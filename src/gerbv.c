@@ -297,12 +297,12 @@ redraw_pixmap(GtkWidget *widget)
     int i;
     int background_polarity = POSITIVE;
     int last_negative = 0;
+    double dmax_width = 0.0, dmax_height = 0.0;
     int max_width = 0, max_height = 0;
     GdkGC *gc = gdk_gc_new(widget->window);
     GdkRectangle update_rect;
 
     /* Called first when opening window and then when resizing window */
-
 
     for(i = 0; i < MAX_FILES; i++) {
 	if (screen.file[i]) {
@@ -310,13 +310,8 @@ redraw_pixmap(GtkWidget *widget)
 	    /* 
 	     * Find the biggest image and use as a size reference
 	     */
-	    int width, height;
-	    width = (int)ceil(screen.file[i]->image->info->max_x * 
-			       (double)screen.scale);
-	    height = (int)ceil(screen.file[i]->image->info->max_y * 
-				(double)screen.scale);
-	    if (width > max_width) max_width = width;
-	    if (height > max_height) max_height = height;
+	    dmax_width  = MAX(screen.file[i]->image->info->max_x, dmax_width);
+	    dmax_height = MAX(screen.file[i]->image->info->max_y, dmax_height);
 
 	    /* 
 	     * Find out if any active layer is negative and 
@@ -330,8 +325,24 @@ redraw_pixmap(GtkWidget *widget)
 	}
     }
 
-    if ((max_width == 0) && (max_height == 0)) 
+    /*
+     * Paranoia check
+     */
+    if ((dmax_width < 0.0001) && (dmax_height < 0.0001)) 
 	return FALSE;
+
+    /*
+     * Make picture a little bit bigger so things on the edges comes
+     * inside.
+     */
+    dmax_width += 0.5 , dmax_height += 0.5;
+
+    /*
+     * Scale width to actual windows size.
+     * Screen.scale inside to reduce rounding error.
+     */
+    max_width = (int)floor(dmax_width * (double)screen.scale);
+    max_height = (int)floor(dmax_height * (double)screen.scale);
 
     if (background_polarity == NEGATIVE) {
 	/* Set background to normal color for the last negative layer */
