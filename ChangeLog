@@ -1,4 +1,9 @@
-2002-11-23  Stefan Petersen  <spe@>
+2002-11-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Yet another G-code (55) discovered in an
+	  example in the "standard" by our russian friend Yuri.
+
+2002-11-23  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/amacro.c, src/draw.c, src/draw_amacro.c, src/gerber.c:
 	  More files with the same mistake in as below. I cleaned up 

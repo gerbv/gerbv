@@ -342,6 +342,8 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	else
 	    err(1, "Strange code after G54\n");
 	break;
+    case 55: /* Prepare for flash */
+	break;
     case 70: /* Specify inches */
 	NOT_IMPL(fd, "G70");
 	break;
