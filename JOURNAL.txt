@@ -19,3 +19,6 @@ places where and when they are allocated and freed.
 --
 
 pnp files project files will only be included with the layer number and colour, not with the selected objects
+
+
+instead of a log message I would like to use the statusbar, any objections? (Stefan?)

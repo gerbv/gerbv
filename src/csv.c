@@ -30,6 +30,11 @@
  * http://www.ioplex.com/~miallen/libmba/dl/libmba-0.8.9.tar.gz
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
+#ifdef USE_GTK2
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -47,17 +52,21 @@
 #define ST_END_QUOTE 4
 #define istspace iswspace
 
+
 struct sinput {
 	FILE *in;
 	const char *src;
 	size_t sn;
 	size_t count;
 };
+
+
 struct winput {
 	const wchar_t *src;
 	size_t sn;
 	size_t count;
 };
+
 
 static int
 snextch(struct sinput *in)
@@ -82,7 +91,9 @@ snextch(struct sinput *in)
 	in->count++;
 
 	return ch;
-}
+}/* snextch */
+
+
 static int
 wnextch(struct winput *in)
 {
@@ -96,7 +107,7 @@ wnextch(struct winput *in)
 	in->count++;
 
 	return ch;
-}
+}/* wnextch */
 
 static int
 csv_parse_str(struct sinput *in, char *buf, size_t bn, char *row[], int rn, int sep, int flags)
@@ -213,7 +224,9 @@ csv_parse_str(struct sinput *in, char *buf, size_t bn, char *row[], int rn, int 
 	}
 
 	return in->count;
-}
+}/* csv_parse_str */
+
+
 static int
 csv_parse_wcs(struct winput *in, wchar_t *buf, size_t bn, wchar_t *row[], int rn, wint_t sep, int flags)
 {
@@ -329,7 +342,9 @@ csv_parse_wcs(struct winput *in, wchar_t *buf, size_t bn, wchar_t *row[], int rn
 	}
 
 	return in->count;
-}
+}/*csv_row_parse_wcs*/
+
+
 int
 csv_row_parse_wcs(const wchar_t *src, size_t sn, wchar_t *buf, size_t bn, wchar_t *row[], int rn, int sep, int trim)
 {
@@ -338,7 +353,9 @@ csv_row_parse_wcs(const wchar_t *src, size_t sn, wchar_t *buf, size_t bn, wchar_
 	input.sn = sn;
 	input.count = 0;
 	return csv_parse_wcs(&input, buf, bn, row, rn, (wint_t)sep, trim);
-}
+}/*csv_row_parse_wcs*/
+
+
 int
 csv_row_parse_str(const char *src, size_t sn, char *buf, size_t bn, char *row[], int rn, int sep, int trim)
 {
@@ -348,7 +365,9 @@ csv_row_parse_str(const char *src, size_t sn, char *buf, size_t bn, char *row[],
 	input.sn = sn;
 	input.count = 0;
 	return csv_parse_str(&input, buf, bn, row, rn, sep, trim);
-}
+}/*csv_row_parse_str*/
+
+
 int
 csv_row_fread(FILE *in, char *buf, size_t bn, char *row[], int numcols, int sep, int trim)
 {
@@ -356,5 +375,5 @@ csv_row_fread(FILE *in, char *buf, size_t bn, char *row[], int numcols, int sep,
 	input.in = in;
 	input.count = 0;
 	return csv_parse_str(&input, buf, bn, row, numcols, sep, trim);
-}
-
+}/*csv_row_fread*/
+#endif

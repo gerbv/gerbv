@@ -967,7 +967,7 @@ unload_file(GtkWidget *widget, gpointer data)
     int         idx = screen.curr_index;
     GtkStyle   *defstyle;
 #ifdef USE_GTK2       
-    int         idx0;
+//    int         idx0;
     GtkTreeIter iter;
 #endif    
 
@@ -1003,21 +1003,8 @@ unload_file(GtkWidget *widget, gpointer data)
 #ifdef USE_GTK2
 //#if 0    
     if (interface.main_window && gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter)) {
-        combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
-        for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
-
-            if (screen.file[idx0] == NULL) {
-                gtk_list_store_append(combo_box_model, &iter);
-                gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
-            } 
-        }
-        gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
-        if (screen.curr_index == interface.layer_select_active) {
-            gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
-            gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
-            g_signal_emit_by_name ((GTK_COMBO_BOX(interface.layer_active)), "changed");
-            click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
-        }
+            update_combo_box_model();
+            
     }
 #endif        
     return;
@@ -1351,7 +1338,12 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
     double us_x1, us_y1, us_x2, us_y2;
     int half_w, half_h;		/* cache for half window dimensions */
+    gchar *designator;
+    GList *tmp_list, *tmp_path;
+    GtkTreeIter iter;
+    double mid_x, mid_y, length, width;
 
+    
     half_w = screen.drawing_area->allocation.width / 2;
     half_h = screen.drawing_area->allocation.height / 2;
 
@@ -1363,7 +1355,42 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     dy = y2-y1;
 
     if (dx < 4 && dy < 4) {
-	GERB_MESSAGE("Warning: Zoom area too small, bailing out!\n");
+//	GERB_MESSAGE("Warning: Zoom area too small, bailing out!\n");//we should modify statusbar for a nice display of the part     
+    tmp_list = gtk_tree_selection_get_selected_rows
+                                            (GTK_TREE_SELECTION(interface.selection),
+                                             (GtkTreeModel **)&interface.model);//item must be in the active selection list 
+    if (tmp_list != NULL) {                                         
+        tmp_path  = g_list_first(tmp_list);
+        do {   
+        gtk_tree_model_get_iter         (GTK_TREE_MODEL(interface.model),
+                                         &iter,
+                                         tmp_path->data);
+        gtk_tree_model_get              (GTK_TREE_MODEL(interface.model),
+                                         &iter,
+                                         COLUMN_DESIGNATOR, &designator, COLUMN_mid_x, &mid_x, COLUMN_mid_y, &mid_y, COLUMN_width, &width, COLUMN_length, &length,  -1);                                  
+            if (((event->x <= mid_x + width*3) || (event->x >= mid_x - width*3)) && ((event->y <= mid_y + length*3) || (event->y >= mid_y - length*3))) {
+                //pointer must be in range  
+                
+                if ( ! g_utf8_validate(designator, -1, NULL)) {
+                    //memset  (designator, 0, sizeof(designator));
+
+                    gchar * str = g_convert(designator, strlen(designator), "UTF-8", "ISO-8859-1",
+                                NULL, NULL, NULL);
+                    // I have not decided yet whether it is better to use always
+                    // "ISO-8859-1" or current locale.
+                    // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
+
+                    sprintf (designator, "%.*s", sizeof(designator)-1, str);
+                    g_free(str);
+                }     
+                snprintf(screen.statusbar.msgstr, MAX_ERRMSGLEN,
+		             "Part: %s", designator);
+                GERB_MESSAGE("The part you have selected is: %s\n", designator);
+
+            }                                              
+        } while ((tmp_path = g_list_next(tmp_list)) != NULL);
+	}
+	update_statusbar(&screen);
 	goto zoom_outline_end;
     }
 
@@ -1658,7 +1685,7 @@ open_image(char *filename, int idx, int reload)
     gerb_verify_error_t error = GERB_IMAGE_OK;
     char *cptr;
 #ifdef USE_GTK2       
-    int          idx0;
+    //int          idx0;
     GtkTreeIter  iter;
 #endif
 
@@ -1772,20 +1799,7 @@ open_image(char *filename, int idx, int reload)
 #ifdef USE_GTK2                         
 //#if 0
     if ((interface.main_window) && (!reload) && gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter)) {                          
-            combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
-            for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
-                if (screen.file[idx0] == NULL) {
-                    gtk_list_store_append(combo_box_model, &iter);
-                    gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
-                } 
-            }
-            gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
-            if (screen.curr_index == interface.layer_select_active) {
-                gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
-                g_signal_emit_by_name ((GTK_COMBO_BOX(interface.layer_active)), "changed");
-                gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
-                click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);                                            
-           }
+            update_combo_box_model();
         }                                     
 #endif                     
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON

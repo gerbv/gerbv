@@ -72,18 +72,6 @@ new_pnp_state()
 
 
 
-static void
-eat_line_pnp(pnp_file_t *fd)
-{
-    int read = fgetc(fd->fd);
-    
-    while(read != 10 && read != 13) {
-	if (read == EOF) return;
-	read = fgetc(fd->fd);
-    }
-} /* eat_line_pnp */
-
-
 /** parse a string representing float number with a unit, default is mm */
 double get_float_unit(char *str)
 {
@@ -151,9 +139,8 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     pnp_state_t      *pnp_state0 = NULL;
     int               line_counter = 0;
     int               ret;
-  //  GtkTreeSelection *tmp_sel;
     char             *row[12];
-    int delimiter;
+    int               delimiter=-1;
     char              buf[MAXL+2], buf0[MAXL+2];
     
     /* added by t.motylewski@bfad.de
@@ -176,9 +163,11 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 	    continue;
 	}
 	/* this accepts file both with and without quotes */
-        if ((delimiter = pnp_screen_for_delimiter(buf, 8)) < 0) {
+        if (!pnp_state) { //we are in first line
+            if ((delimiter = pnp_screen_for_delimiter(buf, 8)) < 0) {
             continue;
-        }
+            }
+        }    
         ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 11, delimiter,   CSV_QUOTES);
         // printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
         
@@ -251,14 +240,14 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 	        COLUMN_NO_FILES_FOUND, FALSE,
 	        -1);
                         
-             gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
-             gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
+            gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
+            gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
 	        0, pnp_state->designator, 
 	        1, pnp_state->comment,
                 -1);
  
-             pnp_state->next = new_pnp_state();
-             pnp_state = pnp_state->next;
+        //     pnp_state->next = new_pnp_state();
+        //     pnp_state = pnp_state->next;
         }    
     }   
            

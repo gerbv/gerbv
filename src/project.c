@@ -101,7 +101,6 @@ define_layer(scheme *sc, pointer args)
     pointer car_el, cdr_el, name, value;
     int layerno;
     project_list_t *plist_tmp = NULL;
-    char *tmp_string;
 
     if (!sc->vptr->is_pair(args)){
 	GERB_MESSAGE("define-layer!: Too few arguments\n");

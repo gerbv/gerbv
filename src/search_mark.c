@@ -219,6 +219,67 @@ void create_marked_layer(int idx) {
 	switch(shape) {
 	case PART_SHAPE_RECTANGLE:
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
+            curr_net->start_x = pad_x;
+            curr_net->start_y = pad_y;
+            curr_net->stop_x = pad_x + width*6;
+            curr_net->stop_y = pad_y;
+    
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = LINEARx1;
+            
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+            
+            curr_net->start_x = pad_x + width*6;
+            curr_net->start_y = pad_y;
+            curr_net->stop_x = pad_x + width*6;
+            curr_net->stop_y = pad_y + length*6;
+    
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = LINEARx1;
+            
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+            
+            curr_net->start_x = pad_x + width*6;
+            curr_net->start_y = pad_y + length*6;
+            curr_net->stop_x = pad_x;
+            curr_net->stop_y = pad_y + length*6;
+    
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = LINEARx1;
+
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+            
+            curr_net->start_x = pad_x;
+            curr_net->start_y = pad_y + length*4;//marking pad_x/ pad_y
+            curr_net->stop_x = pad_x;
+            curr_net->stop_y = pad_y;
+    
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = LINEARx1;
+
+            break;
+            
   	case PART_SHAPE_UNKNOWN:
 	default:
 

@@ -1,3 +1,14 @@
+2004-08-27 Juergen Haas <juergenhaas@gmx.net>
+
+ 	*fixed memory issues pnp_state 
+ 	*fixed too many calls to screen_for_delimiter
+ 	*added #include "string.h" to gerb_transf.c
+ 	*introduced update_combo_box_model()
+ 	*removed unnecessary code
+	*"beautified" gerb_transf.[ch]	
+	*introduced rectangular shape for marking rectangular parts
+	*introduced a LOG MEssage, when right click on any selected part (must be in active selection)
+
 2004-08-26  Juergen Haas <juergenhaas@gmx.net>
 
 	*small bugfixes

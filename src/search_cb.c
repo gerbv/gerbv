@@ -88,7 +88,7 @@ cb_ok_load_pnp_file(GtkWidget *widget, GtkFileSelection *fs)
     screen.file[19] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));/*allocate memory for new layer data*/
     memset((void *)screen.file[19], 0, sizeof(gerbv_fileinfo_t));
     screen.file[19]->name = (char *)malloc(strlen(filename) + 1);
-    strcpy(screen.file[19]->name, filename);/*entry for pnp file also getting saved on "save project"*/
+    strncpy(screen.file[19]->name, filename, strlen(filename));/*entry for pnp file also getting saved on "save project"*/
     screen.file[19]->inverted = 0;
 #endif    
     

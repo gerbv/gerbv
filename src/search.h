@@ -57,42 +57,12 @@ typedef struct pnp_state {
     int      shape;
     double   width;
     double   length;
-  
-
-    gerbv_unit_t unit;/*unused at the moment*/
 
     unsigned int nuf_push;  /* Nuf pushes to estimate stack size */
     struct pnp_state *next;
     } pnp_state_t;
     
 extern pnp_state_t *parsed_PNP_data;
-    
-    
-    
-/*CHECK ME: introduce pnp_state.state and pnp_state.model
-    typedef struct pnp_state {
-    
-        typedef struct state {
-        char     designator[MAXL];
-        char     footprint[MAXL];
-        double   mid_x;
-        double   mid_y;
-        double   ref_x;
-        double   ref_y;
-        double   pad_x;
-        double   pad_y;
-        char     layer[MAXL]; T is top B is bottom
-        double   rotation;
-        char     comment[MAXL];    
-
-        gerbv_unit_t unit;unused at the moment
-
-        unsigned int nuf_push;  Nuf pushes to estimate stack size 
-        struct pnp_state *next;
-        } state;
-    GtkListStore *model;
-    } pnp_state_t;
-*/
 
 pnp_state_t *new_pnp_state();
 double get_float_unit(char *str);

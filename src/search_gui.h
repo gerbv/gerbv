@@ -86,80 +86,18 @@ struct _InterfaceStruct {
 void
 create_search_window(GtkWidget *widget, gpointer data);
 
-
-
-/*
-gchar *
-build_search_command 		(void);
-
 void
-spawn_search_command 		(gchar *command);
+update_combo_box_model(void);
 
-void  		
-add_constraint 			(gint constraint_id,
-				 gchar *value,
-				 gboolean show_constraint);
 
-void  		
-remove_constraint 		(gint constraint_id);
-
-void  		
-update_constraint_info 		(SearchConstraint *constraint, 
-				 gchar *info);
-void
-set_constraint_selected_state	(gint		constraint_id, 
-				 gboolean	state);
-void
-set_constraint_gconf_boolean 	(gint 		constraint_id, 
-				 gboolean 	flag);
-gboolean
-update_progress_bar 		(gpointer data);
-
-gboolean
-update_animation_timeout_cb 	(gpointer data);
-
-void
-set_clone_command		(gint *argcp,
-				 gchar ***argvp,
-				 gpointer client_data,
-				 gboolean escape_values);
-gchar *
-get_desktop_item_name 		(void);
-*/
-
-gboolean
-file_extension_is 		(const char *filename, 
-		   		 const char *ext);
 gboolean  	
 compare_regex	 		(const gchar *regex, 
 				 const gchar *string);
-gint 	 	
-count_of_char_in_string		(const gchar *string, 
-				 const gchar q);
-gchar *   	
-get_readable_date 		(const time_t file_time_raw);
-
-gchar *    	
-strdup_strftime 		(const gchar *format, 
-				 struct tm *time_pieces); 
-			      
-GtkWidget *
-gsearchtool_hig_dialog_new      (GtkWindow      *parent,
-                                 GtkDialogFlags flags,
-                                 GtkButtonsType buttons,
-                                 const gchar    *header,
-                                 const gchar    *message);
 				 			      
 
 /* gsearchtool-callbacks */
 
-			 						 
-void	
-quit_cb 			(GtkWidget 	*widget, 
-				 gpointer 	data);
-void    
-help_cb 			(GtkWidget 	*widget, 
-				 gpointer 	data);
+
 void   
 click_find_cb	 		(GtkWidget 	*widget, 
 				 gpointer 	data);
@@ -182,34 +120,11 @@ click_stop_cb 			(GtkWidget 	*widget,
 void
 click_check_button_cb		(GtkWidget	*widget, 
 				 gpointer 	data);
-void    
-add_constraint_cb		(GtkWidget 	*widget, 
-				 gpointer 	data);
-void    
-remove_constraint_cb		(GtkWidget 	*widget, 
-				 gpointer 	data);
-void    
-constraint_activate_cb 		(GtkWidget 	*widget, 
-				 gpointer 	data);
-void    
-constraint_update_info_cb 	(GtkWidget 	*widget, 
-				 gpointer 	data);	
-void    
-constraint_menu_item_activate_cb(GtkWidget 	*widget,
-                                 gpointer 	data);
-void    
-constraint_entry_changed_cb 	(GtkWidget 	*widget, 
-				 gpointer 	data);
+                 
 void    
 file_is_named_activate_cb 	(GtkWidget 	*widget, 
 				 gpointer 	data);
-void 	
-open_file_cb 			(GtkWidget 	*widget, 
-				 gpointer 	data);
-void	
-open_folder_cb 			(GtkWidget 	*widget, 
 
-				 gpointer 	data);
 /*                                 
 void  
 drag_begin_file_cb  		(GtkWidget          *widget,
@@ -233,13 +148,7 @@ drag_data_animation_cb		(GtkWidget          *widget,
 	       			 guint               time,
 	       			 gpointer            data);
 */                                 
-void    
-show_file_selector_cb 		(GtkWidget 	*widget,
-				 gpointer 	data);
-void   	
-save_results_cb 		(GtkFileSelection   *selector, 
-				 gpointer 	    user_data, 
-				 gpointer 	    data);
+
 gboolean  
 key_press_cb 			(GtkWidget 	*widget, 
 				 GdkEventKey 	*event,
@@ -266,8 +175,7 @@ gboolean
 file_key_press_event_cb		(GtkWidget 	*widget,
 				 GdkEventKey    *event,
 				 gpointer 	data);
-gboolean
-not_running_timeout_cb 		(gpointer data);
+
 #endif
 
 #endif
