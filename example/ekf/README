@@ -2,6 +2,9 @@ The files in this directory is kindly contributed by
 Joachim Jansen <jj@ekf.de> as an example of RS274D with
 an separate aperture file.
 
+Please note that these files should NOT work with gerbv since they
+are RS274D and not RS274X.
+
 	l1.off  : The Gerber file
 	ekf.gap : D-code table maintained by CAM350
 
