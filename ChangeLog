@@ -1,3 +1,10 @@
+2004-06-27  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Improved comments on what is going and why. Also
+	  improved a little in determining the size of the image. Now it 
+	  ignores points with no aperture defined, unless it is a polygon 
+	  area.
+
 2004-06-24  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Removed two potential segfaults when running old

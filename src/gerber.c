@@ -259,10 +259,14 @@ parse_gerb(gerb_file_t *fd)
 	     * Count number of points in Polygon Area 
 	     */
 	    if (state->in_parea_fill && state->parea_start_node) {
-		if (state->aperture_state == OFF) {
-		    /*
-		     * aperture state off, end current polygon and start a new one 
-		     */
+		/* 
+		 * "...all lines drawn with D01 are considered edges of the
+		 * polygon. D02 closes and fills the polygon."
+		 * p.49 rs274xrevd_e.pdf
+		 * D02 -> state->aperture_state == OFF
+		 */
+		if (state->aperture_state == OFF &&
+		    state->interpolation != PAREA_START) {
 		    curr_net->interpolation = PAREA_END;
 		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 		    curr_net = curr_net->next;
@@ -328,12 +332,24 @@ parse_gerb(gerb_file_t *fd)
 		aperture_size = 0.0;
 
 	    /*
-	     * Find min and max of image with compensation for mm.
+	     * For next round we save the current position as
+	     * the previous position
 	     */
+	    state->prev_x = state->curr_x;
+	    state->prev_y = state->curr_y;
+
+	    /*
+	     * If we have an aperture defined at the moment we find 
+	     * min and max of image with compensation for mm.
+	     */
+	    if ((curr_net->aperture == 0) && !state->in_parea_fill) 
+		break;
+
 	    if (curr_net->unit == MM)
 		scale = 25.4;
 	    else 
 		scale = 1.0;
+
 	    if (image->info->min_x > curr_net->stop_x)
 		image->info->min_x = (curr_net->stop_x - aperture_size) / scale;
 	    if (image->info->min_y > curr_net->stop_y)
@@ -342,9 +358,6 @@ parse_gerb(gerb_file_t *fd)
 		image->info->max_x = (curr_net->stop_x + aperture_size) / scale;
 	    if (image->info->max_y < curr_net->stop_y)
 		image->info->max_y = (curr_net->stop_y + aperture_size) / scale;
-	    
-	    state->prev_x = state->curr_x;
-	    state->prev_y = state->curr_y;
 	    
 	    break;
 	case 10 :   /* White space */
