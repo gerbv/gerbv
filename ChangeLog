@@ -1,3 +1,8 @@
+2003-09-28  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Patch from Peter Brueckner. Some Gerbers don't
+	  have G04 but just G4. Peters patch fixes that for G- and M-codes.
+
 2003-09-08  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Patch from Simon Munton to fix a problem with polygons

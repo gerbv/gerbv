@@ -329,22 +329,10 @@ parse_gerb(gerb_file_t *fd)
 static void 
 parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 {
-    int op[2];
-    int op_int;
+    int  op_int;
+
+    op_int=gerb_fgetint(fd);
     
-    op[0] = gerb_fgetc(fd);
-    op[1] = gerb_fgetc(fd);
-    
-    if ((op[0] == EOF) || (op[1] == EOF))
-	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
-
-    if ((op[0] < (int)'0') || (op[0] > (int)'9') || 
-	(op[1] < (int)'0') || (op[1] > (int)'9'))
-	GERB_COMPILE_ERROR("Non numerical G opcode found [%c%c]\n", op[0], op[1]);
-
-    op_int = (op[0] - (int)'0');
-    op_int = op_int * 10 + (op[1] - (int)'0');
-
     switch(op_int) {
     case 0:  /* Move */
 	/* Is this doing anything really? */
@@ -412,7 +400,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	if (format) format->coordinate = INCREMENTAL;
 	break;
     default:
-	GERB_COMPILE_ERROR("Strange/unhandled G code : %c%c\n", op[0], op[1]);
+	GERB_COMPILE_ERROR("Strange/unhandled G code : %d\n", op_int);
     }
     
     return;
@@ -453,26 +441,19 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 static int
 parse_M_code(gerb_file_t *fd)
 {
-    int op[2];
-    
-    op[0] = gerb_fgetc(fd);
-    op[1] = gerb_fgetc(fd);
-    
-    if ((op[0] == EOF) || (op[1] == EOF))
-	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
-    
-    if (op[0] != (int)'0')
-	GERB_COMPILE_ERROR("Strange M code [%c%c]\n", (char)op[0], (char)op[1]);
+    int op_int;
 
-    switch (op[1]) {
-    case '0':  /* Program stop */
+    op_int=gerb_fgetint(fd);
+
+    switch (op_int) {
+    case 0:  /* Program stop */
 	return 1;
-    case '1':  /* Optional stop */
+    case 1:  /* Optional stop */
 	return 2;
-    case '2':  /* End of program */
+    case 2:  /* End of program */
 	return 3;
     default:
-	GERB_COMPILE_ERROR("Strange M code [%c%c]\n", (char)op[0], (char)op[1]);
+	GERB_COMPILE_ERROR("Strange M code [%d]\n", op_int);
     }
     return 0;
 } /* parse_M_code */

@@ -64,3 +64,6 @@ Simon Munton
  - A patch to fix a problem with polygons not always being filled properly.
  - Another patch to solve circular polygon outline by approximating them
    with a number of short segments.
+
+Peter Brueckner
+ - A patch to fix that some gerbers has for instance G4 instead of G04.
