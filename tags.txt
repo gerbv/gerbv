@@ -1,12 +1,14 @@
 Branches
 ========
-SEARCH_SELECT_branch	Juergen and Tomasz new stuff 20040720
+SEARCH_SELECT_branch	Juergen and Tomasz new stuff 20040720 closed 20040822
 FIND_PARTS_branch	Obsolete
 RELEASE_1_x_branch	Obsolete
 STABLE_1_x_branch	Stable branch
 
 Misc. tags
 ==========
+SEARCH_SELECT_merged	After SEARCH_SELECT_branch has been merged
+SEARCH_SELECT_start	Just before merging SEARCH_SELECT_branch
 SEARCH_SELECT_bp	Branch point for SEARCH_SELECT_branch
 RELEASE_0_17_PRE1	Never released
 RELEASE_0_16		Release
