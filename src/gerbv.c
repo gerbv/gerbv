@@ -324,7 +324,10 @@ create_layer_buttons(int nuf_buttons)
 static void
 color_selection_destroy(GtkWidget *widget, gpointer data)
 {
-    gtk_grab_remove(widget);
+    /* Remove modal grab and destroy color selection dialog */
+    gtk_grab_remove(screen.color_selection_popup);
+    gtk_widget_destroy(screen.color_selection_popup);
+    screen.color_selection_popup = NULL;
 } /* color_selection_destroy */
 
 
@@ -396,11 +399,10 @@ color_selection_popup(GtkWidget *widget, gpointer data)
 	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->colorsel),
 	 GTK_UPDATE_CONTINUOUS);
 
-    gtk_signal_connect_object
+    gtk_signal_connect
 	(GTK_OBJECT
 	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 GTK_OBJECT(screen.color_selection_popup));
+	 "clicked", GTK_SIGNAL_FUNC(color_selection_destroy), NULL);
 
     gtk_signal_connect
 	(GTK_OBJECT
@@ -469,11 +471,22 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     redraw_pixmap(screen.drawing_area, TRUE);
 
     gtk_grab_remove(screen.load_file_popup);
-    
+    gtk_widget_destroy(screen.load_file_popup);
     screen.load_file_popup = NULL;
 
     return;
 } /* cb_ok_load_file */
+
+
+static void
+cb_cancel_load_file(GtkWidget *widget, gpointer data)
+{
+    gtk_grab_remove(screen.load_file_popup);
+    gtk_widget_destroy(screen.load_file_popup);
+    screen.load_file_popup = NULL;
+
+    return;
+} /* cb_cancel_load_file */
 
 
 static void
@@ -485,17 +498,16 @@ load_file_popup(GtkWidget *widget, gpointer data)
 	gtk_file_selection_set_filename
 	    (GTK_FILE_SELECTION(screen.load_file_popup), screen.path);
 
+    gtk_signal_connect(GTK_OBJECT(screen.load_file_popup), "destroy",
+		       GTK_SIGNAL_FUNC(cb_cancel_load_file),
+		       NULL);
     gtk_signal_connect
 	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(cb_ok_load_file), 
 	 (gpointer)screen.load_file_popup);
-    gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.load_file_popup);
-    gtk_signal_connect_object
+    gtk_signal_connect
 	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+	 "clicked", GTK_SIGNAL_FUNC(cb_cancel_load_file), 
 	 (gpointer)screen.load_file_popup);
     
     gtk_widget_show(screen.load_file_popup);
@@ -1827,8 +1839,9 @@ create_ZoomFactorWindow (void)
     ZoomFactorWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_object_set_data (GTK_OBJECT (ZoomFactorWindow), "ZoomFactorWindow",
 			 ZoomFactorWindow);
-    gtk_window_set_title (GTK_WINDOW (ZoomFactorWindow),
-			  "Select Zoom factor");
+    gtk_window_set_title (GTK_WINDOW (ZoomFactorWindow), "Set Scale");
+    /* XXX Hardcoded window size values */
+    gtk_window_set_default_size(GTK_WINDOW(ZoomFactorWindow), 180, 50);
     
     table2 = gtk_table_new (2, 2, FALSE);
     gtk_widget_ref (table2);
@@ -1849,7 +1862,7 @@ create_ZoomFactorWindow (void)
 		      (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
 		      (GtkAttachOptions) (0), 0, 0);
 
-    zoom_cancel_button = gtk_button_new_with_label ("cancel");
+    zoom_cancel_button = gtk_button_new_with_label ("Cancel");
     gtk_widget_ref (zoom_cancel_button);
     gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow),
 			      "zoom_cancel_button", zoom_cancel_button,
@@ -1880,6 +1893,9 @@ create_ZoomFactorWindow (void)
 		      (GtkAttachOptions) (0), 0, 0);
     gtk_misc_set_alignment (GTK_MISC (zoomwindowlabel), 0, 0.5);
 
+    gtk_signal_connect(GTK_OBJECT(ZoomFactorWindow), "destroy",
+		       GTK_SIGNAL_FUNC(on_zoom_cancel_button_clicked),
+		       NULL);
     gtk_signal_connect (GTK_OBJECT (zoom_spinbutton1), "realize",
 			GTK_SIGNAL_FUNC (on_zoom_spinbutton1_realize), NULL);
     gtk_signal_connect (GTK_OBJECT (zoom_cancel_button), "clicked",
@@ -1907,11 +1923,11 @@ on_zoom_ok_button_clicked (GtkButton * button, gpointer user_data)
     GtkSpinButton *ZoomSpin;
     int newscale;
     gerbv_zoom_data_t z_data;
-    gerbv_zoom_dir_t zoomdir = ZOOM_SET;
+
     ZoomSpin = (GtkSpinButton *) lookup_widget ((GtkWidget *) button,
 						"zoom_spinbutton1");
     newscale = gtk_spin_button_get_value_as_int (ZoomSpin);
-    z_data.z_dir = zoomdir;
+    z_data.z_dir = ZOOM_SET;
     z_data.z_event = NULL;
     z_data.scale = newscale;
     zoom (screen.drawing_area, &z_data);

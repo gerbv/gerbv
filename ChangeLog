@@ -1,5 +1,8 @@
 2002-11-16  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerbv.c: Made sure all cancels and destroy_event from 
+	  different popup windows are handled and destroyed properly.
+	  Also made some minor fixes in new "set explicit scale" functions.
 	* src/gerbv.c: Made explicit set scale also center image properly.
 
 2002-11-15  Stefan Petersen  <spe@stacken.kth.se>
