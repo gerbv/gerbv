@@ -1,7 +1,14 @@
+2003-02-28  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_gdk.c: Holger ensured that all rectangles and lines 
+	  are at least one pixel wide - so they won't just disappear 
+	  with zooming...
+
 2003-02-26  Stefan Petersen  <spe@stacken.kth.se>
 
-	* This is the BRANCH_render_1, ChangeLog comments are only necessery
-	  in main trunk.
+	* Branched BRANCH_render_1
+	* Added huge patch from Holger Waechtler that extracts the GTK/GDK 
+	  specific things for the render (hence the branch name).
 
 2003-02-24  Stefan Petersen  <spe@stacken.kth.se>
 

@@ -166,9 +166,13 @@ gerb_gdk_fill_rectangle(struct gerb_render_context *ctx,
 			double x, double y, double w, double h)
 {
     struct gerb_gdk_context *gctx = (struct gerb_gdk_context*) ctx;
-    
+    gint _w = round(w);
+    gint _h = round(h);
+
     gdk_draw_rectangle (gctx->clipmask, gctx->clipmask_gc, 1,
-			round(x), round(y), round(w), round(h));
+			round(x), round(y),
+			(_w < 1) ? 1 : _w,
+			(_h < 1) ? 1 : _h);
 } /* gerb_gdk_fill_rectangle */ 
 
 
@@ -177,10 +181,15 @@ gerb_gdk_fill_oval(struct gerb_render_context *ctx,
 		   double x, double y, double rx, double ry)
 {
     struct gerb_gdk_context *gctx = (struct gerb_gdk_context*) ctx;
-    
+    gint _rx = round(rx);
+    gint _ry = round(ry);
+
     gdk_draw_arc (gctx->clipmask, gctx->clipmask_gc, 1,
-		  round(x), round(y), round(rx), round(ry),
-		  360 * 64, 360 * 64);
+		  round(x), round(y),
+		  (_rx < 1) ? 1 : _rx,
+		  (_ry < 1) ? 1 : _ry,
+		  360 * 64,
+		  360 * 64);
 } /* gerb_gdk_fill_oval */
 
 
@@ -202,8 +211,9 @@ gerb_gdk_set_line_style(struct gerb_render_context *ctx,
 			double width, int dashed)
 {
     struct gerb_gdk_context *gctx = (struct gerb_gdk_context*) ctx;
-    
-    gdk_gc_set_line_attributes (gctx->clipmask_gc, round(width),
+    gint w = round(width);
+
+    gdk_gc_set_line_attributes (gctx->clipmask_gc, (w < 1) ? 1 : w,
 				dashed ? GDK_LINE_ON_OFF_DASH : GDK_LINE_SOLID,
 				GDK_CAP_ROUND,
 				GDK_JOIN_MITER);
