@@ -22,9 +22,12 @@ New in 0.0.4
 
 New in 0.0.3
 
-- Now Automake _copies_ files when building distribution.
+- Now the files 'missing', 'mkinstalldirs' and 'install-sh' are
+  copied when release is built.
 
-- Minor bugfix in configure.in so now Solaris should work too.
+- configure can run on Solaris (bug sqashed).
+
+- backends now receive the name of the parsed file.
 
 
 New in 0.0.2

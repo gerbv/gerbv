@@ -27,6 +27,6 @@
 #include <libguile.h>
 #include <guile/gh.h> /* To be deprecated */
 
-SCM scm_image2scm(struct gerb_image *image, char *filename);
+SCM scm_image2scm(gerb_image_t *image, char *filename);
 
 #endif /* SCM_GERBER_H */

@@ -64,14 +64,14 @@
      } while (0)
 #endif
 
-enum gerbv_state {NORMAL, MOVE};
+enum gerbv_state_t {NORMAL, MOVE};
 
-struct gerbv_color {
+typedef struct gerbv_color {
     char *name;
     GdkColor *color;
-};
+} gerbv_color_t;
 
-static struct gerbv_color colors [] = {
+static gerbv_color_t colors [] = {
     {"grey50", NULL},
     {"magenta2", NULL},
     {"purple2", NULL},
@@ -82,22 +82,22 @@ static struct gerbv_color colors [] = {
     {"red", NULL},
 };
 
-static struct gerbv_color background = {"black", NULL};
+static gerbv_color_t background = {"black", NULL};
 
-struct gerbv_fileinfo {
+typedef struct gerbv_fileinfo {
     struct gerb_image *image;
     int color_index;
-};
+} gerbv_fileinfo_t;
 
 
-struct gerbv_screen {
+typedef struct gerbv_screen {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
 
-    struct gerbv_fileinfo *file[MAX_FILES];
+    gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
 
-    enum gerbv_state state;
+    enum gerbv_state_t state;
 
     int scale;
 
@@ -106,9 +106,9 @@ struct gerbv_screen {
 
     gint trans_x; /* Translate offset */
     gint trans_y;
-};
+} gerbv_screen_t;
 
-struct gerbv_screen screen;
+gerbv_screen_t screen;
 
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
@@ -373,7 +373,7 @@ open_image(char *filename, int index)
 	perror("fopen");
 	exit(1);
     }
-    screen.file[index] = (struct gerbv_fileinfo *)malloc(sizeof(struct gerbv_fileinfo));
+    screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
     screen.file[index]->image = parse_gerb(fd);
     screen.file[index]->color_index = index;
     fclose(fd);
@@ -460,13 +460,13 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 static void
 batch(char *backend, char *file)
 {
-    char              *path[3];
-    char 	      *complete_path;
-    char              *home;
-    int		       i;
-    FILE              *fd;
-    struct gerb_image *image;
-    SCM	               scm_image;
+    char         *path[3];
+    char 	 *complete_path;
+    char         *home;
+    int		  i;
+    FILE         *fd;
+    gerb_image_t *image;
+    SCM	          scm_image;
 
     if ((home = getenv("HOME")) == NULL)
 	err(1, "HOME not set\n");
@@ -629,7 +629,7 @@ internal_main(int argc, char *argv[])
     /*
      * Setup the screen info
      */
-    bzero((void *)&screen, sizeof(struct gerbv_screen));
+    bzero((void *)&screen, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
     screen.scale = INITIAL_SCALE;
     

@@ -39,43 +39,43 @@
 
 
 /* Local function prototypes */
-static void parse_G_code(FILE *fd, struct gerb_state *state, struct gerb_format *format);
-static void parse_D_code(FILE *fd, struct gerb_state *state);
+static void parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format);
+static void parse_D_code(FILE *fd, gerb_state_t *state);
 static int parse_M_code(FILE *fd);
-static void parse_rs274x(FILE *fd, struct gerb_image *image);
-static int parse_aperture_definition(FILE *fd, struct gerb_aperture *aperture);
+static void parse_rs274x(FILE *fd, gerb_image_t *image);
+static int parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture);
 static int read_int(FILE *fd);
 
 
-struct gerb_image *
+gerb_image_t *
 parse_gerb(FILE *fd)
 {
-    struct gerb_state *state = NULL;
-    struct gerb_image *image = NULL;
-    struct gerb_net *curr_net = NULL;
+    gerb_state_t *state = NULL;
+    gerb_image_t *image = NULL;
+    gerb_net_t *curr_net = NULL;
     char read;
     double x_scale, y_scale;
     
-    state = (struct gerb_state *)malloc(sizeof(struct gerb_state));
+    state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
 	err(1, "malloc state failed\n");
-    bzero((void *)state, sizeof(struct gerb_state));
+    bzero((void *)state, sizeof(gerb_state_t));
 
-    image = (struct gerb_image *)malloc(sizeof(struct gerb_image));
+    image = (gerb_image_t *)malloc(sizeof(gerb_image_t));
     if (image == NULL)
 	err(1, "malloc image failed\n");
-    bzero((void *)image, sizeof(struct gerb_image));
+    bzero((void *)image, sizeof(gerb_image_t));
     
-    image->netlist = (struct gerb_net *)malloc(sizeof(struct gerb_net));
+    image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t));
     if (image->netlist == NULL)
 	err(1, "malloc image->netlist failed\n");
-    bzero((void *)image->netlist, sizeof(struct gerb_net));
+    bzero((void *)image->netlist, sizeof(gerb_net_t));
     curr_net = image->netlist;
     
-    image->info = (struct gerb_image_info *)malloc(sizeof(struct gerb_image_info));
+    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
     if (image->info == NULL)
 	err(1, "malloc image->info failed\n");
-    bzero((void *)image->info, sizeof(struct gerb_image_info));
+    bzero((void *)image->info, sizeof(gerb_image_info_t));
     
     while ((read = (char)fgetc(fd)) != EOF) {
 	switch (read) {
@@ -115,9 +115,9 @@ parse_gerb(FILE *fd)
 	    break;
 	case '*':
 	    if (state->curr_aperture == 0) break;
-	    curr_net->next = (struct gerb_net *)malloc(sizeof(struct gerb_net));
+	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
-	    bzero((void *)curr_net, sizeof(struct gerb_net));
+	    bzero((void *)curr_net, sizeof(gerb_net_t));
 	    
 	    if (image && image->format ){
 		x_scale = pow(10.0, (double)image->format->x_dec);
@@ -179,10 +179,10 @@ parse_gerb(FILE *fd)
 
 
 void
-free_gerb_image(struct gerb_image *image)
+free_gerb_image(gerb_image_t *image)
 {
     int i;
-    struct gerb_net *net, *tmp;
+    gerb_net_t *net, *tmp;
     
     /*
      * Free apertures
@@ -216,7 +216,7 @@ free_gerb_image(struct gerb_image *image)
 
 
 static void 
-parse_G_code(FILE *fd, struct gerb_state *state, struct gerb_format *format)
+parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
 {
     char op[2];
     
@@ -295,7 +295,7 @@ parse_G_code(FILE *fd, struct gerb_state *state, struct gerb_format *format)
 } /* parse_G_code */
 
 static void 
-parse_D_code(FILE *fd, struct gerb_state *state)
+parse_D_code(FILE *fd, gerb_state_t *state)
 {
     int a;
     
@@ -344,10 +344,10 @@ parse_M_code(FILE *fd)
 
 
 static void 
-parse_rs274x(FILE *fd, struct gerb_image *image)
+parse_rs274x(FILE *fd, gerb_image_t *image)
 {
     char op[3];
-    struct gerb_aperture *a = NULL;
+    gerb_aperture_t *a = NULL;
     int ano;
     
     op[0] = fgetc(fd);
@@ -360,10 +360,10 @@ parse_rs274x(FILE *fd, struct gerb_image *image)
     if (strncmp(op, "AS", 2) == 0) {        /* Axis Select */
 	NOT_IMPL(fd, "%AS%");
     } else if (strncmp(op, "FS", 2) == 0) { /* Format Statement */
-	image->format = (struct gerb_format *)malloc(sizeof(struct gerb_format));
+	image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
 	if (image->format == NULL) 
 	    err(1, "Failed malloc for format\n");
-	bzero((void *)image->format, sizeof(struct gerb_format));
+	bzero((void *)image->format, sizeof(gerb_format_t));
 	
 	op[0] = fgetc(fd);
 	if (op[0] == 'L')
@@ -479,8 +479,8 @@ parse_rs274x(FILE *fd, struct gerb_image *image)
 	
 	/* Aperture parameters */
     } else if (strncmp(op, "AD", 2) == 0) { /* Aperture Description */
-	a = (struct gerb_aperture *)malloc(sizeof(struct gerb_aperture));
-	bzero((void *)a, sizeof(struct gerb_aperture));
+	a = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
+	bzero((void *)a, sizeof(gerb_aperture_t));
 	ano = parse_aperture_definition(fd, a);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) 
 	    image->aperture[ano - APERTURE_MIN] = a;
@@ -510,7 +510,7 @@ parse_rs274x(FILE *fd, struct gerb_image *image)
 } /* parse_rs274x */
 
 static int 
-parse_aperture_definition(FILE *fd, struct gerb_aperture *aperture)
+parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture)
 {
     int ano, i;
     char read;

@@ -42,7 +42,7 @@ extern "C" {
 #define APERTURE_MIN 10
 #define APERTURE_MAX 999
 	
-enum aperture_state {OFF, ON, FLASH};
+enum aperture_state_t {OFF, ON, FLASH};
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
 enum unit_t {INCH, MM};
 enum polarity_t {POSITIVE, NEGATIVE};
@@ -52,7 +52,7 @@ enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001,
 		      CW_CIRCULAR, CCW_CIRCULAR, 
 		      MQ_CW_CIRCULAR, MQ_CCW_CIRCULAR};
 
-struct gerb_net {
+typedef struct gerb_net {
     double start_x;
     double start_y;
     double stop_x;
@@ -60,30 +60,30 @@ struct gerb_net {
     double arc_start_x;
     double arc_start_y;
     int aperture;
-    enum aperture_state aperture_state;
+    enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
     struct gerb_net *next;
-};
+} gerb_net_t;
 
 
-struct gerb_aperture {
+typedef struct gerb_aperture {
     enum aperture_t type;
     double parameter[5];
     int nuf_parameters;
-};
+} gerb_aperture_t;
 
 
-struct gerb_format {
+typedef struct gerb_format {
     enum omit_zeros_t omit_zeros;
     enum coordinate_t coordinate;
     int x_int;
     int x_dec;
     int y_int;
     int y_dec;
-};
+} gerb_format_t;
 	
 	
-struct gerb_image_info {
+typedef struct gerb_image_info {
     enum unit_t unit;
     enum polarity_t polarity;
     double min_x;
@@ -92,29 +92,29 @@ struct gerb_image_info {
     double max_y;
     double offset_a;
     double offset_b;
-};
+} gerb_image_info_t;
 
 #ifdef LAYER
-struct gerb_layer {
+typedef struct gerb_layer {
     struct gerb_net *netlist;
     struct gerb_layer *next;
-};
+} gerb_layer_t;
 #endif
 
-struct gerb_image {
-    struct gerb_aperture *aperture[APERTURE_MAX - APERTURE_MIN];
-    struct gerb_format *format;
-    struct gerb_image_info *info;
+typedef struct gerb_image {
+    gerb_aperture_t *aperture[APERTURE_MAX - APERTURE_MIN];
+    gerb_format_t *format;
+    gerb_image_info_t *info;
 #ifdef LAYER
     int nuf_layers;
-    struct gerb_layer *layer;
+    gerb_layer_t *layer;
 #else
-    struct gerb_net *netlist; /* XXX til I get energy to implement layers */
+    gerb_net_t *netlist; /* XXX til I get energy to implement layers */
 #endif
-};
+} gerb_image_t;
 
 
-struct gerb_state {
+typedef struct gerb_state {
     int curr_x;
     int curr_y;
     int prev_x;
@@ -122,13 +122,13 @@ struct gerb_state {
     int arc_start_x;
     int arc_start_y;
     int curr_aperture;
-    enum aperture_state aperture_state;
+    enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
-};
+} gerb_state_t;
     
-struct gerb_image *parse_gerb(FILE *fd);
+gerb_image_t *parse_gerb(FILE *fd);
     
-void free_gerb_image(struct gerb_image *image);
+void free_gerb_image(gerb_image_t *image);
 
 #ifdef __cplusplus
 }

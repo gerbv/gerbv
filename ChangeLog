@@ -1,4 +1,12 @@
 2001-10-27 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/*.[ch]: typedef:ed all internal structs to *_t
+	
+
+-- Release 0.0.4 --	
+	
+2001-10-27 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/gerber.[hc]: EagleCad generates broken Gerber.
 	  I kindly detect and then tries to run as nothing 
 	  happened. Disable kludge with commenting out 
@@ -12,6 +20,7 @@
 	
 	
 2001-10-24 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/draw.[hc]: Added. Extracted drawing functions from
 	  gerbv.c.
 	* src/gerbv.c: Removed add drawing functions into draw.c.

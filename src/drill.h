@@ -106,7 +106,7 @@ typedef struct drill_image {
     drill_hole_t *holes;
 } drill_image_t;
 
-struct gerb_image *parse_drillfile(FILE *fd);
+gerb_image_t *parse_drillfile(FILE *fd);
 void free_drill_image(drill_image_t *image);
 
 #ifdef __cplusplus

@@ -33,21 +33,21 @@
                            } while(0)
 
 /* Local function prototypes */
-static int drill_parse_M_code(FILE *fd, struct gerb_image *image);
-static int drill_parse_T_code(FILE *fd, drill_state_t *state, struct gerb_image *image);
+static int drill_parse_M_code(FILE *fd, gerb_image_t *image);
+static int drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image);
 static void drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state);
-static struct gerb_image *new_image(struct gerb_image *image);
+static gerb_image_t *new_image(gerb_image_t *image);
 static drill_state_t *new_state(drill_state_t *state);
 static int read_int(FILE *fd);
 static double read_double(FILE *fd);
 static void eat_line(FILE *fd);
 
-struct gerb_image *
+gerb_image_t *
 parse_drillfile(FILE *fd)
 {
     drill_state_t *state = NULL;
-    struct gerb_image *image = NULL;
-    struct gerb_net *curr_net = NULL;
+    gerb_image_t *image = NULL;
+    gerb_net_t *curr_net = NULL;
     char read;
     double x_scale = 1, y_scale = 1;
 
@@ -124,9 +124,9 @@ parse_drillfile(FILE *fd)
 	    image->info->max_x = max(image->info->max_x, state->curr_x);
 	    image->info->max_y = max(image->info->max_y, state->curr_y);
 
-	    curr_net->next = (struct gerb_net *)malloc(sizeof(struct gerb_net));
+	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
-	    bzero((void *)curr_net, sizeof(struct gerb_net));
+	    bzero((void *)curr_net, sizeof(gerb_net_t));
 
 	    break;
 
@@ -153,7 +153,7 @@ parse_drillfile(FILE *fd)
    appear in the header and/or the data.
    Returns tool number on success, -1 on error */
 static int
-drill_parse_T_code(FILE *fd, drill_state_t *state, struct gerb_image *image)
+drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 {
     int tool_num;
     int done = FALSE;
@@ -184,7 +184,7 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, struct gerb_image *image)
 		    err(1, "Tool is already defined\n");
 		} else {
 		    image->aperture[tool_num] =
-			(struct gerb_aperture *)malloc(sizeof(struct gerb_aperture));
+			(gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 		    if (image->aperture[tool_num] == NULL) {
 			err(1, "malloc tool failed\n");
 		    }
@@ -223,7 +223,7 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, struct gerb_image *image)
 
 
 static int
-drill_parse_M_code(FILE *fd, struct gerb_image *image)
+drill_parse_M_code(FILE *fd, gerb_image_t *image)
 {
     char op[3] = "  ";
 
@@ -278,33 +278,33 @@ drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state)
 
 /* Allocates a new gerb_image structure
    Returns gerb_image pointer on success, NULL on ERROR */
-static struct gerb_image *
-new_image(struct gerb_image *image)
+static gerb_image_t *
+new_image(gerb_image_t *image)
 {
 
-    image = (struct gerb_image *)malloc(sizeof(struct gerb_image));
+    image = (gerb_image_t *)malloc(sizeof(gerb_image_t));
     if (image != NULL) {
 
-	bzero((void *)image, sizeof(struct gerb_image));
+	bzero((void *)image, sizeof(gerb_image_t));
 
-	image->netlist = (struct gerb_net *)malloc(sizeof(struct gerb_net));
+	image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	if (image->netlist != NULL) {
 
-	    bzero((void *)image->netlist, sizeof(struct gerb_net));
+	    bzero((void *)image->netlist, sizeof(gerb_net_t));
 	    
-	    image->info = (struct gerb_image_info *)malloc(sizeof(struct gerb_image_info));
+	    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
 
 	    if (image->info != NULL) {
-		bzero((void *)image->info, sizeof(struct gerb_image_info));
+		bzero((void *)image->info, sizeof(gerb_image_info_t));
 
 		image->info->min_x = HUGE_VAL;
 		image->info->min_y = HUGE_VAL;
 		image->info->max_x = -HUGE_VAL;
 		image->info->max_y = -HUGE_VAL;
 
-		image->format = (struct gerb_format *)malloc(sizeof(struct gerb_format));
+		image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
 		if (image->format != NULL) {
-		    bzero((void *)image->format, sizeof(struct gerb_format));
+		    bzero((void *)image->format, sizeof(gerb_format_t));
 		    image->format->x_dec = 4;
 		    image->format->y_dec = 4;
 

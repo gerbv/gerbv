@@ -53,7 +53,7 @@ scm_aperture2scm(enum aperture_t a)
 
 
 static SCM
-scm_aperture_state2scm(enum aperture_state aperture_state)
+scm_aperture_state2scm(enum aperture_state_t aperture_state)
 {
     switch (aperture_state) {
     case OFF:
@@ -112,9 +112,9 @@ scm_omit_zeros2scm(enum omit_zeros_t omit_zeros)
 
 
 SCM
-scm_image2scm(struct gerb_image *image, char *filename)
+scm_image2scm(gerb_image_t *image, char *filename)
 {
-    struct gerb_net *net;
+    gerb_net_t *net;
     int i,j;
     SCM netlist  = SCM_EOL;
     SCM aperture = SCM_EOL;
