@@ -1,3 +1,8 @@
+2004-08-22  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, src/Makefile.am: Use libpng-config to find out
+	  parameters to use in CFLAGS and LIBS.
+
 tag:SEARCH_SELECT_merged
 
 2004-08-13 11:25 Search9-pre8

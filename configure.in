@@ -131,12 +131,14 @@ fi
 fi
 
 if test "$exportpng" = "yes" ; then
-	AC_CHECK_LIB(png, png_write_info,, 
-	AC_MSG_ERROR(*** Must have libpng to get export-png to work))
-	PNG_LIBS="-lpng"
+	PNG_CFLAGS="`libpng-config --cflags`"
+	PNG_LIBS="`libpng-config --libs`"
+dnl	AC_CHECK_LIB($PNG_LIBS, png_write_info,, 
+dnl	AC_MSG_ERROR(*** Must have libpng to get export-png to work))
 else
 	GDK_PIXBUF_CFLAGS=
 	GDK_PIXBUF_LIBS=
+	PNG_CFLAGS=
 	PNG_LIBS=
 fi
 
@@ -172,6 +174,7 @@ AC_SUBST(GTK_LIBS)
 
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
+AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
 
 AC_SUBST(BACKEND_DIR)

@@ -29,15 +29,15 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h draw.c \
 		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
 		gerber.h gerbv.c gerbv_icon.h gerbv_screen.h log.c log.h \
 		opdefines.h project.c project.h scheme-private.h scheme.c \
-       	search.c search.h search_file.c search_file.h search_cb.c search_cb.h \
-	        search_gui.c search_gui.h search_mark.c \
+		search.c search.h search_file.c search_file.h search_cb.c \
+		search_cb.h search_gui.c search_gui.h search_mark.c \
 		csv.c csv.h	\
 		scheme.h setup.c setup.h tooltable.c tooltable.h
 
 scmdatadir = @BACKEND_DIR@
 dist_scmdata_DATA = init.scm
 
-INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@
+INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@ @PNG_CFLAGS@
 gerbv_LDADD = @GTK_LIBS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@
 
 AM_CFLAGS=-Wall
