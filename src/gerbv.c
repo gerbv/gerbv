@@ -1542,6 +1542,12 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	}
 	break;
 
+    case GDK_Alt_L:
+    case GDK_Alt_R: 
+	screen.state = ALT_PRESSED;
+	screen.selected_layer = -1;
+	break;
+
     case GDK_KP_Subtract:
     case GDK_minus:
     case GDK_Z:
@@ -1559,32 +1565,64 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	break;
 
     case GDK_KP_Enter:
-    case GDK_1:
     case GDK_equal:
+    case GDK_1:
     	zoom_data.z_dir = ZOOM_FIT;
 	zoom(widget, &zoom_data);
 	break;
 
+    case GDK_KP_Left:
     case GDK_Left:
 	screen.trans_x -= 10;
     	zoom_data.z_dir = ZOOM_PAN;
 	zoom(widget, &zoom_data);
 	break;
 
+    case GDK_KP_Right:
     case GDK_Right:
 	screen.trans_x += 10;
     	zoom_data.z_dir = ZOOM_PAN;
 	zoom(widget, &zoom_data);
 	break;
 
+    case GDK_KP_Up:
     case GDK_Up:
 	screen.trans_y -= 10;
     	zoom_data.z_dir = ZOOM_PAN;
 	zoom(widget, &zoom_data);
 	break;
 
+    case GDK_KP_Down:
     case GDK_Down:
 	screen.trans_y += 10;
+    	zoom_data.z_dir = ZOOM_PAN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_KP_Page_Up:
+	screen.trans_y -= 10;
+	screen.trans_x += 10;
+    	zoom_data.z_dir = ZOOM_PAN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_KP_Page_Down:
+	screen.trans_y += 10;
+	screen.trans_x += 10;
+    	zoom_data.z_dir = ZOOM_PAN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_KP_Home:
+	screen.trans_y -= 10;
+	screen.trans_x -= 10;
+    	zoom_data.z_dir = ZOOM_PAN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_KP_End:
+	screen.trans_y += 10;
+	screen.trans_x -= 10;
     	zoom_data.z_dir = ZOOM_PAN;
 	zoom(widget, &zoom_data);
 	break;
@@ -1597,11 +1635,6 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 		screen.selected_layer = 10 * screen.selected_layer + 
 		    (event->keyval - GDK_KP_0);
 	}
-
-    case GDK_Alt_L:
-    case GDK_Alt_R: 
-	screen.state = ALT_PRESSED;
-	screen.selected_layer = -1;
 	break;
 
     /* Escape may be used to abort outline zoom and just plain repaint */
@@ -1642,8 +1675,7 @@ key_release_event (GtkWidget *widget, GdkEventKey *event)
 	}
 	break;
     case ALT_PRESSED:
-	if ((event->keyval == GDK_Alt_L) ||
-	     (event->keyval == GDK_Alt_R)) {
+	if ((event->keyval == GDK_Alt_L) || (event->keyval == GDK_Alt_R)) {
 	    if ((screen.selected_layer != -1) &&
 		(screen.selected_layer < MAX_FILES)){
 		TOGGLE_BUTTON(screen.layer_button[screen.selected_layer]);
