@@ -221,6 +221,7 @@ gerb_image_dump(gerb_image_t *image)
 		break;
 	    case MACRO:
 		printf("macro");
+		break;
 	    default:
 		printf("unknown");
 	    }
