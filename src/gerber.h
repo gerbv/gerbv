@@ -45,7 +45,7 @@ enum aperture_state {OFF, ON, FLASH};
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
 enum unit_t {INCH, MM};
 enum polarity_t {POSITIVE, NEGATIVE};
-enum omit_zeros_t {LEADING, TRAILING};
+enum omit_zeros_t {LEADING, TRAILING, EXPLICIT};
 enum coordinate_t {ABSOLUTE, INCREMENTAL};
 enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
 		      CW_CIRCULAR, CCW_CIRCULAR, 

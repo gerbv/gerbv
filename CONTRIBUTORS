@@ -8,3 +8,5 @@ gerbv CONTRIBUTORS
 Dan McMahill           - Fixed 64-bit support
 <mcmahill@mtl.mit.edu> - Some additional configure things
 
+Uwe Bonnes	       - Submitted patches for 'D' flag in Format Statement
+<bon@elektron.ikp.physik.tu-darmstadt.de>

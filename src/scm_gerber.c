@@ -95,6 +95,23 @@ scm_interpolation2scm(enum interpolation_t interpolation)
 
 
 SCM
+scm_omit_zeros2scm(enum omit_zeros_t omit_zeros)
+{
+
+    switch (omit_zeros) {
+    case LEADING :
+	return gh_symbol2scm("leading");
+    case TRAILING :
+	return gh_symbol2scm("trailing");
+    case EXPLICIT :
+	return gh_symbol2scm("explicit");
+    default:
+	return SCM_BOOL_F;
+    }
+}
+
+
+SCM
 scm_image2scm(struct gerb_image *image, char *filename)
 {
     struct gerb_net *net;
@@ -139,8 +156,7 @@ scm_image2scm(struct gerb_image *image, char *filename)
      */
     if (image->format != NULL) {
 	format = scm_listify(scm_cons(gh_symbol2scm("omit-zeros\0"),
-				      gh_symbol2scm((image->format->omit_zeros == LEADING) ? 
-						    "leading\0" : "trailing\0")),
+				      scm_omit_zeros2scm(image->format->omit_zeros)),
 			     scm_cons(gh_symbol2scm("coordinate\0"),
 				      gh_symbol2scm((image->format->coordinate == ABSOLUTE) ? 
 						    "absolute" : "incremental")),

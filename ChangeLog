@@ -1,3 +1,12 @@
+2001-10-09 Stefan Petersen (spe@stacken.kth.se)
+
+	* gerber.h, gerber.c: Added 'D' as possible Format
+	  Statement after patches from Uwe Bonnes
+	  <bon@elektron.ikp.physik.tu-darmstadt.de>. Thanks!
+	* scm_gerber.c: Broke out omit_zeros_t to scm type
+	  conversion and added 'explicit to this type.
+
+	
 2001-09-03 Stefan Petersen (spe@stacken.kth.se)
 
 	* configure.in: fixed bug when testing for opt_backend_dir

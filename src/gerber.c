@@ -362,6 +362,8 @@ parse_rs274x(FILE *fd, struct gerb_image *image)
 	    image->format->omit_zeros = LEADING;
 	else if (op[0] == 'T')
 	    image->format->omit_zeros = TRAILING;
+	else if (op[0] == 'D')
+	    image->format->omit_zeros = EXPLICIT;
 	else
 	    err(1, "Format error: omit_zeros = %c\n", op[0]);
 	
