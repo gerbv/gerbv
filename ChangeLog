@@ -3,7 +3,9 @@
 	* src/gerbv_screen.h: Bounding box needs to be doubles, not
 	  ints.
 	* src/gerbv.c (motion_notify_event): Finally it seems I got 
-	  the absolute coordinates right.
+	  the absolute coordinates right. Partly closes feature
+	  request 567965 (still need to add error messages and fix
+	  the layout).
 
 2002-06-20  Anders Eriksson  <anders@umunet.org>
 
