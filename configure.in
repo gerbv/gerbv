@@ -30,7 +30,7 @@ VERSION=0.0.9
 
 dnl --enable-batch : turn on guile/batch support
 AC_ARG_ENABLE(batch,
-    [  --enable-batch         Enable batch support (ie use Guile).],
+    [  --enable-batch          Enable batch support (ie use Guile).],
     [
         if test $enableval = "yes"; then
                 guile_in_use=yes
@@ -40,12 +40,18 @@ AC_ARG_ENABLE(batch,
 
 dnl --with-backend-dir : tells where to store global backends if != default
 AC_ARG_WITH(backend-dir,
-    [  --with-backend-dir     Where to store backends if != default.],
+    [  --with-backend-dir      Where to store backends if != default.],
 	opt_backend_dir=$withval)
 
 dnl --enable-exportpng
 AC_ARG_ENABLE(exportpng,
-    [  --enable-exportpng     Enable PNG export (needs gdk-pixbuf and libpng).],
+    [  --disable-exportpng     Disable PNG export.],
+    [
+        if test $enableval = "yes"; then
+		exportpng=yes
+	  	AC_DEFINE(EXPORT_PNG)
+	fi
+    ],
     [
 	exportpng=yes
   	AC_DEFINE(EXPORT_PNG)
