@@ -33,6 +33,8 @@
 #define MAX_COORDLEN 50
 #define MAX_DISTLEN 75
 #define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
+#define GERBV_DISTFONTNAME "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1"
+#define GERBV_STATUSFONTNAME "-*-fixed-*-*-normal--*-100-*-*-*-*-iso8859-1"
 
 /* Macros to convert between unscaled gerber coordinates and other units */
 /* XXX NOTE: Currently unscaled units are assumed as inch, this is not
@@ -73,8 +75,7 @@ typedef struct {
     GtkWidget *layer_button[MAX_FILES];
     GtkWidget *popup_menu;
     struct {
-	GtkWidget *msgs;
-	guint msgid;
+	GtkWidget *msg;
 	char msgstr[MAX_ERRMSGLEN];
 	char coordstr[MAX_COORDLEN];
 	char diststr[MAX_DISTLEN];

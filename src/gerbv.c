@@ -1416,7 +1416,6 @@ draw_measure_distance()
     GdkGCValuesMask values_mask;
     gint x1, y1, x2, y2;
     GdkFont *font;
-    const char *fontname = "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1";
 
     if (screen.state != MEASURE)
 	return;
@@ -1427,7 +1426,7 @@ draw_measure_distance()
     values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
     gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
-    font = gdk_font_load(fontname);
+    font = gdk_font_load(GERBV_DISTFONTNAME);
 
     x1 = MIN(screen.start_x, screen.last_x);
     y1 = MIN(screen.start_y, screen.last_y);
@@ -1437,7 +1436,7 @@ draw_measure_distance()
     gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
 		  screen.start_y, screen.last_x, screen.last_y);
     if (font == NULL) {
-	fprintf(stderr, "Failed to load font '%s'\n", fontname);
+	fprintf(stderr, "Failed to load font '%s'\n", GERBV_DISTFONTNAME);
     } else {
 	gchar string[65];
 	double delta, dx, dy;
@@ -1489,19 +1488,11 @@ static void update_statusbar(gerbv_screen_t *scr)
 {
     char str[MAX_STATUSMSGLEN];
 
-    if (scr->statusbar.msgid)
-	gtk_statusbar_pop((GtkStatusbar*)scr->statusbar.msgs,
-			  scr->statusbar.msgid);
-
-    snprintf(str, MAX_STATUSMSGLEN, "%-.*s|%-*s|%-*s",
-	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr,
+    snprintf(str, MAX_STATUSMSGLEN, "%-*s|%-*s|%.*s",
 	     MAX_COORDLEN-1, scr->statusbar.coordstr,
-	     MAX_DISTLEN-1, scr->statusbar.diststr);
-    scr->statusbar.msgid = 
-	gtk_statusbar_get_context_id((GtkStatusbar*)scr->statusbar.msgs,
-				     "StatusMessage");
-    gtk_statusbar_push((GtkStatusbar*)scr->statusbar.msgs,
-		       scr->statusbar.msgid, str);
+	     MAX_DISTLEN-1, scr->statusbar.diststr,
+	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr);
+    gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
 }
 
 
@@ -1643,8 +1634,9 @@ internal_main(int argc, char *argv[])
 {
     GtkWidget *main_win;
     GtkWidget *vbox;
-    GtkWidget *hbox, *hbox2;
+    GtkWidget *hbox;
     GtkWidget *menubar;
+    GtkStyle  *textStyle;
     gint      screen_width, width, height;
     char      read_opt;
     int       i;
@@ -1779,14 +1771,16 @@ internal_main(int argc, char *argv[])
      * Add status bar (three sections: mesages, abs and rel coords)
      */
     hbox = gtk_hbox_new(FALSE, 0);
-    hbox2 = gtk_hbox_new(FALSE, 0);
-    gtk_widget_set_usize(hbox, screen.drawing_area->allocation.width/2,0);
-    screen.statusbar.msgs = gtk_statusbar_new();
-    screen.statusbar.msgid = 0;
+    screen.statusbar.msg = gtk_label_new("");
+    gtk_label_set_justify(GTK_LABEL(screen.statusbar.msg), GTK_JUSTIFY_LEFT);
+    textStyle = gtk_style_new();
+    textStyle->font = gdk_font_load(GERBV_STATUSFONTNAME);
+    gtk_widget_set_style(GTK_WIDGET(screen.statusbar.msg), textStyle);
     screen.statusbar.msgstr[0] = '\0';
     screen.statusbar.coordstr[0] = '\0';
     screen.statusbar.diststr[0] = '\0';
-    gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msgs, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(" "), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msg, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     /*
      * Fill with files (eventually) given on command line
