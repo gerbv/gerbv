@@ -41,6 +41,9 @@
      } while (0)
 #endif
 
+#undef round
+#define round(x) floor((double)(x) + 0.5)
+
 #define MAX_POLYGON_POINTS 50
 
 /*
@@ -121,7 +124,8 @@ gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
  */
 int
 image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     int scale, gint trans_x, gint trans_y, enum polarity_t polarity, 
+	     int scale, double trans_x, double trans_y,
+	     enum polarity_t polarity, 
 	     GdkColor *fg_color, GdkColor *bg_color)
 {
     GdkGC *line_gc = gdk_gc_new(*pixmap);
@@ -131,15 +135,14 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     GdkGC *other_gc = gdk_gc_new(*pixmap);
     GdkColormap *colormap = gdk_colormap_get_system();
     struct gerb_net *net;
-    gint x1, y1, x2, y2, i, j;
+    gint x1, y1, x2, y2;
     int p1, p2;
-    double x_scale, y_scale;
     int width = 0, height = 0;
     int cp_x = 0, cp_y = 0;
     GdkPoint points[MAX_POLYGON_POINTS]; /* XXX Size */
     int nuf_points = 0;
-    
-    
+
+
     if (image == NULL || image->netlist == NULL) 
 	return 0;
     
@@ -161,33 +164,29 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     for (net = image->netlist->next ; net != NULL; net = net->next) {
 	
 	/*
-	 * Scale points with window scaling
+	 * Scale points with window scaling and translate them
 	 */
-	x1 = (int)ceil((image->info->offset_a + net->start_x) * scale);
-	y1 = (int)ceil((image->info->offset_b + 2.5 - net->start_y) * scale);
-	x2 = (int)ceil((image->info->offset_a + net->stop_x) * scale);
-	y2 = (int)ceil((image->info->offset_b + 2.5 - net->stop_y)  * scale);
-
-	/*
-	 * Translate points with window offset
-	 */
-	x1 = x1 + trans_x;
-	y1 = y1 + trans_y;
-	x2 = x2 + trans_x;
-	y2 = y2 + trans_y;
+	x1 = (int)round((image->info->offset_a + net->start_x) * scale +
+			trans_x);
+	y1 = (int)round((image->info->offset_b - net->start_y) * scale +
+			trans_y);
+	x2 = (int)round((image->info->offset_a + net->stop_x) * scale +
+			trans_x);
+	y2 = (int)round((image->info->offset_b - net->stop_y) * scale +
+			trans_y);
 
 	/* 
 	 * If circle segment, scale and translate that one too
 	 */
 	if (net->cirseg) {
-	    width = (int)ceil(net->cirseg->width * scale);
-	    height = (int)ceil(net->cirseg->height * scale);
-	    cp_x = (int)ceil((image->info->offset_a + net->cirseg->cp_x) * scale);
-	    cp_y = (int)ceil((image->info->offset_b + 2.5 - net->cirseg->cp_y) * scale);
-	    cp_x = cp_x + trans_x;
-	    cp_y = cp_y + trans_y;
+	    width = (int)round(net->cirseg->width * scale);
+	    height = (int)round(net->cirseg->height * scale);
+	    cp_x = (int)round((image->info->offset_a + net->cirseg->cp_x) *
+			      scale + trans_x);
+	    cp_y = (int)round((image->info->offset_b - net->cirseg->cp_y) *
+			      scale + trans_y);
 	}
-	
+
 	/*
 	 * Polygon Area Fill routines
 	 */
@@ -220,7 +219,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	 */
 	switch (net->aperture_state) {
 	case ON :
-	    p1 = (int)(image->aperture[net->aperture]->parameter[0] * scale);
+	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * scale);
 	    gdk_gc_set_line_attributes(line_gc, p1, 
 				       GDK_LINE_SOLID, 
 				       GDK_CAP_ROUND, 
@@ -263,8 +262,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	case OFF :
 	    break;
 	case FLASH :
-	    p1 = (int)(image->aperture[net->aperture]->parameter[0] * scale);
-	    p2 = (int)(image->aperture[net->aperture]->parameter[1] * scale);
+	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * scale);
+	    p2 = (int)round(image->aperture[net->aperture]->parameter[1] * scale);
 	    
 	    switch (image->aperture[net->aperture]->type) {
 	    case CIRCLE :

@@ -32,7 +32,8 @@
  */
 int 
 image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     int scale, gint trans_x, gint trans_y, enum polarity_t polarity, 
+	     int scale, double trans_x, double trans_y,
+	     enum polarity_t polarity, 
 	     GdkColor *fg_color, GdkColor *bg_color);
 
 #endif /* DRAW_H */
