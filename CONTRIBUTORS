@@ -38,6 +38,7 @@ Dino Ghilardi <dino.ghilardi@ieee.org>
  - Contributed export PNG functionality!
  - Came up with the idea and sent me the suggestion in source code on
    how the superimposing should work!
+ - Wrote PNGPrintMiniHowto and code for explicitly setting the scale.
 
 Bruno Schwander <bruno@tinkerbox.org>
  - Patch to configure.in to fit different GTK-versions on FreeBSD
