@@ -25,5 +25,5 @@ EXTRA_DIST = aperturemacro.txt sources.txt image2pixmap.fig projectfiles.txt
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile Makefile.in
+DISTCLEANFILES = *~ Makefile
 MAINTAINERCLEANFILES = *~ Makefile Makefile.in

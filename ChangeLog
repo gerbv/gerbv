@@ -1,3 +1,9 @@
+2004-08-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* doc/*, example/*: Makefiles.am removed Makefile.in wheh running
+	  distclean. Not good. Spotted by Hamish Moffatt when packaging
+	  for Debian.
+
 2004-07-28  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.c: In gerbers the image can be negative or positive.
