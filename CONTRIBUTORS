@@ -4,9 +4,18 @@ GNU Electronic Design Automation
 ------------------------------------------------------------------------------
 
 gerbv CONTRIBUTORS
+The peer reviews; Thanks a lot. This is what makes Open Source so fun.
 
-Dan McMahill           - Fixed 64-bit support
-<mcmahill@mtl.mit.edu> - Some additional configure things
+Dan McMahill <mcmahill@mtl.mit.edu>
+ - Fixed 64-bit support
+ - Some additional configure things
 
-Uwe Bonnes	       - Submitted patches for 'D' flag in Format Statement
-<bon@elektron.ikp.physik.tu-darmstadt.de>
+Uwe Bonnes <bon@elektron.ikp.physik.tu-darmstadt.de>
+ - Submitted patches for 'D' flag in Format Statement
+
+Dan Christian <dac@ptolemy.arc.nasa.gov>
+ - Pointed out EagleCad broken Gerber and also sent a 
+   patch for fixing this.
+
+Fredrik Jonsson <fredrikj@spirea.com>
+ - Sent me actual EagleCad files so I saw the bugs.
