@@ -56,6 +56,7 @@ No environment variables are used.
 .nf
 Stefan Petersen (spe@stacken.kth.se): Overall hacker and project leader
 Andreas Andersson (e92_aan@e.kth.se): Drill file support and general hacking
+Anders Eriksson (anders@umunet.org) : X and GTK+ ideas and hacking
 
 .SH COPYRIGHT
 .nf
