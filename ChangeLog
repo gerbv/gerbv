@@ -1,5 +1,9 @@
 2002-06-09  Anders Eriksson  <anders@umunet.org>
 
+	* src/gerbv.c: Fix actual zoomed area for centered outline zooming.
+
+2002-06-09  Anders Eriksson  <anders@umunet.org>
+
 	* src/gerbv.c: Set cross hair cursor as soon as shift key is
 	  pressed (in normal mode, i.e. not zoom outline). Added centered
 	  zoom outline mode (closes Feature Request 553452).

@@ -714,7 +714,7 @@ zoom(GtkWidget *widget, gpointer data)
 static void
 zoom_outline(GtkWidget *widget, GdkEventButton *event)
 {
-    int x1, y1, x2, y2;		/* Zoom outline (UR and LL corners) */
+    int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
     double us_x1, us_y1, us_x2, us_y2;
     int half_w, half_h;		/* cache for half window dimensions */
 
@@ -728,11 +728,22 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     y1 = MIN(screen.start_y, event->y);
     x2 = MAX(screen.start_x, event->x);
     y2 = MAX(screen.start_y, event->y);
+    dx = x2-x1;
+    dy = y2-y1;
 
-    if (x2 - x1 < 4 && y2 - y1 < 4) {
+    if (dx < 4 && dy < 4) {
 	    fprintf(stderr, "Warning: Zoom area too small, bailing out!\n");
 	    goto zoom_outline_end;
     }
+
+    if (event->state & GDK_CONTROL_MASK) {
+	/* Centered outline mode */
+	x1 = screen.start_x - dx;
+	y1 = screen.start_y - dy;
+	dx *= 2;
+	dy *= 2;
+    }
+
     us_x1 = (screen.trans_x + x1)/(double) screen.scale;
     us_y1 = (screen.trans_y + y1)/(double) screen.scale;
     us_x2 = (screen.trans_x + x2)/(double) screen.scale;
@@ -1302,6 +1313,8 @@ draw_zoom_outline(gboolean centered)
 	y1 = screen.start_y - dy;
 	dx *= 2;
 	dy *= 2;
+	x2 = x1+dx;
+	y2 = y1+dy;
     }
 
     gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
