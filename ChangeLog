@@ -1,5 +1,10 @@
 -- Release 1.0.0 --
 
+2004-10-30  Stefan Petersen  <spe@siouxsie.umunet.org>
+
+	* src/draw_amacro.c: Forgot to use local_gc when drawing some
+	  of the primitive aperture macros. Closes bug #1051045.
+
 2004-09-13  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: If you tried to invert color of an unloaded layer

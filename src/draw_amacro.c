@@ -290,7 +290,7 @@ gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	points[i].y = (int)round(scale * radius * sin(vertex)) + y;
     }
 
-    gdk_draw_polygon(pixmap, gc, 1, points, nuf_vertices);
+    gdk_draw_polygon(pixmap, local_gc, 1, points, nuf_vertices);
 
     gdk_gc_unref(local_gc);
 
@@ -553,7 +553,7 @@ gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	gdk_gc_set_foreground(local_gc, &color);
     }
 
-    gdk_draw_polygon(pixmap, gc, 1, points, nuf_points);
+    gdk_draw_polygon(pixmap, local_gc, 1, points, nuf_points);
 
     gdk_gc_unref(local_gc);
 
@@ -608,7 +608,7 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	gdk_gc_set_foreground(local_gc, &color);
     }
 
-    gdk_draw_polygon(pixmap, gc, 1, points, nuf_points);
+    gdk_draw_polygon(pixmap, local_gc, 1, points, nuf_points);
 
     gdk_gc_unref(local_gc);
 
