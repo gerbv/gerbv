@@ -42,6 +42,13 @@ color, etc).
 Currently only 20 layers are supported. Changing this number needs a 
 one line change (MAX_FILES in gerbv.c) in the source and a recompilation.
 
+Zooming can be handled by either menu choices, keypressing, middle mouse 
+button or scroll wheel. If you press Alt+I you will zoom in and if you
+press Alt+O you will zoom out.If you press middle mouse button you will zoom
+out, and if you press Shift and middle mouse button you will zoom in. 
+Scroll wheel works if you enabled that in your X server and mapped it
+to button 4 and 5.
+
 .SH "ENVIRONMENT"
 No environment variables are used.
 
