@@ -48,9 +48,9 @@
 
 #include "gerber.h"
 #include "drill.h"
-#ifndef NO_GUILE
+#ifdef GUILE_IN_USE
 #include "scm_gerber.h"
-#endif
+#endif /* GUILE_IN_USE */
 #include "draw.h"
 #include "color.h"
 
@@ -1122,7 +1122,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 } /* expose_event */
 
 
-#ifndef NO_GUILE
+#ifdef GUILE_IN_USE
 static void
 batch(char *backend, char *filename)
 {
@@ -1242,7 +1242,7 @@ batch(char *backend, char *filename)
     
     return;
 }
-#endif
+#endif /* GUILE_IN_USE */
 
 
 #ifdef HAVE_GETOPT_LONG
@@ -1252,7 +1252,7 @@ static struct option longopts[] = {
     {"batch",   required_argument, NULL, 'b'},
     {0, 0, 0, 0},
 };
-#endif
+#endif /* HAVE_GETOPT_LONG*/
 
 
 void
@@ -1262,28 +1262,27 @@ internal_main(int argc, char *argv[])
     GtkWidget *vbox;
     GtkWidget *hbox;
     GtkWidget *menubar;
-    gint	   screen_width, width, height;
-    int	   run_batch = 0;
-    int 	   i;
+    gint      screen_width, width, height;
+    char      read_opt;
+    int       i;
+#ifdef GUILE_IN_USE
     char      *backend = NULL;
-    char 	   read_opt;
-    
+    int	      run_batch = 0;
+#endif /* GUILE_IN_USE */
+
 #ifdef HAVE_GETOPT_LONG
     while ((read_opt = getopt_long(argc, argv, "Vb:", 
 				   longopts, NULL)) != -1) {
 #else
     while ((read_opt = getopt(argc, argv, "Vb:")) != -1) {
-#endif
+#endif /* HAVE_GETOPT_LONG */
 	switch (read_opt) {
 	case 'V' :
 	    printf("gerbv version %s\n", VERSION);
 	    printf("(C) Stefan Petersen (spe@stacken.kth.se)\n");
 	    exit(0);
 	case 'b' :
-#ifdef NO_GUILE
-	    fprintf(stderr, "This version doesn't have batch support\n");
-	    exit(0);
-#else
+#ifdef GUILE_IN_USE
 	    run_batch = 1;
 	    if (optarg == NULL)
 		err(1, "You must give a backend in batch mode\n");
@@ -1294,10 +1293,17 @@ internal_main(int argc, char *argv[])
 	    strcpy(backend, "gerb-");
 	    strcat(backend, optarg);
 	    strcat(backend, ".scm");
-#endif
+#else
+	    fprintf(stderr, "This version doesn't have batch support\n");
+	    exit(0);
+#endif /* GUILE_IN_USE */
 	    break;
 	case '?':
+#ifdef GUILE_IN_USE
 	    fprintf(stderr, "Usage : %s [--version|-V][--batch=<backend>|-b <backend>] <gerber file(s)>\n", argv[0]);
+#else
+	    fprintf(stderr, "Usage : %s [--version|-V] <gerber file(s)>\n", argv[0]);
+#endif /* GUILE_IN_USE */
 	    exit(1);
 	    break;
 	default :
@@ -1305,7 +1311,7 @@ internal_main(int argc, char *argv[])
 	}
     }
     
-#ifndef NO_GUILE
+#ifdef GUILE_IN_USE
     if (run_batch) {
 	if (optind == argc)
 	    err(1, "No file to work on\n");
@@ -1321,7 +1327,7 @@ internal_main(int argc, char *argv[])
 	free(backend);
 	exit(0);
     }
-#endif
+#endif /* GUILE_IN_USE */
     /*
      * Setup the screen info
      */
@@ -1428,10 +1434,10 @@ internal_main(int argc, char *argv[])
 int
 main(int argc, char *argv[])
 {
-#ifdef NO_GUILE
-    internal_main(argc, argv);
-#else
+#ifdef GUILE_IN_USE
     gh_enter(argc, argv, internal_main);
-#endif
+#else
+    internal_main(argc, argv);
+#endif /* GUILE_IN_USE */
     return 0;
 }

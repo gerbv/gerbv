@@ -1,3 +1,12 @@
+2002-05-17  Stefan Petersen  <spe@stacken.kth.se>
+
+	* acconfig.h, configure.in, src/gerbv.c, scm_gerber.c:
+	  Prepared phase out of Guile by changing default to exclude
+	  Guile inclusion.Change flag disable-batch to enable-batch 
+	  during configure and changing the variable NO_GUILE to 
+	  GUILE_IN_USE.
+
+	
 2002-05-10  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerb_image.*, src/gerber.*, src/gerbv.c: Moved verify_gerb

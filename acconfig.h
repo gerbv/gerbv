@@ -23,7 +23,7 @@
  */
 
 /* Batch support */
-#undef NO_GUILE
+#undef GUILE_IN_USE
 
 /* Header files */
 #undef HAVE_UNISTD_H

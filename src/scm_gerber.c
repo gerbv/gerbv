@@ -25,7 +25,7 @@
 #include <config.h>
 #endif
 
-#ifndef NO_GUILE
+#ifdef GUILE_IN_USE
 
 #include "scm_gerber.h"
 
@@ -237,4 +237,4 @@ scm_image2scm(gerb_image_t *image, char *filename)
     
 } /* scm_image2scm */
 
-#endif /* NO_GUILE */
+#endif /* GUILE_IN_USE */

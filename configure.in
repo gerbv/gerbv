@@ -28,13 +28,13 @@ dnl variables
 PACKAGE=gerbv
 VERSION=0.0.8
 
-dnl --disable-batch : turn off guile/batch support
+dnl --enable-batch : turn on guile/batch support
 AC_ARG_ENABLE(batch,
-    [  --disable-batch        Disable batch support (ie no Guile).],
+    [  --enable-batch         Enable batch support (ie use Guile).],
     [
         if test $enableval = "no"; then
-                no_guile=yes
-		AC_DEFINE(NO_GUILE)
+                guile_in_use=yes
+		AC_DEFINE(GUILE_IN_USE)
         fi
     ])
 
@@ -62,11 +62,7 @@ AC_PROG_INSTALL
 AC_ARG_PROGRAM
 
 dnl Guile stuff
-if test "$no_guile" = "yes" ; then
-	echo Disabling Guile
-	GUILE_CFLAGS=
-	GUILE_LDFLAGS=
-else
+if test "$guile_in_use" = "yes" ; then
 	GUILE_FLAGS
 
 	dnl Check that scm_make_real exist
@@ -76,6 +72,9 @@ else
 	
 	dnl Restore LIBS. Apperantly AC_CHECK_LIB destroys it.
 	LIBS="$ac_save_LIBS"
+else
+	GUILE_CFLAGS=
+	GUILE_LDFLAGS=
 fi
 
 dnl GTK+ stuff
