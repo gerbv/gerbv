@@ -1021,7 +1021,7 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
      * currently is designed it becomes a point. Maybe I should
      * save start angle and how many degrees to draw?
      */
-    if (net->cirseg->angle2 == net->cirseg->angle1)
+    if (fabs(alfa - beta) < 0.00001)
 	net->cirseg->angle2 = 360 + net->cirseg->angle2;
 
     return;

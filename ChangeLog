@@ -1,3 +1,10 @@
+2003-02-22  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Changed comparision if two angles are equal
+	  to double since Dan McMahill discovered a case where the difference
+	  between the angles were actually less than 0.5 degrees.  
+	  Closes bug #689663.
+	
 2003-02-12  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: A patch from Peter Monta for incremental
