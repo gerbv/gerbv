@@ -19,9 +19,9 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-SUBDIRS = PNG-print eagle 
+SUBDIRS = PNG-print eagle html 
 
-EXTRA_DIST = aperturemacro.txt sources.txt image2pixmap.fig projectfiles.txt
+EXTRA_DIST = Doxyfile.nopreprocessing aperturemacro.txt sources.txt image2pixmap.fig projectfiles.txt
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~

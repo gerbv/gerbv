@@ -235,7 +235,7 @@ void select_by_regex(GtkWidget    	*widget,  gpointer 		data)
  * multiple selections are possible\n
  * right clicking or double clicking on one item results in immediate display of part in main window\n
  * only four columns are shown (recognisable by COLUMN_ instead of column),\n
- * \t but all columns from pick and place file are actually in the list;
+ * but all columns from pick and place file are actually in the list;
  */
 GtkWidget *
 create_search_results_section (void)

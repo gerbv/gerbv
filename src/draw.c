@@ -135,8 +135,8 @@ gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
 } /* gerbv_draw_arc */
 
 
-/*
- * Convert a gerber image to a GDK clip mask to be used when creating pixmap
+/** Convert a gerber image to a GDK clip mask to be used when creating pixmap.
+    This is a central step to displaying the gerberdata on screen after it has been parsed and prepared for being drawn
  */
 int
 image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
