@@ -575,14 +575,14 @@ zoom(GtkWidget *widget, gpointer data)
     switch(z_data->z_dir) {
     case ZOOM_IN : /* Zoom In */
     case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
-	screen.scale += 10;
+	screen.scale += screen.scale/10;
 	screen.trans_x = screen.scale * us_midx - half_w;
 	screen.trans_y = screen.scale * us_midy - half_h;
 	break;
     case ZOOM_OUT :  /* Zoom Out */
     case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
 	if (screen.scale > 10) {
-	    screen.scale -= 10;
+	    screen.scale -= screen.scale/10;
 	    screen.trans_x = screen.scale * us_midx - half_w;
 	    screen.trans_y = screen.scale * us_midy - half_h;
 	}
@@ -755,7 +755,7 @@ redraw_pixmap(GtkWidget *widget)
 redraw_pixmap_end:
     /* Return default pointer shape */
     if (window) {
-	gdk_window_set_cursor(window, NULL);
+	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
     }
 
     gdk_gc_unref(gc);

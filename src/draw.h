@@ -27,6 +27,9 @@
 #include <gdk/gdk.h>
 #include "gerber.h"
 
+/* Default mouse cursor. Perhaps redefine this to a variable later? */
+#define GERBV_DEF_CURSOR	NULL
+
 /*
  * Convert a gerber image to a GTK pixmap to be displayed
  */
