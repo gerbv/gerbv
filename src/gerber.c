@@ -789,12 +789,11 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
     /*
      * Some good values 
      */
-#define DIFF(a, b) ((a > b) ? a - b : b - a)
-    d1x = DIFF(net->start_x, net->cirseg->cp_x);
-    d1y = DIFF(net->start_y, net->cirseg->cp_y);
-    d2x = DIFF(net->stop_x, net->cirseg->cp_x);
-    d2y = DIFF(net->stop_y, net->cirseg->cp_y);
-    
+    d1x = fabs(net->start_x - net->cirseg->cp_x);
+    d1y = fabs(net->start_y - net->cirseg->cp_y);
+    d2x = fabs(net->stop_x - net->cirseg->cp_x);
+    d2y = fabs(net->stop_y - net->cirseg->cp_y);
+
     alfa = atan2(d1y, d1x);
     beta = atan2(d2y, d2x);
 
