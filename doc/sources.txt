@@ -53,6 +53,15 @@ more Gerber (aperture macros) than what gerbv currently does. Available at:
      http://home.alphalink.com.au/~seychell/
 
 
+* A Free Gerber to EPS converter
+Dirk Baechle (dl9obn@darc.de) has released a small C++ program to convert 
+Gerber to Encapsulated PostScript. Platform independent commandline program.
+According to the README in version 1.0 "At the moment only a small subset 
+of the RS-274D standard is implemented". Note that it is D! You have to hack
+in every aperture, depsite giving it an X file.
+       http://sourceforge.net/projects/gerber2eps/
+
+
 * Eagle Gerber Tutorial
 http://www.precma.com/informatica/tutorial.htm
 
