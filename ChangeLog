@@ -1,3 +1,9 @@
+2001-12-11 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c : Removed prelighting on buttons and changed
+	  the "random function" creating colors.
+
+	
 2001-12-10 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerbv.c : Forgot to check if we had any pixmap to draw.

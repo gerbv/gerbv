@@ -382,7 +382,6 @@ open_image(char *filename, int index)
 {
     gerb_file_t *fd;
     int r, g, b;
-    GdkColor *prelight;
     GtkStyle *defstyle, *newstyle;
 
     if (index >= MAX_FILES) {
@@ -405,20 +404,18 @@ open_image(char *filename, int index)
 
     /*
      * Calculate a "clever" random color based on index.
-     * 1.1 calculation is to create prelight when mouse is over button.
      */
-    r = (123411 + 65737 * index) % (int)(MAX_COLOR_RESOLUTION / 1.1);
-    g = (234734 + 43438 * index) % (int)(MAX_COLOR_RESOLUTION / 1.1);
-    b = (903415 + 12339 * index) % (int)(MAX_COLOR_RESOLUTION / 1.1);
+    r = (12341 + 657371 * index) % (int)(MAX_COLOR_RESOLUTION);
+    g = (23473 + 434382 * index) % (int)(MAX_COLOR_RESOLUTION);
+    b = (90341 + 123393 * index) % (int)(MAX_COLOR_RESOLUTION);
 
     screen.file[index]->color = alloc_color(r, g, b, NULL);
-    prelight = alloc_color(r * 1.1, g * 1.1, b * 1.1, NULL);
 
     defstyle = gtk_widget_get_default_style();
     newstyle = gtk_style_copy(defstyle);
     newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[index]->color);
     newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[index]->color);
-    newstyle->bg[GTK_STATE_PRELIGHT] = *prelight;
+    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[index]->color);
     gtk_widget_set_style(screen.layer_button[index], newstyle);
 
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
