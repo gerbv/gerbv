@@ -34,17 +34,27 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
+#endif
 #include <errno.h>
 
 #include "gerb_file.h"
+
+
+
+
+
+
 
 gerb_file_t *
 gerb_fopen(char *filename)
 {
     gerb_file_t *fd;
     struct stat statinfo;
+    
 
+#ifdef HAVE_SYS_MMAN_H
     fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
     if (fd == NULL) {
 	return NULL;
@@ -74,7 +84,40 @@ gerb_fopen(char *filename)
 	free(fd);
 	fd = NULL;
     }
+#else
+#if defined (__MINGW32__)
+    fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
+    if (fd == NULL) {
+	return NULL;
+    }
 
+    if (stat(filename, &statinfo)) {
+        perror("snarf_file");
+        return NULL;
+    }
+    
+    fd->fd = fopen(filename, "r");
+    fd->ptr = 0;
+    fd->fileno = fileno(fd->fd);
+    fstat(fd->fileno, &statinfo);
+    if (!S_ISREG(statinfo.st_mode)) {
+	errno = EISDIR;
+	return NULL;
+    }
+    if ((int)statinfo.st_size == 0) {
+	errno = EIO; /* More compatible with the world outside Linux */
+	return NULL;
+    }
+    fd->datalen = (int)statinfo.st_size;
+    fd->data = calloc(1, statinfo.st_size + 1);
+    if (fd->data == NULL) {
+        fclose(fd->fd);
+        free(fd);
+        return NULL;
+    }
+    fread((void*)fd->data, 1, statinfo.st_size, fd->fd);
+   #endif   
+#endif
     return fd;
 } /* gerb_fopen */
 
@@ -158,7 +201,9 @@ gerb_ungetc(gerb_file_t *fd)
 void
 gerb_fclose(gerb_file_t *fd)
 {
+#ifdef HAVE_SYS_MMAN_H
     munmap(fd->data, fd->datalen);
+#endif    
     fclose(fd->fd);
     free(fd);
     

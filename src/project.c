@@ -167,9 +167,11 @@ define_layer(scheme *sc, pointer args)
  * Global:
  * * Background color
  * * Global path.
+ * * corresponding pick and place file <TODO>:JH
  * Per layer:
  * * layer color
  * * layer filename
+
  */
 
 project_list_t *
@@ -244,9 +246,10 @@ write_project_file(char *filename, project_list_t *project)
 
     if ((fd = fopen(filename, "w")) == NULL) {
 	GERB_MESSAGE("Couldn't save project %s\n", filename);
+       // printf(" nope saving projecct file!\n");
 	return(-1);
     }
-
+   // printf("we are about to save a project");
     while (p) {
 	fprintf(fd, "(define-layer! %d ", p->layerno);
 	fprintf(fd, "(cons 'filename \"%s\")", p->filename);

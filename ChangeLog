@@ -1,3 +1,123 @@
+tag:SEARCH_SELECT_merged
+
+2004-08-13 11:25 Search9-pre8
+ todo 	saving projects 
+	Bugs fixed:
+		-if mark is pressed and there is no selection colour of layer
+		 button does not change
+                -use of libmba's csv.[ch]  
+		-automatic screening for delimiters
+		-if  dialog is to be destroyed but it does not exist is caught 
+		-upon loading a second gerberfile the first user dialog is 
+		  destroyed and parsed_PNP_data
+		-compiles under GTK1
+		-pressing mark actually also activates the new layer
+		-loading a gerberfile also activates layer
+		-tooltip to entry field now hints at usage of regexp
+		-arrow down acts like space
+		-colour change back to original colour fixed - new colour is 
+                 only allocated upon first draw on an empty layer
+		-dropdown list for available layers updates, whenever changes 
+                 to layer occur
+		-default layer now is actually also the one which is drawn ontoi
+                  by default 
+ 		 (shown was MAXFILES-1, but it was drawn onto 0!)
+                -if there was an error loading a pnpfile 
+		(e.g. incompatible  csv format) select parts window is destroyed
+                  also   parsed_PNP_data is  freed!
+		-arrow up reverses arrow down/space 
+		-right click now selects and draws the selection on screen
+               	-shift_arrows will add items to selection (moving up and down!)
+		-focus was always going to log window, for MINGW therefore 
+		 logging in log window was disabled as a first measure
+		 
+
+2004-08-12 09:51   Search9-pre7 
+program now works under MINGW
+code cleanup
+BUG fixes:
+	-crash on lowercase entries(linux)using REG_ICASE
+	-crash on entries non existing in the list (MINGW/LINUX)
+use of parsed_PNP_data as a global storage place for pnp data after parsing, in case of reopen search window initiated.
+
+
+2004-08-07 09:29  Search9-pre6
+search_gui.c:
+        -introduced GtkEntryCompletion listing choices for entry
+                works for designators and comments
+                _fixed bug in select_by_regex where
+                if comment was NULL a segfault occurred
+        -automatic scrolling to first hit works with designators only
+        probably utf8 issue with comments
+                       strncasecmp causes segfault
+        -alignment in assembly mode improved, the first 15 elements
+                are also visible now
+        -upon enter in entry field we scroll to first hit in selection
+
+-----------------------------
+2004-08-04 09:29 search9-pre5:
+TODO introduction of libmba csv functions sublicensed under MIT
+ csv.[ch] have been extracted and made independent from msgno.[ch] and text.[ch] the latter 
+ two wont be included 
+-----------------------------
+2004-08-03 09:30 Search9-pre4:
+search_gui.c:
+	-fixed error with default layer selection:now always last layer is default, based on 
+	MAX_FILES
+cleaned up code
+-----------------------------
+Search9-pre3:
+TODO-towards project saving: added filename if pnp file is loaded
+	dont know how to handle loading of files because pnp file is not compatible to 
+	gerberfile
+	->maybe including check for pnpfile in gerb_fopen?
+-search-gui.c:
+	*implemented intelligent top/bottom selector
+		if sel exists, only non matching (either tpo or bottom parts) will be 
+		unselected
+		if no sel exists, all top or bottom parts are selected
+	*implemented gtkcombobox for accessing layers, it will actually not allow overwriting 
+	existing 
+ 	layers( gerberfile displays), if loaded last after all gerberfiles 
+	dynamic update of list to be more flexible
+		ok - used gtkliststore and GtkCellLayout for labels in Gtk_Combo_Box dropdown 
+		list
+
+TODO-MINGW: fgets seems to report NULL ???!!
+-implemented #ifdef __MINGW32__ , HAVE LIBGEN_H, HAVE MMAN_SYS_H and HAVE_REGEX_H for 
+	portability issues under WIN32/mingw
+-------------------------------------
+tag:SEARCH_SELECT_start
+
+2004-07-12 (summary) Juergen Haas/Tomasz Motylewski <juergenhaas@gmx.net> 
+
+	[pleases direct any questions, comments or bug reports to me or Tomasz]
+	* added new functionality: search, select and mark parts in layers 
+	  16-19 by loading a "Pick and Place" file in CSV Format: 
+	  		 entry1,entry2,..
+	  	NO OTHER FORMAT IS RECOGNISED SO FAR!
+		- src/search.c: 
+		   storing pnp data in memory
+	 	- src/search_cb.c:
+		   callbacks
+	 	- src/search_file.c:
+		   how to read in and parse pnp file
+		- src/search_mark.c:
+		   create_marked_layer(layernumber); will draw the selected 
+		   parts as circles with a line going from centre to Pin1 on
+		   the layer given as argument(at the moment layers 16-19 are 
+		   selectable)
+	 	- src/search_gui.c:
+		   will load pick and place file and display the parts unique 
+		   designators, the Top/Bottom Flag and the corresponding 	
+		   comment in a sortable list. Multiple selections can be made 
+		   by entering a regex search phrase or by simply clicking on 
+		   the desired items (for multiple selections by mouse click use
+		   the well-known SHIFT-CTRL-click combinations)
+
+	* This version also includes first rough support for MINGW/WIN32 
+	  -not yet usable, route for reading in files is broken
+
 2004-08-21  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Made sure that only list of short options is 

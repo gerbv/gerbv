@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2004 Juergen Haas (juergenhaas@gmx.net)
  *
  * $Id$
  *
@@ -21,36 +21,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#ifndef SETUP_H
-#define SETUP_H
+#ifndef SEARCH_FILE_H
+#define SEARCH_FILE_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#define DEF_DISTFONTNAME "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1"
 #ifdef USE_GTK2
-#if defined (__MINGW32__)
-#define DEF_STATUSFONTNAME "Sans"
-#else
-#define  DEF_STATUSFONTNAME "Courier Extra-Condensed 11"
-#endif
-#else
-#define DEF_STATUSFONTNAME "-*-fixed-*-*-normal--*-100-*-*-*-*-iso8859-1"
-#endif
+#include <stdio.h>
+#include <gtk/gtk.h>
 
-typedef struct {
-    char *status_fontname;
-    char *dist_fontname;
-    struct {
-        int to_file;      /* Log to file */
-        char *filename;
-    } log;
-} setup_t;
+typedef struct pnp_file {
+    FILE *fd;
+    GtkListStore     	*model;	
 
-extern setup_t setup;
+} pnp_file_t;
 
-void setup_init(void);
-void setup_destroy(void);
 
-#endif /* SETUP_H */
+pnp_file_t *pnp_fopen(char *filename);
+//int pnp_fgetc(pnp_file_t *fd);
+//int pnp_fgetint(pnp_file_t *fd);
+//double pnp_fgetdouble(pnp_file_t *fd);
+//char *pnp_fgetstring(pnp_file_t *fd, char term);
+//void pnp_ungetc(pnp_file_t *fd);
+void pnp_fclose(pnp_file_t *fd);
+
+#endif /* USE_GTK2 */
+#endif /* SEARCH_H */

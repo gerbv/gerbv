@@ -29,7 +29,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifdef HAVE_LIBGEN_H
 #include <libgen.h> /* dirname */
+#endif
 #include <errno.h>
 
 #ifdef HAVE_STRING_H
@@ -52,6 +54,9 @@
 #include <pango/pango.h>
 #endif
 
+#include <locale.h>
+
+
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
@@ -66,8 +71,14 @@
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
 #include "tooltable.h"
+#ifdef USE_GTK2
+#include "search_cb.h"
+#include "search_gui.h"
+#endif
+#include "search_mark.h"
 
-#define WIN_TITLE "Gerber Viewer : "
+
+#define WIN_TITLE "Gerber Viewer"
 
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
@@ -111,9 +122,9 @@ static void all_layers_off(GtkWidget *widget, gpointer data);
 static void load_project(project_list_t *project_list);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
-static gint redraw_pixmap(GtkWidget *widget, int restart);
+gint redraw_pixmap(GtkWidget *widget, int restart);
 static int open_image(char *filename, int idx, int reload);
-static void update_statusbar(gerbv_screen_t *scr);
+void update_statusbar(gerbv_screen_t *scr);
 
 static void menu_ask_zoom (GtkWidget * widget, gpointer data);
 static GtkWidget *create_ZoomFactorWindow (void);
@@ -160,6 +171,10 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/File/_Save Project As...",NULL, project_popup,    SAVE_AS_PROJECT,NULL},
     {"/File/_Save Project",  NULL,     project_save_cb,  0, NULL},
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
+#ifdef USE_GTK2    
+    {"/File/_Load Pick&Place...",NULL, load_pnp_file_popup,  0, NULL},
+    {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
+#endif    
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
     {"/File/_Export/PNG...", NULL,     export_png_popup, 0, NULL},
@@ -586,11 +601,14 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
     if (open_image(filename, screen.curr_index, FALSE) != -1) {
 
+#ifdef HAVE_LIBGEN_H    
+
 	/*
 	 * Remember where we loaded file from last time
 	 */
 	filename = dirname(filename);
-	if (screen.path)
+#endif        
+    if (screen.path)
 	    free(screen.path);
 	screen.path = (char *)malloc(strlen(filename) + 1);
 	strcpy(screen.path, filename);
@@ -686,7 +704,9 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
     /*
      * Remember where we loaded file from last time
      */
+#ifdef HAVE_LIBGEN_H     
     filename = dirname(filename);
+#endif    
     if (screen.path)
 	free(screen.path);
     screen.path = (char *)malloc(strlen(filename) + 1);
@@ -750,7 +770,9 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    free(screen.path);
 	screen.path = (char *)malloc(strlen(filename) + 1);
 	strcpy(screen.path, filename);
+#ifdef HAVE_LIBGEN_H        
 	dirname(screen.path);
+#endif        
 	screen.path = strncat(screen.path, "/", 1);
     }
 
@@ -799,6 +821,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	}
 	
 	if (screen.path) {
+      //printf("screen.path exists");
 	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
 	    memset(project_list, 0, sizeof(project_list_t));
 	    project_list->next = project_list;
@@ -811,17 +834,20 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	}
 	
 	for (idx = 0; idx < MAX_FILES; idx++) {
-	    if (screen.file[idx] && screen.file[idx]->name) {
-		tmp = (project_list_t *)malloc(sizeof(project_list_t));
-		memset(tmp, 0, sizeof(project_list_t));
-		tmp->next = project_list;
-		tmp->layerno = idx;
-		tmp->filename = screen.file[idx]->name;
-		tmp->rgb[0] = screen.file[idx]->color->red;
-		tmp->rgb[1] = screen.file[idx]->color->green;
-		tmp->rgb[2] = screen.file[idx]->color->blue;
-		tmp->inverted = screen.file[idx]->inverted;
-		project_list = tmp;
+	    if (screen.file[idx] && screen.file[idx]->name &&  screen.file[idx]->color) {
+		    tmp = (project_list_t *)malloc(sizeof(project_list_t));
+		    memset(tmp, 0, sizeof(project_list_t));
+		    tmp->next = project_list;
+		    tmp->layerno = idx;
+		    tmp->filename = screen.file[idx]->name;
+            printf(" %s we got the filename right have we?\n", screen.file[idx]->name );
+            printf(" we got the colour right have we?%i\n", screen.file[idx]->color->red );
+		    tmp->rgb[0] = screen.file[idx]->color->red;
+            printf(" we got the colour right have we?%p\n", &screen.file[idx]->color );
+		    tmp->rgb[1] = screen.file[idx]->color->green;
+		    tmp->rgb[2] = screen.file[idx]->color->blue;
+		    tmp->inverted = screen.file[idx]->inverted;
+		    project_list = tmp;
 	    }
 	}
 	if (write_project_file(screen.project, project_list)) {
@@ -832,13 +858,14 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     default:
 	GERB_FATAL_ERROR("Unknown operation in cb_ok_project\n");
     }
-
+#ifdef HAVE_LIBGEN_H
     /*
      * Remember where we loaded file from last time
      */
     filename = dirname(filename);
+#endif 
     if (screen.path)
-	free(screen.path);
+	    free(screen.path);
     screen.path = (char *)malloc(strlen(filename) + 1);
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
@@ -936,9 +963,14 @@ all_layers_off(GtkWidget *widget, gpointer data)
 static void
 unload_file(GtkWidget *widget, gpointer data)
 {
-    int idx = screen.curr_index;
-    GtkStyle *defstyle;
+    int         idx = screen.curr_index;
+    GtkStyle   *defstyle;
+#ifdef USE_GTK2       
+    int         idx0;
+    GtkTreeIter iter;
+#endif    
 
+    
     if (screen.file[idx] == NULL)
 	return;
 
@@ -967,7 +999,25 @@ unload_file(GtkWidget *widget, gpointer data)
     free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
     free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
     free(screen.file[idx]);  screen.file[idx] = NULL;
+#ifdef USE_GTK2    
+    if (interface.main_window) {
+        //printf("unloading");
+        combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+        for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 
+            if (screen.file[idx0] == NULL) {
+                gtk_list_store_append(combo_box_model, &iter);
+                gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
+            } 
+        }
+        gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
+        gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
+       // gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+        gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+        click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
+     
+    }
+#endif        
     return;
 } /* unload_file */
 
@@ -1036,7 +1086,7 @@ load_project(project_list_t *project_list)
 } /* load_project */
 
 
-static void
+void
 autoscale(void)
 {
     double max_width = LONG_MIN, max_height = LONG_MIN;
@@ -1052,7 +1102,8 @@ autoscale(void)
     screen.gerber_bbox.y2 = -HUGE_VAL;
 
     for(i = 0; i < MAX_FILES; i++) {
-        if (screen.file[i]) {
+    /*check if not only screen.file[] exists, but also if it is not a search and select layer*/
+        if ((screen.file[i]) && (screen.file[i]->image != NULL)){
             
             /* 
              * Find the biggest image and use as a size reference
@@ -1118,7 +1169,7 @@ autoscale(void)
  * is called, during this time we are not allowed to call the
  * gtk_idle_xxx functions.
  */
-static gboolean idle_redraw_pixmap_active = FALSE;
+gboolean idle_redraw_pixmap_active = FALSE;
 gboolean idle_redraw_pixmap(gpointer data);
 
 void
@@ -1330,19 +1381,9 @@ create_drawing_area(gint win_width, gint win_height)
     return drawing_area;
 } /* create_drawing_area */
 
-/* Keep redraw state when preempting to process certain events */
-struct gerbv_redraw_state {
-    int valid;			/* Set to nonzero when data is valid */
-    int file_index;
-    GdkPixmap *curr_pixmap;
-    GdkPixmap *clipmask;
-    int max_width;
-    int max_height;
-    int files_loaded;
-};
 
 /* Invalidate state, free up pixmaps if necessary */
-static void
+ void
 invalidate_redraw_state(struct gerbv_redraw_state *state)
 {
     if (state->valid) {
@@ -1358,7 +1399,7 @@ invalidate_redraw_state(struct gerbv_redraw_state *state)
 } /* invalidate_redraw_state() */
 
 /* Create a new backing pixmap of the appropriate size */
-static gint
+ gint
 redraw_pixmap(GtkWidget *widget, int restart)
 {
     int i;
@@ -1587,6 +1628,10 @@ open_image(char *filename, int idx, int reload)
     gerb_image_t *parsed_image;
     gerb_verify_error_t error = GERB_IMAGE_OK;
     char *cptr;
+#ifdef USE_GTK2       
+    int          idx0;
+    GtkTreeIter  iter;
+#endif
 
     if (idx >= MAX_FILES) {
 	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
@@ -1694,8 +1739,26 @@ open_image(char *filename, int idx, int reload)
      * Tool tips on button is the file name 
      */
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
-			 filename, NULL); 
+			 filename, NULL);
+#ifdef USE_GTK2                         
+    if ((interface.main_window) && (!reload)) {                          
+        //printf("loading");
+        combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+        for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 
+            if (screen.file[idx0] == NULL) {
+                gtk_list_store_append(combo_box_model, &iter);
+                gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
+            } 
+        }
+        gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
+        gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
+        gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+        click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);                                            
+    }                                     
+#endif                     
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
+				     (screen.layer_button[idx]),TRUE);
     return 0;
 } /* open_image */
 
@@ -2255,8 +2318,7 @@ draw_measure_distance(void)
     gdk_gc_unref(gc);
 } /* draw_measure_distance */
 
-
-static void 
+ void 
 update_statusbar(gerbv_screen_t *scr)
 {
     char str[MAX_STATUSMSGLEN+1];
@@ -2495,7 +2557,11 @@ main(int argc, char *argv[])
      */
     memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
+#ifdef HAVE_LIBGEN_H    
     screen.execpath = dirname(argv[0]);
+#else 
+//    screen.execpath = argv[0];
+#endif    
 
     setup_init();
 	
@@ -2719,7 +2785,9 @@ main(int argc, char *argv[])
 		free(screen.path);
 	    screen.path = (char *)malloc(strlen(project_filename) + 1);
 	    strcpy(screen.path, project_filename);
+#ifdef HAVE_LIBGEN_H             
 	    dirname(screen.path);
+#endif
 	    screen.path = strncat(screen.path, "/", 1);
 	    
             rename_main_window(screen.project, NULL);
@@ -2736,9 +2804,11 @@ main(int argc, char *argv[])
     /*
      * Set gtk error log handler
      */
+#if !defined (__MINGW32__)     
     g_log_set_handler (NULL, 
 		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
 		       gerbv_gtk_log_handler, NULL); 
+#endif                       
 
     /*
      * Connect all events on drawing area 

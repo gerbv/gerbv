@@ -68,8 +68,13 @@ Simon Munton
 Peter Brueckner
  - A patch to fix that some gerbers has for instance G4 instead of G04.
 
+Juergen Haas
+ - Written code fo select, find and mark parts from "pick and place" files.
+ - MINGW32 WINDOWS port.
+
 Tomasz Motylewski
- - Removed potential dependencies on mmap for porting ot mingw.
+ - Removed potential dependencies on mmap for porting to mingw.
+ - Helped Juergen Haas with above mentioned "part finder" and MINGW32 code.
 
 Dimitri
  - Patch, complete with updated man page, to be able to read tools file from 
@@ -82,3 +87,4 @@ Stefan Thiede
 Richard Lightman
  - Found a bug in handling negative image polarity in combination with
    layer polarity and sent in a patch for that.
+
