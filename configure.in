@@ -136,7 +136,7 @@ BACKEND_DIR="$opt_backend_dir"
 
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 
-AC_CHECK_HEADERS(unistd.h getopt.h string.h malloc.h)
+AC_CHECK_HEADERS(unistd.h getopt.h string.h)
 
 AC_CHECK_FUNCS(getopt_long)
 
