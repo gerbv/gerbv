@@ -88,6 +88,7 @@ parse_gerb(gerb_file_t *fd)
     char read;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
+    double aperture_size;
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
@@ -242,20 +243,27 @@ parse_gerb(gerb_file_t *fd)
 	    state->delta_cp_y = 0.0;
 	    curr_net->aperture = state->curr_aperture;
 	    curr_net->aperture_state = state->aperture_state;
-	    
+
+	    /* 
+	     * Make sure we don't hit any undefined aperture
+	     */
+	    if (curr_net->aperture != 0)
+		aperture_size = image->aperture[curr_net->aperture]->parameter[0];
+	    else 
+		aperture_size = 0.0;
 	    /*
 	     * Find min and max of image
 	     */
 	    if (image->info->min_x == 0.0 || 
 		image->info->min_x > curr_net->stop_x)
-		image->info->min_x = curr_net->stop_x - image->aperture[curr_net->aperture]->parameter[0];
+		image->info->min_x = curr_net->stop_x - aperture_size;
 	    if (image->info->min_y == 0.0 || 
 		image->info->min_y > curr_net->stop_y)
-		image->info->min_y = curr_net->stop_y - image->aperture[curr_net->aperture]->parameter[0];
+		image->info->min_y = curr_net->stop_y - aperture_size;
 	    if (image->info->max_x < curr_net->stop_x)
-		image->info->max_x = curr_net->stop_x + image->aperture[curr_net->aperture]->parameter[0];
+		image->info->max_x = curr_net->stop_x + aperture_size;
 	    if (image->info->max_y < curr_net->stop_y)
-		image->info->max_y = curr_net->stop_y + image->aperture[curr_net->aperture]->parameter[0];
+		image->info->max_y = curr_net->stop_y + aperture_size;
 	    
 	    state->prev_x = state->curr_x;
 	    state->prev_y = state->curr_y;

@@ -1,5 +1,8 @@
 2002-10-07  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerber.c: If aperture was undefined (as in polygon outline)
+	  it caused a segfault in min-max routine. Closes bug #619652.
+
 	* man/gerbv.1.in: Added blurb about the new command line 
 	  switches. Also added some text on backends.
 
