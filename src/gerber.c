@@ -42,6 +42,7 @@
      } while (0)
 #endif
 
+#define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 
 typedef struct gerb_state {
     int curr_x;
@@ -249,6 +250,7 @@ parse_gerb(gerb_file_t *fd)
 	     * In macros the first parameter could be basically anything
 	     */
 	    if ((curr_net->aperture != 0) && 
+		(image->aperture[curr_net->aperture] != NULL) &&
 		(image->aperture[curr_net->aperture]->type != MACRO))
 		aperture_size = image->aperture[curr_net->aperture]->parameter[0];
 	    else 
@@ -439,113 +441,124 @@ parse_M_code(gerb_file_t *fd)
 static void 
 parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 {
-    char op[3];
-    int read[3];
+    int op[2];
+    char str[3];
     gerb_aperture_t *a = NULL;
+    amacro_t *tmp_amacro;
     int ano;
     
-    read[0] = gerb_fgetc(fd);
-    read[1] = gerb_fgetc(fd);
+    op[0] = gerb_fgetc(fd);
+    op[1] = gerb_fgetc(fd);
     
-    if ((read[0] == EOF) || (read[1] == EOF))
+    if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
 
-    /* This is silly. Will be optimized in the next release */
-    op[0] = (char)read[0], op[1] = (char)read[1], op[3] = 0;
+    switch (A2I(op[0], op[1])){
 
-    /* Directive parameters */
-    if (strncmp(op, "AS", 2) == 0) {        /* Axis Select */
+      /* Directive parameters */
+    case A2I('A','S'): /* Axis Select */
 	NOT_IMPL(fd, "%AS%");
-    } else if (strncmp(op, "FS", 2) == 0) { /* Format Statement */
+	break;
+    case A2I('F','S'): /* Format Statement */
 	image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
 	if (image->format == NULL) 
 	    err(1, "Failed malloc for format\n");
 	memset((void *)image->format, 0, sizeof(gerb_format_t));
 	
-	op[0] = (char)gerb_fgetc(fd);
-	if (op[0] == 'L')
+	switch (gerb_fgetc(fd)) {
+	case 'L':
 	    image->format->omit_zeros = LEADING;
-	else if (op[0] == 'T')
+	    break;
+	case 'T':
 	    image->format->omit_zeros = TRAILING;
-	else if (op[0] == 'D')
+	    break;
+	case 'D':
 	    image->format->omit_zeros = EXPLICIT;
-	else {
+	    break;
+	default:
 	    fprintf(stderr,"EagleCad bug detected: Defaults to omit leading zeroes\n");
 	    gerb_ungetc(fd);
 	    image->format->omit_zeros = LEADING;
 	}
 	
-	op[0] = (char)gerb_fgetc(fd);
-	if (op[0] == 'A')
+	switch (gerb_fgetc(fd)) {
+	case 'A':
 	    image->format->coordinate = ABSOLUTE;
-	else if (op[0] == 'T')
+	    break;
+	case 'T':
 	    image->format->coordinate = INCREMENTAL;
-	else
+	    break;
+	default:
 	    err(1, "Format error: coordinate = %c\n", op[0]);
-	
-	while((op[0] = (char)gerb_fgetc(fd)) != '*') {
+	}
+
+	while((op[0] = gerb_fgetc(fd)) != '*') {
 	    switch (op[0]) {
 	    case 'N':
 		op[0] = (char)gerb_fgetc(fd);
-		image->format->lim_seqno = (int)(op[0] - '0');
+		image->format->lim_seqno = op[0] - '0';
 		break;
 	    case 'G':
 		op[0] = (char)gerb_fgetc(fd);
-		image->format->lim_gf = (int)(op[0] - '0');
+		image->format->lim_gf = op[0] - '0';
 		break;
 	    case 'D':
 		op[0] = (char)gerb_fgetc(fd);
-		image->format->lim_pf = (int)(op[0] - '0');
+		image->format->lim_pf = op[0] - '0';
 		break;
 	    case 'M':
 		op[0] = (char)gerb_fgetc(fd);
-		image->format->lim_mf = (int)(op[0] - '0');
+		image->format->lim_mf = op[0] - '0';
 		break;
 	    case 'X' :
-		op[0] = (char)gerb_fgetc(fd);
+		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    err(1,  "Illegal format size : %c\n", op[0]);
-		image->format->x_int = (int)(op[0] - '0');
-		op[0] = (char)gerb_fgetc(fd);
+		    err(1,  "Illegal format size : %c\n", (char)op[0]);
+		image->format->x_int = op[0] - '0';
+		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    err(1,  "Illegal format size : %c\n", op[0]);
-		image->format->x_dec = (int)(op[0] - '0');
+		    err(1,  "Illegal format size : %c\n", (char)op[0]);
+		image->format->x_dec = op[0] - '0';
 		break;
 	    case 'Y':
-		op[0] = (char)gerb_fgetc(fd);
+		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    err(1,  "Illegal format size : %c\n", op[0]);
-		image->format->y_int = (int)(op[0] - '0');
-		op[0] = (char)gerb_fgetc(fd);
+		    err(1,  "Illegal format size : %c\n", (char)op[0]);
+		image->format->y_int = op[0] - '0';
+		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    err(1,  "Illegal format size : %c\n", op[0]);
-		image->format->y_dec = (int)(op[0] - '0');
+		    err(1,  "Illegal format size : %c\n", (char)op[0]);
+		image->format->y_dec = op[0] - '0';
 		break;
 	    default :
 		fprintf(stderr, "Not handled  type of format statement [%c]\n", op[0]);
 	    }
 	}
-    } else if (strncmp(op, "MI", 2) == 0) { /* Mirror Image */
+	break;
+    case A2I('M','I'): /* Mirror Image */
 	NOT_IMPL(fd, "%MI%");
-    } else if (strncmp(op, "MO", 2) == 0) { /* Mode of Units */
-	
-	read[0] = gerb_fgetc(fd);
-	read[1] = gerb_fgetc(fd);
-	
-	if ((read[0] == EOF) || (read[1] == EOF))
-	    err(1, "Unexpected EOF found.\n");
-	
-	op[0] = (char)read[0], op[1] = (char)read[1], op[2] = 0;
+	break;
+    case A2I('M','O'): /* Mode of Units */
 
-	if (strncmp(op, "IN", 2) == 0)
-	    image->info->unit = INCH;
-	else if (strncmp(op, "MM", 2) == 0)
-	    image->info->unit = MM;
-	else
-	    err(1, "Illegal unit:%c%c\n", op[0], op[1]);
+	op[0] = gerb_fgetc(fd);
+	op[1] = gerb_fgetc(fd);
 	
-    } else if (strncmp(op, "OF", 2) == 0) { /* Offset */
-	op[0] = (char)gerb_fgetc(fd);
+	if ((op[0] == EOF) || (op[1] == EOF))
+	    err(1, "Unexpected EOF found.\n");
+
+	switch (A2I(op[0],op[1])) {
+	case A2I('I','N'):
+	    image->info->unit = INCH;
+	    break;
+	case A2I('M','M'):
+	    image->info->unit = MM;
+	    break;
+	default:
+	    err(1, "Illegal unit:%c%c\n", op[0], op[1]);
+	}
+	break;
+    case A2I('O','F'): /* Offset */
+	op[0] = gerb_fgetc(fd);
 	while (op[0] != '*') {
 	    switch (op[0]) {
 	    case 'A' :
@@ -557,71 +570,81 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    default :
 		err(1, "Wrong character in offset:%c\n", op[0]);
 	    }
-	    op[0] = (char)gerb_fgetc(fd);
+	    op[0] = gerb_fgetc(fd);
 	}
 	return;
-    } else if (strncmp(op, "SF", 2) == 0) { /* Scale Factor */
+    case A2I('S','F'): /* Scale Factor */
 	NOT_IMPL(fd, "%SF%");
-    } else if (strncmp(op, "IC", 2) == 0) { /* Input Code */
+	break;
+    case A2I('I','C'): /* Input Code */
 	/* Thanks to Stephen Adam for providing this information. As he writes:
 	 *      btw, here's a logic puzzle for you.  If you need to
 	 * read the gerber file to see how it's encoded, then
 	 * how can you read it?
 	 */
-	read[0] = gerb_fgetc(fd);
-	read[1] = gerb_fgetc(fd);
+	op[0] = gerb_fgetc(fd);
+	op[1] = gerb_fgetc(fd);
 	
-	if ((read[0] == EOF) || (read[1] == EOF))
+	if ((op[0] == EOF) || (op[1] == EOF))
 	    err(1, "Unexpected EOF found.\n");
 
-	op[0] = read[0], op[1] = read[1], op[2] = 0;
-	
-	if (strncmp(op, "AS", 1) == 0) 
+	switch (A2I(op[0],op[1])) {
+	case A2I('A','S'):
 	    image->info->encoding = ASCII;
-	else if (strncmp(op, "EB", 3) == 0)
+	    break;
+	case A2I('E','B'):
 	    image->info->encoding = EBCDIC;
-	else if (strncmp(op, "BC", 3) == 0)
+	    break;
+	case A2I('B','C'):
 	    image->info->encoding = BCD;
-	else if (strncmp(op, "IS", 3) == 0)
+	    break;
+	case A2I('I','S'):
 	    image->info->encoding = ISO_ASCII;
-	else if (strncmp(op, "EI", 3) == 0)
+	    break;
+	case A2I('E','I'):
 	    image->info->encoding = EIA;
-	else 
+	    break;
+	default:
 	    err(1, "Strange inputcode : %c%c\n", op[0], op[1]);
+	}
+	break;
 
-	
 	/* Image parameters */
-    } else if (strncmp(op, "IJ", 2) == 0) { /* Image Justify */
+    case A2I('I','J'): /* Image Justify */
 	NOT_IMPL(fd, "%IJ%");
-    } else if (strncmp(op, "IN", 2) == 0) { /* Image Name */
+	break;
+    case A2I('I','N'): /* Image Name */
 	image->info->name = gerb_fgetstring(fd, '*');
-    } else if (strncmp(op, "IO", 2) == 0) { /* Image Offset */
+	break;
+    case A2I('I','O'): /* Image Offset */
 	NOT_IMPL(fd, "%IO%");
-    } else if (strncmp(op, "IP", 2) == 0) { /* Image Polarity */
+	break;
+    case A2I('I','P'): /* Image Polarity */
 	
-	read[0] = gerb_fgetc(fd);
-	read[1] = gerb_fgetc(fd);
-	read[2] = gerb_fgetc(fd);
+	for (ano = 0; ano < 3; ano++) {
+	    op[0] = gerb_fgetc(fd);
+	    if (op[0] == EOF)
+		err(1, "Unexpected EOF found.\n");
+	    str[ano] = (char)op[0];
+	}
 	
-	if ((read[0] == EOF) || (read[1] == EOF) || (read[2] == EOF))
-	    err(1, "Unexpected EOF found.\n");
-
-	op[0] = (char)read[0], op[1] = (char)read[1], op[2] = (char)read[2];
-
-	if (strncmp(op, "POS", 3) == 0) 
+	if (strncmp(str, "POS", 3) == 0) 
 	    image->info->polarity = POSITIVE;
-	else if (strncmp(op, "NEG", 3) == 0)
+	else if (strncmp(str, "NEG", 3) == 0)
 	    image->info->polarity = NEGATIVE;
 	else 
-	    err(1, "Strange polarity : %c%c%c\n", op[0], op[1], op[2]);
+	    err(1, "Strange polarity : %c%c%c\n", str[0], str[1], str[2]);
 	
-    } else if (strncmp(op, "IR", 2) == 0) { /* Image Rotation */
+	break;
+    case A2I('I','R'): /* Image Rotation */
 	NOT_IMPL(fd, "%IR%");
-    } else if (strncmp(op, "PF", 2) == 0) { /* Plotter Film */
+	break;
+    case A2I('P','F'): /* Plotter Film */
 	NOT_IMPL(fd, "%PF%");
+	break;
 	
 	/* Aperture parameters */
-    } else if (strncmp(op, "AD", 2) == 0) { /* Aperture Description */
+    case A2I('A','D'): /* Aperture Description */
 	a = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 	memset((void *)a, 0, sizeof(gerb_aperture_t));
 	ano = parse_aperture_definition(fd, a, image->amacro);
@@ -629,22 +652,22 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->aperture[ano] = a;
 	else
 	    err(1, "Aperture number out of bounds : %d\n", ano);
-	
-    } else if (strncmp(op, "AM", 2) == 0) { /* Aperture Macro */
-	amacro_t *tmp_amacro;
+	break;
+    case A2I('A','M'): /* Aperture Macro */
 	tmp_amacro = image->amacro;
 	image->amacro = parse_aperture_macro(fd);
 	image->amacro->next = tmp_amacro;
 #ifdef AMACRO_DEBUG
 	print_program(image->amacro);
 #endif
+	break;
 
 	/* Layer */
-    } else if (strncmp(op, "LN", 2) == 0) { /* Layer Name */
+    case A2I('L','N'): /* Layer Name */
 	state->curr_layername = gerb_fgetstring(fd, '*');
-    } else if (strncmp(op, "LP", 2) == 0) { /* Layer Polarity */
-	op[0] = (char)gerb_fgetc(fd);
-	switch (op[0]) {
+	break;
+    case A2I('L','P'): /* Layer Polarity */
+	switch (gerb_fgetc(fd)) {
 	case 'D': /* Dark Polarity (default) */
 	    state->layer_polarity = DARK;
 	    break;
@@ -654,13 +677,17 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	default:
 	    fprintf(stderr, "Strange Layer Polarity: %c\n", op[0]);
 	}
-    } else if (strncmp(op, "KO", 2) == 0) { /* Knock Out */
+	break;
+    case A2I('K','O'): /* Knock Out */
 	NOT_IMPL(fd, "%KO%");
-    } else if (strncmp(op, "SR", 2) == 0) { /* Step and Repeat */
+	break;
+    case A2I('S','R'): /* Step and Repeat */
 	NOT_IMPL(fd, "%SR%");
-    } else if (strncmp(op, "RO", 2) == 0) { /* Rotate */
+	break;
+    case A2I('R','O'): /* Rotate */
 	NOT_IMPL(fd, "%RO%");
-    } else {
+	break;
+    default:
 	fprintf(stderr, "Unknown extension found %%%c%c%%\n", op[0], op[1]);
     }
     

@@ -1,3 +1,10 @@
+2002-10-26  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Removed some nested use of strncmp with simple
+	  switch/case instead in parse_G_code.
+	* src/gerber.c: Added an extra check so RS274D doesn't casue
+	  segfault. Discovered by Jukka Marin. Thanks.
+
 2002-10-24  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c, src/gerbv_screen.h: Played with clipping. Allocated
