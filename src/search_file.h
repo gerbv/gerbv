@@ -24,7 +24,6 @@
 #ifndef SEARCH_FILE_H
 #define SEARCH_FILE_H
 
-#ifdef USE_GTK2
 #include <stdio.h>
 #include <gtk/gtk.h>
 
@@ -40,5 +39,4 @@ pnp_file_t *pnp_fopen(char *filename);
 
 void pnp_fclose(pnp_file_t *fd);
 
-#endif /* USE_GTK2 */
 #endif /* SEARCH_H */

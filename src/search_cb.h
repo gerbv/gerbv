@@ -27,7 +27,7 @@
  
 #ifndef _SEARCH_CB_H
 #define _SEARCH_CB_H
-#ifdef USE_GTK2
+
 #include "search.h"
 #include "search_file.h"
 
@@ -35,5 +35,5 @@
 void load_pnp_file_popup(GtkWidget *widget, gpointer data);
 int open_pnp(char *filename, int idx, int reload);
 
-#endif /* USE_GTK2 */
-#endif
+#endif /* _SEARCH_CB_H */
+

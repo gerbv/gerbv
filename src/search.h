@@ -27,7 +27,6 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
-#ifdef USE_GTK2
 #include <stdio.h>
 #include "search_file.h"
 #include "gerbv_screen.h"
@@ -99,5 +98,4 @@ int pnp_screen_for_delimiter(char *str, int n);
 pnp_state_t *parse_pnp(pnp_file_t *fd);
 void free_pnp_state(pnp_state_t *pnp_state);
 
-#endif /* USE_GTK2 */
 #endif /* SEARCH_H */

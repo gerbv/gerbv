@@ -33,8 +33,6 @@
 #include <config.h>
 #endif
 
-#ifdef USE_GTK2
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,9 +60,7 @@
 #include <getopt.h>
 #endif
 
-#ifdef USE_GTK2
 #include <pango/pango.h>
-#endif
 
 #include "gerber.h"
 #include "drill.h"
@@ -236,4 +232,3 @@ open_pnp(char *filename, int idx, int reload)
     return 0;
     
 } /* open_pnp */
-#endif /* USE_GTK2 */

@@ -33,8 +33,6 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#ifdef USE_GTK2
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,9 +55,7 @@
 #include <getopt.h>
 #endif /* HAVE_GETOPT_H */
 
-#ifdef USE_GTK2
 #include <pango/pango.h>
-#endif /* USE_GTK2 */
 
 #include <assert.h>
 
@@ -399,5 +395,3 @@ void create_marked_layer(int idx) {
                               
     
 } /* create_marked_layer */
-
-#endif /* USE_GTK2  */

@@ -29,14 +29,11 @@
 #endif
 
 #define DEF_DISTFONTNAME "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1"
-#ifdef USE_GTK2
+
 #if defined (__MINGW32__)
 #define DEF_STATUSFONTNAME "Sans"
 #else
 #define  DEF_STATUSFONTNAME "Courier Extra-Condensed 11"
-#endif
-#else
-#define DEF_STATUSFONTNAME "-*-fixed-*-*-normal--*-100-*-*-*-*-iso8859-1"
 #endif
 
 typedef struct {

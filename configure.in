@@ -64,16 +64,6 @@ else
 	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MILS, [Default unit to display in statusbar])
 fi
 
-dnl --enable-gtk2 : Configure to run GTK+ 2.0
-AC_ARG_ENABLE(gtk2,
-    [  --enable-gtk2           Configures gerbv to use GTK+ 2.0],
-    [
-        if test $enableval = "yes"; then
-		use_gtk2="yes"
-	fi
-    ])
-
-
 
 dnl Initialize automake stuff (?)
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
@@ -92,43 +82,8 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
-if test "x$use_gtk2" = "xyes" ; then
-	PKG_CHECK_MODULES(GTK, gtk+-2.0, , AC_MSG_ERROR([*** GTK+-2.0 not installed - please install first ***]))
-dnl	GTK_LIBS="`$PKG_CONFIG --libs gtk+-2.0`"
-dnl	GTK_CFLAGS="`$PKG_CONFIG --cflags gtk+-2.0 mms-bitfields`"
-	AC_DEFINE([USE_GTK2],[1],[We will compile for GTK+ 2.0])
-dnl	AC_CHECK_HEADERS(regex.h)
-else
 
-	dnl Change default location of gtk-config
-	AC_ARG_WITH(gtk-config, [  --with-gtk-config=path  Change where gtk-config is located], [opt_gtkconfig=$withval])
-
-	if eval "test x$opt_gtkconfig != x" ; then
-
-	        if test ! -r "$opt_gtkconfig"; then
-
-        	        AC_MSG_ERROR(Cannot find $opt_gtkconfig -- be sure that this pathname is correct)
-
-	        else
-	                GTK_CONFIG=$opt_gtkconfig
-	        fi
-	else
-	        AM_PATH_GTK(1.2.3,,AC_MSG_ERROR([*** GTK+ >= 1.2.3 not installed - please install first ***]))
-	fi
-
-
-	if test $GTK_CONFIG = "no"; then
-        	AC_MSG_ERROR(Cannot find gtk-config -- be sure that gtk >= 0.99.7 is installed)
-fi
-
-	GTK_LIBS="`$GTK_CONFIG --libs`"
-	GTK_CFLAGS="`$GTK_CONFIG --cflags`"
-
-	dnl GDK-PixBuf stuff
-	if test "$exportpng" = "yes" ; then
-		AM_PATH_GDK_PIXBUF
-	fi
-fi
+PKG_CHECK_MODULES(GTK, gtk+-2.0, , AC_MSG_ERROR([*** GTK+-2.0 not installed - please install first ***]))
 
 if test "$exportpng" = "yes" ; then
 	PNG_CFLAGS="`libpng-config --cflags`"

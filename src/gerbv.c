@@ -76,9 +76,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include <getopt.h>
 #endif
 
-#ifdef USE_GTK2
 #include <pango/pango.h>
-#endif
 
 #include <locale.h>
 
@@ -97,10 +95,9 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
 #include "tooltable.h"
-#ifdef USE_GTK2
+
 #include "search_cb.h"
 #include "search_gui.h"
-#endif
 #include "search_mark.h"
 
 
@@ -202,10 +199,8 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/File/_Save Project As...",NULL, project_popup,    SAVE_AS_PROJECT,NULL},
     {"/File/_Save Project",  NULL,     project_save_cb,  0, NULL},
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
-#ifdef USE_GTK2    
     {"/File/_Load Pick&Place...",NULL, load_pnp_file_popup,  0, NULL},
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
-#endif    
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
     {"/File/_Export/PNG...", NULL,     export_png_popup, 0, NULL},
@@ -270,11 +265,7 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
     gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, NULL);
     
     /* Attach the new accelerator group to the window */
-#ifdef USE_GTK2
     gtk_window_add_accel_group (GTK_WINDOW(window), accel_group);
-#else
-    gtk_accel_group_attach(accel_group, GTK_OBJECT(window));
-#endif
     
     if(menubar) {
 	GtkWidget *menuEntry;
@@ -871,26 +862,25 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	}
 	pnp_file_in_project_list = 0;
 	for (idx = 0; idx < MAX_FILES; idx++) {
-        if (screen.file[idx] &&  screen.file[idx]->color) {
-		    tmp = (project_list_t *)malloc(sizeof(project_list_t));
-		    memset(tmp, 0, sizeof(project_list_t));
-		    tmp->next = project_list;
-		    tmp->layerno = idx;
-#ifdef USE_GTK2            
-            if ((screen.file[idx]->name == NULL) && (pnp_file_in_project_list == 0) && (interface.pnp_filename != NULL)) {
-                tmp->filename = interface.pnp_filename;
-                pnp_file_in_project_list = 1;
-            } else
-#endif            
-    		    tmp->filename = screen.file[idx]->name;
-		    tmp->rgb[0] = screen.file[idx]->color->red;
-		    tmp->rgb[1] = screen.file[idx]->color->green;
-		    tmp->rgb[2] = screen.file[idx]->color->blue;
-		    tmp->inverted = screen.file[idx]->inverted;
-      	    project_list = tmp;
+	    if (screen.file[idx] &&  screen.file[idx]->color) {
+		tmp = (project_list_t *)malloc(sizeof(project_list_t));
+		memset(tmp, 0, sizeof(project_list_t));
+		tmp->next = project_list;
+		tmp->layerno = idx;
+		
+		if ((screen.file[idx]->name == NULL) && (pnp_file_in_project_list == 0) && (interface.pnp_filename != NULL)) {
+		    tmp->filename = interface.pnp_filename;
+		    pnp_file_in_project_list = 1;
+		} else
+		    tmp->filename = screen.file[idx]->name;
+		tmp->rgb[0] = screen.file[idx]->color->red;
+		tmp->rgb[1] = screen.file[idx]->color->green;
+		tmp->rgb[2] = screen.file[idx]->color->blue;
+		tmp->inverted = screen.file[idx]->inverted;
+		project_list = tmp;
 	    }
 	}
-           
+	
 	if (write_project_file(screen.project, project_list)) {
 	    GERB_MESSAGE("Failed to write project\n");
 	    goto cb_ok_project_end;
@@ -1006,11 +996,7 @@ unload_file(GtkWidget *widget, gpointer data)
 {
     int         idx = screen.curr_index;
     GtkStyle   *defstyle;
-#ifdef USE_GTK2       
-//    int         idx0;
     GtkTreeIter iter;
-#endif    
-
     
     if (screen.file[idx] == NULL)
 	return;
@@ -1040,13 +1026,12 @@ unload_file(GtkWidget *widget, gpointer data)
     free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
     free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
     free(screen.file[idx]);  screen.file[idx] = NULL;
-#ifdef USE_GTK2
-//#if 0    
+
     if (interface.main_window && gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter)) {
             update_combo_box_model();
             
     }
-#endif        
+
     return;
 } /* unload_file */
 
@@ -1074,9 +1059,7 @@ load_project(project_list_t *project_list)
 {
     project_list_t *pl_tmp;
     GtkStyle       *defstyle, *newstyle;
-#ifdef USE_GTK2    
     GtkTreeIter     iter;
-#endif
      
     while (project_list) {
 	if (project_list->layerno == -1) {
@@ -1085,33 +1068,30 @@ load_project(project_list_t *project_list)
 					    project_list->rgb[2], NULL);
 	} else {
 	    int  idx =  project_list->layerno;
-#ifdef USE_GTK2        
-        char project_pnp_layer[MAXL] = "";
+	    char project_pnp_layer[MAXL] = "";
         
-        if (project_list->is_pnp) {
-            create_search_window(NULL, NULL);
-            if (open_pnp(project_list->filename, idx, FALSE) == -1) {
-                GERB_MESSAGE("could not read %s[%d]", project_list->filename,
-                    idx);
-                goto next_layer;
-            }
-//            update_combo_box_model();
-            sprintf(project_pnp_layer,"%i", project_list->layerno);
-            gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, project_pnp_layer);
-            g_signal_emit_by_name ((GTK_COMBO_BOX(interface.layer_active)), "changed");
-            gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
-            click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);   
-            create_marked_layer(idx);
-    	} else {
-#endif        
-            if (open_image(project_list->filename, idx, FALSE) == -1) {
-                GERB_MESSAGE("could not read %s[%d]", project_list->filename,
-                    idx);
-                goto next_layer;
-            }
-#ifdef USE_GTK2            
-        }    
-#endif        
+	    if (project_list->is_pnp) {
+		create_search_window(NULL, NULL);
+		if (open_pnp(project_list->filename, idx, FALSE) == -1) {
+		    GERB_MESSAGE("could not read %s[%d]", project_list->filename, idx);
+		    goto next_layer;
+		}
+		
+		sprintf(project_pnp_layer,"%i", project_list->layerno);
+		gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, project_pnp_layer);
+		g_signal_emit_by_name ((GTK_COMBO_BOX(interface.layer_active)), "changed");
+		gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+		click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);   
+		create_marked_layer(idx);
+	    } else {
+		
+		if (open_image(project_list->filename, idx, FALSE) == -1) {
+		    GERB_MESSAGE("could not read %s[%d]", project_list->filename,
+				 idx);
+		    goto next_layer;
+		}
+	    }
+	    
 	    /* 
 	     * Change color from default to from the project list
 	     */
@@ -1119,7 +1099,7 @@ load_project(project_list_t *project_list)
 	    screen.file[idx]->color = alloc_color(project_list->rgb[0], 
 						  project_list->rgb[1],
 						  project_list->rgb[2], NULL);
-
+	    
 	    /* 
 	     * Also change color on layer button
 	     */
@@ -1129,16 +1109,16 @@ load_project(project_list_t *project_list)
 	    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
 	    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
 	    gtk_widget_set_style(screen.layer_button[idx], newstyle);
-
+	    
 	    screen.file[idx]->inverted = project_list->inverted;
 	}
-        next_layer:
+    next_layer:
 	pl_tmp = project_list;
 	project_list = project_list->next;
         free(pl_tmp->filename);
 	free(pl_tmp);
     }
-
+    
     return;
 } /* load_project */
 
@@ -1387,13 +1367,10 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
     double us_x1, us_y1, us_x2, us_y2;
     int half_w, half_h;		/* cache for half window dimensions */
-#ifdef USE_GTK2    
     gchar *designator, *comment, *footprint;
     GList *tmp_list = NULL;
     GtkTreeIter iter;
     double mid_x, mid_y, pad_x, pad_y, length, width;
-#endif    
-
     
     half_w = screen.drawing_area->allocation.width / 2;
     half_h = screen.drawing_area->allocation.height / 2;
@@ -1405,121 +1382,110 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     dx = x2-x1;
     dy = y2-y1;
 
-    if (dx < 4 && dy < 4) {
-#ifndef     USE_GTK2
-	GERB_MESSAGE("Warning: Zoom area too small, bailing out!\n");
-#else    
-    if (parsed_PNP_data == NULL)
-      return;
-    tmp_list = gtk_tree_selection_get_selected_rows
-                                            (GTK_TREE_SELECTION(interface.selection),
-                                             (GtkTreeModel **)&interface.model);//item must be in the active selection list 
-    if (tmp_list == NULL) 
-        return;
-                                                         
-    tmp_list  = g_list_first(tmp_list);
-    do {   
-        gtk_tree_model_get_iter         (GTK_TREE_MODEL(interface.model),
-                                         &iter,
-                                         tmp_list->data);
-        
-        gtk_tree_model_get              (GTK_TREE_MODEL(interface.model),
-                                         &iter,
-                                         COLUMN_DESIGNATOR, &designator, 
-                                         COLUMN_mid_x, &mid_x, 
-                                         COLUMN_mid_y, &mid_y, 
-                                         COLUMN_pad_x, &pad_x, 
-                                         COLUMN_pad_y, &pad_y,
-                                         COLUMN_length, &length,
-                                         COLUMN_width, &width, 
-                                         COLUMN_COMMENT, &comment,
-                                         COLUMN_footprint, &footprint, -1);                                  
-//        printf("Iter: %s", gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(interface.model), &iter));                                         
-        if (screen.unit == GERBV_MILS) {
+    if ((dx < 4) && (dy < 4)) {
 
-            us_x1 = COORD2MILS(screen.gerber_bbox.x1 + (x1+screen.trans_x)/(double)screen.transf->scale);
-            us_y1 = COORD2MILS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
-        } else {
-            us_x1 = COORD2MMS(screen.gerber_bbox.x1 + (x1+screen.trans_x)/(double)screen.transf->scale);
-            us_y1 = COORD2MMS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
-        }    
-
-//        printf("x1/y1:%d/%d,  translated: us_x1/us_y1:%f/%f, desig %s, mid_x/y %f/%f, calc'ed range x1/2:%f/%f, padx/y %f/%f\n",
-//            x1, y1, us_x1, us_y1, designator, mid_x, mid_y, (mid_x - fabs(mid_x - pad_x)) ,(mid_x + fabs(mid_x - pad_x)), pad_x, pad_y);
-
-
-        if ((((us_x1 >= (mid_x - width/2)) &&  (us_x1 <= (mid_x + width/2))) 
-            && ((us_y1 >= (mid_y - length/2)) && (us_y1 <= (mid_y + length/2))) //rectangular PIN1 on centre axis
-            && (((length != 0) && (width != 0))))            
-            ||
-         (((us_x1 >= (mid_x - fabs(mid_x - pad_x))) && (us_x1 <= (mid_x + fabs(mid_x - pad_x)))) //rectangluar PIN1 off centre axis
-            && ((us_y1 >= (mid_y - fabs(mid_y - pad_y))) && (us_y1 <= (mid_y + fabs(mid_y - pad_y)))))
-            ||
-            (((us_x1 >= (mid_x - 3)) && (us_x1 <= (mid_x + 3)))
-            && ((us_y1 >= (mid_y - 3)) && (us_y1 <= (mid_y + 3))))) //circular shapes workaround 3mm in each direction
-#if 0            
-            (((us_x1 >= (mid_x - (fabs(mid_x - pad_x) / 4))) && (us_x1 <= (mid_x + (fabs(mid_x - pad_x) / 4))))
-            && ((us_y1 >= (mid_y - (fabs(mid_y - pad_y) / 4))) && (us_y1 <= (mid_y + (fabs(mid_y - pad_y) / 4)))))) //circular shapes
-#endif            
-            {
-            
-            //pointer must be in range of element;  FIX ME range is rectangular, but in reality it can be circular as well for unknown shapes
-            
-            if ( !g_utf8_validate(designator, -1, NULL)) {
-                //memset  (designator, 0, sizeof(designator));
-
-                gchar * str_designator = g_convert(designator, strlen(designator), "UTF-8", "ISO-8859-1",
-                            NULL, NULL, NULL);
-                // I have not decided yet whether it is better to use always
-                // "ISO-8859-1" or current locale.
-                // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
-
-                sprintf (designator, "%.*s", sizeof(designator)-1, str_designator);
-                g_free(str_designator);
-            } 
-             if ( !g_utf8_validate(comment, -1, NULL)) {
-                //memset  (designator, 0, sizeof(designator));
-
-                gchar * str_comment = g_convert(comment, strlen(comment), "UTF-8", "ISO-8859-1",
-                            NULL, NULL, NULL);
-                // I have not decided yet whether it is better to use always
-                // "ISO-8859-1" or current locale.
-                // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
-
-                sprintf (comment, "%.*s", sizeof(comment)-1, str_comment);
-                g_free(str_comment);
-            } 
-             if ( !g_utf8_validate(footprint, -1, NULL)) {
-                //memset  (designator, 0, sizeof(designator));
-
-                gchar * str_footprint = g_convert(footprint, strlen(footprint), "UTF-8", "ISO-8859-1",
-                            NULL, NULL, NULL);
-                // I have not decided yet whether it is better to use always
-                // "ISO-8859-1" or current locale.
-                // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
-
-                sprintf (footprint, "%.*s", sizeof(footprint)-1, str_footprint);
-                g_free(str_footprint);
-            }     
-
-            snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		         "P: %s, C:%s, FP:%s", designator, comment, footprint);
-            GERB_MESSAGE("The part you have selected is: %s, Comment: %s, Footprint %s\n", designator, comment, footprint);
-           
-            break;
-
-        } else {
-            snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		         "%s", "        ");//blank the statusbar in this section
-        }     
-                                                    
-    } while ((tmp_list = g_list_next(tmp_list)));
-	   
+	if (parsed_PNP_data == NULL)
+	    return;
+	tmp_list = gtk_tree_selection_get_selected_rows
+	    (GTK_TREE_SELECTION(interface.selection),
+	     (GtkTreeModel **)&interface.model); /* item must be in the active selection list */
+	if (tmp_list == NULL) 
+	    return;
+	
+	tmp_list  = g_list_first(tmp_list);
+	do {   
+	    gtk_tree_model_get_iter         (GTK_TREE_MODEL(interface.model),
+					     &iter,
+					     tmp_list->data);
+	    
+	    gtk_tree_model_get              (GTK_TREE_MODEL(interface.model),
+					     &iter,
+					     COLUMN_DESIGNATOR, &designator, 
+					     COLUMN_mid_x, &mid_x, 
+					     COLUMN_mid_y, &mid_y, 
+					     COLUMN_pad_x, &pad_x, 
+					     COLUMN_pad_y, &pad_y,
+					     COLUMN_length, &length,
+					     COLUMN_width, &width, 
+					     COLUMN_COMMENT, &comment,
+					     COLUMN_footprint, &footprint, -1);                                  
+	    if (screen.unit == GERBV_MILS) {
+		
+		us_x1 = COORD2MILS(screen.gerber_bbox.x1 + (x1+screen.trans_x)/(double)screen.transf->scale);
+		us_y1 = COORD2MILS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
+	    } else {
+		us_x1 = COORD2MMS(screen.gerber_bbox.x1 + (x1+screen.trans_x)/(double)screen.transf->scale);
+		us_y1 = COORD2MMS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
+	    }    
+	    
+	    if ((((us_x1 >= (mid_x - width/2)) &&  (us_x1 <= (mid_x + width/2))) 
+		 && ((us_y1 >= (mid_y - length/2)) && (us_y1 <= (mid_y + length/2))) /* rectangular PIN1 on centre axis */
+		 && (((length != 0) && (width != 0))))            
+		||
+		(((us_x1 >= (mid_x - fabs(mid_x - pad_x))) && (us_x1 <= (mid_x + fabs(mid_x - pad_x)))) /* rectangluar PIN1 off centre axis */
+		 && ((us_y1 >= (mid_y - fabs(mid_y - pad_y))) && (us_y1 <= (mid_y + fabs(mid_y - pad_y)))))
+		||
+		(((us_x1 >= (mid_x - 3)) && (us_x1 <= (mid_x + 3)))
+		 && ((us_y1 >= (mid_y - 3)) && (us_y1 <= (mid_y + 3))))) /* circular shapes workaround 3mm in each direction */
+		{
+		    
+		    /* 
+		     * pointer must be in range of element; 
+		     * FIX ME range is rectangular, but in reality it can be 
+		     * circular as well for unknown shapes
+		     */
+		    
+		    if ( !g_utf8_validate(designator, -1, NULL)) {
+			gchar * str_designator = g_convert(designator, strlen(designator), "UTF-8", "ISO-8859-1", NULL, NULL, NULL);
+			/* 
+			 * I have not decided yet whether it is better to use 
+			 * always  "ISO-8859-1" or current locale.
+			 */
+			
+			
+			sprintf (designator, "%.*s", sizeof(designator)-1, str_designator);
+			g_free(str_designator);
+		    } 
+		    if ( !g_utf8_validate(comment, -1, NULL)) {
+			gchar * str_comment = g_convert(comment, strlen(comment),
+							"UTF-8", "ISO-8859-1",
+							NULL, NULL, NULL);
+			/*
+			 * I have not decided yet whether it is better to use 
+			 * always "ISO-8859-1" or current locale.
+			 */
+			sprintf (comment, "%.*s", sizeof(comment)-1, str_comment);
+			g_free(str_comment);
+		    } 
+		    if (!g_utf8_validate(footprint, -1, NULL)) {
+			gchar * str_footprint = g_convert(footprint, strlen(footprint), "UTF-8", "ISO-8859-1", NULL, NULL, NULL);
+			/*
+			 * I have not decided yet whether it is better to use 
+			 *always "ISO-8859-1" or current locale.
+			 */
+			
+			sprintf (footprint, "%.*s", sizeof(footprint)-1, str_footprint);
+			g_free(str_footprint);
+		    }     
+		    
+		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+			     "P: %s, C:%s, FP:%s", designator, comment, footprint);
+		    GERB_MESSAGE("The part you have selected is: %s, Comment: %s, Footprint %s\n", designator, comment, footprint);
+		    
+		    break;
+		    
+		} else {
+		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+			     "%s", "        ");//blank the statusbar in this section
+		}     
+	    
+	} while ((tmp_list = g_list_next(tmp_list)));
+	
 	update_statusbar(&screen);
-#endif    
+	
 	goto zoom_outline_end;
     }
-
+    
     if (screen.centered_outline_zoom) {
 	/* Centered outline mode */
 	x1 = screen.start_x - dx;
@@ -1527,20 +1493,20 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
 	dx *= 2;
 	dy *= 2;
     }
-
+    
     us_x1 = (screen.trans_x + x1)/(double) screen.transf->scale;
     us_y1 = (screen.trans_y + y1)/(double) screen.transf->scale;
     us_x2 = (screen.trans_x + x2)/(double) screen.transf->scale;
     us_y2 = (screen.trans_y + y2)/(double) screen.transf->scale;
-
+    
     screen.transf->scale = MIN(screen.drawing_area->allocation.width/(double)(us_x2 - us_x1),
-		       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
+			       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
     screen.trans_x = screen.transf->scale * (us_x1 + (us_x2 - us_x1)/2) - half_w;
     screen.trans_y = screen.transf->scale * (us_y1 + (us_y2 - us_y1)/2) - half_h;;
     screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
     screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
-
-zoom_outline_end:
+    
+ zoom_outline_end:
     /* Redraw screen */
     redraw_pixmap(screen.drawing_area, TRUE);
 } /* zoom_outline */
@@ -1559,7 +1525,7 @@ create_drawing_area(gint win_width, gint win_height)
 
 
 /* Invalidate state, free up pixmaps if necessary */
- void
+void
 invalidate_redraw_state(struct gerbv_redraw_state *state)
 {
     if (state->valid) {
@@ -1575,7 +1541,7 @@ invalidate_redraw_state(struct gerbv_redraw_state *state)
 } /* invalidate_redraw_state() */
 
 /* Create a new backing pixmap of the appropriate size */
- gint
+gint
 redraw_pixmap(GtkWidget *widget, int restart)
 {
     int i;
@@ -1587,30 +1553,30 @@ redraw_pixmap(GtkWidget *widget, int restart)
     GdkWindow *window;
     int retval = TRUE;
     static struct gerbv_redraw_state state;
-
+    
     window = gtk_widget_get_parent_window(widget);
     /* This might be lengthy, show that we're busy by changing the pointer */
     if (window) {
 	GdkCursor *cursor;
-
+	
 	cursor = gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(window, cursor);
 	gdk_cursor_destroy(cursor);
     }
-
+    
     /* Stop the idle-function if we are not within an idle-call */
     if (state.valid) {
 	stop_idle_redraw_pixmap(widget);
     }
     retval = FALSE;
-
+    
     /* Called first when opening window and then when resizing window */
     for(i = 0; i < MAX_FILES; i++) {
 	if (screen.file[i]) {
 	    file_loaded++;
 	}
     }
-
+    
     /*
      * Setup scale etc first time we load a file
      */
@@ -1618,38 +1584,38 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	autoscale();
 	invalidate_redraw_state(&state);
     }
-
+    
     /*
      * Find the biggest image and use as a size reference
      */
     dmax_x = screen.gerber_bbox.x2;
     dmax_y = screen.gerber_bbox.y2;
-
+    
     /*
      * Also find the smallest coordinates to see if we have negative
      * ones that must be compensated for.
      */
     dmin_x = screen.gerber_bbox.x1;
     dmin_y = screen.gerber_bbox.y1;
-
+    
     /* Should we restart drawing, or try to load a saved state? */
     if (!restart && state.valid) {
 	if (file_loaded != state.files_loaded) {
 	    invalidate_redraw_state(&state);
 	}
-
+	
 	if ((state.max_width != screen.drawing_area->allocation.width ||
-	    state.max_height != screen.drawing_area->allocation.height)) {
+	     state.max_height != screen.drawing_area->allocation.height)) {
 	    invalidate_redraw_state(&state);
 	}
     } else {
 	invalidate_redraw_state(&state);
     }
-
+    
     /* Check for useful data in saved state or initialise state */
     if (!state.valid) {
 	int width = 0, height = 0;
-
+	
 	/*
 	 * Paranoia check; size in width or height is zero
 	 */
@@ -1657,12 +1623,12 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	    retval = FALSE;
 	    goto redraw_pixmap_end;
 	}
-
+	
 	/* Clear state */
 	memset(&state, 0, sizeof(state));
-
+	
 	state.files_loaded = file_loaded;
-
+	
 	/*
 	 * Pixmap size is always size of window, no
 	 * matter how the scale.
@@ -1670,7 +1636,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	gdk_window_get_size(widget->window, &width, &height);	
 	state.max_width = width;
 	state.max_height = height;
-
+	
 	/* 
 	 * Remove old pixmap, allocate a new one, draw the background.
 	 */
@@ -1680,7 +1646,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 				       state.max_height,  -1);
 	gdk_gc_set_foreground(gc, screen.background);
 	gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
-
+	
 	/*
 	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
 	 */
@@ -1690,15 +1656,15 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	state.clipmask = gdk_pixmap_new(widget->window,
 					state.max_width,
 					state.max_height,  1);
-
+	
 	state.valid = 1;
     }
-
+    
     /*
      * Set superimposing function.
      */
     gdk_gc_set_function(gc, screen.si_func);
-
+    
     
     /* 
      * This now allows drawing several layers on top of each other.
@@ -1715,7 +1681,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
 	    screen.file[i]) {
 	    enum polarity_t polarity;
-
+	    
 	    if (screen.file[i]->inverted) {
 		if (screen.file[i]->image->info->polarity == POSITIVE)
 		    polarity = NEGATIVE;
@@ -1724,7 +1690,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	    } else {
 		polarity = screen.file[i]->image->info->polarity;
 	    }
-
+	    
 	    /*
 	     * Show progress in status bar
 	     */
@@ -1732,7 +1698,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 		     "%d %s...",
 		     i, screen.file[i]->basename);
 	    update_statusbar(&screen);
-
+	    
 	    /*
 	     * Fill up image with all the foreground color. Excess pixels
 	     * will be removed by clipmask.
@@ -1744,18 +1710,15 @@ redraw_pixmap(GtkWidget *widget, int restart)
             screen.transf->offset[1] = screen.clip_bbox.y1+dmax_y;
             screen.transf->offset[0] *= screen.transf->scale;
             screen.transf->offset[1] *= screen.transf->scale;
-
+	    
 	    /*
 	     * Translation is to get it inside the allocated pixmap,
 	     * which is not always centered perfectly for GTK/X.
 	     */
 	    image2pixmap(&(state.clipmask),
 			 screen.file[i]->image, screen.transf, 
-                         /* screen.scale, 
-			 (screen.clip_bbox.x1-dmin_x)*screen.transf->scale,
-			 (screen.clip_bbox.y1+dmax_y)*screen.transf->scale, */
 			 polarity);
-
+	    
 	    /* 
 	     * Set clipmask and draw the clipped out image onto the
 	     * screen pixmap. Afterwards we remove the clipmask, else
@@ -1767,7 +1730,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	    gdk_gc_set_clip_mask(gc, NULL);
 	}
     }
-
+    
     screen.statusbar.msgstr[0] = '\0';
     update_statusbar(&screen);
     /* Clean up */
@@ -1779,24 +1742,24 @@ redraw_pixmap(GtkWidget *widget, int restart)
     if (state.clipmask) {
 	gdk_pixmap_unref(state.clipmask);
     }
-
+    
     update_rect.x = 0, update_rect.y = 0;
     update_rect.width =	widget->allocation.width;
     update_rect.height = widget->allocation.height;
-
+    
     /*
      * Calls expose_event
      */
     gtk_widget_draw(widget, &update_rect);
-
-redraw_pixmap_end:
+    
+ redraw_pixmap_end:
     /* Return default pointer shape */
     if (window) {
 	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
     }
-
+    
     gdk_gc_unref(gc);
-
+    
     return retval;
 } /* redraw_pixmap */
 
@@ -1810,17 +1773,14 @@ open_image(char *filename, int idx, int reload)
     gerb_image_t *parsed_image;
     gerb_verify_error_t error = GERB_IMAGE_OK;
     char *cptr;
-#ifdef USE_GTK2       
-    //int          idx0;
     GtkTreeIter  iter;
-#endif
 
     if (idx >= MAX_FILES) {
 	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
 		     filename);
 	return -1;
     }
-
+    
     fd = gerb_fopen(filename);
     if (fd == NULL) {
 	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
@@ -1831,9 +1791,9 @@ open_image(char *filename, int idx, int reload)
 	parsed_image = parse_drillfile(fd);
     else 
 	parsed_image = parse_gerb(fd);
-
+    
     gerb_fclose(fd);
-
+    
     /*
      * Do error check before continuing
      */
@@ -1853,11 +1813,11 @@ open_image(char *filename, int idx, int reload)
 	free_gerb_image(parsed_image);
 	return -1;
     }
-
+    
     /* Used to debug parser */
     if (screen.dump_parsed_image)
 	gerb_image_dump(parsed_image);
-
+    
     /*
      * If reload, just exchange the image. Else we have to allocate
      * a new memory before we define anything more.
@@ -1871,22 +1831,22 @@ open_image(char *filename, int idx, int reload)
 	memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
 	screen.file[idx]->image = parsed_image;
     }
-
+    
     /*
      * Store filename for eventual reload
      * XXX Really should check retval from malloc!!! And use strncpy
      */
     screen.file[idx]->name = (char *)malloc(strlen(filename) + 1);
     strcpy(screen.file[idx]->name, filename);
-
+    
     /*
      * Try to get a basename for the file
      */
-     
+    
     cptr = strrchr(filename, path_separator);
     if (cptr) {
 	int len;
-
+	
 	len = strlen(cptr);
 	screen.file[idx]->basename = (char *)malloc(len + 1);
 	if (screen.file[idx]->basename) {
@@ -1898,16 +1858,16 @@ open_image(char *filename, int idx, int reload)
     } else {
 	screen.file[idx]->basename = screen.file[idx]->name;
     }
-
+    
     /*
      * Calculate a "clever" random color based on index.
      */
     r = (12341 + 657371 * idx) % (int)(MAX_COLOR_RESOLUTION);
     g = (23473 + 434382 * idx) % (int)(MAX_COLOR_RESOLUTION);
     b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
-
+    
     screen.file[idx]->color = alloc_color(r, g, b, NULL);
-
+    
     /* 
      * Set color on layer button
      */
@@ -1917,18 +1877,16 @@ open_image(char *filename, int idx, int reload)
     newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
     newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
     gtk_widget_set_style(screen.layer_button[idx], newstyle);
-
+    
     /* 
      * Tool tips on button is the file name 
      */
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
 			 filename, NULL);
-#ifdef USE_GTK2                         
-//#if 0
     if ((interface.main_window) && (!reload) && gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter)) {                          
-            update_combo_box_model();
-        }                                     
-#endif                     
+	update_combo_box_model();
+    }                                     
+    
     return 0;
 } /* open_image */
 
@@ -1945,7 +1903,7 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
     gerbv_zoom_data_t data;
     gboolean do_zoom = FALSE;
-
+    
     switch (event->button) {
     case 1 :
 	if((event->state & GDK_SHIFT_MASK) == 0) {
@@ -1955,11 +1913,11 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	    screen.last_y = widget->allocation.width  - event->y;
 	} else {
 	    GdkCursor *cursor;
-
+	    
 	    screen.state = MEASURE;
 	    screen.start_x = event->x;
 	    screen.start_y = event->y;
-
+	    
 	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
 	    gdk_window_set_cursor(gtk_widget_get_parent_window(widget),
 				  cursor);
@@ -1997,17 +1955,16 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
     default:
 	break;
     }
-
+    
     if (do_zoom) {
 	data.z_event = event;
 	zoom(widget, &data);
     }
-
+    
     return TRUE;
 } /* button_press_event */
 
 
-#ifdef USE_GTK2
 /* Scroll wheel */
 static gint
 scroll_event(GtkWidget *widget, GdkEventScroll *event)
@@ -2037,7 +1994,6 @@ scroll_event(GtkWidget *widget, GdkEventScroll *event)
 
     return TRUE;
 } /* scroll_event */
-#endif
 
 
 static gint
@@ -2168,7 +2124,7 @@ key_release_event (GtkWidget *widget, GdkEventKey *event)
     default:
 	break;
     }
-
+    
     return TRUE;
 } /* key_release_event */
 
@@ -2190,7 +2146,7 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
     
     if (screen.pixmap != NULL) {
 	double X, Y;
-
+	
 	X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.transf->scale;
 	Y = (screen.gerber_bbox.y2 - (y+screen.trans_y)/(double)screen.transf->scale);
 	if (screen.unit == GERBV_MILS) {
@@ -2203,27 +2159,27 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 		     COORD2MMS(X), COORD2MMS(Y));
 	}
 	update_statusbar(&screen);
-
+	
 	switch (screen.state) {
 	case MOVE: {
-
+	    
 	    x = widget->allocation.height - x;
 	    y = widget->allocation.width - y;
-
+	    
 	    if (screen.last_x != 0 || screen.last_y != 0) {
 		screen.trans_x = screen.trans_x + x - screen.last_x;
 		screen.trans_y = screen.trans_y + y - screen.last_y;
 
 		screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
 		screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
-
+		
 		/* Move pixmap to get a snappier feel of movement */
 		screen.off_x += x - screen.last_x;
 		screen.off_y += y - screen.last_y;
 	    }
 	    screen.last_x = x;
 	    screen.last_y = y;
-
+	    
 	    update_rect.x = 0, update_rect.y = 0;
 	    update_rect.width  = widget->allocation.width;
 	    update_rect.height = widget->allocation.height;
@@ -2890,12 +2846,7 @@ main(int argc, char *argv[])
      */
     main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     rename_main_window("", main_win);
-#ifdef USE_GTK2
     g_signal_connect(GTK_OBJECT(main_win), "delete_event", G_CALLBACK(destroy), NULL);
-#else
-    gtk_signal_connect(GTK_OBJECT(main_win), "delete_event", destroy, NULL);
-    gtk_signal_connect(GTK_OBJECT(main_win), "destroy", destroy, NULL);
-#endif
 
     /* 
      * vbox contains menubar and hbox
@@ -2933,11 +2884,7 @@ main(int argc, char *argv[])
     screen.statusbar.msg = gtk_label_new("");
     gtk_label_set_justify(GTK_LABEL(screen.statusbar.msg), GTK_JUSTIFY_LEFT);
     textStyle = gtk_style_new();
-#ifndef USE_GTK2
-    textStyle->font = gdk_font_load(setup.status_fontname);
-#else
     textStyle->font_desc = pango_font_description_from_string(setup.status_fontname);
-#endif
     gtk_widget_set_style(GTK_WIDGET(screen.statusbar.msg), textStyle);
     screen.statusbar.msgstr[0] = '\0';
     screen.statusbar.coordstr[0] = '\0';
@@ -3014,10 +2961,8 @@ main(int argc, char *argv[])
 		       GTK_SIGNAL_FUNC(key_press_event), NULL);
     gtk_signal_connect_after(GTK_OBJECT(main_win), "key_release_event",
 		       GTK_SIGNAL_FUNC(key_release_event), NULL);
-#ifdef USE_GTK2
     gtk_signal_connect_after(GTK_OBJECT(main_win), "scroll_event",
 		       GTK_SIGNAL_FUNC(scroll_event), NULL);
-#endif
 
     gtk_widget_set_events(screen.drawing_area, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
@@ -3027,9 +2972,7 @@ main(int argc, char *argv[])
 			  | GDK_KEY_RELEASE_MASK
 			  | GDK_POINTER_MOTION_MASK
 			  | GDK_POINTER_MOTION_HINT_MASK
-#ifdef USE_GTK2
 			  | GDK_SCROLL_MASK
-#endif
 			  );
 
     gtk_widget_show_all(main_win);
@@ -3042,9 +2985,9 @@ main(int argc, char *argv[])
     else
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[0]),
 				     TRUE);
-#ifdef USE_GTK2
+
     parsed_PNP_data = NULL;                     
-#endif
+
     gtk_main();
     
     return 0;

@@ -38,13 +38,11 @@
 #include <sys/stat.h>
 #include <string.h>
 
-#ifdef USE_GTK2
 /* 
  * XXX GtkText is deprecated in GTK+ 2.0 so this needs a 
  * more permanent solution
  */
 #define GTK_ENABLE_BROKEN 1
-#endif
 
 #include <gdk/gdkkeysyms.h>
 

@@ -32,8 +32,6 @@
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
 
-#ifdef USE_GTK2
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -103,5 +101,3 @@ pnp_fclose(pnp_file_t *fd)
     
     return;
 } /* pnp_fclose */
-
-#endif /* USE_GTK2 */

@@ -26,12 +26,10 @@
 
 #ifndef _SEARCH_MARK_H
 #define _SEARCH_MARK_H
-#ifdef USE_GTK2
+
 #include "search.h"
 #include "search_file.h"
 #include "search_gui.h"
-#endif
-
 
 /* Keep redraw state when preempting to process certain events */
 struct gerbv_redraw_state {
@@ -44,26 +42,16 @@ struct gerbv_redraw_state {
     int files_loaded;
 };
 
-#ifdef USE_GTK2
-extern
-GtkListStore        *combo_box_model;
-#endif
+extern GtkListStore *combo_box_model;
 
-extern 
-gint
-redraw_pixmap(GtkWidget *widget, int restart);
 
-extern
-void create_marked_layer(int idx);
-extern
-void update_statusbar(gerbv_screen_t *scr);
-extern
-void autoscale(void);
-extern
-void invalidate_redraw_state(struct gerbv_redraw_state *state);
-extern
-void start_idle_redraw_pixmap(GtkWidget *data);
-extern
-void stop_idle_redraw_pixmap(GtkWidget *data);
+extern gint redraw_pixmap(GtkWidget *widget, int restart);
 
-#endif
+extern void create_marked_layer(int idx);
+extern void update_statusbar(gerbv_screen_t *scr);
+extern void autoscale(void);
+extern void invalidate_redraw_state(struct gerbv_redraw_state *state);
+extern void start_idle_redraw_pixmap(GtkWidget *data);
+extern void stop_idle_redraw_pixmap(GtkWidget *data);
+
+#endif /* _SEARCH_MARK_H */

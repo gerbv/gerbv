@@ -39,7 +39,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#ifdef USE_GTK2
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -47,7 +47,7 @@
 #include <errno.h>
 #include <wchar.h>
 #include <wctype.h>
-/*#include "msgno.h"*/
+
 #include "csv.h"
 #include "csv_defines.h"
 #include "gerb_error.h"
@@ -381,4 +381,4 @@ csv_row_fread(FILE *in, char *buf, size_t bn, char *row[], int numcols, int sep,
 	input.count = 0;
 	return csv_parse_str(&input, buf, bn, row, numcols, sep, trim);
 }/*csv_row_fread*/
-#endif
+

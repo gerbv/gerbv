@@ -26,7 +26,7 @@
 
 #ifndef _SEARCH_GUI_H
 #define _SEARCH_GUI_H
-#ifdef USE_GTK2
+
 #include "search.h"
 #include "search_file.h"
 
@@ -259,6 +259,4 @@ file_key_press_event_cb		(GtkWidget 	*widget,
 				 GdkEventKey    *event,
 				 gpointer 	data);
 
-#endif
-
-#endif
+#endif /* _SEARCH_GUI_H */

@@ -31,8 +31,6 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#ifdef USE_GTK2
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,9 +58,7 @@
 #include <getopt.h>
 #endif /* HAVE_GETOPT_H */
 
-#ifdef USE_GTK2
 #include <pango/pango.h>
-#endif /* USE_GTK2 */
 
 #include <glib/gi18n.h>
 #include "gerber.h"
@@ -1190,4 +1186,4 @@ file_key_press_event_cb  (GtkWidget 		*widget,
        gtk_window_activate_focus(GTK_WINDOW(interface.main_window)); 
     return TRUE;
 } /* file_key_press_event_cb */
-#endif 
+

@@ -30,7 +30,6 @@
 #include <config.h>
 #endif
 
-#ifdef USE_GTK2
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -289,5 +288,3 @@ free_pnp_state(pnp_state_t *pnp_state)
 	
     return;
 } /* free_pnp_state */
-
-#endif
