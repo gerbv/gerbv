@@ -1,3 +1,5 @@
+-- Release 0.15 --
+
 2003-10-06  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw_amacro.c: Drawing of aperture macro primitive 7 was
@@ -21,7 +23,6 @@
 
 -- Release 0.14 --
 
->>>>>>> 1.220
 2003-05-31  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in, src/amacro.c: Removed the last remaining malloc.h
