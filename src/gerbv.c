@@ -716,22 +716,7 @@ autoscale()
 
 
 static gboolean idle_redraw_pixmap_active = FALSE;
-
-/*
- * On idle callback to ensure a zoomed image is properly redrawn
- */
-gboolean
-idle_redraw_pixmap(gpointer data)
-{
-    if (redraw_pixmap((GtkWidget *) data, FALSE)) {
-	idle_redraw_pixmap_active = TRUE;
-	return TRUE;
-    } else {
-	idle_redraw_pixmap_active = FALSE;
-	return FALSE;
-    }
-} /* idle_redraw_pixmap */
-
+gboolean idle_redraw_pixmap(gpointer data);
 
 void 
 start_idle_redraw_pixmap(GtkWidget *data)
@@ -751,6 +736,22 @@ stop_idle_redraw_pixmap(GtkWidget *data)
 	idle_redraw_pixmap_active = FALSE;
     }
 } /* stop_idle_redraw_pixmap */
+
+
+/*
+ * On idle callback to ensure a zoomed image is properly redrawn
+ */
+gboolean
+idle_redraw_pixmap(gpointer data)
+{
+    if (redraw_pixmap((GtkWidget *) data, FALSE)) {
+	idle_redraw_pixmap_active = TRUE;
+	return TRUE;
+    } else {
+	idle_redraw_pixmap_active = FALSE;
+	return FALSE;
+    }
+} /* idle_redraw_pixmap */
 
 
 static void
@@ -1069,6 +1070,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	if (g_main_pending()) {
 	    /* return TRUE to keep this idle function active */
 	    retval = TRUE;
+	    start_idle_redraw_pixmap(widget);
 	    state.file_index = i;
 	    goto redraw_pixmap_end;
 	}
