@@ -4,6 +4,10 @@
 	  when a non-loaded layer recently had been selected or deselected.
 	  I didn't find a reason for these two lines to be there. Maybe
 	  there was... Closes bug 593109.
+	* src/gerbv.c, src/gerbv_screen.h, man/gerbv.1.in: Added 
+	  activation/deactivation via the keyboard. Closes feature request
+	  593104. Also updated the man page with this info and fixed other
+	  minor stuff.
 
 2002-08-04  Stefan Petersen  <spe@stacken.kth.se>
 

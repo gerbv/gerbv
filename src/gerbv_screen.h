@@ -42,7 +42,7 @@
 #define COORD2MILS(c) ((c)*1000.0)
 #define COORD2MMS(c) ((c)*25.4)
 
-typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE} gerbv_state_t;
+typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE, ALT_PRESSED} gerbv_state_t;
 
 typedef struct {
     gerb_image_t *image;
@@ -85,6 +85,8 @@ typedef struct {
     gboolean centered_outline_zoom;
 
     int scale;
+
+    int selected_layer;         /* Selected layer by Alt+keypad */
 
     gint last_x;
     gint last_y;

@@ -550,6 +550,7 @@ export_png_popup(GtkWidget *widget, gpointer data)
 
 #endif /* EXPORT_PNG */
 
+
 static void
 unload_file(GtkWidget *widget, gpointer data)
 {
@@ -684,7 +685,8 @@ idle_redraw_pixmap(gpointer data)
 } /* idle_redraw_pixmap */
 
 
-void start_idle_redraw_pixmap(GtkWidget *data)
+void 
+start_idle_redraw_pixmap(GtkWidget *data)
 {
     if (!idle_redraw_pixmap_active) {
 	gtk_idle_add(idle_redraw_pixmap, (gpointer) data);
@@ -693,7 +695,8 @@ void start_idle_redraw_pixmap(GtkWidget *data)
 } /* start_idle_redraw_pixmap */
 
 
-void stop_idle_redraw_pixmap(GtkWidget *data)
+void 
+stop_idle_redraw_pixmap(GtkWidget *data)
 {
     if (idle_redraw_pixmap_active) {
 	gtk_idle_remove_by_data ((gpointer)data);
@@ -1202,19 +1205,38 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 static gint
 key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
-    if (screen.state == NORMAL) {
-	if ((event->state & GDK_SHIFT_MASK) ||
-	    (event->keyval == GDK_Shift_L) ||
-	    (event->keyval == GDK_Shift_R)) {
-	    GdkCursor *cursor;
+    GdkCursor *cursor;
 
+    switch (screen.state) {
+    case NORMAL:
+	switch(event->keyval) {
+	case GDK_Shift_L:
+	case GDK_Shift_R:
 	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
 	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
 				  cursor);
 	    gdk_cursor_destroy(cursor);
+	    break;
+	case GDK_Alt_L:
+	case GDK_Alt_R: 
+	    screen.state = ALT_PRESSED;
+	    screen.selected_layer = -1;
+	    break;
 	}
+	break;
+    case ALT_PRESSED:
+	if ((event->keyval >= GDK_KP_0) &&
+	    (event->keyval <= GDK_KP_9)) {
+	    if (screen.selected_layer == -1) 
+		screen.selected_layer = event->keyval - GDK_KP_0;
+	    else
+		screen.selected_layer = 10 * screen.selected_layer + 
+		    (event->keyval - GDK_KP_0);
+	}
+	break;
+    default:
     }
-
+	    
     /* Escape may be used to abort outline zoom and just plain repaint */
     if (event->keyval == GDK_Escape) {
 	GdkRectangle update_rect;
@@ -1237,18 +1259,34 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
     return TRUE;
 } /* key_press_event */
 
+#define TOGGLE_BUTTON(button) gtk_toggle_button_set_active( \
+                                      GTK_TOGGLE_BUTTON(button),\
+				 !gtk_toggle_button_get_active( \
+                                      GTK_TOGGLE_BUTTON(button)));
 
 static gint
 key_release_event (GtkWidget *widget, GdkEventKey *event)
 {
-    if (screen.state == NORMAL) {
-	if((event->state & GDK_SHIFT_MASK) ||
-	   (event->keyval == GDK_Shift_L) ||
+    switch (screen.state) {
+    case NORMAL:
+	if((event->keyval == GDK_Shift_L) ||
 	   (event->keyval == GDK_Shift_R)) {
 	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
 				  GERBV_DEF_CURSOR);
 	}
+	break;
+    case ALT_PRESSED:
+	if ((event->keyval == GDK_Alt_L) ||
+	     (event->keyval == GDK_Alt_R)) {
+	    if ((screen.selected_layer != -1) &&
+		(screen.selected_layer < MAX_FILES)){
+		TOGGLE_BUTTON(screen.layer_button[screen.selected_layer]);
+	    }
+	    screen.state = NORMAL;
+	}
+    default:
     }
+
     return TRUE;
 } /* key_release_event */
 
@@ -1813,7 +1851,7 @@ internal_main(int argc, char *argv[])
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
     /*
-     * Add status bar (three sections: mesages, abs and rel coords)
+     * Add status bar (three sections: messages, abs and rel coords)
      */
     hbox = gtk_hbox_new(FALSE, 0);
     screen.statusbar.msg = gtk_label_new("");
@@ -1826,6 +1864,7 @@ internal_main(int argc, char *argv[])
     screen.statusbar.diststr[0] = '\0';
     gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msg, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+
     /*
      * Fill with files (eventually) given on command line
      */
