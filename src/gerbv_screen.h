@@ -60,6 +60,7 @@ typedef struct {
     GtkWidget *popup_menu;
     struct {
 	GtkWidget *msgs;
+	guint msgid;
 	GtkWidget *abs;
 	guint absid;
 	GtkWidget *rel;

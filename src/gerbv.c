@@ -1178,6 +1178,7 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
     if (screen.pixmap != NULL) {
 	char str[60];
 	double X, Y;
+	int px, py;
 
 	if (screen.statusbar.absid)
 	    gtk_statusbar_pop((GtkStatusbar*)screen.statusbar.abs,
@@ -1186,10 +1187,11 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	    gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.abs,
 					 "MotionNotify");
 	X = (x+screen.trans_x)/(double)screen.scale;
-	Y = (y+screen.trans_y)/(double)screen.scale;
+	gdk_window_get_size(screen.pixmap, &px, &py); /* Need pixmap size, not screen */
+	Y = (px-y-screen.trans_y)/(double)screen.scale;
 	sprintf(str,
-		"X %4.4d, Y %4.4d || %7.3f\", %7.3f\" || %7.3fcm, %7.3fcm",
-		x, y, X, Y, X*2.54, Y*2.54);
+		"(X, Y) (%7.1f, %7.1f)mils (%7.2f, %7.2f)mm",
+		X*100.0, Y*100.0, X*25.4, Y*25.4);
 	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.abs,
 			   screen.statusbar.absid, str);
 	switch (screen.state) {
@@ -1407,8 +1409,8 @@ draw_measure_distance()
 	dy = (y2 - y1)/(double) screen.scale;
 	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
 
-	sprintf(string, "[dist %7.3f\", dX %7.3f\", dY %7.3f\"]", delta,
-		dx, dy);
+	sprintf(string, "[dist %7.1f, dX %7.1f, dY %7.1f] mils",
+		delta*100.0, dx*100.0, dy*100.0);
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
 			   &ascent, &descent);
@@ -1418,8 +1420,8 @@ draw_measure_distance()
 	linefeed = ascent+descent;
 	linefeed *= (double)1.2;
 
-	sprintf(string, "[dist %7.3fcm, dX %7.3fcm, dY %7.3fcm]",
-		delta*2.54, dx*2.54, dy*2.54);
+	sprintf(string, "[dist %7.2f, dX %7.2f, dY %7.2f] mm",
+		delta*25.4, dx*25.4, dy*25.4);
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
 			   &ascent, &descent);
@@ -1438,8 +1440,8 @@ draw_measure_distance()
 	    gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.rel,
 					 "MotionNotify");
 	sprintf(string,
-		"dist %7.3f\" dx %7.3f\" dx %7.3f\" | %7.3fcm %7.3fcm %7.3fcm",
-		delta, dx, dy, delta*2.54, dx*2.54, dy*2.54);
+		"(dist,dX,dY) (%7.1f, %7.1f, %7.1f)mils (%7.2f, %7.3f, %7.3f)mm",
+		delta*100.0, dx*100.0, dy*100.0, delta*25.4, dx*25.4, dy*25.4);
 	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.rel,
 			   screen.statusbar.relid, string);
 
@@ -1585,7 +1587,7 @@ internal_main(int argc, char *argv[])
 {
     GtkWidget *main_win;
     GtkWidget *vbox;
-    GtkWidget *hbox;
+    GtkWidget *hbox, *hbox2;
     GtkWidget *menubar;
     gint      screen_width, width, height;
     char      read_opt;
@@ -1721,14 +1723,22 @@ internal_main(int argc, char *argv[])
      * Add status bar (three sections: mesages, abs and rel coords)
      */
     hbox = gtk_hbox_new(FALSE, 0);
+    hbox2 = gtk_hbox_new(FALSE, 0);
+    gtk_widget_set_usize(hbox, screen.drawing_area->allocation.width/2,0);
     screen.statusbar.msgs = gtk_statusbar_new();
+    screen.statusbar.msgid =
+	gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.msgs,
+				     "Dummy");
+	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.msgs,
+			   screen.statusbar.msgid, "                                                                               ");
+
     screen.statusbar.abs = gtk_statusbar_new();
-    screen.statusbar.absid = 0;
     screen.statusbar.rel = gtk_statusbar_new();
     screen.statusbar.relid = 0;
     gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msgs, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.abs, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.rel, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), hbox2, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox2), screen.statusbar.abs, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox2), screen.statusbar.rel, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     /*
      * Fill with files (eventually) given on command line

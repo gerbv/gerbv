@@ -1,3 +1,14 @@
+2002-06-17  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv_screen.h: added msgid for stausbar.
+	* src/gerbv.c: Changed coordinate output both in statusbar and
+	  in measure mode. Now using mils and mms as units. Coordinates
+	  are now correct in respect to the gerber coordinate system
+	  (at least that's what I think). Too much information is shown
+	  in the statusbar, we will have to add unit selection (either
+	  mils or mms). Minor layout change for statusbar (I need to
+	  learn gtk layout better!).
+
 2002-06-17  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.c: Ignored if lines were using rectangular apertures
