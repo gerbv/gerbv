@@ -173,9 +173,11 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	return 0;
     }
     
-    /* Current line colors */
+    /* Current line and error colors */
     gdk_gc_set_foreground(line_gc, fg_color);
     gdk_gc_set_background(line_gc, bg_color);
+    gdk_gc_set_foreground(err_gc, err_color);
+    gdk_gc_set_background(err_gc, bg_color);
 
     /*
      * Negative image??
@@ -268,7 +270,6 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    case LINEARx01 :
 	    case LINEARx001 :
 		fprintf(stderr, "Linear != x1\n");
-		gdk_gc_set_foreground(err_gc, err_color);
 		gdk_gc_set_line_attributes(err_gc, p1, 
 					   GDK_LINE_SOLID, 
 					   GDK_CAP_ROUND, 
