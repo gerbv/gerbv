@@ -83,6 +83,10 @@ typedef struct gerb_format {
     int x_dec;
     int y_int;
     int y_dec;
+    int lim_seqno;
+    int lim_gf;
+    int lim_pf;
+    int lim_mf;
 } gerb_format_t;
 	
 	
