@@ -1560,7 +1560,6 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 
     case GDK_KP_Enter:
     case GDK_equal:
-    case GDK_1:
     	zoom_data.z_dir = ZOOM_FIT;
 	zoom(widget, &zoom_data);
 	break;
@@ -1619,6 +1618,19 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	screen.trans_x -= 10;
     	zoom_data.z_dir = ZOOM_PAN;
 	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_0...GDK_9:
+        if (event->state & GDK_MOD1_MASK) { /*  Alt key pressed... */
+	    if (screen.selected_layer == -1) 
+		screen.selected_layer = event->keyval - GDK_0;
+	    else
+		screen.selected_layer = 10 * screen.selected_layer + 
+		    (event->keyval - GDK_0);
+	} else {
+	    zoom_data.z_dir = ZOOM_FIT; /* interpret plain '1' key as zoom fit*/
+	    zoom(widget, &zoom_data);
+	}
 	break;
 
     case GDK_KP_0...GDK_KP_9:
