@@ -1,3 +1,8 @@
+2003-03-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Doesn't warn anymore if a gerber file requests an
+	 image rotate on zero degrees. Reported by Balaji V.
+
 2003-03-09  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerb_image.h,src/gerber.c: angles are floats.
