@@ -121,8 +121,8 @@ gerb_ps_draw_arc(struct gerb_render_context *ctx,
     cp_x = x + rx/2.0, cp_y = y + ry/2.0;
 
     fprintf(gctx->fd,"%.3f %.3f moveto ", 
-	    cp_x + rx/2.0*cos(start*M_PI/180.0), 
-	    cp_y + ry/2.0*sin(start*M_PI/180.0));
+	    cp_x + rx/2.0*cos(phi_start*M_PI/180.0), 
+	    cp_y + ry/2.0*sin(phi_start*M_PI/180.0));
     
     fprintf(gctx->fd,"%.3f %.3f %.3f %.3f %.3f arc %% %.3f %.3f SUCKS!\n",
 	    cp_x, cp_y, /* arc center point */
@@ -220,7 +220,7 @@ gerb_ps_set_line_style (struct gerb_render_context *ctx,
     }
     if (!dashed && gctx->dashed) {
 	fprintf(gctx->fd, "[] 0 setdash\n");
-	gctx->dashed = ;
+	gctx->dashed = 0;
     }
 
     if(cap_projecting && !gctx->cap_projecting) {
