@@ -1,5 +1,13 @@
 2001-10-31 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/gerber.h, src/gerber.c, src/draw.c: Now almost
+	  all calculation for circles is done when parsing and
+	  not when (re)drawing.
+	* src/gerbv.c: Removed two unnecessary defines.
+	
+	
+2001-10-31 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/gerbv.c: Added zooming with scroll wheel on mouse.
 	* README: Added info on how to configure XFree86 for scroll mouse.
 

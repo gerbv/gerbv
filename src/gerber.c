@@ -55,6 +55,7 @@ static int parse_M_code(FILE *fd);
 static void parse_rs274x(FILE *fd, gerb_image_t *image);
 static int parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture);
 static int read_int(FILE *fd);
+static void calc_cirseg(struct gerb_net *net, int cw);
 
 
 gerb_image_t *
@@ -65,6 +66,7 @@ parse_gerb(FILE *fd)
     gerb_net_t *curr_net = NULL;
     char read;
     double x_scale, y_scale;
+/*      int delta_cp_x, delta_cp_y; */
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
@@ -124,6 +126,10 @@ parse_gerb(FILE *fd)
 	    curr_net = curr_net->next;
 	    bzero((void *)curr_net, sizeof(gerb_net_t));
 	    
+	    /*
+	     * Scale to given coordinate format
+	     * XXX only "omit leading zeros".
+	     */
 	    if (image && image->format ){
 		x_scale = pow(10.0, (double)image->format->x_dec);
 		y_scale = pow(10.0, (double)image->format->y_dec);
@@ -135,6 +141,25 @@ parse_gerb(FILE *fd)
 	    curr_net->stop_y = (double)state->curr_y / y_scale;
 	    curr_net->arc_start_x = (double)state->arc_start_x / x_scale;
 	    curr_net->arc_start_y = (double)state->arc_start_y / y_scale;
+
+	    switch (state->interpolation) {
+	    case CW_CIRCULAR :
+		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
+		calc_cirseg(curr_net, 1);
+		break;
+	    case CCW_CIRCULAR :
+		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
+		calc_cirseg(curr_net, 0);
+		break;
+	    case MQ_CW_CIRCULAR :
+		break;
+	    case MQ_CCW_CIRCULAR:
+		break;
+	    default :
+	    }
+
 #ifdef EAGLECAD_KLUDGE
 	    if ( (state->arc_start_x == 0) && (state->arc_start_y == 0) )
 		curr_net->interpolation = LINEARx1;
@@ -245,8 +270,16 @@ free_gerb_image(gerb_image_t *image)
     /*
      * Free netlist
      */
-    for (net = image->netlist; net != NULL; tmp = net, net = net->next, free(tmp));
-    
+    for (net = image->netlist; net != NULL; ) {
+	tmp = net; 
+	net = net->next; 
+	if (tmp->cirseg != NULL) {
+	    free(tmp->cirseg);
+	    tmp->cirseg = 0;
+	}
+	free(tmp);
+    }
+
     /*
      * Free and reset the final image
      */
@@ -633,3 +666,137 @@ read_int(FILE *fd)
     else
 	return i;
 } /* read_int */
+
+static void 
+calc_cirseg(struct gerb_net *net, int cw)
+{
+    double d1x, d1y, d2x, d2y;
+    double alfa, beta;
+    int quadrant = 0;
+
+    
+    /*
+     * Quadrant detection (based on ccw, coverted below if cw)
+     *  Y ^
+     *   /!\
+     *    !
+     *    ---->X
+     */
+    if (net->start_x > net->stop_x)
+	/* 1st and 2nd quadrant */
+	if (net->start_y < net->stop_y)
+	    quadrant = 1;
+	else
+	    quadrant = 2;
+    else
+	/* 3rd and 4th quadrant */
+	if (net->start_y > net->stop_y)
+	    quadrant = 3;
+	else
+	    quadrant = 4;
+
+    /* 
+     * If clockwise, rotate quadrant
+     */
+    if (cw) {
+	switch (quadrant) {
+	case 1 : 
+	    quadrant = 3;
+	    break;
+	case 2 : 
+	    quadrant = 4;
+	    break;
+	case 3 : 
+	    quadrant = 1;
+	    break;
+	case 4 : 
+	    quadrant = 2;
+	    break;
+	default : 
+	    err(1, "Unknow quadrant value while converting to cw\n");
+	}
+    }
+
+    /*
+     * Calculate arc center point
+     */
+    switch (quadrant) {
+    case 1 :
+	net->cirseg->cp_x = net->start_x - net->arc_start_x;
+	net->cirseg->cp_y = net->start_y - net->arc_start_y;
+	break;
+    case 2 :
+	net->cirseg->cp_x = net->start_x + net->arc_start_x;
+	net->cirseg->cp_y = net->start_y - net->arc_start_y;
+	break;
+    case 3 : 
+	net->cirseg->cp_x = net->start_x + net->arc_start_x;
+	net->cirseg->cp_y = net->start_y + net->arc_start_y;
+	break;
+    case 4 :
+	net->cirseg->cp_x = net->start_x - net->arc_start_x;
+	net->cirseg->cp_y = net->start_y + net->arc_start_y;
+	break;
+    default :
+	err(1, "Strange quadrant : %d\n", quadrant);
+    }
+
+    /*
+     * Some good values 
+     */
+#define DIFF(a, b) ((a > b) ? a - b : b - a)
+    d1x = DIFF(net->start_x, net->cirseg->cp_x);
+    d1y = DIFF(net->start_y, net->cirseg->cp_y);
+    d2x = DIFF(net->stop_x, net->cirseg->cp_x);
+    d2y = DIFF(net->stop_y, net->cirseg->cp_y);
+    
+    alfa = atan2(d1y, d1x);
+    beta = atan2(d2y, d2x);
+
+    /*
+     * Avoid divide by zero when sin(0) = 0 and cos(90) = 0
+     */
+    net->cirseg->width = alfa < beta ? 
+	2 * (d1x / cos(alfa)) : 2 * (d2x / cos(beta));
+    net->cirseg->height = alfa > beta ? 
+	2 * (d1y / sin(alfa)) : 2 * (d2y / sin(beta));
+
+    if (alfa < 0.000001 && beta < 0.000001) {
+	printf("FOO\n");
+	net->cirseg->height = 0;
+    }
+
+#define RAD2DEG(a) (int)ceil(a * 180 / M_PI) 
+    
+    switch (quadrant) {
+    case 1 :
+	net->cirseg->angle1 = RAD2DEG(alfa);
+	net->cirseg->angle2 = RAD2DEG(beta);
+	break;
+    case 2 :
+	net->cirseg->angle1 = 180 - RAD2DEG(alfa);
+	net->cirseg->angle2 = 180 - RAD2DEG(beta);
+	break;
+    case 3 : 
+	net->cirseg->angle1 = 180 + RAD2DEG(alfa);
+	net->cirseg->angle2 = 180 + RAD2DEG(beta);
+	break;
+    case 4 :
+	net->cirseg->angle1 = 360 - RAD2DEG(alfa);
+	net->cirseg->angle2 = 360 - RAD2DEG(beta);
+	break;
+    default :
+	err(1, "Strange quadrant : %d\n", quadrant);
+    }
+
+    if (net->cirseg->width < 0.0)
+	fprintf(stderr, "Negative width [%f] in quadrant %d [%f][%f]\n", 
+		net->cirseg->width, quadrant, alfa, beta);
+    
+    if (net->cirseg->height < 0.0)
+	fprintf(stderr, "Negative height [%f] in quadrant %d [%d][%d]\n", 
+		net->cirseg->height, quadrant, RAD2DEG(alfa), RAD2DEG(beta));
+    
+    return;
+
+} /* calc_cirseg */

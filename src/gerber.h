@@ -52,6 +52,16 @@ enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001,
 		      CW_CIRCULAR, CCW_CIRCULAR, 
 		      MQ_CW_CIRCULAR, MQ_CCW_CIRCULAR};
 
+typedef struct gerb_cirseg {
+    double cp_x;
+    double cp_y;
+    double width;  /* of oval */
+    double height; /* of oval */
+    int angle1;
+    int angle2;
+} gerb_cirseg_t;
+
+
 typedef struct gerb_net {
     double start_x;
     double start_y;
@@ -62,6 +72,7 @@ typedef struct gerb_net {
     int aperture;
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
+    struct gerb_cirseg *cirseg;
     struct gerb_net *next;
 } gerb_net_t;
 

@@ -96,147 +96,19 @@ gerbv_draw_oval(GdkPixmap *pixmap, GdkGC *gc,
 
 /*
  * Draws an arc 
+ * Draws an arc _centered_ at x,y
  * direction:  0 counterclockwise, 1 clockwise
  */
 static void
-gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc, int cw, 
-	       gint start_x, gint start_y, 
-	       gint stop_x, gint stop_y, 
-	       gint dist_x, gint dist_y)
+gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
+	       int x, int y,
+	       int width, int height,
+	       int angle1, int angle2)
 {
-    int quadrant = 0;
-    gint angle1 = 0;
-    gint angle2 = 0;
-    gint real_x = 0;
-    gint real_y = 0;
-    gint width  = 0;
-    gint height = 0;
-    gint arc_cp_x = 0;
-    gint arc_cp_y = 0;
-    gint d1x, d1y, d2x, d2y;
-    double alfa, beta;
-    
-    /*
-     * Quadrant detection (based on ccw, coverted below if cw)
-     *    ---->X
-     *    !
-     *   \!/
-     *  Y V
-     */
-    if (start_x > stop_x)
-	/* 1st and 2nd quadrant */
-	if (start_y > stop_y)
-	    quadrant = 1;
-	else
-	    quadrant = 2;
-    else
-	/* 3rd and 4th quadrant */
-	if (start_y < stop_y)
-	    quadrant = 3;
-	else
-	    quadrant = 4;
+    gint real_x = x - width / 2;
+    gint real_y = y - height / 2;
 
-    /* 
-     * If clockwise, rotate quadrant
-     */
-    if (cw) {
-	switch (quadrant) {
-	case 1 : 
-	    quadrant = 3;
-	    break;
-	case 2 : 
-	    quadrant = 4;
-	    break;
-	case 3 : 
-	    quadrant = 1;
-	    break;
-	case 4 : 
-	    quadrant = 2;
-	    break;
-	default : 
-	    err(1, "Unknown quadrant value while converting to cw\n");
-	}
-    }
-
-    /*
-     * Calculate arc center point
-     */
-    switch (quadrant) {
-    case 1 :
-	arc_cp_x = start_x - dist_x;
-	arc_cp_y = start_y + dist_y;
-	break;
-    case 2 :
-	arc_cp_x = start_x + dist_x;
-	arc_cp_y = start_y + dist_y;
-	break;
-    case 3 : 
-	arc_cp_x = start_x + dist_x;
-	arc_cp_y = start_y - dist_y;
-	break;
-    case 4 :
-	arc_cp_x = start_x - dist_x;
-	arc_cp_y = start_y - dist_y;
-	break;
-    default :
-	err(1, "Strange quadrant : %d\n", quadrant);
-    }
-    
-    /*
-     * Some good values 
-     */
-#define DIFF(a, b) ((a > b) ? a - b : b - a)
-    d1x = DIFF(start_x, arc_cp_x);
-    d1y = DIFF(start_y, arc_cp_y);
-    d2x = DIFF(stop_x, arc_cp_x);
-    d2y = DIFF(stop_y, arc_cp_y);
-    
-    alfa = atan2((double)d1y, (double)d1x);
-    beta = atan2((double)d2y, (double)d2x);
-    
-    /*
-     * Avoid divide by zero when sin(0) = 0 and cos(90) = 0
-     */
-    width  = alfa < beta ? 2 * (d1x / cos(alfa)) : 2 * (d2x / cos(beta));
-    height = alfa > beta ? 2 * (d1y / sin(alfa)) : 2 * (d2y / sin(beta));
-    if (alfa < 0.000001 && beta < 0.000001) height = 0;
-    
-    real_x = arc_cp_x - width / 2;
-    real_y = arc_cp_y - height / 2;
-
-#define RAD2DEG(a) (int)ceil(a * 180 / M_PI) 
-    
-    switch (quadrant) {
-    case 1 :
-	angle1 = RAD2DEG(alfa);
-	angle2 = RAD2DEG(beta);
-	break;
-    case 2 :
-	angle1 = 180 - RAD2DEG(alfa);
-	angle2 = 180 - RAD2DEG(beta);
-	break;
-    case 3 : 
-	angle1 = 180 + RAD2DEG(alfa);
-	angle2 = 180 + RAD2DEG(beta);
-	break;
-    case 4 :
-	angle1 = 360 - RAD2DEG(alfa);
-	angle2 = 360 - RAD2DEG(beta);
-	break;
-    default :
-	err(1, "Strange quadrant : %d\n", quadrant);
-    }
-    
-    if (width < 0)
-	fprintf(stderr, "Negative width [%d] in quadrant %d [%f][%f]\n", 
-		width, quadrant, alfa, beta);
-    
-    if (height < 0)
-	fprintf(stderr, "Negative height [%d] in quadrant %d [%d][%d]\n", 
-		height, quadrant, RAD2DEG(alfa), RAD2DEG(beta));
-    
-    gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, 
-		 width, height, 
+    gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, width, height, 
 		 angle1 * 64, (angle2 - angle1) * 64);
     
     return;
@@ -261,6 +133,9 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     gint x1, y1, x2, y2, i, j;
     int p1, p2;
     double x_scale, y_scale;
+    int width = 0, height = 0;
+    int cp_x = 0, cp_y = 0;
+    
     
     if (image == NULL || image->netlist == NULL) 
 	return 0;
@@ -290,13 +165,20 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	y1 = (int)ceil((image->info->offset_b + 2.5 - net->start_y) * scale);
 	x2 = (int)ceil((image->info->offset_a + net->stop_x) * scale);
 	y2 = (int)ceil((image->info->offset_b + 2.5 - net->stop_y)  * scale);
-	i  = (int)ceil(net->arc_start_x * scale);
-	j  = (int)ceil(net->arc_start_y * scale);
-	
+
 	x1 = x1 + trans_x;
 	y1 = y1 + trans_y;
 	x2 = x2 + trans_x;
 	y2 = y2 + trans_y;
+
+	if (net->cirseg) {
+	    width = (int)ceil(net->cirseg->width * scale);
+	    height = (int)ceil(net->cirseg->height * scale);
+	    cp_x = (int)ceil((image->info->offset_a + net->cirseg->cp_x) * scale);
+	    cp_y = (int)ceil((image->info->offset_b + 2.5 - net->cirseg->cp_y) * scale);
+	    cp_x = cp_x + trans_x;
+	    cp_y = cp_y + trans_y;
+	}
 	
 	switch (net->aperture_state) {
 	case ON :
@@ -331,9 +213,11 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		break;
 	    case CW_CIRCULAR :
 #ifdef ARC_DEBUG
-		gerbv_draw_arc(*pixmap, other_gc, 1, x1, y1, x2, y2, i, j);
+		gerbv_draw_arc(*pixmap, other_gc, cp_x, cp_y, width, height, 
+			       net->cirseg->angle1, net->cirseg->angle2);
 #else
-		gerbv_draw_arc(*pixmap, line_gc, 1, x1, y1, x2, y2, i, j);
+		gerbv_draw_arc(*pixmap, line_gc, cp_x, cp_y, width, height, 
+			       net->cirseg->angle1, net->cirseg->angle2);
 #endif
 		break;
 		
@@ -344,9 +228,11 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		break;
 	    case CCW_CIRCULAR :
 #ifdef ARC_DEBUG
-		gerbv_draw_arc(*pixmap, err_gc, 0, x1, y1, x2, y2, i, j);
+		gerbv_draw_arc(*pixmap, err_gc, cp_x, cp_y, width, height, 
+			       net->cirseg->angle1, net->cirseg->angle2);
 #else
-		gerbv_draw_arc(*pixmap, line_gc, 0, x1, y1, x2, y2, i, j);
+		gerbv_draw_arc(*pixmap, line_gc, cp_x, cp_y, width, height, 
+			       net->cirseg->angle1, net->cirseg->angle2);
 #endif
 		break;
 		

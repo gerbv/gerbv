@@ -51,8 +51,6 @@
 #endif
 #include "draw.h"
 
-#define BUTTON
-/*#define ARC_DEBUG*/
 
 #define INITIAL_SCALE 200
 #define MAX_FILES 10
