@@ -126,14 +126,10 @@ int
 image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
 	     int scale, double trans_x, double trans_y,
 	     enum polarity_t polarity, 
-	     GdkColor *fg_color, GdkColor *bg_color)
+	     GdkColor *fg_color, GdkColor *bg_color, GdkColor *err_color)
 {
     GdkGC *line_gc = gdk_gc_new(*pixmap);
-    GdkColor err_color;
-    GdkColor other_color;
     GdkGC *err_gc = gdk_gc_new(*pixmap);
-    GdkGC *other_gc = gdk_gc_new(*pixmap);
-    GdkColormap *colormap = gdk_colormap_get_system();
     struct gerb_net *net;
     gint x1, y1, x2, y2;
     int p1, p2;
@@ -144,15 +140,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 
 
     if (image == NULL || image->netlist == NULL) 
-	return 0;
-    
-    gdk_color_parse("red1", &err_color);
-    gdk_colormap_alloc_color(colormap, &err_color, FALSE, TRUE);
-    gdk_gc_set_foreground(err_gc, &err_color);
-    
-    gdk_color_parse("green", &other_color);
-    gdk_colormap_alloc_color(colormap, &other_color, FALSE, TRUE);
-    gdk_gc_set_foreground(other_gc, &other_color);
+	    return 0;
     
     if (polarity == NEGATIVE) 
 	/* Black */
@@ -224,19 +212,16 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 				       GDK_LINE_SOLID, 
 				       GDK_CAP_ROUND, 
 				       GDK_JOIN_MITER);
-	    gdk_gc_set_line_attributes(err_gc, p1, 
-				       GDK_LINE_SOLID, 
-				       GDK_CAP_ROUND, 
-				       GDK_JOIN_MITER);
-	    gdk_gc_set_line_attributes(other_gc, p1, 
-				       GDK_LINE_SOLID, 
-				       GDK_CAP_ROUND, 
-				       GDK_JOIN_MITER);
 	    switch (net->interpolation) {
 	    case LINEARx10 :
 	    case LINEARx01 :
 	    case LINEARx001 :
 		fprintf(stderr, "Linear != x1\n");
+		gdk_gc_set_foreground(err_gc, err_color);
+		gdk_gc_set_line_attributes(err_gc, p1, 
+					   GDK_LINE_SOLID, 
+					   GDK_CAP_ROUND, 
+					   GDK_JOIN_MITER);
 		gdk_draw_line(*pixmap, err_gc, x1, y1, x2, y2);
 		break;
 	    case LINEARx1 :
@@ -247,13 +232,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    case MQ_CCW_CIRCULAR :
 	    case CW_CIRCULAR :
 	    case CCW_CIRCULAR :
-#ifdef ARC_DEBUG
-		gerbv_draw_arc(*pixmap, other_gc, cp_x, cp_y, width, height, 
-			       net->cirseg->angle1, net->cirseg->angle2);
-#else
 		gerbv_draw_arc(*pixmap, line_gc, cp_x, cp_y, width, height, 
 			       net->cirseg->angle1, net->cirseg->angle2);
-#endif
 		break;		
 	    default :
 		
@@ -280,6 +260,11 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		gerbv_draw_circle(*pixmap, line_gc, TRUE, x2, y2, p1);
 		break;
 	    case MACRO :
+		gdk_gc_set_foreground(err_gc, err_color);
+		gdk_gc_set_line_attributes(err_gc, p1, 
+					   GDK_LINE_SOLID, 
+					   GDK_CAP_ROUND, 
+					   GDK_JOIN_MITER);
 		gerbv_draw_circle(*pixmap, err_gc, TRUE, x2, y2, scale/20);
 		break;
 	    default :
