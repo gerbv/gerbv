@@ -142,7 +142,7 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/File/sep1",  NULL,          NULL,    0, "<Separator>"},
     {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
     {"/_Zoom",      NULL,          NULL,    0, "<Branch>"},
-    {"/Zoom/_Out",  "<alt>P", zoom     ,    0, NULL},
+    {"/Zoom/_Out",  "<alt>O", zoom     ,    0, NULL},
     {"/Zoom/_In",   "<alt>I", zoom     ,    1, NULL},
     {"/Zoom/sep1",  NULL,          NULL,    0, "<Separator>"},
     {"/Zoom/_Clear All",NULL, zoom     ,    2, NULL},

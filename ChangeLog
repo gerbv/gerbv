@@ -1,3 +1,10 @@
+2001-11-14 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Changed speed key for zooming in to
+	  Alt-O.
+	* configure.in: Changed version number for release.
+	
+	
 2001-11-09 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerb_image.[hc]: Added.
