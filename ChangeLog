@@ -1,3 +1,10 @@
+2003-01-14  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: A fix for the previous fix. The previous fix
+	  was not good and had to be redone. now. We check the
+	  parsed image before we put it in use so we don't have to
+	  save alot of thing to be able to back off if error.
+
 2003-01-13  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: When gerbv discovered RS274D and terminated

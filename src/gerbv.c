@@ -1272,6 +1272,7 @@ open_image(char *filename, int idx, int reload)
     gerb_file_t *fd;
     int r, g, b;
     GtkStyle *defstyle, *newstyle;
+    gerb_image_t *parsed_image;
     gerb_verify_error_t error = GERB_IMAGE_OK;
     char *cptr;
 
@@ -1288,30 +1289,17 @@ open_image(char *filename, int idx, int reload)
 	return -1;
     }
     
-    if (reload && screen.file[idx]) {
-	free_gerb_image(screen.file[idx]->image);  
-	screen.file[idx]->image = NULL;
-    } else {
-	screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
-    }
-    
     if(drill_file_p(fd))
-	screen.file[idx]->image = parse_drillfile(fd);
+	parsed_image = parse_drillfile(fd);
     else 
-	screen.file[idx]->image = parse_gerb(fd);
+	parsed_image = parse_gerb(fd);
 
     gerb_fclose(fd);
 
     /*
-     * Do some cleanup if error check below fails
-     */
-    screen.file[idx]->color = NULL;
-    screen.file[idx]->name  = NULL;
-
-    /*
      * Do error check before continuing
      */
-    error = gerb_image_verify(screen.file[idx]->image);
+    error = gerb_image_verify(parsed_image);
     if (error) {
 	fprintf(stderr, "%s: Parse error: ", filename);
 	if (error & GERB_IMAGE_MISSING_NETLIST)
@@ -1324,10 +1312,23 @@ open_image(char *filename, int idx, int reload)
 	    fprintf(stderr, "Missing info ");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "You probably tried to read an RS-274D file, which gerbv doesn't support\n");
+	free_gerb_image(parsed_image);
 	return -1;
     }
 
-    if (reload) return 0; /* Stop here if we do a reload of files */
+    /*
+     * If reload, just exchange the image. Else we have to allocate
+     * a new memory before we define anything more.
+     */
+    if (reload) {
+	free_gerb_image(screen.file[idx]->image);
+	screen.file[idx]->image = parsed_image;
+	return 0;
+    } else {
+	screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
+	memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
+	screen.file[idx]->image = parsed_image;
+    }
 
     /*
      * Store filename for eventual reload
