@@ -1,3 +1,11 @@
+2001-12-07 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.[hc], src/gerbv.c : Pseudo optimized drawing.
+	* src/gerb_file.c, src/gerbv.c: Fixed bug causing segfault
+	  when file didn't exist (oops) and pushed error messages
+	  out of gerb_file.c.
+
+	
 2001-12-06 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/drill.c, src/gerb_image.c, src/gerber.c, src/gerbv.c:
