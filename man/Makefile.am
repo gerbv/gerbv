@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ##
-##    Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+##    Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
 ##
 ##  This file is part of gerbv.
 ##  $Id$

@@ -166,4 +166,18 @@ AC_DEFINE([USE_INTERFACE],[1],[Use extension interface of Scheme interpreter])
 AC_OUTPUT(	Makefile \
 		src/Makefile \
 		man/Makefile \
-		man/gerbv.1)
+		man/gerbv.1 \
+		doc/PNG-print/Makefile \
+		doc/eagle/Makefile \
+		doc/Makefile \
+		example/eaglecad1/Makefile \
+		example/nollezappare/Makefile \
+		example/numpres/Makefile \
+		example/jj/Makefile \
+		example/dan/Makefile \
+		example/ekf2/Makefile \
+		example/am-test/Makefile \
+		example/cslk/Makefile \
+		example/orcad/Makefile \
+		example/Mentor-BoardStation/Makefile \
+		example/Makefile )

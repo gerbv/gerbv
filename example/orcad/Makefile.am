@@ -1,10 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 ##
-##  gEDA - GNU Electronic Design Automation
-##  This file is a part of gerbv.
-##
 ##    Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
 ##
+##  This file is part of gerbv.
 ##  $Id$
 ##
 ##  This program is free software; you can redistribute it and/or modify
@@ -21,27 +19,12 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-bin_PROGRAMS = gerbv
+EXTRA_DIST=ast.ps README.txt rs232_cm.bot rs232_cm.smt rs232_cm.top \
+	rs232_cm.asb rs232_cm.drd rs232_cm.ssb rs232_cm.ast rs232_cm.smb \
+	rs232_cm.sst thruhole.tap
 
-gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h draw.c \
-		draw.h draw_amacro.c draw_amacro.h drill.c drill.h dynload.c \
-		dynload.h exportimage.c exportimage.h gerb_error.h \
-		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
-		gerber.h gerbv.c gerbv_icon.h gerbv_screen.h log.c log.h \
-		opdefines.h project.c project.h scheme-private.h scheme.c \
-		scheme.h setup.c setup.h 
 
-scmdatadir = @BACKEND_DIR@
-scmdata_DATA = init.scm
-
-EXTRA_DIST=    init.scm
-
-INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@
-gerbv_LDADD = @GTK_LIBS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@
-
-AM_CFLAGS=-Wall
-
-MOSTLYCLEANFILES = *~ *.o gerbv
-CLEANFILES = *~ *.o .#* .deps/* gerbv
-DISTCLEANFILES = *~ *.o gerbv Makefile
-MAINTAINERCLEANFILES = *~ *.o gerbv Makefile
+MOSTLYCLEANFILES = *~
+CLEANFILES = *~
+DISTCLEANFILES = *~ Makefile Makefile.in
+MAINTAINERCLEANFILES = *~ Makefile Makefile.in

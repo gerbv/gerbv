@@ -1,3 +1,9 @@
+2003-12-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, */Makefile.am: Added a recursive chain of Makefile.am
+	  to be able to run make dist and make distcheck. Proposed by Dan 
+	  McMahill. Thanks!
+
 2003-12-07  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c, src/project.[hc]: Project now saves ev. inversion of
