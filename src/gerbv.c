@@ -1280,7 +1280,7 @@ open_image(char *filename, int idx, int reload)
 
     fd = gerb_fopen(filename);
     if (fd == NULL) {
-	GERB_MESSAGE("Trying to open %s:%s ", filename, strerror(errno));
+	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
 	return -1;
     }
     
@@ -1296,15 +1296,15 @@ open_image(char *filename, int idx, int reload)
      */
     error = gerb_image_verify(parsed_image);
     if (error) {
-	GERB_COMPILE_ERROR("%s: Parse error: ", filename);
+	GERB_COMPILE_ERROR("%s: Parse error:\n", filename);
 	if (error & GERB_IMAGE_MISSING_NETLIST)
-	    GERB_COMPILE_ERROR("Missing netlist ");
+	    GERB_COMPILE_ERROR("* Missing netlist\n");
 	if (error & GERB_IMAGE_MISSING_FORMAT)
-	    GERB_COMPILE_ERROR("Missing format ");
+	    GERB_COMPILE_ERROR("* Missing format\n");
 	if (error & GERB_IMAGE_MISSING_APERTURES) 
-	    GERB_COMPILE_ERROR("Missing apertures/drill sizes ");
+	    GERB_COMPILE_ERROR("* Missing apertures/drill sizes\n");
 	if (error & GERB_IMAGE_MISSING_INFO)
-	    GERB_COMPILE_ERROR("Missing info ");
+	    GERB_COMPILE_ERROR("* Missing info\n");
 	GERB_COMPILE_ERROR("\n");
 	GERB_COMPILE_ERROR("You probably tried to read an RS-274D file, which gerbv doesn't support\n");
 	free_gerb_image(parsed_image);
@@ -2235,6 +2235,14 @@ internal_main(int argc, char *argv[])
     screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
     screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
 
+    /*
+     * Set console error log handler. The default gives us error levels in
+     * in the beginning which I don't want.
+     */
+    g_log_set_handler (NULL, 
+		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
+		       gerbv_console_log_handler, NULL); 
+
     /* Set default unit to the configured default */
     screen.unit = GERBV_DEFAULT_UNIT;
 
@@ -2296,18 +2304,18 @@ internal_main(int argc, char *argv[])
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 
     /*
-     * Set error log handler
-     */
-    g_log_set_handler (NULL, 
-		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
-		       gerbv_log_handler, NULL); 
-
-    /*
      * Fill with files (eventually) given on command line
      */
     for(i = optind ; i < argc; i++)
 	if (open_image(argv[i], i - optind, FALSE) == -1)
 	    exit(-1);
+
+    /*
+     * Set gtk error log handler
+     */
+    g_log_set_handler (NULL, 
+		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
+		       gerbv_gtk_log_handler, NULL); 
 
     /*
      * Connect all events on drawing area 

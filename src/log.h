@@ -29,9 +29,16 @@
 #include <gtk/gtk.h>
 
 void
-gerbv_log_handler(const gchar *log_domain,
-		  GLogLevelFlags log_level,
-		  const gchar *message, gpointer user_data);
+gerbv_console_log_handler(const gchar *log_domain,
+			  GLogLevelFlags log_level,
+			  const gchar *message, 
+			  gpointer user_data);
+
+
+void
+gerbv_gtk_log_handler(const gchar *log_domain,
+		      GLogLevelFlags log_level,
+		      const gchar *message, gpointer user_data);
 
 
 

@@ -1,5 +1,9 @@
 2003-01-26  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/log.[hc], src/gerbv.c: Made sure error messages are 
+	  directed to the right place (shell and popup) at the
+	  right moment and that the error messages look nicer.
+
 	* .cvsignore, man/.cvsignore, scheme/.cvsignore, src/.cvsignore:
 	  Added these files submitted by Holger Waechtler. Thanks!
 
