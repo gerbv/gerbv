@@ -603,19 +603,26 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 			  amacro_t *amacro)
 {
     int ano, i;
-    char read;
-    char *type;
+    char *ad;
+    char *token;
     amacro_t *curr_amacro;
     
     if (gerb_fgetc(fd) != 'D')
 	return -1;
     
+    /*
+     * Get aperture no
+     */
     ano = gerb_fgetint(fd);
 
-    type = gerb_fgetstring(fd, ',');
+    /*
+     * Read in the whole aperture defintion and tokenize it
+     */
+    ad = gerb_fgetstring(fd, '*');
+    token = strtok(ad, ",");
 
-    if (strlen(type) == 1) {
-	switch (type[0]) {
+    if (strlen(token) == 1) {
+	switch (token[0]) {
 	case 'C':
 	    aperture->type = CIRCLE;
 	    break;
@@ -632,10 +639,14 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 	/* Here a should a T be defined, but I don't know what it represents */
     } else {
 	aperture->type = MACRO;
+	/*
+	 * In aperture definition, point to the aperture macro 
+	 * used in the defintion
+	 */
 	curr_amacro = amacro;
 	while (curr_amacro) {
-	    if ((strlen(curr_amacro->name) == strlen(type)) &&
-		(strcmp(curr_amacro->name, type) == 0)) {
+	    if ((strlen(curr_amacro->name) == strlen(token)) &&
+		(strcmp(curr_amacro->name, token) == 0)) {
 		aperture->amacro = curr_amacro;
 		break;
 	    }
@@ -643,16 +654,18 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 	}
     }
 
-    (void)gerb_fgetc(fd);
-
-    for (read = 'X', i = 0; (read == 'X') && i < 5; read = gerb_fgetc(fd), i++)
-	aperture->parameter[i] = gerb_fgetdouble(fd);
-    
+    /*
+     * Parse all parameters
+     */
+    for (token = strtok(NULL, "X"), i = 0; token != NULL; 
+	 token = strtok(NULL, "X"), i++)
+	aperture->parameter[i] = strtod(token, NULL);
+	    
     aperture->nuf_parameters = i;
-    
+
     gerb_ungetc(fd);
 
-    free(type);
+    free(ad);
 
     return ano;
 } /* parse_aperture_definition */
