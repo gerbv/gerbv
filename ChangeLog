@@ -1,3 +1,10 @@
+2002-11-05  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (redraw_pixmap): Don't try to sneak out doing
+	  events from redraw_pixmap, check for them and preempt if
+	  there are events on queue. This closes the everythinh-is-
+	  not-redrawn-sometimes bug (I hope).
+
 2002-11-04  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/exportimage.c, gerbv.c: export_png now export whole image

@@ -1084,9 +1084,6 @@ redraw_pixmap(GtkWidget *widget, int restart)
      * Higher layer numbers have higher priority in the Z-order. 
      */
     for(i = state.file_index; i < MAX_FILES; i++) {
-	/* Do some events so we don't lag to much behind */
-	gtk_main_iteration_do(FALSE);
-
 	if (g_main_pending()) {
 	    /* Set idle function to ensure we wont miss to redraw */
 	    start_idle_redraw_pixmap(widget);
