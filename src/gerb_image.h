@@ -36,7 +36,7 @@ extern "C" {
 	
 enum aperture_state_t {OFF, ON, FLASH};
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
-enum unit_t {UNIT_UNKNOWN, INCH, MM};
+enum unit_t {INCH, MM};
 enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
 enum omit_zeros_t {LEADING, TRAILING, EXPLICIT};
 enum coordinate_t {ABSOLUTE, INCREMENTAL};
@@ -66,6 +66,7 @@ typedef struct gerb_net {
     enum polarity_t layer_polarity; 
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
+    enum unit_t unit;
     int nuf_pcorners; /* If interpolation=PAREA_START, corners in polygon */
     struct gerb_cirseg *cirseg;
     struct gerb_net *next;
@@ -77,6 +78,7 @@ typedef struct gerb_aperture {
     amacro_t *amacro;
     double parameter[5];
     int nuf_parameters;
+    enum unit_t unit;
 } gerb_aperture_t;
 
 
@@ -96,9 +98,8 @@ typedef struct gerb_format {
 	
 typedef struct gerb_image_info {
     char *name;
-    enum unit_t unit;
     enum polarity_t polarity;
-    double min_x;
+    double min_x; /* Always in inches */
     double min_y;
     double max_x;
     double max_y;

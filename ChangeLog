@@ -1,3 +1,13 @@
+2003-02-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c, src/drill.c, src/gerb_image.[hc], src/gerber.c:
+	  A new system to keep track of mm and inches. Everything is
+	  still drawn based on inches and min/max is also stored as
+	  inches. But now every aperture and every coordinate has a 
+	  unit attached to it that is used when drawing. I hope I 
+	  haven't breaked anything, patricular in drill.c. And I have
+	  very few (one) reference examples in millimeters.
+
 2003-01-26  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/log.[hc], src/gerbv.c: Made sure error messages are 

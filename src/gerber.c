@@ -84,6 +84,7 @@ parse_gerb(gerb_file_t *fd)
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
     double aperture_size;
+    double scale;
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
@@ -94,6 +95,11 @@ parse_gerb(gerb_file_t *fd)
      */
     memset((void *)state, 0, sizeof(gerb_state_t));
     state->layer_polarity = DARK;
+    /* 
+     * "Inches are assumed if units are not specified"
+     * rs274xrevd_e.pdf, p. 39
+     */
+    state->unit = INCH;
 
     /* 
      * Create new image
@@ -153,25 +159,14 @@ parse_gerb(gerb_file_t *fd)
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
 	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-	    
+
+	    /*
+	     * Scale to given coordinate format
+	     * XXX only "omit leading zeros".
+	     */
 	    if (image && image->format ){
-		/*
-		 * Scale to given coordinate format
-		 * XXX only "omit leading zeros".
-		 */
 		x_scale = pow(10.0, (double)image->format->x_dec);
 		y_scale = pow(10.0, (double)image->format->y_dec);
-
-		/*
-		 * If G70/G71 is not used we should use default unit.
-		 * It's only millimeter that needs to be converted.
-		 */
-		if (((state->unit == UNIT_UNKNOWN) && 
-		     (image->info->unit == MM)) || 
-		    state->unit == MM) {
-		    x_scale *= 25.4;
-		    y_scale *= 25.4;
-		}
 	    }
 	    
 	    curr_net->start_x = (double)state->prev_x / x_scale;
@@ -180,6 +175,7 @@ parse_gerb(gerb_file_t *fd)
 	    curr_net->stop_y = (double)state->curr_y / y_scale;
 	    delta_cp_x = (double)state->delta_cp_x / x_scale;
 	    delta_cp_y = (double)state->delta_cp_y / y_scale;
+
 
 	    switch (state->interpolation) {
 	    case CW_CIRCULAR :
@@ -234,9 +230,10 @@ parse_gerb(gerb_file_t *fd)
 		state->interpolation = state->prev_interpolation;
 
 	    /*
-	     * Save layer polarity
+	     * Save layer polarity and unit
 	     */
 	    curr_net->layer_polarity = state->layer_polarity;
+	    curr_net->unit = state->unit;	    
 
 	    state->delta_cp_x = 0.0;
 	    state->delta_cp_y = 0.0;
@@ -255,18 +252,20 @@ parse_gerb(gerb_file_t *fd)
 		aperture_size = 0.0;
 
 	    /*
-	     * Find min and max of image
+	     * Find min and max of image with compensation for mm.
 	     */
-	    if (image->info->min_x == 0.0 || 
-		image->info->min_x > curr_net->stop_x)
-		image->info->min_x = curr_net->stop_x - aperture_size;
-	    if (image->info->min_y == 0.0 || 
-		image->info->min_y > curr_net->stop_y)
-		image->info->min_y = curr_net->stop_y - aperture_size;
+	    if (curr_net->unit == MM)
+		scale = 25.4;
+	    else 
+		scale = 1.0;
+	    if (image->info->min_x > curr_net->stop_x)
+		image->info->min_x = (curr_net->stop_x - aperture_size) / scale;
+	    if (image->info->min_y > curr_net->stop_y)
+		image->info->min_y = (curr_net->stop_y - aperture_size) / scale;
 	    if (image->info->max_x < curr_net->stop_x)
-		image->info->max_x = curr_net->stop_x + aperture_size;
+		image->info->max_x = (curr_net->stop_x + aperture_size) / scale;
 	    if (image->info->max_y < curr_net->stop_y)
-		image->info->max_y = curr_net->stop_y + aperture_size;
+		image->info->max_y = (curr_net->stop_y + aperture_size) / scale;
 	    
 	    state->prev_x = state->curr_x;
 	    state->prev_y = state->curr_y;
@@ -572,11 +571,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 
 	switch (A2I(op[0],op[1])) {
 	case A2I('I','N'):
-	    image->info->unit = INCH;
+	    state->unit = INCH;
 	    break;
 	case A2I('M','M'):
-	    image->info->unit = MM;
-	    GERB_COMPILE_WARNING("This file uses millimeter. gerbv doesn't support millimeter fully, especially in apertures.\n");
+	    state->unit = MM;
 	    break;
 	default:
 	    GERB_COMPILE_ERROR("Illegal unit:%c%c\n", op[0], op[1]);
@@ -683,9 +681,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	a = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 	memset((void *)a, 0, sizeof(gerb_aperture_t));
 	ano = parse_aperture_definition(fd, a, image->amacro);
-	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) 
+	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
+	    a->unit = state->unit;
 	    image->aperture[ano] = a;
-	else
+	} else
 	    GERB_COMPILE_ERROR("Aperture number out of bounds : %d\n", ano);
 	break;
     case A2I('A','M'): /* Aperture Macro */

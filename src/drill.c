@@ -84,10 +84,11 @@ typedef struct drill_state {
     int coordinate_mode;
     double origin_x;
     double origin_y;
+    enum unit_t unit;
 } drill_state_t;
 
 /* Local function prototypes */
-static void drill_guess_format(gerb_file_t *fd, gerb_image_t *image);
+static enum unit_t drill_guess_format(gerb_file_t *fd, gerb_image_t *image);
 static int drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image);
 static int drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image);
 static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image);
@@ -114,7 +115,7 @@ parse_drillfile(gerb_file_t *fd)
 	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
 
-    drill_guess_format(fd, image);
+    state->unit = drill_guess_format(fd, image);
 
     if (image && image->format ){
 	x_scale = pow(10.0, (double)image->format->x_dec);
@@ -188,10 +189,6 @@ parse_drillfile(gerb_file_t *fd)
 		eat_line(fd);
 	    case DRILL_M_ENDREWIND :
 		free(state);
-		/* KLUDGE. All images, regardless of input format,
-		   are returned in INCH format */
-		image->info->unit = INCH;
-
 		return image;
 		break;
 	    default:
@@ -219,10 +216,14 @@ parse_drillfile(gerb_file_t *fd)
 	    curr_net->start_y = (double)state->curr_y;
 	    /* KLUDGE. This function isn't allowed to return anything
 	       but inches */
-	    if(image->info->unit == MM) {
+	    if(state->unit == MM) {
 		(double)curr_net->start_x /= 25.4;
 		(double)curr_net->start_y /= 25.4;
+		/* KLUDGE. All images, regardless of input format,
+		   are returned in INCH format */
+		curr_net->unit = INCH;
 	    }
+
 	    curr_net->stop_x = curr_net->start_x - state->origin_x;
 	    curr_net->stop_y = curr_net->start_y - state->origin_y;
 	    curr_net->aperture = state->current_tool;
@@ -274,7 +275,7 @@ parse_drillfile(gerb_file_t *fd)
 
 /* Guess the format of the input file.
    Rewinds file when done */
-static void
+static enum unit_t
 drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 {
     int inch_score = 0;
@@ -286,6 +287,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     drill_state_t *state = NULL;
     int done = FALSE;
     int i;
+    enum unit_t unit;
 
     state = new_state(state);
     if (state == NULL)
@@ -368,9 +370,9 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 
     /* Unfortunately, inches seem more common, so that's the default */
     if(metric_score > inch_score) {
-	image->info->unit = MM;
+	unit = MM;
     } else {
-	image->info->unit = INCH;
+	unit = INCH;
     }
 
     /* Knowing about trailing zero suppression is more important,
@@ -397,7 +399,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
        calculation. */
     if( (image->format->omit_zeros == LEADING ||
 	 (max_leading_zeros == 0 && max_trailing_zeros == 0) ) &&
-	image->format->x_dec <=3 && image->info->unit == INCH) {
+	image->format->x_dec <=3 && unit == INCH) {
 
 	image->format->x_dec += 1;
 	image->format->y_dec += 1;
@@ -412,6 +414,8 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     }
 
     fd->ptr = 0;
+
+    return unit;
 }
 
 
@@ -504,7 +508,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 	    size = read_double(fd, 1);
 
-	    if(image->info->unit == MM) {
+	    if(state->unit == MM) {
 		size /= 25.4;
 	    }
 
@@ -525,6 +529,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		    image->aperture[tool_num]->parameter[0] = size;
 		    image->aperture[tool_num]->type = CIRCLE;
 		    image->aperture[tool_num]->nuf_parameters = 1;
+		    image->aperture[tool_num]->unit = INCH;
 		}
 	    }
 	    break;
