@@ -11,15 +11,6 @@
 	  and remove USE_GTK2 in many small places. Also made some reformat
 	  of the code to fit into the rest of the gerbv codebase.
 
-2005-02-08  Tomasz Motylewski  <t.motylewski@bfad.de>
-	* src/gerbv.c: malloc strlen+2, not +1
-
-2005-02-08  Tomasz Motylewski  <t.motylewski@bfad.de>
-	* src/gerbv.c: malloc strlen+2, not +1
-
-2005-02-08  Tomasz Motylewski  <t.motylewski@bfad.de>
-	* src/gerbv.c: malloc strlen+2, not +1
-
 2004-12-28  Stefan Petersen  <spe@siouxsie.umunet.org>
 
 	* src/draw.c: When drawing circles I ignored if circle
