@@ -101,7 +101,9 @@ You can also do zooming by outline. Press right mouse button, draw,
 release.  The dashed line shows how the zooming will be dependent on
 the resolution of the window. The non-dashed outline will show what
 you actually selected. If you change your mind when started to mark
-outline, you can always abort by pressing escape.
+outline, you can always abort by pressing escape. By holding down
+the shift key when you press the right mouse button, you will select 
+an area where the point you started at will be the center of your selection.
 
 .SH MEASUREMENTS
 You can do measurement on the image displayed. By pressing shift, the 
