@@ -1,3 +1,9 @@
+2002-04-24 Stefan Petersen (spe@stacken.kth.se)
+
+	* example/orcad/*: Added after submission of and with 
+	  permission from Dino Ghilardi.
+
+
 2002-04-10 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerber.c: Fixed mq arcs so circles are circles and
