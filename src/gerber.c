@@ -52,6 +52,7 @@ typedef struct gerb_state {
     int delta_cp_y;
     int curr_aperture;
     int changed;
+    enum polarity_t layer_polarity;
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
     enum interpolation_t prev_interpolation;
@@ -89,13 +90,24 @@ parse_gerb(gerb_file_t *fd)
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
 	err(1, "malloc state failed\n");
-    memset((void *)state, 0, sizeof(gerb_state_t));
 
+    /*
+     * Set some defaults
+     */
+    memset((void *)state, 0, sizeof(gerb_state_t));
+    state->layer_polarity = DARK;
+
+    /* 
+     * Create new image
+     */
     image = new_gerb_image(image);
     if (image == NULL)
 	err(1, "malloc image failed\n");
     curr_net = image->netlist;
 
+    /*
+     * Start parsing
+     */
     while ((read = gerb_fgetc(fd)) != EOF) {
 	switch (read) {
 	case 'G':
@@ -222,12 +234,15 @@ parse_gerb(gerb_file_t *fd)
 	    default :
 	    }
 
+	    /*
+	     * Save layer polarity
+	     */
+	    curr_net->layer_polarity = state->layer_polarity;
+
 	    state->delta_cp_x = 0.0;
 	    state->delta_cp_y = 0.0;
 	    curr_net->aperture = state->curr_aperture;
 	    curr_net->aperture_state = state->aperture_state;
-	    /* if (state->curr_layername)
-	       printf("layername : %s\n", state->curr_layername);*/
 	    
 	    /*
 	     * Find min and max of image
@@ -618,7 +633,17 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     } else if (strncmp(op, "LN", 2) == 0) { /* Layer Name */
 	state->curr_layername = gerb_fgetstring(fd, '*');
     } else if (strncmp(op, "LP", 2) == 0) { /* Layer Polarity */
-	NOT_IMPL(fd, "%LP%");
+	op[0] = gerb_fgetc(fd);
+	switch (op[0]) {
+	case 'D': /* Dark Polarity (default) */
+	    state->layer_polarity = DARK;
+	    break;
+	case 'C': /* Clear Polarity */
+	    state->layer_polarity = CLEAR;
+	    break;
+	default:
+	    fprintf(stderr, "Strange Layer Polarity: %c\n", op[0]);
+	}
     } else if (strncmp(op, "KO", 2) == 0) { /* Knock Out */
 	NOT_IMPL(fd, "%KO%");
     } else if (strncmp(op, "SR", 2) == 0) { /* Step and Repeat */

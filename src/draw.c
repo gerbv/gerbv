@@ -48,7 +48,6 @@
 #undef round
 #define round(x) floor((double)(x) + 0.5)
 
-#define MAX_POLYGON_POINTS 50
 
 /*
  * Draws a circle _centered_ at x,y with diameter dia
@@ -697,6 +696,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     GdkGC *line_gc = gdk_gc_new(*pixmap);
     GdkGC *err_gc = gdk_gc_new(*pixmap);
     struct gerb_net *net;
+    enum polarity_t old_layer_polarity = DARK;
+    GdkGCValues values;
     gint x1, y1, x2, y2;
     int p1, p2;
     int width = 0, height = 0;
@@ -715,12 +716,16 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	return 0;
     }
     
+    /* Current line colors */
+    gdk_gc_set_foreground(line_gc, fg_color);
+    gdk_gc_set_background(line_gc, bg_color);
+
+    /*
+     * Negative image??
+     */
     if (polarity == NEGATIVE) 
-	/* Black */
-	gdk_gc_set_foreground(line_gc, bg_color);
-    else
-	/* Current line color */
-	gdk_gc_set_foreground(line_gc, fg_color);
+	gdk_gc_set_function(line_gc, GDK_CLEAR);
+
     
     for (net = image->netlist->next ; net != NULL; net = net->next) {
 	
@@ -746,6 +751,21 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 			      scale + trans_x);
 	    cp_y = (int)round((image->info->offset_b - net->cirseg->cp_y) *
 			      scale + trans_y);
+	}
+
+	/*
+	 * Check if layer polarity has changed. Then we have to have change 
+	 * GdkFunction if it really is changed.
+	 */
+	if (old_layer_polarity != net->layer_polarity) {
+	    old_layer_polarity = net->layer_polarity;
+	    gdk_gc_get_values(line_gc, &values);
+  	    if ((values.function == GDK_COPY) &&
+		(net->layer_polarity == CLEAR))
+		gdk_gc_set_function(line_gc, GDK_CLEAR);
+	    else if ((values.function == GDK_CLEAR) &&
+		     (net->layer_polarity == DARK))
+		gdk_gc_set_function(line_gc, GDK_COPY);
 	}
 
 	/*

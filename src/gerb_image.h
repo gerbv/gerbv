@@ -37,7 +37,7 @@ extern "C" {
 enum aperture_state_t {OFF, ON, FLASH};
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
 enum unit_t {INCH, MM};
-enum polarity_t {POSITIVE, NEGATIVE};
+enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
 enum omit_zeros_t {LEADING, TRAILING, EXPLICIT};
 enum coordinate_t {ABSOLUTE, INCREMENTAL};
 enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
@@ -63,6 +63,7 @@ typedef struct gerb_net {
     double stop_x;
     double stop_y;
     int aperture;
+    enum polarity_t layer_polarity; 
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
     int nuf_pcorners; /* If interpolation=PAREA_START, corners in polygon */

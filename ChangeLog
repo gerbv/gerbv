@@ -1,3 +1,9 @@
+2002-06-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c, src/gerb_image.h, src/gerber.c: Now handles
+	  negative layer polarity (%LP%)! After fixing bug 557368 
+	  this was simple to add. Tested with files from PCB.
+
 2002-06-06  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c, src/gerbv_screen.h: Added "reload files", gerbv 
