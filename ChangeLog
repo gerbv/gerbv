@@ -1,3 +1,9 @@
+2003-11-22  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, acconfig.h: acconfig.h removed and more information
+	  added to configure.in after information in warning messages from
+	  autoheader.
+
 2003-11-13  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/export_image.c: Changes pixbuf_to_file_as_png simplify operation

@@ -34,19 +34,19 @@ AC_ARG_ENABLE(exportpng,
     [
         if test $enableval = "yes"; then
 		exportpng=yes
-	  	AC_DEFINE(EXPORT_PNG)
+	  	AC_DEFINE(EXPORT_PNG,,[Support for export of PNG's])
 	fi
     ],
     [
 	exportpng=yes
-  	AC_DEFINE(EXPORT_PNG)
+  	AC_DEFINE(EXPORT_PNG,,[Support for export of PNG's])
     ])
 
 dnl --with-maxfiles : sets maximum number of simultaneous loaded files
 AC_ARG_WITH(maxfiles,
     [  --with-maxfiles         Maximum number of simultaneous loaded files (default 20).],
-	AC_DEFINE_UNQUOTED(MAX_FILES, $withval),
-	AC_DEFINE(MAX_FILES, 20)
+	AC_DEFINE_UNQUOTED(MAX_FILES, $withval,[Maximum number of simultaneous loaded files]),
+	AC_DEFINE(MAX_FILES, 20, [Maximum number of simultaneous loaded files])
 )
 
 dnl --enable-unit-mm : Set default unit for coordinates in status bar to mm
@@ -58,9 +58,9 @@ AC_ARG_ENABLE(unit-mm,
 	fi
     ])
 if test "$default_unit" = "mm"; then
-	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MMS)
+	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MMS, [Default unit to display in statusbar])
 else
-	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MILS)
+	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MILS, [Default unit to display in statusbar])
 fi
 
 
@@ -131,10 +131,10 @@ if test -z "$opt_backend_dir"; then
     fi
 fi
 
-AC_DEFINE_UNQUOTED(BACKEND_DIR, "$opt_backend_dir")
+AC_DEFINE_UNQUOTED([BACKEND_DIR], "$opt_backend_dir",[Backend dir])
 BACKEND_DIR="$opt_backend_dir"
 
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Program version])
 
 AC_CHECK_HEADERS(unistd.h getopt.h string.h)
 
