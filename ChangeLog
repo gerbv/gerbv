@@ -1,3 +1,11 @@
+2004-02-01  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Patch from Dan causes the "save as..." dialog box 
+	  to come up if you try to do a "save" with no current project 
+	  file name.
+	* src/gerbv.c: Yet another patch from Dan to put project filename
+	  in title of window.
+
 2003-12-14  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in, src/gerbv.c, src/log.c, src/setup.h: It is now 

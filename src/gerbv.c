@@ -25,6 +25,7 @@
 #include <config.h>
 #endif
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -98,6 +99,7 @@ static void export_png_popup(GtkWidget *widget, gpointer data);
 #endif /* EXPORT_PNG */
 static void cb_ok_project(GtkWidget *widget, gpointer data);
 static void project_popup(GtkWidget *widget, gpointer data);
+static void project_save_cb(GtkWidget *widget, gpointer data);
 static void unload_file(GtkWidget *widget, gpointer data);
 static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
@@ -118,6 +120,8 @@ static void zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data);
 GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
 static void zoom_ok_button_clicked (GtkButton * button, gpointer user_data);
 static void zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
+
+void rename_main_window(char *filename, GtkWidget *main_win);
 
 #ifdef USE_GTK2
 void
@@ -156,9 +160,9 @@ destroy(GtkWidget *widget, gpointer data)
 
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",               NULL,     NULL,             0, "<Branch>"},
-    {"/File/_Open Project...",NULL, project_popup, OPEN_PROJECT, NULL},
-    {"/File/_Save Project As...",NULL, project_popup, SAVE_AS_PROJECT, NULL},
-    {"/File/_Save Project",NULL, cb_ok_project, SAVE_PROJECT, NULL},
+    {"/File/_Open Project...",NULL,    project_popup,    OPEN_PROJECT, NULL},
+    {"/File/_Save Project As...",NULL, project_popup,    SAVE_AS_PROJECT,NULL},
+    {"/File/_Save Project",  NULL,     project_save_cb,  0, NULL},
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
@@ -758,7 +762,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    screen.project = (char *)malloc(strlen(filename) + 1);
 	    memset((void *)screen.project, 0, strlen(filename) + 1);
 	    strncpy(screen.project, filename, strlen(filename));
-
+            rename_main_window(filename, NULL);
 	    redraw_pixmap(screen.drawing_area, TRUE);
 	} else {
 	    GERB_MESSAGE("Failed to load project\n");
@@ -775,6 +779,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    screen.project = (char *)malloc(strlen(filename) + 1);
 	    memset((void *)screen.project, 0, strlen(filename) + 1);
 	    strncpy(screen.project, filename, strlen(filename));
+            rename_main_window(filename, NULL);
 
     case SAVE_PROJECT:
 	if (!screen.project) {
@@ -880,6 +885,16 @@ project_popup(GtkWidget *widget, gpointer data)
     return;
 } /* project_popup */
 
+static void
+project_save_cb(GtkWidget *widget, gpointer data)
+{
+
+    if (!screen.project) 
+        project_popup(widget, (gpointer) SAVE_AS_PROJECT);
+    else 
+        cb_ok_project(widget, (gpointer) SAVE_PROJECT);
+
+}
 
 static void
 all_layers_on(GtkWidget *widget, gpointer data)
@@ -2405,6 +2420,25 @@ static struct option longopts[] = {
 };
 #endif /* HAVE_GETOPT_LONG*/
 
+void
+rename_main_window(char *filename, GtkWidget *main_win)
+{
+    char *win_title;
+    static GtkWidget *win=NULL;
+    size_t len;
+
+    if( main_win != NULL )
+	win = main_win;
+
+    assert(win != NULL);
+
+    len = strlen(WIN_TITLE) + strlen(VERSION) + 2 + strlen(filename) + 1;
+    win_title = (char *)malloc(len);
+    snprintf(win_title, len, "%s%s: %s", WIN_TITLE, VERSION, filename);
+    gtk_window_set_title(GTK_WINDOW(win), win_title);
+    free(win_title);
+				 
+}
 
 int
 main(int argc, char *argv[])
@@ -2417,7 +2451,6 @@ main(int argc, char *argv[])
     gint      screen_width, width, height;
     int       read_opt;
     int       i;
-    char      *win_title;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
     char      *rest, *project_filename = NULL;
 
@@ -2532,15 +2565,10 @@ main(int argc, char *argv[])
     /*
      * Main window 
      */
-    win_title = (char *)malloc(strlen(WIN_TITLE) + strlen(VERSION) + 1);
-    memset(win_title, 0, strlen(WIN_TITLE) + strlen(VERSION) + 1);
-    strncpy(win_title, WIN_TITLE, strlen(WIN_TITLE));
-    strncat(win_title, VERSION, strlen(VERSION));
     main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(main_win), win_title);
+    rename_main_window("", main_win);
     gtk_signal_connect(GTK_OBJECT(main_win), "delete_event", destroy, NULL);
     gtk_signal_connect(GTK_OBJECT(main_win), "destroy", destroy, NULL);
-    free(win_title);
 
     /* 
      * vbox contains menubar and hbox
@@ -2606,6 +2634,7 @@ main(int argc, char *argv[])
 	    if (screen.project)
 		free(screen.project);
 	    screen.project = project_filename;
+            rename_main_window(project_filename, NULL);
 	} else {
 	    GERB_MESSAGE("Failed to load project\n");
 	}
