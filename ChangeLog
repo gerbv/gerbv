@@ -1,3 +1,7 @@
+2002-11-15  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Robustified if someone tries to parse RS274D.
+
 2002-11-15  Andreas Andersson  <e92_aan@e.kth.se>
 
 	* src/drill.c: Slight change to allow broken drill files from

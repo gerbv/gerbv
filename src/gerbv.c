@@ -102,7 +102,7 @@ static void unit_func(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget, int restart);
-static void open_image(char *filename, int idx, int reload);
+static int open_image(char *filename, int idx, int reload);
 static void update_statusbar(gerbv_screen_t *scr);
 
 
@@ -443,7 +443,8 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     char *filename;
 
     filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-    open_image(filename, screen.curr_index, FALSE);
+    if (open_image(filename, screen.curr_index, FALSE) == -1)
+	return;
 
     /*
      * Remember where we loaded file from last time
@@ -627,7 +628,8 @@ reload_files(GtkWidget *widget, gpointer data)
 
     for (idx = 0; idx < MAX_FILES; idx++) {
 	if (screen.file[idx] && screen.file[idx]->name) {
-	    open_image(screen.file[idx]->name, idx, TRUE);
+	    if (open_image(screen.file[idx]->name, idx, TRUE) == -1)
+		return;
 	}
     }
     
@@ -1163,7 +1165,7 @@ redraw_pixmap_end:
 } /* redraw_pixmap */
 
 
-static void
+static int
 open_image(char *filename, int idx, int reload)
 {
     gerb_file_t *fd;
@@ -1175,14 +1177,14 @@ open_image(char *filename, int idx, int reload)
     if (idx >= MAX_FILES) {
 	fprintf(stderr, "Couldn't open %s. Maximum number of files opened.\n",
 		filename);
-	return;
+	return -1;
     }
 
     fd = gerb_fopen(filename);
     if (fd == NULL) {
 	fprintf(stderr, "Trying to open %s: ", filename);
 	perror("");
-	return;
+	return -1;
     }
     
     if (reload && screen.file[idx]) {
@@ -1214,10 +1216,11 @@ open_image(char *filename, int idx, int reload)
 	if (error & GERB_IMAGE_MISSING_INFO)
 	    fprintf(stderr, "Missing info ");
 	fprintf(stderr, "\n");
-	exit(1);
+	fprintf(stderr, "You probably tried to read an RS-274D file, which gerbv doesn't support\n");
+	return -1;
     }
 
-    if (reload) return; /* Stop here if we do a reload of files */
+    if (reload) return 0; /* Stop here if we do a reload of files */
 
     /*
      * Store filename for eventual reload
@@ -1270,7 +1273,7 @@ open_image(char *filename, int idx, int reload)
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
 			 filename, NULL); 
 
-    return;
+    return 0;
 } /* open_image */
 
 
@@ -2008,7 +2011,8 @@ internal_main(int argc, char *argv[])
      * Fill with files (eventually) given on command line
      */
     for(i = optind ; i < argc; i++)
-	open_image(argv[i], i - optind, FALSE);
+	if (open_image(argv[i], i - optind, FALSE) == -1)
+	    exit(-1);
 
     /*
      * Connect all events on drawing area 
