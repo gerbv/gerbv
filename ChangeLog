@@ -1,3 +1,8 @@
+2002-11-19  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c: Hopefully fixed the one pixel gap between lines
+	  when it should be a filled area.
+
 2002-11-17  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/exportimage.c: Background color was ignored. Noticed by Dino.

@@ -47,7 +47,7 @@
 #endif
 
 #undef round
-#define round(x) floor((double)(x) + 0.5)
+#define round(x) ceil((double)(x))
 
 
 /*
