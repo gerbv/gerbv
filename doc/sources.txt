@@ -1,17 +1,13 @@
 Since almost all documents I have found on the Internet has copyright
 forbidding the distribution of them, I have instead made a list of
-information about RS-274[XD]. I found them basically using google.
+information about RS-274[XD]. I found them by, basically, using google.
 
 $Id$
 
+* BARCO SYSTEMS
+_The_ description which is all over Internet. This is the source.
+	   http://www.maniabarco.com/trandown/rs274xrevd_e.pdf
 
-Gerber is designed by Gerber Systems, which has been bought by
-Barco. Ie Barco (http://www.barco.com/graphics/) has the best
-descriptions.
-
-Now Barco has merged with yet another company and all links pointing
-in to Barco Systems are broken. I haven't taking me the time for
-updating the URLs, just deprecating them.
 
 * D-codes, Apertures & Gerber Plot Files
 Desribes how a photo plotter works and describes RS-274D.
@@ -30,39 +26,12 @@ Discusses the extension to RS27X from RS274D. Continuation from above.
 	  http://www.artwork.com/gerber/274x/rs274x.htm
 
 
-* BARCO SYSTEMS
-_The_ description which is all over Internet. This is the source.
-	   http://www.barco.com/ets/data/rs274xc.pdf (deprecated link)
-
-
-* BARCO SYSTEMS
-Seems like there is an development, even thought they copyrighted 
-the same year
-    http://194.7.253.113/ets/products/rs274xrevd_e.pdf (deprecated link)
-
-
-* Barco has a new format.
-	http://194.7.253.113/ets/products/DPF_syntax.pdf (deprecated link)
-
-
-* A Free Gerber Viewer in Java
-Also has some documentation, which is basically what I listed above.
-I haven't looked at the code.
-  http://www.wizards.de/phil/java/rs274x.html
-
-
-* A Free Gerber to TIF converter in C++
-Adam Seyschell has made a program called gerb2tif. Available at:
-     http://home.alphalink.com.au/~seychell/
-
-
-* A Free Gerber to EPS converter
-Dirk Baechle (dl9obn@darc.de) has released a small C++ program to convert 
-Gerber to Encapsulated PostScript. Platform independent commandline program.
-According to the README in version 1.0 "At the moment only a small subset 
-of the RS-274D standard is implemented". Note that it is D! You have to hack
-in every aperture, depsite giving it an X file.
-       http://sourceforge.net/projects/gerber2eps/
+* Webutils for gerber files
+"These web utilities are Java servlets written by C. Scott Ananian; 
+the source code is licensed under the GNU GPL."
+Send in your gerber and you can view it on the web as SVG. There is
+also an Gerber to HPGL converter.
+    http://sinfor.lcs.mit.edu:8180/pcbmill/index.html
 
 
 * Eagle Gerber Tutorial
@@ -71,3 +40,8 @@ http://www.precma.com/informatica/tutorial.htm
 
 * Excellon Drill Format
 http://www.excellon.com/applicationengineering/manuals/program.htm
+
+
+* Example on other free (as in free speech) implementations
+I try to list as many program as possible living up to the standards on
+gerbv's homepage http://gerbv.sourceforge.net/.
