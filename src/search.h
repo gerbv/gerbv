@@ -94,6 +94,8 @@ extern pnp_state_t *parsed_PNP_data;
 */
 
 pnp_state_t *new_pnp_state();
+double get_float_unit(char *str);
+char pnp_screen_for_delimiter(char *str);
 pnp_state_t *parse_pnp(pnp_file_t *fd);
 void free_pnp_state(pnp_state_t *pnp_state);
 

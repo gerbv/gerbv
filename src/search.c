@@ -84,6 +84,7 @@ eat_line_pnp(pnp_file_t *fd)
     }
 } /* eat_line_pnp */
 
+
 /** parse a string representing float number with a unit, default is mm */
 double get_float_unit(char *str)
 {
@@ -99,7 +100,43 @@ double get_float_unit(char *str)
         x *= 10.0;
     }
     return x;
-}
+}/*get_float_unit*/
+
+
+char pnp_screen_for_delimiter(char str[MAXL+2])
+{
+    char *rest_of_line, tmp_buf[MAXL+2];
+    char delimiter[4] = "|,;:";
+    int counter, idx0;   
+    
+    
+    memset  (tmp_buf, 0, sizeof(tmp_buf));
+    sprintf (tmp_buf, "%.*s", sizeof(tmp_buf)-1, str);
+    for (idx0 = 0; idx0 <4; idx0++) {
+        counter = 0;
+        printf("idx0 %i\n", idx0);
+        if (strchr(tmp_buf, delimiter[idx0]) != NULL) {
+
+            rest_of_line = strrchr(tmp_buf, delimiter[idx0]);       
+            while (rest_of_line  != NULL) {
+                if (rest_of_line != 0)		/* If STRCHR returns an address for '|' then */
+                    *rest_of_line = '\0';		/* stick a null character at that address and so shorten the original line. */
+                counter++;    
+                rest_of_line = strrchr(tmp_buf, delimiter[idx0]);
+            }
+            if (counter > 5) {
+                printf("delimiter is: %c", delimiter[idx0]);
+                return delimiter[idx0];
+            }
+   
+        printf("it is in there:%p", strrchr(tmp_buf, delimiter[idx0]));    
+        }        
+    }
+   
+    return '?';/* does not seem to be a csv-style file*/
+
+}/*pnp_screen_for_delimiter*/
+
 
 /*
  * Parses the PNP data
@@ -110,9 +147,9 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     pnp_state_t      *pnp_state = NULL;
     int               line_counter = 0;
     int               ret;
-    GtkTreeSelection *tmp_sel;
-    char        *row[12];
-    char        buf[MAXL+2], buf0[MAXL+2];
+  //  GtkTreeSelection *tmp_sel;
+    char             *row[12], delimiter;
+    char              buf[MAXL+2], buf0[MAXL+2];
     
     /* added by t.motylewski@bfad.de
      * many locales redefine "." as "," and so on, so sscanf has problems when
@@ -138,7 +175,10 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 	    continue;
 	}
 	/* this accepts file both with and without quotes */
-        ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 11, ',',   CSV_QUOTES);
+        if ((delimiter = pnp_screen_for_delimiter(buf)) == '?') {
+            continue;
+        }
+        ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 11, delimiter,   CSV_QUOTES);
         printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
    
         if (row[0] && row[8]) { // here could be some better check for the syntax

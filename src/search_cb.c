@@ -187,8 +187,10 @@ open_pnp(char *filename, int idx, int reload)
          
     if(!gtk_tree_model_get_iter_first (GTK_TREE_MODEL(interface.model), &interface.iter)) {
         GERB_MESSAGE("You tried to load a non compatible PNP file\n change format to entry1,entry2,... !\n");
-        gtk_widget_destroy(interface.main_window);
-        free_pnp_state(parsed_PNP_data);
+        if (interface.main_window)
+            gtk_widget_destroy(interface.main_window);
+        if (parsed_PNP_data)
+            free_pnp_state(parsed_PNP_data);
     }
     return 0;
     /*
