@@ -222,7 +222,8 @@ parse_gerb(gerb_file_t *fd)
 	     * Also if we detected any of the quadrant flags, since some
 	     * gerbers don't reset the interpolation (EagleCad again).
 	     */
-	    if ((state->interpolation == PAREA_END) ||
+	    if ((state->interpolation == PAREA_START) ||
+		(state->interpolation == PAREA_END) ||
 		(state->interpolation == MQ_START) ||
 		(state->interpolation == MQ_END))
 		state->interpolation = state->prev_interpolation;

@@ -1,3 +1,9 @@
+2002-12-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Fixed some kind of bug causing some filled 
+	  polygons not to get displayed. Reported by Chris Ellec. 
+	  Closes bug #649663.
+
 2002-12-02  Anders Eriksson  <anders@umunet.org>
 
 	* configure.in, src/amacro.c: Applied patch from 
