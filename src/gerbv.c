@@ -1176,6 +1176,22 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
     }
     
     if (screen.pixmap != NULL) {
+	char str[60];
+	double X, Y;
+
+	if (screen.statusbar.absid)
+	    gtk_statusbar_pop((GtkStatusbar*)screen.statusbar.abs,
+			      screen.statusbar.absid);
+	screen.statusbar.absid = 
+	    gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.abs,
+					 "MotionNotify");
+	X = (x+screen.trans_x)/(double)screen.scale;
+	Y = (y+screen.trans_y)/(double)screen.scale;
+	sprintf(str,
+		"X %4.4d, Y %4.4d || %7.3f\", %7.3f\" || %7.3fcm, %7.3fcm",
+		x, y, X, Y, X*2.54, Y*2.54);
+	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.abs,
+			   screen.statusbar.absid, str);
 	switch (screen.state) {
 	case MOVE: {
 
@@ -1411,6 +1427,22 @@ draw_measure_distance()
 			(x1+x2)/2 - width/2, (y1+y2)/2 + linefeed, string);
 
 	gdk_font_unref(font);
+
+	/*
+	 * Update statusbar
+	 */
+	if (screen.statusbar.relid)
+	    gtk_statusbar_pop((GtkStatusbar*)screen.statusbar.rel,
+			      screen.statusbar.relid);
+	screen.statusbar.relid = 
+	    gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.rel,
+					 "MotionNotify");
+	sprintf(string,
+		"dist %7.3f\" dx %7.3f\" dx %7.3f\" | %7.3fcm %7.3fcm %7.3fcm",
+		delta, dx, dy, delta*2.54, dx*2.54, dy*2.54);
+	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.rel,
+			   screen.statusbar.relid, string);
+
     }
     gdk_gc_unref(gc);
 }
@@ -1685,6 +1717,19 @@ internal_main(int argc, char *argv[])
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
+    /*
+     * Add status bar (three sections: mesages, abs and rel coords)
+     */
+    hbox = gtk_hbox_new(FALSE, 0);
+    screen.statusbar.msgs = gtk_statusbar_new();
+    screen.statusbar.abs = gtk_statusbar_new();
+    screen.statusbar.absid = 0;
+    screen.statusbar.rel = gtk_statusbar_new();
+    screen.statusbar.relid = 0;
+    gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msgs, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.abs, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.rel, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     /*
      * Fill with files (eventually) given on command line
      */

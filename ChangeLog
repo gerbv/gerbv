@@ -1,3 +1,8 @@
+2002-06-13  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screeen.h: Added statusbar, prints cursor
+	  position as well as distance when measuring.
+
 2002-06-12  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Fixed autoscale() not to translate image out of

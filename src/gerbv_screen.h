@@ -58,6 +58,13 @@ typedef struct {
     GtkTooltips *tooltips;
     GtkWidget *layer_button[MAX_FILES];
     GtkWidget *popup_menu;
+    struct {
+	GtkWidget *msgs;
+	GtkWidget *abs;
+	guint absid;
+	GtkWidget *rel;
+	guint relid;
+    } statusbar;
 
     gerbv_state_t state;
     gboolean centered_outline_zoom;
