@@ -2,7 +2,7 @@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
-.B gerbv [ --version | -V]  gerberfile[s]
+.B gerbv [OPTIONS]  [gerberfile[s]]
 .SH DESCRIPTION
 .PP
 \fIgerbv\fP is a viewer for Gerber files. Gerber files is generated
@@ -18,10 +18,10 @@ On some platforms, which hasn't long option available, only
 short options are available.
 
 .SS gerbv Options
-.BI -V\ | --version
+.BI -V|--version
 Prints the version number of gerbv and exits.
 .TP
-.BI -b <backend>\ | --batch\=<backend>
+.BI -b\ <backend>|--batch=<backend>
 Calls <backend> with the current parsed file. Only available if you compiled
 in Guile support. 
 .TP
@@ -45,7 +45,7 @@ GTK debugging flags to unset
 .BI --gdk-debug= FLAGS
 GDK debugging flags to set
 .TP
-.BI --gdk-no-debugo= FLAGS
+.BI --gdk-no-debug= FLAGS
 GDK debugging flags to unset
 .TP
 .BI --display= DISPLAY
@@ -132,7 +132,7 @@ this with caution.
 
 If you call gerbv with --batch=<backend>, gerbv starts looking for a file
 namned gerb-<backend>.scm. It starts looking for it in the directory gerbv
-was invoked from, then it looks in \$HOME/.gerbv/scheme and finally in
+was invoked from, then it looks in $HOME/.gerbv/scheme and finally in
 @BACKEND_DIR@.
 
 Currently the only documentation on how to write a backend is the code in the
