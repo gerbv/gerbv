@@ -46,7 +46,7 @@
 #define COORD2MILS(c) ((c)*1000.0)
 #define COORD2MMS(c) ((c)*25.4)
 
-typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE, ALT_PRESSED} gerbv_state_t;
+typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE} gerbv_state_t;
 
 typedef enum {GERBV_MILS, GERBV_MMS} gerbv_unit_t;
 

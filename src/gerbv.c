@@ -1529,10 +1529,11 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
     switch (event->keyval) {
     case GDK_Shift_L:
     case GDK_Shift_R:
-	screen.centered_outline_zoom = 1;
-
-	if (screen.state == ZOOM_OUTLINE)
-	    gtk_widget_draw(widget, NULL);
+	if (screen.state == ZOOM_OUTLINE) {
+	    draw_zoom_outline(screen.centered_outline_zoom);
+	    screen.centered_outline_zoom = 1;
+	    draw_zoom_outline(screen.centered_outline_zoom);
+	}
 
 	if (screen.state == NORMAL) {
 	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
@@ -1543,8 +1544,7 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	break;
 
     case GDK_Alt_L:
-    case GDK_Alt_R: 
-	screen.state = ALT_PRESSED;
+    case GDK_Alt_R:
 	screen.selected_layer = -1;
 	break;
 
@@ -1628,7 +1628,7 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	break;
 
     case GDK_KP_0...GDK_KP_9:
-        if (screen.state == ALT_PRESSED) {
+        if (event->state & GDK_MOD1_MASK) { /*  Alt key pressed... */
 	    if (screen.selected_layer == -1) 
 		screen.selected_layer = event->keyval - GDK_KP_0;
 	    else
@@ -1660,28 +1660,24 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 static gint
 key_release_event (GtkWidget *widget, GdkEventKey *event)
 {
-    if (event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R) {
-	screen.centered_outline_zoom = 0;
-	if (screen.state == ZOOM_OUTLINE)
-	    gtk_widget_draw(widget, NULL);
-    }
-
-    switch (screen.state) {
-    case NORMAL:
-	if((event->keyval == GDK_Shift_L) ||
-	   (event->keyval == GDK_Shift_R)) {
-	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
-				  GERBV_DEF_CURSOR);
+    switch (event->keyval) {
+    case GDK_Shift_L:
+    case GDK_Shift_R:
+	if (screen.state == ZOOM_OUTLINE) {
+	    draw_zoom_outline(screen.centered_outline_zoom);
+	    screen.centered_outline_zoom = 0;
+	    draw_zoom_outline(screen.centered_outline_zoom);
+	} else if (screen.state == NORMAL) {
+	    GdkWindow *w = gtk_widget_get_parent_window(screen.drawing_area);
+	    gdk_window_set_cursor(w, GERBV_DEF_CURSOR);
 	}
 	break;
-    case ALT_PRESSED:
-	if ((event->keyval == GDK_Alt_L) || (event->keyval == GDK_Alt_R)) {
-	    if ((screen.selected_layer != -1) &&
-		(screen.selected_layer < MAX_FILES)){
-		TOGGLE_BUTTON(screen.layer_button[screen.selected_layer]);
-	    }
-	    screen.state = NORMAL;
-	}
+	
+    case GDK_Alt_L:
+    case GDK_Alt_R:
+	if (screen.selected_layer != -1 && screen.selected_layer < MAX_FILES)
+	    TOGGLE_BUTTON(screen.layer_button[screen.selected_layer]);
+
     default:
 	break;
     }
@@ -1738,7 +1734,6 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	screen.last_x = x;
 	screen.last_y = y;
 
-	
 	/*
 	 * Calls expose_event
 	 */
