@@ -1,3 +1,9 @@
+2001-10-31 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Added zooming with scroll wheel on mouse.
+	* README: Added info on how to configure XFree86 for scroll mouse.
+
+	
 2001-10-28 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerber.[hc]: Fixed bug causing parser to reports

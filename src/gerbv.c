@@ -454,6 +454,12 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	break;
     case 3 :
 	break;
+    case 4 : 
+	zoom(widget, (gpointer)1);
+	break;
+    case 5 : 
+	zoom(widget, (gpointer)0);
+	break;
     default:
     }
     

@@ -33,6 +33,18 @@ README for gerbv
   (5.7 and 5.8).
 
 
+- Scroll Wheel
+
+  gerbv supports zooming with scroll wheel. To be able to use scroll 
+  wheel in XFree86 3.x you have to edit XF86Config and add the line:
+	ZAxisMapping 4 5
+  in the Section "Pointer".
+
+  To use scrool wheel in XFree86 4.x you have to add the line:
+	Option   "ZAxisMapping"   "4 5"
+  under the input device describing your mouse.
+
+
 - License  
 
   gerbv and all associated files is placed under the GNU Public 
