@@ -687,8 +687,15 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     int nuf_points = 0;
 
 
-    if (image == NULL || image->netlist == NULL) 
-	    return 0;
+    if (image == NULL || image->netlist == NULL) {
+	/*
+	 * Destroy GCs before exiting
+	 */
+	gdk_gc_unref(line_gc);
+	gdk_gc_unref(err_gc);
+	
+	return 0;
+    }
     
     if (polarity == NEGATIVE) 
 	/* Black */
@@ -828,6 +835,12 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    err(1, "Unknown aperture state\n");
 	}
     }
+
+    /*
+     * Destroy GCs before exiting
+     */
+    gdk_gc_unref(line_gc);
+    gdk_gc_unref(err_gc);
     
     return 1;
 

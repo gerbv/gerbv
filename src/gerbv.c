@@ -607,8 +607,10 @@ redraw_pixmap(GtkWidget *widget)
     /*
      * Paranoia check
      */
-    if ((dmax_width < 0.0001) && (dmax_height < 0.0001)) 
+    if ((dmax_width < 0.0001) && (dmax_height < 0.0001)) {
+	gdk_gc_unref(gc);
 	return FALSE;
+    }
 
     /*
      * Setup scale etc first time we load a file
@@ -667,6 +669,8 @@ redraw_pixmap(GtkWidget *widget)
      * Calls expose_event
      */
     gtk_widget_draw(widget, &update_rect);
+
+    gdk_gc_unref(gc);
 
     return TRUE;
 } /* redraw_pixmap */
