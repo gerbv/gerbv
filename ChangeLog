@@ -1,3 +1,10 @@
+2002-06-06  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Added a crude measurement tool,
+	  renamed screen.zstart_[xy] since they are now used for measure-
+	  ment also. To use this tool hold down <SHIFT> while pressing
+	  button 1 (the leftmost). This functionality still needs some work.
+
 2002-06-06  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.c, src/gerb_image.h, src/gerber.c: Added counting and

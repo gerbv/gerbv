@@ -30,7 +30,7 @@
 #define INITIAL_SCALE 200
 #define MAX_FILES 20
 
-typedef enum {NORMAL, MOVE, ZOOM_OUTLINE} gerbv_state_t;
+typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE} gerbv_state_t;
 
 typedef struct {
     gerb_image_t *image;
@@ -63,8 +63,8 @@ typedef struct {
 
     gint last_x;
     gint last_y;
-    gint zstart_x;		/* Zoom box start coordinates */
-    gint zstart_y;
+    gint start_x;		/* Zoom box/measure start coordinates */
+    gint start_y;
 
     int trans_x; /* Translate offset */
     int trans_y;
