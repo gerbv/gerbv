@@ -1,3 +1,14 @@
+2001-12-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/drill.h, src/gerber.h, src/gerbv.c:
+	  Fixed bug caused by last minute namechange of 
+	  gerb_file.[hc].
+	* src/gerb_file.[hc]: Added functions gerb_fgetint and
+	  gerb_fgetdouble.
+	* src/drill.c, src/gerber.c: Utilize the new file read
+	  functions.
+	
+	
 2001-12-02 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerb_file.[hc], src/drill.[hc], src/gerber.[hc], gerbv.c:

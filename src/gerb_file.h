@@ -36,8 +36,8 @@ typedef struct file {
 
 gerb_file_t *gerb_fopen(char *filename);
 char gerb_fgetc(gerb_file_t *fd);
-int gerb_getint(gerb_file_t *fd);
-double gerb_getdouble(gerb_file_t *fd);
+int gerb_fgetint(gerb_file_t *fd);
+double gerb_fgetdouble(gerb_file_t *fd);
 void gerb_ungetc(gerb_file_t *fd);
 void gerb_fclose(gerb_file_t *fd);
 

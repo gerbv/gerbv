@@ -76,7 +76,7 @@ gerb_fgetc(gerb_file_t *fd)
 
 
 int
-gerb_getint(gerb_file_t *fd)
+gerb_fgetint(gerb_file_t *fd)
 {
     long int result;
     char *end;
@@ -89,7 +89,7 @@ gerb_getint(gerb_file_t *fd)
 
 
 double
-gerb_getdouble(gerb_file_t *fd)
+gerb_fgetdouble(gerb_file_t *fd)
 {
     double result;
     char *end;

@@ -101,7 +101,6 @@ static int drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image);
 static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image);
 static void drill_parse_coordinate(gerb_file_t *fd, char firstchar, double scale_factor, drill_state_t *state);
 static drill_state_t *new_state(drill_state_t *state);
-static int read_int(gerb_file_t *fd);
 static double read_double(gerb_file_t *fd, double scale_factor);
 static void eat_line(gerb_file_t *fd);
 
@@ -438,7 +437,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     char temp;
     double size;
 
-    tool_num = read_int(fd);
+    tool_num = gerb_fgetint(fd);
     if (tool_num == 0) return tool_num;
     if ((tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX)) 
 	err(1, "Tool out of bounds: %d\n", tool_num);
@@ -485,7 +484,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	case 'F':
 	case 'S' :
 	    /* Silently ignored. They're not important. */
-	    read_int(fd);
+	    gerb_fgetint(fd);
 	    break;
 
 	default:
@@ -634,38 +633,9 @@ new_state(drill_state_t *state)
 } /* new_state */
 
 
-/* This is a special read_int used in this file only.
-   Do not let it pollute the namespace by defining it in the .h-file */
-static int
-read_int(gerb_file_t *fd)
-{
-    char read;
-    int i = 0;
-    int neg = 0;
-
-    read = gerb_fgetc(fd); /* XXX Should check return value */
-
-    if (read == '-') {
-	neg = 1;
-	read = gerb_fgetc(fd); /* XXX Should check return value */
-    }
-
-    while (read >= '0' && read <= '9') {
-	i = i*10 + ((int)read - '0');
-	read = gerb_fgetc(fd); /* XXX Should check return value */
-    }
-
-    gerb_ungetc(fd);
-
-    if (neg)
-	return -i;
-    else
-	return i;
-} /* read_int */
-
-
 /* Reads one double from fd and returns it.
    If a decimal point is found, the scale factor is not used. */
+/* Too suspect. To be removed or improved. spe */
 static double
 read_double(gerb_file_t *fd, double scale_factor)
 {

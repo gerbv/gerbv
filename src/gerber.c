@@ -66,7 +66,6 @@ static int parse_M_code(gerb_file_t *fd);
 static void parse_rs274x(gerb_file_t *fd, gerb_image_t *image);
 static int parse_aperture_definition(gerb_file_t *fd, 
 				     gerb_aperture_t *aperture);
-static int read_int(gerb_file_t *fd);
 static void calc_cirseg_sq(struct gerb_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_mq(struct gerb_net *net, int cw, 
@@ -131,19 +130,19 @@ parse_gerb(gerb_file_t *fd)
 	    }
 	    break;
 	case 'X':
-	    state->curr_x = read_int(fd);
+	    state->curr_x = gerb_fgetint(fd);
 	    state->changed = 1;
 	    break;
 	case 'Y':
-	    state->curr_y = read_int(fd);
+	    state->curr_y = gerb_fgetint(fd);
 	    state->changed = 1;
 	    break;
 	case 'I':
-	    state->delta_cp_x = read_int(fd);
+	    state->delta_cp_x = gerb_fgetint(fd);
 	    state->changed = 1;
 	    break;
 	case 'J':
-	    state->delta_cp_y = read_int(fd);
+	    state->delta_cp_y = gerb_fgetint(fd);
 	    state->changed = 1;
 	    break;
 	case '%':
@@ -342,7 +341,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	state->changed = 1;
     } else if (strncmp(op, "54", 2) == 0) { /* Tool prepare */
 	if (gerb_fgetc(fd) == 'D')   /* XXX Check return value */
-	    state->curr_aperture = read_int(fd);
+	    state->curr_aperture = gerb_fgetint(fd);
 	else
 	    err(1, "Strange code after G54\n");
 	
@@ -379,7 +378,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 {
     int a;
     
-    a = read_int(fd);
+    a = gerb_fgetint(fd);
     switch(a) {
     case 1 : /* Exposure on */
 	state->aperture_state = ON;
@@ -519,10 +518,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
 	while (op[0] != '*') {
 	    switch (op[0]) {
 	    case 'A' :
-		fscanf(fd->fd, "%lf", &(image->info->offset_a));
+		image->info->offset_a = gerb_fgetdouble(fd);
 		break;
 	    case 'B' :
-		fscanf(fd->fd, "%lf", &(image->info->offset_b));
+		image->info->offset_b = gerb_fgetdouble(fd);
 		break;
 	    default :
 		err(1, "Wrong character in offset:%c\n", op[0]);
@@ -606,7 +605,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
     
     bzero(type, sizeof(type)/sizeof(type[0]));
     
-    ano = read_int(fd);
+    ano = gerb_fgetint(fd);
     
     for (i = 0, type[i] = gerb_fgetc(fd); type[i] != ','; i++, type[i] = gerb_fgetc(fd));
     
@@ -634,7 +633,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
     }
     
     for (read = 'X', i = 0; (read == 'X') && i < 5; read = gerb_fgetc(fd), i++)
-	fscanf(fd->fd, "%lf", &(aperture->parameter[i]));
+	aperture->parameter[i] = gerb_fgetdouble(fd);
     
     aperture->nuf_parameters = i;
     
@@ -642,34 +641,6 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
 
     return ano;
 } /* parse_aperture_definition */
-
-
-static int
-read_int(gerb_file_t *fd)
-{
-    char read;
-    int i = 0;
-    int neg = 0;
-    
-    read = gerb_fgetc(fd); /* XXX Should check return value */
-    
-    if (read == '-') {
-	neg = 1;
-	read = gerb_fgetc(fd); /* XXX Should check return value */
-    }
-    
-    while (read >= '0' && read <= '9') {
-	i = i*10 + ((int)read - '0');
-	read = gerb_fgetc(fd); /* XXX Should check return value */
-    }
-    
-    gerb_ungetc(fd);
-
-    if (neg)
-	return -i;
-    else
-	return i;
-} /* read_int */
 
 
 static void 
