@@ -5,6 +5,7 @@
 
 #define _SCHEME_SOURCE
 #include "dynload.h"
+#include "gerb_file.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -131,7 +132,7 @@ static void make_filename(const char *name, char *filename) {
 }         
 
 static void make_init_fn(const char *name, char *init_fn) {
- const char *p=strrchr(name,'/');
+ const char *p=strrchr(name,'/');/*CHECK ME MINGW PATH SEPARATOR*/
  if(p==0) {
      p=name;
  } else {

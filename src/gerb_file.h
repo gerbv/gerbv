@@ -44,6 +44,9 @@ char *gerb_fgetstring(gerb_file_t *fd, char term);
 void gerb_ungetc(gerb_file_t *fd);
 void gerb_fclose(gerb_file_t *fd);
 
+extern
+const char path_separator;
+
 /*
  * Search for files in directories pointed out by paths, a NULL terminated
  * list of directories to search. If a string in paths starts with a $, then

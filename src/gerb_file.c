@@ -38,7 +38,7 @@
 #include <sys/mman.h>
 #endif
 #include <errno.h>
-
+#include "gerb_error.h"
 #include "gerb_file.h"
 
 
@@ -229,7 +229,8 @@ gerb_find_file(char *filename, char **paths)
 	    int len;
 
 	    /* Extract environment name. Remember we start with a $ */
-	    tmp = strchr(paths[i], '/');
+        
+   	    tmp = strchr(paths[i], path_separator);
 	    if (tmp == NULL) 
 		len = strlen(paths[i]) - 1;
 	    else
@@ -253,13 +254,13 @@ gerb_find_file(char *filename, char **paths)
 	 */
 	complete_path = (char *)malloc(strlen(curr_path) + strlen(filename) + 2);
 	strcpy(complete_path, curr_path);
-	complete_path[strlen(curr_path)] = '/';
+	complete_path[strlen(curr_path)] = path_separator;
 	complete_path[strlen(curr_path) + 1] = '\0';
 	strncat(complete_path, filename, strlen(filename));
 
 	if (access(complete_path, R_OK) != -1)
 	    break;
-
+//    GERB_MESSAGE("Could not Find %s", complete_path);
 	free(complete_path);
 	complete_path = NULL;
     }

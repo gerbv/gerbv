@@ -1,3 +1,8 @@
+2004-09-05 Juergen Haas <juergenhaas@gmx.net>
+
+	*fixed right click shows designator in statusbar does not hang program
+	*MINGW issues with path separators
+
 2004-09-04 Juergen Haas <juergenhaas@gmx.net>
 
 	*fixed graphical representation of parts

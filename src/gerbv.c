@@ -94,6 +94,12 @@ typedef struct {
  * of what's happening on the screen.
  */
 gerbv_screen_t screen;
+#if defined (__MINGW32__)
+const char path_separator = '\\';
+#else
+const char path_separator = '/';
+#endif
+
 
 #define SAVE_PROJECT 0
 #define SAVE_AS_PROJECT 1
@@ -1380,7 +1386,8 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
         gtk_tree_model_get              (GTK_TREE_MODEL(interface.model),
                                          &iter,
                                          COLUMN_DESIGNATOR, &designator, COLUMN_mid_x, &mid_x, COLUMN_mid_y, &mid_y, COLUMN_width, &width, COLUMN_length, &length,  -1);                                  
-            if (((event->x <= (mid_x + width*3)) || (event->x >= (mid_x - width*3))) && ((event->y <= (mid_y + length*3)) || (event->y >= (mid_y - length*3)))) {
+            if (((event->x <= (mid_x + width/2)) || (event->x >= (mid_x - width/2))) 
+                && ((event->y <= (mid_y + length/2)) || (event->y >= (mid_y - length/2)))) {
                 //pointer must be in range  
                 
                 if ( ! g_utf8_validate(designator, -1, NULL)) {
@@ -1398,6 +1405,7 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
                 snprintf(screen.statusbar.diststr, MAX_DISTLEN,
 		             "Part: %s", designator);
                 GERB_MESSAGE("The part you have selected is: %s\n", designator);
+                break;
 
             }                                              
         } while ((tmp_path = g_list_next(tmp_list)) != NULL);
@@ -1769,7 +1777,8 @@ open_image(char *filename, int idx, int reload)
     /*
      * Try to get a basename for the file
      */
-    cptr = strrchr(filename, '/');
+     
+    cptr = strrchr(filename, path_separator);
     if (cptr) {
 	int len;
 
@@ -2615,10 +2624,10 @@ main(int argc, char *argv[])
      */
     memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
-#ifdef HAVE_LIBGEN_H    
+ #ifdef HAVE_LIBGEN_H    
     screen.execpath = dirname(argv[0]);
 #else 
-//    screen.execpath = argv[0];
+    screen.execpath = "";
 #endif    
     screen.transf = gerb_transf_new();
     screen.transf->scale = 0.0; // will force reinitialization of the screen later

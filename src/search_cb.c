@@ -202,7 +202,7 @@ open_pnp(char *filename, int idx, int reload)
      * set up properties
      */
    
-    cptr = strrchr(filename, '/');
+    cptr = strrchr(filename, path_separator);
     if (cptr) {
 	    int len;
 

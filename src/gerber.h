@@ -37,7 +37,6 @@ extern "C" {
  */
 gerb_image_t *parse_gerb(gerb_file_t *fd);
 
-
 #ifdef __cplusplus
 }
 #endif

@@ -208,7 +208,7 @@ read_project_file(char *filename)
 
     initfile = gerb_find_file("init.scm", initdirs);
     if (initfile == NULL) {
-	GERB_MESSAGE("Didin't find init.scm.\n");
+	GERB_MESSAGE("Didn't find init.scm.\n");
 	return NULL;
     }
     if ((fd = fopen(initfile, "r")) == NULL) {
