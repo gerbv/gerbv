@@ -38,8 +38,6 @@
 #define MAX_COORDLEN 28
 #define MAX_DISTLEN 45
 #define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
-#define GERBV_DISTFONTNAME "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1"
-#define GERBV_STATUSFONTNAME "-*-fixed-*-*-normal--*-100-*-*-*-*-iso8859-1"
 
 /* Macros to convert between unscaled gerber coordinates and other units */
 /* XXX NOTE: Currently unscaled units are assumed as inch, this is not
@@ -80,11 +78,6 @@ typedef struct {
 	GtkWidget *scale;
 	GtkWidget *log;
     } win;
-
-    struct {
-	int to_file;      /* Log to file */
-	char *filename;
-    } log;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;

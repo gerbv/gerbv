@@ -61,6 +61,7 @@
 #include "gerbv_screen.h"
 #include "gerbv_icon.h"
 #include "log.h"
+#include "setup.h"
 #ifdef EXPORT_PNG
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
@@ -136,6 +137,8 @@ destroy(GtkWidget *widget, gpointer data)
 	free(screen.zoom_outline_color);
     if (screen.dist_measure_color)
 	free(screen.dist_measure_color);
+
+    setup_destroy();
 
     gtk_main_quit();
 } /* destroy */
@@ -1873,7 +1876,7 @@ draw_measure_distance(void)
     values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
     gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
-    font = gdk_font_load(GERBV_DISTFONTNAME);
+    font = gdk_font_load(setup.dist_fontname);
 
     x1 = MIN(screen.start_x, screen.last_x);
     y1 = MIN(screen.start_y, screen.last_y);
@@ -1883,7 +1886,7 @@ draw_measure_distance(void)
     gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
 		  screen.start_y, screen.last_x, screen.last_y);
     if (font == NULL) {
-	GERB_MESSAGE("Failed to load font '%s'\n", GERBV_DISTFONTNAME);
+	GERB_MESSAGE("Failed to load font '%s'\n", setup.dist_fontname);
     } else {
 	gchar string[65];
 	double delta, dx, dy;
@@ -2156,6 +2159,8 @@ internal_main(int argc, char *argv[])
      */
     memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
+
+    setup_init();
 	
 #ifdef HAVE_GETOPT_LONG
     while ((read_opt = getopt_long(argc, argv, "Vb:l:", 
@@ -2221,8 +2226,8 @@ internal_main(int argc, char *argv[])
 		fprintf(stderr, "You must give a filename to send log to\n");
 		exit(1);
 	    }
-	    screen.log.to_file = 1;
-	    screen.log.filename = optarg;
+	    setup.log.to_file = 1;
+	    setup.log.filename = optarg;
 	    break;
 	case '?':
 
@@ -2345,7 +2350,7 @@ internal_main(int argc, char *argv[])
     screen.statusbar.msg = gtk_label_new("");
     gtk_label_set_justify(GTK_LABEL(screen.statusbar.msg), GTK_JUSTIFY_LEFT);
     textStyle = gtk_style_new();
-    textStyle->font = gdk_font_load(GERBV_STATUSFONTNAME);
+    textStyle->font = gdk_font_load(setup.status_fontname);
     gtk_widget_set_style(GTK_WIDGET(screen.statusbar.msg), textStyle);
     screen.statusbar.msgstr[0] = '\0';
     screen.statusbar.coordstr[0] = '\0';

@@ -43,6 +43,7 @@
 #include "log.h"
 #include "color.h"
 #include "gerbv_screen.h"
+#include "setup.h"
 
 /*  #define SAVE_LOGFILE */
 
@@ -233,9 +234,9 @@ gerbv_gtk_log_handler(const gchar *log_domain,
     /*
      * Print text to logfile if we have demanded it.
      */
-    if(screen.log.to_file) {	/* Append log message to file if required */
+    if(setup.log.to_file) {	/* Append log message to file if required */
 	FILE *fd = NULL;
-	fd = fopen(screen.log.filename, "a");
+	fd = fopen(setup.log.filename, "a");
 	if(fd) {
 	    switch(log_level & G_LOG_LEVEL_MASK) {
 	    case G_LOG_LEVEL_ERROR:

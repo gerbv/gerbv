@@ -1,3 +1,11 @@
+2003-02-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/Makefile.am,src/gerbv.c,src/gerbv_screen.h,src/log.c,
+	  src/setup.[hc]: Added setup to handle all things that can
+	  be setup by commandline or (future) rc files. We have the
+	  screen variable, but some didn't think it was appropriate
+	  to add setup things to.
+
 2003-02-22  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Changed comparision if two angles are equal
