@@ -38,6 +38,7 @@
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 
 typedef struct gerb_state {
+    enum unit_t unit;
     int curr_x;
     int curr_y;
     int prev_x;
@@ -153,13 +154,24 @@ parse_gerb(gerb_file_t *fd)
 	    curr_net = curr_net->next;
 	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 	    
-	    /*
-	     * Scale to given coordinate format
-	     * XXX only "omit leading zeros".
-	     */
 	    if (image && image->format ){
+		/*
+		 * Scale to given coordinate format
+		 * XXX only "omit leading zeros".
+		 */
 		x_scale = pow(10.0, (double)image->format->x_dec);
 		y_scale = pow(10.0, (double)image->format->y_dec);
+
+		/*
+		 * If G70/G71 is not used we should use default unit.
+		 * It's only millimeter that needs to be converted.
+		 */
+		if (((state->unit == UNIT_UNKNOWN) && 
+		     (image->info->unit == MM)) || 
+		    state->unit == MM) {
+		    x_scale *= 25.4;
+		    y_scale *= 25.4;
+		}
 	    }
 	    
 	    curr_net->start_x = (double)state->prev_x / x_scale;
@@ -340,10 +352,10 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
     case 55: /* Prepare for flash */
 	break;
     case 70: /* Specify inches */
-	NOT_IMPL(fd, "G70");
+	state->unit = INCH;
 	break;
     case 71: /* Specify millimeters */
-	NOT_IMPL(fd, "G71");
+	state->unit = MM;
 	break;
     case 74: /* Disable 360 circular interpolation */
 	state->prev_interpolation = state->interpolation;
@@ -564,6 +576,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    break;
 	case A2I('M','M'):
 	    image->info->unit = MM;
+	    GERB_COMPILE_WARNING("This file uses millimeter. gerbv doesn't support millimeter fully, especially in apertures.\n");
 	    break;
 	default:
 	    GERB_COMPILE_ERROR("Illegal unit:%c%c\n", op[0], op[1]);

@@ -36,7 +36,7 @@ extern "C" {
 	
 enum aperture_state_t {OFF, ON, FLASH};
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
-enum unit_t {INCH, MM};
+enum unit_t {UNIT_UNKNOWN, INCH, MM};
 enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
 enum omit_zeros_t {LEADING, TRAILING, EXPLICIT};
 enum coordinate_t {ABSOLUTE, INCREMENTAL};

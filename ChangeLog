@@ -1,3 +1,16 @@
+2003-01-25  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c, src/gerb_image.[hc]: Added a patch from
+	  Holger Waechtler regarding G70/G71 which opened up a whole
+	  can of worms. After thinking and hacking the following works:
+	  * all in inches (as always).
+	  * apertures in inches and vectors in millimeters.
+	  The reason for not fixing apertures in millimeter are because
+	  the calculation must happen in the drawing engine, since we
+	  don't know until the moment of drawing if the paramters defines
+	  a length or an angle. It's probably just a matter of fixing the
+	  scaling when drawing, but I fix that later on.
+
 2003-01-19  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Fixed bug in arc/circle drawing that caused

@@ -48,6 +48,12 @@ new_gerb_image(gerb_image_t *image)
 		image->info->min_y = HUGE_VAL;
 		image->info->max_x = -HUGE_VAL;
 		image->info->max_y = -HUGE_VAL;
+
+		/* 
+		 * "Inches are assumed if units are not specified"
+		 * rs274xrevd_e.pdf, p. 39
+		 */
+		image->info->unit = INCH;
 		
 		return image;
 	    }
