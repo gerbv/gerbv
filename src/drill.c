@@ -261,14 +261,14 @@ parse_drillfile(gerb_file_t *fd)
 		/* Unrecognised crap in the header is thrown away */
 		eat_line(fd);
 	    } else {
-		fprintf(stderr,
+		GERB_COMPILE_ERROR(
 			"Warning: Found ill fitting character '%c' [0x%02x] inside data, ignoring\n",
 			read, read);
 	    }
 	}
     }
 
-    fprintf(stderr, "Warning: File is missing drill End-Of-File\n");
+    GERB_COMPILE_ERROR("Warning: File is missing drill End-Of-File\n");
 
     return image;
 } /* parse_drillfile */
@@ -484,7 +484,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     temp = gerb_fgetc(fd);
     if( !(isdigit(temp) != 0 || temp == '+' || temp =='-') ) {
 	if(temp != EOF) {
-	    fprintf(stderr,
+	    GERB_COMPILE_ERROR(
 		    "Warning: Junk text found in place of tool definition.\n"
 		    "         Please ask your CAD vendor to stop doing that.\n");
 	    eat_line(fd);
@@ -573,10 +573,10 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	   use T00 at the end of the file while others that don't have
 	   tool definitions inside the file never seem to use T00 at all */
 	if(tool_num != 0) {
-	    fprintf(stderr,
+	    GERB_COMPILE_ERROR(
 		    "Warning: Tool %02d used without being defined\n",
 		    tool_num);
-	    fprintf(stderr,
+	    GERB_COMPILE_ERROR(
 		    "         Setting a default size of %g\"\n",
 		    image->aperture[tool_num]->parameter[0]);
 	}
