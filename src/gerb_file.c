@@ -41,11 +41,18 @@
 
 #include "gerb_file.h"
 
+
+
+
+
+
+
 gerb_file_t *
 gerb_fopen(char *filename)
 {
     gerb_file_t *fd;
     struct stat statinfo;
+    
 
 #ifdef HAVE_SYS_MMAN_H
     fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
@@ -92,7 +99,7 @@ gerb_fopen(char *filename)
     }
     
     fd->fd = fopen(filename, "r");
-
+    printf("gerberfile:\n%p",fd->fd);
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
     fstat(fd->fileno, &statinfo);
@@ -112,10 +119,9 @@ gerb_fopen(char *filename)
         return NULL;
     }
     fread((void*)fd->data, 1, statinfo.st_size, fd->fd);
-  /*FIXME close fd*/
-  #endif   
+   #endif   
 #endif
-
+    printf("We finished MINGW gerb_fopen routine");
     return fd;
 } /* gerb_fopen */
 

@@ -1,7 +1,48 @@
+2004-08-07 09:29 Search9-pre6:
+introduced GtkEntryCompletion listing choices for entry
+	so far only works for designators
+started automatic scrolling to first hit on event->keyval
+-----------------------------
+2004-08-04 09:29 search9-pre5:
+TODO introduction of libmba csv functions sublicensed under MIT
+ csv.[ch] have been extracted and made independent from msgno.[ch] and text.[ch] the latter 
+ two wont be included 
+-----------------------------
+2004-08-03 09:30 Search9-pre4:
+search_gui.c:
+	-fixed error with default layer selection:now always last layer is default, based on 
+	MAX_FILES
+cleaned up code
+-----------------------------
+Search9-pre3:
+TODO-towards project saving: added filename if pnp file is loaded
+	dont know how to handle loading of files because pnp file is not compatible to 
+	gerberfile
+	->maybe including check for pnpfile in gerb_fopen?
+-search-gui.c:
+	*implemented intelligent top/bottom selector
+		if sel exists, only non matching (either tpo or bottom parts) will be 
+		unselected
+		if no sel exists, all top or bottom parts are selected
+	*implemented gtkcombobox for accessing layers, it will actually not allow overwriting 
+	existing 
+ 	layers( gerberfile displays), if loaded last after all gerberfiles 
+	dynamic update of list to be more flexible
+		ok - used gtkliststore and GtkCellLayout for labels in Gtk_Combo_Box dropdown 
+		list
+
+TODO-MINGW: fgets seems to report NULL ???!!
+-implemented #ifdef __MINGW32__ , HAVE LIBGEN_H, HAVE MMAN_SYS_H and HAVE_REGEX_H for 
+	portability issues under WIN32/mingw
+-------------------------------------
+
+
+2004-07-28  Stefan Petersen  <spe@stacken.kth.se>
+ draw.c
+
 2004-07-12 (summary) Juergen Haas/Tomasz Motylewski <juergenhaas@gmx.net> 
 
 	[pleases direct any questions, comments or bug reports to me or Tomasz]
-
 	* added new functionality: search, select and mark parts in layers 
 	  16-19 by loading a "Pick and Place" file in CSV Format: 
 	  		 entry1,entry2,..

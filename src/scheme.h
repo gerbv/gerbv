@@ -32,7 +32,6 @@
 #  define SCHEME_EXPORT __declspec(dllimport)
 # endif
 #endif
-#endif
 
 #if USE_NO_FEATURES
 # define USE_MATH 0

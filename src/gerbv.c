@@ -54,6 +54,7 @@
 #include <pango/pango.h>
 #endif
 
+
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
@@ -167,6 +168,7 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
 #ifdef USE_GTK2    
     {"/File/_Load Pick&Place...",NULL, load_pnp_file_popup,  0, NULL},
+    {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
 #endif    
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
@@ -595,11 +597,14 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 #ifdef HAVE_LIBGEN_H    
     if (open_image(filename, screen.curr_index, FALSE) != -1) {
 
+#ifdef HAVE_LIBGEN_H    
+
 	/*
 	 * Remember where we loaded file from last time
 	 */
 	filename = dirname(filename);
-	if (screen.path)
+#endif        
+    if (screen.path)
 	    free(screen.path);
 	screen.path = (char *)malloc(strlen(filename) + 1);
 	strcpy(screen.path, filename);
@@ -812,12 +817,14 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	}
 	
 	if (screen.path) {
+            printf("screen.path exists");
 	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
 	    memset(project_list, 0, sizeof(project_list_t));
 	    project_list->next = project_list;
 	    project_list->layerno = -1;
 	    project_list->filename = screen.path;
 	    project_list->rgb[0] = screen.background->red;
+            printf("screen.background ok");
 	    project_list->rgb[1] = screen.background->green;
 	    project_list->rgb[2] = screen.background->blue;
 	    project_list->next = NULL;
@@ -830,11 +837,13 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 		tmp->next = project_list;
 		tmp->layerno = idx;
 		tmp->filename = screen.file[idx]->name;
+                printf(" we got the name right have we?\n");
 		tmp->rgb[0] = screen.file[idx]->color->red;
 		tmp->rgb[1] = screen.file[idx]->color->green;
 		tmp->rgb[2] = screen.file[idx]->color->blue;
 		tmp->inverted = screen.file[idx]->inverted;
 		project_list = tmp;
+                printf(" end of this lloop\n");
 	    }
 	}
 	if (write_project_file(screen.project, project_list)) {
@@ -850,12 +859,17 @@ cb_ok_project(GtkWidget *widget, gpointer data)
      * Remember where we loaded file from last time
      */
     filename = dirname(filename);
+#endif 
     if (screen.path)
 	free(screen.path);
     screen.path = (char *)malloc(strlen(filename) + 1);
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
+<<<<<<< gerbv.c
+   
+=======
 #endif    
+>>>>>>> 1.142.4.2
 
  cb_ok_project_end:
     if (screen.win.project) {
@@ -1066,7 +1080,8 @@ autoscale(void)
     screen.gerber_bbox.y2 = -HUGE_VAL;
 
     for(i = 0; i < MAX_FILES; i++) {
-        if (screen.file[i]) {
+    /*check if not only screen.file[] exists, but also if it is not a search and select layer*/
+        if ((screen.file[i]) && (screen.file[i]->image != NULL)){
             
             /* 
              * Find the biggest image and use as a size reference
@@ -2715,9 +2730,15 @@ main(int argc, char *argv[])
 		free(screen.path);
 	    screen.path = (char *)malloc(strlen(project_filename) + 1);
 	    strcpy(screen.path, project_filename);
+#ifdef HAVE_LIBGEN_H             
 	    dirname(screen.path);
+#endif
 	    screen.path = strncat(screen.path, "/", 1);
+<<<<<<< gerbv.c
+            
+=======
 #endif            
+>>>>>>> 1.142.4.2
 	    
             rename_main_window(screen.project, NULL);
 	} else {
