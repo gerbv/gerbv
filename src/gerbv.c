@@ -78,12 +78,16 @@ typedef struct gerbv_screen {
     GdkPixmap *pixmap;
     GdkColor  *background;
     GdkColor  *err_color;
+    
+    GtkWidget *open_file_popup;
+    GtkWidget *color_selection_popup;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
 
     GtkTooltips *tooltips;
     GtkWidget *layer_button[MAX_FILES];
+    GtkWidget *popup_menu;
 
     enum gerbv_state_t state;
 
@@ -100,6 +104,7 @@ gerbv_screen_t screen;
 
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
+static void color_selection_popup(GtkWidget *widget, gpointer data);
 static void open_file_popup(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static gint redraw_pixmap(GtkWidget *widget);
@@ -132,6 +137,11 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Zoom/_In",   "<alt>I", zoom     ,    1, NULL},
     {"/Zoom/sep1",  NULL,          NULL,    0, "<Separator>"},
     {"/Zoom/_Fit",  NULL,     zoom     ,    2, NULL},
+};
+
+static GtkItemFactoryEntry popup_menu_items[] = {
+    {"/Layer Color...", NULL, color_selection_popup, 0, NULL},
+    {"/Open _File...", NULL, open_file_popup, 0, NULL},
 };
 
 
@@ -168,6 +178,27 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
 } /* create_menubar */
 
 
+/*
+ * By redesigning create_menubar we can probably do without this function
+ */
+static void
+create_popupmenu(GtkWidget **popupmenu)
+{
+    int nmenu_items = sizeof(popup_menu_items) / sizeof(popup_menu_items[0]);
+    GtkItemFactory *item_factory;
+
+    item_factory = gtk_item_factory_new(GTK_TYPE_MENU, "<popup>", NULL);
+    gtk_item_factory_create_items(item_factory, nmenu_items, popup_menu_items,
+				  NULL);
+    
+    if(popupmenu)
+	/* Finally, return the actual menu bar created by the item factory. */
+	*popupmenu = gtk_item_factory_get_widget(item_factory, "<popup>");
+
+    return;
+} /* create_popupmenu */
+
+
 static void
 cb_layer_button(GtkWidget *widget, gpointer data)
 {
@@ -178,6 +209,34 @@ cb_layer_button(GtkWidget *widget, gpointer data)
     redraw_pixmap(screen.drawing_area);
 
 } /* cb_layer_button */
+
+
+static gint
+layer_button_press_event(GtkWidget *widget, GdkEventButton *event, 
+			 gpointer button)
+{
+    GdkEventButton *event_button;
+
+    if (event->type != GDK_BUTTON_PRESS) {
+	return FALSE;
+    }
+
+    event_button = (GdkEventButton *) event;
+
+    /*
+     * Only button 3 accepted
+     */
+    if (event_button->button != 3) {
+	return FALSE;
+    }
+
+    gtk_menu_popup(GTK_MENU(screen.popup_menu), NULL, NULL, NULL, NULL, 
+		   event_button->button, event_button->time);
+    
+    screen.curr_index = (long int)button;
+
+    return TRUE;
+} /*layer_button_press_event */
 
 
 static GtkWidget *
@@ -193,15 +252,120 @@ create_layer_buttons(int nuf_buttons)
     for (bi = 0; bi < nuf_buttons; bi++) {
 	sprintf(info, "%ld", bi);
 	button = gtk_toggle_button_new_with_label(info);
+
 	gtk_signal_connect(GTK_OBJECT(button), "toggled", 
 			   GTK_SIGNAL_FUNC(cb_layer_button),
 			   (gpointer)bi);
+	gtk_signal_connect(GTK_OBJECT(button), "button_press_event",
+			   GTK_SIGNAL_FUNC(layer_button_press_event), 
+			   (gpointer)bi);
+
 	gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
 	screen.layer_button[bi] = button;
     }
 
     return box;
 } /* create_layer_buttons */
+
+
+static void
+color_selection_destroy(GtkWidget *widget, gpointer data)
+{
+    gtk_grab_remove(widget);
+} /* color_selection_destroy */
+
+
+static void
+color_selection_ok(GtkWidget *widget, gpointer data)
+{
+    GtkColorSelection *colorsel;
+    gdouble color[4];
+    GtkStyle *oldstyle, *newstyle;
+
+    /* Get selected color */
+    colorsel = GTK_COLOR_SELECTION(GTK_COLOR_SELECTION_DIALOG
+				   (screen.color_selection_popup)->colorsel);
+    gtk_color_selection_get_color(colorsel, color);
+
+    /* Allocate new color  */
+    screen.file[screen.curr_index]->color = 
+	alloc_color((int)(color[0] * MAX_COLOR_RESOLUTION), 
+		    (int)(color[1] * MAX_COLOR_RESOLUTION), 
+		    (int)(color[2] * MAX_COLOR_RESOLUTION), 
+		    NULL);
+
+    /* Redraw image on screen */
+    redraw_pixmap(screen.drawing_area);
+
+    /* Change color on button too */
+    oldstyle = gtk_widget_get_style(screen.layer_button[screen.curr_index]);
+    newstyle = gtk_style_copy(oldstyle);
+    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[screen.curr_index]->color);
+    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[screen.curr_index]->color);
+    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[screen.curr_index]->color);
+    gtk_widget_set_style(screen.layer_button[screen.curr_index], newstyle);
+
+    /* Remove modal grab and destroy color selection dialog */
+    gtk_grab_remove(screen.color_selection_popup);
+    gtk_widget_destroy(screen.color_selection_popup);
+    screen.color_selection_popup = NULL;
+
+} /* cb_ok_color_selection */
+
+
+static void
+color_selection_popup(GtkWidget *widget, gpointer data)
+{
+    gdouble curr_color[4];
+
+    if (screen.file[screen.curr_index] == NULL)
+	return;
+
+    screen.color_selection_popup = gtk_color_selection_dialog_new("Color Selection");
+
+    gtk_color_selection_set_update_policy
+	(GTK_COLOR_SELECTION
+	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->colorsel),
+	 GTK_UPDATE_CONTINUOUS);
+
+    gtk_signal_connect_object
+	(GTK_OBJECT
+	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->cancel_button),
+	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+	 GTK_OBJECT(screen.color_selection_popup));
+
+    gtk_signal_connect
+	(GTK_OBJECT
+	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->ok_button),
+	 "clicked", GTK_SIGNAL_FUNC(color_selection_ok), NULL);
+
+    gtk_signal_connect(GTK_OBJECT(screen.color_selection_popup), "destroy",
+		       GTK_SIGNAL_FUNC(color_selection_destroy),
+		       NULL);
+
+    /* Get current color and use it as a start in color selection dialog */
+    curr_color[0] = (gdouble)screen.file[screen.curr_index]->color->red / 
+	(gdouble)MAX_COLOR_RESOLUTION;
+    curr_color[1] = (gdouble)screen.file[screen.curr_index]->color->green / 
+	(gdouble)MAX_COLOR_RESOLUTION;
+    curr_color[2] = (gdouble)screen.file[screen.curr_index]->color->blue / 
+	(gdouble)MAX_COLOR_RESOLUTION;
+    curr_color[3] = 0.0; /* Actually don't know how to get this value */
+
+    /* Now set this color in color selection dialog */
+    gtk_color_selection_set_color
+	(GTK_COLOR_SELECTION(GTK_COLOR_SELECTION_DIALOG
+			     (screen.color_selection_popup)->colorsel),
+	 curr_color);
+
+    /* Display widget */
+    gtk_widget_show(screen.color_selection_popup);
+
+    /* Make widget modal */
+    gtk_grab_add(screen.color_selection_popup);
+
+    return;
+} /* color_selection_popup */
 
 
 static void
@@ -212,7 +376,11 @@ cb_ok_open_file(GtkWidget *widget, GtkFileSelection *fs)
     
     /* Make loaded image appear on screen */
     redraw_pixmap(screen.drawing_area);
+
+    gtk_grab_remove(screen.open_file_popup);
     
+    screen.open_file_popup = NULL;
+
     return;
 } /* cb_ok_open_file */
 
@@ -220,22 +388,24 @@ cb_ok_open_file(GtkWidget *widget, GtkFileSelection *fs)
 static void
 open_file_popup(GtkWidget *widget, gpointer data)
 {
-    /* File Selection Window */
-    GtkWidget *fsw;
+    screen.open_file_popup = gtk_file_selection_new("Select File To View");
+    
+    gtk_signal_connect
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.open_file_popup)->ok_button),
+	 "clicked", GTK_SIGNAL_FUNC(cb_ok_open_file), 
+	 (gpointer)screen.open_file_popup);
+    gtk_signal_connect_object
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.open_file_popup)->ok_button),
+	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+	 (gpointer)screen.open_file_popup);
+    gtk_signal_connect_object
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.open_file_popup)->cancel_button),
+	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+	 (gpointer)screen.open_file_popup);
+    
+    gtk_widget_show(screen.open_file_popup);
 
-    fsw = gtk_file_selection_new("Select File To View");
-    
-    gtk_signal_connect(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
-		       "clicked", GTK_SIGNAL_FUNC(cb_ok_open_file), 
-		       (gpointer)fsw);
-    gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
-			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-			      (gpointer)fsw);
-    gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->cancel_button),
-			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-			      (gpointer)fsw);
-    
-    gtk_widget_show(fsw);
+    gtk_grab_add(screen.open_file_popup);
     
     return;
 } /* open_file_popup */
@@ -468,6 +638,9 @@ open_image(char *filename, int index)
 
     screen.file[index]->color = alloc_color(r, g, b, NULL);
 
+    /* 
+     * Set color on layer button
+     */
     defstyle = gtk_widget_get_default_style();
     newstyle = gtk_style_copy(defstyle);
     newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[index]->color);
@@ -475,8 +648,12 @@ open_image(char *filename, int index)
     newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[index]->color);
     gtk_widget_set_style(screen.layer_button[index], newstyle);
 
+    /* 
+     * Tool tips on button is the file name 
+     */
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
 			 filename, NULL); 
+
     gerb_fclose(fd);
 
     return;
@@ -487,7 +664,7 @@ static gint
 configure_event (GtkWidget *widget, GdkEventConfigure *event)
 {
     return redraw_pixmap(widget);
-} /*configure_event */
+} /* configure_event */
 
 
 static gint
@@ -624,6 +801,14 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 
     gdk_pixmap_unref(new_pixmap);
     gdk_gc_unref(gc);
+
+    /*
+     * Raise popup windows if they happen to disappear
+     */
+    if (screen.open_file_popup && screen.open_file_popup->window)
+	gdk_window_raise(screen.open_file_popup->window);
+    if (screen.color_selection_popup && screen.color_selection_popup->window)
+	gdk_window_raise(screen.color_selection_popup->window);
 
     return FALSE;
 } /* expose_event */
@@ -864,8 +1049,9 @@ internal_main(int argc, char *argv[])
     gtk_box_pack_start(GTK_BOX(hbox), screen.drawing_area, TRUE, TRUE, 0);
     
     /*
-     * Build layer buttons
+     * Build layer buttons with popup menus
      */
+    create_popupmenu(&screen.popup_menu);
     gtk_box_pack_start(GTK_BOX(hbox), create_layer_buttons(MAX_FILES), 
 		       FALSE, FALSE, 0);
 
