@@ -21,7 +21,15 @@ Fredrik Jonsson <fredrikj@spirea.com>
  - Sent me actual EagleCad files so I saw the bugs.
 
 Joachim Jansen <jj@ekf.de>
- - Found and reported several bugs.
+ - Found and reported several bugs and came with very inspiring ideas
+   which made gerbv take a big leap forward.
 
 Wojciech Kazubski <wk@ire.pw.edu.pl>
  - Patch so ./configure --data works.
+
+Neil Darlow <neil@darlow.co.uk>
+ - Reporting arc draw bug and sending along examples to show the bug.
+
+Dino Ghilardi <dino.ghilardi@ieee.org>
+ - Pointed out that an 'oval' is different from a geometrical ellypse).
+ - Some other feature requests.
