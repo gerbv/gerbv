@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This files is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *

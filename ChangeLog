@@ -1,3 +1,12 @@
+-- Release 0.0.10 debian release 2 --
+
+2002-10-18  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/drill.c, src/gerb_file.[hc], src/gerber.c, src/gerbv.c:
+	  Alot of abuse using EOF(-1) when char actually is unsigned
+	  caused a lot of warnings when Debian build system tried to
+	  build it for a couple of platforms.
+
 2002-10-14  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Activate millimeters in unit menu if this

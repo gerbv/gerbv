@@ -1691,7 +1691,7 @@ internal_main(int argc, char *argv[])
     GtkWidget *menubar;
     GtkStyle  *textStyle;
     gint      screen_width, width, height;
-    char      read_opt;
+    int       read_opt;
     int       i;
     char      *win_title;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;

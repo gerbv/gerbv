@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This is a part of gerbv
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -30,7 +30,7 @@
 
 #define NOT_IMPL(fd, s) do { \
                              fprintf(stderr, "Not Implemented:%s\n", s); \
-                             while (gerb_fgetc(fd) != '*'); \
+                             while (gerb_fgetc(fd) != (int)'*'); \
                            } while(0)
 	
 
@@ -85,7 +85,7 @@ parse_gerb(gerb_file_t *fd)
     gerb_state_t *state = NULL;
     gerb_image_t *image = NULL;
     gerb_net_t *curr_net = NULL;
-    char read;
+    int read;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
     double aperture_size;
@@ -112,7 +112,7 @@ parse_gerb(gerb_file_t *fd)
      * Start parsing
      */
     while ((read = gerb_fgetc(fd)) != EOF) {
-	switch (read) {
+	switch ((char)(read & 0xff)) {
 	case 'G':
 	    parse_G_code(fd, state, image->format);
 	    break;
@@ -291,7 +291,7 @@ parse_gerb(gerb_file_t *fd)
 static void 
 parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 {
-    char op[2];
+    int op[2];
     int op_int;
     
     op[0] = gerb_fgetc(fd);
@@ -300,11 +300,12 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
 
-    if ((op[0] < '0') || (op[0] > '9') || (op[1] < '0') || (op[1] > '9'))
+    if ((op[0] < (int)'0') || (op[0] > (int)'9') || 
+	(op[1] < (int)'0') || (op[1] > (int)'9'))
 	err(1, "Non numerical G opcode found [%c%c]\n", op[0], op[1]);
 
-    op_int = (int)(op[0] - '0');
-    op_int = op_int * 10 + (int)(op[1] - '0');
+    op_int = (op[0] - (int)'0');
+    op_int = op_int * 10 + (op[1] - (int)'0');
 
     switch(op_int) {
     case 0:  /* Move */
@@ -411,7 +412,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 static int
 parse_M_code(gerb_file_t *fd)
 {
-    char op[2];
+    int op[2];
     
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
@@ -419,8 +420,8 @@ parse_M_code(gerb_file_t *fd)
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
     
-    if ((op[0] != '0') || ((op[1] != '0') && (op[1] != '1') && (op[1] != '2')))
-	err(1, "Strange M code [%c%c]\n", op[0], op[1]);
+    if (op[0] != (int)'0')
+	err(1, "Strange M code [%c%c]\n", (char)op[0], (char)op[1]);
 
     switch (op[1]) {
     case '0':  /* Program stop */
@@ -430,7 +431,7 @@ parse_M_code(gerb_file_t *fd)
     case '2':  /* End of program */
 	return 3;
     default:
-	return 0;
+	err(1, "Strange M code [%c%c]\n", (char)op[0], (char)op[1]);
     }
 } /* parse_M_code */
 
@@ -439,15 +440,19 @@ static void
 parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 {
     char op[3];
+    int read[2];
     gerb_aperture_t *a = NULL;
     int ano;
     
-    op[0] = gerb_fgetc(fd);
-    op[1] = gerb_fgetc(fd);
+    read[0] = gerb_fgetc(fd);
+    read[1] = gerb_fgetc(fd);
     
-    if ((op[0] == EOF) || (op[1] == EOF))
+    if ((read[0] == EOF) || (read[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
-    
+
+    /* This is silly. Will be optimized in the next release */
+    op[0] = (char)read[0], op[1] = (char)read[1], op[3] = 0;
+
     /* Directive parameters */
     if (strncmp(op, "AS", 2) == 0) {        /* Axis Select */
 	NOT_IMPL(fd, "%AS%");
@@ -457,7 +462,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    err(1, "Failed malloc for format\n");
 	memset((void *)image->format, 0, sizeof(gerb_format_t));
 	
-	op[0] = gerb_fgetc(fd);
+	op[0] = (char)gerb_fgetc(fd);
 	if (op[0] == 'L')
 	    image->format->omit_zeros = LEADING;
 	else if (op[0] == 'T')
@@ -470,7 +475,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->format->omit_zeros = LEADING;
 	}
 	
-	op[0] = gerb_fgetc(fd);
+	op[0] = (char)gerb_fgetc(fd);
 	if (op[0] == 'A')
 	    image->format->coordinate = ABSOLUTE;
 	else if (op[0] == 'T')
@@ -478,40 +483,40 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	else
 	    err(1, "Format error: coordinate = %c\n", op[0]);
 	
-	while((op[0] = gerb_fgetc(fd)) != '*') {
+	while((op[0] = (char)gerb_fgetc(fd)) != '*') {
 	    switch (op[0]) {
 	    case 'N':
-		op[0] = gerb_fgetc(fd);
+		op[0] = (char)gerb_fgetc(fd);
 		image->format->lim_seqno = (int)(op[0] - '0');
 		break;
 	    case 'G':
-		op[0] = gerb_fgetc(fd);
+		op[0] = (char)gerb_fgetc(fd);
 		image->format->lim_gf = (int)(op[0] - '0');
 		break;
 	    case 'D':
-		op[0] = gerb_fgetc(fd);
+		op[0] = (char)gerb_fgetc(fd);
 		image->format->lim_pf = (int)(op[0] - '0');
 		break;
 	    case 'M':
-		op[0] = gerb_fgetc(fd);
+		op[0] = (char)gerb_fgetc(fd);
 		image->format->lim_mf = (int)(op[0] - '0');
 		break;
 	    case 'X' :
-		op[0] = gerb_fgetc(fd);
+		op[0] = (char)gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
 		    err(1,  "Illegal format size : %c\n", op[0]);
 		image->format->x_int = (int)(op[0] - '0');
-		op[0] = gerb_fgetc(fd);
+		op[0] = (char)gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
 		    err(1,  "Illegal format size : %c\n", op[0]);
 		image->format->x_dec = (int)(op[0] - '0');
 		break;
 	    case 'Y':
-		op[0] = gerb_fgetc(fd);
+		op[0] = (char)gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
 		    err(1,  "Illegal format size : %c\n", op[0]);
 		image->format->y_int = (int)(op[0] - '0');
-		op[0] = gerb_fgetc(fd);
+		op[0] = (char)gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
 		    err(1,  "Illegal format size : %c\n", op[0]);
 		image->format->y_dec = (int)(op[0] - '0');
@@ -524,12 +529,14 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	NOT_IMPL(fd, "%MI%");
     } else if (strncmp(op, "MO", 2) == 0) { /* Mode of Units */
 	
-	op[0] = gerb_fgetc(fd);
-	op[1] = gerb_fgetc(fd);
+	read[0] = gerb_fgetc(fd);
+	read[1] = gerb_fgetc(fd);
 	
-	if ((op[0] == EOF) || (op[1] == EOF))
+	if ((read[0] == EOF) || (read[1] == EOF))
 	    err(1, "Unexpected EOF found.\n");
 	
+	op[0] = (char)read[0], op[1] = (char)read[1], op[2] = 0;
+
 	if (strncmp(op, "IN", 2) == 0)
 	    image->info->unit = INCH;
 	else if (strncmp(op, "MM", 2) == 0)
@@ -538,7 +545,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    err(1, "Illegal unit:%c%c\n", op[0], op[1]);
 	
     } else if (strncmp(op, "OF", 2) == 0) { /* Offset */
-	op[0] = gerb_fgetc(fd);
+	op[0] = (char)gerb_fgetc(fd);
 	while (op[0] != '*') {
 	    switch (op[0]) {
 	    case 'A' :
@@ -550,7 +557,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    default :
 		err(1, "Wrong character in offset:%c\n", op[0]);
 	    }
-	    op[0] = gerb_fgetc(fd);
+	    op[0] = (char)gerb_fgetc(fd);
 	}
 	return;
     } else if (strncmp(op, "SF", 2) == 0) { /* Scale Factor */
@@ -561,11 +568,13 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	 * read the gerber file to see how it's encoded, then
 	 * how can you read it?
 	 */
-	op[0] = gerb_fgetc(fd);
-	op[1] = gerb_fgetc(fd);
+	read[0] = gerb_fgetc(fd);
+	read[1] = gerb_fgetc(fd);
 	
-	if ((op[0] == EOF) || (op[1] == EOF))
+	if ((read[0] == EOF) || (read[1] == EOF))
 	    err(1, "Unexpected EOF found.\n");
+
+	op[0] = read[0], op[1] = read[1], op[2] = 0;
 	
 	if (strncmp(op, "AS", 1) == 0) 
 	    image->info->encoding = ASCII;
@@ -590,13 +599,15 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	NOT_IMPL(fd, "%IO%");
     } else if (strncmp(op, "IP", 2) == 0) { /* Image Polarity */
 	
-	op[0] = gerb_fgetc(fd);
-	op[1] = gerb_fgetc(fd);
-	op[2] = gerb_fgetc(fd);
+	read[0] = gerb_fgetc(fd);
+	read[1] = gerb_fgetc(fd);
+	read[2] = gerb_fgetc(fd);
 	
-	if ((op[0] == EOF) || (op[1] == EOF) || (op[2] == EOF))
+	if ((read[0] == EOF) || (read[1] == EOF) || (read[2] == EOF))
 	    err(1, "Unexpected EOF found.\n");
-	
+
+	op[0] = (char)read[0], op[1] = (char)read[1], op[2] = (char)read[2];
+
 	if (strncmp(op, "POS", 3) == 0) 
 	    image->info->polarity = POSITIVE;
 	else if (strncmp(op, "NEG", 3) == 0)
@@ -632,7 +643,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     } else if (strncmp(op, "LN", 2) == 0) { /* Layer Name */
 	state->curr_layername = gerb_fgetstring(fd, '*');
     } else if (strncmp(op, "LP", 2) == 0) { /* Layer Polarity */
-	op[0] = gerb_fgetc(fd);
+	op[0] = (char)gerb_fgetc(fd);
 	switch (op[0]) {
 	case 'D': /* Dark Polarity (default) */
 	    state->layer_polarity = DARK;

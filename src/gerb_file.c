@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -72,20 +72,18 @@ gerb_fopen(char *filename)
     }
 
     return fd;
-}
+} /* gerb_fopen */
 
 
-char 
+int
 gerb_fgetc(gerb_file_t *fd)
 {
-    char data;
 
     if (fd->ptr > fd->datalen || fd->datalen == 0)
 	return EOF;
-    data = fd->data[fd->ptr++];
 
-    return data;
-}
+    return (int) fd->data[fd->ptr++];
+} /* gerb_fgetc */
 
 
 int
@@ -98,7 +96,7 @@ gerb_fgetint(gerb_file_t *fd)
     fd->ptr = end - fd->data;
 
     return (int)result;
-}
+} /* gerb_fgetint */
 
 
 double
@@ -111,7 +109,7 @@ gerb_fgetdouble(gerb_file_t *fd)
     fd->ptr = end - fd->data;
 
     return result;
-}
+} /* gerb_fgetdouble */
 
 
 char *
@@ -135,7 +133,7 @@ gerb_fgetstring(gerb_file_t *fd, char term)
     fd->ptr += len;
 
     return newstr;
-}
+} /* gerb_fgetstring */
 
 
 void 
@@ -145,7 +143,7 @@ gerb_ungetc(gerb_file_t *fd)
 	fd->ptr--;
 
     return;
-}
+} /* gerb_ungetc */
 
 
 void
@@ -156,4 +154,4 @@ gerb_fclose(gerb_file_t *fd)
     free(fd);
     
     return;
-}
+} /* gerb_fclose */

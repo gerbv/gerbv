@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -35,7 +35,7 @@ typedef struct file {
 } gerb_file_t;
 
 gerb_file_t *gerb_fopen(char *filename);
-char gerb_fgetc(gerb_file_t *fd);
+int gerb_fgetc(gerb_file_t *fd);
 int gerb_fgetint(gerb_file_t *fd);
 double gerb_fgetdouble(gerb_file_t *fd);
 char *gerb_fgetstring(gerb_file_t *fd, char term);
