@@ -1,0 +1,298 @@
+****************************************************************************
+* File-History                                                             *
+****************************************************************************
+* Ed. 0, vl  1998-05-12: Blendenteller aus visu_inf.txt extrahiert         *
+* Ed. 1, vl  1999-08-26: Neue Blenden, Nummer 97, 98 und 99                *
+*        vl  1999-08-30: Typfehler entfernt, 10.0mm quadr. ---> Blende 99  *
+* Ed. 2, vl  1999-10-07: Neue Blende Nummer 110                            *
+* Ed. 3, vl  2000-01-12: Neue Blenden Nummer 300...362                     *
+* Ed. 4, vl  2000-01-25: Neue Blenden Nummer 100...101 und 363...374       *
+* Ed. 5, vl  2000-05-26: Neue Blenden Nummer 375...380                     *
+* Ed. 6, gn  2000-06-28: Neue Blenden Nummer 381...383                     *
+* Ed. 7, vl  2000-11-30: Neue Blenden Nummer 384...386                     * 
+* Ed. 8, vl  2000-12-07: Neue Blenden Nummer 387...389                     *
+****************************************************************************
+* Textpaket: #2147                                                         *
+****************************************************************************
+
+
+********************************
+Beginn Linien (auch zum Fuellen)
+********************************
+
+Number   Size   Auxilliary  Shape            Start  Angle  Mirror  Usage         Comment
+                size                         angle  step
+
+    10      4          0    round               0       1  BOTH    DRAW          EIE 0.1mm Linie
+    11      6          0    round               0       1  BOTH    DRAW          EIE 0.15mm Linie
+    12      8          0    round               0       1  BOTH    DRAW          EIE 0.2mm Linie
+    12      8          0    round               0       1  BOTH    FILL_DRAW     EIE 0.2mm Fuellung
+    13     10          0    round               0       1  BOTH    DRAW          EIE 0.25mm Linie
+    14     12          0    round               0       1  BOTH    DRAW          EIE 0.3mm Linie
+    14     12          0    round               0       1  BOTH    FILL_DRAW     EIE 0.3mm Fuellung
+    15     14          0    round               0       1  BOTH    DRAW          EIE 0.35mm Linie
+    16     16          0    round               0       1  BOTH    DRAW          EIE 0.4mm Linie
+    16     16          0    round               0       1  BOTH    FILL_DRAW     EIE 0.4mm Fuellung
+    17     18          0    round               0       1  BOTH    DRAW          EIE 0.45mm Linie
+    18     20          0    round               0       1  BOTH    DRAW          EIE 0.5mm Linie
+    19     24          0    round               0       1  BOTH    DRAW          EIE 0.6mm Linie
+    19     24          0    round               0       1  BOTH    FILL_DRAW     EIE 0.6mm Fuellung
+    20     28          0    round               0       1  BOTH    DRAW          EIE 0.7mm Linie
+    21     31          0    round               0       1  BOTH    DRAW          EIE 0.8mm Linie
+    22     35          0    round               0       1  BOTH    DRAW          EIE 0.9mm Linie
+    23     39          0    round               0       1  BOTH    DRAW          EIE 1.0mm Linie
+    23     39          0    round               0       1  BOTH    FILL_DRAW     EIE 1.0mm Fuellung
+    24     47          0    round               0       1  BOTH    DRAW          EIE 1.2mm Linie
+    25     51          0    round               0       1  BOTH    DRAW          EIE 1.3mm Linie
+    26     55          0    round               0       1  BOTH    DRAW          EIE 1.4mm Linie
+    26     55          0    round               0       1  BOTH    FILL_DRAW     EIE 1.4mm Fuellung
+    27     59          0    round               0       1  BOTH    DRAW          EIE 1.5mm Linie
+    28     63          0    round               0       1  BOTH    DRAW          EIE 1.6mm Linie
+    29     67          0    round               0       1  BOTH    DRAW          EIE 1.7mm Linie
+    30     71          0    round               0       1  BOTH    DRAW          EIE 1.8mm Linie
+    31     75          0    round               0       1  BOTH    DRAW          EIE 1.9mm Linie
+    32     79          0    round               0       1  BOTH    DRAW          EIE 2.0mm Linie
+    33     83          0    round               0       1  BOTH    DRAW          EIE 2.1mm Linie
+    34     87          0    round               0       1  BOTH    DRAW          EIE 2.2mm Linie
+    35     98          0    round               0       1  BOTH    DRAW          EIE 2.5mm Linie
+    35     98          0    round               0       1  BOTH    FILL_DRAW     EIE 2.5mm Fuellung
+    36    118          0    round               0       1  BOTH    DRAW          EIE 3.0mm Linie
+    37    138          0    round               0       1  BOTH    DRAW          EIE 3.5mm Linie
+    38    157          0    round               0       1  BOTH    DRAW          EIE 4.0mm Linie
+    39    177          0    round               0       1  BOTH    DRAW          EIE 4.5mm Linie
+    40    205          0    round               0       1  BOTH    DRAW          EIE 5.2mm Linie
+
+
+********************************
+Sonder fuer Schriften
+********************************
+
+Number   Size   Auxilliary  Shape            Start  Angle  Mirror  Usage         Comment
+                size                         angle  step
+
+    41     15          0    round               0       1  BOTH    DRAW          0.38mm Linie (16/16)
+
+
+********************************
+Beginn geblitzte Kreise
+********************************
+
+Number   Size   Auxilliary  Shape            Start  Angle  Mirror  Usage         Comment
+                size                         angle  step
+
+    42     18          0    round               0       1  BOTH    FLASH         EIE 0.45mm Pad rund geblitzt
+    43     20          0    round               0       1  BOTH    FLASH         EIE 0.5mm Pad rund geblitzt
+    44     24          0    round               0       1  BOTH    FLASH         EIE 0.6mm Pad rund geblitzt
+    45     28          0    round               0       1  BOTH    FLASH         EIE 0.7mm Pad rund geblitzt
+    46     31          0    round               0       1  BOTH    FLASH         EIE 0.8mm Pad rund geblitzt
+    47     35          0    round               0       1  BOTH    FLASH         EIE 0.9mm Pad rund geblitzt
+    48     39          0    round               0       1  BOTH    FLASH         EIE 1.0mm Pad rund geblitzt
+    49     43          0    round               0       1  BOTH    FLASH         EIE 1.1mm Pad rund geblitzt
+    50     47          0    round               0       1  BOTH    FLASH         EIE 1.2mm Pad rund geblitzt
+    51     51          0    round               0       1  BOTH    FLASH         EIE 1.3mm Pad rund geblitzt
+    52     55          0    round               0       1  BOTH    FLASH         EIE 1.4mm Pad rund geblitzt
+    53     59          0    round               0       1  BOTH    FLASH         EIE 1.5mm Pad rund geblitzt
+    54     63          0    round               0       1  BOTH    FLASH         EIE 1.6mm Pad rund geblitzt
+    55     67          0    round               0       1  BOTH    FLASH         EIE 1.7mm Pad rund geblitzt
+    56     71          0    round               0       1  BOTH    FLASH         EIE 1.8mm Pad rund geblitzt
+    57     75          0    round               0       1  BOTH    FLASH         EIE 1.9mm Pad rund geblitzt
+    58     79          0    round               0       1  BOTH    FLASH         EIE 2.0mm Pad rund geblitzt
+    59     83          0    round               0       1  BOTH    FLASH         EIE 2.1mm Pad rund geblitzt
+    60     87          0    round               0       1  BOTH    FLASH         EIE 2.2mm Pad rund geblitzt
+    61     98          0    round               0       1  BOTH    FLASH         EIE 2.5mm Pad rund geblitzt
+    62    102          0    round               0       1  BOTH    FLASH         EIE 2.6mm Pad rund geblitzt
+    63    110          0    round               0       1  BOTH    FLASH         EIE 2.8mm Pad rund geblitzt
+    64    118          0    round               0       1  BOTH    FLASH         EIE 3.0mm Pad rund geblitzt
+    65    138          0    round               0       1  BOTH    FLASH         EIE 3.5mm Pad rund geblitzt
+    66    157          0    round               0       1  BOTH    FLASH         EIE 4.0mm Pad rund geblitzt
+    67    177          0    round               0       1  BOTH    FLASH         EIE 4.5mm Pad rund geblitzt
+    68    205          0    round               0       1  BOTH    FLASH         EIE 5.2mm Pad rund geblitzt (5.18)
+    69    221          0    round               0       1  BOTH    FLASH         EIE 5.61mm Pad rund geblitzt
+    70      4          0    round               0       1  BOTH    DRAW          EIE 0.1mm Linie
+
+
+********************************
+Beginn geblitzte Quadrate
+********************************
+
+Number   Size   Auxilliary  Shape            Start  Angle  Mirror  Usage         Comment
+                size                         angle  step
+
+    71     24          0    square              0      90  BOTH    FLASH         EIE 0.6mm Pad quadratisch geblitzt
+    72     28          0    square              0      90  BOTH    FLASH         EIE 0.7mm Pad quadratisch geblitzt
+    73     31          0    square              0      90  BOTH    FLASH         EIE 0.8mm Pad quadratisch geblitzt
+    74     35          0    square              0      90  BOTH    FLASH         EIE 0.9mm Pad quadratisch geblitzt
+    75     39          0    square              0      90  BOTH    FLASH         EIE 1.0mm Pad quadratisch geblitzt
+    76     43          0    square              0      90  BOTH    FLASH         EIE 1.1mm Pad quadratisch geblitzt
+    77     47          0    square              0      90  BOTH    FLASH         EIE 1.2mm Pad quadratisch geblitzt
+    78     51          0    square              0      90  BOTH    FLASH         EIE 1.3mm Pad quadratisch geblitzt
+    79     55          0    square              0      90  BOTH    FLASH         EIE 1.4mm Pad quadratisch geblitzt
+    80     59          0    square              0      90  BOTH    FLASH         EIE 1.5mm Pad quadratisch geblitzt
+    81     63          0    square              0      90  BOTH    FLASH         EIE 1.6mm Pad quadratisch geblitzt
+    82     67          0    square              0      90  BOTH    FLASH         EIE 1.7mm Pad quadratisch geblitzt
+    83     71          0    square              0      90  BOTH    FLASH         EIE 1.8mm Pad quadratisch geblitzt
+    84     75          0    square              0      90  BOTH    FLASH         EIE 1.9mm Pad quadratisch geblitzt
+    85     79          0    square              0      90  BOTH    FLASH         EIE 2.0mm Pad quadratisch geblitzt
+    86     83          0    square              0      90  BOTH    FLASH         EIE 2.1mm Pad quadratisch geblitzt
+    87     87          0    square              0      90  BOTH    FLASH         EIE 2.2mm Pad quadratisch geblitzt
+    88     98          0    square              0      90  BOTH    FLASH         EIE 2.5mm Pad quadratisch geblitzt
+    89    102          0    square              0      90  BOTH    FLASH         EIE 2.6mm Pad quadratisch geblitzt
+    90    110          0    square              0      90  BOTH    FLASH         EIE 2.8mm Pad quadratisch geblitzt
+    91    118          0    square              0      90  BOTH    FLASH         EIE 3.0mm Pad quadratisch geblitzt
+    92    138          0    square              0      90  BOTH    FLASH         EIE 3.5mm Pad quadratisch geblitzt
+    93    157          0    square              0      90  BOTH    FLASH         EIE 4.0mm Pad quadratisch geblitzt
+    94    177          0    square              0      90  BOTH    FLASH         EIE 4.5mm Pad quadratisch geblitzt
+    95    205          0    square              0      90  BOTH    FLASH         EIE 5.2mm Pad quadratisch geblitzt
+    96    221          0    square              0      90  BOTH    FLASH         EIE 5.61mm Pad quadratisch geblitzt
+    97    256          0    square              0      90  BOTH    FLASH         EIE 6.5mm Pad quadratisch geblitzt
+    98    315          0    square              0      90  BOTH    FLASH         EIE 8.0mm Pad quadratisch geblitzt
+    99    394          0    square              0      90  BOTH    FLASH         EIE 10.0mm Pad quadratisch geblitzt
+   100     18          0    square              0      90  BOTH    FLASH         EIE 0.46mm Pad quadratisch geblitzt
+   101     20          0    square              0      90  BOTH    FLASH         EIE 0.51mm Pad quadratisch geblitzt
+
+
+********************************
+Weiter Linien (auch zum Fuellen)
+********************************
+
+Number   Size   Auxilliary  Shape            Start  Angle  Mirror  Usage         Comment
+                size                         angle  step
+
+   110      5          0    round               0       1  BOTH    DRAW          EIE 0.12mm Linie
+   120     22          0    round               0       1  BOTH    DRAW          EIE 0.55mm Linie
+   125    326          0    square              0       1  BOTH    DRAW          EIE 8.3mm Linie
+   126    362          0    square              0       1  BOTH    DRAW          EIE 9.2mm Linie
+
+
+***************************************************
+Neue Blenden: Linien, geblitzte Kreise und Quadrate
+***************************************************
+
+Number   Size   Auxilliary  Shape            Start  Angle  Mirror  Usage         Comment
+                size                         angle  step
+
+   300     19          0    round               0       1  BOTH    DRAW          EIE 0.48mm Linie
+   301     19          0    round               0       1  BOTH    FLASH         EIE 0.48mm Pad rund geblitzt
+   302     19          0    square              0      90  BOTH    FLASH         EIE 0.48mm Pad quadratisch geblitzt
+   303     22          0    round               0       1  BOTH    DRAW          EIE 0.56mm Linie
+   304     22          0    round               0       1  BOTH    FLASH         EIE 0.56mm Pad rund geblitzt
+   305     22          0    square              0      90  BOTH    FLASH         EIE 0.56mm Pad quadratisch geblitzt
+   306     32          0    round               0       1  BOTH    DRAW          EIE 0.81mm Linie
+   307     32          0    round               0       1  BOTH    FLASH         EIE 0.81mm Pad rund geblitzt
+   308     32          0    square              0      90  BOTH    FLASH         EIE 0.81mm Pad quadratisch geblitzt
+   309     41          0    round               0       1  BOTH    DRAW          EIE 1.04mm Linie
+   310     41          0    round               0       1  BOTH    FLASH         EIE 1.04mm Pad rund geblitzt
+   311     41          0    square              0      90  BOTH    FLASH         EIE 1.04mm Pad quadratisch geblitzt
+   312     44          0    round               0       1  BOTH    DRAW          EIE 1.12mm Linie
+   313     44          0    round               0       1  BOTH    FLASH         EIE 1.12mm Pad rund geblitzt
+   314     44          0    square              0      90  BOTH    FLASH         EIE 1.12mm Pad quadratisch geblitzt
+   315     45          0    round               0       1  BOTH    DRAW          EIE 1.14mm Linie
+   316     45          0    round               0       1  BOTH    FLASH         EIE 1.14mm Pad rund geblitzt
+   317     45          0    square              0      90  BOTH    FLASH         EIE 1.14mm Pad quadratisch geblitzt
+   318     90          0    round               0       1  BOTH    DRAW          EIE 2.29mm Linie
+   319     90          0    round               0       1  BOTH    FLASH         EIE 2.29mm Pad rund geblitzt
+   320     90          0    square              0      90  BOTH    FLASH         EIE 2.29mm Pad quadratisch geblitzt
+   321     94          0    round               0       1  BOTH    DRAW          EIE 2.39mm Linie
+   322     94          0    round               0       1  BOTH    FLASH         EIE 2.39mm Pad rund geblitzt
+   323     94          0    square              0      90  BOTH    FLASH         EIE 2.39mm Pad quadratisch geblitzt
+   324    114          0    round               0       1  BOTH    DRAW          EIE 2.9mm Linie
+   325    114          0    round               0       1  BOTH    FLASH         EIE 2.9mm Pad rund geblitzt
+   326    114          0    square              0      90  BOTH    FLASH         EIE 2.9mm Pad quadratisch geblitzt
+   327    122          0    round               0       1  BOTH    DRAW          EIE 3.1mm Linie
+   328    122          0    round               0       1  BOTH    FLASH         EIE 3.1mm Pad rund geblitzt
+   329    122          0    square              0      90  BOTH    FLASH         EIE 3.1mm Pad quadratisch geblitzt
+   330    126          0    round               0       1  BOTH    DRAW          EIE 3.2mm Linie
+   331    126          0    round               0       1  BOTH    FLASH         EIE 3.2mm Pad rund geblitzt
+   332    126          0    square              0      90  BOTH    FLASH         EIE 3.2mm Pad quadratisch geblitzt
+   333    130          0    round               0       1  BOTH    DRAW          EIE 3.3mm Linie
+   334    130          0    round               0       1  BOTH    FLASH         EIE 3.3mm Pad rund geblitzt
+   335    130          0    square              0      90  BOTH    FLASH         EIE 3.3mm Pad quadratisch geblitzt
+   336    142          0    round               0       1  BOTH    DRAW          EIE 3.61mm Linie
+   337    142          0    round               0       1  BOTH    FLASH         EIE 3.61mm Pad rund geblitzt
+   338    142          0    square              0      90  BOTH    FLASH         EIE 3.61mm Pad quadratisch geblitzt
+   339    161          0    round               0       1  BOTH    DRAW          EIE 4.09mm Linie
+   340    161          0    round               0       1  BOTH    FLASH         EIE 4.09mm Pad rund geblitzt
+   341    161          0    square              0      90  BOTH    FLASH         EIE 4.09mm Pad quadratisch geblitzt
+   342    181          0    round               0       1  BOTH    DRAW          EIE 4.6mm Linie
+   343    181          0    round               0       1  BOTH    FLASH         EIE 4.6mm Pad rund geblitzt
+   344    181          0    square              0      90  BOTH    FLASH         EIE 4.6mm Pad quadratisch geblitzt
+   345    209          0    round               0       1  BOTH    DRAW          EIE 5.31mm Linie
+   346    209          0    round               0       1  BOTH    FLASH         EIE 5.31mm Pad rund geblitzt
+   347    209          0    square              0      90  BOTH    FLASH         EIE 5.31mm Pad quadratisch geblitzt
+   348    225          0    round               0       1  BOTH    DRAW          EIE 5.72mm Linie
+   349    225          0    round               0       1  BOTH    FLASH         EIE 5.72mm Pad rund geblitzt
+   350    225          0    square              0      90  BOTH    FLASH         EIE 5.72mm Pad quadratisch geblitzt
+   351    241          0    round               0       1  BOTH    DRAW          EIE 6.12mm Linie
+   352    241          0    round               0       1  BOTH    FLASH         EIE 6.12mm Pad rund geblitzt
+   353    241          0    square              0      90  BOTH    FLASH         EIE 6.12mm Pad quadratisch geblitzt
+   354    260          0    round               0       1  BOTH    DRAW          EIE 6.6mm Linie
+   355    260          0    round               0       1  BOTH    FLASH         EIE 6.6mm Pad rund geblitzt
+   356    260          0    square              0      90  BOTH    FLASH         EIE 6.6mm Pad quadratisch geblitzt
+   357    350          0    round               0       1  BOTH    DRAW          EIE 8.89mm Linie
+   358    350          0    round               0       1  BOTH    FLASH         EIE 8.89mm Pad rund geblitzt
+   359    350          0    square              0      90  BOTH    FLASH         EIE 8.89mm Pad quadratisch geblitzt
+   360    354          0    round               0       1  BOTH    DRAW          EIE 8.99mm Linie
+   361    354          0    round               0       1  BOTH    FLASH         EIE 8.99mm Pad rund geblitzt
+   362    354          0    square              0      90  BOTH    FLASH         EIE 8.99mm Pad quadratisch geblitzt
+   363     12          0    round               0       1  BOTH    DRAW          EIE 0.30mm Linie
+   364     12          0    round               0       1  BOTH    FLASH         EIE 0.30mm Pad rund geblitzt
+   365     12          0    square              0      90  BOTH    FLASH         EIE 0.30mm Pad quadratisch geblitzt
+   366     14          0    round               0       1  BOTH    DRAW          EIE 0.36mm Linie
+   367     14          0    round               0       1  BOTH    FLASH         EIE 0.36mm Pad rund geblitzt
+   368     14          0    square              0      90  BOTH    FLASH         EIE 0.36mm Pad quadratisch geblitzt
+   369     16          0    round               0       1  BOTH    DRAW          EIE 0.41mm Linie
+   370     16          0    round               0       1  BOTH    FLASH         EIE 0.41mm Pad rund geblitzt
+   371     16          0    square              0      90  BOTH    FLASH         EIE 0.41mm Pad quadratisch geblitzt
+   372     26          0    round               0       1  BOTH    DRAW          EIE 0.66mm Linie
+   373     26          0    round               0       1  BOTH    FLASH         EIE 0.66mm Pad rund geblitzt
+   374     26          0    square              0      90  BOTH    FLASH         EIE 0.66mm Pad quadratisch geblitzt
+   375     215         0    round               0       1  BOTH    DRAW          EIE 5.45mm Linie
+   376     215         0    round               0       1  BOTH    FLASH         EIE 5.45mm Pad rund geblitzt
+   377     215         0    square              0      90  BOTH    FLASH         EIE 5.45mm Pad quadratisch geblitzt
+   378     219         0    round               0       1  BOTH    DRAW          EIE 5.56mm Linie
+   379     219         0    round               0       1  BOTH    FLASH         EIE 5.56mm Pad rund geblitzt
+   380     219         0    square              0      90  BOTH    FLASH         EIE 5.56mm Pad quadratisch geblitzt
+   381     36          0    round               0       1  BOTH    DRAW          EIE 0.91mm Linie
+   382     36          0    round               0       1  BOTH    FLASH         EIE 0.91mm Pad rund geblitzt
+   383     36          0    square              0      90  BOTH    FLASH         EIE 0.91mm Pad quadratisch geblitzt
+   384      9          0    round               0       1  BOTH    DRAW          EIE 0.23mm Linie
+   385      9          0    round               0       1  BOTH    FLASH         EIE 0.23mm Pad rund geblitzt
+   386      9          0    square              0      90  BOTH    FLASH         EIE 0.23mm Pad quadratisch geblitzt
+   387     40          0    round               0       1  BOTH    DRAW          EIE 1.02mm Linie
+   388     40          0    round               0       1  BOTH    FLASH         EIE 1.02mm Pad rund geblitzt
+   389     40          0    square              0      90  BOTH    FLASH         EIE 1.02mm Pad quadratisch geblitzt
+
+
+*****************************************************
+Beginn Pseudo-Blenden fuer Augenvergroesserung Planes
+*****************************************************
+
+Number   Size   Auxilliary  Shape            Start  Angle  Mirror  Usage         Comment
+                size                         angle  step
+
+   135     95          0    round               0       1  BOTH    FLASH         EIE 2.41mm Pad rund geblitzt
+   148     40          0    round               0       1  BOTH    FLASH         EIE 1.02mm Pad rund geblitzt (48/39)
+   135     95          0    round               0       1  BOTH    FLASH         EIE 2.41mm Pad rund geblitzt
+   166    154          0    round               0       1  BOTH    FLASH         EIE 3.91mm Pad rund geblitzt (66/157)
+   167    173          0    round               0       1  BOTH    FLASH         EIE 4.39mm Pad rund geblitzt (67/177)
+   168    221          0    round               0       1  BOTH    FLASH         EIE 5.61mm Pad rund geblitzt
+   169    237          0    round               0       1  BOTH    FLASH         EIE 6.02mm Pad rund geblitzt
+   188     95          0    square              0      90  BOTH    FLASH         EIE 2.41mm Pad quadratisch geblitzt (93/157)
+   193    154          0    square              0      90  BOTH    FLASH         EIE 3.91mm Pad quadratisch geblitzt (93/157)
+   195    221          0    square              0      90  BOTH    FLASH         EIE 5.61mm Pad quadratisch geblitzt
+   196    237          0    square              0      90  BOTH    FLASH         EIE 6.02mm Pad quadratisch geblitzt
+   266    158          0    round               0       1  BOTH    FLASH         EIE 4.01mm Pad rund geblitzt (66/157)
+   293    158          0    square              0      90  BOTH    FLASH         EIE 4.01mm Pad quadratisch geblitzt (93/157)
+   500      8          0    round               0       1  BOTH    FLASH         EIE 0.2mm Pad rund geblitzt
+
+
+*************************************************************************************************
+D-Code 41 wird fuer verschiedene Schriften genutzt. Alternativ D-Code 15 oder 16 zulaessig.
+
+D-Code 70 wird fuer Begrenzungslinien verwendet - der Leiterplattenhersteller darf diese Elemente 
+nicht plotten - nur verfahren.
+
+D-Codes >=100 sind redundante Blenden, die beim Visula-Postprozessing durch Augenvergroesserung 
+um 16 thou entstehen. Diese koennen wahlweise mit der angegebenen Size oder den ersatzweise 
+genannten D-Codes gefahren werden.
+*************************************************************************************************
