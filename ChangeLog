@@ -1,6 +1,7 @@
 2003-12-06  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerb_file.[hc]: Added function gerb_find_file.
+	* src/draw_amacro.c: Forgot to make some internal functions static.
 
 2003-11-22  Stefan Petersen  <spe@stacken.kth.se>
 

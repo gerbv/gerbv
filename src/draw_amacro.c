@@ -422,7 +422,7 @@ gerbv_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 /*
  * Doesn't handle exposure yet and explicit x,y
  */
-void
+static void
 gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		  gint x, gint y)
 {
@@ -469,7 +469,7 @@ gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 /*
  * Doesn't handle exposure yet and explicit x,y
  */
-void
+static void
 gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		  gint x, gint y)
 {
@@ -508,7 +508,10 @@ gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 } /* gerbv_draw_prim21 */
 
 
-void
+/*
+ * Doesn't handle exposure yet and explicit x,y
+ */
+static void
 gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		  gint x, gint y)
 {
