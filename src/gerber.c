@@ -55,6 +55,7 @@ typedef struct gerb_state {
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
     enum interpolation_t prev_interpolation;
+    gerb_net_t *parea_start_node;
     char *curr_layername;
 } gerb_state_t;
 
@@ -203,11 +204,20 @@ parse_gerb(gerb_file_t *fd)
 	     */
 	    switch (state->interpolation) {
 	    case PAREA_START :
+		/* 
+		 * To be able to get back and fill in number of polygon corners
+		 */
+		state->parea_start_node = curr_net;
 		state->interpolation = PAREA_FILL;
 		state->changed = 1;
 		break;
+	    case PAREA_FILL:
+		if (state->parea_start_node) 
+		    state->parea_start_node->nuf_pcorners++;
+		break;
 	    case PAREA_END :
 		state->interpolation = state->prev_interpolation;
+		state->parea_start_node = NULL;
 		break;
 	    default :
 	    }

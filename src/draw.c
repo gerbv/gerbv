@@ -701,8 +701,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     int p1, p2;
     int width = 0, height = 0;
     int cp_x = 0, cp_y = 0;
-    GdkPoint points[MAX_POLYGON_POINTS]; /* XXX Size */
-    int nuf_points = 0;
+    GdkPoint *points = NULL;
+    int curr_point_idx = 0;
 
 
     if (image == NULL || image->netlist == NULL) {
@@ -753,18 +753,19 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	 */
 	switch (net->interpolation) {
 	case PAREA_START :
-	    nuf_points = 0;
+	    points = (GdkPoint *)malloc(sizeof(GdkPoint) *  net->nuf_pcorners);
+	    memset(points, 0, sizeof(GdkPoint) *  net->nuf_pcorners);
+	    curr_point_idx = 0;
 	    continue;
 	case PAREA_FILL :
-	    points[nuf_points].x = x2;
-	    points[nuf_points].y = y2;
-	    if (nuf_points > MAX_POLYGON_POINTS)
-		fprintf(stderr, "Too many corners on polygon area\n");
-	    else
-		nuf_points++;
+	    points[curr_point_idx].x = x2;
+	    points[curr_point_idx].y = y2;
+	    curr_point_idx++;
 	    continue;
 	case PAREA_END :
-	    gdk_draw_polygon(*pixmap, line_gc, 1, points, nuf_points);
+	    gdk_draw_polygon(*pixmap, line_gc, 1, points, net->nuf_pcorners);
+	    free(points);
+	    points = NULL;
 	    continue;
 	default :
 	    break;

@@ -1,3 +1,12 @@
+2002-06-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c, src/gerb_image.h, src/gerber.c: Added counting and
+	  storing of number of corners in polygons, so drawing of polygons
+	  can use dynamically allocated memory. Hard coded array size gave
+	  horrible result with submitted file from David Cussans with a lot
+	  of corners in the polygons.
+
+
 2002-06-05  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Added check to autoscale so scale don't screw up
