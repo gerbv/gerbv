@@ -34,8 +34,6 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h draw.c \
 scmdatadir = @BACKEND_DIR@
 scmdata_DATA = init.scm
 
-EXTRA_DIST=    init.scm
-
 INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@
 gerbv_LDADD = @GTK_LIBS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@
 

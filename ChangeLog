@@ -1,3 +1,8 @@
+2004-02-14  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/Makefile.am: Making sure init.scm is copied to the right 
+	  place at install.
+
 2004-02-13  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: The good old circles revisited. This time Dan
