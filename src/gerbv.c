@@ -743,13 +743,13 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     char *filename = NULL;
     project_list_t *project_list = NULL, *tmp;
     int idx;
-
+    
     if (screen.win.project)
 	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
-
+    
     switch ((long)data) {
     case OPEN_PROJECT:
-
+	
 	project_list = read_project_file(filename);
 	
 	if (project_list) {
@@ -757,8 +757,10 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    /*
 	     * Save project filename for later use
 	     */
-	    if (screen.project)
+	    if (screen.project) {
 		free(screen.project);
+		screen.project = NULL;
+	    }
 	    screen.project = (char *)malloc(strlen(filename) + 1);
 	    memset((void *)screen.project, 0, strlen(filename) + 1);
 	    strncpy(screen.project, filename, strlen(filename));
@@ -771,22 +773,24 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	all_layers_on(NULL, NULL);
 	break;
     case SAVE_AS_PROJECT:
-	    /*
-	     * Save project filename for later use
-	     */
-	    if (screen.project)
-		free(screen.project);
-	    screen.project = (char *)malloc(strlen(filename) + 1);
-	    memset((void *)screen.project, 0, strlen(filename) + 1);
-	    strncpy(screen.project, filename, strlen(filename));
-            rename_main_window(filename, NULL);
-
+	/*
+	 * Save project filename for later use
+	 */
+	if (screen.project) {
+	    free(screen.project);
+	    screen.project = NULL;
+	}
+	screen.project = (char *)malloc(strlen(filename) + 1);
+	memset((void *)screen.project, 0, strlen(filename) + 1);
+	strncpy(screen.project, filename, strlen(filename));
+	rename_main_window(filename, NULL);
+	
     case SAVE_PROJECT:
 	if (!screen.project) {
 	    GERB_MESSAGE("Missing project filename\n");
 	    goto cb_ok_project_end;
 	}
-
+	
 	if (screen.path) {
 	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
 	    memset(project_list, 0, sizeof(project_list_t));
@@ -796,8 +800,11 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    project_list->rgb[0] = screen.background->red;
 	    project_list->rgb[1] = screen.background->green;
 	    project_list->rgb[2] = screen.background->blue;
+/*  	    printf("[%d, %d,%d]\n", screen.background->red,  */
+/*  		   screen.background->green, screen.background->blue); */
 	    project_list->next = NULL;
 	}
+/*  	else printf("FOO\n"); */
 	
 	for (idx = 0; idx < MAX_FILES; idx++) {
 	    if (screen.file[idx] && screen.file[idx]->name) {
@@ -2638,10 +2645,14 @@ main(int argc, char *argv[])
 	
 	if (project_list) {
 	    load_project(project_list);
-	    if (screen.project)
+	    if (screen.project) {
 		free(screen.project);
-	    screen.project = project_filename;
-            rename_main_window(project_filename, NULL);
+		screen.project = NULL;
+	    }
+	    screen.project = (char *)malloc(strlen(project_filename) + 1);
+	    memset((void *)screen.project, 0, strlen(project_filename) + 1);
+	    strncpy(screen.project, project_filename, strlen(project_filename));
+            rename_main_window(screen.project, NULL);
 	} else {
 	    GERB_MESSAGE("Failed to load project\n");
 	}

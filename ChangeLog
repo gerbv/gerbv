@@ -1,3 +1,8 @@
+2004-02-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Fixed a segmentation fault when I tried to free
+	  an optarg:ed variable.
+
 2004-02-05  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Dan strikes again. Option -p (with appropriate 
