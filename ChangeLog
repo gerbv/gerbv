@@ -1,6 +1,12 @@
+2002-06-05  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added check to autoscale so scale don't screw up
+	  everything.
+	
+
 2002-06-02  Stefan Petersen  <spe@stacken.kth.se>
 
-	* gerb_image.h, gerber.c: Thanks to Stephen Adam I now know
+	* src/gerb_image.h, src/gerber.c: Thanks to Stephen Adam I now know
 	  what %IC??*% means (Input Code) and have added it to the parser.
 	
 

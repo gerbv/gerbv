@@ -551,10 +551,13 @@ autoscale()
     y_scale = screen.drawing_area->allocation.height / max_height;
 
     /*
-     * Take the scale that fits both directions
+     * Take the scale that fits both directions with some extra checks
      */
     screen.scale = (int)ceil(MIN(x_scale, y_scale));
-    screen.scale = (screen.scale / 10) * 10;
+    if (screen.scale < 1)
+	screen.scale = 1;
+    if (screen.scale > 10)
+	screen.scale = (screen.scale / 10) * 10;
 
     /*
      * Calculate translation
