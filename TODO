@@ -4,7 +4,6 @@ $Id$
 * a batch backend generating tiff files (open).
 * improve ps backend (open).
 * hpgl backend (open).
-* color selection (spe).
-* multiple images at the same time (spe).
-* aperture macros (spe).
 * improve drill file parser (pitch).
+* zooming centered around mouse (open, spe?)
+* handle gerber layers (spe)
