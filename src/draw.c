@@ -235,7 +235,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    curr_point_idx++;
 	    continue;
 	case PAREA_END :
-	    gdk_draw_polygon(*pixmap, gc, 1, points, net->nuf_pcorners);
+	    gdk_draw_polygon(*pixmap, gc, 1, points, curr_point_idx);
 	    free(points);
 	    points = NULL;
 	    continue;

@@ -1,3 +1,9 @@
+2002-09-01  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c: Polygon Area Fill could never have worked at
+	  all since number of points reported to gdk_draw_polygon
+	  always was zero.
+
 2002-08-31  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c (redraw_pixmap): Removed redundant bounding
