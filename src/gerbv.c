@@ -1063,9 +1063,10 @@ load_project(project_list_t *project_list)
                     idx);
                 goto next_layer;
             }
+//            update_combo_box_model();
             sprintf(project_pnp_layer,"%i", project_list->layerno);
             gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, project_pnp_layer);
-//            g_signal_emit_by_name ((GTK_COMBO_BOX(interface.layer_active)), "changed");
+            g_signal_emit_by_name ((GTK_COMBO_BOX(interface.layer_active)), "changed");
             gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
             click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);   
             create_marked_layer(idx);
@@ -1354,9 +1355,9 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     int half_w, half_h;		/* cache for half window dimensions */
 #ifdef USE_GTK2    
     gchar *designator;
-    GList *tmp_list, *tmp_path;
+    GList *tmp_list = NULL;
     GtkTreeIter iter;
-    double mid_x, mid_y, length, width;
+    double mid_x, mid_y, pad_x, pad_y;
 #endif    
 
     
@@ -1374,42 +1375,66 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
 #ifndef     USE_GTK2
 	GERB_MESSAGE("Warning: Zoom area too small, bailing out!\n");
 #else    
+    if (parsed_PNP_data == NULL)
+      return;
     tmp_list = gtk_tree_selection_get_selected_rows
                                             (GTK_TREE_SELECTION(interface.selection),
                                              (GtkTreeModel **)&interface.model);//item must be in the active selection list 
-    if (tmp_list != NULL) {                                         
-        tmp_path  = g_list_first(tmp_list);
-        do {   
+    if (tmp_list == NULL) 
+        return;
+                                                         
+    tmp_list  = g_list_first(tmp_list);
+    do {   
         gtk_tree_model_get_iter         (GTK_TREE_MODEL(interface.model),
                                          &iter,
-                                         tmp_path->data);
+                                         tmp_list->data);
+        
         gtk_tree_model_get              (GTK_TREE_MODEL(interface.model),
                                          &iter,
-                                         COLUMN_DESIGNATOR, &designator, COLUMN_mid_x, &mid_x, COLUMN_mid_y, &mid_y, COLUMN_width, &width, COLUMN_length, &length,  -1);                                  
-            if (((event->x <= (mid_x + width/2)) || (event->x >= (mid_x - width/2))) 
-                && ((event->y <= (mid_y + length/2)) || (event->y >= (mid_y - length/2)))) {
-                //pointer must be in range  
-                
-                if ( ! g_utf8_validate(designator, -1, NULL)) {
-                    //memset  (designator, 0, sizeof(designator));
+                                         COLUMN_DESIGNATOR, &designator, COLUMN_mid_x, &mid_x, COLUMN_mid_y, &mid_y, COLUMN_pad_x, &pad_x, COLUMN_pad_y, &pad_y, -1);                                  
+//        printf("Iter: %s", gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(interface.model), &iter));                                         
+        if (screen.unit == GERBV_MILS) {
 
-                    gchar * str = g_convert(designator, strlen(designator), "UTF-8", "ISO-8859-1",
-                                NULL, NULL, NULL);
-                    // I have not decided yet whether it is better to use always
-                    // "ISO-8859-1" or current locale.
-                    // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
+            us_x1 = COORD2MILS(screen.gerber_bbox.x1 + (x1+screen.trans_x)/(double)screen.transf->scale);
+            us_y1 = COORD2MILS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
+        } else {
+            us_x1 = COORD2MMS(screen.gerber_bbox.x1 + (x1+screen.trans_x)/(double)screen.transf->scale);
+            us_y1 = COORD2MMS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
+        }    
 
-                    sprintf (designator, "%.*s", sizeof(designator)-1, str);
-                    g_free(str);
-                }     
-                snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		             "Part: %s", designator);
-                GERB_MESSAGE("The part you have selected is: %s\n", designator);
-                break;
+//        us_x1 = (screen.trans_x + x1);///(double) screen.transf->scale;
+ //       us_y1 = (screen.trans_y + y1);///(double) screen.transf->scale;
+        printf("x1/y1:%d/%d,  translated: us_x1/us_y1:%f/%f, desig %s, mid_x/y %f/%f, range1/2:%f/%f\n", x1, y1, us_x1, us_y1, designator, mid_x, mid_y, (mid_x - abs(mid_x - pad_x)) ,(mid_x + abs(mid_x - pad_x)));
 
-            }                                              
-        } while ((tmp_path = g_list_next(tmp_list)) != NULL);
-	}
+        if (((us_x1 >= (mid_x - abs(mid_x - pad_x))) && (us_x1 <= (mid_x + abs(mid_x - pad_x)))) 
+            && (us_y1 >= (mid_y - abs(mid_y - pad_y))) && (us_y1 <= (mid_y + abs(mid_y - pad_y)))) {
+            //pointer must be in range  FIX ME range is rectangular, but in reality it changes
+            
+            if ( !g_utf8_validate(designator, -1, NULL)) {
+                //memset  (designator, 0, sizeof(designator));
+
+                gchar * str = g_convert(designator, strlen(designator), "UTF-8", "ISO-8859-1",
+                            NULL, NULL, NULL);
+                // I have not decided yet whether it is better to use always
+                // "ISO-8859-1" or current locale.
+                // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
+
+                sprintf (designator, "%.*s", sizeof(designator)-1, str);
+                g_free(str);
+            }     
+
+            snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+		         "Part: %s", designator);
+            GERB_MESSAGE("The part you have selected is: %s\n", designator);
+            break;
+
+        } else {
+            snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+		         "%s", "        ");
+        }     
+                                                    
+    } while ((tmp_list = g_list_next(tmp_list)));
+	   
 	update_statusbar(&screen);
 #endif    
 	goto zoom_outline_end;
@@ -2924,6 +2949,7 @@ main(int argc, char *argv[])
     else
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[0]),
 				     TRUE);
+    parsed_PNP_data = NULL;                     
 
     gtk_main();
     

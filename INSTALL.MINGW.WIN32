@@ -29,7 +29,7 @@ You will need to download the following files:
 
 IMPORTANT BUILD NOTES:
 ./rebuild_conf script is broken, at the moment due to GTK1 check...
-work around: use ./rebuild_conf under linux then copy dir to windows
+Work around: use ./rebuild_conf under linux then copy whole dir to windows
 
 you MUST edit src/Makefile after ./configure --enable-gtk2 and  edit  AM_CFLAGS line:
 AM_CFLAGS = -Wall -mms-bitfields -mno-cygwin 

@@ -1,3 +1,14 @@
+2004-09-11 Juergen Haas <juergenhaas@gmx.net>
+
+	*right click in window with active selection now shows part designator in statusline for easier 
+		identification in multiple selections
+		FIXME only works if pin1 is not on center axis of part
+
+
+2004-09-09 Juergen Haas <juergenhaas@gmx.net>
+
+	*added footprint column shown in result search window
+
 2004-09-05 Juergen Haas <juergenhaas@gmx.net>
 
 	*fixed right click shows designator in statusbar does not hang program

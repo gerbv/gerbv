@@ -188,15 +188,15 @@ void create_marked_layer(int idx) {
     do {
         gchar *designator, *footprint, *layer, *comment;
         double mid_x, mid_y, ref_x, ref_y, pad_x, pad_y, rotation, radius;
-	double length, width;
-	int shape;
-    GtkTreeIter iter;
-    gboolean no_files_found;
+	    double length, width;
+	    int shape;
+        GtkTreeIter iter;
+        gboolean no_files_found;
           
-    gtk_tree_model_get_iter (GTK_TREE_MODEL(interface.model), &iter, 
-			 list->data);
+        gtk_tree_model_get_iter (GTK_TREE_MODEL(interface.model), &iter, 
+			     list->data);
 	 
-    gtk_tree_model_get (GTK_TREE_MODEL(interface.model), &iter,
+        gtk_tree_model_get (GTK_TREE_MODEL(interface.model), &iter,
     			    COLUMN_DESIGNATOR, &designator,
                     COLUMN_footprint, &footprint,
 		            COLUMN_mid_x, &mid_x,
@@ -213,15 +213,15 @@ void create_marked_layer(int idx) {
                     COLUMN_COMMENT, &comment,
 			        COLUMN_NO_FILES_FOUND, &no_files_found,
                                                -1);
-    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-    curr_net = curr_net->next;
-    assert(curr_net);
-    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-    rotation *= M_PI/180; /* convert deg to rad */
+        curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+        curr_net = curr_net->next;
+        assert(curr_net);
+        memset((void *)curr_net, 0, sizeof(gerb_net_t));
+        rotation *= M_PI/180; /* convert deg to rad */
 
-	switch(shape) {
-	case PART_SHAPE_RECTANGLE:
-    case PART_SHAPE_STD:
+	    switch(shape) {
+	    case PART_SHAPE_RECTANGLE:
+        case PART_SHAPE_STD:
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
             gerb_transf_reset(tr_rot);
             gerb_transf_rotate(tr_rot, rotation);

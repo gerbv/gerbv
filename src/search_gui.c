@@ -258,19 +258,19 @@ create_search_results_section (void)
 /*interface.model = */   
 
      interface.model = gtk_list_store_new (NUM_COLUMNS, 
-				      G_TYPE_STRING, // COLUMN_DESIGNATOR
-				      G_TYPE_STRING, // COLUMN_footprint
+				                      G_TYPE_STRING, // COLUMN_DESIGNATOR
+				                      G_TYPE_STRING, // COLUMN_footprint
                                       G_TYPE_DOUBLE, // COLUMN_mid_x
-				      G_TYPE_DOUBLE, // COLUMN_mid_y
+				                      G_TYPE_DOUBLE, // COLUMN_mid_y
                                       G_TYPE_DOUBLE, // COLUMN_ref_x
                                       G_TYPE_DOUBLE, // COLUMN_ref_y
                                       G_TYPE_DOUBLE, // COLUMN_pad_x
                                       G_TYPE_DOUBLE, // COLUMN_pad_y
                                       G_TYPE_STRING, // COLUMN_LAYER
                                       G_TYPE_DOUBLE, // COLUMN_rotation
-				      G_TYPE_DOUBLE, // COLUMN_length
-				      G_TYPE_DOUBLE, // COLUMN_width
-				      G_TYPE_INT, // COLUMN_shape
+				                      G_TYPE_DOUBLE, // COLUMN_length
+				                      G_TYPE_DOUBLE, // COLUMN_width
+				                      G_TYPE_INT, // COLUMN_shape
                                       G_TYPE_STRING, // COLUMN_COMMENT
                                       G_TYPE_BOOLEAN); // COLUMN_NO_FILES_FOUND
                                                                        
@@ -332,6 +332,17 @@ create_search_results_section (void)
     gtk_tree_view_column_set_resizable (interface.column, TRUE);
     gtk_tree_view_column_set_sort_column_id (interface.column, COLUMN_DESIGNATOR); 
     gtk_tree_view_append_column (GTK_TREE_VIEW(interface.tree), interface.column);
+    
+     /* create the fooprint column */
+    renderer = gtk_cell_renderer_text_new ();          
+    interface.column = gtk_tree_view_column_new_with_attributes (_("Footprint"), renderer,
+						       "text",COLUMN_footprint,
+						       NULL);
+    gtk_tree_view_column_set_sizing (interface.column, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
+    gtk_tree_view_column_set_resizable (interface.column, TRUE);
+    gtk_tree_view_column_set_sort_column_id (interface.column, COLUMN_footprint); 
+    gtk_tree_view_append_column (GTK_TREE_VIEW(interface.tree), interface.column);
+
     
     /* create the Layer column */
     renderer = gtk_cell_renderer_text_new ();
@@ -474,7 +485,7 @@ create_main_search_window (void)
     
     for (idx =  0; idx < MAX_FILES; idx++) {
 
-        if (screen.file[idx] == NULL) {
+        if ((screen.file[idx] == NULL)) {
             gtk_list_store_append(combo_box_model, &iter);
             gtk_list_store_set (combo_box_model, &iter, 0, idx, -1);
         } 
@@ -577,11 +588,17 @@ update_combo_box_model(void)
 {
    int         idx0;
    GtkTreeIter iter;
+        
+        if (!combo_box_model) {
+            combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+        } else {
+            gtk_list_store_clear (combo_box_model);
+        }            
    
-        combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
         for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 
-            if (screen.file[idx0] == NULL) {
+/*FIX ME LayER management && (interface.layer_select_active != idx0) */
+            if ((screen.file[idx0] == NULL) ) {
                 gtk_list_store_append(combo_box_model, &iter);
                 gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
             } 

@@ -95,6 +95,28 @@ get_value_string(scheme *sc, pointer value)
 } /* get_value_string */
 
 
+char *
+convert_path_separators(char* path, int conv_flag)
+{
+    char     *hit_in_path;
+    
+    switch (conv_flag) {
+    
+    case MINGW_UNIX:
+        while   ((hit_in_path = strchr(path, '\\'))) {
+            *hit_in_path = '/';
+        }
+        break;
+    case UNIX_MINGW:
+         while   ((hit_in_path = strchr(path, '/'))) {
+            *hit_in_path = '\\';
+        }
+        break;
+    }    
+    return path;
+}/* convert_path_separators */
+
+
 static pointer
 define_layer(scheme *sc, pointer args)
 {
@@ -139,12 +161,22 @@ define_layer(scheme *sc, pointer args)
 	if (strcmp(sc->vptr->symname(name), "color") == 0) {
 	    get_color(sc, value, plist_top->rgb);
 	} else if (strcmp(sc->vptr->symname(name), "filename") == 0) {
+#ifdef USE_GTK2
+#if defined (__MINGW32__)    
+            plist_top->filename = convert_path_separators(strdup(get_value_string(sc, value)), UNIX_MINGW);
+#else
             plist_top->filename = strdup(get_value_string(sc, value));
-#ifdef USE_GTK2            
+#endif
             plist_top->is_pnp = 0;
     } else if (strcmp(sc->vptr->symname(name), "pick_and_place") == 0) {
-	        plist_top->filename = strdup(get_value_string(sc, value));
+#if defined (__MINGW32__)    
+            plist_top->filename = convert_path_separators(strdup(get_value_string(sc, value)), UNIX_MINGW);
+#else
+            plist_top->filename = strdup(get_value_string(sc, value));
+#endif    
             plist_top->is_pnp = 1;
+#else
+            plist_top->filename = strdup(get_value_string(sc, value));             
 #endif            
   	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
 	    if (value ==  sc->F) {
@@ -155,7 +187,6 @@ define_layer(scheme *sc, pointer args)
 		GERB_MESSAGE("Argument to inverted must be #t or #f\n");
 	    }
 	}
-
 
     end_name_value_parse:
 	car_el = sc->vptr->pair_car(cdr_el);
@@ -256,10 +287,24 @@ write_project_file(char *filename, project_list_t *project)
 	fprintf(fd, "(define-layer! %d ", p->layerno);
 #ifdef USE_GTK2    
         if ((interface.pnp_filename != NULL) && (strncmp(p->filename, interface.pnp_filename, strlen(interface.pnp_filename)) == 0)) 
+#if defined (__MINGW32__)    
+    	    fprintf(fd, "(cons 'pick_and_place \"%s\")", convert_path_separators(p->filename, MINGW_UNIX));
+
+#else
     	    fprintf(fd, "(cons 'pick_and_place \"%s\")", p->filename);
         else
-#endif        
+#endif
+#if defined (__MINGW32__)
+            fprintf(fd, "(cons 'filename \"%s\")", convert_path_separators(p->filename, MINGW_UNIX));    
+#else
             fprintf(fd, "(cons 'filename \"%s\")", p->filename);    
+
+#endif
+#else
+        
+            fprintf(fd, "(cons 'filename \"%s\")", p->filename);    
+#endif
+    
 	if (p->inverted)
 	    fprintf(fd, "(cons 'inverted #t)");
 	fprintf(fd, "(cons 'color #(%d %d %d)))", p->rgb[0], p->rgb[1],
