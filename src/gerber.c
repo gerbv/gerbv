@@ -574,7 +574,17 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	}
 	return;
     case A2I('S','F'): /* Scale Factor */
-	NOT_IMPL(fd, "%SF%");
+	if (gerb_fgetc(fd) == 'A')
+	    image->info->scale_factor_A = gerb_fgetdouble(fd);
+	else 
+	    gerb_ungetc(fd);
+	if (gerb_fgetc(fd) == 'B')
+	    image->info->scale_factor_B = gerb_fgetdouble(fd);
+	else 
+	    gerb_ungetc(fd);
+	if ((fabs(image->info->scale_factor_A - 1.0) > 0.00001) ||
+	    (fabs(image->info->scale_factor_B - 1.0) > 0.00001))
+	    NOT_IMPL(fd, "%SF% != 1.0");
 	break;
     case A2I('I','C'): /* Input Code */
 	/* Thanks to Stephen Adam for providing this information. As he writes:
@@ -682,7 +692,31 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	NOT_IMPL(fd, "%KO%");
 	break;
     case A2I('S','R'): /* Step and Repeat */
-	NOT_IMPL(fd, "%SR%");
+	op[0] = gerb_fgetc(fd);
+	if (op[0] != 'X')
+	    fprintf(stderr, "Step-and-repeat parameter error\n");
+	image->info->step_and_repeat_X = gerb_fgetint(fd);
+
+	op[0] = gerb_fgetc(fd);
+	if (op[0] != 'Y')
+	    fprintf(stderr, "Step-and-repeat parameter error\n");
+	image->info->step_and_repeat_Y = gerb_fgetint(fd);
+
+	op[0] = gerb_fgetc(fd);
+	if (op[0] != 'I')
+	    fprintf(stderr, "Step-and-repeat parameter error\n");
+	image->info->step_and_repeat_dist_X = gerb_fgetdouble(fd);
+
+	op[0] = gerb_fgetc(fd);
+	if (op[0] != 'J')
+	    fprintf(stderr, "Step-and-repeat parameter error\n");
+	image->info->step_and_repeat_dist_Y = gerb_fgetdouble(fd);
+
+	if ((image->info->step_and_repeat_X != 1) || 
+	    (image->info->step_and_repeat_Y != 1) ||
+	    (fabs(image->info->step_and_repeat_dist_X) > 0.000001) ||
+	    (fabs(image->info->step_and_repeat_dist_Y) > 0.000001))
+	    NOT_IMPL(fd, "%SR%");
 	break;
     case A2I('R','O'): /* Rotate */
 	NOT_IMPL(fd, "%RO%");

@@ -1,3 +1,9 @@
+2002-10-30  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.h, src/gerber.c: Implemented %SF% and %SR% in
+	  parser, but ignored the draw engine. If any of these parameters
+	  not are default a warning is issued.
+
 2002-10-30  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c, src/gerbv_screen.h: Added restartable
