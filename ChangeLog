@@ -1,3 +1,9 @@
+2003-03-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.[hc], src/draw_amacro.c, draw_gdk.c: Rectangular
+	  apertures should have projecting line ends. set_linestyle
+	  now takes one more argument. See for instance example/dan/top.gbx
+
 -- Release 0.13 --
 
 2003-03-16  Stefan Petersen  <spe@stacken.kth.se>

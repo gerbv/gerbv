@@ -60,7 +60,6 @@ gerb_render_image(struct gerb_render_context *ctx,
     int in_parea_fill = 0;
     double unit_scale;
 
-
     if (image == NULL)
 	goto compose;
 
@@ -165,16 +164,22 @@ gerb_render_image(struct gerb_render_context *ctx,
 	case ON :
 	    p1 = image->aperture[net->aperture]->parameter[0] * unit_scale;
 
-	    ctx->set_line_style (ctx, p1, 0);
+	    /*
+	     * Rectangular apertures should draw lines with projecting end.
+	     */
+	    if ((image->aperture[net->aperture]->type == RECTANGLE))
+		ctx->set_line_style (ctx, p1, 0, 1);
+	    else
+		ctx->set_line_style (ctx, p1, 0, 0);
 
 	    switch (net->interpolation) {
 	    case LINEARx10 :
 	    case LINEARx01 :
 	    case LINEARx001 :
 		GERB_MESSAGE("Linear != x1\n");
-		ctx->set_line_style (ctx, p1, 1);
+		ctx->set_line_style (ctx, p1, 1, 0);
 		ctx->draw_line (ctx, x1, y1, x2, y2);
-		ctx->set_line_style (ctx, p1, 0);
+		ctx->set_line_style (ctx, p1, 0, 0);
 		break;
 	    case LINEARx1:
 		ctx->draw_line (ctx, x1, y1, x2, y2);

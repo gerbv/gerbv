@@ -209,14 +209,14 @@ gerb_gdk_set_color(struct gerb_render_context *ctx,
 
 static void 
 gerb_gdk_set_line_style(struct gerb_render_context *ctx,
-			double width, int dashed)
+			double width, int dashed, int cap_projecting)
 {
     struct gerb_gdk_context *gctx = (struct gerb_gdk_context*) ctx;
 
-    gdk_gc_set_line_attributes (gctx->clipmask_gc, ceil(width),
-				dashed ? GDK_LINE_ON_OFF_DASH : GDK_LINE_SOLID,
-				GDK_CAP_ROUND,
-				GDK_JOIN_MITER);
+    gdk_gc_set_line_attributes(gctx->clipmask_gc, ceil(width),
+			       dashed ? GDK_LINE_ON_OFF_DASH : GDK_LINE_SOLID,
+			       cap_projecting?GDK_CAP_PROJECTING:GDK_CAP_ROUND,
+			       GDK_JOIN_MITER);
 } /* gerb_gdk_set_line_style */
 
 

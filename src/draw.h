@@ -38,7 +38,7 @@ struct gerb_render_context {
     void (*fill_rectangle) (struct gerb_render_context *ctx, double x, double y, double w, double h);
     void (*fill_oval) (struct gerb_render_context *ctx, double x, double y, double rx, double ry);
     void (*set_color) (struct gerb_render_context *ctx, enum polarity_t color);
-    void (*set_line_style) (struct gerb_render_context *ctx, double width, int dashed);
+    void (*set_line_style) (struct gerb_render_context *ctx, double width, int dashed, int cap_projecting);
     void (*clear_composition) (struct gerb_render_context *ctx, const unsigned char clear_rgba [4]);
     void (*compose) (struct gerb_render_context *ctx);
     void (*blit) (struct gerb_render_context *ctx, double offset_x, double offset_y);

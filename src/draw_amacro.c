@@ -261,7 +261,7 @@ gerbv_draw_prim6 (struct gerb_render_context *ctx, stack_t *s, int scale,
     double crosshair[8];
     int i;
 
-    ctx->set_line_style (ctx, scale * s->stack[ci_thickness_idx], 0);
+    ctx->set_line_style (ctx, scale * s->stack[ci_thickness_idx], 0, 0);
 
     real_dia = s->stack[outside_dia_idx] - s->stack[ci_thickness_idx] / 2.0;
     real_gap = s->stack[gap_idx] + s->stack[ci_thickness_idx];
@@ -292,7 +292,7 @@ gerbv_draw_prim6 (struct gerb_render_context *ctx, stack_t *s, int scale,
 	crosshair[2*i+1] += y;
     }
 
-    ctx->set_line_style (ctx, scale * s->stack[ch_thickness_idx], 0);
+    ctx->set_line_style (ctx, scale * s->stack[ch_thickness_idx], 0, 0);
 
     ctx->draw_line (ctx, crosshair[0], crosshair[1], crosshair[2], crosshair[3]);
     ctx->draw_line (ctx, crosshair[4], crosshair[5], crosshair[6], crosshair[7]);
@@ -348,7 +348,7 @@ gerbv_draw_prim20(struct gerb_render_context *ctx, stack_t *s, int scale,
     double points[2*nuf_points];
     int i;
 
-    ctx->set_line_style (ctx, scale * s->stack[linewidth_idx], 0);
+    ctx->set_line_style (ctx, scale * s->stack[linewidth_idx], 0, 0);
 
     points[0] = s->stack[start_x_idx] * scale;
     points[1] = s->stack[start_y_idx] * scale;
