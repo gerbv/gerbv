@@ -1,3 +1,10 @@
+2002-04-29  Anders Eriksson  <anders@faldor.umunet.org>
+
+	* src/gerbv.c: Improved zoom. Now zooming around image center when
+	zooming from menu and around mouse pointer when zooming using the
+	mouse. There seems to be some (small) rounding error in the
+	centering code, but it is very small. Closes 548128.
+
 2002-04-27 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerbv.c: Changed name for all *open* functions to 
