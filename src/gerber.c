@@ -55,6 +55,7 @@ typedef struct gerb_state {
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
     enum interpolation_t prev_interpolation;
+    char *curr_layername;
 } gerb_state_t;
 
 
@@ -63,7 +64,8 @@ static void parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 			 gerb_format_t *format);
 static void parse_D_code(gerb_file_t *fd, gerb_state_t *state);
 static int parse_M_code(gerb_file_t *fd);
-static void parse_rs274x(gerb_file_t *fd, gerb_image_t *image);
+static void parse_rs274x(gerb_file_t *fd, gerb_image_t *image, 
+			 gerb_state_t *state);
 static int parse_aperture_definition(gerb_file_t *fd, 
 				     gerb_aperture_t *aperture,
 				     amacro_t *amacro);
@@ -82,7 +84,6 @@ parse_gerb(gerb_file_t *fd)
     char read;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
-    enum gerb_verify_error error = 0;
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
@@ -108,22 +109,6 @@ parse_gerb(gerb_file_t *fd)
 	    case 2 :
 	    case 3 :
 		free(state);
-		/*
-		 * Do error check before returning image
-		 */
-		error = verify_gerb(image);
-		if (error) {
-		    fprintf(stderr, "Parse error : ");
-		    if (error & MISSING_NETLIST)
-			fprintf(stderr, "Missing netlist ");
-		    if (error & MISSING_FORMAT)
-			fprintf(stderr, "Missing format ");
-		    if (error & MISSING_APERTURES) 
-			fprintf(stderr, "Missing apertures ");
-		    if (error & MISSING_INFO)
-			fprintf(stderr, "Missing info ");
-		    fprintf(stderr, "\n");
-		}
 		return image;
 		break;
 	    default:
@@ -147,7 +132,7 @@ parse_gerb(gerb_file_t *fd)
 	    state->changed = 1;
 	    break;
 	case '%':
-	    parse_rs274x(fd, image);
+	    parse_rs274x(fd, image, state);
 	    while (gerb_fgetc(fd) != '%');
 	    break;
 	case '*':
@@ -231,7 +216,8 @@ parse_gerb(gerb_file_t *fd)
 	    state->delta_cp_y = 0.0;
 	    curr_net->aperture = state->curr_aperture;
 	    curr_net->aperture_state = state->aperture_state;
-
+	    /* if (state->curr_layername)
+	       printf("layername : %s\n", state->curr_layername);*/
 	    
 	    /*
 	     * Find min and max of image
@@ -266,32 +252,6 @@ parse_gerb(gerb_file_t *fd)
     return image;
 } /* parse_gerb */
 
-
-/*
- * Check that the parsed gerber image is complete.
- * Returned errorcodes are:
- * 0: No problems
- * 1: Missing netlist
- * 2: Missing format
- * 4: Missing apertures
- * 8: Missing info
- * It could be any of above or'ed together
- */
-enum gerb_verify_error
-verify_gerb(gerb_image_t *image)
-{
-    enum gerb_verify_error error = 0;
-    int i;
-
-    if (image->netlist == NULL) error |= MISSING_NETLIST;
-    if (image->format == NULL)  error |= MISSING_FORMAT;
-    if (image->info == NULL)    error |= MISSING_INFO;
-
-    for (i = 0; i < APERTURE_MAX && image->aperture[i] == NULL; i++);
-    if (i == APERTURE_MAX) error |= MISSING_APERTURES;
-    
-    return error;
-}
 
 static void 
 parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
@@ -448,7 +408,7 @@ parse_M_code(gerb_file_t *fd)
 
 
 static void 
-parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
+parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 {
     char op[3];
     gerb_aperture_t *a = NULL;
@@ -621,7 +581,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
 
 	/* Layer */
     } else if (strncmp(op, "LN", 2) == 0) { /* Layer Name */
-	NOT_IMPL(fd, "%LN%");
+	state->curr_layername = gerb_fgetstring(fd, '*');
     } else if (strncmp(op, "LP", 2) == 0) { /* Layer Polarity */
 	NOT_IMPL(fd, "%LP%");
     } else if (strncmp(op, "KO", 2) == 0) { /* Knock Out */

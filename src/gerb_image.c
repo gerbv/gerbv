@@ -119,3 +119,30 @@ free_gerb_image(gerb_image_t *image)
     return;
 } /* free_gerb_image */
 
+
+/*
+ * Check that the parsed gerber image is complete.
+ * Returned errorcodes are:
+ * 0: No problems
+ * 1: Missing netlist
+ * 2: Missing format
+ * 4: Missing apertures
+ * 8: Missing info
+ * It could be any of above or'ed together
+ */
+gerb_verify_error_t
+gerb_image_verify(gerb_image_t *image)
+{
+    gerb_verify_error_t error = GERB_IMAGE_OK;
+    int i;
+
+    if (image->netlist == NULL) error |= GERB_IMAGE_MISSING_NETLIST;
+    if (image->format == NULL)  error |= GERB_IMAGE_MISSING_FORMAT;
+    if (image->info == NULL)    error |= GERB_IMAGE_MISSING_INFO;
+
+    for (i = 0; i < APERTURE_MAX && image->aperture[i] == NULL; i++);
+    if (i == APERTURE_MAX) error |= GERB_IMAGE_MISSING_APERTURES;
+    
+    return error;
+}
+

@@ -1,3 +1,11 @@
+2002-05-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.*, src/gerber.*, src/gerbv.c: Moved verify_gerb
+	  to gerb_image and renamed it to gerb_image_verify so drill file
+	  parsing and gerber file parsing could split them. Done after 
+	  receiveing Excellon file without drillfile sizes (Innoveda/PADS
+	  Power PCB) from Dino Ghilardi.
+
 2002-05-08  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c (zoom_outline): Prevent division by zero by

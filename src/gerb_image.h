@@ -117,6 +117,27 @@ typedef struct gerb_image {
 gerb_image_t *new_gerb_image(gerb_image_t *image);
 void free_gerb_image(gerb_image_t *image);
 
+/*
+ * Check that the parsed gerber image is complete.
+ * Returned errorcodes are:
+ * 0: No problems
+ * 1: Missing netlist
+ * 2: Missing format
+ * 4: Missing apertures
+ * 8: Missing info
+ * It could be any of above or'ed together
+ */
+typedef enum { 
+    GERB_IMAGE_OK = 0,
+    GERB_IMAGE_MISSING_NETLIST = 1,
+    GERB_IMAGE_MISSING_FORMAT = 2, 
+    GERB_IMAGE_MISSING_APERTURES = 4,
+    GERB_IMAGE_MISSING_INFO = 8,
+} gerb_verify_error_t;
+
+gerb_verify_error_t gerb_image_verify(gerb_image_t *image);
+
+
 #ifdef __cplusplus
 }
 #endif

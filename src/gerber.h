@@ -40,23 +40,6 @@ extern "C" {
  */
 gerb_image_t *parse_gerb(gerb_file_t *fd);
 
-/*
- * Check that the parsed gerber image is complete.
- * Returned errorcodes are:
- * 0: No problems
- * 1: Missing netlist
- * 2: Missing format
- * 4: Missing apertures
- * 8: Missing info
- * It could be any of above or'ed together
- */
-enum gerb_verify_error { MISSING_NETLIST = 1,
-			 MISSING_FORMAT = 2, 
-			 MISSING_APERTURES = 4,
-			 MISSING_INFO = 8 };
-
-enum gerb_verify_error verify_gerb(gerb_image_t *image);
-
 
 #ifdef __cplusplus
 }

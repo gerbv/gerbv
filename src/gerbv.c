@@ -160,6 +160,27 @@ static GtkItemFactoryEntry popup_menu_items[] = {
     {"/Layer Color...", NULL, color_selection_popup, 0, NULL},
     {"/Load File...", NULL, load_file_popup, 0, NULL},
     {"/Unload File...", NULL, unload_file, 0, NULL},
+    {"/Swap with...", NULL, NULL, 0, "<Branch>"},
+    {"/Swap with.../0", NULL, NULL, 0, NULL},
+    {"/Swap with.../1", NULL, NULL, 0, NULL},
+    {"/Swap with.../2", NULL, NULL, 0, NULL},
+    {"/Swap with.../3", NULL, NULL, 0, NULL},
+    {"/Swap with.../4", NULL, NULL, 0, NULL},
+    {"/Swap with.../5", NULL, NULL, 0, NULL},
+    {"/Swap with.../6", NULL, NULL, 0, NULL},
+    {"/Swap with.../7", NULL, NULL, 0, NULL},
+    {"/Swap with.../8", NULL, NULL, 0, NULL},
+    {"/Swap with.../9", NULL, NULL, 0, NULL},
+    {"/Swap with.../10", NULL, NULL, 0, NULL},
+    {"/Swap with.../11", NULL, NULL, 0, NULL},
+    {"/Swap with.../12", NULL, NULL, 0, NULL},
+    {"/Swap with.../13", NULL, NULL, 0, NULL},
+    {"/Swap with.../14", NULL, NULL, 0, NULL},
+    {"/Swap with.../15", NULL, NULL, 0, NULL},
+    {"/Swap with.../16", NULL, NULL, 0, NULL},
+    {"/Swap with.../17", NULL, NULL, 0, NULL},
+    {"/Swap with.../18", NULL, NULL, 0, NULL},
+    {"/Swap with.../19", NULL, NULL, 0, NULL},
 };
 
 
@@ -836,6 +857,7 @@ open_image(char *filename, int index)
     gerb_file_t *fd;
     int r, g, b;
     GtkStyle *defstyle, *newstyle;
+    gerb_verify_error_t error = GERB_IMAGE_OK;
 
     if (index >= MAX_FILES) {
 	fprintf(stderr, "Couldn't open %s. Maximum number of files opened.\n",
@@ -854,6 +876,24 @@ open_image(char *filename, int index)
 	screen.file[index]->image = parse_drillfile(fd);
     else 
 	screen.file[index]->image = parse_gerb(fd);
+    
+    /*
+     * Do error check before continuing
+     */
+    error = gerb_image_verify(screen.file[index]->image);
+    if (error) {
+	fprintf(stderr, "%s: Parse error: ", filename);
+	if (error & GERB_IMAGE_MISSING_NETLIST)
+	    fprintf(stderr, "Missing netlist ");
+	if (error & GERB_IMAGE_MISSING_FORMAT)
+	    fprintf(stderr, "Missing format ");
+	if (error & GERB_IMAGE_MISSING_APERTURES) 
+	    fprintf(stderr, "Missing apertures/drill sizes ");
+	if (error & GERB_IMAGE_MISSING_INFO)
+	    fprintf(stderr, "Missing info ");
+	fprintf(stderr, "\n");
+	exit(1);
+    }
 
     /*
      * Calculate a "clever" random color based on index.
@@ -1113,6 +1153,7 @@ batch(char *backend, char *filename)
     int		  i;
     gerb_file_t  *fd;
     gerb_image_t *image;
+    gerb_verify_error_t error = GERB_IMAGE_OK;
     SCM	          scm_image;
 
     if ((home = getenv("HOME")) == NULL)
@@ -1182,7 +1223,25 @@ batch(char *backend, char *filename)
 	image = parse_gerb(fd);
     
     gerb_fclose(fd);
-    
+
+    /*
+     * Do error check before continuing
+     */
+    error = gerb_image_verify(image);
+    if (error) {
+	fprintf(stderr, "%s: Parse error: ", filename);
+	if (error & GERB_IMAGE_MISSING_NETLIST)
+	    fprintf(stderr, "Missing netlist ");
+	if (error & GERB_IMAGE_MISSING_FORMAT)
+	    fprintf(stderr, "Missing format ");
+	if (error & GERB_IMAGE_MISSING_APERTURES) 
+	    fprintf(stderr, "Missing apertures/drill sizes ");
+	if (error & GERB_IMAGE_MISSING_INFO)
+	    fprintf(stderr, "Missing info ");
+	fprintf(stderr, "\n");
+	exit(1);
+    }
+   
     /*
      * Convert it to Scheme
      */
