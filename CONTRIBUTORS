@@ -1,0 +1,10 @@
+gEDA
+
+GNU Electronic Design Automation
+------------------------------------------------------------------------------
+
+gerbv CONTRIBUTORS
+
+Dan McMahill           - Fixed 64-bit support
+<mcmahill@mtl.mit.edu> - Some additional configure things
+
