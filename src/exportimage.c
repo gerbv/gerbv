@@ -95,6 +95,12 @@ png_export(GdkPixmap* imagetosave, char* filename)
 	    clipmask = gdk_pixmap_new(screen.drawing_area->window, width, height,  1);
 	    
 	    /* 
+	     * Set background color 
+	     */
+	    gdk_gc_set_foreground(gc, screen.background);
+	    gdk_draw_rectangle (out_pixmap, gc, TRUE, 0,0, width, height);
+
+	    /* 
 	     * This now allows drawing several layers on top of each other.
 	     * Higher layer numbers have higher priority in the Z-order. 
 	     */
