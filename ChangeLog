@@ -1,3 +1,11 @@
+2002-09-29  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerber.c, src/gerbv.c, src/gerbv_screen.h: Removed last
+	  traces of IMG_EXTRA hack. Now using proper aperture width to
+	  increase width of bounding box. This may give slightly too
+	  big bbox, but it is better than before. I consider this to
+	  close bug #605985.
+
 2002-09-17  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in: exportpng is configured in default and removed

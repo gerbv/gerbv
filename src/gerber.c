@@ -248,14 +248,14 @@ parse_gerb(gerb_file_t *fd)
 	     */
 	    if (image->info->min_x == 0.0 || 
 		image->info->min_x > curr_net->stop_x)
-		image->info->min_x = curr_net->stop_x;
+		image->info->min_x = curr_net->stop_x - image->aperture[curr_net->aperture]->parameter[0];
 	    if (image->info->min_y == 0.0 || 
 		image->info->min_y > curr_net->stop_y)
-		image->info->min_y = curr_net->stop_y;
+		image->info->min_y = curr_net->stop_y - image->aperture[curr_net->aperture]->parameter[0];
 	    if (image->info->max_x < curr_net->stop_x)
-		image->info->max_x = curr_net->stop_x;
+		image->info->max_x = curr_net->stop_x + image->aperture[curr_net->aperture]->parameter[0];
 	    if (image->info->max_y < curr_net->stop_y)
-		image->info->max_y = curr_net->stop_y;
+		image->info->max_y = curr_net->stop_y + image->aperture[curr_net->aperture]->parameter[0];
 	    
 	    state->prev_x = state->curr_x;
 	    state->prev_y = state->curr_y;
