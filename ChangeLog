@@ -1,3 +1,8 @@
+2002-10-14  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Activate millimeters in unit menu if this
+	  is the default unit.
+
 -- Release 0.0.10 --
 
 2002-10-13   Stefan Petersen  <spe@stacken.kth.se>

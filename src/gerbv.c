@@ -157,7 +157,7 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Setup/_Background Color",NULL, color_selection_popup, 1, NULL},
     {"/Setup/_Units",  NULL,     NULL,             0, "<Branch>"},
     {"/Setup/_Units/m_ils",NULL, unit_func, GERBV_MILS, "<RadioItem>"},
-    {"/Setup/_Units/_mms",NULL, unit_func, GERBV_MMS, "/Setup/Units/mils"},
+    {"/Setup/_Units/_mm",NULL, unit_func, GERBV_MMS, "/Setup/Units/mils"},
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
@@ -194,9 +194,16 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
     /* Attach the new accelerator group to the window */
     gtk_accel_group_attach(accel_group, GTK_OBJECT(window));
     
-    if(menubar)
+    if(menubar) {
 	/* Finally, return the actual menu bar created by the item factory. */
 	*menubar = gtk_item_factory_get_widget(item_factory, "<main>");
+	/* Set menu selection to reflect the current active unit */
+	if (GERBV_DEFAULT_UNIT == GERBV_MMS) {
+	    GtkWidget *menuEntry;
+	    menuEntry = gtk_item_factory_get_widget(item_factory, "/Setup/Units/mm");
+	    gtk_menu_item_activate(GTK_MENU_ITEM(menuEntry));
+	}
+    }
 } /* create_menubar */
 
 
@@ -1807,7 +1814,7 @@ internal_main(int argc, char *argv[])
     screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
     screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
 
-    /* Set default unit to mils. */
+    /* Set default unit to the configured default */
     screen.unit = GERBV_DEFAULT_UNIT;
 
     /*
