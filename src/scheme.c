@@ -1,4 +1,4 @@
-/* T I N Y S C H E M E    1 . 3 3
+/* T I N Y S C H E M E    1 . 3 5
  *   Dimitrios Souflis (dsouflis@acm.org)
  *   Based on MiniScheme (original credits follow)
  * (MINISCM)               coded by Atsushi Moriwaki (11/5/1989)
@@ -18,11 +18,14 @@
 
 #define _SCHEME_SOURCE
 #include "scheme-private.h"
+#ifndef WIN32
+# include <unistd.h>
+#endif
 #if USE_DL
 # include "dynload.h"
 #endif
 #if USE_MATH
-#include <math.h>
+# include <math.h>
 #endif
 #include <limits.h>
 #include <float.h>
@@ -60,7 +63,7 @@
  *  Basic memory allocation units
  */
 
-#define banner "TinyScheme 1.33"
+#define banner "TinyScheme 1.35"
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -138,13 +141,6 @@ enum scheme_types {
 #define CLRATOM      49151    /* 1011111111111111 */   /* only for gc */
 #define MARK         32768    /* 1000000000000000 */
 #define UNMARK       32767    /* 0111111111111111 */
-
-/* operator code */
-enum scheme_opcodes { 
-#define _OP_DEF(A,B,C,D,E,OP) OP, 
-#include "opdefines.h" 
-  OP_MAXDEFINED 
-}; 
 
 
 static num num_add(num a, num b);
@@ -447,12 +443,14 @@ static num num_rem(num a, num b) {
  e1=num_ivalue(a);
  e2=num_ivalue(b);
  res=e1%e2;
- if(res*e1<0) {    /* remainder should have same sign as first operand */
-     e2=labs(e2);
-     if(res>0) {
-          res-=e2;
-     } else {
-          res+=e2;
+ /* modulo should have same sign as second operand */
+ if (res > 0) {
+     if (e1 < 0) {
+        res -= labs(e2);
+     }
+ } else if (res < 0) {
+     if (e1 > 0) {
+         res += labs(e2);
      }
  }
  ret.value.ivalue=res;
@@ -580,7 +578,7 @@ static int alloc_cellseg(scheme *sc, int n) {
 	  i = ++sc->last_cell_seg ;
 	  sc->alloc_seg[i] = cp;
 	  /* adjust in TYPE_BITS-bit boundary */
-	  if((long)cp%adj!=0) {
+	  if((unsigned)cp%adj!=0) {
 	    cp=(char*)(adj*((long)cp/adj+1));
 	  }
         /* insert new segment in address order */
@@ -1208,9 +1206,9 @@ static void gc(scheme *sc, pointer a, pointer b) {
         if (typeflag(p) != 0) { 
           finalize_cell(sc, p); 
           typeflag(p) = 0; 
-          ++sc->fcells; 
           car(p) = sc->NIL; 
         } 
+        ++sc->fcells; 
         cdr(p) = sc->free_cell; 
         sc->free_cell = p; 
       }
@@ -1300,7 +1298,7 @@ static pointer port_from_filename(scheme *sc, const char *fn, int prop) {
 static port *port_rep_from_file(scheme *sc, FILE *f, int prop) {
   char *rw;
   port *pt;
-  pt=sc->malloc(sizeof(port));
+  pt=(port*)sc->malloc(sizeof(port));
   if(pt==0) {
     return 0;
   }
@@ -1328,7 +1326,7 @@ static pointer port_from_file(scheme *sc, FILE *f, int prop) {
 
 static port *port_rep_from_string(scheme *sc, char *start, char *past_the_end, int prop) {
   port *pt;
-  pt=sc->malloc(sizeof(port));
+  pt=(port*)sc->malloc(sizeof(port));
   if(pt==0) {
     return 0;
   }
@@ -3985,7 +3983,7 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
       }
     }
     old_op=sc->op;
-    if (pcd->func(sc, sc->op) == sc->NIL) {
+    if (pcd->func(sc, (enum scheme_opcodes)sc->op) == sc->NIL) {
       return;
     }
     if(sc->no_memory) {
@@ -4229,7 +4227,7 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   
   for(i=0; i<n; i++) {
     if(dispatch_table[i].name!=0) {
-      assign_proc(sc, i, dispatch_table[i].name);
+      assign_proc(sc, (enum scheme_opcodes)i, dispatch_table[i].name);
     }
   }
 
@@ -4443,9 +4441,9 @@ int main(int argc, char **argv) {
       fprintf(stderr,"Could not open file %s\n",file_name);
     } else {
       if(isfile) {
-	scheme_load_file(&sc,fin);
+        scheme_load_file(&sc,fin);
       } else {
-	scheme_load_string(&sc,file_name);
+        scheme_load_string(&sc,file_name);
       }
       if(!isfile || fin!=stdin) {
 	if(sc.retcode!=0) {

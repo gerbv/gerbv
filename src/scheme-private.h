@@ -132,6 +132,14 @@ void *dump_base;	 /* pointer to base of allocated dump stack */
 int dump_size;		 /* number of frames allocated for dump stack */
 };
 
+/* operator code */
+enum scheme_opcodes { 
+#define _OP_DEF(A,B,C,D,E,OP) OP, 
+#include "opdefines.h" 
+  OP_MAXDEFINED 
+}; 
+
+
 #define cons(sc,a,b) _cons(sc,a,b,0)
 #define immutable_cons(sc,a,b) _cons(sc,a,b,1)
 

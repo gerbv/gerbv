@@ -1,4 +1,4 @@
-;    Initialization file for TinySCHEME 1.31 onwards
+;    Initialization file for TinySCHEME 1.34
 
 ; Per R5RS, up to four deep compositions should be defined
 (define (caar x) (car (car x)))
@@ -142,13 +142,17 @@
 ; Note the trick of returning (cmp x y)
 (define (string-cmp? chcmp cmp a b)
      (let ((na (string-length a)) (nb (string-length b)))
-          (if (<> na nb)
-               (cmp na nb)
-               (let loop ((i 0))
-                    (if (= i na)
-                         (if (= na 0) (cmp 0 0) #t)
-                         (and (chcmp cmp (string-ref a i) (string-ref b i))
-                              (loop (succ i))))))))
+          (let loop ((i 0))
+               (cond
+                    ((= i na)
+                         (if (= i nb) (cmp 0 0) (cmp 0 1)))
+                    ((= i nb)
+                         (cmp 1 0))
+                    ((chcmp = (string-ref a i) (string-ref b i))
+                         (loop (succ i)))
+                    (else
+                         (chcmp cmp (string-ref a i) (string-ref b i)))))))
+
 
 (define (string=? a b) (string-cmp? char-cmp? = a b))
 (define (string<? a b) (string-cmp? char-cmp? < a b))

@@ -1,3 +1,7 @@
+2004-12-28  Stefan Petersen  <spe@siouxsie.umunet.org>
+
+	* Updated to TinyScheme 1.35
+
 2004-10-30  Stefan Petersen  <spe@siouxsie.umunet.org>
 
         * src/draw_amacro.c: Forgot to use local_gc when drawing some
