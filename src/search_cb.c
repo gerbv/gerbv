@@ -100,7 +100,6 @@ cb_ok_load_pnp_file(GtkWidget *widget, GtkFileSelection *fs)
         
         interface.pnp_filename = (char *)malloc(strlen(filename) + 1);
         strcpy(interface.pnp_filename, filename);/*entry for pnp file also getting saved on "save project"*/
-        printf("filename in cb_ok_load_pnp_file %s", filename);
         
 #ifdef HAVE_LIBGEN_H
         /*
@@ -171,84 +170,56 @@ int
 open_pnp(char *filename, int idx, int reload)
 {
     pnp_file_t  *fd;
-    int          r, g, b;
-    GtkStyle    *defstyle, *newstyle;
-    pnp_state_t *temp_state;
    
     char *cptr;
 
-
     if (idx >= MAX_FILES) {
-	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
+	    GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
 		     filename);
-	return -1;
+        return -1;
     }
-    //printf("About to open file:%s\n",filename);
+     /*
+     *FIX ME RELOAD 
+     */
     fd = pnp_fopen(filename);
     if (fd == NULL) {
-	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
-	return -1;
+	    GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
+	    return -1;
     }
-    temp_state = parse_pnp(fd);
+    
+    /*Global storage, TODO: for data reload*/
+    parsed_PNP_data = parse_pnp(fd);
 
     pnp_fclose(fd);
          
     if(!gtk_tree_model_get_iter_first (GTK_TREE_MODEL(interface.model), &interface.iter)) {
-        GERB_MESSAGE("You tried to load a non compatible PNP file\n change format to entry1,entry2,... !\n");
-        if (interface.main_window)
+        GERB_MESSAGE("Non compatible PNP file\n change to csv format using ',' ':' '|' ';' as delimiters (quotes are supported)\n");
+        if (interface.main_window != NULL)
             gtk_widget_destroy(interface.main_window);
         if (parsed_PNP_data)
             free_pnp_state(parsed_PNP_data);
     }
     return 0;
     /*
-     * Do error check before continuing
+     * set up properties
      */
-    /*FIX ME include error checking for PNP files
-     *FIX ME RELOAD 
-     */
+   
     cptr = strrchr(filename, '/');
     if (cptr) {
-	int len;
+	    int len;
 
-	len = strlen(cptr);
-	screen.file[idx]->basename = (char *)malloc(len + 1);
-	if (screen.file[idx]->basename) {
-	    strncpy(screen.file[idx]->basename, cptr+1, len);
-	    screen.file[idx]->basename[len] = '\0';
-	} else {
-	    screen.file[idx]->basename = screen.file[idx]->name;
-	}
+	    len = strlen(cptr);
+	    screen.file[idx]->basename = (char *)malloc(len + 1);
+	    if (screen.file[idx]->basename) {
+	        strncpy(screen.file[idx]->basename, cptr+1, len);
+	        screen.file[idx]->basename[len] = '\0';
+	    } else {
+	        screen.file[idx]->basename = screen.file[idx]->name;
+	    }
     } else {
 	    screen.file[idx]->basename = screen.file[idx]->name;
     }
-
-    /*
-     * Calculate a "clever" random color based on index.
-     */
-    r = (12341 + 657371 * idx) % (int)(MAX_COLOR_RESOLUTION);
-    g = (23473 + 434382 * idx) % (int)(MAX_COLOR_RESOLUTION);
-    b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
-
-    screen.file[idx]->color = alloc_color(r, g, b, NULL);
-    screen.file[idx]->inverted = 0;
-
-    /* 
-     * Set color on layer button
-     */
-    defstyle = gtk_widget_get_default_style();
-    newstyle = gtk_style_copy(defstyle);
-    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[idx]->color);
-    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
-    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
-    gtk_widget_set_style(screen.layer_button[idx], newstyle);
-
-    /* 
-     * Tool tips on button is the file name 
-     */
-    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
-			 filename, NULL); 
-
+ 
     return 0;
     
 } /* open_pnp */

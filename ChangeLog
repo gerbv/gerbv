@@ -1,7 +1,10 @@
 2004-08-13 11:25 Search9-pre8
-mostly done use of libmba's csv.[ch]
  todo 	saving projects 
 	Bugs fixed:
+		-if mark is pressed and there is no selection colour of layer
+		 button does not change
+                -use of libmba's csv.[ch]  
+		-automatic screening for delimiters
 		-if  dialog is to be destroyed but it does not exist is caught 
 		-upon loading a second gerberfile the first user dialog is 
 		  destroyed and parsed_PNP_data

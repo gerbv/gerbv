@@ -492,8 +492,8 @@ create_main_search_window (void)
     gtk_table_attach (GTK_TABLE(interface.table),interface.layer_active, 2, 3, 0, 1, GTK_SHRINK, 0, 0, 0);
     g_signal_connect (G_OBJECT((GTK_COMBO_BOX(interface.layer_active))),"changed",
 		      G_CALLBACK(click_layer_active_cb), NULL);  
+
     sprintf(s_MAX_FILES,"%i",MAX_FILES-2);
-    
     gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, s_MAX_FILES);
     gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
     click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);

@@ -263,9 +263,6 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
              pnp_state = pnp_state->next;
         }    
     }   
-
-    /*Global storage, for data reload, e.g. if search_window was destroyed*/
-    parsed_PNP_data = pnp_state0;
            
     return pnp_state0; /* return the FIRST, not last list node */
 }
