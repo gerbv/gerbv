@@ -1,3 +1,9 @@
+2003-10-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: Drawing of aperture macro primitive 7 was
+	  severly broken. Revealed by Drew Moore who sent an example 
+	  along. Thanks Drew! Closes bug #818307.
+
 2003-09-28  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Patch from Peter Brueckner. Some Gerbers don't

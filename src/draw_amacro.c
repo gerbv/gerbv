@@ -358,23 +358,62 @@ gerbv_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     const int inside_dia_idx = 3;
     const int ch_thickness_idx = 4;
     const int rotation_idx = 5;
-    double new_stack[] = 
-    {s->stack[0],                      /* X */
-     s->stack[1],                      /* Y */
-     s->stack[outside_dia_idx],        /* Outside Diameter */
-     (s->stack[outside_dia_idx] - 
-      s->stack[inside_dia_idx]) / 2.0, /* Circle Line Thickness */
-     0.0,                              /* Gap Between Circles */
-     1.0,                              /* Number of Circles */
-     s->stack[ch_thickness_idx],       /* Cross Hair Thickness */
-     s->stack[outside_dia_idx],        /* Cross Hair Length */
-     s->stack[rotation_idx]};          /* Rotation */
-    double *old_stack;
+    const gint full_circle = 23360;
+    GdkGCValues gc_val;
+    int diameter, i;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    GdkPoint point[4];
+    double ci_thickness = (s->stack[outside_dia_idx] - 
+			s->stack[inside_dia_idx]) / 2.0;
 
-    old_stack = s->stack;
-    s->stack = new_stack;
-    gerbv_draw_prim6(pixmap, gc, s, scale, x, y);
-    s->stack = old_stack;
+    gdk_gc_copy(local_gc, gc);
+    gdk_gc_set_line_attributes(local_gc, 
+			       (int)round(scale * ci_thickness),
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
+
+    /* 
+     * Non filled circle 
+     */
+    diameter = (s->stack[inside_dia_idx] + ci_thickness) * scale;
+    gdk_draw_arc(pixmap, local_gc, 0, x - diameter / 2, y - diameter / 2, 
+		 diameter, diameter, 0, full_circle);
+
+    /*
+     * Cross hair
+     */ 
+    /* Calculate the end points of the crosshair */
+    for (i = 0; i < 4; i++) {
+	point[i].x = round((s->stack[outside_dia_idx] / 2.0) * scale);
+	point[i].y = 0;
+	point[i] = rotate_point(point[i], s->stack[rotation_idx] + 90 * i);
+	point[i].x += x;
+	point[i].y += y;
+    }
+
+    /* We must "reach out" to the outer part of the circle, hence round end */
+    gdk_gc_set_line_attributes(local_gc, 
+			       (int)round(scale * s->stack[ch_thickness_idx]),
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_ROUND, 
+			       GDK_JOIN_MITER);
+
+    /* The cross hair should "cut out" parts of the circle, hence inverse */
+    gdk_gc_get_values(local_gc, &gc_val);
+    if (gc_val.foreground.pixel == 1)
+	gc_val.foreground.pixel = 0;
+    else
+	gc_val.foreground.pixel = 1;
+    gdk_gc_set_foreground(local_gc, &(gc_val.foreground));
+
+    /* Draw the actual cross */
+    gdk_draw_line(pixmap, local_gc, 
+		  point[0].x, point[0].y, point[2].x, point[2].y);
+    gdk_draw_line(pixmap, local_gc,
+		  point[1].x, point[1].y, point[3].x, point[3].y);
+
+    gdk_gc_unref(local_gc);
 
     return;
 } /* gerbv_draw_prim7 */
