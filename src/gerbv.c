@@ -523,7 +523,11 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
     }
 
     /* Export PNG */
+#ifdef EXPORT_DISPLAYED_IMAGE
     result = png_export(screen.pixmap, filename);
+#else
+    result = png_export(NULL, filename);
+#endif /* EXPORT_DISPLAYED_IMAGE */
     if (!result) {
 	fprintf(stderr, "Failed to save PNG at %s\n", filename);
     }

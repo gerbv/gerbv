@@ -1,3 +1,12 @@
+2002-11-04  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/exportimage.c, gerbv.c: export_png now export whole image
+	  despite whats displayed (still depending on zoom/scale thou).
+	  If export_png receives an imagetosave, that will be the image
+	  that will be saved, so it's more general now. Must hack some
+	  more to be able to utilize both ways. Anders can happily remove
+	  all what he calls kludges.
+
 2002-10-31  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Yet another commando that doesn't complain if 
