@@ -24,6 +24,12 @@
 #include <string.h>
 #include <math.h>  /* pow() */
 #include <ctype.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/mman.h>
+
 #include "drill.h"
 
 
@@ -389,40 +395,40 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
     rewind(fd);
 }
 
-/* Looks for M48 at the beginning of a line too see if this
-   might be a drill file */
+
+/* 
+ * Looks for M48 at the beginning of a line too see if this
+ * might be a drill file 
+ */
 int
 drill_file_p(FILE *fd)
 {
-    char read[2];
+    const size_t buffer_size = 50;
+    struct stat statinfo;
+    char *file;
+    char buffer[buffer_size];
+    int returned = 0;
 
-    while ((read[0] = (char)fgetc(fd)) != EOF) {
-	switch (read[0]) {
-	case 'M':
-	    if(fread(read, 1, 2, fd) != 2) {
-		/* Probably EOF. Anyway, it's not a drill file */
-		rewind(fd);
-		clearerr(fd);
-		return 0;
-	    } else if(!strncmp(read, "48", 2)) {
-		/* Drill file header found,
-		   this could very well be a drill file */
-		rewind(fd);
-		return 1;
-	    } else {
-		eat_line(fd);
-	    }
-	    break;
-	default :
-	    eat_line(fd);
-	    break;
-	}
+    fstat(fileno(fd), &statinfo);
+    file = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, 
+			fileno(fd), 0);
+
+    if (file < 0) {
+	perror("mmapping failed");
+    } else {
+	strncpy(buffer, file, buffer_size);
+	buffer[buffer_size - 1] = '\0';
+	if (strstr(buffer, "M48") != NULL) 
+	    returned = 1; /* Found */
+	else
+	    returned = 0;
     }
-    /* This is probably not a drill file */
-    rewind(fd);
-    clearerr(fd);
-    return 0;
+
+    munmap(file, statinfo.st_size);
+
+    return returned;
 }
+
 
 /* Parse tool definition. This can get a bit tricky since it can
    appear in the header and/or the data.
