@@ -62,6 +62,8 @@
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
 
+#define WIN_TITLE "Gerber Viewer : "
+
 #ifndef err
 #define err(errcode, a...) \
      do { \
@@ -1634,6 +1636,7 @@ internal_main(int argc, char *argv[])
     gint      screen_width, width, height;
     char      read_opt;
     int       i;
+    char      *win_title;
 #ifdef GUILE_IN_USE
     char      *backend = NULL;
     int	      run_batch = 0;
@@ -1726,10 +1729,15 @@ internal_main(int argc, char *argv[])
     /*
      * Main window 
      */
+    win_title = (char *)malloc(strlen(WIN_TITLE) + strlen(VERSION) + 1);
+    memset(win_title, 0, strlen(WIN_TITLE) + strlen(VERSION) + 1);
+    strncpy(win_title, WIN_TITLE, strlen(WIN_TITLE));
+    strncat(win_title, VERSION, strlen(VERSION));
     main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(main_win), "Gerber Viewer");
+    gtk_window_set_title(GTK_WINDOW(main_win), win_title);
     gtk_signal_connect(GTK_OBJECT(main_win), "delete_event", destroy, NULL);
     gtk_signal_connect(GTK_OBJECT(main_win), "destroy", destroy, NULL);
+    free(win_title);
 
     /* 
      * vbox contains menubar and hbox

@@ -1,3 +1,8 @@
+2002-09-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added version number in main windows title.
+	
+
 2002-09-07  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/batch.c, src/draw.c, src/gerb_image.h, src/gerber.c, 
