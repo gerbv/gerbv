@@ -166,7 +166,6 @@ gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     gdk_draw_arc(pixmap, local_gc, 0, real_x, real_y, dia, dia, 
 		 0, full_circle);
 
-
     gdk_gc_unref(local_gc);
 
     return;
@@ -197,7 +196,7 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	return;
     }
 
-    rotation = s->stack[nuf_points + rotext_idx];
+    rotation = s->stack[nuf_points * 2 + rotext_idx];
     for (point = 0; point < nuf_points; point++) {
 	points[point].x = (int)round(scale * s->stack[point * 2 + 2]);
 	points[point].y = -(int)round(scale * s->stack[point * 2 + 3]);
@@ -490,7 +489,6 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     points[3].x = (int)round(s->stack[x_lower_left_idx] * scale);
     points[3].y = (int)round((s->stack[y_lower_left_idx] - s->stack[height_idx])
 			     * scale);
-
 
     for (i = 0; i < nuf_points; i++) {
 	points[i] = rotate_point(points[i], s->stack[rotation_idx]);
