@@ -440,7 +440,7 @@ static void
 parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 {
     char op[3];
-    int read[2];
+    int read[3];
     gerb_aperture_t *a = NULL;
     int ano;
     
