@@ -18,6 +18,9 @@ TODO
 ./doc/aperturemacro.txt
 #./doc/Makefile.example
 ./doc/sources.txt
+./doc/image2pixmap.fig
+./doc/PNG-print/gimp-window.jpg
+./doc/PNG-print/PNGPrintMiniHowto.txt
 
 ./example/am-test/am-test.gbx
 
