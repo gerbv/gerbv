@@ -1,9 +1,9 @@
 #!/bin/sh
-rm -f confdefs.h config.* configure aclocal.m4 stamp-h*
+rm -f confdefs.h config.* configure aclocal.m4 stamp-h* install-sh missing mkinstalldirs
 find . -name Makefile -exec rm {} \;
 find . -name Makefile.in -exec rm {} \;
 
 aclocal
 autoheader
 autoconf
-automake --add-missing
+automake --copy --add-missing
