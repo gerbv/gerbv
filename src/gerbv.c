@@ -567,6 +567,9 @@ color_selection_popup(GtkWidget *widget, gpointer data)
 static void 
 invert_color(GtkWidget *widget, gpointer data)
 {
+    if (!screen.file[screen.curr_index])
+	return;
+
     if (screen.file[screen.curr_index]->inverted)
 	screen.file[screen.curr_index]->inverted = 0;
     else
