@@ -3,7 +3,7 @@
 ##  gEDA - GNU Electronic Design Automation
 ##  This file is a part of gerbv.
 ##
-##    Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+##    Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
 ##
 ##  $Id$
 ##
@@ -24,7 +24,7 @@
 bin_PROGRAMS = gerbv
 
 gerbv_SOURCES = gerb_image.c gerb_file.c gerber.c scm_gerber.c gerbv.c \
-		draw.c drill.c color.c amacro.c exportimage.c
+		draw_amacro.c draw.c drill.c color.c amacro.c exportimage.c
 
 INCLUDES = @GTK_CFLAGS@ @GUILE_CFLAGS@ @GDK_PIXBUF_CFLAGS@
 gerbv_LDADD = @GTK_LIBS@ @GUILE_LDFLAGS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@

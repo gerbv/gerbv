@@ -21,22 +21,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#ifndef DRAW_H
-#define DRAW_H
+#ifndef DRAW_AMACRO_H
+#define DRAW_AMACRO_H
 
 #include <gdk/gdk.h>
-#include "gerber.h"
-
-/* Default mouse cursor. Perhaps redefine this to a variable later? */
-#define GERBV_DEF_CURSOR	NULL
+#include "amacro.h"
 
 /*
- * Convert a gerber image to a GTK pixmap to be displayed
+ * Execute (and thus draw) the aperture macro described by program.
+ * Inparameters used when defining aperture is parameters
  */
-int 
-image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     int scale, double trans_x, double trans_y,
-	     enum polarity_t polarity, 
-	     GdkColor *fg_color, GdkColor *bg_color, GdkColor *err_color);
+int gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
+		      instruction_t *program, double *parameters, int scale,
+		      gint x, gint y);
 
-#endif /* DRAW_H */
+#endif /* DRAW_AMACRO_H */

@@ -1,3 +1,8 @@
+2002-06-11  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.[hc],src/draw-amacro.[hc], src/Makefile.am: Split out 
+	  aperture macro stuff from draw.c to a separate file, draw_amacro.c.
+
 2002-06-10  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Centered outline zoom uses shift instead of control,
