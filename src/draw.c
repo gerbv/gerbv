@@ -366,8 +366,8 @@ gerbv_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     const int ch_length_idx = 7;
     const int rotation_idx = 8;
     GdkGC *local_gc = gdk_gc_new(pixmap);
-    int real_dia;
-    int real_gap;
+    double real_dia;
+    double real_gap;
     int circle;
     GdkPoint crosshair[4];
     int point;
@@ -378,11 +378,11 @@ gerbv_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 			       GDK_LINE_SOLID, 
 			       GDK_CAP_BUTT, 
 			       GDK_JOIN_MITER);
-    real_dia = (int)round((s->stack[outside_dia_idx] -
-			  s->stack[ci_thickness_idx] / 2.0) * scale);
-    real_gap = (int)round((s->stack[gap_idx] + s->stack[ci_thickness_idx]) *
-			  scale);
-    for (circle = (int)s->stack[nuf_circles_idx]; circle != 0; circle--) {
+
+    real_dia = s->stack[outside_dia_idx] -  s->stack[ci_thickness_idx] / 2.0;
+    real_gap = s->stack[gap_idx] + s->stack[ci_thickness_idx];
+
+    for (circle = 0; circle != (int)s->stack[nuf_circles_idx];  circle++) {
 	/* 
 	 * Non filled circle 
 	 */
@@ -395,9 +395,14 @@ gerbv_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
      */
     memset(crosshair, 0, sizeof(GdkPoint) * 4);
     crosshair[0].x = (int)((s->stack[ch_length_idx] / 2.0) * scale);
-    crosshair[1].y = crosshair[0].x;
-    crosshair[2].x = -crosshair[0].x;
-    crosshair[1].y = -crosshair[1].y;
+    /*crosshair[0].y = 0;*/
+    crosshair[1].x = -crosshair[0].x;
+    /*crosshair[1].y = 0;*/
+    /*crosshair[2].x = 0;*/
+    crosshair[2].y = crosshair[0].x;
+    /*crosshair[3].x = 0;*/
+    crosshair[3].y = -crosshair[0].x;
+
     gdk_gc_set_line_attributes(local_gc, 
 			       (int)round(scale * s->stack[ch_thickness_idx]),
 			       GDK_LINE_SOLID, 
@@ -410,7 +415,13 @@ gerbv_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	crosshair[point].x += x;
 	crosshair[point].y += y;
     }
-	
+    gdk_draw_line(pixmap, local_gc, 
+		  crosshair[0].x, crosshair[0].y, 
+		  crosshair[1].x, crosshair[1].y);
+    gdk_draw_line(pixmap, local_gc, 
+		  crosshair[2].x, crosshair[2].y, 
+		  crosshair[3].x, crosshair[3].y);
+
     gdk_gc_unref(local_gc);
 
     return;
@@ -440,7 +451,7 @@ gerbv_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
     old_stack = s->stack;
     s->stack = new_stack;
-    gerbv_draw_prim7(pixmap, gc, s, scale, x, y);
+    gerbv_draw_prim6(pixmap, gc, s, scale, x, y);
     s->stack = old_stack;
 
     return;
