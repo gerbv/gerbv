@@ -25,6 +25,9 @@ Prints the version number of gerbv and exits.
 Calls <backend> with the current parsed file. Only available if you compiled
 in Guile support. 
 .TP
+.BI -l\ <filename>|--log=<filename>
+All error messages etc are stored in a file with filename \fI<filename>\fP.
+.TP
 .BI --geometry=<width>x<height>[<+->x-position[<+->y-position]]
 Sets the the size of the window. X-position and y-position are currently
 ignored by gerbv.

@@ -1,4 +1,9 @@
-2003-01-15  Stefan Petersen  <spe@>
+2003-01-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* man/gerbv.1, src/gerbv.c : Updated documentation to reflect
+	  the new log commandline switch.
+
+2003-01-15 Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/Makefile.am, src/color.c, src/draw.c, src/drill.c,
 	  src/gerber.c, src/gerbv.c, src/gerbv_screen.h. Added are

@@ -2175,11 +2175,14 @@ internal_main(int argc, char *argv[])
 	    screen.log.filename = optarg;
 	    break;
 	case '?':
+
+	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
+	    fprintf(stderr, "where FLAGS could be any of\n");
+	    fprintf(stderr, "  --version|-V : Prints version of gerbv\n");
 #ifdef GUILE_IN_USE
-	    fprintf(stderr, "Usage : %s [--version|-V][--batch=<backend>|-b <backend>] <gerber file(s)>\n", argv[0]);
-#else
-	    fprintf(stderr, "Usage : %s [--version|-V] <gerber file(s)>\n", argv[0]);
+	    fprintf(stderr, "  --batch=<backend>|-b <backend> : Run in batch mode with backend <backend>\n");
 #endif /* GUILE_IN_USE */
+	    fprintf(stderr, "  --log=<logfile>|-l <logfile> : Send error messages to <logfile>\n");
 	    exit(1);
 	    break;
 	default :
