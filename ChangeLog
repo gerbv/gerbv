@@ -1,3 +1,12 @@
+2001-10-21 Stefan Petersen (spe@stacken.kth.se)
+
+	* gerbv.c: Changed how cw and ccw is handled when drawing
+	  arcs to avoid swapping of start and stop points.
+	* gerbv.c: Red dots at "aperture macros wanna-be's" scale
+	  with ordinary scale, so they don't disappear when scaling
+	  around.
+
+	
 2001-10-09 Stefan Petersen (spe@stacken.kth.se)
 
 	* gerber.h, gerber.c: Added 'D' as possible Format

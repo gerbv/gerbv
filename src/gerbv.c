@@ -359,7 +359,7 @@ gerbv_draw_oval(GdkPixmap *pixmap, GdkGC *gc, gint filled, gint x, gint y, gint 
 
 /*
  * Draws an arc 
- * direction: 0 clockwise, 1 counterclockwise
+ * direction:  0 counterclockwise, 1 clockwise
  */
 static void
 gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc, int cw, 
@@ -380,22 +380,7 @@ gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc, int cw,
     double alfa, beta;
     
     /*
-     * Convert cw to ccw by swapping start and stop points
-     */
-    if (cw) {
-	gint tmp;
-	
-	tmp = start_x;
-	start_x = stop_x;
-	stop_x = tmp;
-	
-	tmp = start_y;
-	start_y = stop_y;
-	stop_y = tmp;
-    }
-    
-    /*
-     * Quadrant detection 
+     * Quadrant detection (based on ccw, coverted below if cw)
      *    ---->X
      *    !
      *   \!/
@@ -413,29 +398,48 @@ gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc, int cw,
 	    quadrant = 3;
 	else
 	    quadrant = 4;
-    
+
+    /* 
+     * If clockwise, rotate quadrant
+     */
+    if (cw) {
+	switch (quadrant) {
+	case 1 : 
+	    quadrant = 3;
+	    break;
+	case 2 : 
+	    quadrant = 4;
+	    break;
+	case 3 : 
+	    quadrant = 1;
+	    break;
+	case 4 : 
+	    quadrant = 2;
+	    break;
+	default : 
+	    err(1, "Unknow quadrant value while converting to cw\n");
+	}
+    }
+
     /*
      * Calculate arc center point
-     * Depending on direction, we have swapped start and stop points
      */
-    arc_cp_x = cw ? stop_x : start_x;
-    arc_cp_y = cw ? stop_y : start_y;
     switch (quadrant) {
     case 1 :
-	arc_cp_x -= dist_x;
-	arc_cp_y += dist_y;
+	arc_cp_x = start_x - dist_x;
+	arc_cp_y = start_y + dist_y;
 	break;
     case 2 :
-	arc_cp_x += dist_x;
-	arc_cp_y += dist_y;
+	arc_cp_x = start_x + dist_x;
+	arc_cp_y = start_y + dist_y;
 	break;
     case 3 : 
-	arc_cp_x += dist_x;
-	arc_cp_y -= dist_y;
+	arc_cp_x = start_x + dist_x;
+	arc_cp_y = start_y - dist_y;
 	break;
     case 4 :
-	arc_cp_x -= dist_x;
-	arc_cp_y -= dist_y;
+	arc_cp_x = start_x - dist_x;
+	arc_cp_y = start_y - dist_y;
 	break;
     default :
 	err(1, "Strange quadrant : %d\n", quadrant);
@@ -450,7 +454,6 @@ gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc, int cw,
     d2x = DIFF(stop_x, arc_cp_x);
     d2y = DIFF(stop_y, arc_cp_y);
     
-#define RAD2DEG(a) (int)ceil(a * 180 / M_PI) 
     alfa = atan2((double)d1y, (double)d1x);
     beta = atan2((double)d2y, (double)d2x);
     
@@ -463,6 +466,8 @@ gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc, int cw,
     
     real_x = arc_cp_x - width / 2;
     real_y = arc_cp_y - height / 2;
+
+#define RAD2DEG(a) (int)ceil(a * 180 / M_PI) 
     
     switch (quadrant) {
     case 1 :
@@ -622,7 +627,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, int scale, gint trans
 		gerbv_draw_circle(*pixmap, line_gc, TRUE, x2, y2, p1);
 		break;
 	    case MACRO :
-		gerbv_draw_circle(*pixmap, err_gc, TRUE, x2, y2, 10);
+		gerbv_draw_circle(*pixmap, err_gc, TRUE, x2, y2, scale/20);
 		break;
 	    default :
 		err(1, "Unknown aperture type\n");
