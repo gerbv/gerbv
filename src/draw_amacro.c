@@ -52,9 +52,9 @@ typedef struct {
 
 
 static stack_t *
-new_stack(void)
+new_stack(unsigned int nuf_push)
 {
-    const int stack_size = 55;
+    const int extra_stack_size = 10;
     stack_t *s;
 
     s = (stack_t *)malloc(sizeof(stack_t));
@@ -64,13 +64,13 @@ new_stack(void)
     }
     memset(s, 0, sizeof(stack_t));
 
-    s->stack = (double *)malloc(sizeof(double) * stack_size);
+    s->stack = (double *)malloc(sizeof(double) * (nuf_push + extra_stack_size));
     if (!s->stack) {
 	free(s->stack);
 	return NULL;
     }
 
-    memset(s->stack, 0, sizeof(double) * stack_size);
+    memset(s->stack, 0, sizeof(double) * (nuf_push + extra_stack_size));
     s->sp = 0;
 
     return s;
@@ -515,10 +515,10 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
 int
 gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
-		  instruction_t *program, double *parameters, int scale,
-		  gint x, gint y)
+		  instruction_t *program, unsigned int nuf_push,
+		  double *parameters, int scale, gint x, gint y)
 {
-    stack_t *s = new_stack();
+    stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
     int handled = 1;
 

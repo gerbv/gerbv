@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -330,6 +330,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    case MACRO :
 		gerbv_draw_amacro(*pixmap, gc, 
 				  image->aperture[net->aperture]->amacro->program,
+				  image->aperture[net->aperture]->amacro->nuf_push,
 				  image->aperture[net->aperture]->parameter,
 				  scale, x2, y2);
 		break;

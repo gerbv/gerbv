@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This files is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -44,7 +44,7 @@ new_instruction()
     memset(instruction, 0, sizeof(instruction_t));
     
     return instruction;
-}
+} /* new_instruction */
 
 
 /*
@@ -64,7 +64,7 @@ new_amacro()
     memset(amacro, 0, sizeof(amacro_t));
     
     return amacro;
-}
+} /* new_amacro */
 
 
 /*
@@ -106,6 +106,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    ip->next = new_instruction(); /* XXX Check return value */
 	    ip = ip->next;
 	    ip->opcode = PPUSH;
+	    amacro->nuf_push++;
 	    ip->data.ival = gerb_fgetint(fd);
 	    comma = 0;
 	    break;
@@ -191,6 +192,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    ip->next = new_instruction(); /* XXX Check return value */
 	    ip = ip->next;
 	    ip->opcode = PUSH;
+	    amacro->nuf_push++;
 	    ip->data.fval = gerb_fgetdouble(fd);
 	    if (neg) 
 		ip->data.fval = -ip->data.fval;
@@ -234,7 +236,7 @@ free_amacro(amacro_t *amacro)
     }
 	
     return;
-}
+} /* free_amacro */
 
 
 void 
@@ -274,4 +276,4 @@ print_program(amacro_t *amacro)
 	    break;
 	}
     }
-}
+} /* print_program */

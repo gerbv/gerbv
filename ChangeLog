@@ -6,6 +6,8 @@
 	  Therefore not all multiquadrant circles were detected as such and
 	  got defined wrong. Some parts of the EAGLECAD_KLUDGE was removed,
  	  though EagleCad had some other surprises in store.
+	* src/amacro.[hc], draw.c, draw_amacro.[hc]: Dynamic allocation
+	  of stack when drawing aperture macros. Closes the evil bug 603147.
 	
 
 2002-09-02  Stefan Petersen  <spe@stacken.kth.se>
