@@ -99,7 +99,6 @@ static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
 static void si_func(GtkWidget *widget, gpointer data);
 static void unit_func(GtkWidget *widget, gpointer data);
-static void clipping_toggle(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget, int restart);
@@ -148,7 +147,6 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
     {"/_Setup",              NULL,     NULL,             0, "<Branch>"},
 
-    {"/Setup/_Clipping",NULL, clipping_toggle, 0, "<ToggleItem>"},
     {"/Setup/_Superimpose",  NULL,     NULL,             0, "<Branch>"},
     {"/Setup/_Superimpose/Copy",NULL, si_func, 0, "<RadioItem>"},
     {"/Setup/_Superimpose/And", NULL, si_func, GDK_AND,  "/Setup/Superimpose/Copy"},
@@ -206,10 +204,6 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
 	    menuEntry = gtk_item_factory_get_widget(item_factory, "/Setup/Units/mm");
 	    gtk_menu_item_activate(GTK_MENU_ITEM(menuEntry));
 	}
-
-	/* Set menu selection to show that clipping is on by default */
-	menuEntry = gtk_item_factory_get_widget(item_factory, "/Setup/Clipping");
-	gtk_menu_item_activate(GTK_MENU_ITEM(menuEntry));
     }
 } /* create_menubar */
 
@@ -722,6 +716,7 @@ autoscale()
 
 
 static gboolean idle_redraw_pixmap_active = FALSE;
+
 /*
  * On idle callback to ensure a zoomed image is properly redrawn
  */
@@ -794,19 +789,6 @@ unit_func(GtkWidget *widget, gpointer data)
 
     return;
 } /* unit_func() */
-
-
-static void
-clipping_toggle(GtkWidget *widget, gpointer data)
-{
-    /* Toggle pixmap clipping */
-    screen.do_clipping = !screen.do_clipping;
-
-    if (screen.drawing_area) {
-	redraw_pixmap(screen.drawing_area, TRUE);
-    }
-    return;
-} /* clipping_toggle() */
 
 
 /* Zoom function */
@@ -1002,33 +984,22 @@ redraw_pixmap(GtkWidget *widget, int restart)
 
     /* Should we restart drawing, or try to load a saved state? */
     if (!restart && state.valid) {
-	int scaled_max_x, scaled_max_y;
-
 	if (file_loaded != state.files_loaded) {
 	    state.valid = 0;
 	}
 
-	scaled_max_x = (int)floor((dmax_x - dmin_x) * 
-				  (double)screen.scale);
-	scaled_max_y = (int)floor((dmax_y - dmin_y) * 
-				  (double)screen.scale);
-
-	if (screen.do_clipping && 
-	    (state.max_width != screen.drawing_area->allocation.width ||
+	if ((state.max_width != screen.drawing_area->allocation.width ||
 	    state.max_height != screen.drawing_area->allocation.height)) {
 	    state.valid = 0;
-	} else if (!screen.do_clipping && 
-		   (state.max_width != scaled_max_x ||
-		    state.max_height != scaled_max_y)) {
-	    state.valid = 0;
 	}
-
     } else {
 	state.valid = 0;
     }
 
     /* Check for useful data in saved state or initialise state */
     if (!state.valid) {
+	int width = 0, height = 0;
+
 	/*
 	 * Paranoia check; size in width or height is zero
 	 */
@@ -1042,22 +1013,13 @@ redraw_pixmap(GtkWidget *widget, int restart)
 
 	state.files_loaded = file_loaded;
 
-	if (screen.do_clipping) {
-	    /*
-	     * Pixmap size is always size of window, no
-	     * matter how the scale.
-	     */
-	    state.max_width = screen.drawing_area->allocation.width;
-	    state.max_height = screen.drawing_area->allocation.height;
-	} else {
-	    /*
-	     * Scale width to actual windows size. No clipping.
-	     */
-	    state.max_width = (int)floor((dmax_x - dmin_x) * 
-					 (double)screen.scale);
-	    state.max_height = (int)floor((dmax_y - dmin_y) * 
-					  (double)screen.scale);
-	}
+	/*
+	 * Pixmap size is always size of window, no
+	 * matter how the scale.
+	 */
+	gdk_window_get_size(widget->window, &width, &height);	
+	state.max_width = width;
+	state.max_height = height;
 
 	/* 
 	 * Remove old pixmap, allocate a new one, draw the background and set
@@ -1112,19 +1074,11 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	     * Translation is to get it inside the allocated pixmap,
 	     * which is not always centered perfectly for GTK/X.
 	     */
-	    if (screen.do_clipping) {
-		image2pixmap(&(state.clipmask),
-			     screen.file[i]->image, screen.scale, 
-			     (screen.clip_bbox.x1-dmin_x)*screen.scale,
-			     (screen.clip_bbox.y1+dmax_y)*screen.scale,
-			     screen.file[i]->image->info->polarity);
-	    } else {
-		image2pixmap(&(state.clipmask),
-			     screen.file[i]->image, screen.scale, 
-			     -dmin_x*screen.scale,
-			     dmax_y*screen.scale,
-			     screen.file[i]->image->info->polarity);
-	    }
+	    image2pixmap(&(state.clipmask),
+			 screen.file[i]->image, screen.scale, 
+			 (screen.clip_bbox.x1-dmin_x)*screen.scale,
+			 (screen.clip_bbox.y1+dmax_y)*screen.scale,
+			 screen.file[i]->image->info->polarity);
 
 	    /* 
 	     * Set clipmask and draw the clipped out image onto the
@@ -1587,23 +1541,13 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
      * Do translation at the same time.
      */
     if (screen.pixmap != NULL) {
-	if (screen.do_clipping) {
-	    gdk_draw_pixmap(new_pixmap,
-			    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-			    screen.pixmap, 
-			    event->area.x + screen.off_x, 
-			    event->area.y + screen.off_y, 
-			    event->area.x, event->area.y,
-			    event->area.width, event->area.height);
-	} else {
-	    gdk_draw_pixmap(new_pixmap,
-			    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-			    screen.pixmap, 
-			    event->area.x + screen.trans_x, 
-			    event->area.y + screen.trans_y, 
-			    event->area.x, event->area.y,
-			    event->area.width, event->area.height);
-	}
+	gdk_draw_pixmap(new_pixmap,
+			widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+			screen.pixmap, 
+			event->area.x + screen.off_x, 
+			event->area.y + screen.off_y, 
+			event->area.x, event->area.y,
+			event->area.width, event->area.height);
     }
 
     /*
