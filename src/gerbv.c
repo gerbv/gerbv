@@ -86,6 +86,7 @@ gerbv_screen_t screen;
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void draw_zoom_outline(gboolean centered);
 static void draw_measure_distance();
+static void swap_layers(GtkWidget *widget, gpointer data);
 static void color_selection_popup(GtkWidget *widget, gpointer data);
 static void load_file_popup(GtkWidget *widget, gpointer data);
 #ifdef EXPORT_PNG
@@ -172,9 +173,11 @@ static GtkItemFactoryEntry menu_items[] = {
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
+    {"/Swap with Above", NULL, swap_layers, 0, NULL},
     {"/Layer Color...", NULL, color_selection_popup, 0, NULL},
     {"/Load File...", NULL, load_file_popup, 0, NULL},
     {"/Unload File...", NULL, unload_file, 0, NULL},
+    {"/Swap with Below", NULL, swap_layers, 1, NULL},
 };
 
 
@@ -425,6 +428,38 @@ color_selection_ok(GtkWidget *widget, gpointer data)
 
     return;
 } /* cb_ok_color_selection */
+
+
+static void 
+swap_layers(GtkWidget *widget, gpointer data)
+{
+    gerbv_fileinfo_t *temp_file;
+    GtkStyle *s1, *s2;
+    int idx;
+
+    if (data == 0) {
+	/* Moving Up */
+	if (screen.curr_index == 0) return;
+	idx = -1;
+    } else { 
+	/* Moving Down */
+	if (screen.curr_index == MAX_FILES - 1) return;
+	idx = 1;
+    }
+
+    /* Swap file */
+    temp_file = screen.file[screen.curr_index];
+    screen.file[screen.curr_index] = screen.file[screen.curr_index + idx];
+    screen.file[screen.curr_index + idx] = temp_file;
+    /* Swap color on button */
+    s1 = gtk_widget_get_style(screen.layer_button[screen.curr_index]);
+    s2 = gtk_widget_get_style(screen.layer_button[screen.curr_index + idx]);
+    gtk_widget_set_style(screen.layer_button[screen.curr_index + idx], s1);
+    gtk_widget_set_style(screen.layer_button[screen.curr_index], s2);
+    
+    redraw_pixmap(screen.drawing_area, TRUE);
+    
+} /* swap_layers */
 
 
 static void
