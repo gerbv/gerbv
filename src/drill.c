@@ -51,26 +51,40 @@
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
 enum drill_file_section_t {DRILL_NONE, DRILL_HEADER, DRILL_DATA};
+enum drill_coordinate_mode_t {DRILL_MODE_ABSOLUTE, DRILL_MODE_INCREMENTAL};
+
 enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED,
-		     DRILL_M_END, DRILL_M_MESSAGE,
-		     DRILL_M_HEADER, DRILL_M_METRIC, DRILL_M_IMPERIAL,
-		     DRILL_M_BEGINPATTERN, DRILL_M_ENDPATTERN};
+		     DRILL_M_END, DRILL_M_ENDREWIND,
+		     DRILL_M_MESSAGE, DRILL_M_LONGMESSAGE,
+		     DRILL_M_HEADER, DRILL_M_ENDHEADER,
+		     DRILL_M_METRIC, DRILL_M_IMPERIAL,
+		     DRILL_M_BEGINPATTERN, DRILL_M_ENDPATTERN,
+		     DRILL_M_CANNEDTEXT, DRILL_M_TIPCHECK};
+
+enum drill_g_code_t {DRILL_G_ABSOLUTE, DRILL_G_INCREMENTAL,
+		     DRILL_G_ZEROSET, DRILL_G_UNKNOWN,
+		     DRILL_G_ROUT, DRILL_G_DRILL,
+		     DRILL_G_LINEARMOVE, DRILL_G_CWMOVE, DRILL_G_CCWMOVE};
 
 typedef struct drill_state {
     double curr_x;
     double curr_y;
     int current_tool;
     int curr_section;
+    int coordinate_mode;
+    double origin_x;
+    double origin_y;
 } drill_state_t;
 
 /* Local function prototypes */
 static void drill_guess_format(FILE *fd, gerb_image_t *image);
+static int drill_parse_G_code(FILE *fd, gerb_image_t *image);
 static int drill_parse_M_code(FILE *fd, gerb_image_t *image);
 static int drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image);
-static void drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state);
+static void drill_parse_coordinate(FILE *fd, char firstchar, double scale_factor, drill_state_t *state);
 static drill_state_t *new_state(drill_state_t *state);
 static int read_int(FILE *fd);
-static double read_double(FILE *fd);
+static double read_double(FILE *fd, double scale_factor);
 static void eat_line(FILE *fd);
 
 gerb_image_t *
@@ -96,12 +110,6 @@ parse_drillfile(FILE *fd)
     if (image && image->format ){
 	x_scale = pow(10.0, (double)image->format->x_dec);
 	y_scale = pow(10.0, (double)image->format->y_dec);
-
-	/* KLUDGE. I can't get the scale right, somehow... */
-	if(image->info->unit == MM) {
-	    x_scale *= 25.4;
-	    y_scale *= 25.4;
-	}
     }
 
     while ((read = (char)fgetc(fd)) != EOF) {
@@ -117,29 +125,60 @@ parse_drillfile(FILE *fd)
 	    break;
 	case 'G':
 	    /* G codes aren't used, for now */
-/*	    drill_parse_G_code(fd, state, image->format); */
-	    eat_line(fd);
+	    switch(drill_parse_G_code(fd, image)) {
+	    case DRILL_G_ROUT :
+		err(1, "Rout mode data is not supported\n");
+		break;
+	    case DRILL_G_DRILL :
+		break;
+	    case DRILL_G_ABSOLUTE :
+		state->coordinate_mode = DRILL_MODE_ABSOLUTE;
+		break;
+	    case DRILL_G_INCREMENTAL :
+		state->coordinate_mode = DRILL_MODE_INCREMENTAL;
+		break;
+	    case DRILL_G_ZEROSET :
+		if((read = (char)fgetc(fd)) == EOF)
+		    err(1, "Unexpected EOF\n");
+		drill_parse_coordinate(fd, read, 1.0 / x_scale, state);
+		state->origin_x = state->curr_x;
+		state->origin_y = state->curr_y;
+		break;
+	    default :
+		eat_line(fd);
+		break;
+	    }
 	    break;
 	case 'M':
 	    switch(drill_parse_M_code(fd, image)) {
 	    case DRILL_M_HEADER :
 		state->curr_section = DRILL_HEADER;
+		break;
+	    case DRILL_M_ENDHEADER :
+		state->curr_section = DRILL_DATA;
+		break;
 	    case DRILL_M_METRIC :
-/*		image->info->unit = MM; */
+		/* This is taken care of elsewhere */
 		break;
 	    case DRILL_M_IMPERIAL :
-/*		image->info->unit = INCH; */
+		/* This is taken care of elsewhere */
 		break;
+	    case DRILL_M_LONGMESSAGE :
 	    case DRILL_M_MESSAGE :
 		/* Until we have a console, these are ignored */
+	    case DRILL_M_CANNEDTEXT :
+		/* Ignored, probably permanently */
 		eat_line(fd);
 		break;
 	    case DRILL_M_NOT_IMPLEMENTED :
 	    case DRILL_M_ENDPATTERN :
+	    case DRILL_M_TIPCHECK :
 		break;
 	    case DRILL_M_END :
+		/* M00 has optional arguments */
+		eat_line(fd);
+	    case DRILL_M_ENDREWIND :
 		free(state);
-
 		/* KLUDGE. All images, regardless of input format,
 		   are returned in INCH format */
 		image->info->unit = INCH;
@@ -161,20 +200,22 @@ parse_drillfile(FILE *fd)
 	case 'X':
 	case 'Y':
 	    /* Hole coordinate found. Do some parsing */
-	    drill_parse_coordinate(fd, read, state);
+	    drill_parse_coordinate(fd, read, 1.0 / x_scale, state);
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
 	    bzero((void *)curr_net, sizeof(gerb_net_t));
 
-	    curr_net->start_x = (double)state->curr_x / x_scale;
-	    curr_net->start_y = (double)state->curr_y / y_scale;
-	    curr_net->stop_x = curr_net->start_x;
-	    curr_net->stop_y = curr_net->start_y;
-/*
-	    printf("x: %f  y: %f\n", curr_net->start_x,
-		   curr_net->start_y);
-*/
+	    curr_net->start_x = (double)state->curr_x;
+	    curr_net->start_y = (double)state->curr_y;
+	    /* KLUDGE. This function isn't allowed to return anything
+	       but inches */
+	    if(image->info->unit == MM) {
+		(double)curr_net->start_x /= 25.4;
+		(double)curr_net->start_y /= 25.4;
+	    }
+	    curr_net->stop_x = curr_net->start_x - state->origin_x;
+	    curr_net->stop_y = curr_net->start_y - state->origin_y;
 	    curr_net->aperture = state->current_tool;
 	    curr_net->aperture_state = FLASH;
 
@@ -185,9 +226,7 @@ parse_drillfile(FILE *fd)
 	    image->info->max_y = max(image->info->max_y, curr_net->start_y);
 
 	    break;
-
 	case '%':
-/*	    printf("Found start of data segment\n"); */
 	    state->curr_section = DRILL_DATA;
 	    break;
 	case 10 :   /* White space */
@@ -197,7 +236,7 @@ parse_drillfile(FILE *fd)
 	    break;
 	default:
 	    if(state->curr_section == DRILL_HEADER) {
-		/* Unstandard crap in the header is thrown away */
+		/* Unrecognised crap in the header is thrown away */
 		eat_line(fd);
 	    } else {
 		fprintf(stderr,
@@ -240,13 +279,10 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
     while ((read = (char)fgetc(fd)) != EOF && !done) {
 	switch (read) {
 	case ';' :
-	    /* Comment found. Eat rest of line */
 	case 'F' :
-	    /* Z axis feed speed. Silently ignored */
-	case 'S':
-	    /* Spindle speed. Silently ignored */
 	case 'G':
-	    /* G codes aren't used, for now */
+	case 'S':
+	case 'T':
 	    eat_line(fd);
 	    break;
 	case 'M':
@@ -259,17 +295,11 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 		break;
 	    case DRILL_M_END :
 		done = TRUE;
-		break;
-	    case DRILL_M_HEADER :
-		state->curr_section = DRILL_HEADER;
 	    default:
 		break;
 	    }
 	    break;
 
-	case 'T':
-	    drill_parse_T_code(fd, state, image);
-	    break;
 	case 'X':
 	case 'Y':
 	    /* How many leading zeros? */
@@ -280,9 +310,9 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 		/* This state machine is a bit ugly, so it'll probably
 		   have to be rewritten sometime */
 		int local_state = 0;
-		while ((read = (char)fgetc(fd)) != EOF && isdigit(read)) {
-		    
-		    length ++;
+		while ((read = (char)fgetc(fd)) != EOF &&
+		       (isdigit(read) || read == ',' || read == '.')) {
+		    if(read != ',' && read != '.') length ++;
 		    switch (local_state) {
 		    case 0:
 			if(read == '0') {
@@ -343,8 +373,7 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
     /* A bit of a kludge (or maybe wild ass guess would be more correct)
        It seems to work, though */
     if(image->format->omit_zeros == LEADING &&
-       image->format->x_dec <=3 &&
-       image->info->unit == INCH) {
+       image->format->x_dec <=3 && image->info->unit == INCH) {
 	++image->format->x_dec ;
 	++image->format->y_dec ;
     }
@@ -387,7 +416,7 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 	switch(temp) {
 	case 'C':
 
-	    size = read_double(fd);
+	    size = read_double(fd, 1);
 
 	    if(image->info->unit == MM) {
 		size /= 25.4;
@@ -405,8 +434,8 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 			err(1, "malloc tool failed\n");
 		    }
 		    /* There's really no way of knowing what unit the tools
-		       are defined in without sneaking a peek in the rest 
-		       of the file first. Will have to be done. */
+		       are defined in without sneaking a peek in the rest of
+		       the file first. That's done in drill_guess_format() */
 		    image->aperture[tool_num]->parameter[0] = size;
 		    image->aperture[tool_num]->type = CIRCLE;
 		    image->aperture[tool_num]->nuf_parameters = 1;
@@ -450,14 +479,18 @@ drill_parse_M_code(FILE *fd, gerb_image_t *image)
 
 /*    printf("M code: %2s\n", op); */
 
-    if (strncmp(op, "00", 2) == 0 || strncmp(op, "30", 2) == 0) {
-	/* Program stop */
+    if (strncmp(op, "00", 2) == 0) {
 	return DRILL_M_END;
     } else if (strncmp(op, "01", 2) == 0) {
 	return DRILL_M_ENDPATTERN;
+    } else if (strncmp(op, "18", 2) == 0) {
+	return DRILL_M_TIPCHECK;
     } else if (strncmp(op, "25", 2) == 0 || strncmp(op, "31", 2) == 0) {
-	/* Pattern start */
 	return DRILL_M_BEGINPATTERN;
+    } else if (strncmp(op, "30", 2) == 0) {
+	return DRILL_M_ENDREWIND;
+    } else if (strncmp(op, "45", 2) == 0) {
+	return DRILL_M_LONGMESSAGE;
     } else if (strncmp(op, "47", 2) == 0) {
 	return DRILL_M_MESSAGE;
     } else if (strncmp(op, "48", 2) == 0) {
@@ -468,25 +501,79 @@ drill_parse_M_code(FILE *fd, gerb_image_t *image)
     } else if (strncmp(op, "72", 2) == 0) {
 	eat_line(fd);
 	return DRILL_M_IMPERIAL;
+    } else if (strncmp(op, "95", 2) == 0) {
+	return DRILL_M_ENDHEADER;
+    } else if (strncmp(op, "97", 2) == 0 || strncmp(op, "98", 2) == 0) {
+	return DRILL_M_CANNEDTEXT;
     }
+
     return DRILL_M_UNKNOWN;
 
 } /* drill_parse_M_code */
+
+static int
+drill_parse_G_code(FILE *fd, gerb_image_t *image)
+{
+    char op[3] = "  ";
+
+    op[0] = fgetc(fd);
+    op[1] = fgetc(fd);
+
+    if ((op[0] == EOF) || (op[1] == EOF))
+	err(1, "Unexpected EOF found.\n");
+
+/*    printf("G code: %2s\n", op); */
+
+    if (strncmp(op, "00", 2) == 0) {
+	return DRILL_G_ROUT;
+    } else if (strncmp(op, "01", 2) == 0) {
+	return DRILL_G_LINEARMOVE;
+    } else if (strncmp(op, "02", 2) == 0) {
+	return DRILL_G_CWMOVE;
+    } else if (strncmp(op, "03", 2) == 0) {
+	return DRILL_G_CCWMOVE;
+    } else if (strncmp(op, "05", 2) == 0) {
+	return DRILL_G_DRILL;
+    } else if (strncmp(op, "90", 2) == 0) {
+	return DRILL_G_ABSOLUTE;
+    } else if (strncmp(op, "91", 2) == 0) {
+	return DRILL_G_INCREMENTAL;
+    } else if (strncmp(op, "93", 2) == 0) {
+	return DRILL_G_ZEROSET;
+    }
+    return DRILL_G_UNKNOWN;
+
+} /* drill_parse_G_code */
 
 
 /* Parse on drill file coordinate.
    Returns nothing, but modifies state */
 static void
-drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state)
+drill_parse_coordinate(FILE *fd, char firstchar,
+		       double scale_factor, drill_state_t *state)
 
 {
     char read;
 
-    if(firstchar == 'X') {
-	state->curr_x = read_double(fd);
-	if((read = fgetc(fd)) != 'Y') return;
+    if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
+	if(firstchar == 'X') {
+	    state->curr_x = read_double(fd, scale_factor);
+	    if((read = fgetc(fd)) == 'Y') {
+		state->curr_y = read_double(fd, scale_factor);
+	    }
+	} else {
+	    state->curr_y = read_double(fd, scale_factor);
+	}
+    } else if(state->coordinate_mode == DRILL_MODE_INCREMENTAL) {
+	if(firstchar == 'X') {
+	    state->curr_x += read_double(fd, scale_factor);
+	    if((read = fgetc(fd)) == 'Y') {
+		state->curr_y += read_double(fd, scale_factor);
+	    }
+	} else {
+	    state->curr_y += read_double(fd, scale_factor);
+	}
     }
-    state->curr_y = read_double(fd);
 
 } /* drill_parse_coordinate */
 
@@ -501,6 +588,9 @@ new_state(drill_state_t *state)
 	/* Init structure */
 	bzero((void *)state, sizeof(drill_state_t));
 	state->curr_section = DRILL_NONE;
+	state->coordinate_mode = DRILL_MODE_ABSOLUTE;
+	state->origin_x = 0.0;
+	state->origin_y = 0.0;
     }
     return state;
 } /* new_state */
@@ -539,25 +629,30 @@ read_int(FILE *fd)
 } /* read_int */
 
 
-/* Reads one double from fd and returns it */
+/* Reads one double from fd and returns it.
+   If a decimal point is found, the scale factor is not used. */
 static double
-read_double(FILE *fd)
+read_double(FILE *fd, double scale_factor)
 {
     char read;
     char temp[0x20];
     int i = 0;
     double result = 0;
+    int decimal_point = FALSE;
 
     bzero(temp, sizeof(temp));
 
     read = fgetc(fd);
-    while(read != EOF && i < sizeof(temp) && (isdigit(read) || read == '.' || read == '+' || read == '-')) {
+    while(read != EOF && i < sizeof(temp) &&
+	  (isdigit(read) || read == '.' || read == '+' || read == '-')) {
+	if(read == ',' || read == '.') decimal_point = TRUE;
 	temp[i++] = read;
 	read = fgetc(fd);
     }
 
     ungetc(read, fd);
     result = strtod(temp, NULL);
+    if(!decimal_point) result *= scale_factor;
 
     return result;
 } /* read_double */

@@ -1,3 +1,12 @@
+2001-11-26 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c:
+	  Coordinate parsing now works on coordinates with decimal points.
+	  More M codes and some G codes recognized. Most importantly
+	  absolute/incremental mode and zero setting could work, though
+	  it hasn't been properly tested yet.
+
+
 2001-11-23 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerb_image.h, src/draw.c, src/gerber.c, src/scm_gerber.c:
