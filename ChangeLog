@@ -2,6 +2,7 @@
 
 	* src/drill.c, src/gerb_image.c, src/gerber.c, src/gerbv.c:
 	  Exchanged bzero with memset for further portability.
+	* scheme/Makefile.am: gerb-debug.scm gets installed too.
 	
 
 2001-12-06 Andreas Andersson (e92_aan@e.kth.se)
