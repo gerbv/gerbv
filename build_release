@@ -6,6 +6,7 @@
 eval "`grep ^VERSION configure.in`"
 RELEASE=gerbv-${VERSION}
 CVS_TAG=RELEASE_`echo ${VERSION}|/bin/sed -e 'y/./_/'`
+FILES2REMOVE=build_release rebuild_conf cvs-tag.sh files2tag.txt
 
 RESULT=`grep -c :pserver:anonymous@cvs.gerbv.sourceforge.net:[0-9]*/cvsroot/gerbv ${HOME}/.cvspass`
 
@@ -16,7 +17,7 @@ fi
 
 (cd /tmp ;\
 cvs -z3 -d:pserver:anonymous@cvs.gerbv.sourceforge.net:/cvsroot/gerbv export -r ${CVS_TAG} -d ${RELEASE} gerbv ; \
-(cd ${RELEASE} ; rm -f build_release rebuild_conf ; \
+(cd ${RELEASE} ; rm -f ${FILES2REMOVE} ; \
 aclocal ; autoheader ; autoconf ; automake --copy --add-missing) ;\
 tar cf ${RELEASE}.tar ${RELEASE} ;\
 gzip ${RELEASE}.tar )
