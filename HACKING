@@ -1,6 +1,7 @@
-
+Indentation
+-----------
 To hack in this code you need to set emacs (or whatever you use) to
-8 indentation steps and {} at the right places (see code).
+4 indentation steps and {} at the right places (see code).
 Not negotiable.
 
 My ~/.emacs are:
@@ -9,3 +10,41 @@ My ~/.emacs are:
   (setq c-basic-offset 4))
 
 (add-hook 'c-mode-hook 'my-c-mode-hook)
+
+
+Curly Braces
+------------
+
+if () {
+    blah1();
+    blah2();
+} else {
+    yada1();
+    yada2();
+}
+If there is only one statement you don't need the braces.
+
+for() {
+    do_whatever();
+}
+
+switch() {
+case foo:
+    blah1();
+    break;
+case bar:
+    blah2();
+    break;
+default:
+    break;
+Switch should always have a default case.
+
+
+
+ChangeLog
+---------
+Minor changes (cosmetic, minor (up to 4,5 lines) not reported bugs) 
+doesn't need a ChangeLog entry. A ChangeLog entry is needed when a 
+reported bug is fixed (with bug report number) or when a feature is 
+added. I (spe) use ChangeLog when writing release notes.
+
