@@ -1,19 +1,15 @@
-.TH gerbv 1 "April 24th, 2002" Version @VERSION@
+.TH gerbv 1 "July 6th, 2002" Version @VERSION@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
-.B gerbv
-[--batch=<backend> | -b <backend>] [ --version | -V]  gerberfile[s]
+.B gerbv [ --version | -V]  gerberfile[s]
 .SH DESCRIPTION
 .PP
 \fIgerbv\fP is a viewer for Gerber files. Gerber files is generated
 from different PCB CAD programs and are sent to subcontractors to
 actually make the PCB. \fIgerbv\fP also supports Excellon/NC drill files.
 
-\fIgerbv\fP is GTK+ based and contains a possibility to run in "batch mode".
-When running in batch mode, gerbv parses the Gerber file and calls an
-external Scheme function with the parsed data. The Scheme implementation
-is based on Guile.
+\fIgerbv\fP uses GTK+ 1.2.
 
 .SH OPTIONS
 .l
@@ -27,17 +23,19 @@ short options are available.
 .TP
 .BI -V
 Prints the version number of gerbv and exits.
-.TP 8
-.BI --batch=<backend>
-.TP
-.BI -b\ <backend>
-Calls the backend to generate output. GTK+ is never started.
 
 .SH USAGE
-The user interface is graphical. To manipulate a layer, right-click on
+When you start gerbv you can give the files to be loaded on the command line,
+either as each file separated with a space or by using wildcards.
+
+The user interface is graphical. Simply press left mouse button and the image
+will pan as you move the mouse. To manipulate a layer, right-click on
 one of the rightmost buttons. That will bring up a pop-up menu where
-you can select what you want to do with that layer (open file, change
+you can select what you want to do with that layer (load file, change
 color, etc).
+
+If you hold the mouse button over one the rightmost button a tooltips will
+show you the name of the file loaded on that layer.
 
 Currently only 20 layers are supported. Changing this number needs a 
 one line change (MAX_FILES in gerbv.c) in the source and a recompilation.
@@ -48,6 +46,22 @@ press Alt+O you will zoom out.If you press middle mouse button you will zoom
 out, and if you press Shift and middle mouse button you will zoom in. 
 Scroll wheel works if you enabled that in your X server and mapped it
 to button 4 and 5.
+
+You can also do zooming by outline. Press left mouse button, draw,
+release.  The dashed line shows how the zooming will be dependent on
+the resolution of the window. The non-dashed outline will show what
+you actually selected.
+
+You can do measurement on the image displayed. By pressing shift, the 
+cursor changes to a plus. By using left mouse button you can draw the lines
+that you want to measure. Currently the gerber files must be in inches. 
+The result of the last measurement is also displayed on the statusbar.
+All measurements are in the drawing until you either zoom, pan or press the
+escape key.
+
+The statusbar shows the current mouse position on the layer in the same 
+coordinates as in the file. Ie if you have (0,0) in the middle of the image
+in the gerber files, the statusbar will show (0,0) at the same place.
 
 .SH "ENVIRONMENT"
 No environment variables are used.
