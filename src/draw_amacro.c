@@ -415,20 +415,22 @@ gerbv_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     /*
      * Cross hair
      */ 
-    /* Calculate the end points of the crosshair */
+    /* Calculate the end points of the crosshair */    
+    /* GDK doesn't always remove all of the circle (round of error probably)
+       I extend the crosshair line with 2 (one pixel in each end) to make 
+       sure all of the circle is removed with the crosshair */
     for (i = 0; i < 4; i++) {
-	point[i].x = round((s->stack[outside_dia_idx] / 2.0) * scale);
+	point[i].x = round((s->stack[outside_dia_idx] / 2.0) * scale) + 2;
 	point[i].y = 0;
 	point[i] = rotate_point(point[i], s->stack[rotation_idx] + 90 * i);
 	point[i].x += x;
 	point[i].y += y;
     }
 
-    /* We must "reach out" to the outer part of the circle, hence round end */
     gdk_gc_set_line_attributes(local_gc, 
 			       (int)round(scale * s->stack[ch_thickness_idx]),
 			       GDK_LINE_SOLID, 
-			       GDK_CAP_ROUND, 
+			       GDK_CAP_BUTT, 
 			       GDK_JOIN_MITER);
 
     /* The cross hair should "cut out" parts of the circle, hence inverse */

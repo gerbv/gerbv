@@ -1,3 +1,9 @@
+2004-07-11  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: When drawing thermals the cross ends in butt
+	  instead of round which gives nicer look when thermal covers an 
+	  other via.
+
 2004-06-27  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Improved comments on what is going and why. Also
