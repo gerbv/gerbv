@@ -424,13 +424,29 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
 {
     char *filename;
     gboolean result;
+    GdkWindow *window;
 
     filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+
+    /* This might be lengthy, show that we're busy by changing the pointer */
+    window = gtk_widget_get_parent_window(widget);
+    if (window) {
+	GdkCursor *cursor;
+
+	cursor = gdk_cursor_new(GDK_WATCH);
+	gdk_window_set_cursor(window, cursor);
+	gdk_cursor_destroy(cursor);
+    }
 
     /* Export PNG */
     result = png_export(screen.pixmap, filename);
     if (!result) {
 	fprintf(stderr, "Failed to save PNG at %s\n", filename);
+    }
+
+    /* Return default pointer shape */
+    if (window) {
+	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
     }
 
     /*
