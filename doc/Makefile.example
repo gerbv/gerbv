@@ -1,0 +1,53 @@
+
+#
+# General Makefile for latex documents with xfig figs
+#
+
+TEX=latex
+
+# Potential problem, because find returns ./ (infinite recursion)
+SUBDIRS = `find . -type d`
+
+eps_fig_files := $(patsubst %.fig, %.eps, $(wildcard *.fig))
+pdf_fig_files := $(patsubst %.fig, %.pdf, $(wildcard *.fig))
+
+.PHONY: clean subdirs $(SUBDIRS)
+
+all:
+	echo " Use make my.<format> instead"
+
+test: 
+	echo $(MAKE)
+
+
+#
+# Figure implicit rules
+#
+%.eps: %.fig
+	fig2dev -L eps $< $@
+
+%.pdf: %.fig
+	fig2dev -L pdf $< $@
+
+# TeX implicit rules (remove built-in implicit rules first)
+%.dvi: %.tex
+
+%.dvi: %.tex $(eps_fig_files)
+	echo foo ; $(TEX) $<
+
+%.ps: %.dvi
+	dvips -o $@ $<
+
+%.pdf: %.tex $(pdf_fig_files)
+	pdflatex $<
+
+#
+# Recurse directories
+#
+subdirs: $(SUBDIRS)
+
+$(SUBDIRS):
+	$(MAKE) -C $
+
+clean:
+	rm -f *.dvi *.aux *.log *~ *.eps *.ps *.pdf
