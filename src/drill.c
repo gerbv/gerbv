@@ -70,13 +70,14 @@ parse_drillfile(FILE *fd)
 	    /* Comment found. Eat rest of line */
 	    eat_line(fd);
 	    break;
+	case 'F' :
+	    /* Z axis feed speed. Silently ignored */
+	    eat_line(fd);
+	    break;
 	case 'G':
 /*	    drill_parse_G_code(fd, state, image->format); */
 	    eat_line(fd);
 	    
-	    break;
-	case 'T':
-	    drill_parse_T_code(fd, state, image);
 	    break;
 	case 'M':
 	    switch(drill_parse_M_code(fd, image)) {
@@ -95,6 +96,13 @@ parse_drillfile(FILE *fd)
 	    }
 	    break;
 
+	case 'S':
+	    /* Spindle speed. Silently ignored */
+	    eat_line(fd);
+	    break;
+	case 'T':
+	    drill_parse_T_code(fd, state, image);
+	    break;
 	case 'X':
 	case 'Y':
 	    /* Hole coordinate found. Do some parsing */
@@ -209,7 +217,7 @@ drill_parse_G_code(FILE *fd, drill_state_t *state, drill_format_t *format)
     if (strncmp(op, "00", 2) == 0) { 	/* Move */
 	/* Is this doing anything really? */
     } else if (strncmp(op, "01", 2) == 0) { /* Linear Interpolation (1X scale) */
-//		state->interpolation = LINEARx1;
+/*		state->interpolation = LINEARx1; */
 	return;
     } else if (strncmp(op, "02", 2) == 0) { /* Clockwise Linear Interpolation */
 /*		if (state->interpolation == MQ_CW_CIRCULAR ||
@@ -228,13 +236,13 @@ drill_parse_G_code(FILE *fd, drill_state_t *state, drill_format_t *format)
     } else if (strncmp(op, "04", 2) == 0) { /* Ignore Data Block */
 	/* Don't do anything, just read 'til * below */
     } else if (strncmp(op, "10", 2) == 0) { /* Linear Interpolation (10X scale) */
-//		state->interpolation = LINEARx10;
+/*		state->interpolation = LINEARx10; */
 	return;
     } else if (strncmp(op, "11", 2) == 0) { /* Linear Interpolation (0.1X scale) */
-//		state->interpolation = LINEARx01;
+/*		state->interpolation = LINEARx01; */
 	return;
     } else if (strncmp(op, "12", 2) == 0) { /* Linear Interpolation (0.01X scale) */
-//		state->interpolation = LINEARx001;
+/*		state->interpolation = LINEARx001; */
 	return;
     } else if (strncmp(op, "36", 2) == 0) { /* Turn on Polygon Area Fill */
 	NOT_IMPL(fd, "G36");
@@ -242,7 +250,7 @@ drill_parse_G_code(FILE *fd, drill_state_t *state, drill_format_t *format)
 	NOT_IMPL(fd, "G37");
     } else if (strncmp(op, "54", 2) == 0) { /* Tool prepare */
 	if (fgetc(fd) == 'D') {  /* XXX Check return value */
-//			state->curr_aperture = read_int(fd);
+/*			state->curr_aperture = read_int(fd); */
 	} else {
 	    err(1, "Strange code after G54\n");
 	}
@@ -258,13 +266,13 @@ drill_parse_G_code(FILE *fd, drill_state_t *state, drill_format_t *format)
 		state->interpolation = CCW_CIRCULAR;
 */		return;
     } else if (strncmp(op, "75", 2) == 0) { /* Enable 360 circular interpolation */
-//		state->interpolation = MQ_CW_CIRCULAR;
+/*		state->interpolation = MQ_CW_CIRCULAR; */
 	return;
     } else if (strncmp(op, "90", 2) == 0) { /* Specify absolut format */
-//		if (format) format->coordinate = ABSOLUTE;
+/*		if (format) format->coordinate = ABSOLUTE; */
 	return;
     } else if (strncmp(op, "91", 2) == 0) { /* Specify incremental format */
-//		if (format) format->coordinate = INCREMENTAL;
+/*		if (format) format->coordinate = INCREMENTAL; */
 	return;
     } else {
 	err(1, "Strange G code : %c%c\n", op[0], op[1]);
@@ -372,12 +380,11 @@ drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state)
     }
     state->curr_y = read_double(fd);
 
-//    eat_line(fd);
-
 } /* drill_parse_coordinate */
 
 
-#if 0 /* This second stage probably isn't needed with NC drill files */
+#if 0 /* This second stage probably isn't needed with NC drill files.
+	 Still, it's good to have it around for cut-n-pasting */
 static void 
 parse_drill(FILE *fd, drill_state_t *state, drill_image_t *image)
 {
