@@ -53,6 +53,7 @@ typedef struct {
     gerb_image_t *image;
     GdkColor *color;
     char *name;
+    char *basename;
 } gerbv_fileinfo_t;
 
 typedef struct {

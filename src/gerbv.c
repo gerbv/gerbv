@@ -102,7 +102,7 @@ static void unit_func(GtkWidget *widget, gpointer data);
 static void incr_redraw_toggle(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
-static gint redraw_pixmap(GtkWidget *widget);
+static gint redraw_pixmap(GtkWidget *widget, int restart);
 static void open_image(char *filename, int idx, int reload);
 static void update_statusbar(gerbv_screen_t *scr);
 
@@ -251,7 +251,7 @@ cb_layer_button(GtkWidget *widget, gpointer data)
     screen.curr_index = (long int)data;
 
     /* Redraw the image(s) */
-    redraw_pixmap(screen.drawing_area);
+    redraw_pixmap(screen.drawing_area, TRUE);
 
 } /* cb_layer_button */
 
@@ -351,7 +351,7 @@ color_selection_ok(GtkWidget *widget, gpointer data)
     }
 
     /* Redraw image on screen */
-    redraw_pixmap(screen.drawing_area);
+    redraw_pixmap(screen.drawing_area, TRUE);
 
     /* Change color on button too */
     if (!background) {
@@ -457,7 +457,7 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     screen.path = strncat(screen.path, "/", 1);
     
     /* Make loaded image appear on screen */
-    redraw_pixmap(screen.drawing_area);
+    redraw_pixmap(screen.drawing_area, TRUE);
 
     gtk_grab_remove(screen.load_file_popup);
     
@@ -628,7 +628,7 @@ reload_files(GtkWidget *widget, gpointer data)
 	}
     }
     
-    redraw_pixmap(screen.drawing_area);
+    redraw_pixmap(screen.drawing_area, TRUE);
 
     return;
 } /* reload_files */
@@ -720,7 +720,7 @@ gboolean
 idle_redraw_pixmap(gpointer data)
 {
     idle_redraw_pixmap_active = FALSE;
-    redraw_pixmap((GtkWidget *) data);
+    redraw_pixmap((GtkWidget *) data, FALSE);
     return FALSE;
 } /* idle_redraw_pixmap */
 
@@ -765,7 +765,7 @@ si_func(GtkWidget *widget, gpointer data)
     screen.si_func = (GdkFunction)data;
 
     /* Redraw the image(s) */
-    redraw_pixmap(screen.drawing_area);
+    redraw_pixmap(screen.drawing_area, TRUE);
 
     return;
 }
@@ -855,7 +855,7 @@ zoom(GtkWidget *widget, gpointer data)
     screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;    
 
     /* Redraw screen */
-    redraw_pixmap(screen.drawing_area);
+    redraw_pixmap(screen.drawing_area, TRUE);
     
     return;
 } /* zoom */
@@ -908,7 +908,7 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
 
 zoom_outline_end:
     /* Redraw screen */
-    redraw_pixmap(screen.drawing_area);
+    redraw_pixmap(screen.drawing_area, TRUE);
 } /* zoom_outline */
 
 
@@ -923,22 +923,30 @@ create_drawing_area(gint win_width, gint win_height)
     return drawing_area;
 } /* create_drawing_area */
 
+/* Keep redraw state when preempting to process certain events */
+struct gerbv_redraw_state {
+    int valid;			/* Set to nonzero when data is valid */
+    int file_index;
+    GdkPixmap *curr_pixmap;
+    GdkPixmap *clipmask;
+    int max_width;
+    int max_height;
+    int files_loaded;
+};
 
 /* Create a new backing pixmap of the appropriate size */
 static gint
-redraw_pixmap(GtkWidget *widget)
+redraw_pixmap(GtkWidget *widget, int restart)
 {
     int i;
     double dmax_x = LONG_MIN, dmax_y = LONG_MIN;
     double dmin_x = LONG_MAX, dmin_y = LONG_MAX;
-    int max_width = 0, max_height = 0;
     GdkGC *gc = gdk_gc_new(widget->window);
     GdkRectangle update_rect;
     int file_loaded = 0;
     GdkWindow *window;
-    GdkPixmap *curr_pixmap = NULL;
-    GdkPixmap *clipmask = NULL;
     int retval = TRUE;
+    static struct gerbv_redraw_state state;
 
     window = gtk_widget_get_parent_window(widget);
     /* This might be lengthy, show that we're busy by changing the pointer */
@@ -953,26 +961,75 @@ redraw_pixmap(GtkWidget *widget)
     /* Prevent redraw_pixmap from being called too many times */
     stop_idle_redraw_pixmap(screen.drawing_area);
 
-    /* Called first when opening window and then when resizing window */
+    /* Should we restart drawing, or try to load a saved state? */
+    if (!restart && state.valid) {
+	int file_loaded = 0;
 
-    for(i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i]) {
-	    file_loaded = 1;
+	/* Called first when opening window and then when resizing window */
+	for(i = 0; i < MAX_FILES; i++) {
+	    if (screen.file[i]) {
+		file_loaded++;
+	    }
 	}
+	if (file_loaded != state.files_loaded ||
+	    state.max_width != screen.drawing_area->allocation.width ||
+	    state.max_height != screen.drawing_area->allocation.height) {
+	    state.valid = 0;
+	}
+    } else {
+	state.valid = 0;
     }
 
-    /*
-     * Paranoia check; size in width or height is zero
-     */
-    if (!file_loaded) {
-	retval = FALSE;
-	goto redraw_pixmap_end;
-    }
+    /* Check for useful data in saved state or initialise state */
+    if (!state.valid) {
+	/* Clear state */
+	memset(&state, 0, sizeof(state));
 
-    /*
-     * Setup scale etc first time we load a file
-     */
-    if (file_loaded && screen.scale == 0) autoscale();
+	/* Called first when opening window and then when resizing window */
+	for(i = 0; i < MAX_FILES; i++) {
+	    if (screen.file[i]) {
+		file_loaded++;
+	    }
+	}
+	state.files_loaded = file_loaded;
+	/*
+	 * Paranoia check; size in width or height is zero
+	 */
+	if (!file_loaded) {
+	    retval = FALSE;
+	    goto redraw_pixmap_end;
+	}
+
+	/*
+	 * Setup scale etc first time we load a file
+	 */
+	if (file_loaded && screen.scale == 0) autoscale();
+
+	/*
+	 * Pixmap size is always size of window, no matter how big the scale is.
+	 */
+	state.max_width = screen.drawing_area->allocation.width;
+	state.max_height = screen.drawing_area->allocation.height;
+
+	/* 
+	 * Remove old pixmap, allocate a new one, draw the background and set
+	 * superimposing function.
+	 */
+	if (screen.pixmap) 
+	    gdk_pixmap_unref(screen.pixmap);
+	screen.pixmap = gdk_pixmap_new(widget->window, state.max_width, state.max_height,  -1);
+	gdk_gc_set_foreground(gc, screen.background);
+	gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
+	gdk_gc_set_function(gc, screen.si_func);
+
+	/*
+	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
+	 */
+	state.curr_pixmap = gdk_pixmap_new(widget->window, state.max_width, state.max_height,  -1);
+	state.clipmask = gdk_pixmap_new(widget->window, state.max_width, state.max_height,  1);
+
+	state.valid = 1;
+    }
 
     /*
      * Find the biggest image and use as a size reference
@@ -987,64 +1044,47 @@ redraw_pixmap(GtkWidget *widget)
     dmin_x = screen.gerber_bbox.x1;
     dmin_y = screen.gerber_bbox.y1;
 
-    /*
-     * Pixmap size is always size of window, no matter how big the scale is.
-     */
-    max_width = screen.drawing_area->allocation.width;
-    max_height = screen.drawing_area->allocation.height;
-
-    /* 
-     * Remove old pixmap, allocate a new one, draw the background and set
-     * superimposing function.
-     */
-    if (screen.pixmap) 
-	gdk_pixmap_unref(screen.pixmap);
-    screen.pixmap = gdk_pixmap_new(widget->window, max_width, max_height,  -1);
-    gdk_gc_set_foreground(gc, screen.background);
-    gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
-    gdk_gc_set_function(gc, screen.si_func);
-
-    /*
-     * Allocate the pixmap and the clipmask (a one pixel pixmap)
-     */
-    curr_pixmap = gdk_pixmap_new(widget->window, max_width, max_height,  -1);
-    clipmask = gdk_pixmap_new(widget->window, max_width, max_height,  1);
-
     update_rect.x = 0, update_rect.y = 0;
     update_rect.width =	widget->allocation.width;
     update_rect.height = widget->allocation.height;
-
-    screen.off_x = 0;
-    screen.off_y = 0;
 
     /* 
      * This now allows drawing several layers on top of each other.
      * Higher layer numbers have higher priority in the Z-order. 
      */
-    for(i = 0; i < MAX_FILES; i++) {
+    for(i = state.file_index; i < MAX_FILES; i++) {
 	/* Do some events so we don't lag to much behind */
 	gtk_main_iteration_do(FALSE);
 
 	if (g_main_pending()) {
 	    /* Set idle function to ensure we wont miss to redraw */
 	    start_idle_redraw_pixmap(screen.drawing_area);
+	    state.file_index = i;
 	    goto redraw_pixmap_end;
 	}
 	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
 	    screen.file[i]) {
 
 	    /*
+	     * Show progress in status bar
+	     */
+	    snprintf(screen.statusbar.msgstr, MAX_STATUSMSGLEN,
+		     "drawing %d (%s)",
+		     i, screen.file[i]->basename);
+	    update_statusbar(&screen);
+
+	    /*
 	     * Fill up image with all the foreground color. Excess pixels
 	     * will be removed by clipmask.
 	     */
 	    gdk_gc_set_foreground(gc, screen.file[i]->color);
-	    gdk_draw_rectangle(curr_pixmap, gc, TRUE, 0, 0, -1, -1);
+	    gdk_draw_rectangle(state.curr_pixmap, gc, TRUE, 0, 0, -1, -1);
 
 	    /*
 	     * Translation is to get it inside the allocated pixmap,
 	     * which is not always centered perfectly for GTK/X.
 	     */
-	    image2pixmap(&clipmask, screen.file[i]->image, screen.scale, 
+	    image2pixmap(&(state.clipmask), screen.file[i]->image, screen.scale, 
 			 (screen.clip_bbox.x1-dmin_x) * screen.scale,
 			 (screen.clip_bbox.y1+dmax_y) * screen.scale,
 			 screen.file[i]->image->info->polarity);
@@ -1054,9 +1094,9 @@ redraw_pixmap(GtkWidget *widget)
 	     * screen pixmap. Afterwards we remove the clipmask, else
 	     * it will screw things up when run this loop again.
 	     */
-	    gdk_gc_set_clip_mask(gc, clipmask);
+	    gdk_gc_set_clip_mask(gc, state.clipmask);
 	    gdk_gc_set_clip_origin(gc, 0, 0);
-	    gdk_draw_pixmap(screen.pixmap, gc, curr_pixmap, 0, 0, 0, 0, -1, -1);
+	    gdk_draw_pixmap(screen.pixmap, gc, state.curr_pixmap, -screen.off_x, -screen.off_y, 0, 0, -1, -1);
 	    gdk_gc_set_clip_mask(gc, NULL);
 
 	    if (screen.incremental_redraw) {
@@ -1068,6 +1108,17 @@ redraw_pixmap(GtkWidget *widget)
 	}
     }
 
+    screen.statusbar.msgstr[0] = '\0';
+    update_statusbar(&screen);
+    /* Clean up */
+    state.valid = 0;
+    /* Free up pixmaps */
+    if (state.curr_pixmap) {
+	gdk_pixmap_unref(state.curr_pixmap);
+    }
+    if (state.clipmask) {
+	gdk_pixmap_unref(state.clipmask);
+    }
     if (!screen.incremental_redraw) {
 	/*
 	 * Calls expose_event
@@ -1076,14 +1127,6 @@ redraw_pixmap(GtkWidget *widget)
     }
 
 redraw_pixmap_end:
-    /* Free up pixmaps */
-    if (curr_pixmap) {
-	gdk_pixmap_unref(curr_pixmap);
-    }
-    if (clipmask) {
-	gdk_pixmap_unref(clipmask);
-    }
-
     /* Return default pointer shape */
     if (window) {
 	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
@@ -1102,6 +1145,7 @@ open_image(char *filename, int idx, int reload)
     int r, g, b;
     GtkStyle *defstyle, *newstyle;
     gerb_verify_error_t error = GERB_IMAGE_OK;
+    char *cptr;
 
     if (idx >= MAX_FILES) {
 	fprintf(stderr, "Couldn't open %s. Maximum number of files opened.\n",
@@ -1152,9 +1196,29 @@ open_image(char *filename, int idx, int reload)
 
     /*
      * Store filename for eventual reload
+     * XXX Really should check retval from malloc!!! And use strncpy
      */
     screen.file[idx]->name = (char *)malloc(strlen(filename) + 1);
     strcpy(screen.file[idx]->name, filename);
+
+    /*
+     * Try to get a basename for the file
+     */
+    cptr = strrchr(filename, '/');
+    if (cptr) {
+	int len;
+
+	len = strlen(cptr);
+	screen.file[idx]->basename = (char *)malloc(len + 1);
+	if (screen.file[idx]->basename) {
+	    strncpy(screen.file[idx]->basename, cptr+1, len);
+	    screen.file[idx]->basename[len] = '\0';
+	} else {
+	    screen.file[idx]->basename = screen.file[idx]->name;
+	}
+    } else {
+	screen.file[idx]->basename = screen.file[idx]->name;
+    }
 
     /*
      * Calculate a "clever" random color based on index.
@@ -1188,7 +1252,7 @@ open_image(char *filename, int idx, int reload)
 static gint
 configure_event (GtkWidget *widget, GdkEventConfigure *event)
 {
-    return redraw_pixmap(widget);
+    return redraw_pixmap(widget, TRUE);
 } /* configure_event */
 
 
@@ -1265,7 +1329,9 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 	if (screen.state == MOVE) {
 	    screen.state = NORMAL;
 	    /* Redraw the image(s) */
-	    redraw_pixmap(screen.drawing_area);
+	    screen.off_x = 0;
+	    screen.off_y = 0;
+	    redraw_pixmap(screen.drawing_area, TRUE);
 	} else if (screen.state == ZOOM_OUTLINE) {
 	    screen.state = NORMAL;
 	    zoom_outline(widget, event);

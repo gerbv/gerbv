@@ -1,3 +1,9 @@
+2002-10-30  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Added restartable
+	  redraw by keeping redraw state between calls to
+	  redraw_pixmap(). Also added drawing status on statusbar.
+
 2002-10-29  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw_amacro.c: Fixed a bug when drawing primitive 20
