@@ -37,7 +37,6 @@ extern "C" {
 
 #define TOOL_MIN 1
 #define TOOL_MAX 999
-#define TOOL_TO_APERTURE_OFFSET (APERTURE_MIN - TOOL_MIN + 1)
 
 /* I couldn't possibly code without these */
 #undef TRUE
@@ -52,46 +51,9 @@ extern "C" {
 
 #include "gerber.h"
 
-enum tool_state_t {TOOL_NOT_DEFINED, TOOL_DEFINED};
-enum drill_file_type_t {UNKNOWN, EXCELLON};
 enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED, DRILL_M_END,
 		     DRILL_M_ENDOFPATTERN, DRILL_M_HEADER, DRILL_M_METRIC, 
 		     DRILL_M_IMPERIAL, DRILL_M_FILENAME};
-
-typedef struct drill_hole {
-    double x;
-    double y;
-    int tool_num;
-    struct drill_hole *next;
-} drill_hole_t;
-
-typedef struct drill_tool {
-/*    int tool_num; */
-    double diameter;
-    enum unit_t unit;
-/*    enum tool_state_t state; */
-/*    struct drill_tool *next; */
-} drill_tool_t;
-
-typedef struct drill_format {
-    enum unit_t unit;
-    enum drill_file_type_t file_type;
-    enum omit_zeros_t omit_zeros;
-    enum coordinate_t coordinate;
-    int x_int;
-    int x_dec;
-    int y_int;
-    int y_dec;
-} drill_format_t;
-
-typedef struct drill_image_info {
-    double min_x;
-    double min_y;
-    double max_x;
-    double max_y;
-    double offset_a;
-    double offset_b;
-} drill_image_info_t;
 
 typedef struct drill_state {
     double curr_x;
@@ -99,15 +61,7 @@ typedef struct drill_state {
     int current_tool;
 } drill_state_t;
 
-typedef struct drill_image {
-    drill_image_info_t *info;
-    drill_format_t *format;
-    drill_tool_t *tools[TOOL_MAX - TOOL_MIN];
-    drill_hole_t *holes;
-} drill_image_t;
-
 gerb_image_t *parse_drillfile(FILE *fd);
-void free_drill_image(drill_image_t *image);
 
 #ifdef __cplusplus
 }

@@ -77,19 +77,19 @@ gerbv_draw_rectangle(GdkPixmap *pixmap, GdkGC *gc,
 
 
 /*
- * Draws an oval _centered_ at x,y with x axel x_axel and y axel y_axel
+ * Draws an oval _centered_ at x,y with x axle x_axle and y axle y_axle
  */ 
 static void
 gerbv_draw_oval(GdkPixmap *pixmap, GdkGC *gc, 
-		gint filled, gint x, gint y, gint x_axel, gint y_axel)
+		gint filled, gint x, gint y, gint x_axle, gint y_axle)
 {
     static const gint full_circle = 23360;
-    gint real_x = x - x_axel / 2;
-    gint real_y = y - y_axel / 2;
+    gint real_x = x - x_axle / 2;
+    gint real_y = y - y_axle / 2;
     
-    gdk_draw_arc(pixmap, gc, filled, real_x, real_y, x_axel, y_axel, 0, 
+    gdk_draw_arc(pixmap, gc, filled, real_x, real_y, x_axle, y_axle, 0, 
 		 full_circle);
-    
+
     return;
 } /* gerbv_draw_oval */
 
@@ -154,7 +154,7 @@ gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc, int cw,
 	    quadrant = 2;
 	    break;
 	default : 
-	    err(1, "Unknow quadrant value while converting to cw\n");
+	    err(1, "Unknown quadrant value while converting to cw\n");
 	}
     }
 

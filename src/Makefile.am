@@ -23,7 +23,7 @@
 
 bin_PROGRAMS = gerbv
 
-gerbv_SOURCES = gerber.c scm_gerber.c gerbv.c draw.c
+gerbv_SOURCES = gerber.c scm_gerber.c gerbv.c draw.c drill.c
 
 INCLUDES = @GTK_CFLAGS@ @GUILE_CFLAGS@
 gerbv_LDADD = @GTK_LIBS@ @GUILE_LDFLAGS@

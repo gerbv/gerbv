@@ -45,6 +45,7 @@
 
 
 #include "gerber.h"
+#include "drill.h"
 #ifndef NO_GUILE
 #include "scm_gerber.h"
 #endif
@@ -113,9 +114,11 @@ gerbv_screen_t screen;
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void open_file(GtkWidget *widget, gpointer data);
+static void open_drillfile(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static gint redraw_pixmap(GtkWidget *widget);
 static void open_image(char *filename, int index);
+static void open_drillimage(char *filename, int index);
 
 
 void
@@ -136,7 +139,8 @@ destroy(GtkWidget *widget, gpointer data)
 
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",      NULL,          NULL,    0, "<Branch>"},
-    {"/File/_Open", "<alt>O", open_file,    0, NULL},
+    {"/File/_Open Gerber...", "<alt>G", open_file,    0, NULL},
+    {"/File/_Open Drill...", "<alt>D", open_drillfile,    0, NULL},
     {"/File/sep1",  NULL,          NULL,    0, "<Separator>"},
     {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
     {"/_Zoom",      NULL,          NULL,    0, "<Branch>"},
@@ -159,7 +163,7 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
     /* This function initializes the item factory.
        Param 1: The type of menu - can be GTK_TYPE_MENU_BAR, GTK_TYPE_MENU,
        or GTK_TYPE_OPTION_MENU.
-       Param 2: The path og the menu.
+       Param 2: The path of the menu.
        Param 3: A pointer to a gtk_accel_group. The item factory sets up
        the accelerator table while generating menus.
     */
@@ -255,6 +259,18 @@ cb_ok_open_file(GtkWidget *widget, GtkFileSelection *fs)
 
 
 static void
+cb_ok_open_drillfile(GtkWidget *widget, GtkFileSelection *fs)
+{
+    open_drillimage(gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs)), screen.curr_index);
+    
+    /* Make loaded image appear on screen */
+    redraw_pixmap(screen.drawing_area);
+    
+    return;
+} /* cb_ok_open_drillfile */
+
+
+static void
 open_file(GtkWidget *widget, gpointer data)
 {
     /* File Selection Window */
@@ -273,6 +289,26 @@ open_file(GtkWidget *widget, gpointer data)
     
     return;
 } /* open_file */
+
+static void
+open_drillfile(GtkWidget *widget, gpointer data)
+{
+    /* File Selection Window */
+    GtkWidget *fsw;
+
+    fsw = gtk_file_selection_new("Select Drillfile To View");
+    
+    gtk_signal_connect(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
+		       "clicked", GTK_SIGNAL_FUNC(cb_ok_open_drillfile), (gpointer)fsw);
+    gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
+			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), (gpointer)fsw);
+    gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->cancel_button),
+			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), (gpointer)fsw);
+    
+    gtk_widget_show(fsw);
+    
+    return;
+} /* open_drillfile */
 
 static void
 zoom(GtkWidget *widget, gpointer data)
@@ -380,6 +416,24 @@ open_image(char *filename, int index)
     
     return;
 } /* open_image */
+
+static void
+open_drillimage(char *filename, int index)
+{
+    FILE *fd;
+    
+    fd = fopen(filename, "r");
+    if (fd == NULL) {
+	perror("fopen");
+	exit(1);
+    }
+    screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
+    screen.file[index]->image = parse_drillfile(fd);
+    screen.file[index]->color_index = index;
+    fclose(fd);
+    
+    return;
+} /* open_drillimage */
 
 static gint
 configure_event (GtkWidget *widget, GdkEventConfigure *event)

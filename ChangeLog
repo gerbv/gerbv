@@ -1,3 +1,17 @@
+2001-10-28 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/Makefile.am
+	  Added drill.c to SOURCES since it seems to work well enough
+	  for some testing.
+	* src/drill.c
+	  Added an input file format guessing function.
+	  Some kludges to get around scaling problems.
+	* src/gerbv.c
+	  Separated File/Open command into File/Open Gerber... and
+	  File/Open Drill... Added functions to open drill files.
+	* src/*.c:
+	  A few speling errors fixed.
+	
 2001-10-28 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/draw.c, src/gerber.h, src/gerber.c, src/scm_gerber.c:

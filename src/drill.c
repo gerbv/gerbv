@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>  /* pow() */
+#include <ctype.h>
 
 #include "drill.h"
 
@@ -33,6 +34,7 @@
                            } while(0)
 
 /* Local function prototypes */
+static void drill_guess_format(FILE *fd, gerb_image_t *image);
 static int drill_parse_M_code(FILE *fd, gerb_image_t *image);
 static int drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image);
 static void drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state);
@@ -60,6 +62,19 @@ parse_drillfile(FILE *fd)
 	err(1, "malloc image failed\n");
     curr_net = image->netlist;
 
+    drill_guess_format(fd, image);
+
+    if (image && image->format ){
+	x_scale = pow(10.0, (double)image->format->x_dec);
+	y_scale = pow(10.0, (double)image->format->y_dec);
+
+	/* KLUDGE. I can't get the scale right, somehow... */
+	if(image->info->unit == MM) {
+	    x_scale *= 25.4;
+	    y_scale *= 25.4;
+	}
+    }
+
     while ((read = (char)fgetc(fd)) != EOF) {
 
 	switch (read) {
@@ -75,7 +90,6 @@ parse_drillfile(FILE *fd)
 	    /* G codes aren't used, for now */
 /*	    drill_parse_G_code(fd, state, image->format); */
 	    eat_line(fd);
-
 	    break;
 	case 'M':
 	    switch(drill_parse_M_code(fd, image)) {
@@ -106,32 +120,28 @@ parse_drillfile(FILE *fd)
 	    /* Hole coordinate found. Do some parsing */
 	    drill_parse_coordinate(fd, read, state);
 
-	    if (image && image->format ){
-		x_scale = pow(10.0, (double)image->format->x_dec);
-		y_scale = pow(10.0, (double)image->format->y_dec);
-	    }
+	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	    curr_net = curr_net->next;
+	    bzero((void *)curr_net, sizeof(gerb_net_t));
 
 	    curr_net->start_x = (double)state->curr_x / x_scale;
 	    curr_net->start_y = (double)state->curr_y / y_scale;
 	    curr_net->stop_x = (double)state->curr_x / x_scale;
 	    curr_net->stop_y = (double)state->curr_y / y_scale;
-	    curr_net->aperture = state->current_tool + TOOL_TO_APERTURE_OFFSET;
+
+	    curr_net->aperture = state->current_tool;
 	    curr_net->aperture_state = FLASH;
 
 	    /* Find min and max of image */
-	    image->info->min_x = min(image->info->min_x, state->curr_x);
-	    image->info->min_y = min(image->info->min_y, state->curr_y);
-	    image->info->max_x = max(image->info->max_x, state->curr_x);
-	    image->info->max_y = max(image->info->max_y, state->curr_y);
-
-	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-	    curr_net = curr_net->next;
-	    bzero((void *)curr_net, sizeof(gerb_net_t));
+	    image->info->min_x = min(image->info->min_x, curr_net->start_x);
+	    image->info->min_y = min(image->info->min_y, curr_net->start_y);
+	    image->info->max_x = max(image->info->max_x, curr_net->start_x);
+	    image->info->max_y = max(image->info->max_y, curr_net->start_y);
 
 	    break;
 
 	case '%':
-	    printf("Found start of data segment\n");
+/*	    printf("Found start of data segment\n"); */
 	    break;
 	case 10 :   /* White space */
 	case 13 :
@@ -139,7 +149,8 @@ parse_drillfile(FILE *fd)
 	case '\t' :
 	    break;
 	default:
-	    fprintf(stderr, "Found unknown character %c[%d]\n", read, read);
+	    fprintf(stderr, "Found unknown character %c [0x%02x], ignoring\n",
+		    read, read);
 	}
     }
 
@@ -148,6 +159,144 @@ parse_drillfile(FILE *fd)
     return image;
 } /* parse_drillfile */
 
+/* Guess the format of the input file.
+   Rewinds file when done */
+static void
+drill_guess_format(FILE *fd, gerb_image_t *image)
+{
+    int inch_score = 0;
+    int metric_score = 0;
+    int length, max_length = 0;
+    int leading_zeros, max_leading_zeros = 0;
+    int trailing_zeros, max_trailing_zeros = 0;
+    char read;
+    drill_state_t *state = NULL;
+    gerb_net_t curr_net;
+    int done = FALSE;
+    int i;
+
+    state = new_state(state);
+    if (state == NULL)
+	err(1, "malloc state failed\n");
+
+    image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
+    if (image->format == NULL) 
+	err(1, "malloc format failed\n");
+    bzero((void *)image->format, sizeof(gerb_format_t));
+
+    /* This is just a special case of the normal parser */
+    while ((read = (char)fgetc(fd)) != EOF && !done) {
+	switch (read) {
+	case ';' :
+	    /* Comment found. Eat rest of line */
+	    eat_line(fd);
+	    break;
+	case 'F' :
+	    /* Z axis feed speed. Silently ignored */
+	case 'S':
+	    /* Spindle speed. Silently ignored */
+	    eat_line(fd);
+	    break;
+	case 'G':
+	    /* G codes aren't used, for now */
+	    eat_line(fd);
+	    break;
+	case 'M':
+	    switch(drill_parse_M_code(fd, image)) {
+	    case DRILL_M_METRIC :
+		metric_score++;
+		break;
+	    case DRILL_M_IMPERIAL :
+		inch_score++;
+		break;
+	    case DRILL_M_END :
+		done = TRUE;
+		break;
+	    default:
+		break;
+	    }
+	    break;
+
+	case 'T':
+	    drill_parse_T_code(fd, state, image);
+	    break;
+	case 'X':
+	case 'Y':
+	    /* How many leading zeros? */
+	    length = 0;
+	    leading_zeros = 0;
+	    trailing_zeros = 0;
+	    {
+		/* This state machine is a bit ugly, so it'll probably
+		   have to be rewritten sometime */
+		int local_state = 0;
+		while ((read = (char)fgetc(fd)) != EOF && isdigit(read)) {
+		    
+		    length ++;
+		    switch (local_state) {
+		    case 0:
+			if(read == '0') {
+			    leading_zeros++;
+			} else {
+			    local_state++;
+			}
+			break;
+		    case 1:
+			if(read =='0') {
+			    trailing_zeros++;
+			}
+		    }
+		}
+	    }
+	    max_length = max(max_length, length);
+	    max_leading_zeros = max(max_leading_zeros, leading_zeros);
+	    max_trailing_zeros = max(max_trailing_zeros, trailing_zeros);
+	    break;
+
+	case '%':
+	    break;
+	case 10 :   /* White space */
+	case 13 :
+	case ' ' :
+	case '\t' :
+	default:
+	    break;
+	}
+    }
+
+    /* Unfortunately, inches seem more common, so that's the default */
+    if(metric_score > inch_score) {
+	image->info->unit = MM;
+    } else {
+	image->info->unit = INCH;
+    }
+
+    /* Knowing about trailing zero suppression is more important,
+       so it takes precedence here. */
+    if (max_trailing_zeros == 0) {
+	/* No trailing zero anywhere. It's probable they're suppressed */
+	image->format->omit_zeros = TRAILING;
+    } else if(max_leading_zeros == 0) {
+	/* No leading zero anywhere. It's probable they're suppressed */
+	image->format->omit_zeros = LEADING;
+    } else if (max_trailing_zeros >= max_leading_zeros ) {
+	image->format->omit_zeros = TRAILING;
+    } else {
+ 	image->format->omit_zeros = LEADING;
+    }
+
+    /* Almost every file seems to use 2.x format (where x is 3-4) */
+    image->format->x_dec = max_length - 2;
+    image->format->y_dec = max_length - 2;
+
+    /* Restore the necessary things back to their default state */
+    for (i = 0; i < APERTURE_MAX; i++) {
+	    free(image->aperture[i]);
+	    image->aperture[i] = NULL;
+    }
+
+    rewind(fd);
+}
 
 /* Parse tool definition. This can get a bit tricky since it can
    appear in the header and/or the data.
@@ -177,8 +326,12 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 	case 'C':
 
 	    size = read_double(fd);
+	    if(image->info->unit == MM) {
+		size /= 25.4;
+	    }
+
 	    if(size <= 0 || size >= 10000) {
-		err(1, "Tool is wrong size: %h\n", size);
+		err(1, "Tool is wrong size: %g\n", size);
 	    } else {
 		if(image->aperture[tool_num] != NULL) {
 		    err(1, "Tool is already defined\n");
@@ -188,15 +341,13 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 		    if (image->aperture[tool_num] == NULL) {
 			err(1, "malloc tool failed\n");
 		    }
-		    image->aperture[tool_num]->parameter[0] = size/10;
 		    /* There's really no way of knowing what unit the tools
 		       are defined in without sneaking a peek in the rest 
-		       of the file. Will have to be done. */
+		       of the file first. Will have to be done. */
+		    image->aperture[tool_num]->parameter[0] = size;
 		    image->aperture[tool_num]->type = CIRCLE;
-
 		}
-		
-		printf("Tool %02d size %2.4g found\n", tool_num, size);
+/*		printf("Tool %02d size %2.4g found\n", tool_num, size); */
 	    }
 	    break;
 	    
@@ -233,7 +384,7 @@ drill_parse_M_code(FILE *fd, gerb_image_t *image)
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
 
-    printf("M code: %2s\n", op);
+/*    printf("M code: %2s\n", op); */
 
     if (strncmp(op, "00", 2) == 0 || strncmp(op, "30", 2) == 0) {
 	/* Program stop */
@@ -293,7 +444,6 @@ new_image(gerb_image_t *image)
 	    bzero((void *)image->netlist, sizeof(gerb_net_t));
 	    
 	    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
-
 	    if (image->info != NULL) {
 		bzero((void *)image->info, sizeof(gerb_image_info_t));
 
@@ -301,18 +451,10 @@ new_image(gerb_image_t *image)
 		image->info->min_y = HUGE_VAL;
 		image->info->max_x = -HUGE_VAL;
 		image->info->max_y = -HUGE_VAL;
-
-		image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
-		if (image->format != NULL) {
-		    bzero((void *)image->format, sizeof(gerb_format_t));
-		    image->format->x_dec = 4;
-		    image->format->y_dec = 4;
-
-		    return image;
-		}
-		free(image->info);
-		image->info = NULL;
+		
+		return image;
 	    }
+	    
 	    free(image->netlist);
 	    image->netlist = NULL;
 	}
@@ -391,7 +533,7 @@ read_double(FILE *fd)
     return result;
 } /* read_double */
 
-/* This function eats all characters up to and including 
+/* Eats all characters up to and including 
    the first one of CR or LF */
 static void
 eat_line(FILE *fd)

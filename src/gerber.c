@@ -168,7 +168,7 @@ parse_gerb(FILE *fd)
 	case '\t' :
 	    break;
 	default:
-	    fprintf(stderr, "Found unknow character (whitespace?) %c[%d]\n", read, read);
+	    fprintf(stderr, "Found unknown character (whitespace?) %c[%d]\n", read, read);
 	}
     }
     
