@@ -1,7 +1,7 @@
 /*
  * gEDA - GNU Electronic Design Automation
  * drill.c
- * Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2001 Andreas Andersson
  *
  * $Id$
  *
@@ -236,12 +236,24 @@ parse_drillfile(gerb_file_t *fd)
 	    curr_net->aperture = state->current_tool;
 	    curr_net->aperture_state = FLASH;
 
-	    /* Find min and max of image */
-	    image->info->min_x = min(image->info->min_x, curr_net->start_x);
-	    image->info->min_y = min(image->info->min_y, curr_net->start_y);
-	    image->info->max_x = max(image->info->max_x, curr_net->start_x);
-	    image->info->max_y = max(image->info->max_y, curr_net->start_y);
-
+	    /* Find min and max of image.
+	       Mustn't forget (again) to add the hole radius */
+	    image->info->min_x =
+		min(image->info->min_x,
+		    (curr_net->start_x -
+		     image->aperture[state->current_tool]->parameter[0] / 2));
+	    image->info->min_y =
+		min(image->info->min_y,
+		    (curr_net->start_y -
+		     image->aperture[state->current_tool]->parameter[0] / 2));
+	    image->info->max_x =
+		max(image->info->max_x,
+		    (curr_net->start_x +
+		     image->aperture[state->current_tool]->parameter[0] / 2));
+	    image->info->max_y =
+		max(image->info->max_y,
+		    (curr_net->start_y +
+		     image->aperture[state->current_tool]->parameter[0] / 2));
 	    break;
 	case '%':
 	    state->curr_section = DRILL_DATA;
@@ -257,13 +269,13 @@ parse_drillfile(gerb_file_t *fd)
 		eat_line(fd);
 	    } else {
 		fprintf(stderr,
-			"Found unknown character %c [0x%02x], ignoring\n",
+			"Warning: Found ill fitting character '%c' [0x%02x] inside data, ignoring\n",
 			read, read);
 	    }
 	}
     }
 
-    fprintf(stderr, "File is missing drill End-Of-File\n");
+    fprintf(stderr, "Warning: File is missing drill End-Of-File\n");
 
     return image;
 } /* parse_drillfile */
@@ -440,10 +452,10 @@ drill_file_p(gerb_file_t *fd)
 	       being a drill file. Stop parsing and return. */
 	    fd->ptr = 0;
 	    return 0;
-	case 10 :   /* Ignore CR/LF */
+	case 10 :  /* Ignore CR/LF */
 	case 13 :
 	    break;
-        default :
+        default : /* Eat every line that starts with something uninteresting */
             eat_line(fd);
             break;
         }
@@ -504,7 +516,6 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		    image->aperture[tool_num]->type = CIRCLE;
 		    image->aperture[tool_num]->nuf_parameters = 1;
 		}
-/*		printf("Tool %02d size %2.4g found\n", tool_num, size); */
 	    }
 	    break;
 
@@ -525,6 +536,34 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	    err(1, "(very) Unexpected end of file found\n");
 	}
     }
+
+    /* Catch the tools that aren't defined.
+       This isn't strictly a good thing, but at least something is shown */
+    if(image->aperture[tool_num] == NULL) {
+	image->aperture[tool_num] =
+	    (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
+	if (image->aperture[tool_num] == NULL) {
+	    err(1, "malloc tool failed\n");
+	}
+	/* This size calculation is, of course, totally bogus */
+	image->aperture[tool_num]->parameter[0] =
+	    (double)(16 + 8 * tool_num) / 1000;
+
+	image->aperture[tool_num]->type = CIRCLE;
+	image->aperture[tool_num]->nuf_parameters = 1;
+
+	/* Oooh, this is sooo ugly. But some CAD systems seem to always
+	   use T00 at the end of the file while others that don't have
+	   tool definitions inside the file never seem to use T00 at all */
+	if(tool_num != 0) {
+	    fprintf(stderr,
+		    "Warning: Tool %02d used without being defined\n",
+		    tool_num);
+	    fprintf(stderr,
+		    "         Setting a default size of %g\"\n",
+		    image->aperture[tool_num]->parameter[0]);
+	}
+    }
     
     return tool_num;
 } /* drill_parse_T_code */
@@ -540,8 +579,6 @@ drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
-
-/*    printf("M code: %2s\n", op); */
 
     if (strncmp(op, "00", 2) == 0) {
 	return DRILL_M_END;
@@ -585,8 +622,6 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
 
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
-
-/*    printf("G code: %2s\n", op); */
 
     if (strncmp(op, "00", 2) == 0) {
 	return DRILL_G_ROUT;
@@ -662,7 +697,6 @@ new_state(drill_state_t *state)
 
 /* Reads one double from fd and returns it.
    If a decimal point is found, the scale factor is not used. */
-/* Too suspect. To be removed or improved. spe */
 static double
 read_double(gerb_file_t *fd, double scale_factor)
 {

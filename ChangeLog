@@ -1,3 +1,9 @@
+2002-07-24  Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c: Changed the parser to catch undefined tools
+	  and insert default values. It warns the user, though.
+	  Fixed a slight bug in min/max coordinate finding.
+
 2002-07-16  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Fixed bug 573016, some gerbers not drawn.
