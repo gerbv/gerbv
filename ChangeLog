@@ -2,6 +2,12 @@
 
 	* src/gerb_image.h,src/gerber.c: angles are floats.
 
+2003-03-01  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.[hc], gerber.c: Redesigned step-and-repeat
+	  parser. And when I was at it I also cleaned up new_gerb_image()
+	  a bit.
+
 2003-03-03  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw_gdk.c: one-pixel overshoot bug fixed by Holger.
@@ -44,8 +50,8 @@
 2003-02-12  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: A patch from Peter Monta for incremental
-	  coordinates. He also discovered that I had a mistake
-	  in parsing incremental/absolute coordinates.
+	  coordinates. He also discovered that I had made a mistake
+	  when parsing incremental/absolute coordinates.
 
 -- Release 0.12 --
 
