@@ -71,7 +71,7 @@
 #define GERBV_DEF_CURSOR NULL
 
 
-typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
+typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET, ZOOM_PAN} gerbv_zoom_dir_t;
 typedef struct {
     gerbv_zoom_dir_t z_dir;
     GdkEventButton *z_event;
@@ -340,6 +340,7 @@ create_layer_buttons(int nuf_buttons)
      * Create On button with callback, color and tooltips
      */
     button = gtk_button_new_with_label("On");
+    GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
     gtk_signal_connect(GTK_OBJECT(button), "button_press_event",
 		       GTK_SIGNAL_FUNC(all_layers_on), 
 		       (gpointer)NULL);
@@ -351,6 +352,7 @@ create_layer_buttons(int nuf_buttons)
      * Create Off button with callback, color and tooltips
      */
     button = gtk_button_new_with_label("Off");
+    GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
     gtk_signal_connect(GTK_OBJECT(button), "button_press_event",
 		       GTK_SIGNAL_FUNC(all_layers_off), 
 		       (gpointer)NULL);
@@ -364,6 +366,7 @@ create_layer_buttons(int nuf_buttons)
     for (bi = 0; bi < nuf_buttons; bi++) {
 	snprintf(info, sizeof(info), "%ld", bi);
 	button = gtk_toggle_button_new_with_label(info);
+	GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
 
 	gtk_signal_connect(GTK_OBJECT(button), "toggled", 
 			   GTK_SIGNAL_FUNC(cb_layer_button),
@@ -1017,6 +1020,8 @@ zoom(GtkWidget *widget, gpointer data)
 	screen.trans_x = screen.scale * us_midx - half_w;
 	screen.trans_y = screen.scale * us_midy - half_h;
         break;
+    case ZOOM_PAN:
+	break;
     default :
 	GERB_MESSAGE("Illegal zoom direction %ld\n", (long int)data);
     }
@@ -1104,6 +1109,7 @@ create_drawing_area(gint win_width, gint win_height)
     gtk_style_unref(oldstyle);
 
     gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), win_width, win_height);
+    GTK_WIDGET_SET_FLAGS(drawing_area, GTK_CAN_FOCUS);
 
     return drawing_area;
 } /* create_drawing_area */
@@ -1517,56 +1523,97 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 static gint
 key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
+    gerbv_zoom_data_t zoom_data;
     GdkCursor *cursor;
 
-    if (event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R) {
+    switch (event->keyval) {
+    case GDK_Shift_L:
+    case GDK_Shift_R:
 	screen.centered_outline_zoom = 1;
+
 	if (screen.state == ZOOM_OUTLINE)
 	    gtk_widget_draw(widget, NULL);
-    }
 
-    switch (screen.state) {
-    case NORMAL:
-	switch(event->keyval) {
-	case GDK_Shift_L:
-	case GDK_Shift_R:
+	if (screen.state == NORMAL) {
 	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
 	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
 				  cursor);
 	    gdk_cursor_destroy(cursor);
-	    break;
-	case GDK_Alt_L:
-	case GDK_Alt_R: 
-	    screen.state = ALT_PRESSED;
-	    screen.selected_layer = -1;
-	    break;
 	}
 	break;
-    case ALT_PRESSED:
-	if ((event->keyval >= GDK_KP_0) &&
-	    (event->keyval <= GDK_KP_9)) {
+
+    case GDK_KP_Subtract:
+    case GDK_minus:
+    case GDK_Z:
+    case GDK_Y:
+    	zoom_data.z_dir = ZOOM_OUT;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_KP_Add:
+    case GDK_plus:
+    case GDK_z:
+    case GDK_y:
+    	zoom_data.z_dir = ZOOM_IN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_KP_Enter:
+    case GDK_1:
+    case GDK_equal:
+    	zoom_data.z_dir = ZOOM_FIT;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_Left:
+	screen.trans_x -= 10;
+    	zoom_data.z_dir = ZOOM_PAN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_Right:
+	screen.trans_x += 10;
+    	zoom_data.z_dir = ZOOM_PAN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_Up:
+	screen.trans_y -= 10;
+    	zoom_data.z_dir = ZOOM_PAN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_Down:
+	screen.trans_y += 10;
+    	zoom_data.z_dir = ZOOM_PAN;
+	zoom(widget, &zoom_data);
+	break;
+
+    case GDK_KP_0...GDK_KP_9:
+        if (screen.state == ALT_PRESSED) {
 	    if (screen.selected_layer == -1) 
 		screen.selected_layer = event->keyval - GDK_KP_0;
 	    else
 		screen.selected_layer = 10 * screen.selected_layer + 
 		    (event->keyval - GDK_KP_0);
 	}
-	break;
-    default:
-	break;
-    }
-	    
-    /* Escape may be used to abort outline zoom and just plain repaint */
-    if (event->keyval == GDK_Escape) {
-	screen.state = NORMAL;
 
+    case GDK_Alt_L:
+    case GDK_Alt_R: 
+	screen.state = ALT_PRESSED;
+	screen.selected_layer = -1;
+	break;
+
+    /* Escape may be used to abort outline zoom and just plain repaint */
+    case GDK_Escape:
+	screen.state = NORMAL;
 	screen.statusbar.diststr[0] = '\0';
 	update_statusbar(&screen);
-
-	/*
-	 * Calls expose_event
-	 */
 	gtk_widget_draw(widget, NULL);
+	break;
+
+    default:
+	break;
     }
 
     return TRUE;
@@ -2348,6 +2395,7 @@ internal_main(int argc, char *argv[])
     gtk_signal_connect_after(GTK_OBJECT(main_win), "key_release_event",
 		       GTK_SIGNAL_FUNC(key_release_event), NULL);
 
+    gtk_widget_grab_focus (screen.drawing_area);
     gtk_widget_set_events(screen.drawing_area, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
 			  | GDK_BUTTON_PRESS_MASK
