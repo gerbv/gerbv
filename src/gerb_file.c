@@ -112,17 +112,20 @@ gerb_fgetstring(gerb_file_t *fd, char term)
 {
     char *strend;
     char *newstr;
-
+    int len;
+    
     strend = strchr(fd->data + fd->ptr, term);
     if (strend == NULL)
 	return NULL;
 
-    newstr = (char *)malloc(strend - (fd->data + fd->ptr) + 1);
+    len = strend - (fd->data + fd->ptr);
+
+    newstr = (char *)malloc(len + 1);
     if (newstr == NULL)
 	return NULL;
-    strncpy(newstr, fd->data + fd->ptr, strend - (fd->data + fd->ptr));
-    newstr[strend - (fd->data + fd->ptr) + 1] = '\0';
-    fd->ptr = strend - fd->data;
+    strncpy(newstr, fd->data + fd->ptr, len);
+    newstr[len] = '\0';
+    fd->ptr += (len + 1);
 
     return newstr;
 }
