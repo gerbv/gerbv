@@ -1369,6 +1369,7 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	do_zoom = TRUE;
 	break;
     default:
+	break;
     }
 
     if (do_zoom) {
@@ -1438,6 +1439,7 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	}
 	break;
     default:
+	break;
     }
 	    
     /* Escape may be used to abort outline zoom and just plain repaint */
@@ -1488,6 +1490,7 @@ key_release_event (GtkWidget *widget, GdkEventKey *event)
 	    screen.state = NORMAL;
 	}
     default:
+	break;
     }
 
     return TRUE;
@@ -1643,7 +1646,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 			       dx*screen.scale,
 			       dy*screen.scale);
     }
-#endif DEBUG_GERBV_OUTLINE
+#endif /* DEBUG_GERBV_OUTLINE */
 
     gdk_pixmap_unref(new_pixmap);
     gdk_gc_unref(gc);
@@ -2048,6 +2051,7 @@ internal_main(int argc, char *argv[])
 		req_y = (int)strtol(rest, &rest, 10);
 		break;
 	    default:
+		break;
 	    }
 	    break;
 #endif /* HAVE_GETOPT_LONG */
