@@ -1,0 +1,95 @@
+HOW TO PRINT A 1:1 SCALED IMAGE OF A PRINTED CIRCUIT BOARD FROM gerbv.
+
+By:
+ Dino Ghilardi
+ dino.ghilardi@ieee.org
+
+$Id$
+
+First of all: This procedure works for me on my PC, but ABSOLUTLY NO WARRANTY
+that it works for you or that your machine will not hang up etc.. etc.. etc..
+
+What you need:
+* gerbv version 0.11 and above
+* gimp (with a printer configured and working).
+
+
+Introduction - Knowledge base
+-----------------------------
+
+The function `export PNG' in gerbv creates a bitmap that is saved in PNG 
+format. The dimensions (in pixels) of the pixmap created are the same of 
+the image on the screen, so the zoom scale is proportional to the dimensions 
+of the image that will be obtained in the file. 
+In 'Gimp', while printing, there is a scaling method that can specify the 
+ppi (point-per-inches) of the source image, and the program will scale all in 
+the right way (if the printer is well-configured).
+
+
+The Procedure
+-------------
+
+1)  Load the gerber file you want to print (right-click the button of the layer
+    where you want to load your file than choose load file..). 
+2)  Select black as the color of the layer (right-click the button of that 
+    layer and choose layer-color).
+3)  Select white as the background color (Setup->Background color).
+4)  If you want also to have the holes, load the excellon file for the drill
+    holes and set white as the color of the holes.
+5)  Look at the printer you are going to use and see the resolutions that the 
+    printer can use.
+6)  Select as the zoom factor in gerbv the resolution (in dpi) you need. 
+    Warning: if the resolution is too high the image on the screen could be 
+    so big that it can crash the X-server, so try low-resolutions of your 
+    printer first (On my Epson 1520 I've chosen 720 loading 
+    eaglecad/top-cop.gbx in example directory of gerbv).
+7)  Now on the screen you have a big image of the PCB (do not care about the 
+    fact that you see only a part of the board, it will be exported in the 
+    whole), DO NOT CHANGE the ZOOM and export it using File->Export->PNG... 
+8)  Wait some time (the image can be quite big, so exporting it may take a 
+    lot of time... I know, the export routine is not very efficient 8-).
+    On my P3 600MHz 512Mb RAM it took about 15 seconds to export the image 
+    of the example above.
+9)  Close gerbv (just to free some resources if the image is very big)
+10) Start Gimp (I tested it using version 1.2.3 that cames with Mandrake 
+    Linux 8.2), then open the image you just exported (File->Open).
+    Also here, if the board is very big (or if you have choosen a high scale)
+    it may take some time. For the example above, on my machine it took some 
+    seconds.
+11) Right-click ON THE IMAGE and choose File->Print
+12) In the window that appears you can choose some printing parameters. 
+    Now: 
+      a) Set the printer resolution to the zoom factor you used exporting 
+         the image (this is not so important).
+      b) Set the scaling method to PPI (Points per inches). Important!
+      c) Set the scaling to the zoom scale you used exporting the image.
+         Important!
+13) Click on the 'PRINT' button and your printer will start print the image.
+
+Note:
+If the board you have to plot is quite big you can set a lower scale when you 
+export the image and then use that number in 12.c. This will give you a less 
+accurate image (of course). Using my ink-jet printer and setting it up 
+properly I can print on a film and then use that film to realize home-made 
+PCBs (or prototypes).
+   
+If something goes wrong
+-----------------------
+
+If the printed image do not have the dimensions you expect:
+* Check that you did follow all the steps in the above procedure.
+* If you further zoom the image after the explicit zoom set in step 7,
+  you will not obtain the right image.
+* Repeat the whole procedure with a board having different dimensions and 
+  print it. If the scaling error is the same you'll need to find the right 
+  number to use as a scaling factor while exporting the image. To do that 
+  you can create a simple gerber file with your CAD (for instance a square 
+  with known dimensions (I used a 1cm-by-1cm square), follow the whole
+  procedure and check the printed result. 
+  Measure the printed square and re-export the image using a Zoom scale 
+  obtained by:
+	
+    (Scale_Used_Before)*(1 cm)/(actual_dimension_of_the_printed_square)
+	 
+  (This example is made for a square with a 1 cm border. If you use 1 inch, 
+  change 1 cm with 1 inch in the expression above...)
