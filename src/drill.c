@@ -20,14 +20,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
+
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+
 #include <math.h>  /* pow() */
 #include <ctype.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <sys/mman.h>
 
 #include "drill.h"
@@ -83,18 +95,18 @@ typedef struct drill_state {
 } drill_state_t;
 
 /* Local function prototypes */
-static void drill_guess_format(FILE *fd, gerb_image_t *image);
-static int drill_parse_G_code(FILE *fd, gerb_image_t *image);
-static int drill_parse_M_code(FILE *fd, gerb_image_t *image);
-static int drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image);
-static void drill_parse_coordinate(FILE *fd, char firstchar, double scale_factor, drill_state_t *state);
+static void drill_guess_format(gerb_file_t *fd, gerb_image_t *image);
+static int drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image);
+static int drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image);
+static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image);
+static void drill_parse_coordinate(gerb_file_t *fd, char firstchar, double scale_factor, drill_state_t *state);
 static drill_state_t *new_state(drill_state_t *state);
-static int read_int(FILE *fd);
-static double read_double(FILE *fd, double scale_factor);
-static void eat_line(FILE *fd);
+static int read_int(gerb_file_t *fd);
+static double read_double(gerb_file_t *fd, double scale_factor);
+static void eat_line(gerb_file_t *fd);
 
 gerb_image_t *
-parse_drillfile(FILE *fd)
+parse_drillfile(gerb_file_t *fd)
 {
     drill_state_t *state = NULL;
     gerb_image_t *image = NULL;
@@ -118,7 +130,7 @@ parse_drillfile(FILE *fd)
 	y_scale = pow(10.0, (double)image->format->y_dec);
     }
 
-    while ((read = (char)fgetc(fd)) != EOF) {
+    while ((read = gerb_fgetc(fd)) != EOF) {
 
 	switch (read) {
 	case ';' :
@@ -144,7 +156,7 @@ parse_drillfile(FILE *fd)
 		state->coordinate_mode = DRILL_MODE_INCREMENTAL;
 		break;
 	    case DRILL_G_ZEROSET :
-		if((read = (char)fgetc(fd)) == EOF)
+		if((read = gerb_fgetc(fd)) == EOF)
 		    err(1, "Unexpected EOF\n");
 		drill_parse_coordinate(fd, read, 1.0 / x_scale, state);
 		state->origin_x = state->curr_x;
@@ -260,7 +272,7 @@ parse_drillfile(FILE *fd)
 /* Guess the format of the input file.
    Rewinds file when done */
 static void
-drill_guess_format(FILE *fd, gerb_image_t *image)
+drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 {
     int inch_score = 0;
     int metric_score = 0;
@@ -282,7 +294,7 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
     bzero((void *)image->format, sizeof(gerb_format_t));
 
     /* This is just a special case of the normal parser */
-    while ((read = (char)fgetc(fd)) != EOF && !done) {
+    while ((read = gerb_fgetc(fd)) != EOF && !done) {
 	switch (read) {
 	case ';' :
 	case 'F' :
@@ -316,7 +328,7 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 		/* This state machine is a bit ugly, so it'll probably
 		   have to be rewritten sometime */
 		int local_state = 0;
-		while ((read = (char)fgetc(fd)) != EOF &&
+		while ((read = gerb_fgetc(fd)) != EOF &&
 		       (isdigit(read) || read == ',' || read == '.')) {
 		    if(read != ',' && read != '.') length ++;
 		    switch (local_state) {
@@ -392,7 +404,7 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 	}
     }
 
-    rewind(fd);
+    fd->ptr = 0;
 }
 
 
@@ -401,32 +413,17 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
  * might be a drill file 
  */
 int
-drill_file_p(FILE *fd)
+drill_file_p(gerb_file_t *fd)
 {
     const size_t buffer_size = 50;
-    struct stat statinfo;
-    char *file;
     char buffer[buffer_size];
-    int returned = 0;
 
-    fstat(fileno(fd), &statinfo);
-    file = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, 
-			fileno(fd), 0);
-
-    if (file < 0) {
-	perror("mmapping failed");
-    } else {
-	strncpy(buffer, file, buffer_size);
-	buffer[buffer_size - 1] = '\0';
-	if (strstr(buffer, "M48") != NULL) 
-	    returned = 1; /* Found */
-	else
-	    returned = 0;
-    }
-
-    munmap(file, statinfo.st_size);
-
-    return returned;
+    strncpy(buffer, fd->data, buffer_size);
+    buffer[buffer_size - 1] = '\0';
+    if (strstr(buffer, "M48") != NULL) 
+	return 1; /* Found */
+    else
+	return 0;
 }
 
 
@@ -434,7 +431,7 @@ drill_file_p(FILE *fd)
    appear in the header and/or the data.
    Returns tool number on success, -1 on error */
 static int
-drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
+drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 {
     int tool_num;
     int done = FALSE;
@@ -450,7 +447,7 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
     state->current_tool = tool_num;
 
     /* Check for a size definition */
-    temp = fgetc(fd);
+    temp = gerb_fgetc(fd);
 
     while(!done) {
 	
@@ -494,11 +491,11 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 	default:
 	    /* Stop when finding anything but what's expected
 	       (and put it back) */
-	    ungetc(temp, fd);
+	    gerb_ungetc(fd);
 	    done = TRUE;
 	    break;
 	}
-	if( (temp = (char)fgetc(fd)) == EOF) {
+	if( (temp = gerb_fgetc(fd)) == EOF) {
 	    err(1, "(very) Unexpected end of file found\n");
 	}
     }
@@ -508,12 +505,12 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 
 
 static int
-drill_parse_M_code(FILE *fd, gerb_image_t *image)
+drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 {
     char op[3] = "  ";
 
-    op[0] = fgetc(fd);
-    op[1] = fgetc(fd);
+    op[0] = gerb_fgetc(fd);
+    op[1] = gerb_fgetc(fd);
 
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
@@ -553,12 +550,12 @@ drill_parse_M_code(FILE *fd, gerb_image_t *image)
 } /* drill_parse_M_code */
 
 static int
-drill_parse_G_code(FILE *fd, gerb_image_t *image)
+drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
 {
     char op[3] = "  ";
 
-    op[0] = fgetc(fd);
-    op[1] = fgetc(fd);
+    op[0] = gerb_fgetc(fd);
+    op[1] = gerb_fgetc(fd);
 
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
@@ -590,7 +587,7 @@ drill_parse_G_code(FILE *fd, gerb_image_t *image)
 /* Parse on drill file coordinate.
    Returns nothing, but modifies state */
 static void
-drill_parse_coordinate(FILE *fd, char firstchar,
+drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 		       double scale_factor, drill_state_t *state)
 
 {
@@ -599,7 +596,7 @@ drill_parse_coordinate(FILE *fd, char firstchar,
     if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
 	if(firstchar == 'X') {
 	    state->curr_x = read_double(fd, scale_factor);
-	    if((read = fgetc(fd)) == 'Y') {
+	    if((read = gerb_fgetc(fd)) == 'Y') {
 		state->curr_y = read_double(fd, scale_factor);
 	    }
 	} else {
@@ -608,7 +605,7 @@ drill_parse_coordinate(FILE *fd, char firstchar,
     } else if(state->coordinate_mode == DRILL_MODE_INCREMENTAL) {
 	if(firstchar == 'X') {
 	    state->curr_x += read_double(fd, scale_factor);
-	    if((read = fgetc(fd)) == 'Y') {
+	    if((read = gerb_fgetc(fd)) == 'Y') {
 		state->curr_y += read_double(fd, scale_factor);
 	    }
 	} else {
@@ -640,28 +637,25 @@ new_state(drill_state_t *state)
 /* This is a special read_int used in this file only.
    Do not let it pollute the namespace by defining it in the .h-file */
 static int
-read_int(FILE *fd)
+read_int(gerb_file_t *fd)
 {
     char read;
     int i = 0;
     int neg = 0;
 
-    read = fgetc(fd); /* XXX Should check return value */
+    read = gerb_fgetc(fd); /* XXX Should check return value */
 
     if (read == '-') {
 	neg = 1;
-	read = fgetc(fd); /* XXX Should check return value */
+	read = gerb_fgetc(fd); /* XXX Should check return value */
     }
 
     while (read >= '0' && read <= '9') {
 	i = i*10 + ((int)read - '0');
-	read = fgetc(fd); /* XXX Should check return value */
+	read = gerb_fgetc(fd); /* XXX Should check return value */
     }
 
-    if (ungetc(read, fd) != read) {
-	perror("read_int:ungetc");
-	exit(1);
-    }
+    gerb_ungetc(fd);
 
     if (neg)
 	return -i;
@@ -673,7 +667,7 @@ read_int(FILE *fd)
 /* Reads one double from fd and returns it.
    If a decimal point is found, the scale factor is not used. */
 static double
-read_double(FILE *fd, double scale_factor)
+read_double(gerb_file_t *fd, double scale_factor)
 {
     char read;
     char temp[0x20];
@@ -683,15 +677,15 @@ read_double(FILE *fd, double scale_factor)
 
     bzero(temp, sizeof(temp));
 
-    read = fgetc(fd);
+    read = gerb_fgetc(fd);
     while(read != EOF && i < sizeof(temp) &&
 	  (isdigit(read) || read == '.' || read == '+' || read == '-')) {
 	if(read == ',' || read == '.') decimal_point = TRUE;
 	temp[i++] = read;
-	read = fgetc(fd);
+	read = gerb_fgetc(fd);
     }
 
-    ungetc(read, fd);
+    gerb_ungetc(fd);
     result = strtod(temp, NULL);
     if(!decimal_point) result *= scale_factor;
 
@@ -702,12 +696,12 @@ read_double(FILE *fd, double scale_factor)
 /* Eats all characters up to and including 
    the first one of CR or LF */
 static void
-eat_line(FILE *fd)
+eat_line(gerb_file_t *fd)
 {
-    char read = fgetc(fd);
+    char read = gerb_fgetc(fd);
     
     while(read != 10 && read != 13) {
 	if (read == EOF) return;
-	read = fgetc(fd);
+	read = gerb_fgetc(fd);
     }
 } /* eat_line */

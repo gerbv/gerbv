@@ -1,5 +1,12 @@
 2001-12-02 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/gerb_file.[hc], src/drill.[hc], src/gerber.[hc], gerbv.c:
+	  Changed method of file IO from fgetc to mmap. Speed increase 
+	  up to 3 times noted (loading all of jj's file at ones).
+
+	
+2001-12-02 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/drill.c: drill_file_p recoded so it seems to work better.
 	* src/gerbv.c: Removed and cleaned up "open file" code.
 	* src/gerbv.c, src/color.c, src/color.h: Fixed the whole mess

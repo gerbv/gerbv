@@ -1,6 +1,6 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This files is a part of gerbv.
+ * This file is a part of gerbv.
  *
  *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
  *
@@ -21,40 +21,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#ifndef GERBER_H
-#define GERBER_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef FILEIO_H
+#define FILEIO_H
 
 #include <stdio.h>
-#include "gerb_image.h"
-#include "fileio.h"
 
+typedef struct file {
+    FILE *fd;
+    int   fileno;
+    char *data;
+    int   datalen;
+    int   ptr;
+} gerb_file_t;
 
-#define EAGLECAD_KLUDGE 
+gerb_file_t *gerb_fopen(char *filename);
+char gerb_fgetc(gerb_file_t *fd);
+void gerb_ungetc(gerb_file_t *fd);
+void gerb_fclose(gerb_file_t *fd);
 
-/*
- * parse gerber file pointed to by fd
- */
-gerb_image_t *parse_gerb(gerb_file_t *fd);
-
-/*
- * Check that the parsed gerber image is complete.
- * Returned errorcodes are:
- * 0: No problems
- * 1: Missing netlist
- * 2: Missing format
- * 4: Missing apertures
- * 8: Missing info
- * It could be any of above or'ed together
- */
-int check_gerb(gerb_image_t *image);
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* GERBER_H */
+#endif /* FILEIO_H */

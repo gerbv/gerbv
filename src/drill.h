@@ -29,12 +29,13 @@ extern "C" {
 
 #include <stdio.h>
 #include "gerb_image.h"
+#include "fileio.h"
 
 #define TOOL_MIN 1
 #define TOOL_MAX 999
 
-gerb_image_t *parse_drillfile(FILE *fd);
-int drill_file_p(FILE *fd);
+gerb_image_t *parse_drillfile(gerb_file_t *fd);
+int drill_file_p(gerb_file_t *fd);
 
 #ifdef __cplusplus
 }

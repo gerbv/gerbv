@@ -30,7 +30,7 @@
 
 #define NOT_IMPL(fd, s) do { \
                              fprintf(stderr, "Not Implemented:%s\n", s); \
-                             while (fgetc(fd) != '*'); \
+                             while (gerb_fgetc(fd) != '*'); \
                            } while(0)
 	
 
@@ -59,12 +59,14 @@ typedef struct gerb_state {
 
 
 /* Local function prototypes */
-static void parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format);
-static void parse_D_code(FILE *fd, gerb_state_t *state);
-static int parse_M_code(FILE *fd);
-static void parse_rs274x(FILE *fd, gerb_image_t *image);
-static int parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture);
-static int read_int(FILE *fd);
+static void parse_G_code(gerb_file_t *fd, gerb_state_t *state, 
+			 gerb_format_t *format);
+static void parse_D_code(gerb_file_t *fd, gerb_state_t *state);
+static int parse_M_code(gerb_file_t *fd);
+static void parse_rs274x(gerb_file_t *fd, gerb_image_t *image);
+static int parse_aperture_definition(gerb_file_t *fd, 
+				     gerb_aperture_t *aperture);
+static int read_int(gerb_file_t *fd);
 static void calc_cirseg_sq(struct gerb_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_mq(struct gerb_net *net, int cw, 
@@ -72,7 +74,7 @@ static void calc_cirseg_mq(struct gerb_net *net, int cw,
 
 
 gerb_image_t *
-parse_gerb(FILE *fd)
+parse_gerb(gerb_file_t *fd)
 {
     gerb_state_t *state = NULL;
     gerb_image_t *image = NULL;
@@ -92,7 +94,7 @@ parse_gerb(FILE *fd)
 	err(1, "malloc image failed\n");
     curr_net = image->netlist;
 
-    while ((read = (char)fgetc(fd)) != EOF) {
+    while ((read = gerb_fgetc(fd)) != EOF) {
 	switch (read) {
 	case 'G':
 	    parse_G_code(fd, state, image->format);
@@ -146,7 +148,7 @@ parse_gerb(FILE *fd)
 	    break;
 	case '%':
 	    parse_rs274x(fd, image);
-	    while (fgetc(fd) != '%');
+	    while (gerb_fgetc(fd) != '%');
 	    break;
 	case '*':
 	    if (state->changed == 0) break;
@@ -290,12 +292,12 @@ check_gerb(gerb_image_t *image)
 }
 
 static void 
-parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
+parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 {
     char op[2];
     
-    op[0] = fgetc(fd);
-    op[1] = fgetc(fd);
+    op[0] = gerb_fgetc(fd);
+    op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
@@ -321,7 +323,7 @@ parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
 	return;
     } else if (strncmp(op, "04", 2) == 0) { /* Ignore Data Block */
 	/* Don't do anything, just read 'til * */
-	while (fgetc(fd) != '*');
+	while (gerb_fgetc(fd) != '*');
     } else if (strncmp(op, "10", 2) == 0) { /* Linear Interpolation (10X scale) */
 	state->interpolation = LINEARx10;
 	return;
@@ -339,7 +341,7 @@ parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
 	state->interpolation = PAREA_END;
 	state->changed = 1;
     } else if (strncmp(op, "54", 2) == 0) { /* Tool prepare */
-	if (fgetc(fd) == 'D')   /* XXX Check return value */
+	if (gerb_fgetc(fd) == 'D')   /* XXX Check return value */
 	    state->curr_aperture = read_int(fd);
 	else
 	    err(1, "Strange code after G54\n");
@@ -373,7 +375,7 @@ parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
 
 
 static void 
-parse_D_code(FILE *fd, gerb_state_t *state)
+parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 {
     int a;
     
@@ -404,12 +406,12 @@ parse_D_code(FILE *fd, gerb_state_t *state)
 
 
 static int
-parse_M_code(FILE *fd)
+parse_M_code(gerb_file_t *fd)
 {
     char op[2];
     
-    op[0] = fgetc(fd);
-    op[1] = fgetc(fd);
+    op[0] = gerb_fgetc(fd);
+    op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
@@ -426,14 +428,14 @@ parse_M_code(FILE *fd)
 
 
 static void 
-parse_rs274x(FILE *fd, gerb_image_t *image)
+parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
 {
     char op[3];
     gerb_aperture_t *a = NULL;
     int ano;
     
-    op[0] = fgetc(fd);
-    op[1] = fgetc(fd);
+    op[0] = gerb_fgetc(fd);
+    op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
@@ -447,7 +449,7 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
 	    err(1, "Failed malloc for format\n");
 	bzero((void *)image->format, sizeof(gerb_format_t));
 	
-	op[0] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
 	if (op[0] == 'L')
 	    image->format->omit_zeros = LEADING;
 	else if (op[0] == 'T')
@@ -457,14 +459,14 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
 	else {
 #ifdef EAGLECAD_KLUDGE
 	    fprintf(stderr,"EagleCad bug detected: Defaults to omit leading zeroes\n");
-	    ungetc(op[0],fd);
+	    gerb_ungetc(fd);
 	    image->format->omit_zeros = LEADING;
 #else
 	    err(1, "Format error: omit_zeros = %c\n", op[0]);
 #endif
 	}
 	
-	op[0] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
 	if (op[0] == 'A')
 	    image->format->coordinate = ABSOLUTE;
 	else if (op[0] == 'T')
@@ -473,24 +475,24 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
 	    err(1, "Format error: coordinate = %c\n", op[0]);
 	
 	/* XXX Here are other definitions possible but we currently silently ignores them */
-	while (fgetc(fd) != 'X') 
+	while (gerb_fgetc(fd) != 'X') 
 	    fprintf(stderr, "Not handled  type of format statement\n");
-	op[0] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
 	if ((op[0] < '0') || (op[0] > '6'))
 	    err(1,  "Illegal format size : %c\n", op[0]);
 	image->format->x_int = (int)(op[0] - '0');
-	op[0] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
 	if ((op[0] < '0') || (op[0] > '6'))
 	    err(1,  "Illegal format size : %c\n", op[0]);
 	image->format->x_dec = (int)(op[0] - '0');
 	
-	if (fgetc(fd) != 'Y') 
+	if (gerb_fgetc(fd) != 'Y') 
 	    fprintf(stderr, "Not handled  type of format statement\n");
-	op[0] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
 	if ((op[0] < '0') || (op[0] > '6'))
 	    err(1,  "Illegal format size : %c\n", op[0]);
 	image->format->y_int = (int)(op[0] - '0');
-	op[0] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
 	if ((op[0] < '0') || (op[0] > '6'))
 	    err(1,  "Illegal format size : %c\n", op[0]);
 	image->format->y_dec = (int)(op[0] - '0');
@@ -499,8 +501,8 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
 	NOT_IMPL(fd, "%MI%");
     } else if (strncmp(op, "MO", 2) == 0) { /* Mode of Units */
 	
-	op[0] = fgetc(fd);
-	op[1] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
+	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
 	    err(1, "Unexpected EOF found.\n");
@@ -513,19 +515,19 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
 	    err(1, "Illegal unit:%c%c\n", op[0], op[1]);
 	
     } else if (strncmp(op, "OF", 2) == 0) { /* Offset */
-	op[0] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
 	while (op[0] != '*') {
 	    switch (op[0]) {
 	    case 'A' :
-		fscanf(fd, "%lf", &(image->info->offset_a));
+		fscanf(fd->fd, "%lf", &(image->info->offset_a));
 		break;
 	    case 'B' :
-		fscanf(fd, "%lf", &(image->info->offset_b));
+		fscanf(fd->fd, "%lf", &(image->info->offset_b));
 		break;
 	    default :
 		err(1, "Wrong character in offset:%c\n", op[0]);
 	    }
-	    op[0] = fgetc(fd);
+	    op[0] = gerb_fgetc(fd);
 	}
 	return;
     } else if (strncmp(op, "SF", 2) == 0) { /* Scale Factor */
@@ -540,9 +542,9 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
 	NOT_IMPL(fd, "%IO%");
     } else if (strncmp(op, "IP", 2) == 0) { /* Image Polarity */
 	
-	op[0] = fgetc(fd);
-	op[1] = fgetc(fd);
-	op[2] = fgetc(fd);
+	op[0] = gerb_fgetc(fd);
+	op[1] = gerb_fgetc(fd);
+	op[2] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF) || (op[2] == EOF))
 	    err(1, "Unexpected EOF found.\n");
@@ -593,20 +595,20 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
 
 
 static int 
-parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture)
+parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
 {
     int ano, i;
     char read;
     char type[50]; /* XXX */
     
-    if (fgetc(fd) != 'D')
+    if (gerb_fgetc(fd) != 'D')
 	return -1;
     
     bzero(type, sizeof(type)/sizeof(type[0]));
     
     ano = read_int(fd);
     
-    for (i = 0, type[i] = fgetc(fd); type[i] != ','; i++, type[i] = fgetc(fd));
+    for (i = 0, type[i] = gerb_fgetc(fd); type[i] != ','; i++, type[i] = gerb_fgetc(fd));
     
     if (i == 1) {
 	switch (type[0]) {
@@ -631,44 +633,38 @@ parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture)
 	return ano;
     }
     
-    for (read = 'X', i = 0; (read == 'X') && i < 5; read = fgetc(fd), i++)
-	fscanf(fd, "%lf", &(aperture->parameter[i]));
+    for (read = 'X', i = 0; (read == 'X') && i < 5; read = gerb_fgetc(fd), i++)
+	fscanf(fd->fd, "%lf", &(aperture->parameter[i]));
     
     aperture->nuf_parameters = i;
     
-    if (ungetc(read, fd) != read) {
-	perror("parse_aperture_definition:ungetc");
-	exit(1);
-    }
-    
+    gerb_ungetc(fd);
+
     return ano;
 } /* parse_aperture_definition */
 
 
 static int
-read_int(FILE *fd)
+read_int(gerb_file_t *fd)
 {
     char read;
     int i = 0;
     int neg = 0;
     
-    read = fgetc(fd); /* XXX Should check return value */
+    read = gerb_fgetc(fd); /* XXX Should check return value */
     
     if (read == '-') {
 	neg = 1;
-	read = fgetc(fd); /* XXX Should check return value */
+	read = gerb_fgetc(fd); /* XXX Should check return value */
     }
     
     while (read >= '0' && read <= '9') {
 	i = i*10 + ((int)read - '0');
-	read = fgetc(fd); /* XXX Should check return value */
+	read = gerb_fgetc(fd); /* XXX Should check return value */
     }
     
-    if (ungetc(read, fd) != read) {
-	perror("read_int:ungetc");
-	exit(1);
-    }
-    
+    gerb_ungetc(fd);
+
     if (neg)
 	return -i;
     else

@@ -51,7 +51,7 @@
 #endif
 #include "draw.h"
 #include "color.h"
-
+#include "fileio.h"
 
 #define INITIAL_SCALE 200
 #define MAX_FILES 20
@@ -360,7 +360,7 @@ redraw_pixmap(GtkWidget *widget)
 static void
 open_image(char *filename, int index)
 {
-    FILE *fd;
+    gerb_file_t *fd;
     int r, g, b;
     GdkColor *prelight;
     GtkStyle *defstyle, *newstyle;
@@ -370,7 +370,7 @@ open_image(char *filename, int index)
 	return;
     }
 
-    fd = fopen(filename, "r");
+    fd = gerb_fopen(filename);
     if (fd == NULL) {
 	perror("fopen");
 	exit(1);
@@ -401,7 +401,7 @@ open_image(char *filename, int index)
 
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
 			 filename, NULL); 
-    fclose(fd);
+    gerb_fclose(fd);
 
     return;
 } /* open_image */
@@ -509,7 +509,7 @@ batch(char *backend, char *file)
     char 	 *complete_path;
     char         *home;
     int		  i;
-    FILE         *fd;
+    gerb_file_t  *fd;
     gerb_image_t *image;
     SCM	          scm_image;
 
@@ -567,7 +567,7 @@ batch(char *backend, char *file)
     /*
      * Read and parse Gerberfile
      */
-    fd = fopen(file, "r");
+    fd = gerb_fopen(file);
     if (fd == NULL) {
 	perror("fopen");
 	exit(1);
@@ -578,7 +578,7 @@ batch(char *backend, char *file)
     else
 	image = parse_gerb(fd);
     
-    fclose(fd);
+    gerb_fclose(fd);
     
     /*
      * Convert it to Scheme
