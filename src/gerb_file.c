@@ -125,7 +125,7 @@ gerb_fgetstring(gerb_file_t *fd, char term)
 	return NULL;
     strncpy(newstr, fd->data + fd->ptr, len);
     newstr[len] = '\0';
-    fd->ptr += (len + 1);
+    fd->ptr += len;
 
     return newstr;
 }
