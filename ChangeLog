@@ -1,3 +1,13 @@
+2001-12-02 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/drill.c: drill_file_p recoded so it seems to work better.
+	* src/gerbv.c: Removed and cleaned up "open file" code.
+	* src/gerbv.c, src/color.c, src/color.h: Fixed the whole mess
+	  with colors. Now colors doesn't set any limits on how many files
+	  you can load. It also checks that you don't give too many files
+	  to the program.
+	
+
 2001-12-02 Andreas Andersson (e92_aan@e.kth.se)
 
 	* src/gerbv.c:
