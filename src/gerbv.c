@@ -99,7 +99,7 @@ static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
 static void si_func(GtkWidget *widget, gpointer data);
 static void unit_func(GtkWidget *widget, gpointer data);
-static void incr_redraw_toggle(GtkWidget *widget, gpointer data);
+static void clipping_toggle(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget, int restart);
@@ -148,7 +148,7 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
     {"/_Setup",              NULL,     NULL,             0, "<Branch>"},
 
-    {"/Setup/_Incremental redraw",NULL, incr_redraw_toggle, 0, "<ToggleItem>"},
+    {"/Setup/_Clipping",NULL, clipping_toggle, 0, "<ToggleItem>"},
     {"/Setup/_Superimpose",  NULL,     NULL,             0, "<Branch>"},
     {"/Setup/_Superimpose/Copy",NULL, si_func, 0, "<RadioItem>"},
     {"/Setup/_Superimpose/And", NULL, si_func, GDK_AND,  "/Setup/Superimpose/Copy"},
@@ -197,14 +197,19 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
     gtk_accel_group_attach(accel_group, GTK_OBJECT(window));
     
     if(menubar) {
+	GtkWidget *menuEntry;
+
 	/* Finally, return the actual menu bar created by the item factory. */
 	*menubar = gtk_item_factory_get_widget(item_factory, "<main>");
 	/* Set menu selection to reflect the current active unit */
 	if (GERBV_DEFAULT_UNIT == GERBV_MMS) {
-	    GtkWidget *menuEntry;
 	    menuEntry = gtk_item_factory_get_widget(item_factory, "/Setup/Units/mm");
 	    gtk_menu_item_activate(GTK_MENU_ITEM(menuEntry));
 	}
+
+	/* Set menu selection to show that clipping is on by default */
+	menuEntry = gtk_item_factory_get_widget(item_factory, "/Setup/Clipping");
+	gtk_menu_item_activate(GTK_MENU_ITEM(menuEntry));
     }
 } /* create_menubar */
 
@@ -719,7 +724,6 @@ static gboolean idle_redraw_pixmap_active = FALSE;
 gboolean
 idle_redraw_pixmap(gpointer data)
 {
-    idle_redraw_pixmap_active = FALSE;
     redraw_pixmap((GtkWidget *) data, FALSE);
     return FALSE;
 } /* idle_redraw_pixmap */
@@ -789,13 +793,16 @@ unit_func(GtkWidget *widget, gpointer data)
 
 
 static void
-incr_redraw_toggle(GtkWidget *widget, gpointer data)
+clipping_toggle(GtkWidget *widget, gpointer data)
 {
-    /* Toggle incremental redraw */
-    screen.incremental_redraw = !screen.incremental_redraw;
+    /* Toggle pixmap clipping */
+    screen.do_clipping = !screen.do_clipping;
 
+    if (screen.drawing_area) {
+	redraw_pixmap(screen.drawing_area, TRUE);
+    }
     return;
-} /* incr_redraw_toggle() */
+} /* clipping_toggle() */
 
 
 /* Zoom function */
@@ -959,39 +966,65 @@ redraw_pixmap(GtkWidget *widget, int restart)
     }
 
     /* Prevent redraw_pixmap from being called too many times */
-    stop_idle_redraw_pixmap(screen.drawing_area);
+    stop_idle_redraw_pixmap(widget);
+
+    /* Called first when opening window and then when resizing window */
+    for(i = 0; i < MAX_FILES; i++) {
+	if (screen.file[i]) {
+	    file_loaded++;
+	}
+    }
+
+    /*
+     * Setup scale etc first time we load a file
+     */
+    if (file_loaded && screen.scale == 0) {
+	autoscale();
+	state.valid = 0;
+    }
+
+    /*
+     * Find the biggest image and use as a size reference
+     */
+    dmax_x = screen.gerber_bbox.x2;
+    dmax_y = screen.gerber_bbox.y2;
+
+    /*
+     * Also find the smallest coordinates to see if we have negative
+     * ones that must be compensated for.
+     */
+    dmin_x = screen.gerber_bbox.x1;
+    dmin_y = screen.gerber_bbox.y1;
 
     /* Should we restart drawing, or try to load a saved state? */
     if (!restart && state.valid) {
-	int file_loaded = 0;
+	int scaled_max_x, scaled_max_y;
 
-	/* Called first when opening window and then when resizing window */
-	for(i = 0; i < MAX_FILES; i++) {
-	    if (screen.file[i]) {
-		file_loaded++;
-	    }
-	}
-	if (file_loaded != state.files_loaded ||
-	    state.max_width != screen.drawing_area->allocation.width ||
-	    state.max_height != screen.drawing_area->allocation.height) {
+	if (file_loaded != state.files_loaded) {
 	    state.valid = 0;
 	}
+
+	scaled_max_x = (int)floor((dmax_x - dmin_x) * 
+				  (double)screen.scale);
+	scaled_max_y = (int)floor((dmax_y - dmin_y) * 
+				  (double)screen.scale);
+
+	if (screen.do_clipping && 
+	    (state.max_width != screen.drawing_area->allocation.width ||
+	    state.max_height != screen.drawing_area->allocation.height)) {
+	    state.valid = 0;
+	} else if (!screen.do_clipping && 
+		   (state.max_width != scaled_max_x ||
+		    state.max_height != scaled_max_y)) {
+	    state.valid = 0;
+	}
+
     } else {
 	state.valid = 0;
     }
 
     /* Check for useful data in saved state or initialise state */
     if (!state.valid) {
-	/* Clear state */
-	memset(&state, 0, sizeof(state));
-
-	/* Called first when opening window and then when resizing window */
-	for(i = 0; i < MAX_FILES; i++) {
-	    if (screen.file[i]) {
-		file_loaded++;
-	    }
-	}
-	state.files_loaded = file_loaded;
 	/*
 	 * Paranoia check; size in width or height is zero
 	 */
@@ -1000,16 +1033,27 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	    goto redraw_pixmap_end;
 	}
 
-	/*
-	 * Setup scale etc first time we load a file
-	 */
-	if (file_loaded && screen.scale == 0) autoscale();
+	/* Clear state */
+	memset(&state, 0, sizeof(state));
 
-	/*
-	 * Pixmap size is always size of window, no matter how big the scale is.
-	 */
-	state.max_width = screen.drawing_area->allocation.width;
-	state.max_height = screen.drawing_area->allocation.height;
+	state.files_loaded = file_loaded;
+
+	if (screen.do_clipping) {
+	    /*
+	     * Pixmap size is always size of window, no
+	     * matter how the scale.
+	     */
+	    state.max_width = screen.drawing_area->allocation.width;
+	    state.max_height = screen.drawing_area->allocation.height;
+	} else {
+	    /*
+	     * Scale width to actual windows size. No clipping.
+	     */
+	    state.max_width = (int)floor((dmax_x - dmin_x) * 
+					 (double)screen.scale);
+	    state.max_height = (int)floor((dmax_y - dmin_y) * 
+					  (double)screen.scale);
+	}
 
 	/* 
 	 * Remove old pixmap, allocate a new one, draw the background and set
@@ -1031,23 +1075,6 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	state.valid = 1;
     }
 
-    /*
-     * Find the biggest image and use as a size reference
-     */
-    dmax_x = screen.gerber_bbox.x2;
-    dmax_y = screen.gerber_bbox.y2;
-
-    /*
-     * Also find the smallest coordinates to see if we have negative
-     * ones that must be compensated for.
-     */
-    dmin_x = screen.gerber_bbox.x1;
-    dmin_y = screen.gerber_bbox.y1;
-
-    update_rect.x = 0, update_rect.y = 0;
-    update_rect.width =	widget->allocation.width;
-    update_rect.height = widget->allocation.height;
-
     /* 
      * This now allows drawing several layers on top of each other.
      * Higher layer numbers have higher priority in the Z-order. 
@@ -1058,7 +1085,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 
 	if (g_main_pending()) {
 	    /* Set idle function to ensure we wont miss to redraw */
-	    start_idle_redraw_pixmap(screen.drawing_area);
+	    start_idle_redraw_pixmap(widget);
 	    state.file_index = i;
 	    goto redraw_pixmap_end;
 	}
@@ -1069,7 +1096,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	     * Show progress in status bar
 	     */
 	    snprintf(screen.statusbar.msgstr, MAX_STATUSMSGLEN,
-		     "drawing %d (%s)",
+		     "%d %s...",
 		     i, screen.file[i]->basename);
 	    update_statusbar(&screen);
 
@@ -1084,10 +1111,19 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	     * Translation is to get it inside the allocated pixmap,
 	     * which is not always centered perfectly for GTK/X.
 	     */
-	    image2pixmap(&(state.clipmask), screen.file[i]->image, screen.scale, 
-			 (screen.clip_bbox.x1-dmin_x) * screen.scale,
-			 (screen.clip_bbox.y1+dmax_y) * screen.scale,
-			 screen.file[i]->image->info->polarity);
+	    if (screen.do_clipping) {
+		image2pixmap(&(state.clipmask),
+			     screen.file[i]->image, screen.scale, 
+			     (screen.clip_bbox.x1-dmin_x)*screen.scale,
+			     (screen.clip_bbox.y1+dmax_y)*screen.scale,
+			     screen.file[i]->image->info->polarity);
+	    } else {
+		image2pixmap(&(state.clipmask),
+			     screen.file[i]->image, screen.scale, 
+			     -dmin_x*screen.scale,
+			     dmax_y*screen.scale,
+			     screen.file[i]->image->info->polarity);
+	    }
 
 	    /* 
 	     * Set clipmask and draw the clipped out image onto the
@@ -1098,13 +1134,6 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	    gdk_gc_set_clip_origin(gc, 0, 0);
 	    gdk_draw_pixmap(screen.pixmap, gc, state.curr_pixmap, -screen.off_x, -screen.off_y, 0, 0, -1, -1);
 	    gdk_gc_set_clip_mask(gc, NULL);
-
-	    if (screen.incremental_redraw) {
-		/*
-		 * Calls expose_event
-		 */
-		gtk_widget_draw(widget, &update_rect);
-	    }
 	}
     }
 
@@ -1119,12 +1148,15 @@ redraw_pixmap(GtkWidget *widget, int restart)
     if (state.clipmask) {
 	gdk_pixmap_unref(state.clipmask);
     }
-    if (!screen.incremental_redraw) {
-	/*
-	 * Calls expose_event
-	 */
-	gtk_widget_draw(widget, &update_rect);
-    }
+
+    update_rect.x = 0, update_rect.y = 0;
+    update_rect.width =	widget->allocation.width;
+    update_rect.height = widget->allocation.height;
+
+    /*
+     * Calls expose_event
+     */
+    gtk_widget_draw(widget, &update_rect);
 
 redraw_pixmap_end:
     /* Return default pointer shape */
@@ -1553,14 +1585,25 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
      * Copy gerber pixmap onto background if we have one to copy.
      * Do translation at the same time.
      */
-    if (screen.pixmap != NULL)
-	gdk_draw_pixmap(new_pixmap,
-			widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-			screen.pixmap, 
-			event->area.x + screen.off_x, 
-			event->area.y + screen.off_y, 
-			event->area.x, event->area.y,
-			event->area.width, event->area.height);
+    if (screen.pixmap != NULL) {
+	if (screen.do_clipping) {
+	    gdk_draw_pixmap(new_pixmap,
+			    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+			    screen.pixmap, 
+			    event->area.x + screen.off_x, 
+			    event->area.y + screen.off_y, 
+			    event->area.x, event->area.y,
+			    event->area.width, event->area.height);
+	} else {
+	    gdk_draw_pixmap(new_pixmap,
+			    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+			    screen.pixmap, 
+			    event->area.x + screen.trans_x, 
+			    event->area.y + screen.trans_y, 
+			    event->area.x, event->area.y,
+			    event->area.width, event->area.height);
+	}
+    }
 
     /*
      * Draw the whole thing onto screen

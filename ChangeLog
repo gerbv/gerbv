@@ -1,3 +1,10 @@
+2002-10-31  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Replace incremental redraw with clipping
+	  option. It is now possible to turn clipping off, this
+	  might be useful for export png (sorry for breaking this,
+	  Dino).
+
 2002-10-30  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerb_image.h, src/gerber.c: Implemented %SF% and %SR% in

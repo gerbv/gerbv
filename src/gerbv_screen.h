@@ -70,7 +70,7 @@ typedef struct {
     GdkColor  *zoom_outline_color;
     GdkColor  *dist_measure_color;
     gerbv_unit_t unit;
-    gboolean incremental_redraw;
+    gboolean do_clipping;
 
     GtkWidget *load_file_popup;
     GtkWidget *color_selection_popup;
