@@ -52,6 +52,7 @@
 #include "gerbv_screen.h"
 #include "project.h"
 #include "scheme-private.h"
+#include "search_gui.h"
 
 static project_list_t *plist_top = NULL;
 
@@ -142,7 +143,11 @@ define_layer(scheme *sc, pointer args)
 	    tmp_string = get_value_string(sc, value);
 	    plist_top->filename = (char *)malloc(strlen(tmp_string) + 1);
 	    strncpy(plist_top->filename, tmp_string, strlen(tmp_string) + 1);
-	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
+    } else if (strcmp(sc->vptr->symname(name), "pick_and_place") == 0) {
+	    tmp_string = get_value_string(sc, value);
+	    plist_top->filename = (char *)malloc(strlen(tmp_string) + 1);
+	    strncpy(plist_top->filename, tmp_string, strlen(tmp_string) + 1);
+  	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
 	    if (value ==  sc->F) {
 		plist_top->inverted = 0;
 	    } else if (value == sc->T) {
@@ -167,7 +172,7 @@ define_layer(scheme *sc, pointer args)
  * Global:
  * * Background color
  * * Global path.
- * * corresponding pick and place file <TODO>:JH
+ * * corresponding pick and place file: labelled picknplace
  * Per layer:
  * * layer color
  * * layer filename
@@ -245,14 +250,15 @@ write_project_file(char *filename, project_list_t *project)
     project_list_t *p = project, *tmp;
 
     if ((fd = fopen(filename, "w")) == NULL) {
-	GERB_MESSAGE("Couldn't save project %s\n", filename);
-       // printf(" nope saving projecct file!\n");
-	return(-1);
+	    GERB_MESSAGE("Couldn't save project %s\n", filename);
+	    return(-1);
     }
-   // printf("we are about to save a project");
     while (p) {
 	fprintf(fd, "(define-layer! %d ", p->layerno);
-	fprintf(fd, "(cons 'filename \"%s\")", p->filename);
+        if ((interface.pnp_filename != NULL) && (strncmp(p->filename, interface.pnp_filename, strlen(interface.pnp_filename)) == 0)) 
+    	    fprintf(fd, "(cons 'pick_and_place \"%s\")", p->filename);
+        else
+            fprintf(fd, "(cons 'filename \"%s\")", p->filename);    
 	if (p->inverted)
 	    fprintf(fd, "(cons 'inverted #t)");
 	fprintf(fd, "(cons 'color #(%d %d %d)))", p->rgb[0], p->rgb[1],

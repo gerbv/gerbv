@@ -90,11 +90,11 @@ void create_marked_layer(int idx) {
         return;
     }
         
-    if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
+/*    if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
   	 gtk_widget_set_sensitive (interface.find_button, TRUE);
     
-	 return;/*nothing to draw*/
-    }
+	 return;
+    }*/
     curr_net = image->netlist;
     if(screen.file[idx] && screen.file[idx]->image) {
         free_gerb_image(screen.file[idx]->image);
@@ -103,9 +103,9 @@ void create_marked_layer(int idx) {
         assert(screen.file[idx]==NULL);
         screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
         memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
-        if (idx == 19) //FIXME this is not flexible; should be first layer we ever draw a selection onto
-            screen.file[idx]->name = interface.pnp_filename; 
-        else
+    //     if (idx == 19) //FIXME this is not flexible; should be first layer we ever draw a selection onto
+    //        screen.file[idx]->name = interface.pnp_filename; 
+    //    else
             screen.file[idx]->name = tmp_name;
     }
     screen.file[idx]->image = image;
@@ -117,6 +117,8 @@ void create_marked_layer(int idx) {
         b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
 
         screen.file[idx]->color = alloc_color(r, g, b, NULL);
+        screen.file[idx]->inverted = 0;
+
         /* This code will remove the layer which the selection is drawn onto from
          * the available layers to be drawn on in future, dactivate, because the
          * number of layers decreases quite fast*/
@@ -181,6 +183,8 @@ void create_marked_layer(int idx) {
 	    
     list = gtk_tree_selection_get_selected_rows (GTK_TREE_SELECTION(interface.selection),
 							 (GtkTreeModel **)&interface.model);
+    if (list == NULL) 
+        return;                             
     list = g_list_first (list);
    
     do {

@@ -496,7 +496,7 @@ create_main_search_window (void)
     sprintf(s_MAX_FILES,"%i",MAX_FILES-2);
     gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, s_MAX_FILES);
     gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
-    click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
+    /*click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);*/
      
                                                                                             
             
@@ -550,7 +550,7 @@ create_search_window(GtkWidget *widget, gpointer data)
     interface.geometry.min_width  = MINIMUM_WINDOW_WIDTH;
    
     interface.main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    
+
     window = create_main_search_window ();
     gtk_container_add(GTK_CONTAINER(interface.main_window), window);
  
@@ -565,7 +565,9 @@ create_search_window(GtkWidget *widget, gpointer data)
     gtk_widget_show_all (window);
 
     gtk_widget_show (interface.main_window);
-
+    
+    g_signal_connect (G_OBJECT (interface.main_window),"delete-event",
+		      G_CALLBACK (gtk_widget_hide_on_delete), interface.main_window);
 
     return;
 } /* create_search_window */
@@ -751,11 +753,6 @@ click_find_cb (GtkWidget	*widget,
         /* Redraw the image(s) */
   
     redraw_pixmap(screen.drawing_area, TRUE);
-  	
-    if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
-  	 gtk_widget_set_sensitive (interface.find_button, TRUE);
-        return;
-    }
 	    
     gtk_widget_set_sensitive (interface.find_button, TRUE);
 } /* click_find_cb */

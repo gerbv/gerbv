@@ -1,3 +1,13 @@
+2004-08-23 Juergen Haas <juergenhaas@gmx.net>
+	-saving projects:
+	is done in a more flexible way:
+	adds a similar line with "filename" replaced by "pick_and_place" 
+	to project file
+FIX ME: reading in a project file is still broken 
+	-several bugfixes: 
+	 upon pressing mark button in select parts dialog it always updates
+	 screen
+	
 2004-08-23  Tomasz Motylewski <t.motylewski@bfad.de>
 
 	* replaced scale with gerb_transf_t(.scale) - mirroring preparation
@@ -9,7 +19,7 @@
 
 tag:SEARCH_SELECT_merged
 
-2004-08-13 11:25 Search9-pre8
+2004-08-13 11:25 Search9-pre8 Juergen Haas <juergenhaas@gmx.net>
  todo 	saving projects 
 	Bugs fixed:
 		-if mark is pressed and there is no selection colour of layer
@@ -41,7 +51,7 @@ tag:SEARCH_SELECT_merged
 		 logging in log window was disabled as a first measure
 		 
 
-2004-08-12 09:51   Search9-pre7 
+2004-08-12 09:51   Search9-pre7 Juergen Haas <juergenhaas@gmx.net> 
 program now works under MINGW
 code cleanup
 BUG fixes:
@@ -64,18 +74,18 @@ search_gui.c:
         -upon enter in entry field we scroll to first hit in selection
 
 -----------------------------
-2004-08-04 09:29 search9-pre5:
+2004-08-04 09:29 search9-pre5: Juergen Haas <juergenhaas@gmx.net>
 TODO introduction of libmba csv functions sublicensed under MIT
  csv.[ch] have been extracted and made independent from msgno.[ch] and text.[ch] the latter 
  two wont be included 
 -----------------------------
-2004-08-03 09:30 Search9-pre4:
+2004-08-03 09:30 Search9-pre4: Juergen Haas <juergenhaas@gmx.net>
 search_gui.c:
 	-fixed error with default layer selection:now always last layer is default, based on 
 	MAX_FILES
 cleaned up code
 -----------------------------
-Search9-pre3:
+Search9-pre3: Juergen Haas <juergenhaas@gmx.net>
 TODO-towards project saving: added filename if pnp file is loaded
 	dont know how to handle loading of files because pnp file is not compatible to 
 	gerberfile

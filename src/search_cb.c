@@ -76,8 +76,6 @@
 #include "setup.h"
 #include "project.h"
 
-//pnp_state_t *parsed_PNP_data;/*Global storage place for pick and place data*/
-
 
 static void
 cb_ok_load_pnp_file(GtkWidget *widget, GtkFileSelection *fs)
@@ -107,7 +105,7 @@ cb_ok_load_pnp_file(GtkWidget *widget, GtkFileSelection *fs)
          */
         filename = dirname(filename);
 #endif
-            
+            /*CHECK ME:do we need the following lines?, screen.path should be based on the gerberfiles*/
         if (screen.path) 
 	        free(screen.path);
            
@@ -189,7 +187,7 @@ open_pnp(char *filename, int idx, int reload)
     
     /*Global storage, TODO: for data reload*/
     parsed_PNP_data = parse_pnp(fd);
-
+    printf("we even parsed it");
     pnp_fclose(fd);
          
     if(!gtk_tree_model_get_iter_first (GTK_TREE_MODEL(interface.model), &interface.iter)) {

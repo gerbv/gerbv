@@ -758,7 +758,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 {
     char *filename = NULL;
     project_list_t *project_list = NULL, *tmp;
-    int idx;
+    int idx, pnp_file_in_project_list;
     
     if (screen.win.project) {
 	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
@@ -821,7 +821,6 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	}
 	
 	if (screen.path) {
-      //printf("screen.path exists");
 	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
 	    memset(project_list, 0, sizeof(project_list_t));
 	    project_list->next = project_list;
@@ -832,24 +831,26 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    project_list->rgb[2] = screen.background->blue;
 	    project_list->next = NULL;
 	}
-	
+	pnp_file_in_project_list = 0;
 	for (idx = 0; idx < MAX_FILES; idx++) {
-	    if (screen.file[idx] && screen.file[idx]->name &&  screen.file[idx]->color) {
+        if (screen.file[idx] &&  screen.file[idx]->color) {
 		    tmp = (project_list_t *)malloc(sizeof(project_list_t));
 		    memset(tmp, 0, sizeof(project_list_t));
 		    tmp->next = project_list;
 		    tmp->layerno = idx;
-		    tmp->filename = screen.file[idx]->name;
-            printf(" %s we got the filename right have we?\n", screen.file[idx]->name );
-            printf(" we got the colour right have we?%i\n", screen.file[idx]->color->red );
+            if ((screen.file[idx]->name == NULL) && (pnp_file_in_project_list == 0) && (interface.pnp_filename != NULL)) {
+                tmp->filename = interface.pnp_filename;
+                pnp_file_in_project_list = 1;
+            } else
+    		    tmp->filename = screen.file[idx]->name;
 		    tmp->rgb[0] = screen.file[idx]->color->red;
-            printf(" we got the colour right have we?%p\n", &screen.file[idx]->color );
 		    tmp->rgb[1] = screen.file[idx]->color->green;
 		    tmp->rgb[2] = screen.file[idx]->color->blue;
 		    tmp->inverted = screen.file[idx]->inverted;
-		    project_list = tmp;
+      	    project_list = tmp;
 	    }
 	}
+           
 	if (write_project_file(screen.project, project_list)) {
 	    GERB_MESSAGE("Failed to write project\n");
 	    goto cb_ok_project_end;
@@ -999,9 +1000,9 @@ unload_file(GtkWidget *widget, gpointer data)
     free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
     free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
     free(screen.file[idx]);  screen.file[idx] = NULL;
-#ifdef USE_GTK2    
-    if (interface.main_window) {
-        //printf("unloading");
+#ifdef USE_GTK2
+//#if 0    
+    if (interface.main_window && gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter)) {
         combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
         for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 
@@ -1044,8 +1045,9 @@ static void
 load_project(project_list_t *project_list)
 {
     project_list_t *pl_tmp;
-    GtkStyle *defstyle, *newstyle;
-    
+    GtkStyle       *defstyle, *newstyle;
+//    GtkWidget      *tmp_widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+     
     while (project_list) {
 	if (project_list->layerno == -1) {
 	    screen.background = alloc_color(project_list->rgb[0], 
@@ -1054,9 +1056,14 @@ load_project(project_list_t *project_list)
 	} else {
 	    int idx =  project_list->layerno;
 
-	    if (open_image(project_list->filename, idx, FALSE) == -1)
-		exit(-1);
-
+        if (strstr(project_list->filename, ".csv") != NULL) {
+ //           create_search_window(NULL, NULL);
+//            if (open_pnp(project_list->filename, idx, FALSE) == -1) 
+//                exit(-1);
+    	} else {
+            if (open_image(project_list->filename, idx, FALSE) == -1)
+        		exit(-1);
+        }    
 	    /* 
 	     * Change color from default to from the project list
 	     */
@@ -1747,8 +1754,8 @@ open_image(char *filename, int idx, int reload)
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
 			 filename, NULL);
 #ifdef USE_GTK2                         
-    if ((interface.main_window) && (!reload)) {                          
-        //printf("loading");
+//#if 0
+    if ((interface.main_window) && (!reload) && gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter)) {                          
         combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
         for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 

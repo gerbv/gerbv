@@ -227,7 +227,6 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 		        pnp_state->length = 0.0254 * i_length;
                 pnp_state->width = 0.0254 * i_width;
 		        pnp_state->shape = PART_SHAPE_RECTANGLE;
-                //printf("rectangle");
 	        } else {
 		        pnp_state->length = 0.0;
 		        pnp_state->width = 0.0;
@@ -264,7 +263,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
         }    
     }   
            
-    return pnp_state0; /* return the FIRST, not last list node */
+    return pnp_state0; /* return the FIRST list node */
 }
 
 
