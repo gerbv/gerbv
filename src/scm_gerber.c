@@ -29,6 +29,14 @@
 
 #include "scm_gerber.h"
 
+#ifndef err
+#define err(errcode, a...) \
+     do { \
+           fprintf(stderr, ##a); \
+           exit(errcode);\
+     } while (0)
+#endif
+
 static SCM
 scm_aperture2scm(enum aperture_t a)
 {

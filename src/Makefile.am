@@ -29,6 +29,7 @@ gerbv_SOURCES = gerb_image.c gerb_file.c gerber.c scm_gerber.c gerbv.c \
 INCLUDES = @GTK_CFLAGS@ @GUILE_CFLAGS@
 gerbv_LDADD = @GTK_LIBS@ @GUILE_LDFLAGS@
 
+AM_CFLAGS=-Wall
 
 MOSTLYCLEANFILES = *~ *.o gerbv
 CLEANFILES = *~ *.o gerbv

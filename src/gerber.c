@@ -79,8 +79,8 @@ parse_gerb(gerb_file_t *fd)
     gerb_image_t *image = NULL;
     gerb_net_t *curr_net = NULL;
     char read;
-    double x_scale, y_scale;
-    double delta_cp_x, delta_cp_y;
+    double x_scale = 0.0, y_scale = 0.0;
+    double delta_cp_x = 0.0, delta_cp_y = 0.0;
     int error = 0;
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
@@ -785,7 +785,6 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 {
     double d1x, d1y, d2x, d2y;
     double alfa, beta;
-    int quadrant = 0;
 
     net->cirseg->cp_x = net->start_x + delta_cp_x;
     net->cirseg->cp_y = net->start_y + delta_cp_y;

@@ -1,5 +1,11 @@
 2001-12-03 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/Makefile.am, src/color.c, src/gerber.c, src/scm_gerber.c:
+	  Turned on -Wall and cleaned up after it.
+
+	
+2001-12-03 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/drill.h, src/gerber.h, src/gerbv.c:
 	  Fixed bug caused by last minute namechange of 
 	  gerb_file.[hc].
