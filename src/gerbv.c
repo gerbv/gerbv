@@ -736,9 +736,6 @@ zoom(GtkWidget *widget, gpointer data)
     int mouse_delta_y = 0;
     gerbv_zoom_data_t *z_data = (gerbv_zoom_data_t *) data;
 
-    if (screen.file[screen.curr_index] == NULL)
-	return;
-
     half_w = screen.drawing_area->allocation.width / 2;
     half_h = screen.drawing_area->allocation.height / 2;
 
