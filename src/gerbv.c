@@ -736,7 +736,7 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
 	    goto zoom_outline_end;
     }
 
-    if (event->state & GDK_CONTROL_MASK) {
+    if (screen.centered_outline_zoom) {
 	/* Centered outline mode */
 	x1 = screen.start_x - dx;
 	y1 = screen.start_y - dy;
@@ -1028,7 +1028,7 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	    screen.state = MOVE;
 	    screen.last_x = widget->allocation.height - event->x;
 	    screen.last_y = widget->allocation.width  - event->y;
-	} else /* XXX Add some modifier selection criteria */ {
+	} else {
 	    GdkCursor *cursor;
 
 	    screen.state = MEASURE;
@@ -1059,6 +1059,7 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	screen.state = ZOOM_OUTLINE;
 	screen.start_x = event->x;
 	screen.start_y = event->y;
+	screen.centered_outline_zoom = event->state & GDK_SHIFT_MASK;
 	break;
     case 4 :
 	data.z_dir = ZOOM_IN_CMOUSE;
@@ -1088,7 +1089,8 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 	    screen.state = NORMAL;
 	    zoom_outline(widget, event);
 	} else if (!(event->state & GDK_SHIFT_MASK)) {
-	    gdk_window_set_cursor(gtk_widget_get_parent_window(widget), NULL);
+	    gdk_window_set_cursor(gtk_widget_get_parent_window(widget),
+				  GERBV_DEF_CURSOR);
 	}
 	screen.last_x = screen.last_y = 0;
 	screen.state = NORMAL;
@@ -1097,52 +1099,57 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
     return TRUE;
 } /* button_release_event */
 
+
 static gint
 key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
-    if (screen.state == ZOOM_OUTLINE) {
-	if ((event->keyval == GDK_Control_L) ||
-	    (event->keyval == GDK_Control_R)) {
-	    draw_zoom_outline(event->state & GDK_CONTROL_MASK);
-	    draw_zoom_outline(TRUE);
-	}
-    } else if ((event->state & GDK_SHIFT_MASK) ||
-	       (event->keyval == GDK_Shift_L) ||
-	       (event->keyval == GDK_Shift_R)) {
-	GdkCursor *cursor;
+    if (screen.state == NORMAL) {
+	if ((event->state & GDK_SHIFT_MASK) ||
+	    (event->keyval == GDK_Shift_L) ||
+	    (event->keyval == GDK_Shift_R)) {
+	    GdkCursor *cursor;
 
-	cursor = gdk_cursor_new(GDK_CROSSHAIR);
-	gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
-			      cursor);
-	gdk_cursor_destroy(cursor);
+	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
+	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
+				  cursor);
+	    gdk_cursor_destroy(cursor);
+	}
     }
+
+    /* Escape may be used to abort outline zoom and just plain repaint */
+    if (event->keyval == GDK_Escape) {
+	GdkRectangle update_rect;
+
+	screen.state = NORMAL;
+
+	update_rect.x = 0, update_rect.y = 0;
+	update_rect.width =	widget->allocation.width;
+	update_rect.height = widget->allocation.height;
+
+	/*
+	 * Calls expose_event
+	 */
+	gtk_widget_draw(widget, &update_rect);
+    }
+
     return TRUE;
 } /* key_press_event */
+
 
 static gint
 key_release_event (GtkWidget *widget, GdkEventKey *event)
 {
-    if (screen.state == ZOOM_OUTLINE) {
-	if ((event->keyval == GDK_Control_L) ||
-	    (event->keyval == GDK_Control_R)) {
-	    GdkModifierType state;
-	    gint dummy1, dummy2;
-
-	    gdk_window_get_pointer(screen.drawing_area->window, &dummy1, &dummy2,
-				   &state);
-	    draw_zoom_outline(TRUE);
-	    draw_zoom_outline(state & GDK_CONTROL_MASK);
-	}
-    } else if (screen.state != MEASURE) {
+    if (screen.state == NORMAL) {
 	if((event->state & GDK_SHIFT_MASK) ||
 	   (event->keyval == GDK_Shift_L) ||
 	   (event->keyval == GDK_Shift_R)) {
 	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
-				  NULL);
+				  GERBV_DEF_CURSOR);
 	}
     }
     return TRUE;
 } /* key_release_event */
+
 
 static gint
 motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
@@ -1185,12 +1192,12 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	}
 	case ZOOM_OUTLINE: {
 	    if (screen.last_x || screen.last_y)
-		draw_zoom_outline(event->state & GDK_CONTROL_MASK);
+		draw_zoom_outline(screen.centered_outline_zoom);
 
 	    screen.last_x = x;
 	    screen.last_y = y;
 
-	    draw_zoom_outline(event->state & GDK_CONTROL_MASK);
+	    draw_zoom_outline(screen.centered_outline_zoom);
 	    break;
 	}
 	case MEASURE: {
@@ -1264,12 +1271,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
      * Draw Zooming outline if we are in that mode
      */
     if (screen.state == ZOOM_OUTLINE) {
-	GdkModifierType state;
-	gint dummy1, dummy2;
-
-	gdk_window_get_pointer(screen.drawing_area->window, &dummy1, &dummy2,
-			       &state);
-	draw_zoom_outline(state & GDK_CONTROL_MASK);
+	draw_zoom_outline(screen.centered_outline_zoom);
     } else if (screen.state == MEASURE) {
 	draw_measure_distance();
     }

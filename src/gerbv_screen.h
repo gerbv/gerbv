@@ -60,6 +60,7 @@ typedef struct {
     GtkWidget *popup_menu;
 
     gerbv_state_t state;
+    gboolean centered_outline_zoom;
 
     int scale;
 
