@@ -2427,6 +2427,7 @@ int longopt_idx = 0;
 static struct option longopts[] = {
     /* name              has_arg            flag  val */
     {"version",          no_argument,       NULL,    'V'},
+    {"help",             no_argument,       NULL,    'h'},
     {"batch",            required_argument, NULL,    'b'},
     {"log",              required_argument, NULL,    'l'},
     {"tools",            required_argument, NULL,    't'},
@@ -2481,6 +2482,7 @@ main(int argc, char *argv[])
     int       i;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
     char      *rest, *project_filename = NULL;
+    static const char *opt_options = "Vhl:t:p:";
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
@@ -2493,10 +2495,10 @@ main(int argc, char *argv[])
     setup_init();
 	
 #ifdef HAVE_GETOPT_LONG
-    while ((read_opt = getopt_long(argc, argv, "Vl:p:", 
+    while ((read_opt = getopt_long(argc, argv, opt_options, 
 				   longopts, &longopt_idx)) != -1) {
 #else
-    while ((read_opt = getopt(argc, argv, "Vl:p:")) != -1) {
+    while ((read_opt = getopt(argc, argv, opt_options)) != -1) {
 #endif /* HAVE_GETOPT_LONG */
 	switch (read_opt) {
 #ifdef HAVE_GETOPT_LONG
@@ -2562,12 +2564,14 @@ main(int argc, char *argv[])
             }
 	    break;
 	case '?':
-
+	case 'h':
 	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
 	    fprintf(stderr, "where FLAGS could be any of\n");
 	    fprintf(stderr, "  --version|-V : Prints version of gerbv\n");
+	    fprintf(stderr, "  --help|-h : Prints this help message\n");
 	    fprintf(stderr, "  --log=<logfile>|-l <logfile> : Send error messages to <logfile>\n");
-	    fprintf(stderr, "  --tools=<ToolFile.drl> : Read Excellon tools from this file.\n");
+	    fprintf(stderr, "  --project=<prjfile>|-p <prjfile> : Load project file <prjfile>\n");
+	    fprintf(stderr, "  --tools=<toolfile>|-t <toolfile> : Read Excellon tools from file <toolfile>\n");
 	    exit(1);
 	    break;
 	default :
