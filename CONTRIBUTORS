@@ -31,5 +31,6 @@ Neil Darlow <neil@darlow.co.uk>
  - Reporting arc draw bug and sending along examples to show the bug.
 
 Dino Ghilardi <dino.ghilardi@ieee.org>
- - Pointed out that an 'oval' is different from a geometrical ellypse).
+ - Pointed out that an 'oval' is different from a geometrical ellypse.
  - Some other feature requests.
+ - Contributed export PNG functionality!

@@ -25,6 +25,9 @@
 /* Batch support */
 #undef GUILE_IN_USE
 
+/* Support for export of PNG's */
+#undef EXPORT_PNG
+
 /* Header files */
 #undef HAVE_UNISTD_H
 #undef HAVE_GETOPT_H

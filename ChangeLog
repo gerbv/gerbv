@@ -1,3 +1,12 @@
+2002-05-18  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, acconfig.h, src/Makefile.am, src/gerbv.c,
+	  src/gerbv_screen.h, src/exportimage.[hc], CONTRIBUTORS: 
+	  Added "export image to PNG" contributed by Dino Ghilardi.
+	  Thanks! Currently not default, use --enable-exportpng when
+	  running configure.
+	
+
 2002-05-17  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c, src/gerbv_screen.h: Split out the global

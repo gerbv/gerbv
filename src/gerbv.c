@@ -54,6 +54,9 @@
 #include "draw.h"
 #include "color.h"
 #include "gerbv_screen.h"
+#ifdef EXPORT_PNG
+#include "exportimage.h"
+#endif /* EXPORT_PNG */
 
 #ifndef err
 #define err(errcode, a...) \
@@ -80,6 +83,9 @@ gerbv_screen_t screen;
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void color_selection_popup(GtkWidget *widget, gpointer data);
 static void load_file_popup(GtkWidget *widget, gpointer data);
+#ifdef EXPORT_PNG
+static void export_png_popup(GtkWidget *widget, gpointer data);
+#endif /* EXPORT_PNG */
 static void unload_file(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
@@ -105,17 +111,18 @@ destroy(GtkWidget *widget, gpointer data)
 
 
 static GtkItemFactoryEntry menu_items[] = {
-    {"/_File",      NULL,          NULL,    0, "<Branch>"},
-    /* Space for project file handling
-    {"/File/Open _File...", "<alt>F", load_file_popup,    0, NULL},
-    {"/File/sep1",  NULL,          NULL,    0, "<Separator>"},
-    */
-    {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
-    {"/_Zoom",      NULL,          NULL,    0, "<Branch>"},
-    {"/Zoom/_Out",  "<alt>O", menu_zoom     ,    ZOOM_OUT, NULL},
-    {"/Zoom/_In",   "<alt>I", menu_zoom     ,    ZOOM_IN, NULL},
-    {"/Zoom/sep1",  NULL,          NULL,    0, "<Separator>"},
-    {"/Zoom/_Fit",  NULL,     menu_zoom     ,    ZOOM_FIT, NULL},
+    {"/_File",               NULL,     NULL,             0, "<Branch>"},
+#ifdef EXPORT_PNG
+    {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
+    {"/File/_Export/PNG...", NULL,     export_png_popup, 0, NULL},
+    {"/File/sep2",           NULL,     NULL,             0, "<Separator>"},
+#endif /* EXPORT_PNG */
+    {"/File/_Quit",          "<alt>Q", destroy,          0, NULL},
+    {"/_Zoom",               NULL,     NULL,             0, "<Branch>"},
+    {"/Zoom/_Out",           "<alt>O", menu_zoom,        ZOOM_OUT, NULL},
+    {"/Zoom/_In",            "<alt>I", menu_zoom,        ZOOM_IN, NULL},
+    {"/Zoom/sep1",           NULL,     NULL,             0,  "<Separator>"},
+    {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
@@ -406,6 +413,70 @@ load_file_popup(GtkWidget *widget, gpointer data)
     return;
 } /* load_file_popup */
 
+
+#ifdef EXPORT_PNG
+static void
+cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
+{
+    char *filename;
+    gboolean result;
+
+    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+
+    /* Export PNG */
+    result = png_export(screen.pixmap, filename);
+    if (!result) {
+	fprintf(stderr, "Failed to save PNG at %s\n", filename);
+    }
+
+    /*
+     * Remember where we loaded file from last time
+     */
+    filename = dirname(filename);
+    if (screen.path)
+	free(screen.path);
+    screen.path = (char *)malloc(strlen(filename) + 1);
+    strcpy(screen.path, filename);
+    screen.path = strncat(screen.path, "/", 1);
+   
+    gtk_grab_remove(screen.export_png_popup);
+    
+    screen.export_png_popup = NULL;
+
+    return;
+} /* cb_ok_export_png */
+
+
+static void
+export_png_popup(GtkWidget *widget, gpointer data)
+{
+    screen.export_png_popup = gtk_file_selection_new("Save PNG filename");
+
+    if (screen.path)
+	gtk_file_selection_set_filename
+	    (GTK_FILE_SELECTION(screen.export_png_popup), screen.path);
+
+    gtk_signal_connect
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.export_png_popup)->ok_button),
+	 "clicked", GTK_SIGNAL_FUNC(cb_ok_export_png), 
+	 (gpointer)screen.export_png_popup);
+    gtk_signal_connect_object
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.export_png_popup)->ok_button),
+	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+	 (gpointer)screen.export_png_popup);
+    gtk_signal_connect_object
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.export_png_popup)->cancel_button),
+	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+	 (gpointer)screen.export_png_popup);
+    
+    gtk_widget_show(screen.export_png_popup);
+
+    gtk_grab_add(screen.export_png_popup);
+    
+    return;
+} /* export_png_popup */
+
+#endif /* EXPORT_PNG */
 
 static void
 unload_file(GtkWidget *widget, gpointer data)
@@ -1079,6 +1150,8 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 	gdk_window_raise(screen.load_file_popup->window);
     if (screen.color_selection_popup && screen.color_selection_popup->window)
 	gdk_window_raise(screen.color_selection_popup->window);
+    if (screen.export_png_popup && screen.export_png_popup->window)
+	gdk_window_raise(screen.export_png_popup->window);
 
     return FALSE;
 } /* expose_event */
