@@ -37,7 +37,8 @@ static void drill_parse_G_code(FILE *fd, drill_state_t *state, drill_format_t *f
 static int drill_parse_M_code(FILE *fd, drill_image_t *image);
 static int drill_parse_T_code(FILE *fd, drill_state_t *state, drill_image_t *image);
 static void drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state);
-
+static drill_image_t *new_image(drill_image_t *image);
+static drill_state_t *new_state(drill_state_t *state);
 /* static void parse_drill(FILE *fd, drill_state_t *state, drill_image_t *image); */
 static int read_int(FILE *fd);
 static double read_double(FILE *fd);
@@ -53,35 +54,14 @@ parse_drillfile(FILE *fd)
     char read;
     double x_scale, y_scale;
 
-    state = (drill_state_t *)malloc(sizeof(drill_state_t));
+    state = new_state(state);
     if (state == NULL)
 	err(1, "malloc state failed\n");
-    bzero((void *)state, sizeof(drill_state_t));
 
-    image = (drill_image_t *)malloc(sizeof(drill_image_t));
+    image = new_image(image);
     if (image == NULL)
 	err(1, "malloc image failed\n");
-    bzero((void *)image, sizeof(drill_image_t));
-
-    image->holes = (drill_hole_t *)malloc(sizeof(drill_hole_t));
-    if (image->holes == NULL)
-	err(1, "malloc image->hole failed\n");
-    bzero((void *)image->holes, sizeof(drill_hole_t));
     curr_hole = image->holes;
-
-    image->info = (drill_image_info_t *)malloc(sizeof(drill_image_info_t));
-    if (image->info == NULL)
-	err(1, "malloc image->info failed\n");
-    bzero((void *)image->info, sizeof(drill_image_info_t));
-    image->info->min_x = HUGE_VAL;
-    image->info->min_y = HUGE_VAL;
-    image->info->max_x = -HUGE_VAL;
-    image->info->max_y = -HUGE_VAL;
-
-    image->format = (drill_format_t *)malloc(sizeof(drill_format_t));
-    if (image->format == NULL)
-	err(1, "malloc image->format failed\n");
-    bzero((void *)image->format, sizeof(drill_format_t));
 
     while ((read = (char)fgetc(fd)) != EOF) {
 	
@@ -120,10 +100,6 @@ parse_drillfile(FILE *fd)
 	    /* Hole coordinate found. Do some parsing */
 	    drill_parse_coordinate(fd, read, state);
 
-	    curr_hole->next = (drill_hole_t *)malloc(sizeof(drill_hole_t));
-	    curr_hole = curr_hole->next;
-	    bzero((void *)curr_hole, sizeof(drill_hole_t));
-
 /*	    if (image && image->format ){
 		x_scale = pow(10.0, (double)image->format->x_dec);
 		y_scale = pow(10.0, (double)image->format->y_dec);
@@ -146,6 +122,10 @@ parse_drillfile(FILE *fd)
 		image->info->max_x = curr_hole->x;
 	    if (image->info->max_y < curr_hole->x)
 		image->info->max_y = curr_hole->y;
+
+	    curr_hole->next = (drill_hole_t *)malloc(sizeof(drill_hole_t));
+	    curr_hole = curr_hole->next;
+	    bzero((void *)curr_hole, sizeof(drill_hole_t));
 
 	    break;
 
@@ -192,14 +172,12 @@ free_drill_image(drill_image_t *image)
     /*
      * Free format
      */
-    if(image->format != NULL)
-	free(image->format);
+    free(image->format);
 
     /*
      * Free info
      */
-    if(image->info != NULL)
-	free(image->info);
+    free(image->info);
 
     /*
      * Free holelist
@@ -210,8 +188,7 @@ free_drill_image(drill_image_t *image)
     /*
      * Free and reset the final image
      */
-    if(image != NULL)
-	free(image);
+    free(image);
     image = NULL;
 
     return;
@@ -400,7 +377,7 @@ drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state)
 } /* drill_parse_coordinate */
 
 
-#if 0
+#if 0 /* This second stage probably isn't needed with NC drill files */
 static void 
 parse_drill(FILE *fd, drill_state_t *state, drill_image_t *image)
 {
@@ -537,6 +514,55 @@ parse_drill(FILE *fd, drill_state_t *state, drill_image_t *image)
     return;
 } /* parse_drill */
 #endif
+
+
+static drill_image_t *new_image(drill_image_t *image)
+{
+    image = (drill_image_t *)malloc(sizeof(drill_image_t));
+    if (image != NULL) {
+	
+	bzero((void *)image, sizeof(drill_image_t));
+
+	image->holes = (drill_hole_t *)malloc(sizeof(drill_hole_t));
+	if (image->holes != NULL) {
+	    
+	    bzero((void *)image->holes, sizeof(drill_hole_t));
+
+	    image->info = (drill_image_info_t *)malloc(sizeof(drill_image_info_t));
+	    if (image->info != NULL) {
+		bzero((void *)image->info, sizeof(drill_image_info_t));
+		image->info->min_x = HUGE_VAL;
+		image->info->min_y = HUGE_VAL;
+		image->info->max_x = -HUGE_VAL;
+		image->info->max_y = -HUGE_VAL;
+		
+		image->format = (drill_format_t *)malloc(sizeof(drill_format_t));
+		if (image->format != NULL) {
+		    bzero((void *)image->format, sizeof(drill_format_t));
+		    return image;
+		}
+		free(image->info);
+		image->info = NULL;
+	    }
+	    free(image->holes);
+	    image->holes = NULL;
+	}
+	free(image);
+	image = NULL;
+    }
+    
+    return image;
+} /* new_image */
+
+static drill_state_t *new_state(drill_state_t *state)
+{
+    state = (drill_state_t *)malloc(sizeof(drill_state_t));
+    if (state != NULL) {
+	/* Init structure */
+	bzero((void *)state, sizeof(drill_state_t));
+    }
+    return state;
+} /* new_state */
 
 /* This is a special read_int used in this file only.
    Do not let it pollute the namespace by defining it in the .h-file */
