@@ -1,5 +1,11 @@
 2002-04-03 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/gerber.c, src/gerber.h: Fixed some numerical
+	  constants in verify code.
+	
+
+2002-04-03 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/gerbv.c: Added color selection on layers.
 	* TODO: Added zooming and gerber layers.
 

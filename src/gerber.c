@@ -82,7 +82,7 @@ parse_gerb(gerb_file_t *fd)
     char read;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
-    int error = 0;
+    enum gerb_verify_error error = 0;
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
@@ -111,16 +111,16 @@ parse_gerb(gerb_file_t *fd)
 		/*
 		 * Do error check before returning image
 		 */
-		error = check_gerb(image);
+		error = verify_gerb(image);
 		if (error) {
 		    fprintf(stderr, "Parse error : ");
-		    if (error & 1)
+		    if (error & MISSING_NETLIST)
 			fprintf(stderr, "Missing netlist ");
-		    if (error & 2)
+		    if (error & MISSING_FORMAT)
 			fprintf(stderr, "Missing format ");
-		    if (error & 4) 
+		    if (error & MISSING_APERTURES) 
 			fprintf(stderr, "Missing apertures ");
-		    if (error & 8)
+		    if (error & MISSING_INFO)
 			fprintf(stderr, "Missing info ");
 		    fprintf(stderr, "\n");
 		}
@@ -213,6 +213,9 @@ parse_gerb(gerb_file_t *fd)
 #else
 	    curr_net->interpolation = state->interpolation;
 #endif
+	    /*
+	     * Handle Polygon Area Fill (G36, G37)
+	     */
 	    switch (state->interpolation) {
 	    case PAREA_START :
 		state->interpolation = PAREA_FILL;
@@ -274,18 +277,18 @@ parse_gerb(gerb_file_t *fd)
  * 8: Missing info
  * It could be any of above or'ed together
  */
-int 
-check_gerb(gerb_image_t *image)
+enum gerb_verify_error
+verify_gerb(gerb_image_t *image)
 {
-    int error = 0;
+    enum gerb_verify_error error = 0;
     int i;
 
-    if (image->netlist == NULL) error |= 1;
-    if (image->format == NULL)  error |= 2;
-    if (image->info == NULL)    error |= 8;
+    if (image->netlist == NULL) error |= MISSING_NETLIST;
+    if (image->format == NULL)  error |= MISSING_FORMAT;
+    if (image->info == NULL)    error |= MISSING_INFO;
 
     for (i = 0; i < APERTURE_MAX && image->aperture[i] == NULL; i++);
-    if (i == APERTURE_MAX) error |= 4;
+    if (i == APERTURE_MAX) error |= MISSING_APERTURES;
     
     return error;
 }

@@ -50,7 +50,12 @@ gerb_image_t *parse_gerb(gerb_file_t *fd);
  * 8: Missing info
  * It could be any of above or'ed together
  */
-int check_gerb(gerb_image_t *image);
+enum gerb_verify_error { MISSING_NETLIST = 1,
+			 MISSING_FORMAT = 2, 
+			 MISSING_APERTURES = 4,
+			 MISSING_INFO = 8 };
+
+enum gerb_verify_error verify_gerb(gerb_image_t *image);
 
 
 #ifdef __cplusplus
