@@ -2414,12 +2414,15 @@ draw_zoom_outline(gboolean centered)
 static void
 draw_measure_distance(void)
 {
+#if !defined (__MINGW32__) 
+
     GdkGC *gc;
     GdkGCValues values;
     GdkGCValuesMask values_mask;
+    GdkFont *font;
+#endif   
     gint x1, y1, x2, y2;
     double delta, dx, dy;
-    GdkFont *font;
 
     if (screen.state != MEASURE)
 	return;
@@ -2488,8 +2491,8 @@ draw_measure_distance(void)
 	}
 	update_statusbar(&screen);
 
-    }
 #if !defined (__MINGW32__)
+    }
     gdk_gc_unref(gc);
 #endif     
 } /* draw_measure_distance */

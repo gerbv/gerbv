@@ -111,13 +111,17 @@ cb_ok_load_pnp_file(GtkWidget *widget, GtkFileSelection *fs)
         filename = dirname(filename);
 #endif
             /*CHECK ME:do we need the following lines?, screen.path should be based on the gerberfiles*/
+#if 0
         if (screen.path) 
 	        free(screen.path);
            
         screen.path = (char *)malloc(strlen(filename) + 1);
         strcpy(screen.path, filename);
         screen.path = strncat(screen.path, "/", 1);
+        //commented out because screen.path will be decided based on gerberfiles!
+#endif         
     }
+    
     gtk_grab_remove(screen.win.load_file);
     gtk_widget_destroy(screen.win.load_file);
     screen.win.load_file = NULL;
