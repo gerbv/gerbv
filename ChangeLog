@@ -1,2 +1,11 @@
-Not in use until the whole repository is transferred to Sourceforge.net
+2001-08-31 Stefan Petersen (spe@stacken.kth.se)
+
+	* Splitted AUTHORS to AUTHORS and CONTRIBUTORS
+	* src/gerb-ps.scm: removed 
+	* build_release uses anonymous cvs from sourceforge
+	  to build the release.
+	* src/scm_gerber.c, src/gerbv.c:
+	  Now the scheme backend receives the name of the parsed file
+	* scheme/gerb-ps.scm: Utilizes the above feature by creating output
+	  filename by prepending input filename with ".ps"
 	
