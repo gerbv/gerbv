@@ -860,8 +860,10 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
     /*
      * Make sure it's always positive angles
      */
-    if (net->cirseg->angle1 < 0) 
+    if (net->cirseg->angle1 < 0) {
 	net->cirseg->angle1 = 360 + net->cirseg->angle1;
+	net->cirseg->angle2 = 360 + net->cirseg->angle2;
+    }
 
     if (net->cirseg->angle2 < 0) 
 	net->cirseg->angle2 = 360 + net->cirseg->angle2;
