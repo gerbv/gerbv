@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -91,8 +92,8 @@ typedef struct gerbv_screen {
     gint last_x;
     gint last_y;
 
-    double trans_x; /* Translate offset */
-    double trans_y;
+    int trans_x; /* Translate offset */
+    int trans_y;
 } gerbv_screen_t;
 
 gerbv_screen_t screen;
@@ -251,15 +252,15 @@ zoom(GtkWidget *widget, gpointer data)
 	if (screen.scale > 10) {
 	    /* The translation vaules are crap.
 	       This _must_ be done in a better way. */
-	    screen.trans_x += 25.4;
-	    screen.trans_y -= 19.05; /* 25.4 * 3/4 */
+	    screen.trans_x += 25;
+	    screen.trans_y -= 19; /* 25.4 * 3/4 */
 	    screen.scale -= 10;
 	}
 
 	break;
     case 1 : /* Zoom Out */
-	screen.trans_x -= 25.4;
-	screen.trans_y += 19.05; /* 25.4 * 3/4 */
+	screen.trans_x -= 25;
+	screen.trans_y += 19; /* 25.4 * 3/4 */
 	screen.scale += 10;
 	break;
     case 2 : /* Clear All */
@@ -296,26 +297,41 @@ redraw_pixmap(GtkWidget *widget)
     int i;
     int background_polarity = POSITIVE;
     int last_negative = 0;
+    int max_width = 0, max_height = 0;
     GdkGC *gc = gdk_gc_new(widget->window);
+    GdkRectangle update_rect;
 
     /* Called first when opening window and then when resizing window */
-    if (screen.pixmap)
-	gdk_pixmap_unref(screen.pixmap);
-    
-    screen.pixmap = gdk_pixmap_new(widget->window,
-				   widget->allocation.width,
-				   widget->allocation.height,
-				   -1);
 
-    /* Find out if any layer is negative and what the last negative layer is */
+
     for(i = 0; i < MAX_FILES; i++) {
-	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
-	    screen.file[i] &&
-	    screen.file[i]->image->info->polarity == NEGATIVE) {
-	    last_negative = i;
-	    background_polarity = NEGATIVE;
+	if (screen.file[i]) {
+
+	    /* 
+	     * Find the biggest image and use as a size reference
+	     */
+	    int width, height;
+	    width = (int)ceil(screen.file[i]->image->info->max_x * 
+			       (double)screen.scale);
+	    height = (int)ceil(screen.file[i]->image->info->max_y * 
+				(double)screen.scale);
+	    if (width > max_width) max_width = width;
+	    if (height > max_height) max_height = height;
+
+	    /* 
+	     * Find out if any active layer is negative and 
+	     * what the last negative layer is 
+	     */
+	    if (screen.file[i]->image->info->polarity == NEGATIVE &&
+		GTK_TOGGLE_BUTTON(screen.layer_button[i])->active) {
+		last_negative = i;
+		background_polarity = NEGATIVE;
+	    }
 	}
     }
+
+    if ((max_width == 0) && (max_height == 0)) 
+	return FALSE;
 
     if (background_polarity == NEGATIVE) {
 	/* Set background to normal color for the last negative layer */
@@ -325,33 +341,37 @@ redraw_pixmap(GtkWidget *widget)
 	gdk_gc_set_foreground(gc, screen.background);
     }
 
-    gdk_draw_rectangle(screen.pixmap,
-		       gc,
-		       TRUE,
-		       0, 0,
-		       widget->allocation.width,
-		       widget->allocation.height);
+
+    /* 
+     * Remove old pixmap, allocate a new one and draw the background
+     */
+    if (screen.pixmap) 
+	gdk_pixmap_unref(screen.pixmap);
+    screen.pixmap = gdk_pixmap_new(widget->window, max_width, max_height,  -1);
+    gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, max_width, max_height);
     
     /* This now allows drawing several layers on top of each other.
        Higher layer numbers have higher priority in the Z-order. */
     for(i = 0; i < MAX_FILES; i++) {
 	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
 	    screen.file[i]) {
-
 	    image2pixmap(&screen.pixmap, screen.file[i]->image, 
-			 screen.scale, screen.trans_x, screen.trans_y,
+			 screen.scale, 
+			 0, max_height,
 			 screen.file[i]->image->info->polarity,
 			 screen.file[i]->color,
 			 screen.background, screen.err_color);
 	}
     }
 
-    gdk_draw_pixmap(widget->window,
-		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-		    screen.pixmap,
-		    0, 0,
-		    0, 0,
-		    widget->allocation.width, widget->allocation.height);
+    update_rect.x = 0, update_rect.y = 0;
+    update_rect.width =	widget->allocation.width;
+    update_rect.height = widget->allocation.height;
+
+    /*
+     * Calls expose_event
+     */
+    gtk_widget_draw(widget, &update_rect);
 
     return TRUE;
 } /* redraw_pixmap */
@@ -422,7 +442,8 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
     switch (event->button) {
     case 1 :
 	screen.state = MOVE;
-	screen.last_x = event->x, screen.last_y = event->y;
+	screen.last_x = widget->allocation.height - event->x;
+	screen.last_y = widget->allocation.width  - event->y;
 	break;
     case 2 :
 	/* And now, some Veribest-like mouse commands for
@@ -466,6 +487,7 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 {
     int x, y;
     GdkModifierType state;
+    GdkRectangle update_rect;
     
     if (event->is_hint)
 	gdk_window_get_pointer (event->window, &x, &y, &state);
@@ -475,13 +497,26 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	state = event->state;
     }
     
+    x = widget->allocation.height - x;
+    y = widget->allocation.width - y;
+
     if (screen.state == MOVE && screen.pixmap != NULL) {
 	if (screen.last_x != 0 || screen.last_y != 0) {
 	    screen.trans_x = screen.trans_x + x - screen.last_x;
 	    screen.trans_y = screen.trans_y + y - screen.last_y;
 	}
-	screen.last_x = x, screen.last_y = y;
-	redraw_pixmap(widget);
+	screen.last_x = x;
+	screen.last_y = y;
+
+	update_rect.x = 0, update_rect.y = 0;
+	update_rect.width  = widget->allocation.width;
+	update_rect.height = widget->allocation.height;
+	
+	/*
+	 * Calls expose_event
+	 */
+	gtk_widget_draw(widget, &update_rect);
+
     }
     
     return TRUE;
@@ -492,13 +527,49 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 static gint
 expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
-    gdk_draw_pixmap(widget->window,
+
+    GdkPixmap *new_pixmap;
+    GdkGC *gc = gdk_gc_new(widget->window);
+
+    /*
+     * Create a pixmap with default background
+     */
+    new_pixmap = gdk_pixmap_new(widget->window,
+				widget->allocation.width,
+				widget->allocation.height,
+				-1);
+
+    gdk_gc_set_foreground(gc, screen.background);
+
+    gdk_draw_rectangle(new_pixmap, gc, TRUE, 
+		       event->area.x, event->area.y,
+		       event->area.width, event->area.height);
+    
+    /*
+     * Copy gerber pixmap onto background.
+     * Do translation at the same time.
+     */
+    gdk_draw_pixmap(new_pixmap,
 		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
 		    screen.pixmap,
-		    event->area.x, event->area.y,
+		    screen.trans_x +  event->area.x, 
+		    screen.trans_y +  event->area.y,
+		    0,0,
+		    event->area.width, event->area.height);
+
+    /*
+     * Draw the whole thing onto screen
+     */
+    gdk_draw_pixmap(widget->window,
+		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+		    new_pixmap,
+		    0, 0,
 		    event->area.x, event->area.y,
 		    event->area.width, event->area.height);
-    
+
+    gdk_pixmap_unref(new_pixmap);
+    gdk_gc_unref(gc);
+
     return FALSE;
 } /* expose_event */
 
@@ -707,7 +778,7 @@ internal_main(int argc, char *argv[])
      * Translation values set so that 0,0 is in the bottom left corner
      */
     screen.trans_x = 0;
-    screen.trans_y = height;
+    screen.trans_y = 0;
 
     /*
      * Setup some GTK+ defaults
