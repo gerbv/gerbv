@@ -701,7 +701,7 @@ autoscale()
     }
 
     /* Initialize clipping bbox to contain entire image */
-    screen.clip_bbox.x1 = screen.trans_x/(double)screen.scale;
+    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
     screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;
     screen.clip_bbox.x2 = screen.gerber_bbox.x2-screen.gerber_bbox.x1;
     screen.clip_bbox.y2 = screen.gerber_bbox.y2-screen.gerber_bbox.y1;

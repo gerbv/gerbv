@@ -1,3 +1,8 @@
+2002-10-28  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (autoscale): Wrong sign on clip_bbox.x1 from
+	  trans_x. Now even nollezappare is centered correctly.
+
 2002-10-27  Stefan Petersen  <spe@>
 
 	* src/draw_amacro.c: Reset the stack pointer after each primitive
