@@ -50,6 +50,7 @@
 #include "scm_gerber.h"
 #endif
 #include "draw.h"
+#include "color.h"
 
 
 #define INITIAL_SCALE 200
@@ -64,11 +65,6 @@
 #endif
 
 enum gerbv_state_t {NORMAL, MOVE};
-
-typedef struct gerbv_color {
-    char *name;
-    GdkColor *color;
-} gerbv_color_t;
 
 static gerbv_color_t colors [] = {
     {"grey50", NULL},
@@ -179,27 +175,6 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
 	/* Finally, return the actual menu bar created by the item factory. */
 	*menubar = gtk_item_factory_get_widget(item_factory, "<main>");
 } /* create_menubar */
-
-
-static void
-alloc_colors(void)
-{
-    int nuf_colors = sizeof(colors)/sizeof(colors[0]);
-    int i;
-    GdkColormap *colormap = gdk_colormap_get_system();
-    
-    for (i = 0; i < nuf_colors; i++) {
-	colors[i].color = (struct _GdkColor *)malloc(sizeof(struct _GdkColor));
-	gdk_color_parse(colors[i].name, colors[i].color);
-	gdk_colormap_alloc_color(colormap, colors[i].color, FALSE, TRUE);
-    }
-    
-    background.color = (struct _GdkColor *)malloc(sizeof(struct _GdkColor));
-    gdk_color_parse(background.name, background.color);
-    gdk_colormap_alloc_color(colormap, background.color, FALSE, TRUE);
-    
-    return;
-} /* alloc_colors */
 
 
 static void
@@ -717,7 +692,7 @@ internal_main(int argc, char *argv[])
      * Setup some GTK+ defaults
      */
     screen.tooltips = gtk_tooltips_new();        
-    alloc_colors();
+    alloc_colors(colors, sizeof(colors)/sizeof(colors[0]), &background);
     
     /*
      * Main window 
