@@ -74,3 +74,7 @@ Tomasz Motylewski
 Dimitri
  - Patch, complete with updated man page, to be able to read tools file from 
    for instance Eagle CAD.
+
+Stefan Thiede
+ - Found some ugly bugs in the polygon area.
+ - Suggested use of z, Z and f.
