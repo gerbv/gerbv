@@ -140,10 +140,12 @@ define_layer(scheme *sc, pointer args)
 	    get_color(sc, value, plist_top->rgb);
 	} else if (strcmp(sc->vptr->symname(name), "filename") == 0) {
             plist_top->filename = strdup(get_value_string(sc, value));
+#ifdef USE_GTK2            
             plist_top->is_pnp = 0;
     } else if (strcmp(sc->vptr->symname(name), "pick_and_place") == 0) {
-	    plist_top->filename = strdup(get_value_string(sc, value));
+	        plist_top->filename = strdup(get_value_string(sc, value));
             plist_top->is_pnp = 1;
+#endif            
   	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
 	    if (value ==  sc->F) {
 		plist_top->inverted = 0;
@@ -252,9 +254,11 @@ write_project_file(char *filename, project_list_t *project)
     }
     while (p) {
 	fprintf(fd, "(define-layer! %d ", p->layerno);
+#ifdef USE_GTK2    
         if ((interface.pnp_filename != NULL) && (strncmp(p->filename, interface.pnp_filename, strlen(interface.pnp_filename)) == 0)) 
     	    fprintf(fd, "(cons 'pick_and_place \"%s\")", p->filename);
         else
+#endif        
             fprintf(fd, "(cons 'filename \"%s\")", p->filename);    
 	if (p->inverted)
 	    fprintf(fd, "(cons 'inverted #t)");

@@ -838,10 +838,12 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 		    memset(tmp, 0, sizeof(project_list_t));
 		    tmp->next = project_list;
 		    tmp->layerno = idx;
+#ifdef USE_GTK2            
             if ((screen.file[idx]->name == NULL) && (pnp_file_in_project_list == 0) && (interface.pnp_filename != NULL)) {
                 tmp->filename = interface.pnp_filename;
                 pnp_file_in_project_list = 1;
             } else
+#endif            
     		    tmp->filename = screen.file[idx]->name;
 		    tmp->rgb[0] = screen.file[idx]->color->red;
 		    tmp->rgb[1] = screen.file[idx]->color->green;
@@ -1034,7 +1036,9 @@ load_project(project_list_t *project_list)
 {
     project_list_t *pl_tmp;
     GtkStyle       *defstyle, *newstyle;
+#ifdef USE_GTK2    
     GtkTreeIter     iter;
+#endif
      
     while (project_list) {
 	if (project_list->layerno == -1) {
@@ -1043,6 +1047,7 @@ load_project(project_list_t *project_list)
 					    project_list->rgb[2], NULL);
 	} else {
 	    int  idx =  project_list->layerno;
+#ifdef USE_GTK2        
         char project_pnp_layer[MAXL] = "";
         
         if (project_list->is_pnp) {
@@ -1059,12 +1064,15 @@ load_project(project_list_t *project_list)
             click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);   
             create_marked_layer(idx);
     	} else {
+#endif        
             if (open_image(project_list->filename, idx, FALSE) == -1) {
                 GERB_MESSAGE("could not read %s[%d]", project_list->filename,
                     idx);
                 goto next_layer;
             }
+#ifdef USE_GTK2            
         }    
+#endif        
 	    /* 
 	     * Change color from default to from the project list
 	     */
@@ -1338,10 +1346,12 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
     double us_x1, us_y1, us_x2, us_y2;
     int half_w, half_h;		/* cache for half window dimensions */
+#ifdef USE_GTK2    
     gchar *designator;
     GList *tmp_list, *tmp_path;
     GtkTreeIter iter;
     double mid_x, mid_y, length, width;
+#endif    
 
     
     half_w = screen.drawing_area->allocation.width / 2;
@@ -1355,7 +1365,9 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     dy = y2-y1;
 
     if (dx < 4 && dy < 4) {
-//	GERB_MESSAGE("Warning: Zoom area too small, bailing out!\n");//we should modify statusbar for a nice display of the part     
+#ifndef     USE_GTK2
+	GERB_MESSAGE("Warning: Zoom area too small, bailing out!\n");
+#else    
     tmp_list = gtk_tree_selection_get_selected_rows
                                             (GTK_TREE_SELECTION(interface.selection),
                                              (GtkTreeModel **)&interface.model);//item must be in the active selection list 
@@ -1368,7 +1380,7 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
         gtk_tree_model_get              (GTK_TREE_MODEL(interface.model),
                                          &iter,
                                          COLUMN_DESIGNATOR, &designator, COLUMN_mid_x, &mid_x, COLUMN_mid_y, &mid_y, COLUMN_width, &width, COLUMN_length, &length,  -1);                                  
-            if (((event->x <= mid_x + width*3) || (event->x >= mid_x - width*3)) && ((event->y <= mid_y + length*3) || (event->y >= mid_y - length*3))) {
+            if (((event->x <= (mid_x + width*3)) || (event->x >= (mid_x - width*3))) && ((event->y <= (mid_y + length*3)) || (event->y >= (mid_y - length*3)))) {
                 //pointer must be in range  
                 
                 if ( ! g_utf8_validate(designator, -1, NULL)) {
@@ -1383,7 +1395,7 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
                     sprintf (designator, "%.*s", sizeof(designator)-1, str);
                     g_free(str);
                 }     
-                snprintf(screen.statusbar.msgstr, MAX_ERRMSGLEN,
+                snprintf(screen.statusbar.diststr, MAX_DISTLEN,
 		             "Part: %s", designator);
                 GERB_MESSAGE("The part you have selected is: %s\n", designator);
 
@@ -1391,6 +1403,7 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
         } while ((tmp_path = g_list_next(tmp_list)) != NULL);
 	}
 	update_statusbar(&screen);
+#endif    
 	goto zoom_outline_end;
     }
 

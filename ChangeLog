@@ -1,3 +1,8 @@
+2004-08-28 Juergen Haas <juergenhaas@gmx.net>
+
+	*fixed GTK1 compilation issues
+
+
 2004-08-27 Juergen Haas <juergenhaas@gmx.net>
 
  	*fixed memory issues pnp_state 
