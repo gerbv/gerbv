@@ -58,6 +58,7 @@ typedef struct gerb_state {
     enum interpolation_t prev_interpolation;
     gerb_net_t *parea_start_node;
     char *curr_layername;
+    int in_parea_fill;
 } gerb_state_t;
 
 
@@ -152,9 +153,13 @@ parse_gerb(gerb_file_t *fd)
 	    if (state->changed == 0) break;
 	    state->changed = 0;
 
+	    /*
+	     * If no aperture is set we'll consider it an error, unless
+	     * we're in Polygon Area Fill business.
+	     */
 	    if ( (state->curr_aperture == 0) &&
 		 (state->interpolation != PAREA_START) &&
-		 (state->interpolation != PAREA_FILL) &&
+		 (!state->in_parea_fill) &&
 		 (state->interpolation != PAREA_END) ) break;
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
@@ -198,8 +203,25 @@ parse_gerb(gerb_file_t *fd)
 		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 		calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
 		break;
+	    case PAREA_START :
+		/* 
+		 * To be able to get back and fill in number of polygon corners
+		 */
+		state->parea_start_node = curr_net;
+		state->in_parea_fill = 1;
+		break;
+	    case PAREA_END :
+		state->parea_start_node = NULL;
+		state->in_parea_fill = 0;
+		break;
 	    default :
 	    }
+
+	    /* 
+	     * Count number of points in Polygon Area 
+	     */
+	    if (state->in_parea_fill && state->parea_start_node) 
+		state->parea_start_node->nuf_pcorners++;
 
 #ifdef EAGLECAD_KLUDGE
 	    if ( (state->delta_cp_x == 0.0) && (state->delta_cp_y == 0.0) &&
@@ -211,28 +233,9 @@ parse_gerb(gerb_file_t *fd)
 #else
 	    curr_net->interpolation = state->interpolation;
 #endif
-	    /*
-	     * Handle Polygon Area Fill (G36, G37)
-	     */
-	    switch (state->interpolation) {
-	    case PAREA_START :
-		/* 
-		 * To be able to get back and fill in number of polygon corners
-		 */
-		state->parea_start_node = curr_net;
-		state->interpolation = PAREA_FILL;
-		state->changed = 1;
-		break;
-	    case PAREA_FILL:
-		if (state->parea_start_node) 
-		    state->parea_start_node->nuf_pcorners++;
-		break;
-	    case PAREA_END :
+
+	    if (state->interpolation == PAREA_END)
 		state->interpolation = state->prev_interpolation;
-		state->parea_start_node = NULL;
-		break;
-	    default :
-	    }
 
 	    /*
 	     * Save layer polarity

@@ -150,6 +150,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	     enum polarity_t polarity)
 {
     GdkGC *gc = gdk_gc_new(*pixmap);
+    GdkGC *pgc = gdk_gc_new(*pixmap);
     struct gerb_net *net;
     gint x1, y1, x2, y2;
     int p1, p2;
@@ -157,6 +158,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     int cp_x = 0, cp_y = 0;
     GdkPoint *points = NULL;
     int curr_point_idx = 0;
+    int in_parea_fill = 0;
     GdkColor transparent, opaque;
 
 
@@ -165,6 +167,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	 * Destroy GCs before exiting
 	 */
 	gdk_gc_unref(gc);
+	gdk_gc_unref(pgc);
 	
 	return 0;
     }
@@ -226,21 +229,33 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	switch (net->interpolation) {
 	case PAREA_START :
 	    points = (GdkPoint *)malloc(sizeof(GdkPoint) *  net->nuf_pcorners);
+	    if (points == NULL) {
+		err(1, "Malloc failed\n");
+	    }
 	    memset(points, 0, sizeof(GdkPoint) *  net->nuf_pcorners);
 	    curr_point_idx = 0;
+	    in_parea_fill = 1;
 	    continue;
-	case PAREA_FILL :
+	case PAREA_END :
+	    gdk_gc_copy(pgc, gc); 
+	    gdk_gc_set_line_attributes(pgc, 1, 
+				       GDK_LINE_SOLID, 
+				       GDK_CAP_PROJECTING, 
+				       GDK_JOIN_MITER);
+	    gdk_draw_polygon(*pixmap, pgc, 1, points, curr_point_idx);
+	    free(points);
+	    points = NULL;
+	    in_parea_fill = 0;
+	    continue;
+	default :
+	    break;
+	}
+
+	if (in_parea_fill) {
 	    points[curr_point_idx].x = x2;
 	    points[curr_point_idx].y = y2;
 	    curr_point_idx++;
 	    continue;
-	case PAREA_END :
-	    gdk_draw_polygon(*pixmap, gc, 1, points, curr_point_idx);
-	    free(points);
-	    points = NULL;
-	    continue;
-	default :
-	    break;
 	}
 
 	if (image->aperture[net->aperture] == NULL) {
@@ -334,6 +349,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
      * Destroy GCs before exiting
      */
     gdk_gc_unref(gc);
+    gdk_gc_unref(pgc);
     
     return 1;
 

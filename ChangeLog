@@ -1,3 +1,16 @@
+2002-09-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/batch.c, src/draw.c, src/gerb_image.h, src/gerber.c:
+	  Polygon drawing got it's own gc (pgc) since we must have 
+	  our own outline pen size. Now we don't have to have an aperture
+	  defined to be able to draw polygon areas. Closes bug 602965.
+	* Removed PAREA_FILL as an interpolation. Has only PAREA_START
+	  and PAREA_END left so the application has to keep track if it's
+	  in polygon area fill or not by itself. PAREA_FILL was not a
+	  proper "interpolation", it is instead any of the other 
+	  interpolations. Closes bug 603146.
+
+
 2002-09-01  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.c: Polygon Area Fill could never have worked at
