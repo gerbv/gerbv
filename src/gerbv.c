@@ -2570,6 +2570,7 @@ main(int argc, char *argv[])
 	    break;
 	case '?':
 	case 'h':
+#ifdef HAVE_GETOPT_LONG
 	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
 	    fprintf(stderr, "where FLAGS could be any of\n");
 	    fprintf(stderr, "  --version|-V : Prints version of gerbv\n");
@@ -2579,6 +2580,17 @@ main(int argc, char *argv[])
 	    fprintf(stderr, "  --tools=<toolfile>|-t <toolfile> : Read Excellon tools from file <toolfile>\n");
 	    exit(1);
 	    break;
+#else
+	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
+	    fprintf(stderr, "where FLAGS could be any of\n");
+	    fprintf(stderr, "  -V : Prints version of gerbv\n");
+	    fprintf(stderr, "  -h : Prints this help message\n");
+	    fprintf(stderr, "  -l <logfile> : Send error messages to <logfile>\n");
+	    fprintf(stderr, "  -p <prjfile> : Load project file <prjfile>\n");
+	    fprintf(stderr, "  -t <toolfile> : Read Excellon tools from file <toolfile>\n");
+	    exit(1);
+	    break;
+#endif /* HAVE_GETOPT_LONG */
 	default :
 	    printf("Not handled option [%d=%c]\n", read_opt, read_opt);
 	}
