@@ -1,4 +1,4 @@
-.TH gerbv 1 "July 6th, 2002" Version @VERSION@
+.TH gerbv 1 "Aug 4th, 2002" Version @VERSION@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
@@ -24,7 +24,7 @@ short options are available.
 .BI -V
 Prints the version number of gerbv and exits.
 
-.SH USAGE
+.SH GENERAL
 When you start gerbv you can give the files to be loaded on the command line,
 either as each file separated with a space or by using wildcards.
 
@@ -40,6 +40,7 @@ show you the name of the file loaded on that layer.
 Currently only 20 layers are supported. Changing this number needs a 
 one line change (MAX_FILES in gerbv.c) in the source and a recompilation.
 
+.SH ZOOMING
 Zooming can be handled by either menu choices, keypressing, middle mouse 
 button or scroll wheel. If you press Alt+I you will zoom in and if you
 press Alt+O you will zoom out.If you press middle mouse button you will zoom
@@ -53,6 +54,7 @@ the resolution of the window. The non-dashed outline will show what
 you actually selected. If you change your mind when started to mark
 outline, you can always abort by pressing escape.
 
+.SH MEASUREMENTS
 You can do measurement on the image displayed. By pressing shift, the 
 cursor changes to a plus. By using left mouse button you can draw the lines
 that you want to measure. Currently the gerber files must be in inches. 
@@ -63,6 +65,16 @@ escape key.
 The statusbar shows the current mouse position on the layer in the same 
 coordinates as in the file. Ie if you have (0,0) in the middle of the image
 in the gerber files, the statusbar will show (0,0) at the same place.
+
+.SH SUPERIMPOSING
+When you load several Gerber files, you can display the "on top of each other",
+ie superimposing. The general way to display them are that upper layers
+cover the layers beneath, which is called copy (GTK+ terms).
+
+The other ways selectable are and, or, xor and invert. They map directly to
+corresponding functions in GTK. In GTK they are described as:
+"For colored images, only GDK_COPY, GDK_XOR and GDK_INVERT are generally 
+useful. For bitmaps, GDK_AND and GDK_OR are also useful."
 
 .SH "ENVIRONMENT"
 No environment variables are used.

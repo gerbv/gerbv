@@ -3,6 +3,8 @@
 	* src/gerbv.c, src/gerbv_screen.h: Added superimposing selectable
 	  function to be used when you put "layer upon layer". I call it
 	  superimposing functions. Hope it's correct english.
+	* man/gerbv.1.in: Minor layout changes and added part on superimposing
+	  functions.
 
 2002-08-01  Stefan Petersen  <spe@stacken.kth.se>
 
