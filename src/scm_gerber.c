@@ -153,7 +153,7 @@ scm_image2scm(gerb_image_t *image, char *filename)
     /*
      * Convert aperture definitions
      */
-    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+    for (i = 0; i < APERTURE_MAX; i++) {
 	if (image->aperture[i] != NULL) {
 	    SCM a = SCM_EOL;
 	    for (j = image->aperture[i]->nuf_parameters; j != 0; j--)

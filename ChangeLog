@@ -1,5 +1,12 @@
 2001-11-03 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/drill.c, src/scm_gerber.c: Fixed bug causing backend
+	  first not to generate aperture list and then barfing when
+	  trying.
+
+	
+2001-11-03 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/gerbv.c: Added command line -d|--drill support 
 	  for drill files both in graphical mode and batch mode.
 	  Though are drill file tool/apertures not properly handled

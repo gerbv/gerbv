@@ -291,8 +291,10 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 
     /* Restore the necessary things back to their default state */
     for (i = 0; i < APERTURE_MAX; i++) {
+	if (image->aperture[i] != NULL) {
 	    free(image->aperture[i]);
 	    image->aperture[i] = NULL;
+	}
     }
 
     rewind(fd);
@@ -346,6 +348,7 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 		       of the file first. Will have to be done. */
 		    image->aperture[tool_num]->parameter[0] = size;
 		    image->aperture[tool_num]->type = CIRCLE;
+		    image->aperture[tool_num]->nuf_parameters = 1;
 		}
 /*		printf("Tool %02d size %2.4g found\n", tool_num, size); */
 	    }
