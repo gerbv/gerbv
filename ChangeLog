@@ -1,3 +1,18 @@
+2002-05-03  Anders Eriksson  <anders@umunet.org>
+
+	* AUTHORS: Corrected my e-mail address
+
+2002-05-02  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Made redraw_pixmap() and image2pixmap()
+	interruptible by calling g_main_pending() at regular intervals and
+	registering an idle function to redraw the pixmap at a later time
+	if there are pending events to process. This partly fixes 550319.
+	  Also added the event to the data sent to the zoom function since
+	this allows us to read the mouse position at the event generation
+	and not at processing time which we used to do (giving a very
+	confusing behaviour if we can't keep up with events).
+
 2002-05-02  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.c: Now ovals are ovals and not ellypses.
@@ -8,7 +23,6 @@
 	* src/gerbv.c: Autoscale is more correct, though not completely
 	  perfect. Closes bug 550795.
 	
-
 2002-04-29  Anders Eriksson  <anders@faldor.umunet.org>
 
 	* src/gerbv.c: Improved zoom. Now zooming around image center when
