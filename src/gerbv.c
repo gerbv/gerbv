@@ -113,12 +113,10 @@ typedef struct gerbv_screen {
 gerbv_screen_t screen;
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
-static void open_file(GtkWidget *widget, gpointer data);
-static void open_drillfile(GtkWidget *widget, gpointer data);
+static void open_file_popup(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static gint redraw_pixmap(GtkWidget *widget);
 static void open_image(char *filename, int index);
-static void open_drillimage(char *filename, int index);
 
 
 void
@@ -139,8 +137,7 @@ destroy(GtkWidget *widget, gpointer data)
 
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",      NULL,          NULL,    0, "<Branch>"},
-    {"/File/Open _File...", "<alt>F", open_file,    0, NULL},
-    {"/File/Open _Drill...", "<alt>D", open_drillfile,    0, NULL},
+    {"/File/Open _File...", "<alt>F", open_file_popup,    0, NULL},
     {"/File/sep1",  NULL,          NULL,    0, "<Separator>"},
     {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
     {"/_Zoom",      NULL,          NULL,    0, "<Branch>"},
@@ -254,19 +251,7 @@ cb_ok_open_file(GtkWidget *widget, GtkFileSelection *fs)
 
 
 static void
-cb_ok_open_drillfile(GtkWidget *widget, GtkFileSelection *fs)
-{
-    open_drillimage(gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs)), screen.curr_index);
-    
-    /* Make loaded image appear on screen */
-    redraw_pixmap(screen.drawing_area);
-    
-    return;
-} /* cb_ok_open_drillfile */
-
-
-static void
-open_file(GtkWidget *widget, gpointer data)
+open_file_popup(GtkWidget *widget, gpointer data)
 {
     /* File Selection Window */
     GtkWidget *fsw;
@@ -283,27 +268,8 @@ open_file(GtkWidget *widget, gpointer data)
     gtk_widget_show(fsw);
     
     return;
-} /* open_file */
+} /* open_file_popup */
 
-static void
-open_drillfile(GtkWidget *widget, gpointer data)
-{
-    /* File Selection Window */
-    GtkWidget *fsw;
-
-    fsw = gtk_file_selection_new("Select Drillfile To View");
-    
-    gtk_signal_connect(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
-		       "clicked", GTK_SIGNAL_FUNC(cb_ok_open_drillfile), (gpointer)fsw);
-    gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
-			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), (gpointer)fsw);
-    gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->cancel_button),
-			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), (gpointer)fsw);
-    
-    gtk_widget_show(fsw);
-    
-    return;
-} /* open_drillfile */
 
 static void
 zoom(GtkWidget *widget, gpointer data)
@@ -433,11 +399,11 @@ open_image(char *filename, int index)
 	exit(1);
     }
     screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
-    if(drill_file_p(fd) != 1) {
-	screen.file[index]->image = parse_gerb(fd);
-    } else {
+    if(drill_file_p(fd))
 	screen.file[index]->image = parse_drillfile(fd);
-    }
+    else 
+	screen.file[index]->image = parse_gerb(fd);
+
     screen.file[index]->color_index = index;
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
 			 filename, NULL); 
@@ -446,25 +412,6 @@ open_image(char *filename, int index)
     return;
 } /* open_image */
 
-static void
-open_drillimage(char *filename, int index)
-{
-    FILE *fd;
-    
-    fd = fopen(filename, "r");
-    if (fd == NULL) {
-	perror("fopen");
-	exit(1);
-    }
-    screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
-    screen.file[index]->image = parse_drillfile(fd);
-    screen.file[index]->color_index = index;
-    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
-			 filename, NULL);
-    fclose(fd);
-
-    return;
-} /* open_drillimage */
 
 static gint
 configure_event (GtkWidget *widget, GdkEventConfigure *event)
@@ -507,6 +454,7 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
     return TRUE;
 } /* button_press_event */
 
+
 static gint
 button_release_event (GtkWidget *widget, GdkEventButton *event)
 {
@@ -515,6 +463,7 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 
     return TRUE;
 } /* button_release_event */
+
 
 static gint
 motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
@@ -542,6 +491,7 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
     return TRUE;
 } /* motion_notify_event */
 
+
 /* Redraw the screen from the backing pixmap */
 static gint
 expose_event (GtkWidget *widget, GdkEventExpose *event)
@@ -559,7 +509,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 #ifndef NO_GUILE
 static void
-batch(char *backend, char *file, int drillp) /* XXX drillp kludge */
+batch(char *backend, char *file)
 {
     char         *path[3];
     char 	 *complete_path;
@@ -629,7 +579,7 @@ batch(char *backend, char *file, int drillp) /* XXX drillp kludge */
 	exit(1);
     }
 
-    if (drillp)
+    if (drill_file_p(fd))
 	image = parse_drillfile(fd);
     else
 	image = parse_gerb(fd);
@@ -665,7 +615,6 @@ static struct option longopts[] = {
     /* name     has_arg            flag  val */
     {"version", no_argument,       NULL, 'V'},
     {"batch",   required_argument, NULL, 'b'},
-    {"drill",   required_argument, NULL, 'd'},
     {0, 0, 0, 0},
 };
 #endif
@@ -682,15 +631,14 @@ internal_main(int argc, char *argv[])
     int	   run_batch = 0;
     int 	   i;
     char      *backend = NULL;
-    char      *drill_file = NULL;
     char 	   read_opt;
     int 	   option_index;
     
 #ifdef HAVE_GETOPT_LONG
-    while ((read_opt = getopt_long(argc, argv, "Vb:d:", 
+    while ((read_opt = getopt_long(argc, argv, "Vb:", 
 				   longopts, &option_index)) != -1) {
 #else
-    while ((read_opt = getopt(argc, argv, "Vb:d:")) != -1) {
+    while ((read_opt = getopt(argc, argv, "Vb:")) != -1) {
 #endif
 	switch (read_opt) {
 	case 'V' :
@@ -714,14 +662,8 @@ internal_main(int argc, char *argv[])
 	    strcat(backend, ".scm");
 #endif
 	    break;
-	case 'd' :
-	    drill_file = (char *)malloc(strlen(optarg) + 1);
-	    if (drill_file == NULL)
-		err(1, "Failed mallocing drill filename\n");
-	    strcpy(drill_file, optarg);
-	    break;
 	case '?':
-	    fprintf(stderr, "Usage : %s [--version|-V][--batch=<backend>|-b <backend>][--drill=<drill file>|-d <drill file>] <gerber file(s)>\n", argv[0]);
+	    fprintf(stderr, "Usage : %s [--version|-V][--batch=<backend>|-b <backend>] <gerber file(s)>\n", argv[0]);
 	    exit(1);
 	    break;
 	default :
@@ -731,7 +673,7 @@ internal_main(int argc, char *argv[])
     
 #ifndef NO_GUILE
     if (run_batch) {
-	if (optind == argc && drill_file == NULL)
+	if (optind == argc)
 	    err(1, "No file to work on\n");
 	
 	/*
@@ -739,16 +681,7 @@ internal_main(int argc, char *argv[])
 	 */
 	for(i = optind ; i < argc; i++) {
 	    printf("%s\n", argv[i]);
-	    batch(backend, argv[i], 0);
-	}
-
-	/*
-	 * If drill file is defined, parse and drop it
-	 */
-	if (drill_file) {
-	    batch(backend, drill_file, 1);
-	    free(drill_file);
-	    drill_file = NULL;
+	    batch(backend, argv[i]);
 	}
 
 	free(backend);
@@ -827,8 +760,6 @@ internal_main(int argc, char *argv[])
      */
     for(i = optind ; i < argc; i++)
 	open_image(argv[i], i - optind);
-    if (drill_file)
-	open_drillimage(drill_file, i - optind);
 
     /*
      * Connect all events on drawing area 
