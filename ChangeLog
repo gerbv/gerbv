@@ -3,7 +3,9 @@
 	* src/draw.[hc], src/gerbv.c : Pseudo optimized drawing.
 	* src/gerb_file.c, src/gerbv.c: Fixed bug causing segfault
 	  when file didn't exist (oops) and pushed error messages
-	  out of gerb_file.c.
+	  out of gerb_file.c. And if a file (of many) given at 
+	  commandline doesn't exist, the next file is tried instead 
+	  of halting.
 
 	
 2001-12-06 Stefan Petersen (spe@stacken.kth.se)
