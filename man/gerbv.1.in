@@ -1,4 +1,4 @@
-.TH gerbv 1 "November 4th, 2001" Version 0.0.5
+.TH gerbv 1 "April 24th, 2002" Version @VERSION@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
@@ -33,6 +33,15 @@ Prints the version number of gerbv and exits.
 .BI -b\ <backend>
 Calls the backend to generate output. GTK+ is never started.
 
+.SH USAGE
+The user interface is graphical. To manipulate a layer, right-click on
+one of the rightmost buttons. That will bring up a pop-up menu where
+you can select what you want to do with that layer (open file, change
+color, etc).
+
+Currently only 20 layers are supported. Changing this number needs a 
+one line change (MAX_FILES in gerbv.c) in the source and a recompilation.
+
 .SH "ENVIRONMENT"
 No environment variables are used.
 
@@ -43,7 +52,7 @@ Andreas Andersson (e92_aan@e.kth.se): Drill file support and general hacking
 
 .SH COPYRIGHT
 .nf
-Copyright \(co  2001 Stefan Petersen
+Copyright \(co  2001-2002 Stefan Petersen
 
 This document can be freely redistributed according to the terms of the 
 GNU General Public License version 2.0

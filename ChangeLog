@@ -1,6 +1,14 @@
 2002-04-24 Stefan Petersen (spe@stacken.kth.se)
 
-	* example/orcad/*: Added after submission of and with 
+	* man/gerbv.1: Removed.
+	* man/gerbv.1.in: Created, so configure can add version of 
+	  gerbv automagically. Also added blurb about right-click thing.
+	* configure.in: man/gerbv.1 is created from man/gerbv.1.in.
+	
+
+2002-04-24 Stefan Petersen (spe@stacken.kth.se)
+
+	* example/orcad/*: Added after submission from and with 
 	  permission from Dino Ghilardi.
 
 

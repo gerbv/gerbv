@@ -119,5 +119,5 @@ AC_SUBST(BACKEND_DIR)
 AC_OUTPUT(	Makefile \
 		src/Makefile \
 		man/Makefile \
-		scheme/Makefile)
-
+		scheme/Makefile \
+		man/gerbv.1)
