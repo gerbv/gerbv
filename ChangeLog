@@ -1,3 +1,8 @@
+2002-11-26  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Fixes bug #643799 (zoom out_line stopped
+	  working).
+
 2002-11-26  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Added idea and (hacked up by me) patch for

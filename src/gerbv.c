@@ -257,8 +257,12 @@ set_window_icon (GtkWidget * this_window)
 static void
 cb_layer_button(GtkWidget *widget, gpointer data)
 {
-    
-    screen.curr_index = (long int)data;
+    long idx = (long)data;
+
+    if (screen.file[idx] == NULL)
+	return;
+
+    screen.curr_index = idx;
 
     /* Redraw the image(s) */
     redraw_pixmap(screen.drawing_area, TRUE);
@@ -967,9 +971,6 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
     double us_x1, us_y1, us_x2, us_y2;
     int half_w, half_h;		/* cache for half window dimensions */
-
-    if (screen.file[screen.curr_index] == NULL)
-	return;
 
     half_w = screen.drawing_area->allocation.width / 2;
     half_h = screen.drawing_area->allocation.height / 2;
