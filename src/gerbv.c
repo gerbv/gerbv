@@ -714,11 +714,15 @@ autoscale()
     return;
 } /* autoscale */
 
-
+/*
+ * idle_redraw_pixmap_active is true when idle_redraw_pixmap
+ * is called, during this time we are not allowed to call the
+ * gtk_idle_xxx functions.
+ */
 static gboolean idle_redraw_pixmap_active = FALSE;
 gboolean idle_redraw_pixmap(gpointer data);
 
-void 
+void
 start_idle_redraw_pixmap(GtkWidget *data)
 {
     if (!idle_redraw_pixmap_active) {
@@ -728,10 +732,10 @@ start_idle_redraw_pixmap(GtkWidget *data)
 } /* start_idle_redraw_pixmap */
 
 
-void 
+void
 stop_idle_redraw_pixmap(GtkWidget *data)
 {
-    if (idle_redraw_pixmap_active) {
+    if (!idle_redraw_pixmap_active) {
 	gtk_idle_remove_by_data ((gpointer)data);
 	idle_redraw_pixmap_active = FALSE;
     }
@@ -744,13 +748,16 @@ stop_idle_redraw_pixmap(GtkWidget *data)
 gboolean
 idle_redraw_pixmap(gpointer data)
 {
+    gboolean retval;
+
+    idle_redraw_pixmap_active = TRUE;
     if (redraw_pixmap((GtkWidget *) data, FALSE)) {
-	idle_redraw_pixmap_active = TRUE;
-	return TRUE;
+	retval = TRUE;
     } else {
-	idle_redraw_pixmap_active = FALSE;
-	return FALSE;
+	retval = FALSE;
     }
+    idle_redraw_pixmap_active = FALSE;
+    return retval;
 } /* idle_redraw_pixmap */
 
 
@@ -973,6 +980,10 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	gdk_cursor_destroy(cursor);
     }
 
+    /* Stop the idle-function if we are not within an idle-call */
+    if (state.valid) {
+	stop_idle_redraw_pixmap(widget);
+    }
     retval = FALSE;
 
     /* Called first when opening window and then when resizing window */
@@ -1043,12 +1054,13 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	state.max_height = height;
 
 	/* 
-	 * Remove old pixmap, allocate a new one, draw the background and set
-	 * superimposing function.
+	 * Remove old pixmap, allocate a new one, draw the background
+	 * and set superimposing function.
 	 */
 	if (screen.pixmap) 
 	    gdk_pixmap_unref(screen.pixmap);
-	screen.pixmap = gdk_pixmap_new(widget->window, state.max_width, state.max_height,  -1);
+	screen.pixmap = gdk_pixmap_new(widget->window, state.max_width,
+				       state.max_height,  -1);
 	gdk_gc_set_foreground(gc, screen.background);
 	gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
 	gdk_gc_set_function(gc, screen.si_func);
@@ -1056,8 +1068,12 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	/*
 	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
 	 */
-	state.curr_pixmap = gdk_pixmap_new(widget->window, state.max_width, state.max_height,  -1);
-	state.clipmask = gdk_pixmap_new(widget->window, state.max_width, state.max_height,  1);
+	state.curr_pixmap = gdk_pixmap_new(widget->window,
+					   state.max_width,
+					   state.max_height,  -1);
+	state.clipmask = gdk_pixmap_new(widget->window,
+					state.max_width,
+					state.max_height,  1);
 
 	state.valid = 1;
     }

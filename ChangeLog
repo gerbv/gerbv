@@ -1,3 +1,9 @@
+2002-11-07  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Minor cleanups, prepare idle_redraw to
+	  be reentrant to allow calling it more than once (i.e.
+	  for png export as well as for screen redraw).
+
 2002-11-06  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Re-read some gtk-docs, we weree mistreating
