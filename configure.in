@@ -96,7 +96,9 @@ fi
 dnl GDK-PixBuf stuff
 if test "$exportpng" = "yes" ; then
 	AM_PATH_GDK_PIXBUF
-	AC_CHECK_HEADERS(png.h pngconf.h)
+dnl Must come up with a better way to check for libpng. Doesn't work when
+dnl export_png is not given!    
+dnl	AC_CHECK_HEADERS(png.h pngconf.h)
 	PNG_LIBS="-lpng"
 else
 	GDK_PIXBUF_CFLAGS=
