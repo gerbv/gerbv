@@ -1,3 +1,10 @@
+2001-10-22 Stefan Petersen (spe@stacken.kth.se)
+
+	* example/*: Cleaned out numpres.pcb.* to a separate dir
+	  and added a example received from Joachim Jansen on
+	  separate aperture files.
+
+	
 2001-10-21 Stefan Petersen (spe@stacken.kth.se)
 
 	* gerbv.c: Changed how cw and ccw is handled when drawing
