@@ -1,5 +1,10 @@
 2003-03-16  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/draw.c, src/gerb_image.h, src/gerber.c: Angles are now
+	  calculated as doubles instead of ints. For instance, the cslk
+	  example now draws properly at the same time as Dans ridicously
+	  small arcs also works.
+
 	* src/gerber.c: Better sanity checks for angles of arcs, so
 	  cw are drawn cw and ccw are drawn ccw. Closes bug #703265
 	  which was reported by Mark Whitis. Thanks!

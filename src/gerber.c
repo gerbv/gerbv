@@ -1008,12 +1008,12 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
      * Make sure it's always positive angles
      */
     if (net->cirseg->angle1 < 0) {
-	net->cirseg->angle1 = 360.0 + net->cirseg->angle1;
-	net->cirseg->angle2 = 360.0 + net->cirseg->angle2;
+	net->cirseg->angle1 += 360.0;
+	net->cirseg->angle2 += 360.0;
     }
 
     if (net->cirseg->angle2 < 0.0) 
-	net->cirseg->angle2 = 360.0 + net->cirseg->angle2;
+	net->cirseg->angle2 += 360.0;
 
     if(fabs(net->cirseg->angle2) < 0.0001) 
 	net->cirseg->angle2 = 360.0;
@@ -1033,13 +1033,5 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 	    net->cirseg->angle2 += 360.0;
     }
 
-    /*
-     * If angles are equal it should be a circle, but as gerbv
-     * currently is designed it becomes a point. Maybe I should
-     * save start angle and how many degrees to draw?
-     */
-    if (fabs(net->cirseg->angle2 - net->cirseg->angle1) < 0.00001)
-	net->cirseg->angle2 = 360.0 + net->cirseg->angle2;
-
-    return;
 } /* calc_cirseg_mq */
+
