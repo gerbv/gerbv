@@ -378,7 +378,7 @@ color_selection_destroy(GtkWidget *widget, gpointer data)
 static void
 color_selection_ok(GtkWidget *widget, gpointer data)
 {
-    int background = (int)data;
+    int background = (long int)data;
     GtkColorSelection *colorsel;
     gdouble color[4];
     GtkStyle *oldstyle, *newstyle;
@@ -431,7 +431,7 @@ static void
 color_selection_popup(GtkWidget *widget, gpointer data)
 {
     gdouble curr_color[4];
-    int background = (int)data;
+    int background = (long int)data;
 
     if (!background && (screen.file[screen.curr_index] == NULL))
 	return;

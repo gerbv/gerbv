@@ -1,3 +1,8 @@
+2002-12-11  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Fixed 64-bit compilation warning by casting
+	  gpointer to long int. Closes bug #642703.
+
 2002-12-09  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Fixed some kind of bug causing some filled 
