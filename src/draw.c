@@ -85,17 +85,17 @@ gerbv_draw_rectangle(GdkPixmap *pixmap, GdkGC *gc,
 
 
 /*
- * Draws an oval _centered_ at x,y with x axle x_axle and y axle y_axle
+ * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
  */ 
 static void
 gerbv_draw_oval(GdkPixmap *pixmap, GdkGC *gc, 
-		gint filled, gint x, gint y, gint x_axle, gint y_axle)
+		gint filled, gint x, gint y, gint x_axis, gint y_axis)
 {
     static const gint full_circle = 23360;
-    gint real_x = x - x_axle / 2;
-    gint real_y = y - y_axle / 2;
+    gint real_x = x - x_axis / 2;
+    gint real_y = y - y_axis / 2;
     
-    gdk_draw_arc(pixmap, gc, filled, real_x, real_y, x_axle, y_axle, 0, 
+    gdk_draw_arc(pixmap, gc, filled, real_x, real_y, x_axis, y_axis, 0, 
 		 full_circle);
 
     return;
