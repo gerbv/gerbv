@@ -1,3 +1,8 @@
+2003-05-31  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, src/amacro.c: Removed the last remaining malloc.h
+	  after tips from Charles Lepple on the geda mailinglist.
+
 2003-04-18  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw_amacro.c: Larry Dolittle had a problem when drawing
