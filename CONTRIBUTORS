@@ -19,3 +19,9 @@ Dan Christian <dac@ptolemy.arc.nasa.gov>
 
 Fredrik Jonsson <fredrikj@spirea.com>
  - Sent me actual EagleCad files so I saw the bugs.
+
+Joachim Jansen <jj@ekf.de>
+ - Found and reported several bugs.
+
+Wojciech Kazubski <wk@ire.pw.edu.pl>
+ - Patch so ./configure --data works.
