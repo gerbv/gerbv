@@ -1,3 +1,5 @@
+-- Release 0.14 --
+
 2003-05-31  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in, src/amacro.c: Removed the last remaining malloc.h
