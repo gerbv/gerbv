@@ -1,3 +1,9 @@
+2002-07-02  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Macrofied coordinate unit
+	  conversions to have the constants in one place. Converted
+	  sprintf()s to safer snprintf()s.
+
 2002-07-01  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv_screen.h: Bounding box needs to be doubles, not

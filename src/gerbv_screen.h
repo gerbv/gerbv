@@ -34,6 +34,12 @@
 #define MAX_DISTLEN 75
 #define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
 
+/* Macros to convert between unscaled gerber coordinates and other units */
+/* XXX NOTE: Currently unscaled units are assumed as inch, this is not
+   XXX necessarily true for all files */
+#define COORD2MILS(c) ((c)*1000.0)
+#define COORD2MMS(c) ((c)*25.4)
+
 typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE} gerbv_state_t;
 
 typedef struct {

@@ -247,7 +247,7 @@ create_layer_buttons(int nuf_buttons)
     box = gtk_vbox_new(TRUE, 0);
 
     for (bi = 0; bi < nuf_buttons; bi++) {
-	sprintf(info, "%ld", bi);
+	snprintf(info, sizeof(info), "%ld", bi);
 	button = gtk_toggle_button_new_with_label(info);
 
 	gtk_signal_connect(GTK_OBJECT(button), "toggled", 
@@ -1227,9 +1227,10 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 
 	X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.scale;
 	Y = (screen.gerber_bbox.y2 - (y+screen.trans_y)/(double)screen.scale);
-	sprintf(screen.statusbar.coordstr,
-		"X,Y (%7.1f, %7.1f)mils (%7.2f, %7.2f)mm",
-		X*1000.0, Y*1000.0, X*25.4, Y*25.4);
+	snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+		 "X,Y (%7.1f, %7.1f)mils (%7.2f, %7.2f)mm",
+		 COORD2MILS(X), COORD2MILS(Y),
+		 COORD2MMS(X), COORD2MMS(Y));
 	update_statusbar(&screen);
 
 	switch (screen.state) {
@@ -1447,8 +1448,9 @@ draw_measure_distance()
 	dy = (y2 - y1)/(double) screen.scale;
 	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
 
-	sprintf(string, "[dist %7.1f, dX %7.1f, dY %7.1f] mils",
-		delta*1000.0, dx*1000.0, dy*1000.0);
+	snprintf(string, sizeof(string),
+		 "[dist %7.1f, dX %7.1f, dY %7.1f] mils",
+		 COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
 			   &ascent, &descent);
@@ -1458,8 +1460,9 @@ draw_measure_distance()
 	linefeed = ascent+descent;
 	linefeed *= (double)1.2;
 
-	sprintf(string, "[dist %7.2f, dX %7.2f, dY %7.2f] mm",
-		delta*25.4, dx*25.4, dy*25.4);
+	snprintf(string, sizeof(string),
+		 "[dist %7.2f, dX %7.2f, dY %7.2f] mm",
+		 COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
 			   &ascent, &descent);
@@ -1471,9 +1474,10 @@ draw_measure_distance()
 	/*
 	 * Update statusbar
 	 */
-	sprintf(screen.statusbar.diststr,
-		" dist,dX,dY (%7.1f, %7.1f, %7.1f)mils (%7.2f, %7.2f, %7.2f)mm",
-		delta*1000.0, dx*1000.0, dy*1000.0, delta*25.4, dx*25.4, dy*25.4);
+	snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+		 " dist,dX,dY (%7.1f, %7.1f, %7.1f)mils (%7.2f, %7.2f, %7.2f)mm",
+		 COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy),
+		 COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
 	update_statusbar(&screen);
 
     }
@@ -1489,9 +1493,10 @@ static void update_statusbar(gerbv_screen_t *scr)
 	gtk_statusbar_pop((GtkStatusbar*)scr->statusbar.msgs,
 			  scr->statusbar.msgid);
 
-    sprintf(str, "%-.*s|%-*s|%-*s", MAX_ERRMSGLEN-1, scr->statusbar.msgstr,
-	    MAX_COORDLEN-1, scr->statusbar.coordstr,
-	    MAX_DISTLEN-1, scr->statusbar.diststr);
+    snprintf(str, MAX_STATUSMSGLEN, "%-.*s|%-*s|%-*s",
+	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr,
+	     MAX_COORDLEN-1, scr->statusbar.coordstr,
+	     MAX_DISTLEN-1, scr->statusbar.diststr);
     scr->statusbar.msgid = 
 	gtk_statusbar_get_context_id((GtkStatusbar*)scr->statusbar.msgs,
 				     "StatusMessage");
