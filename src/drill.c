@@ -438,7 +438,6 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     double size;
 
     tool_num = gerb_fgetint(fd);
-    if (tool_num == 0) return tool_num;
     if ((tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX)) 
 	err(1, "Tool out of bounds: %d\n", tool_num);
 

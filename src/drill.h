@@ -31,7 +31,7 @@ extern "C" {
 #include "gerb_image.h"
 #include "gerb_file.h"
 
-#define TOOL_MIN 1
+#define TOOL_MIN 0
 #define TOOL_MAX 999
 
 gerb_image_t *parse_drillfile(gerb_file_t *fd);
