@@ -31,6 +31,9 @@
 /* Maximum number of simultaneous loaded files */
 #undef MAX_FILES
 
+/* Default unit to display in status bar */
+#undef GERBV_DEFAULT_UNIT
+
 /* Header files */
 #undef HAVE_UNISTD_H
 #undef HAVE_GETOPT_H

@@ -1807,8 +1807,8 @@ internal_main(int argc, char *argv[])
     screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
     screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
 
-    /* Set default unit to mils. XXX This should be configured with  autoconf! */
-    screen.unit = GERBV_MILS;
+    /* Set default unit to mils. */
+    screen.unit = GERBV_DEFAULT_UNIT;
 
     /*
      * Main window 
