@@ -1,9 +1,18 @@
+2002-06-08  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (motion_notify_event, expose_event): Don't
+	  redraw entire image when drawing zoom outline and measured
+	  distance. This makes the outline follow much more smoothly.
+	  The side effect in measure mode is that several measures
+	  may be visible simultaneously. I am not sure if this is
+	  a bug or a feature. :)
+
 2002-06-08  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Setting up a watch while running export_image.
 	* configure.in: Adding a check for libpng when export_png enabled. 
 
-2002-06-07  Anders Eriksson  <anders@poirot.faldor.umunet.org>
+2002-06-07  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c (expose_event): Center distance strings properly,
 	  get string height to properly space the two lines independant

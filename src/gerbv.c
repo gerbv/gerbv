@@ -81,6 +81,8 @@ gerbv_screen_t screen;
 
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
+static void draw_zoom_outline();
+static void draw_measure_distance();
 static void color_selection_popup(GtkWidget *widget, gpointer data);
 static void load_file_popup(GtkWidget *widget, gpointer data);
 #ifdef EXPORT_PNG
@@ -1066,6 +1068,7 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 	    screen.state = NORMAL;
 	    zoom_outline(widget, event);
 	}
+	screen.last_x = screen.last_y = 0;
 	screen.state = NORMAL;
     }
 
@@ -1113,31 +1116,23 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	    break;
 	}
 	case ZOOM_OUTLINE: {
+	    if (screen.last_x || screen.last_y)
+		draw_zoom_outline();
+
 	    screen.last_x = x;
 	    screen.last_y = y;
 
-	    update_rect.x = 0, update_rect.y = 0;
-	    update_rect.width  = widget->allocation.width;
-	    update_rect.height = widget->allocation.height;
-	
-	    /*
-	     * Calls expose_event
-	     */
-	    gtk_widget_draw(widget, &update_rect);
+	    draw_zoom_outline();
 	    break;
 	}
 	case MEASURE: {
+	    if (screen.last_x || screen.last_y)
+		draw_measure_distance();
+
 	    screen.last_x = x;
 	    screen.last_y = y;
 
-	    update_rect.x = 0, update_rect.y = 0;
-	    update_rect.width  = widget->allocation.width;
-	    update_rect.height = widget->allocation.height;
-	
-	    /*
-	     * Calls expose_event
-	     */
-	    gtk_widget_draw(widget, &update_rect);
+	    draw_measure_distance();
 	    break;
 	}
 	default:
@@ -1201,79 +1196,9 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
      * Draw Zooming outline if we are in that mode
      */
     if (screen.state == ZOOM_OUTLINE) {
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
-	gint x1, y1, x2, y2;
-
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.foreground = *screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
-
-	x1 = MIN(screen.start_x, screen.last_x);
-	y1 = MIN(screen.start_y, screen.last_y);
-	x2 = MAX(screen.start_x, screen.last_x);
-	y2 = MAX(screen.start_y, screen.last_y);
-
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, x2-x1, y2-y1);
+	draw_zoom_outline();
     } else if (screen.state == MEASURE) {
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
-	gint x1, y1, x2, y2;
-	GdkFont *font;
-	const char *fontname = "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1";
-
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.foreground = *screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				    values_mask);
-	font = gdk_font_load(fontname);
-
-	x1 = MIN(screen.start_x, screen.last_x);
-	y1 = MIN(screen.start_y, screen.last_y);
-	x2 = MAX(screen.start_x, screen.last_x);
-	y2 = MAX(screen.start_y, screen.last_y);
-
-	gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
-		      screen.start_y, screen.last_x, screen.last_y);
-	if (font == NULL) {
-	    fprintf(stderr, "Failed to load font '%s'\n", fontname);
-	} else {
-	    gchar string[65];
-	    double delta, dx, dy;
-	    gint lbearing, rbearing, width, ascent, descent;
-	    gint linefeed;	/* Pseudonym for inter line gap */
-
-	    dx = (x2 - x1)/(double) screen.scale;
-	    dy = (y2 - y1)/(double) screen.scale;
-	    delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
-
-	    sprintf(string, "[dist %.3g\", dX %.3g\", dY %.3g\"]", delta,
-		    dx, dy);
-
-	    gdk_string_extents(font, string, &lbearing, &rbearing, &width,
-			       &ascent, &descent);
-	    gdk_draw_string(screen.drawing_area->window, font, gc,
-			    (x1+x2)/2-width/2, (y1+y2)/2, string);
-
-	    linefeed = ascent+descent;
-	    linefeed *= (double)1.2;
-
-	    sprintf(string, "[dist %.3gcm, dX %.3gcm, dY %.3gcm]",
-		    delta*2.54, dx*2.54, dy*2.54);
-
-	    gdk_string_extents(font, string, &lbearing, &rbearing, &width,
-			       &ascent, &descent);
-	    gdk_draw_string(screen.drawing_area->window, font, gc,
-			    (x1+x2)/2 - width/2, (y1+y2)/2 + linefeed, string);
-
-	    gdk_font_unref(font);
-	}
+	draw_measure_distance();
     }
     /*
      * Raise popup windows if they happen to disappear
@@ -1288,6 +1213,90 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
     return FALSE;
 } /* expose_event */
 
+static void
+draw_zoom_outline()
+{
+    GdkGC *gc;
+    GdkGCValues values;
+    GdkGCValuesMask values_mask;
+    gint x1, y1, x2, y2;
+
+    memset(&values, 0, sizeof(values));
+    values.function = GDK_XOR;
+    values.foreground = *screen.zoom_outline_color;
+    values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
+    gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
+
+    x1 = MIN(screen.start_x, screen.last_x);
+    y1 = MIN(screen.start_y, screen.last_y);
+    x2 = MAX(screen.start_x, screen.last_x);
+    y2 = MAX(screen.start_y, screen.last_y);
+
+    gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, x2-x1, y2-y1);
+}
+
+static void
+draw_measure_distance()
+{
+    GdkGC *gc;
+    GdkGCValues values;
+    GdkGCValuesMask values_mask;
+    gint x1, y1, x2, y2;
+    GdkFont *font;
+    const char *fontname = "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1";
+
+    if (screen.state != MEASURE)
+	return;
+
+    memset(&values, 0, sizeof(values));
+    values.function = GDK_XOR;
+    values.foreground = *screen.zoom_outline_color;
+    values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
+    gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
+				values_mask);
+    font = gdk_font_load(fontname);
+
+    x1 = MIN(screen.start_x, screen.last_x);
+    y1 = MIN(screen.start_y, screen.last_y);
+    x2 = MAX(screen.start_x, screen.last_x);
+    y2 = MAX(screen.start_y, screen.last_y);
+
+    gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
+		  screen.start_y, screen.last_x, screen.last_y);
+    if (font == NULL) {
+	fprintf(stderr, "Failed to load font '%s'\n", fontname);
+    } else {
+	gchar string[65];
+	double delta, dx, dy;
+	gint lbearing, rbearing, width, ascent, descent;
+	gint linefeed;	/* Pseudonym for inter line gap */
+
+	dx = (x2 - x1)/(double) screen.scale;
+	dy = (y2 - y1)/(double) screen.scale;
+	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
+
+	sprintf(string, "[dist %.3g\", dX %.3g\", dY %.3g\"]", delta,
+		dx, dy);
+
+	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
+			   &ascent, &descent);
+	gdk_draw_string(screen.drawing_area->window, font, gc,
+			(x1+x2)/2-width/2, (y1+y2)/2, string);
+
+	linefeed = ascent+descent;
+	linefeed *= (double)1.2;
+
+	sprintf(string, "[dist %.3gcm, dX %.3gcm, dY %.3gcm]",
+		delta*2.54, dx*2.54, dy*2.54);
+
+	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
+			   &ascent, &descent);
+	gdk_draw_string(screen.drawing_area->window, font, gc,
+			(x1+x2)/2 - width/2, (y1+y2)/2 + linefeed, string);
+
+	gdk_font_unref(font);
+    }
+}
 
 #ifdef GUILE_IN_USE
 static void
