@@ -546,16 +546,17 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 		       event->area.width, event->area.height);
     
     /*
-     * Copy gerber pixmap onto background.
+     * Copy gerber pixmap onto background if we have one to copy.
      * Do translation at the same time.
      */
-    gdk_draw_pixmap(new_pixmap,
-		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-		    screen.pixmap, 
-		    screen.trans_x + event->area.x, 
-		    screen.trans_y + event->area.y, 
-		    event->area.x, event->area.y,
-		    event->area.width, event->area.height);
+    if (screen.pixmap != NULL)
+	gdk_draw_pixmap(new_pixmap,
+			widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+			screen.pixmap, 
+			screen.trans_x + event->area.x, 
+			screen.trans_y + event->area.y, 
+			event->area.x, event->area.y,
+			event->area.width, event->area.height);
 
     /*
      * Draw the whole thing onto screen
