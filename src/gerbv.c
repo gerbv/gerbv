@@ -551,6 +551,7 @@ batch(char *backend, char *file)
 }
 #endif
 
+
 #ifdef HAVE_GETOPT_LONG
 static struct option longopts[] = {
     /* name     has_arg            flag  val */
@@ -560,13 +561,9 @@ static struct option longopts[] = {
 };
 #endif
 
-#ifdef NO_GUILE
-int
-main(int argc, char *argv[])
-#else
+
 void
 internal_main(int argc, char *argv[])
-#endif
 {
     GtkWidget *main_win;
     GtkWidget *vbox;
@@ -700,19 +697,17 @@ internal_main(int argc, char *argv[])
     gtk_widget_show_all(main_win);
     gtk_main();
     
-#ifdef NO_GUILE
-    return 0;
-#else
     return;
-#endif
-    }
+}
     
-#ifndef NO_GUILE
+
 int
 main(int argc, char *argv[])
 {
+#ifdef NO_GUILE
+    internal_main(argc, argv);
+#else
     gh_enter(argc, argv, internal_main);
-
+#endif
     return 0;
 }
-#endif

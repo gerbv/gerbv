@@ -2,7 +2,7 @@
 	* src/draw.[hc]: Added. Extracted drawing functions from
 	  gerbv.c.
 	* src/gerbv.c: Removed add drawing functions into draw.c.
-	  Also minor clean ups.
+	  Also minor clean ups. Fixed #def's of Guile support.
 	* src/Makefile.am: Added draw.c as src file.
 	
 	
