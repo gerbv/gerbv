@@ -1533,9 +1533,7 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	    draw_zoom_outline(screen.centered_outline_zoom);
 	    screen.centered_outline_zoom = 1;
 	    draw_zoom_outline(screen.centered_outline_zoom);
-	}
-
-	if (screen.state == NORMAL) {
+	} else if (screen.state == NORMAL) {
 	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
 	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
 				  cursor);
