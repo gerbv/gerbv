@@ -450,6 +450,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 {
     int op[2];
     char str[3];
+    int tmp;
     gerb_aperture_t *a = NULL;
     amacro_t *tmp_amacro;
     int ano;
@@ -676,7 +677,9 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	
 	break;
     case A2I('I','R'): /* Image Rotation */
-	NOT_IMPL(fd, "%IR%");
+	tmp = gerb_fgetint(fd);
+	if (tmp != 0)
+	    NOT_IMPL(fd, "%IR%");
 	break;
     case A2I('P','F'): /* Plotter Film */
 	NOT_IMPL(fd, "%PF%");
