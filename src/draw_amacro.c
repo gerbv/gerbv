@@ -146,7 +146,7 @@ gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     const int diameter_idx = 1;
     const gint full_circle = 23360;
     GdkGC *local_gc = gdk_gc_new(pixmap);
-    gint dia    = s->stack[diameter_idx] * scale;
+    gint dia    = round(fabs(s->stack[diameter_idx] * scale));
     gint real_x = x - dia / 2;
     gint real_y = y - dia / 2;
 
