@@ -64,7 +64,7 @@
      } while (0)
 #endif
 
-typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT} gerbv_zoom_dir_t;
+typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE} gerbv_zoom_dir_t;
 
 typedef enum {NORMAL, MOVE} gerbv_state_t;
 
@@ -499,28 +499,42 @@ autoscale()
 static void
 zoom(GtkWidget *widget, gpointer data)
 {
-    double us_transx, us_transy; /* unscaled translation for screen center */
+    double us_midx, us_midy; /* unscaled translation for screen center */
     int half_w, half_h;		/* cache for half window dimensions */
+    int mouse_delta_x, mouse_delta_y; /* Delta for mouse to window center */
 
     if (screen.file[screen.curr_index] == NULL)
 	return;
 
     half_w = screen.drawing_area->allocation.width / 2;
     half_h = screen.drawing_area->allocation.height / 2;
-    us_transx = (screen.trans_x + half_w)/(double) screen.scale;
-    us_transy = (screen.trans_y + half_h)/(double) screen.scale;
+
+    if ((gerbv_zoom_dir_t)data == ZOOM_IN_CMOUSE ||
+	(gerbv_zoom_dir_t)data == ZOOM_OUT_CMOUSE) {
+	gtk_widget_get_pointer(screen.drawing_area, &mouse_delta_x,
+			       &mouse_delta_y);
+	mouse_delta_x = half_w - mouse_delta_x;
+	mouse_delta_y = half_h - mouse_delta_y;
+	screen.trans_x -= mouse_delta_x;
+	screen.trans_y -= mouse_delta_y;
+    }
+
+    us_midx = (screen.trans_x + half_w)/(double) screen.scale;
+    us_midy = (screen.trans_y + half_h)/(double) screen.scale;
 
     switch((gerbv_zoom_dir_t)data) {
     case ZOOM_IN : /* Zoom In */
+    case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
 	screen.scale += 10;
-	screen.trans_x = screen.scale * us_transx - half_w;
-	screen.trans_y = screen.scale * us_transy - half_h;
+	screen.trans_x = screen.scale * us_midx - half_w;
+	screen.trans_y = screen.scale * us_midy - half_h;
 	break;
     case ZOOM_OUT :  /* Zoom Out */
+    case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
 	if (screen.scale > 10) {
 	    screen.scale -= 10;
-	    screen.trans_x = screen.scale * us_transx - half_w;
-	    screen.trans_y = screen.scale * us_transy - half_h;
+	    screen.trans_x = screen.scale * us_midx - half_w;
+	    screen.trans_y = screen.scale * us_midy - half_h;
 	}
 	break;
     case ZOOM_FIT : /* Zoom Fit */
@@ -528,6 +542,12 @@ zoom(GtkWidget *widget, gpointer data)
 	break;
     default :
 	fprintf(stderr, "Illegal zoom direction %ld\n", (long int)data);
+    }
+
+    if ((gerbv_zoom_dir_t)data == ZOOM_IN_CMOUSE ||
+	(gerbv_zoom_dir_t)data == ZOOM_OUT_CMOUSE) {
+	screen.trans_x += mouse_delta_x;
+	screen.trans_y += mouse_delta_y;
     }
     
     redraw_pixmap(screen.drawing_area);
@@ -729,20 +749,20 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	   all us who dislike scroll wheels ;) */
 	if((event->state & GDK_SHIFT_MASK) != 0) {
 	    /* Middle button + shift == zoom in */
-	    zoom(widget, (gpointer)ZOOM_IN);
+	    zoom(widget, (gpointer)ZOOM_IN_CMOUSE);
 	} else {
 	    /* Only middle button == zoom out */
-	    zoom(widget, (gpointer)ZOOM_OUT);
+	    zoom(widget, (gpointer)ZOOM_OUT_CMOUSE);
 	}
 	break;
     case 3 :
 	/* Add color selection code here? */
 	break;
-    case 4 : 
-	zoom(widget, (gpointer)ZOOM_IN);
+    case 4 :
+	zoom(widget, (gpointer)ZOOM_IN_CMOUSE);
 	break;
     case 5 : 
-	zoom(widget, (gpointer)ZOOM_OUT);
+	zoom(widget, (gpointer)ZOOM_OUT_CMOUSE);
 	break;
     default:
     }
