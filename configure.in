@@ -85,8 +85,28 @@ else
 	GUILE_LDFLAGS=
 fi
 
-dnl GTK+ stuff
-AM_PATH_GTK(1.2.3, ,AC_MSG_ERROR([*** GTK+ >= 1.2.3 not installed - please install first ***]))
+dnl Change default location of gtk-config
+AC_ARG_WITH(gtk-config, [  --with-gtk-config=path  Change where gtk-config is located], [opt_gtkconfig=$withval])
+
+if eval "test x$opt_gtkconfig != x" ; then
+
+        if test ! -r "$opt_gtkconfig"; then
+
+                AC_MSG_ERROR(Cannot find $opt_gtkconfig -- be sure that this pathname is correct)
+
+        else
+                GTK_CONFIG=$opt_gtkconfig
+        fi
+else
+        AM_PATH_GTK(1.2.3,,AC_MSG_ERROR([*** GTK+ >= 1.2.3 not installed - please install first ***]))
+fi
+
+if test $GTK_CONFIG = "no"; then
+        AC_MSG_ERROR(Cannot find gtk-config -- be sure that gtk >= 0.99.7 is installed)
+fi
+
+GTK_LIBS="`$GTK_CONFIG --libs`"
+GTK_CFLAGS="`$GTK_CONFIG --cflags`"
 
 dnl Why do I have to set prefix?
 if eval "test x$prefix = xNONE"; then

@@ -34,3 +34,6 @@ Dino Ghilardi <dino.ghilardi@ieee.org>
  - Pointed out that an 'oval' is different from a geometrical ellypse.
  - Some other feature requests.
  - Contributed export PNG functionality!
+
+Bruno Schwander <bruno@tinkerbox.org>
+ - Patch to configure.in to fit different GTK-versions on FreeBSD

@@ -1,3 +1,8 @@
+2002-07-11  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: Added --with-gtk-config to fit FreeBSD 
+	  after patch from Bruno Schwander <bruno@tinkerbox.org>.
+	
 -- Release 0.0.9 --
 
 2002-07-06  Stefan Petersen  <spe@stacken.kth.se>
