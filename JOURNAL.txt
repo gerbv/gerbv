@@ -5,3 +5,14 @@ term TODO lists etc. Feel free to put anything here.
 Q:if the widget interface.main_window is destroyed, will it be NULL?
 several combinations of loading/ unloading gerberfiles and destroying the search
 dialog hint at it still exists and checking with if (interface.main_window) is not enough
+
+A: without looking into details, destroying (freeing) a pointer never
+sets it automatically to NULL. If it is important to know
+whether a pointer is valid, one should do
+free(ptr); ptr=NULL;
+or even if(ptr) free(ptr); ptr = NULL;
+--
+Tomek
+
+What will follow is the list of dynamically allocated objects,
+places where and when they are allocated and freed.
