@@ -512,6 +512,15 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 	    if(state->unit == MM) {
 		size /= 25.4;
+	    } else if(size >= 4.0) {
+		/* If the drill size is >= 4 inches, assume that this
+		   must be wrong and that the units are mils.
+		   The limit being 4 inches is because the smallest drill
+		   I've ever seen used is 0,3mm(about 12mil). Half of that
+		   seemed a bit too small a margin, so a third it is */
+		GERB_COMPILE_WARNING("Read a tool diameter of %g. ", size);
+		GERB_COMPILE_WARNING("Assuming this is mils and your CAD tool is broken.\n");
+		size /= 1000.0;
 	    }
 
 	    if(size <= 0 || size >= 10000) {
