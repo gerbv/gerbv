@@ -1,3 +1,10 @@
+2002-05-08  Stefan Petersen  <spe@stacken.kth.se>
+
+	* INSTALL: Changed gschem->gerbv
+	* src/gerbv.c: Remember where we loaded file from last time and
+	  start file selection from there.
+
+	
 2002-05-07  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c (zoom_outline): Added zoom outline support and

@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <libgen.h> /* dirname */
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -91,6 +92,7 @@ typedef struct {
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
+    char *path;
 
     GtkTooltips *tooltips;
     GtkWidget *layer_button[MAX_FILES];
@@ -386,8 +388,20 @@ color_selection_popup(GtkWidget *widget, gpointer data)
 static void
 cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 {
-    open_image(gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs)), 
-	       screen.curr_index);
+    char *filename;
+
+    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+    open_image(filename, screen.curr_index);
+
+    /*
+     * Remember where we loaded file from last time
+     */
+    filename = dirname(filename);
+    if (screen.path)
+	free(screen.path);
+    screen.path = (char *)malloc(strlen(filename) + 1);
+    strcpy(screen.path, filename);
+    screen.path = strncat(screen.path, "/", 1);
     
     /* Make loaded image appear on screen */
     redraw_pixmap(screen.drawing_area);
@@ -404,7 +418,11 @@ static void
 load_file_popup(GtkWidget *widget, gpointer data)
 {
     screen.load_file_popup = gtk_file_selection_new("Select File To View");
-    
+
+    if (screen.path)
+	gtk_file_selection_set_filename
+	    (GTK_FILE_SELECTION(screen.load_file_popup), screen.path);
+
     gtk_signal_connect
 	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(cb_ok_load_file), 
