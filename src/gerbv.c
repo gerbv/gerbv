@@ -915,18 +915,6 @@ redraw_pixmap(GtkWidget *widget)
 	}
 	if (screen.file[i]) {
 	    file_loaded = 1;
-	    /* 
-	     * Find the biggest image and use as a size reference
-	     */
-	    dmax_x  = MAX(screen.file[i]->image->info->max_x, dmax_x);
-	    dmax_y = MAX(screen.file[i]->image->info->max_y, dmax_y);
-	    
-	    /*
-	     * Also find the smallest coordinates to see if we have negative
-	     * ones that must be compensated for.
-	     */
-	    dmin_x  = MIN(screen.file[i]->image->info->min_x, dmin_x);
-	    dmin_y = MIN(screen.file[i]->image->info->min_y, dmin_y);
 	}
     }
 
@@ -942,6 +930,19 @@ redraw_pixmap(GtkWidget *widget)
      * Setup scale etc first time we load a file
      */
     if (file_loaded && screen.scale == 0) autoscale();
+
+    /*
+     * Find the biggest image and use as a size reference
+     */
+    dmax_x = screen.gerber_bbox.x2;
+    dmax_y = screen.gerber_bbox.y2;
+
+    /*
+     * Also find the smallest coordinates to see if we have negative
+     * ones that must be compensated for.
+     */
+    dmin_x = screen.gerber_bbox.x1;
+    dmin_y = screen.gerber_bbox.y1;
 
     /*
      * Scale width to actual windows size. Make picture a little bit 
