@@ -51,9 +51,10 @@
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
 enum drill_file_section_t {DRILL_NONE, DRILL_HEADER, DRILL_DATA};
-enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED, DRILL_M_END,
-		     DRILL_M_ENDOFPATTERN, DRILL_M_HEADER, DRILL_M_METRIC, 
-		     DRILL_M_IMPERIAL, DRILL_M_FILENAME};
+enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED,
+		     DRILL_M_END, DRILL_M_MESSAGE,
+		     DRILL_M_HEADER, DRILL_M_METRIC, DRILL_M_IMPERIAL,
+		     DRILL_M_BEGINPATTERN, DRILL_M_ENDPATTERN};
 
 typedef struct drill_state {
     double curr_x;
@@ -124,9 +125,17 @@ parse_drillfile(FILE *fd)
 	    case DRILL_M_HEADER :
 		state->curr_section = DRILL_HEADER;
 	    case DRILL_M_METRIC :
+/*		image->info->unit = MM; */
+		break;
 	    case DRILL_M_IMPERIAL :
+/*		image->info->unit = INCH; */
+		break;
+	    case DRILL_M_MESSAGE :
+		/* Until we have a console, these are ignored */
+		eat_line(fd);
+		break;
 	    case DRILL_M_NOT_IMPLEMENTED :
-	    case DRILL_M_ENDOFPATTERN :
+	    case DRILL_M_ENDPATTERN :
 		break;
 	    case DRILL_M_END :
 		free(state);
@@ -160,9 +169,12 @@ parse_drillfile(FILE *fd)
 
 	    curr_net->start_x = (double)state->curr_x / x_scale;
 	    curr_net->start_y = (double)state->curr_y / y_scale;
-	    curr_net->stop_x = (double)state->curr_x / x_scale;
-	    curr_net->stop_y = (double)state->curr_y / y_scale;
-
+	    curr_net->stop_x = curr_net->start_x;
+	    curr_net->stop_y = curr_net->start_y;
+/*
+	    printf("x: %f  y: %f\n", curr_net->start_x,
+		   curr_net->start_y);
+*/
 	    curr_net->aperture = state->current_tool;
 	    curr_net->aperture_state = FLASH;
 
@@ -212,7 +224,6 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
     int trailing_zeros, max_trailing_zeros = 0;
     char read;
     drill_state_t *state = NULL;
-    gerb_net_t curr_net;
     int done = FALSE;
     int i;
 
@@ -241,10 +252,10 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 	case 'M':
 	    switch(drill_parse_M_code(fd, image)) {
 	    case DRILL_M_METRIC :
-		metric_score++;
+		metric_score += 10;
 		break;
 	    case DRILL_M_IMPERIAL :
-		inch_score++;
+		inch_score += 10;
 		break;
 	    case DRILL_M_END :
 		done = TRUE;
@@ -328,9 +339,12 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
     /* Almost every file seems to use 2.x format (where x is 3-4) */
     image->format->x_dec = max_length - 2;
     image->format->y_dec = max_length - 2;
-    /* KLUDGE for Stefans example file. I'm not excactly sure how to
-       handle this right */
-    if(max_length <= 4) {
+
+    /* A bit of a kludge (or maybe wild ass guess would be more correct)
+       It seems to work, though */
+    if(image->format->omit_zeros == LEADING &&
+       image->format->x_dec <=3 &&
+       image->info->unit == INCH) {
 	++image->format->x_dec ;
 	++image->format->y_dec ;
     }
@@ -400,13 +414,13 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 /*		printf("Tool %02d size %2.4g found\n", tool_num, size); */
 	    }
 	    break;
-	    
+
 	case 'F':
 	case 'S' :
 	    /* Silently ignored. They're not important. */
 	    read_int(fd);
 	    break;
-	    
+
 	default:
 	    /* Stop when finding anything but what's expected
 	       (and put it back) */
@@ -440,19 +454,18 @@ drill_parse_M_code(FILE *fd, gerb_image_t *image)
 	/* Program stop */
 	return DRILL_M_END;
     } else if (strncmp(op, "01", 2) == 0) {
-	return DRILL_M_ENDOFPATTERN;
-    } else if (strncmp(op, "48", 2) == 0) {
-	return DRILL_M_HEADER;
+	return DRILL_M_ENDPATTERN;
+    } else if (strncmp(op, "25", 2) == 0 || strncmp(op, "31", 2) == 0) {
+	/* Pattern start */
+	return DRILL_M_BEGINPATTERN;
     } else if (strncmp(op, "47", 2) == 0) {
-	return DRILL_M_FILENAME;
+	return DRILL_M_MESSAGE;
     } else if (strncmp(op, "48", 2) == 0) {
 	return DRILL_M_HEADER;
     } else if (strncmp(op, "71", 2) == 0) {
-	image->info->unit = MM;
 	eat_line(fd);
 	return DRILL_M_METRIC;
     } else if (strncmp(op, "72", 2) == 0) {
-	image->info->unit = INCH;
 	eat_line(fd);
 	return DRILL_M_IMPERIAL;
     }

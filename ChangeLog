@@ -1,3 +1,10 @@
+2001-11-21 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c:
+	  The format guessing code now guesses right for
+	  one more format.
+	  More M codes recognized (and later ignored).
+	
 2001-11-20 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/scm_gerber.c: Backend didn't receive the last
