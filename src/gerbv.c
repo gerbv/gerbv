@@ -736,6 +736,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	
 	if (project_list) {
 	    load_project(project_list);
+	    redraw_pixmap(screen.drawing_area, TRUE);
 	} else {
 	    GERB_MESSAGE("Failed to load project\n");
 	    goto cb_ok_project_end;
@@ -765,6 +766,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 		tmp->rgb[0] = screen.file[idx]->color->red;
 		tmp->rgb[1] = screen.file[idx]->color->green;
 		tmp->rgb[2] = screen.file[idx]->color->blue;
+		tmp->inverted = screen.file[idx]->inverted;
 		project_list = tmp;
 	    }
 	}
@@ -951,15 +953,14 @@ load_project(project_list_t *project_list)
 	    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
 	    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
 	    gtk_widget_set_style(screen.layer_button[idx], newstyle);
-	    
+
+	    screen.file[idx]->inverted = project_list->inverted;
 	}
 	pl_tmp = project_list;
 	project_list = project_list->next;
 	free(pl_tmp);
     }
 
-    redraw_pixmap(screen.drawing_area, TRUE);
-    
     return;
 } /* load_project */
 
@@ -2515,14 +2516,13 @@ main(int argc, char *argv[])
     if (project_filename) {
 	project_list_t *project_list;
 
-	printf("FOO");
-	fflush(stdout);
 	project_list = read_project_file(project_filename);
-	printf("BAR\n");
-	fflush(stdout);
 	
-	if (project_list) 
+	if (project_list) {
 	    load_project(project_list);
+	} else {
+	    GERB_MESSAGE("Failed to load project\n");
+	}
 
     } else {
 	for(i = optind ; i < argc; i++)

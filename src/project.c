@@ -136,27 +136,28 @@ define_layer(scheme *sc, pointer args)
 	    goto end_name_value_parse;
 	}
 
-	if (layerno == -1) { /* General settings */
-	    if (strcmp(sc->vptr->symname(name), "color") == 0) {
-		get_color(sc, value, plist_top->rgb);
-	    } else
-		GERB_MESSAGE("Illegal name: %s\n", sc->vptr->symname(name));
-	} else {
-	    if (strcmp(sc->vptr->symname(name), "color") == 0) {
-		get_color(sc, value, plist_top->rgb);
-	    } else if (strcmp(sc->vptr->symname(name), "filename") == 0) {
-		tmp_string = get_value_string(sc, value);
-		plist_top->filename = (char *)malloc(strlen(tmp_string) + 1);
-		strncpy(plist_top->filename, tmp_string, strlen(tmp_string) + 1);
-	    } else 
-		GERB_MESSAGE("Illegal name: %s\n", sc->vptr->symname(name));
+	if (strcmp(sc->vptr->symname(name), "color") == 0) {
+	    get_color(sc, value, plist_top->rgb);
+	} else if (strcmp(sc->vptr->symname(name), "filename") == 0) {
+	    tmp_string = get_value_string(sc, value);
+	    plist_top->filename = (char *)malloc(strlen(tmp_string) + 1);
+	    strncpy(plist_top->filename, tmp_string, strlen(tmp_string) + 1);
+	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
+	    if (value ==  sc->F) {
+		plist_top->inverted = 0;
+	    } else if (value == sc->T) {
+		plist_top->inverted = 1;
+	    } else {
+		GERB_MESSAGE("Argument to inverted must be #t or #f\n");
+	    }
 	}
+
 
     end_name_value_parse:
 	car_el = sc->vptr->pair_car(cdr_el);
 	cdr_el = sc->vptr->pair_cdr(cdr_el);
     }
-
+    
     return sc->NIL;
 } /* define_layer */
 
@@ -249,6 +250,8 @@ write_project_file(char *filename, project_list_t *project)
     while (p) {
 	fprintf(fd, "(define-layer! %d ", p->layerno);
 	fprintf(fd, "(cons 'filename \"%s\")", p->filename);
+	if (p->inverted)
+	    fprintf(fd, "(cons 'inverted #t)");
 	fprintf(fd, "(cons 'color #(%d %d %d)))", p->rgb[0], p->rgb[1],
 		p->rgb[2]);
 	fprintf(fd, "\n");

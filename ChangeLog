@@ -1,5 +1,9 @@
 2003-12-07  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerbv.c, src/project.[hc]: Project now saves ev. inversion of
+	  layer, all layers accept all parameters and commandline switch
+	  --project=<project file> also works.
+
 	* src/gerbv.c, src/gerbv_screen.h: Added invert layer functionality.
 	  Closes feature request 777547.
 

@@ -28,6 +28,7 @@ typedef struct project_list_t {
     int layerno;
     char *filename;
     int rgb[3];
+    char inverted;
     struct project_list_t *next;
 } project_list_t;
 
