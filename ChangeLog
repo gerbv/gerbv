@@ -1,3 +1,9 @@
+2004-02-13  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: The good old circles revisited. This time Dan
+	  noticed that circles with the same start and end point did not 
+	  draw properly ie as circles. It became points.
+
 2004-02-08  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in: Apperently auto* doesn't define $prefix if you

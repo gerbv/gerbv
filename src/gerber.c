@@ -866,7 +866,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 
     
     /*
-     * Quadrant detection (based on ccw, coverted below if cw)
+     * Quadrant detection (based on ccw, converted below if cw)
      *  Y ^
      *   /!\
      *    !
@@ -1021,7 +1021,7 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
     /*
      * Make sure it's always positive angles
      */
-    if (net->cirseg->angle1 < 0) {
+    if (net->cirseg->angle1 < 0.0) {
 	net->cirseg->angle1 += 360.0;
 	net->cirseg->angle2 += 360.0;
     }
@@ -1040,10 +1040,10 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
      * uses them. But what the heck, it works for me.
      */
     if (cw) {
-	if (net->cirseg->angle1 < net->cirseg->angle2)
+	if (net->cirseg->angle1 <= net->cirseg->angle2)
 	    net->cirseg->angle2 -= 360.0;
     } else {
-	if (net->cirseg->angle1 > net->cirseg->angle2)
+	if (net->cirseg->angle1 >= net->cirseg->angle2)
 	    net->cirseg->angle2 += 360.0;
     }
 
