@@ -1,5 +1,9 @@
 2002-05-17  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerbv.c, src/gerbv_screen.h: Split out the global
+	  screen variable and it's struct to simplify future 
+	  split of gerbv.c.
+
 	* acconfig.h, configure.in, src/gerbv.c, scm_gerber.c:
 	  Prepared phase out of Guile by changing default to exclude
 	  Guile inclusion.Change flag disable-batch to enable-batch 

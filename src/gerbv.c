@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -53,9 +53,7 @@
 #endif /* GUILE_IN_USE */
 #include "draw.h"
 #include "color.h"
-
-#define INITIAL_SCALE 200
-#define MAX_FILES 20
+#include "gerbv_screen.h"
 
 #ifndef err
 #define err(errcode, a...) \
@@ -72,46 +70,10 @@ typedef struct {
 } gerbv_zoom_data_t;
 
 
-
-typedef enum {NORMAL, MOVE, ZOOM_OUTLINE} gerbv_state_t;
-
-typedef struct {
-    gerb_image_t *image;
-    GdkColor *color;
-} gerbv_fileinfo_t;
-
-
-typedef struct {
-    GtkWidget *drawing_area;
-    GdkPixmap *pixmap;
-    GdkColor  *background;
-    GdkColor  *err_color;
-    GdkColor  *zoom_outline_color;
-    
-    GtkWidget *load_file_popup;
-    GtkWidget *color_selection_popup;
-
-    gerbv_fileinfo_t *file[MAX_FILES];
-    int curr_index;
-    char *path;
-
-    GtkTooltips *tooltips;
-    GtkWidget *layer_button[MAX_FILES];
-    GtkWidget *popup_menu;
-
-    gerbv_state_t state;
-
-    int scale;
-
-    gint last_x;
-    gint last_y;
-    gint zstart_x;		/* Zoom box start coordinates */
-    gint zstart_y;
-
-    int trans_x; /* Translate offset */
-    int trans_y;
-} gerbv_screen_t;
-
+/*
+ * Declared extern in gerbv_screen.h. Global state variable to keep track
+ * of what's happening on the screen.
+ */
 gerbv_screen_t screen;
 
 
