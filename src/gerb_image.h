@@ -108,10 +108,12 @@ typedef struct gerb_image_info {
     enum encoding_t encoding;
     double scale_factor_A;  /* SF parameters */
     double scale_factor_B;
-    int step_and_repeat_X;  /* SR parameters */
-    int step_and_repeat_Y;
-    double step_and_repeat_dist_X;
-    double step_and_repeat_dist_Y;
+    struct {                /* SR parameters */
+	int X;
+	int Y;
+	double dist_X;
+	double dist_Y;
+    } step_and_repeat;
 } gerb_image_info_t;
 
 

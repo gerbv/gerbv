@@ -723,31 +723,38 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	break;
     case A2I('S','R'): /* Step and Repeat */
 	op[0] = gerb_fgetc(fd);
-	if (op[0] != 'X')
-	    GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
-	image->info->step_and_repeat_X = gerb_fgetint(fd);
-
-	op[0] = gerb_fgetc(fd);
-	if (op[0] != 'Y')
-	    GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
-	image->info->step_and_repeat_Y = gerb_fgetint(fd);
-
-	op[0] = gerb_fgetc(fd);
-	if (op[0] != 'I')
-	    GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
-	image->info->step_and_repeat_dist_X = gerb_fgetdouble(fd);
-
-	op[0] = gerb_fgetc(fd);
-	if (op[0] != 'J')
-	    GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
-	image->info->step_and_repeat_dist_Y = gerb_fgetdouble(fd);
-
-	if ((image->info->step_and_repeat_X != 1) || 
-	    (image->info->step_and_repeat_Y != 1) ||
-	    (fabs(image->info->step_and_repeat_dist_X) > 0.000001) ||
-	    (fabs(image->info->step_and_repeat_dist_Y) > 0.000001))
+	if (op[0] == '*') { /* Disable previous SR parameters */
+	    image->info->step_and_repeat.X = 1;
+	    image->info->step_and_repeat.Y = 1;
+	    image->info->step_and_repeat.dist_X = 0.0;
+	    image->info->step_and_repeat.dist_Y = 0.0;
+	    break;
+	}
+	while (op[0] != '*') { 
+	    switch (op[0]) {
+	    case 'X':
+		image->info->step_and_repeat.X = gerb_fgetint(fd);
+		break;
+	    case 'Y':
+		image->info->step_and_repeat.Y = gerb_fgetint(fd);
+		break;
+	    case 'I':
+		image->info->step_and_repeat.dist_X = gerb_fgetdouble(fd);
+		break;
+	    case 'J':
+		image->info->step_and_repeat.dist_Y = gerb_fgetdouble(fd);
+		break;
+	    default:
+		GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
+	    }
+	    op[0] = gerb_fgetc(fd);
+	}
+	if ((image->info->step_and_repeat.X != 1) || 
+	    (image->info->step_and_repeat.Y != 1) ||
+	    (fabs(image->info->step_and_repeat.dist_X) > 0.000001) ||
+	    (fabs(image->info->step_and_repeat.dist_Y) > 0.000001))
 	    NOT_IMPL(fd, "%SR%");
-	break;
+	break;	    
     case A2I('R','O'): /* Rotate */
 	NOT_IMPL(fd, "%RO%");
 	break;

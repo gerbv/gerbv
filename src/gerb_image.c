@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This files is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -32,34 +32,42 @@ gerb_image_t *
 new_gerb_image(gerb_image_t *image)
 {
 
-    image = (gerb_image_t *)malloc(sizeof(gerb_image_t));
-    if (image != NULL) {
-	memset((void *)image, 0, sizeof(gerb_image_t));
-
-	image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-	if (image->netlist != NULL) {
-	    memset((void *)image->netlist, 0, sizeof(gerb_net_t));
-	    
-	    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
-	    if (image->info != NULL) {
-		memset((void *)image->info, 0, sizeof(gerb_image_info_t));
-
-		image->info->min_x = HUGE_VAL;
-		image->info->min_y = HUGE_VAL;
-		image->info->max_x = -HUGE_VAL;
-		image->info->max_y = -HUGE_VAL;
-
-		return image;
-	    }
-	    
-	    free(image->netlist);
-	    image->netlist = NULL;
-	}
+    if ((image = (gerb_image_t *)malloc(sizeof(gerb_image_t))) == NULL) {
 	free(image);
 	image = NULL;
+	return NULL;
     }
+    memset((void *)image, 0, sizeof(gerb_image_t));
     
-    return NULL;
+    if ((image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t))) == NULL) {
+	free(image->netlist);
+	image->netlist = NULL;
+	free(image);
+	image = NULL;
+	return NULL;
+    }
+    memset((void *)image->netlist, 0, sizeof(gerb_net_t));
+    
+    if ((image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t))) == NULL) {
+	free(image->netlist);
+	image->netlist = NULL;
+	free(image->info);
+	image->info = NULL;
+	free(image);
+	image = NULL;
+	return NULL;
+    }
+    memset((void *)image->info, 0, sizeof(gerb_image_info_t));
+    
+    image->info->min_x = HUGE_VAL;
+    image->info->min_y = HUGE_VAL;
+    image->info->max_x = -HUGE_VAL;
+    image->info->max_y = -HUGE_VAL;
+
+    image->info->step_and_repeat.X = 1;
+    image->info->step_and_repeat.Y = 1;
+
+    return image;
 }
 
 
