@@ -1,3 +1,7 @@
+2002-07-15  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_icon.h: Added application icon.
+
 2002-07-13  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in: Added --with-gtk-config to fit FreeBSD 

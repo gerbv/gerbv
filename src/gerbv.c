@@ -55,6 +55,7 @@
 #include "draw.h"
 #include "color.h"
 #include "gerbv_screen.h"
+#include "gerbv_icon.h"
 #ifdef EXPORT_PNG
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
@@ -194,6 +195,21 @@ create_popupmenu(GtkWidget **popupmenu)
 
     return;
 } /* create_popupmenu */
+
+
+void
+set_window_icon (GtkWidget * this_window)
+{
+    GdkPixmap *pixmap;
+    GdkBitmap *mask;
+
+    
+    pixmap = gdk_pixmap_create_from_xpm_d (this_window->window, &mask,
+&this_window->style->bg[GTK_STATE_NORMAL], gerbv_icon_xpm);
+    gdk_window_set_icon (this_window->window, NULL, pixmap, mask);
+
+    return;
+}
 
 
 static void
@@ -1737,7 +1753,7 @@ internal_main(int argc, char *argv[])
     gtk_window_set_title(GTK_WINDOW(main_win), "Gerber Viewer");
     gtk_signal_connect(GTK_OBJECT(main_win), "delete_event", destroy, NULL);
     gtk_signal_connect(GTK_OBJECT(main_win), "destroy", destroy, NULL);
-    
+
     /* 
      * vbox contains menubar and hbox
      */
@@ -1815,6 +1831,7 @@ internal_main(int argc, char *argv[])
 			  | GDK_POINTER_MOTION_HINT_MASK);
     
     gtk_widget_show_all(main_win);
+    set_window_icon(main_win);
 
     /* It seems this has to be done after the button is shown for
        the first time, or we get a segmentation fault */
