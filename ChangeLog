@@ -1,4 +1,12 @@
-2001-12-30 Stefan Petersemn (spe@stacken.kth.se)
+2001-12-31 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c: Started to add functions to be able to draw
+	  aperture macros too. Some aperture macro primitives are 
+	  half way implemented, so the examples in the distribution
+	  should work. Though not 100% properly.
+	
+	
+2001-12-30 Stefan Petersen (spe@stacken.kth.se)
 
         * src/amacro.[hc]: Added, even though I haven't executed 
           an aperture macro program yet. But parsing seems stable.
