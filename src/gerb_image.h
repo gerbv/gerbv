@@ -41,9 +41,7 @@ enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
 enum omit_zeros_t {LEADING, TRAILING, EXPLICIT};
 enum coordinate_t {ABSOLUTE, INCREMENTAL};
 enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
-		      CW_CIRCULAR, CCW_CIRCULAR, 
-		      MQ_START, MQ_END,
-                      PAREA_START, PAREA_END};
+		      CW_CIRCULAR, CCW_CIRCULAR, PAREA_START, PAREA_END};
 enum encoding_t {NONE, ASCII, EBCDIC, BCD, ISO_ASCII, EIA };
 
 

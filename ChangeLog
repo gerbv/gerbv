@@ -1,5 +1,12 @@
 2004-06-24  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerber.c, src/batch.c, src/gerb_image.[hc]: Actually removed
+	  all traces of MQ_END and MQ_START. That means that empty nodes 
+	  with only this information isn't saved, since the only time we need
+	  this information is when parsing arcs. When an arc is parsed
+	  the information wheter that arc is multi or single quadrant is
+	  saved there. Also closes bug #942590.
+
 	* src/gerbv.c, src/gerbv_screen.h, src/gerb_image.c, src/gerb_image.h:
 	  Added possibility to dump a parsed image as text to be able to
 	  debug the parser.

@@ -96,6 +96,7 @@ parse_gerb(gerb_file_t *fd)
      */
     memset((void *)state, 0, sizeof(gerb_state_t));
     state->layer_polarity = DARK;
+
     /* 
      * "Inches are assumed if units are not specified"
      * rs274xrevd_e.pdf, p. 39
@@ -301,9 +302,7 @@ parse_gerb(gerb_file_t *fd)
 	     * gerbers don't reset the interpolation (EagleCad again).
 	     */
 	    if ((state->interpolation == PAREA_START) ||
-		(state->interpolation == PAREA_END) ||
-		(state->interpolation == MQ_START) ||
-		(state->interpolation == MQ_END))
+		(state->interpolation == PAREA_END))
 		state->interpolation = state->prev_interpolation;
 
 	    /*
@@ -422,13 +421,9 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	state->unit = MM;
 	break;
     case 74: /* Disable 360 circular interpolation */
-	state->prev_interpolation = state->interpolation;
-	state->interpolation = MQ_END;
 	state->mq_on = 0;
 	break;
     case 75: /* Enable 360 circular interpolation */
-	state->prev_interpolation = state->interpolation;
-	state->interpolation = MQ_START;
 	state->mq_on = 1;
 	break;
     case 90: /* Specify absolut format */

@@ -180,12 +180,6 @@ gerb_image_interpolation(enum interpolation_t interpolation)
     case CCW_CIRCULAR:
 	printf("CCW circular");
 	break;
-    case MQ_START:
-	printf("multi quadrant start");
-	break;
-    case MQ_END:
-	printf("multi quadrant end");
-	break;
     case  PAREA_START:
 	printf("polygon area start");
 	break;

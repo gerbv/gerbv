@@ -103,10 +103,6 @@ scm_interpolation2scm(enum interpolation_t interpolation)
 	return gh_symbol2scm("cw-circular");
     case CCW_CIRCULAR : 
 	return gh_symbol2scm("ccw-circular");
-    case MQ_START : 
-	return gh_symbol2scm("mq-start");
-    case MQ_END :
-	return gh_symbol2scm("mq-end");
     case PAREA_START :
 	return gh_symbol2scm("polygon-area-start");
     case PAREA_END :
