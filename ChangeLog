@@ -1,3 +1,9 @@
+2004-06-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: By mistake I assumed that all aperture 
+	  macros had exposure flags, but that was a mistake. Drew Moore
+	  pointed it out to me. Thanks.
+
 2004-06-05  Stefan Petersen  <spe@stacken.kth.se>
 
 	* */.cvsignore, man/gerbv.1.in, src/gerbv.c: Minor updates and 

@@ -143,14 +143,22 @@ static void
 gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		 gint x, gint y)
 {
+    const int exposure_idx = 0;
     const int diameter_idx = 1;
     const gint full_circle = 23360;
     GdkGC *local_gc = gdk_gc_new(pixmap);
     gint dia    = round(fabs(s->stack[diameter_idx] * scale));
     gint real_x = x - dia / 2;
     gint real_y = y - dia / 2;
+    GdkColor color;
 
     gdk_gc_copy(local_gc, gc);
+
+    /* Exposure */
+    if (s->stack[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
 
     gdk_gc_set_line_attributes(local_gc, 
 			       1, /* outline always 1 pixels */
@@ -180,6 +188,7 @@ static void
 gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		 gint x, gint y)
 {
+    const int exposure_idx = 0;
     const int nuf_points_idx = 1;
     const int first_x_idx = 2;
     const int first_y_idx = 3;
@@ -188,6 +197,8 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     int nuf_points, point, closed_shape;
     double rotation;
     GdkPoint *points;
+    GdkColor color;
+
 
     nuf_points = (int)s->stack[nuf_points_idx];
     points = (GdkPoint *)malloc(sizeof(GdkPoint) * nuf_points);
@@ -215,6 +226,13 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     }
 
     gdk_gc_copy(local_gc, gc);
+
+    /* Exposure */
+    if (s->stack[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
+
     gdk_gc_set_line_attributes(local_gc, 
 			       1, /* outline always 1 pixels */
 			       GDK_LINE_SOLID, 
@@ -223,7 +241,9 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     gdk_draw_polygon(pixmap, local_gc, closed_shape, points, nuf_points);
 
     free(points);
+
     gdk_gc_unref(local_gc);
+
     return;
 } /* gerbv_draw_prim4 */
 
@@ -235,12 +255,15 @@ static void
 gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		 gint x, gint y)
 {
+    const int exposure_idx = 0;
     const int nuf_vertices_idx = 1;
     const int diameter_idx = 4;
     const int rotation_idx = 5;
     int nuf_vertices, i;
     double vertex, tick, rotation, radius;
     GdkPoint *points;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    GdkColor color;
 
     if (s->sp != 6)
 	return;
@@ -250,6 +273,12 @@ gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     if (!points) {
 	free(points);
 	return;
+    }
+
+    /* Exposure */
+    if (s->stack[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
     }
 
     tick = 2 * M_PI / (double)nuf_vertices;
@@ -262,6 +291,8 @@ gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     }
 
     gdk_draw_polygon(pixmap, gc, 1, points, nuf_vertices);
+
+    gdk_gc_unref(local_gc);
 
     free(points);
     return;
@@ -427,6 +458,7 @@ static void
 gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		  gint x, gint y)
 {
+    const int exposure_idx = 0;
     const int linewidth_idx = 1;
     const int start_x_idx = 2;
     const int start_y_idx = 3;
@@ -436,9 +468,16 @@ gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     const int nuf_points = 2;
     GdkGC *local_gc = gdk_gc_new(pixmap);
     GdkPoint points[nuf_points];
+    GdkColor color;
     int i;
 
     gdk_gc_copy(local_gc, gc);
+
+    /* Exposure */
+    if (s->stack[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
 
     gdk_gc_set_line_attributes(local_gc, 
 			       (int)round(scale * s->stack[linewidth_idx]),
@@ -474,11 +513,14 @@ static void
 gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		  gint x, gint y)
 {
+    const int exposure_idx = 0;
     const int width_idx = 1;
     const int height_idx = 2;
     const int rotation_idx = 5;
     const int nuf_points = 4;
     GdkPoint points[nuf_points];
+    GdkColor color;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
     int half_width, half_height;
     int i;
 
@@ -503,7 +545,15 @@ gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	points[i].y += y;
     }
 
+    /* Exposure */
+    if (s->stack[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
+
     gdk_draw_polygon(pixmap, gc, 1, points, nuf_points);
+
+    gdk_gc_unref(local_gc);
 
     return;
 } /* gerbv_draw_prim21 */
@@ -516,6 +566,7 @@ static void
 gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		  gint x, gint y)
 {
+    const int exposure_idx = 0;
     const int width_idx = 1;
     const int height_idx = 2;
     const int x_lower_left_idx = 3;
@@ -523,6 +574,8 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     const int rotation_idx = 5;
     const int nuf_points = 4;
     GdkPoint points[nuf_points];
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    GdkColor color;
     int i;
 
     points[0].x = (int)round(s->stack[x_lower_left_idx] * scale);
@@ -546,8 +599,16 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	points[i].x += x;
 	points[i].y += y;
     }
+    
+    /* Exposure */
+    if (s->stack[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
 
     gdk_draw_polygon(pixmap, gc, 1, points, nuf_points);
+
+    gdk_gc_unref(local_gc);
 
     return;
 } /* gerbv_draw_prim22 */
@@ -561,9 +622,6 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
     stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
     int handled = 1;
-    const int exposure_idx = 0;
-    GdkGC *local_gc = gdk_gc_new(pixmap);
-    GdkColor color;
     
     for(ip = program; ip != NULL; ip = ip->next) {
 	switch(ip->opcode) {
@@ -593,37 +651,31 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	     * The exposure is always the first element on stack independent
 	     * of aperture macro.
 	     */
-	    gdk_gc_copy(local_gc, gc);
-	    if (s->stack[exposure_idx] == 0.0) {
-		color.pixel = 0;
-		gdk_gc_set_foreground(local_gc, &color);
-	    }
-
 	    switch(ip->data.ival) {
 	    case 1:
-		gerbv_draw_prim1(pixmap, local_gc, s, scale, x, y);
+		gerbv_draw_prim1(pixmap, gc, s, scale, x, y);
 		break;
 	    case 4 :
-		gerbv_draw_prim4(pixmap, local_gc, s, scale, x, y);
+		gerbv_draw_prim4(pixmap, gc, s, scale, x, y);
 		break;
 	    case 5 :
-		gerbv_draw_prim5(pixmap, local_gc, s, scale, x, y);
+		gerbv_draw_prim5(pixmap, gc, s, scale, x, y);
 		break;
 	    case 6 :
-		gerbv_draw_prim6(pixmap, local_gc, s, scale, x, y);
+		gerbv_draw_prim6(pixmap, gc, s, scale, x, y);
 		break;
 	    case 7 :
-		gerbv_draw_prim7(pixmap, local_gc, s, scale, x, y);
+		gerbv_draw_prim7(pixmap, gc, s, scale, x, y);
 		break;
 	    case 2  :
 	    case 20 :
-		gerbv_draw_prim20(pixmap, local_gc, s, scale, x, y);
+		gerbv_draw_prim20(pixmap, gc, s, scale, x, y);
 		break;
 	    case 21 :
-		gerbv_draw_prim21(pixmap, local_gc, s, scale, x, y);
+		gerbv_draw_prim21(pixmap, gc, s, scale, x, y);
 		break;
 	    case 22 :
-		gerbv_draw_prim22(pixmap, local_gc, s, scale, x, y);
+		gerbv_draw_prim22(pixmap, gc, s, scale, x, y);
 		break;
 	    default :
 		handled = 0;
@@ -641,6 +693,6 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	}
     }
     free_stack(s);
-    gdk_gc_unref(local_gc);
+
     return handled;
 } /* gerbv_draw_amacro */
