@@ -183,9 +183,11 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		 gint x, gint y)
 {
     const int nuf_points_idx = 1;
+    const int first_x_idx = 2;
+    const int first_y_idx = 3;
     const int rotext_idx = 4;
     GdkGC *local_gc = gdk_gc_new(pixmap);
-    int nuf_points, point;
+    int nuf_points, point, closed_shape;
     double rotation;
     GdkPoint *points;
 
@@ -196,11 +198,20 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	return;
     }
 
+    /*
+     * Closed (ie filled as I interpret it) shape if first and last point
+     * are the same.
+     */
+    closed_shape = 
+	(abs(s->stack[first_x_idx] - s->stack[nuf_points * 2 + first_x_idx]) < 0.0001) &&
+	(abs(s->stack[first_y_idx] - s->stack[nuf_points * 2 + first_y_idx]) < 0.0001);
+
     rotation = s->stack[nuf_points * 2 + rotext_idx];
     for (point = 0; point < nuf_points; point++) {
-	points[point].x = (int)round(scale * s->stack[point * 2 + 2]);
-	points[point].y = -(int)round(scale * s->stack[point * 2 + 3]);
-	points[point] = rotate_point(points[point], rotation);
+	points[point].x = (int)round(scale * s->stack[point * 2 + first_x_idx]);
+	points[point].y = -(int)round(scale * s->stack[point * 2 + first_y_idx]);
+	if (rotation > 0.1)
+	    points[point] = rotate_point(points[point], rotation);
 	points[point].x += x;
 	points[point].y += y;
     }
@@ -211,7 +222,7 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 			       GDK_LINE_SOLID, 
 			       GDK_CAP_BUTT, 
 			       GDK_JOIN_MITER);
-    gdk_draw_polygon(pixmap, local_gc, 0, points, nuf_points);
+    gdk_draw_polygon(pixmap, local_gc, closed_shape, points, nuf_points);
 
     free(points);
     gdk_gc_unref(local_gc);

@@ -5,6 +5,10 @@
 	* src/draw_amacro.c: Fixed bug when drawing primitive 4 causing
 	  rotation to be wrong. Thanks to Jonas (you know who you are) for 
 	  the excellent files.
+	* src/draw_amacro.c: Changed interpretation of "closed shape" in
+	  primitive 4. If first point is the same as the last point it's
+	  a closed shape, ie filled according to my interpretation. Don't
+	  know if it's a correct interpretation.
 
 2002-06-10  Anders Eriksson  <anders@umunet.org>
 
