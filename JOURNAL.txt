@@ -1,0 +1,5 @@
+This file is intended to be a scratch pad storing
+design, implementation notes, questions and answers, short
+term TODO lists etc. Feel free to put anything here.
+
+

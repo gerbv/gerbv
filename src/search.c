@@ -103,37 +103,42 @@ double get_float_unit(char *str)
 }/*get_float_unit*/
 
 
-char pnp_screen_for_delimiter(char str[MAXL+2])
+int pnp_screen_for_delimiter(char *str, int n)
 {
-    char *rest_of_line, tmp_buf[MAXL+2];
+    char *ptr;
     char delimiter[4] = "|,;:";
-    int counter, idx0;   
+    int counter[4];
+    int idx, idx_max = 0;
     
-    
-    memset  (tmp_buf, 0, sizeof(tmp_buf));
-    sprintf (tmp_buf, "%.*s", sizeof(tmp_buf)-1, str);
-    for (idx0 = 0; idx0 <4; idx0++) {
-        counter = 0;
-        if (strchr(tmp_buf, delimiter[idx0]) != NULL) {
-
-            rest_of_line = strrchr(tmp_buf, delimiter[idx0]);       
-            while (rest_of_line  != NULL) {
-                if (rest_of_line != 0)		/* If STRCHR returns an address for '|' then */
-                    *rest_of_line = '\0';		/* stick a null character at that address and so shorten the original line. */
-                counter++;    
-                rest_of_line = strrchr(tmp_buf, delimiter[idx0]);
-            }
-            if (counter > 5) {
-                //printf("delimiter is: %c", delimiter[idx0]);
-                return delimiter[idx0];
-            }
-   
-       // printf("it is in there:%p", strrchr(tmp_buf, delimiter[idx0]));    
-        }        
+    memset(counter, 0, sizeof(counter));
+    for(ptr=str; *ptr; ptr++) {
+        switch(*ptr) {
+        case '|':
+            idx = 0;
+            break;
+        case ',':
+            idx = 1;
+            break;
+        case ';':
+            idx = 2;
+            break;
+        case ':':
+            idx = 3;
+            break;
+        default:
+            continue;
+            break;
+        }
+        counter[idx]++;
+        if(counter[idx]>counter[idx_max]) {
+            idx_max = idx;
+        }
     }
-   
-    return '?';/* does not seem to be a csv-style file*/
-
+    if (counter[idx_max] > n) {
+        return (unsigned char) delimiter[idx_max];
+    } else {
+        return -1;
+    }
 }/*pnp_screen_for_delimiter*/
 
 
@@ -144,20 +149,18 @@ char pnp_screen_for_delimiter(char str[MAXL+2])
 pnp_state_t *parse_pnp(pnp_file_t *fd)
 {
     pnp_state_t      *pnp_state = NULL;
+    pnp_state_t      *pnp_state0 = NULL;
     int               line_counter = 0;
     int               ret;
   //  GtkTreeSelection *tmp_sel;
-    char             *row[12], delimiter;
+    char             *row[12];
+    int delimiter;
     char              buf[MAXL+2], buf0[MAXL+2];
     
     /* added by t.motylewski@bfad.de
      * many locales redefine "." as "," and so on, so sscanf has problems when
      * reading Pick and Place files using %f format */
-
     setlocale(LC_NUMERIC, "C" );
-     
-    pnp_state = new_pnp_state();
-    parsed_PNP_data = pnp_state;/*Global storage, for data reload, e.g. if search_window was destroyed*/
 
     while ( fgets(buf, MAXL, fd->fd) != NULL ) {
 	int len = strlen(buf)-1;
@@ -174,11 +177,18 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 	    continue;
 	}
 	/* this accepts file both with and without quotes */
-        if ((delimiter = pnp_screen_for_delimiter(buf)) == '?') {
+        if ((delimiter = pnp_screen_for_delimiter(buf, 8)) < 0) {
             continue;
         }
         ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 11, delimiter,   CSV_QUOTES);
-       // printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
+        // printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
+        
+        if(pnp_state) {
+            pnp_state = pnp_state->next = new_pnp_state();
+        } else {
+            // first element
+            pnp_state0 = pnp_state = new_pnp_state();
+        }
    
         if (row[0] && row[8]) { // here could be some better check for the syntax
 	    int i_length=0, i_width = 0;
@@ -202,7 +212,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 		} else 
                     sprintf (pnp_state->comment, "%.*s", sizeof(pnp_state->comment)-1, row[10]);
             }
-/*
+    /*
     gchar* g_convert(const gchar *str, gssize len, const gchar *to_codeset, const gchar *from_codeset, gsize *bytes_read, gsize *bytes_written, GError **error);
     */
             pnp_state->mid_x = get_float_unit(row[2]);
@@ -246,143 +256,30 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
              gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
              gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
 	        0, pnp_state->designator, 
-	        1, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL), -1);
+	        1, pnp_state->comment,
+                -1);
  
              pnp_state->next = new_pnp_state();
              pnp_state = pnp_state->next;
         }    
     }   
 
- 
-   
-#if 0 
-#ifdef HAVE_SYS_MMAN_H
-    char buf[MAXL+1];
-    
-    while (fgets(buf, MAXL, fd->fd) != NULL) {
-    if(buf[strlen(buf)-1] == '\n')
-        buf[strlen(buf)-1] = 0;
-    if(buf[strlen(buf)-1] == '\r')
-        buf[strlen(buf)-1] = 0;
-   
-    ret = sscanf(buf, "%100[^,],%100[^,],%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%100[^,],%lf,%100[^\n]",
-        pnp_state->designator, pnp_state->footprint, &pnp_state->mid_x, &pnp_state->mid_y, &pnp_state->ref_x, &pnp_state->ref_y, &pnp_state->pad_x, &pnp_state->pad_y,
-        pnp_state->layer, &pnp_state->rotation, pnp_state->comment);
-    /*fprintf(stderr,"layer:%s: ", pnp_state->layer);
-    fprintf(stderr,"mid_x:%f: ",pnp_state-> mid_x);
-    fprintf(stderr,"comment:%s:", pnp_state->comment);*/
-    
-    if(ret<11) {
-        GERB_MESSAGE("wrong line format(%d): %s\n", ret, buf);
-        continue;
-    } 
-    eat_line_pnp(fd);
-    gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
-    gtk_list_store_set (GTK_LIST_STORE(fd->model), &interface.iter,
-			COLUMN_DESIGNATOR, pnp_state->designator, 
-			COLUMN_footprint, pnp_state->footprint,
-			COLUMN_mid_x, pnp_state->mid_x,
-			COLUMN_mid_y, pnp_state->mid_y ,
-			COLUMN_ref_x, pnp_state->ref_x,
-			COLUMN_ref_y, pnp_state->ref_y,
-			COLUMN_pad_x, pnp_state->pad_x,
-			COLUMN_pad_y, pnp_state->pad_y,
-                        COLUMN_LAYER, pnp_state->layer,
-                        COLUMN_rotation, pnp_state->rotation,
-                        COLUMN_COMMENT, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL),
-			COLUMN_NO_FILES_FOUND, FALSE,
-			-1);
-                        
-     gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
-     gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
-			0, pnp_state->designator, 
-		        1, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL), -1);
- 
-    line_counter += 1;/*next line*/
-    pnp_state->next = new_pnp_state();
-    pnp_state = pnp_state->next;
-    }   
-#else
-#if defined (__MINGW32__)
-    char buf[MAXL];
- 
-  while (fgets(buf, MAXL, fd->fd) != NULL) {
-
-    if(buf[strlen(buf)-1] == '\n')
-        buf[strlen(buf)-1] = 0;
-    if(buf[strlen(buf)-1] == '\r')
-        buf[strlen(buf)-1] = 0;
-   
-    ret = sscanf(buf, "%100[^,],%100[^,],%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%100[^,],%lf,%100[^X]",
-        pnp_state->designator, pnp_state->footprint, &pnp_state->mid_x, &pnp_state->mid_y, &pnp_state->ref_x, &pnp_state->ref_y, &pnp_state->pad_x, &pnp_state->pad_y,
-        pnp_state->layer, &pnp_state->rotation, pnp_state->comment);
-    /*fprintf(stderr,"layer:%s: ", pnp_state->layer);
-    fprintf(stderr,"mid_x:%f: ",pnp_state-> mid_x);
-    fprintf(stderr,"comment:%s:", pnp_state->comment);*/
-    
-    if(ret<11) {
-        GERB_MESSAGE("wrong line format: %s\n", buf);
-        continue;
-    }
-    
-    eat_line_pnp(fd);
-    gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
-    gtk_list_store_set (GTK_LIST_STORE(fd->model), &interface.iter,
-			COLUMN_DESIGNATOR, pnp_state->designator, 
-			COLUMN_footprint, pnp_state->footprint,
-			COLUMN_mid_x, pnp_state->mid_x,
-			COLUMN_mid_y, pnp_state->mid_y ,
-			COLUMN_ref_x, pnp_state->ref_x,
-			COLUMN_ref_y, pnp_state->ref_y,
-			COLUMN_pad_x, pnp_state->pad_x,
-			COLUMN_pad_y, pnp_state->pad_y,
-                        COLUMN_LAYER, pnp_state->layer,
-                        COLUMN_rotation, pnp_state->rotation,
-                        COLUMN_COMMENT, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL),
-			COLUMN_NO_FILES_FOUND, FALSE,
-			-1);
-                        
-     gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
-     gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
-			0, pnp_state->designator, 
-		        1, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL), -1);
-
-    
-    line_counter += 1;/*next line*/
-    pnp_state->next = new_pnp_state();
-    pnp_state = pnp_state->next;
-    }             
-#endif
-#endif
-#endif /*#if 0*/
-    pnp_state->next = NULL;
-    /* create list of all entries as a Glist for convenient use later
-     * (uparrow movements in assembly mode) 
-    tmp_sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface.tree));
-    gtk_tree_selection_select_all (tmp_sel);
-    interface.PNP_entries_list = gtk_tree_selection_get_selected_rows
-                                            (GTK_TREE_SELECTION(tmp_sel),
-                                             (GtkTreeModel **)&interface.model);
-    gtk_tree_selection_unselect_all (tmp_sel); */                                            
-    return pnp_state;
+    /*Global storage, for data reload, e.g. if search_window was destroyed*/
+    parsed_PNP_data = pnp_state0;
+           
+    return pnp_state0; /* return the FIRST, not last list node */
 }
 
 
 void 
 free_pnp_state(pnp_state_t *pnp_state)
 {
-    pnp_state_t *pnp1, *pnp2;
+    pnp_state_t *pnp_next;
    
-    
-    pnp1 = pnp_state;
-    while (pnp1 != NULL) {
-//	free(pnp1->designator);
-//	pnp1->designator = NULL;
-	
-	pnp2 = pnp1;
-	pnp1 = pnp1->next;
-	free(pnp2);
-	pnp2 = NULL;
+    while (pnp_state != NULL) {
+	pnp_next = pnp_state->next;
+        free(pnp_state);
+        pnp_state = pnp_next;
     }
 	
     return;

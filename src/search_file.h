@@ -30,10 +30,6 @@
 
 typedef struct pnp_file {
     FILE *fd;
-//    int   fileno;
-//    char *data;
-//    int   datalen;
-//    int   ptr;
     GtkListStore     	*model;	
 
 } pnp_file_t;
