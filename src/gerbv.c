@@ -79,7 +79,7 @@ typedef struct gerbv_screen {
     GdkColor  *background;
     GdkColor  *err_color;
     
-    GtkWidget *open_file_popup;
+    GtkWidget *load_file_popup;
     GtkWidget *color_selection_popup;
 
     gerbv_fileinfo_t *file[MAX_FILES];
@@ -105,7 +105,8 @@ gerbv_screen_t screen;
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void color_selection_popup(GtkWidget *widget, gpointer data);
-static void open_file_popup(GtkWidget *widget, gpointer data);
+static void load_file_popup(GtkWidget *widget, gpointer data);
+static void unload_file(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static gint redraw_pixmap(GtkWidget *widget);
 static void open_image(char *filename, int index);
@@ -129,8 +130,10 @@ destroy(GtkWidget *widget, gpointer data)
 
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",      NULL,          NULL,    0, "<Branch>"},
-    {"/File/Open _File...", "<alt>F", open_file_popup,    0, NULL},
+    /* Space for project file handling
+    {"/File/Open _File...", "<alt>F", load_file_popup,    0, NULL},
     {"/File/sep1",  NULL,          NULL,    0, "<Separator>"},
+    */
     {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
     {"/_Zoom",      NULL,          NULL,    0, "<Branch>"},
     {"/Zoom/_Out",  "<alt>O", zoom     ,    0, NULL},
@@ -141,7 +144,8 @@ static GtkItemFactoryEntry menu_items[] = {
 
 static GtkItemFactoryEntry popup_menu_items[] = {
     {"/Layer Color...", NULL, color_selection_popup, 0, NULL},
-    {"/Open _File...", NULL, open_file_popup, 0, NULL},
+    {"/Load File...", NULL, load_file_popup, 0, NULL},
+    {"/Unload File...", NULL, unload_file, 0, NULL},
 };
 
 
@@ -369,7 +373,7 @@ color_selection_popup(GtkWidget *widget, gpointer data)
 
 
 static void
-cb_ok_open_file(GtkWidget *widget, GtkFileSelection *fs)
+cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 {
     open_image(gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs)), 
 	       screen.curr_index);
@@ -377,38 +381,76 @@ cb_ok_open_file(GtkWidget *widget, GtkFileSelection *fs)
     /* Make loaded image appear on screen */
     redraw_pixmap(screen.drawing_area);
 
-    gtk_grab_remove(screen.open_file_popup);
+    gtk_grab_remove(screen.load_file_popup);
     
-    screen.open_file_popup = NULL;
+    screen.load_file_popup = NULL;
 
     return;
-} /* cb_ok_open_file */
+} /* cb_ok_load_file */
 
 
 static void
-open_file_popup(GtkWidget *widget, gpointer data)
+load_file_popup(GtkWidget *widget, gpointer data)
 {
-    screen.open_file_popup = gtk_file_selection_new("Select File To View");
+    screen.load_file_popup = gtk_file_selection_new("Select File To View");
     
     gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.open_file_popup)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_ok_open_file), 
-	 (gpointer)screen.open_file_popup);
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->ok_button),
+	 "clicked", GTK_SIGNAL_FUNC(cb_ok_load_file), 
+	 (gpointer)screen.load_file_popup);
     gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.open_file_popup)->ok_button),
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.open_file_popup);
+	 (gpointer)screen.load_file_popup);
     gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.open_file_popup)->cancel_button),
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->cancel_button),
 	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.open_file_popup);
+	 (gpointer)screen.load_file_popup);
     
-    gtk_widget_show(screen.open_file_popup);
+    gtk_widget_show(screen.load_file_popup);
 
-    gtk_grab_add(screen.open_file_popup);
+    gtk_grab_add(screen.load_file_popup);
     
     return;
-} /* open_file_popup */
+} /* load_file_popup */
+
+
+static void
+unload_file(GtkWidget *widget, gpointer data)
+{
+    int idx = screen.curr_index;
+    GtkStyle *defstyle;
+
+    if (screen.file[idx] == NULL)
+	return;
+
+    /*
+     * Deselect the layer we're unloading so it's not left in the pixmap
+     */
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[idx]),
+				 FALSE);
+
+    /* 
+     * Remove color on layer button (set default style) 
+     */
+    defstyle = gtk_widget_get_default_style();
+    gtk_widget_set_style(screen.layer_button[idx], defstyle);
+
+    /* 
+     * Remove tool tips 
+     */
+    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx], 
+			 NULL, NULL); 
+
+    /* 
+     * Remove data struct 
+     */
+    free_gerb_image(screen.file[idx]->image);  screen.file[idx]->image = NULL;
+    free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
+    free(screen.file[idx]);  screen.file[idx] = NULL;
+
+    return;
+} /* unload_file */
 
 
 static void
@@ -805,8 +847,8 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
     /*
      * Raise popup windows if they happen to disappear
      */
-    if (screen.open_file_popup && screen.open_file_popup->window)
-	gdk_window_raise(screen.open_file_popup->window);
+    if (screen.load_file_popup && screen.load_file_popup->window)
+	gdk_window_raise(screen.load_file_popup->window);
     if (screen.color_selection_popup && screen.color_selection_popup->window)
 	gdk_window_raise(screen.color_selection_popup->window);
 

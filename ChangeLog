@@ -1,3 +1,10 @@
+2002-04-27 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Changed name for all *open* functions to 
+	  *load*. Implemented "unload file" in right-click popup,
+	  which closes feature req. 548124.
+	
+
 2002-04-24 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerb_file.c: Fixed bug causing segfault when opening
