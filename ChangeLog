@@ -1,3 +1,7 @@
+2003-03-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.h,src/gerber.c: angles are floats.
+
 2003-03-03  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw_gdk.c: one-pixel overshoot bug fixed by Holger.
