@@ -65,6 +65,12 @@
 #endif
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE} gerbv_zoom_dir_t;
+typedef struct {
+    gerbv_zoom_dir_t z_dir;
+    GdkEventButton *z_event;
+} gerbv_zoom_data_t;
+
+
 
 typedef enum {NORMAL, MOVE} gerbv_state_t;
 
@@ -108,6 +114,7 @@ static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void color_selection_popup(GtkWidget *widget, gpointer data);
 static void load_file_popup(GtkWidget *widget, gpointer data);
 static void unload_file(GtkWidget *widget, gpointer data);
+static void menu_zoom(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static gint redraw_pixmap(GtkWidget *widget);
 static void open_image(char *filename, int index);
@@ -137,10 +144,10 @@ static GtkItemFactoryEntry menu_items[] = {
     */
     {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
     {"/_Zoom",      NULL,          NULL,    0, "<Branch>"},
-    {"/Zoom/_Out",  "<alt>O", zoom     ,    ZOOM_OUT, NULL},
-    {"/Zoom/_In",   "<alt>I", zoom     ,    ZOOM_IN, NULL},
+    {"/Zoom/_Out",  "<alt>O", menu_zoom     ,    ZOOM_OUT, NULL},
+    {"/Zoom/_In",   "<alt>I", menu_zoom     ,    ZOOM_IN, NULL},
     {"/Zoom/sep1",  NULL,          NULL,    0, "<Separator>"},
-    {"/Zoom/_Fit",  NULL,     zoom     ,    ZOOM_FIT, NULL},
+    {"/Zoom/_Fit",  NULL,     menu_zoom     ,    ZOOM_FIT, NULL},
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
@@ -495,13 +502,50 @@ autoscale()
     return;
 } /* autoscale */
 
+static gboolean idle_redraw_pixmap_active = FALSE;
+/*
+ * On idle callback to ensure a zoomed image is properly redrawn
+ */
+gboolean
+idle_redraw_pixmap(gpointer data)
+{
+    idle_redraw_pixmap_active = FALSE;
+    redraw_pixmap((GtkWidget *) data);
+    return FALSE;
+}
+
+void start_idle_redraw_pixmap(GtkWidget *data)
+{
+    if (!idle_redraw_pixmap_active) {
+	gtk_idle_add(idle_redraw_pixmap, (gpointer) data);
+	idle_redraw_pixmap_active = TRUE;
+    }
+}
+
+void stop_idle_redraw_pixmap(GtkWidget *data)
+{
+    if (idle_redraw_pixmap_active) {
+	gtk_idle_remove_by_data ((gpointer)data);
+	idle_redraw_pixmap_active = FALSE;
+    }
+}
+
+static void
+menu_zoom(GtkWidget *widget, gpointer data)
+{
+    gerbv_zoom_data_t z_data = { (gerbv_zoom_dir_t)data, NULL };
+
+    zoom(widget, &z_data);
+}
 
 static void
 zoom(GtkWidget *widget, gpointer data)
 {
-    double us_midx, us_midy; /* unscaled translation for screen center */
+    double us_midx, us_midy;	/* unscaled translation for screen center */
     int half_w, half_h;		/* cache for half window dimensions */
-    int mouse_delta_x, mouse_delta_y; /* Delta for mouse to window center */
+    int mouse_delta_x = 0;	/* Delta for mouse to window center */
+    int mouse_delta_y = 0;
+    gerbv_zoom_data_t *z_data = (gerbv_zoom_data_t *) data;
 
     if (screen.file[screen.curr_index] == NULL)
 	return;
@@ -509,12 +553,10 @@ zoom(GtkWidget *widget, gpointer data)
     half_w = screen.drawing_area->allocation.width / 2;
     half_h = screen.drawing_area->allocation.height / 2;
 
-    if ((gerbv_zoom_dir_t)data == ZOOM_IN_CMOUSE ||
-	(gerbv_zoom_dir_t)data == ZOOM_OUT_CMOUSE) {
-	gtk_widget_get_pointer(screen.drawing_area, &mouse_delta_x,
-			       &mouse_delta_y);
-	mouse_delta_x = half_w - mouse_delta_x;
-	mouse_delta_y = half_h - mouse_delta_y;
+    if (z_data->z_dir == ZOOM_IN_CMOUSE ||
+	z_data->z_dir == ZOOM_OUT_CMOUSE) {
+	mouse_delta_x = half_w - z_data->z_event->x;
+	mouse_delta_y = half_h - z_data->z_event->y;
 	screen.trans_x -= mouse_delta_x;
 	screen.trans_y -= mouse_delta_y;
     }
@@ -522,7 +564,7 @@ zoom(GtkWidget *widget, gpointer data)
     us_midx = (screen.trans_x + half_w)/(double) screen.scale;
     us_midy = (screen.trans_y + half_h)/(double) screen.scale;
 
-    switch((gerbv_zoom_dir_t)data) {
+    switch(z_data->z_dir) {
     case ZOOM_IN : /* Zoom In */
     case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
 	screen.scale += 10;
@@ -544,14 +586,21 @@ zoom(GtkWidget *widget, gpointer data)
 	fprintf(stderr, "Illegal zoom direction %ld\n", (long int)data);
     }
 
-    if ((gerbv_zoom_dir_t)data == ZOOM_IN_CMOUSE ||
-	(gerbv_zoom_dir_t)data == ZOOM_OUT_CMOUSE) {
+    if (z_data->z_dir == ZOOM_IN_CMOUSE ||
+	z_data->z_dir == ZOOM_OUT_CMOUSE) {
 	screen.trans_x += mouse_delta_x;
 	screen.trans_y += mouse_delta_y;
     }
-    
-    redraw_pixmap(screen.drawing_area);
-    
+
+    /* Redraw screen unless we have more events to process */
+    if (!g_main_pending()) {
+	stop_idle_redraw_pixmap(screen.drawing_area);
+	redraw_pixmap(screen.drawing_area);
+    } else {
+	/* Set idle function to ensure we wont miss to redraw */
+	start_idle_redraw_pixmap(screen.drawing_area);
+    }
+
     return;
 } /* zoom */
 
@@ -580,10 +629,26 @@ redraw_pixmap(GtkWidget *widget)
     GdkGC *gc = gdk_gc_new(widget->window);
     GdkRectangle update_rect;
     int file_loaded = 0;
+    GdkWindow *window;
+
+    window = gtk_widget_get_parent_window(widget);
+    /* This might be lengthy, show that we're busy by changing the pointer */
+    if (window) {
+	GdkCursor *cursor;
+
+	cursor = gdk_cursor_new(GDK_WATCH);
+	gdk_window_set_cursor(window, cursor);
+	gdk_cursor_destroy(cursor);
+    }
 
     /* Called first when opening window and then when resizing window */
 
     for(i = 0; i < MAX_FILES; i++) {
+	if (g_main_pending()) {
+	    /* Set idle function to ensure we wont miss to redraw */
+	    start_idle_redraw_pixmap(screen.drawing_area);
+	    goto redraw_pixmap_end;
+	}
 	if (screen.file[i]) {
 	    file_loaded = 1;
 	    /* 
@@ -650,6 +715,11 @@ redraw_pixmap(GtkWidget *widget)
     /* This now allows drawing several layers on top of each other.
        Higher layer numbers have higher priority in the Z-order. */
     for(i = 0; i < MAX_FILES; i++) {
+	if (g_main_pending()) {
+	    /* Set idle function to ensure we wont miss to redraw */
+	    start_idle_redraw_pixmap(screen.drawing_area);
+	    goto redraw_pixmap_end;
+	}
 	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
 	    screen.file[i]) {
 	    image2pixmap(&screen.pixmap, screen.file[i]->image, 
@@ -669,6 +739,12 @@ redraw_pixmap(GtkWidget *widget)
      * Calls expose_event
      */
     gtk_widget_draw(widget, &update_rect);
+
+redraw_pixmap_end:
+    /* Return default pointer shape */
+    if (window) {
+	gdk_window_set_cursor(window, NULL);
+    }
 
     gdk_gc_unref(gc);
 
@@ -742,6 +818,9 @@ configure_event (GtkWidget *widget, GdkEventConfigure *event)
 static gint
 button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
+    gerbv_zoom_data_t data;
+    gboolean do_zoom = FALSE;
+
     switch (event->button) {
     case 1 :
 	screen.state = MOVE;
@@ -751,26 +830,34 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
     case 2 :
 	/* And now, some Veribest-like mouse commands for
 	   all us who dislike scroll wheels ;) */
+	do_zoom = TRUE;
 	if((event->state & GDK_SHIFT_MASK) != 0) {
 	    /* Middle button + shift == zoom in */
-	    zoom(widget, (gpointer)ZOOM_IN_CMOUSE);
+	    data.z_dir = ZOOM_IN_CMOUSE;
 	} else {
 	    /* Only middle button == zoom out */
-	    zoom(widget, (gpointer)ZOOM_OUT_CMOUSE);
+	    data.z_dir = ZOOM_OUT_CMOUSE;
 	}
 	break;
     case 3 :
 	/* Add color selection code here? */
 	break;
     case 4 :
-	zoom(widget, (gpointer)ZOOM_IN_CMOUSE);
+	data.z_dir = ZOOM_IN_CMOUSE;
+	do_zoom = TRUE;
 	break;
     case 5 : 
-	zoom(widget, (gpointer)ZOOM_OUT_CMOUSE);
+	data.z_dir = ZOOM_OUT_CMOUSE;
+	do_zoom = TRUE;
 	break;
     default:
     }
-    
+
+    if (do_zoom) {
+	data.z_event = event;
+	zoom(widget, &data);
+    }
+
     return TRUE;
 } /* button_press_event */
 
