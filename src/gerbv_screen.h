@@ -29,6 +29,10 @@
 
 #define INITIAL_SCALE 200
 #define MAX_FILES 20
+#define MAX_ERRMSGLEN 45
+#define MAX_COORDLEN 50
+#define MAX_DISTLEN 75
+#define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
 
 typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE} gerbv_state_t;
 
@@ -65,10 +69,9 @@ typedef struct {
     struct {
 	GtkWidget *msgs;
 	guint msgid;
-	GtkWidget *abs;
-	guint absid;
-	GtkWidget *rel;
-	guint relid;
+	char msgstr[MAX_ERRMSGLEN];
+	char coordstr[MAX_COORDLEN];
+	char diststr[MAX_DISTLEN];
     } statusbar;
 
     gerbv_state_t state;

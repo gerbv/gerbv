@@ -6,6 +6,9 @@
 	  the absolute coordinates right. Partly closes feature
 	  request 567965 (still need to add error messages and fix
 	  the layout).
+	  * Fixed some of the layout issues. Now uses only one statusbar
+	  widget instead of three. The message is composed from three
+	  strings. Still no error messages.
 
 2002-06-20  Anders Eriksson  <anders@umunet.org>
 

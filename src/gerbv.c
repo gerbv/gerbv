@@ -96,6 +96,7 @@ static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget);
 static void open_image(char *filename, int idx, int reload);
+static void update_statusbar(gerbv_screen_t *scr);
 
 
 void
@@ -1174,6 +1175,9 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 
 	screen.state = NORMAL;
 
+	screen.statusbar.diststr[0] = '\0';
+	update_statusbar(&screen);
+
 	update_rect.x = 0, update_rect.y = 0;
 	update_rect.width =	widget->allocation.width;
 	update_rect.height = widget->allocation.height;
@@ -1219,22 +1223,15 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
     }
     
     if (screen.pixmap != NULL) {
-	char str[60];
 	double X, Y;
 
-	if (screen.statusbar.absid)
-	    gtk_statusbar_pop((GtkStatusbar*)screen.statusbar.abs,
-			      screen.statusbar.absid);
-	screen.statusbar.absid = 
-	    gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.abs,
-					 "MotionNotify");
 	X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.scale;
 	Y = (screen.gerber_bbox.y2 - (y+screen.trans_y)/(double)screen.scale);
-	sprintf(str,
-		"(X, Y) (%7.1f, %7.1f)mils (%7.2f, %7.2f)mm",
+	sprintf(screen.statusbar.coordstr,
+		"X,Y (%7.1f, %7.1f)mils (%7.2f, %7.2f)mm",
 		X*1000.0, Y*1000.0, X*25.4, Y*25.4);
-	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.abs,
-			   screen.statusbar.absid, str);
+	update_statusbar(&screen);
+
 	switch (screen.state) {
 	case MOVE: {
 
@@ -1474,21 +1471,34 @@ draw_measure_distance()
 	/*
 	 * Update statusbar
 	 */
-	if (screen.statusbar.relid)
-	    gtk_statusbar_pop((GtkStatusbar*)screen.statusbar.rel,
-			      screen.statusbar.relid);
-	screen.statusbar.relid = 
-	    gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.rel,
-					 "MotionNotify");
-	sprintf(string,
-		"(dist,dX,dY) (%7.1f, %7.1f, %7.1f)mils (%7.2f, %7.3f, %7.3f)mm",
+	sprintf(screen.statusbar.diststr,
+		" dist,dX,dY (%7.1f, %7.1f, %7.1f)mils (%7.2f, %7.2f, %7.2f)mm",
 		delta*1000.0, dx*1000.0, dy*1000.0, delta*25.4, dx*25.4, dy*25.4);
-	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.rel,
-			   screen.statusbar.relid, string);
+	update_statusbar(&screen);
 
     }
     gdk_gc_unref(gc);
 }
+
+
+static void update_statusbar(gerbv_screen_t *scr)
+{
+    char str[MAX_STATUSMSGLEN];
+
+    if (scr->statusbar.msgid)
+	gtk_statusbar_pop((GtkStatusbar*)scr->statusbar.msgs,
+			  scr->statusbar.msgid);
+
+    sprintf(str, "%-.*s|%-*s|%-*s", MAX_ERRMSGLEN-1, scr->statusbar.msgstr,
+	    MAX_COORDLEN-1, scr->statusbar.coordstr,
+	    MAX_DISTLEN-1, scr->statusbar.diststr);
+    scr->statusbar.msgid = 
+	gtk_statusbar_get_context_id((GtkStatusbar*)scr->statusbar.msgs,
+				     "StatusMessage");
+    gtk_statusbar_push((GtkStatusbar*)scr->statusbar.msgs,
+		       scr->statusbar.msgid, str);
+}
+
 
 #ifdef GUILE_IN_USE
 static void
@@ -1767,19 +1777,11 @@ internal_main(int argc, char *argv[])
     hbox2 = gtk_hbox_new(FALSE, 0);
     gtk_widget_set_usize(hbox, screen.drawing_area->allocation.width/2,0);
     screen.statusbar.msgs = gtk_statusbar_new();
-    screen.statusbar.msgid =
-	gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.msgs,
-				     "Dummy");
-	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.msgs,
-			   screen.statusbar.msgid, "                                                                               ");
-
-    screen.statusbar.abs = gtk_statusbar_new();
-    screen.statusbar.rel = gtk_statusbar_new();
-    screen.statusbar.relid = 0;
+    screen.statusbar.msgid = 0;
+    screen.statusbar.msgstr[0] = '\0';
+    screen.statusbar.coordstr[0] = '\0';
+    screen.statusbar.diststr[0] = '\0';
     gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msgs, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), hbox2, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox2), screen.statusbar.abs, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox2), screen.statusbar.rel, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     /*
      * Fill with files (eventually) given on command line
