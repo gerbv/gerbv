@@ -901,8 +901,8 @@ redraw_pixmap(GtkWidget *widget)
     /*
      * Paranoia check; size in width or height is zero
      */
-    if ((abs(dmax_x - dmin_x) < 0.0001) || 
-	(abs(dmax_y - dmin_y) < 0.0001)) {
+    if ((fabs(dmax_x - dmin_x) < 0.0001) || 
+	(fabs(dmax_y - dmin_y) < 0.0001)) {
 	retval = FALSE;
 	goto redraw_pixmap_end;
     }

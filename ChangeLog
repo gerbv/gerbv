@@ -1,5 +1,7 @@
 2002-07-16  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerbv.c: Fixed bug 573016, some gerbers not drawn.
+	  always do fabs on floats not abs.
 	* src/gerb_image.[hc], gerber.c: Parses and stores %IN%
 	  ie the image name.
 
