@@ -625,6 +625,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
     } else {
 	aperture->type = MACRO;
 	fprintf(stderr, "Aperture using macro [%s] ignored.\n", type);
+	free(type);
 	return ano;
     }
     
