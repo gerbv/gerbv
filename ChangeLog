@@ -1,3 +1,12 @@
+2002-05-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c: Now ovals are ovals and not ellypses.
+	  Closes bug 548099.
+	* HACKING, AUTHORS, CONTRIBUTORS: Updated with more authors
+	  and contributors. Also extended HACKING to include ChangeLog
+	  and code format.
+	
+
 2002-04-29  Anders Eriksson  <anders@faldor.umunet.org>
 
 	* src/gerbv.c: Improved zoom. Now zooming around image center when
