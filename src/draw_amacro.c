@@ -203,8 +203,8 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
      * are the same.
      */
     closed_shape = 
-	(abs(s->stack[first_x_idx] - s->stack[nuf_points * 2 + first_x_idx]) < 0.0001) &&
-	(abs(s->stack[first_y_idx] - s->stack[nuf_points * 2 + first_y_idx]) < 0.0001);
+	(fabs(s->stack[first_x_idx] - s->stack[nuf_points * 2 + first_x_idx]) < 0.0001) &&
+	(fabs(s->stack[first_y_idx] - s->stack[nuf_points * 2 + first_y_idx]) < 0.0001);
 
     rotation = s->stack[nuf_points * 2 + rotext_idx];
     for (point = 0; point < nuf_points; point++) {
