@@ -68,7 +68,7 @@ snextch(struct sinput *in)
 		if (in->sn == 0) {
 			return 0;
 		}
-		ch = *(in->src)++;
+		ch = (unsigned char) *(in->src)++;
 		in->sn--;
 	}
 	in->count++;
