@@ -1649,10 +1649,25 @@ static void update_statusbar(gerbv_screen_t *scr)
 
 
 #ifdef HAVE_GETOPT_LONG
+int longopt_val = 0;
+int longopt_idx = 0;
 static struct option longopts[] = {
-    /* name     has_arg            flag  val */
-    {"version", no_argument,       NULL, 'V'},
-    {"batch",   required_argument, NULL, 'b'},
+    /* name              has_arg            flag  val */
+    {"version",          no_argument,       NULL,    'V'},
+    {"batch",            required_argument, NULL,    'b'},
+    {"geometry",         required_argument, &longopt_val, 1 },
+    /* GDK/GDK debug flags to be "let through" */
+    {"gtk-module",       required_argument, &longopt_val, 2},
+    {"g-fatal-warnings", no_argument,       &longopt_val, 2},
+    {"gtk-debug",        required_argument, &longopt_val, 2},
+    {"gtk-no-debug",     required_argument, &longopt_val, 2},
+    {"gdk-debug",        required_argument, &longopt_val, 2},
+    {"gdk-no-debug",     required_argument, &longopt_val, 2},
+    {"display",          required_argument, &longopt_val, 2},
+    {"sync",             no_argument,       &longopt_val, 2},
+    {"no-xshm",          no_argument,       &longopt_val, 2},
+    {"name",             required_argument, &longopt_val, 2},
+    {"class",            required_argument, &longopt_val, 2},
     {0, 0, 0, 0},
 };
 #endif /* HAVE_GETOPT_LONG*/
@@ -1670,6 +1685,8 @@ internal_main(int argc, char *argv[])
     char      read_opt;
     int       i;
     char      *win_title;
+    int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
+    char      *rest;
 #ifdef GUILE_IN_USE
     char      *backend = NULL;
     int	      run_batch = 0;
@@ -1677,11 +1694,37 @@ internal_main(int argc, char *argv[])
 
 #ifdef HAVE_GETOPT_LONG
     while ((read_opt = getopt_long(argc, argv, "Vb:", 
-				   longopts, NULL)) != -1) {
+				   longopts, &longopt_idx)) != -1) {
 #else
     while ((read_opt = getopt(argc, argv, "Vb:")) != -1) {
 #endif /* HAVE_GETOPT_LONG */
 	switch (read_opt) {
+#ifdef HAVE_GETOPT_LONG
+	case 0:
+	    /* Only long options like GDK/GTK debug */
+	    switch (longopt_val) {
+	    case 0: /* default value if nothing is set */
+		printf("Not handled option %s\n", longopts[longopt_idx].name);
+		break;
+	    case 1: /* geometry */
+		req_width = (int)strtol(optarg, &rest, 10);
+		if (rest[0] != 'x'){
+		    printf("Split X and Y parameters with an x\n");
+		    break;
+		}
+		rest++;
+		req_height = (int)strtol(rest, &rest, 10);
+		if ((rest[0] == 0) || ((rest[0] != '-') && (rest[0] != '+')))
+		    break;
+		req_x = (int)strtol(rest, &rest, 10);
+		if ((rest[0] == 0) || ((rest[0] != '-') && (rest[0] != '+')))
+		    break;
+		req_y = (int)strtol(rest, &rest, 10);
+		break;
+	    default:
+	    }
+	    break;
+#endif /* HAVE_GETOPT_LONG */
 	case 'V' :
 	    printf("gerbv version %s\n", VERSION);
 	    printf("(C) Stefan Petersen (spe@stacken.kth.se)\n");
@@ -1747,9 +1790,14 @@ internal_main(int argc, char *argv[])
     /* 
      * Good defaults according to Ales. Gives aspect ratio of 1.3333...
      */
-    screen_width = gdk_screen_width();
-    width = screen_width * 3/4;
-    height = width * 3/4;
+    if ((req_width != -1) && (req_height != -1)) {
+	width = req_width;
+	height = req_height;
+    } else {
+	screen_width = gdk_screen_width();
+	width = screen_width * 3/4;
+	height = width * 3/4;
+    }
 
     /*
      * Setup some GTK+ defaults

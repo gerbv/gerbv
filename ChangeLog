@@ -1,3 +1,9 @@
+2002-10-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added some GDK/GTK specific command line
+	  parameters. Also added the parameter --geometry.
+	  Currently ignoring placement parameters, though I parse them
+
 2002-10-06  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv_screen.h, src/gerbv.c: Added menu selection for
