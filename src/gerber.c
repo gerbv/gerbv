@@ -133,14 +133,14 @@ parse_gerb(gerb_file_t *fd)
 	    }
 	    break;
 	case 'X':
-	    if (image->format->coordinate==INCREMENTAL)
+	    if (image->format && (image->format->coordinate==INCREMENTAL))
 	        state->curr_x += gerb_fgetint(fd);
 	    else
 	        state->curr_x = gerb_fgetint(fd);
 	    state->changed = 1;
 	    break;
 	case 'Y':
-	    if (image->format->coordinate==INCREMENTAL)
+	    if (image->format && (image->format->coordinate==INCREMENTAL))
 	        state->curr_y += gerb_fgetint(fd);
 	    else
 	        state->curr_y = gerb_fgetint(fd);

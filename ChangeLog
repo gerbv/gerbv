@@ -4,6 +4,9 @@
 	  one of his files, a circle seemed to explode. I couldn't 
 	  reproduce it, but after his tests I added this patch. Thanks Larry!
 
+2003-04-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: RS274D caused segfaults again. Reported by Skurk.
 
 2003-03-24  Stefan Petersen  <spe@stacken.kth.se>
 
