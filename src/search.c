@@ -152,7 +152,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
             memset  (pnp_state->comment, 0, sizeof(pnp_state->comment));
             if (row[10] != NULL) {
                 memset  (pnp_state->comment, 0, sizeof(pnp_state->comment));
-                if (g_utf8_validate(row[10], -1, NULL)) {
+                if ( ! g_utf8_validate(row[10], -1, NULL)) {
 		    gchar * str = g_convert(row[10], strlen(row[10]), "UTF-8", "ISO-8859-1",
                         NULL, NULL, NULL);
 		    // I have not decided yet whether it is better to use always
@@ -168,10 +168,10 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     */
             pnp_state->mid_x = get_float_unit(row[2]);
 	    pnp_state->mid_y = get_float_unit(row[3]);
-	    pnp_state->ref_x = get_float_unit(row[3]);
-	    pnp_state->ref_y = get_float_unit(row[4]);
-	    pnp_state->pad_x = get_float_unit(row[5]);
-	    pnp_state->pad_y = get_float_unit(row[6]);
+	    pnp_state->ref_x = get_float_unit(row[4]);
+	    pnp_state->ref_y = get_float_unit(row[5]);
+	    pnp_state->pad_x = get_float_unit(row[6]);
+	    pnp_state->pad_y = get_float_unit(row[7]);
 	    sscanf(row[9], "%lf", &pnp_state->rotation); // no units, always deg
 	    if(sscanf(pnp_state->footprint, "%02d%02d", &i_length, &i_width) == 2) {
 		// parse footprints like 0805 or 1206
@@ -199,7 +199,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 		COLUMN_length, pnp_state->length,
 		COLUMN_width, pnp_state->width,
 		COLUMN_shape, pnp_state->shape,
-                COLUMN_COMMENT, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL),
+                COLUMN_COMMENT, pnp_state->comment,
 	        COLUMN_NO_FILES_FOUND, FALSE,
 	        -1);
                         
