@@ -389,6 +389,36 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
     rewind(fd);
 }
 
+/* Looks for M48 at the beginning of a line too see if this
+   might be a drill file */
+int
+drill_file_p(FILE *fd)
+{
+    char read[2];
+
+    while ((read[0] = (char)fgetc(fd)) != EOF) {
+	switch (read[0]) {
+	case 'M':
+	    if(fread(read, 1, 2, fd) != 2) {
+		/* Probably EOF. Anyway, it's not a drill file */
+		return 0;
+	    } else if(!strncmp(read, "48", 2)) {
+		/* Drill file header found,
+		   this could very well be a drill file */
+		return 1;
+	    } else {
+		eat_line(fd);
+	    }
+	    break;
+	default :
+	    eat_line(fd);
+	    break;
+	}
+    }
+    /* This is probably not a drill file */
+    return 1;
+}
+
 /* Parse tool definition. This can get a bit tricky since it can
    appear in the header and/or the data.
    Returns tool number on success, -1 on error */
