@@ -154,41 +154,19 @@ png_export(GdkPixmap* imagetosave, char* filename)
 	if (gc) gdk_gc_unref(gc);
 
 	return result;
-}
+} /* png_export */
 
-/*The following routine has been taken from GQView 1.0.2 (comment included)*/
 
-/*
- *-----------------------------------------------------------------------------
- * simple png save (please read comment)
- *-----------------------------------------------------------------------------
- */
-
-/*
- * This save_pixbuf_to_file utility was copied from the nautilus 0.1 preview,
- * and judging by the message they got it from gnome-iconedit.
- *
- * I have only changed the source to match my coding style in GQview,
- * make it work in here, and rename to pixbuf_to_file_as_png
- *                                                                   -John
- *
- * === message in nautilus source:
- * utility routine for saving a pixbuf to a png file.
- * This was adapted from Iain Holmes' code in gnome-iconedit, and probably
- * should be in a utility library, possibly in gdk-pixbuf itself.
- * ===
- */
 static gboolean 
-pixbuf_to_file_as_png (GdkPixbuf *pixbuf, char *filename)
+pixbuf_to_file_as_png(GdkPixbuf *pixbuf, char *filename)
 {
 	FILE *handle;
-  	char *buffer;
-	gboolean has_alpha;
 	int width, height, depth, rowstride;
   	guchar *pixels;
   	png_structp png_ptr;
   	png_infop info_ptr;
   	png_text text[2];
+	png_byte **row_ptr;
   	int i;
 
 	g_return_val_if_fail (pixbuf != NULL, FALSE);
@@ -215,7 +193,6 @@ pixbuf_to_file_as_png (GdkPixbuf *pixbuf, char *filename)
 
 	png_init_io (png_ptr, handle);
 	
-        has_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
 	width = gdk_pixbuf_get_width (pixbuf);
 	height = gdk_pixbuf_get_height (pixbuf);
 	depth = gdk_pixbuf_get_bits_per_sample (pixbuf);
@@ -223,7 +200,7 @@ pixbuf_to_file_as_png (GdkPixbuf *pixbuf, char *filename)
 	rowstride = gdk_pixbuf_get_rowstride (pixbuf);
 	
 	png_set_IHDR (png_ptr, info_ptr, width, height,
-		      depth, PNG_COLOR_TYPE_RGB_ALPHA,
+		      depth, PNG_COLOR_TYPE_RGB,
 		      PNG_INTERLACE_NONE,
 		      PNG_COMPRESSION_TYPE_DEFAULT,
 		      PNG_FILTER_TYPE_DEFAULT);
@@ -240,40 +217,23 @@ pixbuf_to_file_as_png (GdkPixbuf *pixbuf, char *filename)
 	/* Write header data */
 	png_write_info (png_ptr, info_ptr);
 	
-	/* if there is no alpha in the data, allocate buffer to expand into */
-	if (has_alpha)
-	    buffer = NULL;
-	else
-	    buffer = g_malloc(4 * width);
-	
-	/* pump the raster data into libpng, one scan line at a time */	
+	/* Build up a vector of row pointers */	
+	row_ptr = (png_byte **)g_malloc(height * sizeof(png_byte *));
 	for (i = 0; i < height; i++) {
-	    if (has_alpha) {
-		png_bytep row_pointer = pixels;
-		png_write_row (png_ptr, row_pointer);
-	    } else {
-		/* expand RGB to RGBA using an opaque alpha value */
-		int x;
-		char *buffer_ptr = buffer;
-		char *source_ptr = pixels;
-		for (x = 0; x < width; x++) {
-		    *buffer_ptr++ = *source_ptr++;
-		    *buffer_ptr++ = *source_ptr++;
-		    *buffer_ptr++ = *source_ptr++;
-		    *buffer_ptr++ = 255;
-		}
-		png_write_row (png_ptr, (png_bytep) buffer);		
-	    }
+	    row_ptr[i] = (png_byte *)pixels;
 	    pixels += rowstride;
 	}
-	
+
+	/* Write it and free the row vector */
+	png_write_image(png_ptr, row_ptr);
+	g_free(row_ptr);
+
+	/* Finish of PNG writing */
 	png_write_end (png_ptr, info_ptr);
 	png_destroy_write_struct (&png_ptr, &info_ptr);
 	
-	g_free (buffer);
-	
 	fclose (handle);
 	return TRUE;
-}
+} /* pixbuf_to_file_as_png */
 
 #endif /* EXPORT_PNG */

@@ -1,3 +1,8 @@
+2003-11-13  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/export_image.c: Changes pixbuf_to_file_as_png simplify operation
+	  No major speedup since that is not the time hog.
+
 -- Release 0.15 --
 
 2003-10-06  Stefan Petersen  <spe@stacken.kth.se>
