@@ -551,10 +551,10 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
      */
     gdk_draw_pixmap(new_pixmap,
 		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-		    screen.pixmap,
-		    screen.trans_x +  event->area.x, 
-		    screen.trans_y +  event->area.y,
-		    0,0,
+		    screen.pixmap, 
+		    screen.trans_x + event->area.x, 
+		    screen.trans_y + event->area.y, 
+		    event->area.x, event->area.y,
 		    event->area.width, event->area.height);
 
     /*
@@ -563,7 +563,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
     gdk_draw_pixmap(widget->window,
 		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
 		    new_pixmap,
-		    0, 0,
+		    event->area.x, event->area.y,
 		    event->area.x, event->area.y,
 		    event->area.width, event->area.height);
 
