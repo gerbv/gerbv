@@ -1,5 +1,9 @@
 2002-11-05  Anders Eriksson  <anders@umunet.org>
 
+	* src/gerbv.c, src/gerbv_screen.h: Removed clipping/no
+	  clipping kludge since export_png now behaves as Dino
+	  expects. We should make a function of common code in
+	  export_png and redraw_pixmap to make it more maintainable.
 	* src/gerbv.c (redraw_pixmap): Don't try to sneak out doing
 	  events from redraw_pixmap, check for them and preempt if
 	  there are events on queue. This closes the everythinh-is-
