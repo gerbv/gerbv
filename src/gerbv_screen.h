@@ -35,6 +35,7 @@ typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE} gerbv_state_t;
 typedef struct {
     gerb_image_t *image;
     GdkColor *color;
+    char *name;
 } gerbv_fileinfo_t;
 
 

@@ -1,3 +1,9 @@
+2002-06-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/gerbv_screen.h: Added "reload files", gerbv 
+	  rereads all loaded files and display them. Usefull if you have
+	  an external gerber manipulation tool.
+
 2002-06-06  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c, src/gerbv_screen.h: Added a crude measurement tool,

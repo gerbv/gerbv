@@ -87,11 +87,12 @@ static void load_file_popup(GtkWidget *widget, gpointer data);
 static void export_png_popup(GtkWidget *widget, gpointer data);
 #endif /* EXPORT_PNG */
 static void unload_file(GtkWidget *widget, gpointer data);
+static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget);
-static void open_image(char *filename, int index);
+static void open_image(char *filename, int idx, int reload);
 
 
 void
@@ -103,6 +104,7 @@ destroy(GtkWidget *widget, gpointer data)
 	if (screen.file[i] != NULL && 
 	    screen.file[i]->image != NULL) {
 	    free_gerb_image(screen.file[i]->image);
+	    free(screen.file[i]->name);
 	    free(screen.file[i]);
 	}
     }
@@ -115,13 +117,15 @@ static GtkItemFactoryEntry menu_items[] = {
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
     {"/File/_Export/PNG...", NULL,     export_png_popup, 0, NULL},
-    {"/File/sep2",           NULL,     NULL,             0, "<Separator>"},
+    {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
 #endif /* EXPORT_PNG */
+    {"/File/Reload",         "<alt>R", reload_files,     0, NULL},
+    {"/File/sep2",           NULL,     NULL,             0, "<Separator>"},
     {"/File/_Quit",          "<alt>Q", destroy,          0, NULL},
     {"/_Zoom",               NULL,     NULL,             0, "<Branch>"},
     {"/Zoom/_Out",           "<alt>O", menu_zoom,        ZOOM_OUT, NULL},
     {"/Zoom/_In",            "<alt>I", menu_zoom,        ZOOM_IN, NULL},
-    {"/Zoom/sep1",           NULL,     NULL,             0,  "<Separator>"},
+    {"/Zoom/sep3",           NULL,     NULL,             0,  "<Separator>"},
     {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
 };
 
@@ -361,7 +365,7 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     char *filename;
 
     filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-    open_image(filename, screen.curr_index);
+    open_image(filename, screen.curr_index, FALSE);
 
     /*
      * Remember where we loaded file from last time
@@ -510,10 +514,28 @@ unload_file(GtkWidget *widget, gpointer data)
      */
     free_gerb_image(screen.file[idx]->image);  screen.file[idx]->image = NULL;
     free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
+    free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
     free(screen.file[idx]);  screen.file[idx] = NULL;
 
     return;
 } /* unload_file */
+
+
+static void
+reload_files(GtkWidget *widget, gpointer data)
+{
+    int idx;
+
+    for (idx = 0; idx < MAX_FILES; idx++) {
+	if (screen.file[idx] && screen.file[idx]->name) {
+	    open_image(screen.file[idx]->name, idx, TRUE);
+	}
+    }
+    
+    redraw_pixmap(screen.drawing_area);
+
+    return;
+} /* reload_files */
 
 
 static void
@@ -867,14 +889,14 @@ redraw_pixmap_end:
 
 
 static void
-open_image(char *filename, int index)
+open_image(char *filename, int idx, int reload)
 {
     gerb_file_t *fd;
     int r, g, b;
     GtkStyle *defstyle, *newstyle;
     gerb_verify_error_t error = GERB_IMAGE_OK;
 
-    if (index >= MAX_FILES) {
+    if (idx >= MAX_FILES) {
 	fprintf(stderr, "Couldn't open %s. Maximum number of files opened.\n",
 		filename);
 	return;
@@ -886,16 +908,25 @@ open_image(char *filename, int index)
 	perror("");
 	return;
     }
-    screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
+    
+    if (reload && screen.file[idx]) {
+	free_gerb_image(screen.file[idx]->image);  
+	screen.file[idx]->image = NULL;
+    } else {
+	screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
+    }
+    
     if(drill_file_p(fd))
-	screen.file[index]->image = parse_drillfile(fd);
+	screen.file[idx]->image = parse_drillfile(fd);
     else 
-	screen.file[index]->image = parse_gerb(fd);
+	screen.file[idx]->image = parse_gerb(fd);
+
+    gerb_fclose(fd);
     
     /*
      * Do error check before continuing
      */
-    error = gerb_image_verify(screen.file[index]->image);
+    error = gerb_image_verify(screen.file[idx]->image);
     if (error) {
 	fprintf(stderr, "%s: Parse error: ", filename);
 	if (error & GERB_IMAGE_MISSING_NETLIST)
@@ -910,32 +941,38 @@ open_image(char *filename, int index)
 	exit(1);
     }
 
+    if (reload) return; /* Stop here if we do a reload of files */
+
+    /*
+     * Store filename for eventual reload
+     */
+    screen.file[idx]->name = (char *)malloc(strlen(filename) + 1);
+    strcpy(screen.file[idx]->name, filename);
+
     /*
      * Calculate a "clever" random color based on index.
      */
-    r = (12341 + 657371 * index) % (int)(MAX_COLOR_RESOLUTION);
-    g = (23473 + 434382 * index) % (int)(MAX_COLOR_RESOLUTION);
-    b = (90341 + 123393 * index) % (int)(MAX_COLOR_RESOLUTION);
+    r = (12341 + 657371 * idx) % (int)(MAX_COLOR_RESOLUTION);
+    g = (23473 + 434382 * idx) % (int)(MAX_COLOR_RESOLUTION);
+    b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
 
-    screen.file[index]->color = alloc_color(r, g, b, NULL);
+    screen.file[idx]->color = alloc_color(r, g, b, NULL);
 
     /* 
      * Set color on layer button
      */
     defstyle = gtk_widget_get_default_style();
     newstyle = gtk_style_copy(defstyle);
-    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[index]->color);
-    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[index]->color);
-    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[index]->color);
-    gtk_widget_set_style(screen.layer_button[index], newstyle);
+    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[idx]->color);
+    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
+    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
+    gtk_widget_set_style(screen.layer_button[idx], newstyle);
 
     /* 
      * Tool tips on button is the file name 
      */
-    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
+    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
 			 filename, NULL); 
-
-    gerb_fclose(fd);
 
     return;
 } /* open_image */
@@ -1491,7 +1528,7 @@ internal_main(int argc, char *argv[])
      * Fill with files (eventually) given on command line
      */
     for(i = optind ; i < argc; i++)
-	open_image(argv[i], i - optind);
+	open_image(argv[i], i - optind, FALSE);
 
     /*
      * Connect all events on drawing area 
