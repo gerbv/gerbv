@@ -1,3 +1,8 @@
+2003-12-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/gerbv_screen.h: Added invert layer functionality.
+	  Closes feature request 777547.
+
 2003-12-06  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerb_file.[hc]: Added function gerb_find_file.

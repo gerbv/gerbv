@@ -54,6 +54,7 @@ typedef struct {
     GdkColor *color;
     char *name;
     char *basename;
+    char inverted;
 } gerbv_fileinfo_t;
 
 typedef struct {

@@ -87,6 +87,7 @@ static void draw_zoom_outline(gboolean centered);
 static void draw_measure_distance();
 static void swap_layers(GtkWidget *widget, gpointer data);
 static void color_selection_popup(GtkWidget *widget, gpointer data);
+static void invert_color(GtkWidget *widget, gpointer data);
 static void load_file_popup(GtkWidget *widget, gpointer data);
 #ifdef EXPORT_PNG
 static void export_png_popup(GtkWidget *widget, gpointer data);
@@ -184,6 +185,7 @@ static GtkItemFactoryEntry popup_menu_items[] = {
     {"/Layer Color...", NULL, color_selection_popup, 0, NULL},
     {"/Load File...", NULL, load_file_popup, 0, NULL},
     {"/Unload File...", NULL, unload_file, 0, NULL},
+    {"/Invert Color", NULL, invert_color, 0, NULL},
     {"/Swap with Below", NULL, swap_layers, 1, NULL},
 };
 
@@ -547,6 +549,20 @@ color_selection_popup(GtkWidget *widget, gpointer data)
 
     return;
 } /* color_selection_popup */
+
+
+static void 
+invert_color(GtkWidget *widget, gpointer data)
+{
+    if (screen.file[screen.curr_index]->inverted)
+	screen.file[screen.curr_index]->inverted = 0;
+    else
+	screen.file[screen.curr_index]->inverted = 1;
+
+    redraw_pixmap(screen.drawing_area, TRUE);
+	
+    return;
+} /* invert_color */
 
 
 static void
@@ -1409,6 +1425,16 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	}
 	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
 	    screen.file[i]) {
+	    enum polarity_t polarity;
+
+	    if (screen.file[i]->inverted) {
+		if (screen.file[i]->image->info->polarity == POSITIVE)
+		    polarity = NEGATIVE;
+		else
+		    polarity = POSITIVE;
+	    } else {
+		polarity = screen.file[i]->image->info->polarity;
+	    }
 
 	    /*
 	     * Show progress in status bar
@@ -1433,7 +1459,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 			 screen.file[i]->image, screen.scale, 
 			 (screen.clip_bbox.x1-dmin_x)*screen.scale,
 			 (screen.clip_bbox.y1+dmax_y)*screen.scale,
-			 screen.file[i]->image->info->polarity);
+			 polarity);
 
 	    /* 
 	     * Set clipmask and draw the clipped out image onto the
