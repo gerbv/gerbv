@@ -6,10 +6,10 @@
 eval "`grep ^VERSION configure.in`"
 RELEASE=gerbv-${VERSION}
 
-RESULT=`grep -c :pserver:anonymous@cvs.gerbv.sourceforge.net:/cvsroot/gerbv ${HOME}/.cvspass`
+RESULT=`grep -c :pserver:anonymous@cvs.gerbv.sourceforge.net:[0-9]*/cvsroot/gerbv ${HOME}/.cvspass`
 
 if [[ $RESULT -eq 0 ]] ; then
-	echo You must login with anonymous login o get this to work!
+	echo You must login with anonymous login to get this to work!
 	exit;
 fi
 
