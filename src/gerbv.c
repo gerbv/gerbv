@@ -563,7 +563,6 @@ autoscale()
     double max_width = LONG_MIN, max_height = LONG_MIN;
     double min_x = LONG_MAX;
     double x_scale, y_scale;
-    static const int edge_offset = 10;
     int i;
     
     if (screen.drawing_area == NULL)
@@ -601,9 +600,9 @@ autoscale()
 	screen.scale = (screen.scale / 10) * 10;
 
     /*
-     * Calculate translation
+     * "Calculate" translation
      */
-    screen.trans_x = (int)ceil(min_x * screen.scale) - edge_offset;
+    screen.trans_x = 0;
     screen.trans_y = 0;
 
     return;
