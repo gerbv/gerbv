@@ -505,14 +505,15 @@ create_main_search_window (void)
     renderer = gtk_cell_renderer_text_new ();
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT(GTK_COMBO_BOX(interface.layer_active)), renderer, TRUE);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT(GTK_COMBO_BOX(interface.layer_active)), renderer, "text", 0);  
-
+    sprintf(s_MAX_FILES,"%i",MAX_FILES-2);
+    gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, s_MAX_FILES);
+    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+    click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
   
     gtk_table_attach (GTK_TABLE(interface.table),interface.layer_active, 2, 3, 0, 1, GTK_SHRINK, 0, 0, 0);
     g_signal_connect (G_OBJECT((GTK_COMBO_BOX(interface.layer_active))),"changed",
 		      G_CALLBACK(click_layer_active_cb), NULL);  
-    sprintf(s_MAX_FILES,"%i",MAX_FILES-2);
-    gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, s_MAX_FILES);
-    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);                                             
+                                                
             
     interface.check_comment = gtk_check_button_new_with_mnemonic (_("Comment"));
     gtk_box_pack_end (GTK_BOX(hbox), interface.check_comment, FALSE, FALSE, 0);
@@ -530,7 +531,7 @@ create_main_search_window (void)
     gtk_tooltips_set_tip(tooltips, interface.top_parts_selection, "Select parts on the top side", NULL);
     gtk_tooltips_set_tip(tooltips, interface.bottom_parts_selection, "Select parts on the bottom side", NULL);
     gtk_tooltips_set_tip(tooltips, interface.check_comment, "Search in Comments", NULL);
-    gtk_tooltips_set_tip(tooltips, interface.file_is_named_entry, "Regexp if regex.h was found", NULL);
+    gtk_tooltips_set_tip(tooltips, interface.file_is_named_entry, "Enter a parts name to search for;\n  If regex.h was found, use Regexp Style (e.g. .* to mark all parts)", NULL);
     gtk_tooltips_set_tip(tooltips, interface.find_button, "Mark search results on screen", NULL); 
     gtk_tooltips_set_tip(tooltips, interface.layer_active, "Choose layer for selection", NULL);    
     
@@ -819,7 +820,8 @@ file_is_named_entry_key_press_cb (GtkWidget    	*widget,
               return TRUE;
             }
             do {
-               /* We loop through the treemodel, as soon we found the first which is matching the key 
+               /* Scroll Engine:
+                * We loop through the treemodel, as soon we found the first which is matching the key 
                 * pressed we exit and scroll there
                 */
                 scroll_line_number++;
@@ -931,24 +933,30 @@ file_button_release_event_cb (GtkWidget 	*widget,
 	}	
 	gtk_tree_path_free (path);
     }	
-   /* if (event->button == 3) {	
+    if (event->button == 3) {	
+      GtkTreePath *path;
+
+  
+        if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW(interface.tree), event->x, event->y,
+		&path, NULL, NULL, NULL)) {
+
+		if ((event->state & GDK_SHIFT_MASK) || (event->state & GDK_CONTROL_MASK)) {
+		    if (row_selected_by_button_press_event) {
+                        gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+                        click_find_cb(interface.find_button, NULL);
+		    } else {
+                       gtk_tree_selection_unselect_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+                       click_find_cb(interface.find_button, NULL);
+		    }
+                } else {
+	            gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)));
+                    gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+                    click_find_cb(interface.find_button, NULL);
+		}
     
-//    GtkWidget *popup;
-    GList *list;
-    
-    list = gtk_tree_selection_get_selected_rows (GTK_TREE_SELECTION(interface.selection),
-						 (GtkTreeModel **)&interface.model);
-    
-    gtk_tree_model_get_iter (GTK_TREE_MODEL(interface.model), &iter, 
-			     g_list_first (list)->data);
-			     
-    gtk_tree_model_get (GTK_TREE_MODEL(interface.model), &iter,
-			    COLUMN_NO_FILES_FOUND, &no_files_found,
-			   -1);		    
-			  
-    g_list_free (list);
+        
+        }
     }
-    */	
     return FALSE;
 } /* file_button_release_event_cb */
 
@@ -998,45 +1006,92 @@ file_key_press_event_cb  (GtkWidget 		*widget,
     if (event->keyval == GDK_Escape) {
         GERB_MESSAGE("ESC unselected all\n");/*CHECK ME: do we need to check GTK_WIDGET_VISIBLE?*/
         gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)));
-    }
-    if (event->keyval == GDK_space) {
+    
+     } else  if (event->state & GDK_SHIFT_MASK) {
+                                                   /*select multiple items by SHift-Up/Down*/
+        if (event->keyval == GDK_Up)  {
+    
         GtkTreeSelection  *tree_sel = NULL;    
-        GtkTreeIter        iter, tmp_iter;
-        int                tmp_scroll_line_number = 1, scroll_line_number = 1; 
+        GList             *selection_list, *tmp_path;
                 
-        if(!gtk_tree_model_get_iter_first (GTK_TREE_MODEL(interface.model), &iter)) {
-          GERB_MESSAGE("empty interface.model\n");
-          return TRUE;
-        }
+        
         tree_sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface.tree));
-        do {
-           /* We loop through the current selection, as soon we found the first, 
+        selection_list = gtk_tree_selection_get_selected_rows
+                                            (GTK_TREE_SELECTION(tree_sel),
+                                             (GtkTreeModel **)&interface.model);
+        if (selection_list != NULL) {                                         
+           tmp_path  = g_list_first(selection_list);
+           gtk_tree_path_prev(tmp_path->data);   
+           gtk_tree_selection_select_path  (tree_sel, tmp_path->data);
+           gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(interface.tree),
+                                                  tmp_path->data,
+                                                  COLUMN_DESIGNATOR,
+                                                  TRUE,
+                                                  0.3,
+                                                  0.5);
+        }
+   
+        
+        click_find_cb(interface.find_button, NULL);
+    
+     /*
+      * g_free(tree_sel);CHECK ME:do we need to free them?
+      */
+        } else if (event->keyval == GDK_Down) {
+            GtkTreeSelection  *tree_sel = NULL;
+            GList             *selection_list, *tmp_path;
+                
+        
+            tree_sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface.tree));
+            selection_list = gtk_tree_selection_get_selected_rows
+                                                (GTK_TREE_SELECTION(tree_sel),
+                                                 (GtkTreeModel **)&interface.model);
+            if (selection_list != NULL) {                                         
+               tmp_path  = g_list_first(selection_list);
+               gtk_tree_path_next(tmp_path->data);   
+               gtk_tree_selection_select_path  (tree_sel, tmp_path->data);
+               gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(interface.tree),
+                                                      tmp_path->data,
+                                                      COLUMN_DESIGNATOR,
+                                                      TRUE,
+                                                      0.3,
+                                                      0.5);
+                                                  
+            }
+            click_find_cb(interface.find_button, NULL);
+    
+         /*
+          * g_free(tree_sel);CHECK ME:do we need to free them?
+          */
+        }
+     } else  if ((event->keyval == GDK_space) || (event->keyval == GDK_downarrow) || (event->keyval == GDK_Down)) {
+        /* We loop through the current selection, as soon we found the first, 
             * the following item will automatically  be selected and the rest unselected
             * and returned.
             */
-            scroll_line_number++;    
-    
-            if (gtk_tree_selection_iter_is_selected(tree_sel,&iter)) {
+        GtkTreeSelection  *tree_sel = NULL;
+        GList             *selection_list, *tmp_path;
+                
         
-                if (gtk_tree_model_iter_next(GTK_TREE_MODEL(interface.model), &iter)) {
-                    tmp_iter = iter;
-                    tmp_scroll_line_number = scroll_line_number;
-                    gtk_tree_selection_unselect_all (tree_sel);
-                    gtk_tree_selection_select_iter(tree_sel, &tmp_iter);                           
-                } else {
-                    tmp_scroll_line_number = scroll_line_number;
-                    break;/*dont fall over the edge:-)*/
-                 }    
-            }
-      
-        } while (gtk_tree_model_iter_next(GTK_TREE_MODEL(interface.model), &iter));	
-        /* This is the assembly mode where one scrolls down one-by-one pressing space
-         * the use of scroll_to_point actually allows to also visibly show how far we have
-         * gone down the list: at the beginning the selected part will be aligned top which gradually 
-         * moves down to arrive at the bottom when the last part is reached*/
-        if (tmp_scroll_line_number < 15) gtk_tree_view_scroll_to_point (GTK_TREE_VIEW(interface.tree), -1,(int)(tmp_scroll_line_number*(4000/scroll_line_number)));
-        else gtk_tree_view_scroll_to_point (GTK_TREE_VIEW(interface.tree), -1,(int)(tmp_scroll_line_number*(6245/scroll_line_number)));
-
+        tree_sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface.tree));
+        selection_list = gtk_tree_selection_get_selected_rows
+                                            (GTK_TREE_SELECTION(tree_sel),
+                                             (GtkTreeModel **)&interface.model);
+        if (selection_list != NULL) {                                         
+           tmp_path  = g_list_first(selection_list);
+           gtk_tree_selection_unselect_all  (tree_sel);
+           gtk_tree_path_next(tmp_path->data);   
+          // if (tmp_path->data != NULL) {
+               gtk_tree_selection_select_path  (tree_sel, tmp_path->data);
+               gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(interface.tree),
+                                                      tmp_path->data,
+                                                      COLUMN_DESIGNATOR,
+                                                      TRUE,
+                                                      0.3,
+                                                      0.5);
+          // }                                                      
+                                                  
+        }
         click_find_cb(interface.find_button, NULL);
     
      /*
@@ -1048,7 +1103,39 @@ file_key_press_event_cb  (GtkWidget 		*widget,
         tree_sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface.tree));
         gtk_tree_selection_unselect_all (tree_sel);*/
         return TRUE;
-    }
+    } else if ((event->keyval == GDK_Up) || (event->keyval == GDK_uparrow)) {
+    
+        GtkTreeSelection  *tree_sel = NULL; 
+        GList             *selection_list, *tmp_path;
+                
+
+        
+        tree_sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface.tree));
+        selection_list = gtk_tree_selection_get_selected_rows
+                                            (GTK_TREE_SELECTION(tree_sel),
+                                             (GtkTreeModel **)&interface.model);
+        if (selection_list != NULL) {                                         
+           tmp_path  = g_list_first(selection_list);
+           gtk_tree_selection_unselect_all  (tree_sel);
+           gtk_tree_path_prev(tmp_path->data);   
+           gtk_tree_selection_select_path  (tree_sel, tmp_path->data);
+           gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(interface.tree),
+                                                  tmp_path->data,
+                                                  COLUMN_DESIGNATOR,
+                                                  TRUE,
+                                                  0.3,
+                                                  0.5);
+        }
+   
+        
+        click_find_cb(interface.find_button, NULL);
+    
+        }
+    
+     /*
+      * g_free(tree_sel);CHECK ME:do we need to free them?
+      */      
+       gtk_window_activate_focus(GTK_WINDOW(interface.main_window)); 
     return TRUE;
 } /* file_key_press_event_cb */
  

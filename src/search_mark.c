@@ -75,12 +75,13 @@
 #define _(String) (String)
 
 void create_marked_layer(int idx) {
-    int r, g, b;
-    GtkStyle *defstyle, *newstyle;
-    gerb_net_t *curr_net = NULL;
+    int           r, g, b;
+    GtkStyle     *defstyle, *newstyle;
+    gerb_net_t   *curr_net = NULL;
     gerb_image_t *image = new_gerb_image(image);
-    GList *list;
-    char *tmp_name = NULL;
+    GList        *list;
+    char         *tmp_name = NULL;
+  //  GtkTreeIter   iter;
     
     if (image == NULL) {
 	GERB_FATAL_ERROR("malloc image failed\n");
@@ -88,10 +89,6 @@ void create_marked_layer(int idx) {
     }
     curr_net = image->netlist;
     if(screen.file[idx] && screen.file[idx]->image) {
-      /*  if (idx  == 16) {
-            printf("search_mark:we are  drawing on special layer 16%p\n",screen.file[idx]->name);
-            tmp_name = screen.file[idx]->name; save name for projects
-        }*/
         free_gerb_image(screen.file[idx]->image);
     } else {
         screen.file[idx]=NULL;
@@ -101,12 +98,29 @@ void create_marked_layer(int idx) {
         screen.file[idx]->name = tmp_name;
     }
     screen.file[idx]->image = image;
-    r = (12341 + 657371 * idx) % (int)(MAX_COLOR_RESOLUTION);
-    g = (23473 + 434382 * idx) % (int)(MAX_COLOR_RESOLUTION);
-    b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
+    if (!screen.file[idx]->color) {
+      //  int   idx0;
+      //  char  tmp_iter_str[MAXL];
+        r = (12341 + 657371 * idx) % (int)(MAX_COLOR_RESOLUTION);
+        g = (23473 + 434382 * idx) % (int)(MAX_COLOR_RESOLUTION);
+        b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
 
-    screen.file[idx]->color = alloc_color(r, g, b, NULL);
-    
+        screen.file[idx]->color = alloc_color(r, g, b, NULL);
+        /*combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+        for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
+
+            if (screen.file[idx0] == NULL) {
+                gtk_list_store_append(combo_box_model, &iter);
+                gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
+            } 
+        }
+        gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
+        //sprintf(tmp_iter_str, "%i", idx);
+        //gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, tmp_iter_str);
+        gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
+        gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+        */
+    }    
 
     /* 
      * Set color on layer button
@@ -123,7 +137,7 @@ void create_marked_layer(int idx) {
      */
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
 			 "selected parts", NULL); 
-                         
+              
     image->info->min_x = -1;
     image->info->min_y = -1;
     image->info->max_x = 5;
@@ -237,7 +251,8 @@ void create_marked_layer(int idx) {
     curr_net->next = NULL;		    
   //  g_list_free (list);
 
-       
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
+				 (screen.layer_button[idx]),TRUE);              
     
 } /* create_marked_layer */
 

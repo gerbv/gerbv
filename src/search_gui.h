@@ -68,13 +68,14 @@ struct _InterfaceStruct {
        	GtkWidget		*results_label;
 	GtkWidget       	*results;
 	GtkWidget        	*tree;
-       	GdkGeometry 		geometry;
+       	GdkGeometry 		 geometry;
         GtkWidget               *layer_active;
-        int                     layer_select_active;
+        int                      layer_select_active;
         GtkListStore     	*model;
+        GList                   *PNP_entries_list;
 	GtkTreeSelection 	*selection;
-	GtkTreeIter       	iter;
-	gboolean  	  	is_gail_loaded;
+	GtkTreeIter       	 iter;
+	gboolean  	  	 is_gail_loaded;
 } interface;
 
 void

@@ -86,9 +86,10 @@ eat_line_pnp(pnp_file_t *fd)
 
 pnp_state_t *parse_pnp(pnp_file_t *fd)
 {
-    pnp_state_t *pnp_state = NULL;
-    int         line_counter = 1;
-    int         ret;
+    pnp_state_t      *pnp_state = NULL;
+    int               line_counter = 1;
+    int               ret;
+    GtkTreeSelection *tmp_sel;
    // char        *row[10];
   //  char        buf[1024];
     
@@ -208,6 +209,14 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 #endif
 #endif
     pnp_state->next = NULL;
+    /* create list of all entries as a Glist for convenient use later
+     * (uparrow movements in assembly mode) */
+    tmp_sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface.tree));
+    gtk_tree_selection_select_all (tmp_sel);
+    interface.PNP_entries_list = gtk_tree_selection_get_selected_rows
+                                            (GTK_TREE_SELECTION(tmp_sel),
+                                             (GtkTreeModel **)&interface.model);
+    gtk_tree_selection_unselect_all (tmp_sel);                                             
     return pnp_state;
 }
 

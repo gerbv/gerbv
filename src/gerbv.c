@@ -958,9 +958,12 @@ all_layers_off(GtkWidget *widget, gpointer data)
 static void
 unload_file(GtkWidget *widget, gpointer data)
 {
-    int idx = screen.curr_index;
-    GtkStyle *defstyle;
+    int         idx = screen.curr_index;
+    GtkStyle   *defstyle;
+    int         idx0;
+    GtkTreeIter iter;
 
+    
     if (screen.file[idx] == NULL)
 	return;
 
@@ -989,7 +992,19 @@ unload_file(GtkWidget *widget, gpointer data)
     free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
     free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
     free(screen.file[idx]);  screen.file[idx] = NULL;
+    combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+    for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 
+        if (screen.file[idx0] == NULL) {
+            gtk_list_store_append(combo_box_model, &iter);
+            gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
+        } 
+    }
+    gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
+    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+    click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
+    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
     return;
 } /* unload_file */
 
@@ -1600,6 +1615,8 @@ open_image(char *filename, int idx, int reload)
     gerb_image_t *parsed_image;
     gerb_verify_error_t error = GERB_IMAGE_OK;
     char *cptr;
+    int          idx0;
+    GtkTreeIter  iter;
 
     if (idx >= MAX_FILES) {
 	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
@@ -1708,6 +1725,20 @@ open_image(char *filename, int idx, int reload)
      */
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
 			 filename, NULL); 
+    combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+    for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
+
+        if (screen.file[idx0] == NULL) {
+            gtk_list_store_append(combo_box_model, &iter);
+            gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
+        } 
+    }
+    gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
+    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
+				 (screen.layer_button[idx]),TRUE);  
+    click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);                 
 
     return 0;
 } /* open_image */
@@ -2742,9 +2773,11 @@ main(int argc, char *argv[])
     /*
      * Set gtk error log handler
      */
+#if !defined (__MINGW32__)     
     g_log_set_handler (NULL, 
 		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
 		       gerbv_gtk_log_handler, NULL); 
+#endif                       
 
     /*
      * Connect all events on drawing area 

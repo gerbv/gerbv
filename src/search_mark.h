@@ -42,6 +42,10 @@ struct gerbv_redraw_state {
     int files_loaded;
 };
 
+extern
+GtkListStore        *combo_box_model;
+
+
 extern 
 gint
 redraw_pixmap(GtkWidget *widget, int restart);

@@ -180,28 +180,14 @@ open_pnp(char *filename, int idx, int reload)
 	return -1;
     }
     temp_state = parse_pnp(fd);
-#if 0
-    GERB_MESSAGE("data is parsed search_cb %s\n", parsed_PNP_data->designator);
-    //GERB_MESSAGE("pointer parsedPNPdata %p\n", parsed_PNP_data);
-     while (parsed_PNP_data->next != NULL) {
-      /*  gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
-       gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
-		        0, parsed_PNP_data->designator, 
-		        1,  g_locale_to_utf8(parsed_PNP_data->comment, -1, NULL, NULL, NULL), -1);
-                        */
-        printf("parsed_PNP_data designator %s\n", parsed_PNP_data->designator);   
-        parsed_PNP_data = parsed_PNP_data->next;
-    }
-
-    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(completion_model), &interface.iter);
-    do {
-    gtk_tree_model_get(GTK_TREE_MODEL(completion_model), &interface.iter, 0, &cptr, -1);
-    printf("\n  entry: %s in line:%s\n", cptr, gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(completion_model),&interface.iter));
-
-    } while   (gtk_tree_model_iter_next(GTK_TREE_MODEL(completion_model), &interface.iter));	
-#endif
 
     pnp_fclose(fd);
+         
+    if(!gtk_tree_model_get_iter_first (GTK_TREE_MODEL(interface.model), &interface.iter)) {
+        GERB_MESSAGE("You tried to load a non compatible PNP file\n change format to entry1,entry2,... !\n");
+        gtk_widget_destroy(interface.main_window);
+        free_pnp_state(parsed_PNP_data);
+    }
     return 0;
     /*
      * Do error check before continuing
