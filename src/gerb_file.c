@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -97,6 +98,28 @@ gerb_fgetdouble(gerb_file_t *fd)
 
     return result;
 }
+
+
+char *
+gerb_fgetstring(gerb_file_t *fd, char term)
+{
+    char *strend;
+    char *newstr;
+
+    strend = strchr(fd->data + fd->ptr, term);
+    if (strend == NULL)
+	return NULL;
+
+    newstr = (char *)malloc(strend - (fd->data + fd->ptr) + 1);
+    if (newstr == NULL)
+	return NULL;
+    strncpy(newstr, fd->data + fd->ptr, strend - (fd->data + fd->ptr));
+    newstr[strend - (fd->data + fd->ptr) + 1] = '\0';
+    fd->ptr = strend - fd->data;
+
+    return newstr;
+}
+
 
 void 
 gerb_ungetc(gerb_file_t *fd)

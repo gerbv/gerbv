@@ -1,3 +1,9 @@
+2001-12-29 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerb_file.[hc], src/gerber.c: Added function 
+	  gerb_fgetstring and used it.
+
+	
 2001-12-14 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/draw.c : Removed gdk_gc_set_line_attribute when drawing

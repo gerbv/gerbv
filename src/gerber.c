@@ -597,18 +597,16 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
 {
     int ano, i;
     char read;
-    char type[50]; /* XXX */
+    char *type;
     
     if (gerb_fgetc(fd) != 'D')
 	return -1;
     
-    memset(type, 0, sizeof(type)/sizeof(type[0]));
-    
     ano = gerb_fgetint(fd);
-    
-    for (i = 0, type[i] = gerb_fgetc(fd); type[i] != ','; i++, type[i] = gerb_fgetc(fd));
-    
-    if (i == 1) {
+
+    type = gerb_fgetstring(fd, ',');
+
+    if (strlen(type) == 1) {
 	switch (type[0]) {
 	case 'C':
 	    aperture->type = CIRCLE;
@@ -626,8 +624,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
 	/* Here a should a T be defined, but I don't know what it represents */
     } else {
 	aperture->type = MACRO;
-	type[i] = '\0';
-	fprintf(stderr, "Aperture using macro %s[%d] ignored.\n", type, i);
+	fprintf(stderr, "Aperture using macro [%s] ignored.\n", type);
 	return ano;
     }
     
@@ -637,6 +634,8 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
     aperture->nuf_parameters = i;
     
     gerb_ungetc(fd);
+
+    free(type);
 
     return ano;
 } /* parse_aperture_definition */

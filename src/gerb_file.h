@@ -38,6 +38,7 @@ gerb_file_t *gerb_fopen(char *filename);
 char gerb_fgetc(gerb_file_t *fd);
 int gerb_fgetint(gerb_file_t *fd);
 double gerb_fgetdouble(gerb_file_t *fd);
+char *gerb_fgetstring(gerb_file_t *fd, char term);
 void gerb_ungetc(gerb_file_t *fd);
 void gerb_fclose(gerb_file_t *fd);
 
