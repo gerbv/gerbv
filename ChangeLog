@@ -1,3 +1,12 @@
+2003-12-14  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, src/gerbv.c, src/log.c, src/setup.h: It is now 
+	  possible to compile gerbv with GTK+ 2.*, at least tested with
+	  2.2.4. There are still some problems, particulary in log.c. 
+	  GtkText is deprecated, but I have enabled GTK_ENABLE_BROKEN.
+	  This needs a more permanent solution. This closes Feature 
+	  Request #771480, but probably opens up some new ones.
+
 2003-12-10  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Projects saves and restores background color.

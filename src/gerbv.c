@@ -47,6 +47,9 @@
 #include <getopt.h>
 #endif
 
+#ifdef USE_GTK2
+#include <pango/pango.h>
+#endif
 
 #include "gerber.h"
 #include "drill.h"
@@ -116,9 +119,13 @@ GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
 static void zoom_ok_button_clicked (GtkButton * button, gpointer user_data);
 static void zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
 
-
+#ifdef USE_GTK2
+void
+destroy(void)
+#else
 void
 destroy(GtkWidget *widget, gpointer data)
+#endif
 {
     int i;
 
@@ -217,7 +224,11 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
     gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, NULL);
     
     /* Attach the new accelerator group to the window */
+#ifdef USE_GTK2
+    gtk_window_add_accel_group (GTK_WINDOW(window), accel_group);
+#else
     gtk_accel_group_attach(accel_group, GTK_OBJECT(window));
+#endif
     
     if(menubar) {
 	GtkWidget *menuEntry;
@@ -572,7 +583,7 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 {
     char *filename;
 
-    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+    filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
     if (open_image(filename, screen.curr_index, FALSE) != -1) {
 
 	/*
@@ -645,7 +656,7 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
     gboolean result;
     GdkWindow *window;
 
-    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+    filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
 
     /* This might be lengthy, show that we're busy by changing the pointer */
     window = gtk_widget_get_parent_window(widget);
@@ -730,7 +741,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     int idx;
 
     if (screen.win.project)
-	filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
+	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
 
     switch ((long)data) {
     case OPEN_PROJECT:
@@ -1712,11 +1723,11 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	screen.start_y = event->y;
 	screen.centered_outline_zoom = event->state & GDK_SHIFT_MASK;
 	break;
-    case 4 :
+    case 4 : /* Scroll wheel */
 	data.z_dir = ZOOM_IN_CMOUSE;
 	do_zoom = TRUE;
 	break;
-    case 5 : 
+    case 5 :  /* Scroll wheel */
 	data.z_dir = ZOOM_OUT_CMOUSE;
 	do_zoom = TRUE;
 	break;
@@ -1731,6 +1742,39 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 
     return TRUE;
 } /* button_press_event */
+
+
+#ifdef USE_GTK2
+/* Scroll wheel */
+static gint
+scroll_event(GtkWidget *widget, GdkEventScroll *event)
+{
+    gerbv_zoom_data_t data;
+
+    switch (event->direction) {
+    case GDK_SCROLL_UP:
+	data.z_dir = ZOOM_IN_CMOUSE;
+	break;
+    case GDK_SCROLL_DOWN:
+	data.z_dir = ZOOM_OUT_CMOUSE;
+	break;
+    case GDK_SCROLL_LEFT: 
+	/* Ignore */
+	return TRUE;
+    case GDK_SCROLL_RIGHT:
+	/* Ignore */
+	return TRUE;
+    default:
+	return TRUE;
+    }
+
+    /* XXX Ugly hack */
+    data.z_event = (GdkEventButton *)event;
+    zoom(widget, &data);
+
+    return TRUE;
+} /* scroll_event */
+#endif
 
 
 static gint
@@ -1815,6 +1859,7 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 
     return TRUE;
 } /* key_press_event */
+
 
 #define TOGGLE_BUTTON(button) gtk_toggle_button_set_active( \
                                       GTK_TOGGLE_BUTTON(button),\
@@ -2533,7 +2578,11 @@ main(int argc, char *argv[])
     screen.statusbar.msg = gtk_label_new("");
     gtk_label_set_justify(GTK_LABEL(screen.statusbar.msg), GTK_JUSTIFY_LEFT);
     textStyle = gtk_style_new();
+#ifndef USE_GTK2
     textStyle->font = gdk_font_load(setup.status_fontname);
+#else
+    textStyle->font_desc = pango_font_description_from_string(setup.status_fontname);
+#endif
     gtk_widget_set_style(GTK_WIDGET(screen.statusbar.msg), textStyle);
     screen.statusbar.msgstr[0] = '\0';
     screen.statusbar.coordstr[0] = '\0';
@@ -2591,6 +2640,10 @@ main(int argc, char *argv[])
 		       GTK_SIGNAL_FUNC(key_press_event), NULL);
     gtk_signal_connect_after(GTK_OBJECT(main_win), "key_release_event",
 		       GTK_SIGNAL_FUNC(key_release_event), NULL);
+#ifdef USE_GTK2
+    gtk_signal_connect_after(GTK_OBJECT(main_win), "scroll_event",
+		       GTK_SIGNAL_FUNC(scroll_event), NULL);
+#endif
 
     gtk_widget_set_events(screen.drawing_area, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
@@ -2599,8 +2652,12 @@ main(int argc, char *argv[])
 			  | GDK_KEY_PRESS_MASK
 			  | GDK_KEY_RELEASE_MASK
 			  | GDK_POINTER_MOTION_MASK
-			  | GDK_POINTER_MOTION_HINT_MASK);
-    
+			  | GDK_POINTER_MOTION_HINT_MASK
+#ifdef USE_GTK2
+			  | GDK_SCROLL_MASK
+#endif
+			  );
+
     gtk_widget_show_all(main_win);
     set_window_icon(main_win);
 

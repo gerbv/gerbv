@@ -24,8 +24,16 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define DEF_DISTFONTNAME "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1"
+#ifdef USE_GTK2
+#define DEF_STATUSFONTNAME "Courier Extra-Condensed 11"
+#else
 #define DEF_STATUSFONTNAME "-*-fixed-*-*-normal--*-100-*-*-*-*-iso8859-1"
+#endif
 
 typedef struct {
     char *status_fontname;
