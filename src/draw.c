@@ -91,12 +91,30 @@ static void
 gerbv_draw_oval(GdkPixmap *pixmap, GdkGC *gc, 
 		gint filled, gint x, gint y, gint x_axis, gint y_axis)
 {
-    static const gint full_circle = 23360;
-    gint real_x = x - x_axis / 2;
-    gint real_y = y - y_axis / 2;
-    
-    gdk_draw_arc(pixmap, gc, filled, real_x, real_y, x_axis, y_axis, 0, 
-		 full_circle);
+    gint delta = 0;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+
+    gdk_gc_copy(local_gc, gc);
+
+    if (x_axis > y_axis) {
+	/* Draw in x axis */
+	delta = x_axis / 2 - y_axis / 2;
+	gdk_gc_set_line_attributes(local_gc, y_axis, 
+				   GDK_LINE_SOLID, 
+				   GDK_CAP_ROUND, 
+				   GDK_JOIN_MITER);
+	gdk_draw_line(pixmap, local_gc, x - delta, y, x + delta, y);
+    } else {
+	/* Draw in y axis */
+	delta = y_axis / 2 - x_axis / 2;
+	gdk_gc_set_line_attributes(local_gc, x_axis, 
+				   GDK_LINE_SOLID, 
+				   GDK_CAP_ROUND, 
+				   GDK_JOIN_MITER);
+	gdk_draw_line(pixmap, local_gc, x, y - delta, x, y + delta);
+    }
+
+    gdk_gc_unref(local_gc);
 
     return;
 } /* gerbv_draw_oval */
