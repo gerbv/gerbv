@@ -1,3 +1,11 @@
+2001-12-09 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.c: Fixed small bug in min/max calculation
+	  which caused big problems.
+	* src/gerbv.c: Major rewrite of panning code giving major
+	  improvements in screen update speed.
+	
+
 2001-12-07 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/draw.[hc], src/gerbv.c : Pseudo optimized drawing.
