@@ -1,3 +1,8 @@
+2004-08-26  Juergen Haas <juergenhaas@gmx.net>
+
+	*small bugfixes
+	*added double click draws selected item on screen
+
 2004-08-25  Tomasz Motylewski <t.motylewski@bfad.de>
 
 	* eliminated memory leak MINGW32 gerb_file.c fd->data

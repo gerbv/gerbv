@@ -86,20 +86,16 @@ void create_marked_layer(int idx) {
   //  GtkTreeIter   iter;
     
         
-/*    if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
-  	 gtk_widget_set_sensitive (interface.find_button, TRUE);
-    
-	 return;
+/*   if ((interface.selection != NULL) 
+      && (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) 
+      && (!screen.file[idx]->color)) {
+  	    
+	  return;
     }*/
-    if(screen.file[idx]) {
-         // no reason to free it free(screen.file[idx]);
-    } else {
+    if(!screen.file[idx]) {
         screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
         memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
-    //     if (idx == 19) //FIXME this is not flexible; should be first layer we ever draw a selection onto
-    //        screen.file[idx]->name = interface.pnp_filename; 
-    //    else
-            screen.file[idx]->name = tmp_name;
+        screen.file[idx]->name = tmp_name;
     }
     screen.file[idx]->image = new_gerb_image(screen.file[idx]->image);
     image = screen.file[idx]->image;

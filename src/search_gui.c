@@ -299,11 +299,11 @@ create_search_results_section (void)
 		      "drag_begin",
 		      G_CALLBACK (drag_begin_file_cb),
 		      NULL);	  
-		  
+	*/	  
 	g_signal_connect (G_OBJECT(interface.tree), 
 		      "event_after",
 		      G_CALLBACK(file_event_after_cb), 
-		      NULL);*/
+		      NULL);
 		      
     g_signal_connect (G_OBJECT(interface.tree), 
 		      "button_release_event",
@@ -496,6 +496,7 @@ create_main_search_window (void)
     sprintf(s_MAX_FILES,"%i",MAX_FILES-2);
     gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, s_MAX_FILES);
     gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+    g_signal_emit_by_name ((GTK_COMBO_BOX(interface.layer_active)), "changed");
     /*click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);*/
      
                                                                                             
@@ -854,8 +855,30 @@ file_is_named_entry_key_press_cb (GtkWidget    	*widget,
       
 } /* file_is_named_entry_key_press_cb */
 
-
 gboolean row_selected_by_button_press_event = FALSE;
+
+
+gboolean
+file_event_after_cb	        (GtkWidget 	*widget,
+				            GdkEventButton *event,
+				            gpointer 	data)
+{
+
+if (event->type == GDK_2BUTTON_PRESS) {	
+      GtkTreePath *path;
+
+        if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW(interface.tree), event->x, event->y,
+		&path, NULL, NULL, NULL)) {
+
+                gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)));
+                gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+                click_find_cb(interface.find_button, NULL);
+	    }
+     	gtk_tree_path_free (path);
+        
+    } 
+    return !(row_selected_by_button_press_event);
+}/*file_event_after_cb*/                            
 
 
 gboolean
@@ -899,57 +922,52 @@ file_button_release_event_cb (GtkWidget 	*widget,
 		      	      gpointer 		data)
 {
 
-
     if (event->window != gtk_tree_view_get_bin_window (GTK_TREE_VIEW(interface.tree))) {
 	    return FALSE;
     }
        
-        if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
-	    return FALSE;
-        }
-	    
-    if (event->button == 1 || event->button == 2) {
-	GtkTreePath *path;
-
-	if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW(interface.tree), event->x, event->y,
-		&path, NULL, NULL, NULL)) {
-		if ((event->state & GDK_SHIFT_MASK) || (event->state & GDK_CONTROL_MASK)) {
-		    if (row_selected_by_button_press_event) {
-                        gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
-		    } else {
-                       gtk_tree_selection_unselect_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
-		    }
-                } else {
-	            gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)));
-                    gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
-		}
-	}	
-	gtk_tree_path_free (path);
-    }	
-    if (event->button == 3) {	
+    if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
+	return FALSE;
+    }
+    if ((event->button == 3)  || (event->type == GDK_2BUTTON_PRESS)) {	
       GtkTreePath *path;
 
-  
         if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW(interface.tree), event->x, event->y,
 		&path, NULL, NULL, NULL)) {
 
-		if ((event->state & GDK_SHIFT_MASK) || (event->state & GDK_CONTROL_MASK)) {
-		    if (row_selected_by_button_press_event) {
-                        gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
-                        click_find_cb(interface.find_button, NULL);
-		    } else {
-                       gtk_tree_selection_unselect_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
-                       click_find_cb(interface.find_button, NULL);
-		    }
-                } else {
-	            gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)));
+		    if ((event->state & GDK_SHIFT_MASK) || (event->state & GDK_CONTROL_MASK)) {
+		        if (row_selected_by_button_press_event) {
                     gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
                     click_find_cb(interface.find_button, NULL);
-		}
-    
-        
+		        } else {
+                    gtk_tree_selection_unselect_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+                    click_find_cb(interface.find_button, NULL);
+		        }
+            } else {
+                gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)));
+                gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+                click_find_cb(interface.find_button, NULL);
+		    }
+     	gtk_tree_path_free (path);
         }
-    }
+    } else if (event->button == 1 || event->button == 2) {
+	    GtkTreePath *path;
+
+	    if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW(interface.tree), event->x, event->y,
+		    &path, NULL, NULL, NULL)) {
+		    if ((event->state & GDK_SHIFT_MASK) || (event->state & GDK_CONTROL_MASK)) {
+		        if (row_selected_by_button_press_event) {
+                            gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+		        } else {
+                           gtk_tree_selection_unselect_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+		        }
+                    } else {
+	                    gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)));
+                        gtk_tree_selection_select_path (gtk_tree_view_get_selection (GTK_TREE_VIEW(interface.tree)), path);
+		    }
+	    }	
+	gtk_tree_path_free (path);
+    }	
     return FALSE;
 } /* file_button_release_event_cb */
 

@@ -16,3 +16,6 @@ Tomek
 
 What will follow is the list of dynamically allocated objects,
 places where and when they are allocated and freed.
+--
+
+pnp files project files will only be included with the layer number and colour, not with the selected objects

@@ -43,7 +43,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
-
 #include "search_file.h"
 #include "gerb_error.h"
 #include "search.h"

@@ -125,7 +125,7 @@ free_gerb_image(gerb_image_t *image)
 	tmp = NULL;
     }
     
-    gerb_transf_free(image->transf);
+ //   gerb_transf_free(image->transf);
 
     /*
      * Free and reset the final image

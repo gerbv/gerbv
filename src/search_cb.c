@@ -187,7 +187,6 @@ open_pnp(char *filename, int idx, int reload)
     
     /*Global storage, TODO: for data reload*/
     parsed_PNP_data = parse_pnp(fd);
-    printf("we even parsed it");
     pnp_fclose(fd);
          
     if(!gtk_tree_model_get_iter_first (GTK_TREE_MODEL(interface.model), &interface.iter)) {
