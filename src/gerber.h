@@ -113,18 +113,6 @@ typedef struct gerb_image {
 #endif
 } gerb_image_t;
 
-
-typedef struct gerb_state {
-    int curr_x;
-    int curr_y;
-    int prev_x;
-    int prev_y;
-    int arc_start_x;
-    int arc_start_y;
-    int curr_aperture;
-    enum aperture_state_t aperture_state;
-    enum interpolation_t interpolation;
-} gerb_state_t;
     
 gerb_image_t *parse_gerb(FILE *fd);
 gerb_image_t *new_image(gerb_image_t *image);

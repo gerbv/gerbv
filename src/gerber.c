@@ -33,9 +33,19 @@
                              fprintf(stderr, "Not Implemented:%s\n", s); \
                            } while(0)
 
-/*
- * Make sure there is a difference between aperture and aperture no.
- */
+
+typedef struct gerb_state {
+    int curr_x;
+    int curr_y;
+    int prev_x;
+    int prev_y;
+    int arc_start_x;
+    int arc_start_y;
+    int curr_aperture;
+    int changed;
+    enum aperture_state_t aperture_state;
+    enum interpolation_t interpolation;
+} gerb_state_t;
 
 
 /* Local function prototypes */
@@ -88,22 +98,28 @@ parse_gerb(FILE *fd)
 	    break;
 	case 'X':
 	    state->curr_x = read_int(fd);
+	    state->changed = 1;
 	    break;
 	case 'Y':
 	    state->curr_y = read_int(fd);
+	    state->changed = 1;
 	    break;
 	case 'I':
 	    state->arc_start_x = read_int(fd);
+	    state->changed = 1;
 	    break;
 	case 'J':
 	    state->arc_start_y = read_int(fd);
+	    state->changed = 1;
 	    break;
 	case '%':
 	    parse_rs274x(fd, image);
 	    while (fgetc(fd) != '%');
 	    break;
 	case '*':
-	    if (state->curr_aperture == 0) break;
+	    if (state->changed == 0) break;
+	    state->changed = 0;
+
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
 	    bzero((void *)curr_net, sizeof(gerb_net_t));

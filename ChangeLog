@@ -1,8 +1,15 @@
+2001-10-28 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.[hc]: Fixed bug causing parser to reports
+	  points with wrong aperture. Pointed out by Dan Christian.
+	
+
 2001-10-30 Andreas Andersson (e92_aan@e.kth.se)
 
 	* src/drill.c, src/gerber.h, src/gerber.c
 	  Moved new_image() to the correct place
 
+	
 2001-10-28 Andreas Andersson (e92_aan@e.kth.se)
 
 	* src/Makefile.am
@@ -16,6 +23,7 @@
 	  File/Open Drill... Added functions to open drill files.
 	* src/*.c:
 	  A few speling errors fixed.
+
 	
 2001-10-28 Stefan Petersen (spe@stacken.kth.se)
 
