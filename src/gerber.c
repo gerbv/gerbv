@@ -457,7 +457,29 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 
       /* Directive parameters */
     case A2I('A','S'): /* Axis Select */
-	NOT_IMPL(fd, "%AS%");
+	op[0] = gerb_fgetc(fd);
+	op[1] = gerb_fgetc(fd);
+	
+	if ((op[0] == EOF) || (op[1] == EOF))
+	    err(1, "Unexpected EOF found.\n");
+	
+	if (((op[0] == 'A') && (op[1] == 'Y')) ||
+	    ((op[0] == 'B') && (op[1] == 'X'))) {
+	    NOT_IMPL(fd, "%MI with reversed axis not supported%");
+	    break;
+	}
+
+	op[0] = gerb_fgetc(fd);
+	op[1] = gerb_fgetc(fd);
+
+	if ((op[0] == EOF) || (op[1] == EOF))
+	    err(1, "Unexpected EOF found.\n");
+
+	if (((op[0] == 'A') && (op[1] == 'Y')) ||
+	    ((op[0] == 'B') && (op[1] == 'X'))) {
+	    NOT_IMPL(fd, "%MI with reversed axis not supported%");
+	    break;
+	}
 	break;
     case A2I('F','S'): /* Format Statement */
 	image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
