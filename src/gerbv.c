@@ -288,20 +288,16 @@ static gint
 layer_button_press_event(GtkWidget *widget, GdkEventButton *event, 
 			 gpointer button)
 {
-    GdkEventButton *event_button;
+    GdkEventButton *event_button = (GdkEventButton *) event;
 
-    if (event->type != GDK_BUTTON_PRESS) {
+    if (event->type != GDK_BUTTON_PRESS)
 	return FALSE;
-    }
-
-    event_button = (GdkEventButton *) event;
 
     /*
      * Only button 3 accepted
      */
-    if (event_button->button != 3) {
+    if (event_button->button != 3)
 	return FALSE;
-    }
 
     gtk_menu_popup(GTK_MENU(screen.popup_menu), NULL, NULL, NULL, NULL, 
 		   event_button->button, event_button->time);
