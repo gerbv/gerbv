@@ -1,5 +1,8 @@
 2002-11-24  Stefan Petersen  <spe@stacken.kth.se>
 
+	* doc/eagle/*: Added information for Eagle CAD users from
+	  Daniel Dorau. It also made the webpage. Thanks Daniel!  
+
 	* src/gerber.c: Yet another G-code (55) discovered in an
 	  example in the "standard" by our russian friend Yuri.
 
