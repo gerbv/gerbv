@@ -1,5 +1,9 @@
 2004-02-08  Stefan Petersen  <spe@stacken.kth.se>
 
+	* configure.in: Apperently auto* doesn't define $prefix if you
+	  don't set it in your script. The autotools has become more and
+	  more of a moving target...
+
 	* man/gerbv.1.in: A bunch of updates, mainly reflecting the new
 	  features.
 

@@ -65,9 +65,8 @@ else
 fi
 
 dnl --enable-gtk2 : Configure to run GTK+ 2.0
-dnl Currently used only for developing a port to GTK+ 2.0
 AC_ARG_ENABLE(gtk2,
-    [  --enable-gtk2           Tries to configure to use GTK+ 2.0 instead of GTK+ 1.2. Development only!],
+    [  --enable-gtk2           Configures gerbv to use GTK+ 2.0],
     [
         if test $enableval = "yes"; then
 		use_gtk2="yes"
@@ -138,6 +137,11 @@ else
 	GDK_PIXBUF_CFLAGS=
 	GDK_PIXBUF_LIBS=
 	PNG_LIBS=
+fi
+
+dnl Why in ... has auto* stopped fixing this ???
+if eval "test x$prefix = xNONE"; then
+    prefix="$ac_default_prefix"
 fi
 
 dnl This is because I can unquote only once. Should be $datadir/gerbv/scheme
