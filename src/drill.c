@@ -415,6 +415,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 	}
     }
 
+    free(state);
     fd->ptr = 0;
 
     return unit;
