@@ -25,6 +25,7 @@
 #include <string.h>
 #include <math.h>  /* pow() */
 #include <glib.h>
+#include <locale.h>
 
 #include "gerber.h"
 #include "gerb_error.h"
@@ -86,6 +87,13 @@ parse_gerb(gerb_file_t *fd)
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
     double aperture_size;
     double scale;
+    
+    /* added by t.motylewski@bfad.de
+     * many locales redefine "." as "," and so on, 
+     * so sscanf and strtod has problems when
+     * reading files using %f format */
+    setlocale(LC_NUMERIC, "C" );
+
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
