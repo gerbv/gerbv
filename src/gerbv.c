@@ -723,8 +723,13 @@ static gboolean idle_redraw_pixmap_active = FALSE;
 gboolean
 idle_redraw_pixmap(gpointer data)
 {
-    redraw_pixmap((GtkWidget *) data, FALSE);
-    return FALSE;
+    if (redraw_pixmap((GtkWidget *) data, FALSE)) {
+	idle_redraw_pixmap_active = TRUE;
+	return TRUE;
+    } else {
+	idle_redraw_pixmap_active = FALSE;
+	return FALSE;
+    }
 } /* idle_redraw_pixmap */
 
 
@@ -927,6 +932,22 @@ struct gerbv_redraw_state {
     int files_loaded;
 };
 
+/* Invalidate state, free up pixmaps if necessary */
+static void
+invalidate_redraw_state(struct gerbv_redraw_state *state)
+{
+    if (state->valid) {
+	state->valid = 0;
+	/* Free up pixmaps */
+	if (state->curr_pixmap) {
+	    gdk_pixmap_unref(state->curr_pixmap);
+	}
+	if (state->clipmask) {
+	    gdk_pixmap_unref(state->clipmask);
+	}
+    }
+} /* invalidate_redraw_state() */
+
 /* Create a new backing pixmap of the appropriate size */
 static gint
 redraw_pixmap(GtkWidget *widget, int restart)
@@ -951,8 +972,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	gdk_cursor_destroy(cursor);
     }
 
-    /* Prevent redraw_pixmap from being called too many times */
-    stop_idle_redraw_pixmap(widget);
+    retval = FALSE;
 
     /* Called first when opening window and then when resizing window */
     for(i = 0; i < MAX_FILES; i++) {
@@ -966,7 +986,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
      */
     if (file_loaded && screen.scale == 0) {
 	autoscale();
-	state.valid = 0;
+	invalidate_redraw_state(&state);
     }
 
     /*
@@ -985,15 +1005,15 @@ redraw_pixmap(GtkWidget *widget, int restart)
     /* Should we restart drawing, or try to load a saved state? */
     if (!restart && state.valid) {
 	if (file_loaded != state.files_loaded) {
-	    state.valid = 0;
+	    invalidate_redraw_state(&state);
 	}
 
 	if ((state.max_width != screen.drawing_area->allocation.width ||
 	    state.max_height != screen.drawing_area->allocation.height)) {
-	    state.valid = 0;
+	    invalidate_redraw_state(&state);
 	}
     } else {
-	state.valid = 0;
+	invalidate_redraw_state(&state);
     }
 
     /* Check for useful data in saved state or initialise state */
@@ -1047,8 +1067,8 @@ redraw_pixmap(GtkWidget *widget, int restart)
      */
     for(i = state.file_index; i < MAX_FILES; i++) {
 	if (g_main_pending()) {
-	    /* Set idle function to ensure we wont miss to redraw */
-	    start_idle_redraw_pixmap(widget);
+	    /* return TRUE to keep this idle function active */
+	    retval = TRUE;
 	    state.file_index = i;
 	    goto redraw_pixmap_end;
 	}

@@ -1,3 +1,10 @@
+2002-11-06  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Re-read some gtk-docs, we weree mistreating
+	  the gtk_idle-functions. This patch fixes this and closes
+	  pixmap leakage caused by complete redraw when we had a
+	  preempted state.
+
 2002-11-05  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c, src/gerbv_screen.h: Removed clipping/no
