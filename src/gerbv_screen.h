@@ -55,8 +55,8 @@ typedef struct {
     int curr_index;
     char *path;
     struct {			/* Bounding box for all gerber images loaded */
-	int x1, y1;		/* Initialized by autoscale() */
-	int x2, y2;
+	double x1, y1;		/* Initialized by autoscale() */
+	double x2, y2;
     } gerber_bbox;
 
     GtkTooltips *tooltips;

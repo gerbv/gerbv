@@ -1,3 +1,10 @@
+2002-07-01  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv_screen.h: Bounding box needs to be doubles, not
+	  ints.
+	* src/gerbv.c (motion_notify_event): Finally it seems I got 
+	  the absolute coordinates right.
+
 2002-06-20  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Mils are 0.001 inch and not 0.01, thanks Dan!
