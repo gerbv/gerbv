@@ -139,8 +139,8 @@ destroy(GtkWidget *widget, gpointer data)
 
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",      NULL,          NULL,    0, "<Branch>"},
-    {"/File/_Open Gerber...", "<alt>G", open_file,    0, NULL},
-    {"/File/_Open Drill...", "<alt>D", open_drillfile,    0, NULL},
+    {"/File/Open _Gerber...", "<alt>G", open_file,    0, NULL},
+    {"/File/Open _Drill...", "<alt>D", open_drillfile,    0, NULL},
     {"/File/sep1",  NULL,          NULL,    0, "<Separator>"},
     {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
     {"/_Zoom",      NULL,          NULL,    0, "<Branch>"},

@@ -127,7 +127,7 @@ typedef struct gerb_state {
 } gerb_state_t;
     
 gerb_image_t *parse_gerb(FILE *fd);
-    
+gerb_image_t *new_image(gerb_image_t *image);
 void free_gerb_image(gerb_image_t *image);
 
 #ifdef __cplusplus

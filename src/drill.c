@@ -26,6 +26,7 @@
 #include <math.h>  /* pow() */
 #include <ctype.h>
 
+#include "gerber.h"
 #include "drill.h"
 
 
@@ -38,7 +39,6 @@ static void drill_guess_format(FILE *fd, gerb_image_t *image);
 static int drill_parse_M_code(FILE *fd, gerb_image_t *image);
 static int drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image);
 static void drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state);
-static gerb_image_t *new_image(gerb_image_t *image);
 static drill_state_t *new_state(drill_state_t *state);
 static int read_int(FILE *fd);
 static double read_double(FILE *fd);
@@ -410,6 +410,7 @@ drill_parse_M_code(FILE *fd, gerb_image_t *image)
 
 } /* drill_parse_M_code */
 
+
 /* Parse on drill file coordinate.
    Returns nothing, but modifies state */
 static void
@@ -427,44 +428,6 @@ drill_parse_coordinate(FILE *fd, char firstchar, drill_state_t *state)
 } /* drill_parse_coordinate */
 
 
-/* Allocates a new gerb_image structure
-   Returns gerb_image pointer on success, NULL on ERROR */
-static gerb_image_t *
-new_image(gerb_image_t *image)
-{
-
-    image = (gerb_image_t *)malloc(sizeof(gerb_image_t));
-    if (image != NULL) {
-
-	bzero((void *)image, sizeof(gerb_image_t));
-
-	image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-	if (image->netlist != NULL) {
-
-	    bzero((void *)image->netlist, sizeof(gerb_net_t));
-	    
-	    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
-	    if (image->info != NULL) {
-		bzero((void *)image->info, sizeof(gerb_image_info_t));
-
-		image->info->min_x = HUGE_VAL;
-		image->info->min_y = HUGE_VAL;
-		image->info->max_x = -HUGE_VAL;
-		image->info->max_y = -HUGE_VAL;
-		
-		return image;
-	    }
-	    
-	    free(image->netlist);
-	    image->netlist = NULL;
-	}
-	free(image);
-	image = NULL;
-    }
-    
-    return NULL;
-}
-
 /* Allocates and returns a new drill_state structure
    Returns state pointer on success, NULL on ERROR */
 static drill_state_t *
@@ -477,6 +440,7 @@ new_state(drill_state_t *state)
     }
     return state;
 } /* new_state */
+
 
 /* This is a special read_int used in this file only.
    Do not let it pollute the namespace by defining it in the .h-file */
@@ -510,6 +474,7 @@ read_int(FILE *fd)
 	return i;
 } /* read_int */
 
+
 /* Reads one double from fd and returns it */
 static double
 read_double(FILE *fd)
@@ -532,6 +497,7 @@ read_double(FILE *fd)
 
     return result;
 } /* read_double */
+
 
 /* Eats all characters up to and including 
    the first one of CR or LF */

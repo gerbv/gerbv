@@ -61,22 +61,11 @@ parse_gerb(FILE *fd)
 	err(1, "malloc state failed\n");
     bzero((void *)state, sizeof(gerb_state_t));
 
-    image = (gerb_image_t *)malloc(sizeof(gerb_image_t));
+    image = new_image(image);
     if (image == NULL)
 	err(1, "malloc image failed\n");
-    bzero((void *)image, sizeof(gerb_image_t));
-    
-    image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-    if (image->netlist == NULL)
-	err(1, "malloc image->netlist failed\n");
-    bzero((void *)image->netlist, sizeof(gerb_net_t));
     curr_net = image->netlist;
-    
-    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
-    if (image->info == NULL)
-	err(1, "malloc image->info failed\n");
-    bzero((void *)image->info, sizeof(gerb_image_info_t));
-    
+
     while ((read = (char)fgetc(fd)) != EOF) {
 	switch (read) {
 	case 'G':
@@ -176,6 +165,43 @@ parse_gerb(FILE *fd)
     
     return image;
 } /* parse_gerb */
+
+
+/* Allocates a new gerb_image structure
+   Returns gerb_image pointer on success, NULL on ERROR */
+gerb_image_t *
+new_image(gerb_image_t *image)
+{
+
+    image = (gerb_image_t *)malloc(sizeof(gerb_image_t));
+    if (image != NULL) {
+	bzero((void *)image, sizeof(gerb_image_t));
+
+	image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	if (image->netlist != NULL) {
+	    bzero((void *)image->netlist, sizeof(gerb_net_t));
+	    
+	    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
+	    if (image->info != NULL) {
+		bzero((void *)image->info, sizeof(gerb_image_info_t));
+
+		image->info->min_x = HUGE_VAL;
+		image->info->min_y = HUGE_VAL;
+		image->info->max_x = -HUGE_VAL;
+		image->info->max_y = -HUGE_VAL;
+		
+		return image;
+	    }
+	    
+	    free(image->netlist);
+	    image->netlist = NULL;
+	}
+	free(image);
+	image = NULL;
+    }
+    
+    return NULL;
+}
 
 
 void
