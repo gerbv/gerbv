@@ -1,3 +1,7 @@
+2003-04-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: RS274D caused segfaults again. Reported by Skurk.
+
 -- Release 0.13 --
 
 2003-03-16  Stefan Petersen  <spe@stacken.kth.se>
