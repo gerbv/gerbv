@@ -99,7 +99,9 @@ button or scroll wheel. If you press Alt+I you will zoom in and if you
 press Alt+O you will zoom out.If you press middle mouse button you will zoom
 out, and if you press Shift and middle mouse button you will zoom in. 
 Scroll wheel works if you enabled that in your X server and mapped it
-to button 4 and 5.
+to button 4 and 5. You can also zoom in by pressing z and zoom out by pressing
+shift+z (ie Z). You can make the image fit by pressing f (there is also a 
+menu alternativ for this).
 
 You can also do zooming by outline. Press right mouse button, draw,
 release.  The dashed line shows how the zooming will be dependent on
