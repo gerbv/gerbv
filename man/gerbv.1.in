@@ -81,6 +81,14 @@ during configure with:
 
  ./configure with\-maxfiles\=\<number\>
 
+.SH ACTIVATION AND DEACTIVATION OF LAYERS
+You can load several files at one time. You can then turn displaying
+of the layers on and off by clicking on one of the rightmost buttons.
+
+You can also control this from the keyboard. Press Alt, enter the number
+on the layer you want activate/deactivate on the numerical keypad and then
+release the Alt key.
+
 .SH ZOOMING
 Zooming can be handled by either menu choices, keypressing, middle mouse 
 button or scroll wheel. If you press Alt+I you will zoom in and if you
