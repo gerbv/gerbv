@@ -24,6 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#ifdef USE_GTK2
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
@@ -415,30 +416,6 @@ create_main_search_window (void)
    completion_model = gtk_list_store_new (2, 
 				      G_TYPE_STRING,
 				      G_TYPE_STRING);
-  
-#if 0
-     printf("parsedPNPdata pointer %p\n", parsed_PNP_data);
-     if (parsed_PNP_data != NULL) {
-         while (parsed_PNP_data->next != NULL) {
-           /* gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
-            gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
-		            0, parsed_PNP_data->designator, 
-		            1,  g_locale_to_utf8(parsed_PNP_data->comment, -1, NULL, NULL, NULL), -1);
-                            */
-            GERB_MESSAGE("parsed_PNP_data designator %s\n", parsed_PNP_data->designator);   
-            parsed_PNP_data = parsed_PNP_data->next;
-        }
-     }
-  /*   printf("parsed_PNP_data designator %s\n", parsed_PNP_data->designator);    
-              
-    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(completion_model), &interface.iter);
-    do {
-    gtk_tree_model_get(GTK_TREE_MODEL(completion_model), &interface.iter, 0, &tmp, -1);
-    printf("\n  entry: %s in line:%s\n", tmp, gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(completion_model),&interface.iter));
-
-    } while   (gtk_tree_model_iter_next(GTK_TREE_MODEL(completion_model), &interface.iter));	
-   */ 
-#endif   
 
     interface.file_is_named_entry = gtk_entry_new (); 
     entry_completion = gtk_entry_completion_new ();  
@@ -505,15 +482,19 @@ create_main_search_window (void)
     renderer = gtk_cell_renderer_text_new ();
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT(GTK_COMBO_BOX(interface.layer_active)), renderer, TRUE);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT(GTK_COMBO_BOX(interface.layer_active)), renderer, "text", 0);  
-    sprintf(s_MAX_FILES,"%i",MAX_FILES-2);
-    gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, s_MAX_FILES);
-    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
-    click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
-  
+      
+
+    
     gtk_table_attach (GTK_TABLE(interface.table),interface.layer_active, 2, 3, 0, 1, GTK_SHRINK, 0, 0, 0);
     g_signal_connect (G_OBJECT((GTK_COMBO_BOX(interface.layer_active))),"changed",
 		      G_CALLBACK(click_layer_active_cb), NULL);  
-                                                
+    sprintf(s_MAX_FILES,"%i",MAX_FILES-2);
+    
+    gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, s_MAX_FILES);
+    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+    click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
+     
+                                                                                            
             
     interface.check_comment = gtk_check_button_new_with_mnemonic (_("Comment"));
     gtk_box_pack_end (GTK_BOX(hbox), interface.check_comment, FALSE, FALSE, 0);
@@ -737,12 +718,15 @@ click_layer_active_cb(GtkWidget	*widget,
 
     int           idx;
     GtkTreeIter   iter;
+   
+    if (gtk_tree_model_get_iter_first (GTK_TREE_MODEL(combo_box_model), &iter)) {
+        gtk_widget_set_sensitive (interface.layer_active, FALSE);
+        gtk_combo_box_get_active_iter(GTK_COMBO_BOX(interface.layer_active), &iter);
+        gtk_tree_model_get (GTK_TREE_MODEL(combo_box_model), &iter, 0, &idx, -1);
+        interface.layer_select_active = idx;
+        gtk_widget_set_sensitive (interface.layer_active, TRUE);
+    }
     
-    gtk_widget_set_sensitive (interface.layer_active, FALSE);
-    gtk_combo_box_get_active_iter(GTK_COMBO_BOX(interface.layer_active), &iter);
-    gtk_tree_model_get (GTK_TREE_MODEL(combo_box_model), &iter, 0, &idx, -1);
-    interface.layer_select_active = idx;
-    gtk_widget_set_sensitive (interface.layer_active, TRUE);
 
 } /* click_layer_active_cb */
    
@@ -1051,7 +1035,7 @@ file_key_press_event_cb  (GtkWidget 		*widget,
                                                 (GTK_TREE_SELECTION(tree_sel),
                                                  (GtkTreeModel **)&interface.model);
             if (selection_list != NULL) {                                         
-               tmp_path  = g_list_first(selection_list);
+               tmp_path  = g_list_last(selection_list);
                gtk_tree_path_next(tmp_path->data);   
                gtk_tree_selection_select_path  (tree_sel, tmp_path->data);
                gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(interface.tree),
@@ -1142,4 +1126,4 @@ file_key_press_event_cb  (GtkWidget 		*widget,
        gtk_window_activate_focus(GTK_WINDOW(interface.main_window)); 
     return TRUE;
 } /* file_key_press_event_cb */
- 
+#endif 

@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2004 Juergen Haas (juergenhaas@gmx.net)
  *
  * $Id$
  * 
@@ -24,8 +24,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
  
+ 
 #ifndef _SEARCH_CB_H
 #define _SEARCH_CB_H
+#ifdef USE_GTK2
 #include "search.h"
 #include "search_file.h"
 
@@ -33,3 +35,4 @@
 void load_pnp_file_popup(GtkWidget *widget, gpointer data);
 int open_pnp(char *filename, int idx, int reload);
 #endif
+#endif /* USE_GTK2 */

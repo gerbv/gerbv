@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2004 Juergen Haas (juergenhaas@gmx.net)
  *
  * $Id$
  *	                      by Juergen Haas (juergenhaas@gmx.net)
@@ -22,6 +22,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#ifdef USE_GTK2
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
@@ -213,3 +214,4 @@ pnp_fclose(pnp_file_t *fd)
     return;
 } /* pnp_fclose */
 
+#endif /* USE_GTK2 */

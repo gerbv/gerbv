@@ -24,6 +24,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#ifdef USE_GTK2
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
@@ -256,4 +257,4 @@ void create_marked_layer(int idx) {
     
 } /* create_marked_layer */
 
-
+#endif /* USE_GTK2  */

@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2004 Juergen Haas (juergenhaas@gmx.net)
  *
  * $Id$
  *  
@@ -26,6 +26,7 @@
 
 #ifndef _SEARCH_GUI_H
 #define _SEARCH_GUI_H
+#ifdef USE_GTK2
 #include "search.h"
 #include "search_file.h"
 
@@ -263,4 +264,6 @@ file_key_press_event_cb		(GtkWidget 	*widget,
 				 gpointer 	data);
 gboolean
 not_running_timeout_cb 		(gpointer data);
+#endif
+
 #endif

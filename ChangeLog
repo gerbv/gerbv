@@ -1,13 +1,40 @@
-2004-08-12 09:51   Search9-pre7
+2004-08-13 11:25 Search9-pre8
+ todo	use of libmba's csv.[ch]
+ todo 	saving projects 
+	Bugs fixed:
+		-compiles under GTK1
+		 regex.h is only checked for when --enabled-gtk2 is specified 
+                 to configure
+		-pressing mark actually also activates the new layer
+		-loading a gerberfile also activates layer
+		-tooltip to entry field now hints at usage of regexp
+		-arrow down acts like space
+		-colour change back to original colour fixed - new colour is 
+                 only allocated upon first draw on an empty layer
+		-dropdown list for available layers updates, whenever changes 
+                 to layer occur
+		-default layer now is actually also the one which is drawn ontoi
+                  by default 
+ 		 (shown was MAXFILES-1, but it was drawn onto 0!)
+		-if there was an error loading a pnpfile (e.g. incompatible 
+	  	  csv format) select parts window is destroyed!
+                  also   parsed_PNP_data is  freed!
+		-arrow up reverses arrow down/space 
+		-right click now selects and draws the selection on screen
+               	-shift_arrows will add items to selection (moving up and down!)
+		-focus was always going to log window, for MINGW therefore 
+		 logging in log window was disabled as a first measure
+		 
+
+2004-08-12 09:51   Search9-pre7 
 program now works under MINGW
 code cleanup
 BUG fixes:
-        -crash on lowercase entries(linux)using REG_ICASE
-        -crash on entries non existing in the list (MINGW/LINUX)
-use of parsed_PNP_data as a global storage place for pnp data after parsing, in
-case of reopen search window initiated.
+	-crash on lowercase entries(linux)using REG_ICASE
+	-crash on entries non existing in the list (MINGW/LINUX)
+use of parsed_PNP_data as a global storage place for pnp data after parsing, in case of reopen search window initiated.
 
-----------------------------
+
 2004-08-07 09:29  Search9-pre6
 search_gui.c:
         -introduced GtkEntryCompletion listing choices for entry

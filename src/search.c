@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2004 Juergen Haas (juergenhaas@gmx.net)
  *
  * $Id$
  *	                     by Juergen Haas (juergenhaas@gmx.net)
@@ -22,7 +22,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-
+#ifdef USE_GTK2
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -210,13 +210,13 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 #endif
     pnp_state->next = NULL;
     /* create list of all entries as a Glist for convenient use later
-     * (uparrow movements in assembly mode) */
+     * (uparrow movements in assembly mode) 
     tmp_sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface.tree));
     gtk_tree_selection_select_all (tmp_sel);
     interface.PNP_entries_list = gtk_tree_selection_get_selected_rows
                                             (GTK_TREE_SELECTION(tmp_sel),
                                              (GtkTreeModel **)&interface.model);
-    gtk_tree_selection_unselect_all (tmp_sel);                                             
+    gtk_tree_selection_unselect_all (tmp_sel); */                                            
     return pnp_state;
 }
 
@@ -241,3 +241,4 @@ free_pnp_state(pnp_state_t *pnp_state)
     return;
 } /* free_pnp_state */
 
+#endif

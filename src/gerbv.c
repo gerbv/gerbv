@@ -69,11 +69,14 @@
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
 #include "tooltable.h"
+#ifdef USE_GTK2
 #include "search_cb.h"
 #include "search_gui.h"
+#endif
 #include "search_mark.h"
 
-#define WIN_TITLE "Gerber Viewer : "
+
+#define WIN_TITLE "Gerber Viewer"
 
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
@@ -960,8 +963,10 @@ unload_file(GtkWidget *widget, gpointer data)
 {
     int         idx = screen.curr_index;
     GtkStyle   *defstyle;
+#ifdef USE_GTK2       
     int         idx0;
     GtkTreeIter iter;
+#endif    
 
     
     if (screen.file[idx] == NULL)
@@ -992,19 +997,25 @@ unload_file(GtkWidget *widget, gpointer data)
     free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
     free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
     free(screen.file[idx]);  screen.file[idx] = NULL;
-    combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
-    for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
+#ifdef USE_GTK2    
+    if (interface.main_window) {
+        //printf("unloading");
+        combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+        for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 
-        if (screen.file[idx0] == NULL) {
-            gtk_list_store_append(combo_box_model, &iter);
-            gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
-        } 
+            if (screen.file[idx0] == NULL) {
+                gtk_list_store_append(combo_box_model, &iter);
+                gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
+            } 
+        }
+        gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
+        gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
+       // gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+        gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+        click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
+     
     }
-    gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
-    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
-    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
-    click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);
-    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+#endif        
     return;
 } /* unload_file */
 
@@ -1615,8 +1626,10 @@ open_image(char *filename, int idx, int reload)
     gerb_image_t *parsed_image;
     gerb_verify_error_t error = GERB_IMAGE_OK;
     char *cptr;
+#ifdef USE_GTK2       
     int          idx0;
     GtkTreeIter  iter;
+#endif
 
     if (idx >= MAX_FILES) {
 	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
@@ -1724,22 +1737,26 @@ open_image(char *filename, int idx, int reload)
      * Tool tips on button is the file name 
      */
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
-			 filename, NULL); 
-    combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
-    for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
+			 filename, NULL);
+#ifdef USE_GTK2                         
+    if ((interface.main_window) && (!reload)) {                          
+        //printf("loading");
+        combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+        for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 
-        if (screen.file[idx0] == NULL) {
-            gtk_list_store_append(combo_box_model, &iter);
-            gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
-        } 
-    }
-    gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
-    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
-    gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+            if (screen.file[idx0] == NULL) {
+                gtk_list_store_append(combo_box_model, &iter);
+                gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
+            } 
+        }
+        gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
+        gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
+        gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
+        click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);                                            
+    }                                     
+#endif                     
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-				 (screen.layer_button[idx]),TRUE);  
-    click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);                 
-
+				     (screen.layer_button[idx]),TRUE);
     return 0;
 } /* open_image */
 

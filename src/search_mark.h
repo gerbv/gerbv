@@ -26,9 +26,11 @@
 
 #ifndef _SEARCH_MARK_H
 #define _SEARCH_MARK_H
+#ifdef USE_GTK2
 #include "search.h"
 #include "search_file.h"
 #include "search_gui.h"
+#endif
 
 
 /* Keep redraw state when preempting to process certain events */
@@ -42,9 +44,10 @@ struct gerbv_redraw_state {
     int files_loaded;
 };
 
+#ifdef USE_GTK2
 extern
 GtkListStore        *combo_box_model;
-
+#endif
 
 extern 
 gint

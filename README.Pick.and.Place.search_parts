@@ -9,7 +9,7 @@ Please direct any comments, suggestions etc. to Juergen <juergenhaas@gmx.net>
 Some instructions for the first time user:
 
 after loading a PNP file three modes of selecting items do exist:
-1)simply enter any search phrase and hit enter 
+1)enter any search phrase and hit enter 
      (See also paragraph "SCROLLING" further down)
         -Generally under linux regexp expressions are used such as ".*" i.e. '*'
         -All matches will be marked in the list AND on the screen
@@ -18,8 +18,10 @@ after loading a PNP file three modes of selecting items do exist:
         -if you had a selection already and you would like to add single items
 	 one by one, just hold down CTRL key while you left-click on the desired 	 fields
 
-2)just simply use left click combined with Shift and/or CTRL to to you manual
+2)just simply use left click combined with Shift and/or CTRL for manual
   mouse driven selections
+  Pressing right button of mouse will not only select but also draw item on 
+  selected layer
 
 3)if you have pressed <ENTER> on an empty phrase you first of all will deselct 
   anything which was selected  and you can then enter the so-called "assembly 
@@ -37,7 +39,11 @@ after loading a PNP file three modes of selecting items do exist:
  You can of course also select an item by clicking on it, pressing space will 
  then proceed as described
 
+ This mode also features arrows Up/Down selection, where arrow Up will reverse 
+ the action of arrow Down/Spacebar. Furthermore, holding SHIFT while pressing 
+ arrow Up/Down will increase the selection in either direction 
   
+
 4)Inversion of selection:
   pressing this button at any given time inverts the selection concerning the 
   whole list and upon clicking Mark button this new selection will be drawn 

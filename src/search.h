@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2004 Juergen Haas (juergenhaas@gmx.net)
  *
  * $Id$
  *  
@@ -27,6 +27,7 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#ifdef USE_GTK2
 #include <stdio.h>
 #include "search_file.h"
 #include "gerbv_screen.h"
@@ -88,5 +89,5 @@ pnp_state_t *new_pnp_state();
 pnp_state_t *parse_pnp(pnp_file_t *fd);
 void free_pnp_state(pnp_state_t *pnp_state);
 
-
+#endif /* USE_GTK2 */
 #endif /* SEARCH_H */
