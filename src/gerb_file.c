@@ -50,12 +50,19 @@ gerb_fopen(char *filename)
 	return NULL;
     }
 
+    fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
     fstat(fd->fileno, &statinfo);
     fd->datalen = (int)statinfo.st_size;
     fd->data = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, 
 			    fd->fileno, 0);
-    fd->ptr = 0;
+    if(fd->data == MAP_FAILED) {
+	/* Failed to memory map file.
+	   Probable cause is that it is a directory. */
+	fclose(fd->fd);
+	free(fd);
+	fd = NULL;
+    }
 
     return fd;
 }
