@@ -64,16 +64,17 @@
      } while (0)
 #endif
 
-enum gerbv_state_t {NORMAL, MOVE};
+typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT} gerbv_zoom_dir_t;
 
+typedef enum {NORMAL, MOVE} gerbv_state_t;
 
-typedef struct gerbv_fileinfo {
+typedef struct {
     gerb_image_t *image;
     GdkColor *color;
 } gerbv_fileinfo_t;
 
 
-typedef struct gerbv_screen {
+typedef struct {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
     GdkColor  *background;
@@ -89,7 +90,7 @@ typedef struct gerbv_screen {
     GtkWidget *layer_button[MAX_FILES];
     GtkWidget *popup_menu;
 
-    enum gerbv_state_t state;
+    gerbv_state_t state;
 
     int scale;
 
@@ -136,10 +137,10 @@ static GtkItemFactoryEntry menu_items[] = {
     */
     {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
     {"/_Zoom",      NULL,          NULL,    0, "<Branch>"},
-    {"/Zoom/_Out",  "<alt>O", zoom     ,    0, NULL},
-    {"/Zoom/_In",   "<alt>I", zoom     ,    1, NULL},
+    {"/Zoom/_Out",  "<alt>O", zoom     ,    ZOOM_OUT, NULL},
+    {"/Zoom/_In",   "<alt>I", zoom     ,    ZOOM_IN, NULL},
     {"/Zoom/sep1",  NULL,          NULL,    0, "<Separator>"},
-    {"/Zoom/_Fit",  NULL,     zoom     ,    2, NULL},
+    {"/Zoom/_Fit",  NULL,     zoom     ,    ZOOM_FIT, NULL},
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
@@ -501,23 +502,15 @@ zoom(GtkWidget *widget, gpointer data)
     if (screen.file[screen.curr_index] == NULL)
 	return;
 
-    switch((long int)data) {
-    case 0 :  /* Zoom In */
-	if (screen.scale > 10) {
-	    /* The translation vaules are crap.
-	       This _must_ be done in a better way. */
-	    screen.trans_x += 25;
-	    screen.trans_y -= 19; /* 25.4 * 3/4 */
-	    screen.scale -= 10;
-	}
-
-	break;
-    case 1 : /* Zoom Out */
-	screen.trans_x -= 25;
-	screen.trans_y += 19; /* 25.4 * 3/4 */
+    switch((gerbv_zoom_dir_t)data) {
+    case ZOOM_IN : /* Zoom In */
 	screen.scale += 10;
 	break;
-    case 2 : /* Zoom Fit */
+    case ZOOM_OUT :  /* Zoom Out */
+	if (screen.scale > 10)
+	    screen.scale -= 10;
+	break;
+    case ZOOM_FIT : /* Zoom Fit */
 	autoscale();
 	break;
     default :
@@ -723,20 +716,20 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	   all us who dislike scroll wheels ;) */
 	if((event->state & GDK_SHIFT_MASK) != 0) {
 	    /* Middle button + shift == zoom in */
-	    zoom(widget, (gpointer)0);
+	    zoom(widget, (gpointer)ZOOM_IN);
 	} else {
 	    /* Only middle button == zoom out */
-	    zoom(widget, (gpointer)1);
+	    zoom(widget, (gpointer)ZOOM_OUT);
 	}
 	break;
     case 3 :
 	/* Add color selection code here? */
 	break;
     case 4 : 
-	zoom(widget, (gpointer)1);
+	zoom(widget, (gpointer)ZOOM_IN);
 	break;
     case 5 : 
-	zoom(widget, (gpointer)0);
+	zoom(widget, (gpointer)ZOOM_OUT);
 	break;
     default:
     }
