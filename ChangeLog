@@ -1,5 +1,12 @@
+2003-09-08  Stefan Petersen  <spe@stacken.kth.se>
+
+	* gerber.c: Patch from Simon Munton to fix a problem with polygons
+	  sometimes not being filled properly. Closes bug #800928 (which
+	  he promptly had submitted).
+
 -- Release 0.14 --
 
+>>>>>>> 1.220
 2003-05-31  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in, src/amacro.c: Removed the last remaining malloc.h
@@ -7,7 +14,7 @@
 
 2003-04-18  Stefan Petersen  <spe@stacken.kth.se>
 
-	* src/draw_amacro.c: Larry Dolittle had a problem when drawing
+	* src/draw_amacro.c: Larry Doolittle had a problem when drawing
 	  one of his files, a circle seemed to explode. I couldn't 
 	  reproduce it, but after his tests I added this patch. Thanks Larry!
 

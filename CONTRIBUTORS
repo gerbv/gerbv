@@ -59,3 +59,6 @@ Charles Lepple
 
 Peter Monta
  - A patch to support incremental coordinates.
+
+Simon Munton
+ - A patch to fix a problem with polygons not always being filled properly.

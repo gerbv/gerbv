@@ -218,8 +218,29 @@ parse_gerb(gerb_file_t *fd)
 	    /* 
 	     * Count number of points in Polygon Area 
 	     */
-	    if (state->in_parea_fill && state->parea_start_node) 
+	    if (state->in_parea_fill && state->parea_start_node) {
+		if (state->aperture_state == OFF) {
+		    /*
+		     * aperture state off, end current polygon and start a new one 
+		     */
+		    curr_net->interpolation = PAREA_END;
+		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+		    curr_net = curr_net->next;
+		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+
+		    curr_net->interpolation = PAREA_START;
+		    state->parea_start_node = curr_net;
+		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+		    curr_net = curr_net->next;
+		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+
+		    curr_net->start_x = (double)state->prev_x / x_scale;
+		    curr_net->start_y = (double)state->prev_y / y_scale;
+		    curr_net->stop_x = (double)state->curr_x / x_scale;
+		    curr_net->stop_y = (double)state->curr_y / y_scale;
+		}
 		state->parea_start_node->nuf_pcorners++;
+	    }
 
 	    curr_net->interpolation = state->interpolation;
 
