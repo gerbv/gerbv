@@ -156,15 +156,6 @@ parse_gerb(gerb_file_t *fd)
 	    if (state->changed == 0) break;
 	    state->changed = 0;
 
-	    /*
-	     * If no aperture is set we'll consider it an error, unless
-	     * we're in Polygon Area Fill business.
-	     */
-	    if ( (state->curr_aperture == 0) &&
-		 (state->interpolation != PAREA_START) &&
-		 (!state->in_parea_fill) &&
-		 (state->interpolation != PAREA_END) ) break;
-
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
 	    memset((void *)curr_net, 0, sizeof(gerb_net_t));

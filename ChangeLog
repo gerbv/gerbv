@@ -2,6 +2,9 @@
 
 	* src/gerber.c: Yet another commando that doesn't complain if 
 	  default values are given. AS is the lucky one this time.
+	* src/gerber.c, src/draw.c: By considering an undefined aperture
+	  despite we didn't draw caused strange lines around the first line
+	  drawn.
 
 2002-10-31  Anders Eriksson  <anders@umunet.org>
 

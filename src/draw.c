@@ -258,8 +258,15 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    continue;
 	}
 
+	/*
+	 * If aperture state is off we allow use of undefined apertures.
+	 * This happens when gerber files starts, but hasn't decided on 
+	 * which aperture to use.
+	 */
 	if (image->aperture[net->aperture] == NULL) {
-	    fprintf(stderr, "Aperture [%d] is not defined\n", net->aperture);
+	    if (net->aperture_state != OFF)
+		fprintf(stderr, "Aperture [%d] is not defined\n", 
+			net->aperture);
 	    continue;
 	}
 
