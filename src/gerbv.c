@@ -93,6 +93,7 @@ static void export_png_popup(GtkWidget *widget, gpointer data);
 static void unload_file(GtkWidget *widget, gpointer data);
 static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
+static void si_func(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget);
@@ -133,7 +134,15 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Zoom/sep3",           NULL,     NULL,             0,  "<Separator>"},
     {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
     {"/_Setup",              NULL,     NULL,             0, "<Branch>"},
-    {"/Setup/_Background Color", NULL, color_selection_popup, 1, NULL},
+
+    {"/Setup/_Superimpose",  NULL,     NULL,             0, "<Branch>"},
+    {"/Setup/_Superimpose/Copy",NULL, si_func, 0, "<RadioItem>"},
+    {"/Setup/_Superimpose/And", NULL, si_func, GDK_AND,  "/Setup/Superimpose/Copy"},
+    {"/Setup/_Superimpose/Or",  NULL, si_func, GDK_OR,   "/Setup/Superimpose/Copy"},
+    {"/Setup/_Superimpose/Xor", NULL, si_func, GDK_XOR,  "/Setup/Superimpose/Copy"},
+    {"/Setup/_Superimpose/Invert", NULL, si_func, GDK_INVERT,  "/Setup/Superimpose/Copy"},
+
+    {"/Setup/_Background Color",NULL, color_selection_popup, 1, NULL},
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
@@ -702,6 +711,22 @@ menu_zoom(GtkWidget *widget, gpointer data)
 } /* menu_zoom */
 
 
+/* Superimpose function */
+static void 
+si_func(GtkWidget *widget, gpointer data)
+{
+
+    if ((GdkFunction)data  == screen.si_func)
+	return;
+    
+    screen.si_func = (GdkFunction)data;
+
+    /* Redraw the image(s) */
+    redraw_pixmap(screen.drawing_area);
+
+    return;
+}
+
 static void
 zoom(GtkWidget *widget, gpointer data)
 {
@@ -913,13 +938,15 @@ redraw_pixmap(GtkWidget *widget)
 			    (double)screen.scale);
 
     /* 
-     * Remove old pixmap, allocate a new one and draw the background
+     * Remove old pixmap, allocate a new one, draw the background and set
+     * superimposing function.
      */
     if (screen.pixmap) 
 	gdk_pixmap_unref(screen.pixmap);
     screen.pixmap = gdk_pixmap_new(widget->window, max_width, max_height,  -1);
     gdk_gc_set_foreground(gc, screen.background);
     gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
+    gdk_gc_set_function(gc, screen.si_func);
 
     /*
      * Allocate the pixmap and the clipmask (a one pixel pixmap)

@@ -55,7 +55,7 @@ typedef struct {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
     GdkColor  *background;
-    GdkColor  *err_color;
+    GdkFunction si_func; /* Function used for superimposing layers */
     GdkColor  *zoom_outline_color;
     GdkColor  *dist_measure_color;
     
