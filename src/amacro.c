@@ -99,7 +99,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	 * First element describes which primitive element to use
 	 */
 	if (primitive == 0) {
-	    primitive = gerb_fgetint(fd);
+	    primitive = gerb_fgetint(fd, NULL);
 	}
 
 	switch (gerb_fgetc(fd)) {
@@ -108,7 +108,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    ip = ip->next;
 	    ip->opcode = PPUSH;
 	    amacro->nuf_push++;
-	    ip->data.ival = gerb_fgetint(fd);
+	    ip->data.ival = gerb_fgetint(fd, NULL);
 	    comma = 0;
 	    break;
 	case '*':

@@ -27,16 +27,18 @@
 #include <stdio.h>
 
 typedef struct file {
-    FILE *fd;
-    int   fileno;
-    char *data;
-    int   datalen;
-    int   ptr;
+    FILE *fd;     /* File descriptor */
+    int   fileno; /* The integer version of fd */
+    char *data;   /* Pointer to data mmaped in. May not be changed, use ptr */
+    int   datalen;/* Length of mmaped data ie file length */
+    int   ptr;    /* Index in data where we are reading */
 } gerb_file_t;
+
 
 gerb_file_t *gerb_fopen(char *filename);
 int gerb_fgetc(gerb_file_t *fd);
-int gerb_fgetint(gerb_file_t *fd);
+int gerb_fgetint(gerb_file_t *fd, int *len); /* If len != NULL, returns number
+						of chars parsed in len */
 double gerb_fgetdouble(gerb_file_t *fd);
 char *gerb_fgetstring(gerb_file_t *fd, char term);
 void gerb_ungetc(gerb_file_t *fd);

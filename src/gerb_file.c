@@ -91,12 +91,17 @@ gerb_fgetc(gerb_file_t *fd)
 
 
 int
-gerb_fgetint(gerb_file_t *fd)
+gerb_fgetint(gerb_file_t *fd, int *len)
 {
     long int result;
     char *end;
     
     result = strtol(fd->data + fd->ptr, &end, 10);
+
+    if (len) {
+	*len = end - (fd->data + fd->ptr);
+    }
+
     fd->ptr = end - fd->data;
 
     return (int)result;

@@ -494,7 +494,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     }
     gerb_ungetc(fd);
 
-    tool_num = gerb_fgetint(fd);
+    tool_num = gerb_fgetint(fd, NULL);
     if ((tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX)) 
 	GERB_COMPILE_ERROR("Tool out of bounds: %d\n", tool_num);
 
@@ -549,7 +549,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	case 'F':
 	case 'S' :
 	    /* Silently ignored. They're not important. */
-	    gerb_fgetint(fd);
+	    gerb_fgetint(fd, NULL);
 	    break;
 
 	default:

@@ -81,7 +81,7 @@ parse_gerb(gerb_file_t *fd)
     gerb_state_t *state = NULL;
     gerb_image_t *image = NULL;
     gerb_net_t *curr_net = NULL;
-    int read;
+    int read, coord, len;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
     double aperture_size;
@@ -134,25 +134,63 @@ parse_gerb(gerb_file_t *fd)
 	    }
 	    break;
 	case 'X':
+	    coord = gerb_fgetint(fd, &len);
+	    if (image->format->omit_zeros == TRAILING) {
+
+		switch ((image->format->x_int + image->format->x_dec) - len) {
+		case 5:
+		    coord *= 10;
+		case 4:
+		    coord *= 10;
+		case 3:
+		    coord *= 10;
+		case 2:
+		    coord *= 10;
+		case 1:
+		    coord *= 10;
+		    break;
+		default:
+		    ;
+		}
+	    }
 	    if (image->format && (image->format->coordinate==INCREMENTAL))
-	        state->curr_x += gerb_fgetint(fd);
+	        state->curr_x += coord;
 	    else
-	        state->curr_x = gerb_fgetint(fd);
+	        state->curr_x = coord;
 	    state->changed = 1;
 	    break;
 	case 'Y':
+	    coord = gerb_fgetint(fd, &len);
+	    if (image->format->omit_zeros == TRAILING) {
+
+		switch ((image->format->y_int + image->format->y_dec) - len) {
+		case 5:
+		    coord *= 10;
+		case 4:
+		    coord *= 10;
+		case 3:
+		    coord *= 10;
+		case 2:
+		    coord *= 10;
+		case 1:
+		    coord *= 10;
+		    break;
+		default:
+		    ;
+		}
+	    }
 	    if (image->format && (image->format->coordinate==INCREMENTAL))
-	        state->curr_y += gerb_fgetint(fd);
+	        state->curr_y += coord;
 	    else
-	        state->curr_y = gerb_fgetint(fd);
+	        state->curr_y = coord;
 	    state->changed = 1;
 	    break;
 	case 'I':
-	    state->delta_cp_x = gerb_fgetint(fd);
+	    state->delta_cp_x = gerb_fgetint(fd, NULL);
 	    state->changed = 1;
 	    break;
 	case 'J':
-	    state->delta_cp_y = gerb_fgetint(fd);
+	    state->delta_cp_y = gerb_fgetint(fd, NULL);
 	    state->changed = 1;
 	    break;
 	case '%':
@@ -331,7 +369,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 {
     int  op_int;
 
-    op_int=gerb_fgetint(fd);
+    op_int=gerb_fgetint(fd, NULL);
     
     switch(op_int) {
     case 0:  /* Move */
@@ -371,7 +409,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
     case 54: /* Tool prepare */
 	/* XXX Maybe uneccesary??? */
 	if (gerb_fgetc(fd) == 'D')
-	    state->curr_aperture = gerb_fgetint(fd);
+	    state->curr_aperture = gerb_fgetint(fd, NULL);
 	else
 	    GERB_COMPILE_WARNING("Strange code after G54\n");
 	break;
@@ -412,7 +450,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 {
     int a;
     
-    a = gerb_fgetint(fd);
+    a = gerb_fgetint(fd, NULL);
     switch(a) {
     case 1 : /* Exposure on */
 	state->aperture_state = ON;
@@ -443,7 +481,7 @@ parse_M_code(gerb_file_t *fd)
 {
     int op_int;
 
-    op_int=gerb_fgetint(fd);
+    op_int=gerb_fgetint(fd, NULL);
 
     switch (op_int) {
     case 0:  /* Program stop */
@@ -691,7 +729,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	
 	break;
     case A2I('I','R'): /* Image Rotation */
-	tmp = gerb_fgetint(fd);
+	tmp = gerb_fgetint(fd, NULL);
 	if (tmp != 0)
 	    NOT_IMPL(fd, "%IR%");
 	break;
@@ -750,10 +788,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	while (op[0] != '*') { 
 	    switch (op[0]) {
 	    case 'X':
-		image->info->step_and_repeat.X = gerb_fgetint(fd);
+		image->info->step_and_repeat.X = gerb_fgetint(fd, NULL);
 		break;
 	    case 'Y':
-		image->info->step_and_repeat.Y = gerb_fgetint(fd);
+		image->info->step_and_repeat.Y = gerb_fgetint(fd, NULL);
 		break;
 	    case 'I':
 		image->info->step_and_repeat.dist_X = gerb_fgetdouble(fd);
@@ -798,7 +836,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     /*
      * Get aperture no
      */
-    ano = gerb_fgetint(fd);
+    ano = gerb_fgetint(fd, NULL);
 
     /*
      * Read in the whole aperture defintion and tokenize it
