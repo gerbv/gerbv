@@ -37,6 +37,18 @@ extern "C" {
 
 #define TOOL_MIN 1
 #define TOOL_MAX 999
+#define TOOL_TO_APERTURE_OFFSET (APERTURE_MIN - TOOL_MIN + 1)
+
+/* I couldn't possibly code without these */
+#undef TRUE
+#define TRUE 1
+#undef FALSE
+#define FALSE 0
+
+#undef max
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#undef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
 
 #include "gerber.h"
 
@@ -94,7 +106,7 @@ typedef struct drill_image {
     drill_hole_t *holes;
 } drill_image_t;
 
-drill_image_t *parse_drillfile(FILE *fd);
+struct gerb_image *parse_drillfile(FILE *fd);
 void free_drill_image(drill_image_t *image);
 
 #ifdef __cplusplus
