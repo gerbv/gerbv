@@ -33,7 +33,7 @@ struct gerb_render_context {
     void (*clear) (struct gerb_render_context *ctx, enum polarity_t color);
     void (*draw_line) (struct gerb_render_context *ctx, double x1, double y1, double x2, double y2);
     void (*draw_linestrip) (struct gerb_render_context *ctx, double *xy, int n);
-    void (*draw_arc) (struct gerb_render_context *ctx, double x, double y, double rx, double ry, double phi_start, double phi_end);
+    void (*draw_arc) (struct gerb_render_context *ctx, double cp_x, double cp_yy, double dx, double dy, double phi_start, double phi_delta);
     void (*fill_polygon) (struct gerb_render_context *ctx, double *xy, int n);
     void (*fill_rectangle) (struct gerb_render_context *ctx, double x, double y, double w, double h);
     void (*fill_oval) (struct gerb_render_context *ctx, double x, double y, double rx, double ry);

@@ -82,9 +82,9 @@ gerb_render_image(struct gerb_render_context *ctx,
 	 * Scale points with window scaling and translate them
 	 */
 	x1 = (image->info->offset_a + net->start_x) * unit_scale + trans_x;
-	y1 = (image->info->offset_b - net->start_y) * unit_scale + trans_y;
+	y1 = (image->info->offset_b + net->start_y) * unit_scale + trans_y;
 	x2 = (image->info->offset_a + net->stop_x) * unit_scale + trans_x;
-	y2 = (image->info->offset_b - net->stop_y) * unit_scale + trans_y;
+	y2 = (image->info->offset_b + net->stop_y) * unit_scale + trans_y;
 
 	/* 
 	 * If circle segment, scale and translate that one too
@@ -94,7 +94,7 @@ gerb_render_image(struct gerb_render_context *ctx,
 	    cir_height = net->cirseg->height * unit_scale;
 	    cp_x = (image->info->offset_a + net->cirseg->cp_x) *
 			      unit_scale + trans_x;
-	    cp_y = (image->info->offset_b - net->cirseg->cp_y) *
+	    cp_y = (image->info->offset_b + net->cirseg->cp_y) *
 			      unit_scale + trans_y;
 	}
 
@@ -186,7 +186,7 @@ gerb_render_image(struct gerb_render_context *ctx,
 		break;
 	    case CW_CIRCULAR:
 	    case CCW_CIRCULAR:
-		ctx->draw_arc (ctx, cp_x-cir_width/2.0, cp_y-cir_height/2.0,
+		ctx->draw_arc (ctx, cp_x, cp_y,
 			       cir_width, cir_height,
 			       net->cirseg->angle1,
 			       net->cirseg->angle2 - net->cirseg->angle1);
@@ -203,17 +203,17 @@ gerb_render_image(struct gerb_render_context *ctx,
 	    
 	    switch (image->aperture[net->aperture]->type) {
 	    case CIRCLE:
-		ctx->fill_oval (ctx, x2-p1/2, y2-p1/2, p1, p1);
+		ctx->fill_oval (ctx, x2, y2, p1, p1);
 		break;
 	    case RECTANGLE:
-		ctx->fill_rectangle (ctx, x2-p1/2, y2-p2/2, p1, p2);
+		ctx->fill_rectangle (ctx, x2, y2, p1, p2);
 		break;
 	    case OVAL :
-		ctx->fill_oval (ctx, x2-p1/2, y2-p2/2, p1, p2);
+		ctx->fill_oval (ctx, x2, y2, p1, p2);
 		break;
 	    case POLYGON :
 		GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
-		ctx->fill_oval (ctx, x2-p1/2, y2-p1/2, p1, p1);
+		ctx->fill_oval (ctx, x2, y2, p1, p1);
 		break;
 	    case MACRO :
 		gerbv_draw_amacro(ctx, 

@@ -112,22 +112,19 @@ gerb_ps_draw_linestrip(struct gerb_render_context *ctx, double *xy, int n)
 
 static void 
 gerb_ps_draw_arc(struct gerb_render_context *ctx,
-		 double x, double y, double rx, double ry,
-		 double phi_start, double phi_end)
+		 double cp_x, double cp_y, double dx, double dy,
+		 double phi_start, double phi_delta)
 {
     struct gerb_ps_context *gctx = (struct gerb_ps_context*) ctx;
-    double cp_x, cp_y;
-
-    cp_x = x + rx/2.0, cp_y = y + ry/2.0;
 
     fprintf(gctx->fd,"%.3f %.3f moveto ", 
-	    cp_x + rx/2.0*cos(phi_start*M_PI/180.0), 
-	    cp_y + ry/2.0*sin(phi_start*M_PI/180.0));
+	    cp_x + dx/2.0*cos(phi_start*M_PI/180.0), 
+	    cp_y + dy/2.0*sin(phi_start*M_PI/180.0));
     
     fprintf(gctx->fd,"%.3f %.3f %.3f %.3f %.3f arc %% %.3f %.3f SUCKS!\n",
 	    cp_x, cp_y, /* arc center point */
-	    rx/2.0,
-	    phi_start,  phi_start+phi_end, phi_start, phi_end);
+	    dx/2.0,
+	    phi_start,  phi_start+phi_delta, phi_start, phi_delta);
 
 } /* gerb_ps_draw_arc */
 
@@ -166,10 +163,10 @@ gerb_ps_fill_oval(struct gerb_render_context *ctx,
     if (rx != ry) {
 	fprintf(gctx->fd, "gsave 1 setlinewidth ");
 	fprintf(gctx->fd, "%.3f %.3f %.3f %.3f 0 360 ellipse fill grestore\n", 
-		x + rx/2.0, y + ry/2.0, rx/2.0, ry/2.0);
+		x, y, rx/2.0, ry/2.0);
     } else
 	fprintf(gctx->fd, "%.3f %.3f 0.000 %.3f circle\n", 
-		x + rx/2.0, y + ry/2.0, rx);
+		x, y, rx);
 
 } /* gerb_ps_fill_oval */
 
@@ -318,7 +315,7 @@ gerb_create_ps_render_context(char *filename)
 	fprintf(fd, "/inch {72 mul} def\n");
 	fprintf(fd, "/mm {25.4 div inch} def\n");
 
-	fprintf(fd, "1 inch 1 inch translate 90 rotate\n");
+	fprintf(fd, "1 inch 1 inch translate %%90 rotate\n");
 
 #if 1
 	fprintf(fd, "/Black {0 setgray} def\n");

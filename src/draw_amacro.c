@@ -271,7 +271,7 @@ gerbv_draw_prim6 (struct gerb_render_context *ctx, stack_t *s, int scale,
 	 * Non filled circle 
 	 */
 	double dia = (real_dia - real_gap * i) * scale;
-	ctx->draw_arc (ctx, x - 0.5 * dia, y - 0.5 * dia, dia, dia, 0.0, 360.0);
+	ctx->draw_arc (ctx, x, y, dia, dia, 0.0, 360.0);
     }
 
     /*

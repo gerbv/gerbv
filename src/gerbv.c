@@ -1278,7 +1278,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	    gerb_render_set_color(screen.ctx, screen.file[i]->color);
 	    gerb_render_image(screen.ctx, screen.file[i]->image, screen.scale,
 			      (screen.clip_bbox.x1-dmin_x)*screen.scale,
-			      (screen.clip_bbox.y1+dmax_y)*screen.scale);
+			      (-screen.clip_bbox.y1-dmax_y)*screen.scale);
 	}
     }
 

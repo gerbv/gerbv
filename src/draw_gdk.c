@@ -110,7 +110,7 @@ gerb_gdk_draw_line(struct gerb_render_context *ctx,
     struct gerb_gdk_context *gctx = (struct gerb_gdk_context*) ctx;
     
     gdk_draw_line (gctx->clipmask, gctx->clipmask_gc,
-		   round(x1), round(y1), round(x2), round(y2));
+		   round(x1), round(-y1), round(x2), round(-y2));
 } /* gerb_gdk_draw_line */
 
 
@@ -123,21 +123,22 @@ gerb_gdk_draw_linestrip(struct gerb_render_context *ctx,
     
     for (i=0; i<n-1; i++)
 	gdk_draw_line (gctx->clipmask, gctx->clipmask_gc,
-		       round(xy[2*i]), round(xy[2*i+1]),
-		       round(xy[2*i+2]), round(xy[2*i+3]));
+		       round(xy[2*i]), round(-xy[2*i+1]),
+		       round(xy[2*i+2]), round(-xy[2*i+3]));
 } /* gerb_gdk_draw_linestrip */
 
 
 static void 
 gerb_gdk_draw_arc(struct gerb_render_context *ctx,
-		  double x, double y, double rx, double ry,
-		  double phi_start, double phi_end)
+		  double cp_x, double cp_y, double dx, double dy,
+		  double phi_start, double phi_delta)
 {
     struct gerb_gdk_context *gctx = (struct gerb_gdk_context*) ctx;
     
     gdk_draw_arc (gctx->clipmask, gctx->clipmask_gc, 0,
-		  round(x), round(y), round(rx), round(ry),
-		  phi_start * 64.0, phi_end * 64.0);
+		  round(cp_x-dx/2.0), round(-cp_y-dy/2.0), 
+		  round(dx), round(dy),
+		  phi_start * 64.0, phi_delta * 64.0);
 } /* gerb_gdk_draw_arc */
 
 
@@ -153,7 +154,7 @@ gerb_gdk_fill_polygon(struct gerb_render_context *ctx, double *xy, int n)
     
     for (i=0; i<n; i++) {
 	points[i].x = round(xy[2*i]);
-	points[i].y = round(xy[2*i+1]);
+	points[i].y = round(-xy[2*i+1]);
     }
     
     gdk_draw_polygon(gctx->clipmask, gctx->clipmask_gc, 1, points, n);
@@ -171,7 +172,7 @@ gerb_gdk_fill_rectangle(struct gerb_render_context *ctx,
     gint _h = round(h);
 
     gdk_draw_rectangle (gctx->clipmask, gctx->clipmask_gc, 1,
-			round(x), round(y),
+			round(x-w/2.0), round(-y-h/2.0),
 			(_w < 1) ? 1 : _w,
 			(_h < 1) ? 1 : _h);
 } /* gerb_gdk_fill_rectangle */ 
@@ -186,7 +187,7 @@ gerb_gdk_fill_oval(struct gerb_render_context *ctx,
     gint _ry = round(ry);
 
     gdk_draw_arc (gctx->clipmask, gctx->clipmask_gc, 1,
-		  round(x), round(y),
+		  round(x-rx/2.0), round(-y-ry/2.0),
 		  (_rx < 1) ? 1 : _rx,
 		  (_ry < 1) ? 1 : _ry,
 		  360 * 64,
