@@ -171,7 +171,6 @@ define_layer(scheme *sc, pointer args)
  * Per layer:
  * * layer color
  * * layer filename
-
  */
 
 project_list_t *

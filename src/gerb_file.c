@@ -41,18 +41,12 @@
 
 #include "gerb_file.h"
 
-
-
-
-
-
-
 gerb_file_t *
 gerb_fopen(char *filename)
 {
     gerb_file_t *fd;
     struct stat statinfo;
-    
+
 #ifdef HAVE_SYS_MMAN_H
     fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
     if (fd == NULL) {

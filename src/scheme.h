@@ -16,7 +16,6 @@
 # define STANDALONE 1
 #endif
 
-
 #if !defined(_MSC_VER) && !defined(__MINGW32__)
 # define USE_STRCASECMP 1 
 # define USE_STRLWR 1 
@@ -34,8 +33,6 @@
 # endif
 #endif
 #endif
-
-
 
 #if USE_NO_FEATURES
 # define USE_MATH 0

@@ -54,7 +54,6 @@
 #include <pango/pango.h>
 #endif
 
-
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
