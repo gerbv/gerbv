@@ -29,6 +29,10 @@
 #include <stdlib.h>
 #include <math.h>  /* ceil(), atan2() */
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
 #include <gtk/gtk.h>
 
 #include "draw.h"
