@@ -1,3 +1,16 @@
+2003-01-15  Stefan Petersen  <spe@>
+
+	* src/Makefile.am, src/color.c, src/draw.c, src/drill.c,
+	  src/gerber.c, src/gerbv.c, src/gerbv_screen.h. Added are
+	  src/log.[hc], src/gerb_error.h: Finally have managed to
+	  change all error reporting routines so it works with
+	  Dinos log system. Now should all errors and warnings pop up
+	  in an explicit window so it behaves like a proper 
+	  X-application. Thanks to Dino I got this fixed. Maybe
+	  all code is not what Dino expected, but anyhow I owe him
+	  a great THANKS. Maybe all compilation errors should have
+	  "return;" after them?
+
 2003-01-14  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: A fix for the previous fix. The previous fix

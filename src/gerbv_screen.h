@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -30,6 +30,8 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+
+#include "gerb_image.h"
 
 #define INITIAL_SCALE 200
 #define MAX_ERRMSGLEN 25
@@ -76,7 +78,13 @@ typedef struct {
 	GtkWidget *color_selection;
 	GtkWidget *export_png;
 	GtkWidget *scale;
+	GtkWidget *log;
     } win;
+
+    struct {
+	int to_file;      /* Log to file */
+	char *filename;
+    } log;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;

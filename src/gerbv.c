@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <libgen.h> /* dirname */
+#include <errno.h>
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -49,6 +50,7 @@
 
 #include "gerber.h"
 #include "drill.h"
+#include "gerb_error.h"
 #ifdef GUILE_IN_USE
 #include <libguile.h>
 #include <guile/gh.h> /* To be deprecated */
@@ -58,19 +60,13 @@
 #include "color.h"
 #include "gerbv_screen.h"
 #include "gerbv_icon.h"
+#include "log.h"
 #ifdef EXPORT_PNG
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
 
 #define WIN_TITLE "Gerber Viewer : "
 
-#ifndef err
-#define err(errcode, a...) \
-     do { \
-           fprintf(stderr, ##a); \
-           exit(errcode);\
-     } while (0)
-#endif
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {
@@ -111,7 +107,7 @@ static void update_statusbar(gerbv_screen_t *scr);
 static void menu_ask_zoom (GtkWidget * widget, gpointer data);
 static GtkWidget *create_ZoomFactorWindow (void);
 static void zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data);
-static GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
+GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
 static void zoom_ok_button_clicked (GtkButton * button, gpointer user_data);
 static void zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
 
@@ -593,7 +589,7 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
     result = png_export(NULL, filename);
 #endif /* EXPORT_DISPLAYED_IMAGE */
     if (!result) {
-	fprintf(stderr, "Failed to save PNG at %s\n", filename);
+	GERB_MESSAGE("Failed to save PNG at %s\n", filename);
     }
 
     /* Return default pointer shape */
@@ -949,7 +945,7 @@ zoom(GtkWidget *widget, gpointer data)
 	screen.trans_y = screen.scale * us_midy - half_h;
         break;
     default :
-	fprintf(stderr, "Illegal zoom direction %ld\n", (long int)data);
+	GERB_MESSAGE("Illegal zoom direction %ld\n", (long int)data);
     }
 
     if (z_data->z_dir == ZOOM_IN_CMOUSE ||
@@ -987,8 +983,8 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     dy = y2-y1;
 
     if (dx < 4 && dy < 4) {
-	    fprintf(stderr, "Warning: Zoom area too small, bailing out!\n");
-	    goto zoom_outline_end;
+	GERB_MESSAGE("Warning: Zoom area too small, bailing out!\n");
+	goto zoom_outline_end;
     }
 
     if (screen.centered_outline_zoom) {
@@ -1277,15 +1273,14 @@ open_image(char *filename, int idx, int reload)
     char *cptr;
 
     if (idx >= MAX_FILES) {
-	fprintf(stderr, "Couldn't open %s. Maximum number of files opened.\n",
-		filename);
+	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
+		     filename);
 	return -1;
     }
 
     fd = gerb_fopen(filename);
     if (fd == NULL) {
-	fprintf(stderr, "Trying to open %s: ", filename);
-	perror("");
+	GERB_MESSAGE("Trying to open %s:%s ", filename, strerror(errno));
 	return -1;
     }
     
@@ -1301,17 +1296,17 @@ open_image(char *filename, int idx, int reload)
      */
     error = gerb_image_verify(parsed_image);
     if (error) {
-	fprintf(stderr, "%s: Parse error: ", filename);
+	GERB_COMPILE_ERROR("%s: Parse error: ", filename);
 	if (error & GERB_IMAGE_MISSING_NETLIST)
-	    fprintf(stderr, "Missing netlist ");
+	    GERB_COMPILE_ERROR("Missing netlist ");
 	if (error & GERB_IMAGE_MISSING_FORMAT)
-	    fprintf(stderr, "Missing format ");
+	    GERB_COMPILE_ERROR("Missing format ");
 	if (error & GERB_IMAGE_MISSING_APERTURES) 
-	    fprintf(stderr, "Missing apertures/drill sizes ");
+	    GERB_COMPILE_ERROR("Missing apertures/drill sizes ");
 	if (error & GERB_IMAGE_MISSING_INFO)
-	    fprintf(stderr, "Missing info ");
-	fprintf(stderr, "\n");
-	fprintf(stderr, "You probably tried to read an RS-274D file, which gerbv doesn't support\n");
+	    GERB_COMPILE_ERROR("Missing info ");
+	GERB_COMPILE_ERROR("\n");
+	GERB_COMPILE_ERROR("You probably tried to read an RS-274D file, which gerbv doesn't support\n");
 	free_gerb_image(parsed_image);
 	return -1;
     }
@@ -1748,6 +1743,8 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 	gdk_window_raise(screen.win.export_png->window);
     if (screen.win.scale && screen.win.scale->window)
 	gdk_window_raise(screen.win.scale->window);
+    if (screen.win.log && screen.win.log->window)
+	gdk_window_raise(screen.win.log->window);
 
     return FALSE;
 } /* expose_event */
@@ -1836,7 +1833,7 @@ draw_measure_distance(void)
     gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
 		  screen.start_y, screen.last_x, screen.last_y);
     if (font == NULL) {
-	fprintf(stderr, "Failed to load font '%s'\n", GERBV_DISTFONTNAME);
+	GERB_MESSAGE("Failed to load font '%s'\n", GERBV_DISTFONTNAME);
     } else {
 	gchar string[65];
 	double delta, dx, dy;
@@ -2035,7 +2032,7 @@ zoom_cancel_button_clicked(GtkButton * button, gpointer user_data)
 } /* zoom_cancel_button_clicked */
 
 
-static GtkWidget *
+GtkWidget *
 lookup_widget (GtkWidget * widget, const gchar * widget_name)
 {
     GtkWidget *parent, *found_widget;
@@ -2065,6 +2062,7 @@ static struct option longopts[] = {
     /* name              has_arg            flag  val */
     {"version",          no_argument,       NULL,    'V'},
     {"batch",            required_argument, NULL,    'b'},
+    {"log",              required_argument, NULL,    'l'},
     {"geometry",         required_argument, &longopt_val, 1 },
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",       required_argument, &longopt_val, 2},
@@ -2102,11 +2100,18 @@ internal_main(int argc, char *argv[])
     int	      run_batch = 0;
 #endif /* GUILE_IN_USE */
 
+    /*
+     * Setup the screen info. Must do this before getopt, since getopt
+     * eventually will set some variables in screen.
+     */
+    memset((void *)&screen, 0, sizeof(gerbv_screen_t));
+    screen.state = NORMAL;
+	
 #ifdef HAVE_GETOPT_LONG
-    while ((read_opt = getopt_long(argc, argv, "Vb:", 
+    while ((read_opt = getopt_long(argc, argv, "Vb:l:", 
 				   longopts, &longopt_idx)) != -1) {
 #else
-    while ((read_opt = getopt(argc, argv, "Vb:")) != -1) {
+    while ((read_opt = getopt(argc, argv, "Vb:l:")) != -1) {
 #endif /* HAVE_GETOPT_LONG */
 	switch (read_opt) {
 #ifdef HAVE_GETOPT_LONG
@@ -2143,19 +2148,31 @@ internal_main(int argc, char *argv[])
 	case 'b' :
 #ifdef GUILE_IN_USE
 	    run_batch = 1;
-	    if (optarg == NULL)
-		err(1, "You must give a backend in batch mode\n");
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give a backend in batch mode\n");
+		exit(1);
+	    }
 	    
 	    backend = (char *)malloc(strlen(optarg) + strlen("gerb-.scm") + 1);
-	    if (backend == NULL) 
-		err(1, "Failed mallocing backend string\n");
+	    if (backend == NULL) {
+		fprintf(stderr, "Failed mallocing backend string\n");
+		exit(1);
+	    }
 	    strcpy(backend, "gerb-");
 	    strcat(backend, optarg);
 	    strcat(backend, ".scm");
 #else
 	    fprintf(stderr, "This version doesn't have batch support\n");
-	    exit(0);
+	    exit(1);
 #endif /* GUILE_IN_USE */
+	    break;
+	case 'l' :
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give a filename to send log to\n");
+		exit(1);
+	    }
+	    screen.log.to_file = 1;
+	    screen.log.filename = optarg;
 	    break;
 	case '?':
 #ifdef GUILE_IN_USE
@@ -2172,8 +2189,10 @@ internal_main(int argc, char *argv[])
     
 #ifdef GUILE_IN_USE
     if (run_batch) {
-	if (optind == argc)
-	    err(1, "No file to work on\n");
+	if (optind == argc) {
+	    fprintf(stderr, "No file to work on\n");
+	    exit(1);
+	}
 	
 	/*
 	 * Loop through gerber files
@@ -2187,12 +2206,7 @@ internal_main(int argc, char *argv[])
 	exit(0);
     }
 #endif /* GUILE_IN_USE */
-    /*
-     * Setup the screen info
-     */
-    memset((void *)&screen, 0, sizeof(gerbv_screen_t));
-    screen.state = NORMAL;
-	
+
     /*
      * Init GTK+
      */
@@ -2277,6 +2291,13 @@ internal_main(int argc, char *argv[])
     screen.statusbar.diststr[0] = '\0';
     gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msg, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+
+    /*
+     * Set error log handler
+     */
+    g_log_set_handler (NULL, 
+		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
+		       gerbv_log_handler, NULL); 
 
     /*
      * Fill with files (eventually) given on command line

@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -37,14 +37,7 @@
 
 #include "draw.h"
 #include "draw_amacro.h"
-
-#ifndef err
-#define err(errcode, a...) \
-     do { \
-           fprintf(stderr, ##a); \
-           exit(errcode);\
-     } while (0)
-#endif
+#include "gerb_error.h"
 
 #undef round
 #define round(x) ceil((double)(x))
@@ -230,7 +223,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	case PAREA_START :
 	    points = (GdkPoint *)malloc(sizeof(GdkPoint) *  net->nuf_pcorners);
 	    if (points == NULL) {
-		err(1, "Malloc failed\n");
+		GERB_FATAL_ERROR("Malloc failed\n");
 	    }
 	    memset(points, 0, sizeof(GdkPoint) *  net->nuf_pcorners);
 	    curr_point_idx = 0;
@@ -265,8 +258,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	 */
 	if (image->aperture[net->aperture] == NULL) {
 	    if (net->aperture_state != OFF)
-		fprintf(stderr, "Aperture [%d] is not defined\n", 
-			net->aperture);
+		GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
 	    continue;
 	}
 
@@ -291,7 +283,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    case LINEARx10 :
 	    case LINEARx01 :
 	    case LINEARx001 :
-		fprintf(stderr, "Linear != x1\n");
+		GERB_MESSAGE("Linear != x1\n");
 		gdk_gc_set_line_attributes(gc, p1, 
 					   GDK_LINE_ON_OFF_DASH, 
 					   GDK_CAP_ROUND, 
@@ -331,7 +323,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		gerbv_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
 		break;
 	    case POLYGON :
-		fprintf(stderr, "Warning! Very bad at drawing polygons.\n");
+		GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
 		gerbv_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
 		break;
 	    case MACRO :
@@ -342,11 +334,13 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 				  scale, x2, y2);
 		break;
 	    default :
-		err(1, "Unknown aperture type\n");
+		GERB_MESSAGE("Unknown aperture type\n");
+		return 0;
 	    }
 	    break;
 	default :
-	    err(1, "Unknown aperture state\n");
+	    GERB_MESSAGE("Unknown aperture state\n");
+	    return 0;
 	}
     }
 

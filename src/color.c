@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include "color.h"
+#include "gerb_error.h"
 
 /*
  * Allocates a color in the systems colormap.
@@ -36,11 +37,11 @@ alloc_color(int r, int g, int b, char *colorname)
     GdkColor *color;
 
     if (r < 0 || r > MAX_COLOR_RESOLUTION)
-	fprintf(stderr, "Red out range: %d\n", r);
+	GERB_MESSAGE("Red out range: %d\n", r);
     if (g < 0 || g > MAX_COLOR_RESOLUTION)
-	fprintf(stderr, "Green out range: %d\n", g);
+	GERB_MESSAGE("Green out range: %d\n", g);
     if (b < 0 || b > MAX_COLOR_RESOLUTION)
-	fprintf(stderr, "Blue out range: %d\n", b);
+	GERB_MESSAGE("Blue out range: %d\n", b);
 
     color = (struct _GdkColor *)malloc(sizeof(struct _GdkColor));
     if (color == NULL)

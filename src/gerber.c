@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This is a part of gerbv
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -24,23 +24,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>  /* pow() */
+#include <glib.h>
 
 #include "gerber.h"
-
+#include "gerb_error.h"
 
 #define NOT_IMPL(fd, s) do { \
-                             fprintf(stderr, "Not Implemented:%s\n", s); \
+                             GERB_MESSAGE("Not Implemented:%s\n", s); \
                              while (gerb_fgetc(fd) != (int)'*'); \
                            } while(0)
 	
-
-#ifndef err
-#define err(errcode, a...) \
-     do { \
-           fprintf(stderr, ##a); \
-           exit(errcode);\
-     } while (0)
-#endif
 
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 
@@ -93,7 +86,7 @@ parse_gerb(gerb_file_t *fd)
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
-	err(1, "malloc state failed\n");
+	GERB_FATAL_ERROR("malloc state failed\n");
 
     /*
      * Set some defaults
@@ -106,7 +99,7 @@ parse_gerb(gerb_file_t *fd)
      */
     image = new_gerb_image(image);
     if (image == NULL)
-	err(1, "malloc image failed\n");
+	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
 
     /*
@@ -129,7 +122,7 @@ parse_gerb(gerb_file_t *fd)
 		return image;
 		break;
 	    default:
-		err(1, "Strange M code found.\n");
+		GERB_FATAL_ERROR("Strange M code found.\n");
 	    }
 	    break;
 	case 'X':
@@ -273,11 +266,11 @@ parse_gerb(gerb_file_t *fd)
 	case '\t' :
 	    break;
 	default:
-	    fprintf(stderr, "Found unknown character (whitespace?) %c[%d]\n", read, read);
+	    GERB_COMPILE_ERROR("Found unknown character (whitespace?) %c[%d]\n", read, read);
 	}
     }
     
-    fprintf(stderr, "File is missing gerber End-Of-File\n");
+    GERB_COMPILE_ERROR("File is missing gerber End-Of-File\n");
     
     return image;
 } /* parse_gerb */
@@ -293,11 +286,11 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
     op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
-	err(1, "Unexpected EOF found.\n");
+	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 
     if ((op[0] < (int)'0') || (op[0] > (int)'9') || 
 	(op[1] < (int)'0') || (op[1] > (int)'9'))
-	err(1, "Non numerical G opcode found [%c%c]\n", op[0], op[1]);
+	GERB_COMPILE_ERROR("Non numerical G opcode found [%c%c]\n", op[0], op[1]);
 
     op_int = (op[0] - (int)'0');
     op_int = op_int * 10 + (op[1] - (int)'0');
@@ -338,10 +331,11 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	state->changed = 1;
 	break;
     case 54: /* Tool prepare */
+	/* XXX Maybe uneccesary??? */
 	if (gerb_fgetc(fd) == 'D')
 	    state->curr_aperture = gerb_fgetint(fd);
 	else
-	    err(1, "Strange code after G54\n");
+	    GERB_COMPILE_WARNING("Strange code after G54\n");
 	break;
     case 55: /* Prepare for flash */
 	break;
@@ -368,7 +362,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	if (format) format->coordinate = INCREMENTAL;
 	break;
     default:
-	err(1, "Strange/unhandled G code : %c%c\n", op[0], op[1]);
+	GERB_COMPILE_ERROR("Strange/unhandled G code : %c%c\n", op[0], op[1]);
     }
     
     return;
@@ -398,7 +392,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 	if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) 
 	    state->curr_aperture = a;
 	else
-	    err(1, "Aperture out of bounds:%d\n", a);
+	    GERB_COMPILE_ERROR("Aperture out of bounds:%d\n", a);
 	state->changed = 0;
     }
     
@@ -415,10 +409,10 @@ parse_M_code(gerb_file_t *fd)
     op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
-	err(1, "Unexpected EOF found.\n");
+	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
     
     if (op[0] != (int)'0')
-	err(1, "Strange M code [%c%c]\n", (char)op[0], (char)op[1]);
+	GERB_COMPILE_ERROR("Strange M code [%c%c]\n", (char)op[0], (char)op[1]);
 
     switch (op[1]) {
     case '0':  /* Program stop */
@@ -428,8 +422,9 @@ parse_M_code(gerb_file_t *fd)
     case '2':  /* End of program */
 	return 3;
     default:
-	err(1, "Strange M code [%c%c]\n", (char)op[0], (char)op[1]);
+	GERB_COMPILE_ERROR("Strange M code [%c%c]\n", (char)op[0], (char)op[1]);
     }
+    return 0;
 } /* parse_M_code */
 
 
@@ -446,7 +441,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
-	err(1, "Unexpected EOF found.\n");
+	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 
     switch (A2I(op[0], op[1])){
 
@@ -456,7 +451,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    err(1, "Unexpected EOF found.\n");
+	    GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 	
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
@@ -468,7 +463,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[1] = gerb_fgetc(fd);
 
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    err(1, "Unexpected EOF found.\n");
+	    GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
@@ -479,7 +474,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     case A2I('F','S'): /* Format Statement */
 	image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
 	if (image->format == NULL) 
-	    err(1, "Failed malloc for format\n");
+	    GERB_FATAL_ERROR("Failed malloc for format\n");
 	memset((void *)image->format, 0, sizeof(gerb_format_t));
 	
 	switch (gerb_fgetc(fd)) {
@@ -493,7 +488,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->format->omit_zeros = EXPLICIT;
 	    break;
 	default:
-	    fprintf(stderr,"EagleCad bug detected: Defaults to omit leading zeroes\n");
+	    GERB_MESSAGE("EagleCad bug detected: Defaults to omit leading zeroes\n");
 	    gerb_ungetc(fd);
 	    image->format->omit_zeros = LEADING;
 	}
@@ -506,7 +501,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->format->coordinate = INCREMENTAL;
 	    break;
 	default:
-	    err(1, "Format error: coordinate = %c\n", op[0]);
+	    GERB_COMPILE_ERROR("Format error: coordinate = %c\n", op[0]);
 	}
 
 	while((op[0] = gerb_fgetc(fd)) != '*') {
@@ -530,25 +525,25 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    case 'X' :
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    err(1,  "Illegal format size : %c\n", (char)op[0]);
+		    GERB_COMPILE_ERROR("Illegal format size : %c\n", (char)op[0]);
 		image->format->x_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    err(1,  "Illegal format size : %c\n", (char)op[0]);
+		    GERB_COMPILE_ERROR("Illegal format size : %c\n", (char)op[0]);
 		image->format->x_dec = op[0] - '0';
 		break;
 	    case 'Y':
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    err(1,  "Illegal format size : %c\n", (char)op[0]);
+		    GERB_COMPILE_ERROR("Illegal format size : %c\n", (char)op[0]);
 		image->format->y_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    err(1,  "Illegal format size : %c\n", (char)op[0]);
+		    GERB_COMPILE_ERROR("Illegal format size : %c\n", (char)op[0]);
 		image->format->y_dec = op[0] - '0';
 		break;
 	    default :
-		fprintf(stderr, "Not handled  type of format statement [%c]\n", op[0]);
+		GERB_COMPILE_ERROR("Not handled  type of format statement [%c]\n", op[0]);
 	    }
 	}
 	break;
@@ -561,7 +556,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    err(1, "Unexpected EOF found.\n");
+	    GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 
 	switch (A2I(op[0],op[1])) {
 	case A2I('I','N'):
@@ -571,7 +566,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->info->unit = MM;
 	    break;
 	default:
-	    err(1, "Illegal unit:%c%c\n", op[0], op[1]);
+	    GERB_COMPILE_ERROR("Illegal unit:%c%c\n", op[0], op[1]);
 	}
 	break;
     case A2I('O','F'): /* Offset */
@@ -585,7 +580,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 		image->info->offset_b = gerb_fgetdouble(fd);
 		break;
 	    default :
-		err(1, "Wrong character in offset:%c\n", op[0]);
+		GERB_COMPILE_ERROR("Wrong character in offset:%c\n", op[0]);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -613,7 +608,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    err(1, "Unexpected EOF found.\n");
+	    GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 
 	switch (A2I(op[0],op[1])) {
 	case A2I('A','S'):
@@ -632,7 +627,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->info->encoding = EIA;
 	    break;
 	default:
-	    err(1, "Strange inputcode : %c%c\n", op[0], op[1]);
+	    GERB_COMPILE_ERROR("Strange inputcode : %c%c\n", op[0], op[1]);
 	}
 	break;
 
@@ -651,7 +646,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	for (ano = 0; ano < 3; ano++) {
 	    op[0] = gerb_fgetc(fd);
 	    if (op[0] == EOF)
-		err(1, "Unexpected EOF found.\n");
+		GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 	    str[ano] = (char)op[0];
 	}
 	
@@ -660,7 +655,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	else if (strncmp(str, "NEG", 3) == 0)
 	    image->info->polarity = NEGATIVE;
 	else 
-	    err(1, "Strange polarity : %c%c%c\n", str[0], str[1], str[2]);
+	    GERB_COMPILE_ERROR("Strange polarity : %c%c%c\n", str[0], str[1], str[2]);
 	
 	break;
     case A2I('I','R'): /* Image Rotation */
@@ -678,7 +673,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) 
 	    image->aperture[ano] = a;
 	else
-	    err(1, "Aperture number out of bounds : %d\n", ano);
+	    GERB_COMPILE_ERROR("Aperture number out of bounds : %d\n", ano);
 	break;
     case A2I('A','M'): /* Aperture Macro */
 	tmp_amacro = image->amacro;
@@ -702,7 +697,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    state->layer_polarity = CLEAR;
 	    break;
 	default:
-	    fprintf(stderr, "Strange Layer Polarity: %c\n", op[0]);
+	    GERB_COMPILE_WARNING("Strange Layer Polarity: %c\n", op[0]);
 	}
 	break;
     case A2I('K','O'): /* Knock Out */
@@ -711,22 +706,22 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     case A2I('S','R'): /* Step and Repeat */
 	op[0] = gerb_fgetc(fd);
 	if (op[0] != 'X')
-	    fprintf(stderr, "Step-and-repeat parameter error\n");
+	    GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
 	image->info->step_and_repeat_X = gerb_fgetint(fd);
 
 	op[0] = gerb_fgetc(fd);
 	if (op[0] != 'Y')
-	    fprintf(stderr, "Step-and-repeat parameter error\n");
+	    GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
 	image->info->step_and_repeat_Y = gerb_fgetint(fd);
 
 	op[0] = gerb_fgetc(fd);
 	if (op[0] != 'I')
-	    fprintf(stderr, "Step-and-repeat parameter error\n");
+	    GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
 	image->info->step_and_repeat_dist_X = gerb_fgetdouble(fd);
 
 	op[0] = gerb_fgetc(fd);
 	if (op[0] != 'J')
-	    fprintf(stderr, "Step-and-repeat parameter error\n");
+	    GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
 	image->info->step_and_repeat_dist_Y = gerb_fgetdouble(fd);
 
 	if ((image->info->step_and_repeat_X != 1) || 
@@ -739,7 +734,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	NOT_IMPL(fd, "%RO%");
 	break;
     default:
-	fprintf(stderr, "Unknown extension found %%%c%c%%\n", op[0], op[1]);
+	GERB_COMPILE_ERROR("Unknown extension found %%%c%c%%\n", op[0], op[1]);
     }
     
     return;
@@ -866,7 +861,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 	    quadrant = 2;
 	    break;
 	default : 
-	    err(1, "Unknow quadrant value while converting to cw\n");
+	    GERB_COMPILE_ERROR("Unknow quadrant value while converting to cw\n");
 	}
     }
 
@@ -891,7 +886,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 	net->cirseg->cp_y = net->start_y + delta_cp_y;
 	break;
     default :
-	err(1, "Strange quadrant : %d\n", quadrant);
+	GERB_COMPILE_ERROR("Strange quadrant : %d\n", quadrant);
     }
 
     /*
@@ -937,17 +932,17 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 	net->cirseg->angle2 = 360 - RAD2DEG(beta);
 	break;
     default :
-	err(1, "Strange quadrant : %d\n", quadrant);
+	GERB_COMPILE_ERROR("Strange quadrant : %d\n", quadrant);
     }
 
     if (net->cirseg->width < 0.0)
-	fprintf(stderr, "Negative width [%f] in quadrant %d [%f][%f]\n", 
-		net->cirseg->width, quadrant, alfa, beta);
+	GERB_COMPILE_WARNING("Negative width [%f] in quadrant %d [%f][%f]\n", 
+			     net->cirseg->width, quadrant, alfa, beta);
     
     if (net->cirseg->height < 0.0)
-	fprintf(stderr, "Negative height [%f] in quadrant %d [%d][%d]\n", 
-		net->cirseg->height, quadrant, RAD2DEG(alfa), RAD2DEG(beta));
-    
+	GERB_COMPILE_WARNING("Negative height [%f] in quadrant %d [%d][%d]\n", 
+	     net->cirseg->height, quadrant, RAD2DEG(alfa), RAD2DEG(beta));
+
     return;
 
 } /* calc_cirseg_sq */

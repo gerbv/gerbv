@@ -1,7 +1,7 @@
 /*
  * gEDA - GNU Electronic Design Automation
  * drill.c
- * Copyright (C) 2000-2002 Andreas Andersson
+ * Copyright (C) 2000-2003 Andreas Andersson
  *
  * $Id$
  *
@@ -43,19 +43,11 @@
 #include <sys/mman.h>
 
 #include "drill.h"
-
+#include "gerb_error.h"
 
 #define NOT_IMPL(fd, s) do { \
-                             fprintf(stderr, "Not Implemented:%s\n", s); \
+                             GERB_MESSAGE("Not Implemented:%s\n", s); \
                            } while(0)
-
-#ifndef err
-#define err(errcode, a...) \
-     do { \
-           fprintf(stderr, ##a); \
-           exit(errcode);\
-     } while (0)
-#endif
 
 /* I couldn't possibly code without these */
 #undef TRUE
@@ -115,11 +107,11 @@ parse_drillfile(gerb_file_t *fd)
 
     state = new_state(state);
     if (state == NULL)
-	err(1, "malloc state failed\n");
+	GERB_FATAL_ERROR("malloc state failed\n");
 
     image = new_gerb_image(image);
     if (image == NULL)
-	err(1, "malloc image failed\n");
+	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
 
     drill_guess_format(fd, image);
@@ -144,7 +136,7 @@ parse_drillfile(gerb_file_t *fd)
 	    /* Most G codes aren't used, for now */
 	    switch(drill_parse_G_code(fd, image)) {
 	    case DRILL_G_ROUT :
-		err(1, "Rout mode data is not supported\n");
+		GERB_COMPILE_ERROR("Rout mode data is not supported\n");
 		break;
 	    case DRILL_G_DRILL :
 		break;
@@ -156,7 +148,7 @@ parse_drillfile(gerb_file_t *fd)
 		break;
 	    case DRILL_G_ZEROSET :
 		if((read = gerb_fgetc(fd)) == EOF)
-		    err(1, "Unexpected EOF\n");
+		    GERB_COMPILE_ERROR("Unexpected EOF\n");
 		drill_parse_coordinate(fd, (char)read, 1.0 / x_scale, state);
 		state->origin_x = state->curr_x;
 		state->origin_y = state->curr_y;
@@ -203,7 +195,7 @@ parse_drillfile(gerb_file_t *fd)
 		return image;
 		break;
 	    default:
-		err(1, "Strange M code found.\n");
+		GERB_COMPILE_ERROR("Strange M code found.\n");
 	    }
 	    break;
 
@@ -297,11 +289,11 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 
     state = new_state(state);
     if (state == NULL)
-	err(1, "malloc state failed\n");
+	GERB_FATAL_ERROR("malloc state failed\n");
 
     image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
     if (image->format == NULL) 
-	err(1, "malloc format failed\n");
+	GERB_FATAL_ERROR("malloc format failed\n");
     memset((void *)image->format, 0, sizeof(gerb_format_t));
 
     /* This is just a special case of the normal parser */
@@ -497,7 +489,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
     tool_num = gerb_fgetint(fd);
     if ((tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX)) 
-	err(1, "Tool out of bounds: %d\n", tool_num);
+	GERB_COMPILE_ERROR("Tool out of bounds: %d\n", tool_num);
 
     /* Set the current tool to the correct one */
     state->current_tool = tool_num;
@@ -517,15 +509,15 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	    }
 
 	    if(size <= 0 || size >= 10000) {
-		err(1, "Tool is wrong size: %g\n", size);
+		GERB_COMPILE_ERROR("Tool is wrong size: %g\n", size);
 	    } else {
 		if(image->aperture[tool_num] != NULL) {
-		    err(1, "Tool is already defined\n");
+		    GERB_COMPILE_ERROR("Tool is already defined\n");
 		} else {
 		    image->aperture[tool_num] =
 			(gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 		    if (image->aperture[tool_num] == NULL) {
-			err(1, "malloc tool failed\n");
+			GERB_FATAL_ERROR("malloc tool failed\n");
 		    }
 		    /* There's really no way of knowing what unit the tools
 		       are defined in without sneaking a peek in the rest of
@@ -551,7 +543,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	    break;
 	}
 	if( (temp = gerb_fgetc(fd)) == EOF) {
-	    err(1, "(very) Unexpected end of file found\n");
+	    GERB_COMPILE_ERROR("(very) Unexpected end of file found\n");
 	}
     }
 
@@ -561,7 +553,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	image->aperture[tool_num] =
 	    (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 	if (image->aperture[tool_num] == NULL) {
-	    err(1, "malloc tool failed\n");
+	    GERB_FATAL_ERROR("malloc tool failed\n");
 	}
 	/* This size calculation is, of course, totally bogus */
 	image->aperture[tool_num]->parameter[0] =
@@ -597,7 +589,7 @@ drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
     read[1] = gerb_fgetc(fd);
 
     if ((read[0] == EOF) || (read[1] == EOF))
-	err(1, "Unexpected EOF found.\n");
+	GERB_COMPILE_WARNING("Unexpected EOF found.\n");
 
     op[0] = read[0], op[1] = read[1], op[3] = 0;
  
@@ -643,7 +635,7 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
     read[1] = gerb_fgetc(fd);
 
     if ((read[0] == EOF) || (read[1] == EOF))
-	err(1, "Unexpected EOF found.\n");
+	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 
     op[0] = read[0], op[1] = read[1], op[3] = 0;
 
