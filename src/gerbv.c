@@ -76,6 +76,7 @@ typedef struct gerbv_screen {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
     GdkColor  *background;
+    GdkColor  *err_color;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
@@ -341,7 +342,7 @@ redraw_pixmap(GtkWidget *widget)
 			 screen.scale, screen.trans_x, screen.trans_y,
 			 screen.file[i]->image->info->polarity,
 			 screen.file[i]->color,
-			 screen.background);
+			 screen.background, screen.err_color);
 	}
     }
 
@@ -365,14 +366,16 @@ open_image(char *filename, int index)
     GtkStyle *defstyle, *newstyle;
 
     if (index >= MAX_FILES) {
-	fprintf(stderr, "Couldn't open %s. Index out of range.\n", filename);
+	fprintf(stderr, "Couldn't open %s. Maximum number of files opened.\n",
+		filename);
 	return;
     }
 
     fd = gerb_fopen(filename);
     if (fd == NULL) {
-	perror("fopen");
-	exit(1);
+	fprintf(stderr, "Trying to open %s: ", filename);
+	perror("");
+	return;
     }
     screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
     if(drill_file_p(fd))
@@ -502,7 +505,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 #ifndef NO_GUILE
 static void
-batch(char *backend, char *file)
+batch(char *backend, char *filename)
 {
     char         *path[3];
     char 	 *complete_path;
@@ -566,10 +569,11 @@ batch(char *backend, char *file)
     /*
      * Read and parse Gerberfile
      */
-    fd = gerb_fopen(file);
+    fd = gerb_fopen(filename);
     if (fd == NULL) {
-	perror("fopen");
-	exit(1);
+	fprintf(stderr, "Trying to open %s: ", filename);
+	perror("");
+	return;
     }
 
     if (drill_file_p(fd))
@@ -582,7 +586,7 @@ batch(char *backend, char *file)
     /*
      * Convert it to Scheme
      */
-    scm_image = scm_image2scm(image, file);
+    scm_image = scm_image2scm(image, filename);
     
     /*
      * Call external Scheme function in found backend
@@ -710,6 +714,7 @@ internal_main(int argc, char *argv[])
      */
     screen.tooltips = gtk_tooltips_new();        
     screen.background = alloc_color(0, 0, 0, "black");
+    screen.err_color  = alloc_color(0, 0, 0, "red1");
 
     /*
      * Main window 
