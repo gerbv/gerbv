@@ -134,9 +134,6 @@ rotate_point(double *x, double *y, double angle)
 
 /*
  * Doesn't handle exposure yet and explicit x,y
- * Questions:
- *  - Empty or filled circle?
- *  - If empty, width of line?
  */
 static void 
 gerbv_draw_prim1 (struct gerb_render_context *ctx,
@@ -147,8 +144,7 @@ gerbv_draw_prim1 (struct gerb_render_context *ctx,
     double real_x = x - 0.5 * dia;
     double real_y = y - 0.5 * dia;
 
-    ctx->set_line_style(ctx, 1.0, 0);
-    ctx->draw_arc(ctx, real_x, real_y, dia, dia, 0.0, 360.0);
+    ctx->fill_oval(ctx, real_x, real_y, dia, dia);
 
 } /* gerbv_draw_prim1 */
 

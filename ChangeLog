@@ -2,6 +2,10 @@
 
 	* src/gerb_image.h,src/gerber.c: angles are floats.
 
+2003-03-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: Aperture macro primitive 1 is a filled circle.
+
 2003-03-01  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerb_image.[hc], gerber.c: Redesigned step-and-repeat
