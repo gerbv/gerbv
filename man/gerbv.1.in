@@ -1,4 +1,4 @@
-.TH gerbv 1 "Aug 4th, 2002" Version @VERSION@
+.TH gerbv 1 "Oct 13th, 2002" Version @VERSION@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
