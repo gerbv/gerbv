@@ -1,3 +1,6 @@
+-- Release 0.0.7 --	
+
+	
 2002-02-03 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/draw.c: Fixed bugs in drawing primitive 6 and 7 after
@@ -64,6 +67,9 @@
 
 	* src/gerb_file.[hc], src/gerber.c: Added function 
 	  gerb_fgetstring and used it.
+
+	
+-- Release 0.0.6 --	
 
 	
 2001-12-14 Stefan Petersen (spe@stacken.kth.se)
