@@ -1232,7 +1232,7 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	Y = screen.gerber_bbox.y1 + (py-y-screen.trans_y)/(double)screen.scale;
 	sprintf(str,
 		"(X, Y) (%7.1f, %7.1f)mils (%7.2f, %7.2f)mm",
-		X*100.0, Y*100.0, X*25.4, Y*25.4);
+		X*1000.0, Y*1000.0, X*25.4, Y*25.4);
 	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.abs,
 			   screen.statusbar.absid, str);
 	switch (screen.state) {
@@ -1451,7 +1451,7 @@ draw_measure_distance()
 	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
 
 	sprintf(string, "[dist %7.1f, dX %7.1f, dY %7.1f] mils",
-		delta*100.0, dx*100.0, dy*100.0);
+		delta*1000.0, dx*1000.0, dy*1000.0);
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
 			   &ascent, &descent);
@@ -1482,7 +1482,7 @@ draw_measure_distance()
 					 "MotionNotify");
 	sprintf(string,
 		"(dist,dX,dY) (%7.1f, %7.1f, %7.1f)mils (%7.2f, %7.3f, %7.3f)mm",
-		delta*100.0, dx*100.0, dy*100.0, delta*25.4, dx*25.4, dy*25.4);
+		delta*1000.0, dx*1000.0, dy*1000.0, delta*25.4, dx*25.4, dy*25.4);
 	gtk_statusbar_push((GtkStatusbar*)screen.statusbar.rel,
 			   screen.statusbar.relid, string);
 

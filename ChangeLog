@@ -1,3 +1,8 @@
+2002-06-20  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Mils are 0.001 inch and not 0.01, thanks Dan!
+	  This closes bug #571097.
+
 2002-06-19  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c (motion_notify_event): py, not px!
