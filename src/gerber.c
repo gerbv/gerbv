@@ -297,80 +297,93 @@ static void
 parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 {
     char op[2];
+    int op_int;
     
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
-    
-    if (strncmp(op, "00", 2) == 0) { 	/* Move */
+
+    if ((op[0] < '0') || (op[0] > '9') || (op[1] < '0') || (op[1] > '9'))
+	err(1, "Non numerical G opcode found [%c%c]\n", op[0], op[1]);
+
+    op_int = (int)(op[0] - '0');
+    op_int = op_int * 10 + (int)(op[1] - '0');
+
+    switch(op_int) {
+    case 0:  /* Move */
 	/* Is this doing anything really? */
-    } else if (strncmp(op, "01", 2) == 0) { /* Linear Interpolation (1X scale) */
+	break;
+    case 1:  /* Linear Interpolation (1X scale) */
 	state->interpolation = LINEARx1;
-	return;
-    } else if (strncmp(op, "02", 2) == 0) { /* Clockwise Linear Interpolation */
+	break;
+    case 2:  /* Clockwise Linear Interpolation */
 	if (state->interpolation == MQ_CW_CIRCULAR ||
 	    state->interpolation == MQ_CCW_CIRCULAR)
 	    state->interpolation = MQ_CW_CIRCULAR;
 	else 
 	    state->interpolation = CW_CIRCULAR;
-	return;
-    } else if (strncmp(op, "03", 2) == 0) { /* Counter Clockwise Linear Interpolation */
+	break;
+    case 3:  /* Counter Clockwise Linear Interpolation */
 	if (state->interpolation == MQ_CW_CIRCULAR ||
 	    state->interpolation == MQ_CCW_CIRCULAR)
 	    state->interpolation = MQ_CCW_CIRCULAR;
 	else 
 	    state->interpolation = CCW_CIRCULAR;
-	return;
-    } else if (strncmp(op, "04", 2) == 0) { /* Ignore Data Block */
+	break;
+    case 4:  /* Ignore Data Block */
 	/* Don't do anything, just read 'til * */
 	while (gerb_fgetc(fd) != '*');
-    } else if (strncmp(op, "10", 2) == 0) { /* Linear Interpolation (10X scale) */
+	break;
+    case 10: /* Linear Interpolation (10X scale) */
 	state->interpolation = LINEARx10;
-	return;
-    } else if (strncmp(op, "11", 2) == 0) { /* Linear Interpolation (0.1X scale) */
+	break;
+    case 11: /* Linear Interpolation (0.1X scale) */
 	state->interpolation = LINEARx01;
-	return;
-    } else if (strncmp(op, "12", 2) == 0) { /* Linear Interpolation (0.01X scale) */
+	break;
+    case 12: /* Linear Interpolation (0.01X scale) */
 	state->interpolation = LINEARx001;
-	return;
-    } else if (strncmp(op, "36", 2) == 0) { /* Turn on Polygon Area Fill */
+	break;
+    case 36: /* Turn on Polygon Area Fill */
 	state->prev_interpolation = state->interpolation;
 	state->interpolation = PAREA_START;
 	state->changed = 1;
-    } else if (strncmp(op, "37", 2) == 0) { /* Turn off Polygon Area Fill */
+	break;
+    case 37: /* Turn off Polygon Area Fill */
 	state->interpolation = PAREA_END;
 	state->changed = 1;
-    } else if (strncmp(op, "54", 2) == 0) { /* Tool prepare */
-	if (gerb_fgetc(fd) == 'D')   /* XXX Check return value */
+	break;
+    case 54: /* Tool prepare */
+	if (gerb_fgetc(fd) == 'D')
 	    state->curr_aperture = gerb_fgetint(fd);
 	else
 	    err(1, "Strange code after G54\n");
-	
-    } else if (strncmp(op, "70", 2) == 0) { /* Specify inches */
+	break;
+    case 70: /* Specify inches */
 	NOT_IMPL(fd, "G70");
-    } else if (strncmp(op, "71", 2) == 0) { /* Specify millimeters */
+	break;
+    case 71: /* Specify millimeters */
 	NOT_IMPL(fd, "G71");
-    } else if (strncmp(op, "74", 2) == 0) { /* Disable 360 circular interpolation */
+	break;
+    case 74: /* Disable 360 circular interpolation */
 	if (state->interpolation == MQ_CW_CIRCULAR)
 	    state->interpolation = CW_CIRCULAR;
 	else
 	    state->interpolation = CCW_CIRCULAR;
-	return;
-    } else if (strncmp(op, "75", 2) == 0) { /* Enable 360 circular interpolation */
+	break;
+    case 75: /* Enable 360 circular interpolation */
 	state->interpolation = MQ_CW_CIRCULAR;
-	return;
-    } else if (strncmp(op, "90", 2) == 0) { /* Specify absolut format */
+	break;
+    case 90: /* Specify absolut format */
 	if (format) format->coordinate = ABSOLUTE;
-	return;
-    } else if (strncmp(op, "91", 2) == 0) { /* Specify incremental format */
+	break;
+    case 91: /* Specify incremental format */
 	if (format) format->coordinate = INCREMENTAL;
-	return;
-    } else {
-	err(1, "Strange G code : %c%c\n", op[0], op[1]);
+	break;
+    default:
+	err(1, "Strange/unhandled G code : %c%c\n", op[0], op[1]);
     }
-    
     
     return;
 } /* parse_G_code */
@@ -418,14 +431,19 @@ parse_M_code(gerb_file_t *fd)
     if ((op[0] == EOF) || (op[1] == EOF))
 	err(1, "Unexpected EOF found.\n");
     
-    if (strncmp(op, "00", 2) == 0)      /* Program stop */
+    if ((op[0] != '0') || ((op[1] != '0') && (op[1] != '1') && (op[1] != '2')))
+	err(1, "Strange M code [%c%c]\n", op[0], op[1]);
+
+    switch (op[1]) {
+    case '0':  /* Program stop */
 	return 1;
-    else if (strncmp(op, "01", 2) == 0) /* Optional stop */
+    case '1':  /* Optional stop */
 	return 2;
-    else if (strncmp(op, "02", 2) == 0) /* End of program */
+    case '2':  /* End of program */
 	return 3;
-    else
+    default:
 	return 0;
+    }
 } /* parse_M_code */
 
 
