@@ -2403,7 +2403,7 @@ static struct option longopts[] = {
     {"batch",            required_argument, NULL,    'b'},
     {"log",              required_argument, NULL,    'l'},
     {"geometry",         required_argument, &longopt_val, 1},
-    {"project",          required_argument, &longopt_val, 3},
+    {"project",          required_argument, &longopt_val, 'p'},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",       required_argument, &longopt_val, 2},
     {"g-fatal-warnings", no_argument,       &longopt_val, 2},
@@ -2465,10 +2465,10 @@ main(int argc, char *argv[])
     setup_init();
 	
 #ifdef HAVE_GETOPT_LONG
-    while ((read_opt = getopt_long(argc, argv, "Vl:", 
+    while ((read_opt = getopt_long(argc, argv, "Vl:p:", 
 				   longopts, &longopt_idx)) != -1) {
 #else
-    while ((read_opt = getopt(argc, argv, "Vl:")) != -1) {
+    while ((read_opt = getopt(argc, argv, "Vl:p:")) != -1) {
 #endif /* HAVE_GETOPT_LONG */
 	switch (read_opt) {
 #ifdef HAVE_GETOPT_LONG
@@ -2493,7 +2493,7 @@ main(int argc, char *argv[])
 		    break;
 		req_y = (int)strtol(rest, &rest, 10);
 		break;
-	    case 3: /* project */
+	    case 'p': /* project */
 		project_filename = optarg;
 		break;
 	    default:
@@ -2512,6 +2512,13 @@ main(int argc, char *argv[])
 	    }
 	    setup.log.to_file = 1;
 	    setup.log.filename = optarg;
+	    break;
+	case 'p' :
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give a project filename\n");
+		exit(1);
+	    }
+	    project_filename = optarg;
 	    break;
 	case '?':
 
