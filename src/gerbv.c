@@ -130,6 +130,8 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Zoom/_In",            "<alt>I", menu_zoom,        ZOOM_IN, NULL},
     {"/Zoom/sep3",           NULL,     NULL,             0,  "<Separator>"},
     {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
+    {"/_Setup",              NULL,     NULL,             0, "<Branch>"},
+    {"/Setup/_Background Color", NULL, color_selection_popup, 1, NULL},
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
@@ -272,6 +274,7 @@ color_selection_destroy(GtkWidget *widget, gpointer data)
 static void
 color_selection_ok(GtkWidget *widget, gpointer data)
 {
+    int background = (int)data;
     GtkColorSelection *colorsel;
     gdouble color[4];
     GtkStyle *oldstyle, *newstyle;
@@ -282,28 +285,38 @@ color_selection_ok(GtkWidget *widget, gpointer data)
     gtk_color_selection_get_color(colorsel, color);
 
     /* Allocate new color  */
-    screen.file[screen.curr_index]->color = 
-	alloc_color((int)(color[0] * MAX_COLOR_RESOLUTION), 
-		    (int)(color[1] * MAX_COLOR_RESOLUTION), 
-		    (int)(color[2] * MAX_COLOR_RESOLUTION), 
-		    NULL);
+    if (background)
+	screen.background = 
+	    alloc_color((int)(color[0] * MAX_COLOR_RESOLUTION),
+			(int)(color[1] * MAX_COLOR_RESOLUTION),
+			(int)(color[2] * MAX_COLOR_RESOLUTION),
+			NULL);
+    else
+	screen.file[screen.curr_index]->color = 
+	    alloc_color((int)(color[0] * MAX_COLOR_RESOLUTION), 
+			(int)(color[1] * MAX_COLOR_RESOLUTION), 
+			(int)(color[2] * MAX_COLOR_RESOLUTION), 
+			NULL);
 
     /* Redraw image on screen */
     redraw_pixmap(screen.drawing_area);
 
     /* Change color on button too */
-    oldstyle = gtk_widget_get_style(screen.layer_button[screen.curr_index]);
-    newstyle = gtk_style_copy(oldstyle);
-    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[screen.curr_index]->color);
-    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[screen.curr_index]->color);
-    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[screen.curr_index]->color);
-    gtk_widget_set_style(screen.layer_button[screen.curr_index], newstyle);
+    if (!background) {
+	oldstyle = gtk_widget_get_style(screen.layer_button[screen.curr_index]);
+	newstyle = gtk_style_copy(oldstyle);
+	newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[screen.curr_index]->color);
+	newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[screen.curr_index]->color);
+	newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[screen.curr_index]->color);
+	gtk_widget_set_style(screen.layer_button[screen.curr_index], newstyle);
+    }
 
     /* Remove modal grab and destroy color selection dialog */
     gtk_grab_remove(screen.color_selection_popup);
     gtk_widget_destroy(screen.color_selection_popup);
     screen.color_selection_popup = NULL;
 
+    return;
 } /* cb_ok_color_selection */
 
 
@@ -311,8 +324,9 @@ static void
 color_selection_popup(GtkWidget *widget, gpointer data)
 {
     gdouble curr_color[4];
+    int background = (int)data;
 
-    if (screen.file[screen.curr_index] == NULL)
+    if (!background && (screen.file[screen.curr_index] == NULL))
 	return;
 
     screen.color_selection_popup = gtk_color_selection_dialog_new("Color Selection");
@@ -331,20 +345,30 @@ color_selection_popup(GtkWidget *widget, gpointer data)
     gtk_signal_connect
 	(GTK_OBJECT
 	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(color_selection_ok), NULL);
+	 "clicked", GTK_SIGNAL_FUNC(color_selection_ok), data);
 
     gtk_signal_connect(GTK_OBJECT(screen.color_selection_popup), "destroy",
 		       GTK_SIGNAL_FUNC(color_selection_destroy),
 		       NULL);
 
     /* Get current color and use it as a start in color selection dialog */
-    curr_color[0] = (gdouble)screen.file[screen.curr_index]->color->red / 
-	(gdouble)MAX_COLOR_RESOLUTION;
-    curr_color[1] = (gdouble)screen.file[screen.curr_index]->color->green / 
-	(gdouble)MAX_COLOR_RESOLUTION;
-    curr_color[2] = (gdouble)screen.file[screen.curr_index]->color->blue / 
-	(gdouble)MAX_COLOR_RESOLUTION;
-    curr_color[3] = 0.0; /* Actually don't know how to get this value */
+    if (background) {
+	curr_color[0] = (gdouble)screen.background->red / 
+	    (gdouble)MAX_COLOR_RESOLUTION;
+	curr_color[1] = (gdouble)screen.background->green / 
+	    (gdouble)MAX_COLOR_RESOLUTION;
+	curr_color[2] = (gdouble)screen.background->blue / 
+	    (gdouble)MAX_COLOR_RESOLUTION;
+	curr_color[3] = 0.0; /* Actually don't know how to get this value */
+    }else {
+	curr_color[0] = (gdouble)screen.file[screen.curr_index]->color->red / 
+	    (gdouble)MAX_COLOR_RESOLUTION;
+	curr_color[1] = (gdouble)screen.file[screen.curr_index]->color->green /
+	    (gdouble)MAX_COLOR_RESOLUTION;
+	curr_color[2] = (gdouble)screen.file[screen.curr_index]->color->blue / 
+	    (gdouble)MAX_COLOR_RESOLUTION;
+	curr_color[3] = 0.0; /* Actually don't know how to get this value */
+    }
 
     /* Now set this color in color selection dialog */
     gtk_color_selection_set_color
@@ -608,6 +632,7 @@ autoscale()
     return;
 } /* autoscale */
 
+
 static gboolean idle_redraw_pixmap_active = FALSE;
 /*
  * On idle callback to ensure a zoomed image is properly redrawn
@@ -620,6 +645,7 @@ idle_redraw_pixmap(gpointer data)
     return FALSE;
 } /* idle_redraw_pixmap */
 
+
 void start_idle_redraw_pixmap(GtkWidget *data)
 {
     if (!idle_redraw_pixmap_active) {
@@ -627,6 +653,7 @@ void start_idle_redraw_pixmap(GtkWidget *data)
 	idle_redraw_pixmap_active = TRUE;
     }
 } /* start_idle_redraw_pixmap */
+
 
 void stop_idle_redraw_pixmap(GtkWidget *data)
 {
@@ -636,6 +663,7 @@ void stop_idle_redraw_pixmap(GtkWidget *data)
     }
 } /* stop_idle_redraw_pixmap */
 
+
 static void
 menu_zoom(GtkWidget *widget, gpointer data)
 {
@@ -643,6 +671,7 @@ menu_zoom(GtkWidget *widget, gpointer data)
 
     zoom(widget, &z_data);
 } /* menu_zoom */
+
 
 static void
 zoom(GtkWidget *widget, gpointer data)
@@ -709,6 +738,7 @@ zoom(GtkWidget *widget, gpointer data)
     
     return;
 } /* zoom */
+
 
 static void
 zoom_outline(GtkWidget *widget, GdkEventButton *event)

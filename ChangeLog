@@ -1,3 +1,8 @@
+2002-06-18  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added background color selection. Closes feature
+	  request 557365.
+	
 2002-06-17  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv_screen.h: added msgid for stausbar.
