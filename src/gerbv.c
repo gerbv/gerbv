@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -122,19 +122,23 @@ destroy(GtkWidget *widget, gpointer data)
     int i;
 
     for (i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i] != NULL && 
-	    screen.file[i]->image != NULL) {
+	if (screen.file[i] && screen.file[i]->image)
 	    free_gerb_image(screen.file[i]->image);
+	if (screen.file[i] && screen.file[i]->color)
 	    free(screen.file[i]->color);
+	if (screen.file[i] && screen.file[i]->name)
 	    free(screen.file[i]->name);
+	if (screen.file[i])
 	    free(screen.file[i]);
-	}
     }
 
     /* Free all colors allocated */
-    free(screen.background);
-    free(screen.zoom_outline_color);
-    free(screen.dist_measure_color);
+    if (screen.background)
+	free(screen.background);
+    if (screen.zoom_outline_color)
+	free(screen.zoom_outline_color);
+    if (screen.dist_measure_color)
+	free(screen.dist_measure_color);
 
     gtk_main_quit();
 } /* destroy */
@@ -498,21 +502,21 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     char *filename;
 
     filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-    if (open_image(filename, screen.curr_index, FALSE) == -1)
-	return;
+    if (open_image(filename, screen.curr_index, FALSE) != -1) {
 
-    /*
-     * Remember where we loaded file from last time
-     */
-    filename = dirname(filename);
-    if (screen.path)
-	free(screen.path);
-    screen.path = (char *)malloc(strlen(filename) + 1);
-    strcpy(screen.path, filename);
-    screen.path = strncat(screen.path, "/", 1);
-    
-    /* Make loaded image appear on screen */
-    redraw_pixmap(screen.drawing_area, TRUE);
+	/*
+	 * Remember where we loaded file from last time
+	 */
+	filename = dirname(filename);
+	if (screen.path)
+	    free(screen.path);
+	screen.path = (char *)malloc(strlen(filename) + 1);
+	strcpy(screen.path, filename);
+	screen.path = strncat(screen.path, "/", 1);
+	
+	/* Make loaded image appear on screen */
+	redraw_pixmap(screen.drawing_area, TRUE);
+    }
 
     gtk_grab_remove(screen.win.load_file);
     gtk_widget_destroy(screen.win.load_file);
@@ -1297,7 +1301,13 @@ open_image(char *filename, int idx, int reload)
 	screen.file[idx]->image = parse_gerb(fd);
 
     gerb_fclose(fd);
-    
+
+    /*
+     * Do some cleanup if error check below fails
+     */
+    screen.file[idx]->color = NULL;
+    screen.file[idx]->name  = NULL;
+
     /*
      * Do error check before continuing
      */

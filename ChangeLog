@@ -1,3 +1,10 @@
+2003-01-13  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: When gerbv discovered RS274D and terminated
+	  it tried to free memory to hadn't been allocated due to 
+	  it had discovered error in the gerber file. This caused
+	  windows to never close and segfaults when terminating.
+
 2002-12-25  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv_screen.h, src/gerbv.c: Changed how the
