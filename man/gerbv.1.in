@@ -130,19 +130,6 @@ corresponding functions in GTK. In GTK they are described as:
 "For colored images, only GDK_COPY, GDK_XOR and GDK_INVERT are generally 
 useful. For bitmaps, GDK_AND and GDK_OR are also useful."
 
-.SH BACKEND
-If you compiled in Guile you can run gerbv as a parser with output generated
-by a Scheme script. This system is currently under heavy redesign, so use 
-this with caution.
-
-If you call gerbv with --batch=<backend>, gerbv starts looking for a file
-namned gerb-<backend>.scm. It starts looking for it in the directory gerbv
-was invoked from, then it looks in $HOME/.gerbv/scheme and finally in
-@BACKEND_DIR@.
-
-Currently the only documentation on how to write a backend is the code in the
-scheme directory of the distribution.
-
 .SH "ENVIRONMENT"
 No environment variables are currently in use.
 
