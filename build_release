@@ -5,6 +5,7 @@
 
 eval "`grep ^VERSION configure.in`"
 RELEASE=gerbv-${VERSION}
+CVS_TAG=RELEASE_`echo ${VERSION}|/bin/sed -e 'y/./_/'`
 
 RESULT=`grep -c :pserver:anonymous@cvs.gerbv.sourceforge.net:[0-9]*/cvsroot/gerbv ${HOME}/.cvspass`
 
@@ -14,7 +15,7 @@ if [[ $RESULT -eq 0 ]] ; then
 fi
 
 (cd /tmp ;\
-cvs -z3 -d:pserver:anonymous@cvs.gerbv.sourceforge.net:/cvsroot/gerbv export -r RELEASE_0_0_4 -d ${RELEASE} gerbv ; \
+cvs -z3 -d:pserver:anonymous@cvs.gerbv.sourceforge.net:/cvsroot/gerbv export -r ${CVS_TAG} -d ${RELEASE} gerbv ; \
 (cd ${RELEASE} ; rm -f build_release rebuild_conf ; \
 aclocal ; autoheader ; autoconf ; automake --copy --add-missing) ;\
 tar cf ${RELEASE}.tar ${RELEASE} ;\
