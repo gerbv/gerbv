@@ -188,7 +188,7 @@ gerb_find_file(char *filename, char **paths)
 		len = strlen(paths[i]) - 1;
 	    else
 		len = tmp - paths[i] - 1;
-	    env_name = (char *)malloc(len);
+	    env_name = (char *)malloc(len+1);
 	    strncpy(env_name, (char *)(paths[i] + 1), len);
 	    env_name[len] = '\0';
 

@@ -595,7 +595,7 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 	filename = dirname(filename);
 	if (screen.path)
 	    free(screen.path);
-	screen.path = (char *)malloc(strlen(filename) + 1);
+	screen.path = (char *)malloc(strlen(filename) + 2);
 	strcpy(screen.path, filename);
 	screen.path = strncat(screen.path, "/", 1);
 	
@@ -692,7 +692,7 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
     filename = dirname(filename);
     if (screen.path)
 	free(screen.path);
-    screen.path = (char *)malloc(strlen(filename) + 1);
+    screen.path = (char *)malloc(strlen(filename) + 2);
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
    
@@ -751,7 +751,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	 */
 	if (screen.path)
 	    free(screen.path);
-	screen.path = (char *)malloc(strlen(filename) + 1);
+	screen.path = (char *)malloc(strlen(filename) + 2);
 	strcpy(screen.path, filename);
 	dirname(screen.path);
 	screen.path = strncat(screen.path, "/", 1);
@@ -842,7 +842,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     filename = dirname(filename);
     if (screen.path)
 	free(screen.path);
-    screen.path = (char *)malloc(strlen(filename) + 1);
+    screen.path = (char *)malloc(strlen(filename) + 2);
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
 
@@ -1651,6 +1651,7 @@ open_image(char *filename, int idx, int reload)
     /*
      * Store filename for eventual reload
      * XXX Really should check retval from malloc!!! And use strncpy
+     * TOM: not really. filename is not changing between strlen and strcpy
      */
     screen.file[idx]->name = (char *)malloc(strlen(filename) + 1);
     strcpy(screen.file[idx]->name, filename);
@@ -2720,7 +2721,7 @@ main(int argc, char *argv[])
 	     */
 	    if (screen.path)
 		free(screen.path);
-	    screen.path = (char *)malloc(strlen(project_filename) + 1);
+	    screen.path = (char *)malloc(strlen(project_filename) + 2);
 	    strcpy(screen.path, project_filename);
 	    dirname(screen.path);
 	    screen.path = strncat(screen.path, "/", 1);
