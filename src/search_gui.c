@@ -71,7 +71,6 @@
 #include "draw.h"
 #include "color.h"
 #include "gerbv_screen.h"
-#include "gerbv_icon.h"
 #include "search.h"
 #include "search_cb.h"
 #include "search_file.h"
