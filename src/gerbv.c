@@ -936,8 +936,8 @@ redraw_pixmap(GtkWidget *widget)
     GdkRectangle update_rect;
     int file_loaded = 0;
     GdkWindow *window;
-    GdkPixmap *curr_pixmap;
-    GdkPixmap *clipmask;
+    GdkPixmap *curr_pixmap = NULL;
+    GdkPixmap *clipmask = NULL;
     int retval = TRUE;
 
     window = gtk_widget_get_parent_window(widget);
@@ -956,11 +956,6 @@ redraw_pixmap(GtkWidget *widget)
     /* Called first when opening window and then when resizing window */
 
     for(i = 0; i < MAX_FILES; i++) {
-	if (g_main_pending()) {
-	    /* Set idle function to ensure we wont miss to redraw */
-	    start_idle_redraw_pixmap(screen.drawing_area);
-	    goto redraw_pixmap_end;
-	}
 	if (screen.file[i]) {
 	    file_loaded = 1;
 	}
@@ -1073,9 +1068,6 @@ redraw_pixmap(GtkWidget *widget)
 	}
     }
 
-    gdk_pixmap_unref(curr_pixmap);
-    gdk_pixmap_unref(clipmask);
-
     if (!screen.incremental_redraw) {
 	/*
 	 * Calls expose_event
@@ -1084,6 +1076,14 @@ redraw_pixmap(GtkWidget *widget)
     }
 
 redraw_pixmap_end:
+    /* Free up pixmaps */
+    if (curr_pixmap) {
+	gdk_pixmap_unref(curr_pixmap);
+    }
+    if (clipmask) {
+	gdk_pixmap_unref(clipmask);
+    }
+
     /* Return default pointer shape */
     if (window) {
 	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);

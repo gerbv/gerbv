@@ -1,3 +1,8 @@
+2002-10-29  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (redraw_pixmap): Free pixmaps also when
+	  preempted, we used to leek pixmaps (bad!).
+
 2002-10-28  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c (autoscale): Wrong sign on clip_bbox.x1 from
