@@ -31,7 +31,7 @@
 #endif
 #include <sys/mman.h>
 
-#include "fileio.h"
+#include "gerb_file.h"
 
 gerb_file_t *
 gerb_fopen(char *filename)
@@ -74,6 +74,31 @@ gerb_fgetc(gerb_file_t *fd)
     return data;
 }
 
+
+int
+gerb_getint(gerb_file_t *fd)
+{
+    long int result;
+    char *end;
+    
+    result = strtol(fd->data + fd->ptr, &end, 10);
+    fd->ptr = end - fd->data;
+
+    return (int)result;
+}
+
+
+double
+gerb_getdouble(gerb_file_t *fd)
+{
+    double result;
+    char *end;
+    
+    result = strtod(fd->data + fd->ptr, &end);
+    fd->ptr = end - fd->data;
+
+    return result;
+}
 
 void 
 gerb_ungetc(gerb_file_t *fd)

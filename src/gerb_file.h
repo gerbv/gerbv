@@ -21,8 +21,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#ifndef FILEIO_H
-#define FILEIO_H
+#ifndef GERB_FILE_H
+#define GERB_FILE_H
 
 #include <stdio.h>
 
@@ -36,7 +36,9 @@ typedef struct file {
 
 gerb_file_t *gerb_fopen(char *filename);
 char gerb_fgetc(gerb_file_t *fd);
+int gerb_getint(gerb_file_t *fd);
+double gerb_getdouble(gerb_file_t *fd);
 void gerb_ungetc(gerb_file_t *fd);
 void gerb_fclose(gerb_file_t *fd);
 
-#endif /* FILEIO_H */
+#endif /* GERB_FILE_H */
