@@ -1,5 +1,8 @@
 2004-06-24  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerber.c: Removed two potential segfaults when running old
+	  RS-274D format.
+
 	* src/gerber.c, src/batch.c, src/gerb_image.[hc]: Actually removed
 	  all traces of MQ_END and MQ_START. That means that empty nodes 
 	  with only this information isn't saved, since the only time we need

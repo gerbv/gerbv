@@ -136,7 +136,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case 'X':
 	    coord = gerb_fgetint(fd, &len);
-	    if (image->format->omit_zeros == TRAILING) {
+	    if (image->format && image->format->omit_zeros == TRAILING) {
 
 		switch ((image->format->x_int + image->format->x_dec) - len) {
 		case 5:
@@ -162,7 +162,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case 'Y':
 	    coord = gerb_fgetint(fd, &len);
-	    if (image->format->omit_zeros == TRAILING) {
+	    if (image->format && image->format->omit_zeros == TRAILING) {
 
 		switch ((image->format->y_int + image->format->y_dec) - len) {
 		case 5:
