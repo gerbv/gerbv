@@ -48,8 +48,7 @@ I haven't looked at the code.
 
 
 * A Free Gerber to TIF converter in C++
-Adam Seyschell has made a program called gerb2tif. Seems to handle
-more Gerber (aperture macros) than what gerbv currently does. Available at:
+Adam Seyschell has made a program called gerb2tif. Available at:
      http://home.alphalink.com.au/~seychell/
 
 
