@@ -1,3 +1,8 @@
+2001-11-26 Stefan Petersen (spe@stacken.kth.se)
+
+	* configure.in: Now --data works when running ./configure.
+	  A patch from Wojciech Kazubski <wk@ire.pw.edu.pl>
+
 2001-11-26 Andreas Andersson (e92_aan@e.kth.se)
 
 	* src/drill.c:

@@ -88,7 +88,11 @@ fi
 
 dnl This is because I can unquote only once. Should be $datadir/gerbv/scheme
 if test -z "$opt_backend_dir"; then
-	opt_backend_dir="$prefix/share/gerbv/scheme"
+    if eval "test $datadir = '${prefix}/share'"; then
+       opt_backend_dir="$prefix/share/gerbv/scheme"
+    else
+       opt_backend_dir="$datadir/gerbv/scheme"
+    fi
 fi
 
 AC_DEFINE_UNQUOTED(BACKEND_DIR, "$opt_backend_dir")
