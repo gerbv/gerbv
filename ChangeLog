@@ -1,5 +1,9 @@
 2003-02-28  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerbv.c: Holger made a patch that allows to switch between 
+	  edge- and centered zoom by tapping on shift while moving the 
+	  mouse and keeping the right button pressed.
+ 
 	* src/draw_gdk.c: Holger ensured that all rectangles and lines 
 	  are at least one pixel wide - so they won't just disappear 
 	  with zooming...

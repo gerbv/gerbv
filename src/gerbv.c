@@ -1134,7 +1134,6 @@ redraw_pixmap(GtkWidget *widget, int restart)
     double dmax_x = LONG_MIN, dmax_y = LONG_MIN;
     double dmin_x = LONG_MAX, dmin_y = LONG_MAX;
     GdkGC *gc = gdk_gc_new(widget->window);
-    GdkRectangle update_rect;
     int file_loaded = 0;
     GdkWindow *window;
     int retval = TRUE;
@@ -1272,14 +1271,10 @@ redraw_pixmap(GtkWidget *widget, int restart)
     /* Clean up */
     state.valid = 0;
 
-    update_rect.x = 0, update_rect.y = 0;
-    update_rect.width =	widget->allocation.width;
-    update_rect.height = widget->allocation.height;
-
     /*
      * Calls expose_event
      */
-    gtk_widget_draw(widget, &update_rect);
+    gtk_widget_draw(widget, NULL);
 
 redraw_pixmap_end:
     /* Return default pointer shape */
@@ -1524,6 +1519,12 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
     GdkCursor *cursor;
 
+    if (event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R) {
+	screen.centered_outline_zoom = 1;
+	if (screen.state == ZOOM_OUTLINE)
+	    gtk_widget_draw(widget, NULL);
+    }
+
     switch (screen.state) {
     case NORMAL:
 	switch(event->keyval) {
@@ -1557,21 +1558,15 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	    
     /* Escape may be used to abort outline zoom and just plain repaint */
     if (event->keyval == GDK_Escape) {
-	GdkRectangle update_rect;
-
 	screen.state = NORMAL;
 
 	screen.statusbar.diststr[0] = '\0';
 	update_statusbar(&screen);
 
-	update_rect.x = 0, update_rect.y = 0;
-	update_rect.width =	widget->allocation.width;
-	update_rect.height = widget->allocation.height;
-
 	/*
 	 * Calls expose_event
 	 */
-	gtk_widget_draw(widget, &update_rect);
+	gtk_widget_draw(widget, NULL);
     }
 
     return TRUE;
@@ -1585,6 +1580,12 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 static gint
 key_release_event (GtkWidget *widget, GdkEventKey *event)
 {
+    if (event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R) {
+	screen.centered_outline_zoom = 0;
+	if (screen.state == ZOOM_OUTLINE)
+	    gtk_widget_draw(widget, NULL);
+    }
+
     switch (screen.state) {
     case NORMAL:
 	if((event->keyval == GDK_Shift_L) ||
@@ -1615,7 +1616,6 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 {
     int x, y;
     GdkModifierType state;
-    GdkRectangle update_rect;
     double X, Y;
     
     if (event->is_hint)
@@ -1660,14 +1660,10 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	screen.last_y = y;
 
 	
-	update_rect.x = 0, update_rect.y = 0;
-	update_rect.width  = widget->allocation.width;
-	update_rect.height = widget->allocation.height;
-
 	/*
 	 * Calls expose_event
 	 */
-	gtk_widget_draw(widget, &update_rect);
+	gtk_widget_draw(widget, NULL);
 	break;
 
     case ZOOM_OUTLINE:
