@@ -1,3 +1,9 @@
+2003-01-19  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Fixed bug in arc/circle drawing that caused
+	  some odd cases (not noticed so far elsewhere) that made
+	  ccw arcs to be drawn cw. Discovered by Jukka Marin. Thanks.
+
 2003-01-16  Stefan Petersen  <spe@stacken.kth.se>
 
 	* man/gerbv.1, src/gerbv.c : Updated documentation to reflect

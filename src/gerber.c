@@ -991,11 +991,19 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 	net->cirseg->angle2 = 360;
 
     /*
+     * If ccw we must make sure angle2-angle1 are always positive
+     * We should really return one angle and the difference as GTK
+     * uses them. But what the heck, it works for me.
+     */
+    if ((net->cirseg->angle1 > net->cirseg->angle2) && (cw == 0))
+	net->cirseg->angle2 = 360 + net->cirseg->angle2;
+    
+    /*
      * If angles are equal it should be a circle, but as gerbv
      * currently is designed it becomes a point. Maybe I should
      * save start angle and how many degrees to draw?
      */
-    if ((net->cirseg->angle2 - net->cirseg->angle1) == 0)
+    if (net->cirseg->angle2 == net->cirseg->angle1)
 	net->cirseg->angle2 = 360 + net->cirseg->angle2;
 
     return;
