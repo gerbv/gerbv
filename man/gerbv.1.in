@@ -1,4 +1,4 @@
-.TH gerbv 1 "Mar 18th, 2003" Version @VERSION@
+.TH gerbv 1 "Feb 8th, 2004" Version @VERSION@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
@@ -8,8 +8,6 @@ gerbv - Gerber Viewer
 \fIgerbv\fP is a viewer for Gerber files. Gerber files is generated
 from different PCB CAD programs and are sent to subcontractors to
 actually make the PCB. \fIgerbv\fP also supports Excellon/NC drill files.
-
-\fIgerbv\fP uses GTK+ 1.2.
 
 .SH OPTIONS
 .l
@@ -27,6 +25,10 @@ All error messages etc are stored in a file with filename \fI<filename>\fP.
 .BI --geometry=<width>x<height>[<+->x-position[<+->y-position]]
 Sets the the size of the window. X-position and y-position are currently
 ignored by gerbv.
+.TP
+.BI -p\ <project\ filename>|--project=<project\ filename>
+Load a stored project. Please note that the project file must be stored in
+the same directory as the gerber files.
 
 .SS GTK Options
 .BI --gtk-module= MODULE
@@ -107,7 +109,7 @@ an area where the point you started at will be the center of your selection.
 .SH MEASUREMENTS
 You can do measurement on the image displayed. By pressing shift, the 
 cursor changes to a plus. By using left mouse button you can draw the lines
-that you want to measure. Currently the gerber files must be in inches. 
+that you want to measure. 
 The result of the last measurement is also displayed on the statusbar.
 All measurements are in the drawing until you either zoom, pan or press the
 escape key.
@@ -126,18 +128,41 @@ corresponding functions in GTK. In GTK they are described as:
 "For colored images, only GDK_COPY, GDK_XOR and GDK_INVERT are generally 
 useful. For bitmaps, GDK_AND and GDK_OR are also useful."
 
+.SH PROJECTS
+gerbv can also handle projects. A project consist of bunch of 
+loaded layers with their resp. color and the background color. The easiest
+way to create a project is to load all files you want into the layer
+you want, set all the colors etc and do a "Save Project As...".
+
+You load a project either from the menu bar or by using the commandline 
+switches -p or --project.
+
+Currently there is a limit in that the project file must be in the same
+directory as the gerber files to be loaded.
+
+.SH SCHEME
+The project files are simple Scheme programs that is interpreted by a
+built in Scheme interpreter. The Scheme interpreter is TinyScheme and
+needs a Scheme program called init.scm to initialize itself. The search
+path for init.scm is (in the following order) 
+@BACKEND_DIR@/share/gerbv/scheme/, the directory with the executable
+gerbv, the directory gerbv was invoked from and finally
+according to the environment variable GERBV_SCHEMEINIT.
+
 .SH "ENVIRONMENT"
-No environment variables are currently in use.
+.IP GERBV_SCHEMEINIT
+Defines where init.scm file is stored. Used by scheme interpreter, which is 
+used by project reader.
 
 .SH "AUTHOR"
 .nf
-Stefan Petersen (spe@stacken.kth.se): Overall hacker and project leader
-Andreas Andersson (e92_aan@e.kth.se): Drill file support and general hacking
-Anders Eriksson (anders@umunet.org) : X and GTK+ ideas and hacking
+Stefan Petersen (spetm at users.sourceforge.net): Overall hacker and project leader
+Andreas Andersson (e92_aan at e.kth.se): Drill file support and general hacking
+Anders Eriksson (aenfaldor at users.sourceforge.net) : X and GTK+ ideas and hacking
 
 .SH COPYRIGHT
 .nf
-Copyright \(co  2001-2002 Stefan Petersen
+Copyright \(co  2001-2004 Stefan Petersen
 
 This document can be freely redistributed according to the terms of the 
 GNU General Public License version 2.0
