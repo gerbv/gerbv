@@ -2,6 +2,8 @@
 
 	* man/gerbv.1, src/gerbv.c : Updated documentation to reflect
 	  the new log commandline switch.
+	* files2tag, TODO: Minor documentation updates to reflect
+	   reality.
 
 2003-01-15 Stefan Petersen  <spe@stacken.kth.se>
 

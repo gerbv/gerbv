@@ -127,6 +127,7 @@ TODO
 ./src/exportimage.h
 ./src/gerber.c
 ./src/gerber.h
+./src/gerb_error.h
 ./src/gerb_file.c
 ./src/gerb_file.h
 ./src/gerbv_icon.h
@@ -134,4 +135,6 @@ TODO
 ./src/gerb_image.h
 ./src/gerbv.c
 ./src/gerbv_screen.h
+./src/log.c
+./src/log.h
 ./src/Makefile.am
