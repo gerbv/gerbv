@@ -1,5 +1,11 @@
 2002-04-24 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/gerb_file.c: Fixed bug causing segfault when opening
+	  empty file (bug 548578).
+
+	
+2002-04-24 Stefan Petersen (spe@stacken.kth.se)
+
 	* man/gerbv.1: Removed.
 	* man/gerbv.1.in: Created, so configure can add version of 
 	  gerbv automagically. Also added blurb about right-click thing.

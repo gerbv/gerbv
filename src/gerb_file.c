@@ -73,7 +73,7 @@ gerb_fgetc(gerb_file_t *fd)
 {
     char data;
 
-    if (fd->ptr > fd->datalen)
+    if (fd->ptr > fd->datalen || fd->datalen == 0)
 	return EOF;
     data = fd->data[fd->ptr++];
 
