@@ -438,13 +438,17 @@ swap_layers(GtkWidget *widget, gpointer data)
     GtkTooltipsData *td1, *td2;
     int idx;
 
+    if (screen.file[screen.curr_index] == NULL) return;
+
     if (data == 0) {
 	/* Moving Up */
 	if (screen.curr_index == 0) return;
+	if (screen.file[screen.curr_index - 1] == NULL) return;
 	idx = -1;
     } else { 
 	/* Moving Down */
 	if (screen.curr_index == MAX_FILES - 1) return;
+	if (screen.file[screen.curr_index + 1] == NULL) return;
 	idx = 1;
     }
 

@@ -4,6 +4,10 @@
 	  to double since Dan McMahill discovered a case where the difference
 	  between the angles were actually less than 0.5 degrees.  
 	  Closes bug #689663.
+
+	* src/gerbv.c: I you tried to swap layer with an unused layer 
+	  gerbv segfaulted. Also discovered by Dan McMahill. Cudos to him
+	  as usual... Closes bug #689667.
 	
 2003-02-12  Stefan Petersen  <spe@stacken.kth.se>
 
