@@ -202,10 +202,11 @@
   (display "stroke\nshowpage\n" port))
 
       
-(define (main netlist aperture info format)
+(define (main netlist aperture info format filename)
   (display "Warning! This backend is incomplete and known ")
   (display "to generate incorrect PostScript files\n")
-  (let ((outfile "foo.ps"))
+  (let ((outfile (string-append filename ".ps")))
+    (display (string-append "Output file will be " outfile "\n"))
     (call-with-output-file outfile
       (lambda (port) 
 	(generate-ps (reverse netlist) aperture info format port)))))

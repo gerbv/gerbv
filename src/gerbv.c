@@ -851,7 +851,7 @@ batch(char *backend, char *file)
     /*
      * Convert it to Scheme
      */
-    scm_image = scm_image2scm(image);
+    scm_image = scm_image2scm(image, file);
     
     /*
      * Call external Scheme function in found backend

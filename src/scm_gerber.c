@@ -95,7 +95,7 @@ scm_interpolation2scm(enum interpolation_t interpolation)
 
 
 SCM
-scm_image2scm(struct gerb_image *image)
+scm_image2scm(struct gerb_image *image, char *filename)
 {
     struct gerb_net *net;
     int i,j;
@@ -193,7 +193,8 @@ scm_image2scm(struct gerb_image *image)
 		    info);
     
     
-    return scm_listify(netlist, aperture, info, format, SCM_UNDEFINED);
+    return scm_listify(netlist, aperture, info, format, 
+		       scm_makfrom0str(filename), SCM_UNDEFINED);
     
 } /* scm_image2scm */
 
