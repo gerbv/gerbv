@@ -204,9 +204,8 @@ parse_gerb(gerb_file_t *fd)
 
 #ifdef EAGLECAD_KLUDGE
 	    if ( (state->delta_cp_x == 0.0) && (state->delta_cp_y == 0.0) &&
-		 (state->interpolation != PAREA_START) &&
-		 (state->interpolation != PAREA_FILL) &&
-		 (state->interpolation != PAREA_END)  )
+		 ( (state->interpolation == MQ_CW_CIRCULAR) ||
+		   (state->interpolation == MQ_CCW_CIRCULAR) ))
 		curr_net->interpolation = LINEARx1;
 	    else
 		curr_net->interpolation = state->interpolation;
@@ -241,7 +240,7 @@ parse_gerb(gerb_file_t *fd)
 		image->info->min_y = curr_net->stop_y;
 	    if (image->info->max_x < curr_net->stop_x)
 		image->info->max_x = curr_net->stop_x;
-	    if (image->info->max_y < curr_net->stop_x)
+	    if (image->info->max_y < curr_net->stop_y)
 		image->info->max_y = curr_net->stop_y;
 	    
 	    state->prev_x = state->curr_x;
