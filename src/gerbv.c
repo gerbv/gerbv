@@ -588,6 +588,9 @@ color_selection_popup(GtkWidget *widget, gpointer data)
 static void 
 invert_color(GtkWidget *widget, gpointer data)
 {
+    if (!screen.file[screen.curr_index])
+	return;
+
     if (screen.file[screen.curr_index]->inverted)
 	screen.file[screen.curr_index]->inverted = 0;
     else
@@ -606,6 +609,10 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 
     filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
     if (open_image(filename, screen.curr_index, FALSE) != -1) {
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
+				     (screen.layer_button[screen.curr_index]),
+				     TRUE);
 
 #ifdef HAVE_LIBGEN_H    
 
@@ -1849,8 +1856,6 @@ open_image(char *filename, int idx, int reload)
             update_combo_box_model();
         }                                     
 #endif                     
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-				     (screen.layer_button[idx]),TRUE);
     return 0;
 } /* open_image */
 
