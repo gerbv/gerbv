@@ -140,7 +140,7 @@ gerbv_draw_prim1 (struct gerb_render_context *ctx,
 		  stack_t *s, int scale, double x, double y)
 {
     const int diameter_idx = 1;
-    double dia    = s->stack[diameter_idx] * scale;
+    double dia    = round(fabs(s->stack[diameter_idx] * scale));
     double real_x = x - 0.5 * dia;
     double real_y = y - 0.5 * dia;
 

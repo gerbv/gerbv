@@ -1,3 +1,10 @@
+2003-04-18  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: Larry Dolittle had a problem when drawing
+	  one of his files, a circle seemed to explode. I couldn't 
+	  reproduce it, but after his tests I added this patch. Thanks Larry!
+
+
 2003-03-24  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.[hc], src/draw_amacro.c, draw_gdk.c: Rectangular
