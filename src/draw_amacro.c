@@ -138,9 +138,6 @@ rotate_point(GdkPoint point, int angle)
 
 /*
  * Doesn't handle exposure yet and explicit x,y
- * Questions:
- *  - Empty or filled circle?
- *  - If empty, width of line?
  */
 static void
 gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
@@ -161,9 +158,9 @@ gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 			       GDK_JOIN_MITER);
 
     /* 
-     * Non filled circle 
+     * A filled circle 
      */
-    gdk_draw_arc(pixmap, local_gc, 0, real_x, real_y, dia, dia, 
+    gdk_draw_arc(pixmap, local_gc, 1, real_x, real_y, dia, dia, 
 		 0, full_circle);
 
     gdk_gc_unref(local_gc);
