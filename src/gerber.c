@@ -65,7 +65,8 @@ static void parse_D_code(gerb_file_t *fd, gerb_state_t *state);
 static int parse_M_code(gerb_file_t *fd);
 static void parse_rs274x(gerb_file_t *fd, gerb_image_t *image);
 static int parse_aperture_definition(gerb_file_t *fd, 
-				     gerb_aperture_t *aperture);
+				     gerb_aperture_t *aperture,
+				     amacro_t *amacro);
 static void calc_cirseg_sq(struct gerb_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_mq(struct gerb_net *net, int cw, 
@@ -563,16 +564,21 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
     } else if (strncmp(op, "AD", 2) == 0) { /* Aperture Description */
 	a = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 	memset((void *)a, 0, sizeof(gerb_aperture_t));
-	ano = parse_aperture_definition(fd, a);
+	ano = parse_aperture_definition(fd, a, image->amacro);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) 
 	    image->aperture[ano] = a;
 	else
 	    err(1, "Aperture number out of bounds : %d\n", ano);
 	
     } else if (strncmp(op, "AM", 2) == 0) { /* Aperture Macro */
-	NOT_IMPL(fd, "%AM%");
-	return;
-	
+	amacro_t *tmp_amacro;
+	tmp_amacro = image->amacro;
+	image->amacro = parse_aperture_macro(fd);
+	image->amacro->next = tmp_amacro;
+#ifdef AMACRO_DEBUG
+	print_program(image->amacro);
+#endif
+
 	/* Layer */
     } else if (strncmp(op, "LN", 2) == 0) { /* Layer Name */
 	NOT_IMPL(fd, "%LN%");
@@ -593,11 +599,13 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
 
 
 static int 
-parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
+parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
+			  amacro_t *amacro)
 {
     int ano, i;
     char read;
     char *type;
+    amacro_t *curr_amacro;
     
     if (gerb_fgetc(fd) != 'D')
 	return -1;
@@ -624,9 +632,15 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
 	/* Here a should a T be defined, but I don't know what it represents */
     } else {
 	aperture->type = MACRO;
-	fprintf(stderr, "Aperture using macro [%s] ignored.\n", type);
-	free(type);
-	return ano;
+	curr_amacro = amacro;
+	while (curr_amacro) {
+	    if ((strlen(curr_amacro->name) == strlen(type)) &&
+		(strcmp(curr_amacro->name, type) == 0)) {
+		aperture->amacro = curr_amacro;
+		break;
+	    }
+	    curr_amacro = curr_amacro->next;
+	}
     }
 
     (void)gerb_fgetc(fd);
@@ -740,7 +754,6 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 	2 * (d1y / sin(alfa)) : 2 * (d2y / sin(beta));
 
     if (alfa < 0.000001 && beta < 0.000001) {
-	printf("FOO\n");
 	net->cirseg->height = 0;
     }
 

@@ -79,14 +79,22 @@ free_gerb_image(gerb_image_t *image)
 	}
 
     /*
+     * Free aperture macro
+     */
+    if (image->amacro)
+	free_amacro(image->amacro);
+
+    /*
      * Free format
      */
-    free(image->format);
+    if (image->format)
+	free(image->format);
     
     /*
      * Free info
      */
-    free(image->info);
+    if (image->info)
+	free(image->info);
     
     /*
      * Free netlist

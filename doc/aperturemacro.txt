@@ -1,0 +1,51 @@
+Description of how aperture macros are implemented in gerbv
+
+By Stefan Petersen
+
+$Id$
+
+Operation of gerbv is split in two stages; parsing and drawing.
+This makes it simpler handle peculiar syntax in different gerber
+implementation by just doing the parser more robust. It also
+simplifies debugging.
+
+Handling of aperture macros are also split in two parts, ie parsing
+and drawing.
+
+Parsing
+-------
+When the command "%AM" is stumbled upon in the gerber file command
+is left to the function parse_aperture_macro in amacro.c. It first
+extracts out the name of the aperture macro. Then it tries to build
+program in a very primitive assembler. This program should describe
+how to draw the macro. The assembler consist of 8 instruction intended
+for a stackbased machine. The instructions are:
+NOP, PUSH, PPUSH, ADD, SUB, MUL, DIV, PRIM.
+
+The instructions
+----------------
+NOP  : The no operation. This is the default instruction and are
+       added as a security measure.
+PUSH : Pushes a value on the stack. This machine only works with floats
+       on the stack. 
+PPUSH: Pushes inparameters onto the stack. Gerber aperture macros accepts
+       parameters to be set when later declared, so the same macro can
+       be used at several instances. Wich parameter to b set is an integer
+       and starts with 1.
+ADD  : The mathematical operation +. Takes the two uppermost values on the
+       the stack, adds them and pushes the result back onto the stack.
+SUB  : Same as ADD, but with -.
+MUL  : Same as ADD, but with *.
+DIV  : Same as ADD, but with /.
+PRIM : Aperture macros are based on primitive figures, which then are
+       combined in a macro. This instruction describes which primitive
+       figure to draw (for a description, see Gerber documentation) and
+       all parameters when drawing this primitive figure is taken from
+       the stack (and hence popped).
+
+Caveats
+-------
+The parser have no precedence at all regarding mathematical operations.
+The standard doesn't define any, but the limit lies only within the parser.
+The parser handles several primitives within one aperture macro definition.
+

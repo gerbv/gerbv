@@ -1,3 +1,13 @@
+2001-12-30 Stefan Petersemn (spe@stacken.kth.se)
+
+        * src/amacro.[hc]: Added, even though I haven't executed 
+          an aperture macro program yet. But parsing seems stable.
+        * src/gerb_image.[hc], gerber.c, src/Makefile.am: Calls 
+          and keeps track of parsing of aperture macros.
+        * doc/aperturemacro.txt: simple text on the "program code"
+          generated when parsing aperture macros.
+
+
 2001-12-29 Andreas Andersson (e92_aan@e.kth.se)
 
 	* src/gerb_file.c:

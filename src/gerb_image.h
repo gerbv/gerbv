@@ -24,6 +24,8 @@
 #ifndef GERB_IMAGE_H
 #define GERB_IMAGE_H
 
+#include "amacro.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -68,6 +70,7 @@ typedef struct gerb_net {
 
 typedef struct gerb_aperture {
     enum aperture_t type;
+    amacro_t *amacro;
     double parameter[5];
     int nuf_parameters;
 } gerb_aperture_t;
@@ -97,6 +100,7 @@ typedef struct gerb_image_info {
 
 typedef struct gerb_image {
     gerb_aperture_t *aperture[APERTURE_MAX];
+    amacro_t *amacro;
     gerb_format_t *format;
     gerb_image_info_t *info;
     gerb_net_t *netlist;
