@@ -494,29 +494,48 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
 	else
 	    err(1, "Format error: coordinate = %c\n", op[0]);
 	
-	/* XXX Here are other definitions possible but we currently silently ignores them */
-	while (gerb_fgetc(fd) != 'X') 
-	    fprintf(stderr, "Not handled  type of format statement\n");
-	op[0] = gerb_fgetc(fd);
-	if ((op[0] < '0') || (op[0] > '6'))
-	    err(1,  "Illegal format size : %c\n", op[0]);
-	image->format->x_int = (int)(op[0] - '0');
-	op[0] = gerb_fgetc(fd);
-	if ((op[0] < '0') || (op[0] > '6'))
-	    err(1,  "Illegal format size : %c\n", op[0]);
-	image->format->x_dec = (int)(op[0] - '0');
-	
-	if (gerb_fgetc(fd) != 'Y') 
-	    fprintf(stderr, "Not handled  type of format statement\n");
-	op[0] = gerb_fgetc(fd);
-	if ((op[0] < '0') || (op[0] > '6'))
-	    err(1,  "Illegal format size : %c\n", op[0]);
-	image->format->y_int = (int)(op[0] - '0');
-	op[0] = gerb_fgetc(fd);
-	if ((op[0] < '0') || (op[0] > '6'))
-	    err(1,  "Illegal format size : %c\n", op[0]);
-	image->format->y_dec = (int)(op[0] - '0');
-	
+	while((op[0] = gerb_fgetc(fd)) != '*') {
+	    switch (op[0]) {
+	    case 'N':
+		op[0] = gerb_fgetc(fd);
+		image->format->lim_seqno = (int)(op[0] - '0');
+		break;
+	    case 'G':
+		op[0] = gerb_fgetc(fd);
+		image->format->lim_gf = (int)(op[0] - '0');
+		break;
+	    case 'D':
+		op[0] = gerb_fgetc(fd);
+		image->format->lim_pf = (int)(op[0] - '0');
+		break;
+	    case 'M':
+		op[0] = gerb_fgetc(fd);
+		image->format->lim_mf = (int)(op[0] - '0');
+		break;
+	    case 'X' :
+		op[0] = gerb_fgetc(fd);
+		if ((op[0] < '0') || (op[0] > '6'))
+		    err(1,  "Illegal format size : %c\n", op[0]);
+		image->format->x_int = (int)(op[0] - '0');
+		op[0] = gerb_fgetc(fd);
+		if ((op[0] < '0') || (op[0] > '6'))
+		    err(1,  "Illegal format size : %c\n", op[0]);
+		image->format->x_dec = (int)(op[0] - '0');
+		break;
+	    case 'Y':
+		op[0] = gerb_fgetc(fd);
+		if ((op[0] < '0') || (op[0] > '6'))
+		    err(1,  "Illegal format size : %c\n", op[0]);
+		image->format->y_int = (int)(op[0] - '0');
+		op[0] = gerb_fgetc(fd);
+		if ((op[0] < '0') || (op[0] > '6'))
+		    err(1,  "Illegal format size : %c\n", op[0]);
+		image->format->y_dec = (int)(op[0] - '0');
+		break;
+	    default :
+		fprintf(stderr, "Not handled  type of format statement [%c]\n", op[0]);
+	    }
+	}
     } else if (strncmp(op, "MI", 2) == 0) { /* Mirror Image */
 	NOT_IMPL(fd, "%MI%");
     } else if (strncmp(op, "MO", 2) == 0) { /* Mode of Units */
