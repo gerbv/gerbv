@@ -80,27 +80,20 @@ void create_marked_layer(int idx) {
     int           r, g, b;
     GtkStyle     *defstyle, *newstyle;
     gerb_net_t   *curr_net = NULL;
-    gerb_image_t *image = new_gerb_image(image);
+    gerb_image_t *image = NULL;
     GList        *list;
     char         *tmp_name = NULL;
   //  GtkTreeIter   iter;
     
-    if (image == NULL) {
-	GERB_FATAL_ERROR("malloc image failed\n");
-        return;
-    }
         
 /*    if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
   	 gtk_widget_set_sensitive (interface.find_button, TRUE);
     
 	 return;
     }*/
-    curr_net = image->netlist;
-    if(screen.file[idx] && screen.file[idx]->image) {
-        free_gerb_image(screen.file[idx]->image);
+    if(screen.file[idx]) {
+         // no reason to free it free(screen.file[idx]);
     } else {
-        screen.file[idx]=NULL;
-        assert(screen.file[idx]==NULL);
         screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
         memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
     //     if (idx == 19) //FIXME this is not flexible; should be first layer we ever draw a selection onto
@@ -108,7 +101,14 @@ void create_marked_layer(int idx) {
     //    else
             screen.file[idx]->name = tmp_name;
     }
-    screen.file[idx]->image = image;
+    screen.file[idx]->image = new_gerb_image(screen.file[idx]->image);
+    image = screen.file[idx]->image;
+    if (image == NULL) {
+	GERB_FATAL_ERROR("malloc image failed\n");
+        return;
+    }
+    curr_net = image->netlist;
+
     if (!screen.file[idx]->color) {
       //  int   idx0;
       //  char  tmp_iter_str[MAXL];

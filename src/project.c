@@ -140,13 +140,11 @@ define_layer(scheme *sc, pointer args)
 	if (strcmp(sc->vptr->symname(name), "color") == 0) {
 	    get_color(sc, value, plist_top->rgb);
 	} else if (strcmp(sc->vptr->symname(name), "filename") == 0) {
-	    tmp_string = get_value_string(sc, value);
-	    plist_top->filename = (char *)malloc(strlen(tmp_string) + 1);
-	    strncpy(plist_top->filename, tmp_string, strlen(tmp_string) + 1);
+            plist_top->filename = strdup(get_value_string(sc, value));
+            plist_top->is_pnp = 0;
     } else if (strcmp(sc->vptr->symname(name), "pick_and_place") == 0) {
-	    tmp_string = get_value_string(sc, value);
-	    plist_top->filename = (char *)malloc(strlen(tmp_string) + 1);
-	    strncpy(plist_top->filename, tmp_string, strlen(tmp_string) + 1);
+	    plist_top->filename = strdup(get_value_string(sc, value));
+            plist_top->is_pnp = 1;
   	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
 	    if (value ==  sc->F) {
 		plist_top->inverted = 0;

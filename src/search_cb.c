@@ -197,7 +197,8 @@ open_pnp(char *filename, int idx, int reload)
         if (parsed_PNP_data)
             free_pnp_state(parsed_PNP_data);
     }
-    return 0;
+        
+    return 0; /* CHECKME */
     /*
      * set up properties
      */

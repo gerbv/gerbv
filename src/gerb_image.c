@@ -26,48 +26,36 @@
 #include <math.h>
 #include "gerb_image.h"
 
-/* Allocates a new gerb_image structure
-   Returns gerb_image pointer on success, NULL on ERROR */
+/** Allocates a new gerb_image structure
+   @param image will be freed up if not NULL
+   @return gerb_image pointer on success, NULL on ERROR */
 gerb_image_t *
 new_gerb_image(gerb_image_t *image)
 {
-
+    free_gerb_image(image);
+    
     if ((image = (gerb_image_t *)malloc(sizeof(gerb_image_t))) == NULL) {
-	free(image);
-	image = NULL;
 	return NULL;
     }
     memset((void *)image, 0, sizeof(gerb_image_t));
     
     if ((image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t))) == NULL) {
-	free(image->netlist);
-	image->netlist = NULL;
 	free(image);
-	image = NULL;
 	return NULL;
     }
     memset((void *)image->netlist, 0, sizeof(gerb_net_t));
     
     if ((image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t))) == NULL) {
 	free(image->netlist);
-	image->netlist = NULL;
-	free(image->info);
-	image->info = NULL;
 	free(image);
-	image = NULL;
 	return NULL;
     }
     memset((void *)image->info, 0, sizeof(gerb_image_info_t));
     
     if ((image->transf = gerb_transf_new()) == NULL) {
         free(image->info);
-        image->info = NULL;
         free(image->netlist);
-        image->netlist = NULL;
-	free(image->info);
-        image->info = NULL;
 	free(image);
-        image = NULL;
 	return NULL;
     }
 
@@ -90,6 +78,9 @@ free_gerb_image(gerb_image_t *image)
     int i;
     gerb_net_t *net, *tmp;
     
+    if(image==NULL)
+        return;
+        
     /*
      * Free apertures
      */

@@ -29,6 +29,7 @@ typedef struct project_list_t {
     char *filename;
     int rgb[3];
     char inverted;
+    char is_pnp;
     struct project_list_t *next;
 } project_list_t;
 

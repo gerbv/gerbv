@@ -1056,13 +1056,20 @@ load_project(project_list_t *project_list)
 	} else {
 	    int idx =  project_list->layerno;
 
-        if (strstr(project_list->filename, ".csv") != NULL) {
- //           create_search_window(NULL, NULL);
-//            if (open_pnp(project_list->filename, idx, FALSE) == -1) 
-//                exit(-1);
+        if (project_list->is_pnp) {
+            create_search_window(NULL, NULL);
+            if (open_pnp(project_list->filename, idx, FALSE) == -1) {
+                GERB_MESSAGE("could not read %s[%d]", project_list->filename,
+                    idx);
+                goto next_layer;
+            }
+            create_marked_layer(idx);
     	} else {
-            if (open_image(project_list->filename, idx, FALSE) == -1)
-        		exit(-1);
+            if (open_image(project_list->filename, idx, FALSE) == -1) {
+                GERB_MESSAGE("could not read %s[%d]", project_list->filename,
+                    idx);
+                goto next_layer;
+            }
         }    
 	    /* 
 	     * Change color from default to from the project list
@@ -1084,8 +1091,10 @@ load_project(project_list_t *project_list)
 
 	    screen.file[idx]->inverted = project_list->inverted;
 	}
+        next_layer:
 	pl_tmp = project_list;
 	project_list = project_list->next;
+        free(pl_tmp->filename);
 	free(pl_tmp);
     }
 

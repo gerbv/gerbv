@@ -1,4 +1,11 @@
-2004-08-23 Juergen Haas <juergenhaas@gmx.net>
+2004-08-23  Tomasz Motylewski <t.motylewski@bfad.de>
+
+	* cleaned up memory allocation in gerb_image.c
+	* improved project loading (still broken, there is no clear
+	design which function should do what).
+	* fixed memory leak plist_top->filename
+
+2004-08-23  Juergen Haas <juergenhaas@gmx.net>
 	-saving projects:
 	is done in a more flexible way:
 	adds a similar line with "filename" replaced by "pick_and_place" 
