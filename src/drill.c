@@ -40,7 +40,6 @@
 #include <unistd.h>
 #endif
 
-#include <sys/mman.h>
 
 #include "drill.h"
 #include "gerb_error.h"

@@ -1,3 +1,9 @@
+2004-04-27  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, src/drill.c: Patch from Tomasz Motylewski as a start
+	  remove dependencies on mmap et al (sys/mman.h) for targets lacking
+	  these operations (mingw).
+
 2004-04-21  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Added keys f for fit, z for zoom in and Z for zoom out

@@ -26,7 +26,7 @@ AC_INIT(src/gerbv.c)
 
 dnl variables
 PACKAGE=gerbv
-VERSION=0.15
+VERSION=0.15-2
 PKG_CONFIG=pkg-config
 
 dnl --enable-exportpng
@@ -158,7 +158,7 @@ BACKEND_DIR="$opt_backend_dir"
 
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Program version])
 
-AC_CHECK_HEADERS(unistd.h getopt.h string.h)
+AC_CHECK_HEADERS(unistd.h getopt.h string.h sys/mman.h)
 
 AC_CHECK_FUNCS(getopt_long)
 
