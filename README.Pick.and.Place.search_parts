@@ -1,5 +1,7 @@
 Searching for Parts in gerbv
 
+THIS FUNCIOTNALITY IS ONLY AVAILABLE WHEN COMPILING GERBV AGAINST GTK2!
+
 Please direct any comments, suggestions etc. to Juergen <juergenhaas@gmx.net>
 =============================================================================
 ***  Support for Pick and Place files:                                   ***

@@ -49,7 +49,7 @@
 #include "search.h"
 #include "search_gui.h"
 #include "csv.h"
-//#define  G_STR_DELIMITERS       "_-|> <.:;,`\n`"
+
 
 
 /*
@@ -95,8 +95,8 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     int               line_counter = 1;
     int               ret;
     GtkTreeSelection *tmp_sel;
-   // char        *row[10];
-  //  char        buf[1024];
+    char        *row[12];
+    char        buf[MAXL+1], buf0[MAXL+1];
     
     /* added by t.motylewski@bfad.de
      * many locales redefine "." as "," and so on, so sscanf has problems when
@@ -111,12 +111,88 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
    }
    while  ((ret = csv_row_fread(fopen("etc/passwd", "r"),  buf, 1024, row, 10, ':', CSV_TRIM))  > 0 ) {
     printf("ret:%i >%s %s \n", ret, row[0], row[2]);       
-   }
-   
-   while  ((ret = csv_row_parse(fd->data, 1024,  buf, 1024, row, 1024, ',', CSV_QUOTES))  > 0 ) {
-    printf("direct:%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, \n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10]);       
    }*/
-  
+       
+    while (fgets(buf, MAXL, fd->fd) != NULL) {
+        if(buf[strlen(buf)-1] == '\n')
+            buf[strlen(buf)-1] = 0;
+        if(buf[strlen(buf)-1] == '\r')
+            buf[strlen(buf)-1] = 0;
+        if (strlen(buf) > 11 )  {  //lets check a minimum length of 11
+            ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 11, ',',   CSV_QUOTES);
+            printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
+   
+       //diese linie funkt mit csv ohne quotes: ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 12, ',',   CSV_QUOTES)
+       //ret = sscanf(buf, "%100[^,],%100[^,],%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%100[^,],%lf,%100[^X]",
+       //     pnp_state->designator, pnp_state->footprint, &pnp_state->mid_x, &pnp_state->mid_y, &pnp_state->ref_x, &pnp_state->ref_y, &pnp_state->pad_x, &pnp_state->pad_y,
+        //    pnp_state->layer, &pnp_state->rotation, pnp_state->comment);
+        /*fprintf(stderr,"layer:%s: ", pnp_state->layer);
+        fprintf(stderr,"mid_x:%f: ",pnp_state-> mid_x);
+        fprintf(stderr,"comment:%s:", pnp_state->comment);*/
+    
+       /* if(ret<11) {
+            GERB_MESSAGE("wrong line format: %s\n", buf);
+            continue;
+        } else {
+             GERB_MESSAGE("\n");
+        }*/
+    
+            if ((row[0] != NULL) && (strstr(row[2], "mm") != NULL )) {
+                memset  (pnp_state->designator, 0, sizeof(pnp_state->designator));
+                sprintf (pnp_state->designator, "%.*s", sizeof(pnp_state->designator)-1, row[0]);
+                memset  (pnp_state->footprint, 0, sizeof(pnp_state->footprint));
+                sprintf (pnp_state->footprint, "%.*s", sizeof(pnp_state->footprint)-1, row[1]);
+                memset  (pnp_state->layer, 0, sizeof(pnp_state->layer));
+                sprintf (pnp_state->layer, "%.*s", sizeof(pnp_state->layer)-1, row[8]);
+                if (row[10] != NULL) {
+                    memset  (pnp_state->comment, 0, sizeof(pnp_state->comment));
+                    if (g_utf8_validate(row[10], -1, NULL)) 
+                    sprintf (pnp_state->comment, "%.*s", sizeof(pnp_state->comment)-1, g_locale_to_utf8(row[10], -1, NULL, NULL, NULL));
+                    else 
+                    sprintf (pnp_state->comment, "%.*s", sizeof(pnp_state->comment)-1, row[10]);
+                }
+   
+                sscanf(row[2], "%lfmm", &pnp_state->mid_x);
+                sscanf(row[3], "%lfmm", &pnp_state->mid_y);
+                sscanf(row[4], "%lfmm", &pnp_state->ref_x);
+                sscanf(row[5], "%lfmm", &pnp_state->ref_y);
+                sscanf(row[6], "%lfmm", &pnp_state->pad_x);
+                sscanf(row[7], "%lfmm", &pnp_state->pad_y);
+                sscanf(row[9], "%lfmm", &pnp_state->rotation);
+
+                eat_line_pnp(fd);
+
+                gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
+                gtk_list_store_set (GTK_LIST_STORE(fd->model), &interface.iter,
+			            COLUMN_DESIGNATOR, pnp_state->designator, 
+			            COLUMN_footprint, pnp_state->footprint,
+			            COLUMN_mid_x, pnp_state->mid_x,
+			            COLUMN_mid_y, pnp_state->mid_y ,
+			            COLUMN_ref_x, pnp_state->ref_x,
+			            COLUMN_ref_y, pnp_state->ref_y,
+			            COLUMN_pad_x, pnp_state->pad_x,
+			            COLUMN_pad_y, pnp_state->pad_y,
+                                    COLUMN_LAYER, pnp_state->layer,
+                                    COLUMN_rotation, pnp_state->rotation,
+                                    COLUMN_COMMENT, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL),
+			            COLUMN_NO_FILES_FOUND, FALSE,
+			            -1);
+                        
+                 gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
+                 gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
+			            0, pnp_state->designator, 
+		                    1, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL), -1);
+ 
+                line_counter += 1;/*next line*/
+                pnp_state->next = new_pnp_state();
+                pnp_state = pnp_state->next;
+            }    
+        }    
+    }   
+
+ 
+   
+#if 0 
 #ifdef HAVE_SYS_MMAN_H
     char buf[MAXL+1];
     
@@ -136,9 +212,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     if(ret<11) {
         GERB_MESSAGE("wrong line format(%d): %s\n", ret, buf);
         continue;
-    } else {
-         GERB_MESSAGE("\n");
-    }
+    } 
     eat_line_pnp(fd);
     gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
     gtk_list_store_set (GTK_LIST_STORE(fd->model), &interface.iter,
@@ -186,9 +260,8 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     if(ret<11) {
         GERB_MESSAGE("wrong line format: %s\n", buf);
         continue;
-    } else {
-         GERB_MESSAGE("\n");
     }
+    
     eat_line_pnp(fd);
     gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
     gtk_list_store_set (GTK_LIST_STORE(fd->model), &interface.iter,
@@ -218,6 +291,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     }             
 #endif
 #endif
+#endif /*#if 0*/
     pnp_state->next = NULL;
     /* create list of all entries as a Glist for convenient use later
      * (uparrow movements in assembly mode) 

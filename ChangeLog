@@ -1,7 +1,9 @@
 2004-08-13 11:25 Search9-pre8
- todo	use of libmba's csv.[ch]
+partly done use of libmba's csv.[ch]
  todo 	saving projects 
 	Bugs fixed:
+		-upon loading a second gerberfile the first user dialog is 
+		  destroyed and parsed_PNP_data
 		-compiles under GTK1
 		-pressing mark actually also activates the new layer
 		-loading a gerberfile also activates layer
@@ -14,8 +16,8 @@
 		-default layer now is actually also the one which is drawn ontoi
                   by default 
  		 (shown was MAXFILES-1, but it was drawn onto 0!)
-		-if there was an error loading a pnpfile (e.g. incompatible 
-	  	  csv format) select parts window is destroyed!
+BROKEN since csv is used    -if there was an error loading a pnpfile 
+		(e.g. incompatible  csv format) select parts window is destroyed
                   also   parsed_PNP_data is  freed!
 		-arrow up reverses arrow down/space 
 		-right click now selects and draws the selection on screen

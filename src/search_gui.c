@@ -537,13 +537,17 @@ void
 create_search_window(GtkWidget *widget, gpointer data)
 {
     GtkWidget    *window;
-    
+   
+    if (interface.main_window != NULL) {
+        gtk_widget_destroy(interface.main_window);
+        free_pnp_state(parsed_PNP_data);
+    }  
     memset (&interface, 0, sizeof (interface));
     interface.geometry.min_height = MINIMUM_WINDOW_HEIGHT;
     interface.geometry.min_width  = MINIMUM_WINDOW_WIDTH;
-
+   
     interface.main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    //FIXME: ?use gtk_widget_hide_on_delete       (GtkWidget *widget);
+    
     window = create_main_search_window ();
     gtk_container_add(GTK_CONTAINER(interface.main_window), window);
  
