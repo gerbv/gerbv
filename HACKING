@@ -1,3 +1,9 @@
+
+	CODING STANDARD FOR GERBV
+
+$Id$
+
+
 Indentation
 -----------
 To hack in this code you need to set emacs (or whatever you use) to
@@ -25,7 +31,8 @@ if () {
 If there is only one statement you don't need the braces.
 
 for() {
-    do_whatever();
+    do_whatever1();
+    do_whatever2();
 }
 
 switch() {
@@ -37,8 +44,8 @@ case bar:
     break;
 default:
     break;
+}
 Switch should always have a default case.
-
 
 
 ChangeLog
@@ -48,3 +55,21 @@ doesn't need a ChangeLog entry. A ChangeLog entry is needed when a
 reported bug is fixed (with bug report number) or when a feature is 
 added. I (spe) use ChangeLog when writing release notes.
 
+
+Functions
+---------
+The prototype should have return type on the same line as function name:
+int some_function(int par1, int par2);
+
+The function implementation should have return type on a separate line
+(including eventual pointer star). The function implementation should 
+have the function name in c-comments
+at the closing brace.
+int *
+some_function(int par1, int par2)
+{
+    /* Implementation */
+} /* some_function */
+
+In a function there should be maximum one empty line in a row.
+Between functions there should be two empty lines.
