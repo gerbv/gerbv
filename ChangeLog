@@ -1,3 +1,9 @@
+2003-03-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Better sanity checks for angles of arcs, so
+	  cw are drawn cw and ccw are drawn ccw. Closes bug #703265
+	  which was reported by Mark Whitis. Thanks!
+
 2003-03-10  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Doesn't warn anymore if a gerber file requests an

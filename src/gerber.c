@@ -1019,13 +1019,20 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 	net->cirseg->angle2 = 360.0;
 
     /*
-     * If ccw we must make sure angle2-angle1 are always positive
+     * This is a sanity check for angles after the nature of atan2.
+     * If cw we must make sure angle1-angle2 are always positive,
+     * If ccw we must make sure angle2-angle1 are always negative.
      * We should really return one angle and the difference as GTK
      * uses them. But what the heck, it works for me.
      */
-    if ((net->cirseg->angle1 > net->cirseg->angle2) && (cw == 0))
-	net->cirseg->angle2 = 360.0 + net->cirseg->angle2;
-    
+    if (cw) {
+	if (net->cirseg->angle1 < net->cirseg->angle2)
+	    net->cirseg->angle2 -= 360.0;
+    } else {
+	if (net->cirseg->angle1 > net->cirseg->angle2)
+	    net->cirseg->angle2 += 360.0;
+    }
+
     /*
      * If angles are equal it should be a circle, but as gerbv
      * currently is designed it becomes a point. Maybe I should
