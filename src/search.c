@@ -22,6 +22,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+
+/*! @file search.c
+    @brief routines for parsing pick and place files */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -52,9 +56,8 @@
 
 
 
-/*
- * Allocates a new pnp_state structure
- */
+/** Allocates a new pnp_state structure. 
+   First of a netlist of type pnp_state_t */
 pnp_state_t *
 new_pnp_state()
 {
@@ -73,7 +76,9 @@ new_pnp_state()
 
 
 
-/** parse a string representing float number with a unit, default is mm */
+//! Parses a string representing float number with a unit, default is mm
+/** @param char a string to be screened for unit
+    @return a correctly converted double */
 double get_float_unit(char *str)
 {
     double x = 0.0;
@@ -90,7 +95,8 @@ double get_float_unit(char *str)
     return x;
 }/*get_float_unit*/
 
-
+/** search a string for a delimiter.
+ Must occur at least n times. */
 int pnp_screen_for_delimiter(char *str, int n)
 {
     char *ptr;
@@ -130,8 +136,10 @@ int pnp_screen_for_delimiter(char *str, int n)
 }/*pnp_screen_for_delimiter*/
 
 
-/*
- * Parses the PNP data
+/**Parses the PNP data.
+   two lists are filled with the row data.\n One for the scrollable list in the search and select parts interface, the other one a mere two columned list, which drives the autocompletion when entering a search.\n
+   It also tries to determine the shape of a part and sets  pnp_state->shape accordingly which will be used when drawing the selections as an overlay on screen.
+   @return the initial node of the pnp_state netlist
  */
 
 pnp_state_t *parse_pnp(pnp_file_t *fd)
@@ -267,7 +275,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     return pnp_state0; /* return the FIRST list node */
 }
 
-
+/**Frees a pnp_state_t netlist completely.*/
 void 
 free_pnp_state(pnp_state_t *pnp_state)
 {

@@ -1,3 +1,19 @@
+2004-10-13 Juergen Haas <juergenhaas@gmx.net>
+
+	* right click on selected part (current active selection) now works also on shapes with PIN1 Offi
+	  centre axis
+	FIXME circular shapes are recognised  at a fixed radius of 3mm 
+	Only works with units of gerbv match units used in pick and place file! 
+
+2004-10-11 Juergen Haas <juergenhaas@gmx.net>
+
+	* a first draft of API documentation exists see
+ 	 doc/html/main.html
+	 After adding further comments please use the following style:
+	 /** brief description.
+	 Now we can write details */
+	Afterwards use doc/Doxyfile.nopreprocessing to update documentation with doxygen
+
 2004-09-13  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: If you tried to invert color of an unloaded layer

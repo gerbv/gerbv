@@ -24,6 +24,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
  
+/*! @file gerb_transf.c
+    @brief handles all translation and rotation operations for drawing on screen. */ 
+ 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
@@ -64,7 +67,8 @@ void gerb_transf_reset(gerb_transf_t* transf)
     
 } /*gerb_transf_reset*/
 
-/** append rotation to transformation.
+//!Rotation
+/*! append rotation to transformation.
 @param transf transformation to be modified
 @param angle in rad (counterclockwise rotation) */
 
@@ -82,7 +86,8 @@ void gerb_transf_rotate(gerb_transf_t* transf, double angle)
     
 } /*gerb_transf_rotate*/
 
-/** append translation to transformation.
+//!Translation
+/*! append translation to transformation.
 @param transf transformation to be modified
 @param shift_x translation in x direction
 @param shift_y translation in y direction */

@@ -4,7 +4,7 @@ please direct any comment or suggestion to Juergen (juergenhaas@gmx.net)
 ------------------------------------------------------------------------
 
 
-From gerbv version 0.17 onwards it is possible to compile gerbv under WIN32 
+From gerbv version 1.1.0 onwards it is possible to compile gerbv under WIN32 
  (tested on WINDOWS 2000) using GTK2/GLIB2 libraries).
 
 You will need to download the following files:

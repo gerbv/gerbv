@@ -24,6 +24,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+
+/** @file search_mark.c
+    @brief draws selected parts on screen
+ */ 
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
@@ -76,6 +81,13 @@
 /* CHECKME - here gi18n is disabled */
 #define _(String) (String)
 
+
+/**will actually create the layer set in the dialog containing all selected parts.
+  *this is called whenever enter is pressed, Mark button is clicked or right-click/double click was recognised on a single part.
+  *parts are differentiated between by using the PART_SHAPE_ identifier set in\n 
+  *parse_pnp
+  *@see parse_pnp()
+  */
 void create_marked_layer(int idx) {
     int            r, g, b;
     GtkStyle      *defstyle, *newstyle;

@@ -1,5 +1,9 @@
 #ifndef DEFINES_H
 #define DEFINES_H
+/**
+@file csv_defines.h
+@brief sets up internal definitions for handling csv-style files
+*/
 
 #if defined(__sparc__)
 

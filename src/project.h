@@ -29,16 +29,17 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
-/** @var typedef struct project_list_t {
-        int layerno;
-        char *filename;
-        int rgb[3];
-        char inverted;
-        char is_pnp;
-        struct project_list_t *next;
-    } project_list_t;
-    @brief definition for the project list
-    char *filename is actually converted to unix style paths on MINGW platforms */
+
+/** definition for the project list.
+     typedef struct project_list_t {\n
+        int layerno;\n
+        char *filename;\n
+        int rgb[3];\n
+        char inverted;\n
+        char is_pnp;\n
+        struct project_list_t *next;\n
+    } project_list_t;\n
+       filename is actually converted to unix style paths on MINGW platforms */
 typedef struct project_list_t {
     int layerno;
     char *filename;
@@ -59,14 +60,10 @@ enum conv_type {
 project_list_t *read_project_file(char *filename);
 
 
-/*
- * Writes a description of a project to a file 
- * that can be parsed by read_project above
+
+ /* that can be parsed by read_project above
  */
 int write_project_file(char *filename, project_list_t *project);
-
-/** @fn utility fctn for MINGW port: converts '\\' into '/' to allow compatible project files on both platforms
-@param path*/
 
 char *
 convert_path_separators(char* path, int conv_flag); 

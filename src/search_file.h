@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 
+/**stores a model and the actual fiel descriptor.*/
 typedef struct pnp_file {
     FILE *fd;
     GtkListStore     	*model;	

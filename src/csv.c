@@ -30,6 +30,11 @@
  * http://www.ioplex.com/~miallen/libmba/dl/libmba-0.8.9.tar.gz
  */
 
+/**
+@file csv.c
+@brief handles import of csv style files (allowed delimiters are ';' ',' '|' ':')
+*/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */

@@ -24,6 +24,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/*! @file search_gui.c
+    @brief initialises and handles user dialog to search and select parts */ 
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
@@ -89,6 +92,10 @@ GtkListStore        *combo_box_model;
 GtkEntryCompletion  *entry_completion;
 char composed_entry[MAXL] = "";
 
+/** allows selections by search strings utilising regular expressions where available.
+  * default mode is searching in designators, comments are also searchable\n
+  * employs a completion model based on the pick and place file for straightforward location of a specific part 
+  */
 void select_by_regex(GtkWidget    	*widget,  gpointer 		data) 
 {
     GtkTreeIter       iter;
@@ -223,6 +230,13 @@ void select_by_regex(GtkWidget    	*widget,  gpointer 		data)
 } /* select_by_regex */
 
 
+/**creates the lower part of the search parts dialog.
+ * displays the selected (highlighted) and unselected rows\n
+ * multiple selections are possible\n
+ * right clicking or double clicking on one item results in immediate display of part in main window\n
+ * only four columns are shown (recognisable by COLUMN_ instead of column),\n
+ * \t but all columns from pick and place file are actually in the list;
+ */
 GtkWidget *
 create_search_results_section (void)
 {
@@ -369,7 +383,10 @@ create_search_results_section (void)
 
 } /* create_search_results_section */
 
-
+/** creates upper part of search dialog and calls create_search_results_section. 
+    currently pressing top/bottom parts results in a selection of parts on top/bottom of the circuit board only, incase there was no selection all top/bottom parts are shown\n
+    tooltips are also created here.
+*/
 GtkWidget *
 create_main_search_window (void)
 {
@@ -546,6 +563,7 @@ create_main_search_window (void)
     return window;
 } /* create_main_search_window */
 
+/** This is the parent of the search dialog.*/
 void
 create_search_window(GtkWidget *widget, gpointer data)
 {
@@ -583,6 +601,8 @@ create_search_window(GtkWidget *widget, gpointer data)
 } /* create_search_window */
 
 
+/** Updates list of available layers.
+    Often used, since any change in the layers must be reflected by the selectable layers list in the search dialog.*/
 void
 update_combo_box_model(void)
 {
@@ -808,6 +828,7 @@ file_is_named_activate_cb (GtkWidget 	*widget,
 } /* file_is_named_activate_cb */
 
 
+/** Handles keys pressed while entry field of search dialog is active.*/
 gboolean
 file_is_named_entry_key_press_cb (GtkWidget    	*widget, 
 		     	     GdkEventKey	*event, 
@@ -895,6 +916,7 @@ file_is_named_entry_key_press_cb (GtkWidget    	*widget,
 gboolean row_selected_by_button_press_event = FALSE;
 
 
+/** Used for double clicks.*/
 gboolean
 file_event_after_cb	        (GtkWidget 	*widget,
 				            GdkEventButton *event,
@@ -1027,7 +1049,7 @@ drag_begin_file_cb  (GtkWidget          *widget,
 }
 */
 
-   
+/** Handles pressing of keys within the whole search parts dialog.*/   
 gboolean
 file_key_press_event_cb  (GtkWidget 		*widget, 
 		    	  GdkEventKey	 	*event, 

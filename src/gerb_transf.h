@@ -28,8 +28,10 @@
 #ifndef GERB_TRANSF_H
 #define GERB_TRANSF_H
 
-/** this linear transformation applies first shift by offset [0]=x, [1]=y,
-  * then multiplication by r_mat and scale */
+
+/** Contains the transformation matrix, the scale and the offset on screen.
+   linear transformation applies first shift by offset [0]=x, [1]=y,
+   then multiplication by r_mat and scale */
 typedef struct gerb_transf {
     double r_mat[2][2];
     double scale;

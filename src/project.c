@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/*! @file project.c
+    @brief routines for loading and saving project files */ 
+
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -53,6 +57,8 @@
 #include "project.h"
 #include "scheme-private.h"
 #include "search_gui.h"
+
+
 
 static project_list_t *plist_top = NULL;
 
@@ -95,6 +101,7 @@ get_value_string(scheme *sc, pointer value)
 } /* get_value_string */
 
 
+/** Conversion of '\' into '/' and vice versa for compatibility under WIN32 platforms. */
 char *
 convert_path_separators(char* path, int conv_flag)
 {
@@ -197,18 +204,15 @@ define_layer(scheme *sc, pointer args)
 } /* define_layer */
 
 
-/*
- * What should be in a project?
- * Global:
- * * Background color
- * * Global path.
- * * corresponding pick and place file: labelled picknplace
- * Per layer:
- * * layer color
- * * layer filename
-
- */
-
+/** Reads the content of a project file.
+  *  Global:\n
+  *    Background color,\n
+  *    global path,\n
+  *    corresponding pick and place file: labelled 'picknplace'\n
+  *   Per layer:\n
+  *    layer color,\n
+  *    layer filename
+  */
 project_list_t *
 read_project_file(char *filename)
 {

@@ -24,6 +24,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
  
+/** @file search_cb.c
+    @brief callbacks for handling pick and place files
+
+ */ 
+ 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -133,6 +138,8 @@ cb_cancel_load_file(GtkWidget *widget, gpointer data)
 } /* cb_cancel_load_file */
 
 
+/**Handles the initialisation of the search and select parts dialog.
+    This firstly fires up a dialog to choose the pick and place (PNP) file to be loaded and then brings up the search dialog itself along with all necessary lists, buttons and the search-entry field*/
 void
 load_pnp_file_popup(GtkWidget *widget, gpointer data)
 {
@@ -164,6 +171,11 @@ load_pnp_file_popup(GtkWidget *widget, gpointer data)
     return;
 } /* load_pnp_file_popup */
 
+//!handles opening of Pick and Place files
+/*! calls pnp_fopen and parse_pnp and also sets up global paths
+@see pnp_fopen
+@see parse_pnp
+*/
 int
 open_pnp(char *filename, int idx, int reload)
 {

@@ -33,15 +33,41 @@
 #include "gerbv_screen.h"
 #include "search_cb.h"
 
-/* maximum size of string*/
+/** maximum size of strings. */
 #define MAXL 200
 
 enum e_footprint {
-    PART_SHAPE_UNKNOWN = 0, // drawn as circle with line
-    PART_SHAPE_RECTANGLE = 1, // rectangle with one side marked
-    PART_SHAPE_STD = 2 //rectangle with one corner marked
+    PART_SHAPE_UNKNOWN = 0, /* drawn as circle with line*/
+    PART_SHAPE_RECTANGLE = 1, /* rectangle with one side marked*/
+    PART_SHAPE_STD = 2 /* rectangle with one corner marked*/
 };
 
+/** captures all pick and place data columns.
+ which were read successfully in from a pick and place file.\n
+  There is only one pnp file at any time valid, for the whole project. Loading a second pnp file results in complete loss of previous pick_and_place data.\n
+  
+  typedef struct pnp_state {\n
+    
+    char     designator[MAXL];\n
+    char     footprint[MAXL];\n
+    double   mid_x;\n
+    double   mid_y;\n
+    double   ref_x;\n
+    double   ref_y;\n
+    double   pad_x;\n
+    double   pad_y;\n
+    char     layer[MAXL]; T is top B is bottom\n
+    double   rotation;\n
+    char     comment[MAXL];    \n
+    int      shape;\n
+    double   width;\n
+    double   length;\n
+
+    unsigned int nuf_push;   Nuf pushes to estimate stack size \n
+    struct pnp_state *next;\n
+    } pnp_state_t;\n
+  
+*/
 typedef struct pnp_state {
     
     char     designator[MAXL];
@@ -62,7 +88,9 @@ typedef struct pnp_state {
     unsigned int nuf_push;  /* Nuf pushes to estimate stack size */
     struct pnp_state *next;
     } pnp_state_t;
-    
+
+/** captures all pick and place data in a netlist style.
+    Is intended to be also used e.g. for reloading files*/        
 extern pnp_state_t *parsed_PNP_data;
 
 pnp_state_t *new_pnp_state();

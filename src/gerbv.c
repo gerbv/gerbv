@@ -20,6 +20,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
+ 
+ 
+/** @file gerbv.c
+    @brief gerbv GUI control/main.
+    This is the core of gerbv it connects all modules in a single GUI
+*/
+
+/**
+\mainpage gerbv Index Page
+
+\section intro_sec Introduction
+
+gerbv is part of gEDA tools.\n
+
+It displays gerberfiles in an overlayable multilayer fashion and it also allows to measure distances.\n
+Searching (powerful wildcard search in a browsable list) for electronic parts is available once a so-called
+pick and place file has been read in (by definition there is only one for each project).\n
+Apart from saving projects files, it also can export PNG graphics.
+
+
+The doxygen config file is called Doxyfile.nopreprocessing and is located in the /doc directory of gerbv.
+
+Project Manager is Stefan Petersen < speatstacken.kth.se >
+*/
+
+
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -89,9 +115,8 @@ typedef struct {
 } gerbv_zoom_data_t;
 
 
-/*
- * Declared extern in gerbv_screen.h. Global state variable to keep track
- * of what's happening on the screen.
+/**Global state variable to keep track of what's happening on the screen.
+   Declared extern in gerbv_screen.h
  */
 gerbv_screen_t screen;
 #if defined (__MINGW32__)
@@ -1224,7 +1249,7 @@ stop_idle_redraw_pixmap(GtkWidget *data)
 } /* stop_idle_redraw_pixmap */
 
 
-/*
+/**Properly Redraw zoomed image.
  * On idle callback to ensure a zoomed image is properly redrawn
  */
 gboolean
@@ -1354,6 +1379,8 @@ zoom(GtkWidget *widget, gpointer data)
 } /* zoom */
 
 
+/** Will determine the outline of the zoomed regions.
+In case region to be zoomed is too small (which correspondes e.g. to a double click) it is interpreted as a right-click and will be used to identify a part from the CURRENT selection, which is drawn on screen*/
 static void
 zoom_outline(GtkWidget *widget, GdkEventButton *event)
 {
@@ -1361,10 +1388,10 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     double us_x1, us_y1, us_x2, us_y2;
     int half_w, half_h;		/* cache for half window dimensions */
 #ifdef USE_GTK2    
-    gchar *designator;
+    gchar *designator, *comment, *footprint;
     GList *tmp_list = NULL;
     GtkTreeIter iter;
-    double mid_x, mid_y, pad_x, pad_y;
+    double mid_x, mid_y, pad_x, pad_y, length, width;
 #endif    
 
     
@@ -1398,7 +1425,15 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
         
         gtk_tree_model_get              (GTK_TREE_MODEL(interface.model),
                                          &iter,
-                                         COLUMN_DESIGNATOR, &designator, COLUMN_mid_x, &mid_x, COLUMN_mid_y, &mid_y, COLUMN_pad_x, &pad_x, COLUMN_pad_y, &pad_y, -1);                                  
+                                         COLUMN_DESIGNATOR, &designator, 
+                                         COLUMN_mid_x, &mid_x, 
+                                         COLUMN_mid_y, &mid_y, 
+                                         COLUMN_pad_x, &pad_x, 
+                                         COLUMN_pad_y, &pad_y,
+                                         COLUMN_length, &length,
+                                         COLUMN_width, &width, 
+                                         COLUMN_COMMENT, &comment,
+                                         COLUMN_footprint, &footprint, -1);                                  
 //        printf("Iter: %s", gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(interface.model), &iter));                                         
         if (screen.unit == GERBV_MILS) {
 
@@ -1409,35 +1444,73 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
             us_y1 = COORD2MMS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
         }    
 
-//        us_x1 = (screen.trans_x + x1);///(double) screen.transf->scale;
- //       us_y1 = (screen.trans_y + y1);///(double) screen.transf->scale;
-        printf("x1/y1:%d/%d,  translated: us_x1/us_y1:%f/%f, desig %s, mid_x/y %f/%f, range1/2:%f/%f\n", x1, y1, us_x1, us_y1, designator, mid_x, mid_y, (mid_x - abs(mid_x - pad_x)) ,(mid_x + abs(mid_x - pad_x)));
+//        printf("x1/y1:%d/%d,  translated: us_x1/us_y1:%f/%f, desig %s, mid_x/y %f/%f, calc'ed range x1/2:%f/%f, padx/y %f/%f\n",
+//            x1, y1, us_x1, us_y1, designator, mid_x, mid_y, (mid_x - fabs(mid_x - pad_x)) ,(mid_x + fabs(mid_x - pad_x)), pad_x, pad_y);
 
-        if (((us_x1 >= (mid_x - abs(mid_x - pad_x))) && (us_x1 <= (mid_x + abs(mid_x - pad_x)))) 
-            && (us_y1 >= (mid_y - abs(mid_y - pad_y))) && (us_y1 <= (mid_y + abs(mid_y - pad_y)))) {
-            //pointer must be in range  FIX ME range is rectangular, but in reality it changes
+
+        if ((((us_x1 >= (mid_x - width/2)) &&  (us_x1 <= (mid_x + width/2))) 
+            && ((us_y1 >= (mid_y - length/2)) && (us_y1 <= (mid_y + length/2))) //rectangular PIN1 on centre axis
+            && (((length != 0) && (width != 0))))            
+            ||
+         (((us_x1 >= (mid_x - fabs(mid_x - pad_x))) && (us_x1 <= (mid_x + fabs(mid_x - pad_x)))) //rectangluar PIN1 off centre axis
+            && ((us_y1 >= (mid_y - fabs(mid_y - pad_y))) && (us_y1 <= (mid_y + fabs(mid_y - pad_y)))))
+            ||
+            (((us_x1 >= (mid_x - 3)) && (us_x1 <= (mid_x + 3)))
+            && ((us_y1 >= (mid_y - 3)) && (us_y1 <= (mid_y + 3))))) //circular shapes workaround 3mm in each direction
+#if 0            
+            (((us_x1 >= (mid_x - (fabs(mid_x - pad_x) / 4))) && (us_x1 <= (mid_x + (fabs(mid_x - pad_x) / 4))))
+            && ((us_y1 >= (mid_y - (fabs(mid_y - pad_y) / 4))) && (us_y1 <= (mid_y + (fabs(mid_y - pad_y) / 4)))))) //circular shapes
+#endif            
+            {
+            
+            //pointer must be in range of element;  FIX ME range is rectangular, but in reality it can be circular as well for unknown shapes
             
             if ( !g_utf8_validate(designator, -1, NULL)) {
                 //memset  (designator, 0, sizeof(designator));
 
-                gchar * str = g_convert(designator, strlen(designator), "UTF-8", "ISO-8859-1",
+                gchar * str_designator = g_convert(designator, strlen(designator), "UTF-8", "ISO-8859-1",
                             NULL, NULL, NULL);
                 // I have not decided yet whether it is better to use always
                 // "ISO-8859-1" or current locale.
                 // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
 
-                sprintf (designator, "%.*s", sizeof(designator)-1, str);
-                g_free(str);
+                sprintf (designator, "%.*s", sizeof(designator)-1, str_designator);
+                g_free(str_designator);
+            } 
+             if ( !g_utf8_validate(comment, -1, NULL)) {
+                //memset  (designator, 0, sizeof(designator));
+
+                gchar * str_comment = g_convert(comment, strlen(comment), "UTF-8", "ISO-8859-1",
+                            NULL, NULL, NULL);
+                // I have not decided yet whether it is better to use always
+                // "ISO-8859-1" or current locale.
+                // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
+
+                sprintf (comment, "%.*s", sizeof(comment)-1, str_comment);
+                g_free(str_comment);
+            } 
+             if ( !g_utf8_validate(footprint, -1, NULL)) {
+                //memset  (designator, 0, sizeof(designator));
+
+                gchar * str_footprint = g_convert(footprint, strlen(footprint), "UTF-8", "ISO-8859-1",
+                            NULL, NULL, NULL);
+                // I have not decided yet whether it is better to use always
+                // "ISO-8859-1" or current locale.
+                // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
+
+                sprintf (footprint, "%.*s", sizeof(footprint)-1, str_footprint);
+                g_free(str_footprint);
             }     
 
             snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		         "Part: %s", designator);
-            GERB_MESSAGE("The part you have selected is: %s\n", designator);
+		         "P: %s, C:%s, FP:%s", designator, comment, footprint);
+            GERB_MESSAGE("The part you have selected is: %s, Comment: %s, Footprint %s\n", designator, comment, footprint);
+           
             break;
 
         } else {
             snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		         "%s", "        ");
+		         "%s", "        ");//blank the statusbar in this section
         }     
                                                     
     } while ((tmp_list = g_list_next(tmp_list)));
@@ -2335,6 +2408,9 @@ draw_zoom_outline(gboolean centered)
 } /* draw_zoom_outline */
 
 
+/** Displays a measured distance graphically on screen and in statusbar.
+    activated when using SHIFT and mouse dragged to measure distances\n
+    under win32 graphical annotations are currently disabled (GTK 2.47)*/
 static void
 draw_measure_distance(void)
 {
@@ -2342,11 +2418,12 @@ draw_measure_distance(void)
     GdkGCValues values;
     GdkGCValuesMask values_mask;
     gint x1, y1, x2, y2;
+    double delta, dx, dy;
     GdkFont *font;
 
     if (screen.state != MEASURE)
 	return;
-
+#if !defined (__MINGW32__) //taken out because of different drawing behaviour under win32 resulting in a smear
     memset(&values, 0, sizeof(values));
     values.function = GDK_XOR;
     values.foreground = *screen.dist_measure_color;
@@ -2354,25 +2431,25 @@ draw_measure_distance(void)
     gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
     font = gdk_font_load(setup.dist_fontname);
-
+#endif
     x1 = MIN(screen.start_x, screen.last_x);
     y1 = MIN(screen.start_y, screen.last_y);
     x2 = MAX(screen.start_x, screen.last_x);
     y2 = MAX(screen.start_y, screen.last_y);
 
+	dx = (x2 - x1)/(double) screen.transf->scale;
+	dy = (y2 - y1)/(double) screen.transf->scale;
+	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
+    
+#if !defined (__MINGW32__)
     gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
 		  screen.start_y, screen.last_x, screen.last_y);
     if (font == NULL) {
 	GERB_MESSAGE("Failed to load font '%s'\n", setup.dist_fontname);
     } else {
 	gchar string[65];
-	double delta, dx, dy;
 	gint lbearing, rbearing, width, ascent, descent;
 	gint linefeed;	/* Pseudonym for inter line gap */
-
-	dx = (x2 - x1)/(double) screen.transf->scale;
-	dy = (y2 - y1)/(double) screen.transf->scale;
-	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
 
 	snprintf(string, sizeof(string),
 		 "[dist %7.1f, dX %7.1f, dY %7.1f] mils",
@@ -2396,7 +2473,7 @@ draw_measure_distance(void)
 			(x1+x2)/2 - width/2, (y1+y2)/2 + linefeed, string);
 
 	gdk_font_unref(font);
-
+#endif
 	/*
 	 * Update statusbar
 	 */
@@ -2412,9 +2489,17 @@ draw_measure_distance(void)
 	update_statusbar(&screen);
 
     }
+#if !defined (__MINGW32__)
     gdk_gc_unref(gc);
+#endif     
 } /* draw_measure_distance */
 
+/** Displays additional information in the statusbar.
+    The Statusbar is divided into three sections:\n
+    statusbar.coordstr for coords\n
+    statusbar.diststr for displaying measured distances or the designator 
+    (right click on a graphically marked and also actively selected part)\n
+    statusbar.msg for e.g. showing progress of actions*/
  void 
 update_statusbar(gerbv_screen_t *scr)
 {

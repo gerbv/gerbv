@@ -21,6 +21,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
+ 
+/** @file search_file.c
+    @brief file access to pick and place files
+
+ */  
+ 
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -49,6 +55,7 @@
 
 GtkListStore *completion_model;
 
+/** This simply opens a file for reading in.*/
 pnp_file_t *
 pnp_fopen(char *filename)
 {
@@ -84,6 +91,8 @@ pnp_fopen(char *filename)
     return fd;
 } /* pnp_fopen */
 
+
+/** This simply closes a pick and place file. */
 void
 pnp_fclose(pnp_file_t *fd)
 {

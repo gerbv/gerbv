@@ -33,11 +33,16 @@
 #define MINIMUM_WINDOW_WIDTH   370
 #define MINIMUM_WINDOW_HEIGHT  310
 
+/** Stores options for autocompleting search entries.
+    handles the autocompletion functionality when entering search strings (search and select parts dialog).\n
+    list contains only the designators and comments in contrast to parsed_PNP_data, which holds all 11 columns of a pick and place file.\n
+    
+    @see parsed_PNP_data */
 extern GtkListStore *completion_model;
 
 
 
-/** lowercase entries are hidden from search window display*/
+/** lowercase entries are hidden from search window display.*/
 typedef enum {
 	COLUMN_DESIGNATOR,
 	COLUMN_footprint,
@@ -57,30 +62,55 @@ typedef enum {
 	NUM_COLUMNS
 } ResultColumn;
 
+/** Handles the search dialog/interface.
+struct _InterfaceStruct {\n
+	GtkWidget		  *file_is_named_entry;\n
+	GtkWidget		  *find_button;\n
+	GtkWidget 		  *main_window;\n	
+	GtkWidget		  *table;\n
+    GtkTreeViewColumn *column;\n	
+	GtkWidget 		  *file_selector;\n
+	GtkWidget		  *check_designator;\n
+    GtkWidget		  *invert_selection;\n
+    GtkWidget		  *top_parts_selection;\n
+    GtkWidget		  *bottom_parts_selection;\n
+    GtkWidget		  *check_comment;\n
+    GtkWidget		  *results_label;\n
+	GtkWidget         *results;\n
+	GtkWidget         *tree;\n
+    GdkGeometry 	   geometry;\n
+    GtkWidget         *layer_active;\n
+    int                layer_select_active;\n
+    GtkListStore      *model;\n
+    GList             *PNP_entries_list;\n
+	GtkTreeSelection  *selection;\n
+	GtkTreeIter        iter;\n
+    char              *pnp_filename;\n
+} interface;
+ */
 struct _InterfaceStruct {
-	GtkWidget		*file_is_named_entry;
-	GtkWidget		*find_button;
-	GtkWidget 		*main_window;	
-	GtkWidget		*table;
-        GtkTreeViewColumn       *column;	
-	GtkWidget 		*file_selector;
-	GtkWidget		*check_designator;
-        GtkWidget		*invert_selection;
-        GtkWidget		*top_parts_selection;
-        GtkWidget		*bottom_parts_selection;
-        GtkWidget		*check_comment;
-       	GtkWidget		*results_label;
-	GtkWidget       	*results;
-	GtkWidget        	*tree;
-       	GdkGeometry 		 geometry;
-        GtkWidget               *layer_active;
-        int                      layer_select_active;
-        GtkListStore     	*model;
-        GList                   *PNP_entries_list;
-	GtkTreeSelection 	*selection;
-	GtkTreeIter       	 iter;
-	gboolean  	  	 is_gail_loaded;
-    char            *pnp_filename;
+	GtkWidget		  *file_is_named_entry;
+	GtkWidget		  *find_button;
+	GtkWidget 		  *main_window;	
+	GtkWidget		  *table;
+    GtkTreeViewColumn *column;	
+	GtkWidget 		  *file_selector;
+	GtkWidget		  *check_designator;
+    GtkWidget		  *invert_selection;
+    GtkWidget		  *top_parts_selection;
+    GtkWidget		  *bottom_parts_selection;
+    GtkWidget		  *check_comment;
+    GtkWidget		  *results_label;
+	GtkWidget         *results;
+	GtkWidget         *tree;
+    GdkGeometry 	   geometry;
+    GtkWidget         *layer_active;
+    int                layer_select_active;
+    GtkListStore      *model;
+    GList             *PNP_entries_list;
+	GtkTreeSelection  *selection;
+	GtkTreeIter        iter;
+    char              *pnp_filename;
 } interface;
 
 void
@@ -95,7 +125,60 @@ compare_regex	 		(const gchar *regex,
 				 const gchar *string);
 				 			      
 
-/* gsearchtool-callbacks */
+/** search dialog callbacks.
+void   \n
+click_find_cb	 		(GtkWidget 	*widget, \n
+				 gpointer 	data);\n
+void\n
+click_invert_selection_cb       (GtkWidget 	*widget,\n
+                                 gpointer      *data);\n  
+void\n
+click_top_parts_selection_cb       (GtkWidget 	*widget,\n
+                                 gpointer      *data); \n
+void\n
+click_bottom_parts_selection_cb       (GtkWidget 	*widget,\n
+                                 gpointer      *data);  \n
+                                 
+void\n
+click_layer_active_cb           (GtkWidget 	*widget,\n
+                                 gpointer      *data);\n
+void\n
+click_stop_cb 			(GtkWidget 	*widget, \n
+	       			 gpointer 	data);\n
+void\n
+click_check_button_cb		(GtkWidget	*widget, \n
+				 gpointer 	data);\n
+                 
+void\n
+file_is_named_activate_cb 	(GtkWidget 	*widget, \n
+				 gpointer 	data);\n
+
+gboolean  \n
+key_press_cb 			(GtkWidget 	*widget, \n
+				 GdkEventKey 	*event,\n
+				 gpointer 	data);	\n
+gboolean   \n
+file_is_named_entry_key_press_cb 	(GtkWidget 	*widget, \n
+				 GdkEventKey    *event,\n
+				 gpointer 	data);\n
+				 
+gboolean \n
+file_button_release_event_cb	(GtkWidget 	*widget,\n
+				 GdkEventButton *event,\n
+				 gpointer 	data);\n
+
+gboolean\n
+file_event_after_cb	        (GtkWidget 	*widget,\n
+				 GdkEventButton *event,\n
+				 gpointer 	data);  \n
+gboolean	\n
+file_button_press_event_cb	(GtkWidget 	*widget, \n
+				 GdkEventButton *event, \n
+				 gpointer 	data);\n
+gboolean	\n
+file_key_press_event_cb		(GtkWidget 	*widget,\n
+				 GdkEventKey    *event,\n
+				 gpointer 	data); */
 
 
 void   

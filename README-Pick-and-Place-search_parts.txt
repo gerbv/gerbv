@@ -1,4 +1,4 @@
-Searching for Parts and marking them on screen (in gerbv)OB
+Searching for Parts and marking them on screen (in gerbv)
 
 THIS FUNCTIONALITY IS ONLY AVAILABLE WHEN COMPILING GERBV AGAINST GTK2!
 
@@ -8,9 +8,21 @@ Please direct any comments, suggestions etc. to Juergen <juergenhaas@gmx.net>
 ***  csv-style files with/without quotes                                 ***    
 ***  the following delimiters are supported ';' ':' '|' ','		 ***
 ----------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------
+A pick and place file has 11 columns (the first two lines a file in gerbv/examplei are shown here) and looks like this:
+
+Designator:Footprint:Mid X:Mid Y:Ref X:Ref Y:Pad X:Pad Y:Layer:Rotation:Comment
+
+R29:0805_REFL:25.4mm:72.644mm:25.4mm:72.644mm:25.4mm:71.6788mm:T:90.00:1K/1%
+----------------------------------------------------------------------------
+
 Some instructions for the first time user:
 
-after loading a PNP file three modes of selecting items do exist:
+after loading a PNP file a new dialog will come up offering various option of selecting and graphically marking electronic parts.
+
+Three modes of selecting items do exist:
 1)enter any search phrase and hit enter 
      (See also paragraph "SCROLLING" further down)
         -Generally under linux regexp expressions are used such as ".*" i.e. '*'
@@ -44,7 +56,8 @@ after loading a PNP file three modes of selecting items do exist:
  This mode also features arrows Up/Down selection, where arrow Up will reverse 
  the action of arrow Down/Spacebar. Furthermore, holding SHIFT while pressing 
  arrow Up/Down will increase the selection in either direction 
-  
+-------------------------
+More Features:  
 
 4)Inversion of selection:
   pressing this button at any given time inverts the selection concerning the 
@@ -66,8 +79,16 @@ after loading a PNP file three modes of selecting items do exist:
   HINT: if pick and place file is loaded last, already occupied layers 
         will not be in the drop-down list
 
-==========================
-SCROLLING
+-------------------------------------------------------------------
+Hint 1:
+right click functionality to know Part description.
+After you have graphically marked a number of parts (say all resistors) you can right click onto a part which is selected in the scroll-down list of available parts in the search dialog.
+Its designator, comment and footprint are then shown in the statusbar and in the log window.
+This comes in handy if there are many parts you want to look at, but e.g. you already know a fault has occurred only on one side of the board.
+
+-------------------------------------------------------------------
+Hint 2:
+SCROLLING (in the dialog window)
  Scrolling generally only occurs, if search for comments is not activated AND 
  also whenever enter is hit the list will bescrolled to the first hit, 
  regardless of the search mode.
@@ -81,4 +102,4 @@ Example:
  list will be scrolled to the first element matching this key (E), also entering
  a subsequent key (U) will then further refine that and scroll to the first 
  element with EU etc.
--------------------------------------------------------------------
+====================================================================
