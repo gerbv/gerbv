@@ -112,10 +112,18 @@ destroy(GtkWidget *widget, gpointer data)
 	if (screen.file[i] != NULL && 
 	    screen.file[i]->image != NULL) {
 	    free_gerb_image(screen.file[i]->image);
+	    free(screen.file[i]->color);
 	    free(screen.file[i]->name);
 	    free(screen.file[i]);
 	}
     }
+
+    /* Free all colors allocated */
+    free(screen.background);
+    free(screen.zoom_outline_color);
+    free(screen.dist_measure_color);
+
+    printf("MUERTE \n");
     gtk_main_quit();
 } /* destroy */
 
@@ -312,18 +320,21 @@ color_selection_ok(GtkWidget *widget, gpointer data)
     gtk_color_selection_get_color(colorsel, color);
 
     /* Allocate new color  */
-    if (background)
+    if (background) {
+	free(screen.background);
 	screen.background = 
 	    alloc_color((int)(color[0] * MAX_COLOR_RESOLUTION),
 			(int)(color[1] * MAX_COLOR_RESOLUTION),
 			(int)(color[2] * MAX_COLOR_RESOLUTION),
 			NULL);
-    else
+    } else {
+	free(screen.file[screen.curr_index]->color);
 	screen.file[screen.curr_index]->color = 
 	    alloc_color((int)(color[0] * MAX_COLOR_RESOLUTION), 
 			(int)(color[1] * MAX_COLOR_RESOLUTION), 
 			(int)(color[2] * MAX_COLOR_RESOLUTION), 
 			NULL);
+    }
 
     /* Redraw image on screen */
     redraw_pixmap(screen.drawing_area);
