@@ -1,3 +1,13 @@
+2001-11-20 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/scm_gerber.c: Backend didn't receive the last
+	  entry in the netlist due to bad loop constraint.
+	* src/gerber.c: Made sure angles always are positive when
+	  calculating multi quadrant ones.
+	* src/gerber.c: Improved error detection by checking that
+	  all part of an image is there.
+	
+	
 2001-11-15 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerbv.c: Tooltips over radio buttons with name

@@ -122,7 +122,7 @@ scm_image2scm(gerb_image_t *image, char *filename)
     /*
      * Convert the netlist 
      */
-    for (net = image->netlist->next; net->next != NULL; net = net->next) {
+    for (net = image->netlist->next; net != NULL; net = net->next) {
 
 	if (net->cirseg)
 	    cirseg = scm_listify(scm_cons(scm_make_real(net->cirseg->cp_x),

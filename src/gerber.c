@@ -78,6 +78,7 @@ parse_gerb(FILE *fd)
     char read;
     double x_scale, y_scale;
     double delta_cp_x, delta_cp_y;
+    int error = 0;
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
@@ -103,6 +104,22 @@ parse_gerb(FILE *fd)
 	    case 2 :
 	    case 3 :
 		free(state);
+		/*
+		 * Do error check before returning image
+		 */
+		error = check_gerb(image);
+		if (error) {
+		    fprintf(stderr, "Parse error : ");
+		    if (error & 1)
+			fprintf(stderr, "Missing netlist ");
+		    if (error & 2)
+			fprintf(stderr, "Missing format ");
+		    if (error & 4) 
+			fprintf(stderr, "Missing apertures ");
+		    if (error & 8)
+			fprintf(stderr, "Missing info ");
+		    fprintf(stderr, "\n");
+		}
 		return image;
 		break;
 	    default:
@@ -224,6 +241,32 @@ parse_gerb(FILE *fd)
     return image;
 } /* parse_gerb */
 
+
+/*
+ * Check that the parsed gerber image is complete.
+ * Returned errorcodes are:
+ * 0: No problems
+ * 1: Missing netlist
+ * 2: Missing format
+ * 4: Missing apertures
+ * 8: Missing info
+ * It could be any of above or'ed together
+ */
+int 
+check_gerb(gerb_image_t *image)
+{
+    int error = 0;
+    int i;
+
+    if (image->netlist == NULL) error |= 1;
+    if (image->format == NULL)  error |= 2;
+    if (image->info == NULL)    error |= 8;
+
+    for (i = 0; i < APERTURE_MAX && image->aperture[i] == NULL; i++);
+    if (i == APERTURE_MAX) error |= 4;
+    
+    return error;
+}
 
 static void 
 parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
@@ -771,6 +814,15 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 
     net->cirseg->angle1 = RAD2DEG(alfa);
     net->cirseg->angle2 = RAD2DEG(beta);
+
+    /*
+     * Make sure it's always positive angles
+     */
+    if (net->cirseg->angle1 < 0) 
+	net->cirseg->angle1 = 360 + net->cirseg->angle1;
+
+    if (net->cirseg->angle2 < 0) 
+	net->cirseg->angle2 = 360 + net->cirseg->angle2;
 
     if(net->cirseg->angle2 == 0)
 	net->cirseg->angle2 = 360;

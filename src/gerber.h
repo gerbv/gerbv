@@ -34,8 +34,22 @@ extern "C" {
 
 #define EAGLECAD_KLUDGE 
 
-
+/*
+ * parse gerber file pointed to by fd
+ */
 gerb_image_t *parse_gerb(FILE *fd);
+
+/*
+ * Check that the parsed gerber image is complete.
+ * Returned errorcodes are:
+ * 0: No problems
+ * 1: Missing netlist
+ * 2: Missing format
+ * 4: Missing apertures
+ * 8: Missing info
+ * It could be any of above or'ed together
+ */
+int check_gerb(gerb_image_t *image);
 
 
 #ifdef __cplusplus
