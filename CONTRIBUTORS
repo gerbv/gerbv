@@ -49,3 +49,6 @@ Daniel Dorau
 
 Martin Sigrand
  - Submitted code for turning all layers on and off.
+
+Charles Lepple
+ - Sent in a patch to be able to compile gerbv under Mac OS X and fink.
