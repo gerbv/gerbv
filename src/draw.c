@@ -144,9 +144,10 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 {
     GdkGC *gc = gdk_gc_new(*pixmap);
     GdkGC *pgc = gdk_gc_new(*pixmap);
+    GdkGCValues gc_values;
     struct gerb_net *net;
     gint x1, y1, x2, y2;
-    int p1, p2;
+    int p1, p2, p3;
     int cir_width = 0, cir_height = 0;
     int cp_x = 0, cp_y = 0;
     GdkPoint *points = NULL;
@@ -333,10 +334,32 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	case FLASH :
 	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * trf.scale);
 	    p2 = (int)round(image->aperture[net->aperture]->parameter[1] * trf.scale);
+	    p3 = (int)round(image->aperture[net->aperture]->parameter[2] * trf.scale);
 	    
 	    switch (image->aperture[net->aperture]->type) {
 	    case CIRCLE :
 		gerbv_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
+               /*
+                * If circle has an inner diameter we must remove
+                * that part of the circle to make a hole in it.
+                */
+		if (p2) {
+		    gdk_gc_get_values(gc, &gc_values);
+		    if (gc_values.foreground.pixel == opaque.pixel)
+			gdk_gc_set_foreground(gc, &transparent);
+		    else
+			gdk_gc_set_foreground(gc, &opaque);
+		    
+		    if (p3) 
+			gerbv_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p2, p3);
+		    else
+			gerbv_draw_circle(*pixmap, gc, TRUE, x2, y2, p2);
+
+		    if (gc_values.foreground.pixel == opaque.pixel) 
+			gdk_gc_set_foreground(gc, &opaque);
+		    else
+			gdk_gc_set_foreground(gc, &transparent);
+		}
 		break;
 	    case RECTANGLE:
 		gerbv_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p1, p2);

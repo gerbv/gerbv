@@ -1,5 +1,9 @@
 2004-12-28  Stefan Petersen  <spe@siouxsie.umunet.org>
 
+	* src/draw.c: When drawing circles I ignored if circle
+          had inner diameter, which was pointed out by Harry Eaton. 
+          Not anymore... Closes bug #1050340 in this branch.
+
 	* Updated to TinyScheme 1.35
 
 2004-10-30  Stefan Petersen  <spe@siouxsie.umunet.org>
