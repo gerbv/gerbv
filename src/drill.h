@@ -27,12 +27,16 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
+#include "gerb_image.h"
+
+
 #define TOOL_MIN 1
 #define TOOL_MAX 999
 
-#include "gerber.h"
 
 gerb_image_t *parse_drillfile(FILE *fd);
+
 
 #ifdef __cplusplus
 }

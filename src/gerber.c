@@ -21,7 +21,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>  /* pow() */
@@ -32,6 +31,15 @@
 #define NOT_IMPL(fd, s) do { \
                              fprintf(stderr, "Not Implemented:%s\n", s); \
                            } while(0)
+	
+
+#ifndef err
+#define err(errcode, a...) \
+     do { \
+           fprintf(stderr, ##a); \
+           exit(errcode);\
+     } while (0)
+#endif
 
 
 typedef struct gerb_state {
@@ -76,7 +84,7 @@ parse_gerb(FILE *fd)
 	err(1, "malloc state failed\n");
     bzero((void *)state, sizeof(gerb_state_t));
 
-    image = new_image(image);
+    image = new_gerb_image(image);
     if (image == NULL)
 	err(1, "malloc image failed\n");
     curr_net = image->netlist;
@@ -217,88 +225,6 @@ parse_gerb(FILE *fd)
 } /* parse_gerb */
 
 
-/* Allocates a new gerb_image structure
-   Returns gerb_image pointer on success, NULL on ERROR */
-gerb_image_t *
-new_image(gerb_image_t *image)
-{
-
-    image = (gerb_image_t *)malloc(sizeof(gerb_image_t));
-    if (image != NULL) {
-	bzero((void *)image, sizeof(gerb_image_t));
-
-	image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-	if (image->netlist != NULL) {
-	    bzero((void *)image->netlist, sizeof(gerb_net_t));
-	    
-	    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
-	    if (image->info != NULL) {
-		bzero((void *)image->info, sizeof(gerb_image_info_t));
-
-		image->info->min_x = HUGE_VAL;
-		image->info->min_y = HUGE_VAL;
-		image->info->max_x = -HUGE_VAL;
-		image->info->max_y = -HUGE_VAL;
-		
-		return image;
-	    }
-	    
-	    free(image->netlist);
-	    image->netlist = NULL;
-	}
-	free(image);
-	image = NULL;
-    }
-    
-    return NULL;
-}
-
-
-void
-free_gerb_image(gerb_image_t *image)
-{
-    int i;
-    gerb_net_t *net, *tmp;
-    
-    /*
-     * Free apertures
-     */
-    for (i = 0; i < APERTURE_MAX; i++) 
-	if (image->aperture[i] != NULL) 
-	    free(image->aperture[i]);
-    /*
-     * Free format
-     */
-    free(image->format);
-    
-    /*
-     * Free info
-     */
-    free(image->info);
-    
-    /*
-     * Free netlist
-     */
-    for (net = image->netlist; net != NULL; ) {
-	tmp = net; 
-	net = net->next; 
-	if (tmp->cirseg != NULL) {
-	    free(tmp->cirseg);
-	    tmp->cirseg = 0;
-	}
-	free(tmp);
-    }
-
-    /*
-     * Free and reset the final image
-     */
-    free(image);
-    image = NULL;
-    
-    return;
-} /* free_gerb_image */
-
-
 static void 
 parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
 {
@@ -377,6 +303,7 @@ parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
     
     return;
 } /* parse_G_code */
+
 
 static void 
 parse_D_code(FILE *fd, gerb_state_t *state)
@@ -593,6 +520,7 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
     return;
 } /* parse_rs274x */
 
+
 static int 
 parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture)
 {
@@ -675,6 +603,7 @@ read_int(FILE *fd)
     else
 	return i;
 } /* read_int */
+
 
 static void 
 calc_cirseg_sq(struct gerb_net *net, int cw, 

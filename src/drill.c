@@ -20,19 +20,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>  /* pow() */
 #include <ctype.h>
-
-#include "gerber.h"
 #include "drill.h"
 
 
 #define NOT_IMPL(fd, s) do { \
                              fprintf(stderr, "Not Implemented:%s\n", s); \
                            } while(0)
+
 #ifndef err
 #define err(errcode, a...) \
      do { \
@@ -87,7 +85,7 @@ parse_drillfile(FILE *fd)
     if (state == NULL)
 	err(1, "malloc state failed\n");
 
-    image = new_image(image);
+    image = new_gerb_image(image);
     if (image == NULL)
 	err(1, "malloc image failed\n");
     curr_net = image->netlist;
@@ -376,6 +374,7 @@ drill_parse_T_code(FILE *fd, drill_state_t *state, gerb_image_t *image)
 	case 'C':
 
 	    size = read_double(fd);
+
 	    if(image->info->unit == MM) {
 		size /= 25.4;
 	    }

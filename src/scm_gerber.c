@@ -27,10 +27,7 @@
 
 #ifndef NO_GUILE
 
-#include <libguile.h>
-#include <guile/gh.h> /* To be deprecated */
-
-#include "gerber.h"
+#include "scm_gerber.h"
 
 static SCM
 scm_aperture2scm(enum aperture_t a)

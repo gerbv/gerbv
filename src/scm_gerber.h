@@ -26,6 +26,7 @@
 
 #include <libguile.h>
 #include <guile/gh.h> /* To be deprecated */
+#include "gerb_image.h"
 
 SCM scm_image2scm(gerb_image_t *image, char *filename);
 

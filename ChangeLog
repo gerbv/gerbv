@@ -1,3 +1,10 @@
+2001-11-09 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerb_image.[hc]: Added.
+	* src/drill.[hc], src/gerber.[hc], src/scm_gerber.[hc]:
+	  Changed to utilize the new "class", gerb_image.
+
+	
 2001-11-07 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/draw.c, src/gerber.c: Implemented multi quadrant arcs.

@@ -28,104 +28,15 @@
 extern "C" {
 #endif
 
-	
-#ifndef err
-#define err(errcode, a...) \
-     do { \
-           fprintf(stderr, ##a); \
-           exit(errcode);\
-     } while (0)
-#endif
-	
+#include <stdio.h>
+#include "gerb_image.h"
+
+
 #define EAGLECAD_KLUDGE 
-	
-#define APERTURE_MIN 10
-#define APERTURE_MAX 999
-	
-enum aperture_state_t {OFF, ON, FLASH};
-enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
-enum unit_t {INCH, MM};
-enum polarity_t {POSITIVE, NEGATIVE};
-enum omit_zeros_t {LEADING, TRAILING, EXPLICIT};
-enum coordinate_t {ABSOLUTE, INCREMENTAL};
-enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
-		      CW_CIRCULAR, CCW_CIRCULAR, 
-		      MQ_CW_CIRCULAR, MQ_CCW_CIRCULAR};
-
-typedef struct gerb_cirseg {
-    double cp_x;
-    double cp_y;
-    double width;  /* of oval */
-    double height; /* of oval */
-    int angle1;
-    int angle2;
-} gerb_cirseg_t;
 
 
-typedef struct gerb_net {
-    double start_x;
-    double start_y;
-    double stop_x;
-    double stop_y;
-    int aperture;
-    enum aperture_state_t aperture_state;
-    enum interpolation_t interpolation;
-    struct gerb_cirseg *cirseg;
-    struct gerb_net *next;
-} gerb_net_t;
-
-
-typedef struct gerb_aperture {
-    enum aperture_t type;
-    double parameter[5];
-    int nuf_parameters;
-} gerb_aperture_t;
-
-
-typedef struct gerb_format {
-    enum omit_zeros_t omit_zeros;
-    enum coordinate_t coordinate;
-    int x_int;
-    int x_dec;
-    int y_int;
-    int y_dec;
-} gerb_format_t;
-	
-	
-typedef struct gerb_image_info {
-    enum unit_t unit;
-    enum polarity_t polarity;
-    double min_x;
-    double min_y;
-    double max_x;
-    double max_y;
-    double offset_a;
-    double offset_b;
-} gerb_image_info_t;
-
-#ifdef LAYER
-typedef struct gerb_layer {
-    struct gerb_net *netlist;
-    struct gerb_layer *next;
-} gerb_layer_t;
-#endif
-
-typedef struct gerb_image {
-    gerb_aperture_t *aperture[APERTURE_MAX];
-    gerb_format_t *format;
-    gerb_image_info_t *info;
-#ifdef LAYER
-    int nuf_layers;
-    gerb_layer_t *layer;
-#else
-    gerb_net_t *netlist; /* XXX til I get energy to implement layers */
-#endif
-} gerb_image_t;
-
-    
 gerb_image_t *parse_gerb(FILE *fd);
-gerb_image_t *new_image(gerb_image_t *image);
-void free_gerb_image(gerb_image_t *image);
+
 
 #ifdef __cplusplus
 }
