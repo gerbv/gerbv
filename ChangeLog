@@ -4,6 +4,8 @@
 2002-05-05  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in: Updated VERSION.
+	* src/gerbv.c: If gerbv was started without any files loaded,
+	  the watch mouse pointer was running all the time.
 	
 
 2002-05-03  Anders Eriksson  <anders@umunet.org>

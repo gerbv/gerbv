@@ -638,6 +638,7 @@ redraw_pixmap(GtkWidget *widget)
     GdkRectangle update_rect;
     int file_loaded = 0;
     GdkWindow *window;
+    int retval = TRUE;
 
     window = gtk_widget_get_parent_window(widget);
     /* This might be lengthy, show that we're busy by changing the pointer */
@@ -681,8 +682,8 @@ redraw_pixmap(GtkWidget *widget)
      * Paranoia check
      */
     if ((dmax_width < 0.0001) && (dmax_height < 0.0001)) {
-	gdk_gc_unref(gc);
-	return FALSE;
+	retval = FALSE;
+	goto redraw_pixmap_end;
     }
 
     /*
@@ -759,7 +760,7 @@ redraw_pixmap_end:
 
     gdk_gc_unref(gc);
 
-    return TRUE;
+    return retval;
 } /* redraw_pixmap */
 
 
