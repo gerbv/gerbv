@@ -34,15 +34,15 @@ new_gerb_image(gerb_image_t *image)
 
     image = (gerb_image_t *)malloc(sizeof(gerb_image_t));
     if (image != NULL) {
-	bzero((void *)image, sizeof(gerb_image_t));
+	memset((void *)image, 0, sizeof(gerb_image_t));
 
 	image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	if (image->netlist != NULL) {
-	    bzero((void *)image->netlist, sizeof(gerb_net_t));
+	    memset((void *)image->netlist, 0, sizeof(gerb_net_t));
 	    
 	    image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t));
 	    if (image->info != NULL) {
-		bzero((void *)image->info, sizeof(gerb_image_info_t));
+		memset((void *)image->info, 0, sizeof(gerb_image_info_t));
 
 		image->info->min_x = HUGE_VAL;
 		image->info->min_y = HUGE_VAL;

@@ -625,11 +625,10 @@ internal_main(int argc, char *argv[])
     int 	   i;
     char      *backend = NULL;
     char 	   read_opt;
-    int 	   option_index;
     
 #ifdef HAVE_GETOPT_LONG
     while ((read_opt = getopt_long(argc, argv, "Vb:", 
-				   longopts, &option_index)) != -1) {
+				   longopts, NULL)) != -1) {
 #else
     while ((read_opt = getopt(argc, argv, "Vb:")) != -1) {
 #endif
@@ -684,7 +683,7 @@ internal_main(int argc, char *argv[])
     /*
      * Setup the screen info
      */
-    bzero((void *)&screen, sizeof(gerbv_screen_t));
+    memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
     screen.scale = INITIAL_SCALE;
 	

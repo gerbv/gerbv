@@ -86,7 +86,7 @@ parse_gerb(gerb_file_t *fd)
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
 	err(1, "malloc state failed\n");
-    bzero((void *)state, sizeof(gerb_state_t));
+    memset((void *)state, 0, sizeof(gerb_state_t));
 
     image = new_gerb_image(image);
     if (image == NULL)
@@ -160,7 +160,7 @@ parse_gerb(gerb_file_t *fd)
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
-	    bzero((void *)curr_net, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 	    
 	    /*
 	     * Scale to given coordinate format
@@ -181,22 +181,22 @@ parse_gerb(gerb_file_t *fd)
 	    switch (state->interpolation) {
 	    case CW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
-		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
+		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 		calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case CCW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
-		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
+		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 		calc_cirseg_sq(curr_net, 0, delta_cp_x, delta_cp_y);
 		break;
 	    case MQ_CW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
-		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
+		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 		calc_cirseg_mq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case MQ_CCW_CIRCULAR:
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
-		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
+		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 		calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
 		break;
 	    default :
@@ -446,7 +446,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
 	image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
 	if (image->format == NULL) 
 	    err(1, "Failed malloc for format\n");
-	bzero((void *)image->format, sizeof(gerb_format_t));
+	memset((void *)image->format, 0, sizeof(gerb_format_t));
 	
 	op[0] = gerb_fgetc(fd);
 	if (op[0] == 'L')
@@ -563,7 +563,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image)
 	/* Aperture parameters */
     } else if (strncmp(op, "AD", 2) == 0) { /* Aperture Description */
 	a = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
-	bzero((void *)a, sizeof(gerb_aperture_t));
+	memset((void *)a, 0, sizeof(gerb_aperture_t));
 	ano = parse_aperture_definition(fd, a);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) 
 	    image->aperture[ano] = a;
@@ -603,7 +603,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
     if (gerb_fgetc(fd) != 'D')
 	return -1;
     
-    bzero(type, sizeof(type)/sizeof(type[0]));
+    memset(type, 0, sizeof(type)/sizeof(type[0]));
     
     ano = gerb_fgetint(fd);
     

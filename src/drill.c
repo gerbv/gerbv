@@ -221,7 +221,7 @@ parse_drillfile(gerb_file_t *fd)
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
-	    bzero((void *)curr_net, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 
 	    curr_net->start_x = (double)state->curr_x;
 	    curr_net->start_y = (double)state->curr_y;
@@ -290,7 +290,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
     if (image->format == NULL) 
 	err(1, "malloc format failed\n");
-    bzero((void *)image->format, sizeof(gerb_format_t));
+    memset((void *)image->format, 0, sizeof(gerb_format_t));
 
     /* This is just a special case of the normal parser */
     while ((read = gerb_fgetc(fd)) != EOF && !done) {
@@ -328,7 +328,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 		   have to be rewritten sometime */
 		int local_state = 0;
 		while ((read = gerb_fgetc(fd)) != EOF &&
-		       (isdigit(read) || read == ',' || read == '.')) {
+		       (isdigit((int)read) || read == ',' || read == '.')) {
 		    if(read != ',' && read != '.') length ++;
 		    switch (local_state) {
 		    case 0:
@@ -414,7 +414,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 int
 drill_file_p(gerb_file_t *fd)
 {
-    const size_t buffer_size = 50;
+    const size_t buffer_size = 150;
     char buffer[buffer_size];
 
     strncpy(buffer, fd->data, buffer_size);
@@ -622,7 +622,7 @@ new_state(drill_state_t *state)
     state = (drill_state_t *)malloc(sizeof(drill_state_t));
     if (state != NULL) {
 	/* Init structure */
-	bzero((void *)state, sizeof(drill_state_t));
+	memset((void *)state, 0, sizeof(drill_state_t));
 	state->curr_section = DRILL_NONE;
 	state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 	state->origin_x = 0.0;
@@ -644,11 +644,11 @@ read_double(gerb_file_t *fd, double scale_factor)
     double result = 0;
     int decimal_point = FALSE;
 
-    bzero(temp, sizeof(temp));
+    memset(temp, 0, sizeof(temp));
 
     read = gerb_fgetc(fd);
     while(read != EOF && i < sizeof(temp) &&
-	  (isdigit(read) || read == '.' || read == '+' || read == '-')) {
+	  (isdigit((int)read) || read == '.' || read == '+' || read == '-')) {
 	if(read == ',' || read == '.') decimal_point = TRUE;
 	temp[i++] = read;
 	read = gerb_fgetc(fd);
