@@ -65,6 +65,7 @@
 #ifdef EXPORT_PNG
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
+#include "tooltable.h"
 
 #define WIN_TITLE "Gerber Viewer : "
 
@@ -2428,6 +2429,7 @@ static struct option longopts[] = {
     {"version",          no_argument,       NULL,    'V'},
     {"batch",            required_argument, NULL,    'b'},
     {"log",              required_argument, NULL,    'l'},
+    {"tools",            required_argument, NULL,    't'},
     {"geometry",         required_argument, &longopt_val, 1},
     {"project",          required_argument, &longopt_val, 'p'},
     /* GDK/GDK debug flags to be "let through" */
@@ -2546,12 +2548,26 @@ main(int argc, char *argv[])
 	    }
 	    project_filename = optarg;
 	    break;
+	case 't' :
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give a filename to read the tools from.\n");
+		exit(1);
+	    }
+	    if (!ProcessToolsFile(optarg)) {
+		fprintf(stderr, "*** ERROR processing tools file \"%s\".\n", optarg);
+		fprintf(stderr, "Make sure all lines of the file are formatted like this:\n");
+		fprintf(stderr, "T01 0.024\nT02 0.032\nT03 0.040\n...\n");
+		fprintf(stderr, "*** EXITING to prevent erroneous display.\n");
+		exit(1);
+            }
+	    break;
 	case '?':
 
 	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
 	    fprintf(stderr, "where FLAGS could be any of\n");
 	    fprintf(stderr, "  --version|-V : Prints version of gerbv\n");
 	    fprintf(stderr, "  --log=<logfile>|-l <logfile> : Send error messages to <logfile>\n");
+	    fprintf(stderr, "  --tools=<ToolFile.drl> : Read Excellon tools from this file.\n");
 	    exit(1);
 	    break;
 	default :

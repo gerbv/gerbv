@@ -43,6 +43,7 @@
 
 #include "drill.h"
 #include "gerb_error.h"
+#include "tooltable.h"
 
 #define NOT_IMPL(fd, s) do { \
                              GERB_MESSAGE("Not Implemented:%s\n", s); \
@@ -566,29 +567,38 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     /* Catch the tools that aren't defined.
        This isn't strictly a good thing, but at least something is shown */
     if(image->aperture[tool_num] == NULL) {
+        double dia;
+
 	image->aperture[tool_num] =
 	    (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 	if (image->aperture[tool_num] == NULL) {
 	    GERB_FATAL_ERROR("malloc tool failed\n");
 	}
-	/* This size calculation is, of course, totally bogus */
-	image->aperture[tool_num]->parameter[0] =
-	    (double)(16 + 8 * tool_num) / 1000;
+
+        /* See if we have the tool table */
+        dia = GetToolDiameter_Inches(tool_num);
+        if (dia <= 0) {
+            /*
+             * There is no tool. So go out and make some.
+             * This size calculation is, of course, totally bogus.
+             */
+            dia = (double)(16 + 8 * tool_num) / 1000;
+            /*
+             * Oooh, this is sooo ugly. But some CAD systems seem to always
+             * use T00 at the end of the file while others that don't have
+             * tool definitions inside the file never seem to use T00 at all.
+             */
+            if(tool_num != 0) {
+                GERB_COMPILE_ERROR(
+		    "Warning: Tool %02d used without being defined\n",
+		    tool_num);
+                GERB_COMPILE_ERROR("Setting a default size of %g\"\n", dia);
+            }
+	}
 
 	image->aperture[tool_num]->type = CIRCLE;
 	image->aperture[tool_num]->nuf_parameters = 1;
-
-	/* Oooh, this is sooo ugly. But some CAD systems seem to always
-	   use T00 at the end of the file while others that don't have
-	   tool definitions inside the file never seem to use T00 at all */
-	if(tool_num != 0) {
-	    GERB_COMPILE_ERROR(
-		    "Warning: Tool %02d used without being defined\n",
-		    tool_num);
-	    GERB_COMPILE_ERROR(
-		    "         Setting a default size of %g\"\n",
-		    image->aperture[tool_num]->parameter[0]);
-	}
+        image->aperture[tool_num]->parameter[0] = dia;
     }
     
     return tool_num;

@@ -29,7 +29,7 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h draw.c \
 		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
 		gerber.h gerbv.c gerbv_icon.h gerbv_screen.h log.c log.h \
 		opdefines.h project.c project.h scheme-private.h scheme.c \
-		scheme.h setup.c setup.h 
+		scheme.h setup.c setup.h tooltable.c tooltable.h
 
 scmdatadir = @BACKEND_DIR@
 scmdata_DATA = init.scm

@@ -67,3 +67,10 @@ Simon Munton
 
 Peter Brueckner
  - A patch to fix that some gerbers has for instance G4 instead of G04.
+
+Tomasz Motylewski
+ - Removed potential dependencies on mmap for porting ot mingw.
+
+Dimitri
+ - Patch, complete with updated man page, to be able to read tools file from 
+   for instance Eagle CAD.

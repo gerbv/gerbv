@@ -1,3 +1,9 @@
+2004-05-19  Stefan Petersen  <spe@stacken.kth.se>
+
+	* man/gerbv.1.in, src/Makefile.am, src/drill.c, src/gerbv.c, 
+	  src/tooltable.c, src/tooltable.h: Patch from Dimitri 
+	  (lastname unknown) to read tool files from for instance Eagle CAD.
+
 2004-04-27  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in, src/drill.c: Patch from Tomasz Motylewski as a start
