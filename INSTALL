@@ -23,7 +23,7 @@ To recreate the configuration files you have to run:
 
 ------------------------------------------------------------------------------
 
-In order to build gschem you must install the following packages first:
+In order to build gerbv you must install the following packages first:
 * GLIB 1.2.x
 * GTK+ 1.2.x
 * Guile 1.4
