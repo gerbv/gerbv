@@ -78,3 +78,7 @@ Dimitri
 Stefan Thiede
  - Found some ugly bugs in the polygon area.
  - Suggested use of z, Z and f.
+
+Richard Lightman
+ - Found a bug in handling negative image polarity in combination with
+   layer polarity and sent in a patch for that.
