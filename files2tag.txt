@@ -17,12 +17,15 @@ TODO
 
 ./doc/aperturemacro.txt
 #./doc/Makefile.example
+./doc/Makefile.am
 ./doc/sources.txt
 ./doc/image2pixmap.fig
+./doc/PNG-print/Makefile.am
 ./doc/PNG-print/gimp-window.jpg
 ./doc/PNG-print/PNGPrintMiniHowto.txt
 ./doc/eagle/
 
+./example/Makefile.am
 
 ./example/am-test/am-test.gbx
 
