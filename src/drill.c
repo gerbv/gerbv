@@ -399,12 +399,16 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     image->format->x_dec = max_length - 2;
     image->format->y_dec = max_length - 2;
 
-    /* A bit of a kludge (or maybe wild ass guess would be more correct)
-       It seems to work, though */
-    if(image->format->omit_zeros == LEADING &&
-       image->format->x_dec <=3 && image->info->unit == INCH) {
-	++image->format->x_dec ;
-	++image->format->y_dec ;
+    /* A bit of a kludge (or maybe wild ass guess would be more correct,
+       it seems to work, though). It tries to cover all cases I've
+       found where the format has to be adjusted from the above
+       calculation. */
+    if( (image->format->omit_zeros == LEADING ||
+	 (max_leading_zeros == 0 && max_trailing_zeros == 0) ) &&
+	image->format->x_dec <=3 && image->info->unit == INCH) {
+
+	image->format->x_dec += 1;
+	image->format->y_dec += 1;
     }
 
     /* Restore the necessary things back to their default state */

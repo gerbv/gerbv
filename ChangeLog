@@ -1,3 +1,8 @@
+2002-08-27  Andreas Andersson  <e92_aan@e.kth.se>
+
+	* src/drill.c: Minor change to the drill file format guessing
+	  logic to allow for yet another special case.
+
 2002-08-27  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Fixed a couple of minor memoryleaks in color
