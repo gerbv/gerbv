@@ -118,7 +118,7 @@ coordinates as in the file. Ie if you have (0,0) in the middle of the image
 in the gerber files, the statusbar will show (0,0) at the same place.
 
 .SH SUPERIMPOSING
-When you load several Gerber files, you can display the "on top of each other",
+When you load several Gerber files, you can display them "on top of each other",
 ie superimposing. The general way to display them are that upper layers
 cover the layers beneath, which is called copy (GTK+ terms).
 
