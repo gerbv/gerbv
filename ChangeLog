@@ -1,4 +1,10 @@
-2001-10-31 Stefan Petersen (spe@stacken.kth.se)
+2001-11-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.c: Inserted check for undefined apertures that
+	  was earlier removed.
+
+	
+2001-11-02 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerber.h, src/gerber.c, src/draw.c: Now almost
 	  all calculation for circles is done when parsing and

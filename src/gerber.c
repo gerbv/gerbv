@@ -119,7 +119,7 @@ parse_gerb(FILE *fd)
 	    while (fgetc(fd) != '%');
 	    break;
 	case '*':
-	    if (state->changed == 0) break;
+	    if (state->changed == 0 || state->curr_aperture == 0) break;
 	    state->changed = 0;
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
