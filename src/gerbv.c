@@ -587,7 +587,7 @@ autoscale()
     double max_width = LONG_MIN, max_height = LONG_MIN;
     double min_x = LONG_MAX;
     double x_scale, y_scale;
-    int i;
+    int i, first = 1;
     
     if (screen.drawing_area == NULL)
 	return;
@@ -598,15 +598,28 @@ autoscale()
             /* 
              * Find the biggest image and use as a size reference
              */
-            max_width = MAX(screen.file[i]->image->info->max_x -
-                            screen.file[i]->image->info->min_x,
-                            max_width);
-            max_height = MAX(screen.file[i]->image->info->max_y -
-                             screen.file[i]->image->info->min_y,
-                             max_height);
-            min_x  = MIN(screen.file[i]->image->info->min_x, min_x);
+	    if (first) {
+		screen.gerber_bbox.x1 = screen.file[i]->image->info->min_x;
+		screen.gerber_bbox.y1 = screen.file[i]->image->info->min_y;
+		screen.gerber_bbox.x2 = screen.file[i]->image->info->max_x;
+		screen.gerber_bbox.y2 = screen.file[i]->image->info->max_y;
+		first = 0;
+	    } else {
+		screen.gerber_bbox.x1 = MIN(screen.gerber_bbox.x1,
+					    screen.file[i]->image->info->min_x);
+		screen.gerber_bbox.y1 = MIN(screen.gerber_bbox.y1,
+					    screen.file[i]->image->info->min_y);
+		screen.gerber_bbox.x2 = MAX(screen.gerber_bbox.x2,
+					    screen.file[i]->image->info->max_x);
+		screen.gerber_bbox.y2 = MAX(screen.gerber_bbox.y2,
+					    screen.file[i]->image->info->max_y);
+	    }
         }
     }
+
+    max_width = screen.gerber_bbox.x2 - screen.gerber_bbox.x1;
+    max_height = screen.gerber_bbox.y2 - screen.gerber_bbox.y1;
+    min_x  = screen.gerber_bbox.x1;
 
     /*
      * Calculate scale for both x axis and y axis
@@ -1216,9 +1229,9 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	screen.statusbar.absid = 
 	    gtk_statusbar_get_context_id((GtkStatusbar*)screen.statusbar.abs,
 					 "MotionNotify");
-	X = (x+screen.trans_x)/(double)screen.scale;
+	X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.scale;
 	gdk_window_get_size(screen.pixmap, &px, &py); /* Need pixmap size, not screen */
-	Y = (px-y-screen.trans_y)/(double)screen.scale;
+	Y = screen.gerber_bbox.y1 + (py-y-screen.trans_y)/(double)screen.scale;
 	sprintf(str,
 		"(X, Y) (%7.1f, %7.1f)mils (%7.2f, %7.2f)mm",
 		X*100.0, Y*100.0, X*25.4, Y*25.4);

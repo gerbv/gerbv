@@ -54,6 +54,10 @@ typedef struct {
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
     char *path;
+    struct {			/* Bounding box for all gerber images loaded */
+	int x1, y1;		/* Initialized by autoscale() */
+	int x2, y2;
+    } gerber_bbox;
 
     GtkTooltips *tooltips;
     GtkWidget *layer_button[MAX_FILES];

@@ -1,3 +1,10 @@
+2002-06-19  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (motion_notify_event): py, not px!
+	* src/gerbv.c, src/gerbv_screen.h, src/draw.c: Added bounding
+	  box translations to get correct gerber coordinates (second
+	  try, did I make it?).
+
 2002-06-18  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Added background color selection. Closes feature
