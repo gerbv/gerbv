@@ -53,7 +53,7 @@
 
 
 #define INITIAL_SCALE 200
-#define MAX_FILES 10
+#define MAX_FILES 8
 
 #ifndef err
 #define err(errcode, a...) \
@@ -97,7 +97,7 @@ typedef struct gerbv_screen {
     int curr_index;
 
     GtkTooltips *tooltips;
-    GtkWidget *select_button[MAX_FILES];
+    GtkWidget *layer_button[MAX_FILES];
 
     enum gerbv_state_t state;
 
@@ -106,8 +106,8 @@ typedef struct gerbv_screen {
     gint last_x;
     gint last_y;
 
-    gint trans_x; /* Translate offset */
-    gint trans_y;
+    double trans_x; /* Translate offset */
+    double trans_y;
 } gerbv_screen_t;
 
 gerbv_screen_t screen;
@@ -159,7 +159,7 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
     GtkAccelGroup  *accel_group;
     
     accel_group = gtk_accel_group_new();
-    
+
     /* This function initializes the item factory.
        Param 1: The type of menu - can be GTK_TYPE_MENU_BAR, GTK_TYPE_MENU,
        or GTK_TYPE_OPTION_MENU.
@@ -206,45 +206,39 @@ alloc_colors(void)
 
 
 static void
-cb_radio_button(GtkWidget *widget, gpointer data)
+cb_layer_button(GtkWidget *widget, gpointer data)
 {
-    long int button = (long int)data;
     
-    if (GTK_TOGGLE_BUTTON(widget)->active &&
-	button != screen.curr_index) {
-	screen.curr_index = button;
-	/* Make loaded image appear on screen */
-	redraw_pixmap(screen.drawing_area);
-    }
-} /* cb_radio_button */
+    screen.curr_index = (long int)data;
+
+    /* Redraw the image(s) */
+    redraw_pixmap(screen.drawing_area);
+
+} /* cb_layer_button */
 
 
 static GtkWidget *
-create_radio_buttons(int nuf_buttons)
+create_layer_buttons(int nuf_buttons)
 {
     GtkWidget *button = NULL;
     GtkWidget *box = NULL;
-    GSList    *button_group = NULL;
     char      info[5];
-    long int bi;
-    
+    long int  bi;
 
-    box = gtk_vbox_new(FALSE, 0);
-    
+    box = gtk_vbox_new(TRUE, 0);
+
     for (bi = 0; bi < nuf_buttons; bi++) {
 	sprintf(info, "%ld", bi);
-	button = gtk_radio_button_new_with_label(button_group, info);
-	gtk_signal_connect(GTK_OBJECT(button), "clicked", 
-			   GTK_SIGNAL_FUNC(cb_radio_button), (gpointer)bi);
-	button_group = gtk_radio_button_group(GTK_RADIO_BUTTON(button));
-	gtk_box_pack_start(GTK_BOX(box), button, TRUE, FALSE, 0);
-	if (bi == 0)
-	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-    	screen.select_button[bi] = button;
+	button = gtk_toggle_button_new_with_label(info);
+	gtk_signal_connect(GTK_OBJECT(button), "toggled", 
+			   GTK_SIGNAL_FUNC(cb_layer_button),
+			   (gpointer)bi);
+	gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
+	screen.layer_button[bi] = button;
     }
-    
+
     return box;
-} /* create_radio_buttons */
+} /* create_layer_buttons */
 
 
 static void
@@ -316,19 +310,27 @@ zoom(GtkWidget *widget, gpointer data)
 {
     if (screen.file[screen.curr_index] == NULL)
 	return;
-    
+
     switch((long int)data) {
     case 0 :  /* Zoom In */
-	if (screen.scale > 0) 
+	if (screen.scale > 10) {
+	    /* The translation vaules are crap.
+	       This _must_ be done in a better way. */
+	    screen.trans_x += 25.4;
+	    screen.trans_y -= 19.05; /* 25.4 * 3/4 */
 	    screen.scale -= 10;
+	}
+
 	break;
     case 1 : /* Zoom Out */
+	screen.trans_x -= 25.4;
+	screen.trans_y += 19.05; /* 25.4 * 3/4 */
 	screen.scale += 10;
 	break;
     case 2 : /* Clear All */
 	screen.scale = INITIAL_SCALE;
 	screen.trans_x = 0;
-	screen.trans_y = 0;
+	screen.trans_y = screen.drawing_area->allocation.height;
 	break;
     default :
 	fprintf(stderr, "Illegal zoom direction %ld\n", (long int)data);
@@ -356,8 +358,11 @@ create_drawing_area(gint win_width, gint win_height)
 static gint
 redraw_pixmap(GtkWidget *widget)
 {
+    int i;
+    int background_polarity = POSITIVE;
+    int last_negative = 0;
     GdkGC *gc = gdk_gc_new(widget->window);
-    
+
     /* Called first when opening window and then when resizing window */
     if (screen.pixmap)
 	gdk_pixmap_unref(screen.pixmap);
@@ -366,36 +371,53 @@ redraw_pixmap(GtkWidget *widget)
 				   widget->allocation.width,
 				   widget->allocation.height,
 				   -1);
-    
-    if (screen.file[screen.curr_index] &&
-	screen.file[screen.curr_index]->image->info->polarity == NEGATIVE) 
-	/* Current line color */
-	gdk_gc_set_foreground(gc, colors[screen.file[screen.curr_index]->color_index].color);
-    else
-	/* Black */
+
+    /* Find out if any layer is negative and what the last negative layer is */
+    for(i = 0; i < MAX_FILES; i++) {
+	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
+	    screen.file[i] &&
+	    screen.file[i]->image->info->polarity == NEGATIVE) {
+	    last_negative = i;
+	    background_polarity = NEGATIVE;
+	}
+    }
+
+    if (background_polarity == NEGATIVE) {
+	/* Set background to normal color for the last negative layer */
+	gdk_gc_set_foreground(gc, colors[screen.file[last_negative]->color_index].color);
+    } else {
+	/* Background to black */
 	gdk_gc_set_foreground(gc, background.color);
-    
+    }
+
     gdk_draw_rectangle(screen.pixmap,
 		       gc,
 		       TRUE,
 		       0, 0,
 		       widget->allocation.width,
 		       widget->allocation.height);
-
-    if (screen.file[screen.curr_index])
-	image2pixmap(&screen.pixmap, screen.file[screen.curr_index]->image, 
-		     screen.scale, screen.trans_x, screen.trans_y,
-		     screen.file[screen.curr_index]->image->info->polarity,
-		     colors[screen.file[screen.curr_index]->color_index].color,
-		     background.color);
     
+    /* This now allows drawing several layers on top of each other.
+       Higher layer numbers have higher priority in the Z-order. */
+    for(i = 0; i < MAX_FILES; i++) {
+	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
+	    screen.file[i]) {
+
+	    image2pixmap(&screen.pixmap, screen.file[i]->image, 
+			 screen.scale, screen.trans_x, screen.trans_y,
+			 screen.file[i]->image->info->polarity,
+			 colors[screen.file[i]->color_index].color,
+			 background.color);
+	}
+    }
+
     gdk_draw_pixmap(widget->window,
 		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
 		    screen.pixmap,
 		    0, 0,
 		    0, 0,
 		    widget->allocation.width, widget->allocation.height);
-    
+
     return TRUE;
 } /* redraw_pixmap */
 
@@ -417,7 +439,7 @@ open_image(char *filename, int index)
 	screen.file[index]->image = parse_drillfile(fd);
     }
     screen.file[index]->color_index = index;
-    gtk_tooltips_set_tip(screen.tooltips, screen.select_button[index],
+    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
 			 filename, NULL); 
     fclose(fd);
 
@@ -437,10 +459,10 @@ open_drillimage(char *filename, int index)
     screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
     screen.file[index]->image = parse_drillfile(fd);
     screen.file[index]->color_index = index;
-    gtk_tooltips_set_tip(screen.tooltips, screen.select_button[index],
-			 filename, NULL); 
+    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
+			 filename, NULL);
     fclose(fd);
-    
+
     return;
 } /* open_drillimage */
 
@@ -460,8 +482,18 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	screen.last_x = event->x, screen.last_y = event->y;
 	break;
     case 2 :
+	/* And now, some Veribest-like mouse commands for
+	   all us who dislike scroll wheels ;) */
+	if((event->state & GDK_SHIFT_MASK) != 0) {
+	    /* Middle button + shift == zoom in */
+	    zoom(widget, (gpointer)0);
+	} else {
+	    /* Only middle button == zoom out */
+	    zoom(widget, (gpointer)1);
+	}
 	break;
     case 3 :
+	/* Add color selection code here? */
 	break;
     case 4 : 
 	zoom(widget, (gpointer)1);
@@ -480,7 +512,7 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 {
     if (event->type == GDK_BUTTON_RELEASE)
 	screen.state = NORMAL;
-    
+
     return TRUE;
 } /* button_release_event */
 
@@ -500,7 +532,7 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
     
     if (screen.state == MOVE && screen.pixmap != NULL) {
 	if (screen.last_x != 0 || screen.last_y != 0) {
-	    screen.trans_x = screen.trans_x + x- screen.last_x;
+	    screen.trans_x = screen.trans_x + x - screen.last_x;
 	    screen.trans_y = screen.trans_y + y - screen.last_y;
 	}
 	screen.last_x = x, screen.last_y = y;
@@ -729,7 +761,7 @@ internal_main(int argc, char *argv[])
     bzero((void *)&screen, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
     screen.scale = INITIAL_SCALE;
-
+	
     /*
      * Init GTK+
      */
@@ -741,6 +773,12 @@ internal_main(int argc, char *argv[])
     screen_width = gdk_screen_width();
     width = screen_width * 3/4;
     height = width * 3/4;
+
+    /*
+     * Translation values set so that 0,0 is in the bottom left corner
+     */
+    screen.trans_x = 0;
+    screen.trans_y = height;
 
     /*
      * Setup some GTK+ defaults
@@ -777,10 +815,11 @@ internal_main(int argc, char *argv[])
     gtk_box_pack_start(GTK_BOX(hbox), screen.drawing_area, TRUE, TRUE, 0);
     
     /*
-     * Build radio buttons
+     * Build layer buttons
      */
-    gtk_box_pack_start(GTK_BOX(hbox), create_radio_buttons(MAX_FILES), 
+    gtk_box_pack_start(GTK_BOX(hbox), create_layer_buttons(MAX_FILES), 
 		       FALSE, FALSE, 0);
+
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
     /*
@@ -804,7 +843,7 @@ internal_main(int argc, char *argv[])
 		       GTK_SIGNAL_FUNC(button_press_event), NULL);
     gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "button_release_event",
 		       GTK_SIGNAL_FUNC(button_release_event), NULL);
-    
+
     gtk_widget_set_events(screen.drawing_area, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
 			  | GDK_BUTTON_PRESS_MASK
@@ -813,6 +852,12 @@ internal_main(int argc, char *argv[])
 			  | GDK_POINTER_MOTION_HINT_MASK);
     
     gtk_widget_show_all(main_win);
+
+    /* It seems this has to be done after the button is shown for
+       the first time, or we get a segmentation fault */
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[0]),
+				 TRUE);
+
     gtk_main();
     
     return;
