@@ -141,7 +141,7 @@ parse_drillfile(gerb_file_t *fd)
 	    eat_line(fd);
 	    break;
 	case 'G':
-	    /* G codes aren't used, for now */
+	    /* Most G codes aren't used, for now */
 	    switch(drill_parse_G_code(fd, image)) {
 	    case DRILL_G_ROUT :
 		err(1, "Rout mode data is not supported\n");
@@ -399,8 +399,8 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     image->format->x_dec = max_length - 2;
     image->format->y_dec = max_length - 2;
 
-    /* A bit of a kludge (or maybe wild ass guess would be more correct,
-       it seems to work, though). It tries to cover all cases I've
+    /* A bit of a kludge (Or maybe wild ass guess would be more correct.
+       It seems to work, though.) It tries to cover all cases I've
        found where the format has to be adjusted from the above
        calculation. */
     if( (image->format->omit_zeros == LEADING ||
@@ -480,6 +480,20 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     int done = FALSE;
     int temp;
     double size;
+
+    /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
+       broken headers from Orcad, which is crap */
+    temp = gerb_fgetc(fd);
+    if( !(isdigit(temp) != 0 || temp == '+' || temp =='-') ) {
+	if(temp != EOF) {
+	    fprintf(stderr,
+		    "Warning: Junk text found in place of tool definition.\n"
+		    "         Please ask your CAD vendor to stop doing that.\n");
+	    eat_line(fd);
+	}
+	return -1;
+    }
+    gerb_ungetc(fd);
 
     tool_num = gerb_fgetint(fd);
     if ((tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX)) 

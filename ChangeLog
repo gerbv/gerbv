@@ -1,3 +1,8 @@
+2002-11-15  Andreas Andersson  <e92_aan@e.kth.se>
+
+	* src/drill.c: Slight change to allow broken drill files from
+	  Orcad386. Not pretty. But then again, neither is Orcad.
+
 2002-11-07  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Minor cleanups, prepare idle_redraw to
