@@ -493,7 +493,6 @@ swap_layers(GtkWidget *widget, gpointer data)
     gtk_tooltips_set_tip(td2->tooltips, td2->widget,
 			 screen.file[screen.curr_index + idx]->name, NULL);
 
-
     redraw_pixmap(screen.drawing_area, TRUE);
     
 } /* swap_layers */
@@ -585,7 +584,6 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     gtk_widget_destroy(screen.win.load_file);
     screen.win.load_file = NULL;
 
-    return;
 } /* cb_ok_load_file */
 
 
@@ -876,7 +874,6 @@ autoscale(void)
     screen.off_x = 0;
     screen.off_y = 0;
 
-    return;
 } /* autoscale */
 
 /*
@@ -916,11 +913,13 @@ idle_redraw_pixmap(gpointer data)
     gboolean retval;
 
     idle_redraw_pixmap_active = TRUE;
+
     if (redraw_pixmap((GtkWidget *) data, FALSE)) {
 	retval = TRUE;
     } else {
 	retval = FALSE;
     }
+
     idle_redraw_pixmap_active = FALSE;
     return retval;
 } /* idle_redraw_pixmap */
@@ -1087,8 +1086,30 @@ zoom_outline_end:
 } /* zoom_outline */
 
 
-GtkWidget *
-create_drawing_area(gint win_width, gint win_height)
+
+static
+gint drawing_area_configure_event (GtkWidget *widget, GdkEventConfigure *e)
+{
+    static int w, h;
+    
+    if (!screen.ctx)
+	return TRUE;
+
+    if (w != e->width || h != e->height) {
+	w = e->width;
+	h = e->height;
+	gerb_render_set_viewport(screen.ctx, w, h);
+	screen.statusbar.diststr[0] = '\0';
+	update_statusbar(&screen);
+	redraw_pixmap(screen.drawing_area, TRUE);
+    }
+
+    return TRUE;
+}
+
+
+static GtkWidget*
+create_drawing_area(void)
 {
     GtkWidget *drawing_area;
     GtkStyle *oldstyle, *newstyle;
@@ -1104,8 +1125,10 @@ create_drawing_area(gint win_width, gint win_height)
     gtk_widget_set_style(drawing_area, newstyle);
     gtk_style_unref(oldstyle);
 
-    gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), win_width, win_height);
     GTK_WIDGET_SET_FLAGS(drawing_area, GTK_CAN_FOCUS);
+
+    gtk_signal_connect(GTK_OBJECT(drawing_area), "configure_event",
+		       GTK_SIGNAL_FUNC(drawing_area_configure_event), NULL);
 
     return drawing_area;
 } /* create_drawing_area */
@@ -1151,20 +1174,16 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	gdk_cursor_destroy(cursor);
     }
 
-    if (!screen.ctx)
-    	screen.ctx = gerb_create_gdk_render_context (widget->window);
-
     /* Stop the idle-function if we are not within an idle-call */
-    if (state.valid) {
+    if (state.valid)
 	stop_idle_redraw_pixmap(widget);
-    }
+
     retval = FALSE;
 
     /* Called first when opening window and then when resizing window */
     for(i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i]) {
+	if (screen.file[i])
 	    file_loaded++;
-	}
     }
 
     /*
@@ -1273,19 +1292,14 @@ redraw_pixmap(GtkWidget *widget, int restart)
     /* Clean up */
     state.valid = 0;
 
-    /*
-     * Calls expose_event
-     */
-    gtk_widget_draw(widget, NULL);
+    gtk_widget_queue_draw(widget);
 
 redraw_pixmap_end:
     /* Return default pointer shape */
-    if (window) {
+    if (window)
 	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
-    }
 
     gdk_gc_unref(gc);
-
     return retval;
 } /* redraw_pixmap */
 
@@ -1403,7 +1417,11 @@ open_image(char *filename, int idx, int reload)
     newstyle->bg[GTK_STATE_ACTIVE] = c;
     newstyle->bg[GTK_STATE_PRELIGHT] = c;
     gtk_widget_set_style(screen.layer_button[idx], newstyle);
-    gtk_style_unref(oldstyle);
+    /**
+     * CHECKME: Gtk+ throws critical warnings...
+     * don't we have to unref the unused style?
+     */
+//  gtk_style_unref(oldstyle);
     
     /* 
      * Tool tips on button is the file name 
@@ -1411,16 +1429,11 @@ open_image(char *filename, int idx, int reload)
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
 			 filename, NULL); 
 
+    autoscale();
+
     return 0;
 
 } /* open_image */
-
-
-static gint
-configure_event (GtkWidget *widget, GdkEventConfigure *event)
-{
-    return redraw_pixmap(widget, TRUE);
-} /* configure_event */
 
 
 static gint
@@ -1499,7 +1512,6 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 	    /* Redraw the image(s) */
 	    screen.off_x = 0;
 	    screen.off_y = 0;
-
 	    redraw_pixmap(screen.drawing_area, TRUE);
 	} else if (screen.state == ZOOM_OUTLINE) {
 	    screen.state = NORMAL;
@@ -1648,7 +1660,7 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	screen.state = NORMAL;
 	screen.statusbar.diststr[0] = '\0';
 	update_statusbar(&screen);
-	gtk_widget_draw(widget, NULL);
+	gtk_widget_queue_draw(widget);
 	break;
 
     default:
@@ -1740,10 +1752,7 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	screen.last_x = x;
 	screen.last_y = y;
 
-	/*
-	 * Calls expose_event
-	 */
-	gtk_widget_draw(widget, NULL);
+	gtk_widget_queue_draw(widget);
 	break;
 
     case ZOOM_OUTLINE:
@@ -1967,13 +1976,12 @@ update_statusbar(gerbv_screen_t *scr)
 {
     char str[MAX_STATUSMSGLEN+1];
 
-    snprintf(str, MAX_STATUSMSGLEN, " %-*s|%-*s|%.*s",
+    snprintf(str, MAX_STATUSMSGLEN, " %-*s|%-*s|%-*s",
 	     MAX_COORDLEN-1, scr->statusbar.coordstr,
 	     MAX_DISTLEN-1, scr->statusbar.diststr,
 	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr);
-    if (scr->statusbar.msg != NULL) {
+    if (scr->statusbar.msg != NULL)
 	    gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
-    }
 } /* update_statusbar */
 
 
@@ -2165,7 +2173,7 @@ internal_main(int argc, char *argv[])
     GtkWidget *hbox;
     GtkWidget *menubar;
     GtkStyle  *textStyle;
-    gint      screen_width, width, height;
+    gint      width, height;
     int       read_opt;
     int       i;
     char      *win_title;
@@ -2300,9 +2308,8 @@ internal_main(int argc, char *argv[])
 	width = req_width;
 	height = req_height;
     } else {
-	screen_width = gdk_screen_width();
-	width = screen_width * 3/4;
-	height = width * 3/4;
+	width = 640;
+	height = 480;
     }
 
     /*
@@ -2369,7 +2376,7 @@ internal_main(int argc, char *argv[])
     /*
      * Create drawing area
      */
-    screen.drawing_area = create_drawing_area(width, height);
+    screen.drawing_area = create_drawing_area();
     gtk_box_pack_start(GTK_BOX(hbox), screen.drawing_area, TRUE, TRUE, 0);
 
     /*
@@ -2384,7 +2391,6 @@ internal_main(int argc, char *argv[])
     /*
      * Add status bar (three sections: messages, abs and rel coords)
      */
-    hbox = gtk_hbox_new(FALSE, 0);
     screen.statusbar.msg = gtk_label_new("");
     gtk_label_set_justify(GTK_LABEL(screen.statusbar.msg), GTK_JUSTIFY_LEFT);
     textStyle = gtk_style_new();
@@ -2393,15 +2399,9 @@ internal_main(int argc, char *argv[])
     screen.statusbar.msgstr[0] = '\0';
     screen.statusbar.coordstr[0] = '\0';
     screen.statusbar.diststr[0] = '\0';
+    hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msg, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-
-    /*
-     * Fill with files (eventually) given on command line
-     */
-    for(i = optind ; i < argc; i++)
-	if (open_image(argv[i], i - optind, FALSE) == -1)
-	    exit(-1);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
     /*
      * Set gtk error log handler
@@ -2415,8 +2415,6 @@ internal_main(int argc, char *argv[])
      */    
     gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "expose_event",
 		       GTK_SIGNAL_FUNC(expose_event), NULL);
-    gtk_signal_connect(GTK_OBJECT(screen.drawing_area),"configure_event",
-		       GTK_SIGNAL_FUNC(configure_event), NULL);
     gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "motion_notify_event",
 		       GTK_SIGNAL_FUNC(motion_notify_event), NULL);
     gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "button_press_event",
@@ -2437,9 +2435,23 @@ internal_main(int argc, char *argv[])
 			  | GDK_KEY_RELEASE_MASK
 			  | GDK_POINTER_MOTION_MASK
 			  | GDK_POINTER_MOTION_HINT_MASK);
-    
+
     gtk_widget_show_all(main_win);
     set_window_icon(main_win);
+    gdk_window_move_resize (main_win->window, 10, 10, width, height);
+
+    screen.ctx = gerb_create_gdk_render_context (screen.drawing_area->window);
+    gerb_render_set_viewport(screen.ctx, width, height);
+
+    /*
+     * Fill with files (eventually) given on command line
+     */
+    for(i = optind ; i < argc; i++) {
+	while (gtk_events_pending())
+	    gtk_main_iteration ();
+	if (open_image(argv[i], i - optind, FALSE) == -1)
+	    exit(-1);
+    }
 
     /* It seems this has to be done after the button is shown for
        the first time, or we get a segmentation fault */
@@ -2448,7 +2460,6 @@ internal_main(int argc, char *argv[])
 
     gtk_main();
     
-    return;
 } /* internal_main */
     
 
