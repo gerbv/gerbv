@@ -68,6 +68,14 @@ if test "$no_guile" = "yes" ; then
 	GUILE_LDFLAGS=
 else
 	GUILE_FLAGS
+
+	dnl Check that scm_make_real exist
+	AC_CHECK_LIB(guile, scm_make_real,,
+        AC_MSG_ERROR(**Upgrade Guile**  At least version >= 1.4), 
+	$GUILE_LDFLAGS)
+	
+	dnl Restore LIBS. Apperantly AC_CHECK_LIB destroys it.
+	LIBS="$ac_save_LIBS"
 fi
 
 dnl GTK+ stuff
@@ -75,12 +83,11 @@ AM_PATH_GTK(1.2.3, ,AC_MSG_ERROR([*** GTK+ >= 1.2.3 not installed - please insta
 
 dnl Why do I have to set prefix?
 if eval "test x$prefix = xNONE"; then
-	echo FOO
 	prefix=$ac_default_prefix
 fi
 
 dnl This is because I can unquote only once. Should be $datadir/gerbv/scheme
-if eval "test -z $opt_backend_dir"; then
+if test -z "$opt_backend_dir"; then
 	opt_backend_dir="$prefix/share/gerbv/scheme"
 fi
 

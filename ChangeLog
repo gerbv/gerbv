@@ -1,8 +1,16 @@
+2001-09-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* configure.in: fixed bug when testing for opt_backend_dir
+	  causing configure to fail at least on Solaris.
+	* INSTALL: updated with info now that automake's in use.
+
+	
 2001-09-02 Stefan Petersen (spe@stacken.kth.se)
 
 	* build-release, rebuild-conf: missing files when running
 	  automake are now copied instead of linked. Thanks
 	  Dan <mcmahill@mtl.mit.edu> for reporting this.
+
 	
 2001-08-31 Stefan Petersen (spe@stacken.kth.se)
 

@@ -2,19 +2,23 @@ Install instructions for gerbv
 
 GNU Electronic Design Automation
 ------------------------------------------------------------------------------
+$Id$
 
 Installation instructions 
 
 
-The build system of gerbv is based on GNU Autoconf. The build system
-is not complete as of this writing. Basically you can say that 'make
-install' is not implemented yet.
+The build system of gerbv is based on GNU Autoconf.
 
 Simple build instructions would (currently) be:
 % ./configure
 % make
+% make install
 
-The executable is situated in the src directory and is called gerbv.
+To recreate the configuration files you have to run:
+% aclocal
+% autoheader
+% autoconf
+% automake --copy --add-missing
 
 
 ------------------------------------------------------------------------------
@@ -30,3 +34,10 @@ gerbv in batch mode you can simply omit Guile (and therefore batch
 mode) at configure time:
 
 	./configure --disable-batch
+
+
+If your make program is called gmake (for instance on Sun platforms) you
+can run this by typing:
+% MAKE=gmake ./configure
+% gmake
+% gmake install
