@@ -1,3 +1,10 @@
+2001-10-28 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c, src/gerber.h, src/gerber.c, src/scm_gerber.c:
+	  aperture array is now full size and array index is very
+	  simple.
+	
+
 2001-10-27 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/*.[ch]: typedef:ed all internal structs to *_t

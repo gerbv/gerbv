@@ -281,7 +281,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	gdk_gc_set_foreground(line_gc, fg_color);
     
     for (net = image->netlist->next ; net != NULL; net = net->next) {
-	if (image->aperture[net->aperture - APERTURE_MIN] == NULL) {
+	if (image->aperture[net->aperture] == NULL) {
 	    fprintf(stderr, "Aperture [%d] is not defined\n", net->aperture);
 	    continue;
 	}
@@ -300,13 +300,19 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	
 	switch (net->aperture_state) {
 	case ON :
-	    p1 = (int)(image->aperture[net->aperture - APERTURE_MIN]->parameter[0] * scale);
+	    p1 = (int)(image->aperture[net->aperture]->parameter[0] * scale);
 	    gdk_gc_set_line_attributes(line_gc, p1, 
-				       GDK_LINE_SOLID, GDK_CAP_ROUND, GDK_JOIN_MITER);
+				       GDK_LINE_SOLID, 
+				       GDK_CAP_ROUND, 
+				       GDK_JOIN_MITER);
 	    gdk_gc_set_line_attributes(err_gc, p1, 
-				       GDK_LINE_SOLID, GDK_CAP_ROUND, GDK_JOIN_MITER);
+				       GDK_LINE_SOLID, 
+				       GDK_CAP_ROUND, 
+				       GDK_JOIN_MITER);
 	    gdk_gc_set_line_attributes(other_gc, p1, 
-				       GDK_LINE_SOLID, GDK_CAP_ROUND, GDK_JOIN_MITER);
+				       GDK_LINE_SOLID, 
+				       GDK_CAP_ROUND, 
+				       GDK_JOIN_MITER);
 	    switch (net->interpolation) {
 	    case LINEARx10 :
 	    case LINEARx01 :
@@ -351,10 +357,10 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	case OFF :
 	    break;
 	case FLASH :
-	    p1 = (int)(image->aperture[net->aperture - APERTURE_MIN]->parameter[0] * scale);
-	    p2 = (int)(image->aperture[net->aperture - APERTURE_MIN]->parameter[1] * scale);
+	    p1 = (int)(image->aperture[net->aperture]->parameter[0] * scale);
+	    p2 = (int)(image->aperture[net->aperture]->parameter[1] * scale);
 	    
-	    switch (image->aperture[net->aperture-APERTURE_MIN]->type) {
+	    switch (image->aperture[net->aperture]->type) {
 	    case CIRCLE :
 		gerbv_draw_circle(*pixmap, line_gc, TRUE, x2, y2, p1);
 		break;

@@ -141,13 +141,13 @@ scm_image2scm(gerb_image_t *image, char *filename)
     /*
      * Convert aperture definitions
      */
-    for (i = 0; i < APERTURE_MAX - APERTURE_MIN; i++) {
+    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
 	if (image->aperture[i] != NULL) {
 	    SCM a = SCM_EOL;
 	    for (j = image->aperture[i]->nuf_parameters; j != 0; j--)
 		a = scm_cons(scm_make_real(image->aperture[i]->parameter[j - 1]), a);
 	    a = scm_cons(scm_aperture2scm(image->aperture[i]->type), a);
-	    a = scm_cons(SCM_MAKINUM(i + APERTURE_MIN), a);
+	    a = scm_cons(SCM_MAKINUM(i), a);
 	    aperture = scm_cons(a, aperture);
 	}
     }

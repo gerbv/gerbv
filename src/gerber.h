@@ -102,7 +102,7 @@ typedef struct gerb_layer {
 #endif
 
 typedef struct gerb_image {
-    gerb_aperture_t *aperture[APERTURE_MAX - APERTURE_MIN];
+    gerb_aperture_t *aperture[APERTURE_MAX];
     gerb_format_t *format;
     gerb_image_info_t *info;
 #ifdef LAYER

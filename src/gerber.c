@@ -187,7 +187,7 @@ free_gerb_image(gerb_image_t *image)
     /*
      * Free apertures
      */
-    for (i = 0; i < APERTURE_MAX - APERTURE_MIN; i++) 
+    for (i = 0; i < APERTURE_MAX; i++) 
 	if (image->aperture[i] != NULL) 
 	    free(image->aperture[i]);
     /*
@@ -483,7 +483,7 @@ parse_rs274x(FILE *fd, gerb_image_t *image)
 	bzero((void *)a, sizeof(gerb_aperture_t));
 	ano = parse_aperture_definition(fd, a);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) 
-	    image->aperture[ano - APERTURE_MIN] = a;
+	    image->aperture[ano] = a;
 	else
 	    err(1, "Aperture number out of bounds : %d\n", ano);
 	
