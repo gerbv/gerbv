@@ -31,6 +31,7 @@
 #include <unistd.h>
 #endif
 #include <sys/mman.h>
+#include <errno.h>
 
 #include "gerb_file.h"
 
@@ -53,12 +54,18 @@ gerb_fopen(char *filename)
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
     fstat(fd->fileno, &statinfo);
+    if (!S_ISREG(statinfo.st_mode)) {
+	errno = EISDIR;
+	return NULL;
+    }
+    if ((int)statinfo.st_size == 0) {
+	errno = ENODATA;
+	return NULL;
+    }
     fd->datalen = (int)statinfo.st_size;
     fd->data = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, 
 			    fd->fileno, 0);
     if(fd->data == MAP_FAILED) {
-	/* Failed to memory map file.
-	   Probable cause is that it is a directory. */
 	fclose(fd->fd);
 	free(fd);
 	fd = NULL;
