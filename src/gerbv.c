@@ -131,7 +131,7 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Zoom/_Out",  "<alt>O", zoom     ,    0, NULL},
     {"/Zoom/_In",   "<alt>I", zoom     ,    1, NULL},
     {"/Zoom/sep1",  NULL,          NULL,    0, "<Separator>"},
-    {"/Zoom/_Clear All",NULL, zoom     ,    2, NULL},
+    {"/Zoom/_Fit",  NULL,     zoom     ,    2, NULL},
 };
 
 
@@ -242,6 +242,48 @@ open_file_popup(GtkWidget *widget, gpointer data)
 
 
 static void
+autoscale()
+{
+    int i;
+    double max_width = 0.0, max_height = 0.0;
+    double min_x = 100.0;
+    double x_scale, y_scale;
+    
+    if (screen.drawing_area == NULL)
+	return;
+
+    for(i = 0; i < MAX_FILES; i++) {
+        if (screen.file[i]) {
+            
+            /* 
+             * Find the biggest image and use as a size reference
+             */
+            max_width = MAX(screen.file[i]->image->info->max_x -
+                            screen.file[i]->image->info->min_x,
+                            max_width);
+            max_height = MAX(screen.file[i]->image->info->max_y -
+                             screen.file[i]->image->info->min_y,
+                             max_height);
+            min_x  = MIN(screen.file[i]->image->info->min_x, min_x);
+        }
+    }
+
+
+    x_scale = screen.drawing_area->allocation.width / max_width;
+    y_scale = screen.drawing_area->allocation.height / max_height;
+
+    screen.scale = (int)ceil(MIN(x_scale, y_scale));
+    screen.scale = (screen.scale / 10) * 10;
+
+    screen.trans_x = (int)ceil((min_x - 0.05) * screen.scale);
+    /* Don't ask me about 0.35. It just seems to work. spe */
+    screen.trans_y = (int)ceil(0.35 * screen.scale);
+
+    return;
+} /* autoscale */
+
+
+static void
 zoom(GtkWidget *widget, gpointer data)
 {
     if (screen.file[screen.curr_index] == NULL)
@@ -263,10 +305,8 @@ zoom(GtkWidget *widget, gpointer data)
 	screen.trans_y += 19; /* 25.4 * 3/4 */
 	screen.scale += 10;
 	break;
-    case 2 : /* Clear All */
-	screen.scale = INITIAL_SCALE;
-	screen.trans_x = 0;
-	screen.trans_y = 0;/*screen.drawing_area->allocation.height;*/
+    case 2 : /* Zoom Fit */
+	autoscale();
 	break;
     default :
 	fprintf(stderr, "Illegal zoom direction %ld\n", (long int)data);
@@ -301,12 +341,13 @@ redraw_pixmap(GtkWidget *widget)
     int max_width = 0, max_height = 0;
     GdkGC *gc = gdk_gc_new(widget->window);
     GdkRectangle update_rect;
+    int file_loaded = 0;
 
     /* Called first when opening window and then when resizing window */
 
     for(i = 0; i < MAX_FILES; i++) {
 	if (screen.file[i]) {
-
+	    file_loaded = 1;
 	    /* 
 	     * Find the biggest image and use as a size reference
 	     */
@@ -330,6 +371,11 @@ redraw_pixmap(GtkWidget *widget)
      */
     if ((dmax_width < 0.0001) && (dmax_height < 0.0001)) 
 	return FALSE;
+
+    /*
+     * Setup scale etc first time we load a file
+     */
+    if (file_loaded && screen.scale == 0) autoscale();
 
     /*
      * Make picture a little bit bigger so things on the edges comes
@@ -769,7 +815,6 @@ internal_main(int argc, char *argv[])
      */
     memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
-    screen.scale = INITIAL_SCALE;
 	
     /*
      * Init GTK+
@@ -782,12 +827,6 @@ internal_main(int argc, char *argv[])
     screen_width = gdk_screen_width();
     width = screen_width * 3/4;
     height = width * 3/4;
-
-    /*
-     * Translation values set so that 0,0 is in the bottom left corner
-     */
-    screen.trans_x = 0;
-    screen.trans_y = 0;
 
     /*
      * Setup some GTK+ defaults

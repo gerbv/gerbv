@@ -261,10 +261,6 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		break;
 	    case MACRO :
 		gdk_gc_set_foreground(err_gc, err_color);
-		gdk_gc_set_line_attributes(err_gc, p1, 
-					   GDK_LINE_SOLID, 
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
 		gerbv_draw_circle(*pixmap, err_gc, TRUE, x2, y2, scale/20);
 		break;
 	    default :

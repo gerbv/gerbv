@@ -1,3 +1,11 @@
+2001-12-14 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c : Removed gdk_gc_set_line_attribute when drawing
+	  a point.
+	* src/gerbv.c: Added autoscaling and autocentering, both as
+	  a menu option (Zoom/Fit) and when loading a file.
+
+	
 2001-12-11 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerbv.c : Removed prelighting on buttons and changed
