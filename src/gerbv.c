@@ -72,10 +72,11 @@
      } while (0)
 #endif
 
-typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE} gerbv_zoom_dir_t;
+typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {
     gerbv_zoom_dir_t z_dir;
     GdkEventButton *z_event;
+    int scale;
 } gerbv_zoom_data_t;
 
 
@@ -104,6 +105,13 @@ static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget, int restart);
 static int open_image(char *filename, int idx, int reload);
 static void update_statusbar(gerbv_screen_t *scr);
+
+static void menu_ask_zoom (GtkWidget * widget, gpointer data);
+static GtkWidget *create_ZoomFactorWindow (void);
+void on_zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data);
+GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
+void on_zoom_ok_button_clicked (GtkButton * button, gpointer user_data);
+void on_zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
 
 
 void
@@ -145,6 +153,7 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Zoom/_In",            "<alt>I", menu_zoom,        ZOOM_IN, NULL},
     {"/Zoom/sep3",           NULL,     NULL,             0,  "<Separator>"},
     {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
+    {"/Zoom/_Set scale",     NULL,     menu_ask_zoom,    0, NULL},
     {"/_Setup",              NULL,     NULL,             0, "<Branch>"},
 
     {"/Setup/_Superimpose",  NULL,     NULL,             0, "<Branch>"},
@@ -848,6 +857,9 @@ zoom(GtkWidget *widget, gpointer data)
     case ZOOM_FIT : /* Zoom Fit */
 	autoscale();
 	break;
+    case ZOOM_SET:              /*explicit scale set by user */
+        screen.scale = z_data->scale;
+        break;
     default :
 	fprintf(stderr, "Illegal zoom direction %ld\n", (long int)data);
     }
@@ -1635,6 +1647,8 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 	gdk_window_raise(screen.color_selection_popup->window);
     if (screen.export_png_popup && screen.export_png_popup->window)
 	gdk_window_raise(screen.export_png_popup->window);
+    if (screen.scale_popup && screen.scale_popup->window)
+	gdk_window_raise(screen.scale_popup->window);
 
     return FALSE;
 } /* expose_event */
@@ -1785,6 +1799,156 @@ static void update_statusbar(gerbv_screen_t *scr)
     if (scr->statusbar.msg != NULL) {
 	    gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
     }
+}
+
+
+void
+menu_ask_zoom (GtkWidget * widget, gpointer data)
+{
+    screen.scale_popup = create_ZoomFactorWindow();
+    gtk_widget_show (screen.scale_popup);
+    gtk_grab_add(screen.scale_popup);
+}
+    
+
+GtkWidget *
+create_ZoomFactorWindow (void)
+{
+    GtkWidget *ZoomFactorWindow;
+    GtkWidget *table2;
+    GtkObject *zoom_spinbutton1_adj;
+    GtkWidget *zoom_spinbutton1;
+    GtkWidget *zoom_cancel_button;
+    GtkWidget *zoom_ok_button;
+    GtkWidget *zoomwindowlabel;
+    
+    ZoomFactorWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_object_set_data (GTK_OBJECT (ZoomFactorWindow), "ZoomFactorWindow",
+			 ZoomFactorWindow);
+    gtk_window_set_title (GTK_WINDOW (ZoomFactorWindow),
+			  "Select Zoom factor");
+    
+    table2 = gtk_table_new (2, 2, FALSE);
+    gtk_widget_ref (table2);
+    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow), "table2", table2,
+			      (GtkDestroyNotify) gtk_widget_unref);
+    gtk_widget_show (table2);
+    gtk_container_add (GTK_CONTAINER (ZoomFactorWindow), table2);
+    
+    zoom_spinbutton1_adj = gtk_adjustment_new (1, 1, 65535, 1, 10, 10);
+    zoom_spinbutton1 =
+	gtk_spin_button_new (GTK_ADJUSTMENT (zoom_spinbutton1_adj), 1, 0);
+    gtk_widget_ref (zoom_spinbutton1);
+    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow),
+			      "zoom_spinbutton1", zoom_spinbutton1,
+			      (GtkDestroyNotify) gtk_widget_unref);
+    gtk_widget_show (zoom_spinbutton1);
+    gtk_table_attach (GTK_TABLE (table2), zoom_spinbutton1, 1, 2, 0, 1,
+		      (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+		      (GtkAttachOptions) (0), 0, 0);
+
+    zoom_cancel_button = gtk_button_new_with_label ("cancel");
+    gtk_widget_ref (zoom_cancel_button);
+    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow),
+			      "zoom_cancel_button", zoom_cancel_button,
+			      (GtkDestroyNotify) gtk_widget_unref);
+    gtk_widget_show (zoom_cancel_button);
+    gtk_table_attach (GTK_TABLE (table2), zoom_cancel_button, 1, 2, 1, 2,
+		      (GtkAttachOptions) (GTK_FILL),
+		      (GtkAttachOptions) (0), 0, 0);
+
+    zoom_ok_button = gtk_button_new_with_label ("OK");
+    gtk_widget_ref (zoom_ok_button);
+    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow), "zoom_ok_button",
+			      zoom_ok_button,
+			      (GtkDestroyNotify) gtk_widget_unref);
+    gtk_widget_show (zoom_ok_button);
+    gtk_table_attach (GTK_TABLE (table2), zoom_ok_button, 0, 1, 1, 2,
+		      (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+		      (GtkAttachOptions) (0), 0, 0);
+
+    zoomwindowlabel = gtk_label_new ("Zoom factor:");
+    gtk_widget_ref (zoomwindowlabel);
+    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow),
+			      "zoomwindowlabel", zoomwindowlabel,
+			      (GtkDestroyNotify) gtk_widget_unref);
+    gtk_widget_show (zoomwindowlabel);
+    gtk_table_attach (GTK_TABLE (table2), zoomwindowlabel, 0, 1, 0, 1,
+		      (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+		      (GtkAttachOptions) (0), 0, 0);
+    gtk_misc_set_alignment (GTK_MISC (zoomwindowlabel), 0, 0.5);
+
+    gtk_signal_connect (GTK_OBJECT (zoom_spinbutton1), "realize",
+			GTK_SIGNAL_FUNC (on_zoom_spinbutton1_realize), NULL);
+    gtk_signal_connect (GTK_OBJECT (zoom_cancel_button), "clicked",
+			GTK_SIGNAL_FUNC (on_zoom_cancel_button_clicked),
+			(gpointer) ZoomFactorWindow);
+    gtk_signal_connect (GTK_OBJECT (zoom_ok_button), "clicked",
+			GTK_SIGNAL_FUNC (on_zoom_ok_button_clicked),
+			(gpointer) ZoomFactorWindow);
+
+    return ZoomFactorWindow;
+}
+
+
+void
+on_zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data)
+{
+    gtk_spin_button_set_value ((GtkSpinButton *) widget,
+			       (gfloat) screen.scale);
+}
+
+
+void
+on_zoom_ok_button_clicked (GtkButton * button, gpointer user_data)
+{
+    GtkSpinButton *ZoomSpin;
+    int newscale;
+    gerbv_zoom_data_t z_data;
+    gerbv_zoom_dir_t zoomdir = ZOOM_SET;
+    ZoomSpin = (GtkSpinButton *) lookup_widget ((GtkWidget *) button,
+						"zoom_spinbutton1");
+    newscale = gtk_spin_button_get_value_as_int (ZoomSpin);
+    z_data.z_dir = zoomdir;
+    z_data.z_event = NULL;
+    z_data.scale = newscale;
+    zoom (screen.drawing_area, &z_data);
+
+    gtk_grab_remove(screen.scale_popup);
+    gtk_widget_destroy (screen.scale_popup);
+    screen.scale_popup = NULL;
+}
+
+
+void
+on_zoom_cancel_button_clicked (GtkButton * button, gpointer user_data)
+{
+    gtk_grab_remove(screen.scale_popup);
+    gtk_widget_destroy (screen.scale_popup);
+    screen.scale_popup = NULL;
+}
+
+
+GtkWidget *
+lookup_widget (GtkWidget * widget, const gchar * widget_name)
+{
+    GtkWidget *parent, *found_widget;
+
+    for (;;) {
+	if (GTK_IS_MENU (widget))
+	    parent = gtk_menu_get_attach_widget (GTK_MENU (widget));
+	else
+	    parent = widget->parent;
+	if (parent == NULL)
+	    break;
+	widget = parent;
+    }
+
+    found_widget = (GtkWidget *) gtk_object_get_data (GTK_OBJECT (widget),
+						      widget_name);
+    if (!found_widget)
+	g_warning ("Widget not found: %s", widget_name);
+    return found_widget;
 }
 
 

@@ -74,6 +74,7 @@ typedef struct {
     GtkWidget *load_file_popup;
     GtkWidget *color_selection_popup;
     GtkWidget *export_png_popup;
+    GtkWidget *scale_popup;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
