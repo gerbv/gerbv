@@ -55,8 +55,10 @@ static int parse_M_code(FILE *fd);
 static void parse_rs274x(FILE *fd, gerb_image_t *image);
 static int parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture);
 static int read_int(FILE *fd);
-static void calc_cirseg(struct gerb_net *net, int cw, 
-			double delta_cp_x, double delta_cp_y);
+static void calc_cirseg_sq(struct gerb_net *net, int cw, 
+			   double delta_cp_x, double delta_cp_y);
+static void calc_cirseg_mq(struct gerb_net *net, int cw, 
+			   double delta_cp_x, double delta_cp_y);
 
 
 gerb_image_t *
@@ -147,16 +149,22 @@ parse_gerb(FILE *fd)
 	    case CW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
 		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
-		calc_cirseg(curr_net, 1, delta_cp_x, delta_cp_y);
+		calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case CCW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
 		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
-		calc_cirseg(curr_net, 0, delta_cp_x, delta_cp_y);
+		calc_cirseg_sq(curr_net, 0, delta_cp_x, delta_cp_y);
 		break;
 	    case MQ_CW_CIRCULAR :
+		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
+		calc_cirseg_mq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case MQ_CCW_CIRCULAR:
+		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
+		calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
 		break;
 	    default :
 	    }
@@ -669,7 +677,8 @@ read_int(FILE *fd)
 } /* read_int */
 
 static void 
-calc_cirseg(struct gerb_net *net, int cw, double delta_cp_x, double delta_cp_y)
+calc_cirseg_sq(struct gerb_net *net, int cw, 
+	       double delta_cp_x, double delta_cp_y)
 {
     double d1x, d1y, d2x, d2y;
     double alfa, beta;
@@ -800,4 +809,42 @@ calc_cirseg(struct gerb_net *net, int cw, double delta_cp_x, double delta_cp_y)
     
     return;
 
-} /* calc_cirseg */
+} /* calc_cirseg_sq */
+
+
+static void 
+calc_cirseg_mq(struct gerb_net *net, int cw, 
+	       double delta_cp_x, double delta_cp_y)
+{
+    double d1x, d1y, d2x, d2y;
+    double alfa, beta;
+    int quadrant = 0;
+
+    net->cirseg->cp_x = net->start_x + delta_cp_x;
+    net->cirseg->cp_y = net->start_y + delta_cp_y;
+
+    /*
+     * Some good values 
+     */
+    d1x = net->start_x - net->cirseg->cp_x;
+    d1y = net->start_y - net->cirseg->cp_y;
+    d2x = net->stop_x - net->cirseg->cp_x;
+    d2y = net->stop_y - net->cirseg->cp_y;
+    
+    alfa = atan2(d1y, d1x);
+    beta = atan2(d2y, d2x);
+
+
+#define ABS(a) (a>0.0?a:-a)
+#define MAX(a,b) (a>b?a:b)
+    net->cirseg->width = MAX(ABS(delta_cp_x), ABS(delta_cp_y)) * 2.0;
+    net->cirseg->height = MAX(ABS(delta_cp_x), ABS(delta_cp_y)) * 2.0 ;
+
+    net->cirseg->angle1 = RAD2DEG(alfa);
+    net->cirseg->angle2 = RAD2DEG(beta);
+
+    if(net->cirseg->angle2 == 0)
+	net->cirseg->angle2 = 360;
+
+    return;
+} /* calc_cirseg_mq */

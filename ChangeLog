@@ -1,3 +1,11 @@
+2001-11-07 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c, src/gerber.c: Implemented multi quadrant arcs.
+	  Calculated with a separate function; should be able to be
+	  combined with single quadrant calculations. Not properly 
+	  tested since I need better examples.
+	
+	
 2001-11-06 Andreas Andersson (e92_aan@e.kth.se)
 
 	* src/drill.h, src/drill.c:

@@ -207,11 +207,9 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		break;
 		
 	    case MQ_CW_CIRCULAR :
-		fprintf(stderr, "Multi quadrant cw arc\n");
-		/*gerbv_draw_arc(*pixmap, err_gc, 1, x1, y1, x2, y2, i, j);*/
-		gdk_draw_line(*pixmap, err_gc, x1, y1, x2, y2);
-		break;
+	    case MQ_CCW_CIRCULAR :
 	    case CW_CIRCULAR :
+	    case CCW_CIRCULAR :
 #ifdef ARC_DEBUG
 		gerbv_draw_arc(*pixmap, other_gc, cp_x, cp_y, width, height, 
 			       net->cirseg->angle1, net->cirseg->angle2);
@@ -219,23 +217,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		gerbv_draw_arc(*pixmap, line_gc, cp_x, cp_y, width, height, 
 			       net->cirseg->angle1, net->cirseg->angle2);
 #endif
-		break;
-		
-	    case MQ_CCW_CIRCULAR :
-		fprintf(stderr, "Multi quadrant ccw arc\n");
-		gdk_draw_line(*pixmap, err_gc, x1, y1, x2, y2);
-		/*gerbv_draw_arc(*pixmap, err_gc, 0, x1, y1, x2, y2, i, j);*/
-		break;
-	    case CCW_CIRCULAR :
-#ifdef ARC_DEBUG
-		gerbv_draw_arc(*pixmap, err_gc, cp_x, cp_y, width, height, 
-			       net->cirseg->angle1, net->cirseg->angle2);
-#else
-		gerbv_draw_arc(*pixmap, line_gc, cp_x, cp_y, width, height, 
-			       net->cirseg->angle1, net->cirseg->angle2);
-#endif
-		break;
-		
+		break;		
 	    default :
 		
 	    }
