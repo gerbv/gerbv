@@ -1,5 +1,14 @@
 2001-12-29 Andreas Andersson (e92_aan@e.kth.se)
 
+	* src/gerb_file.c:
+	  Fixed gerb_fgetstring() to not write after the end of the
+	  allocated array.
+	* src/gerber.c:
+	  Removed small memory leak in parse_aperture_definition()
+
+
+2001-12-29 Andreas Andersson (e92_aan@e.kth.se)
+
 	* src/drill.c:
 	  Autodetection routine changed back to original style to allow
 	  special cases needed with output from some CAD systems.
