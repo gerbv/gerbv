@@ -357,18 +357,22 @@ parse_D_code(FILE *fd, gerb_state_t *state)
     switch(a) {
     case 1 : /* Exposure on */
 	state->aperture_state = ON;
+	state->changed = 1;
 	break;
     case 2 : /* Exposure off */
 	state->aperture_state = OFF;
+	state->changed = 1;
 	break;
     case 3 : /* Flash aperture */
 	state->aperture_state = FLASH;
+	state->changed = 1;
 	break;
     default: /* Aperture in use */
 	if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) 
 	    state->curr_aperture = a;
 	else
 	    err(1, "Aperture out of bounds:%d\n", a);
+	state->changed = 0;
     }
     
     return;

@@ -6,6 +6,9 @@
 	  calculating multi quadrant ones.
 	* src/gerber.c: Improved error detection by checking that
 	  all part of an image is there.
+	* src/gerber.c: Fix for EagleCad caused other Gerber files
+	  to fail. Only D-code 1-3 on a line should also be considered
+	  as a change.
 	
 	
 2001-11-15 Stefan Petersen (spe@stacken.kth.se)
