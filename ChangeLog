@@ -1,3 +1,11 @@
+2002-06-12  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Fixed autoscale() not to translate image out of
+	  window. Happened after fix for negative coordinates. Should
+	  translate image to center of window.
+	* src/draw.c: Moved setting off err_gc outside loop so it's always 
+	  done, even if you don't need it.
+
 2002-06-12  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c (draw_zoom_outline): Fix division by zero when
