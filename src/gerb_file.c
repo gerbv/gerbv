@@ -85,7 +85,7 @@ gerb_fopen(char *filename)
 	fd = NULL;
     }
 #else
-#if defined (__MINGW32__)
+    /* all systems without mmap, not only MINGW32 */
     fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
     if (fd == NULL) {
 	return NULL;
@@ -116,7 +116,6 @@ gerb_fopen(char *filename)
         return NULL;
     }
     fread((void*)fd->data, 1, statinfo.st_size, fd->fd);
-   #endif   
 #endif
     return fd;
 } /* gerb_fopen */
@@ -203,7 +202,9 @@ gerb_fclose(gerb_file_t *fd)
 {
 #ifdef HAVE_SYS_MMAN_H
     munmap(fd->data, fd->datalen);
-#endif    
+#else
+    free(fd->data);
+#endif   
     fclose(fd->fd);
     free(fd);
     
