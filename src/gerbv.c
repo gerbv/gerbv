@@ -80,7 +80,8 @@ typedef struct {
 gerbv_screen_t screen;
 
 #define SAVE_PROJECT 0
-#define OPEN_PROJECT 1
+#define SAVE_AS_PROJECT 1
+#define OPEN_PROJECT 2
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void draw_zoom_outline(gboolean centered);
@@ -92,6 +93,7 @@ static void load_file_popup(GtkWidget *widget, gpointer data);
 #ifdef EXPORT_PNG
 static void export_png_popup(GtkWidget *widget, gpointer data);
 #endif /* EXPORT_PNG */
+static void cb_ok_project(GtkWidget *widget, gpointer data);
 static void project_popup(GtkWidget *widget, gpointer data);
 static void unload_file(GtkWidget *widget, gpointer data);
 static void reload_files(GtkWidget *widget, gpointer data);
@@ -148,8 +150,8 @@ destroy(GtkWidget *widget, gpointer data)
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",               NULL,     NULL,             0, "<Branch>"},
     {"/File/_Open Project...",NULL, project_popup, OPEN_PROJECT, NULL},
-    {"/File/_Save Project...",NULL, project_popup, SAVE_PROJECT, NULL},
-    
+    {"/File/_Save Project As...",NULL, project_popup, SAVE_AS_PROJECT, NULL},
+    {"/File/_Save Project",NULL, cb_ok_project, SAVE_PROJECT, NULL},
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
@@ -723,11 +725,12 @@ export_png_popup(GtkWidget *widget, gpointer data)
 static void
 cb_ok_project(GtkWidget *widget, gpointer data)
 {
-    char *filename;
+    char *filename = NULL;
     project_list_t *project_list = NULL, *tmp;
     int idx;
 
-    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
+    if (screen.win.project)
+	filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
 
     switch ((long)data) {
     case OPEN_PROJECT:
@@ -736,6 +739,15 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	
 	if (project_list) {
 	    load_project(project_list);
+	    /*
+	     * Save project filename for later use
+	     */
+	    if (screen.project)
+		free(screen.project);
+	    screen.project = (char *)malloc(strlen(filename) + 1);
+	    memset((void *)screen.project, 0, strlen(filename) + 1);
+	    strncpy(screen.project, filename, strlen(filename));
+
 	    redraw_pixmap(screen.drawing_area, TRUE);
 	} else {
 	    GERB_MESSAGE("Failed to load project\n");
@@ -743,7 +755,22 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	}
 	all_layers_on(NULL, NULL);
 	break;
+    case SAVE_AS_PROJECT:
+	    /*
+	     * Save project filename for later use
+	     */
+	    if (screen.project)
+		free(screen.project);
+	    screen.project = (char *)malloc(strlen(filename) + 1);
+	    memset((void *)screen.project, 0, strlen(filename) + 1);
+	    strncpy(screen.project, filename, strlen(filename));
+
     case SAVE_PROJECT:
+	if (!screen.project) {
+	    GERB_MESSAGE("Missing project filename\n");
+	    goto cb_ok_project_end;
+	}
+
 	if (screen.path) {
 	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
 	    memset(project_list, 0, sizeof(project_list_t));
@@ -770,7 +797,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 		project_list = tmp;
 	    }
 	}
-	if (write_project_file(filename, project_list)) {
+	if (write_project_file(screen.project, project_list)) {
 	    GERB_MESSAGE("Failed to write project\n");
 	    goto cb_ok_project_end;
 	}
@@ -790,9 +817,10 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     screen.path = strncat(screen.path, "/", 1);
 
  cb_ok_project_end:
-    gtk_grab_remove(screen.win.project);
-    
-    screen.win.project = NULL;
+    if (screen.win.project) {
+	gtk_grab_remove(screen.win.project);
+    	screen.win.project = NULL;
+    }
 
     return;
 } /* cb_ok_project */
@@ -803,6 +831,7 @@ project_popup(GtkWidget *widget, gpointer data)
 {
 
     switch ((long)data) {
+    case SAVE_AS_PROJECT:
     case SAVE_PROJECT:
 	screen.win.project = gtk_file_selection_new("Save project filename");
 	break;
@@ -813,10 +842,13 @@ project_popup(GtkWidget *widget, gpointer data)
 	GERB_FATAL_ERROR("Unknown operation in project_popup\n");
     }
 
-    if (screen.path)
+    if (screen.project)
+	gtk_file_selection_set_filename
+	    (GTK_FILE_SELECTION(screen.win.project), screen.project);
+    else if (screen.path)
 	gtk_file_selection_set_filename
 	    (GTK_FILE_SELECTION(screen.win.project), screen.path);
-
+    
     gtk_signal_connect
 	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(cb_ok_project), data);
@@ -2520,6 +2552,9 @@ main(int argc, char *argv[])
 	
 	if (project_list) {
 	    load_project(project_list);
+	    if (screen.project)
+		free(screen.project);
+	    screen.project = project_filename;
 	} else {
 	    GERB_MESSAGE("Failed to load project\n");
 	}

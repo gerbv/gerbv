@@ -84,7 +84,8 @@ typedef struct {
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
     char *path;
-    char *execpath;
+    char *execpath;    /* Path to executed version of gerbv */
+    char *project;     /* Current project to simplify save next time */
     
     /* Bounding box for all loaded gerber images. Initialized by autoscale() */
     gerbv_bbox_t gerber_bbox;
