@@ -55,3 +55,7 @@ more Gerber (aperture macros) than what gerbv currently does. Available at:
 
 * Eagle Gerber Tutorial
 http://www.precma.com/informatica/tutorial.htm
+
+
+* Excellon Drill Format
+http://www.excellon.com/applicationengineering/manuals/program.htm
