@@ -1,3 +1,8 @@
+2002-07-05  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Save a widget by adding a leading space in
+	  statusbar.
+
 2002-07-04  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Statusbar => Label to allow setting a fixed

@@ -1486,9 +1486,9 @@ draw_measure_distance()
 
 static void update_statusbar(gerbv_screen_t *scr)
 {
-    char str[MAX_STATUSMSGLEN];
+    char str[MAX_STATUSMSGLEN+1];
 
-    snprintf(str, MAX_STATUSMSGLEN, "%-*s|%-*s|%.*s",
+    snprintf(str, MAX_STATUSMSGLEN, " %-*s|%-*s|%.*s",
 	     MAX_COORDLEN-1, scr->statusbar.coordstr,
 	     MAX_DISTLEN-1, scr->statusbar.diststr,
 	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr);
@@ -1779,7 +1779,6 @@ internal_main(int argc, char *argv[])
     screen.statusbar.msgstr[0] = '\0';
     screen.statusbar.coordstr[0] = '\0';
     screen.statusbar.diststr[0] = '\0';
-    gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(" "), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msg, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
     /*
