@@ -246,11 +246,14 @@ parse_gerb(gerb_file_t *fd)
 
 	    /* 
 	     * Make sure we don't hit any undefined aperture
+	     * In macros the first parameter could be basically anything
 	     */
-	    if (curr_net->aperture != 0)
+	    if ((curr_net->aperture != 0) && 
+		(image->aperture[curr_net->aperture]->type != MACRO))
 		aperture_size = image->aperture[curr_net->aperture]->parameter[0];
 	    else 
 		aperture_size = 0.0;
+
 	    /*
 	     * Find min and max of image
 	     */

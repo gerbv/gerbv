@@ -1,3 +1,8 @@
+2002-10-09  Stefan Petersen  <spe@>
+
+	* src/gerber.c: The undefined aperture fix below is, in princip,
+	  only valid if aperture type != from aperture macro.
+
 2002-10-07  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: If aperture was undefined (as in polygon outline)
