@@ -261,10 +261,17 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	switch (net->aperture_state) {
 	case ON :
 	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * scale);
-	    gdk_gc_set_line_attributes(line_gc, p1, 
-				       GDK_LINE_SOLID, 
-				       GDK_CAP_ROUND, 
-				       GDK_JOIN_MITER);
+	    if (image->aperture[net->aperture]->type == RECTANGLE)
+		gdk_gc_set_line_attributes(line_gc, p1, 
+					   GDK_LINE_SOLID, 
+					   GDK_CAP_PROJECTING, 
+					   GDK_JOIN_MITER);
+	    else
+		gdk_gc_set_line_attributes(line_gc, p1, 
+					   GDK_LINE_SOLID, 
+					   GDK_CAP_ROUND, 
+					   GDK_JOIN_MITER);
+
 	    switch (net->interpolation) {
 	    case LINEARx10 :
 	    case LINEARx01 :

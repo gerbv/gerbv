@@ -1,3 +1,8 @@
+2002-06-17  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c: Ignored if lines were using rectangular apertures
+	  to draw. Closes bug 567128.
+
 2002-06-13  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c, src/gerbv_screeen.h: Added statusbar, prints cursor
