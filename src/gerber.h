@@ -67,8 +67,6 @@ typedef struct gerb_net {
     double start_y;
     double stop_x;
     double stop_y;
-    double arc_start_x;
-    double arc_start_y;
     int aperture;
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;

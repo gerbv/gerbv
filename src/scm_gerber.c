@@ -116,6 +116,7 @@ scm_image2scm(gerb_image_t *image, char *filename)
 {
     gerb_net_t *net;
     int i,j;
+    SCM cirseg   = SCM_EOL;
     SCM netlist  = SCM_EOL;
     SCM aperture = SCM_EOL;
     SCM format   = SCM_EOL;
@@ -125,15 +126,26 @@ scm_image2scm(gerb_image_t *image, char *filename)
      * Convert the netlist 
      */
     for (net = image->netlist->next; net->next != NULL; net = net->next) {
+
+	if (net->cirseg)
+	    cirseg = scm_listify(scm_cons(scm_make_real(net->cirseg->cp_x),
+					  scm_make_real(net->cirseg->cp_y)),
+				 scm_cons(scm_make_real(net->cirseg->width),
+					  scm_make_real(net->cirseg->height)),
+				 scm_cons(SCM_MAKINUM(net->cirseg->angle1),
+					  SCM_MAKINUM(net->cirseg->angle2)),
+				 SCM_UNDEFINED);
+	else
+	    cirseg = SCM_EOL;
+
 	netlist = scm_cons(scm_listify(scm_cons(scm_make_real(net->start_x), 
 						scm_make_real(net->start_y)),
 				       scm_cons(scm_make_real(net->stop_x), 
 						scm_make_real(net->stop_y)),
-				       scm_cons(scm_make_real(net->arc_start_x), 
-						scm_make_real(net->arc_start_y)),
 				       scm_cons(SCM_MAKINUM(net->aperture), 
 						scm_aperture_state2scm(net->aperture_state)),
 				       scm_interpolation2scm(net->interpolation),
+				       cirseg,
 				       SCM_UNDEFINED),
 			   netlist);
     }

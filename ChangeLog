@@ -1,5 +1,15 @@
 2001-11-03 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/gerber.[hc]: Cleaned up code after latest hack.
+	* src/scm_gerber.c: Changed format of list delivered to
+	  the backend; no delta center points. Now it's all calculated
+	  center points and angles.
+	* scheme/gerb-ps.scm: Accept the new list, but doesn't do anything
+	  with it yet.
+
+	
+2001-11-03 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/gerber.c: Inserted check for undefined apertures that
 	  was earlier removed.
 

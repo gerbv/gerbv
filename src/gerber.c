@@ -39,8 +39,8 @@ typedef struct gerb_state {
     int curr_y;
     int prev_x;
     int prev_y;
-    int arc_start_x;
-    int arc_start_y;
+    int delta_cp_x;
+    int delta_cp_y;
     int curr_aperture;
     int changed;
     enum aperture_state_t aperture_state;
@@ -55,7 +55,8 @@ static int parse_M_code(FILE *fd);
 static void parse_rs274x(FILE *fd, gerb_image_t *image);
 static int parse_aperture_definition(FILE *fd, gerb_aperture_t *aperture);
 static int read_int(FILE *fd);
-static void calc_cirseg(struct gerb_net *net, int cw);
+static void calc_cirseg(struct gerb_net *net, int cw, 
+			double delta_cp_x, double delta_cp_y);
 
 
 gerb_image_t *
@@ -66,7 +67,7 @@ parse_gerb(FILE *fd)
     gerb_net_t *curr_net = NULL;
     char read;
     double x_scale, y_scale;
-/*      int delta_cp_x, delta_cp_y; */
+    double delta_cp_x, delta_cp_y;
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
@@ -107,11 +108,11 @@ parse_gerb(FILE *fd)
 	    state->changed = 1;
 	    break;
 	case 'I':
-	    state->arc_start_x = read_int(fd);
+	    state->delta_cp_x = read_int(fd);
 	    state->changed = 1;
 	    break;
 	case 'J':
-	    state->arc_start_y = read_int(fd);
+	    state->delta_cp_y = read_int(fd);
 	    state->changed = 1;
 	    break;
 	case '%':
@@ -139,19 +140,19 @@ parse_gerb(FILE *fd)
 	    curr_net->start_y = (double)state->prev_y / y_scale;
 	    curr_net->stop_x = (double)state->curr_x / x_scale;
 	    curr_net->stop_y = (double)state->curr_y / y_scale;
-	    curr_net->arc_start_x = (double)state->arc_start_x / x_scale;
-	    curr_net->arc_start_y = (double)state->arc_start_y / y_scale;
+	    delta_cp_x = (double)state->delta_cp_x / x_scale;
+	    delta_cp_y = (double)state->delta_cp_y / y_scale;
 
 	    switch (state->interpolation) {
 	    case CW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
 		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
-		calc_cirseg(curr_net, 1);
+		calc_cirseg(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case CCW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
 		bzero((void *)curr_net->cirseg, sizeof(gerb_cirseg_t));
-		calc_cirseg(curr_net, 0);
+		calc_cirseg(curr_net, 0, delta_cp_x, delta_cp_y);
 		break;
 	    case MQ_CW_CIRCULAR :
 		break;
@@ -161,15 +162,15 @@ parse_gerb(FILE *fd)
 	    }
 
 #ifdef EAGLECAD_KLUDGE
-	    if ( (state->arc_start_x == 0) && (state->arc_start_y == 0) )
+	    if ( (state->delta_cp_x == 0) && (state->delta_cp_y == 0) )
 		curr_net->interpolation = LINEARx1;
 	    else
 		curr_net->interpolation = state->interpolation;
 #else
 	    curr_net->interpolation = state->interpolation;
 #endif
-	    state->arc_start_x = 0.0;
-	    state->arc_start_y = 0.0;
+	    state->delta_cp_x = 0.0;
+	    state->delta_cp_y = 0.0;
 	    curr_net->aperture = state->curr_aperture;
 	    curr_net->aperture_state = state->aperture_state;
 
@@ -668,7 +669,7 @@ read_int(FILE *fd)
 } /* read_int */
 
 static void 
-calc_cirseg(struct gerb_net *net, int cw)
+calc_cirseg(struct gerb_net *net, int cw, double delta_cp_x, double delta_cp_y)
 {
     double d1x, d1y, d2x, d2y;
     double alfa, beta;
@@ -722,20 +723,20 @@ calc_cirseg(struct gerb_net *net, int cw)
      */
     switch (quadrant) {
     case 1 :
-	net->cirseg->cp_x = net->start_x - net->arc_start_x;
-	net->cirseg->cp_y = net->start_y - net->arc_start_y;
+	net->cirseg->cp_x = net->start_x - delta_cp_x;
+	net->cirseg->cp_y = net->start_y - delta_cp_y;
 	break;
     case 2 :
-	net->cirseg->cp_x = net->start_x + net->arc_start_x;
-	net->cirseg->cp_y = net->start_y - net->arc_start_y;
+	net->cirseg->cp_x = net->start_x + delta_cp_x;
+	net->cirseg->cp_y = net->start_y - delta_cp_y;
 	break;
     case 3 : 
-	net->cirseg->cp_x = net->start_x + net->arc_start_x;
-	net->cirseg->cp_y = net->start_y + net->arc_start_y;
+	net->cirseg->cp_x = net->start_x + delta_cp_x;
+	net->cirseg->cp_y = net->start_y + delta_cp_y;
 	break;
     case 4 :
-	net->cirseg->cp_x = net->start_x - net->arc_start_x;
-	net->cirseg->cp_y = net->start_y + net->arc_start_y;
+	net->cirseg->cp_x = net->start_x - delta_cp_x;
+	net->cirseg->cp_y = net->start_y + delta_cp_y;
 	break;
     default :
 	err(1, "Strange quadrant : %d\n", quadrant);
