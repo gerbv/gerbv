@@ -440,6 +440,9 @@ drill_file_p(gerb_file_t *fd)
 	       being a drill file. Stop parsing and return. */
 	    fd->ptr = 0;
 	    return 0;
+	case 10 :   /* Ignore CR/LF */
+	case 13 :
+	    break;
         default :
             eat_line(fd);
             break;
