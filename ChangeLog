@@ -1,3 +1,11 @@
+2002-12-25  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv_screen.h, src/gerbv.c: Changed how the
+	  different windows are stored in the screen struct.
+	* src/amacro.h: Forgot to include stdlib.h which was needed
+	  to remove warnings regarding free missing.
+	* src/gerbv.c: Minor beautification cleanups.
+
 2002-12-11  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Fixed 64-bit compilation warning by casting

@@ -71,10 +71,12 @@ typedef struct {
     GdkColor  *dist_measure_color;
     gerbv_unit_t unit;
 
-    GtkWidget *load_file_popup;
-    GtkWidget *color_selection_popup;
-    GtkWidget *export_png_popup;
-    GtkWidget *scale_popup;
+    struct {
+	GtkWidget *load_file;
+	GtkWidget *color_selection;
+	GtkWidget *export_png;
+	GtkWidget *scale;
+    } win;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;

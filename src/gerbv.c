@@ -110,10 +110,10 @@ static void update_statusbar(gerbv_screen_t *scr);
 
 static void menu_ask_zoom (GtkWidget * widget, gpointer data);
 static GtkWidget *create_ZoomFactorWindow (void);
-void on_zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data);
-GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
-void on_zoom_ok_button_clicked (GtkButton * button, gpointer user_data);
-void on_zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
+static void zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data);
+static GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
+static void zoom_ok_button_clicked (GtkButton * button, gpointer user_data);
+static void zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
 
 
 void
@@ -369,9 +369,9 @@ static void
 color_selection_destroy(GtkWidget *widget, gpointer data)
 {
     /* Remove modal grab and destroy color selection dialog */
-    gtk_grab_remove(screen.color_selection_popup);
-    gtk_widget_destroy(screen.color_selection_popup);
-    screen.color_selection_popup = NULL;
+    gtk_grab_remove(screen.win.color_selection);
+    gtk_widget_destroy(screen.win.color_selection);
+    screen.win.color_selection = NULL;
 } /* color_selection_destroy */
 
 
@@ -385,7 +385,7 @@ color_selection_ok(GtkWidget *widget, gpointer data)
 
     /* Get selected color */
     colorsel = GTK_COLOR_SELECTION(GTK_COLOR_SELECTION_DIALOG
-				   (screen.color_selection_popup)->colorsel);
+				   (screen.win.color_selection)->colorsel);
     gtk_color_selection_get_color(colorsel, color);
 
     /* Allocate new color  */
@@ -419,9 +419,9 @@ color_selection_ok(GtkWidget *widget, gpointer data)
     }
 
     /* Remove modal grab and destroy color selection dialog */
-    gtk_grab_remove(screen.color_selection_popup);
-    gtk_widget_destroy(screen.color_selection_popup);
-    screen.color_selection_popup = NULL;
+    gtk_grab_remove(screen.win.color_selection);
+    gtk_widget_destroy(screen.win.color_selection);
+    screen.win.color_selection = NULL;
 
     return;
 } /* cb_ok_color_selection */
@@ -436,24 +436,24 @@ color_selection_popup(GtkWidget *widget, gpointer data)
     if (!background && (screen.file[screen.curr_index] == NULL))
 	return;
 
-    screen.color_selection_popup = gtk_color_selection_dialog_new("Color Selection");
+    screen.win.color_selection = gtk_color_selection_dialog_new("Color Selection");
 
     gtk_color_selection_set_update_policy
 	(GTK_COLOR_SELECTION
-	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->colorsel),
+	 (GTK_COLOR_SELECTION_DIALOG(screen.win.color_selection)->colorsel),
 	 GTK_UPDATE_CONTINUOUS);
 
     gtk_signal_connect
 	(GTK_OBJECT
-	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->cancel_button),
+	 (GTK_COLOR_SELECTION_DIALOG(screen.win.color_selection)->cancel_button),
 	 "clicked", GTK_SIGNAL_FUNC(color_selection_destroy), NULL);
 
     gtk_signal_connect
 	(GTK_OBJECT
-	 (GTK_COLOR_SELECTION_DIALOG(screen.color_selection_popup)->ok_button),
+	 (GTK_COLOR_SELECTION_DIALOG(screen.win.color_selection)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(color_selection_ok), data);
 
-    gtk_signal_connect(GTK_OBJECT(screen.color_selection_popup), "destroy",
+    gtk_signal_connect(GTK_OBJECT(screen.win.color_selection), "destroy",
 		       GTK_SIGNAL_FUNC(color_selection_destroy),
 		       NULL);
 
@@ -479,14 +479,14 @@ color_selection_popup(GtkWidget *widget, gpointer data)
     /* Now set this color in color selection dialog */
     gtk_color_selection_set_color
 	(GTK_COLOR_SELECTION(GTK_COLOR_SELECTION_DIALOG
-			     (screen.color_selection_popup)->colorsel),
+			     (screen.win.color_selection)->colorsel),
 	 curr_color);
 
     /* Display widget */
-    gtk_widget_show(screen.color_selection_popup);
+    gtk_widget_show(screen.win.color_selection);
 
     /* Make widget modal */
-    gtk_grab_add(screen.color_selection_popup);
+    gtk_grab_add(screen.win.color_selection);
 
     return;
 } /* color_selection_popup */
@@ -514,9 +514,9 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     /* Make loaded image appear on screen */
     redraw_pixmap(screen.drawing_area, TRUE);
 
-    gtk_grab_remove(screen.load_file_popup);
-    gtk_widget_destroy(screen.load_file_popup);
-    screen.load_file_popup = NULL;
+    gtk_grab_remove(screen.win.load_file);
+    gtk_widget_destroy(screen.win.load_file);
+    screen.win.load_file = NULL;
 
     return;
 } /* cb_ok_load_file */
@@ -525,9 +525,9 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 static void
 cb_cancel_load_file(GtkWidget *widget, gpointer data)
 {
-    gtk_grab_remove(screen.load_file_popup);
-    gtk_widget_destroy(screen.load_file_popup);
-    screen.load_file_popup = NULL;
+    gtk_grab_remove(screen.win.load_file);
+    gtk_widget_destroy(screen.win.load_file);
+    screen.win.load_file = NULL;
 
     return;
 } /* cb_cancel_load_file */
@@ -536,27 +536,27 @@ cb_cancel_load_file(GtkWidget *widget, gpointer data)
 static void
 load_file_popup(GtkWidget *widget, gpointer data)
 {
-    screen.load_file_popup = gtk_file_selection_new("Select File To View");
+    screen.win.load_file = gtk_file_selection_new("Select File To View");
 
     if (screen.path)
 	gtk_file_selection_set_filename
-	    (GTK_FILE_SELECTION(screen.load_file_popup), screen.path);
+	    (GTK_FILE_SELECTION(screen.win.load_file), screen.path);
 
-    gtk_signal_connect(GTK_OBJECT(screen.load_file_popup), "destroy",
+    gtk_signal_connect(GTK_OBJECT(screen.win.load_file), "destroy",
 		       GTK_SIGNAL_FUNC(cb_cancel_load_file),
 		       NULL);
     gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->ok_button),
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.load_file)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(cb_ok_load_file), 
-	 (gpointer)screen.load_file_popup);
+	 (gpointer)screen.win.load_file);
     gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.load_file_popup)->cancel_button),
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.load_file)->cancel_button),
 	 "clicked", GTK_SIGNAL_FUNC(cb_cancel_load_file), 
-	 (gpointer)screen.load_file_popup);
+	 (gpointer)screen.win.load_file);
     
-    gtk_widget_show(screen.load_file_popup);
+    gtk_widget_show(screen.win.load_file);
 
-    gtk_grab_add(screen.load_file_popup);
+    gtk_grab_add(screen.win.load_file);
     
     return;
 } /* load_file_popup */
@@ -607,9 +607,9 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
    
-    gtk_grab_remove(screen.export_png_popup);
+    gtk_grab_remove(screen.win.export_png);
     
-    screen.export_png_popup = NULL;
+    screen.win.export_png = NULL;
 
     return;
 } /* cb_ok_export_png */
@@ -618,28 +618,28 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
 static void
 export_png_popup(GtkWidget *widget, gpointer data)
 {
-    screen.export_png_popup = gtk_file_selection_new("Save PNG filename");
+    screen.win.export_png = gtk_file_selection_new("Save PNG filename");
 
     if (screen.path)
 	gtk_file_selection_set_filename
-	    (GTK_FILE_SELECTION(screen.export_png_popup), screen.path);
+	    (GTK_FILE_SELECTION(screen.win.export_png), screen.path);
 
     gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.export_png_popup)->ok_button),
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(cb_ok_export_png), 
-	 (gpointer)screen.export_png_popup);
+	 (gpointer)screen.win.export_png);
     gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.export_png_popup)->ok_button),
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.export_png_popup);
+	 (gpointer)screen.win.export_png);
     gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.export_png_popup)->cancel_button),
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->cancel_button),
 	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.export_png_popup);
+	 (gpointer)screen.win.export_png);
     
-    gtk_widget_show(screen.export_png_popup);
+    gtk_widget_show(screen.win.export_png);
 
-    gtk_grab_add(screen.export_png_popup);
+    gtk_grab_add(screen.win.export_png);
     
     return;
 } /* export_png_popup */
@@ -1729,17 +1729,18 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
     /*
      * Raise popup windows if they happen to disappear
      */
-    if (screen.load_file_popup && screen.load_file_popup->window)
-	gdk_window_raise(screen.load_file_popup->window);
-    if (screen.color_selection_popup && screen.color_selection_popup->window)
-	gdk_window_raise(screen.color_selection_popup->window);
-    if (screen.export_png_popup && screen.export_png_popup->window)
-	gdk_window_raise(screen.export_png_popup->window);
-    if (screen.scale_popup && screen.scale_popup->window)
-	gdk_window_raise(screen.scale_popup->window);
+    if (screen.win.load_file && screen.win.load_file->window)
+	gdk_window_raise(screen.win.load_file->window);
+    if (screen.win.color_selection && screen.win.color_selection->window)
+	gdk_window_raise(screen.win.color_selection->window);
+    if (screen.win.export_png && screen.win.export_png->window)
+	gdk_window_raise(screen.win.export_png->window);
+    if (screen.win.scale && screen.win.scale->window)
+	gdk_window_raise(screen.win.scale->window);
 
     return FALSE;
 } /* expose_event */
+
 
 static void
 draw_zoom_outline(gboolean centered)
@@ -1793,10 +1794,11 @@ draw_zoom_outline(gboolean centered)
     gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, (x1+x2-dx)/2, (y1+y2-dy)/2, dx, dy);
 
     gdk_gc_unref(gc);
-}
+} /* draw_zoom_outline */
+
 
 static void
-draw_measure_distance()
+draw_measure_distance(void)
 {
     GdkGC *gc;
     GdkGCValues values;
@@ -1873,10 +1875,11 @@ draw_measure_distance()
 
     }
     gdk_gc_unref(gc);
-}
+} /* draw_measure_distance */
 
 
-static void update_statusbar(gerbv_screen_t *scr)
+static void 
+update_statusbar(gerbv_screen_t *scr)
 {
     char str[MAX_STATUSMSGLEN+1];
 
@@ -1887,20 +1890,20 @@ static void update_statusbar(gerbv_screen_t *scr)
     if (scr->statusbar.msg != NULL) {
 	    gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
     }
-}
+} /* update_statusbar */
 
 
-void
+static void
 menu_ask_zoom (GtkWidget * widget, gpointer data)
 {
-    screen.scale_popup = create_ZoomFactorWindow();
-    gtk_widget_show (screen.scale_popup);
-    gtk_grab_add(screen.scale_popup);
-}
+    screen.win.scale = create_ZoomFactorWindow();
+    gtk_widget_show(screen.win.scale);
+    gtk_grab_add(screen.win.scale);
+} /* menu_ask_zoom */
     
 
-GtkWidget *
-create_ZoomFactorWindow (void)
+static GtkWidget *
+create_ZoomFactorWindow(void)
 {
     GtkWidget *ZoomFactorWindow;
     GtkWidget *table2;
@@ -1968,31 +1971,31 @@ create_ZoomFactorWindow (void)
     gtk_misc_set_alignment (GTK_MISC (zoomwindowlabel), 0, 0.5);
 
     gtk_signal_connect(GTK_OBJECT(ZoomFactorWindow), "destroy",
-		       GTK_SIGNAL_FUNC(on_zoom_cancel_button_clicked),
+		       GTK_SIGNAL_FUNC(zoom_cancel_button_clicked),
 		       NULL);
     gtk_signal_connect (GTK_OBJECT (zoom_spinbutton1), "realize",
-			GTK_SIGNAL_FUNC (on_zoom_spinbutton1_realize), NULL);
+			GTK_SIGNAL_FUNC (zoom_spinbutton1_realize), NULL);
     gtk_signal_connect (GTK_OBJECT (zoom_cancel_button), "clicked",
-			GTK_SIGNAL_FUNC (on_zoom_cancel_button_clicked),
+			GTK_SIGNAL_FUNC (zoom_cancel_button_clicked),
 			(gpointer) ZoomFactorWindow);
     gtk_signal_connect (GTK_OBJECT (zoom_ok_button), "clicked",
-			GTK_SIGNAL_FUNC (on_zoom_ok_button_clicked),
+			GTK_SIGNAL_FUNC (zoom_ok_button_clicked),
 			(gpointer) ZoomFactorWindow);
 
     return ZoomFactorWindow;
-}
+} /* create_ZoomFactorWindow */
 
 
 void
-on_zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data)
+zoom_spinbutton1_realize(GtkWidget * widget, gpointer user_data)
 {
     gtk_spin_button_set_value ((GtkSpinButton *) widget,
 			       (gfloat) screen.scale);
-}
+} /* zoom_spinbutton1_realize */
 
 
-void
-on_zoom_ok_button_clicked (GtkButton * button, gpointer user_data)
+static void
+zoom_ok_button_clicked(GtkButton * button, gpointer user_data)
 {
     GtkSpinButton *ZoomSpin;
     int newscale;
@@ -2006,22 +2009,22 @@ on_zoom_ok_button_clicked (GtkButton * button, gpointer user_data)
     z_data.scale = newscale;
     zoom (screen.drawing_area, &z_data);
 
-    gtk_grab_remove(screen.scale_popup);
-    gtk_widget_destroy (screen.scale_popup);
-    screen.scale_popup = NULL;
-}
+    gtk_grab_remove(screen.win.scale);
+    gtk_widget_destroy (screen.win.scale);
+    screen.win.scale = NULL;
+} /* zoom_ok_button_clicked */
 
 
-void
-on_zoom_cancel_button_clicked (GtkButton * button, gpointer user_data)
+static void
+zoom_cancel_button_clicked(GtkButton * button, gpointer user_data)
 {
-    gtk_grab_remove(screen.scale_popup);
-    gtk_widget_destroy (screen.scale_popup);
-    screen.scale_popup = NULL;
-}
+    gtk_grab_remove(screen.win.scale);
+    gtk_widget_destroy(screen.win.scale);
+    screen.win.scale = NULL;
+} /* zoom_cancel_button_clicked */
 
 
-GtkWidget *
+static GtkWidget *
 lookup_widget (GtkWidget * widget, const gchar * widget_name)
 {
     GtkWidget *parent, *found_widget;
@@ -2041,7 +2044,7 @@ lookup_widget (GtkWidget * widget, const gchar * widget_name)
     if (!found_widget)
 	g_warning ("Widget not found: %s", widget_name);
     return found_widget;
-}
+} /* lookup_widget */
 
 
 #ifdef HAVE_GETOPT_LONG
@@ -2309,7 +2312,7 @@ internal_main(int argc, char *argv[])
     gtk_main();
     
     return;
-}
+} /* internal_main */
     
 
 int
@@ -2321,4 +2324,4 @@ main(int argc, char *argv[])
     internal_main(argc, argv);
 #endif /* GUILE_IN_USE */
     return 0;
-}
+} /* main */
