@@ -100,6 +100,8 @@ static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
 static void si_func(GtkWidget *widget, gpointer data);
 static void unit_func(GtkWidget *widget, gpointer data);
+static void all_layers_on(GtkWidget *widget, gpointer data);
+static void all_layers_off(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget, int restart);
@@ -297,11 +299,49 @@ create_layer_buttons(int nuf_buttons)
 {
     GtkWidget *button = NULL;
     GtkWidget *box = NULL;
+    GdkColor  *color;
+    GtkStyle  *defstyle, *newstyle;
+    GtkTooltips *tooltips = gtk_tooltips_new();
     char      info[5];
     long int  bi;
 
     box = gtk_vbox_new(TRUE, 0);
 
+    /* 
+     * Create style to be used by "all layer" buttons
+     */
+    color = alloc_color(0, 0, 0, "white");
+    defstyle = gtk_widget_get_default_style();
+    newstyle = gtk_style_copy(defstyle);
+    newstyle->bg[GTK_STATE_NORMAL] = *color;
+    newstyle->bg[GTK_STATE_ACTIVE] = *color;
+    newstyle->bg[GTK_STATE_PRELIGHT] = *color;
+
+    /*
+     * Create On button with callback, color and tooltips
+     */
+    button = gtk_button_new_with_label("On");
+    gtk_signal_connect(GTK_OBJECT(button), "button_press_event",
+		       GTK_SIGNAL_FUNC(all_layers_on), 
+		       (gpointer)NULL);
+    gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
+    gtk_widget_set_style(button, newstyle);
+    gtk_tooltips_set_tip(tooltips, button, "Turn On All Layers", NULL); 
+
+    /*
+     * Create Off button with callback, color and tooltips
+     */
+    button = gtk_button_new_with_label("Off");
+    gtk_signal_connect(GTK_OBJECT(button), "button_press_event",
+		       GTK_SIGNAL_FUNC(all_layers_off), 
+		       (gpointer)NULL);
+    gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
+    gtk_widget_set_style(button, newstyle);
+    gtk_tooltips_set_tip(tooltips, button, "Turn Off All Layers", NULL); 
+
+    /*
+     * Create the rest of the buttons
+     */
     for (bi = 0; bi < nuf_buttons; bi++) {
 	snprintf(info, sizeof(info), "%ld", bi);
 	button = gtk_toggle_button_new_with_label(info);
@@ -601,6 +641,32 @@ export_png_popup(GtkWidget *widget, gpointer data)
 } /* export_png_popup */
 
 #endif /* EXPORT_PNG */
+
+
+static void
+all_layers_on(GtkWidget *widget, gpointer data)
+{
+    int idx;
+    for (idx = 0; idx < MAX_FILES; idx++) {
+	if (screen.file[idx]) {
+	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
+					 (screen.layer_button[idx]),TRUE);
+	}
+    }
+} /* all_layers_on */
+
+
+static void
+all_layers_off(GtkWidget *widget, gpointer data)
+{
+    int idx;
+    for (idx = 0; idx < MAX_FILES; idx++) {
+	if (screen.file[idx]) {
+	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
+					 (screen.layer_button[idx]),FALSE);
+	}
+    }
+} /* all_layers_off */
 
 
 static void

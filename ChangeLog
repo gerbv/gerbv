@@ -1,3 +1,9 @@
+2002-11-26  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added idea and (hacked up by me) patch for
+	  turning all layers on and off from Martin Sigrand. It should
+	  really need an overhaul regarding non freed memory.
+
 2002-11-24  Stefan Petersen  <spe@stacken.kth.se>
 
 	* doc/eagle/*: Added information for Eagle CAD users from

@@ -6,33 +6,33 @@ GNU Electronic Design Automation
 gerbv CONTRIBUTORS
 The peer reviews; Thanks a lot. This is what makes Open Source so fun.
 
-Dan McMahill <mcmahill@mtl.mit.edu>
+Dan McMahill <mcmahill at mtl dot mit dot edu>
  - Fixed 64-bit support
  - Some additional configure things
  - Some great feedback on the measure tool thing.
  - The over-all NetBSD and 64-bit guy.
 
-Uwe Bonnes <bon@elektron.ikp.physik.tu-darmstadt.de>
+Uwe Bonnes <bon at elektron dot ikp dot physik dot tu-darmstadt dot de>
  - Submitted patches for 'D' flag in Format Statement
 
-Dan Christian <dac@ptolemy.arc.nasa.gov>
+Dan Christian <dac at ptolemy dot arc dot nasa dot gov>
  - Pointed out EagleCad broken Gerber and also sent a 
    patch for fixing this.
 
-Fredrik Jonsson <fredrikj@spirea.com>
+Fredrik Jonsson <fredrikj at spirea dot com>
  - Sent me actual EagleCad files so I saw the bugs.
 
-Joachim Jansen <jj@ekf.de>
+Joachim Jansen <jj at ekf dot de>
  - Found and reported several bugs and came with very inspiring ideas
    which made gerbv take a big leap forward.
 
-Wojciech Kazubski <wk@ire.pw.edu.pl>
+Wojciech Kazubski <wk at ire dot pw dot edu dot pl>
  - Patch so ./configure --data works.
 
-Neil Darlow <neil@darlow.co.uk>
+Neil Darlow <neil at darlow dot co dot uk>
  - Reporting arc draw bug and sending along examples to show the bug.
 
-Dino Ghilardi <dino.ghilardi@ieee.org>
+Dino Ghilardi <dino dot ghilardi at ieee dot org>
  - Pointed out that an 'oval' is different from a geometrical ellypse.
  - Some other feature requests.
  - Contributed export PNG functionality!
@@ -40,5 +40,12 @@ Dino Ghilardi <dino.ghilardi@ieee.org>
    how the superimposing should work!
  - Wrote PNGPrintMiniHowto and code for explicitly setting the scale.
 
-Bruno Schwander <bruno@tinkerbox.org>
+Bruno Schwander <bruno at tinkerbox dot org>
  - Patch to configure.in to fit different GTK-versions on FreeBSD
+
+Daniel Dorau
+ - Submitted information on how to generate proper Excellon files from
+   Eagle CAD program.
+
+Martin Sigrand
+ - Submitted code for turning all layers on and off.
