@@ -1,5 +1,7 @@
 2002-06-11  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerbv.c: It is now possible to draw images with negative
+	  coordinates. Closes bug 548094.
 	* src/draw.[hc],src/draw-amacro.[hc], src/Makefile.am: Split out 
 	  aperture macro stuff from draw.c to a separate file, draw_amacro.c.
 	* src/draw_amacro.c: Fixed bug when drawing primitive 4 causing

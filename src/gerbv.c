@@ -786,7 +786,8 @@ redraw_pixmap(GtkWidget *widget)
     int i;
     int background_polarity = POSITIVE;
     int last_negative = 0;
-    double dmax_width = 0.0, dmax_height = 0.0;
+    double dmax_width = LONG_MIN, dmax_height = LONG_MIN;
+    double dmin_width = LONG_MAX, dmin_height = LONG_MAX;
     int max_width = 0, max_height = 0;
     GdkGC *gc = gdk_gc_new(widget->window);
     GdkRectangle update_rect;
@@ -819,6 +820,13 @@ redraw_pixmap(GtkWidget *widget)
 	     */
 	    dmax_width  = MAX(screen.file[i]->image->info->max_x, dmax_width);
 	    dmax_height = MAX(screen.file[i]->image->info->max_y, dmax_height);
+	    
+	    /*
+	     * Also find the smallest coordinates to see if we have negative
+	     * ones that must be compensated for.
+	     */
+	    dmin_width  = MIN(screen.file[i]->image->info->min_x, dmin_width);
+	    dmin_height = MIN(screen.file[i]->image->info->min_y, dmin_height);
 
 	    /* 
 	     * Find out if any active layer is negative and 
@@ -833,9 +841,10 @@ redraw_pixmap(GtkWidget *widget)
     }
 
     /*
-     * Paranoia check
+     * Paranoia check; size in width or height is zero
      */
-    if ((dmax_width < 0.0001) && (dmax_height < 0.0001)) {
+    if ((abs(dmax_width - dmin_width) < 0.0001) || 
+	(abs(dmax_height - dmin_height) < 0.0001)) {
 	retval = FALSE;
 	goto redraw_pixmap_end;
     }
@@ -846,17 +855,14 @@ redraw_pixmap(GtkWidget *widget)
     if (file_loaded && screen.scale == 0) autoscale();
 
     /*
-     * Make picture a little bit bigger so things on the edges comes
-     * inside.
+     * Scale width to actual windows size. Make picture a little bit 
+     * bigger so things on the edges comes inside. Actual width is
+     * abs(max) + abs(min) -> max - min. Same with height.
      */
-    dmax_width += 0.1 , dmax_height += 0.1;
-
-    /*
-     * Scale width to actual windows size.
-     * Screen.scale inside to reduce rounding error.
-     */
-    max_width = (int)floor(dmax_width * (double)screen.scale);
-    max_height = (int)floor(dmax_height * (double)screen.scale);
+    max_width = (int)floor((dmax_width - dmin_width + 0.1) * 
+			   (double)screen.scale);
+    max_height = (int)floor((dmax_height - dmin_height + 0.1) * 
+			    (double)screen.scale);
 
     if (background_polarity == NEGATIVE) {
 	/* Set background to normal color for the last negative layer */
@@ -866,7 +872,6 @@ redraw_pixmap(GtkWidget *widget)
 	gdk_gc_set_foreground(gc, screen.background);
     }
 
-
     /* 
      * Remove old pixmap, allocate a new one and draw the background
      */
@@ -875,8 +880,10 @@ redraw_pixmap(GtkWidget *widget)
     screen.pixmap = gdk_pixmap_new(widget->window, max_width, max_height,  -1);
     gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, max_width, max_height);
     
-    /* This now allows drawing several layers on top of each other.
-       Higher layer numbers have higher priority in the Z-order. */
+    /* 
+     * This now allows drawing several layers on top of each other.
+     * Higher layer numbers have higher priority in the Z-order. 
+     */
     for(i = 0; i < MAX_FILES; i++) {
 	/* Do some events so we don't lag to much behind */
 	gtk_main_iteration_do(FALSE);
@@ -888,9 +895,12 @@ redraw_pixmap(GtkWidget *widget)
 	}
 	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
 	    screen.file[i]) {
-	    image2pixmap(&screen.pixmap, screen.file[i]->image, 
-			 screen.scale, 
-			 0, max_height,
+	    /*
+	     * Translation is to get it inside the allocated pixmap,
+	     * which is not always centered perfectly for GTK/X.
+	     */
+	    image2pixmap(&screen.pixmap, screen.file[i]->image, screen.scale, 
+			 -dmin_width * screen.scale,dmax_height * screen.scale,
 			 screen.file[i]->image->info->polarity,
 			 screen.file[i]->color,
 			 screen.background, screen.err_color);
