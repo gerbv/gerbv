@@ -1,3 +1,7 @@
+2002-11-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Made explicit set scale also center image properly.
+
 2002-11-15  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Robustified if someone tries to parse RS274D.

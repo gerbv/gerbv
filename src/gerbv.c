@@ -857,8 +857,10 @@ zoom(GtkWidget *widget, gpointer data)
     case ZOOM_FIT : /* Zoom Fit */
 	autoscale();
 	break;
-    case ZOOM_SET:              /*explicit scale set by user */
-        screen.scale = z_data->scale;
+    case ZOOM_SET : /*explicit scale set by user */
+	screen.scale = z_data->scale;
+	screen.trans_x = screen.scale * us_midx - half_w;
+	screen.trans_y = screen.scale * us_midy - half_h;
         break;
     default :
 	fprintf(stderr, "Illegal zoom direction %ld\n", (long int)data);
