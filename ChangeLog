@@ -1,3 +1,9 @@
+2003-02-12  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: A patch from Peter Monta for incremental
+	  coordinates. He also discovered that I had a mistake
+	  in parsing incremental/absolute coordinates.
+
 -- Release 0.12 --
 
 2003-02-06  Stefan Petersen  <spe@stacken.kth.se>

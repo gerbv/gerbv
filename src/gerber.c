@@ -133,11 +133,17 @@ parse_gerb(gerb_file_t *fd)
 	    }
 	    break;
 	case 'X':
-	    state->curr_x = gerb_fgetint(fd);
+	    if (image->format->coordinate==INCREMENTAL)
+	        state->curr_x += gerb_fgetint(fd);
+	    else
+	        state->curr_x = gerb_fgetint(fd);
 	    state->changed = 1;
 	    break;
 	case 'Y':
-	    state->curr_y = gerb_fgetint(fd);
+	    if (image->format->coordinate==INCREMENTAL)
+	        state->curr_y += gerb_fgetint(fd);
+	    else
+	        state->curr_y = gerb_fgetint(fd);
 	    state->changed = 1;
 	    break;
 	case 'I':
@@ -508,7 +514,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	case 'A':
 	    image->format->coordinate = ABSOLUTE;
 	    break;
-	case 'T':
+	case 'I':
 	    image->format->coordinate = INCREMENTAL;
 	    break;
 	default:

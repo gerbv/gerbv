@@ -56,3 +56,6 @@ Martin Sigrand
 
 Charles Lepple
  - Sent in a patch to be able to compile gerbv under Mac OS X and fink.
+
+Peter Monta
+ - A patch to support incremental coordinates.
