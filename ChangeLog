@@ -1,3 +1,10 @@
+2004-08-25  Tomasz Motylewski <t.motylewski@bfad.de>
+
+	* eliminated memory leak MINGW32 gerb_file.c fd->data
+	* forced LC_NUMERIC to "C" in parse_gerb(), fixing
+	  bug resulting in very thin lines (aperture size = 0)
+	  under GTK2
+
 2004-08-23  Tomasz Motylewski <t.motylewski@bfad.de>
 
 	* cleaned up memory allocation in gerb_image.c
