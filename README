@@ -22,14 +22,16 @@ README for gerbv
 
   gerbv is dependent on a couple of different external libraries:
   * GTK+, the graphical toolkit available from http://www.gtk.org/
-  * Guile, an embeddable Scheme interpretator. Guile is available
+  * GdkPixbuf (default but not necessary), extracts data from GDK pixbufs.
+  * libpng (default but not necessary), saves extracted pixbufs to PNG.
+  * Guile (optional), an embeddable Scheme interpretator. Guile is available
     from http://www.gnu.org/software/guile/guile.html
   * getopt_long from the GNU project. gerbv can do without getopt_long
     long options to the program will hence not be available.
 
   gerbv is basically known to compile on all system which the above 
   mentioned libraries compile on, basically all flavors of *ix. It
-  has been tested on Linux (2.2.18pre21), NetBSD (1.4.1), Solaris 
+  has been tested on Linux (2.2.*, 2.4.*), NetBSD (1.4.*, 1.5.*), Solaris 
   (5.7 and 5.8).
 
 
@@ -52,7 +54,7 @@ README for gerbv
   more information.
 
   Programs and associated files are: 
-  Copyright 2001 by Stefan Petersen and the respective
+  Copyright 2001, 2002 by Stefan Petersen and the respective
   original authors (which are listed on the respective files)
 
 
@@ -86,6 +88,6 @@ README for gerbv
 - Contact information  
 
   Stefan Petersen
-  E-mail: spe@stacken.kth.se
+  E-mail: spe at stacken.kth.se
   Web: http://www.sourceforge.net/projects/gerbv
 

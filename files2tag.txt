@@ -1,6 +1,6 @@
 acconfig.h
 AUTHORS
-build_release*
+build_release
 ChangeLog
 configure.in
 CONTRIBUTORS
@@ -12,7 +12,7 @@ INSTALL
 Makefile.am
 NEWS
 README
-rebuild_conf*
+rebuild_conf
 TODO
 
 ./doc/aperturemacro.txt
@@ -23,7 +23,6 @@ TODO
 
 ./example/cslk/cslk.gbx
 ./example/cslk/cslk.ps
-./example/cslk/CVS/
 ./example/cslk/README.txt
 
 ./example/dan/README.txt
@@ -57,6 +56,12 @@ TODO
 ./example/ekf2/sieb1.grb
 ./example/ekf2/stp0.grb
 ./example/ekf2/stp1.grb
+
+./example/jj/l1-1.grb  
+./example/jj/l1-2.grb  
+./example/jj/l1-3.grb  
+./example/jj/l1-orig.grb  
+./example/jj/README.txt
 
 ./example/Mentor-BoardStation/artwork_1.grb
 ./example/Mentor-BoardStation/README.txt
@@ -96,15 +101,17 @@ TODO
 #./pixmaps/gerbv-icon2.xcf.gz
 #./pixmaps/gerbv-icon.xcf.gz
 
-./scheme/gbx2ps.scm*
+./scheme/gbx2ps.scm
 ./scheme/gerb-debug.scm
 ./scheme/gerb-ps.scm
 ./scheme/Makefile.am
 ./scheme/parse-gerber.scm
-./scheme/pgt.scm*
+./scheme/pgt.scm
 
 ./src/amacro.c
 ./src/amacro.h
+./src/batch.c
+./src/batch.h
 ./src/color.c
 ./src/color.h
 ./src/draw_amacro.c
@@ -119,10 +126,9 @@ TODO
 ./src/gerber.h
 ./src/gerb_file.c
 ./src/gerb_file.h
+./src/gerbv_icon.h
 ./src/gerb_image.c
 ./src/gerb_image.h
 ./src/gerbv.c
 ./src/gerbv_screen.h
 ./src/Makefile.am
-./src/batch.c
-./src/batch.h
