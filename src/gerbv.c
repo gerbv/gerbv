@@ -57,6 +57,7 @@
 #include "gerbv_icon.h"
 #include "log.h"
 #include "setup.h"
+#include "project.h"
 #ifdef EXPORT_PNG
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
@@ -78,6 +79,8 @@ typedef struct {
  */
 gerbv_screen_t screen;
 
+#define SAVE_PROJECT 0
+#define OPEN_PROJECT 1
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void draw_zoom_outline(gboolean centered);
@@ -88,6 +91,7 @@ static void load_file_popup(GtkWidget *widget, gpointer data);
 #ifdef EXPORT_PNG
 static void export_png_popup(GtkWidget *widget, gpointer data);
 #endif /* EXPORT_PNG */
+static void project_popup(GtkWidget *widget, gpointer data);
 static void unload_file(GtkWidget *widget, gpointer data);
 static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
@@ -95,6 +99,7 @@ static void si_func(GtkWidget *widget, gpointer data);
 static void unit_func(GtkWidget *widget, gpointer data);
 static void all_layers_on(GtkWidget *widget, gpointer data);
 static void all_layers_off(GtkWidget *widget, gpointer data);
+static void load_project(project_list_t *project_list);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget, int restart);
@@ -141,6 +146,10 @@ destroy(GtkWidget *widget, gpointer data)
 
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",               NULL,     NULL,             0, "<Branch>"},
+    {"/File/_Open Project...",NULL, project_popup, OPEN_PROJECT, NULL},
+    {"/File/_Save Project...",NULL, project_popup, SAVE_PROJECT, NULL},
+    
+    {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
     {"/File/_Export/PNG...", NULL,     export_png_popup, 0, NULL},
@@ -696,6 +705,122 @@ export_png_popup(GtkWidget *widget, gpointer data)
 
 
 static void
+cb_ok_project(GtkWidget *widget, gpointer data)
+{
+    char *filename;
+    project_list_t *project_list = NULL, *tmp;
+    int idx;
+
+    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
+
+    switch ((long)data) {
+    case OPEN_PROJECT:
+
+	project_list = read_project_file(filename);
+	
+	if (project_list) {
+	    load_project(project_list);
+	} else {
+	    GERB_MESSAGE("Failed to load project\n");
+	    goto cb_ok_project_end;
+	}
+	all_layers_on(NULL, NULL);
+	break;
+    case SAVE_PROJECT:
+	if (screen.path) {
+	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
+	    memset(project_list, 0, sizeof(project_list_t));
+	    project_list->next = project_list;
+	    project_list->layerno = -1;
+	    project_list->filename = screen.path;
+	    project_list->rgb[0] = 0;
+	    project_list->rgb[1] = 0;
+	    project_list->rgb[2] = 0;
+	    project_list->next = NULL;
+	}
+	
+	for (idx = 0; idx < MAX_FILES; idx++) {
+	    if (screen.file[idx] && screen.file[idx]->name) {
+		tmp = (project_list_t *)malloc(sizeof(project_list_t));
+		memset(tmp, 0, sizeof(project_list_t));
+		tmp->next = project_list;
+		tmp->layerno = idx;
+		tmp->filename = screen.file[idx]->name;
+		tmp->rgb[0] = screen.file[idx]->color->red;
+		tmp->rgb[1] = screen.file[idx]->color->green;
+		tmp->rgb[2] = screen.file[idx]->color->blue;
+		project_list = tmp;
+	    }
+	}
+	if (write_project_file(filename, project_list)) {
+	    GERB_MESSAGE("Failed to write project\n");
+	    goto cb_ok_project_end;
+	}
+	break;
+    default:
+	GERB_FATAL_ERROR("Unknown operation in cb_ok_project\n");
+    }
+
+    /*
+     * Remember where we loaded file from last time
+     */
+    filename = dirname(filename);
+    if (screen.path)
+	free(screen.path);
+    screen.path = (char *)malloc(strlen(filename) + 1);
+    strcpy(screen.path, filename);
+    screen.path = strncat(screen.path, "/", 1);
+
+ cb_ok_project_end:
+    gtk_grab_remove(screen.win.project);
+    
+    screen.win.project = NULL;
+
+    return;
+} /* cb_ok_project */
+
+
+static void 
+project_popup(GtkWidget *widget, gpointer data)
+{
+
+    switch ((long)data) {
+    case SAVE_PROJECT:
+	screen.win.project = gtk_file_selection_new("Save project filename");
+	break;
+    case OPEN_PROJECT:
+    	screen.win.project = gtk_file_selection_new("Open project filename");
+	break;
+    default:
+	GERB_FATAL_ERROR("Unknown operation in project_popup\n");
+    }
+
+    if (screen.path)
+	gtk_file_selection_set_filename
+	    (GTK_FILE_SELECTION(screen.win.project), screen.path);
+
+    gtk_signal_connect
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->ok_button),
+	 "clicked", GTK_SIGNAL_FUNC(cb_ok_project), data);
+    gtk_signal_connect_object
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->ok_button),
+	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+	 (gpointer)screen.win.project);
+    gtk_signal_connect_object
+	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->cancel_button),
+	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+	 (gpointer)screen.win.project);
+    
+
+    gtk_widget_show(screen.win.project);
+
+    gtk_grab_add(screen.win.project);
+    
+    return;
+} /* project_popup */
+
+
+static void
 all_layers_on(GtkWidget *widget, gpointer data)
 {
     int idx;
@@ -779,7 +904,52 @@ reload_files(GtkWidget *widget, gpointer data)
 
 
 static void
-autoscale()
+load_project(project_list_t *project_list)
+{
+    project_list_t *pl_tmp;
+    GtkStyle *defstyle, *newstyle;
+    
+    while (project_list) {
+	if (project_list->layerno == -1) {
+	    ;
+	} else {
+	    int idx =  project_list->layerno;
+
+	    if (open_image(project_list->filename, idx, FALSE) == -1)
+		exit(-1);
+
+	    /* 
+	     * Change color from default to from the project list
+	     */
+	    free(screen.file[idx]->color);
+	    screen.file[idx]->color = alloc_color(project_list->rgb[0], 
+						  project_list->rgb[1],
+						  project_list->rgb[2], NULL);
+
+	    /* 
+	     * Also change color on layer button
+	     */
+	    defstyle = gtk_widget_get_default_style();
+	    newstyle = gtk_style_copy(defstyle);
+	    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[idx]->color);
+	    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
+	    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
+	    gtk_widget_set_style(screen.layer_button[idx], newstyle);
+	    
+	}
+	pl_tmp = project_list;
+	project_list = project_list->next;
+	free(pl_tmp);
+    }
+
+    redraw_pixmap(screen.drawing_area, TRUE);
+    
+    return;
+} /* load_project */
+
+
+static void
+autoscale(void)
 {
     double max_width = LONG_MIN, max_height = LONG_MIN;
     double x_scale, y_scale;
@@ -2111,7 +2281,8 @@ static struct option longopts[] = {
     {"version",          no_argument,       NULL,    'V'},
     {"batch",            required_argument, NULL,    'b'},
     {"log",              required_argument, NULL,    'l'},
-    {"geometry",         required_argument, &longopt_val, 1 },
+    {"geometry",         required_argument, &longopt_val, 1},
+    {"project",          required_argument, &longopt_val, 3},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",       required_argument, &longopt_val, 2},
     {"g-fatal-warnings", no_argument,       &longopt_val, 2},
@@ -2142,7 +2313,7 @@ main(int argc, char *argv[])
     int       i;
     char      *win_title;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
-    char      *rest;
+    char      *rest, *project_filename = NULL;
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
@@ -2150,6 +2321,7 @@ main(int argc, char *argv[])
      */
     memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
+    screen.execpath = dirname(argv[0]);
 
     setup_init();
 	
@@ -2181,6 +2353,9 @@ main(int argc, char *argv[])
 		if ((rest[0] == 0) || ((rest[0] != '-') && (rest[0] != '+')))
 		    break;
 		req_y = (int)strtol(rest, &rest, 10);
+		break;
+	    case 3: /* project */
+		project_filename = optarg;
 		break;
 	    default:
 		break;
@@ -2306,11 +2481,28 @@ main(int argc, char *argv[])
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 
     /*
-     * Fill with files (eventually) given on command line
+     * If project is given, load that one and use it for files and colors.
+     * Else load files (eventually) given on the command line.
+     * This limits you to either give files on the commandline or just load
+     * a project.
      */
-    for(i = optind ; i < argc; i++)
-	if (open_image(argv[i], i - optind, FALSE) == -1)
-	    exit(-1);
+    if (project_filename) {
+	project_list_t *project_list;
+
+	printf("FOO");
+	fflush(stdout);
+	project_list = read_project_file(project_filename);
+	printf("BAR\n");
+	fflush(stdout);
+	
+	if (project_list) 
+	    load_project(project_list);
+
+    } else {
+	for(i = optind ; i < argc; i++)
+	    if (open_image(argv[i], i - optind, FALSE) == -1)
+		exit(-1);
+    }
 
     /*
      * Set gtk error log handler
@@ -2351,8 +2543,11 @@ main(int argc, char *argv[])
 
     /* It seems this has to be done after the button is shown for
        the first time, or we get a segmentation fault */
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[0]),
-				 TRUE);
+    if (project_filename)
+	all_layers_on(NULL, NULL);
+    else
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[0]),
+				     TRUE);
 
     gtk_main();
     

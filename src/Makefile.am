@@ -24,7 +24,11 @@
 bin_PROGRAMS = gerbv
 
 gerbv_SOURCES = gerb_image.c gerb_file.c gerber.c gerbv.c log.c setup.c\
-		draw_amacro.c draw.c drill.c color.c amacro.c exportimage.c
+		draw_amacro.c draw.c drill.c color.c amacro.c exportimage.c \
+		project.c scheme.c dynload.c
+
+scmdatadir = @BACKEND_DIR@
+scmdata_DATA = init.scm
 
 INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@
 gerbv_LDADD = @GTK_LIBS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@
@@ -32,6 +36,6 @@ gerbv_LDADD = @GTK_LIBS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@
 AM_CFLAGS=-Wall
 
 MOSTLYCLEANFILES = *~ *.o gerbv
-CLEANFILES = *~ *.o gerbv
+CLEANFILES = *~ *.o .#* .deps/* gerbv
 DISTCLEANFILES = *~ *.o gerbv Makefile
 MAINTAINERCLEANFILES = *~ *.o gerbv Makefile

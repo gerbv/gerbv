@@ -1,0 +1,21 @@
+This is short description of the project file format used in gerbv
+$Id$
+
+The parser for project files is based on TinyScheme 1.33 
+(http://tinyscheme.sourceforge.net/), therefore the syntax of project files
+resembles Scheme syntax.
+
+Current per-layer syntax is:
+(define-layer! <layer no> <one or several name-value pairs>)
+
+Current legal names are:
+* filename: The value for filename is of course the filename with in ".
+  Example: (cons 'filename "foo.proj")
+* color: The value for color is a three element array with RGB values,
+  where values can be between 0 and 65536.
+  Example: (cons 'color #(1234 23444 12313))
+
+Complete example for layer three is thus:
+(define-layer! 3 (cons 'filename "foo.proj")(cons 'color #(1234 23444 12313)))
+
+As in all Scheme syntax comments are between ; and end-of-line.

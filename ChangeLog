@@ -2,6 +2,9 @@
 
 	* src/gerb_file.[hc]: Added function gerb_find_file.
 	* src/draw_amacro.c: Forgot to make some internal functions static.
+	* src/*: Scheme interpreter added to be used by project files as a 
+	  start. Also project file handling added. A short description of
+	  the format used in project files also added. A massive commit.
 
 2003-11-22  Stefan Petersen  <spe@stacken.kth.se>
 

@@ -77,11 +77,13 @@ typedef struct {
 	GtkWidget *export_png;
 	GtkWidget *scale;
 	GtkWidget *log;
+	GtkWidget *project;
     } win;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
     char *path;
+    char *execpath;
     
     /* Bounding box for all loaded gerber images. Initialized by autoscale() */
     gerbv_bbox_t gerber_bbox;

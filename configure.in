@@ -153,6 +153,16 @@ AC_SUBST(PNG_LIBS)
 
 AC_SUBST(BACKEND_DIR)
 
+AC_DEFINE([STANDALONE], [0],[Scheme interpreter not used standalone])
+AC_DEFINE([USE_DL],[1],[Dynamic linking in Scheme interpreter])
+AC_DEFINE([SUN_DL],[1],[DL Sun method])
+AC_DEFINE([USE_MATH],[1],[Math in Scheme interpreter])
+AC_DEFINE([USE_ASCII_NAMES],[1],[ASCII names in Scheme interpreter])
+AC_DEFINE([USE_COLON_HOOKS],[1],[Colon Hooks in Scheme interpreter])
+AC_DEFINE([USE_STRING_HOOKS],[1],[String Hooks in Scheme interpreter])
+AC_DEFINE([USE_INTERFACE],[1],[Use extension interface of Scheme interpreter])
+
+
 AC_OUTPUT(	Makefile \
 		src/Makefile \
 		man/Makefile \
