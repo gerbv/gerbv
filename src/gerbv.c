@@ -48,6 +48,7 @@
 #ifndef NO_GUILE
 #include "scm_gerber.h"
 #endif
+#include "draw.h"
 
 #define BUTTON
 /*#define ARC_DEBUG*/
@@ -252,12 +253,13 @@ cb_ok_open_file(GtkWidget *widget, GtkFileSelection *fs)
     return;
 } /* cb_ok_open_file */
 
-/* File Selection Window */
-GtkWidget *fsw;
 
 static void
 open_file(GtkWidget *widget, gpointer data)
 {
+    /* File Selection Window */
+    GtkWidget *fsw;
+
     fsw = gtk_file_selection_new("Select Gerberfile To View");
     
     gtk_signal_connect(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
