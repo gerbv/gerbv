@@ -628,7 +628,9 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture)
 	free(type);
 	return ano;
     }
-    
+
+    (void)gerb_fgetc(fd);
+
     for (read = 'X', i = 0; (read == 'X') && i < 5; read = gerb_fgetc(fd), i++)
 	aperture->parameter[i] = gerb_fgetdouble(fd);
     
