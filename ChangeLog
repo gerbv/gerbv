@@ -1,3 +1,8 @@
+2003-01-26  Stefan Petersen  <spe@stacken.kth.se>
+
+	* .cvsignore, man/.cvsignore, scheme/.cvsignore, src/.cvsignore:
+	  Added these files submitted by Holger Waechtler. Thanks!
+
 2003-01-25  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c, src/gerb_image.[hc]: Added a patch from
