@@ -178,6 +178,8 @@ void create_marked_layer(int idx) {
     do {
         gchar *designator, *footprint, *layer, *comment;
         double mid_x, mid_y, ref_x, ref_y, pad_x, pad_y, rotation, radius;
+	double length, width;
+	int shape;
         GtkTreeIter iter;
         gboolean no_files_found;
               
@@ -195,6 +197,9 @@ void create_marked_layer(int idx) {
                         COLUMN_pad_y, &pad_y,
                         COLUMN_LAYER, &layer,
                         COLUMN_rotation, &rotation,
+			COLUMN_length, &length,
+			COLUMN_width, &width,
+			COLUMN_shape, &shape,
                         COLUMN_COMMENT, &comment,
 			COLUMN_NO_FILES_FOUND, &no_files_found,
                                                    -1);
@@ -203,43 +208,50 @@ void create_marked_layer(int idx) {
         assert(curr_net);
         memset((void *)curr_net, 0, sizeof(gerb_net_t));
   
+	switch(shape) {
+	case PART_SHAPE_RECTANGLE:
+	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
+	case PART_SHAPE_UNKNOWN:
+	default:
 
-        curr_net->start_x = mid_x;
-        curr_net->start_y = mid_y;
-        curr_net->stop_x = pad_x;
-        curr_net->stop_y = pad_y;
+            curr_net->start_x = mid_x;
+            curr_net->start_y = mid_y;
+            curr_net->stop_x = pad_x;
+            curr_net->stop_y = pad_y;
     
-        curr_net->aperture = 0;
-        curr_net->layer_polarity = POSITIVE;
-        curr_net->unit = MM;
-        curr_net->aperture_state = ON;
-        curr_net->interpolation = LINEARx1;
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = LINEARx1;
         
-        curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-        curr_net = curr_net->next;
-        assert(curr_net);
-        memset((void *)curr_net, 0, sizeof(gerb_net_t));
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
   
 
-        curr_net->start_x = mid_x;
-        curr_net->start_y = mid_y;
-        curr_net->stop_x = pad_x;
-        curr_net->stop_y = pad_y;
+            curr_net->start_x = mid_x;
+            curr_net->start_y = mid_y;
+            curr_net->stop_x = pad_x;
+            curr_net->stop_y = pad_y;
     
-        curr_net->aperture = 0;
-        curr_net->layer_polarity = POSITIVE;
-        curr_net->unit = MM;
-        curr_net->aperture_state = ON;
-        curr_net->interpolation = CW_CIRCULAR;
-        curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
-        memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
-        curr_net->cirseg->angle1 = 0.0;
-        curr_net->cirseg->angle2 = 360.0;
-        curr_net->cirseg->cp_x = mid_x;
-        curr_net->cirseg->cp_y = mid_y;
-        radius = sqrt((pad_x-mid_x)*(pad_x-mid_x) + (pad_y-mid_y)*(pad_y-mid_y));
-        curr_net->cirseg->width = 2*radius; /* fabs(pad_x-mid_x) */
-        curr_net->cirseg->height = 2*radius;
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = CW_CIRCULAR;
+            curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+            memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
+            curr_net->cirseg->angle1 = 0.0;
+            curr_net->cirseg->angle2 = 360.0;
+            curr_net->cirseg->cp_x = mid_x;
+            curr_net->cirseg->cp_y = mid_y;
+            radius = sqrt((pad_x-mid_x)*(pad_x-mid_x) + (pad_y-mid_y)*(pad_y-mid_y));
+            curr_net->cirseg->width = 2*radius; /* fabs(pad_x-mid_x) */
+            curr_net->cirseg->height = 2*radius;
+            break;
+	}
                            
         
        // if (!no_files_found)   GERB_MESSAGE("%s %s: mid_x %f\n", designator, comment, mid_x);

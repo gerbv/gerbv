@@ -49,6 +49,9 @@ typedef enum {
 	COLUMN_pad_y,
         COLUMN_LAYER,
         COLUMN_rotation,
+	COLUMN_length,
+	COLUMN_width,
+	COLUMN_shape,
         COLUMN_COMMENT,
         COLUMN_NO_FILES_FOUND,
 	NUM_COLUMNS

@@ -261,18 +261,21 @@ create_search_results_section (void)
 /*interface.model = */   
 
      interface.model = gtk_list_store_new (NUM_COLUMNS, 
-				      G_TYPE_STRING, 
-				      G_TYPE_STRING,
-                                      G_TYPE_DOUBLE, 
-				      G_TYPE_DOUBLE,
-                                      G_TYPE_DOUBLE,
-                                      G_TYPE_DOUBLE,
-                                      G_TYPE_DOUBLE,
-                                      G_TYPE_DOUBLE,
-                                      G_TYPE_STRING,
-                                      G_TYPE_DOUBLE,
-                                      G_TYPE_STRING,
-                                      G_TYPE_BOOLEAN);
+				      G_TYPE_STRING, // COLUMN_DESIGNATOR
+				      G_TYPE_STRING, // COLUMN_footprint
+                                      G_TYPE_DOUBLE, // COLUMN_mid_x
+				      G_TYPE_DOUBLE, // COLUMN_mid_y
+                                      G_TYPE_DOUBLE, // COLUMN_ref_x
+                                      G_TYPE_DOUBLE, // COLUMN_ref_y
+                                      G_TYPE_DOUBLE, // COLUMN_pad_x
+                                      G_TYPE_DOUBLE, // COLUMN_pad_y
+                                      G_TYPE_STRING, // COLUMN_LAYER
+                                      G_TYPE_DOUBLE, // COLUMN_rotation
+				      G_TYPE_DOUBLE, // COLUMN_length
+				      G_TYPE_DOUBLE, // COLUMN_width
+				      G_TYPE_INT, // COLUMN_shape
+                                      G_TYPE_STRING, // COLUMN_COMMENT
+                                      G_TYPE_BOOLEAN); // COLUMN_NO_FILES_FOUND
                                                                        
     interface.tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL(interface.model));
     gtk_tree_view_set_headers_visible (GTK_TREE_VIEW(interface.tree), TRUE);						

@@ -36,6 +36,11 @@
 /* maximum size of string*/
 #define MAXL 200
 
+enum e_footprint {
+    PART_SHAPE_UNKNOWN = 0, /// drawn as circle with line
+    PART_SHAPE_RECTANGLE = 1 /// rectangle with one side marked
+};
+
 typedef struct pnp_state {
     
     char     designator[MAXL];
@@ -49,6 +54,9 @@ typedef struct pnp_state {
     char     layer[MAXL]; /*T is top B is bottom*/
     double   rotation;
     char     comment[MAXL];    
+    int      shape;
+    double   width;
+    double   length;
 
     gerbv_unit_t unit;/*unused at the moment*/
 

@@ -84,6 +84,22 @@ eat_line_pnp(pnp_file_t *fd)
     }
 } /* eat_line_pnp */
 
+/** parse a string representing float number with a unit, default is mm */
+double get_float_unit(char *str)
+{
+    double x = 0.0;
+    char unit[41];
+    /* float, optional space, optional unit mm,cm,in,mil */
+    sscanf(str, "%lf %40s", &x, unit);
+    if(strstr(unit,"in")) {
+        x *= 25.4;
+    } else if(strstr(unit,"mil")) {
+        x *= 0.0254;
+    } else if(strstr(unit, "cm")) {
+        x *= 10.0;
+    }
+    return x;
+}
 
 /*
  * Parses the PNP data
@@ -92,11 +108,11 @@ eat_line_pnp(pnp_file_t *fd)
 pnp_state_t *parse_pnp(pnp_file_t *fd)
 {
     pnp_state_t      *pnp_state = NULL;
-    int               line_counter = 1;
+    int               line_counter = 0;
     int               ret;
     GtkTreeSelection *tmp_sel;
     char        *row[12];
-    char        buf[MAXL+1], buf0[MAXL+1];
+    char        buf[MAXL+2], buf0[MAXL+2];
     
     /* added by t.motylewski@bfad.de
      * many locales redefine "." as "," and so on, so sscanf has problems when
@@ -106,87 +122,94 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
      
     pnp_state = new_pnp_state();
     parsed_PNP_data = pnp_state;/*Global storage, for data reload, e.g. if search_window was destroyed*/
-   /* while  (ret = csv_row_fread(fopen("/home/juergen/MINGW/gerbv/PickPlaceforaim02.easy.csv", "r"),  buf, 1024, row, 11, ',', CSV_QUOTES)  > 0 ) {
-    printf("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, \n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10]);       
-   }
-   while  ((ret = csv_row_fread(fopen("etc/passwd", "r"),  buf, 1024, row, 10, ':', CSV_TRIM))  > 0 ) {
-    printf("ret:%i >%s %s \n", ret, row[0], row[2]);       
-   }*/
-       
-    while (fgets(buf, MAXL, fd->fd) != NULL) {
-        if(buf[strlen(buf)-1] == '\n')
-            buf[strlen(buf)-1] = 0;
-        if(buf[strlen(buf)-1] == '\r')
-            buf[strlen(buf)-1] = 0;
-        if (strlen(buf) > 11 )  {  //lets check a minimum length of 11
-            ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 11, ',',   CSV_QUOTES);
-            printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
+
+    while ( fgets(buf, MAXL, fd->fd) != NULL ) {
+	int len = strlen(buf)-1;
+        line_counter += 1;/*next line*/
+	if(line_counter<2) {
+	    // TODO in principle column names could be read and interpreted
+	    continue; // skip the first line with names of columns
+	}
+        if(len >=0 && buf[len] == '\n')
+            buf[len--] = 0;
+        if(len >=0 && buf[len] == '\r')
+            buf[len--] = 0;
+        if (len <= 11 )  {  //lets check a minimum length of 11
+	    continue;
+	}
+	/* this accepts file both with and without quotes */
+        ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 11, ',',   CSV_QUOTES);
+        printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
    
-       //diese linie funkt mit csv ohne quotes: ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 12, ',',   CSV_QUOTES)
-       //ret = sscanf(buf, "%100[^,],%100[^,],%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%100[^,],%lf,%100[^X]",
-       //     pnp_state->designator, pnp_state->footprint, &pnp_state->mid_x, &pnp_state->mid_y, &pnp_state->ref_x, &pnp_state->ref_y, &pnp_state->pad_x, &pnp_state->pad_y,
-        //    pnp_state->layer, &pnp_state->rotation, pnp_state->comment);
-        /*fprintf(stderr,"layer:%s: ", pnp_state->layer);
-        fprintf(stderr,"mid_x:%f: ",pnp_state-> mid_x);
-        fprintf(stderr,"comment:%s:", pnp_state->comment);*/
-    
-       /* if(ret<11) {
-            GERB_MESSAGE("wrong line format: %s\n", buf);
-            continue;
-        } else {
-             GERB_MESSAGE("\n");
-        }*/
-    
-            if ((row[0] != NULL) && (strstr(row[2], "mm") != NULL )) {
-                memset  (pnp_state->designator, 0, sizeof(pnp_state->designator));
-                sprintf (pnp_state->designator, "%.*s", sizeof(pnp_state->designator)-1, row[0]);
-                memset  (pnp_state->footprint, 0, sizeof(pnp_state->footprint));
-                sprintf (pnp_state->footprint, "%.*s", sizeof(pnp_state->footprint)-1, row[1]);
-                memset  (pnp_state->layer, 0, sizeof(pnp_state->layer));
-                sprintf (pnp_state->layer, "%.*s", sizeof(pnp_state->layer)-1, row[8]);
-                if (row[10] != NULL) {
-                    memset  (pnp_state->comment, 0, sizeof(pnp_state->comment));
-                    if (g_utf8_validate(row[10], -1, NULL)) 
-                    sprintf (pnp_state->comment, "%.*s", sizeof(pnp_state->comment)-1, g_locale_to_utf8(row[10], -1, NULL, NULL, NULL));
-                    else 
+        if (row[0] && row[8]) { // here could be some better check for the syntax
+	    int i_length=0, i_width = 0;
+            memset  (pnp_state->designator, 0, sizeof(pnp_state->designator));
+            sprintf (pnp_state->designator, "%.*s", sizeof(pnp_state->designator)-1, row[0]);
+            memset  (pnp_state->footprint, 0, sizeof(pnp_state->footprint));
+            sprintf (pnp_state->footprint, "%.*s", sizeof(pnp_state->footprint)-1, row[1]);
+            memset  (pnp_state->layer, 0, sizeof(pnp_state->layer));
+            sprintf (pnp_state->layer, "%.*s", sizeof(pnp_state->layer)-1, row[8]);
+            memset  (pnp_state->comment, 0, sizeof(pnp_state->comment));
+            if (row[10] != NULL) {
+                memset  (pnp_state->comment, 0, sizeof(pnp_state->comment));
+                if (g_utf8_validate(row[10], -1, NULL)) {
+		    gchar * str = g_convert(row[10], strlen(row[10]), "UTF-8", "ISO-8859-1",
+                        NULL, NULL, NULL);
+		    // I have not decided yet whether it is better to use always
+		    // "ISO-8859-1" or current locale.
+		    // str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
+                    sprintf (pnp_state->comment, "%.*s", sizeof(pnp_state->comment)-1, str);
+		    g_free(str);
+		} else 
                     sprintf (pnp_state->comment, "%.*s", sizeof(pnp_state->comment)-1, row[10]);
-                }
-   
-                sscanf(row[2], "%lfmm", &pnp_state->mid_x);
-                sscanf(row[3], "%lfmm", &pnp_state->mid_y);
-                sscanf(row[4], "%lfmm", &pnp_state->ref_x);
-                sscanf(row[5], "%lfmm", &pnp_state->ref_y);
-                sscanf(row[6], "%lfmm", &pnp_state->pad_x);
-                sscanf(row[7], "%lfmm", &pnp_state->pad_y);
-                sscanf(row[9], "%lfmm", &pnp_state->rotation);
+            }
+/*
+    gchar* g_convert(const gchar *str, gssize len, const gchar *to_codeset, const gchar *from_codeset, gsize *bytes_read, gsize *bytes_written, GError **error);
+    */
+            pnp_state->mid_x = get_float_unit(row[2]);
+	    pnp_state->mid_y = get_float_unit(row[3]);
+	    pnp_state->ref_x = get_float_unit(row[3]);
+	    pnp_state->ref_y = get_float_unit(row[4]);
+	    pnp_state->pad_x = get_float_unit(row[5]);
+	    pnp_state->pad_y = get_float_unit(row[6]);
+	    sscanf(row[9], "%lf", &pnp_state->rotation); // no units, always deg
+	    if(sscanf(pnp_state->footprint, "%02d%02d", &i_length, &i_width) == 2) {
+		// parse footprints like 0805 or 1206
+		pnp_state->length = 0.0254 * i_length;
+                pnp_state->width = 0.0254 * i_width;
+		pnp_state->shape = PART_SHAPE_RECTANGLE;
+	    } else {
+		pnp_state->length = 0.0;
+		pnp_state->width = 0.0;
+		pnp_state->shape = PART_SHAPE_UNKNOWN;
+            }
 
-                eat_line_pnp(fd);
-
-                gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
-                gtk_list_store_set (GTK_LIST_STORE(fd->model), &interface.iter,
-			            COLUMN_DESIGNATOR, pnp_state->designator, 
-			            COLUMN_footprint, pnp_state->footprint,
-			            COLUMN_mid_x, pnp_state->mid_x,
-			            COLUMN_mid_y, pnp_state->mid_y ,
-			            COLUMN_ref_x, pnp_state->ref_x,
-			            COLUMN_ref_y, pnp_state->ref_y,
-			            COLUMN_pad_x, pnp_state->pad_x,
-			            COLUMN_pad_y, pnp_state->pad_y,
-                                    COLUMN_LAYER, pnp_state->layer,
-                                    COLUMN_rotation, pnp_state->rotation,
-                                    COLUMN_COMMENT, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL),
-			            COLUMN_NO_FILES_FOUND, FALSE,
-			            -1);
+            gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
+            gtk_list_store_set (GTK_LIST_STORE(fd->model), &interface.iter,
+                COLUMN_DESIGNATOR, pnp_state->designator, 
+	        COLUMN_footprint, pnp_state->footprint,
+	        COLUMN_mid_x, pnp_state->mid_x,
+	        COLUMN_mid_y, pnp_state->mid_y ,
+	        COLUMN_ref_x, pnp_state->ref_x,
+	        COLUMN_ref_y, pnp_state->ref_y,
+	        COLUMN_pad_x, pnp_state->pad_x,
+	        COLUMN_pad_y, pnp_state->pad_y,
+                COLUMN_LAYER, pnp_state->layer,
+                COLUMN_rotation, pnp_state->rotation,
+		COLUMN_length, pnp_state->length,
+		COLUMN_width, pnp_state->width,
+		COLUMN_shape, pnp_state->shape,
+                COLUMN_COMMENT, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL),
+	        COLUMN_NO_FILES_FOUND, FALSE,
+	        -1);
                         
-                 gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
-                 gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
-			            0, pnp_state->designator, 
-		                    1, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL), -1);
+             gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
+             gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
+	        0, pnp_state->designator, 
+	        1, g_locale_to_utf8(pnp_state->comment, -1, NULL, NULL, NULL), -1);
  
-                line_counter += 1;/*next line*/
-                pnp_state->next = new_pnp_state();
-                pnp_state = pnp_state->next;
-            }    
+             pnp_state->next = new_pnp_state();
+             pnp_state = pnp_state->next;
         }    
     }   
 
