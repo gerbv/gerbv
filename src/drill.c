@@ -334,8 +334,10 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 		   have to be rewritten sometime */
 		int local_state = 0;
 		while ((read = gerb_fgetc(fd)) != EOF &&
-		       (isdigit(read) || read == ',' || read == '.')) {
-		    if(read != ',' && read != '.') length ++;
+		       (isdigit(read) || read == '+' || read == '-'
+			|| read == ',' || read == '.')) {
+		    if(read != '+' && read != '-' 
+		       && read != ',' && read != '.') length ++;
 		    switch (local_state) {
 		    case 0:
 			if(read == '0') {

@@ -1,5 +1,9 @@
 2003-02-02  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/drill.c: Added patch from Dan McMahill since + sign
+	  before coordinates seemed to confuse the drill parser.
+	  Closes bug #678407.
+
 	* src/gerbv.c: Now you can move around layers in the right
 	  sidebar so you can select in which order the layers should 
 	  be presented.
