@@ -24,18 +24,51 @@
 #ifndef DRAW_H
 #define DRAW_H
 
-#include <gdk/gdk.h>
 #include "gerber.h"
 
-/* Default mouse cursor. Perhaps redefine this to a variable later? */
-#define GERBV_DEF_CURSOR	NULL
+
+struct gerb_render_context {
+    void (*set_layer_color) (struct gerb_render_context *ctx, const unsigned char rgba [4]);
+    void (*set_viewport) (struct gerb_render_context *ctx, int w, int h);
+    void (*clear) (struct gerb_render_context *ctx, enum polarity_t color);
+    void (*draw_line) (struct gerb_render_context *ctx, double x1, double y1, double x2, double y2);
+    void (*draw_linestrip) (struct gerb_render_context *ctx, double *xy, int n);
+    void (*draw_arc) (struct gerb_render_context *ctx, double x, double y, double rx, double ry, double phi_start, double phi_end);
+    void (*fill_polygon) (struct gerb_render_context *ctx, double *xy, int n);
+    void (*fill_rectangle) (struct gerb_render_context *ctx, double x, double y, double w, double h);
+    void (*fill_oval) (struct gerb_render_context *ctx, double x, double y, double rx, double ry);
+    void (*set_color) (struct gerb_render_context *ctx, enum polarity_t color);
+    void (*set_line_style) (struct gerb_render_context *ctx, double width, int dashed);
+    void (*clear_composition) (struct gerb_render_context *ctx, const unsigned char clear_rgba [4]);
+    void (*compose) (struct gerb_render_context *ctx);
+    void (*blit) (struct gerb_render_context *ctx, double offset_x, double offset_y);
+};
+
+
 
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
-int 
-image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     int scale, double trans_x, double trans_y,
-	     enum polarity_t polarity);
+extern
+int gerb_render_image (struct gerb_render_context *ctx,
+		       struct gerb_image *image, 
+		       int scale, double trans_x, double trans_y);
+
+extern
+void gerb_render_set_viewport (struct gerb_render_context *ctx,
+			       int width, int height);
+
+extern
+void gerb_render_clear_bg (struct gerb_render_context *ctx,
+			   const unsigned char bg_rgba[4]);
+
+extern
+void gerb_render_set_color (struct gerb_render_context *ctx,
+			    const unsigned char rgba[4]);
+
+extern
+void gerb_render_show (struct gerb_render_context *ctx,
+		       double offset_x, double offset_y);
 
 #endif /* DRAW_H */
+

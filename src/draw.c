@@ -25,163 +25,52 @@
 #include <config.h>
 #endif
 
-#include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
-#include <math.h>  /* ceil(), atan2() */
 
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
 
-#include <gtk/gtk.h>
-
 #include "draw.h"
 #include "draw_amacro.h"
 #include "gerb_error.h"
 
-#undef round
-#define round(x) ceil((double)(x))
-
 
 /*
- * Draws a circle _centered_ at x,y with diameter dia
- */
-static void 
-gerbv_draw_circle(GdkPixmap *pixmap, GdkGC *gc, 
-		  gint filled, gint x, gint y, gint dia)
-{
-    static const gint full_circle = 23360;
-    gint real_x = x - dia / 2;
-    gint real_y = y - dia / 2;
-    
-    gdk_draw_arc(pixmap, gc, filled, real_x, real_y, dia, dia, 0, full_circle);
-    
-    return;
-} /* gerbv_draw_circle */
-
-
-/*
- * Draws a rectangle _centered_ at x,y with sides x_side, y_side
- */
-static void 
-gerbv_draw_rectangle(GdkPixmap *pixmap, GdkGC *gc, 
-		     gint filled, gint x, gint y, gint x_side, gint y_side)
-{
-    
-    gint real_x = x - x_side / 2;
-    gint real_y = y - y_side / 2;
-    
-    gdk_draw_rectangle(pixmap, gc, filled, real_x, real_y, x_side, y_side);
-    
-    return;
-} /* gerbv_draw_rectangle */
-
-
-/*
- * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
+ * Render data contained of gerb_image struct and compose it into the
+ * framebuffer using the specified color and transparency.
+ *
+ * if image is NULL we'll just clear the framebuffer to prepare a new
+ * render pass.
+ * 
  */ 
-static void
-gerbv_draw_oval(GdkPixmap *pixmap, GdkGC *gc, 
-		gint filled, gint x, gint y, gint x_axis, gint y_axis)
+int 
+gerb_render_image(struct gerb_render_context *ctx,
+		  struct gerb_image *image, 
+		  int scale, double trans_x, double trans_y)
 {
-    gint delta = 0;
-    GdkGC *local_gc = gdk_gc_new(pixmap);
-
-    gdk_gc_copy(local_gc, gc);
-
-    if (x_axis > y_axis) {
-	/* Draw in x axis */
-	delta = x_axis / 2 - y_axis / 2;
-	gdk_gc_set_line_attributes(local_gc, y_axis, 
-				   GDK_LINE_SOLID, 
-				   GDK_CAP_ROUND, 
-				   GDK_JOIN_MITER);
-	gdk_draw_line(pixmap, local_gc, x - delta, y, x + delta, y);
-    } else {
-	/* Draw in y axis */
-	delta = y_axis / 2 - x_axis / 2;
-	gdk_gc_set_line_attributes(local_gc, x_axis, 
-				   GDK_LINE_SOLID, 
-				   GDK_CAP_ROUND, 
-				   GDK_JOIN_MITER);
-	gdk_draw_line(pixmap, local_gc, x, y - delta, x, y + delta);
-    }
-
-    gdk_gc_unref(local_gc);
-
-    return;
-} /* gerbv_draw_oval */
-
-
-/*
- * Draws an arc 
- * Draws an arc _centered_ at x,y
- * direction:  0 counterclockwise, 1 clockwise
- */
-static void
-gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
-	       int x, int y,
-	       int width, int height,
-	       int angle1, int angle2)
-{
-    gint real_x = x - width / 2;
-    gint real_y = y - height / 2;
-
-    gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, width, height, 
-		 angle1 * 64, (angle2 - angle1) * 64);
-    
-    return;
-} /* gerbv_draw_arc */
-
-
-/*
- * Convert a gerber image to a GDK clip mask to be used when creating pixmap
- */
-int
-image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     int scale, double trans_x, double trans_y,
-	     enum polarity_t polarity)
-{
-    GdkGC *gc = gdk_gc_new(*pixmap);
-    GdkGC *pgc = gdk_gc_new(*pixmap);
     struct gerb_net *net;
-    gint x1, y1, x2, y2;
-    int p1, p2;
-    int cir_width = 0, cir_height = 0;
-    int cp_x = 0, cp_y = 0;
-    GdkPoint *points = NULL;
+    double x1, y1, x2, y2;
+    double p1, p2;
+    double cir_width = 0, cir_height = 0;
+    double cp_x = 0, cp_y = 0;
+    double *points = NULL;
     int curr_point_idx = 0;
     int in_parea_fill = 0;
     double unit_scale;
-    GdkColor transparent, opaque;
 
 
-    if (image == NULL || image->netlist == NULL) {
-	/*
-	 * Destroy GCs before exiting
-	 */
-	gdk_gc_unref(gc);
-	gdk_gc_unref(pgc);
-	
-	return 0;
-    }
-    
-    /* Set up the two "colors" we have */
-    opaque.pixel = 0; /* opaque will not let color through */
-    transparent.pixel = 1; /* transparent will let color through */ 
+    if (image == NULL)
+	goto compose;
 
     /*
-     * Clear clipmask and set draw color depending image on image polarity
+     * Clear background depending image on image polarity
      */
-    if (polarity == NEGATIVE) {
-	gdk_gc_set_foreground(gc, &transparent);
-	gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
-	gdk_gc_set_foreground(gc, &opaque);
-    } else {
-	gdk_gc_set_foreground(gc, &opaque);
-	gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
-	gdk_gc_set_foreground(gc, &transparent);
-    }
+    if (image->info->polarity == NEGATIVE)
+	ctx->clear (ctx, CLEAR);
+    else
+	ctx->clear (ctx, DARK);
 
     for (net = image->netlist->next ; net != NULL; net = net->next) {
 	
@@ -193,55 +82,51 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	/*
 	 * Scale points with window scaling and translate them
 	 */
-	x1 = (int)round((image->info->offset_a + net->start_x) * unit_scale +
-			trans_x);
-	y1 = (int)round((image->info->offset_b - net->start_y) * unit_scale +
-			trans_y);
-	x2 = (int)round((image->info->offset_a + net->stop_x) * unit_scale +
-			trans_x);
-	y2 = (int)round((image->info->offset_b - net->stop_y) * unit_scale +
-			trans_y);
+	x1 = (image->info->offset_a + net->start_x) * unit_scale + trans_x;
+	y1 = (image->info->offset_b - net->start_y) * unit_scale + trans_y;
+	x2 = (image->info->offset_a + net->stop_x) * unit_scale + trans_x;
+	y2 = (image->info->offset_b - net->stop_y) * unit_scale + trans_y;
 
 	/* 
 	 * If circle segment, scale and translate that one too
 	 */
 	if (net->cirseg) {
-	    cir_width = (int)round(net->cirseg->width * unit_scale);
-	    cir_height = (int)round(net->cirseg->height * unit_scale);
-	    cp_x = (int)round((image->info->offset_a + net->cirseg->cp_x) *
-			      unit_scale + trans_x);
-	    cp_y = (int)round((image->info->offset_b - net->cirseg->cp_y) *
-			      unit_scale + trans_y);
+	    cir_width = net->cirseg->width * unit_scale;
+	    cir_height = net->cirseg->height * unit_scale;
+	    cp_x = (image->info->offset_a + net->cirseg->cp_x) *
+			      unit_scale + trans_x;
+	    cp_y = (image->info->offset_b - net->cirseg->cp_y) *
+			      unit_scale + trans_y;
 	}
 
 	/*
-	 * Set GdkFunction depending on if this (gerber) layer is inverted
+	 * if this (gerber) layer is inverted
 	 */
-	if (net->layer_polarity == CLEAR)
-	    gdk_gc_set_function(gc, GDK_CLEAR);
-	else
-	    gdk_gc_set_function(gc, GDK_COPY);
+	if (net->layer_polarity == CLEAR) {
+	    if (image->info->polarity == NEGATIVE)
+	    	ctx->set_color (ctx, CLEAR);
+	    else
+	    	ctx->set_color (ctx, DARK);
+	} else {
+	    if (image->info->polarity == NEGATIVE)
+	    	ctx->set_color (ctx, DARK);
+	    else
+	    	ctx->set_color (ctx, CLEAR);
+	}
 
 	/*
 	 * Polygon Area Fill routines
 	 */
 	switch (net->interpolation) {
 	case PAREA_START :
-	    points = (GdkPoint *)malloc(sizeof(GdkPoint) *  net->nuf_pcorners);
-	    if (points == NULL) {
+	    if (!(points = malloc (2 * sizeof(double) *  net->nuf_pcorners)))
 		GERB_FATAL_ERROR("Malloc failed\n");
-	    }
-	    memset(points, 0, sizeof(GdkPoint) *  net->nuf_pcorners);
+	    memset(points, 0, 2 * sizeof(double) *  net->nuf_pcorners);
 	    curr_point_idx = 0;
 	    in_parea_fill = 1;
 	    continue;
 	case PAREA_END :
-	    gdk_gc_copy(pgc, gc); 
-	    gdk_gc_set_line_attributes(pgc, 1, 
-				       GDK_LINE_SOLID, 
-				       GDK_CAP_PROJECTING, 
-				       GDK_JOIN_MITER);
-	    gdk_draw_polygon(*pixmap, pgc, 1, points, curr_point_idx);
+	    ctx->fill_polygon (ctx, points, curr_point_idx);
 	    free(points);
 	    points = NULL;
 	    in_parea_fill = 0;
@@ -251,8 +136,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	}
 
 	if (in_parea_fill) {
-	    points[curr_point_idx].x = x2;
-	    points[curr_point_idx].y = y2;
+	    points[2*curr_point_idx]   = x2;
+	    points[2*curr_point_idx+1] = y2;
 	    curr_point_idx++;
 	    continue;
 	}
@@ -278,40 +163,28 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 
 	switch (net->aperture_state) {
 	case ON :
-	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
-	    if (image->aperture[net->aperture]->type == RECTANGLE)
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID, 
-					   GDK_CAP_PROJECTING, 
-					   GDK_JOIN_MITER);
-	    else
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID, 
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
+	    p1 = image->aperture[net->aperture]->parameter[0] * unit_scale;
+
+	    ctx->set_line_style (ctx, p1, 0);
 
 	    switch (net->interpolation) {
 	    case LINEARx10 :
 	    case LINEARx01 :
 	    case LINEARx001 :
 		GERB_MESSAGE("Linear != x1\n");
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_ON_OFF_DASH, 
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
-		gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID,
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
+		ctx->set_line_style (ctx, p1, 1);
+		ctx->draw_line (ctx, x1, y1, x2, y2);
+		ctx->set_line_style (ctx, p1, 0);
 		break;
-	    case LINEARx1 :
-		gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
+	    case LINEARx1:
+		ctx->draw_line (ctx, x1, y1, x2, y2);
 		break;
-	    case CW_CIRCULAR :
-	    case CCW_CIRCULAR :
-		gerbv_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
-			       net->cirseg->angle1, net->cirseg->angle2);
+	    case CW_CIRCULAR:
+	    case CCW_CIRCULAR:
+		ctx->draw_arc (ctx, cp_x-cir_width/2, cp_y-cir_height/2,
+			       cir_width, cir_height,
+			       net->cirseg->angle1,
+			       net->cirseg->angle2 - net->cirseg->angle1);
 		break;		
 	    default :
 		break;
@@ -320,25 +193,25 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	case OFF :
 	    break;
 	case FLASH :
-	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
-	    p2 = (int)round(image->aperture[net->aperture]->parameter[1] * unit_scale);
+	    p1 = image->aperture[net->aperture]->parameter[0] * unit_scale;
+	    p2 = image->aperture[net->aperture]->parameter[1] * unit_scale;
 	    
 	    switch (image->aperture[net->aperture]->type) {
-	    case CIRCLE :
-		gerbv_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
+	    case CIRCLE:
+		ctx->fill_oval (ctx, x2-p1/2, y2-p1/2, p1, p1);
 		break;
 	    case RECTANGLE:
-		gerbv_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p1, p2);
+		ctx->fill_rectangle (ctx, x2-p1/2, y2-p2/2, p1, p2);
 		break;
 	    case OVAL :
-		gerbv_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
+		ctx->fill_oval (ctx, x2-p1/2, y2-p2/2, p1, p2);
 		break;
 	    case POLYGON :
 		GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
-		gerbv_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
+		ctx->fill_oval (ctx, x2-p1/2, y2-p1/2, p1, p1);
 		break;
 	    case MACRO :
-		gerbv_draw_amacro(*pixmap, gc, 
+		gerbv_draw_amacro(ctx, 
 				  image->aperture[net->aperture]->amacro->program,
 				  image->aperture[net->aperture]->amacro->nuf_push,
 				  image->aperture[net->aperture]->parameter,
@@ -346,21 +219,50 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		break;
 	    default :
 		GERB_MESSAGE("Unknown aperture type\n");
-		return 0;
+		return -1;
 	    }
 	    break;
 	default :
 	    GERB_MESSAGE("Unknown aperture state\n");
-	    return 0;
+	    return -1;
 	}
     }
 
-    /*
-     * Destroy GCs before exiting
-     */
-    gdk_gc_unref(gc);
-    gdk_gc_unref(pgc);
-    
-    return 1;
+compose:
+    ctx->compose (ctx);
 
-} /* image2pixmap */
+    return 0;
+} /* gerb_render_image */
+
+
+void
+gerb_render_set_viewport(struct gerb_render_context *ctx,
+			 int width, int height)
+{
+    ctx->set_viewport (ctx, width, height);
+} /* gerb_render_set_viewport */
+
+
+void 
+gerb_render_clear_bg(struct gerb_render_context *ctx,
+		     const unsigned char bg_rgba[4])
+{
+    ctx->clear_composition (ctx, bg_rgba);
+} /* gerb_render_clear_bg */
+
+
+void 
+gerb_render_set_color(struct gerb_render_context *ctx,
+		      const unsigned char rgba [4])
+{
+    ctx->set_layer_color (ctx, rgba);
+} /* gerb_render_set_color */
+
+
+void 
+gerb_render_show(struct gerb_render_context *ctx,
+		 double offset_x, double offset_y)
+{
+    ctx->blit (ctx, offset_x, offset_y);
+} /* gerb_render_show */
+

@@ -32,6 +32,7 @@
 #include <gdk/gdk.h>
 
 #include "gerb_image.h"
+#include "draw.h"
 
 #define INITIAL_SCALE 200
 #define MAX_ERRMSGLEN 25
@@ -51,24 +52,26 @@ typedef enum {GERBV_MILS, GERBV_MMS} gerbv_unit_t;
 
 typedef struct {
     gerb_image_t *image;
-    GdkColor *color;
+    unsigned char color [4];
     char *name;
     char *basename;
 } gerbv_fileinfo_t;
 
 typedef struct {
-	double x1, y1;
-	double x2, y2;
+    double x1, y1;
+    double x2, y2;
 } gerbv_bbox_t;
 
 
 typedef struct {
     GtkWidget *drawing_area;
-    GdkPixmap *pixmap;
-    GdkColor  *background;
     GdkFunction si_func; /* Function used for superimposing layers */
-    GdkColor  *zoom_outline_color;
-    GdkColor  *dist_measure_color;
+    unsigned char bg_color [4];
+    unsigned char zoom_outline_color [4];
+    unsigned char dist_measure_color [4];
+    
+    struct gerb_render_context *ctx;
+    
     gerbv_unit_t unit;
 
     struct {

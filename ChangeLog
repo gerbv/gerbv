@@ -1,3 +1,8 @@
+2003-02-26  Stefan Petersen  <spe@stacken.kth.se>
+
+	* This is the BRANCH_render_1, ChangeLog comments are only necessery
+	  in main trunk.
+
 2003-02-24  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/Makefile.am,src/gerbv.c,src/gerbv_screen.h,src/log.c,

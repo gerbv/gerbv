@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -21,18 +21,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#ifndef DRAW_AMACRO_H
-#define DRAW_AMACRO_H
+#ifndef DRAW_GDK_H
+#define DRAW_GDK_H
+
+#include <gdk/gdk.h>
 
 #include "draw.h"
-#include "amacro.h"
 
-/*
- * Execute (and thus draw) the aperture macro described by program.
- * Inparameters used when defining aperture is parameters
- */
-int gerbv_draw_amacro(struct gerb_render_context *ctx,
-		      instruction_t *program, unsigned int nuf_push,
-		      double *parameters, int scale, double x, double y);
 
-#endif /* DRAW_AMACRO_H */
+extern
+struct gerb_render_context* gerb_create_gdk_render_context (GdkDrawable *dest);
+
+#endif
+
