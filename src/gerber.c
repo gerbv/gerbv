@@ -130,11 +130,19 @@ parse_gerb(FILE *fd)
 	    curr_net->stop_y = (double)state->curr_y / y_scale;
 	    curr_net->arc_start_x = (double)state->arc_start_x / x_scale;
 	    curr_net->arc_start_y = (double)state->arc_start_y / y_scale;
+#ifdef EAGLECAD_KLUDGE
+	    if ( (state->arc_start_x == 0) && (state->arc_start_y == 0) )
+		curr_net->interpolation = LINEARx1;
+	    else
+		curr_net->interpolation = state->interpolation;
+#else
+	    curr_net->interpolation = state->interpolation;
+#endif
 	    state->arc_start_x = 0.0;
 	    state->arc_start_y = 0.0;
 	    curr_net->aperture = state->curr_aperture;
 	    curr_net->aperture_state = state->aperture_state;
-	    curr_net->interpolation = state->interpolation;
+
 	    
 	    /*
 	     * Find min and max of image
@@ -364,8 +372,15 @@ parse_rs274x(FILE *fd, struct gerb_image *image)
 	    image->format->omit_zeros = TRAILING;
 	else if (op[0] == 'D')
 	    image->format->omit_zeros = EXPLICIT;
-	else
+	else {
+#ifdef EAGLECAD_KLUDGE
+	    fprintf(stderr,"EagleCad bug detected: Defaults to omit leading zeroes\n");
+	    ungetc(op[0],fd);
+	    image->format->omit_zeros = LEADING;
+#else
 	    err(1, "Format error: omit_zeros = %c\n", op[0]);
+#endif
+	}
 	
 	op[0] = fgetc(fd);
 	if (op[0] == 'A')

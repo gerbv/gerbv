@@ -37,6 +37,7 @@ extern "C" {
      } while (0)
 #endif
 	
+#define EAGLECAD_KLUDGE 
 	
 #define APERTURE_MIN 10
 #define APERTURE_MAX 999
