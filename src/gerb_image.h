@@ -52,8 +52,8 @@ typedef struct gerb_cirseg {
     double cp_y;
     double width;  /* of oval */
     double height; /* of oval */
-    int angle1;
-    int angle2;
+    double angle1;
+    double angle2;
 } gerb_cirseg_t;
 
 

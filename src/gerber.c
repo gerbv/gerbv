@@ -940,7 +940,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 	net->cirseg->height = 0;
     }
 
-#define RAD2DEG(a) (int)ceil(a * 180 / M_PI) 
+#define RAD2DEG(a) (a * 180 / M_PI) 
     
     switch (quadrant) {
     case 1 :
@@ -948,16 +948,16 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 	net->cirseg->angle2 = RAD2DEG(beta);
 	break;
     case 2 :
-	net->cirseg->angle1 = 180 - RAD2DEG(alfa);
-	net->cirseg->angle2 = 180 - RAD2DEG(beta);
+	net->cirseg->angle1 = 180.0 - RAD2DEG(alfa);
+	net->cirseg->angle2 = 180.0 - RAD2DEG(beta);
 	break;
     case 3 : 
-	net->cirseg->angle1 = 180 + RAD2DEG(alfa);
-	net->cirseg->angle2 = 180 + RAD2DEG(beta);
+	net->cirseg->angle1 = 180.0 + RAD2DEG(alfa);
+	net->cirseg->angle2 = 180.0 + RAD2DEG(beta);
 	break;
     case 4 :
-	net->cirseg->angle1 = 360 - RAD2DEG(alfa);
-	net->cirseg->angle2 = 360 - RAD2DEG(beta);
+	net->cirseg->angle1 = 360.0 - RAD2DEG(alfa);
+	net->cirseg->angle2 = 360.0 - RAD2DEG(beta);
 	break;
     default :
 	GERB_COMPILE_ERROR("Strange quadrant : %d\n", quadrant);
@@ -968,7 +968,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 			     net->cirseg->width, quadrant, alfa, beta);
     
     if (net->cirseg->height < 0.0)
-	GERB_COMPILE_WARNING("Negative height [%f] in quadrant %d [%d][%d]\n", 
+	GERB_COMPILE_WARNING("Negative height [%f] in quadrant %d [%f][%f]\n", 
 	     net->cirseg->height, quadrant, RAD2DEG(alfa), RAD2DEG(beta));
 
     return;
@@ -1008,15 +1008,15 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
      * Make sure it's always positive angles
      */
     if (net->cirseg->angle1 < 0) {
-	net->cirseg->angle1 = 360 + net->cirseg->angle1;
-	net->cirseg->angle2 = 360 + net->cirseg->angle2;
+	net->cirseg->angle1 += 360.0;
+	net->cirseg->angle2 += 360.0;
     }
 
-    if (net->cirseg->angle2 < 0) 
-	net->cirseg->angle2 = 360 + net->cirseg->angle2;
+    if (net->cirseg->angle2 < 0.0) 
+	net->cirseg->angle2 += 360.0;
 
-    if(net->cirseg->angle2 == 0) 
-	net->cirseg->angle2 = 360;
+    if(net->cirseg->angle2 == 0.0) 
+	net->cirseg->angle2 = 360.0;
 
     /*
      * This is a sanity check for angles after the nature of atan2.
@@ -1027,19 +1027,11 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
      */
     if (cw) {
 	if (net->cirseg->angle1 < net->cirseg->angle2)
-	    net->cirseg->angle2 -= 360;
+	    net->cirseg->angle2 -= 360.0;
     } else {
 	if (net->cirseg->angle1 > net->cirseg->angle2)
-	    net->cirseg->angle2 += 360;
+	    net->cirseg->angle2 += 360.0;
     }
-
-    /*
-     * If angles are equal it should be a circle, but as gerbv
-     * currently is designed it becomes a point. Maybe I should
-     * save start angle and how many degrees to draw?
-     */
-    if (fabs(alfa - beta) < 0.00001)
-	net->cirseg->angle2 = 360 + net->cirseg->angle2;
 
     return;
 } /* calc_cirseg_mq */

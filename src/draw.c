@@ -122,13 +122,13 @@ static void
 gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
 	       int x, int y,
 	       int width, int height,
-	       int angle1, int angle2)
+	       double angle1, double angle2)
 {
     gint real_x = x - width / 2;
     gint real_y = y - height / 2;
 
     gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, width, height, 
-		 angle1 * 64, (angle2 - angle1) * 64);
+		 (gint)angle1 * 64.0, (gint)(angle2 - angle1) * 64.0);
     
     return;
 } /* gerbv_draw_arc */
