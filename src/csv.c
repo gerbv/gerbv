@@ -31,7 +31,7 @@
 #include <wctype.h>
 /*#include "msgno.h"*/
 #include "csv.h"
-#include "defines.h"
+#include "csv.defines.h"
 #include "gerb_error.h"
 #define ST_START     1
 #define ST_COLLECT   2

@@ -24,13 +24,14 @@
 #else 
 # define USE_STRCASECMP 0 
 # define USE_STRLWR 0 
-#if defined(__MINGW32__)
-# define SCHEME_EXPORT
+# if defined(__MINGW32__)
+#  define SCHEME_EXPORT
 # else
-# ifdef _SCHEME_SOURCE
-#  define SCHEME_EXPORT __declspec(dllexport)
-# else
-#  define SCHEME_EXPORT __declspec(dllimport)
+#  ifdef _SCHEME_SOURCE
+#   define SCHEME_EXPORT __declspec(dllexport)
+#  else
+#   define SCHEME_EXPORT __declspec(dllimport)
+#  endif
 # endif
 #endif
 

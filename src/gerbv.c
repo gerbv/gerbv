@@ -598,8 +598,6 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 
 #ifdef HAVE_LIBGEN_H    
 
-#ifdef HAVE_LIBGEN_H    
-
 	/*
 	 * Remember where we loaded file from last time
 	 */
