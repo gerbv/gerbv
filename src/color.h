@@ -24,17 +24,14 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-typedef struct gerbv_color {
-    char *name;
-    GdkColor *color;
-} gerbv_color_t;
+#define MAX_COLOR_RESOLUTION 65535
 
-extern gerbv_color_t colors [];
+/*
+ * Allocates a color in the systems colormap. Either you give the
+ * RGB values or the name of the color. The name of the color has
+ * precedence over RGB values.
+ */
+GdkColor *alloc_color(int r, int g, int b, char *colorname);
 
-
-extern gerbv_color_t background;
-
-void alloc_colors(gerbv_color_t colors[], int nuf_colors, 
-		  gerbv_color_t *background);
 
 #endif /* COLOR_H */

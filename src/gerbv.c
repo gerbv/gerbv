@@ -54,7 +54,7 @@
 
 
 #define INITIAL_SCALE 200
-#define MAX_FILES 8
+#define MAX_FILES 20
 
 #ifndef err
 #define err(errcode, a...) \
@@ -66,28 +66,17 @@
 
 enum gerbv_state_t {NORMAL, MOVE};
 
-static gerbv_color_t colors [] = {
-    {"grey50", NULL},
-    {"magenta2", NULL},
-    {"purple2", NULL},
-    {"white", NULL},
-    {"green", NULL},
-    {"blue", NULL},
-    {"yellow", NULL},
-    {"red", NULL},
-};
-
-static gerbv_color_t background = {"black", NULL};
 
 typedef struct gerbv_fileinfo {
     gerb_image_t *image;
-    int color_index;
+    GdkColor *color;
 } gerbv_fileinfo_t;
 
 
 typedef struct gerbv_screen {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
+    GdkColor  *background;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
@@ -107,6 +96,7 @@ typedef struct gerbv_screen {
 } gerbv_screen_t;
 
 gerbv_screen_t screen;
+
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void open_file_popup(GtkWidget *widget, gpointer data);
@@ -216,7 +206,8 @@ create_layer_buttons(int nuf_buttons)
 static void
 cb_ok_open_file(GtkWidget *widget, GtkFileSelection *fs)
 {
-    open_image(gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs)), screen.curr_index);
+    open_image(gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs)), 
+	       screen.curr_index);
     
     /* Make loaded image appear on screen */
     redraw_pixmap(screen.drawing_area);
@@ -231,14 +222,17 @@ open_file_popup(GtkWidget *widget, gpointer data)
     /* File Selection Window */
     GtkWidget *fsw;
 
-    fsw = gtk_file_selection_new("Select Gerberfile To View");
+    fsw = gtk_file_selection_new("Select File To View");
     
     gtk_signal_connect(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
-		       "clicked", GTK_SIGNAL_FUNC(cb_ok_open_file), (gpointer)fsw);
+		       "clicked", GTK_SIGNAL_FUNC(cb_ok_open_file), 
+		       (gpointer)fsw);
     gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->ok_button),
-			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), (gpointer)fsw);
+			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+			      (gpointer)fsw);
     gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(fsw)->cancel_button),
-			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), (gpointer)fsw);
+			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
+			      (gpointer)fsw);
     
     gtk_widget_show(fsw);
     
@@ -325,10 +319,10 @@ redraw_pixmap(GtkWidget *widget)
 
     if (background_polarity == NEGATIVE) {
 	/* Set background to normal color for the last negative layer */
-	gdk_gc_set_foreground(gc, colors[screen.file[last_negative]->color_index].color);
+	gdk_gc_set_foreground(gc, screen.file[last_negative]->color);
     } else {
 	/* Background to black */
-	gdk_gc_set_foreground(gc, background.color);
+	gdk_gc_set_foreground(gc, screen.background);
     }
 
     gdk_draw_rectangle(screen.pixmap,
@@ -347,8 +341,8 @@ redraw_pixmap(GtkWidget *widget)
 	    image2pixmap(&screen.pixmap, screen.file[i]->image, 
 			 screen.scale, screen.trans_x, screen.trans_y,
 			 screen.file[i]->image->info->polarity,
-			 colors[screen.file[i]->color_index].color,
-			 background.color);
+			 screen.file[i]->color,
+			 screen.background);
 	}
     }
 
@@ -367,7 +361,15 @@ static void
 open_image(char *filename, int index)
 {
     FILE *fd;
-    
+    int r, g, b;
+    GdkColor *prelight;
+    GtkStyle *defstyle, *newstyle;
+
+    if (index >= MAX_FILES) {
+	fprintf(stderr, "Couldn't open %s. Index out of range.\n", filename);
+	return;
+    }
+
     fd = fopen(filename, "r");
     if (fd == NULL) {
 	perror("fopen");
@@ -379,7 +381,24 @@ open_image(char *filename, int index)
     else 
 	screen.file[index]->image = parse_gerb(fd);
 
-    screen.file[index]->color_index = index;
+    /*
+     * Calculate a "clever" random color based on index.
+     * 1.1 calculation is to create prelight when mouse is over button.
+     */
+    r = (123411 + 65737 * index) % (int)(MAX_COLOR_RESOLUTION / 1.1);
+    g = (234734 + 43438 * index) % (int)(MAX_COLOR_RESOLUTION / 1.1);
+    b = (903415 + 12339 * index) % (int)(MAX_COLOR_RESOLUTION / 1.1);
+
+    screen.file[index]->color = alloc_color(r, g, b, NULL);
+    prelight = alloc_color(r * 1.1, g * 1.1, b * 1.1, NULL);
+
+    defstyle = gtk_widget_get_default_style();
+    newstyle = gtk_style_copy(defstyle);
+    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[index]->color);
+    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[index]->color);
+    newstyle->bg[GTK_STATE_PRELIGHT] = *prelight;
+    gtk_widget_set_style(screen.layer_button[index], newstyle);
+
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[index],
 			 filename, NULL); 
     fclose(fd);
@@ -692,8 +711,8 @@ internal_main(int argc, char *argv[])
      * Setup some GTK+ defaults
      */
     screen.tooltips = gtk_tooltips_new();        
-    alloc_colors(colors, sizeof(colors)/sizeof(colors[0]), &background);
-    
+    screen.background = alloc_color(0, 0, 0, "black");
+
     /*
      * Main window 
      */

@@ -21,27 +21,39 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#include <stdio.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include "color.h"
 
-void
-alloc_colors(gerbv_color_t colors[], int nuf_colors,
-	     gerbv_color_t *background)
+/*
+ * Allocates a color in the systems colormap.
+ */
+GdkColor *
+alloc_color(int r, int g, int b, char *colorname)
 {
-    int i;
-    GdkColormap *colormap = gdk_colormap_get_system();
-    
-    for (i = 0; i < nuf_colors; i++) {
-	colors[i].color = (struct _GdkColor *)malloc(sizeof(struct _GdkColor));
-	gdk_color_parse(colors[i].name, colors[i].color);
-	gdk_colormap_alloc_color(colormap, colors[i].color, FALSE, TRUE);
-    }
-    
-    background->color = (struct _GdkColor *)malloc(sizeof(struct _GdkColor));
-    gdk_color_parse(background->name, background->color);
-    gdk_colormap_alloc_color(colormap, background->color, FALSE, TRUE);
-    
-    return;
-} /* alloc_colors */
+    GdkColor *color;
 
+    if (r < 0 || r > MAX_COLOR_RESOLUTION)
+	fprintf(stderr, "Red out range: %d\n", r);
+    if (g < 0 || g > MAX_COLOR_RESOLUTION)
+	fprintf(stderr, "Green out range: %d\n", g);
+    if (b < 0 || b > MAX_COLOR_RESOLUTION)
+	fprintf(stderr, "Blue out range: %d\n", b);
+
+    color = (struct _GdkColor *)malloc(sizeof(struct _GdkColor));
+    if (color == NULL)
+	return NULL;
+
+    if (colorname)
+	gdk_color_parse(colorname, color);
+    else {
+	color->pixel = 0;
+	color->red   = (gushort)r;
+	color->green = (gushort)g;
+	color->blue  = (gushort)b;
+    }
+    gdk_colormap_alloc_color(gdk_colormap_get_system(), color, FALSE, TRUE);
+    
+    return color;
+} /* alloc_color */
