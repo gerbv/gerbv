@@ -97,7 +97,7 @@ out, and if you press Shift and middle mouse button you will zoom in.
 Scroll wheel works if you enabled that in your X server and mapped it
 to button 4 and 5.
 
-You can also do zooming by outline. Press left mouse button, draw,
+You can also do zooming by outline. Press right mouse button, draw,
 release.  The dashed line shows how the zooming will be dependent on
 the resolution of the window. The non-dashed outline will show what
 you actually selected. If you change your mind when started to mark
