@@ -86,6 +86,7 @@ typedef struct {
     GdkPixmap *pixmap;
     GdkColor  *background;
     GdkColor  *err_color;
+    GdkColor  *zoom_outline_color;
     
     GtkWidget *load_file_popup;
     GtkWidget *color_selection_popup;
@@ -651,6 +652,10 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     x2 = MAX(screen.zstart_x, event->x);
     y2 = MAX(screen.zstart_y, event->y);
 
+    if (x2 - x1 < 4 && y2 - y1 < 4) {
+	    fprintf(stderr, "Warning: Zoom area too small, bailing out!\n");
+	    goto zoom_outline_end;
+    }
     us_x1 = (screen.trans_x + x1)/(double) screen.scale;
     us_y1 = (screen.trans_y + y1)/(double) screen.scale;
     us_x2 = (screen.trans_x + x2)/(double) screen.scale;
@@ -658,10 +663,10 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
 
     screen.scale = MIN(screen.drawing_area->allocation.width/(double)(us_x2 - us_x1),
 		       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
+    screen.trans_x = screen.scale * (us_x1 + (us_x2 - us_x1)/2) - half_w;
+    screen.trans_y = screen.scale * (us_y1 + (us_y2 - us_y1)/2) - half_h;;
 
-    screen.trans_x = screen.scale * us_x1;
-    screen.trans_y = screen.scale * us_y1;
-
+zoom_outline_end:
     /* Redraw screen unless we have more events to process */
     if (!g_main_pending()) {
 	stop_idle_redraw_pixmap(screen.drawing_area);
@@ -1074,7 +1079,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 	    memset(&values, 0, sizeof(values));
 	    values.function = GDK_XOR;
-	    values.foreground = *screen.err_color;
+	    values.foreground = *screen.zoom_outline_color;
 	    values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	    gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
 
@@ -1303,6 +1308,7 @@ internal_main(int argc, char *argv[])
     screen.tooltips = gtk_tooltips_new();        
     screen.background = alloc_color(0, 0, 0, "black");
     screen.err_color  = alloc_color(0, 0, 0, "red1");
+    screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
 
     /*
      * Main window 

@@ -1,3 +1,10 @@
+2002-05-08  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (zoom_outline): Prevent division by zero by
+	disallowing too small zoom areas in outline mode. Allocate a
+	separate outline zoom color. Center outline zoom area instead
+	of using upper left corner as translation points.
+
 2002-05-08  Stefan Petersen  <spe@stacken.kth.se>
 
 	* INSTALL: Changed gschem->gerbv
