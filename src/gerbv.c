@@ -266,7 +266,7 @@ zoom(GtkWidget *widget, gpointer data)
     case 2 : /* Clear All */
 	screen.scale = INITIAL_SCALE;
 	screen.trans_x = 0;
-	screen.trans_y = screen.drawing_area->allocation.height;
+	screen.trans_y = 0;/*screen.drawing_area->allocation.height;*/
 	break;
     default :
 	fprintf(stderr, "Illegal zoom direction %ld\n", (long int)data);

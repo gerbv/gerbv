@@ -1,7 +1,8 @@
 2001-12-11 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerbv.c : Removed prelighting on buttons and changed
-	  the "random function" creating colors.
+	  the "random function" creating colors. Also fixed "clear 
+	  all" remaining after the pan speedup rewrite.
 
 	
 2001-12-10 Stefan Petersen (spe@stacken.kth.se)
