@@ -1651,7 +1651,9 @@ static void update_statusbar(gerbv_screen_t *scr)
 	     MAX_COORDLEN-1, scr->statusbar.coordstr,
 	     MAX_DISTLEN-1, scr->statusbar.diststr,
 	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr);
-    gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
+    if (scr->statusbar.msg != NULL) {
+	    gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
+    }
 }
 
 

@@ -2,6 +2,9 @@
 
 	* src/gerbv.c: Activate millimeters in unit menu if this
 	  is the default unit.
+	  (update_statusbar()): Check that statusbar has been
+	  created before trying to set text to it. This eliminates
+	  an annoying GTK assertion.
 
 -- Release 0.0.10 --
 
