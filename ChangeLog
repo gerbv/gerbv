@@ -1,18 +1,24 @@
+2004-10-30  Stefan Petersen  <spe@siouxsie.umunet.org>
+
+        * src/draw_amacro.c: Forgot to use local_gc when drawing some
+          of the primitive aperture macros. Closes bug #1051045.
+
 2004-10-13 Juergen Haas <juergenhaas@gmx.net>
 
-	* right click on selected part (current active selection) now works also on shapes with PIN1 Offi
-	  centre axis
-	FIXME circular shapes are recognised  at a fixed radius of 3mm 
-	Only works with units of gerbv match units used in pick and place file! 
+	* right click on selected part (current active selection) now works 
+	  also on shapes with PIN1 Off centre axis
+	  FIXME circular shapes are recognised  at a fixed radius of 3mm 
+	  Only works with units of gerbv match units used in pick and place 
+	  file! 
 
 2004-10-11 Juergen Haas <juergenhaas@gmx.net>
 
-	* a first draft of API documentation exists see
- 	 doc/html/main.html
+	* a first draft of API documentation exists see doc/html/main.html
 	 After adding further comments please use the following style:
 	 /** brief description.
 	 Now we can write details */
-	Afterwards use doc/Doxyfile.nopreprocessing to update documentation with doxygen
+	Afterwards use doc/Doxyfile.nopreprocessing to update documentation
+	with doxygen
 
 2004-09-13  Stefan Petersen  <spe@stacken.kth.se>
 
@@ -21,61 +27,62 @@
 
 2004-09-11 Juergen Haas <juergenhaas@gmx.net>
 
-	*right click in window with active selection now shows part designator in statusline for easier 
-		identification in multiple selections
-		FIXME only works if pin1 is not on center axis of part
+	* right click in window with active selection now shows part 
+	  designator in statusline for easier identification in multiple 
+	  selections
+	  FIXME only works if pin1 is not on center axis of part
 
 
 2004-09-09 Juergen Haas <juergenhaas@gmx.net>
 
-	*added footprint column shown in result search window
+	* added footprint column shown in result search window
 
 2004-09-05 Juergen Haas <juergenhaas@gmx.net>
 
-	*fixed right click shows designator in statusbar does not hang program
-	*MINGW issues with path separators
+	* fixed right click shows designator in statusbar does not hang program
+	* MINGW issues with path separators
 
 2004-09-04 Juergen Haas <juergenhaas@gmx.net>
 
-	*fixed graphical representation of parts
-	*added gerb_transf_rotate
-	*added gerb_transf_shift  
-	*fixed segfault when searching in comments
-	*designator is also shown checked by default
+	* fixed graphical representation of parts
+	* added gerb_transf_rotate
+	* added gerb_transf_shift  
+	* fixed segfault when searching in comments
+	* designator is also shown checked by default
 
 2004-08-28 Juergen Haas <juergenhaas@gmx.net>
 
-	*fixed GTK1 compilation issues
+	* fixed GTK1 compilation issues
 
 
 2004-08-27 Juergen Haas <juergenhaas@gmx.net>
 
- 	*fixed memory issues pnp_state 
- 	*fixed too many calls to screen_for_delimiter
- 	*added #include "string.h" to gerb_transf.c
- 	*introduced update_combo_box_model()
- 	*removed unnecessary code
-	*"beautified" gerb_transf.[ch]	
-	*introduced rectangular shape for marking rectangular parts
-	*introduced a LOG MEssage, when right click on any selected part (must be in active selection)
+ 	* fixed memory issues pnp_state 
+ 	* fixed too many calls to screen_for_delimiter
+ 	* added #include "string.h" to gerb_transf.c
+ 	* introduced update_combo_box_model()
+ 	* removed unnecessary code
+	* "beautified" gerb_transf.[ch]	
+	* introduced rectangular shape for marking rectangular parts
+	* introduced a LOG MEssage, when right click on any selected part
+	  (must be in active selection)
 
 2004-08-26  Juergen Haas <juergenhaas@gmx.net>
 
-	*small bugfixes
-	*added double click draws selected item on screen
+	* small bugfixes
+	* added double click draws selected item on screen
 
 2004-08-25  Tomasz Motylewski <t.motylewski@bfad.de>
 
 	* eliminated memory leak MINGW32 gerb_file.c fd->data
-	* forced LC_NUMERIC to "C" in parse_gerb(), fixing
-	  bug resulting in very thin lines (aperture size = 0)
-	  under GTK2
+	* forced LC_NUMERIC to "C" in parse_gerb(), fixing bug 
+	  resulting in very thin lines (aperture size = 0) under GTK2
 
 2004-08-23  Tomasz Motylewski <t.motylewski@bfad.de>
 
 	* cleaned up memory allocation in gerb_image.c
 	* improved project loading (still broken, there is no clear
-	design which function should do what).
+	  design which function should do what).
 	* fixed memory leak plist_top->filename
 
 2004-08-23  Juergen Haas <juergenhaas@gmx.net>
