@@ -937,7 +937,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 	net->cirseg->height = 0;
     }
 
-#define RAD2DEG(a) (a * 180 / M_PI) 
+#define RAD2DEG(a) (a * 180.0 / M_PI) 
     
     switch (quadrant) {
     case 1 :
