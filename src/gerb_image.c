@@ -155,5 +155,95 @@ gerb_image_verify(gerb_image_t *image)
     if (i == APERTURE_MAX) error |= GERB_IMAGE_MISSING_APERTURES;
     
     return error;
-}
+} /* gerb_image_verify */
 
+
+static void
+gerb_image_interpolation(enum interpolation_t interpolation)
+{
+    switch (interpolation) {
+    case LINEARx1:
+	printf("linearX1");
+	break;
+    case LINEARx10:
+	printf("linearX10");
+	break;
+    case LINEARx01:
+	printf("linearX01");
+	break;
+    case LINEARx001:
+	printf("linearX001");
+	break;
+    case CW_CIRCULAR:
+	printf("CW circular");
+	break;
+    case CCW_CIRCULAR:
+	printf("CCW circular");
+	break;
+    case MQ_START:
+	printf("multi quadrant start");
+	break;
+    case MQ_END:
+	printf("multi quadrant end");
+	break;
+    case  PAREA_START:
+	printf("polygon area start");
+	break;
+    case  PAREA_END:
+	printf("polygon area end");
+	break;
+    default:
+	printf("unknown");
+    }
+} /* gerb_image_interpolation */
+
+
+/* Dumps a written version of image to stdout */
+void 
+gerb_image_dump(gerb_image_t *image)
+{
+    int i, j;
+    gerb_aperture_t **aperture;
+    gerb_net_t *net;
+
+    /* Apertures */
+    printf("Apertures:\n");
+    aperture = image->aperture;
+    for (i = 0; i < APERTURE_MAX; i++) {
+	if (aperture[i]) {
+	    printf(" Aperture no:%d is an ", i);
+	    switch(aperture[i]->type) {
+	    case CIRCLE:
+		printf("circle");
+		break;
+	    case RECTANGLE:
+		printf("rectangle");
+		break;
+	    case OVAL:
+		printf("oval");
+		break;
+	    case POLYGON:
+		printf("polygon");
+		break;
+	    case MACRO:
+		printf("macro");
+	    default:
+		printf("unknown");
+	    }
+	    for (j = 0; j < aperture[i]->nuf_parameters; j++) {
+		printf(" %f", aperture[i]->parameter[j]);
+	    }
+	    printf("\n");
+	}
+    }
+
+    /* Netlist */
+    net = image->netlist;
+    while (net){
+	printf("(%f,%f)->(%f,%f) with %d (", net->start_x, net->start_y, 
+	       net->stop_x, net->stop_y, net->aperture);
+	gerb_image_interpolation(net->interpolation);
+	printf(")\n");
+	net = net->next;
+    }
+} /* gerb_image_dump */

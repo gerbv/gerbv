@@ -1,3 +1,9 @@
+2004-06-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/gerbv_screen.h, src/gerb_image.c, src/gerb_image.h:
+	  Added possibility to dump a parsed image as text to be able to
+	  debug the parser.
+
 2004-06-10  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw_amacro.c: By mistake I assumed that all aperture 

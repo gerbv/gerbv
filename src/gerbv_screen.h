@@ -118,6 +118,8 @@ typedef struct {
     gint off_x;			/* Offset current pixmap when panning */
     gint off_y;
     gerbv_bbox_t clip_bbox;	/* Clipping bounding box */
+
+    int dump_parsed_image;
 } gerbv_screen_t;
 
 extern gerbv_screen_t screen;

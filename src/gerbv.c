@@ -1627,6 +1627,10 @@ open_image(char *filename, int idx, int reload)
 	return -1;
     }
 
+    /* Used to debug parser */
+    if (screen.dump_parsed_image)
+	gerb_image_dump(parsed_image);
+
     /*
      * If reload, just exchange the image. Else we have to allocate
      * a new memory before we define anything more.
@@ -2421,34 +2425,6 @@ lookup_widget (GtkWidget * widget, const gchar * widget_name)
 } /* lookup_widget */
 
 
-#ifdef HAVE_GETOPT_LONG
-int longopt_val = 0;
-int longopt_idx = 0;
-static struct option longopts[] = {
-    /* name              has_arg            flag  val */
-    {"version",          no_argument,       NULL,    'V'},
-    {"help",             no_argument,       NULL,    'h'},
-    {"batch",            required_argument, NULL,    'b'},
-    {"log",              required_argument, NULL,    'l'},
-    {"tools",            required_argument, NULL,    't'},
-    {"geometry",         required_argument, &longopt_val, 1},
-    {"project",          required_argument, &longopt_val, 'p'},
-    /* GDK/GDK debug flags to be "let through" */
-    {"gtk-module",       required_argument, &longopt_val, 2},
-    {"g-fatal-warnings", no_argument,       &longopt_val, 2},
-    {"gtk-debug",        required_argument, &longopt_val, 2},
-    {"gtk-no-debug",     required_argument, &longopt_val, 2},
-    {"gdk-debug",        required_argument, &longopt_val, 2},
-    {"gdk-no-debug",     required_argument, &longopt_val, 2},
-    {"display",          required_argument, &longopt_val, 2},
-    {"sync",             no_argument,       &longopt_val, 2},
-    {"no-xshm",          no_argument,       &longopt_val, 2},
-    {"name",             required_argument, &longopt_val, 2},
-    {"class",            required_argument, &longopt_val, 2},
-    {0, 0, 0, 0},
-};
-#endif /* HAVE_GETOPT_LONG*/
-
 void
 rename_main_window(char *filename, GtkWidget *main_win)
 {
@@ -2469,6 +2445,36 @@ rename_main_window(char *filename, GtkWidget *main_win)
 				 
 }
 
+#ifdef HAVE_GETOPT_LONG
+int longopt_val = 0;
+int longopt_idx = 0;
+const struct option longopts[] = {
+    /* name              has_arg            flag  val */
+    {"version",          no_argument,       NULL,    'V'},
+    {"help",             no_argument,       NULL,    'h'},
+    {"batch",            required_argument, NULL,    'b'},
+    {"log",              required_argument, NULL,    'l'},
+    {"tools",            required_argument, NULL,    't'},
+    {"project",          required_argument, NULL,    'p'},
+    {"dump",             no_argument,       NULL,    'd'},
+    {"geometry",         required_argument, &longopt_val, 1},
+    /* GDK/GDK debug flags to be "let through" */
+    {"gtk-module",       required_argument, &longopt_val, 2},
+    {"g-fatal-warnings", no_argument,       &longopt_val, 2},
+    {"gtk-debug",        required_argument, &longopt_val, 2},
+    {"gtk-no-debug",     required_argument, &longopt_val, 2},
+    {"gdk-debug",        required_argument, &longopt_val, 2},
+    {"gdk-no-debug",     required_argument, &longopt_val, 2},
+    {"display",          required_argument, &longopt_val, 2},
+    {"sync",             no_argument,       &longopt_val, 2},
+    {"no-xshm",          no_argument,       &longopt_val, 2},
+    {"name",             required_argument, &longopt_val, 2},
+    {"class",            required_argument, &longopt_val, 2},
+    {0, 0, 0, 0},
+};
+#endif /* HAVE_GETOPT_LONG*/
+const char *opt_options = "Vhl:t:p:d";
+
 int
 main(int argc, char *argv[])
 {
@@ -2482,7 +2488,6 @@ main(int argc, char *argv[])
     int       i;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
     char      *rest, *project_filename = NULL;
-    static const char *opt_options = "Vhl:t:p:";
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
@@ -2523,9 +2528,6 @@ main(int argc, char *argv[])
 		    break;
 		req_y = (int)strtol(rest, &rest, 10);
 		break;
-	    case 'p': /* project */
-		project_filename = optarg;
-		break;
 	    default:
 		break;
 	    }
@@ -2562,6 +2564,9 @@ main(int argc, char *argv[])
 		fprintf(stderr, "*** EXITING to prevent erroneous display.\n");
 		exit(1);
             }
+	    break;
+	case 'd':
+	    screen.dump_parsed_image = 1;
 	    break;
 	case '?':
 	case 'h':

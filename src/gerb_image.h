@@ -152,6 +152,8 @@ typedef enum {
 
 gerb_verify_error_t gerb_image_verify(gerb_image_t *image);
 
+/* Dumps a written version of image to stdout */
+void gerb_image_dump(gerb_image_t *image);
 
 #ifdef __cplusplus
 }
