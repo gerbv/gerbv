@@ -1,14 +1,15 @@
-.TH gerbv 1 "August 22nd, 2001" Version 0.0.1
+.TH gerbv 1 "November 4th, 2001" Version 0.0.5
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
 .B gerbv
-[--batch=<backend> | -b <backend>] [ --version | -V] gerberfile[s]
+[--batch=<backend> | -b <backend>] [ --version | -V] 
+[--drill=<drillfile> | -d <drillfile>] gerberfile[s]
 .SH DESCRIPTION
 .PP
 \fIgerbv\fP is a viewer for Gerber files. Gerber files is generated
 from different PCB CAD programs and are sent to subcontractors to
-actually make the PCB.
+actually make the PCB. \fIgerbv\fP also supports Excellon/NC drill files.
 
 \fIgerbv\fP is GTK+ based and contains a possibility to run in "batch mode".
 When running in batch mode, gerbv parses the Gerber file and calls an
@@ -32,13 +33,19 @@ Prints the version number of gerbv and exits.
 .TP
 .BI -b\ <backend>
 Calls the backend to generate output. GTK+ is never started.
+.TP 8
+.BI --drill=<drillfile>
+.TP
+.BI -d\ <drillfile>
+Read <drillfile> as a drillfile and displays it with the other gerberfiles.
 
 .SH "ENVIRONMENT"
 No environment variables are used.
 
 .SH "AUTHOR"
 .nf
-Stefan Petersen (spe@stacken.kth.se)
+Stefan Petersen (spe@stacken.kth.se): Overall hacker and project leader
+Andreas Andersson (e92_aan@e.kth.se): Drill file support
 
 .SH COPYRIGHT
 .nf

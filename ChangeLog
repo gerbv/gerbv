@@ -1,5 +1,13 @@
 2001-11-03 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/gerbv.c: Added command line -d|--drill support 
+	  for drill files both in graphical mode and batch mode.
+	  Though are drill file tool/apertures not properly handled
+	  by ->scheme converter.
+	* man/gerbv.1: Changed man page to reflect the new switches.
+	
+2001-11-03 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/gerber.[hc]: Cleaned up code after latest hack.
 	* src/scm_gerber.c: Changed format of list delivered to
 	  the backend; no delta center points. Now it's all calculated

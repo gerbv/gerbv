@@ -516,7 +516,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 #ifndef NO_GUILE
 static void
-batch(char *backend, char *file)
+batch(char *backend, char *file, int drillp) /* XXX drillp kludge */
 {
     char         *path[3];
     char 	 *complete_path;
@@ -585,7 +585,12 @@ batch(char *backend, char *file)
 	perror("fopen");
 	exit(1);
     }
-    image = parse_gerb(fd);
+
+    if (drillp)
+	image = parse_drillfile(fd);
+    else
+	image = parse_gerb(fd);
+
     fclose(fd);
     
     /*
@@ -617,6 +622,7 @@ static struct option longopts[] = {
     /* name     has_arg            flag  val */
     {"version", no_argument,       NULL, 'V'},
     {"batch",   required_argument, NULL, 'b'},
+    {"drill",   required_argument, NULL, 'd'},
     {0, 0, 0, 0},
 };
 #endif
@@ -633,14 +639,15 @@ internal_main(int argc, char *argv[])
     int	   run_batch = 0;
     int 	   i;
     char      *backend = NULL;
+    char      *drill_file = NULL;
     char 	   read_opt;
     int 	   option_index;
     
 #ifdef HAVE_GETOPT_LONG
-    while ((read_opt = getopt_long(argc, argv, "Vb:", 
+    while ((read_opt = getopt_long(argc, argv, "Vb:d:", 
 				   longopts, &option_index)) != -1) {
 #else
-    while ((read_opt = getopt(argc, argv, "Vb:")) != -1) {
+    while ((read_opt = getopt(argc, argv, "Vb:d:")) != -1) {
 #endif
 	switch (read_opt) {
 	case 'V' :
@@ -657,13 +664,21 @@ internal_main(int argc, char *argv[])
 		err(1, "You must give a backend in batch mode\n");
 	    
 	    backend = (char *)malloc(strlen(optarg) + strlen("gerb-.scm") + 1);
+	    if (backend == NULL) 
+		err(1, "Failed mallocing backend string\n");
 	    strcpy(backend, "gerb-");
 	    strcat(backend, optarg);
 	    strcat(backend, ".scm");
 #endif
 	    break;
+	case 'd' :
+	    drill_file = (char *)malloc(strlen(optarg) + 1);
+	    if (drill_file == NULL)
+		err(1, "Failed mallocing drill filename\n");
+	    strcpy(drill_file, optarg);
+	    break;
 	case '?':
-	    fprintf(stderr, "Usage : %s [--batch=<backend>|-b <backend>]\n", argv[0]);
+	    fprintf(stderr, "Usage : %s [--version|-V][--batch=<backend>|-b <backend>][--drill=<drill file>|-d <drill file>] <gerber file(s)>\n", argv[0]);
 	    exit(1);
 	    break;
 	default :
@@ -673,14 +688,27 @@ internal_main(int argc, char *argv[])
     
 #ifndef NO_GUILE
     if (run_batch) {
-	if (optind == argc)
+	if (optind == argc && drill_file == NULL)
 	    err(1, "No file to work on\n");
 	
+	/*
+	 * Loop through gerber files
+	 */
 	for(i = optind ; i < argc; i++) {
 	    printf("%s\n", argv[i]);
-	    batch(backend, argv[i]);
-	    free(backend);
+	    batch(backend, argv[i], 0);
 	}
+
+	/*
+	 * If drill file is defined, parse and drop it
+	 */
+	if (drill_file) {
+	    batch(backend, drill_file, 1);
+	    free(drill_file);
+	    drill_file = NULL;
+	}
+
+	free(backend);
 	exit(0);
     }
 #endif
@@ -731,6 +759,9 @@ internal_main(int argc, char *argv[])
     gtk_box_pack_start(GTK_BOX(hbox), screen.drawing_area, TRUE, TRUE, 0);
     for(i = optind ; i < argc; i++)
 	open_image(argv[i], i - optind);
+
+    if (drill_file)
+	open_drillimage(drill_file, i - optind);
     
     gtk_box_pack_start(GTK_BOX(hbox), create_radio_buttons(MAX_FILES), FALSE, FALSE, 0);
     
