@@ -203,13 +203,12 @@ set_window_icon (GtkWidget * this_window)
     GdkPixmap *pixmap;
     GdkBitmap *mask;
 
-    
     pixmap = gdk_pixmap_create_from_xpm_d (this_window->window, &mask,
 &this_window->style->bg[GTK_STATE_NORMAL], gerbv_icon_xpm);
     gdk_window_set_icon (this_window->window, NULL, pixmap, mask);
 
     return;
-}
+} /* set_window_icon */
 
 
 static void
