@@ -1,3 +1,13 @@
+2001-12-29 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c:
+	  Autodetection routine changed back to original style to allow
+	  special cases needed with output from some CAD systems.
+	* src/gerb_file.c:
+	  Error check for mmap() added to stop gerbv from segdumping
+	  when trying to open a directory instead of a file.
+
+
 2001-12-29 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerb_file.[hc], src/gerber.c: Added function 
