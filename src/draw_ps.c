@@ -121,10 +121,11 @@ gerb_ps_draw_arc(struct gerb_render_context *ctx,
 	    cp_x + dx/2.0*cos(phi_start*M_PI/180.0), 
 	    cp_y + dy/2.0*sin(phi_start*M_PI/180.0));
     
-    fprintf(gctx->fd,"%.3f %.3f %.3f %.3f %.3f arc %% %.3f %.3f SUCKS!\n",
+    fprintf(gctx->fd,"%.3f %.3f %.3f %.3f %.3f %s stroke\n",
 	    cp_x, cp_y, /* arc center point */
 	    dx/2.0,
-	    phi_start,  phi_start+phi_delta, phi_start, phi_delta);
+	    phi_start,  phi_start+phi_delta, 
+	    (phi_delta < 0.0)?"arcn":"arc");
 
 } /* gerb_ps_draw_arc */
 
