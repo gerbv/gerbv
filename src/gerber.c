@@ -59,6 +59,7 @@ typedef struct gerb_state {
     gerb_net_t *parea_start_node;
     char *curr_layername;
     int in_parea_fill;
+    int mq_on;
 } gerb_state_t;
 
 
@@ -186,22 +187,18 @@ parse_gerb(gerb_file_t *fd)
 	    case CW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
 		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
-		calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
+		if (state->mq_on)
+		    calc_cirseg_mq(curr_net, 1, delta_cp_x, delta_cp_y);
+		else
+		    calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case CCW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
 		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
-		calc_cirseg_sq(curr_net, 0, delta_cp_x, delta_cp_y);
-		break;
-	    case MQ_CW_CIRCULAR :
-		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
-		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
-		calc_cirseg_mq(curr_net, 1, delta_cp_x, delta_cp_y);
-		break;
-	    case MQ_CCW_CIRCULAR:
-		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
-		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
-		calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
+		if (state->mq_on)
+		    calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
+		else
+		    calc_cirseg_sq(curr_net, 0, delta_cp_x, delta_cp_y);
 		break;
 	    case PAREA_START :
 		/* 
@@ -223,18 +220,17 @@ parse_gerb(gerb_file_t *fd)
 	    if (state->in_parea_fill && state->parea_start_node) 
 		state->parea_start_node->nuf_pcorners++;
 
-#ifdef EAGLECAD_KLUDGE
-	    if ( (state->delta_cp_x == 0.0) && (state->delta_cp_y == 0.0) &&
-		 ( (state->interpolation == MQ_CW_CIRCULAR) ||
-		   (state->interpolation == MQ_CCW_CIRCULAR) ))
-		curr_net->interpolation = LINEARx1;
-	    else
-		curr_net->interpolation = state->interpolation;
-#else
 	    curr_net->interpolation = state->interpolation;
-#endif
 
-	    if (state->interpolation == PAREA_END)
+	    /*
+	     * If we detected the end of Polygon Area Fill we go back to
+	     * the interpolation we had before that.
+	     * Also if we detected any of the quadrant flags, since some
+	     * gerbers don't reset the interpolation (EagleCad again).
+	     */
+	    if ((state->interpolation == PAREA_END) ||
+		(state->interpolation == MQ_START) ||
+		(state->interpolation == MQ_END))
 		state->interpolation = state->prev_interpolation;
 
 	    /*
@@ -307,18 +303,10 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	state->interpolation = LINEARx1;
 	break;
     case 2:  /* Clockwise Linear Interpolation */
-	if (state->interpolation == MQ_CW_CIRCULAR ||
-	    state->interpolation == MQ_CCW_CIRCULAR)
-	    state->interpolation = MQ_CW_CIRCULAR;
-	else 
-	    state->interpolation = CW_CIRCULAR;
+	state->interpolation = CW_CIRCULAR;
 	break;
     case 3:  /* Counter Clockwise Linear Interpolation */
-	if (state->interpolation == MQ_CW_CIRCULAR ||
-	    state->interpolation == MQ_CCW_CIRCULAR)
-	    state->interpolation = MQ_CCW_CIRCULAR;
-	else 
-	    state->interpolation = CCW_CIRCULAR;
+	state->interpolation = CCW_CIRCULAR;
 	break;
     case 4:  /* Ignore Data Block */
 	/* Don't do anything, just read 'til * */
@@ -355,13 +343,14 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	NOT_IMPL(fd, "G71");
 	break;
     case 74: /* Disable 360 circular interpolation */
-	if (state->interpolation == MQ_CW_CIRCULAR)
-	    state->interpolation = CW_CIRCULAR;
-	else
-	    state->interpolation = CCW_CIRCULAR;
+	state->prev_interpolation = state->interpolation;
+	state->interpolation = MQ_END;
+	state->mq_on = 0;
 	break;
     case 75: /* Enable 360 circular interpolation */
-	state->interpolation = MQ_CW_CIRCULAR;
+	state->prev_interpolation = state->interpolation;
+	state->interpolation = MQ_START;
+	state->mq_on = 1;
 	break;
     case 90: /* Specify absolut format */
 	if (format) format->coordinate = ABSOLUTE;
@@ -465,13 +454,9 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	else if (op[0] == 'D')
 	    image->format->omit_zeros = EXPLICIT;
 	else {
-#ifdef EAGLECAD_KLUDGE
 	    fprintf(stderr,"EagleCad bug detected: Defaults to omit leading zeroes\n");
 	    gerb_ungetc(fd);
 	    image->format->omit_zeros = LEADING;
-#else
-	    err(1, "Format error: omit_zeros = %c\n", op[0]);
-#endif
 	}
 	
 	op[0] = gerb_fgetc(fd);

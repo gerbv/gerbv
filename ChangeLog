@@ -1,3 +1,13 @@
+2002-09-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/batch.c, src/draw.c, src/gerb_image.h, src/gerber.c, 
+	  src/gerber.h: Changed how multiquadrant circles are supported.
+	  Now it's more of a state, before it was considered an interpolation.
+	  Therefore not all multiquadrant circles were detected as such and
+	  got defined wrong. Some parts of the EAGLECAD_KLUDGE was removed,
+ 	  though EagleCad had some other surprises in store.
+	
+
 2002-09-02  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/batch.c, src/draw.c, src/gerb_image.h, src/gerber.c:

@@ -32,9 +32,6 @@ extern "C" {
 #include "gerb_image.h"
 #include "gerb_file.h"
 
-
-#define EAGLECAD_KLUDGE 
-
 /*
  * parse gerber file pointed to by fd
  */

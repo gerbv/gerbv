@@ -298,9 +298,6 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    case LINEARx1 :
 		gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
 		break;
-		
-	    case MQ_CW_CIRCULAR :
-	    case MQ_CCW_CIRCULAR :
 	    case CW_CIRCULAR :
 	    case CCW_CIRCULAR :
 		gerbv_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
