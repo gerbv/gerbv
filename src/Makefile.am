@@ -23,7 +23,7 @@
 
 bin_PROGRAMS = gerbv
 
-gerbv_SOURCES = gerb_image.c gerb_file.c gerber.c scm_gerber.c gerbv.c \
+gerbv_SOURCES = gerb_image.c gerb_file.c gerber.c batch.c gerbv.c \
 		draw_amacro.c draw.c drill.c color.c amacro.c exportimage.c
 
 INCLUDES = @GTK_CFLAGS@ @GUILE_CFLAGS@ @GDK_PIXBUF_CFLAGS@

@@ -50,7 +50,9 @@
 #include "gerber.h"
 #include "drill.h"
 #ifdef GUILE_IN_USE
-#include "scm_gerber.h"
+#include <libguile.h>
+#include <guile/gh.h> /* To be deprecated */
+#include "batch.h"
 #endif /* GUILE_IN_USE */
 #include "draw.h"
 #include "color.h"
@@ -1578,129 +1580,6 @@ static void update_statusbar(gerbv_screen_t *scr)
 	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr);
     gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
 }
-
-
-#ifdef GUILE_IN_USE
-static void
-batch(char *backend, char *filename)
-{
-    char         *path[3];
-    char 	 *complete_path;
-    char         *home;
-    int		  i;
-    gerb_file_t  *fd;
-    gerb_image_t *image;
-    gerb_verify_error_t error = GERB_IMAGE_OK;
-    SCM	          scm_image;
-
-    if ((home = getenv("HOME")) == NULL)
-	err(1, "HOME not set\n");
-
-    /*
-     * Define the paths to look for backend in.
-     */
-    if ((path[0] = (char *)malloc(strlen(".") + 1)) == NULL)
-	err(1, "Malloc failed\n");
-    strcpy(path[0], ".");
-
-    if ((path[1] = (char *)malloc(strlen(home) + strlen("/.gerbv/scheme") + 1)) == NULL)
-	err(1, "Malloc failed\n");
-    strcpy(path[1], home);
-    strcat(path[1], "/.gerbv/scheme");
-
-    if ((path[2] = (char *)malloc(strlen(BACKEND_DIR) + 1)) == NULL)
-	err(1, "Malloc failed\n");
-    strcpy(path[2], BACKEND_DIR);
-
-    /*
-     * Search for backend in along the paths. Break when you find one.
-     */
-    for (i = 0; i < sizeof(path)/sizeof(path[0]); i++) {
-	complete_path = (char *)malloc(strlen(path[i]) + strlen(backend) + 2);
-	strcpy(complete_path, path[i]);
-	strcat(complete_path, "/");
-	strcat(complete_path, backend);
-	if (access(complete_path, R_OK) != -1)
-	    break;
-	free(complete_path);
-	complete_path = NULL;
-    }
-
-    /*
-     * First minor cleanup
-     */
-    for (i = 0; i < sizeof(path)/sizeof(path[0]); i++) {
-	free(path[i]);
-	path[i] = NULL;
-    }
-
-    /*
-     * Did we find a backend?
-     */
-    if (complete_path == NULL) {
-	printf("Backend not found\n");
-	return;
-    } else {
-	printf("Backend is [%s]\n", complete_path);
-    }
-
-    /*
-     * Read and parse Gerberfile
-     */
-    fd = gerb_fopen(filename);
-    if (fd == NULL) {
-	fprintf(stderr, "Trying to open %s: ", filename);
-	perror("");
-	return;
-    }
-
-    if (drill_file_p(fd))
-	image = parse_drillfile(fd);
-    else
-	image = parse_gerb(fd);
-    
-    gerb_fclose(fd);
-
-    /*
-     * Do error check before continuing
-     */
-    error = gerb_image_verify(image);
-    if (error) {
-	fprintf(stderr, "%s: Parse error: ", filename);
-	if (error & GERB_IMAGE_MISSING_NETLIST)
-	    fprintf(stderr, "Missing netlist ");
-	if (error & GERB_IMAGE_MISSING_FORMAT)
-	    fprintf(stderr, "Missing format ");
-	if (error & GERB_IMAGE_MISSING_APERTURES) 
-	    fprintf(stderr, "Missing apertures/drill sizes ");
-	if (error & GERB_IMAGE_MISSING_INFO)
-	    fprintf(stderr, "Missing info ");
-	fprintf(stderr, "\n");
-	exit(1);
-    }
-   
-    /*
-     * Convert it to Scheme
-     */
-    scm_image = scm_image2scm(image, filename);
-    
-    /*
-     * Call external Scheme function in found backend
-     */
-    scm_primitive_load(scm_makfrom0str(complete_path));
-    scm_apply(scm_eval(gh_symbol2scm("main")), scm_image, SCM_EOL);
-    
-    /*
-     * Cleanup
-     */
-    free(complete_path);
-    complete_path = NULL;
-    
-    free_gerb_image(image);
-    
-    return;
-}
-#endif /* GUILE_IN_USE */
 
 
 #ifdef HAVE_GETOPT_LONG

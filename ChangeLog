@@ -1,3 +1,9 @@
+2002-08-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/Makefile.am, files2tag.txt modified, 
+	  src/scm_gerber.[hc] removed, src/batch.[hc] added: 
+	  All batch functionality broken out to one place, ie batch.[hc].
+
 2002-08-09  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Removed two lines causing zoom to stop work

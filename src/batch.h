@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -21,13 +21,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#ifndef SCM_GERBER_H
-#define SCM_GERBER_H
+#ifndef BATCH_H
+#define BATCH_H
 
-#include <libguile.h>
-#include <guile/gh.h> /* To be deprecated */
-#include "gerb_image.h"
+void batch(char *backend, char *filename);
 
-SCM scm_image2scm(gerb_image_t *image, char *filename);
-
-#endif /* SCM_GERBER_H */
+#endif /* BATCH_H */

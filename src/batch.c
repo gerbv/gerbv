@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- * Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -25,9 +25,22 @@
 #include <config.h>
 #endif
 
-#ifdef GUILE_IN_USE
+#ifdef GUILE_IN_USE 
 
-#include "scm_gerber.h"
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include <libguile.h>
+#include <guile/gh.h> /* To be deprecated */
+
+#include "gerber.h"
+#include "drill.h"
+#include "gerb_image.h"
 
 #ifndef err
 #define err(errcode, a...) \
@@ -36,6 +49,7 @@
            exit(errcode);\
      } while (0)
 #endif
+
 
 static SCM
 scm_aperture2scm(enum aperture_t a)
@@ -54,7 +68,7 @@ scm_aperture2scm(enum aperture_t a)
     default :
 	err(1, "Unhandled aperture type\n");
     }
-}
+} /* scm_aperture2scm */
 
 
 static SCM
@@ -70,7 +84,7 @@ scm_aperture_state2scm(enum aperture_state_t aperture_state)
     default :
 	err(1, "Unhandled aperture type\n");
     }
-}
+} /* scm_aperture_state2scm */
 
 
 static SCM
@@ -102,10 +116,10 @@ scm_interpolation2scm(enum interpolation_t interpolation)
     default :
 	return SCM_BOOL_F;
     }
-}
+} /* scm_interpolation2scm */
 
 
-SCM
+static SCM
 scm_omit_zeros2scm(enum omit_zeros_t omit_zeros)
 {
 
@@ -119,10 +133,10 @@ scm_omit_zeros2scm(enum omit_zeros_t omit_zeros)
     default:
 	return SCM_BOOL_F;
     }
-}
+} /* scm_omit_zeros2scm */
 
 
-SCM
+static SCM
 scm_image2scm(gerb_image_t *image, char *filename)
 {
     gerb_net_t *net;
@@ -236,5 +250,130 @@ scm_image2scm(gerb_image_t *image, char *filename)
 		       scm_makfrom0str(filename), SCM_UNDEFINED);
     
 } /* scm_image2scm */
+
+
+void
+batch(char *backend, char *filename)
+{
+    char         *path[3];
+    char 	 *complete_path;
+    char         *home;
+    int		  i;
+    gerb_file_t  *fd;
+    gerb_image_t *image;
+    gerb_verify_error_t error = GERB_IMAGE_OK;
+    SCM	          scm_image;
+
+    if ((home = getenv("HOME")) == NULL)
+	err(1, "HOME not set\n");
+
+    /*
+     * Define the paths to look for backend in:
+     * path[0] = current directory where gerbv was invoked from
+     * path[1] = $HOME/.gerbv/scheme
+     * path[2] = BACKEND_DIR defined with ./configure --with-backend-dir=XX,
+     *           default /usr/local/share/gerbv/scheme
+     */
+    if ((path[0] = (char *)malloc(strlen(".") + 1)) == NULL)
+	err(1, "Malloc failed\n");
+    strcpy(path[0], ".");
+
+    if ((path[1] = (char *)malloc(strlen(home) + strlen("/.gerbv/scheme") + 1)) == NULL)
+	err(1, "Malloc failed\n");
+    strcpy(path[1], home);
+    strcat(path[1], "/.gerbv/scheme");
+
+    if ((path[2] = (char *)malloc(strlen(BACKEND_DIR) + 1)) == NULL)
+	err(1, "Malloc failed\n");
+    strcpy(path[2], BACKEND_DIR);
+
+    /*
+     * Search for backend along the paths. Break when you find one.
+     */
+    for (i = 0; i < sizeof(path)/sizeof(path[0]); i++) {
+	complete_path = (char *)malloc(strlen(path[i]) + strlen(backend) + 2);
+	strcpy(complete_path, path[i]);
+	strcat(complete_path, "/");
+	strcat(complete_path, backend);
+	if (access(complete_path, R_OK) != -1)
+	    break;
+	free(complete_path);
+	complete_path = NULL;
+    }
+
+    /*
+     * Make sure all allocated path strings above are deallocated
+     */
+    for (i = 0; i < sizeof(path)/sizeof(path[0]); i++) {
+	free(path[i]);
+	path[i] = NULL;
+    }
+
+    /*
+     * Did we find a backend?
+     */
+    if (complete_path == NULL) {
+	printf("Backend not found\n");
+	return;
+    } else {
+	printf("Backend is [%s]\n", complete_path);
+    }
+
+    /*
+     * Read and parse Gerberfile
+     */
+    fd = gerb_fopen(filename);
+    if (fd == NULL) {
+	fprintf(stderr, "Trying to open %s: ", filename);
+	perror("gerbv:batch");
+	return;
+    }
+
+    if (drill_file_p(fd))
+	image = parse_drillfile(fd);
+    else
+	image = parse_gerb(fd);
+    
+    gerb_fclose(fd);
+
+    /*
+     * Do error check before continuing
+     */
+    error = gerb_image_verify(image);
+    if (error) {
+	fprintf(stderr, "%s: Parse error: ", filename);
+	if (error & GERB_IMAGE_MISSING_NETLIST)
+	    fprintf(stderr, "Missing netlist ");
+	if (error & GERB_IMAGE_MISSING_FORMAT)
+	    fprintf(stderr, "Missing format ");
+	if (error & GERB_IMAGE_MISSING_APERTURES) 
+	    fprintf(stderr, "Missing apertures/drill sizes ");
+	if (error & GERB_IMAGE_MISSING_INFO)
+	    fprintf(stderr, "Missing info ");
+	fprintf(stderr, "\n");
+	exit(1);
+    }
+   
+    /*
+     * Convert it to Scheme
+     */
+    scm_image = scm_image2scm(image, filename);
+    
+    /*
+     * Call external Scheme function in found backend
+     */
+    scm_primitive_load(scm_makfrom0str(complete_path));
+    scm_apply(scm_eval(gh_symbol2scm("main")), scm_image, SCM_EOL);
+    
+    /*
+     * Cleanup
+     */
+    free(complete_path);
+    complete_path = NULL;
+    
+    free_gerb_image(image);
+    
+    return;
+} /* batch */
 
 #endif /* GUILE_IN_USE */

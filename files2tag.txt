@@ -16,7 +16,7 @@ rebuild_conf*
 TODO
 
 ./doc/aperturemacro.txt
-./doc/Makefile.example
+#./doc/Makefile.example
 ./doc/sources.txt
 
 ./example/am-test/am-test.gbx
@@ -124,5 +124,5 @@ TODO
 ./src/gerbv.c
 ./src/gerbv_screen.h
 ./src/Makefile.am
-./src/scm_gerber.c
-./src/scm_gerber.h
+./src/batch.c
+./src/batch.h
