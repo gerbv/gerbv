@@ -848,11 +848,9 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
     alfa = atan2(d1y, d1x);
     beta = atan2(d2y, d2x);
 
-
-#define ABS(a) (a>0.0?a:-a)
-#define MAX(a,b) (a>b?a:b)
-    net->cirseg->width = MAX(ABS(delta_cp_x), ABS(delta_cp_y)) * 2.0;
-    net->cirseg->height = MAX(ABS(delta_cp_x), ABS(delta_cp_y)) * 2.0 ;
+    net->cirseg->width = sqrt(delta_cp_x*delta_cp_x + delta_cp_y*delta_cp_y);
+    net->cirseg->width *= 2.0;
+    net->cirseg->height = net->cirseg->width;
 
     net->cirseg->angle1 = RAD2DEG(alfa);
     net->cirseg->angle2 = RAD2DEG(beta);
@@ -868,8 +866,16 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
     if (net->cirseg->angle2 < 0) 
 	net->cirseg->angle2 = 360 + net->cirseg->angle2;
 
-    if(net->cirseg->angle2 == 0)
+    if(net->cirseg->angle2 == 0) 
 	net->cirseg->angle2 = 360;
+
+    /*
+     * If angles are equal it should be a circle, but as gerbv
+     * currently is designed it becomes a point. Maybe I should
+     * save start angle and how many degrees to draw?
+     */
+    if ((net->cirseg->angle2 - net->cirseg->angle1) == 0)
+	net->cirseg->angle2 = 360 + net->cirseg->angle2;
 
     return;
 } /* calc_cirseg_mq */

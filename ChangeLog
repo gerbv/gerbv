@@ -1,3 +1,10 @@
+2002-04-10 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.c: Fixed mq arcs so circles are circles and
+	  and width/height are correctly calculated. Closes bug
+	  #541089. Hopefully.
+
+	
 2002-04-09 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerber.c: Fixed draw direction of arcs reported in
