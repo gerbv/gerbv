@@ -1,8 +1,9 @@
-2002-06-10  Anders Eriksson  <anders@poirot.faldor.umunet.org>
+2002-06-10  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Centered outline zoom uses shift instead of control,
 	  use shift before clicking with button three to initiate centered
 	  outline zoom (rm:ed switching between centered and plain outline).
+	  Changed distance output format to add more digits.
 
 2002-06-09  Anders Eriksson  <anders@umunet.org>
 
@@ -171,7 +172,7 @@
 	* src/gerbv.c: Autoscale is more correct, though not completely
 	  perfect. Closes bug 550795.
 	
-2002-04-29  Anders Eriksson  <anders@faldor.umunet.org>
+2002-04-29  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Improved zoom. Now zooming around image center when
 	zooming from menu and around mouse pointer when zooming using the

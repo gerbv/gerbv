@@ -1382,7 +1382,7 @@ draw_measure_distance()
 	dy = (y2 - y1)/(double) screen.scale;
 	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
 
-	sprintf(string, "[dist %5.2f\", dX %5.2f\", dY %5.2f\"]", delta,
+	sprintf(string, "[dist %7.3f\", dX %7.3f\", dY %7.3f\"]", delta,
 		dx, dy);
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
@@ -1393,7 +1393,7 @@ draw_measure_distance()
 	linefeed = ascent+descent;
 	linefeed *= (double)1.2;
 
-	sprintf(string, "[dist %5.2fcm, dX %5.2fcm, dY %5.2fcm]",
+	sprintf(string, "[dist %7.3fcm, dX %7.3fcm, dY %7.3fcm]",
 		delta*2.54, dx*2.54, dy*2.54);
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
