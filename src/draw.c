@@ -206,8 +206,9 @@ pop(stack_t *s)
  *
  * From comp.graphics.algorithms Frequently Asked Questions
  *
- * Due reverse defintion of X-axis in GTK it probably rotates 
- * in the wrong direction.
+ * Due reverse defintion of X-axis in GTK you have to negate
+ * angels.
+ *
  */
 GdkPoint 
 rotate_point(GdkPoint point, int angle)
@@ -218,8 +219,8 @@ rotate_point(GdkPoint point, int angle)
     if (angle == 0)
 	return point;
 
-    sint = sin((double)angle * M_PI / 180.0);
-    cost = cos((double)angle * M_PI / 180.0);
+    sint = sin(-(double)angle * M_PI / 180.0);
+    cost = cos(-(double)angle * M_PI / 180.0);
     
     returned.x = (int)round(cost * (double)point.x - sint * (double)point.y);
     returned.y = (int)round(sint * (double)point.x + cost * (double)point.y);
@@ -230,18 +231,31 @@ rotate_point(GdkPoint point, int angle)
 
 /*
  * Doesn't handle exposure yet and explicit x,y
+ * Questions:
+ *  - Empty or filled circle?
+ *  - If empty, width of line?
  */
 static void
 gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 		 gint x, gint y)
 {
-    const int diameter_idx = 2;
+    const int diameter_idx = 1;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+
+    gdk_gc_copy(local_gc, gc);
+    gdk_gc_set_line_attributes(local_gc, 
+			       1, /* outline always 1 pixels */
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
 
     /* 
      * Non filled circle 
      */
-    gerbv_draw_circle(pixmap, gc, 0, x, y,
+    gerbv_draw_circle(pixmap, local_gc, 0, x, y,
 		      s->stack[diameter_idx] * scale);
+
+    gdk_gc_unref(local_gc);
 
     return;
 } /* gerbv_draw_prim1 */
@@ -273,8 +287,8 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
     rotation = s->stack[nuf_points + rotext_idx];
     for (point = 0; point < nuf_points; point++) {
-	points[point].x = (int)round(scale * s->stack[point + 2]);
-	points[point].y = (int)round(scale * s->stack[point + 3]);
+	points[point].x = (int)round(scale * s->stack[point * 2 + 2]);
+	points[point].y = -(int)round(scale * s->stack[point * 2 + 3]);
 	points[point] = rotate_point(points[point], rotation);
 	points[point].x += x;
 	points[point].y += y;
@@ -282,11 +296,11 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
     gdk_gc_copy(local_gc, gc);
     gdk_gc_set_line_attributes(local_gc, 
-			       3, /* outline always 3 pixels high */
+			       1, /* outline always 1 pixels */
 			       GDK_LINE_SOLID, 
 			       GDK_CAP_BUTT, 
 			       GDK_JOIN_MITER);
-    gdk_draw_polygon(pixmap, gc, 0, points, nuf_points);
+    gdk_draw_polygon(pixmap, local_gc, 0, points, nuf_points);
 
     free(points);
     gdk_gc_unref(local_gc);
@@ -319,7 +333,7 @@ gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     }
 
     tick = 2 * M_PI / (double)nuf_vertices;
-    rotation = s->stack[rotation_idx] * M_PI / 180.0;
+    rotation = -s->stack[rotation_idx] * M_PI / 180.0;
     radius = s->stack[diameter_idx] / 2.0;
     for (i = 0; i < nuf_vertices; i++) {
 	vertex =  tick * (double)i + rotation;
@@ -492,7 +506,7 @@ gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     const int rotation_idx = 5;
     const int nuf_points = 4;
     GdkPoint points[nuf_points];
-    double half_width, half_height;
+    int half_width, half_height;
     int i;
 
     half_width = (int)round(s->stack[width_idx] * scale / 2.0);
@@ -509,7 +523,6 @@ gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
     points[3].x = -half_width;
     points[3].y = half_height;
-
 
     for (i = 0; i < nuf_points; i++) {
 	points[i] = rotate_point(points[i], s->stack[rotation_idx]);
@@ -545,11 +558,11 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
     points[2].x = (int)round((s->stack[x_lower_left_idx]  + s->stack[width_idx])
 			     * scale);
-    points[2].y = (int)round((s->stack[y_lower_left_idx]  + s->stack[height_idx])
+    points[2].y = (int)round((s->stack[y_lower_left_idx]  - s->stack[height_idx])
 			     * scale);
 
     points[3].x = (int)round(s->stack[x_lower_left_idx] * scale);
-    points[3].y = (int)round((s->stack[y_lower_left_idx] + s->stack[height_idx])
+    points[3].y = (int)round((s->stack[y_lower_left_idx] - s->stack[height_idx])
 			     * scale);
 
 
@@ -600,6 +613,7 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	    switch(ip->data.ival) {
 	    case 1:
 		gerbv_draw_prim1(pixmap, gc, s, scale, x, y);
+		break;
 	    case 4 :
 		gerbv_draw_prim4(pixmap, gc, s, scale, x, y);
 		break;

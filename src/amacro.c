@@ -77,6 +77,7 @@ parse_aperture_macro(gerb_file_t *fd)
     instruction_t *ip = NULL;
     int primitive = 0;
     enum opcodes math_op = NOP;
+    int comma = 0, neg = 0; /* negative numbers succeding , */
 
     amacro = new_amacro();
 
@@ -106,6 +107,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    ip = ip->next;
 	    ip->opcode = PPUSH;
 	    ip->data.ival = gerb_fgetint(fd);
+	    comma = 0;
 	    break;
 	case '*':
 	    if (math_op != NOP) {
@@ -133,6 +135,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		ip->opcode = math_op;
 		math_op = NOP;
 	    }
+	    comma = 1;
 	    break;
 	case '+':
 	    if (math_op != NOP) {
@@ -143,6 +146,11 @@ parse_aperture_macro(gerb_file_t *fd)
 	    math_op = ADD;
 	    break;
 	case '-':
+	    if (comma) {
+		neg = 1;
+		comma = 0;
+		break;
+	    }
 	    if (math_op != NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
@@ -157,6 +165,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		ip->opcode = math_op;
 	    }
 	    math_op = DIV;
+	    comma = 0;
 	    break;
 	case 'X':
 	case 'x':
@@ -166,6 +175,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		ip->opcode = math_op;
 	    }
 	    math_op = MUL;
+	    comma = 0;
 	    break;
 	case '0':
 	case '1':
@@ -182,6 +192,10 @@ parse_aperture_macro(gerb_file_t *fd)
 	    ip = ip->next;
 	    ip->opcode = PUSH;
 	    ip->data.fval = gerb_fgetdouble(fd);
+	    if (neg) 
+		ip->data.fval = -ip->data.fval;
+	    neg = 0;
+	    comma = 0;
 	    break;
 	case '%':
 	    gerb_ungetc(fd);  /* Must return with % first in string
