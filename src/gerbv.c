@@ -842,8 +842,6 @@ static gint
 redraw_pixmap(GtkWidget *widget)
 {
     int i;
-    int background_polarity = POSITIVE;
-    int last_negative = 0;
     double dmax_x = LONG_MIN, dmax_y = LONG_MIN;
     double dmin_x = LONG_MAX, dmin_y = LONG_MAX;
     int max_width = 0, max_height = 0;
@@ -851,6 +849,8 @@ redraw_pixmap(GtkWidget *widget)
     GdkRectangle update_rect;
     int file_loaded = 0;
     GdkWindow *window;
+    GdkPixmap *curr_pixmap;
+    GdkPixmap *clipmask;
     int retval = TRUE;
 
     window = gtk_widget_get_parent_window(widget);
@@ -885,16 +885,6 @@ redraw_pixmap(GtkWidget *widget)
 	     */
 	    dmin_x  = MIN(screen.file[i]->image->info->min_x, dmin_x);
 	    dmin_y = MIN(screen.file[i]->image->info->min_y, dmin_y);
-
-	    /* 
-	     * Find out if any active layer is negative and 
-	     * what the last negative layer is 
-	     */
-	    if (screen.file[i]->image->info->polarity == NEGATIVE &&
-		GTK_TOGGLE_BUTTON(screen.layer_button[i])->active) {
-		last_negative = i;
-		background_polarity = NEGATIVE;
-	    }
 	}
     }
 
@@ -922,22 +912,21 @@ redraw_pixmap(GtkWidget *widget)
     max_height = (int)floor((dmax_y - dmin_y + 0.1) * 
 			    (double)screen.scale);
 
-    if (background_polarity == NEGATIVE) {
-	/* Set background to normal color for the last negative layer */
-	gdk_gc_set_foreground(gc, screen.file[last_negative]->color);
-    } else {
-	/* Background to black */
-	gdk_gc_set_foreground(gc, screen.background);
-    }
-
     /* 
      * Remove old pixmap, allocate a new one and draw the background
      */
     if (screen.pixmap) 
 	gdk_pixmap_unref(screen.pixmap);
     screen.pixmap = gdk_pixmap_new(widget->window, max_width, max_height,  -1);
-    gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, max_width, max_height);
-    
+    gdk_gc_set_foreground(gc, screen.background);
+    gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
+
+    /*
+     * Allocate the pixmap and the clipmask (a one pixel pixmap)
+     */
+    curr_pixmap = gdk_pixmap_new(widget->window, max_width, max_height,  -1);
+    clipmask = gdk_pixmap_new(widget->window, max_width, max_height,  1);
+
     /* 
      * This now allows drawing several layers on top of each other.
      * Higher layer numbers have higher priority in the Z-order. 
@@ -953,18 +942,37 @@ redraw_pixmap(GtkWidget *widget)
 	}
 	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
 	    screen.file[i]) {
+
+	    /*
+	     * Fill up image with all the foreground color. Excess pixels
+	     * will be removed by clipmask.
+	     */
+	    gdk_gc_set_foreground(gc, screen.file[i]->color);
+	    gdk_draw_rectangle(curr_pixmap, gc, TRUE, 0, 0, -1, -1);
+
 	    /*
 	     * Translation is to get it inside the allocated pixmap,
 	     * which is not always centered perfectly for GTK/X.
 	     */
-	    image2pixmap(&screen.pixmap, screen.file[i]->image, screen.scale, 
+	    image2pixmap(&clipmask, screen.file[i]->image, screen.scale, 
 			 -dmin_x * screen.scale,dmax_y * screen.scale,
-			 screen.file[i]->image->info->polarity,
-			 screen.file[i]->color,
-			 screen.background, screen.err_color);
+			 screen.file[i]->image->info->polarity);
+
+	    /* 
+	     * Set clipmask and draw the clipped out image onto the
+	     * screen pixmap. Afterwards we remove the clipmask, else
+	     * it will screw things up when run this loop again.
+	     */
+	    gdk_gc_set_clip_mask(gc, clipmask);
+	    gdk_gc_set_clip_origin(gc, 0, 0);
+	    gdk_draw_pixmap(screen.pixmap, gc, curr_pixmap, 0, 0, 0, 0, -1, -1);
+	    gdk_gc_set_clip_mask(gc, NULL);
 	}
     }
 
+    gdk_pixmap_unref(curr_pixmap);
+    gdk_pixmap_unref(clipmask);
+    
     update_rect.x = 0, update_rect.y = 0;
     update_rect.width =	widget->allocation.width;
     update_rect.height = widget->allocation.height;
@@ -1741,7 +1749,6 @@ internal_main(int argc, char *argv[])
      */
     screen.tooltips = gtk_tooltips_new();        
     screen.background = alloc_color(0, 0, 0, "black");
-    screen.err_color  = alloc_color(0, 0, 0, "red1");
     screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
     screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
 

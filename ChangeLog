@@ -1,3 +1,9 @@
+2002-08-01  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.[hc], src/gerbv.c: Changed how layers are created and
+	  stored to be able to be displayed on top of each other. This
+	  is based on a grand idea from Dino Ghilardi.
+
 2002-07-24  Andreas Andersson (e92_aan@e.kth.se)
 
 	* src/drill.c: Changed the parser to catch undefined tools
