@@ -1,3 +1,9 @@
+2002-06-07  Anders Eriksson  <anders@poirot.faldor.umunet.org>
+
+	* src/gerbv.c (expose_event): Center distance strings properly,
+	  get string height to properly space the two lines independant
+	  of the resolution (dpi). Minor cleanups.
+
 2002-06-07  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.c, src/gerb_image.h, src/gerber.c: Now handles
