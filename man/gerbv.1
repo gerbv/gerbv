@@ -3,8 +3,7 @@
 gerbv - Gerber Viewer
 .SH SYNOPSIS
 .B gerbv
-[--batch=<backend> | -b <backend>] [ --version | -V] 
-[--drill=<drillfile> | -d <drillfile>] gerberfile[s]
+[--batch=<backend> | -b <backend>] [ --version | -V]  gerberfile[s]
 .SH DESCRIPTION
 .PP
 \fIgerbv\fP is a viewer for Gerber files. Gerber files is generated
@@ -33,11 +32,6 @@ Prints the version number of gerbv and exits.
 .TP
 .BI -b\ <backend>
 Calls the backend to generate output. GTK+ is never started.
-.TP 8
-.BI --drill=<drillfile>
-.TP
-.BI -d\ <drillfile>
-Read <drillfile> as a drillfile and displays it with the other gerberfiles.
 
 .SH "ENVIRONMENT"
 No environment variables are used.
@@ -45,7 +39,7 @@ No environment variables are used.
 .SH "AUTHOR"
 .nf
 Stefan Petersen (spe@stacken.kth.se): Overall hacker and project leader
-Andreas Andersson (e92_aan@e.kth.se): Drill file support
+Andreas Andersson (e92_aan@e.kth.se): Drill file support and general hacking
 
 .SH COPYRIGHT
 .nf
