@@ -311,7 +311,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 			       net->cirseg->angle1, net->cirseg->angle2);
 		break;		
 	    default :
-		
+		break;
 	    }
 	    break;
 	case OFF :

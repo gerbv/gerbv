@@ -205,6 +205,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    return amacro;
 	default :
 	    /* Whitespace */
+	    break;
 	}
     }
 }

@@ -583,6 +583,7 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	    s->sp = 0;
 	    break;
 	default :
+	    break;
 	}
     }
     free_stack(s);

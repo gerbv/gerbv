@@ -205,6 +205,7 @@ parse_gerb(gerb_file_t *fd)
 		state->in_parea_fill = 0;
 		break;
 	    default :
+		break;
 	    }
 
 	    /* 
