@@ -44,6 +44,8 @@ enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001,
 		      CW_CIRCULAR, CCW_CIRCULAR, 
 		      MQ_CW_CIRCULAR, MQ_CCW_CIRCULAR,
                       PAREA_START, PAREA_FILL, PAREA_END};
+enum encoding_t {NONE, ASCII, EBCDIC, BCD, ISO_ASCII, EIA };
+
 
 typedef struct gerb_cirseg {
     double cp_x;
@@ -99,6 +101,7 @@ typedef struct gerb_image_info {
     double max_y;
     double offset_a;
     double offset_b;
+    enum encoding_t encoding;
 } gerb_image_info_t;
 
 

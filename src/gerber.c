@@ -531,6 +531,31 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	return;
     } else if (strncmp(op, "SF", 2) == 0) { /* Scale Factor */
 	NOT_IMPL(fd, "%SF%");
+    } else if (strncmp(op, "IC", 2) == 0) { /* Input Code */
+	/* Thanks to Stephen Adam for providing this information. As he writes:
+	 *      btw, here's a logic puzzle for you.  If you need to
+	 * read the gerber file to see how it's encoded, then
+	 * how can you read it?
+	 */
+	op[0] = gerb_fgetc(fd);
+	op[1] = gerb_fgetc(fd);
+	
+	if ((op[0] == EOF) || (op[1] == EOF))
+	    err(1, "Unexpected EOF found.\n");
+	
+	if (strncmp(op, "AS", 1) == 0) 
+	    image->info->encoding = ASCII;
+	else if (strncmp(op, "EB", 3) == 0)
+	    image->info->encoding = EBCDIC;
+	else if (strncmp(op, "BC", 3) == 0)
+	    image->info->encoding = BCD;
+	else if (strncmp(op, "IS", 3) == 0)
+	    image->info->encoding = ISO_ASCII;
+	else if (strncmp(op, "EI", 3) == 0)
+	    image->info->encoding = EIA;
+	else 
+	    err(1, "Strange inputcode : %c%c\n", op[0], op[1]);
+
 	
 	/* Image parameters */
     } else if (strncmp(op, "IJ", 2) == 0) { /* Image Justify */
