@@ -50,7 +50,8 @@ to button 4 and 5.
 You can also do zooming by outline. Press left mouse button, draw,
 release.  The dashed line shows how the zooming will be dependent on
 the resolution of the window. The non-dashed outline will show what
-you actually selected.
+you actually selected. If you change your mind when started to mark
+outline, you can always abort by pressing escape.
 
 You can do measurement on the image displayed. By pressing shift, the 
 cursor changes to a plus. By using left mouse button you can draw the lines
