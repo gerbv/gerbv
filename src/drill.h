@@ -27,39 +27,10 @@
 extern "C" {
 #endif
 
-#ifndef err
-#define err(errcode, a...) \
-     do { \
-           fprintf(stderr, ##a); \
-           exit(errcode);\
-     } while (0)
-#endif
-
 #define TOOL_MIN 1
 #define TOOL_MAX 999
 
-/* I couldn't possibly code without these */
-#undef TRUE
-#define TRUE 1
-#undef FALSE
-#define FALSE 0
-
-#undef max
-#define max(a,b) ((a) > (b) ? (a) : (b))
-#undef min
-#define min(a,b) ((a) < (b) ? (a) : (b))
-
 #include "gerber.h"
-
-enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED, DRILL_M_END,
-		     DRILL_M_ENDOFPATTERN, DRILL_M_HEADER, DRILL_M_METRIC, 
-		     DRILL_M_IMPERIAL, DRILL_M_FILENAME};
-
-typedef struct drill_state {
-    double curr_x;
-    double curr_y;
-    int current_tool;
-} drill_state_t;
 
 gerb_image_t *parse_drillfile(FILE *fd);
 

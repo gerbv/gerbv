@@ -7,4 +7,4 @@ $Id$
 * color selection (spe).
 * multiple images at the same time (spe).
 * aperture macros (spe).
-* parse gerber drill files (pitch/sikis?).
+* improve drill file parser (pitch).

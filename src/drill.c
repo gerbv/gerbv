@@ -33,6 +33,36 @@
 #define NOT_IMPL(fd, s) do { \
                              fprintf(stderr, "Not Implemented:%s\n", s); \
                            } while(0)
+#ifndef err
+#define err(errcode, a...) \
+     do { \
+           fprintf(stderr, ##a); \
+           exit(errcode);\
+     } while (0)
+#endif
+
+/* I couldn't possibly code without these */
+#undef TRUE
+#define TRUE 1
+#undef FALSE
+#define FALSE 0
+
+#undef max
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#undef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
+
+enum drill_file_section_t {DRILL_NONE, DRILL_HEADER, DRILL_DATA};
+enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED, DRILL_M_END,
+		     DRILL_M_ENDOFPATTERN, DRILL_M_HEADER, DRILL_M_METRIC, 
+		     DRILL_M_IMPERIAL, DRILL_M_FILENAME};
+
+typedef struct drill_state {
+    double curr_x;
+    double curr_y;
+    int current_tool;
+    int curr_section;
+} drill_state_t;
 
 /* Local function prototypes */
 static void drill_guess_format(FILE *fd, gerb_image_t *image);
@@ -94,6 +124,7 @@ parse_drillfile(FILE *fd)
 	case 'M':
 	    switch(drill_parse_M_code(fd, image)) {
 	    case DRILL_M_HEADER :
+		state->curr_section = DRILL_HEADER;
 	    case DRILL_M_METRIC :
 	    case DRILL_M_IMPERIAL :
 	    case DRILL_M_NOT_IMPLEMENTED :
@@ -101,6 +132,11 @@ parse_drillfile(FILE *fd)
 		break;
 	    case DRILL_M_END :
 		free(state);
+
+		/* KLUDGE. All images, regardless of input format,
+		   are returned in INCH format */
+		image->info->unit = INCH;
+
 		return image;
 		break;
 	    default:
@@ -142,6 +178,7 @@ parse_drillfile(FILE *fd)
 
 	case '%':
 /*	    printf("Found start of data segment\n"); */
+	    state->curr_section = DRILL_DATA;
 	    break;
 	case 10 :   /* White space */
 	case 13 :
@@ -149,8 +186,14 @@ parse_drillfile(FILE *fd)
 	case '\t' :
 	    break;
 	default:
-	    fprintf(stderr, "Found unknown character %c [0x%02x], ignoring\n",
-		    read, read);
+	    if(state->curr_section == DRILL_HEADER) {
+		/* Unstandard crap in the header is thrown away */
+		eat_line(fd);
+	    } else {
+		fprintf(stderr,
+			"Found unknown character %c [0x%02x], ignoring\n",
+			read, read);
+	    }
 	}
     }
 
@@ -189,14 +232,10 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 	switch (read) {
 	case ';' :
 	    /* Comment found. Eat rest of line */
-	    eat_line(fd);
-	    break;
 	case 'F' :
 	    /* Z axis feed speed. Silently ignored */
 	case 'S':
 	    /* Spindle speed. Silently ignored */
-	    eat_line(fd);
-	    break;
 	case 'G':
 	    /* G codes aren't used, for now */
 	    eat_line(fd);
@@ -212,6 +251,8 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 	    case DRILL_M_END :
 		done = TRUE;
 		break;
+	    case DRILL_M_HEADER :
+		state->curr_section = DRILL_HEADER;
 	    default:
 		break;
 	    }
@@ -254,6 +295,7 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
 	    break;
 
 	case '%':
+	    state->curr_section = DRILL_HEADER;
 	    break;
 	case 10 :   /* White space */
 	case 13 :
@@ -288,6 +330,12 @@ drill_guess_format(FILE *fd, gerb_image_t *image)
     /* Almost every file seems to use 2.x format (where x is 3-4) */
     image->format->x_dec = max_length - 2;
     image->format->y_dec = max_length - 2;
+    /* KLUDGE for Stefans example file. I'm not excactly sure how to
+       handle this right */
+    if(max_length <= 4) {
+	++image->format->x_dec ;
+	++image->format->y_dec ;
+    }
 
     /* Restore the necessary things back to their default state */
     for (i = 0; i < APERTURE_MAX; i++) {
@@ -440,6 +488,7 @@ new_state(drill_state_t *state)
     if (state != NULL) {
 	/* Init structure */
 	bzero((void *)state, sizeof(drill_state_t));
+	state->curr_section = DRILL_NONE;
     }
     return state;
 } /* new_state */

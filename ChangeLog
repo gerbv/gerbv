@@ -1,3 +1,11 @@
+2001-11-06 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.h, src/drill.c:
+	  parse_drillfile() now ignores unstandard text in headers.
+	  Also, it now returns the actual unit used (it used to return
+	  the unit of the input file).
+	  Minor fixes, mostly moved stuff around.
+
 2001-11-03 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/drill.c, src/scm_gerber.c: Fixed bug causing backend
