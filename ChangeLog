@@ -1,4 +1,10 @@
-2002-06-09  Anders Eriksson  <anders@poirot.faldor.umunet.org>
+2002-06-09  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Set cross hair cursor as soon as shift key is
+	  pressed (in normal mode, i.e. not zoom outline). Added centered
+	  zoom outline mode (closes Feature Request 553452).
+
+2002-06-09  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Added measure distance color. Added actual zoom
 	  box for zoom outline mode (this shows the area that will

@@ -40,6 +40,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -81,7 +82,7 @@ gerbv_screen_t screen;
 
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
-static void draw_zoom_outline();
+static void draw_zoom_outline(gboolean centered);
 static void draw_measure_distance();
 static void color_selection_popup(GtkWidget *widget, gpointer data);
 static void load_file_popup(GtkWidget *widget, gpointer data);
@@ -1075,7 +1076,7 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 	if (screen.state == ZOOM_OUTLINE) {
 	    screen.state = NORMAL;
 	    zoom_outline(widget, event);
-	} else if (screen.state == MEASURE) {
+	} else if (!(event->state & GDK_SHIFT_MASK)) {
 	    gdk_window_set_cursor(gtk_widget_get_parent_window(widget), NULL);
 	}
 	screen.last_x = screen.last_y = 0;
@@ -1085,6 +1086,52 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
     return TRUE;
 } /* button_release_event */
 
+static gint
+key_press_event (GtkWidget *widget, GdkEventKey *event)
+{
+    if (screen.state == ZOOM_OUTLINE) {
+	if ((event->keyval == GDK_Control_L) ||
+	    (event->keyval == GDK_Control_R)) {
+	    draw_zoom_outline(event->state & GDK_CONTROL_MASK);
+	    draw_zoom_outline(TRUE);
+	}
+    } else if ((event->state & GDK_SHIFT_MASK) ||
+	       (event->keyval == GDK_Shift_L) ||
+	       (event->keyval == GDK_Shift_R)) {
+	GdkCursor *cursor;
+
+	cursor = gdk_cursor_new(GDK_CROSSHAIR);
+	gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
+			      cursor);
+	gdk_cursor_destroy(cursor);
+    }
+    return TRUE;
+} /* key_press_event */
+
+static gint
+key_release_event (GtkWidget *widget, GdkEventKey *event)
+{
+    if (screen.state == ZOOM_OUTLINE) {
+	if ((event->keyval == GDK_Control_L) ||
+	    (event->keyval == GDK_Control_R)) {
+	    GdkModifierType state;
+	    gint dummy1, dummy2;
+
+	    gdk_window_get_pointer(screen.drawing_area->window, &dummy1, &dummy2,
+				   &state);
+	    draw_zoom_outline(TRUE);
+	    draw_zoom_outline(state & GDK_CONTROL_MASK);
+	}
+    } else if (screen.state != MEASURE) {
+	if((event->state & GDK_SHIFT_MASK) ||
+	   (event->keyval == GDK_Shift_L) ||
+	   (event->keyval == GDK_Shift_R)) {
+	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
+				  NULL);
+	}
+    }
+    return TRUE;
+} /* key_release_event */
 
 static gint
 motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
@@ -1127,12 +1174,12 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	}
 	case ZOOM_OUTLINE: {
 	    if (screen.last_x || screen.last_y)
-		draw_zoom_outline();
+		draw_zoom_outline(event->state & GDK_CONTROL_MASK);
 
 	    screen.last_x = x;
 	    screen.last_y = y;
 
-	    draw_zoom_outline();
+	    draw_zoom_outline(event->state & GDK_CONTROL_MASK);
 	    break;
 	}
 	case MEASURE: {
@@ -1206,7 +1253,12 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
      * Draw Zooming outline if we are in that mode
      */
     if (screen.state == ZOOM_OUTLINE) {
-	draw_zoom_outline();
+	GdkModifierType state;
+	gint dummy1, dummy2;
+
+	gdk_window_get_pointer(screen.drawing_area->window, &dummy1, &dummy2,
+			       &state);
+	draw_zoom_outline(state & GDK_CONTROL_MASK);
     } else if (screen.state == MEASURE) {
 	draw_measure_distance();
     }
@@ -1224,7 +1276,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 } /* expose_event */
 
 static void
-draw_zoom_outline()
+draw_zoom_outline(gboolean centered)
 {
     GdkGC *gc;
     GdkGCValues values;
@@ -1243,6 +1295,14 @@ draw_zoom_outline()
     y2 = MAX(screen.start_y, screen.last_y);
     dx = x2-x1;
     dy = y2-y1;
+
+    if (centered) {
+	/* Centered outline mode */
+	x1 = screen.start_x - dx;
+	y1 = screen.start_y - dy;
+	dx *= 2;
+	dy *= 2;
+    }
 
     gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
     gdk_gc_unref(gc);
@@ -1620,11 +1680,17 @@ internal_main(int argc, char *argv[])
 		       GTK_SIGNAL_FUNC(button_press_event), NULL);
     gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "button_release_event",
 		       GTK_SIGNAL_FUNC(button_release_event), NULL);
+    gtk_signal_connect_after(GTK_OBJECT(main_win), "key_press_event",
+		       GTK_SIGNAL_FUNC(key_press_event), NULL);
+    gtk_signal_connect_after(GTK_OBJECT(main_win), "key_release_event",
+		       GTK_SIGNAL_FUNC(key_release_event), NULL);
 
     gtk_widget_set_events(screen.drawing_area, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
 			  | GDK_BUTTON_PRESS_MASK
 			  | GDK_BUTTON_RELEASE_MASK
+			  | GDK_KEY_PRESS_MASK
+			  | GDK_KEY_RELEASE_MASK
 			  | GDK_POINTER_MOTION_MASK
 			  | GDK_POINTER_MOTION_HINT_MASK);
     
