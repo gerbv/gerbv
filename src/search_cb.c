@@ -84,23 +84,31 @@ cb_ok_load_pnp_file(GtkWidget *widget, GtkFileSelection *fs)
 {
     char *filename;
 
-     filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-    screen.file[16] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));/*allocate memory for new layer data*/
-    memset((void *)screen.file[16], 0, sizeof(gerbv_fileinfo_t));
-    screen.file[16]->name = (char *)malloc(strlen(filename) + 1);
-    strcpy(screen.file[16]->name, filename);/*entry for pnp file also getting saved on "save project"*/
-   // screen.file[16]->inverted = 0;
+    filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+
+#if 0
+    screen.file[19] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));/*allocate memory for new layer data*/
+    memset((void *)screen.file[19], 0, sizeof(gerbv_fileinfo_t));
+    screen.file[19]->name = (char *)malloc(strlen(filename) + 1);
+    strcpy(screen.file[19]->name, filename);/*entry for pnp file also getting saved on "save project"*/
+    screen.file[19]->inverted = 0;
+#endif    
     
     create_search_window(widget, NULL);
     
     if (open_pnp(filename, screen.curr_index, FALSE) != -1) {
-
+        
+        interface.pnp_filename = (char *)malloc(strlen(filename) + 1);
+        strcpy(interface.pnp_filename, filename);/*entry for pnp file also getting saved on "save project"*/
+        printf("filename in cb_ok_load_pnp_file %s", filename);
+        
 #ifdef HAVE_LIBGEN_H
         /*
          * Remember where we loaded file from last time
          */
         filename = dirname(filename);
 #endif
+            
         if (screen.path) 
 	        free(screen.path);
            
@@ -212,7 +220,7 @@ open_pnp(char *filename, int idx, int reload)
 	    screen.file[idx]->basename = screen.file[idx]->name;
 	}
     } else {
-	screen.file[idx]->basename = screen.file[idx]->name;
+	    screen.file[idx]->basename = screen.file[idx]->name;
     }
 
     /*
@@ -223,6 +231,7 @@ open_pnp(char *filename, int idx, int reload)
     b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
 
     screen.file[idx]->color = alloc_color(r, g, b, NULL);
+    screen.file[idx]->inverted = 0;
 
     /* 
      * Set color on layer button

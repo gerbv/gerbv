@@ -1,12 +1,12 @@
-Searching for Parts in gerbv
+Searching for Parts and marking them on screen (in gerbv)OB
 
 THIS FUNCIOTNALITY IS ONLY AVAILABLE WHEN COMPILING GERBV AGAINST GTK2!
 
 Please direct any comments, suggestions etc. to Juergen <juergenhaas@gmx.net>
 =============================================================================
 ***  Support for Pick and Place files:                                   ***
-***  ONLY the CSV like format entry1,entry2,entry3,.. will be read in    ***
-***                                                                      ***
+***  csv-style files with/without quotes                                 ***    
+***  the following delimiters are supported ';' ':' '|' ','		 ***
 ----------------------------------------------------------------------------
 Some instructions for the first time user:
 

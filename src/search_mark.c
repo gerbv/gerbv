@@ -89,6 +89,12 @@ void create_marked_layer(int idx) {
 	GERB_FATAL_ERROR("malloc image failed\n");
         return;
     }
+        
+    if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
+  	 gtk_widget_set_sensitive (interface.find_button, TRUE);
+    
+	 return;/*nothing to draw*/
+    }
     curr_net = image->netlist;
     if(screen.file[idx] && screen.file[idx]->image) {
         free_gerb_image(screen.file[idx]->image);
@@ -97,7 +103,10 @@ void create_marked_layer(int idx) {
         assert(screen.file[idx]==NULL);
         screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
         memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
-        screen.file[idx]->name = tmp_name;
+        if (idx == 19) //FIXME this is not flexible; should be first layer we ever draw a selection onto
+            screen.file[idx]->name = interface.pnp_filename; 
+        else
+            screen.file[idx]->name = tmp_name;
     }
     screen.file[idx]->image = image;
     if (!screen.file[idx]->color) {
@@ -108,7 +117,11 @@ void create_marked_layer(int idx) {
         b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
 
         screen.file[idx]->color = alloc_color(r, g, b, NULL);
-        /*combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
+        /* This code will remove the layer which the selection is drawn onto from
+         * the available layers to be drawn on in future, dactivate, because the
+         * number of layers decreases quite fast*/
+         
+        /* combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
         for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
 
             if (screen.file[idx0] == NULL) {
@@ -164,12 +177,7 @@ void create_marked_layer(int idx) {
     image->aperture[0]->parameter[4] = 0.0;
     image->aperture[0]->nuf_parameters = 1;
     image->aperture[0]->unit = MM;
-    
-    if (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) {
-  	 gtk_widget_set_sensitive (interface.find_button, TRUE);
-    
-	 return;
-    }
+
 	    
     list = gtk_tree_selection_get_selected_rows (GTK_TREE_SELECTION(interface.selection),
 							 (GtkTreeModel **)&interface.model);
@@ -187,9 +195,9 @@ void create_marked_layer(int idx) {
 			     list->data);
 	     
         gtk_tree_model_get (GTK_TREE_MODEL(interface.model), &iter,
-    			COLUMN_DESIGNATOR, &designator,
+    			        COLUMN_DESIGNATOR, &designator,
                         COLUMN_footprint, &footprint,
-		        COLUMN_mid_x, &mid_x,
+		                COLUMN_mid_x, &mid_x,
                         COLUMN_mid_y, &mid_y,
                         COLUMN_ref_x, &ref_x,
                         COLUMN_ref_y, &ref_y,
@@ -197,11 +205,11 @@ void create_marked_layer(int idx) {
                         COLUMN_pad_y, &pad_y,
                         COLUMN_LAYER, &layer,
                         COLUMN_rotation, &rotation,
-			COLUMN_length, &length,
-			COLUMN_width, &width,
-			COLUMN_shape, &shape,
+			            COLUMN_length, &length,
+			            COLUMN_width, &width,
+			            COLUMN_shape, &shape,
                         COLUMN_COMMENT, &comment,
-			COLUMN_NO_FILES_FOUND, &no_files_found,
+			            COLUMN_NO_FILES_FOUND, &no_files_found,
                                                    -1);
         curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
         curr_net = curr_net->next;
@@ -211,7 +219,97 @@ void create_marked_layer(int idx) {
 	switch(shape) {
 	case PART_SHAPE_RECTANGLE:
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
-	case PART_SHAPE_UNKNOWN:
+#if 0
+            curr_net->start_x = mid_x;
+            curr_net->start_y = mid_y;
+            curr_net->stop_x = pad_x;
+            curr_net->stop_y = pad_y;
+    
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = LINEARx1;
+        
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+
+
+            curr_net->start_x = pad_x;
+            curr_net->start_y = pad_y;
+            curr_net->stop_x = pad_x + width;
+            curr_net->stop_y = pad_y +length;
+    
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = PAREA_START;
+            
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+  
+            curr_net->start_x = pad_x + 2 * (mid_x - pad_x);
+            curr_net->start_y = pad_y;
+            curr_net->stop_x = pad_x + width;
+            curr_net->stop_y = pad_y + length;
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = PAREA_START;
+
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+            curr_net->start_x = pad_x + width;
+            curr_net->start_y = pad_y + length;
+            curr_net->stop_x = pad_x;
+            curr_net->stop_y = pad_y + length;
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = PAREA_START;            
+            
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+            
+            curr_net->start_x = pad_x;
+            curr_net->start_y = pad_y + length;
+            curr_net->stop_x = pad_x;
+            curr_net->stop_y = pad_y +length;
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = PAREA_START;
+            
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+  
+            curr_net->start_x = pad_x + 10 * width;
+            curr_net->start_y = pad_y + 10 * length;
+            curr_net->stop_x = pad_x;
+            curr_net->stop_y = pad_y;
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = PAREA_END;
+            printf("corners of a rectangle: %f/%f %f/%f %f/%f , %f/%f\n", pad_x, pad_y, (pad_x + width), pad_y, (pad_x + width), (pad_y + length), pad_x,(pad_y + length));            
+            break;
+#endif
+  	case PART_SHAPE_UNKNOWN:
 	default:
 
             curr_net->start_x = mid_x;

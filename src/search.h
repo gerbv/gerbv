@@ -57,6 +57,7 @@ typedef struct pnp_state {
     int      shape;
     double   width;
     double   length;
+  
 
     gerbv_unit_t unit;/*unused at the moment*/
 

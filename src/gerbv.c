@@ -821,33 +821,33 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	}
 	
 	if (screen.path) {
-            printf("screen.path exists");
+      //printf("screen.path exists");
 	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
 	    memset(project_list, 0, sizeof(project_list_t));
 	    project_list->next = project_list;
 	    project_list->layerno = -1;
 	    project_list->filename = screen.path;
 	    project_list->rgb[0] = screen.background->red;
-            printf("screen.background ok");
 	    project_list->rgb[1] = screen.background->green;
 	    project_list->rgb[2] = screen.background->blue;
 	    project_list->next = NULL;
 	}
 	
 	for (idx = 0; idx < MAX_FILES; idx++) {
-	    if (screen.file[idx] && screen.file[idx]->name) {
-		tmp = (project_list_t *)malloc(sizeof(project_list_t));
-		memset(tmp, 0, sizeof(project_list_t));
-		tmp->next = project_list;
-		tmp->layerno = idx;
-		tmp->filename = screen.file[idx]->name;
-                printf(" we got the name right have we?\n");
-		tmp->rgb[0] = screen.file[idx]->color->red;
-		tmp->rgb[1] = screen.file[idx]->color->green;
-		tmp->rgb[2] = screen.file[idx]->color->blue;
-		tmp->inverted = screen.file[idx]->inverted;
-		project_list = tmp;
-                printf(" end of this lloop\n");
+	    if (screen.file[idx] && screen.file[idx]->name &&  screen.file[idx]->color) {
+		    tmp = (project_list_t *)malloc(sizeof(project_list_t));
+		    memset(tmp, 0, sizeof(project_list_t));
+		    tmp->next = project_list;
+		    tmp->layerno = idx;
+		    tmp->filename = screen.file[idx]->name;
+            printf(" %s we got the filename right have we?\n", screen.file[idx]->name );
+            printf(" we got the colour right have we?%i\n", screen.file[idx]->color->red );
+		    tmp->rgb[0] = screen.file[idx]->color->red;
+            printf(" we got the colour right have we?%p\n", &screen.file[idx]->color );
+		    tmp->rgb[1] = screen.file[idx]->color->green;
+		    tmp->rgb[2] = screen.file[idx]->color->blue;
+		    tmp->inverted = screen.file[idx]->inverted;
+		    project_list = tmp;
 	    }
 	}
 	if (write_project_file(screen.project, project_list)) {
@@ -865,7 +865,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     filename = dirname(filename);
 #endif 
     if (screen.path)
-	free(screen.path);
+	    free(screen.path);
     screen.path = (char *)malloc(strlen(filename) + 1);
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);

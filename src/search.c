@@ -114,7 +114,6 @@ char pnp_screen_for_delimiter(char str[MAXL+2])
     sprintf (tmp_buf, "%.*s", sizeof(tmp_buf)-1, str);
     for (idx0 = 0; idx0 <4; idx0++) {
         counter = 0;
-        printf("idx0 %i\n", idx0);
         if (strchr(tmp_buf, delimiter[idx0]) != NULL) {
 
             rest_of_line = strrchr(tmp_buf, delimiter[idx0]);       
@@ -125,11 +124,11 @@ char pnp_screen_for_delimiter(char str[MAXL+2])
                 rest_of_line = strrchr(tmp_buf, delimiter[idx0]);
             }
             if (counter > 5) {
-                printf("delimiter is: %c", delimiter[idx0]);
+                //printf("delimiter is: %c", delimiter[idx0]);
                 return delimiter[idx0];
             }
    
-        printf("it is in there:%p", strrchr(tmp_buf, delimiter[idx0]));    
+       // printf("it is in there:%p", strrchr(tmp_buf, delimiter[idx0]));    
         }        
     }
    
@@ -179,7 +178,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
             continue;
         }
         ret = csv_row_parse(buf, MAXL,  buf0, MAXL, row, 11, delimiter,   CSV_QUOTES);
-        printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
+       // printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
    
         if (row[0] && row[8]) { // here could be some better check for the syntax
 	    int i_length=0, i_width = 0;
@@ -207,21 +206,22 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     gchar* g_convert(const gchar *str, gssize len, const gchar *to_codeset, const gchar *from_codeset, gsize *bytes_read, gsize *bytes_written, GError **error);
     */
             pnp_state->mid_x = get_float_unit(row[2]);
-	    pnp_state->mid_y = get_float_unit(row[3]);
-	    pnp_state->ref_x = get_float_unit(row[4]);
-	    pnp_state->ref_y = get_float_unit(row[5]);
-	    pnp_state->pad_x = get_float_unit(row[6]);
-	    pnp_state->pad_y = get_float_unit(row[7]);
-	    sscanf(row[9], "%lf", &pnp_state->rotation); // no units, always deg
-	    if(sscanf(pnp_state->footprint, "%02d%02d", &i_length, &i_width) == 2) {
-		// parse footprints like 0805 or 1206
-		pnp_state->length = 0.0254 * i_length;
+	        pnp_state->mid_y = get_float_unit(row[3]);
+	        pnp_state->ref_x = get_float_unit(row[4]);
+	        pnp_state->ref_y = get_float_unit(row[5]);
+	        pnp_state->pad_x = get_float_unit(row[6]);
+	        pnp_state->pad_y = get_float_unit(row[7]);
+	        sscanf(row[9], "%lf", &pnp_state->rotation); // no units, always deg
+	        if(sscanf(pnp_state->footprint, "%02d%02d", &i_length, &i_width) == 2) {
+		        // parse footprints like 0805 or 1206
+		        pnp_state->length = 0.0254 * i_length;
                 pnp_state->width = 0.0254 * i_width;
-		pnp_state->shape = PART_SHAPE_RECTANGLE;
-	    } else {
-		pnp_state->length = 0.0;
-		pnp_state->width = 0.0;
-		pnp_state->shape = PART_SHAPE_UNKNOWN;
+		        pnp_state->shape = PART_SHAPE_RECTANGLE;
+                //printf("rectangle");
+	        } else {
+		        pnp_state->length = 0.0;
+		        pnp_state->width = 0.0;
+		        pnp_state->shape = PART_SHAPE_UNKNOWN;
             }
 
             gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
@@ -234,12 +234,12 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 	        COLUMN_ref_y, pnp_state->ref_y,
 	        COLUMN_pad_x, pnp_state->pad_x,
 	        COLUMN_pad_y, pnp_state->pad_y,
-                COLUMN_LAYER, pnp_state->layer,
-                COLUMN_rotation, pnp_state->rotation,
-		COLUMN_length, pnp_state->length,
-		COLUMN_width, pnp_state->width,
-		COLUMN_shape, pnp_state->shape,
-                COLUMN_COMMENT, pnp_state->comment,
+            COLUMN_LAYER, pnp_state->layer,
+            COLUMN_rotation, pnp_state->rotation,
+		    COLUMN_length, pnp_state->length,
+		    COLUMN_width, pnp_state->width,
+		    COLUMN_shape, pnp_state->shape,
+            COLUMN_COMMENT, pnp_state->comment,
 	        COLUMN_NO_FILES_FOUND, FALSE,
 	        -1);
                         

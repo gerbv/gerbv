@@ -246,10 +246,10 @@ write_project_file(char *filename, project_list_t *project)
 
     if ((fd = fopen(filename, "w")) == NULL) {
 	GERB_MESSAGE("Couldn't save project %s\n", filename);
-        printf(" nope saving projecct file!\n");
+       // printf(" nope saving projecct file!\n");
 	return(-1);
     }
-    printf("we are about to save a project");
+   // printf("we are about to save a project");
     while (p) {
 	fprintf(fd, "(define-layer! %d ", p->layerno);
 	fprintf(fd, "(cons 'filename \"%s\")", p->filename);

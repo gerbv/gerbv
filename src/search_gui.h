@@ -80,6 +80,7 @@ struct _InterfaceStruct {
 	GtkTreeSelection 	*selection;
 	GtkTreeIter       	 iter;
 	gboolean  	  	 is_gail_loaded;
+    char            *pnp_filename;
 } interface;
 
 void
