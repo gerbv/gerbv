@@ -51,11 +51,6 @@
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
-#ifdef GUILE_IN_USE
-#include <libguile.h>
-#include <guile/gh.h> /* To be deprecated */
-#include "batch.h"
-#endif /* GUILE_IN_USE */
 #include "draw.h"
 #include "color.h"
 #include "gerbv_screen.h"
@@ -2134,8 +2129,8 @@ static struct option longopts[] = {
 #endif /* HAVE_GETOPT_LONG*/
 
 
-void
-internal_main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     GtkWidget *main_win;
     GtkWidget *vbox;
@@ -2148,10 +2143,6 @@ internal_main(int argc, char *argv[])
     char      *win_title;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
     char      *rest;
-#ifdef GUILE_IN_USE
-    char      *backend = NULL;
-    int	      run_batch = 0;
-#endif /* GUILE_IN_USE */
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
@@ -2163,10 +2154,10 @@ internal_main(int argc, char *argv[])
     setup_init();
 	
 #ifdef HAVE_GETOPT_LONG
-    while ((read_opt = getopt_long(argc, argv, "Vb:l:", 
+    while ((read_opt = getopt_long(argc, argv, "Vl:", 
 				   longopts, &longopt_idx)) != -1) {
 #else
-    while ((read_opt = getopt(argc, argv, "Vb:l:")) != -1) {
+    while ((read_opt = getopt(argc, argv, "Vl:")) != -1) {
 #endif /* HAVE_GETOPT_LONG */
 	switch (read_opt) {
 #ifdef HAVE_GETOPT_LONG
@@ -2200,27 +2191,6 @@ internal_main(int argc, char *argv[])
 	    printf("gerbv version %s\n", VERSION);
 	    printf("(C) Stefan Petersen (spe@stacken.kth.se)\n");
 	    exit(0);
-	case 'b' :
-#ifdef GUILE_IN_USE
-	    run_batch = 1;
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a backend in batch mode\n");
-		exit(1);
-	    }
-	    
-	    backend = (char *)malloc(strlen(optarg) + strlen("gerb-.scm") + 1);
-	    if (backend == NULL) {
-		fprintf(stderr, "Failed mallocing backend string\n");
-		exit(1);
-	    }
-	    strcpy(backend, "gerb-");
-	    strcat(backend, optarg);
-	    strcat(backend, ".scm");
-#else
-	    fprintf(stderr, "This version doesn't have batch support\n");
-	    exit(1);
-#endif /* GUILE_IN_USE */
-	    break;
 	case 'l' :
 	    if (optarg == NULL) {
 		fprintf(stderr, "You must give a filename to send log to\n");
@@ -2234,9 +2204,6 @@ internal_main(int argc, char *argv[])
 	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
 	    fprintf(stderr, "where FLAGS could be any of\n");
 	    fprintf(stderr, "  --version|-V : Prints version of gerbv\n");
-#ifdef GUILE_IN_USE
-	    fprintf(stderr, "  --batch=<backend>|-b <backend> : Run in batch mode with backend <backend>\n");
-#endif /* GUILE_IN_USE */
 	    fprintf(stderr, "  --log=<logfile>|-l <logfile> : Send error messages to <logfile>\n");
 	    exit(1);
 	    break;
@@ -2245,26 +2212,6 @@ internal_main(int argc, char *argv[])
 	}
     }
     
-#ifdef GUILE_IN_USE
-    if (run_batch) {
-	if (optind == argc) {
-	    fprintf(stderr, "No file to work on\n");
-	    exit(1);
-	}
-	
-	/*
-	 * Loop through gerber files
-	 */
-	for(i = optind ; i < argc; i++) {
-	    printf("%s\n", argv[i]);
-	    batch(backend, argv[i]);
-	}
-
-	free(backend);
-	exit(0);
-    }
-#endif /* GUILE_IN_USE */
-
     /*
      * Init GTK+
      */
@@ -2409,17 +2356,5 @@ internal_main(int argc, char *argv[])
 
     gtk_main();
     
-    return;
-} /* internal_main */
-    
-
-int
-main(int argc, char *argv[])
-{
-#ifdef GUILE_IN_USE
-    gh_enter(argc, argv, internal_main);
-#else
-    internal_main(argc, argv);
-#endif /* GUILE_IN_USE */
     return 0;
 } /* main */

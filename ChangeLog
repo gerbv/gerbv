@@ -1,6 +1,9 @@
 2003-03-02  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw_amacro.c: Aperture macro primitive 1 is a filled circle.
+	* Makefile.am, configure.in, src/gerbv.c, src/Makefile.am, 
+	  src/gerbv.1.in: Removed all traces of Guile. batch.c is left, but 
+	  is not compiled in.
 
 2003-03-01  Stefan Petersen  <spe@stacken.kth.se>
 
