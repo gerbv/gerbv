@@ -1,3 +1,5 @@
+-- Release 0.16 --
+
 2004-05-19  Stefan Petersen  <spe@stacken.kth.se>
 
 	* man/gerbv.1.in, src/Makefile.am, src/drill.c, src/gerbv.c, 

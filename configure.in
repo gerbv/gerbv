@@ -26,7 +26,7 @@ AC_INIT(src/gerbv.c)
 
 dnl variables
 PACKAGE=gerbv
-VERSION=0.15-2
+VERSION=0.16
 PKG_CONFIG=pkg-config
 
 dnl --enable-exportpng
