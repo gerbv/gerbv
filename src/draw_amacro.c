@@ -416,8 +416,8 @@ gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
     for (i = 0; i < nuf_points; i++) {
 	points[i] = rotate_point(points[i], s->stack[rotation_idx]);
-	points[i].x += x;
-	points[i].y += y;
+	points[i].x = x + points[i].x;
+	points[i].y = y - points[i].y;
     }
 
     gdk_draw_line(pixmap, local_gc, 
