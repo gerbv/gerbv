@@ -7,6 +7,15 @@
 
 2002-04-27 Stefan Petersen (spe@stacken.kth.se)
 
+	* src/gerbv.c: Number constants replaced with an enumeration
+	  type. Also error in zooming comments fixed.
+	* man/gerbv.1.in: Added blurb about zooming.
+	* src/gerber.c: Bug 549602 fixed so format statements are
+	  completely handled.
+
+
+2002-04-27 Stefan Petersen (spe@stacken.kth.se)
+
 	* src/gerbv.c: Changed name for all *open* functions to 
 	  *load*. Implemented "unload file" in right-click popup,
 	  which closes feature req. 548124.
