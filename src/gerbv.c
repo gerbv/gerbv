@@ -435,6 +435,7 @@ swap_layers(GtkWidget *widget, gpointer data)
 {
     gerbv_fileinfo_t *temp_file;
     GtkStyle *s1, *s2;
+    GtkTooltipsData *td1, *td2;
     int idx;
 
     if (data == 0) {
@@ -451,12 +452,22 @@ swap_layers(GtkWidget *widget, gpointer data)
     temp_file = screen.file[screen.curr_index];
     screen.file[screen.curr_index] = screen.file[screen.curr_index + idx];
     screen.file[screen.curr_index + idx] = temp_file;
+
     /* Swap color on button */
     s1 = gtk_widget_get_style(screen.layer_button[screen.curr_index]);
     s2 = gtk_widget_get_style(screen.layer_button[screen.curr_index + idx]);
     gtk_widget_set_style(screen.layer_button[screen.curr_index + idx], s1);
     gtk_widget_set_style(screen.layer_button[screen.curr_index], s2);
-    
+
+    /* Swap tooltips on button */
+    td1 = gtk_tooltips_data_get(screen.layer_button[screen.curr_index]);
+    td2 = gtk_tooltips_data_get(screen.layer_button[screen.curr_index + idx]);
+    gtk_tooltips_set_tip(td1->tooltips, td1->widget,
+			 screen.file[screen.curr_index]->name, NULL);
+    gtk_tooltips_set_tip(td2->tooltips, td2->widget,
+			 screen.file[screen.curr_index + idx]->name, NULL);
+
+
     redraw_pixmap(screen.drawing_area, TRUE);
     
 } /* swap_layers */
