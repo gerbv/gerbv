@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -155,3 +159,59 @@ gerb_fclose(gerb_file_t *fd)
     
     return;
 } /* gerb_fclose */
+
+
+char *
+gerb_find_file(char *filename, char **paths)
+{
+    char *curr_path = NULL;
+    char *complete_path = NULL;
+    int	 i;
+
+    for (i = 0; paths[i] != NULL; i++) {
+
+	/*
+	 * Environment variables start with a $ sign 
+	 */
+	if (paths[i][0] == '$') {
+	    char *env_name, *env_value, *tmp;
+	    int len;
+
+	    /* Extract environment name. Remember we start with a $ */
+	    tmp = strchr(paths[i], '/');
+	    if (tmp == NULL) 
+		len = strlen(paths[i]) - 1;
+	    else
+		len = tmp - paths[i] - 1;
+	    env_name = (char *)malloc(len);
+	    strncpy(env_name, (char *)(paths[i] + 1), len);
+	    env_name[len] = '\0';
+
+	    env_value = getenv(env_name);
+	    if (env_value == NULL) break;
+	    curr_path = (char *)malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
+	    strcpy(curr_path, env_value);
+	    strcat(curr_path, &paths[i][len + 1]);
+	    free(env_name);
+	} else {
+	    curr_path = paths[i];
+	}
+
+	/*
+	 * Build complete path (inc. filename) and check if file exists.
+	 */
+	complete_path = (char *)malloc(strlen(curr_path) + strlen(filename) + 2);
+	strcpy(complete_path, curr_path);
+	complete_path[strlen(curr_path)] = '/';
+	complete_path[strlen(curr_path) + 1] = '\0';
+	strncat(complete_path, filename, strlen(filename));
+
+	if (access(complete_path, R_OK) != -1)
+	    break;
+
+	free(complete_path);
+	complete_path = NULL;
+    }
+
+    return complete_path;
+} /* gerb_find_file */

@@ -1,3 +1,7 @@
+2003-12-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_file.[hc]: Added function gerb_find_file.
+
 2003-11-22  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in, acconfig.h: acconfig.h removed and more information
