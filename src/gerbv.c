@@ -1831,6 +1831,7 @@ static gint
 key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
     GdkCursor *cursor;
+    gerbv_zoom_data_t z_data;
 
     switch (screen.state) {
     case NORMAL:
@@ -1846,6 +1847,21 @@ key_press_event (GtkWidget *widget, GdkEventKey *event)
 	case GDK_Alt_R: 
 	    screen.state = ALT_PRESSED;
 	    screen.selected_layer = -1;
+	    break;
+	case GDK_f:
+	case GDK_F:
+	    autoscale();
+	    redraw_pixmap(screen.drawing_area, TRUE);
+	    break;
+	case GDK_z:
+	    z_data.z_dir = ZOOM_IN;
+	    zoom(widget, &z_data);
+	    break;
+	case GDK_Z:
+	    z_data.z_dir = ZOOM_OUT;
+	    zoom(widget, &z_data);
+	    break;
+	default:
 	    break;
 	}
 	break;
