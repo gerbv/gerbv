@@ -1,0 +1,30 @@
+Branches
+========
+SEARCH_SELECT_branch	Juergen and Tomasz new stuff 20040720
+FIND_PARTS_branch	Obsolete
+RELEASE_1_x_branch	Obsolete
+STABLE_1_x_branch	Stable branch
+
+Misc. tags
+==========
+SEARCH_SELECT_bp	Branch point for SEARCH_SELECT_branch
+RELEASE_0_17_PRE1	Never released
+RELEASE_0_16		Release
+RELEASE_0_15		Release
+RELEASE_0_14		Release
+RELEASE_0_13		Release
+RELEASE_0_12		Release
+RELEASE_0_11		Release
+RELEASE_0_0_10_debian2	Release
+RELEASE_0_0_9		Release
+RELEASE_0_0_8		Release
+RELEASE_0_0_7		Release
+RELEASE_0_0_6pre2	Release
+RELEASE_0_0_6pre1	Release
+RELEASE_0_0_6		Release
+RELEASE_0_0_5		Release
+RELEASE_0_0_4		Release
+RELEASE_0_0_3		Release
+FIND_PARTS_bp		Obsolete
+FIND_PARTS		Obsolete
+STABLE_1_x_bp		Branch point for stable branch
