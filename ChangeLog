@@ -5,6 +5,8 @@
 	* HACKING, AUTHORS, CONTRIBUTORS: Updated with more authors
 	  and contributors. Also extended HACKING to include ChangeLog
 	  and code format.
+	* src/gerbv.c: Autoscale is more correct, though not completely
+	  perfect. Closes bug 550795.
 	
 
 2002-04-29  Anders Eriksson  <anders@faldor.umunet.org>

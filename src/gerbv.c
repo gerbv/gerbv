@@ -464,10 +464,11 @@ unload_file(GtkWidget *widget, gpointer data)
 static void
 autoscale()
 {
-    int i;
-    double max_width = 0.0, max_height = 0.0;
-    double min_x = 100.0;
+    double max_width = LONG_MIN, max_height = LONG_MIN;
+    double min_x = LONG_MAX;
     double x_scale, y_scale;
+    static const int edge_offset = 10;
+    int i;
     
     if (screen.drawing_area == NULL)
 	return;
@@ -488,16 +489,23 @@ autoscale()
         }
     }
 
-
+    /*
+     * Calculate scale for both x axis and y axis
+     */
     x_scale = screen.drawing_area->allocation.width / max_width;
     y_scale = screen.drawing_area->allocation.height / max_height;
 
+    /*
+     * Take the scale that fits both directions
+     */
     screen.scale = (int)ceil(MIN(x_scale, y_scale));
     screen.scale = (screen.scale / 10) * 10;
 
-    screen.trans_x = (int)ceil((min_x - 0.05) * screen.scale);
-    /* Don't ask me about 0.35. It just seems to work. spe */
-    screen.trans_y = (int)ceil(0.35 * screen.scale);
+    /*
+     * Calculate translation
+     */
+    screen.trans_x = (int)ceil(min_x * screen.scale) - edge_offset;
+    screen.trans_y = 0;
 
     return;
 } /* autoscale */
@@ -686,7 +694,7 @@ redraw_pixmap(GtkWidget *widget)
      * Make picture a little bit bigger so things on the edges comes
      * inside.
      */
-    dmax_width += 0.5 , dmax_height += 0.5;
+    dmax_width += 0.1 , dmax_height += 0.1;
 
     /*
      * Scale width to actual windows size.
