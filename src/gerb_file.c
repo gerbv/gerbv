@@ -59,7 +59,7 @@ gerb_fopen(char *filename)
 	return NULL;
     }
     if ((int)statinfo.st_size == 0) {
-	errno = ENODATA;
+	errno = EIO; /* More compatible with the world outside Linux */
 	return NULL;
     }
     fd->datalen = (int)statinfo.st_size;

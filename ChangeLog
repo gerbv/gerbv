@@ -1,5 +1,7 @@
 2002-06-11  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerb_file.c: Changed ENODATA to EIO, which is more portable.
+	  Closes bug 567179.
 	* src/gerbv.c: It is now possible to draw images with negative
 	  coordinates. Closes bug 548094.
 	* src/draw.[hc],src/draw-amacro.[hc], src/Makefile.am: Split out 
