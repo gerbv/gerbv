@@ -137,7 +137,7 @@ rotate_point(GdkPoint point, int angle)
 
 
 /*
- * Doesn't handle exposure yet and explicit x,y
+ * Doesn't handle explicit x,y yet
  */
 static void
 gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
@@ -151,6 +151,7 @@ gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
     gint real_y = y - dia / 2;
 
     gdk_gc_copy(local_gc, gc);
+
     gdk_gc_set_line_attributes(local_gc, 
 			       1, /* outline always 1 pixels */
 			       GDK_LINE_SOLID, 
@@ -170,7 +171,7 @@ gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
 
 /*
- * Doesn't handle exposure yet and explicit x,y
+ * Doesn't handle explicit x,y yet
  * Questions:
  *  - should start point be included in number of points?
  *  - how thick is the outline?
@@ -228,7 +229,7 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
 
 /*
- * Doesn't handle exposure yet and explicit x,y
+ * Doesn't handle explicit x,y yet
  */
 static void
 gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
@@ -268,7 +269,7 @@ gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
 
 /*
- * Doesn't handle exposure yet and explicit x,y
+ * Doesn't handle and explicit x,y yet
  * Questions:
  *  - is "gap" distance between edges of circles or distance between
  *    center of line of circle?
@@ -420,7 +421,7 @@ gerbv_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
 
 /*
- * Doesn't handle exposure yet and explicit x,y
+ * Doesn't handle and explicit x,y yet
  */
 static void
 gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
@@ -467,7 +468,7 @@ gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
 
 /*
- * Doesn't handle exposure yet and explicit x,y
+ * Doesn't handle explicit x,y yet
  */
 static void
 gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
@@ -509,7 +510,7 @@ gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
 
 /*
- * Doesn't handle exposure yet and explicit x,y
+ * Doesn't handle explicit x,y yet
  */
 static void
 gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
@@ -560,7 +561,10 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
     stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
     int handled = 1;
-
+    const int exposure_idx = 0;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    GdkColor color;
+    
     for(ip = program; ip != NULL; ip = ip->next) {
 	switch(ip->opcode) {
 	case NOP:
@@ -584,31 +588,42 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	    push(s, 1 / ((pop(s) / pop(s))));
 	    break;
 	case PRIM :
+	    /* 
+	     * This handles the exposure thing in the aperture macro
+	     * The exposure is always the first element on stack independent
+	     * of aperture macro.
+	     */
+	    gdk_gc_copy(local_gc, gc);
+	    if (s->stack[exposure_idx] == 0.0) {
+		color.pixel = 0;
+		gdk_gc_set_foreground(local_gc, &color);
+	    }
+
 	    switch(ip->data.ival) {
 	    case 1:
-		gerbv_draw_prim1(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim1(pixmap, local_gc, s, scale, x, y);
 		break;
 	    case 4 :
-		gerbv_draw_prim4(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim4(pixmap, local_gc, s, scale, x, y);
 		break;
 	    case 5 :
-		gerbv_draw_prim5(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim5(pixmap, local_gc, s, scale, x, y);
 		break;
 	    case 6 :
-		gerbv_draw_prim6(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim6(pixmap, local_gc, s, scale, x, y);
 		break;
 	    case 7 :
-		gerbv_draw_prim7(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim7(pixmap, local_gc, s, scale, x, y);
 		break;
 	    case 2  :
 	    case 20 :
-		gerbv_draw_prim20(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim20(pixmap, local_gc, s, scale, x, y);
 		break;
 	    case 21 :
-		gerbv_draw_prim21(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim21(pixmap, local_gc, s, scale, x, y);
 		break;
 	    case 22 :
-		gerbv_draw_prim22(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim22(pixmap, local_gc, s, scale, x, y);
 		break;
 	    default :
 		handled = 0;
@@ -626,5 +641,6 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	}
     }
     free_stack(s);
+    gdk_gc_unref(local_gc);
     return handled;
 } /* gerbv_draw_amacro */
