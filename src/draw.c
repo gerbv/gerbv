@@ -216,11 +216,13 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 
 	/*
 	 * Set GdkFunction depending on if this (gerber) layer is inverted
+	 * and allow for the photoplot being negative.
 	 */
-	if (net->layer_polarity == CLEAR)
-	    gdk_gc_set_function(gc, GDK_CLEAR);
+	gdk_gc_set_function(gc, GDK_COPY);
+	if ((net->layer_polarity == CLEAR) != (polarity == NEGATIVE))
+	    gdk_gc_set_foreground(gc, &opaque);
 	else
-	    gdk_gc_set_function(gc, GDK_COPY);
+	    gdk_gc_set_foreground(gc, &transparent);
 
 	/*
 	 * Polygon Area Fill routines
