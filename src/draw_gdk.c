@@ -29,7 +29,8 @@
 
 
 #undef round
-#define round(x) ceil((double)(x))
+#define round(x) floor((double)(x)+0.5)
+
 
 
 struct gerb_gdk_context {
@@ -211,9 +212,8 @@ gerb_gdk_set_line_style(struct gerb_render_context *ctx,
 			double width, int dashed)
 {
     struct gerb_gdk_context *gctx = (struct gerb_gdk_context*) ctx;
-    gint w = round(width);
 
-    gdk_gc_set_line_attributes (gctx->clipmask_gc, (w < 1) ? 1 : w,
+    gdk_gc_set_line_attributes (gctx->clipmask_gc, ceil(width),
 				dashed ? GDK_LINE_ON_OFF_DASH : GDK_LINE_SOLID,
 				GDK_CAP_ROUND,
 				GDK_JOIN_MITER);

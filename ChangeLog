@@ -1,3 +1,7 @@
+2003-03-03  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_gdk.c: one-pixel overshoot bug fixed by Holger.
+
 2003-02-28  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerbv.c: Holger made a patch that allows to switch between 
