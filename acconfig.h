@@ -28,6 +28,9 @@
 /* Support for export of PNG's */
 #undef EXPORT_PNG
 
+/* Maximum number of simultaneous loaded files */
+#undef MAX_FILES
+
 /* Header files */
 #undef HAVE_UNISTD_H
 #undef HAVE_GETOPT_H

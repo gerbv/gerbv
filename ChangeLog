@@ -2,6 +2,8 @@
 
 	* configure.in: exportpng is configured in default and removed
 	  if asked (--disable-exportpng).
+	* configure.in, acconfig.h, src/gerbv_screen.h: Setting of MAX_FILES
+	  from ./configure.
 	
 
 2002-09-09  Stefan Petersen  <spe@stacken.kth.se>
