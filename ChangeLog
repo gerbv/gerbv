@@ -1,3 +1,8 @@
+2002-07-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.[hc], gerber.c: Parses and stores %IN%
+	  ie the image name.
+
 2002-07-15  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c, src/gerbv_icon.h: Added application icon.

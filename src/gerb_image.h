@@ -87,14 +87,15 @@ typedef struct gerb_format {
     int x_dec;
     int y_int;
     int y_dec;
-    int lim_seqno;
-    int lim_gf;
-    int lim_pf;
-    int lim_mf;
+    int lim_seqno; /* Length limit for codes of sequence number */
+    int lim_gf;    /* Length limit for codes of general function */
+    int lim_pf;    /* Length limit for codes of plot function */
+    int lim_mf;    /* Length limit for codes of miscellaneous function */
 } gerb_format_t;
 	
 	
 typedef struct gerb_image_info {
+    char *name;
     enum unit_t unit;
     enum polarity_t polarity;
     double min_x;

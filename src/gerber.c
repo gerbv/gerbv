@@ -586,7 +586,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     } else if (strncmp(op, "IJ", 2) == 0) { /* Image Justify */
 	NOT_IMPL(fd, "%IJ%");
     } else if (strncmp(op, "IN", 2) == 0) { /* Image Name */
-	NOT_IMPL(fd, "%IN%");
+	image->info->name = gerb_fgetstring(fd, '*');
     } else if (strncmp(op, "IO", 2) == 0) { /* Image Offset */
 	NOT_IMPL(fd, "%IO%");
     } else if (strncmp(op, "IP", 2) == 0) { /* Image Polarity */

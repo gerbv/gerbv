@@ -93,8 +93,11 @@ free_gerb_image(gerb_image_t *image)
     /*
      * Free info
      */
-    if (image->info)
+    if (image->info) {
+	if (image->info->name)
+	    free(image->info->name);
 	free(image->info);
+    }
     
     /*
      * Free netlist
