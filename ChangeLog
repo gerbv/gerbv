@@ -1,3 +1,12 @@
+2002-10-06  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv_screen.h, src/gerbv.c: Added menu selection for
+	  units. Decreased width of status bar. This closes the too
+	  wide window problem in bug #615475. The default minimum
+	  height is still too high to fit in an 800x600 display.
+	  By limiting the number of files to 17 or so this problem
+	  is also solved.
+
 2002-09-29  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerber.c, src/gerbv.c, src/gerbv_screen.h: Removed last

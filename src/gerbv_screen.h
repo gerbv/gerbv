@@ -32,9 +32,9 @@
 #include <gdk/gdk.h>
 
 #define INITIAL_SCALE 200
-#define MAX_ERRMSGLEN 45
-#define MAX_COORDLEN 50
-#define MAX_DISTLEN 75
+#define MAX_ERRMSGLEN 25
+#define MAX_COORDLEN 28
+#define MAX_DISTLEN 45
 #define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
 #define GERBV_DISTFONTNAME "-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1"
 #define GERBV_STATUSFONTNAME "-*-fixed-*-*-normal--*-100-*-*-*-*-iso8859-1"
@@ -46,6 +46,8 @@
 #define COORD2MMS(c) ((c)*25.4)
 
 typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE, ALT_PRESSED} gerbv_state_t;
+
+typedef enum {GERBV_MILS, GERBV_MMS} gerbv_unit_t;
 
 typedef struct {
     gerb_image_t *image;
@@ -61,7 +63,8 @@ typedef struct {
     GdkFunction si_func; /* Function used for superimposing layers */
     GdkColor  *zoom_outline_color;
     GdkColor  *dist_measure_color;
-    
+    gerbv_unit_t unit;
+
     GtkWidget *load_file_popup;
     GtkWidget *color_selection_popup;
     GtkWidget *export_png_popup;

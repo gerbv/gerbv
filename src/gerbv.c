@@ -98,6 +98,7 @@ static void unload_file(GtkWidget *widget, gpointer data);
 static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
 static void si_func(GtkWidget *widget, gpointer data);
+static void unit_func(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget);
@@ -154,6 +155,9 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Setup/_Superimpose/Invert", NULL, si_func, GDK_INVERT,  "/Setup/Superimpose/Copy"},
 
     {"/Setup/_Background Color",NULL, color_selection_popup, 1, NULL},
+    {"/Setup/_Units",  NULL,     NULL,             0, "<Branch>"},
+    {"/Setup/_Units/m_ils",NULL, unit_func, GERBV_MILS, "<RadioItem>"},
+    {"/Setup/_Units/_mms",NULL, unit_func, GERBV_MMS, "/Setup/Units/mils"},
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
@@ -749,6 +753,25 @@ si_func(GtkWidget *widget, gpointer data)
     return;
 }
 
+
+/* Unit function, sets unit for statusbar */
+static void 
+unit_func(GtkWidget *widget, gpointer data)
+{
+
+    if ((gerbv_unit_t)data  == screen.unit)
+	return;
+    
+    screen.unit = (gerbv_unit_t)data;
+
+    /* Redraw the status bar */
+    update_statusbar(&screen);
+
+    return;
+}
+
+
+/* Zoom function */
 static void
 zoom(GtkWidget *widget, gpointer data)
 {
@@ -1331,10 +1354,15 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 
 	X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.scale;
 	Y = (screen.gerber_bbox.y2 - (y+screen.trans_y)/(double)screen.scale);
-	snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		 "X,Y (%7.1f, %7.1f)mils (%7.2f, %7.2f)mm",
-		 COORD2MILS(X), COORD2MILS(Y),
-		 COORD2MMS(X), COORD2MMS(Y));
+	if (screen.unit == GERBV_MILS) {
+	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+		     "X,Y (%7.1f, %7.1f)mils",
+		     COORD2MILS(X), COORD2MILS(Y));
+	} else /* unit is GERBV_MMS */ {
+	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+		     "X,Y (%7.2f, %7.2f)mm",
+		     COORD2MMS(X), COORD2MMS(Y));
+	}
 	update_statusbar(&screen);
 
 	switch (screen.state) {
@@ -1592,10 +1620,15 @@ draw_measure_distance()
 	/*
 	 * Update statusbar
 	 */
-	snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		 " dist,dX,dY (%7.1f, %7.1f, %7.1f)mils (%7.2f, %7.2f, %7.2f)mm",
-		 COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy),
-		 COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
+	if (screen.unit == GERBV_MILS) {
+	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+		     " dist,dX,dY (%7.1f, %7.1f, %7.1f)mils",
+		     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
+	} else /* unit is GERBV_MMS */ {
+	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+		     " dist,dX,dY (%7.2f, %7.2f, %7.2f)mm",
+		     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
+	}
 	update_statusbar(&screen);
 
     }
@@ -1725,6 +1758,9 @@ internal_main(int argc, char *argv[])
     screen.background = alloc_color(0, 0, 0, "black");
     screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
     screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
+
+    /* Set default unit to mils. XXX This should be configured with  autoconf! */
+    screen.unit = GERBV_MILS;
 
     /*
      * Main window 
