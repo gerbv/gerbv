@@ -72,7 +72,8 @@ static void calc_cirseg_sq(struct gerb_net *net, int cw,
 			   double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_mq(struct gerb_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
-
+static gerb_net_t *gen_circle_segments(gerb_net_t *curr_net,
+				       int cw, int *nuf_pcorners);
 
 gerb_image_t *
 parse_gerb(gerb_file_t *fd)
@@ -239,6 +240,17 @@ parse_gerb(gerb_file_t *fd)
 		    curr_net->stop_x = (double)state->curr_x / x_scale;
 		    curr_net->stop_y = (double)state->curr_y / y_scale;
 		}
+
+		/*
+		 * if this outline is circular, approximate it with short lines
+		 */
+		if (curr_net->cirseg) {
+		    curr_net->interpolation = state->interpolation;
+		    curr_net->layer_polarity = state->layer_polarity;
+		    curr_net->unit = state->unit;	    
+		    curr_net = gen_circle_segments(curr_net, state->interpolation == CW_CIRCULAR, &(state->parea_start_node->nuf_pcorners));
+		}
+
 		state->parea_start_node->nuf_pcorners++;
 	    }
 
@@ -1056,3 +1068,74 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 
     return;
 } /* calc_cirseg_mq */
+
+
+static gerb_net_t *
+gen_circle_segments(gerb_net_t *curr_net, int cw, int *nuf_pcorners)
+{
+    double end_x, end_y;
+    double angle, angle_diff;
+    double cp_x, cp_y;
+    double radius;
+    int steps, i;
+    gerb_net_t * new_net;
+
+    radius = curr_net->cirseg->width / 2.0;
+    cp_x = curr_net->cirseg->cp_x;
+    cp_y = curr_net->cirseg->cp_y;
+
+    end_x = curr_net->stop_x;
+    end_y = curr_net->stop_y;
+
+    angle = curr_net->cirseg->angle1;
+    angle_diff = curr_net->cirseg->angle2 - curr_net->cirseg->angle1;
+
+    /*
+     * compute number of segments, each is approx 1 degree
+     */
+    if (cw)
+        steps = (int)(1.0 - angle_diff);
+    else
+        steps = (int)(1.0 + angle_diff);
+
+    for (i = 1; i < steps; i++) {
+#define DEG2RAD(a) (((a) * M_PI) / 180.0) 
+
+	/*
+	 * calculate end point for this segment
+	 */
+	curr_net->stop_x = cp_x + radius * cos (DEG2RAD(angle + (angle_diff * i) / steps));
+	curr_net->stop_y = cp_y + radius * sin (DEG2RAD(angle + (angle_diff * i) / steps));
+
+	/*
+	 * create a new net, and copy current into it, (but not cirseg)
+	 */
+	new_net = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	*new_net = *curr_net;
+	new_net->cirseg = NULL;
+
+	/*
+	 * set start point to be old stop
+	 */
+	new_net->start_x = curr_net->stop_x;
+	new_net->start_y = curr_net->stop_y;
+
+	curr_net->next = new_net;
+	curr_net = new_net;
+
+	/*
+	 * increment the polygon corner count
+	 */
+	(*nuf_pcorners)++;
+    }
+
+    /*
+     * ensure the last point is at the end passed in
+     */
+    curr_net->stop_x = end_x;
+    curr_net->stop_y = end_y;
+
+    (*nuf_pcorners)++;
+
+    return curr_net;
+} /* gen_circle_segments */

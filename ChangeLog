@@ -1,8 +1,12 @@
 2003-09-08  Stefan Petersen  <spe@stacken.kth.se>
 
-	* gerber.c: Patch from Simon Munton to fix a problem with polygons
+	* src/gerber.c: Patch from Simon Munton to fix a problem with polygons
 	  sometimes not being filled properly. Closes bug #800928 (which
 	  he promptly had submitted).
+
+	* src/gerber.c: Another patch from Simon. This time it fixes
+	  circular polygon outlines by with a number of short segments.
+	  Closes bug #603183, which was almost a year old. Thanks Simon!
 
 -- Release 0.14 --
 
