@@ -1,3 +1,11 @@
+-- Release 0.0.8 --
+	
+	
+2002-05-05  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: Updated VERSION.
+	
+
 2002-05-03  Anders Eriksson  <anders@umunet.org>
 
 	* AUTHORS: Corrected my e-mail address
