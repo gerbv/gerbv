@@ -139,7 +139,7 @@ destroy(GtkWidget *widget, gpointer data)
 
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",      NULL,          NULL,    0, "<Branch>"},
-    {"/File/Open _Gerber...", "<alt>G", open_file,    0, NULL},
+    {"/File/Open _File...", "<alt>F", open_file,    0, NULL},
     {"/File/Open _Drill...", "<alt>D", open_drillfile,    0, NULL},
     {"/File/sep1",  NULL,          NULL,    0, "<Separator>"},
     {"/File/_Quit", "<alt>Q", destroy  ,    0, NULL},
@@ -232,7 +232,7 @@ create_radio_buttons(int nuf_buttons)
     box = gtk_vbox_new(FALSE, 0);
     
     for (bi = 0; bi < nuf_buttons; bi++) {
-	sprintf(info, "%d", bi);
+	sprintf(info, "%ld", bi);
 	button = gtk_radio_button_new_with_label(button_group, info);
 	gtk_signal_connect(GTK_OBJECT(button), "clicked", 
 			   GTK_SIGNAL_FUNC(cb_radio_button), (gpointer)bi);
@@ -411,12 +411,16 @@ open_image(char *filename, int index)
 	exit(1);
     }
     screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
-    screen.file[index]->image = parse_gerb(fd);
+    if(drill_file_p(fd) != 1) {
+	screen.file[index]->image = parse_gerb(fd);
+    } else {
+	screen.file[index]->image = parse_drillfile(fd);
+    }
     screen.file[index]->color_index = index;
     gtk_tooltips_set_tip(screen.tooltips, screen.select_button[index],
 			 filename, NULL); 
     fclose(fd);
-    
+
     return;
 } /* open_image */
 
@@ -597,7 +601,7 @@ batch(char *backend, char *file, int drillp) /* XXX drillp kludge */
 	image = parse_drillfile(fd);
     else
 	image = parse_gerb(fd);
-
+    
     fclose(fd);
     
     /*

@@ -401,10 +401,13 @@ drill_file_p(FILE *fd)
 	case 'M':
 	    if(fread(read, 1, 2, fd) != 2) {
 		/* Probably EOF. Anyway, it's not a drill file */
+		rewind(fd);
+		clearerr(fd);
 		return 0;
 	    } else if(!strncmp(read, "48", 2)) {
 		/* Drill file header found,
 		   this could very well be a drill file */
+		rewind(fd);
 		return 1;
 	    } else {
 		eat_line(fd);
@@ -416,7 +419,9 @@ drill_file_p(FILE *fd)
 	}
     }
     /* This is probably not a drill file */
-    return 1;
+    rewind(fd);
+    clearerr(fd);
+    return 0;
 }
 
 /* Parse tool definition. This can get a bit tricky since it can
@@ -694,9 +699,9 @@ static void
 eat_line(FILE *fd)
 {
     char read = fgetc(fd);
-
+    
     while(read != 10 && read != 13) {
-	if (read == EOF) err(1, "Unexpected EOF found.\n");
+	if (read == EOF) return;
 	read = fgetc(fd);
     }
 } /* eat_line */

@@ -1,6 +1,14 @@
 2001-11-27 Andreas Andersson (e92_aan@e.kth.se)
 
-	* src/drill.h src/drill.c:
+	* src/gerbv.c:
+	  Added autodetection of file type.
+	* src/drill.c:
+	  Corrected stupid bug in autodetection.
+
+
+2001-11-27 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.h, src/drill.c:
 	  Added drill_file_p(); which checks whether a file could
 	  be a drill file or not.
 	
