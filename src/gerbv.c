@@ -51,7 +51,6 @@
 #endif
 #include "draw.h"
 #include "color.h"
-#include "fileio.h"
 
 #define INITIAL_SCALE 200
 #define MAX_FILES 20

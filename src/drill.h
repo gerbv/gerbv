@@ -29,7 +29,7 @@ extern "C" {
 
 #include <stdio.h>
 #include "gerb_image.h"
-#include "fileio.h"
+#include "gerb_file.h"
 
 #define TOOL_MIN 1
 #define TOOL_MAX 999

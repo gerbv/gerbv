@@ -30,7 +30,7 @@ extern "C" {
 
 #include <stdio.h>
 #include "gerb_image.h"
-#include "fileio.h"
+#include "gerb_file.h"
 
 
 #define EAGLECAD_KLUDGE 
