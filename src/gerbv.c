@@ -123,13 +123,8 @@ static void zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
 
 void rename_main_window(char *filename, GtkWidget *main_win);
 
-#ifdef USE_GTK2
-void
-destroy(void)
-#else
 void
 destroy(GtkWidget *widget, gpointer data)
-#endif
 {
     int i;
 
@@ -2589,8 +2584,12 @@ main(int argc, char *argv[])
      */
     main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     rename_main_window("", main_win);
+#ifdef USE_GTK2
+    g_signal_connect(GTK_OBJECT(main_win), "delete_event", G_CALLBACK(destroy), NULL);
+#else
     gtk_signal_connect(GTK_OBJECT(main_win), "delete_event", destroy, NULL);
     gtk_signal_connect(GTK_OBJECT(main_win), "destroy", destroy, NULL);
+#endif
 
     /* 
      * vbox contains menubar and hbox

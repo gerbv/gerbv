@@ -1,3 +1,10 @@
+2004-02-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Apperently under GTK2 both delete_event and destroy
+	  signals is emitted when you press the little cross in the 
+	  decoration bar. When both signals were emitted gerbv tried to free
+	  the same memory twice.
+
 2004-02-14  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/Makefile.am: Making sure init.scm is copied to the right 
