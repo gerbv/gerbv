@@ -16,13 +16,52 @@ actually make the PCB. \fIgerbv\fP also supports Excellon/NC drill files.
 .B Warning! 
 On some platforms, which hasn't long option available, only
 short options are available.
-.TP 8
-\fIgerbv\fP accepts the following options:
-.TP 8
-.BI --version
-.TP
-.BI -V
+
+.SS gerbv Options
+.BI -V\ | --version
 Prints the version number of gerbv and exits.
+.TP
+.BI -b <backend>\ | --batch\=<backend>
+Calls <backend> with the current parsed file. Only available if you compiled
+in Guile support. 
+.TP
+.BI --geometry=<width>x<height>[<+->x-position[<+->y-position]]
+Sets the the size of the window. X-position and y-position are currently
+ignored by gerbv.
+
+.SS GTK Options
+.BI --gtk-module= MODULE
+Load an additional GTK module
+.TP
+.BI --g-fatal-warnings
+Make all warnings fatal
+.TP
+.BI --gtk-debug= FLAGS
+GTK debugging flags to set
+.TP
+.BI --gtk-no-debug= FLAGS
+GTK debugging flags to unset
+.TP
+.BI --gdk-debug= FLAGS
+GDK debugging flags to set
+.TP
+.BI --gdk-no-debugo= FLAGS
+GDK debugging flags to unset
+.TP
+.BI --display= DISPLAY
+X display to use
+.TP
+.BI --sync
+Make X call synchronous
+.TP
+.BI --no-xshm
+Don't use X shared memory extension
+.TP
+.BI --name= NAME
+Program name as used by the window manager
+.TP
+.BI --class= CLASS
+Program class as used by the window manager
 
 .SH GENERAL
 When you start gerbv you can give the files to be loaded on the command line,
@@ -37,8 +76,10 @@ color, etc).
 If you hold the mouse button over one the rightmost button a tooltips will
 show you the name of the file loaded on that layer.
 
-Currently only 20 layers are supported. Changing this number needs a 
-one line change (MAX_FILES in gerbv.c) in the source and a recompilation.
+Default of concurrently loaded files are 20 layers. You can change this 
+during configure with:
+
+ ./configure with\-maxfiles\=\<number\>
 
 .SH ZOOMING
 Zooming can be handled by either menu choices, keypressing, middle mouse 
@@ -76,8 +117,21 @@ corresponding functions in GTK. In GTK they are described as:
 "For colored images, only GDK_COPY, GDK_XOR and GDK_INVERT are generally 
 useful. For bitmaps, GDK_AND and GDK_OR are also useful."
 
+.SH BACKEND
+If you compiled in Guile you can run gerbv as a parser with output generated
+by a Scheme script. This system is currently under heavy redesign, so use 
+this with caution.
+
+If you call gerbv with --batch=<backend>, gerbv starts looking for a file
+namned gerb-<backend>.scm. It starts looking for it in the directory gerbv
+was invoked from, then it looks in \$HOME/.gerbv/scheme and finally in
+@BACKEND_DIR@.
+
+Currently the only documentation on how to write a backend is the code in the
+scheme directory of the distribution.
+
 .SH "ENVIRONMENT"
-No environment variables are used.
+No environment variables are currently in use.
 
 .SH "AUTHOR"
 .nf

@@ -1,5 +1,8 @@
 2002-10-07  Stefan Petersen  <spe@stacken.kth.se>
 
+	* man/gerbv.1.in: Added blurb about the new command line 
+	  switches. Also added some text on backends.
+
 	* src/gerbv.c: Added some GDK/GTK specific command line
 	  parameters. Also added the parameter --geometry.
 	  Currently ignoring placement parameters, though I parse them
