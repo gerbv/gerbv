@@ -1,10 +1,10 @@
 2004-07-28  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.c: In gerbers the image can be negative or positive.
-	  Then a part of the image called a layer can be clear or dark.
-	  -"No more weed for you, Mr Gerber".
-	  Richard Lightman found this and submitted both an example and 
-	  a patch. Thanks!
+          Then a part of the image called a layer can be clear or dark.
+          -"No more weed for you, Mr Gerber".
+          Richard Lightman found this and submitted both an example and 
+          a patch. Thanks!
 
 2004-07-11  Stefan Petersen  <spe@stacken.kth.se>
 
