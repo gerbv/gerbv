@@ -1,10 +1,16 @@
+-- Release 0.0.10 --
+
+2002-10-13   Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: Updated version to 0.0.10
+
 2002-10-11  Anders Eriksson  <anders@umunet.org>
 
 	* configure.in, acconfig.h, src/gerbv.c: Added configure-option
 	  to change default unit for status bar to millimeters instead
 	  of the built-in default of mils.
 
-2002-10-09  Stefan Petersen  <spe@>
+2002-10-09  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: The undefined aperture fix below is, in princip,
 	  only valid if aperture type != from aperture macro.
