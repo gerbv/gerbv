@@ -1,3 +1,12 @@
+2002-05-07  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (zoom_outline): Added zoom outline support and
+	scaled zoom step (zoom 10% of current scale instead of a fixed
+	number of 10). Some comments in old code. The outline drawing could
+	probably be optimized quite a bit (it currently piggybacks on the
+	expose event). With this functionality it is easier to note the
+	excessive memory usage when zooming in too far.
+
 -- Release 0.0.8 --
 	
 	

@@ -72,7 +72,7 @@ typedef struct {
 
 
 
-typedef enum {NORMAL, MOVE} gerbv_state_t;
+typedef enum {NORMAL, MOVE, ZOOM_OUTLINE} gerbv_state_t;
 
 typedef struct {
     gerb_image_t *image;
@@ -102,6 +102,8 @@ typedef struct {
 
     gint last_x;
     gint last_y;
+    gint zstart_x;		/* Zoom box start coordinates */
+    gint zstart_y;
 
     int trans_x; /* Translate offset */
     int trans_y;
@@ -116,6 +118,7 @@ static void load_file_popup(GtkWidget *widget, gpointer data);
 static void unload_file(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
+static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget);
 static void open_image(char *filename, int index);
 
@@ -520,7 +523,7 @@ idle_redraw_pixmap(gpointer data)
     idle_redraw_pixmap_active = FALSE;
     redraw_pixmap((GtkWidget *) data);
     return FALSE;
-}
+} /* idle_redraw_pixmap */
 
 void start_idle_redraw_pixmap(GtkWidget *data)
 {
@@ -528,7 +531,7 @@ void start_idle_redraw_pixmap(GtkWidget *data)
 	gtk_idle_add(idle_redraw_pixmap, (gpointer) data);
 	idle_redraw_pixmap_active = TRUE;
     }
-}
+} /* start_idle_redraw_pixmap */
 
 void stop_idle_redraw_pixmap(GtkWidget *data)
 {
@@ -536,7 +539,7 @@ void stop_idle_redraw_pixmap(GtkWidget *data)
 	gtk_idle_remove_by_data ((gpointer)data);
 	idle_redraw_pixmap_active = FALSE;
     }
-}
+} /* stop_idle_redraw_pixmap */
 
 static void
 menu_zoom(GtkWidget *widget, gpointer data)
@@ -544,7 +547,7 @@ menu_zoom(GtkWidget *widget, gpointer data)
     gerbv_zoom_data_t z_data = { (gerbv_zoom_dir_t)data, NULL };
 
     zoom(widget, &z_data);
-}
+} /* menu_zoom */
 
 static void
 zoom(GtkWidget *widget, gpointer data)
@@ -608,9 +611,49 @@ zoom(GtkWidget *widget, gpointer data)
 	/* Set idle function to ensure we wont miss to redraw */
 	start_idle_redraw_pixmap(screen.drawing_area);
     }
-
+    
     return;
 } /* zoom */
+
+static void
+zoom_outline(GtkWidget *widget, GdkEventButton *event)
+{
+    int x1, y1, x2, y2;		/* Zoom outline (UR and LL corners) */
+    double us_x1, us_y1, us_x2, us_y2;
+    int half_w, half_h;		/* cache for half window dimensions */
+
+    if (screen.file[screen.curr_index] == NULL)
+	return;
+
+    half_w = screen.drawing_area->allocation.width / 2;
+    half_h = screen.drawing_area->allocation.height / 2;
+
+    x1 = MIN(screen.zstart_x, event->x);
+    y1 = MIN(screen.zstart_y, event->y);
+    x2 = MAX(screen.zstart_x, event->x);
+    y2 = MAX(screen.zstart_y, event->y);
+
+    us_x1 = (screen.trans_x + x1)/(double) screen.scale;
+    us_y1 = (screen.trans_y + y1)/(double) screen.scale;
+    us_x2 = (screen.trans_x + x2)/(double) screen.scale;
+    us_y2 = (screen.trans_y + y2)/(double) screen.scale;
+
+    screen.scale = MIN(screen.drawing_area->allocation.width/(double)(us_x2 - us_x1),
+		       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
+
+    screen.trans_x = screen.scale * us_x1;
+    screen.trans_y = screen.scale * us_y1;
+
+    /* Redraw screen unless we have more events to process */
+    if (!g_main_pending()) {
+	stop_idle_redraw_pixmap(screen.drawing_area);
+	redraw_pixmap(screen.drawing_area);
+    } else {
+	/* Set idle function to ensure we wont miss to redraw */
+	start_idle_redraw_pixmap(screen.drawing_area);
+    }
+    
+} /* zoom_outline */
 
 
 GtkWidget *
@@ -852,7 +895,10 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	}
 	break;
     case 3 :
-	/* Add color selection code here? */
+	/* Zoom outline mode initiated */
+	screen.state = ZOOM_OUTLINE;
+	screen.zstart_x = event->x;
+	screen.zstart_y = event->y;
 	break;
     case 4 :
 	data.z_dir = ZOOM_IN_CMOUSE;
@@ -877,8 +923,13 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 static gint
 button_release_event (GtkWidget *widget, GdkEventButton *event)
 {
-    if (event->type == GDK_BUTTON_RELEASE)
+    if (event->type == GDK_BUTTON_RELEASE) {
+	if (screen.state == ZOOM_OUTLINE) {
+	    screen.state = NORMAL;
+	    zoom_outline(widget, event);
+	}
 	screen.state = NORMAL;
+    }
 
     return TRUE;
 } /* button_release_event */
@@ -899,26 +950,47 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	state = event->state;
     }
     
-    x = widget->allocation.height - x;
-    y = widget->allocation.width - y;
+    if (screen.pixmap != NULL) {
+	switch (screen.state) {
+	case MOVE: {
 
-    if (screen.state == MOVE && screen.pixmap != NULL) {
-	if (screen.last_x != 0 || screen.last_y != 0) {
-	    screen.trans_x = screen.trans_x + x - screen.last_x;
-	    screen.trans_y = screen.trans_y + y - screen.last_y;
-	}
-	screen.last_x = x;
-	screen.last_y = y;
+	    x = widget->allocation.height - x;
+	    y = widget->allocation.width - y;
 
-	update_rect.x = 0, update_rect.y = 0;
-	update_rect.width  = widget->allocation.width;
-	update_rect.height = widget->allocation.height;
+	    if (screen.last_x != 0 || screen.last_y != 0) {
+		screen.trans_x = screen.trans_x + x - screen.last_x;
+		screen.trans_y = screen.trans_y + y - screen.last_y;
+	    }
+	    screen.last_x = x;
+	    screen.last_y = y;
+
+	    update_rect.x = 0, update_rect.y = 0;
+	    update_rect.width  = widget->allocation.width;
+	    update_rect.height = widget->allocation.height;
 	
-	/*
-	 * Calls expose_event
-	 */
-	gtk_widget_draw(widget, &update_rect);
+	    /*
+	     * Calls expose_event
+	     */
+	    gtk_widget_draw(widget, &update_rect);
+	    break;
+	}
+	case ZOOM_OUTLINE: {
+	    screen.last_x = x;
+	    screen.last_y = y;
 
+	    update_rect.x = 0, update_rect.y = 0;
+	    update_rect.width  = widget->allocation.width;
+	    update_rect.height = widget->allocation.height;
+	
+	    /*
+	     * Calls expose_event
+	     */
+	    gtk_widget_draw(widget, &update_rect);
+	    break;
+	}
+	default:
+	    break;
+	}
     }
     
     return TRUE;
@@ -972,6 +1044,29 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 
     gdk_pixmap_unref(new_pixmap);
     gdk_gc_unref(gc);
+
+    /*
+     * Draw Zooming outline if we are in that mode
+     */
+    if (screen.state == ZOOM_OUTLINE) {
+	    GdkGC *gc;
+	    GdkGCValues values;
+	    GdkGCValuesMask values_mask;
+	    gint x1, y1, x2, y2;
+
+	    memset(&values, 0, sizeof(values));
+	    values.function = GDK_XOR;
+	    values.foreground = *screen.err_color;
+	    values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
+	    gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
+
+	    x1 = MIN(screen.zstart_x, screen.last_x);
+	    y1 = MIN(screen.zstart_y, screen.last_y);
+	    x2 = MAX(screen.zstart_x, screen.last_x);
+	    y2 = MAX(screen.zstart_y, screen.last_y);
+
+	    gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, x2-x1, y2-y1);	    
+    }
 
     /*
      * Raise popup windows if they happen to disappear
