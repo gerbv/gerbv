@@ -38,6 +38,7 @@
 #include "draw.h"
 #include "draw_amacro.h"
 #include "gerb_error.h"
+#include "gerb_transf.h"
 
 #undef round
 #define round(x) ceil((double)(x))
@@ -139,8 +140,7 @@ gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
  */
 int
 image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     int scale, double trans_x, double trans_y,
-	     enum polarity_t polarity)
+	     gerb_transf_t *transf, enum polarity_t polarity)
 {
     GdkGC *gc = gdk_gc_new(*pixmap);
     GdkGC *pgc = gdk_gc_new(*pixmap);
@@ -152,8 +152,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     GdkPoint *points = NULL;
     int curr_point_idx = 0;
     int in_parea_fill = 0;
-    double unit_scale;
     GdkColor transparent, opaque;
+    gerb_transf_t trf;
 
 
     if (image == NULL || image->netlist == NULL) {
@@ -165,6 +165,10 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	
 	return 0;
     }
+    
+    /*TODO effects of both:combine global transf with image->transf*/
+    trf = *transf;
+    
     
     /* Set up the two "colors" we have */
     opaque.pixel = 0; /* opaque will not let color through */
@@ -184,34 +188,38 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     }
 
     for (net = image->netlist->next ; net != NULL; net = net->next) {
-	
-	if (net->unit == MM) 
-	    unit_scale = scale / 25.4;
-	else 
-	    unit_scale = scale;
+        double x1d, y1d, x2d, y2d;
+        double x, y; /*for circle centre*/
+        int x_stop, y_stop; /* not transformed x2,y2 */
+        trf.scale = transf->scale;
+        if (net->unit == MM) 
+            trf.scale /= 25.4;
 
 	/*
 	 * Scale points with window scaling and translate them
 	 */
-	x1 = (int)round((image->info->offset_a + net->start_x) * unit_scale +
-			trans_x);
-	y1 = (int)round((image->info->offset_b - net->start_y) * unit_scale +
-			trans_y);
-	x2 = (int)round((image->info->offset_a + net->stop_x) * unit_scale +
-			trans_x);
-	y2 = (int)round((image->info->offset_b - net->stop_y) * unit_scale +
-			trans_y);
+        gerb_transf_apply(image->info->offset_a + net->start_x,image->info->offset_b - net->start_y,
+            &trf, &x1d, &y1d);
+        gerb_transf_apply(image->info->offset_a + net->stop_x,image->info->offset_b - net->stop_y,
+            &trf, &x2d, &y2d);    
+        x1 = (int)round(x1d);
+        y1 = (int)round(y1d);
+        x2 = (int)round(x2d);/*CHECK ME: Why integer cast?*/
+        y2 = (int)round(y2d);
+        x_stop = (int)round(image->info->offset_a + net->stop_x);
+        y_stop = (int)round(image->info->offset_b - net->stop_y);
 
 	/* 
 	 * If circle segment, scale and translate that one too
 	 */
 	if (net->cirseg) {
-	    cir_width = (int)round(net->cirseg->width * unit_scale);
-	    cir_height = (int)round(net->cirseg->height * unit_scale);
-	    cp_x = (int)round((image->info->offset_a + net->cirseg->cp_x) *
-			      unit_scale + trans_x);
-	    cp_y = (int)round((image->info->offset_b - net->cirseg->cp_y) *
-			      unit_scale + trans_y);
+	    cir_width = (int)round(net->cirseg->width * trf.scale); /*CHECK ME later: take into account rotation and other matrix trafos*/
+	    cir_height = (int)round(net->cirseg->height * trf.scale);
+            gerb_transf_apply(image->info->offset_a + net->cirseg->cp_x,image->info->offset_b - net->cirseg->cp_y,
+            &trf, &x, &y);  
+	    cp_x = (int)round(x);
+	    cp_y = (int)round(y);
+            /* FIXME recalculate angles as well */
 	}
 
 	/*
@@ -273,14 +281,14 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	/*
 	 * "Normal" aperture drawing routines
 	 */
+        trf.scale = transf->scale; /*TODO must be  changed once image->transf and transf are combined*/
 	if (image->aperture[net->aperture]->unit == MM)
-	    unit_scale = scale / 25.4;
-	else
-	    unit_scale = scale;
+	    trf.scale /=  25.4;
+
 
 	switch (net->aperture_state) {
 	case ON :
-	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
+	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * trf.scale);
 	    if (image->aperture[net->aperture]->type == RECTANGLE)
 		gdk_gc_set_line_attributes(gc, p1, 
 					   GDK_LINE_SOLID, 
@@ -312,6 +320,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 		break;
 	    case CW_CIRCULAR :
 	    case CCW_CIRCULAR :
+                /* FIXME: angles have to be transformed (rotated)! */
 		gerbv_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
 			       net->cirseg->angle1, net->cirseg->angle2);
 		break;		
@@ -322,8 +331,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	case OFF :
 	    break;
 	case FLASH :
-	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
-	    p2 = (int)round(image->aperture[net->aperture]->parameter[1] * unit_scale);
+	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * trf.scale);
+	    p2 = (int)round(image->aperture[net->aperture]->parameter[1] * trf.scale);
 	    
 	    switch (image->aperture[net->aperture]->type) {
 	    case CIRCLE :
@@ -344,7 +353,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 				  image->aperture[net->aperture]->amacro->program,
 				  image->aperture[net->aperture]->amacro->nuf_push,
 				  image->aperture[net->aperture]->parameter,
-				  unit_scale, x2, y2);
+				  &trf, x2, y2);
 		break;
 	    default :
 		GERB_MESSAGE("Unknown aperture type\n");

@@ -31,6 +31,7 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h draw.c \
 		opdefines.h project.c project.h scheme-private.h scheme.c \
 		search.c search.h search_file.c search_file.h search_cb.c \
 		search_cb.h search_gui.c search_gui.h search_mark.c \
+		gerb_transf.c gerb_transf.h \
 		csv.c csv.h	\
 		scheme.h setup.c setup.h tooltable.c tooltable.h
 

@@ -59,6 +59,19 @@ new_gerb_image(gerb_image_t *image)
     }
     memset((void *)image->info, 0, sizeof(gerb_image_info_t));
     
+    if ((image->transf = gerb_transf_new()) == NULL) {
+        free(image->info);
+        image->info = NULL;
+        free(image->netlist);
+        image->netlist = NULL;
+	free(image->info);
+        image->info = NULL;
+	free(image);
+        image = NULL;
+	return NULL;
+    }
+
+    
     image->info->min_x = HUGE_VAL;
     image->info->min_y = HUGE_VAL;
     image->info->max_x = -HUGE_VAL;
@@ -120,6 +133,8 @@ free_gerb_image(gerb_image_t *image)
 	free(tmp);
 	tmp = NULL;
     }
+    
+    gerb_transf_free(image->transf);
 
     /*
      * Free and reset the final image

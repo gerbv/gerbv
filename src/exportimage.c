@@ -82,9 +82,9 @@ png_export(GdkPixmap* imagetosave, char* filename)
 	     * Width and height to scaled full size.
 	     */
 	    width = (int)floor((dmax_x - dmin_x) * 
-			       (double)screen.scale);
+			       (double)screen.transf->scale);
 	    height = (int)floor((dmax_y - dmin_y) * 
-			    (double)screen.scale);
+			    (double)screen.transf->scale);
 	    
 	    /*
 	     * Allocate the pixmap and the clipmask (a one pixel pixmap)
@@ -104,6 +104,9 @@ png_export(GdkPixmap* imagetosave, char* filename)
 	     * This now allows drawing several layers on top of each other.
 	     * Higher layer numbers have higher priority in the Z-order. 
 	     */
+            screen.transf->offset[0] = -dmin_x;
+            screen.transf->offset[1] = dmax_y;
+            
 	    for(i = 0; i < MAX_FILES; i++) {
 		if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
 		    screen.file[i]) {
@@ -119,9 +122,10 @@ png_export(GdkPixmap* imagetosave, char* filename)
 		     * Translation is to get it inside the allocated pixmap,
 		     * which is not always centered perfectly for GTK/X.
 		     */
-		    image2pixmap(&clipmask, screen.file[i]->image, screen.scale, 
-				 -dmin_x*screen.scale,
-				 dmax_y*screen.scale,
+		    image2pixmap(&clipmask, screen.file[i]->image, screen.transf, 
+                                /*screen.transf->scale, 
+				 -dmin_x*screen.transf->scale,
+				 dmax_y*screen.transf->scale, */
 				 screen.file[i]->image->info->polarity);
 		    /* 
 		     * Set clipmask and draw the clipped out image onto the

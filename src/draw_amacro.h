@@ -26,6 +26,7 @@
 
 #include <gdk/gdk.h>
 #include "amacro.h"
+#include "gerb_transf.h"
 
 /*
  * Execute (and thus draw) the aperture macro described by program.
@@ -33,6 +34,6 @@
  */
 int gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		      instruction_t *program, unsigned int nuf_push,
-		      double *parameters, int scale, gint x, gint y);
+		      double *parameters, gerb_transf_t  *transf, gint x, gint y);
 
 #endif /* DRAW_AMACRO_H */

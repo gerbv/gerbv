@@ -103,7 +103,7 @@ typedef struct {
     gerbv_state_t state;
     gboolean centered_outline_zoom;
 
-    int scale;
+ //   int scale;
 
     int selected_layer;         /* Selected layer by Alt+keypad */
 
@@ -114,6 +114,7 @@ typedef struct {
 
     int trans_x; /* Translate offset */
     int trans_y;
+    gerb_transf_t *transf; /*handles all tranformations:Mirroring, scaling and translation*/
 
     gint off_x;			/* Offset current pixmap when panning */
     gint off_y;

@@ -25,6 +25,7 @@
 #define GERB_IMAGE_H
 
 #include "amacro.h"
+#include "gerb_transf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -121,6 +122,7 @@ typedef struct gerb_image {
     gerb_format_t *format;
     gerb_image_info_t *info;
     gerb_net_t *netlist;
+    gerb_transf_t *transf;
 } gerb_image_t;
 
 

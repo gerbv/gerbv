@@ -35,7 +35,7 @@
  */
 int 
 image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     int scale, double trans_x, double trans_y,
-	     enum polarity_t polarity);
+    gerb_transf_t *transf,
+    enum polarity_t polarity);
 
 #endif /* DRAW_H */

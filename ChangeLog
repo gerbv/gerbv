@@ -1,3 +1,7 @@
+2004-08-23  Tomasz Motylewski <t.motylewski@bfad.de>
+
+	* replaced scale with gerb_transf_t(.scale) - mirroring preparation
+
 2004-08-22  Stefan Petersen  <spe@stacken.kth.se>
 
 	* configure.in, src/Makefile.am: Use libpng-config to find out

@@ -1136,26 +1136,26 @@ autoscale(void)
     /*
      * Take the scale that fits both directions with some extra checks
      */
-    screen.scale = (int)ceil(MIN(x_scale, y_scale));
-    if (screen.scale < 1)
-	screen.scale = 1;
-    if (screen.scale > 10)
-	screen.scale = (screen.scale / 10) * 10;
+    screen.transf->scale = (int)ceil(MIN(x_scale, y_scale));
+    if (screen.transf->scale < 1)
+	screen.transf->scale = 1;
+    if (screen.transf->scale > 10)
+	screen.transf->scale = floor(screen.transf->scale / 10) * 10;
 
     /*
      * Calculate translation
      */
     if (x_scale < y_scale) {
 	screen.trans_x = 0;
-	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.scale*(max_height))/2.0));
+	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.transf->scale*(max_height))/2.0));
     } else {
-	screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.scale*(max_width))/2.0));
+	screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.transf->scale*(max_width))/2.0));
 	screen.trans_y = 0;
     }
 
     /* Initialize clipping bbox to contain entire image */
-    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
-    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;
+    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
+    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
     screen.clip_bbox.x2 = screen.gerber_bbox.x2-screen.gerber_bbox.x1;
     screen.clip_bbox.y2 = screen.gerber_bbox.y2-screen.gerber_bbox.y1;
     screen.off_x = 0;
@@ -1275,31 +1275,31 @@ zoom(GtkWidget *widget, gpointer data)
 	screen.trans_y -= mouse_delta_y;
     }
 
-    us_midx = (screen.trans_x + half_w)/(double) screen.scale;
-    us_midy = (screen.trans_y + half_h)/(double) screen.scale;
+    us_midx = (screen.trans_x + half_w)/(double) screen.transf->scale;
+    us_midy = (screen.trans_y + half_h)/(double) screen.transf->scale;
 
     switch(z_data->z_dir) {
     case ZOOM_IN : /* Zoom In */
     case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
-	screen.scale += screen.scale/10;
-	screen.trans_x = screen.scale * us_midx - half_w;
-	screen.trans_y = screen.scale * us_midy - half_h;
+	screen.transf->scale += screen.transf->scale/10;
+	screen.trans_x = screen.transf->scale * us_midx - half_w;
+	screen.trans_y = screen.transf->scale * us_midy - half_h;
 	break;
     case ZOOM_OUT :  /* Zoom Out */
     case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
-	if (screen.scale > 10) {
-	    screen.scale -= screen.scale/10;
-	    screen.trans_x = screen.scale * us_midx - half_w;
-	    screen.trans_y = screen.scale * us_midy - half_h;
+	if (screen.transf->scale > 10) {
+	    screen.transf->scale -= screen.transf->scale/10;
+	    screen.trans_x = screen.transf->scale * us_midx - half_w;
+	    screen.trans_y = screen.transf->scale * us_midy - half_h;
 	}
 	break;
     case ZOOM_FIT : /* Zoom Fit */
 	autoscale();
 	break;
     case ZOOM_SET : /*explicit scale set by user */
-	screen.scale = z_data->scale;
-	screen.trans_x = screen.scale * us_midx - half_w;
-	screen.trans_y = screen.scale * us_midy - half_h;
+	screen.transf->scale = z_data->scale;
+	screen.trans_x = screen.transf->scale * us_midx - half_w;
+	screen.trans_y = screen.transf->scale * us_midy - half_h;
         break;
     default :
 	GERB_MESSAGE("Illegal zoom direction %ld\n", (long int)data);
@@ -1312,8 +1312,8 @@ zoom(GtkWidget *widget, gpointer data)
     }
 
     /* Update clipping bbox */
-    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
-    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;    
+    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
+    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;    
 
     /* Redraw screen */
     redraw_pixmap(screen.drawing_area, TRUE);
@@ -1352,17 +1352,17 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
 	dy *= 2;
     }
 
-    us_x1 = (screen.trans_x + x1)/(double) screen.scale;
-    us_y1 = (screen.trans_y + y1)/(double) screen.scale;
-    us_x2 = (screen.trans_x + x2)/(double) screen.scale;
-    us_y2 = (screen.trans_y + y2)/(double) screen.scale;
+    us_x1 = (screen.trans_x + x1)/(double) screen.transf->scale;
+    us_y1 = (screen.trans_y + y1)/(double) screen.transf->scale;
+    us_x2 = (screen.trans_x + x2)/(double) screen.transf->scale;
+    us_y2 = (screen.trans_y + y2)/(double) screen.transf->scale;
 
-    screen.scale = MIN(screen.drawing_area->allocation.width/(double)(us_x2 - us_x1),
+    screen.transf->scale = MIN(screen.drawing_area->allocation.width/(double)(us_x2 - us_x1),
 		       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
-    screen.trans_x = screen.scale * (us_x1 + (us_x2 - us_x1)/2) - half_w;
-    screen.trans_y = screen.scale * (us_y1 + (us_y2 - us_y1)/2) - half_h;;
-    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
-    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;
+    screen.trans_x = screen.transf->scale * (us_x1 + (us_x2 - us_x1)/2) - half_w;
+    screen.trans_y = screen.transf->scale * (us_y1 + (us_y2 - us_y1)/2) - half_h;;
+    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
+    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
 
 zoom_outline_end:
     /* Redraw screen */
@@ -1438,7 +1438,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
     /*
      * Setup scale etc first time we load a file
      */
-    if (file_loaded && screen.scale == 0) {
+    if (file_loaded && screen.transf->scale < 0.001) {
 	autoscale();
 	invalidate_redraw_state(&state);
     }
@@ -1523,7 +1523,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
      */
     gdk_gc_set_function(gc, screen.si_func);
 
-
+    
     /* 
      * This now allows drawing several layers on top of each other.
      * Higher layer numbers have higher priority in the Z-order. 
@@ -1563,15 +1563,21 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	     */
 	    gdk_gc_set_foreground(gc, screen.file[i]->color);
 	    gdk_draw_rectangle(state.curr_pixmap, gc, TRUE, 0, 0, -1, -1);
+            /* calculate shift */
+            screen.transf->offset[0] = screen.clip_bbox.x1-dmin_x;
+            screen.transf->offset[1] = screen.clip_bbox.y1+dmax_y;
+            screen.transf->offset[0] *= screen.transf->scale;
+            screen.transf->offset[1] *= screen.transf->scale;
 
 	    /*
 	     * Translation is to get it inside the allocated pixmap,
 	     * which is not always centered perfectly for GTK/X.
 	     */
 	    image2pixmap(&(state.clipmask),
-			 screen.file[i]->image, screen.scale, 
-			 (screen.clip_bbox.x1-dmin_x)*screen.scale,
-			 (screen.clip_bbox.y1+dmax_y)*screen.scale,
+			 screen.file[i]->image, screen.transf, 
+                         /* screen.scale, 
+			 (screen.clip_bbox.x1-dmin_x)*screen.transf->scale,
+			 (screen.clip_bbox.y1+dmax_y)*screen.transf->scale, */
 			 polarity);
 
 	    /* 
@@ -2021,8 +2027,8 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
     if (screen.pixmap != NULL) {
 	double X, Y;
 
-	X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.scale;
-	Y = (screen.gerber_bbox.y2 - (y+screen.trans_y)/(double)screen.scale);
+	X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.transf->scale;
+	Y = (screen.gerber_bbox.y2 - (y+screen.trans_y)/(double)screen.transf->scale);
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     "X,Y (%7.1f, %7.1f)mils",
@@ -2044,8 +2050,8 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 		screen.trans_x = screen.trans_x + x - screen.last_x;
 		screen.trans_y = screen.trans_y + y - screen.last_y;
 
-		screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
-		screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;
+		screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
+		screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
 
 		/* Move pixmap to get a snappier feel of movement */
 		screen.off_x += x - screen.last_x;
@@ -2147,10 +2153,10 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 	    dy = screen.gerber_bbox.y2-screen.gerber_bbox.y1;
 	    gdk_gc_set_foreground(gc, screen.dist_measure_color);
 	    gdk_draw_rectangle(widget->window, gc, FALSE, 
-			       (screen.gerber_bbox.x1-1.1)*screen.scale - screen.trans_x,
-			       ((screen.gerber_bbox.y1-0.6)*screen.scale - screen.trans_y),
-			       dx*screen.scale,
-			       dy*screen.scale);
+			       (screen.gerber_bbox.x1-1.1)*screen.transf->scale - screen.trans_x,
+			       ((screen.gerber_bbox.y1-0.6)*screen.transf->scale - screen.trans_y),
+			       dx*screen.transf->scale,
+			       dy*screen.transf->scale);
     }
 #endif /* DEBUG_GERBV_OUTLINE */
 
@@ -2273,8 +2279,8 @@ draw_measure_distance(void)
 	gint lbearing, rbearing, width, ascent, descent;
 	gint linefeed;	/* Pseudonym for inter line gap */
 
-	dx = (x2 - x1)/(double) screen.scale;
-	dy = (y2 - y1)/(double) screen.scale;
+	dx = (x2 - x1)/(double) screen.transf->scale;
+	dy = (y2 - y1)/(double) screen.transf->scale;
 	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
 
 	snprintf(string, sizeof(string),
@@ -2430,7 +2436,7 @@ void
 zoom_spinbutton1_realize(GtkWidget * widget, gpointer user_data)
 {
     gtk_spin_button_set_value ((GtkSpinButton *) widget,
-			       (gfloat) screen.scale);
+			       (gfloat) screen.transf->scale);
 } /* zoom_spinbutton1_realize */
 
 
@@ -2562,6 +2568,8 @@ main(int argc, char *argv[])
 #else 
 //    screen.execpath = argv[0];
 #endif    
+    screen.transf = gerb_transf_new();
+    screen.transf->scale = 0.0; // will force reinitialization of the screen later
 
     setup_init();
 	

@@ -619,7 +619,7 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 int
 gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		  instruction_t *program, unsigned int nuf_push,
-		  double *parameters, int scale, gint x, gint y)
+		  double *parameters, gerb_transf_t *transf, gint x, gint y)
 {
     stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
@@ -653,31 +653,32 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	     * The exposure is always the first element on stack independent
 	     * of aperture macro.
 	     */
+// later TODO            gerb_transf_apply(x,y,transf, &x,&y);
 	    switch(ip->data.ival) {
 	    case 1:
-		gerbv_draw_prim1(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim1(pixmap, gc, s, transf->scale, x, y);
 		break;
 	    case 4 :
-		gerbv_draw_prim4(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim4(pixmap, gc, s, transf->scale, x, y);
 		break;
 	    case 5 :
-		gerbv_draw_prim5(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim5(pixmap, gc, s, transf->scale, x, y);
 		break;
 	    case 6 :
-		gerbv_draw_prim6(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim6(pixmap, gc, s, transf->scale, x, y);
 		break;
 	    case 7 :
-		gerbv_draw_prim7(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim7(pixmap, gc, s, transf->scale, x, y);
 		break;
 	    case 2  :
 	    case 20 :
-		gerbv_draw_prim20(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim20(pixmap, gc, s, transf->scale, x, y);
 		break;
 	    case 21 :
-		gerbv_draw_prim21(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim21(pixmap, gc, s, transf->scale, x, y);
 		break;
 	    case 22 :
-		gerbv_draw_prim22(pixmap, gc, s, scale, x, y);
+		gerbv_draw_prim22(pixmap, gc, s, transf->scale, x, y);
 		break;
 	    default :
 		handled = 0;
