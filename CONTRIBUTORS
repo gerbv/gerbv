@@ -10,6 +10,7 @@ Dan McMahill <mcmahill at mtl dot mit dot edu>
  - Fixed 64-bit support
  - Some additional configure things
  - Some great feedback on the measure tool thing.
+ - A patch to allow plus sign on the coordinates in a drill file.
  - The over-all NetBSD and 64-bit guy.
 
 Uwe Bonnes <bon at elektron dot ikp dot physik dot tu-darmstadt dot de>
@@ -39,9 +40,12 @@ Dino Ghilardi <dino dot ghilardi at ieee dot org>
  - Came up with the idea and sent me the suggestion in source code on
    how the superimposing should work!
  - Wrote PNGPrintMiniHowto and code for explicitly setting the scale.
+ - Hacked together the error popup thing.
 
 Bruno Schwander <bruno at tinkerbox dot org>
  - Patch to configure.in to fit different GTK-versions on FreeBSD
+ - Made me aware of BSD "different" getopt and also sent an example
+   that was already fixed in CVS so I had to make a release.
 
 Daniel Dorau
  - Submitted information on how to generate proper Excellon files from
