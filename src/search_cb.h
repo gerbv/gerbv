@@ -34,5 +34,5 @@
 
 void load_pnp_file_popup(GtkWidget *widget, gpointer data);
 int open_pnp(char *filename, int idx, int reload);
-#endif
 #endif /* USE_GTK2 */
+#endif

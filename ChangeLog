@@ -3,8 +3,6 @@
  todo 	saving projects 
 	Bugs fixed:
 		-compiles under GTK1
-		 regex.h is only checked for when --enabled-gtk2 is specified 
-                 to configure
 		-pressing mark actually also activates the new layer
 		-loading a gerberfile also activates layer
 		-tooltip to entry field now hints at usage of regexp

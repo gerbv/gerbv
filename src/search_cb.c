@@ -24,10 +24,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
  
-#ifdef USE_GTK2
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#ifdef USE_GTK2
 
 #include <assert.h>
 #include <stdio.h>
