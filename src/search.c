@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -142,6 +143,8 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     char             *row[12];
     int               delimiter=-1;
     char              buf[MAXL+2], buf0[MAXL+2];
+    double            tmp_x, tmp_y;
+    gerb_transf_t    *tr_rot = gerb_transf_new();
     
     /* added by t.motylewski@bfad.de
      * many locales redefine "." as "," and so on, so sscanf has problems when
@@ -210,16 +213,29 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 	        pnp_state->pad_x = get_float_unit(row[6]);
 	        pnp_state->pad_y = get_float_unit(row[7]);
 	        sscanf(row[9], "%lf", &pnp_state->rotation); // no units, always deg
+            
 	        if(sscanf(pnp_state->footprint, "%02d%02d", &i_length, &i_width) == 2) {
 		        // parse footprints like 0805 or 1206
-		        pnp_state->length = 0.0254 * i_length;
-                pnp_state->width = 0.0254 * i_width;
+		        pnp_state->length = 0.254 * i_length;
+                pnp_state->width = 0.254 * i_width;
 		        pnp_state->shape = PART_SHAPE_RECTANGLE;
-	        } else {
-		        pnp_state->length = 0.0;
-		        pnp_state->width = 0.0;
-		        pnp_state->shape = PART_SHAPE_UNKNOWN;
-            }
+	        } else { 
+                gerb_transf_reset(tr_rot);
+                gerb_transf_rotate(tr_rot, -pnp_state->rotation * M_PI/180);/* rotate it back to get dimensions */
+                gerb_transf_apply( pnp_state->pad_x -  pnp_state->mid_x, 
+                     pnp_state->pad_y - pnp_state->mid_y, tr_rot, 
+                     &tmp_x, &tmp_y);
+                if ((fabs(tmp_y) > fabs(tmp_x/100)) && (fabs(tmp_x) > fabs(tmp_y/100))){
+                    pnp_state->length = 2 * tmp_x;/* get dimensions*/
+                    pnp_state->width = 2 * tmp_y;
+                    pnp_state->shape = PART_SHAPE_STD;
+                    
+                } else {
+                    pnp_state->length = 0.0;
+                    pnp_state->width = 0.0;
+                    pnp_state->shape = PART_SHAPE_UNKNOWN;
+                }
+            }    
 
             gtk_list_store_append (GTK_LIST_STORE(fd->model), &interface.iter); 
             gtk_list_store_set (GTK_LIST_STORE(fd->model), &interface.iter,
@@ -245,12 +261,9 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
 	        0, pnp_state->designator, 
 	        1, pnp_state->comment,
                 -1);
- 
-        //     pnp_state->next = new_pnp_state();
-        //     pnp_state = pnp_state->next;
         }    
     }   
-           
+    gerb_transf_free(tr_rot);       
     return pnp_state0; /* return the FIRST list node */
 }
 

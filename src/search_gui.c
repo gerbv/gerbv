@@ -179,12 +179,12 @@ void select_by_regex(GtkWidget    	*widget,  gpointer 		data)
                 if ((designator_active) && (designator != NULL))
                     match = (regexec (&regexec_pattern, designator, 0, 0, 0) != REG_NOMATCH);
                 if ((comment_active) && (comment != NULL))
-                    match = match || (regexec (&regexec_pattern, g_locale_from_utf8(comment, -1, NULL, NULL, NULL), 0, 0, 0) != REG_NOMATCH);
+                    match = match || (regexec (&regexec_pattern, comment, 0, 0, 0) != REG_NOMATCH);
 #else 
                 if ((designator_active) && (designator != NULL))
                     match = (strstr (designator, regex) != NULL);
                 if ((comment_active) && (comment != NULL))
-                    match = match || (strstr (g_locale_from_utf8(comment, -1, NULL, NULL, NULL), regex) != NULL);    
+                    match = match || (strstr (comment, regex) != NULL);    
 /*?use      g_utf8_strdown (const gchar *str, gssize len); before strstr and maybe g_strstr_len?*/
 #endif     
             }
@@ -529,6 +529,7 @@ create_main_search_window (void)
            
     gtk_box_pack_start (GTK_BOX (vbox), interface.results, TRUE, TRUE, 0);
     
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(interface.check_designator), TRUE);
     gtk_widget_set_sensitive (interface.results, TRUE);
     gtk_widget_set_sensitive (interface.find_button, TRUE);
     return window;

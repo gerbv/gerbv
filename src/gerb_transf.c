@@ -64,6 +64,37 @@ void gerb_transf_reset(gerb_transf_t* transf)
     
 } /*gerb_transf_reset*/
 
+/** append rotation to transformation.
+@param transf transformation to be modified
+@param angle in rad (counterclockwise rotation) */
+
+void gerb_transf_rotate(gerb_transf_t* transf, double angle)
+{
+    double m[2][2]; 
+    double s = sin(angle), c = cos(angle);
+      
+    memcpy(m, transf->r_mat, sizeof(m));    
+    transf->r_mat[0][0] = c * m[0][0] - s * m[1][0];
+    transf->r_mat[0][1] = c * m[0][1] - s * m[1][1];
+    transf->r_mat[1][0] = s * m[0][0] + c * m[1][0];
+    transf->r_mat[1][1] = s * m[0][1] + c * m[1][1];
+//    transf->offset[0] = transf->offset[1] = 0.0; CHECK ME
+    
+} /*gerb_transf_rotate*/
+
+/** append translation to transformation.
+@param transf transformation to be modified
+@param shift_x translation in x direction
+@param shift_y translation in y direction */
+
+void gerb_transf_shift(gerb_transf_t* transf, double shift_x, double shift_y)
+{
+      
+    transf->offset[0] += shift_x;
+    transf->offset[1] += shift_y;
+            
+} /*gerb_transf_shift*/
+
 void gerb_transf_apply(double x, double y, gerb_transf_t* transf, double *out_x, double *out_y)
 {
 

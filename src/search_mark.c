@@ -77,12 +77,13 @@
 #define _(String) (String)
 
 void create_marked_layer(int idx) {
-    int           r, g, b;
-    GtkStyle     *defstyle, *newstyle;
-    gerb_net_t   *curr_net = NULL;
-    gerb_image_t *image = NULL;
-    GList        *list;
-    char         *tmp_name = NULL;
+    int            r, g, b;
+    GtkStyle      *defstyle, *newstyle;
+    gerb_net_t    *curr_net = NULL;
+    gerb_image_t  *image = NULL;
+    GList         *list;
+    char          *tmp_name = NULL;
+    gerb_transf_t *tr_rot = gerb_transf_new();
   //  GtkTreeIter   iter;
     
         
@@ -92,6 +93,7 @@ void create_marked_layer(int idx) {
   	    
 	  return;
     }*/
+    
     if(!screen.file[idx]) {
         screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
         memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
@@ -188,41 +190,47 @@ void create_marked_layer(int idx) {
         double mid_x, mid_y, ref_x, ref_y, pad_x, pad_y, rotation, radius;
 	double length, width;
 	int shape;
-        GtkTreeIter iter;
-        gboolean no_files_found;
-              
-        gtk_tree_model_get_iter (GTK_TREE_MODEL(interface.model), &iter, 
-			     list->data);
-	     
-        gtk_tree_model_get (GTK_TREE_MODEL(interface.model), &iter,
-    			        COLUMN_DESIGNATOR, &designator,
-                        COLUMN_footprint, &footprint,
-		                COLUMN_mid_x, &mid_x,
-                        COLUMN_mid_y, &mid_y,
-                        COLUMN_ref_x, &ref_x,
-                        COLUMN_ref_y, &ref_y,
-                        COLUMN_pad_x, &pad_x,
-                        COLUMN_pad_y, &pad_y,
-                        COLUMN_LAYER, &layer,
-                        COLUMN_rotation, &rotation,
-			            COLUMN_length, &length,
-			            COLUMN_width, &width,
-			            COLUMN_shape, &shape,
-                        COLUMN_COMMENT, &comment,
-			            COLUMN_NO_FILES_FOUND, &no_files_found,
-                                                   -1);
-        curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-        curr_net = curr_net->next;
-        assert(curr_net);
-        memset((void *)curr_net, 0, sizeof(gerb_net_t));
-  
+    GtkTreeIter iter;
+    gboolean no_files_found;
+          
+    gtk_tree_model_get_iter (GTK_TREE_MODEL(interface.model), &iter, 
+			 list->data);
+	 
+    gtk_tree_model_get (GTK_TREE_MODEL(interface.model), &iter,
+    			    COLUMN_DESIGNATOR, &designator,
+                    COLUMN_footprint, &footprint,
+		            COLUMN_mid_x, &mid_x,
+                    COLUMN_mid_y, &mid_y,
+                    COLUMN_ref_x, &ref_x,
+                    COLUMN_ref_y, &ref_y,
+                    COLUMN_pad_x, &pad_x,
+                    COLUMN_pad_y, &pad_y,
+                    COLUMN_LAYER, &layer,
+                    COLUMN_rotation, &rotation,
+			        COLUMN_length, &length,
+			        COLUMN_width, &width,
+			        COLUMN_shape, &shape,
+                    COLUMN_COMMENT, &comment,
+			        COLUMN_NO_FILES_FOUND, &no_files_found,
+                                               -1);
+    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+    curr_net = curr_net->next;
+    assert(curr_net);
+    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+    rotation *= M_PI/180; /* convert deg to rad */
+
 	switch(shape) {
 	case PART_SHAPE_RECTANGLE:
+    case PART_SHAPE_STD:
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
-            curr_net->start_x = pad_x;
-            curr_net->start_y = pad_y;
-            curr_net->stop_x = pad_x + width*6;
-            curr_net->stop_y = pad_y;
+            gerb_transf_reset(tr_rot);
+            gerb_transf_rotate(tr_rot, rotation);
+            gerb_transf_shift(tr_rot, mid_x, mid_y);
+
+            gerb_transf_apply(length/2, width/2, tr_rot, 
+                &curr_net->start_x, &curr_net->start_y);
+            gerb_transf_apply(-length/2, width/2, tr_rot, 
+                &curr_net->stop_x, &curr_net->stop_y);
     
             curr_net->aperture = 0;
             curr_net->layer_polarity = POSITIVE;
@@ -235,11 +243,11 @@ void create_marked_layer(int idx) {
             assert(curr_net);
             memset((void *)curr_net, 0, sizeof(gerb_net_t));
             
-            curr_net->start_x = pad_x + width*6;
-            curr_net->start_y = pad_y;
-            curr_net->stop_x = pad_x + width*6;
-            curr_net->stop_y = pad_y + length*6;
-    
+            gerb_transf_apply(-length/2, width/2, tr_rot, 
+                &curr_net->start_x, &curr_net->start_y);
+            gerb_transf_apply(-length/2, -width/2, tr_rot, 
+                &curr_net->stop_x, &curr_net->stop_y);
+                    
             curr_net->aperture = 0;
             curr_net->layer_polarity = POSITIVE;
             curr_net->unit = MM;
@@ -251,11 +259,11 @@ void create_marked_layer(int idx) {
             assert(curr_net);
             memset((void *)curr_net, 0, sizeof(gerb_net_t));
             
-            curr_net->start_x = pad_x + width*6;
-            curr_net->start_y = pad_y + length*6;
-            curr_net->stop_x = pad_x;
-            curr_net->stop_y = pad_y + length*6;
-    
+            gerb_transf_apply(-length/2, -width/2, tr_rot, 
+                &curr_net->start_x, &curr_net->start_y);
+            gerb_transf_apply(length/2, -width/2, tr_rot, 
+                &curr_net->stop_x, &curr_net->stop_y);
+                    
             curr_net->aperture = 0;
             curr_net->layer_polarity = POSITIVE;
             curr_net->unit = MM;
@@ -267,17 +275,57 @@ void create_marked_layer(int idx) {
             assert(curr_net);
             memset((void *)curr_net, 0, sizeof(gerb_net_t));
             
-            curr_net->start_x = pad_x;
-            curr_net->start_y = pad_y + length*4;//marking pad_x/ pad_y
-            curr_net->stop_x = pad_x;
-            curr_net->stop_y = pad_y;
-    
+            gerb_transf_apply(length/2, -width/2, tr_rot, 
+                &curr_net->start_x, &curr_net->start_y);
+            gerb_transf_apply(length/2, width/2, tr_rot, 
+                &curr_net->stop_x, &curr_net->stop_y);
+                
             curr_net->aperture = 0;
             curr_net->layer_polarity = POSITIVE;
             curr_net->unit = MM;
             curr_net->aperture_state = ON;
             curr_net->interpolation = LINEARx1;
 
+            curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+            curr_net = curr_net->next;
+            assert(curr_net);
+            memset((void *)curr_net, 0, sizeof(gerb_net_t));
+            
+            if (shape == PART_SHAPE_RECTANGLE) {
+                gerb_transf_apply(length/4, -width/2, tr_rot, 
+                    &curr_net->start_x, &curr_net->start_y);
+                gerb_transf_apply(length/4, width/2, tr_rot, 
+                    &curr_net->stop_x, &curr_net->stop_y);
+            } else {
+                gerb_transf_apply(length/4, width/2, tr_rot, 
+                    &curr_net->start_x, &curr_net->start_y);
+                gerb_transf_apply(length/4, width/4, tr_rot, 
+                    &curr_net->stop_x, &curr_net->stop_y);
+                    
+                curr_net->aperture = 0;
+                curr_net->layer_polarity = POSITIVE;
+                curr_net->unit = MM;
+                curr_net->aperture_state = ON;
+                curr_net->interpolation = LINEARx1;
+                
+                curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+                curr_net = curr_net->next;
+                assert(curr_net);
+                memset((void *)curr_net, 0, sizeof(gerb_net_t));
+                gerb_transf_apply(length/2, width/4, tr_rot, 
+                    &curr_net->start_x, &curr_net->start_y);
+                gerb_transf_apply(length/4, width/4, tr_rot, 
+                    &curr_net->stop_x, &curr_net->stop_y);
+                    
+            }
+                                
+                
+            curr_net->aperture = 0;
+            curr_net->layer_polarity = POSITIVE;
+            curr_net->unit = MM;
+            curr_net->aperture_state = ON;
+            curr_net->interpolation = LINEARx1;
+            
             break;
             
   	case PART_SHAPE_UNKNOWN:
@@ -333,9 +381,11 @@ void create_marked_layer(int idx) {
          
     curr_net->next = NULL;		    
   //  g_list_free (list);
+    gerb_transf_free(tr_rot);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-				 (screen.layer_button[idx]),TRUE);              
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
+				 (screen.layer_button[idx]),TRUE); 
+                              
     
 } /* create_marked_layer */
 

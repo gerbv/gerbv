@@ -42,6 +42,10 @@ gerb_transf_t* gerb_transf_new(void);
 void gerb_transf_free(gerb_transf_t* transf);
 
 void gerb_transf_reset(gerb_transf_t* transf);
+
+void gerb_transf_rotate(gerb_transf_t* transf, double angle);
+
+void gerb_transf_shift(gerb_transf_t* transf, double shift_x, double shift_y);
    
 void gerb_transf_apply(double x, double y, gerb_transf_t* transf, double *out_x, double *out_y);
 
