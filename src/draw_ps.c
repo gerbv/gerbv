@@ -371,6 +371,7 @@ gerb_create_ps_render_context(char *filename)
 	fprintf(fd, "} def\n");
 
 	fprintf(fd, "\n1 setlinecap\n");
+	fprintf(fd, "1 setlinejoin\n\n");
 
 	return (struct gerb_render_context*) gctx;
 } /* gerb_create_ps_render_context */
