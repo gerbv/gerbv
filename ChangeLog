@@ -1,3 +1,16 @@
+2001-10-27 Stefan Petersen (spe@stacken.kth.se)
+	* src/gerber.[hc]: EagleCad generates broken Gerber.
+	  I kindly detect and then tries to run as nothing 
+	  happened. Disable kludge with commenting out 
+	  EAGLECAD_KLUDGE in src/gerber.h.
+	  This was pointed out to me by Dan Christian and
+	  later confirmed by Fredrik Jonsson sent me some
+	  examples. Thanks guys!
+	* AUTHORS/CONTRIBUTORS: Added latest bunch of contributing
+	  people.
+	* configure.in: Updated version to 0.0.4 before release.
+	
+	
 2001-10-24 Stefan Petersen (spe@stacken.kth.se)
 	* src/draw.[hc]: Added. Extracted drawing functions from
 	  gerbv.c.
