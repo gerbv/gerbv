@@ -55,6 +55,11 @@ typedef struct {
     char *name;
 } gerbv_fileinfo_t;
 
+typedef struct {
+	double x1, y1;
+	double x2, y2;
+} gerbv_bbox_t;
+
 
 typedef struct {
     GtkWidget *drawing_area;
@@ -64,6 +69,7 @@ typedef struct {
     GdkColor  *zoom_outline_color;
     GdkColor  *dist_measure_color;
     gerbv_unit_t unit;
+    gboolean incremental_redraw;
 
     GtkWidget *load_file_popup;
     GtkWidget *color_selection_popup;
@@ -72,10 +78,9 @@ typedef struct {
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
     char *path;
-    struct {			/* Bounding box for all gerber images loaded */
-	double x1, y1;		/* Initialized by autoscale() */
-	double x2, y2;
-    } gerber_bbox;
+    
+    /* Bounding box for all loaded gerber images. Initialized by autoscale() */
+    gerbv_bbox_t gerber_bbox;
 
     GtkTooltips *tooltips;
     GtkWidget *layer_button[MAX_FILES];
@@ -101,6 +106,10 @@ typedef struct {
 
     int trans_x; /* Translate offset */
     int trans_y;
+
+    gint off_x;			/* Offset current pixmap when panning */
+    gint off_y;
+    gerbv_bbox_t clip_bbox;	/* Clipping bounding box */
 } gerbv_screen_t;
 
 extern gerbv_screen_t screen;

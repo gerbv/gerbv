@@ -1,3 +1,11 @@
+2002-10-24  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Played with clipping. Allocated
+	  pixmap is now same size as window. GTK does all clipping (we
+	  could optimize this somewhat with "object" bounding boxes). This
+	  makes it possible to zoom where no gerbv has zoomed before.
+	  Some interesting effects can be found by zooming in a lot.
+
 -- Release 0.0.10 debian release 2 --
 
 2002-10-18  Stefan Petersen  <spe@stacken.kth.se>

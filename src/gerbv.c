@@ -99,6 +99,7 @@ static void reload_files(GtkWidget *widget, gpointer data);
 static void menu_zoom(GtkWidget *widget, gpointer data);
 static void si_func(GtkWidget *widget, gpointer data);
 static void unit_func(GtkWidget *widget, gpointer data);
+static void incr_redraw_toggle(GtkWidget *widget, gpointer data);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
 static gint redraw_pixmap(GtkWidget *widget);
@@ -147,6 +148,7 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
     {"/_Setup",              NULL,     NULL,             0, "<Branch>"},
 
+    {"/Setup/_Incremental redraw",NULL, incr_redraw_toggle, 0, "<ToggleItem>"},
     {"/Setup/_Superimpose",  NULL,     NULL,             0, "<Branch>"},
     {"/Setup/_Superimpose/Copy",NULL, si_func, 0, "<RadioItem>"},
     {"/Setup/_Superimpose/And", NULL, si_func, GDK_AND,  "/Setup/Superimpose/Copy"},
@@ -698,6 +700,14 @@ autoscale()
 	screen.trans_y = 0;
     }
 
+    /* Initialize clipping bbox to contain entire image */
+    screen.clip_bbox.x1 = screen.trans_x/(double)screen.scale;
+    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;
+    screen.clip_bbox.x2 = screen.gerber_bbox.x2-screen.gerber_bbox.x1;
+    screen.clip_bbox.y2 = screen.gerber_bbox.y2-screen.gerber_bbox.y1;
+    screen.off_x = 0;
+    screen.off_y = 0;
+
     return;
 } /* autoscale */
 
@@ -775,7 +785,17 @@ unit_func(GtkWidget *widget, gpointer data)
     update_statusbar(&screen);
 
     return;
-}
+} /* unit_func() */
+
+
+static void
+incr_redraw_toggle(GtkWidget *widget, gpointer data)
+{
+    /* Toggle incremental redraw */
+    screen.incremental_redraw = !screen.incremental_redraw;
+
+    return;
+} /* incr_redraw_toggle() */
 
 
 /* Zoom function */
@@ -830,14 +850,12 @@ zoom(GtkWidget *widget, gpointer data)
 	screen.trans_y += mouse_delta_y;
     }
 
-    /* Redraw screen unless we have more events to process */
-    if (!g_main_pending()) {
-	stop_idle_redraw_pixmap(screen.drawing_area);
-	redraw_pixmap(screen.drawing_area);
-    } else {
-	/* Set idle function to ensure we wont miss to redraw */
-	start_idle_redraw_pixmap(screen.drawing_area);
-    }
+    /* Update clipping bbox */
+    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
+    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;    
+
+    /* Redraw screen */
+    redraw_pixmap(screen.drawing_area);
     
     return;
 } /* zoom */
@@ -885,17 +903,12 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
 		       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
     screen.trans_x = screen.scale * (us_x1 + (us_x2 - us_x1)/2) - half_w;
     screen.trans_y = screen.scale * (us_y1 + (us_y2 - us_y1)/2) - half_h;;
+    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
+    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;
 
 zoom_outline_end:
-    /* Redraw screen unless we have more events to process */
-    if (!g_main_pending()) {
-	stop_idle_redraw_pixmap(screen.drawing_area);
-	redraw_pixmap(screen.drawing_area);
-    } else {
-	/* Set idle function to ensure we wont miss to redraw */
-	start_idle_redraw_pixmap(screen.drawing_area);
-    }
-    
+    /* Redraw screen */
+    redraw_pixmap(screen.drawing_area);
 } /* zoom_outline */
 
 
@@ -937,6 +950,9 @@ redraw_pixmap(GtkWidget *widget)
 	gdk_cursor_destroy(cursor);
     }
 
+    /* Prevent redraw_pixmap from being called too many times */
+    stop_idle_redraw_pixmap(screen.drawing_area);
+
     /* Called first when opening window and then when resizing window */
 
     for(i = 0; i < MAX_FILES; i++) {
@@ -977,14 +993,10 @@ redraw_pixmap(GtkWidget *widget)
     dmin_y = screen.gerber_bbox.y1;
 
     /*
-     * Scale width to actual windows size. Make picture a little bit 
-     * bigger so things on the edges comes inside. Actual width is
-     * abs(max) + abs(min) -> max - min. Same with height.
+     * Pixmap size is always size of window, no matter how big the scale is.
      */
-    max_width = (int)floor((dmax_x - dmin_x) * 
-			   (double)screen.scale);
-    max_height = (int)floor((dmax_y - dmin_y) * 
-			    (double)screen.scale);
+    max_width = screen.drawing_area->allocation.width;
+    max_height = screen.drawing_area->allocation.height;
 
     /* 
      * Remove old pixmap, allocate a new one, draw the background and set
@@ -1002,6 +1014,13 @@ redraw_pixmap(GtkWidget *widget)
      */
     curr_pixmap = gdk_pixmap_new(widget->window, max_width, max_height,  -1);
     clipmask = gdk_pixmap_new(widget->window, max_width, max_height,  1);
+
+    update_rect.x = 0, update_rect.y = 0;
+    update_rect.width =	widget->allocation.width;
+    update_rect.height = widget->allocation.height;
+
+    screen.off_x = 0;
+    screen.off_y = 0;
 
     /* 
      * This now allows drawing several layers on top of each other.
@@ -1031,7 +1050,8 @@ redraw_pixmap(GtkWidget *widget)
 	     * which is not always centered perfectly for GTK/X.
 	     */
 	    image2pixmap(&clipmask, screen.file[i]->image, screen.scale, 
-			 -dmin_x * screen.scale,dmax_y * screen.scale,
+			 (screen.clip_bbox.x1-dmin_x) * screen.scale,
+			 (screen.clip_bbox.y1+dmax_y) * screen.scale,
 			 screen.file[i]->image->info->polarity);
 
 	    /* 
@@ -1043,20 +1063,25 @@ redraw_pixmap(GtkWidget *widget)
 	    gdk_gc_set_clip_origin(gc, 0, 0);
 	    gdk_draw_pixmap(screen.pixmap, gc, curr_pixmap, 0, 0, 0, 0, -1, -1);
 	    gdk_gc_set_clip_mask(gc, NULL);
+
+	    if (screen.incremental_redraw) {
+		/*
+		 * Calls expose_event
+		 */
+		gtk_widget_draw(widget, &update_rect);
+	    }
 	}
     }
 
     gdk_pixmap_unref(curr_pixmap);
     gdk_pixmap_unref(clipmask);
-    
-    update_rect.x = 0, update_rect.y = 0;
-    update_rect.width =	widget->allocation.width;
-    update_rect.height = widget->allocation.height;
 
-    /*
-     * Calls expose_event
-     */
-    gtk_widget_draw(widget, &update_rect);
+    if (!screen.incremental_redraw) {
+	/*
+	 * Calls expose_event
+	 */
+	gtk_widget_draw(widget, &update_rect);
+    }
 
 redraw_pixmap_end:
     /* Return default pointer shape */
@@ -1237,7 +1262,11 @@ static gint
 button_release_event (GtkWidget *widget, GdkEventButton *event)
 {
     if (event->type == GDK_BUTTON_RELEASE) {
-	if (screen.state == ZOOM_OUTLINE) {
+	if (screen.state == MOVE) {
+	    screen.state = NORMAL;
+	    /* Redraw the image(s) */
+	    redraw_pixmap(screen.drawing_area);
+	} else if (screen.state == ZOOM_OUTLINE) {
 	    screen.state = NORMAL;
 	    zoom_outline(widget, event);
 	} else if (!(event->state & GDK_SHIFT_MASK)) {
@@ -1381,6 +1410,13 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	    if (screen.last_x != 0 || screen.last_y != 0) {
 		screen.trans_x = screen.trans_x + x - screen.last_x;
 		screen.trans_y = screen.trans_y + y - screen.last_y;
+
+		screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
+		screen.clip_bbox.y1 = -screen.trans_y/(double)screen.scale;
+
+		/* Move pixmap to get a snappier feel of movement */
+		screen.off_x += x - screen.last_x;
+		screen.off_y += y - screen.last_y;
 	    }
 	    screen.last_x = x;
 	    screen.last_y = y;
@@ -1388,11 +1424,12 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 	    update_rect.x = 0, update_rect.y = 0;
 	    update_rect.width  = widget->allocation.width;
 	    update_rect.height = widget->allocation.height;
-	
+
 	    /*
 	     * Calls expose_event
 	     */
 	    gtk_widget_draw(widget, &update_rect);
+
 	    break;
 	}
 	case ZOOM_OUTLINE: {
@@ -1454,8 +1491,8 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 	gdk_draw_pixmap(new_pixmap,
 			widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
 			screen.pixmap, 
-			screen.trans_x + event->area.x, 
-			screen.trans_y + event->area.y, 
+			event->area.x + screen.off_x, 
+			event->area.y + screen.off_y, 
 			event->area.x, event->area.y,
 			event->area.width, event->area.height);
 
@@ -1468,7 +1505,6 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 		    event->area.x, event->area.y,
 		    event->area.x, event->area.y,
 		    event->area.width, event->area.height);
-
 #ifdef GERBV_DEBUG_OUTLINE
     {
 	    double dx, dy;
