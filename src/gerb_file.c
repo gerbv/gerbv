@@ -41,13 +41,11 @@ gerb_fopen(char *filename)
 
     fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
     if (fd == NULL) {
-	perror("gerb_fopen");
 	return NULL;
     }
 
     fd->fd = fopen(filename, "r");
-    if (fd == NULL) {
-	perror("gerb_fopen");
+    if (fd->fd == NULL) {
 	return NULL;
     }
 
