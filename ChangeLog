@@ -5,6 +5,7 @@
 	  as the number of digits change. Moved font names to header
 	  file. We should consider using a rc-file for font names and
 	  colours and stuff.
+	  Made status bar not expandable.
 
 2002-07-02  Anders Eriksson  <anders@umunet.org>
 

@@ -1781,7 +1781,7 @@ internal_main(int argc, char *argv[])
     screen.statusbar.diststr[0] = '\0';
     gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(" "), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msg, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
     /*
      * Fill with files (eventually) given on command line
      */
