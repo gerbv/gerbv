@@ -531,7 +531,11 @@ create_main_search_window (void)
     gtk_tooltips_set_tip(tooltips, interface.top_parts_selection, "Select parts on the top side", NULL);
     gtk_tooltips_set_tip(tooltips, interface.bottom_parts_selection, "Select parts on the bottom side", NULL);
     gtk_tooltips_set_tip(tooltips, interface.check_comment, "Search in Comments", NULL);
-    gtk_tooltips_set_tip(tooltips, interface.file_is_named_entry, "Enter a parts name to search for;\n  If regex.h was found, use Regexp Style (e.g. .* to mark all parts)", NULL);
+#ifdef HAVE_REGEX_H
+    gtk_tooltips_set_tip(tooltips, interface.file_is_named_entry, "Enter a part name to search for;\nUse .* (regex) as a wildcard", NULL);
+#else
+    gtk_tooltips_set_tip(tooltips, interface.file_is_named_entry, "Enter a part name to search for, press Enter to mark", NULL);
+#endif
     gtk_tooltips_set_tip(tooltips, interface.find_button, "Mark search results on screen", NULL); 
     gtk_tooltips_set_tip(tooltips, interface.layer_active, "Choose layer for selection", NULL);    
     
