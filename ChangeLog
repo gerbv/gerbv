@@ -1,9 +1,15 @@
--- Release 1.0.0 --
+2005-02-15  Stefan Petersen  <spe@siouxsie.umunet.org>
+
+	* src/draw_amacro.c: Forgot to copy gc to local_gc
+	  so drawing inherits gc from image wide setting.
+	  Pointed out by Warren Young.
 
 2005-02-08  Tomasz Motylewski  <t.motylewski@bfad.de>
 	* src/gerbv.c: malloc strlen+2, not +1
 	* src/gerb_file.c: malloc len+1, not len
 
+-- Release 1.0.0 --
+	
 2004-12-28  Stefan Petersen  <spe@siouxsie.umunet.org>
 
 	* src/draw.c: When drawing circles I ignored if circle

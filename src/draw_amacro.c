@@ -275,6 +275,8 @@ gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	return;
     }
 
+    gdk_gc_copy(local_gc, gc);
+
     /* Exposure */
     if (s->stack[exposure_idx] == 0.0) {
 	color.pixel = 0;
@@ -547,6 +549,8 @@ gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	points[i].y += y;
     }
 
+    gdk_gc_copy(local_gc, gc);
+
     /* Exposure */
     if (s->stack[exposure_idx] == 0.0) {
 	color.pixel = 0;
@@ -602,6 +606,8 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 	points[i].y += y;
     }
     
+    gdk_gc_copy(local_gc, gc);
+
     /* Exposure */
     if (s->stack[exposure_idx] == 0.0) {
 	color.pixel = 0;
