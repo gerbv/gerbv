@@ -574,6 +574,13 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	    default :
 		handled = 0;
 	    }
+	    /* 
+	     * Here we reset the stack pointer. It's not general correct
+	     * correct to do this, but since I know how the compiler works
+	     * I can do this. The correct way to do this should be to 
+	     * subtract number of used elements in each primitive operation.
+	     */
+	    s->sp = 0;
 	    break;
 	default :
 	}

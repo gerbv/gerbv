@@ -1,3 +1,10 @@
+2002-10-27  Stefan Petersen  <spe@>
+
+	* src/draw_amacro.c: Reset the stack pointer after each primitive
+	  operation. It's not completly right to do it this way, but since
+	  I built the compiler I know how the code generated looks like ;-).
+	  Closes bug #629101.
+
 2002-10-26  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerber.c: Removed some nested use of strncmp with simple
