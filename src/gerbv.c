@@ -3042,8 +3042,9 @@ main(int argc, char *argv[])
     else
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[0]),
 				     TRUE);
+#ifdef USE_GTK2
     parsed_PNP_data = NULL;                     
-
+#endif
     gtk_main();
     
     return 0;
