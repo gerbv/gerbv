@@ -84,7 +84,7 @@ static gerbv_color_t colors [] = {
 static gerbv_color_t background = {"black", NULL};
 
 typedef struct gerbv_fileinfo {
-    struct gerb_image *image;
+    gerb_image_t *image;
     int color_index;
 } gerbv_fileinfo_t;
 
@@ -95,6 +95,9 @@ typedef struct gerbv_screen {
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
+
+    GtkTooltips *tooltips;
+    GtkWidget *select_button[MAX_FILES];
 
     enum gerbv_state_t state;
 
@@ -108,7 +111,6 @@ typedef struct gerbv_screen {
 } gerbv_screen_t;
 
 gerbv_screen_t screen;
-
 
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void open_file(GtkWidget *widget, gpointer data);
@@ -179,7 +181,7 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
     if(menubar)
 	/* Finally, return the actual menu bar created by the item factory. */
 	*menubar = gtk_item_factory_get_widget(item_factory, "<main>");
-} /* create_menu_bar */
+} /* create_menubar */
 
 
 static void
@@ -238,6 +240,7 @@ create_radio_buttons(int nuf_buttons)
 	gtk_box_pack_start(GTK_BOX(box), button, TRUE, FALSE, 0);
 	if (bi == 0)
 	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+    	screen.select_button[bi] = button;
     }
     
     return box;
@@ -410,6 +413,8 @@ open_image(char *filename, int index)
     screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
     screen.file[index]->image = parse_gerb(fd);
     screen.file[index]->color_index = index;
+    gtk_tooltips_set_tip(screen.tooltips, screen.select_button[index],
+			 filename, NULL); 
     fclose(fd);
     
     return;
@@ -428,6 +433,8 @@ open_drillimage(char *filename, int index)
     screen.file[index] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
     screen.file[index]->image = parse_drillfile(fd);
     screen.file[index]->color_index = index;
+    gtk_tooltips_set_tip(screen.tooltips, screen.select_button[index],
+			 filename, NULL); 
     fclose(fd);
     
     return;
@@ -718,16 +725,23 @@ internal_main(int argc, char *argv[])
     bzero((void *)&screen, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
     screen.scale = INITIAL_SCALE;
-    
+
+    /*
+     * Init GTK+
+     */
     gtk_init(&argc, &argv);
-    
+
     /* 
      * Good defaults according to Ales. Gives aspect ratio of 1.3333...
      */
     screen_width = gdk_screen_width();
     width = screen_width * 3/4;
     height = width * 3/4;
-    
+
+    /*
+     * Setup some GTK+ defaults
+     */
+    screen.tooltips = gtk_tooltips_new();        
     alloc_colors();
     
     /*
@@ -753,20 +767,29 @@ internal_main(int argc, char *argv[])
     hbox = gtk_hbox_new(FALSE, 0);
     
     /*
-     * Create drawing area and fill with eventually given on command line
+     * Create drawing area
      */
     screen.drawing_area = create_drawing_area(width, height);
     gtk_box_pack_start(GTK_BOX(hbox), screen.drawing_area, TRUE, TRUE, 0);
+    
+    /*
+     * Build radio buttons
+     */
+    gtk_box_pack_start(GTK_BOX(hbox), create_radio_buttons(MAX_FILES), 
+		       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+    /*
+     * Fill with files (eventually) given on command line
+     */
     for(i = optind ; i < argc; i++)
 	open_image(argv[i], i - optind);
-
     if (drill_file)
 	open_drillimage(drill_file, i - optind);
-    
-    gtk_box_pack_start(GTK_BOX(hbox), create_radio_buttons(MAX_FILES), FALSE, FALSE, 0);
-    
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
-    
+
+    /*
+     * Connect all events on drawing area 
+     */    
     gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "expose_event",
 		       GTK_SIGNAL_FUNC(expose_event), NULL);
     gtk_signal_connect(GTK_OBJECT(screen.drawing_area),"configure_event",

@@ -1,3 +1,12 @@
+2001-11-15 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Tooltips over radio buttons with name
+	  of loaded file.
+
+	
+-- Release 0.0.5 --	
+
+	
 2001-11-14 Stefan Petersen (spe@stacken.kth.se)
 
 	* src/gerbv.c: Changed speed key for zooming in to
