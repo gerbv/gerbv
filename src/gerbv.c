@@ -499,16 +499,29 @@ autoscale()
 static void
 zoom(GtkWidget *widget, gpointer data)
 {
+    double us_transx, us_transy; /* unscaled translation for screen center */
+    int half_w, half_h;		/* cache for half window dimensions */
+
     if (screen.file[screen.curr_index] == NULL)
 	return;
+
+    half_w = screen.drawing_area->allocation.width / 2;
+    half_h = screen.drawing_area->allocation.height / 2;
+    us_transx = (screen.trans_x + half_w)/(double) screen.scale;
+    us_transy = (screen.trans_y + half_h)/(double) screen.scale;
 
     switch((gerbv_zoom_dir_t)data) {
     case ZOOM_IN : /* Zoom In */
 	screen.scale += 10;
+	screen.trans_x = screen.scale * us_transx - half_w;
+	screen.trans_y = screen.scale * us_transy - half_h;
 	break;
     case ZOOM_OUT :  /* Zoom Out */
-	if (screen.scale > 10)
+	if (screen.scale > 10) {
 	    screen.scale -= 10;
+	    screen.trans_x = screen.scale * us_transx - half_w;
+	    screen.trans_y = screen.scale * us_transy - half_h;
+	}
 	break;
     case ZOOM_FIT : /* Zoom Fit */
 	autoscale();
