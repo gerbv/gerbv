@@ -1,3 +1,8 @@
+2002-12-02  Anders Eriksson  <anders@umunet.org>
+
+	* configure.in, src/amacro.c: Applied patch from 
+	  Charles Lepple to fix bug #646268 (building on MacOS X).
+
 2002-11-26  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c: Fixes bug #643799 (zoom out_line stopped
