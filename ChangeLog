@@ -1,5 +1,7 @@
 2003-12-10  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerbv.c: Projects saves and restores background color.
+
 	* src/gerbv.c, src/gerbv_screen.h: Added Save Project and handles
 	  if a filename was given, either when loading or a previous save.
 

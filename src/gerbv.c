@@ -777,9 +777,9 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    project_list->next = project_list;
 	    project_list->layerno = -1;
 	    project_list->filename = screen.path;
-	    project_list->rgb[0] = 0;
-	    project_list->rgb[1] = 0;
-	    project_list->rgb[2] = 0;
+	    project_list->rgb[0] = screen.background->red;
+	    project_list->rgb[1] = screen.background->green;
+	    project_list->rgb[2] = screen.background->blue;
 	    project_list->next = NULL;
 	}
 	
@@ -961,7 +961,9 @@ load_project(project_list_t *project_list)
     
     while (project_list) {
 	if (project_list->layerno == -1) {
-	    ;
+	    screen.background = alloc_color(project_list->rgb[0], 
+					    project_list->rgb[1],
+					    project_list->rgb[2], NULL);
 	} else {
 	    int idx =  project_list->layerno;
 
