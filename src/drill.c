@@ -407,27 +407,52 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 }
 
 
-/* 
- * Looks for M48 at the beginning of a line too see if this
- * might be a drill file 
+/*
+ * Checks for signs that this is a drill file
+ * Returns 1 if it is, 0 if not.
  */
 int
 drill_file_p(gerb_file_t *fd)
 {
-    const size_t buffer_size = 150;
-    char buffer[buffer_size];
+    char read[2];
 
-    strncpy(buffer, fd->data, buffer_size);
-    buffer[buffer_size - 1] = '\0';
-    if (strstr(buffer, "M48") != NULL) 
-	return 1; /* Found */
-    else
-	return 0;
+    while ((read[0] = gerb_fgetc(fd)) != EOF) {
+        switch (read[0]) {
+        case 'M':
+            if(gerb_fgetc(fd) == '4') {
+		if(gerb_fgetc(fd) == '8') {
+                /* Drill file header command found,
+                   this could very well be a drill file */
+		fd->ptr = 0;
+                return 1;
+		}
+	    }
+	    eat_line(fd);
+            break;
+	case 'T':
+	    /* Something that looks like a tool definition found.
+	       Special case to allow files from Orcad, which sucks. */
+	    fd->ptr = 0;
+	    return 1;
+	case 'X':
+	case 'Y':
+	    /* First coordinate reached without finding any sign of this
+	       being a drill file. Stop parsing and return. */
+	    fd->ptr = 0;
+	    return 0;
+        default :
+            eat_line(fd);
+            break;
+        }
+    }
+    /* This is, in all likelyhood, not a drill file */
+    fd->ptr = 0;
+    return 0;
 }
 
 
 /* Parse tool definition. This can get a bit tricky since it can
-   appear in the header and/or the data.
+   appear in the header and/or data section.
    Returns tool number on success, -1 on error */
 static int
 drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
