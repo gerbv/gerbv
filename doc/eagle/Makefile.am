@@ -23,5 +23,5 @@ EXTRA_DIST=eagle2exc.pl  eagle2exc.txt
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile Makefile.in
+DISTCLEANFILES = *~ Makefile
 MAINTAINERCLEANFILES = *~ Makefile Makefile.in

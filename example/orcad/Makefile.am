@@ -26,5 +26,5 @@ EXTRA_DIST=ast.ps README.txt rs232_cm.bot rs232_cm.smt rs232_cm.top \
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile Makefile.in
+DISTCLEANFILES = *~ Makefile
 MAINTAINERCLEANFILES = *~ Makefile Makefile.in

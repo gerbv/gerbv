@@ -24,5 +24,5 @@ SUBDIRS = am-test cslk dan eaglecad1 ekf2 jj Mentor-BoardStation nollezappare \
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile Makefile.in
+DISTCLEANFILES = *~ Makefile
 MAINTAINERCLEANFILES = *~ Makefile Makefile.in
