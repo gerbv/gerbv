@@ -123,7 +123,6 @@ destroy(GtkWidget *widget, gpointer data)
     free(screen.zoom_outline_color);
     free(screen.dist_measure_color);
 
-    printf("MUERTE \n");
     gtk_main_quit();
 } /* destroy */
 
