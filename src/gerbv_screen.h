@@ -45,6 +45,7 @@ typedef struct {
     GdkColor  *background;
     GdkColor  *err_color;
     GdkColor  *zoom_outline_color;
+    GdkColor  *dist_measure_color;
     
     GtkWidget *load_file_popup;
     GtkWidget *color_selection_popup;

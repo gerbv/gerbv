@@ -1,3 +1,10 @@
+2002-06-09  Anders Eriksson  <anders@poirot.faldor.umunet.org>
+
+	* src/gerbv.c: Added measure distance color. Added actual zoom
+	  box for zoom outline mode (this shows the area that will
+	  be included when zooming, displayed as dashed lines). Use
+	  cross-hair cursor when measuring distance.
+
 2002-06-08  Anders Eriksson  <anders@umunet.org>
 
 	* src/gerbv.c (motion_notify_event, expose_event): Don't

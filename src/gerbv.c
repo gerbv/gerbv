@@ -1017,9 +1017,17 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 	    screen.last_x = widget->allocation.height - event->x;
 	    screen.last_y = widget->allocation.width  - event->y;
 	} else /* XXX Add some modifier selection criteria */ {
+	    GdkCursor *cursor;
+
 	    screen.state = MEASURE;
 	    screen.start_x = event->x;
 	    screen.start_y = event->y;
+
+	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
+	    gdk_window_set_cursor(gtk_widget_get_parent_window(widget),
+				  cursor);
+	    gdk_cursor_destroy(cursor);
+	    
 	}
 	break;
     case 2 :
@@ -1067,6 +1075,8 @@ button_release_event (GtkWidget *widget, GdkEventButton *event)
 	if (screen.state == ZOOM_OUTLINE) {
 	    screen.state = NORMAL;
 	    zoom_outline(widget, event);
+	} else if (screen.state == MEASURE) {
+	    gdk_window_set_cursor(gtk_widget_get_parent_window(widget), NULL);
 	}
 	screen.last_x = screen.last_y = 0;
 	screen.state = NORMAL;
@@ -1219,7 +1229,7 @@ draw_zoom_outline()
     GdkGC *gc;
     GdkGCValues values;
     GdkGCValuesMask values_mask;
-    gint x1, y1, x2, y2;
+    gint x1, y1, x2, y2, dx, dy;
 
     memset(&values, 0, sizeof(values));
     values.function = GDK_XOR;
@@ -1231,8 +1241,30 @@ draw_zoom_outline()
     y1 = MIN(screen.start_y, screen.last_y);
     x2 = MAX(screen.start_x, screen.last_x);
     y2 = MAX(screen.start_y, screen.last_y);
+    dx = x2-x1;
+    dy = y2-y1;
 
-    gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, x2-x1, y2-y1);
+    gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
+    gdk_gc_unref(gc);
+
+    /* Draw actual zoom area in dashed lines */
+    memset(&values, 0, sizeof(values));
+    values.function = GDK_XOR;
+    values.foreground = *screen.dist_measure_color;
+    values.line_style = GDK_LINE_ON_OFF_DASH;
+    values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND | GDK_GC_LINE_STYLE;
+    gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
+				values_mask);
+
+    if ((double)dx/dy > (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height) {
+	    dy = dx * (double)screen.drawing_area->allocation.height/screen.drawing_area->allocation.width;
+    } else {
+	    dx = dy * (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height;
+    }
+
+    gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, (x1+x2-dx)/2, (y1+y2-dy)/2, dx, dy);
+
+    gdk_gc_unref(gc);
 }
 
 static void
@@ -1250,7 +1282,7 @@ draw_measure_distance()
 
     memset(&values, 0, sizeof(values));
     values.function = GDK_XOR;
-    values.foreground = *screen.zoom_outline_color;
+    values.foreground = *screen.dist_measure_color;
     values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
     gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
@@ -1275,7 +1307,7 @@ draw_measure_distance()
 	dy = (y2 - y1)/(double) screen.scale;
 	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
 
-	sprintf(string, "[dist %.3g\", dX %.3g\", dY %.3g\"]", delta,
+	sprintf(string, "[dist %5.2f\", dX %5.2f\", dY %5.2f\"]", delta,
 		dx, dy);
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
@@ -1286,7 +1318,7 @@ draw_measure_distance()
 	linefeed = ascent+descent;
 	linefeed *= (double)1.2;
 
-	sprintf(string, "[dist %.3gcm, dX %.3gcm, dY %.3gcm]",
+	sprintf(string, "[dist %5.2fcm, dX %5.2fcm, dY %5.2fcm]",
 		delta*2.54, dx*2.54, dy*2.54);
 
 	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
@@ -1296,6 +1328,7 @@ draw_measure_distance()
 
 	gdk_font_unref(font);
     }
+    gdk_gc_unref(gc);
 }
 
 #ifdef GUILE_IN_USE
@@ -1529,6 +1562,7 @@ internal_main(int argc, char *argv[])
     screen.background = alloc_color(0, 0, 0, "black");
     screen.err_color  = alloc_color(0, 0, 0, "red1");
     screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
+    screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
 
     /*
      * Main window 
