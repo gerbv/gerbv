@@ -675,10 +675,15 @@ autoscale()
 	screen.scale = (screen.scale / 10) * 10;
 
     /*
-     * "Calculate" translation
+     * Calculate translation
      */
-    screen.trans_x = 0;
-    screen.trans_y = 0;
+    if (x_scale < y_scale) {
+	screen.trans_x = -(int)((double)IMG_EXTRA*screen.scale);
+	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.scale*(max_height+IMG_EXTRA_2))/2.0));
+    } else {
+	screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.scale*(max_width+IMG_EXTRA_2))/2.0));
+	screen.trans_y = -(int)((double)IMG_EXTRA*screen.scale);
+    }
 
     return;
 } /* autoscale */
@@ -943,9 +948,9 @@ redraw_pixmap(GtkWidget *widget)
      * bigger so things on the edges comes inside. Actual width is
      * abs(max) + abs(min) -> max - min. Same with height.
      */
-    max_width = (int)floor((dmax_x - dmin_x + 0.1) * 
+    max_width = (int)floor((dmax_x - dmin_x + IMG_EXTRA) * 
 			   (double)screen.scale);
-    max_height = (int)floor((dmax_y - dmin_y + 0.1) * 
+    max_height = (int)floor((dmax_y - dmin_y + IMG_EXTRA) * 
 			    (double)screen.scale);
 
     /* 
@@ -1425,6 +1430,21 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 		    event->area.x, event->area.y,
 		    event->area.x, event->area.y,
 		    event->area.width, event->area.height);
+
+#ifdef GERBV_DEBUG_OUTLINE
+    {
+	    double dx, dy;
+
+	    dx = screen.gerber_bbox.x2-screen.gerber_bbox.x1+IMG_EXTRA;
+	    dy = screen.gerber_bbox.y2-screen.gerber_bbox.y1+IMG_EXTRA;
+	    gdk_gc_set_foreground(gc, screen.dist_measure_color);
+	    gdk_draw_rectangle(widget->window, gc, FALSE, 
+			       (screen.gerber_bbox.x1-1.1)*screen.scale - screen.trans_x,
+			       ((screen.gerber_bbox.y1-0.6)*screen.scale - screen.trans_y),
+			       dx*screen.scale,
+			       dy*screen.scale);
+    }
+#endif DEBUG_GERBV_OUTLINE
 
     gdk_pixmap_unref(new_pixmap);
     gdk_gc_unref(gc);

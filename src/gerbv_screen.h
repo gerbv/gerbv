@@ -28,6 +28,8 @@
 #include <gdk/gdk.h>
 
 #define INITIAL_SCALE 200
+#define IMG_EXTRA 0.1
+#define IMG_EXTRA_2 ((IMG_EXTRA)/2.0)
 #define MAX_FILES 20
 #define MAX_ERRMSGLEN 45
 #define MAX_COORDLEN 50
