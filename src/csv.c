@@ -174,19 +174,30 @@ csv_parse_str(struct sinput *in, char *buf, size_t bn, char *row[], int rn, int 
 				return -1;
 		}
 	}
-	if (ch == -1) {
-	//	AMSG("");
-		return -1;
+	if (ch <= 0) {
+		/* treat EOF as EOL, so the last record is accepted even when
+		   \n is not present. Some users parse strings, not lines */
+		if(state == ST_TAILSPACE || state == ST_END_QUOTE
+			|| (state == ST_COLLECT && ! inquotes)) {
+			row[r++] = buf; rn--;
+			buf[j] = '\0'; bn--;
+			buf += j + 1;
+			inquotes = 0;
+			rn = 0;
+		} else {
+	//		AMSG("");
+			return -1;
+		}
 	}
 	if (bn == 0) {
 		errno = E2BIG;
-		GERB_MESSAGE("%d", errno);
+		GERB_MESSAGE("E2BIG %d ", errno);
 		return -1;
 	}
 	if (rn) {
 		if (inquotes) {
 			errno = EILSEQ;
-			GERB_MESSAGE("%d", errno);
+			GERB_MESSAGE("EILSEQ %d ", errno);
 			return -1;
 		}
 		row[r] = buf;
@@ -279,9 +290,20 @@ csv_parse_wcs(struct winput *in, wchar_t *buf, size_t bn, wchar_t *row[], int rn
 				return -1;
 		}
 	}
-	if (ch == (wint_t)-1) {
-	//	AMSG("");
-		return -1;
+	if (ch <= 0) {
+		/* treat EOF as EOL, so the last record is accepted even when
+		   \n is not present. Some users parse strings, not lines */
+		if(state == ST_TAILSPACE || state == ST_END_QUOTE
+			|| (state == ST_COLLECT && ! inquotes)) {
+			row[r++] = buf; rn--;
+			buf[j] = L'\0'; bn--;
+			buf += j + 1;
+			inquotes = 0;
+			rn = 0;
+		} else {
+	//		AMSG("");
+			return -1;
+		}
 	}
 	if (bn == 0) {
 		errno = E2BIG;
