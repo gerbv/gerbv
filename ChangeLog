@@ -1,3 +1,8 @@
+2002-06-12  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (draw_zoom_outline): Fix division by zero when
+	  drawing a zoom box with no delta y. Closes bug 567166.
+
 2002-06-11  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/gerb_file.c: Changed ENODATA to EIO, which is more portable.

@@ -1341,7 +1341,7 @@ draw_zoom_outline(gboolean centered)
     gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
 
-    if ((double)dx/dy > (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height) {
+    if ((dy == 0) || ((double)dx/dy > (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height)) {
 	    dy = dx * (double)screen.drawing_area->allocation.height/screen.drawing_area->allocation.width;
     } else {
 	    dx = dy * (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height;
