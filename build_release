@@ -1,8 +1,20 @@
 #!/bin/sh
+# Release script for gerbv
+# (C) 2001 Stefan Petersen (spe@stacken.kth.se)
+# $Id$
+
 eval "`grep ^VERSION configure.in`"
 RELEASE=gerbv-${VERSION}
+
+RESULT=`grep -c :pserver:anonymous@cvs.gerbv.sourceforge.net:/cvsroot/gerbv ${HOME}/.cvspass`
+
+if [[ $RESULT -eq 0 ]] ; then
+	echo You must login with anonymous login o get this to work!
+	exit;
+fi
+
 (cd /tmp ;\
-cvs -d :pserver:spe@siouxsie:/usr/home/cvsroot export -D NOW -d ${RELEASE} gerbv ; \
+cvs -z3 -d:pserver:anonymous@cvs.gerbv.sourceforge.net:/cvsroot/gerbv export -D NOW -d ${RELEASE} gerbv ; \
 (cd ${RELEASE} ; rm -f build_release rebuild_conf ; \
 aclocal ; autoheader ; autoconf ; automake --foreign --add-missing) ;\
 tar cf ${RELEASE}.tar ${RELEASE} ;\
