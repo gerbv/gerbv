@@ -37,6 +37,7 @@ typedef struct pnp_file {
 
 } pnp_file_t;
 
+
 pnp_file_t *pnp_fopen(char *filename);
 int pnp_fgetc(pnp_file_t *fd);
 int pnp_fgetint(pnp_file_t *fd);

@@ -1,7 +1,26 @@
-2004-08-07 09:29 Search9-pre6:
-introduced GtkEntryCompletion listing choices for entry
-	so far only works for designators
-started automatic scrolling to first hit on event->keyval
+2004-08-12 09:51   Search9-pre7
+program now works under MINGW
+code cleanup
+BUG fixes:
+        -crash on lowercase entries(linux)using REG_ICASE
+        -crash on entries non existing in the list (MINGW/LINUX)
+use of parsed_PNP_data as a global storage place for pnp data after parsing, in
+case of reopen search window initiated.
+
+----------------------------
+2004-08-07 09:29  Search9-pre6
+search_gui.c:
+        -introduced GtkEntryCompletion listing choices for entry
+                works for designators and comments
+                _fixed bug in select_by_regex where
+                if comment was NULL a segfault occurred
+        -automatic scrolling to first hit works with designators only
+        probably utf8 issue with comments
+                       strncasecmp causes segfault
+        -alignment in assembly mode improved, the first 15 elements
+                are also visible now
+        -upon enter in entry field we scroll to first hit in selection
+
 -----------------------------
 2004-08-04 09:29 search9-pre5:
 TODO introduction of libmba csv functions sublicensed under MIT

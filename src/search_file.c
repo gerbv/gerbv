@@ -41,8 +41,11 @@
 #include <sys/mman.h>
 #endif /*HAVE_SYS_MMAN_H*/
 
+#include "gerb_error.h"
 #include "search_file.h"
 #include "search_gui.h"
+
+GtkListStore *completion_model;
 
 pnp_file_t *
 pnp_fopen(char *filename)
@@ -51,15 +54,13 @@ pnp_fopen(char *filename)
     pnp_file_t *fd;
     struct stat statinfo;
     
-    printf("pnpfopen start");
 #ifdef HAVE_SYS_MMAN_H
     fd = (pnp_file_t *)malloc(sizeof(pnp_file_t));
     memset(fd,0,sizeof(pnp_file_t));
     if (fd == NULL) {
 	return NULL;
     }
-
-    fd->fd = fopen(filename, "r");
+     fd->fd = fopen(filename, "r");
     if (fd->fd == NULL) {
 	return NULL;
     }
@@ -84,28 +85,29 @@ pnp_fopen(char *filename)
 	    fd = NULL;
     }
 
-   fd->model  =    interface.model;	
+    fd->model = interface.model;
+    
 #else
-#if defined (__MINGW32__) 
-    printf("search_file start");
+#if defined (__MINGW32__)
+
     fd = (pnp_file_t *)malloc(sizeof(pnp_file_t));
-    memset(fd,0,sizeof(pnp_file_t));
+    memset(fd, 0, sizeof(pnp_file_t));
     if (fd == NULL) {
+        GERB_MESSAGE("FD was NULL");
 	return NULL;
     }
-
+    
     fd->fd = fopen(filename, "r");
     if (fd->fd == NULL) {
-	return NULL;
+        return NULL;
     }
-
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
     fstat(fd->fileno, &statinfo);
-   /* if (!S_ISREG(statinfo.st_mode)) {
+    if (!S_ISREG(statinfo.st_mode)) {
 	errno = EISDIR;
 	return NULL;
-    }*/
+    }
     if ((int)statinfo.st_size == 0) {
 	errno = EIO; /* More compatible with the world outside Linux */
 	return NULL;
@@ -117,11 +119,13 @@ pnp_fopen(char *filename)
 	free(fd);
 	fd = NULL;
     }
-   printf("MINGW32"); 
-   fd->model  =    interface.model ;	
-#endif   
+   // fread((void*)fd->data, 1, statinfo.st_size, fd->fd);
+    fd->model  =    interface.model;
+
+  
+   
+    #endif   
 #endif
-   printf("search_file end");
     return fd;
 } /* pnp_fopen */
 

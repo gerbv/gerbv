@@ -28,7 +28,7 @@
 #define _SEARCH_CB_H
 #include "search.h"
 #include "search_file.h"
-extern pnp_state_t *parsed_PNP_data;
+
 
 void load_pnp_file_popup(GtkWidget *widget, gpointer data);
 int open_pnp(char *filename, int idx, int reload);

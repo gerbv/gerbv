@@ -594,8 +594,9 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     char *filename;
 
     filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-#ifdef HAVE_LIBGEN_H    
     if (open_image(filename, screen.curr_index, FALSE) != -1) {
+
+#ifdef HAVE_LIBGEN_H    
 
 #ifdef HAVE_LIBGEN_H    
 
@@ -613,7 +614,7 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 	/* Make loaded image appear on screen */
 	redraw_pixmap(screen.drawing_area, TRUE);
     }
-#endif
+
     gtk_grab_remove(screen.win.load_file);
     gtk_widget_destroy(screen.win.load_file);
     screen.win.load_file = NULL;
@@ -865,11 +866,6 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     screen.path = (char *)malloc(strlen(filename) + 1);
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
-<<<<<<< gerbv.c
-   
-=======
-#endif    
->>>>>>> 1.142.4.2
 
  cb_ok_project_end:
     if (screen.win.project) {
@@ -2725,7 +2721,6 @@ main(int argc, char *argv[])
 	    /*
 	     * Remember where we loaded file from last time
 	     */
-#ifdef HAVE_LIBGEN_H             
 	    if (screen.path)
 		free(screen.path);
 	    screen.path = (char *)malloc(strlen(project_filename) + 1);
@@ -2734,11 +2729,6 @@ main(int argc, char *argv[])
 	    dirname(screen.path);
 #endif
 	    screen.path = strncat(screen.path, "/", 1);
-<<<<<<< gerbv.c
-            
-=======
-#endif            
->>>>>>> 1.142.4.2
 	    
             rename_main_window(screen.project, NULL);
 	} else {

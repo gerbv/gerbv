@@ -80,17 +80,25 @@ void create_marked_layer(int idx) {
     gerb_net_t *curr_net = NULL;
     gerb_image_t *image = new_gerb_image(image);
     GList *list;
+    char *tmp_name = NULL;
+    
     if (image == NULL) {
 	GERB_FATAL_ERROR("malloc image failed\n");
         return;
     }
     curr_net = image->netlist;
     if(screen.file[idx] && screen.file[idx]->image) {
+      /*  if (idx  == 16) {
+            printf("search_mark:we are  drawing on special layer 16%p\n",screen.file[idx]->name);
+            tmp_name = screen.file[idx]->name; save name for projects
+        }*/
         free_gerb_image(screen.file[idx]->image);
     } else {
+        screen.file[idx]=NULL;
         assert(screen.file[idx]==NULL);
         screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
         memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
+        screen.file[idx]->name = tmp_name;
     }
     screen.file[idx]->image = image;
     r = (12341 + 657371 * idx) % (int)(MAX_COLOR_RESOLUTION);
@@ -98,6 +106,7 @@ void create_marked_layer(int idx) {
     b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
 
     screen.file[idx]->color = alloc_color(r, g, b, NULL);
+    
 
     /* 
      * Set color on layer button
@@ -217,8 +226,7 @@ void create_marked_layer(int idx) {
         curr_net->cirseg->height = 2*radius;
                            
         
-        if (!no_files_found)
-            printf("%s %s: mid_x %f\n", designator, comment, mid_x);
+       // if (!no_files_found)   GERB_MESSAGE("%s %s: mid_x %f\n", designator, comment, mid_x);
         g_free(designator);
         g_free(footprint);
         g_free(layer);
@@ -227,7 +235,7 @@ void create_marked_layer(int idx) {
     } while ((list = g_list_next(list)));
          
     curr_net->next = NULL;		    
-    g_list_free (list);
+  //  g_list_free (list);
 
        
     

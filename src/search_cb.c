@@ -74,30 +74,38 @@
 #include "setup.h"
 #include "project.h"
 
-pnp_state_t *parsed_PNP_data;
+//pnp_state_t *parsed_PNP_data;/*Global storage place for pick and place data*/
+
 
 static void
 cb_ok_load_pnp_file(GtkWidget *widget, GtkFileSelection *fs)
 {
     char *filename;
 
-    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+     filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+    screen.file[16] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));/*allocate memory for new layer data*/
+    memset((void *)screen.file[16], 0, sizeof(gerbv_fileinfo_t));
+    screen.file[16]->name = (char *)malloc(strlen(filename) + 1);
+    strcpy(screen.file[16]->name, filename);/*entry for pnp file also getting saved on "save project"*/
+   // screen.file[16]->inverted = 0;
+    
     create_search_window(widget, NULL);
-#ifdef HAVE_LIBGEN_H
+    
     if (open_pnp(filename, screen.curr_index, FALSE) != -1) {
 
-	/*
-	 * Remember where we loaded file from last time
-	 */
-	filename = dirname(filename);
-	if (screen.path)
-	    free(screen.path);
-	screen.path = (char *)malloc(strlen(filename) + 1);
-	strcpy(screen.path, filename);
-	screen.path = strncat(screen.path, "/", 1);
-    }
+#ifdef HAVE_LIBGEN_H
+        /*
+         * Remember where we loaded file from last time
+         */
+        filename = dirname(filename);
 #endif
-
+        if (screen.path) 
+	        free(screen.path);
+           
+        screen.path = (char *)malloc(strlen(filename) + 1);
+        strcpy(screen.path, filename);
+        screen.path = strncat(screen.path, "/", 1);
+    }
     gtk_grab_remove(screen.win.load_file);
     gtk_widget_destroy(screen.win.load_file);
     screen.win.load_file = NULL;
@@ -118,16 +126,12 @@ cb_cancel_load_file(GtkWidget *widget, gpointer data)
 } /* cb_cancel_load_file */
 
 
-static void search_pnp()
-{
-
-}/*search_pnp*/
-
 void
 load_pnp_file_popup(GtkWidget *widget, gpointer data)
 {
-    screen.win.load_file = gtk_file_selection_new("Select 'Pick and Place' File");
 
+    screen.win.load_file = gtk_file_selection_new("Select 'Pick and Place' File");
+    
     if (screen.path)
 	gtk_file_selection_set_filename
 	    (GTK_FILE_SELECTION(screen.win.load_file), screen.path);
@@ -135,10 +139,12 @@ load_pnp_file_popup(GtkWidget *widget, gpointer data)
     gtk_signal_connect(GTK_OBJECT(screen.win.load_file), "destroy",
 		       GTK_SIGNAL_FUNC(cb_cancel_load_file),
 		       NULL);
+
     gtk_signal_connect
 	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.load_file)->ok_button),
 	 "clicked", GTK_SIGNAL_FUNC(cb_ok_load_pnp_file), 
 	 (gpointer)screen.win.load_file);
+         
     gtk_signal_connect
 	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.load_file)->cancel_button),
 	 "clicked", GTK_SIGNAL_FUNC(cb_cancel_load_file), 
@@ -147,33 +153,53 @@ load_pnp_file_popup(GtkWidget *widget, gpointer data)
     gtk_widget_show(screen.win.load_file);
 
     gtk_grab_add(screen.win.load_file);
-    
+       
     return;
 } /* load_pnp_file_popup */
 
 int
 open_pnp(char *filename, int idx, int reload)
 {
-    pnp_file_t *fd;
-    int r, g, b;
-    GtkStyle *defstyle, *newstyle;
+    pnp_file_t  *fd;
+    int          r, g, b;
+    GtkStyle    *defstyle, *newstyle;
+    pnp_state_t *temp_state;
    
     char *cptr;
+
 
     if (idx >= MAX_FILES) {
 	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
 		     filename);
 	return -1;
     }
-   // printf("About to open file");
+    //printf("About to open file:%s\n",filename);
     fd = pnp_fopen(filename);
     if (fd == NULL) {
 	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
 	return -1;
     }
-    
-    
-    parsed_PNP_data = parse_pnp(fd);
+    temp_state = parse_pnp(fd);
+#if 0
+    GERB_MESSAGE("data is parsed search_cb %s\n", parsed_PNP_data->designator);
+    //GERB_MESSAGE("pointer parsedPNPdata %p\n", parsed_PNP_data);
+     while (parsed_PNP_data->next != NULL) {
+      /*  gtk_list_store_append (GTK_LIST_STORE(completion_model), &interface.iter); 
+       gtk_list_store_set (GTK_LIST_STORE(completion_model), &interface.iter,
+		        0, parsed_PNP_data->designator, 
+		        1,  g_locale_to_utf8(parsed_PNP_data->comment, -1, NULL, NULL, NULL), -1);
+                        */
+        printf("parsed_PNP_data designator %s\n", parsed_PNP_data->designator);   
+        parsed_PNP_data = parsed_PNP_data->next;
+    }
+
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(completion_model), &interface.iter);
+    do {
+    gtk_tree_model_get(GTK_TREE_MODEL(completion_model), &interface.iter, 0, &cptr, -1);
+    printf("\n  entry: %s in line:%s\n", cptr, gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(completion_model),&interface.iter));
+
+    } while   (gtk_tree_model_iter_next(GTK_TREE_MODEL(completion_model), &interface.iter));	
+#endif
 
     pnp_fclose(fd);
     return 0;
@@ -225,5 +251,6 @@ open_pnp(char *filename, int idx, int reload)
 			 filename, NULL); 
 
     return 0;
+    
 } /* open_pnp */
 

@@ -32,7 +32,7 @@
 #define MINIMUM_WINDOW_WIDTH   370
 #define MINIMUM_WINDOW_HEIGHT  310
 
-extern pnp_state_t *parsed_PNP_data;
+extern GtkListStore *completion_model;
 
 
 
@@ -62,6 +62,8 @@ struct _InterfaceStruct {
 	GtkWidget 		*file_selector;
 	GtkWidget		*check_designator;
         GtkWidget		*invert_selection;
+        GtkWidget		*top_parts_selection;
+        GtkWidget		*bottom_parts_selection;
         GtkWidget		*check_comment;
        	GtkWidget		*results_label;
 	GtkWidget       	*results;
@@ -69,7 +71,6 @@ struct _InterfaceStruct {
        	GdkGeometry 		geometry;
         GtkWidget               *layer_active;
         int                     layer_select_active;
-//	GtkSizeGroup 	 	*constraint_size_group;
         GtkListStore     	*model;
 	GtkTreeSelection 	*selection;
 	GtkTreeIter       	iter;
@@ -159,6 +160,12 @@ click_find_cb	 		(GtkWidget 	*widget,
 void
 click_invert_selection_cb       (GtkWidget 	*widget,
                                  gpointer      *data);  
+void
+click_top_parts_selection_cb       (GtkWidget 	*widget,
+                                 gpointer      *data); 
+void
+click_bottom_parts_selection_cb       (GtkWidget 	*widget,
+                                 gpointer      *data);  
                                  
 void
 click_layer_active_cb           (GtkWidget 	*widget,
@@ -168,10 +175,6 @@ click_stop_cb 			(GtkWidget 	*widget,
 	       			 gpointer 	data);
 void
 click_check_button_cb		(GtkWidget	*widget, 
-				 gpointer 	data);
-void   
-size_allocate_cb 		(GtkWidget 	*widget,
-				 GtkAllocation  *allocation, 
 				 gpointer 	data);
 void    
 add_constraint_cb		(GtkWidget 	*widget, 

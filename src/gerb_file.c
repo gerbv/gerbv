@@ -86,8 +86,7 @@ gerb_fopen(char *filename)
     }
 #else
 #if defined (__MINGW32__)
-
-   // printf("We entered MINGW routine");
+    printf("We entered MINGW gerb_fopen routine");
     fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
     if (fd == NULL) {
 	return NULL;
@@ -121,7 +120,6 @@ gerb_fopen(char *filename)
     fread((void*)fd->data, 1, statinfo.st_size, fd->fd);
    #endif   
 #endif
-    printf("We finished MINGW gerb_fopen routine");
     return fd;
 } /* gerb_fopen */
 
