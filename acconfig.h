@@ -22,9 +22,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-/* Batch support */
-#undef GUILE_IN_USE
-
 /* Support for export of PNG's */
 #undef EXPORT_PNG
 

@@ -21,122 +21,40 @@ TODO
 ./doc/image2pixmap.fig
 ./doc/PNG-print/gimp-window.jpg
 ./doc/PNG-print/PNGPrintMiniHowto.txt
-./doc/eagle/eagle2exc.txt
-./doc/eagle/eagle2exc.pl
+./doc/eagle/
+
 
 ./example/am-test/am-test.gbx
 
-./example/cslk/cslk.gbx
-./example/cslk/cslk.ps
-./example/cslk/README.txt
+./example/cslk/
 
-./example/dan/README.txt
-./example/dan/top.gbx
+./example/dan/
 
-./example/eaglecad1/top-cop.gbx
-./example/eaglecad1/top-cop.pdf
+./example/eaglecad1/
 
-#./example/ekf/ekf_08.apt
-#./example/ekf/ekf.gap
-#./example/ekf/l1.off
-#./example/ekf/README
+./example/ekf2/
 
-./example/ekf2/d1.grb
-./example/ekf2/drill0.exc
-./example/ekf2/drill1.exc
-./example/ekf2/drill20.exc
-./example/ekf2/drill30.exc
-./example/ekf2/gnd.grb
-./example/ekf2/l0.grb
-./example/ekf2/l1.grb
-./example/ekf2/l2.grb
-./example/ekf2/l3.grb
-./example/ekf2/l4.grb
-./example/ekf2/l5.grb
-./example/ekf2/pow3.grb
-./example/ekf2/pow.grb
-./example/ekf2/README.txt
-./example/ekf2/resplan.grb
-./example/ekf2/sieb0.grb
-./example/ekf2/sieb1.grb
-./example/ekf2/stp0.grb
-./example/ekf2/stp1.grb
+./example/jj/
 
-./example/jj/l1-1.grb  
-./example/jj/l1-2.grb  
-./example/jj/l1-3.grb  
-./example/jj/l1-orig.grb  
-./example/jj/README.txt
+./example/Mentor-BoardStation/
 
-./example/Mentor-BoardStation/artwork_1.grb
-./example/Mentor-BoardStation/README.txt
+./example/nollezappare/
 
-./example/nollezappare/AssemblyTop.gdo
-./example/nollezappare/EtchLayer2Bottom.gdo
-./example/nollezappare/ThruHolePlated.ncd
+./example/numpres/
 
-./example/numpres/numpres.pcb
-./example/numpres/numpres.pcb.output_componentmask.grb
-./example/numpres/numpres.pcb.output_componentsilk.grb
-./example/numpres/numpres.pcb.output_group1.grb
-./example/numpres/numpres.pcb.output_group2.grb
-./example/numpres/numpres.pcb.output_plated-drill.grb
-./example/numpres/numpres.pcb.output_soldermask.grb
-./example/numpres/numpres.pcb.output_unplated-drill.grb
-
-./example/orcad/ast.ps
-./example/orcad/README.txt
-./example/orcad/rs232_cm.asb
-./example/orcad/rs232_cm.ast
-./example/orcad/rs232_cm.bot
-./example/orcad/rs232_cm.drd
-./example/orcad/rs232_cm.smb
-./example/orcad/rs232_cm.smt
-./example/orcad/rs232_cm.ssb
-./example/orcad/rs232_cm.sst
-./example/orcad/rs232_cm.top
-./example/orcad/thruhole.tap
+./example/orcad/
 
 ./man/gerbv.1.in
 ./man/Makefile.am
 
 ./pixmaps/gerbv-icon-1.png
 ./pixmaps/gerbv-icon-2.png
-#./pixmaps/gerbv-icon2.png
-#./pixmaps/gerbv-icon2.xcf.gz
-#./pixmaps/gerbv-icon.xcf.gz
 
-./scheme/gbx2ps.scm
-./scheme/gerb-debug.scm
-./scheme/gerb-ps.scm
-./scheme/Makefile.am
-./scheme/parse-gerber.scm
-./scheme/pgt.scm
+#./scheme/gbx2ps.scm
+#./scheme/gerb-debug.scm
+#./scheme/gerb-ps.scm
+#./scheme/Makefile.am
+#./scheme/parse-gerber.scm
+#./scheme/pgt.scm
 
-./src/amacro.c
-./src/amacro.h
-./src/batch.c
-./src/batch.h
-./src/color.c
-./src/color.h
-./src/draw_amacro.c
-./src/draw_amacro.h
-./src/draw.c
-./src/draw.h
-./src/drill.c
-./src/drill.h
-./src/exportimage.c
-./src/exportimage.h
-./src/gerber.c
-./src/gerber.h
-./src/gerb_error.h
-./src/gerb_file.c
-./src/gerb_file.h
-./src/gerbv_icon.h
-./src/gerb_image.c
-./src/gerb_image.h
-./src/gerbv.c
-./src/gerbv_screen.h
-./src/log.c
-./src/log.h
-./src/Makefile.am
+./src/

@@ -24,8 +24,6 @@ README for gerbv
   * GTK+, the graphical toolkit available from http://www.gtk.org/
   * GdkPixbuf (default but not necessary), extracts data from GDK pixbufs.
   * libpng (default but not necessary), saves extracted pixbufs to PNG.
-  * Guile (optional), an embeddable Scheme interpretator. Guile is available
-    from http://www.gnu.org/software/guile/guile.html
   * getopt_long from the GNU project. gerbv can do without getopt_long
     long options to the program will hence not be available.
 

@@ -26,15 +26,9 @@ To recreate the configuration files you have to run:
 In order to build gerbv you must install the following packages first:
 * GLIB 1.2.x
 * GTK+ 1.2.x
-* Guile 1.4 is optional
 * GdkPixbuf can be configured out
 * libpng can be configured out
 
-
-If you're interested in running gerbv in batch mode you have to install
-Guile and run at configure time:
-
-  ./configure --enable-batch
 
 If you don't want to have the possibility to export Gerber images to PNG
 (and thus removing dependency on GdkPixbuf and libpng) you can run:

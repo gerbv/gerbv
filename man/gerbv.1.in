@@ -1,4 +1,4 @@
-.TH gerbv 1 "Oct 13th, 2002" Version @VERSION@
+.TH gerbv 1 "Mar 18th, 2003" Version @VERSION@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
@@ -20,10 +20,6 @@ short options are available.
 .SS gerbv Options
 .BI -V|--version
 Prints the version number of gerbv and exits.
-.TP
-.BI -b\ <backend>|--batch=<backend>
-Calls <backend> with the current parsed file. Only available if you compiled
-in Guile support. 
 .TP
 .BI -l\ <filename>|--log=<filename>
 All error messages etc are stored in a file with filename \fI<filename>\fP.
