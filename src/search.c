@@ -37,6 +37,7 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
+#include <locale.h>
 
 
 #include <gtk/gtk.h>
@@ -75,11 +76,11 @@ new_pnp_state()
 static void
 eat_line_pnp(pnp_file_t *fd)
 {
-    int read = pnp_fgetc(fd);
+    int read = fgetc(fd->fd);
     
     while(read != 10 && read != 13) {
 	if (read == EOF) return;
-	read = pnp_fgetc(fd);
+	read = fgetc(fd->fd);
     }
 } /* eat_line_pnp */
 
@@ -97,6 +98,11 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
    // char        *row[10];
   //  char        buf[1024];
     
+    /* added by t.motylewski@bfad.de
+     * many locales redefine "." as "," and so on, so sscanf has problems when
+     * reading Pick and Place files using %f format */
+
+    setlocale(LC_NUMERIC, "C" );
      
     pnp_state = new_pnp_state();
     parsed_PNP_data = pnp_state;/*Global storage, for data reload, e.g. if search_window was destroyed*/
@@ -120,7 +126,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     if(buf[strlen(buf)-1] == '\r')
         buf[strlen(buf)-1] = 0;
    
-    ret = sscanf(buf, "%100[^,],%100[^,],%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%100[^,],%lf,%100[^X]",
+    ret = sscanf(buf, "%100[^,],%100[^,],%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%lfmm,%100[^,],%lf,%100[^\n]",
         pnp_state->designator, pnp_state->footprint, &pnp_state->mid_x, &pnp_state->mid_y, &pnp_state->ref_x, &pnp_state->ref_y, &pnp_state->pad_x, &pnp_state->pad_y,
         pnp_state->layer, &pnp_state->rotation, pnp_state->comment);
     /*fprintf(stderr,"layer:%s: ", pnp_state->layer);
@@ -128,7 +134,7 @@ pnp_state_t *parse_pnp(pnp_file_t *fd)
     fprintf(stderr,"comment:%s:", pnp_state->comment);*/
     
     if(ret<11) {
-        GERB_MESSAGE("wrong line format: %s\n", buf);
+        GERB_MESSAGE("wrong line format(%d): %s\n", ret, buf);
         continue;
     } else {
          GERB_MESSAGE("\n");

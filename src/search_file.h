@@ -30,21 +30,21 @@
 
 typedef struct pnp_file {
     FILE *fd;
-    int   fileno;
-    char *data;
-    int   datalen;
-    int   ptr;
+//    int   fileno;
+//    char *data;
+//    int   datalen;
+//    int   ptr;
     GtkListStore     	*model;	
 
 } pnp_file_t;
 
 
 pnp_file_t *pnp_fopen(char *filename);
-int pnp_fgetc(pnp_file_t *fd);
-int pnp_fgetint(pnp_file_t *fd);
-double pnp_fgetdouble(pnp_file_t *fd);
-char *pnp_fgetstring(pnp_file_t *fd, char term);
-void pnp_ungetc(pnp_file_t *fd);
+//int pnp_fgetc(pnp_file_t *fd);
+//int pnp_fgetint(pnp_file_t *fd);
+//double pnp_fgetdouble(pnp_file_t *fd);
+//char *pnp_fgetstring(pnp_file_t *fd, char term);
+//void pnp_ungetc(pnp_file_t *fd);
 void pnp_fclose(pnp_file_t *fd);
 
 #endif /* USE_GTK2 */

@@ -54,6 +54,8 @@
 #include <pango/pango.h>
 #endif
 
+#include <locale.h>
+
 
 #include "gerber.h"
 #include "drill.h"
