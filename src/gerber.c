@@ -30,6 +30,7 @@
 
 #define NOT_IMPL(fd, s) do { \
                              fprintf(stderr, "Not Implemented:%s\n", s); \
+                             while (fgetc(fd) != '*'); \
                            } while(0)
 	
 
@@ -53,6 +54,7 @@ typedef struct gerb_state {
     int changed;
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
+    enum interpolation_t prev_interpolation;
 } gerb_state_t;
 
 
@@ -147,8 +149,13 @@ parse_gerb(FILE *fd)
 	    while (fgetc(fd) != '%');
 	    break;
 	case '*':
-	    if (state->changed == 0 || state->curr_aperture == 0) break;
+	    if (state->changed == 0) break;
 	    state->changed = 0;
+
+	    if ( (state->curr_aperture == 0) &&
+		 (state->interpolation != PAREA_START) &&
+		 (state->interpolation != PAREA_FILL) &&
+		 (state->interpolation != PAREA_END) ) break;
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
@@ -195,13 +202,27 @@ parse_gerb(FILE *fd)
 	    }
 
 #ifdef EAGLECAD_KLUDGE
-	    if ( (state->delta_cp_x == 0) && (state->delta_cp_y == 0) )
+	    if ( (state->delta_cp_x == 0.0) && (state->delta_cp_y == 0.0) &&
+		 (state->interpolation != PAREA_START) &&
+		 (state->interpolation != PAREA_FILL) &&
+		 (state->interpolation != PAREA_END)  )
 		curr_net->interpolation = LINEARx1;
 	    else
 		curr_net->interpolation = state->interpolation;
 #else
 	    curr_net->interpolation = state->interpolation;
 #endif
+	    switch (state->interpolation) {
+	    case PAREA_START :
+		state->interpolation = PAREA_FILL;
+		state->changed = 1;
+		break;
+	    case PAREA_END :
+		state->interpolation = state->prev_interpolation;
+		break;
+	    default :
+	    }
+
 	    state->delta_cp_x = 0.0;
 	    state->delta_cp_y = 0.0;
 	    curr_net->aperture = state->curr_aperture;
@@ -299,7 +320,8 @@ parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
 	    state->interpolation = CCW_CIRCULAR;
 	return;
     } else if (strncmp(op, "04", 2) == 0) { /* Ignore Data Block */
-	/* Don't do anything, just read 'til * below */
+	/* Don't do anything, just read 'til * */
+	while (fgetc(fd) != '*');
     } else if (strncmp(op, "10", 2) == 0) { /* Linear Interpolation (10X scale) */
 	state->interpolation = LINEARx10;
 	return;
@@ -310,9 +332,12 @@ parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
 	state->interpolation = LINEARx001;
 	return;
     } else if (strncmp(op, "36", 2) == 0) { /* Turn on Polygon Area Fill */
-	NOT_IMPL(fd, "G36");
+	state->prev_interpolation = state->interpolation;
+	state->interpolation = PAREA_START;
+	state->changed = 1;
     } else if (strncmp(op, "37", 2) == 0) { /* Turn off Polygon Area Fill */
-	NOT_IMPL(fd, "G37");
+	state->interpolation = PAREA_END;
+	state->changed = 1;
     } else if (strncmp(op, "54", 2) == 0) { /* Tool prepare */
 	if (fgetc(fd) == 'D')   /* XXX Check return value */
 	    state->curr_aperture = read_int(fd);
@@ -342,7 +367,6 @@ parse_G_code(FILE *fd, gerb_state_t *state, gerb_format_t *format)
 	err(1, "Strange G code : %c%c\n", op[0], op[1]);
     }
     
-    while (fgetc(fd) != '*'); /* XXX Check return value */
     
     return;
 } /* parse_G_code */

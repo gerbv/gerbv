@@ -41,6 +41,7 @@
      } while (0)
 #endif
 
+#define MAX_POLYGON_POINTS 50
 
 /*
  * Draws a circle _centered_ at x,y with diameter dia
@@ -135,6 +136,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     double x_scale, y_scale;
     int width = 0, height = 0;
     int cp_x = 0, cp_y = 0;
+    GdkPoint points[MAX_POLYGON_POINTS]; /* XXX Size */
+    int nuf_points = 0;
     
     
     if (image == NULL || image->netlist == NULL) 
@@ -156,21 +159,26 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	gdk_gc_set_foreground(line_gc, fg_color);
     
     for (net = image->netlist->next ; net != NULL; net = net->next) {
-	if (image->aperture[net->aperture] == NULL) {
-	    fprintf(stderr, "Aperture [%d] is not defined\n", net->aperture);
-	    continue;
-	}
 	
+	/*
+	 * Scale points with window scaling
+	 */
 	x1 = (int)ceil((image->info->offset_a + net->start_x) * scale);
 	y1 = (int)ceil((image->info->offset_b + 2.5 - net->start_y) * scale);
 	x2 = (int)ceil((image->info->offset_a + net->stop_x) * scale);
 	y2 = (int)ceil((image->info->offset_b + 2.5 - net->stop_y)  * scale);
 
+	/*
+	 * Translate points with window offset
+	 */
 	x1 = x1 + trans_x;
 	y1 = y1 + trans_y;
 	x2 = x2 + trans_x;
 	y2 = y2 + trans_y;
 
+	/* 
+	 * If circle segment, scale and translate that one too
+	 */
 	if (net->cirseg) {
 	    width = (int)ceil(net->cirseg->width * scale);
 	    height = (int)ceil(net->cirseg->height * scale);
@@ -180,6 +188,36 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    cp_y = cp_y + trans_y;
 	}
 	
+	/*
+	 * Polygon Area Fill routines
+	 */
+	switch (net->interpolation) {
+	case PAREA_START :
+	    nuf_points = 0;
+	    continue;
+	case PAREA_FILL :
+	    points[nuf_points].x = x2;
+	    points[nuf_points].y = y2;
+	    if (nuf_points > MAX_POLYGON_POINTS)
+		fprintf(stderr, "Too many corners on polygon area\n");
+	    else
+		nuf_points++;
+	    continue;
+	case PAREA_END :
+	    gdk_draw_polygon(*pixmap, line_gc, 1, points, nuf_points);
+	    continue;
+	default :
+	    break;
+	}
+
+	if (image->aperture[net->aperture] == NULL) {
+	    fprintf(stderr, "Aperture [%d] is not defined\n", net->aperture);
+	    continue;
+	}
+
+	/*
+	 * "Normal" aperture drawing routines
+	 */
 	switch (net->aperture_state) {
 	case ON :
 	    p1 = (int)(image->aperture[net->aperture]->parameter[0] * scale);

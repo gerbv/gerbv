@@ -40,7 +40,8 @@ enum omit_zeros_t {LEADING, TRAILING, EXPLICIT};
 enum coordinate_t {ABSOLUTE, INCREMENTAL};
 enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
 		      CW_CIRCULAR, CCW_CIRCULAR, 
-		      MQ_CW_CIRCULAR, MQ_CCW_CIRCULAR};
+		      MQ_CW_CIRCULAR, MQ_CCW_CIRCULAR,
+                      PAREA_START, PAREA_FILL, PAREA_END};
 
 typedef struct gerb_cirseg {
     double cp_x;
