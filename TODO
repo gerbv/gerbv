@@ -1,0 +1,10 @@
+TODO for gerbv (priorities mixed)
+$Id$
+
+* a batch backend generating tiff files (open).
+* improve ps backend (open).
+* hpgl backend (open).
+* color selection (spe).
+* multiple images at the same time (spe).
+* aperture macros (spe).
+* parse gerber drill files (pitch/sikis?).

@@ -1,0 +1,32 @@
+Install instructions for gerbv
+
+GNU Electronic Design Automation
+------------------------------------------------------------------------------
+
+Installation instructions 
+
+
+The build system of gerbv is based on GNU Autoconf. The build system
+is not complete as of this writing. Basically you can say that 'make
+install' is not implemented yet.
+
+Simple build instructions would (currently) be:
+% ./configure
+% make
+
+The executable is situated in the src directory and is called gerbv.
+
+
+------------------------------------------------------------------------------
+
+In order to build gschem you must install the following packages first:
+* GLIB 1.2.x
+* GTK+ 1.2.x
+* Guile 1.4
+
+
+If you don't have Guile installed and have no intention of running
+gerbv in batch mode you can simply omit Guile (and therefore batch 
+mode) at configure time:
+
+	./configure --disable-batch

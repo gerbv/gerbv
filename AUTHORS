@@ -1,0 +1,17 @@
+gEDA
+
+GNU Electronic Design Automation
+------------------------------------------------------------------------------
+
+gerbv AUTHORS
+
+Stefan Petersen
+E-mail: spe@stacken.kth.se
+Web: http://gerbv.sourceforge.net/
+
+
+Dan McMahill           - Fixed 64-bit support
+<mcmahill@mtl.mit.edu> - Some additional configure things
+
+
+ 

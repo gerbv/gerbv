@@ -1,0 +1,12 @@
+#!/bin/sh
+eval "`grep ^VERSION configure.in`"
+RELEASE=gerbv-${VERSION}
+(cd /tmp ;\
+cvs -d :pserver:spe@siouxsie:/usr/home/cvsroot export -D NOW -d ${RELEASE} gerbv ; \
+(cd ${RELEASE} ; rm -f build_release rebuild_conf ; \
+aclocal ; autoheader ; autoconf ; automake --foreign --add-missing) ;\
+tar cf ${RELEASE}.tar ${RELEASE} ;\
+gzip ${RELEASE}.tar )
+
+cp /tmp/${RELEASE}.tar.gz .
+rm -rf /tmp/${RELEASE}.tar.gz /tmp/${RELEASE}

@@ -1,0 +1,11 @@
+
+To hack in this code you need to set emacs (or whatever you use) to
+8 indentation steps and {} at the right places (see code).
+Not negotiable.
+
+My ~/.emacs are:
+(defun my-c-mode-hook ()
+  (turn-on-font-lock)
+  (setq c-basic-offset 4))
+
+(add-hook 'c-mode-hook 'my-c-mode-hook)

@@ -1,0 +1,79 @@
+
+Gerber Viewer
+
+gEDA - GPL Electronic Design Automation
+------------------------------------------------------------------------------
+
+
+README for gerbv
+(This software is ALPHA)
+
+  Gerber Viewer (gerbv) is a viewer for Gerber files. Gerber files
+  are generated from PCB CAD system and sent to PCB manufacturers
+  as basis for the manufacturing process. 
+
+  The different layers of the PCB are separated into different files. 
+  gerbv can load all files at the same time, though it can not show 
+  them at the same time. You have to browse through the different layers
+  with the radio buttons on the right side.
+
+
+- System Requirements
+
+  gerbv is dependent on a couple of different external libraries:
+  * GTK+, the graphical toolkit available from http://www.gtk.org/
+  * Guile, an embeddable Scheme interpretator. Guile is available
+    from http://www.gnu.org/software/guile/guile.html
+  * getopt_long from the GNU project. gerbv can do without getopt_long
+    long options to the program will hence not be available.
+
+  gerbv is basically known to compile on all system which the above 
+  mentioned libraries compile on, basically all flavors of *ix. It
+  has been tested on Linux (2.2.18pre21), NetBSD (1.4.1), Solaris 
+  (5.7 and 5.8).
+
+
+- License  
+
+  gerbv and all associated files is placed under the GNU Public 
+  License (GPL) version 2.0.  See the toplevel COPYING file for 
+  more information.
+
+  Programs and associated files are: 
+  Copyright 2001 by Stefan Petersen and the respective
+  original authors (which are listed on the respective files)
+
+
+- gEDA and gerbv Internet resources
+
+  gerbv Homepage: http://gerbv.sourceforge.net/
+  gEDA Homepage: http://www.geda.seul.org/
+
+  Mailing list:
+	To subscribe send an email to: majordomo@geda.seul.org  
+	with   subscribe geda-dev   in the body.
+		
+	To unsubscribe send an email to: majordomo@geda.seul.org
+	with   unsubscribe geda-dev   in the body.
+
+	To send email to the list use the address:
+
+		geda-dev@geda.seul.org
+
+	Remember, geda-dev@geda.seul.org is for the actual traffic.  
+	For administrative commands, use majordomo@geda.seul.org.
+
+	The mailing list archive is at:
+
+		http://www.geda.seul.org/mailinglist 
+
+	Many thanks to the SEUL project for hosting gEDA!
+
+
+
+- Contact information  
+
+  Stefan Petersen
+  E-mail: spe@stacken.kth.se
+  Web: http://www.sourceforge.net/projects/gerbv
+

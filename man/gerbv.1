@@ -1,0 +1,48 @@
+.TH gerbv 1 "August 22nd, 2001" Version 0.0.1
+.SH NAME
+gerbv - Gerber Viewer
+.SH SYNOPSIS
+.B gerbv
+[--batch=<backend> | -b <backend>] [ --version | -V] gerberfile[s]
+.SH DESCRIPTION
+.PP
+\fIgerbv\fP is a viewer for Gerber files. Gerber files is generated
+from different PCB CAD programs and are sent to subcontractors to
+actually make the PCB.
+
+\fIgerbv\fP is GTK+ based and contains a possibility to run in "batch mode".
+When running in batch mode, gerbv parses the Gerber file and calls an
+external Scheme function with the parsed data. The Scheme implementation
+is based on Guile.
+
+.SH OPTIONS
+.l
+.B Warning! 
+On some platforms, which hasn't long option available, only
+short options are available.
+.TP 8
+\fIgerbv\fP accepts the following options:
+.TP 8
+.BI --version
+.TP
+.BI -V
+Prints the version number of gerbv and exits.
+.TP 8
+.BI --batch=<backend>
+.TP
+.BI -b\ <backend>
+Calls the backend to generate output. GTK+ is never started.
+
+.SH "ENVIRONMENT"
+No environment variables are used.
+
+.SH "AUTHOR"
+.nf
+Stefan Petersen (spe@stacken.kth.se)
+
+.SH COPYRIGHT
+.nf
+Copyright \(co  2001 Stefan Petersen
+
+This document can be freely redistributed according to the terms of the 
+GNU General Public License version 2.0

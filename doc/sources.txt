@@ -1,0 +1,51 @@
+Since almost all documents I have found on the Internet has copyright
+forbidding the distribution of them, I have instead made a list of
+information about RS-274[XD]. I found them basically using google.
+
+$Id$
+
+
+Gerber is designed by Gerber Systems, which has been bought by
+Barco. Ie Barco (http://www.barco.com/graphics/) has the best
+descriptions.
+
+* D-codes, Apertures & Gerber Plot Files
+Desribes how a photo plotter works and describes RS-274D.
+
+	 http://www.artwork.com/gerber/appl2.htm
+
+
+* What's all this about RS274X Anyway?
+
+"If you're a PCB designer you're probably hearing more and more about 
+extended Gerber - RS274X. The latest versions of many PCB layout programs 
+either offer RS274X as an option or only output RS274X-- such as Cadence's 
+Allegro."
+
+Discusses the extension to RS27X from RS274D. Continuation from above.
+	  http://www.artwork.com/gerber/274x/rs274x.htm
+
+
+* BARCO SYSTEMS
+_The_ description which is all over Internet. This is the source.
+	   http://www.barco.com/ets/data/rs274xc.pdf
+
+
+* BARCO SYSTEMS
+Seems like there is an development, even thought they copyrighted 
+the same year
+    http://194.7.253.113/ets/products/rs274xrevd_e.pdf
+
+
+* Barco has a new format.
+	http://194.7.253.113/ets/products/DPF_syntax.pdf
+
+
+* A Free Gerber Viewer in Java
+Also has some documentation, which is basically what I listed above.
+I haven't looked at the code.
+  http://www.wizards.de/phil/java/rs274x.html
+
+
+* Eagle Gerber Tutorial
+http://www.precma.com/informatica/tutorial.htm

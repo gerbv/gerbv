@@ -1,0 +1,26 @@
+gEDA
+
+GNU Electronic Design Automation
+------------------------------------------------------------------------------
+
+gerbv NEWS
+
+Stefan Petersen
+E-mail: spe@stacken.kth.se
+Web: http://gerbv.sourceforge.net/
+
+
+------------------------------------------------------------------------------
+New in 0.0.2
+
+- Automake in use, so now the build system is "complete"
+  - make install, make uninstall etc works
+  - gerbv --batch=<backend> now searches local directory, 
+    $HOME/.gerbv/scheme and ${prefix}/share/gerbv/scheme until it finds
+    a valid backend, ie gerb-<backend>.scm.
+  - backends moved from src to scheme in tarball
+
+- Version flag changed from -v to -V
+
+- Fixed 64-bit build problems thanks to patches from Dan <mcmahill@mtl.mit.edu>
+  He also fixed some other build problems.
