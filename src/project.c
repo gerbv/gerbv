@@ -167,9 +167,11 @@ define_layer(scheme *sc, pointer args)
  * Global:
  * * Background color
  * * Global path.
+ * * corresponding pick and place file <TODO>:JH
  * Per layer:
  * * layer color
  * * layer filename
+
  */
 
 project_list_t *
