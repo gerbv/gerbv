@@ -1,5 +1,9 @@
 2002-11-19  Stefan Petersen  <spe@stacken.kth.se>
 
+	* src/gerbv.c: Anders optimized drawing optimized away setting
+	  of superimpose function. Not any longer. Daniel Dorau pointed
+	  out this and the one below.
+
 	* src/draw.c: Hopefully fixed the one pixel gap between lines
 	  when it should be a filled area.
 

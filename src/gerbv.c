@@ -1082,8 +1082,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	state.max_height = height;
 
 	/* 
-	 * Remove old pixmap, allocate a new one, draw the background
-	 * and set superimposing function.
+	 * Remove old pixmap, allocate a new one, draw the background.
 	 */
 	if (screen.pixmap) 
 	    gdk_pixmap_unref(screen.pixmap);
@@ -1091,7 +1090,6 @@ redraw_pixmap(GtkWidget *widget, int restart)
 				       state.max_height,  -1);
 	gdk_gc_set_foreground(gc, screen.background);
 	gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
-	gdk_gc_set_function(gc, screen.si_func);
 
 	/*
 	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
@@ -1105,6 +1103,12 @@ redraw_pixmap(GtkWidget *widget, int restart)
 
 	state.valid = 1;
     }
+
+    /*
+     * Set superimposing function.
+     */
+    gdk_gc_set_function(gc, screen.si_func);
+
 
     /* 
      * This now allows drawing several layers on top of each other.
