@@ -1,3 +1,33 @@
+2004-07-12 (summary) Juergen Haas/Tomasz Motylewski <juergenhaas@gmx.net> 
+
+	[pleases direct any questions, comments or bug reports to me or Tomasz]
+
+	* added new functionality: search, select and mark parts in layers 
+	  16-19 by loading a "Pick and Place" file in CSV Format: 
+	  		 entry1,entry2,..
+	  	NO OTHER FORMAT IS RECOGNISED SO FAR!
+		- src/search.c: 
+		   storing pnp data in memory
+	 	- src/search_cb.c:
+		   callbacks
+	 	- src/search_file.c:
+		   how to read in and parse pnp file
+		- src/search_mark.c:
+		   create_marked_layer(layernumber); will draw the selected 
+		   parts as circles with a line going from centre to Pin1 on
+		   the layer given as argument(at the moment layers 16-19 are 
+		   selectable)
+	 	- src/search_gui.c:
+		   will load pick and place file and display the parts unique 
+		   designators, the Top/Bottom Flag and the corresponding 	
+		   comment in a sortable list. Multiple selections can be made 
+		   by entering a regex search phrase or by simply clicking on 
+		   the desired items (for multiple selections by mouse click use
+		   the well-known SHIFT-CTRL-click combinations)
+
+	* This version also includes first rough support for MINGW/WIN32 
+	  -not yet usable, route for reading in files is broken
+	  
 2004-07-11  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw_amacro.c: When drawing thermals the cross ends in butt

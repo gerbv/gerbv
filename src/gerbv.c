@@ -29,7 +29,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifdef HAVE_LIBGEN_H
 #include <libgen.h> /* dirname */
+#endif
 #include <errno.h>
 
 #ifdef HAVE_STRING_H
@@ -52,6 +54,7 @@
 #include <pango/pango.h>
 #endif
 
+
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
@@ -66,6 +69,9 @@
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
 #include "tooltable.h"
+#include "search_cb.h"
+#include "search_gui.h"
+#include "search_mark.h"
 
 #define WIN_TITLE "Gerber Viewer : "
 
@@ -111,9 +117,9 @@ static void all_layers_off(GtkWidget *widget, gpointer data);
 static void load_project(project_list_t *project_list);
 static void zoom(GtkWidget *widget, gpointer data);
 static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
-static gint redraw_pixmap(GtkWidget *widget, int restart);
+gint redraw_pixmap(GtkWidget *widget, int restart);
 static int open_image(char *filename, int idx, int reload);
-static void update_statusbar(gerbv_screen_t *scr);
+void update_statusbar(gerbv_screen_t *scr);
 
 static void menu_ask_zoom (GtkWidget * widget, gpointer data);
 static GtkWidget *create_ZoomFactorWindow (void);
@@ -160,6 +166,9 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/File/_Save Project As...",NULL, project_popup,    SAVE_AS_PROJECT,NULL},
     {"/File/_Save Project",  NULL,     project_save_cb,  0, NULL},
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
+#ifdef USE_GTK2    
+    {"/File/_Load Pick&Place...",NULL, load_pnp_file_popup,  0, NULL},
+#endif    
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
     {"/File/_Export/PNG...", NULL,     export_png_popup, 0, NULL},
@@ -584,6 +593,7 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     char *filename;
 
     filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
+#ifdef HAVE_LIBGEN_H    
     if (open_image(filename, screen.curr_index, FALSE) != -1) {
 
 	/*
@@ -599,7 +609,7 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 	/* Make loaded image appear on screen */
 	redraw_pixmap(screen.drawing_area, TRUE);
     }
-
+#endif
     gtk_grab_remove(screen.win.load_file);
     gtk_widget_destroy(screen.win.load_file);
     screen.win.load_file = NULL;
@@ -686,7 +696,9 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
     /*
      * Remember where we loaded file from last time
      */
+#ifdef HAVE_LIBGEN_H     
     filename = dirname(filename);
+#endif    
     if (screen.path)
 	free(screen.path);
     screen.path = (char *)malloc(strlen(filename) + 1);
@@ -750,7 +762,9 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    free(screen.path);
 	screen.path = (char *)malloc(strlen(filename) + 1);
 	strcpy(screen.path, filename);
+#ifdef HAVE_LIBGEN_H        
 	dirname(screen.path);
+#endif        
 	screen.path = strncat(screen.path, "/", 1);
     }
 
@@ -832,7 +846,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     default:
 	GERB_FATAL_ERROR("Unknown operation in cb_ok_project\n");
     }
-
+#ifdef HAVE_LIBGEN_H
     /*
      * Remember where we loaded file from last time
      */
@@ -842,6 +856,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     screen.path = (char *)malloc(strlen(filename) + 1);
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
+#endif    
 
  cb_ok_project_end:
     if (screen.win.project) {
@@ -1036,7 +1051,7 @@ load_project(project_list_t *project_list)
 } /* load_project */
 
 
-static void
+void
 autoscale(void)
 {
     double max_width = LONG_MIN, max_height = LONG_MIN;
@@ -1118,7 +1133,7 @@ autoscale(void)
  * is called, during this time we are not allowed to call the
  * gtk_idle_xxx functions.
  */
-static gboolean idle_redraw_pixmap_active = FALSE;
+gboolean idle_redraw_pixmap_active = FALSE;
 gboolean idle_redraw_pixmap(gpointer data);
 
 void
@@ -1330,19 +1345,9 @@ create_drawing_area(gint win_width, gint win_height)
     return drawing_area;
 } /* create_drawing_area */
 
-/* Keep redraw state when preempting to process certain events */
-struct gerbv_redraw_state {
-    int valid;			/* Set to nonzero when data is valid */
-    int file_index;
-    GdkPixmap *curr_pixmap;
-    GdkPixmap *clipmask;
-    int max_width;
-    int max_height;
-    int files_loaded;
-};
 
 /* Invalidate state, free up pixmaps if necessary */
-static void
+ void
 invalidate_redraw_state(struct gerbv_redraw_state *state)
 {
     if (state->valid) {
@@ -1358,7 +1363,7 @@ invalidate_redraw_state(struct gerbv_redraw_state *state)
 } /* invalidate_redraw_state() */
 
 /* Create a new backing pixmap of the appropriate size */
-static gint
+ gint
 redraw_pixmap(GtkWidget *widget, int restart)
 {
     int i;
@@ -2255,8 +2260,7 @@ draw_measure_distance(void)
     gdk_gc_unref(gc);
 } /* draw_measure_distance */
 
-
-static void 
+ void 
 update_statusbar(gerbv_screen_t *scr)
 {
     char str[MAX_STATUSMSGLEN+1];
@@ -2495,7 +2499,11 @@ main(int argc, char *argv[])
      */
     memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
+#ifdef HAVE_LIBGEN_H    
     screen.execpath = dirname(argv[0]);
+#else 
+//    screen.execpath = argv[0];
+#endif    
 
     setup_init();
 	
@@ -2703,12 +2711,14 @@ main(int argc, char *argv[])
 	    /*
 	     * Remember where we loaded file from last time
 	     */
+#ifdef HAVE_LIBGEN_H             
 	    if (screen.path)
 		free(screen.path);
 	    screen.path = (char *)malloc(strlen(project_filename) + 1);
 	    strcpy(screen.path, project_filename);
 	    dirname(screen.path);
 	    screen.path = strncat(screen.path, "/", 1);
+#endif            
 	    
             rename_main_window(screen.project, NULL);
 	} else {

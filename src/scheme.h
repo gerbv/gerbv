@@ -16,19 +16,26 @@
 # define STANDALONE 1
 #endif
 
-#ifndef _MSC_VER 
+
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
 # define USE_STRCASECMP 1 
 # define USE_STRLWR 1 
 # define SCHEME_EXPORT
 #else 
 # define USE_STRCASECMP 0 
 # define USE_STRLWR 0 
+#if defined(__MINGW32__)
+# define SCHEME_EXPORT
+# else
 # ifdef _SCHEME_SOURCE
 #  define SCHEME_EXPORT __declspec(dllexport)
 # else
 #  define SCHEME_EXPORT __declspec(dllimport)
 # endif
 #endif
+#endif
+
+
 
 #if USE_NO_FEATURES
 # define USE_MATH 0
