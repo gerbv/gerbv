@@ -53,6 +53,7 @@
 #include "gerb_error.h"
 #include "draw.h"
 #include "draw_gdk.h"
+#include "draw_ps.h"
 #include "gerbv_screen.h"
 #include "gerbv_icon.h"
 #include "log.h"
@@ -109,7 +110,6 @@ static void zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data);
 GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
 static void zoom_ok_button_clicked (GtkButton * button, gpointer user_data);
 static void zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
-
 
 
 static GdkColor 
@@ -2174,6 +2174,7 @@ main(int argc, char *argv[])
     char      *win_title;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
     char      *rest;
+    char      *psfile = NULL;
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
@@ -2185,10 +2186,10 @@ main(int argc, char *argv[])
     setup_init();
 	
 #ifdef HAVE_GETOPT_LONG
-    while ((read_opt = getopt_long(argc, argv, "Vl:", 
+    while ((read_opt = getopt_long(argc, argv, "Vl:p:", 
 				   longopts, &longopt_idx)) != -1) {
 #else
-    while ((read_opt = getopt(argc, argv, "Vl:")) != -1) {
+    while ((read_opt = getopt(argc, argv, "Vl:p:")) != -1) {
 #endif /* HAVE_GETOPT_LONG */
 	switch (read_opt) {
 #ifdef HAVE_GETOPT_LONG
@@ -2230,6 +2231,9 @@ main(int argc, char *argv[])
 	    setup.log.to_file = 1;
 	    setup.log.filename = optarg;
 	    break;
+	case 'p' :
+	    psfile = optarg;
+	    break;
 	case '?':
 
 	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
@@ -2243,6 +2247,58 @@ main(int argc, char *argv[])
 	}
     }
     
+    if (psfile) {
+	gerb_image_t *image;
+	struct gerb_render_context *ps_ctx;
+	char *filename = argv[optind];
+	gerb_file_t *fd;
+
+	fd = gerb_fopen(filename);
+	if (fd == NULL) {
+	    GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
+	    return -1;
+	}
+    
+	if(drill_file_p(fd))
+	    image = parse_drillfile(fd);
+	else 
+	    image = parse_gerb(fd);
+	
+	gerb_fclose(fd);
+
+#if 0
+	/*
+	 * Do error check before continuing XXX disabled
+	 */
+	error = gerb_image_verify(image);
+	if (error) {
+	    GERB_COMPILE_ERROR("%s: Parse error:\n", filename);
+	    if (error & GERB_IMAGE_MISSING_NETLIST)
+		GERB_COMPILE_ERROR("* Missing netlist\n");
+	    if (error & GERB_IMAGE_MISSING_FORMAT)
+		GERB_COMPILE_ERROR("* Missing format\n");
+	    if (error & GERB_IMAGE_MISSING_APERTURES) 
+		GERB_COMPILE_ERROR("* Missing apertures/drill sizes\n");
+	    if (error & GERB_IMAGE_MISSING_INFO)
+		GERB_COMPILE_ERROR("* Missing info\n");
+	    GERB_COMPILE_ERROR("\n");
+	    GERB_COMPILE_ERROR("You probably tried to read an RS-274D file, which gerbv doesn't support\n");
+	    free_gerb_image(image);
+	    exit(-1);
+	}
+#endif
+	ps_ctx = gerb_create_ps_render_context(psfile);
+	gerb_render_set_viewport(ps_ctx, 1000, 1000);
+    
+	gerb_render_image(ps_ctx, image, 72, 0,0);
+	ps_ctx->blit(ps_ctx,0,0);
+
+	free(ps_ctx);
+	free_gerb_image(image);
+
+	exit(0);
+    }
+
     /*
      * Init GTK+
      */

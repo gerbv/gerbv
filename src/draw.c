@@ -186,7 +186,7 @@ gerb_render_image(struct gerb_render_context *ctx,
 		break;
 	    case CW_CIRCULAR:
 	    case CCW_CIRCULAR:
-		ctx->draw_arc (ctx, cp_x-cir_width/2, cp_y-cir_height/2,
+		ctx->draw_arc (ctx, cp_x-cir_width/2.0, cp_y-cir_height/2.0,
 			       cir_width, cir_height,
 			       net->cirseg->angle1,
 			       net->cirseg->angle2 - net->cirseg->angle1);

@@ -25,7 +25,7 @@ bin_PROGRAMS = gerbv
 
 gerbv_SOURCES = gerb_image.c gerb_file.c gerber.c gerbv.c \
 		draw_amacro.c draw.c drill.c amacro.c log.c setup.c \
-	 	draw_gdk.c
+	 	draw_gdk.c draw_ps.c
 # exportimage.c 
 
 INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@
