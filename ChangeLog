@@ -1,3 +1,11 @@
+2001-10-24 Stefan Petersen (spe@stacken.kth.se)
+	* src/draw.[hc]: Added. Extracted drawing functions from
+	  gerbv.c.
+	* src/gerbv.c: Removed add drawing functions into draw.c.
+	  Also minor clean ups.
+	* src/Makefile.am: Added draw.c as src file.
+	
+	
 2001-10-22 Stefan Petersen (spe@stacken.kth.se)
 
 	* example/*: Cleaned out numpres.pcb.* to a separate dir
