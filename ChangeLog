@@ -1,3 +1,5 @@
+-- Release 0.13 --
+
 2003-03-16  Stefan Petersen  <spe@stacken.kth.se>
 
 	* src/draw.c, src/gerb_image.h, src/gerber.c: Angles are now
