@@ -1,3 +1,19 @@
+2001-12-02 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/gerbv.c:
+	  Changed radiobuttons to togglebuttons, redraw_pixmap() now shows
+	  all switched on images. Slight changes to the zoom/translate code
+	  (it still doesn't work as intended, though). Added mouse commmands
+	  for zooming without scrollwheel. screen.scale no longer goes down
+	  to 0 when zooming out.
+	* src/draw.h, src/draw.c:
+	  Floating point calculations that are converted to ints for
+	  display are now rounded to the nearest int rather than always
+	  truncated down (or was it up?) Macro round(x) added to make that
+	  prettier. Removed minor stuff that caused warnings with -Wall
+	  flag to gcc.
+
+
 2001-11-27 Andreas Andersson (e92_aan@e.kth.se)
 
 	* src/gerbv.c:
@@ -11,7 +27,7 @@
 	* src/drill.h, src/drill.c:
 	  Added drill_file_p(); which checks whether a file could
 	  be a drill file or not.
-	
+
 
 2001-11-26 Stefan Petersen (spe@stacken.kth.se)
 
