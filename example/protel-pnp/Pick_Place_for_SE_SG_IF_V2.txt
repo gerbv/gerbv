@@ -1,0 +1,285 @@
+Designator Footprint          Mid X         Mid Y         Ref X         Ref Y         Pad X         Pad Y TB      Rotation Comment   
+
+HEAD       KEY-98KSC   -1968.504mil  -4133.858mil        890mil       5190mil  -1968.504mil  -4133.858mil  T          0.00           
+ZB4        BOHR-3.0      885.826mil   3248.032mil    885.827mil   3248.031mil    885.826mil   3248.032mil  T          0.00           
+ZB3        BOHR-3.0     3346.456mil   3937.008mil   3346.457mil   3937.007mil   3346.456mil   3937.008mil  T          0.00           
+ZB2        BOHR-3.0     2834.646mil      393.7mil   2834.646mil      393.7mil   2834.646mil      393.7mil  T          0.00           
+ZB1        BOHR-3.0       196.85mil      393.7mil     196.85mil      393.7mil     196.85mil      393.7mil  T          0.00           
+U202       SO-16        1240.496mil   1909.504mil       1240mil       1910mil   1065.496mil   1799.504mil  T         90.00 M74HC4053 
+R260       0805_REFL    2874.992mil   2105.008mil       2875mil       2105mil   2874.992mil   2067.008mil  T         90.00 1K 1%     
+R259       0805_REFL    3079.992mil   1584.638mil       3080mil   1584.646mil   3117.992mil   1584.638mil  T        180.00 1K 1%     
+R258       0805_REFL    3000.008mil   2079.992mil       3000mil       2080mil   3000.008mil   2117.992mil  T        270.00 1K 1%     
+R257       0805_REFL    2839.992mil   1754.654mil       2840mil   1754.646mil   2839.992mil   1716.654mil  T         90.00 1K 1%     
+R256       0805_REFL    1669.992mil   2254.654mil       1670mil   2254.646mil   1669.992mil   2216.654mil  T         90.00 100R 1%   
+R255       0805_REFL    1759.992mil   2254.654mil       1760mil   2254.646mil   1759.992mil   2216.654mil  T         90.00 100R 1%   
+C214       0805_REFL     970.008mil   1904.638mil        970mil   1904.646mil    970.008mil   1942.638mil  T        270.00 100NF/50V 
+U200       SOL-28       1930.504mil   2629.512mil       1931mil   2629.016mil   2255.504mil   2819.512mil  T        270.00 Comment   
+C100       1206_REFL    2913.394mil   3208.654mil   2913.386mil   3208.661mil   2913.394mil   3267.154mil  T        270.00 10NF/500V 
+C101       1206_REFL    3277.566mil   2696.842mil   3277.559mil    2696.85mil   3277.566mil   2755.342mil  T        270.00 10NF/500V 
+C102       1206_REFL    3277.566mil   2903.536mil   3277.559mil   2903.543mil   3277.566mil   2962.036mil  T        270.00 10NF/500V 
+C103       1206_REFL    3020.008mil   1484.654mil       3020mil   1484.646mil   2961.508mil   1484.654mil  T        360.00 10NF/500V 
+C104       1206_REFL    3327.708mil     816.78mil   3327.716mil    816.772mil   3327.708mil     758.28mil  T         90.00 10NF/500V 
+C105       1206_REFL    3327.724mil   1023.456mil   3327.716mil   1023.465mil   3327.724mil   1081.956mil  T        270.00 10NF/500V 
+C106       1206_REFL    3297.236mil   3159.442mil   3297.244mil   3159.449mil   3355.736mil   3159.442mil  T        180.00 1NF/500V  
+C107       1206_REFL    3297.236mil   3061.016mil   3297.244mil   3061.024mil   3355.736mil   3061.016mil  T        180.00 1NF/500V  
+C108       1206_REFL    3435.032mil   2352.354mil   3435.039mil   2352.362mil   3493.532mil   2352.354mil  T        180.00 1NF/500V  
+C109       1206_REFL    3288.338mil   1279.362mil   3288.346mil    1279.37mil   3346.838mil   1279.362mil  T        180.00 1NF/500V  
+C110       1206_REFL    3429.992mil   1176.842mil       3430mil    1176.85mil   3488.492mil   1176.842mil  T        180.00 1NF/500V  
+C111       1206_REFL    3395.662mil    472.434mil   3395.669mil    472.441mil   3454.162mil    472.434mil  T        180.00 1NF/500V  
+C112       0805_REFL     935.048mil   1564.968mil    935.039mil   1564.961mil    897.048mil   1564.968mil  T        360.00 100NF/50V 
+C113       0805_REFL        1063mil   1624.008mil   1062.992mil   1624.016mil       1063mil   1662.008mil  T        270.00 100NF/50V 
+C114       0805_REFL     849.992mil   4016.842mil        850mil    4016.85mil    887.992mil   4016.842mil  T        180.00 100NF/50V 
+C115       0805_REFL    1210.008mil    699.991mil       1210mil        700mil   1210.008mil    737.991mil  T        270.00 100NF/50V 
+C201       0805_REFL    2260.008mil   1524.638mil       2260mil   1524.646mil   2260.008mil   1562.638mil  T        270.00 100NF/50V 
+C202       0805_REFL    2210.008mil   1994.654mil       2210mil   1994.646mil   2172.008mil   1994.654mil  T        360.00 100NF/50V 
+C207       0805_REFL    2210.008mil   1814.654mil       2210mil   1814.646mil   2172.008mil   1814.654mil  T        360.00 10NF/50V  
+C208       0805_REFL    2360.008mil   2184.654mil       2360mil   2184.646mil   2322.008mil   2184.654mil  T        360.00 10NF/50V  
+C212       0805_REFL    2090.008mil   3086.842mil       2090mil    3086.85mil   2090.008mil   3124.842mil  T        270.00 15PF/50V  
+C213       0805_REFL    1661.992mil   3217.842mil       1662mil    3217.85mil   1699.992mil   3217.842mil  T        180.00 15PF/50V  
+DS100      1206-D_REFL   3179.142mil   2696.842mil   3179.134mil    2696.85mil   3179.142mil   2755.342mil  T        270.00 BAS85     
+DS101      1206-D_REFL   3239.142mil    816.764mil   3239.134mil    816.772mil   3239.142mil    875.264mil  T        270.00 BAS85     
+DS102      1206-D_REFL    738.182mil    1476.37mil    738.189mil   1476.378mil    796.682mil    1476.37mil  T        180.00 BAS85     
+DS103      1206-D_REFL    708.654mil   1604.324mil    708.661mil   1604.331mil    767.154mil   1604.324mil  T        180.00 BAS85     
+DS105      SOT-23       1190.448mil    1623.52mil   1190.945mil   1624.016mil   1152.948mil    1583.52mil  T        360.00 BAS70-04  
+DS106      SOT-23         1112.7mil   1456.198mil   1112.205mil   1456.693mil     1152.7mil   1418.698mil  T         90.00 BAS70-04  
+DS107      SOT-23       1490.496mil   1467.346mil       1490mil    1466.85mil   1527.996mil   1507.346mil  T        180.00 BAS70-04  
+DS200      1206-D_REFL   2360.008mil   1714.638mil       2360mil   1714.646mil   2360.008mil   1773.138mil  T        270.00 BAS85     
+DS201      1206-D_REFL   2080.008mil   2114.638mil       2080mil   2114.646mil   2080.008mil   2173.138mil  T        270.00 BAS85     
+DS202      1206-D_REFL   1560.008mil   2044.638mil       1560mil   2044.646mil   1560.008mil   2103.138mil  T        270.00 BAS85     
+DS205      SOT-23       2220.496mil   3057.346mil       2220mil    3056.85mil   2257.996mil   3097.346mil  T        180.00 BAS70-04  
+DS206      SOT-23       2550.496mil    2254.15mil       2550mil   2254.646mil   2590.496mil    2216.65mil  T         90.00 BAS70-04  
+DT100      SMA           3582.67mil    3346.45mil   3582.677mil   3346.457mil    3662.67mil    3346.45mil  T        180.00 SMAJ15CA  
+DT101      SMA           3582.67mil     3543.3mil   3582.677mil   3543.307mil    3662.67mil     3543.3mil  T        180.00 SMAJ15CA  
+DT102      SMA           3582.67mil    3740.15mil   3582.677mil   3740.157mil    3662.67mil    3740.15mil  T        180.00 SMAJ15CA  
+DT103      SMA           910.008mil   3736.842mil        910mil    3736.85mil    910.008mil   3816.842mil  T        270.00 SMAJ15CA  
+DT104      SMA          1349.992mil   3964.654mil       1350mil   3964.646mil   1349.992mil   3884.654mil  T         90.00 SMAJ15CA  
+DT105      SMA          1761.818mil   3523.614mil   1761.811mil   3523.622mil   1761.818mil   3603.614mil  T        270.00 SMAJ15CA  
+DT106      SMA           3582.67mil   1456.686mil   3582.677mil   1456.693mil    3662.67mil   1456.686mil  T        180.00 SMAJ15CA  
+DT107      SMA           3582.67mil   1653.536mil   3582.677mil   1653.543mil    3662.67mil   1653.536mil  T        180.00 SMAJ15CA  
+DT108      SMA          3589.992mil   1774.638mil       3590mil   1774.646mil   3669.992mil   1774.638mil  T        180.00 SMAJ15CA  
+DT109      SMA          1574.796mil   3562.984mil   1574.803mil   3562.992mil   1654.796mil   3562.984mil  T        180.00 *SMAJ5.0CA
+DT110      SMA          2145.662mil   3513.788mil   2145.669mil    3513.78mil   2145.662mil   3433.788mil  T         90.00 *SMAJ5.0CA
+DT111      SMA          2000.008mil   3974.638mil       2000mil   3974.646mil   2000.008mil   4054.638mil  T        270.00 *SMAJ5.0CA
+DZ100      1206-D_REFL     3080.7mil   3061.016mil   3080.709mil   3061.024mil     3139.2mil   3061.016mil  T        180.00 ZMM3.3    
+DZ101      1206-D_REFL   3229.992mil   1176.842mil       3230mil    1176.85mil   3288.492mil   1176.842mil  T        180.00 ZMM3.3    
+DZ102      1206-D_REFL   3080.716mil   3257.882mil   3080.709mil   3257.874mil   3022.216mil   3257.882mil  T        360.00 ZMM18     
+DZ103      1206-D_REFL   3020.008mil   1384.654mil       3020mil   1384.646mil   2961.508mil   1384.654mil  T        360.00 ZMM18     
+DZ104      1206-D_REFL    950.008mil   1116.858mil        950mil    1116.85mil    891.508mil   1116.858mil  T        360.00 ZMM7.5    
+DZ200      1206-D_REFL   3260.008mil   1769.992mil       3260mil       1770mil   3260.008mil   1828.492mil  T        270.00 ZMM3.3    
+DZ203      1206-D_REFL   2349.992mil   2284.638mil       2350mil   2284.646mil   2408.492mil   2284.638mil  T        180.00 ZMM4.7    
+DZ204      1206-D_REFL   1510.008mil   2204.654mil       1510mil   2204.646mil   1451.508mil   2204.654mil  T        360.00 ZMM4.7    
+DZ207      1206-D_REFL   2069.992mil   1574.654mil       2070mil   1574.646mil   2069.992mil   1516.154mil  T         90.00 ZMM4.7    
+DZ208      1206-D_REFL   1960.008mil   1574.638mil       1960mil   1574.646mil   1960.008mil   1633.138mil  T        270.00 ZMM2.4    
+DZ209      1206-D_REFL   2339.992mil   2094.638mil       2340mil   2094.646mil   2398.492mil   2094.638mil  T        180.00 ZMM4.7    
+E100       C            3170.008mil   2346.858mil       3170mil    2346.85mil   3075.008mil   2346.858mil  T        360.00 10UF/25V(C)
+E101       C            3349.992mil   2496.842mil       3350mil    2496.85mil   3444.992mil   2496.842mil  T        180.00 10UF/25V(C)
+E102       C             3129.93mil    462.606mil   3129.921mil    462.599mil    3034.93mil    462.606mil  T        360.00 10UF/25V(C)
+E103       C            3369.992mil    606.842mil       3370mil     606.85mil   3464.992mil    606.842mil  T        180.00 10UF/25V(C)
+E200       B            2540.008mil   2124.654mil       2540mil   2124.646mil   2477.008mil   2124.654mil  T        360.00 4.7UF/10V 
+E202       B            2129.992mil   2274.638mil       2130mil   2274.646mil   2192.992mil   2274.638mil  T        180.00 4.7UF/10V 
+E203       B            1489.992mil   2314.638mil       1490mil   2314.646mil   1552.992mil   2314.638mil  T        180.00 4.7UF/10V 
+F100       NFE31P            860mil   3906.851mil        860mil    3906.85mil    919.056mil    3906.85mil  T        180.00 NFE31PT222Z1E9_6A
+F101       NFE31P            910mil   3516.851mil        910mil    3516.85mil        910mil   3457.796mil  T         90.00 NFE31PT222Z1E9_6A
+F102       NFM21C       3499.977mil   3446.842mil       3500mil    3446.85mil   3541.316mil   3446.842mil  T        180.00 NFM21CC223R1H3_1A1
+F103       NFM21C       3579.977mil   3246.842mil       3580mil    3246.85mil   3621.316mil   3246.842mil  T        180.00 NFM21CC223R1H3_1A1
+F104       NFM21C        659.472mil   1348.434mil    659.449mil   1348.425mil    618.134mil   1348.434mil  T        360.00 NFM21CC223R1H3_1A1
+F105       NFM21C       3579.977mil   3056.842mil       3580mil    3056.85mil   3621.316mil   3056.842mil  T        180.00 NFM21CC223R1H3_1A1
+F106       NFM21C       3579.977mil   2856.842mil       3580mil    2856.85mil   3621.316mil   2856.842mil  T        180.00 NFM21CC223R1H3_1A1
+F107       NFM21C       3579.977mil   2656.842mil       3580mil    2656.85mil   3621.316mil   2656.842mil  T        180.00 NFM21CC223R1H3_1A1
+F108       NFM21C       3579.977mil   2456.842mil       3580mil    2456.85mil   3621.316mil   2456.842mil  T        180.00 NFM21CC223R1H3_1A1
+F109       NFM21C       3499.977mil   1556.842mil       3500mil    1556.85mil   3541.316mil   1556.842mil  T        180.00 NFM21CC223R1H3_1A1
+F110       NFM21C       3584.017mil   1346.842mil    3584.04mil    1346.85mil   3625.356mil   1346.842mil  T        180.00 NFM21CC223R1H3_1A1
+F111       NFM21C       3584.017mil   1166.842mil    3584.04mil    1166.85mil   3625.356mil   1166.842mil  T        180.00 NFM21CC223R1H3_1A1
+F112       NFM21C       3584.977mil    961.842mil       3585mil     961.85mil   3626.316mil    961.842mil  T        180.00 NFM21CC223R1H3_1A1
+F113       NFM21C       3584.977mil    766.842mil       3585mil     766.85mil   3626.316mil    766.842mil  T        180.00 NFM21CC223R1H3_1A1
+F114       NFM21C       3584.977mil    561.842mil       3585mil     561.85mil   3626.316mil    561.842mil  T        180.00 NFM21CC223R1H3_1A1
+F116       NFM21C       1269.677mil   3503.961mil   1269.685mil   3503.937mil   1269.678mil   3462.622mil  T         90.00 *         
+F117       NFM21C       1466.544mil   3425.174mil   1466.535mil   3425.197mil   1466.544mil   3466.512mil  T        270.00 *         
+F118       NFM21C       1663.378mil   3425.221mil   1663.386mil   3425.197mil   1663.378mil   3383.882mil  T         90.00 *         
+F119       0805         1569.505mil   3420.495mil       1570mil       3420mil   1569.505mil   3465.495mil  T        270.00 BK2125HS601-T 600R@100MHZ
+F120       NFM21C        1958.67mil   3503.914mil   1958.661mil   3503.937mil    1958.67mil   3545.252mil  T        270.00 *         
+F121       0805         2039.504mil   3507.346mil       2040mil    3506.85mil   2039.504mil   3552.346mil  T        270.00 BK2125HS601-T 600R@100MHZ
+F122       0805         1909.944mil   3936.512mil   1909.449mil   3937.008mil   1909.944mil   3891.512mil  T         90.00 BK2125HS601-T 600R@100MHZ
+F123       NFM21C       2253.945mil   3503.914mil   2253.937mil   3503.937mil   2253.944mil   3545.252mil  T        270.00 *         
+LED200     LED_3M       1260.008mil    1465.26mil   1259.842mil   1515.748mil   1260.008mil    1415.26mil  T        270.00 LED GRÜN 3MM
+P100       BOURNS3314J       3030mil    2536.85mil       3030mil    2536.85mil     2952.5mil    2491.85mil  T        270.00 5K 20% 0.25W
+P101       BOURNS3314J       3070mil     696.85mil       3070mil     696.85mil       3115mil     619.35mil  T        360.00 5K 20% 0.25W
+P102       BOURNS3314J        830mil    1296.85mil        830mil    1296.85mil        875mil    1219.35mil  T        360.00 10K 20% 0.25W
+Q200       XTAL-SS3      2028.98mil   3307.582mil   2125.984mil   3307.087mil    2126.48mil   3307.582mil  T        180.00 SMT4.0MHz 
+R100       1206_REFL    3061.016mil   3159.442mil   3061.024mil   3159.449mil   3119.516mil   3159.442mil  T        180.00 390R 1%   
+R101       1206_REFL    3020.007mil   1286.859mil       3020mil    1286.85mil   2961.507mil   1286.859mil  T        360.00 390R 1%   
+R102       1206_REFL    3179.126mil   2903.552mil   3179.134mil   2903.543mil   3179.126mil   2845.052mil  T         90.00 220R 1%   
+R103       1206_REFL    3229.991mil   1026.858mil       3230mil    1026.85mil   3229.991mil    968.358mil  T         90.00 220R 1%   
+R104       1206_REFL    3300.008mil   3256.859mil       3300mil    3256.85mil   3241.508mil   3256.859mil  T        360.00 0R0       
+R105       1206_REFL    3229.992mil   1384.638mil       3230mil   1384.646mil   3288.492mil   1384.638mil  T        180.00 0R0       
+R106       1206_REFL    3375.992mil   2903.536mil   3375.984mil   2903.543mil   3375.992mil   2962.036mil  T        270.00 6R8 5%    
+R107       1206_REFL    3375.992mil   2696.842mil   3375.984mil    2696.85mil   3375.992mil   2755.342mil  T        270.00 6R8 5%    
+R108       1206_REFL     3426.15mil   1023.456mil   3426.142mil   1023.465mil    3426.15mil   1081.956mil  T        270.00 6R8 5%    
+R109       1206_REFL     3426.15mil    816.764mil   3426.142mil    816.772mil    3426.15mil    875.264mil  T        270.00 6R8 5%    
+R110       0805_REFL     935.048mil   1476.386mil    935.039mil   1476.378mil    897.048mil   1476.386mil  T        360.00 10K 1%    
+R111       0805_REFL     935.048mil   1663.394mil    935.039mil   1663.386mil    897.048mil   1663.394mil  T        360.00 10K 1%    
+R112       0805_REFL    1119.992mil    696.858mil       1120mil     696.85mil   1119.992mil    658.858mil  T         90.00 10K 1%    
+R113       0805_REFL    1339.992mil   1624.638mil       1340mil   1624.646mil   1377.992mil   1624.638mil  T        180.00 680R 1%   
+R114       1206_REFL    1060.008mil   1226.858mil       1060mil    1226.85mil   1001.508mil   1226.858mil  T        360.00 680R 1%   
+R115       0805_REFL    1040.008mil   1325.007mil       1040mil       1325mil   1002.008mil   1325.007mil  T        360.00 2K2 1%    
+R116       2512          829.992mil    746.844mil        830mil     746.85mil    940.228mil    746.844mil  T        180.00 0R0 5%    
+R200       0805_REFL    2259.992mil   1684.654mil       2260mil   1684.646mil   2259.992mil   1646.654mil  T         90.00 10K 1%    
+R201       0805_REFL    2169.992mil   1684.654mil       2170mil   1684.646mil   2169.992mil   1646.654mil  T         90.00 10K 1%    
+R202       0805_REFL    2169.992mil   2134.654mil       2170mil   2134.646mil   2169.992mil   2096.654mil  T         90.00 10K 1%    
+R207       0805_REFL    2530.008mil   2014.654mil       2530mil   2014.646mil   2492.008mil   2014.654mil  T        360.00 470R 1%   
+R208       0805_REFL    2360.008mil   2424.024mil       2360mil   2424.016mil   2322.008mil   2424.024mil  T        360.00 470R 1%   
+R209       0805_REFL    1519.992mil   2630.007mil       1520mil       2630mil   1519.992mil   2592.007mil  T         90.00 470R 1%   
+R213       0805_REFL    2169.992mil   1524.654mil       2170mil   1524.646mil   2169.992mil   1486.654mil  T         90.00 100R 1%   
+R214       0805_REFL    1919.992mil   3084.024mil       1920mil   3084.016mil   1919.992mil   3046.024mil  T         90.00 100R 1%   
+R215       0805_REFL    2389.992mil   2834.008mil       2390mil   2834.016mil   2427.992mil   2834.008mil  T        180.00 100R 1%   
+R216       0805_REFL    1394.992mil   2934.008mil       1395mil   2934.016mil   1432.992mil   2934.008mil  T        180.00 100R 1%   
+R217       0805_REFL    1394.992mil   2844.008mil       1395mil   2844.016mil   1432.992mil   2844.008mil  T        180.00 100R 1%   
+R218       0805_REFL    2429.992mil   2694.024mil       2430mil   2694.016mil   2429.992mil   2656.024mil  T         90.00 100R 1%   
+R223       0805_REFL    2349.992mil   1524.654mil       2350mil   1524.646mil   2349.992mil   1486.654mil  T         90.00 100K 1%   
+R224       0805_REFL    2389.992mil   2924.008mil       2390mil   2924.016mil   2427.992mil   2924.008mil  T        180.00 22K 1%    
+R225       0805_REFL    1660.008mil   3126.858mil       1660mil    3126.85mil   1622.008mil   3126.858mil  T        360.00 100R      
+R226       0805_REFL    1660.008mil   3034.024mil       1660mil   3034.016mil   1622.008mil   3034.024mil  T        360.00 100R      
+R227       0805_REFL    1620.008mil   2936.858mil       1620mil    2936.85mil   1582.008mil   2936.858mil  T        360.00 100R      
+R229       0805_REFL    2079.992mil   1934.654mil       2080mil   1934.646mil   2079.992mil   1896.654mil  T         90.00 1K2 1%    
+R236       0805_REFL    2079.992mil   1764.654mil       2080mil   1764.646mil   2079.992mil   1726.654mil  T         90.00 2K4 5%    
+R237       0805_REFL    2210.008mil   1904.654mil       2210mil   1904.646mil   2172.008mil   1904.654mil  T        360.00 2K4 5%    
+R241       0805_REFL    1394.992mil   2754.008mil       1395mil   2754.016mil   1432.992mil   2754.008mil  T        180.00 *3K3 1%   
+R242       0805_REFL    1394.992mil   2479.008mil       1395mil   2479.016mil   1432.992mil   2479.008mil  T        180.00 *3K3 1%   
+RV100      0805_REFL    1460.008mil   3964.638mil       1460mil   3964.646mil   1460.008mil   4002.638mil  T        270.00 VC080514A300
+RV101      0805_REFL    1369.992mil   3526.858mil       1370mil    3526.85mil   1369.992mil   3488.858mil  T         90.00 VC080514A300
+RV102      0805_REFL    2109.992mil   3964.654mil       2110mil   3964.646mil   2109.992mil   3926.654mil  T         90.00 VC080514A300
+RV103      0805_REFL    1870.086mil   3523.614mil   1870.079mil   3523.622mil   1870.086mil   3561.614mil  T        270.00 VC080514A300
+RV104      0805_REFL     3622.04mil   3149.598mil   3622.047mil   3149.606mil    3660.04mil   3149.598mil  T        180.00 VC080514A300
+RV105      0805_REFL     3622.04mil   2952.748mil   3622.047mil   2952.756mil    3660.04mil   2952.748mil  T        180.00 VC080514A300
+RV106      0805_REFL     3622.04mil   2755.898mil   3622.047mil   2755.905mil    3660.04mil   2755.898mil  T        180.00 VC080514A300
+RV107      0805_REFL     3622.04mil   2559.048mil   3622.047mil   2559.055mil    3660.04mil   2559.048mil  T        180.00 VC080514A300
+RV108      0805_REFL     3622.04mil   2352.354mil   3622.047mil   2352.362mil    3660.04mil   2352.354mil  T        180.00 VC080514A300
+RV109      0805_REFL     3622.04mil   1259.834mil   3622.047mil   1259.843mil    3660.04mil   1259.834mil  T        180.00 VC080514A300
+RV110      0805_REFL     3622.04mil   1062.984mil   3622.047mil   1062.992mil    3660.04mil   1062.984mil  T        180.00 VC080514A300
+RV111      0805_REFL     3622.04mil    866.134mil   3622.047mil    866.142mil    3660.04mil    866.134mil  T        180.00 VC080514A300
+RV112      0805_REFL     3622.04mil    669.284mil   3622.047mil    669.291mil    3660.04mil    669.284mil  T        180.00 VC080514A300
+RV113      0805_REFL     3622.04mil    472.434mil   3622.047mil    472.441mil    3660.04mil    472.434mil  T        180.00 VC080514A300
+U100       OPTO1        3010.008mil   2856.842mil       3010mil    2856.85mil   3060.008mil   2994.342mil  T        270.00 PC357NT   
+U101       OPTO1        3050.008mil   1036.842mil       3050mil    1036.85mil   3100.008mil   1174.342mil  T        270.00 PC357NT   
+U200       SSOP-28      1977.566mil   2824.796mil   1977.559mil   2824.803mil   2143.966mil   2954.796mil  T        270.00 PIC16F872 
+X100       MC1,5/3-G-3,81     314.96mil   3826.378mil    314.961mil   3976.378mil     314.96mil   3976.378mil  T        270.00 MC1.5/3-G1-3.81
+X101       KK6410-10A       1970mil     846.85mil       1970mil     396.85mil       1970mil     396.85mil  T         90.00 KK6410-10A
+X104       DB25RA/F      442.126mil   1815.418mil    492.126mil   1161.417mil    492.126mil   1161.418mil  T         90.00 DB25F-XXX 
+X105       KK6410-05A    2814.96mil   2837.796mil   2814.961mil   2637.795mil    2814.96mil   2637.796mil  T         90.00 KK6410-05A
+X106       KK6410-05A       2560mil     596.85mil       2560mil     796.85mil       2560mil     796.85mil  T        270.00 KK6410-05A
+X107       KK6410-05A       2860mil     916.85mil       2860mil     716.85mil       2860mil     716.85mil  T         90.00 KK6410-05A
+X200       KK6410-10A       1380mil     846.85mil       1380mil     396.85mil       1380mil     396.85mil  T         90.00 KK6410-10A
+XIA100     KK6410-03A        720mil    1016.85mil        720mil     916.85mil        720mil     916.85mil  T         90.00 KK-3POL   
+XIA101     KK6410-03A        720mil    1986.85mil        720mil    1886.85mil        720mil    1886.85mil  T         90.00 KK-3POL   
+XICD200    B6B-ZR           2580mil   2716.378mil       2580mil   2864.016mil       2580mil   2864.016mil  T        270.00 CONS-ICD-B6B-ZR
+XP100      BIGPAD       3779.528mil   2047.244mil   3779.528mil   2047.244mil   3779.528mil   2047.244mil  T        180.00 A1        
+XP101      BIGPAD       3779.528mil   3937.008mil   3779.528mil   3937.008mil   3779.528mil   3937.008mil  T        180.00 A1        
+XP102      BIGPAD       3779.528mil   3740.158mil   3779.528mil   3740.157mil   3779.528mil   3740.158mil  T        180.00 B1        
+XP103      BIGPAD       3779.528mil   1850.394mil   3779.528mil   1850.394mil   3779.528mil   1850.394mil  T        180.00 B1        
+XP104      BIGPAD       3779.528mil   3543.308mil   3779.528mil   3543.307mil   3779.528mil   3543.308mil  T        180.00 C1        
+XP105      BIGPAD       3779.528mil   1653.544mil   3779.528mil   1653.543mil   3779.528mil   1653.544mil  T        180.00 C1        
+XP106      BIGPAD       3779.528mil   3346.456mil   3779.528mil   3346.457mil   3779.528mil   3346.456mil  T        180.00 D1        
+XP107      BIGPAD       3779.528mil   1456.694mil   3779.528mil   1456.693mil   3779.528mil   1456.694mil  T        180.00 D1        
+XP108      BIGPAD       3779.528mil   3149.606mil   3779.528mil   3149.606mil   3779.528mil   3149.606mil  T        180.00 H1        
+XP109      BIGPAD       3779.528mil   1259.842mil   3779.528mil   1259.843mil   3779.528mil   1259.842mil  T        180.00 H1        
+XP110      BIGPAD       3779.528mil   2952.756mil   3779.528mil   2952.756mil   3779.528mil   2952.756mil  T        180.00 K1        
+XP111      BIGPAD       3779.528mil   1062.992mil   3779.528mil   1062.992mil   3779.528mil   1062.992mil  T        180.00 K1        
+XP112      BIGPAD       3779.528mil   2755.906mil   3779.528mil   2755.905mil   3779.528mil   2755.906mil  T        180.00 S1        
+XP113      BIGPAD       3779.528mil    866.142mil   3779.528mil    866.142mil   3779.528mil    866.142mil  T        180.00 S1        
+XP114      BIGPAD       3779.528mil   2559.056mil   3779.528mil   2559.055mil   3779.528mil   2559.056mil  T        180.00 T1        
+XP115      BIGPAD       3779.528mil    669.292mil   3779.528mil    669.291mil   3779.528mil    669.292mil  T        180.00 T1        
+XP116      BIGPAD       3779.528mil   2362.206mil   3779.528mil   2362.205mil   3779.528mil   2362.206mil  T         90.00 U1        
+XP117      BIGPAD       3779.528mil    472.442mil   3779.528mil    472.441mil   3779.528mil    472.442mil  T        270.00 U1        
+XST200     B6B-ZR           1220mil   2706.378mil       1220mil   2854.016mil       1220mil   2854.016mil  T        270.00 B6B-ZR    
+X201       KK6410-10A       2260mil     846.85mil       2260mil     396.85mil       2260mil     396.85mil  T         90.00 KK6410-10A
+X102       KK6410-10A       1670mil     846.85mil       1670mil     396.85mil       1670mil     396.85mil  T         90.00 KK6410-10A
+U201       SO-8         3449.504mil    2034.15mil       3450mil   2034.646mil   3339.504mil    2109.15mil  T        360.00 LT1763CS8-ADJ
+T203       SOT-23_MOS   2839.992mil   1934.638mil       2840mil   1934.646mil   2877.492mil   1974.638mil  T        180.00 BSS138    
+T202       SOT-23_MOS   2979.992mil   1929.992mil       2980mil       1930mil   2942.492mil   1969.992mil  T        180.00 BSS138    
+T201       SOT-23_MOS   2910.008mil   1604.638mil       2910mil   1604.646mil   2870.008mil   1642.138mil  T        270.00 BSS138    
+T200       SOT-23_MOS_REFL       3410mil   1844.896mil       3410mil   1844.646mil       3410mil   1884.146mil  T          0.00 FDV304P   
+R253       1206_REFL    2509.992mil   1914.638mil       2510mil   1914.646mil   2568.492mil   1914.638mil  T        180.00 0R0       
+R251       0805_REFL    2970.008mil   1724.654mil       2970mil   1724.646mil   2932.008mil   1724.654mil  T        360.00 43R 5%    
+R250       0805_REFL    2970.008mil   1814.654mil       2970mil   1814.646mil   2932.008mil   1814.654mil  T        360.00 27R 1%    
+R249       0805_REFL    3130.008mil   1924.654mil       3130mil   1924.646mil   3092.008mil   1924.654mil  T        360.00 22R 1%    
+R248       0805_REFL    3060.008mil   2204.654mil       3060mil   2204.646mil   3022.008mil   2204.654mil  T        360.00 15R 5%    
+R247       0805_REFL    3130.008mil   1814.654mil       3130mil   1814.646mil   3092.008mil   1814.654mil  T        360.00 430R 1%   
+R246       0805_REFL    3130.008mil   2014.654mil       3130mil   2014.646mil   3092.008mil   2014.654mil  T        360.00 240R 1%   
+R245       0805_REFL    3659.992mil   1994.654mil       3660mil   1994.646mil   3659.992mil   1956.654mil  T         90.00 1K 1%     
+R244       0805_REFL    3390.008mil   1720.008mil       3390mil       1720mil   3352.008mil   1720.008mil  T        360.00 2K2 1%    
+R243       0805_REFL    3230.008mil   2206.858mil       3230mil    2206.85mil   3192.008mil   2206.858mil  T        360.00 1K5 1%    
+R240       0805_REFL    2610.008mil   1204.654mil       2610mil   1204.646mil   2572.008mil   1204.654mil  T        360.00 2K4 5%    
+R239       0805_REFL    1950.008mil   1904.654mil       1950mil   1904.646mil   1912.008mil   1904.654mil  T        360.00 2K4 5%    
+R238       0805_REFL    1690.008mil   1724.654mil       1690mil   1724.646mil   1652.008mil   1724.654mil  T        360.00 2K4 5%    
+R235       0805_REFL    2480.008mil   1184.638mil       2480mil   1184.646mil   2480.008mil   1222.638mil  T        270.00 1K2 1%    
+R234       0805_REFL    2569.992mil   1344.654mil       2570mil   1344.646mil   2569.992mil   1306.654mil  T         90.00 1K2 1%    
+R233       0805_REFL    1949.992mil   1724.638mil       1950mil   1724.646mil   1987.992mil   1724.638mil  T        180.00 1K2 1%    
+R232       0805_REFL    1950.008mil   1994.654mil       1950mil   1994.646mil   1912.008mil   1994.654mil  T        360.00 1K2 1%    
+R231       0805_REFL    1660.008mil   1594.638mil       1660mil   1594.646mil   1660.008mil   1632.638mil  T        270.00 1K2 1%    
+R230       0805_REFL    1559.992mil   1854.654mil       1560mil   1854.646mil   1559.992mil   1816.654mil  T         90.00 1K2 1%    
+R222       0805_REFL    2389.992mil   2564.008mil       2390mil   2564.016mil   2427.992mil   2564.008mil  T        180.00 100R 1%   
+R221       0805_REFL    1394.992mil   2569.008mil       1395mil   2569.016mil   1432.992mil   2569.008mil  T        180.00 100R 1%   
+R220       0805_REFL    1394.992mil   2664.008mil       1395mil   2664.016mil   1432.992mil   2664.008mil  T        180.00 100R 1%   
+R219       0805_REFL    2349.992mil   2694.024mil       2350mil   2694.016mil   2349.992mil   2656.024mil  T         90.00 100R 1%   
+R212       0805_REFL    2530.008mil   1804.654mil       2530mil   1804.646mil   2492.008mil   1804.654mil  T        360.00 470R 1%   
+R211       0805_REFL    3130.008mil   2104.654mil       3130mil   2104.646mil   3092.008mil   2104.654mil  T        360.00 470R 1%   
+R206       0805_REFL    3130.008mil   1724.654mil       3130mil   1724.646mil   3092.008mil   1724.654mil  T        360.00 680R 1%   
+R205       0805_REFL    2659.992mil   1344.654mil       2660mil   1344.646mil   2659.992mil   1306.654mil  T         90.00 10K 1%    
+R204       0805_REFL    1849.992mil   2094.638mil       1850mil   2094.646mil   1887.992mil   2094.638mil  T        180.00 10K 1%    
+R203       0805_REFL    1529.992mil   1729.992mil       1530mil       1730mil   1567.992mil   1729.992mil  T        180.00 10K 1%    
+E603       D            2700.008mil   1864.638mil       2700mil   1864.646mil   2700.008mil   1985.138mil  T        270.00 100UF/16V( L ESR )
+E206       C            3459.992mil   2224.638mil       3460mil   2224.646mil   3554.992mil   2224.638mil  T        180.00 10UF/25V(LESR)
+E205       B            2525.008mil   1695.008mil       2525mil       1695mil   2462.008mil   1695.008mil  T        360.00 4.7UF/10V 
+DZ215      1206-D_REFL   2750.008mil   1324.638mil       2750mil   1324.646mil   2750.008mil   1383.138mil  T        270.00 ZMM2.4    
+DZ214      1206-D_REFL   2590.008mil   1044.638mil       2590mil   1044.646mil   2590.008mil   1103.138mil  T        270.00 ZMM2.4    
+DZ213      1206-D_REFL   1819.992mil   1784.654mil       1820mil   1784.646mil   1819.992mil   1726.154mil  T         90.00 ZMM2.4    
+DZ212      1206-D_REFL   1860.008mil   1574.638mil       1860mil   1574.646mil   1860.008mil   1633.138mil  T        270.00 ZMM2.4    
+DZ211      1206-D_REFL   1670.008mil   1954.638mil       1670mil   1954.646mil   1670.008mil   2013.138mil  T        270.00 ZMM2.4    
+DZ210      1206-D_REFL   1760.008mil   1574.638mil       1760mil   1574.646mil   1760.008mil   1633.138mil  T        270.00 ZMM2.4    
+DZ206      1206-D_REFL   2529.992mil   1574.638mil       2530mil   1574.646mil   2588.492mil   1574.638mil  T        180.00 ZMM3.3    
+DZ201      1206-D_REFL   3270.008mil   1614.654mil       3270mil   1614.646mil   3211.508mil   1614.654mil  T        360.00 ZMM5.1    
+DS209      SOT-23       2710.496mil    1614.15mil       2710mil   1614.646mil   2750.496mil    1576.65mil  T         90.00 BAS70-04  
+DS208      SOT-23       1869.504mil    2214.15mil       1870mil   2214.646mil   1832.004mil    2174.15mil  T          0.00 BAS70-04  
+DS207      SOT-23       1699.504mil   2119.504mil       1700mil       2120mil   1662.004mil   2079.504mil  T          0.00 BAS70-04  
+DS204      1206-D_REFL   2530.008mil   1474.654mil       2530mil   1474.646mil   2471.508mil   1474.654mil  T        360.00 BAS85     
+DS203      1206-D_REFL   1980.008mil   2144.638mil       1980mil   2144.646mil   1980.008mil   2203.138mil  T        270.00 BAS85     
+C619       0805_REFL    3250.008mil   2064.638mil       3250mil   2064.646mil   3250.008mil   2102.638mil  T        270.00 100NF/50V 
+C610       0805_REFL    2730.008mil   2094.654mil       2730mil   2094.646mil   2692.008mil   2094.654mil  T        360.00 10NF/50V  
+C211       0805_REFL    2710.008mil   1474.654mil       2710mil   1474.646mil   2672.008mil   1474.654mil  T        360.00 10NF/50V  
+C210       0805_REFL    1820.008mil   1964.638mil       1820mil   1964.646mil   1820.008mil   2002.638mil  T        270.00 10NF/50V  
+C209       0805_REFL    1530.008mil   1640.008mil       1530mil       1640mil   1492.008mil   1640.008mil  T        360.00 10NF/50V  
+C206       0805_REFL    2479.992mil   1344.654mil       2480mil   1344.646mil   2479.992mil   1306.654mil  T         90.00 100NF/50V 
+C205       0805_REFL    1950.008mil   1814.654mil       1950mil   1814.646mil   1912.008mil   1814.654mil  T        360.00 100NF/50V 
+C204       0805_REFL    3659.992mil   2214.654mil       3660mil   2214.646mil   3659.992mil   2176.654mil  T         90.00 100NF/50V 
+C203       0805_REFL    1690.008mil   1814.654mil       1690mil   1814.646mil   1652.008mil   1814.654mil  T        360.00 100NF/50V 
+F115       NFM21C       1179.992mil   3506.874mil       1180mil    3506.85mil   1179.992mil   3465.536mil  T         90.00 *         
+R252       0805_REFL     688.968mil    1712.59mil    688.976mil   1712.599mil    726.968mil    1712.59mil  T        180.00 0R00 1%   
+R254       0805_REFL    2480.308mil   1013.788mil   2480.315mil    1013.78mil   2480.308mil    975.788mil  T         90.00 0R00 1%   
+XP200      BIGPAD           1670mil     196.85mil       1670mil     196.85mil       1670mil     196.85mil  T          0.00 BAT_UB+   
+C116       0805_REFL     970.008mil   1016.858mil        970mil    1016.85mil    932.008mil   1016.858mil  T        360.00 100NF/50V 
+C117       0805_REFL     940.008mil    586.858mil        940mil     586.85mil    902.008mil    586.858mil  T        360.00 100NF/50V 
+C118       0805_REFL    1380.008mil    196.842mil       1380mil     196.85mil   1380.008mil    234.842mil  T        270.00 100NF/50V 
+C215       0805_REFL     489.992mil   3620.009mil        490mil       3620mil    489.992mil   3582.009mil  T         90.00 100NF/50V 
+D100       1206-D_REFL    740.008mil    586.858mil        740mil     586.85mil    681.508mil    586.858mil  T        360.00 LL4148    
+DZ105      1206-D_REFL   1250.008mil    216.842mil       1250mil     216.85mil   1250.008mil    275.342mil  T        270.00 ZMM5.1    
+DZ202      1206-D       2279.504mil   1399.503mil       2280mil       1400mil   2212.004mil   1399.503mil  T        360.00 ZMM4.7    
+F125       NFM21C       1239.992mil   3926.874mil       1240mil    3926.85mil   1239.992mil   3885.536mil  T         90.00 *         
+F126       NFM21C       1089.992mil   3506.874mil       1090mil    3506.85mil   1089.992mil   3465.536mil  T         90.00 *         
+L200       L-WEZB            470mil    3872.52mil        470mil    3976.85mil        470mil    3976.85mil  T        270.00 100UH/0.5AWE
+MP100      LPT50X50     1135.008mil   2105.007mil       1135mil       2105mil   1135.008mil   2105.007mil  T          0.00 MP50      
+R117       0805_REFL    1470.008mil    196.842mil       1470mil     196.85mil   1470.008mil    234.842mil  T        270.00 680R 1%   
+R118       0805_REFL     580.008mil    626.842mil        580mil     626.85mil    580.008mil    664.842mil  T        270.00 2K2 1%    
+R119       0805_REFL     490.008mil    626.842mil        490mil     626.85mil    490.008mil    664.842mil  T        270.00 3K3 1%    
+RL100      REL-DIL51         770mil     316.85mil       1070mil     466.85mil       1070mil     466.85mil  T        180.00 REL-DIL05-1C90-51D
+T100       SOT-23A       359.734mil    626.866mil        360mil     626.85mil    319.734mil    627.366mil  T         90.00 BC846     
+U203       OPTO1        1160.008mil    976.842mil       1160mil     976.85mil   1210.008mil   1114.342mil  T        270.00 PC357NT   
+X202       KK6410-10A       3990mil    3096.85mil       3990mil    3546.85mil       3990mil    3546.85mil  T        270.00 KK6410-10A
+X203       KK6410-10A       3990mil    1206.85mil       3990mil    1656.85mil       3990mil    1656.85mil  T        270.00 KK6410-10A
+XIA102     KK6410-03A        720mil    2356.85mil        720mil    2456.85mil        720mil    2456.85mil  T        270.00 KK-3POL   
+XIA108     KK6410-03A        290mil   3350.001mil        290mil       3450mil        290mil   3450.001mil  T        270.00 KK-3POL   
+X108       IDC6             1180mil    2286.85mil       1130mil    2386.85mil       1130mil    2386.85mil  T        270.00 JUM3X2    
+R228       0805_REFL    1519.992mil   2786.857mil       1520mil    2786.85mil   1519.992mil   2748.857mil  T         90.00 100R      
+C200       0805_REFL    1759.992mil   2476.843mil       1760mil    2476.85mil   1759.992mil   2514.843mil  B        270.00 100NF/50V 
+E201       B            1929.992mil   2486.843mil       1930mil    2486.85mil   1929.992mil   2549.843mil  B        270.00 4.7UF/10V 
+X103       DB25/FSS     1673.229mil   3740.158mil   1673.228mil   3740.157mil    1019.26mil   3795.158mil  B        360.00 DB25/FSS  
+

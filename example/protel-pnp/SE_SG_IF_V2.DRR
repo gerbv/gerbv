@@ -1,0 +1,26 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: SE_SG_IF_V2.PCBDOC   18.04.2005  21:37:32
+---------------------------------------------------------------------------
+
+
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII File : NCDrillOutput.TXT
+EIA File   : NCDrillOutput.DRL
+
+Tool         Hole Size          Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        12mil (0.3048mm)         106              34.32 Inch (871.65 mm)
+T2        16mil (0.4064mm)         86               34.13 Inch (866.93 mm)
+T3        24mil (0.6096mm)         30               16.92 Inch (429.83 mm)
+T4        28mil (0.7112mm)         10               8.45 Inch (214.53 mm)
+T5        31mil (0.7874mm)         72               15.89 Inch (403.64 mm)
+T6        35mil (0.889mm)          87               20.44 Inch (519.13 mm)
+T7        39mil (0.9906mm)         25               12.67 Inch (321.75 mm)
+T8        51mil (1.2954mm)         3                3.99 Inch (101.34 mm)
+T9        118mil (2.9972mm)        6                11.71 Inch (297.52 mm)
+T10       126mil (3.2004mm)        2                2.85 Inch (72.35 mm)
+---------------------------------------------------------------------------
+Totals                             427              161.36 Inch (4098.67 mm)
+
+Total Processing Time (hh:mm:ss) : 00:00:01

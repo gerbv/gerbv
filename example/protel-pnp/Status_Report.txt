@@ -1,0 +1,11 @@
+Output: Generates pick and place files
+Type  : Pick Place
+From  : Project [Free Documents]
+   Generated File[Pick Place for SE_SG_IF_V2.txt]
+   Generated File[Pick Place for SE_SG_IF_V2.csv]
+
+
+Files Generated   : 2
+Documents Printed : 0
+
+Finished Output Generation At 21:39:29 On 18.04.2005

@@ -1,0 +1,9 @@
+DRC Rules Export File for PCB: C:\test\Gerbertest\SE_SG_IF_V2.PCBDOC
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansion_VIA|Scope=Board|Minimum=-60,00
+RuleKind=Clearance|RuleName=Clearance_GND|Scope=Board|Minimum=16,00
+RuleKind=Width|RuleName=Width_pwr|Scope=Board|Minimum=13,00
+RuleKind=Width|RuleName=Width|Scope=Board|Minimum=8,00
+RuleKind=Clearance|RuleName=Clearance|Scope=Board|Minimum=8,00
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansion|Scope=Board|Minimum=2,00
+RuleKind=Clearance|RuleName=Clearance_U200|Scope=Board|Minimum=4,00
+RuleKind=ShortCircuit|RuleName=ShortCircuit|Scope=Board|Allowed=0
