@@ -104,8 +104,8 @@ png_export(GdkPixmap* imagetosave, char* filename)
 	     * This now allows drawing several layers on top of each other.
 	     * Higher layer numbers have higher priority in the Z-order. 
 	     */
-            screen.transf->offset[0] = -dmin_x;
-            screen.transf->offset[1] = dmax_y;
+/*              screen.transf->offset[0] = -dmin_x; */
+/*              screen.transf->offset[1] = dmax_y; */
             
 	    for(i = 0; i < MAX_FILES; i++) {
 		if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
