@@ -1,3 +1,9 @@
+2005-09-28 Dan McMahill       
+
+        * src/drill.c: Remove an lval typecast.  Not only does this get
+	  gerbv to compile with gcc4 and other non-gcc compilers, it was no
+	  longer needed as the types involved were all doubles anyway.
+
 -- Release 1.0.1 --
 	
 2005-02-15  Stefan Petersen  <spe@siouxsie.umunet.org>
