@@ -217,8 +217,8 @@ parse_drillfile(gerb_file_t *fd)
 	    /* KLUDGE. This function isn't allowed to return anything
 	       but inches */
 	    if(state->unit == MM) {
-		(double)curr_net->start_x /= 25.4;
-		(double)curr_net->start_y /= 25.4;
+		curr_net->start_x /= 25.4;
+		curr_net->start_y /= 25.4;
 		/* KLUDGE. All images, regardless of input format,
 		   are returned in INCH format */
 		curr_net->unit = INCH;
