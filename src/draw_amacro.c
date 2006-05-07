@@ -48,21 +48,21 @@
 typedef struct {
     double *stack;
     int sp;
-} stack_t;
+} macro_stack_t;
 
 
-static stack_t *
+static macro_stack_t *
 new_stack(unsigned int nuf_push)
 {
     const int extra_stack_size = 10;
-    stack_t *s;
+    macro_stack_t *s;
 
-    s = (stack_t *)malloc(sizeof(stack_t));
+    s = (macro_stack_t *)malloc(sizeof(macro_stack_t));
     if (!s) {
 	free(s);
 	return NULL;
     }
-    memset(s, 0, sizeof(stack_t));
+    memset(s, 0, sizeof(macro_stack_t));
 
     s->stack = (double *)malloc(sizeof(double) * (nuf_push + extra_stack_size));
     if (!s->stack) {
@@ -78,7 +78,7 @@ new_stack(unsigned int nuf_push)
 
 
 static void
-free_stack(stack_t *s)
+free_stack(macro_stack_t *s)
 {
     if (s && s->stack)
 	free(s->stack);
@@ -91,7 +91,7 @@ free_stack(stack_t *s)
 
 
 static void
-push(stack_t *s, double val)
+push(macro_stack_t *s, double val)
 {
     s->stack[s->sp++] = val;
     return;
@@ -99,7 +99,7 @@ push(stack_t *s, double val)
 
 
 static double
-pop(stack_t *s)
+pop(macro_stack_t *s)
 {
     return s->stack[--s->sp];
 } /* pop */
@@ -140,8 +140,8 @@ rotate_point(GdkPoint point, int angle)
  * Doesn't handle explicit x,y yet
  */
 static void
-gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
-		 gint x, gint y)
+gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
+		 int scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int diameter_idx = 1;
@@ -185,8 +185,8 @@ gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
  *  - how thick is the outline?
  */
 static void
-gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
-		 gint x, gint y)
+gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
+		 int scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int nuf_points_idx = 1;
@@ -252,8 +252,8 @@ gerbv_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
  * Doesn't handle explicit x,y yet
  */
 static void
-gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
-		 gint x, gint y)
+gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
+		 int scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int nuf_vertices_idx = 1;
@@ -308,8 +308,8 @@ gerbv_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
  *    center of line of circle?
  */
 static void
-gerbv_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
-		 gint x, gint y)
+gerbv_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
+		 int scale, gint x, gint y)
 {
     const int outside_dia_idx = 2;
     const int ci_thickness_idx = 3;
@@ -385,8 +385,8 @@ gerbv_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
 
 
 static void
-gerbv_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
-		 gint x, gint y)
+gerbv_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
+		 int scale, gint x, gint y)
 {
     const int outside_dia_idx = 2;
     const int inside_dia_idx = 3;
@@ -459,8 +459,8 @@ gerbv_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
  * Doesn't handle and explicit x,y yet
  */
 static void
-gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
-		  gint x, gint y)
+gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
+		  int scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int linewidth_idx = 1;
@@ -514,8 +514,8 @@ gerbv_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
  * Doesn't handle explicit x,y yet
  */
 static void
-gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
-		  gint x, gint y)
+gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
+		  int scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int width_idx = 1;
@@ -569,8 +569,8 @@ gerbv_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
  * Doesn't handle explicit x,y yet
  */
 static void
-gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, stack_t *s, int scale,
-		  gint x, gint y)
+gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
+		  int scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int width_idx = 1;
@@ -627,7 +627,7 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		  instruction_t *program, unsigned int nuf_push,
 		  double *parameters, gerb_transf_t *transf, gint x, gint y)
 {
-    stack_t *s = new_stack(nuf_push);
+    macro_stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
     int handled = 1;
     
