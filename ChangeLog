@@ -1,5 +1,10 @@
 2006-05-07  Stefan Petersen  <spe@localhost.localdomain>
 
+	* src/draw_amacro.c: Daniel Mack - zonque submitted
+	  as a patch (1350283) (with no file attached though) that 
+	  renaming stack_t to macro_stack_t would make gerbv build
+	  on darwin.
+
 	* configure.in: Removed GTK+ 1.2 support and builds 
 	  by default for GTK+ 2.x.
 
