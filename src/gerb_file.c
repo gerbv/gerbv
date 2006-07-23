@@ -65,15 +65,15 @@ gerb_fopen(char *filename)
     fd->fileno = fileno(fd->fd);
     fstat(fd->fileno, &statinfo);
     if (!S_ISREG(statinfo.st_mode)) {
-	errno = EISDIR;
 	fclose(fd->fd);
 	free(fd);
+	errno = EISDIR;
 	return NULL;
     }
     if ((int)statinfo.st_size == 0) {
-	errno = EIO; /* More compatible with the world outside Linux */
 	fclose(fd->fd);
 	free(fd);
+	errno = EIO; /* More compatible with the world outside Linux */
 	return NULL;
     }
     fd->datalen = (int)statinfo.st_size;
@@ -103,15 +103,15 @@ gerb_fopen(char *filename)
     fd->fileno = fileno(fd->fd);
     fstat(fd->fileno, &statinfo);
     if (!S_ISREG(statinfo.st_mode)) {
-	errno = EISDIR;
 	fclose(fd->fd);
 	free(fd);
+	errno = EISDIR;
 	return NULL;
     }
     if ((int)statinfo.st_size == 0) {
-	errno = EIO; /* More compatible with the world outside Linux */
 	fclose(fd->fd);
 	free(fd);
+	errno = EIO; /* More compatible with the world outside Linux */
 	return NULL;
     }
     fd->datalen = (int)statinfo.st_size;
