@@ -231,6 +231,12 @@ parse_drillfile(gerb_file_t *fd)
 
 	    /* Find min and max of image.
 	       Mustn't forget (again) to add the hole radius */
+
+	    /* Check if aperture is set. Ignore the below instead of
+	       causing SEGV... */
+	    if(image->aperture[state->current_tool] == NULL)
+		break;
+
 	    image->info->min_x =
 		min(image->info->min_x,
 		    (curr_net->start_x -
@@ -269,6 +275,8 @@ parse_drillfile(gerb_file_t *fd)
     }
 
     GERB_COMPILE_ERROR("Warning: File is missing drill End-Of-File\n");
+
+    free(state);
 
     return image;
 } /* parse_drillfile */
@@ -617,7 +625,7 @@ drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
     if ((read[0] == EOF) || (read[1] == EOF))
 	GERB_COMPILE_WARNING("Unexpected EOF found.\n");
 
-    op[0] = read[0], op[1] = read[1], op[3] = 0;
+    op[0] = read[0], op[1] = read[1], op[2] = 0;
  
     if (strncmp(op, "00", 2) == 0) {
 	return DRILL_M_END;
@@ -663,7 +671,7 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
     if ((read[0] == EOF) || (read[1] == EOF))
 	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
 
-    op[0] = read[0], op[1] = read[1], op[3] = 0;
+    op[0] = read[0], op[1] = read[1], op[2] = 0;
 
     if (strncmp(op, "00", 2) == 0) {
 	return DRILL_G_ROUT;

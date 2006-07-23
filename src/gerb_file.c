@@ -42,11 +42,6 @@
 #include "gerb_file.h"
 
 
-
-
-
-
-
 gerb_file_t *
 gerb_fopen(char *filename)
 {
@@ -62,6 +57,7 @@ gerb_fopen(char *filename)
 
     fd->fd = fopen(filename, "r");
     if (fd->fd == NULL) {
+	free(fd);
 	return NULL;
     }
 
@@ -70,10 +66,14 @@ gerb_fopen(char *filename)
     fstat(fd->fileno, &statinfo);
     if (!S_ISREG(statinfo.st_mode)) {
 	errno = EISDIR;
+	fclose(fd->fd);
+	free(fd);
 	return NULL;
     }
     if ((int)statinfo.st_size == 0) {
 	errno = EIO; /* More compatible with the world outside Linux */
+	fclose(fd->fd);
+	free(fd);
 	return NULL;
     }
     fd->datalen = (int)statinfo.st_size;
@@ -93,6 +93,8 @@ gerb_fopen(char *filename)
 
     if (stat(filename, &statinfo)) {
         perror("snarf_file");
+	fclose(fd->fd);
+	free(fd);
         return NULL;
     }
     
@@ -102,10 +104,14 @@ gerb_fopen(char *filename)
     fstat(fd->fileno, &statinfo);
     if (!S_ISREG(statinfo.st_mode)) {
 	errno = EISDIR;
+	fclose(fd->fd);
+	free(fd);
 	return NULL;
     }
     if ((int)statinfo.st_size == 0) {
 	errno = EIO; /* More compatible with the world outside Linux */
+	fclose(fd->fd);
+	free(fd);
 	return NULL;
     }
     fd->datalen = (int)statinfo.st_size;
@@ -115,7 +121,12 @@ gerb_fopen(char *filename)
         free(fd);
         return NULL;
     }
-    fread((void*)fd->data, 1, statinfo.st_size, fd->fd);
+    if (fread((void*)fd->data, 1, statinfo.st_size, fd->fd) == NULL) {
+        fclose(fd->fd);
+	free(fd->data);
+        free(fd);
+	return NULL;
+    }
 #endif
     return fd;
 } /* gerb_fopen */
@@ -125,7 +136,7 @@ int
 gerb_fgetc(gerb_file_t *fd)
 {
 
-    if (fd->ptr > fd->datalen || fd->datalen == 0)
+    if (fd->ptr >= fd->datalen)
 	return EOF;
 
     return (int) fd->data[fd->ptr++];
@@ -138,7 +149,12 @@ gerb_fgetint(gerb_file_t *fd, int *len)
     long int result;
     char *end;
     
+    errno = 0;
     result = strtol(fd->data + fd->ptr, &end, 10);
+    if (errno) {
+	GERB_COMPILE_ERROR("Failed to read integer");
+	return 0;
+    }
 
     if (len) {
 	*len = end - (fd->data + fd->ptr);
@@ -155,8 +171,14 @@ gerb_fgetdouble(gerb_file_t *fd)
 {
     double result;
     char *end;
-    
+
+    errno = 0;    
     result = strtod(fd->data + fd->ptr, &end);
+    if (errno) {
+	GERB_COMPILE_ERROR("Failed to read integer");
+	return 0;
+    }
+
     fd->ptr = end - fd->data;
 
     return result;
@@ -166,11 +188,19 @@ gerb_fgetdouble(gerb_file_t *fd)
 char *
 gerb_fgetstring(gerb_file_t *fd, char term)
 {
-    char *strend;
+    char *strend = NULL;
     char *newstr;
+    char *i, *iend;
     int len;
-    
-    strend = strchr(fd->data + fd->ptr, term);
+
+    iend = fd->data + fd->datalen;
+    for (i = fd->data + fd->ptr; i < iend; i++) {
+	if (*i == term) {
+	    strend = i;
+	    break;
+	}
+    }
+
     if (strend == NULL)
 	return NULL;
 
@@ -236,12 +266,16 @@ gerb_find_file(char *filename, char **paths)
 	    else
 		len = tmp - paths[i] - 1;
 	    env_name = (char *)malloc(len + 1);
+	    if (env_name == NULL)
+		return NULL;
 	    strncpy(env_name, (char *)(paths[i] + 1), len);
 	    env_name[len] = '\0';
 
 	    env_value = getenv(env_name);
 	    if (env_value == NULL) break;
 	    curr_path = (char *)malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
+	    if (curr_path == NULL)
+		return NULL;
 	    strcpy(curr_path, env_value);
 	    strcat(curr_path, &paths[i][len + 1]);
 	    free(env_name);
@@ -253,6 +287,8 @@ gerb_find_file(char *filename, char **paths)
 	 * Build complete path (inc. filename) and check if file exists.
 	 */
 	complete_path = (char *)malloc(strlen(curr_path) + strlen(filename) + 2);
+	if (complete_path == NULL)
+	    return NULL;
 	strcpy(complete_path, curr_path);
 	complete_path[strlen(curr_path)] = path_separator;
 	complete_path[strlen(curr_path) + 1] = '\0';
