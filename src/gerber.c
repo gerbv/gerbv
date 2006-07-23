@@ -514,6 +514,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     gerb_aperture_t *a = NULL;
     amacro_t *tmp_amacro;
     int ano;
+    double scale;
     
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
@@ -649,13 +650,21 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	break;
     case A2I('O','F'): /* Offset */
 	op[0] = gerb_fgetc(fd);
+
+        if (state->unit == MM)
+            scale = 25.4;
+        else
+            scale = 1.0;
+
 	while (op[0] != '*') {
 	    switch (op[0]) {
 	    case 'A' :
 		image->info->offset_a = gerb_fgetdouble(fd);
+		image->info->offset_a_in = image->info->offset_a;
 		break;
 	    case 'B' :
 		image->info->offset_b = gerb_fgetdouble(fd);
+		image->info->offset_b_in = image->info->offset_b;
 		break;
 	    default :
 		GERB_COMPILE_ERROR("Wrong character in offset:%c\n", op[0]);
