@@ -1,3 +1,9 @@
+2006-07-23  Stefan Petersen  <spe@localhost.localdomain>
+
+	* src/drill.c, src/gerb_file.c: Fixed some possible memory
+          leaks and SIGSEGVs pointed out by Wolfgang Wieser
+          (hand patched from #1201900).
+
 2006-05-07  Stefan Petersen  <spe@localhost.localdomain>
 
 	* src/draw_amacro.c: Daniel Mack - zonque submitted

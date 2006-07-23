@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2006 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -37,6 +37,7 @@
 #include <sys/mman.h>
 #include <errno.h>
 
+#include "gerb_error.h"
 #include "gerb_file.h"
 
 gerb_file_t *
@@ -52,6 +53,7 @@ gerb_fopen(char *filename)
 
     fd->fd = fopen(filename, "r");
     if (fd->fd == NULL) {
+	free(fd);
 	return NULL;
     }
 
@@ -59,10 +61,14 @@ gerb_fopen(char *filename)
     fd->fileno = fileno(fd->fd);
     fstat(fd->fileno, &statinfo);
     if (!S_ISREG(statinfo.st_mode)) {
+	fclose(fd->fd);
+	free(fd);
 	errno = EISDIR;
 	return NULL;
     }
     if ((int)statinfo.st_size == 0) {
+	fclose(fd->fd);
+	free(fd);
 	errno = EIO; /* More compatible with the world outside Linux */
 	return NULL;
     }
@@ -83,7 +89,7 @@ int
 gerb_fgetc(gerb_file_t *fd)
 {
 
-    if (fd->ptr > fd->datalen || fd->datalen == 0)
+    if (fd->ptr >= fd->datalen)
 	return EOF;
 
     return (int) fd->data[fd->ptr++];
@@ -96,7 +102,12 @@ gerb_fgetint(gerb_file_t *fd, int *len)
     long int result;
     char *end;
     
+    errno = 0;
     result = strtol(fd->data + fd->ptr, &end, 10);
+    if (errno) {
+	GERB_COMPILE_ERROR("Failed to read integer");
+	return 0;
+    }
 
     if (len) {
 	*len = end - (fd->data + fd->ptr);
@@ -114,7 +125,13 @@ gerb_fgetdouble(gerb_file_t *fd)
     double result;
     char *end;
     
+    errno = 0;
     result = strtod(fd->data + fd->ptr, &end);
+    if (errno) {
+	GERB_COMPILE_ERROR("Failed to read integer");
+	return 0.0;
+    }
+
     fd->ptr = end - fd->data;
 
     return result;
@@ -124,11 +141,19 @@ gerb_fgetdouble(gerb_file_t *fd)
 char *
 gerb_fgetstring(gerb_file_t *fd, char term)
 {
-    char *strend;
+    char *strend = NULL;
     char *newstr;
+    char *i, *iend;
     int len;
     
-    strend = strchr(fd->data + fd->ptr, term);
+    iend = fd->data + fd->datalen;
+    for (i = fd->data + fd->ptr; i < iend; i++) {
+	if (*i == term) {
+	    strend = i;
+	    break;
+	}
+    }
+
     if (strend == NULL)
 	return NULL;
 
