@@ -1,5 +1,9 @@
 2006-07-23  Stefan Petersen  <spe@localhost.localdomain>
 
+	* src/gerb_image.h, src/gerber.c, gerbv.c: Added patch from
+	  extensive (Sourceforge alias) that according to him make
+	  gerbv handles autoscaling of gerber files with mm better.
+
 	* src/drill.c, src/gerb_file.c: Fixed some possible memory 
 	  leaks and SIGSEGVs pointed out by Wolfgang Wieser 
 	  (hand patched from #1201900).

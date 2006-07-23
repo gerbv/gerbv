@@ -102,8 +102,10 @@ typedef struct gerb_image_info {
     double min_y;
     double max_x;
     double max_y;
-    double offset_a;
-    double offset_b;
+    double offset_a;     /* may be inches or mm */
+    double offset_b;     /* may be inches or mm */
+    double offset_a_in;  /* always inches */
+    double offset_b_in;  /* always inches */
     enum encoding_t encoding;
     double scale_factor_A;  /* SF parameters */
     double scale_factor_B;

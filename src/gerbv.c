@@ -1146,17 +1146,17 @@ autoscale(void)
              * Find the biggest image and use as a size reference
              */
 	    screen.gerber_bbox.x1 = MIN(screen.gerber_bbox.x1,
-					screen.file[i]->image->info->min_x+
-					screen.file[i]->image->info->offset_a);
+					screen.file[i]->image->info->min_x +
+					screen.file[i]->image->info->offset_a_in);
 	    screen.gerber_bbox.y1 = MIN(screen.gerber_bbox.y1,
-					screen.file[i]->image->info->min_y+
-					screen.file[i]->image->info->offset_b);
+					screen.file[i]->image->info->min_y +
+					screen.file[i]->image->info->offset_b_in);
 	    screen.gerber_bbox.x2 = MAX(screen.gerber_bbox.x2,
-					screen.file[i]->image->info->max_x+
-					screen.file[i]->image->info->offset_a);
+					screen.file[i]->image->info->max_x +
+					screen.file[i]->image->info->offset_a_in);
 	    screen.gerber_bbox.y2 = MAX(screen.gerber_bbox.y2,
-					screen.file[i]->image->info->max_y+
-					screen.file[i]->image->info->offset_b);
+					screen.file[i]->image->info->max_y +
+					screen.file[i]->image->info->offset_b_in);
         }
     }
 
