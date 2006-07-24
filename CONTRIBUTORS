@@ -12,6 +12,7 @@ Dan McMahill <mcmahill at mtl dot mit dot edu>
  - Some great feedback on the measure tool thing.
  - A patch to allow plus sign on the coordinates in a drill file.
  - The over-all NetBSD and 64-bit guy.
+ - Fixed GCC4 problem that had rotten into the code.
 
 Uwe Bonnes <bon at elektron dot ikp dot physik dot tu-darmstadt dot de>
  - Submitted patches for 'D' flag in Format Statement
