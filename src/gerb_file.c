@@ -220,13 +220,17 @@ gerb_find_file(char *filename, char **paths)
 		len = strlen(paths[i]) - 1;
 	    else
 		len = tmp - paths[i] - 1;
-	    env_name = (char *)malloc(len+1);
+	    env_name = (char *)malloc(len + 1);
+	    if (env_name == NULL)
+		return NULL;
 	    strncpy(env_name, (char *)(paths[i] + 1), len);
 	    env_name[len] = '\0';
 
 	    env_value = getenv(env_name);
 	    if (env_value == NULL) break;
 	    curr_path = (char *)malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
+	    if (curr_path == NULL)
+		return NULL;
 	    strcpy(curr_path, env_value);
 	    strcat(curr_path, &paths[i][len + 1]);
 	    free(env_name);
