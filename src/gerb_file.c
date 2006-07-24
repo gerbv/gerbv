@@ -162,7 +162,7 @@ gerb_fgetint(gerb_file_t *fd, int *len)
 
     fd->ptr = end - fd->data;
 
-    if (result < 0)
+    if (len && (result < 0))
 	*len -= 1;
 
     return (int)result;
