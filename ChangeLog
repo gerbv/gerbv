@@ -1,5 +1,8 @@
 2006-07-24  Stefan Petersen  <spe@localhost.localdomain>
 
+	* src/gerb_file.c: Fixed bug #1236047, so now gerbv handles
+	  negative coordinates.
+
 	* src/gerb_file.c, src/gerbv.c: Hopefully reduce SEGVs
 	  even more by better error checking of operations in
 	  gerb_fclose.
