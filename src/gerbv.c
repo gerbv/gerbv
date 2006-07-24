@@ -1608,6 +1608,9 @@ open_image(char *filename, int idx, int reload)
     else 
 	parsed_image = parse_gerb(fd);
 
+    if (parsed_image == NULL)
+	return -1;
+
     gerb_fclose(fd);
 
     /*

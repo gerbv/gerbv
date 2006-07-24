@@ -1,3 +1,9 @@
+2006-07-24  Stefan Petersen  <spe@localhost.localdomain>
+
+	* src/gerb_file.c, src/gerbv.c: Hopefully reduce SEGVs
+          even more by better error checking of operations in
+          gerb_fclose.
+
 2006-07-23  Stefan Petersen  <spe@localhost.localdomain>
 
 	* src/gerb_image.h, src/gerber.c, gerbv.c: Added patch from

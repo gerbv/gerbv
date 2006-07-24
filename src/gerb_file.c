@@ -183,10 +183,14 @@ gerb_ungetc(gerb_file_t *fd)
 void
 gerb_fclose(gerb_file_t *fd)
 {
-    munmap(fd->data, fd->datalen);
-    fclose(fd->fd);
-    free(fd);
-    
+    if (fd) {
+	if (munmap(fd->data, fd->datalen) < 0)
+	    GERB_FATAL_ERROR("munmap %s", sys_errlist[errno]);
+	if (fclose(fd->fd) == EOF)
+	    GERB_FATAL_ERROR("fclose %s", sys_errlist[errno]);
+	free(fd);
+    }
+
     return;
 } /* gerb_fclose */
 
