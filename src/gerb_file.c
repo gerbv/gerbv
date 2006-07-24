@@ -230,14 +230,18 @@ gerb_ungetc(gerb_file_t *fd)
 void
 gerb_fclose(gerb_file_t *fd)
 {
+    if (fd) {
 #ifdef HAVE_SYS_MMAN_H
-    munmap(fd->data, fd->datalen);
+	if (munmap(fd->data, fd->datalen) < 0)
+	    GERB_FATAL_ERROR("munmap %s", sys_errlist[errno]);
 #else
-    free(fd->data);
+	free(fd->data);
 #endif   
-    fclose(fd->fd);
-    free(fd);
-    
+	if (fclose(fd->fd) == EOF)
+	    GERB_FATAL_ERROR("fclose %s", sys_errlist[errno]);
+	free(fd);
+    }
+
     return;
 } /* gerb_fclose */
 
