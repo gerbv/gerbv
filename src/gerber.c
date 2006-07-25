@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This is a part of gerbv
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2006 Stefan Petersen (spe at stacken.kth.se)
  *
  * $Id$
  *
@@ -25,6 +25,8 @@
 #include <string.h>
 #include <math.h>  /* pow() */
 #include <glib.h>
+#include <locale.h>
+#include <errno.h>
 
 #include "gerber.h"
 #include "gerb_error.h"
@@ -86,6 +88,14 @@ parse_gerb(gerb_file_t *fd)
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
     double aperture_size;
     double scale;
+    
+    /*
+     * many locales redefine "." as "," and so on,
+     * so sscanf and strtod has problems when
+     * reading files using %f format    
+     * Observed by t.motylewski at bfad dot de
+     */
+    setlocale(LC_NUMERIC, "C" );
     
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
@@ -203,6 +213,8 @@ parse_gerb(gerb_file_t *fd)
 	    state->changed = 0;
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	    if (curr_net->next == NULL)
+		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 	    curr_net = curr_net->next;
 	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 
@@ -226,6 +238,8 @@ parse_gerb(gerb_file_t *fd)
 	    switch (state->interpolation) {
 	    case CW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+		if (curr_net->cirseg == NULL)
+		    GERB_FATAL_ERROR("malloc curr_net->cirseg failed\n");
 		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 		if (state->mq_on)
 		    calc_cirseg_mq(curr_net, 1, delta_cp_x, delta_cp_y);
@@ -234,6 +248,8 @@ parse_gerb(gerb_file_t *fd)
 		break;
 	    case CCW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+		if (curr_net->cirseg == NULL)
+		    GERB_FATAL_ERROR("malloc curr_net->cirseg failed\n");
 		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 		if (state->mq_on)
 		    calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
@@ -269,12 +285,16 @@ parse_gerb(gerb_file_t *fd)
 		    state->interpolation != PAREA_START) {
 		    curr_net->interpolation = PAREA_END;
 		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+		    if (curr_net->next == NULL)
+			GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 		    curr_net = curr_net->next;
 		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 
 		    curr_net->interpolation = PAREA_START;
 		    state->parea_start_node = curr_net;
 		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+		    if (curr_net->cirseg == NULL)
+			GERB_FATAL_ERROR("malloc curr_net->cirseg failed\n")
 		    curr_net = curr_net->next;
 		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 
@@ -757,6 +777,8 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	/* Aperture parameters */
     case A2I('A','D'): /* Aperture Description */
 	a = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
+	if (a == NULL)
+	    GERB_FATAL_ERROR("malloc a failed\n");
 	memset((void *)a, 0, sizeof(gerb_aperture_t));
 	ano = parse_aperture_definition(fd, a, image->amacro);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
@@ -898,8 +920,14 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
      * Parse all parameters
      */
     for (token = strtok(NULL, "X"), i = 0; token != NULL; 
-	 token = strtok(NULL, "X"), i++)
+	 token = strtok(NULL, "X"), i++) {
+	errno = 0;
 	aperture->parameter[i] = strtod(token, NULL);
+	if (errno) {
+	    GERB_COMPILE_WARNING("Failed to read aperture parameters\n");
+	    aperture->parameter[i] = 0.0;
+	}
+    }
 	    
     aperture->nuf_parameters = i;
 
@@ -1147,6 +1175,8 @@ gen_circle_segments(gerb_net_t *curr_net, int cw, int *nuf_pcorners)
 	 * create a new net, and copy current into it, (but not cirseg)
 	 */
 	new_net = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	if (new_net == NULL)
+	    GERB_FATAL_ERROR("malloc new_net failed\n");
 	*new_net = *curr_net;
 	new_net->cirseg = NULL;
 

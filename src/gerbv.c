@@ -596,6 +596,8 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
 	if (screen.path)
 	    free(screen.path);
 	screen.path = (char *)malloc(strlen(filename) + 2);
+	if (screen.path == NULL)
+	    GERB_FATAL_ERROR("malloc screen.path failed\n");
 	strcpy(screen.path, filename);
 	screen.path = strncat(screen.path, "/", 1);
 	
@@ -693,6 +695,8 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
     if (screen.path)
 	free(screen.path);
     screen.path = (char *)malloc(strlen(filename) + 2);
+    if (screen.path == NULL)
+	GERB_FATAL_ERROR("malloc screen.path failed\n");
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
    
@@ -752,6 +756,8 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	if (screen.path)
 	    free(screen.path);
 	screen.path = (char *)malloc(strlen(filename) + 2);
+	if (screen.path == NULL)
+	    GERB_FATAL_ERROR("malloc screen.path failed\n");
 	strcpy(screen.path, filename);
 	dirname(screen.path);
 	screen.path = strncat(screen.path, "/", 1);
@@ -772,6 +778,8 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 		screen.project = NULL;
 	    }
 	    screen.project = (char *)malloc(strlen(filename) + 1);
+	    if (screen.project == NULL)
+	    GERB_FATAL_ERROR("malloc screen.project failed\n");
 	    memset((void *)screen.project, 0, strlen(filename) + 1);
 	    strncpy(screen.project, filename, strlen(filename));
             rename_main_window(filename, NULL);
@@ -791,6 +799,8 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    screen.project = NULL;
 	}
 	screen.project = (char *)malloc(strlen(filename) + 1);
+	if (screen.project == NULL)
+	    GERB_FATAL_ERROR("malloc screen.proejct failed\n");
 	memset((void *)screen.project, 0, strlen(filename) + 1);
 	strncpy(screen.project, filename, strlen(filename));
 	rename_main_window(filename, NULL);
@@ -803,6 +813,8 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	
 	if (screen.path) {
 	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
+	    if (project_list == NULL)
+		GERB_FATAL_ERROR("malloc project_list failed\n");
 	    memset(project_list, 0, sizeof(project_list_t));
 	    project_list->next = project_list;
 	    project_list->layerno = -1;
@@ -816,6 +828,8 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	for (idx = 0; idx < MAX_FILES; idx++) {
 	    if (screen.file[idx] && screen.file[idx]->name) {
 		tmp = (project_list_t *)malloc(sizeof(project_list_t));
+		if (tmp == NULL)
+		    GERB_FATAL_ERROR("malloc tmp failed\n");
 		memset(tmp, 0, sizeof(project_list_t));
 		tmp->next = project_list;
 		tmp->layerno = idx;
@@ -843,6 +857,8 @@ cb_ok_project(GtkWidget *widget, gpointer data)
     if (screen.path)
 	free(screen.path);
     screen.path = (char *)malloc(strlen(filename) + 2);
+    if (screen.path == NULL)
+	GERB_FATAL_ERROR("malloc screen.path failed\n");
     strcpy(screen.path, filename);
     screen.path = strncat(screen.path, "/", 1);
 
@@ -1647,16 +1663,18 @@ open_image(char *filename, int idx, int reload)
 	return 0;
     } else {
 	screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
+	if (screen.file[idx] == NULL)
+	    GERB_FATAL_ERROR("malloc screen.file[idx] failed\n");
 	memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
 	screen.file[idx]->image = parsed_image;
     }
 
     /*
      * Store filename for eventual reload
-     * XXX Really should check retval from malloc!!! And use strncpy
-     * TOM: not really. filename is not changing between strlen and strcpy
      */
     screen.file[idx]->name = (char *)malloc(strlen(filename) + 1);
+    if (screen.file[idx]->name == NULL)
+	GERB_FATAL_ERROR("malloc screen.file[idx]->name failed\n");
     strcpy(screen.file[idx]->name, filename);
 
     /*
@@ -1668,6 +1686,8 @@ open_image(char *filename, int idx, int reload)
 
 	len = strlen(cptr);
 	screen.file[idx]->basename = (char *)malloc(len + 1);
+	if (screen.file[idx]->basename == NULL)
+	    GERB_FATAL_ERROR("malloc screen.file[idx]->basename failed\n");
 	if (screen.file[idx]->basename) {
 	    strncpy(screen.file[idx]->basename, cptr+1, len);
 	    screen.file[idx]->basename[len] = '\0';
@@ -2446,6 +2466,8 @@ rename_main_window(char *filename, GtkWidget *main_win)
 
     len = strlen(WIN_TITLE) + strlen(VERSION) + 2 + strlen(filename) + 1;
     win_title = (char *)malloc(len);
+    if (win_title == NULL)
+	GERB_FATAL_ERROR("malloc win_title failed\n");
     snprintf(win_title, len, "%s%s: %s", WIN_TITLE, VERSION, filename);
     gtk_window_set_title(GTK_WINDOW(win), win_title);
     free(win_title);
@@ -2717,6 +2739,8 @@ main(int argc, char *argv[])
 		screen.project = NULL;
 	    }
 	    screen.project = (char *)malloc(strlen(project_filename) + 1);
+	    if (screen.project == NULL)
+		GERB_FATAL_ERROR("malloc screen.project failed\n");
 	    memset((void *)screen.project, 0, strlen(project_filename) + 1);
 	    strncpy(screen.project, project_filename, strlen(project_filename));
 	    /*
@@ -2725,6 +2749,8 @@ main(int argc, char *argv[])
 	    if (screen.path)
 		free(screen.path);
 	    screen.path = (char *)malloc(strlen(project_filename) + 2);
+	    if (screen.path == NULL)
+		GERB_FATAL_ERROR("malloc screen.path failed\n");
 	    strcpy(screen.path, project_filename);
 	    dirname(screen.path);
 	    screen.path = strncat(screen.path, "/", 1);
