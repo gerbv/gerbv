@@ -1,5 +1,8 @@
 2006-07-25  Stefan Petersen  <spe@localhost.localdomain>
 
+        * loads of files: Added check of return value for
+          error checking.
+	
 	* configure.in, man/gerbv.1.in, src/Makefile.am:
           Remade build system so it should be able to handle
           autoconf 2.60 and automake 1.9. Thanks FSF for yet
