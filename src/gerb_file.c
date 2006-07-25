@@ -63,7 +63,11 @@ gerb_fopen(char *filename)
 
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
-    fstat(fd->fileno, &statinfo);
+    if (fstat(fd->fileno, &statinfo) < 0) {
+	fclose(fd->fd);
+	free(fd);
+	return NULL;
+    }
     if (!S_ISREG(statinfo.st_mode)) {
 	fclose(fd->fd);
 	free(fd);
@@ -91,8 +95,7 @@ gerb_fopen(char *filename)
 	return NULL;
     }
 
-    if (stat(filename, &statinfo)) {
-        perror("snarf_file");
+    if (stat(filename, &statinfo) < 0) {
 	fclose(fd->fd);
 	free(fd);
         return NULL;
@@ -101,7 +104,11 @@ gerb_fopen(char *filename)
     fd->fd = fopen(filename, "r");
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
-    fstat(fd->fileno, &statinfo);
+    if (fstat(fd->fileno, &statinfo) < 0) {
+	fclose(fd->fd);
+	free(fd);
+	return NULL;
+    }	
     if (!S_ISREG(statinfo.st_mode)) {
 	fclose(fd->fd);
 	free(fd);
@@ -236,12 +243,12 @@ gerb_fclose(gerb_file_t *fd)
     if (fd) {
 #ifdef HAVE_SYS_MMAN_H
 	if (munmap(fd->data, fd->datalen) < 0)
-	    GERB_FATAL_ERROR("munmap %s", sys_errlist[errno]);
+	    GERB_FATAL_ERROR("munmap:%s", strerror(errno));
 #else
 	free(fd->data);
 #endif   
 	if (fclose(fd->fd) == EOF)
-	    GERB_FATAL_ERROR("fclose %s", sys_errlist[errno]);
+	    GERB_FATAL_ERROR("fclose:%s", strerror(errno));
 	free(fd);
     }
 
@@ -303,10 +310,13 @@ gerb_find_file(char *filename, char **paths)
 
 	if (access(complete_path, R_OK) != -1)
 	    break;
-//    GERB_MESSAGE("Could not Find %s", complete_path);
+
 	free(complete_path);
 	complete_path = NULL;
     }
+
+    if (complete_path == NULL)
+	errno = ENOENT;
 
     return complete_path;
 } /* gerb_find_file */
