@@ -59,7 +59,11 @@ gerb_fopen(char *filename)
 
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
-    fstat(fd->fileno, &statinfo);
+    if (fstat(fd->fileno, &statinfo) < 0) {
+	fclose(fd->fd);
+	free(fd);
+	return NULL;
+    }
     if (!S_ISREG(statinfo.st_mode)) {
 	fclose(fd->fd);
 	free(fd);
@@ -188,9 +192,9 @@ gerb_fclose(gerb_file_t *fd)
 {
     if (fd) {
 	if (munmap(fd->data, fd->datalen) < 0)
-	    GERB_FATAL_ERROR("munmap %s", sys_errlist[errno]);
+	    GERB_FATAL_ERROR("gerb_fclose:munmap:%s\n", strerror(errno));
 	if (fclose(fd->fd) == EOF)
-	    GERB_FATAL_ERROR("fclose %s", sys_errlist[errno]);
+	    GERB_FATAL_ERROR("gerb_fclose:fclose:%s\n", strerror(errno));
 	free(fd);
     }
 
@@ -242,6 +246,8 @@ gerb_find_file(char *filename, char **paths)
 	 * Build complete path (inc. filename) and check if file exists.
 	 */
 	complete_path = (char *)malloc(strlen(curr_path) + strlen(filename) + 2);
+	if (complete_path == NULL)
+	    return NULL;
 	strcpy(complete_path, curr_path);
 	complete_path[strlen(curr_path)] = '/';
 	complete_path[strlen(curr_path) + 1] = '\0';
@@ -253,6 +259,9 @@ gerb_find_file(char *filename, char **paths)
 	free(complete_path);
 	complete_path = NULL;
     }
+
+    if (complete_path == NULL)
+	errno = ENOENT;
 
     return complete_path;
 } /* gerb_find_file */

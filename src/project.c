@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This file is a part of gerbv.
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2000-2006 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -46,6 +46,8 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+
+#include <errno.h>
 
 #include "gerb_error.h"
 #include "gerb_file.h"
@@ -200,14 +202,17 @@ read_project_file(char *filename)
 	exit(1);
     }
 
+    errno = 0;
     initfile = gerb_find_file("init.scm", initdirs);
     if (initfile == NULL) {
-	GERB_MESSAGE("Didin't find init.scm.\n");
+	scheme_deinit(sc);
+	GERB_MESSAGE("Problem loading init.scm (%s)\n", strerror(errno));
 	return NULL;
     }
     if ((fd = fopen(initfile, "r")) == NULL) {
-	GERB_FATAL_ERROR("Couldn't open %s\n", initfile);
-	exit(1);
+	scheme_deinit(sc);
+	GERB_MESSAGE("Couldn't open %s (%s)\n", initfile, strerror(errno));
+	return NULL;
     }
     sc->vptr->load_file(sc, fd);
     fclose(fd);
@@ -217,8 +222,10 @@ read_project_file(char *filename)
 			    sc->vptr->mk_foreign_func(sc, define_layer));
 
     if ((fd = fopen(filename, "r")) == NULL) {
-	GERB_MESSAGE("Couldn't open project file %s\n", filename);
-	return(NULL);
+	scheme_deinit(sc);
+	GERB_MESSAGE("Couldn't open project file %s (%s)\n", filename,
+		     strerror(errno));
+	return NULL;
     }
 
     plist_top = NULL;
