@@ -1,7 +1,7 @@
 /*
  * gEDA - GNU Electronic Design Automation
  * drill.c
- * Copyright (C) 2000-2003 Andreas Andersson
+ * Copyright (C) 2000-2006 Andreas Andersson
  *
  * $Id$
  *
@@ -209,6 +209,8 @@ parse_drillfile(gerb_file_t *fd)
 	    drill_parse_coordinate(fd, read, 1.0 / x_scale, state);
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	    if (curr_net->next == NULL)
+		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 	    curr_net = curr_net->next;
 	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 

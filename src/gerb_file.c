@@ -185,8 +185,8 @@ gerb_fgetdouble(gerb_file_t *fd)
     errno = 0;    
     result = strtod(fd->data + fd->ptr, &end);
     if (errno) {
-	GERB_COMPILE_ERROR("Failed to read integer");
-	return 0;
+	GERB_COMPILE_ERROR("Failed to read double");
+	return 0.0;
     }
 
     fd->ptr = end - fd->data;
