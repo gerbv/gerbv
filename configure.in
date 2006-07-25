@@ -152,22 +152,6 @@ else
 	PNG_LIBS=
 fi
 
-dnl Why in ... has auto* stopped fixing this ???
-if eval "test x$prefix = xNONE"; then
-    prefix="$ac_default_prefix"
-fi
-
-dnl This is because I can unquote only once. Should be $datadir/gerbv/scheme
-if test -z "$opt_backend_dir"; then
-    if eval "test $datadir = '${prefix}/share'"; then
-       opt_backend_dir="$prefix/share/gerbv/scheme"
-    else
-       opt_backend_dir="$datadir/gerbv/scheme"
-    fi
-fi
-
-AC_DEFINE_UNQUOTED([BACKEND_DIR], "$opt_backend_dir",[Backend dir])
-BACKEND_DIR="$opt_backend_dir"
 
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Program version])
 
@@ -193,8 +177,6 @@ AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
 
 AC_SUBST(WIN32_CFLAGS)
-
-AC_SUBST(BACKEND_DIR)
 
 AC_DEFINE([STANDALONE], [0],[Scheme interpreter not used standalone])
 AC_DEFINE([USE_DL],[1],[Dynamic linking in Scheme interpreter])

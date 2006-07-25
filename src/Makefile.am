@@ -35,13 +35,13 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h draw.c \
 		search_mark.h gerb_transf.c gerb_transf.h csv.c csv.h \
 		csv_defines.h
 
-scmdatadir = @BACKEND_DIR@
+scmdatadir = $(datarootdir)/gerbv/scheme/
 dist_scmdata_DATA = init.scm
 
 INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@ @PNG_CFLAGS@ @WIN32_CFLAGS@
 gerbv_LDADD = @GTK_LIBS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@
 
-AM_CFLAGS=-Wall
+AM_CFLAGS=-Wall -DBACKEND_DIR='"$(scmdatadir)"'
 
 MOSTLYCLEANFILES = *~ *.o gerbv
 CLEANFILES = *~ *.o .#* .deps/* gerbv

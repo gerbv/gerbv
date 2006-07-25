@@ -153,7 +153,7 @@ The project files are simple Scheme programs that is interpreted by a
 built in Scheme interpreter. The Scheme interpreter is TinyScheme and
 needs a Scheme program called init.scm to initialize itself. The search
 path for init.scm is (in the following order) 
-@BACKEND_DIR@/share/gerbv/scheme/, the directory with the executable
+@datarootdir@/gerbv/scheme/, the directory with the executable
 gerbv, the directory gerbv was invoked from and finally
 according to the environment variable GERBV_SCHEMEINIT.
 
