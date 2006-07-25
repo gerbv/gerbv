@@ -1,4 +1,4 @@
-.TH gerbv 1 "Feb 8th, 2004" Version @VERSION@
+.TH gerbv 1 "Jul 25th, 2006" Version @VERSION@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
@@ -153,7 +153,7 @@ The project files are simple Scheme programs that is interpreted by a
 built in Scheme interpreter. The Scheme interpreter is TinyScheme and
 needs a Scheme program called init.scm to initialize itself. The search
 path for init.scm is (in the following order) 
-@BACKEND_DIR@/share/gerbv/scheme/, the directory with the executable
+@datarootdir@/gerbv/scheme/, the directory with the executable
 gerbv, the directory gerbv was invoked from and finally
 according to the environment variable GERBV_SCHEMEINIT.
 
@@ -211,7 +211,7 @@ Anders Eriksson (aenfaldor at users.sourceforge.net) : X and GTK+ ideas and hack
 
 .SH COPYRIGHT
 .nf
-Copyright \(co  2001-2004 Stefan Petersen
+Copyright \(co  2001-2006 Stefan Petersen
 
 This document can be freely redistributed according to the terms of the 
 GNU General Public License version 2.0
