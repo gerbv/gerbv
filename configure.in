@@ -143,4 +143,5 @@ AC_OUTPUT(	Makefile \
 		example/cslk/Makefile \
 		example/orcad/Makefile \
 		example/Mentor-BoardStation/Makefile \
-		example/Makefile )
+		example/Makefile \
+		desktop/Makefile )
