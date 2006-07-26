@@ -19,9 +19,9 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-SUBDIRS = src man doc example desktop
+EXTRA_DIST = gerbv.desktop gerbv.png
 
-MOSTLYCLEANFILES = *~ *.o gerbv
-CLEANFILES = *~ *.o gerbv
-DISTCLEANFILES = *~ *.o gerbv Makefile stamp-h*
-MAINTAINERCLEANFILES = *~ *.o gerbv Makefile config.* stamp-h*
+MOSTLYCLEANFILES = *~
+CLEANFILES = *~
+DISTCLEANFILES = *~ Makefile
+MAINTAINERCLEANFILES = *~ Makefile Makefile.in
