@@ -1,3 +1,5 @@
+-- Release 1.0.2 --
+
 2006-07-26  Stefan Petersen  <spe@localhost.localdomain>
 
 	* src/log.c: Rewritten by Dino to use GTK2. The
