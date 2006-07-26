@@ -1,3 +1,9 @@
+2006-07-26  Stefan Petersen  <spe@localhost.localdomain>
+
+	* src/log.c: Rewritten by Dino to use GTK2. The
+          previous caused SEGVs, so it was time to get
+          it exchanged.
+
 2006-07-25  Stefan Petersen  <spe@localhost.localdomain>
 
 	* loads of files: Added check of return value for 
