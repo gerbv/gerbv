@@ -293,8 +293,8 @@ parse_gerb(gerb_file_t *fd)
 		    curr_net->interpolation = PAREA_START;
 		    state->parea_start_node = curr_net;
 		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
-		    if (curr_net->cirseg == NULL)
-			GERB_FATAL_ERROR("malloc curr_net->cirseg failed\n")
+		    if (curr_net->next == NULL)
+			GERB_FATAL_ERROR("malloc curr_net->next failed\n")
 		    curr_net = curr_net->next;
 		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 
