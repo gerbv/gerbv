@@ -43,13 +43,10 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
+#include <pango/pango.h>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#endif
-
-#ifdef USE_GTK2
-#include <pango/pango.h>
 #endif
 
 #include "gerber.h"
@@ -224,11 +221,7 @@ create_menubar(GtkWidget *window, GtkWidget **menubar)
     gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, NULL);
     
     /* Attach the new accelerator group to the window */
-#ifdef USE_GTK2
     gtk_window_add_accel_group (GTK_WINDOW(window), accel_group);
-#else
-    gtk_accel_group_attach(accel_group, GTK_OBJECT(window));
-#endif
     
     if(menubar) {
 	GtkWidget *menuEntry;
@@ -1801,7 +1794,6 @@ button_press_event (GtkWidget *widget, GdkEventButton *event)
 } /* button_press_event */
 
 
-#ifdef USE_GTK2
 /* Scroll wheel */
 static gint
 scroll_event(GtkWidget *widget, GdkEventScroll *event)
@@ -1831,7 +1823,6 @@ scroll_event(GtkWidget *widget, GdkEventScroll *event)
 
     return TRUE;
 } /* scroll_event */
-#endif
 
 
 static gint
@@ -2666,12 +2657,7 @@ main(int argc, char *argv[])
      */
     main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     rename_main_window("", main_win);
-#ifdef USE_GTK2
     g_signal_connect(GTK_OBJECT(main_win), "delete_event", G_CALLBACK(destroy), NULL);
-#else
-    gtk_signal_connect(GTK_OBJECT(main_win), "delete_event", destroy, NULL);
-    gtk_signal_connect(GTK_OBJECT(main_win), "destroy", destroy, NULL);
-#endif
 
     /* 
      * vbox contains menubar and hbox
@@ -2709,11 +2695,7 @@ main(int argc, char *argv[])
     screen.statusbar.msg = gtk_label_new("");
     gtk_label_set_justify(GTK_LABEL(screen.statusbar.msg), GTK_JUSTIFY_LEFT);
     textStyle = gtk_style_new();
-#ifndef USE_GTK2
-    textStyle->font = gdk_font_load(setup.status_fontname);
-#else
     textStyle->font_desc = pango_font_description_from_string(setup.status_fontname);
-#endif
     gtk_widget_set_style(GTK_WIDGET(screen.statusbar.msg), textStyle);
     screen.statusbar.msgstr[0] = '\0';
     screen.statusbar.coordstr[0] = '\0';
@@ -2790,10 +2772,8 @@ main(int argc, char *argv[])
 		       GTK_SIGNAL_FUNC(key_press_event), NULL);
     gtk_signal_connect_after(GTK_OBJECT(main_win), "key_release_event",
 		       GTK_SIGNAL_FUNC(key_release_event), NULL);
-#ifdef USE_GTK2
     gtk_signal_connect_after(GTK_OBJECT(main_win), "scroll_event",
 		       GTK_SIGNAL_FUNC(scroll_event), NULL);
-#endif
 
     gtk_widget_set_events(screen.drawing_area, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
@@ -2803,9 +2783,7 @@ main(int argc, char *argv[])
 			  | GDK_KEY_RELEASE_MASK
 			  | GDK_POINTER_MOTION_MASK
 			  | GDK_POINTER_MOTION_HINT_MASK
-#ifdef USE_GTK2
 			  | GDK_SCROLL_MASK
-#endif
 			  );
 
     gtk_widget_show_all(main_win);

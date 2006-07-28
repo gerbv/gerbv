@@ -85,7 +85,6 @@ AC_PROG_INSTALL
 PKG_CHECK_MODULES(GTK, gtk+-2.0, , AC_MSG_ERROR([*** GTK+-2.0 not installed - please install first ***]))
 dnl	GTK_LIBS="`$PKG_CONFIG --libs gtk+-2.0`"
 dnl	GTK_CFLAGS="`$PKG_CONFIG --cflags gtk+-2.0`"
-AC_DEFINE([USE_GTK2],[1],[We will compile for GTK+ 2.0])
 
 if test "$exportpng" = "yes" ; then
 	PNG_CFLAGS="`libpng-config --cflags`"
