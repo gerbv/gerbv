@@ -6,7 +6,6 @@ gEDA - GPL Electronic Design Automation
 
 
 README for gerbv
-(This software is ALPHA)
 
   Gerber Viewer (gerbv) is a viewer for Gerber files. Gerber files
   are generated from PCB CAD system and sent to PCB manufacturers

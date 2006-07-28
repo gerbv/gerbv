@@ -17,15 +17,14 @@ Simple build instructions would (currently) be:
 To recreate the configuration files you have to run:
 % aclocal
 % autoheader
-% autoconf
 % automake --copy --add-missing
-
+% autoconf
 
 ------------------------------------------------------------------------------
 
 In order to build gerbv you must install the following packages first:
-* GLIB 1.2.x
-* GTK+ 1.2.x
+* GLIB 2.x
+* GTK+ 2.x
 * GdkPixbuf can be configured out
 * libpng can be configured out
 
