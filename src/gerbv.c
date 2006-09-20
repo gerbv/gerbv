@@ -1534,7 +1534,6 @@ create_drawing_area(gint win_width, gint win_height)
     GtkWidget *drawing_area;
     
     drawing_area = gtk_drawing_area_new();
-    gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), win_width, win_height);
     
     return drawing_area;
 } /* create_drawing_area */
@@ -2711,7 +2710,7 @@ main(int argc, char *argv[])
     GtkWidget *hbox;
     GtkWidget *menubar;
     GtkStyle  *textStyle;
-    gint      screen_width, width, height;
+    gint      screen_width, screen_height, width, height;
     int       read_opt;
     int       i;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
@@ -2863,8 +2862,13 @@ main(int argc, char *argv[])
 	height = req_height;
     } else {
 	screen_width = gdk_screen_width();
+        screen_height = gdk_screen_height();
 	width = screen_width * 3/4;
 	height = width * 3/4;
+        if (height > screen_height) {
+            height = screen_height*9/10;
+            width = height*4/3;
+        }
     }
 
     /*
@@ -2891,6 +2895,7 @@ main(int argc, char *argv[])
      */
     main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     rename_main_window("", main_win);
+    gtk_window_set_default_size(main_win, width, height);
     g_signal_connect(GTK_OBJECT(main_win), "delete_event", G_CALLBACK(destroy), NULL);
 
     /* 
