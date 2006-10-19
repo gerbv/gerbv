@@ -2503,7 +2503,7 @@ main(int argc, char *argv[])
     GtkWidget *hbox;
     GtkWidget *menubar;
     GtkStyle  *textStyle;
-    gint      screen_width, width, height;
+    gint      width, height;
     int       read_opt;
     int       i;
     int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
@@ -2628,9 +2628,14 @@ main(int argc, char *argv[])
 	width = req_width;
 	height = req_height;
     } else {
-	screen_width = gdk_screen_width();
-	width = screen_width * 3/4;
-	height = width * 3/4;
+    	GdkScreen *screen;
+    	int nmonitors;
+    
+    	screen = gdk_screen_get_default();
+    	nmonitors = gdk_screen_get_n_monitors(screen);
+    
+    	width = gdk_screen_get_width(screen) * 3/4 / nmonitors;
+    	height = gdk_screen_get_height(screen) * 3/4 / nmonitors;
     }
 
     /*
