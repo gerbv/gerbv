@@ -5,7 +5,7 @@ find . -name Makefile -exec rm {} \;
 find . -name Makefile.in -exec rm {} \;
 
 echo "Running aclocal..."
-aclocal || exit 1
+aclocal $ACLOCAL_FLAGS || exit 1
 echo "Done with aclocal"
 
 echo "Running autoheader..."
