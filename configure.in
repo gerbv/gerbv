@@ -141,8 +141,19 @@ fi
 PKG_CHECK_MODULES(GTK, gtk+-2.0, , AC_MSG_ERROR([*** GTK+-2.0 not installed - please install first ***]))
 
 if test "$exportpng" = "yes" ; then
-	PNG_CFLAGS="`libpng-config --cflags`"
-	PNG_LIBS="`libpng-config --libs`"
+	AC_PATH_PROG([LIBPNG_CONFIG], [libpng-config], [notfound])
+	if test "$LIBPNG_CONFIG" = "notfound" ; then
+		AC_ERROR([You have requested png export but libpng-config could not be found.  You may
+		build $PACKAGE without png support by using --disable-exportpng])
+	fi
+
+	AC_MSG_CHECKING([for libpng cflags])
+	PNG_CFLAGS="`$LIBPNG_CONFIG --cflags`"
+	AC_MSG_RESULT([$PNG_CFLAGS])
+
+	AC_MSG_CHECKING([for libpng libs])
+	PNG_LIBS="`$LIBPNG_CONFIG --libs`"
+	AC_MSG_RESULT([$PNG_LIBS])
 dnl	AC_CHECK_LIB($PNG_LIBS, png_write_info,, 
 dnl	AC_MSG_ERROR(*** Must have libpng to get export-png to work))
 else
