@@ -1,3 +1,9 @@
+2007-02-16  Julian Lamb
+
+	* src/pick-and-place.c, src/pick-and-place.h, src/gerbv.c:
+	  Continue cleaning up pick-and-place code into simple
+	  parser/renderer.
+
 2007-02-15  Julian Lamb
 
 	* src/search.c, src/search.h, src/search-gui.c,

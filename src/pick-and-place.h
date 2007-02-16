@@ -19,13 +19,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
  
- /**stores a model and the actual file descriptor.*/
-typedef struct pnp_file {
-    FILE *fd;
-    GtkListStore     	*model;	
-
-} pnp_file_t;
-
 /** maximum size of strings. */
 #define MAXL 200
 
@@ -89,5 +82,11 @@ extern pnp_state_t *parsed_PNP_data;
 pnp_state_t *new_pnp_state();
 double get_float_unit(char *str);
 int pnp_screen_for_delimiter(char *str, int n);
-pnp_state_t *parse_pnp(pnp_file_t *fd);
+pnp_state_t *parse_pnp(gerb_file_t *fd);
 void free_pnp_state(pnp_state_t *pnp_state);
+
+gerb_image_t *
+pick_and_place_parse_file(gerb_file_t *fd);
+
+gboolean
+pick_and_place_check_file_type(gerb_file_t *fd);

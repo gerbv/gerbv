@@ -1678,6 +1678,8 @@ open_image(char *filename, int idx, int reload)
     
     if(drill_file_p(fd))
 	parsed_image = parse_drillfile(fd);
+    else if (pick_and_place_check_file_type(fd))
+	parsed_image = pick_and_place_parse_file(fd);
     else 
 	parsed_image = parse_gerb(fd);
     

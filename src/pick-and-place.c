@@ -76,7 +76,7 @@
 #define ST_END_QUOTE 4
 #define istspace iswspace
 
-pnp_state_t  *parsed_PNP_data;
+
 
 /** Allocates a new pnp_state structure. 
    First of a netlist of type pnp_state_t */
@@ -164,7 +164,7 @@ int pnp_screen_for_delimiter(char *str, int n)
    @return the initial node of the pnp_state netlist
  */
 
-pnp_state_t *parse_pnp(pnp_file_t *fd)
+pnp_state_t *parse_pnp(gerb_file_t *fd)
 {
     pnp_state_t      *pnp_state = NULL;
     pnp_state_t      *pnp_state0 = NULL;
@@ -289,109 +289,23 @@ free_pnp_state(pnp_state_t *pnp_state)
 } /* free_pnp_state */
 
 
-/** This simply opens a file for reading in.*/
-pnp_file_t *
-pnp_fopen(char *filename)
-{
+/*
+ * Check if the file looks like a valid pick-and-place file
+ * by checking for at least 4 commas
+ * Returns 1 if it is, 0 if not.
+ */
+gboolean
+pick_and_place_check_file_type(gerb_file_t *fd) {
+	pnp_state_t *parsedPickAndPlaceData = parse_pnp (fd);
 
-    pnp_file_t *fd;
-    struct stat statinfo;
-    int filenr;
-    
-    fd = (pnp_file_t *)malloc(sizeof(pnp_file_t));
-    memset(fd,0,sizeof(pnp_file_t));
-    if (fd == NULL) {
-	return NULL;
-    }
-    fd->fd = fopen(filename, "r");
-    if (fd->fd == NULL) {
-        GERB_MESSAGE("FD was NULL");
-	return NULL;
-    }
-
-    filenr = fileno(fd->fd);
-    fstat(filenr, &statinfo);
-    if (!S_ISREG(statinfo.st_mode)) {
-	errno = EISDIR;
-	return NULL;
-    }
-    if ((int)statinfo.st_size == 0) {
-	errno = EIO; /* More compatible with the world outside Linux */
-	return NULL;
-    }
-
-    return fd;
-} /* pnp_fopen */
-
-
-/** This simply closes a pick and place file. */
-void
-pnp_fclose(pnp_file_t *fd)
-{
-    if(fd == NULL)
-        return;
-    fclose(fd->fd);
-    free(fd);
-    
-    return;
-} /* pnp_fclose */
-
-
-
-//!handles opening of Pick and Place files
-/*! calls pnp_fopen and parse_pnp and also sets up global paths
-@see pnp_fopen
-@see parse_pnp
-*/
-int
-open_pnp(char *filename, int idx, int reload)
-{
-    pnp_file_t  *fd;
-   
-    char *cptr;
-
-    if (idx >= MAX_FILES) {
-	    GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
-		     filename);
-        return -1;
-    }
-     /*
-     *FIX ME RELOAD 
-     */
-    fd = pnp_fopen(filename);
-    if (fd == NULL) {
-	    GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
-	    return -1;
-    }
-    
-    /*Global storage, TODO: for data reload*/
-    parsed_PNP_data = parse_pnp(fd);
-    pnp_fclose(fd);
-               
-    return 0; /* CHECKME */
-    /*
-     * set up properties
-     */
-   
-    cptr = strrchr(filename, path_separator);
-    if (cptr) {
-	    int len;
-
-	    len = strlen(cptr);
-	    screen.file[idx]->basename = (char *)malloc(len + 1);
-	    if (screen.file[idx]->basename) {
-	        strncpy(screen.file[idx]->basename, cptr+1, len);
-	        screen.file[idx]->basename[len] = '\0';
-	    } else {
-	        screen.file[idx]->basename = screen.file[idx]->name;
-	    }
-    } else {
-	    screen.file[idx]->basename = screen.file[idx]->name;
-    }
- 
-    return 0;
-    
-} /* open_pnp */
+	if (parsedPickAndPlaceData == NULL) {
+		return FALSE;	
+	}
+	else {
+		free_pnp_state (parsedPickAndPlaceData);
+		return TRUE;
+	}
+}
 
 
 /**will actually create the layer set in the dialog containing all selected parts.
@@ -400,113 +314,22 @@ open_pnp(char *filename, int idx, int reload)
   *parse_pnp
   *@see parse_pnp()
   */
-void create_marked_layer(int idx) {
-    int            r, g, b;
-    GtkStyle      *defstyle, *newstyle;
-    gerb_net_t    *curr_net = NULL;
-    gerb_image_t  *image = NULL;
-    char          *tmp_name = NULL;
-    gerb_transf_t *tr_rot = gerb_transf_new();
-  //  GtkTreeIter   iter;
-    
-        
-/*   if ((interface.selection != NULL) 
-      && (gtk_tree_selection_count_selected_rows (GTK_TREE_SELECTION(interface.selection)) == 0) 
-      && (!screen.file[idx]->color)) {
-  	    
-	  return;
-    }*/
-    
-    if(!screen.file[idx]) {
-        screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
-        memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
-        screen.file[idx]->name = tmp_name;
-    }
-    screen.file[idx]->image = new_gerb_image(screen.file[idx]->image);
-    image = screen.file[idx]->image;
-    if (image == NULL) {
-	GERB_FATAL_ERROR("malloc image failed\n");
-        return;
-    }
-    curr_net = image->netlist;
+gerb_image_t *
+pick_and_place_parse_file(gerb_file_t *fd) {
+	gerb_image_t *image = NULL;
+	gerb_net_t *curr_net = NULL;
+	double x_scale = 1, y_scale = 1;
 
-    if (!screen.file[idx]->color) {
-      //  int   idx0;
-      //  char  tmp_iter_str[MAXL];
-        r = (12341 + 657371 * idx) % (int)(MAX_COLOR_RESOLUTION);
-        g = (23473 + 434382 * idx) % (int)(MAX_COLOR_RESOLUTION);
-        b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
+	image = new_gerb_image(image);
+	if (image == NULL) {
+		GERB_FATAL_ERROR("malloc image failed\n");
+	}
+	curr_net = image->netlist;
 
-        screen.file[idx]->color = alloc_color(r, g, b, NULL);
-        screen.file[idx]->inverted = 0;
-
-        /* This code will remove the layer which the selection is drawn onto from
-         * the available layers to be drawn on in future, dactivate, because the
-         * number of layers decreases quite fast*/
-         
-        /* combo_box_model = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING); 
-        for (idx0 =  0; idx0 < MAX_FILES; idx0++) {
-
-            if (screen.file[idx0] == NULL) {
-                gtk_list_store_append(combo_box_model, &iter);
-                gtk_list_store_set (combo_box_model, &iter, 0, idx0, -1);
-            } 
-        }
-        gtk_combo_box_set_model(GTK_COMBO_BOX(interface.layer_active), GTK_TREE_MODEL(combo_box_model));
-        //sprintf(tmp_iter_str, "%i", idx);
-        //gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, tmp_iter_str);
-        gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter);
-        gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
-        */
-    }    
-
-    /* 
-     * Set color on layer button
-     */
-    defstyle = gtk_widget_get_default_style();
-    newstyle = gtk_style_copy(defstyle);
-    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[idx]->color);
-    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
-    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
-    gtk_widget_set_style(screen.layer_button[idx], newstyle);
-
-    /* 
-     * Tool tips on button is the file name 
-     */
-    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
-			 "selected parts", NULL); 
-              
-    image->info->min_x = -1;
-    image->info->min_y = -1;
-    image->info->max_x = 5;
-    image->info->max_y = 5;
-    image->info->scale_factor_A = 1.0;
-    image->info->scale_factor_B = 1.0;
-    image->info->offset_a = 0.0;
-    image->info->offset_b = 0.0;
-    image->info->step_and_repeat.X = 1.0;
-    image->info->step_and_repeat.Y = 1.0;
-    image->info->step_and_repeat.dist_X = 0.0;
-    image->info->step_and_repeat.dist_Y = 0.0;
-
-    image->aperture[0] = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
-    memset((void *) image->aperture[0], 0, sizeof(gerb_aperture_t));
-    image->aperture[0]->type = CIRCLE;
-    image->aperture[0]->amacro = NULL;
-    image->aperture[0]->parameter[0] = 0.4;
-    image->aperture[0]->parameter[1] = 0.0;
-    image->aperture[0]->parameter[2] = 0.0;
-    image->aperture[0]->parameter[3] = 0.0;
-    image->aperture[0]->parameter[4] = 0.0;
-    image->aperture[0]->nuf_parameters = 1;
-    image->aperture[0]->unit = MM;
-         
-    curr_net->next = NULL;		    
-  //  g_list_free (list);
-    gerb_transf_free(tr_rot);
-
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-				 (screen.layer_button[idx]),TRUE); 
-                              
-    
-} /* create_marked_layer */
+	if (image && image->format ){
+		x_scale = pow(10.0, (double)image->format->x_dec);
+		y_scale = pow(10.0, (double)image->format->y_dec);
+	}
+	//pnp_state_t  *parsed_PNP_data = parse_pnp(fd);                       
+	return image;
+}
