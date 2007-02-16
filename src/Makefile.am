@@ -30,10 +30,8 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h draw.c \
 		gerber.h gerbv.c gerbv_icon.h gerbv_screen.h log.c log.h \
 		opdefines.h project.c project.h scheme-private.h scheme.c \
 		scheme.h setup.c setup.h tooltable.c tooltable.h \
-		search.c search.h search_file.c search_file.h search_cb.c \
-		search_cb.h search_gui.c search_gui.h search_mark.c \
-		search_mark.h gerb_transf.c gerb_transf.h csv.c csv.h \
-		csv_defines.h
+		pick-and-place.c pick-and-place.h gerb_transf.c gerb_transf.h \
+		csv.c csv.h
 
 scmdatadir = $(datarootdir)/gerbv/scheme/
 dist_scmdata_DATA = init.scm

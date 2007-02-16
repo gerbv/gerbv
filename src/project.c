@@ -58,7 +58,6 @@
 #include "gerbv_screen.h"
 #include "project.h"
 #include "scheme-private.h"
-#include "search_gui.h"
 
 
 
@@ -293,18 +292,10 @@ write_project_file(char *filename, project_list_t *project)
     while (p) {
 	fprintf(fd, "(define-layer! %d ", p->layerno);
 	
-        if ((interface.pnp_filename != NULL) && (strncmp(p->filename, interface.pnp_filename, strlen(interface.pnp_filename)) == 0)) 
-#if defined (__MINGW32__)    
-    	    fprintf(fd, "(cons 'pick_and_place \"%s\")", convert_path_separators(p->filename, MINGW_UNIX));
-	
-#else
-	    fprintf(fd, "(cons 'pick_and_place \"%s\")", p->filename);
-        else
-#endif
 #if defined (__MINGW32__)
-            fprintf(fd, "(cons 'filename \"%s\")", convert_path_separators(p->filename, MINGW_UNIX));    
+	fprintf(fd, "(cons 'filename \"%s\")", convert_path_separators(p->filename, MINGW_UNIX));    
 #else
-            fprintf(fd, "(cons 'filename \"%s\")", p->filename);    
+	fprintf(fd, "(cons 'filename \"%s\")", p->filename);    
 #endif
     
 	if (p->inverted)

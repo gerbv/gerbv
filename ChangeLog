@@ -1,3 +1,16 @@
+2007-02-15  Julian Lamb
+
+	* src/search.c, src/search.h, src/search-gui.c,
+	  src/search-gui.h, src/search-cb.c, src/search-cb.h,
+	  src/search-file.c, src/search-file.h, src/search-mark.c,
+	  src/search-mark.h, src/pick-and-place.c,
+	  src/pick-and-place.h, src/Makefile.am: Remove all
+	  search* files, and combine important functions into
+	  pick-and-place.[ch].
+	* src/gerbv.c, src/project.c: Remove gui-related references
+	  to pick and place functions in preparation for moving
+	  pick-and-place functionality to a simple parser/renderer.
+
 2006-07-26  Stefan Petersen  <spe@localhost.localdomain>
 
 	* src/log.c: Rewritten by Dino to use GTK2. The 

@@ -95,10 +95,8 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
 #include "tooltable.h"
+#include "pick-and-place.h"
 
-#include "search_cb.h"
-#include "search_gui.h"
-#include "search_mark.h"
 
 
 #define WIN_TITLE "Gerber Viewer"
@@ -198,8 +196,6 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/File/_Open Project...",NULL,    project_popup,    OPEN_PROJECT, NULL},
     {"/File/_Save Project As...",NULL, project_popup,    SAVE_AS_PROJECT,NULL},
     {"/File/_Save Project",  NULL,     project_save_cb,  0, NULL},
-    {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
-    {"/File/_Load Pick&Place...",NULL, load_pnp_file_popup,  0, NULL},
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
 #ifdef EXPORT_PNG
     {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
@@ -791,7 +787,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 {
     char *filename = NULL;
     project_list_t *project_list = NULL, *tmp;
-    int idx, pnp_file_in_project_list;
+    int idx;
     
     if (screen.win.project) {
 	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
@@ -872,7 +868,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 	    project_list->rgb[2] = screen.background->blue;
 	    project_list->next = NULL;
 	}
-	pnp_file_in_project_list = 0;
+	
 	for (idx = 0; idx < MAX_FILES; idx++) {
 	    if (screen.file[idx] &&  screen.file[idx]->color) {
 		tmp = (project_list_t *)malloc(sizeof(project_list_t));
@@ -882,11 +878,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 		tmp->next = project_list;
 		tmp->layerno = idx;
 		
-		if ((screen.file[idx]->name == NULL) && (pnp_file_in_project_list == 0) && (interface.pnp_filename != NULL)) {
-		    tmp->filename = interface.pnp_filename;
-		    pnp_file_in_project_list = 1;
-		} else
-		    tmp->filename = screen.file[idx]->name;
+		tmp->filename = screen.file[idx]->name;
 		tmp->rgb[0] = screen.file[idx]->color->red;
 		tmp->rgb[1] = screen.file[idx]->color->green;
 		tmp->rgb[2] = screen.file[idx]->color->blue;
@@ -1012,7 +1004,6 @@ unload_file(GtkWidget *widget, gpointer data)
 {
     int         idx = screen.curr_index;
     GtkStyle   *defstyle;
-    GtkTreeIter iter;
     
     if (screen.file[idx] == NULL)
 	return;
@@ -1043,11 +1034,6 @@ unload_file(GtkWidget *widget, gpointer data)
     free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
     free(screen.file[idx]);  screen.file[idx] = NULL;
 
-    if (interface.main_window && gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter)) {
-            update_combo_box_model();
-            
-    }
-
     return;
 } /* unload_file */
 
@@ -1075,7 +1061,6 @@ load_project(project_list_t *project_list)
 {
     project_list_t *pl_tmp;
     GtkStyle       *defstyle, *newstyle;
-    GtkTreeIter     iter;
      
     while (project_list) {
 	if (project_list->layerno == -1) {
@@ -1084,29 +1069,12 @@ load_project(project_list_t *project_list)
 					    project_list->rgb[2], NULL);
 	} else {
 	    int  idx =  project_list->layerno;
-	    char project_pnp_layer[MAXL] = "";
         
-	    if (project_list->is_pnp) {
-		create_search_window(NULL, NULL);
-		if (open_pnp(project_list->filename, idx, FALSE) == -1) {
-		    GERB_MESSAGE("could not read %s[%d]", project_list->filename, idx);
-		    goto next_layer;
-		}
-		
-		sprintf(project_pnp_layer,"%i", project_list->layerno);
-		gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(combo_box_model), &iter, project_pnp_layer);
-		g_signal_emit_by_name ((GTK_COMBO_BOX(interface.layer_active)), "changed");
-		gtk_combo_box_set_active_iter   (GTK_COMBO_BOX(interface.layer_active), &iter);
-		click_layer_active_cb(GTK_WIDGET(interface.layer_active), NULL);   
-		create_marked_layer(idx);
-	    } else {
-		
 		if (open_image(project_list->filename, idx, FALSE) == -1) {
-		    GERB_MESSAGE("could not read %s[%d]", project_list->filename,
+			GERB_MESSAGE("could not read %s[%d]", project_list->filename,
 				 idx);
 		    goto next_layer;
 		}
-	    }
 	    
 	    /* 
 	     * Change color from default to from the project list
@@ -1383,10 +1351,6 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
     double us_x1, us_y1, us_x2, us_y2;
     int half_w, half_h;		/* cache for half window dimensions */
-    gchar *designator, *comment, *footprint;
-    GList *tmp_list = NULL;
-    GtkTreeIter iter;
-    double mid_x, mid_y, pad_x, pad_y, length, width;
     
     half_w = screen.drawing_area->allocation.width / 2;
     half_h = screen.drawing_area->allocation.height / 2;
@@ -1399,115 +1363,16 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
     dy = y2-y1;
 
     if ((dx < 4) && (dy < 4)) {
-
-	if (parsed_PNP_data == NULL)
-	    return;
-	tmp_list = gtk_tree_selection_get_selected_rows
-	    (GTK_TREE_SELECTION(interface.selection),
-	     (GtkTreeModel **)&interface.model); /* item must be in the active selection list */
-	if (tmp_list == NULL) 
-	    return;
-	
-	tmp_list  = g_list_first(tmp_list);
-	do {   
-	    gtk_tree_model_get_iter         (GTK_TREE_MODEL(interface.model),
-					     &iter,
-					     tmp_list->data);
-	    
-	    gtk_tree_model_get              (GTK_TREE_MODEL(interface.model),
-					     &iter,
-					     COLUMN_DESIGNATOR, &designator, 
-					     COLUMN_mid_x, &mid_x, 
-					     COLUMN_mid_y, &mid_y, 
-					     COLUMN_pad_x, &pad_x, 
-					     COLUMN_pad_y, &pad_y,
-					     COLUMN_length, &length,
-					     COLUMN_width, &width, 
-					     COLUMN_COMMENT, &comment,
-					     COLUMN_footprint, &footprint, -1);                                  
-	    if (screen.unit == GERBV_MILS) {
-		
-		us_x1 = COORD2MILS(screen.gerber_bbox.x1 + (x1+screen.trans_x)/(double)screen.transf->scale);
-		us_y1 = COORD2MILS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
-	    } else {
-		us_x1 = COORD2MMS(screen.gerber_bbox.x1 + (x1+screen.trans_x)/(double)screen.transf->scale);
-		us_y1 = COORD2MMS(screen.gerber_bbox.y2 - (y1+screen.trans_y)/(double)screen.transf->scale);
-	    }    
-	    
-	    if ((((us_x1 >= (mid_x - width/2)) &&  (us_x1 <= (mid_x + width/2))) 
-		 && ((us_y1 >= (mid_y - length/2)) && (us_y1 <= (mid_y + length/2))) /* rectangular PIN1 on centre axis */
-		 && (((length != 0) && (width != 0))))            
-		||
-		(((us_x1 >= (mid_x - fabs(mid_x - pad_x))) && (us_x1 <= (mid_x + fabs(mid_x - pad_x)))) /* rectangluar PIN1 off centre axis */
-		 && ((us_y1 >= (mid_y - fabs(mid_y - pad_y))) && (us_y1 <= (mid_y + fabs(mid_y - pad_y)))))
-		||
-		(((us_x1 >= (mid_x - 3)) && (us_x1 <= (mid_x + 3)))
-		 && ((us_y1 >= (mid_y - 3)) && (us_y1 <= (mid_y + 3))))) /* circular shapes workaround 3mm in each direction */
-		{
-		    
-		    /* 
-		     * pointer must be in range of element; 
-		     * FIX ME range is rectangular, but in reality it can be 
-		     * circular as well for unknown shapes
-		     */
-		    
-		    if ( !g_utf8_validate(designator, -1, NULL)) {
-			gchar * str_designator = g_convert(designator, strlen(designator), "UTF-8", "ISO-8859-1", NULL, NULL, NULL);
-			/* 
-			 * I have not decided yet whether it is better to use 
-			 * always  "ISO-8859-1" or current locale.
-			 */
-			
-			
-			sprintf (designator, "%.*s", sizeof(designator)-1, str_designator);
-			g_free(str_designator);
-		    } 
-		    if ( !g_utf8_validate(comment, -1, NULL)) {
-			gchar * str_comment = g_convert(comment, strlen(comment),
-							"UTF-8", "ISO-8859-1",
-							NULL, NULL, NULL);
-			/*
-			 * I have not decided yet whether it is better to use 
-			 * always "ISO-8859-1" or current locale.
-			 */
-			sprintf (comment, "%.*s", sizeof(comment)-1, str_comment);
-			g_free(str_comment);
-		    } 
-		    if (!g_utf8_validate(footprint, -1, NULL)) {
-			gchar * str_footprint = g_convert(footprint, strlen(footprint), "UTF-8", "ISO-8859-1", NULL, NULL, NULL);
-			/*
-			 * I have not decided yet whether it is better to use 
-			 *always "ISO-8859-1" or current locale.
-			 */
-			
-			sprintf (footprint, "%.*s", sizeof(footprint)-1, str_footprint);
-			g_free(str_footprint);
-		    }     
-		    
-		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     "P: %s, C:%s, FP:%s", designator, comment, footprint);
-		    GERB_MESSAGE("The part you have selected is: %s, Comment: %s, Footprint %s\n", designator, comment, footprint);
-		    
-		    break;
-		    
-		} else {
-		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     "%s", "        ");//blank the statusbar in this section
-		}     
-	    
-	} while ((tmp_list = g_list_next(tmp_list)));
-	
-	update_statusbar(&screen);
-	
-	goto zoom_outline_end;
+		update_statusbar(&screen);
+		goto zoom_outline_end;
     }
     
     if (screen.centered_outline_zoom) {
-	/* Centered outline mode */
-	x1 = screen.start_x - dx;
-	y1 = screen.start_y - dy;
-	dx *= 2;
-	dy *= 2;
+		/* Centered outline mode */
+		x1 = screen.start_x - dx;
+		y1 = screen.start_y - dy;
+		dx *= 2;
+		dy *= 2;
     }
     
     us_x1 = (screen.trans_x + x1)/(double) screen.transf->scale;
@@ -1538,6 +1403,16 @@ create_drawing_area(gint win_width, gint win_height)
     return drawing_area;
 } /* create_drawing_area */
 
+/* Keep redraw state when preempting to process certain events */
+struct gerbv_redraw_state {
+    int valid;			/* Set to nonzero when data is valid */
+    int file_index;
+    GdkPixmap *curr_pixmap;
+    GdkPixmap *clipmask;
+    int max_width;
+    int max_height;
+    int files_loaded;
+};
 
 /* Invalidate state, free up pixmaps if necessary */
 void
@@ -1788,7 +1663,6 @@ open_image(char *filename, int idx, int reload)
     gerb_image_t *parsed_image;
     gerb_verify_error_t error = GERB_IMAGE_OK;
     char *cptr;
-    GtkTreeIter  iter;
 
     if (idx >= MAX_FILES) {
 	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
@@ -1904,10 +1778,7 @@ open_image(char *filename, int idx, int reload)
      * Tool tips on button is the file name 
      */
     gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
-			 filename, NULL);
-    if ((interface.main_window) && (!reload) && gtk_tree_model_get_iter_first(GTK_TREE_MODEL(combo_box_model), &iter)) {                          
-	update_combo_box_model();
-    }                                     
+			 filename, NULL);                                
     
     return 0;
 } /* open_image */
@@ -2895,7 +2766,7 @@ main(int argc, char *argv[])
      */
     main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     rename_main_window("", main_win);
-    gtk_window_set_default_size(main_win, width, height);
+    gtk_window_set_default_size((GtkWindow *)main_win, width, height);
     g_signal_connect(GTK_OBJECT(main_win), "delete_event", G_CALLBACK(destroy), NULL);
 
     /* 
@@ -3038,9 +2909,7 @@ main(int argc, char *argv[])
 	all_layers_on(NULL, NULL);
     else
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[0]),
-				     TRUE);
-
-    parsed_PNP_data = NULL;                     
+				     TRUE);               
 
     gtk_main();
     

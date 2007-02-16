@@ -1,13 +1,8 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * This files is a part of gerbv.
  *
- *   Copyright (C) 2004 Juergen Haas (juergenhaas@gmx.net)
- *
- * $Id$
- *  
- *                                      Juergen H. (juergenhaas@gmx.net) 
- *                                      and Tomasz M. (T.Motylewski@bfad.de)
+ *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,14 +18,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
+ 
+ /**stores a model and the actual file descriptor.*/
+typedef struct pnp_file {
+    FILE *fd;
+    GtkListStore     	*model;	
 
-#ifndef SEARCH_H
-#define SEARCH_H
-
-#include <stdio.h>
-#include "search_file.h"
-#include "gerbv_screen.h"
-#include "search_cb.h"
+} pnp_file_t;
 
 /** maximum size of strings. */
 #define MAXL 200
@@ -97,5 +91,3 @@ double get_float_unit(char *str);
 int pnp_screen_for_delimiter(char *str, int n);
 pnp_state_t *parse_pnp(pnp_file_t *fd);
 void free_pnp_state(pnp_state_t *pnp_state);
-
-#endif /* SEARCH_H */
