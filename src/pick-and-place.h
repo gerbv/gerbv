@@ -28,34 +28,7 @@ enum e_footprint {
     PART_SHAPE_STD = 2 /* rectangle with one corner marked*/
 };
 
-/** captures all pick and place data columns.
- which were read successfully in from a pick and place file.\n
-  There is only one pnp file at any time valid, for the whole project. Loading a second pnp file results in complete loss of previous pick_and_place data.\n
-  
-  typedef struct pnp_state {\n
-    
-    char     designator[MAXL];\n
-    char     footprint[MAXL];\n
-    double   mid_x;\n
-    double   mid_y;\n
-    double   ref_x;\n
-    double   ref_y;\n
-    double   pad_x;\n
-    double   pad_y;\n
-    char     layer[MAXL]; T is top B is bottom\n
-    double   rotation;\n
-    char     comment[MAXL];    \n
-    int      shape;\n
-    double   width;\n
-    double   length;\n
-
-    unsigned int nuf_push;   Nuf pushes to estimate stack size \n
-    struct pnp_state *next;\n
-    } pnp_state_t;\n
-  
-*/
-typedef struct pnp_state {
-    
+typedef struct {
     char     designator[MAXL];
     char     footprint[MAXL];
     double   mid_x;
@@ -70,23 +43,17 @@ typedef struct pnp_state {
     int      shape;
     double   width;
     double   length;
-
     unsigned int nuf_push;  /* Nuf pushes to estimate stack size */
-    struct pnp_state *next;
-    } pnp_state_t;
+} PnpPartData;
 
-/** captures all pick and place data in a netlist style.
-    Is intended to be also used e.g. for reloading files*/        
-extern pnp_state_t *parsed_PNP_data;
+double
+pick_and_place_get_float_unit(char *str);
 
-pnp_state_t *new_pnp_state();
-double get_float_unit(char *str);
-int pnp_screen_for_delimiter(char *str, int n);
-pnp_state_t *parse_pnp(gerb_file_t *fd);
-void free_pnp_state(pnp_state_t *pnp_state);
+GArray *
+pick_and_place_parse_file (gerb_file_t *fd);
 
 gerb_image_t *
-pick_and_place_parse_file(gerb_file_t *fd);
+pick_and_place_parse_file_to_image (gerb_file_t *fd);
 
 gboolean
-pick_and_place_check_file_type(gerb_file_t *fd);
+pick_and_place_check_file_type (gerb_file_t *fd);

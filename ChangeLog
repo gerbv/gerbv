@@ -1,3 +1,11 @@
+2007-02-17  Julian Lamb
+
+	* src/pick-and-place.c, src/pick-and-place.h, src/gerbv.c,
+	  src/csv.c:
+	  Get example/protel-pnp/Pick*.csv to load through the normal
+	  file loading code, implementing some simple logic to try
+	  and guess if a given file is pick and place data.
+
 2007-02-16  Julian Lamb
 
 	* src/pick-and-place.c, src/pick-and-place.h, src/gerbv.c:

@@ -227,7 +227,10 @@ csv_parse_str(struct sinput *in, char *buf, size_t bn, char *row[], int rn, int 
 		row[r] = buf;
 		buf[t] = '\0';
 	}
-
+	// return error if we can't read the minimum number of fields
+	if (r < 4) {
+		return -1;
+	}
 	return in->count;
 }/* csv_parse_str */
 
