@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <glib.h>
 #include <math.h>
 #include "gerb_image.h"
 
@@ -120,6 +121,9 @@ free_gerb_image(gerb_image_t *image)
 	if (tmp->cirseg != NULL) {
 	    free(tmp->cirseg);
 	    tmp->cirseg = NULL;
+	}
+	if (tmp->label) {
+		g_string_free (tmp->label, TRUE);
 	}
 	free(tmp);
 	tmp = NULL;

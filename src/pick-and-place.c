@@ -45,36 +45,27 @@
 
 #include <locale.h>
 #include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif /* HAVE_GETOPT_H */
 
-#include <pango/pango.h>
-
 #include <assert.h>
 
 #include "gerber.h"
-#include "drill.h"
 #include "gerb_error.h"
 #include "draw.h"
-#include "color.h"
-#include "gerbv_screen.h"
 #include "log.h"
 #include "setup.h"
-#include "project.h"
 #include "csv.h"
 #include "pick-and-place.h"
 /* CHECKME - here gi18n is disabled */
 #define _(String) (String)
 
-#define ST_START     1
-#define ST_COLLECT   2
-#define ST_TAILSPACE 3
-#define ST_END_QUOTE 4
-#define istspace iswspace
+#undef max
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#undef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
 
 //! Parses a string representing float number with a unit, default is mm
 /** @param char a string to be screened for unit
@@ -87,10 +78,13 @@ double pick_and_place_get_float_unit(char *str)
 	sscanf(str, "%lf %40s", &x, unit);
 	if(strstr(unit,"in")) {
 		x *= 25.4;
-	} else if(strstr(unit,"mil")) {
-		x *= 0.0254;
-	} else if(strstr(unit, "cm")) {
+	}
+	else if(strstr(unit, "cm")) {
 		x *= 10.0;
+	}
+	// default to mils
+	else {
+		x *= 0.0254;	
 	}
 	return x;
 }/*get_float_unit*/
@@ -164,7 +158,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 
 	while ( fgets(buf, MAXL, fd->fd) != NULL ) {
 		int len = strlen(buf)-1;
-
+		int i_length=0, i_width = 0;
+		
 		line_counter += 1;/*next line*/
 		if(line_counter<2) {
 			// TODO in principle column names could be read and interpreted
@@ -197,10 +192,12 @@ pick_and_place_parse_file(gerb_file_t *fd)
 		if (ret > 0) {
 			foundValidDataRow = TRUE;
 		}
+		else {
+			continue;
+		}
 		//printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
-
+		//g_warning ("FFF %s %s\n",row[8],row[6]);
 		if (row[0] && row[8]) { // here could be some better check for the syntax
-			int i_length=0, i_width = 0;
 			sprintf (pnpPartData.designator, "%.*s", sizeof(pnpPartData.designator)-1, row[0]);
 			sprintf (pnpPartData.footprint, "%.*s", sizeof(pnpPartData.footprint)-1, row[1]);
 			sprintf (pnpPartData.layer, "%.*s", sizeof(pnpPartData.layer)-1, row[8]);
@@ -228,31 +225,52 @@ pick_and_place_parse_file(gerb_file_t *fd)
 			pnpPartData.pad_x = pick_and_place_get_float_unit(row[6]);
 			pnpPartData.pad_y = pick_and_place_get_float_unit(row[7]);
 			sscanf(row[9], "%lf", &pnpPartData.rotation); // no units, always deg
-
-			if(sscanf(pnpPartData.footprint, "%02d%02d", &i_length, &i_width) == 2) {
-				// parse footprints like 0805 or 1206
-				pnpPartData.length = 0.254 * i_length;
-				pnpPartData.width = 0.254 * i_width;
-				pnpPartData.shape = PART_SHAPE_RECTANGLE;
-			} 
-			else { 
-				gerb_transf_reset(tr_rot);
-				gerb_transf_rotate(tr_rot, -pnpPartData.rotation * M_PI/180);/* rotate it back to get dimensions */
-				gerb_transf_apply( pnpPartData.pad_x -  pnpPartData.mid_x, 
-				pnpPartData.pad_y - pnpPartData.mid_y, tr_rot, 
-				&tmp_x, &tmp_y);
-				if ((fabs(tmp_y) > fabs(tmp_x/100)) && (fabs(tmp_x) > fabs(tmp_y/100))){
-					pnpPartData.length = 2 * tmp_x;/* get dimensions*/
-					pnpPartData.width = 2 * tmp_y;
-					pnpPartData.shape = PART_SHAPE_STD;
-				} 
-				else {
-					pnpPartData.length = 0.0;
-					pnpPartData.width = 0.0;
-					pnpPartData.shape = PART_SHAPE_UNKNOWN;
-				}
-			}  
 		}
+		// for now, default back to PCB program format
+		// TODO: implement better checking for format
+		else if (row[0] && row[1] && row[2] && row[3] && row[4] && row[5] && row[6]) {
+			sprintf (pnpPartData.designator, "%.*s", sizeof(pnpPartData.designator)-1, row[0]);
+			sprintf (pnpPartData.footprint, "%.*s", sizeof(pnpPartData.footprint)-1, row[1]);		
+			sprintf (pnpPartData.layer, "%.*s", sizeof(pnpPartData.layer)-1, row[6]);	
+			pnpPartData.mid_x = pick_and_place_get_float_unit(row[3]);
+			pnpPartData.mid_y = pick_and_place_get_float_unit(row[4]);
+			pnpPartData.pad_x = pnpPartData.mid_x + 1;
+			pnpPartData.pad_y = pnpPartData.mid_y + 1;
+			sscanf(row[5], "%lf", &pnpPartData.rotation); // no units, always deg
+			// check for coordinate sanity, and abort if it fails
+			// Note: this is mainly to catch comment lines that get parsed
+			if ((fabs(pnpPartData.mid_x) < 0.001)&&(fabs(pnpPartData.mid_y) < 0.001)) {
+				continue;			
+			}
+		}
+		else {
+			continue;
+		}
+		// now, try and figure out the actual footprint shape to draw, or just guess
+		//  something reasonable
+		if(sscanf(pnpPartData.footprint, "%02d%02d", &i_length, &i_width) == 2) {
+			// parse footprints like 0805 or 1206
+			pnpPartData.length = 0.254 * i_length;
+			pnpPartData.width = 0.254 * i_width;
+			pnpPartData.shape = PART_SHAPE_RECTANGLE;
+		} 
+		else { 
+			gerb_transf_reset(tr_rot);
+			gerb_transf_rotate(tr_rot, -pnpPartData.rotation * M_PI/180);/* rotate it back to get dimensions */
+			gerb_transf_apply( pnpPartData.pad_x -  pnpPartData.mid_x, 
+				pnpPartData.pad_y - pnpPartData.mid_y, tr_rot, &tmp_x, &tmp_y);
+			if ((fabs(tmp_y) > fabs(tmp_x/100)) && (fabs(tmp_x) > fabs(tmp_y/100))){
+				pnpPartData.length = 2 * tmp_x;/* get dimensions*/
+				pnpPartData.width = 2 * tmp_y;
+				pnpPartData.shape = PART_SHAPE_STD;
+			}
+			else {
+				g_warning ("unkn");
+				pnpPartData.length = 10.0;
+				pnpPartData.width = 10.0;
+				pnpPartData.shape = PART_SHAPE_UNKNOWN;
+			}
+		}  
 		g_array_append_val (pnpParseDataArray, pnpPartData);
 	}   
 	gerb_transf_free(tr_rot);
@@ -262,17 +280,20 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	if (!foundValidDataRow) {
 		// this doesn't look like a valid PNP file, so return error
 		g_array_free (pnpParseDataArray, TRUE);
-		return NULL;    
+		return NULL;
 	}     
     return pnpParseDataArray;
 }
 
 
-/*
- * Check if the file looks like a valid pick-and-place file
- * by checking for at least 4 commas
- * Returns 1 if it is, 0 if not.
- */
+//	------------------------------------------------------------------
+//	pick_and_place_check_file_type
+//	------------------------------------------------------------------
+//	Description: Tries to parse the given file into a pick-and-place
+//		data set. If it fails to read any good rows, then returns
+//		FALSE, otherwise it returns TRUE.
+//	Notes: 
+//	------------------------------------------------------------------
 gboolean
 pick_and_place_check_file_type (gerb_file_t *fd) {
 	GArray *parsedPickAndPlaceData = pick_and_place_parse_file (fd);
@@ -286,11 +307,17 @@ pick_and_place_check_file_type (gerb_file_t *fd) {
 	}
 }
 
+
+//	------------------------------------------------------------------
+//	pick_and_place_convert_pnp_data_to_image
+//	------------------------------------------------------------------
+//	Description: Render a parsedPickAndPlaceData array into a gerb_image.
+//	Notes: 
+//	------------------------------------------------------------------
 gerb_image_t *
 pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	gerb_image_t *image = NULL;
 	gerb_net_t *curr_net = NULL;
-	float radius;
 	int i;
 	gerb_transf_t *tr_rot = gerb_transf_new();
 
@@ -306,10 +333,10 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	memset((void *)image->format, 0, sizeof(gerb_format_t));
 
 	curr_net = image->netlist;
-	image->info->min_x = -1;
-	image->info->min_y = -1;
-	image->info->max_x = 5;
-	image->info->max_y = 5;
+	image->info->min_x = 10;
+	image->info->min_y = 10;
+	image->info->max_x = -10;
+	image->info->max_y = -10;
 	image->info->scale_factor_A = 1.0;
 	image->info->scale_factor_B = 1.0;
 	image->info->offset_a = 0.0;
@@ -334,7 +361,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	//g_warning ("length is %d",parsedPickAndPlaceData->len);
 	for (i = 0; i < parsedPickAndPlaceData->len; i++) {
 		PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
-                                  
+		float radius;                         
 		curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 		curr_net = curr_net->next;
 		assert(curr_net);
@@ -358,6 +385,12 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->unit = MM;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
+			
+			// assign a label to this first draw primitive, in case we want
+			//  to render some text next to the mark
+			if (strlen (partData.designator) > 0) {
+				curr_net->label = g_string_new (partData.designator);
+			}
 
 			curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
@@ -367,8 +400,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			gerb_transf_apply(-partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
 			gerb_transf_apply(-partData.length/2, -partData.width/2, tr_rot, 
-			      &curr_net->stop_x, &curr_net->stop_y);
-			            
+				&curr_net->stop_x, &curr_net->stop_y);
+
 			curr_net->aperture = 0;
 			curr_net->layer_polarity = POSITIVE;
 			curr_net->unit = MM;
@@ -438,12 +471,13 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 				gerb_transf_apply(partData.length/4, partData.width/4, tr_rot, 
 				      &curr_net->stop_x, &curr_net->stop_y);     
 			}
-
 	            curr_net->aperture = 0;
 	            curr_net->layer_polarity = POSITIVE;
 	            curr_net->unit = MM;
 	            curr_net->aperture_state = ON;
 	            curr_net->interpolation = LINEARx1;
+			// calculate a rough radius for the min/max screen calcs later
+			radius = max (partData.length/2, partData.width/2) + 1;
             }
 		else {
 			curr_net->start_x = partData.mid_x;
@@ -461,7 +495,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net = curr_net->next;
 			assert(curr_net);
 			memset((void *)curr_net, 0, sizeof(gerb_net_t));
-
 
 			curr_net->start_x = partData.mid_x;
 			curr_net->start_y = partData.mid_y;
@@ -484,6 +517,12 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->cirseg->width = 2*radius; /* fabs(pad_x-mid_x) */
 			curr_net->cirseg->height = 2*radius;
 		}
+		// update min and max numbers so the screen zoom-to-fit
+		//  function will work
+		image->info->min_x = min(image->info->min_x, (partData.pad_x - radius)/25.4);
+		image->info->min_y = min(image->info->min_y, (partData.pad_y - radius)/25.4);
+		image->info->max_x = max(image->info->max_x, (partData.pad_x + radius)/25.4);
+		image->info->max_y = max(image->info->max_y, (partData.pad_y + radius)/25.4);
 	}
 	curr_net->next = NULL;
 	    
@@ -492,13 +531,13 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	return image;
 }
 
-
-/**will actually create the layer set in the dialog containing all selected parts.
-  *this is called whenever enter is pressed, Mark button is clicked or right-click/double click was recognised on a single part.
-  *parts are differentiated between by using the PART_SHAPE_ identifier set in\n 
-  *parse_pnp
-  *@see parse_pnp()
-  */
+//	------------------------------------------------------------------
+//	pick_and_place_parse_file_to_image
+//	------------------------------------------------------------------
+//	Description: Renders a pick and place file to a gerb_image. 
+//	Notes: The file format should already be verified before calling
+//       this function, since it does very little sanity checking itself.
+//	------------------------------------------------------------------
 gerb_image_t *
 pick_and_place_parse_file_to_image(gerb_file_t *fd) {
 	gerb_image_t *image;

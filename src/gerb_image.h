@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#include <glib.h>
 	
 #define APERTURE_MIN 10
 #define APERTURE_MAX 999
@@ -69,6 +70,7 @@ typedef struct gerb_net {
     int nuf_pcorners; /* If interpolation=PAREA_START, corners in polygon */
     struct gerb_cirseg *cirseg;
     struct gerb_net *next;
+    GString *label;
 } gerb_net_t;
 
 

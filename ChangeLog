@@ -1,3 +1,14 @@
+2007-02-21  Julian Lamb
+
+	* src/gerb_image.c, src/gerb_image.h: Added string label capability
+	  to the gerb_image struct for future rendering of labels.
+	* src/pick-and-place.c: Updated parser to accept pick-and-place
+	  files output from the PCB program.  Performed more code cleanup
+	  and implemented min/max screen calcs based on pick-and-place
+	  files.
+	* example/LED.xy: Added a sample pick-and-place file output
+	  from PCB, based on the LED example in the PCB source code.
+
 2007-02-17  Julian Lamb
 
 	* src/pick-and-place.c, src/pick-and-place.h, src/gerbv.c,
