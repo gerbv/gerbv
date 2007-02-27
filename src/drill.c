@@ -284,8 +284,8 @@ parse_drillfile(gerb_file_t *fd)
     return image;
 } /* parse_drillfile */
 
-/* Guess the format of the input file.
-   Rewinds file when done */
+
+/* Guess the format of the input file. Rewinds file when done */
 static enum unit_t
 drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 {
@@ -294,6 +294,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     int length, max_length = 0;
     int leading_zeros, max_leading_zeros = 0;
     int trailing_zeros, max_trailing_zeros = 0;
+    int t_precision = 0;
     int read;
     drill_state_t *state = NULL;
     int done = FALSE;
@@ -316,9 +317,28 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 	case 'F' :
 	case 'G':
 	case 'S':
-	case 'T':
 	    eat_line(fd);
 	    break;
+
+	case 'T':
+            while (1) {
+                read = gerb_fgetc(fd);
+                if (!((read == 'C') || ((read >= '0') && (read <= '9'))))
+		    break;
+            }
+            if (read == '.') {
+                t_precision = 0;
+                while (1) {
+                    read = gerb_fgetc(fd);
+                    if ((read >= '0') && (read <= '9')) {
+                        t_precision++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+	    break;
+
 	case 'M':
 	    switch(drill_parse_M_code(fd, image)) {
 	    case DRILL_M_METRIC :
@@ -347,8 +367,9 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 		while ((read = gerb_fgetc(fd)) != EOF &&
 		       (isdigit(read) || read == '+' || read == '-'
 			|| read == ',' || read == '.')) {
-		    if(read != '+' && read != '-' 
-		       && read != ',' && read != '.') length ++;
+		    if ((read != '+') && (read != '-') && 
+			(read != ',') && (read != '.')) 
+			length ++;
 		    switch (local_state) {
 		    case 0:
 			if(read == '0') {
@@ -402,9 +423,19 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
  	image->format->omit_zeros = LEADING;
     }
 
-    /* Almost every file seems to use 2.x format (where x is 3-4) */
-    image->format->x_dec = max_length - 2;
-    image->format->y_dec = max_length - 2;
+    if (t_precision > 0) {
+        /* 
+	 * If drill sizes were specified with a T command, 
+	 * assume precision is the same 
+	 */
+        image->format->x_dec = t_precision;
+        image->format->y_dec = t_precision;
+    } else {
+        /* Almost every file seems to use 2.x format (where x is 3-4) */
+        image->format->x_dec = max_length - 2;
+        image->format->y_dec = max_length - 2;
+    }
+
 
     /* A bit of a kludge (Or maybe wild ass guess would be more correct.
        It seems to work, though.) It tries to cover all cases I've
