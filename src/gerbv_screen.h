@@ -95,7 +95,7 @@ typedef struct {
     GtkWidget *popup_menu;
     struct {
 	GtkWidget *msg;
-	char msgstr[MAX_ERRMSGLEN];
+	char msgstr[MAX_STATUSMSGLEN];
 	char coordstr[MAX_COORDLEN];
 	char diststr[MAX_DISTLEN];
     } statusbar;
