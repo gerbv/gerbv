@@ -30,12 +30,87 @@
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
 
+typedef enum {
+	CIRCLE_EXPOSURE,
+	CIRCLE_DIAMETER
+} AMACRO_CIRCLE_INDEX;
+
+typedef enum {
+	OUTLINE_EXPOSURE,
+	OUTLINE_NUMBER_OF_POINTS,
+	OUTLINE_FIRST_X,
+	OUTLINE_FIRST_Y,
+	OUTLINE_ROTATION
+} AMACRO_OUTLINE_INDEX;
+
+typedef enum {
+	POLYGON_EXPOSURE,
+	POLYGON_NUMBER_OF_POINTS,
+	POLYGON_START_X,
+	POLYGON_START_Y,
+	POLYGON_DIAMETER,
+	POLYGON_ROTATION
+} AMACRO_POLYGON_INDEX;
+
+typedef enum {
+	MOIRE_START_X,
+	MOIRE_START_Y,
+	MOIRE_OUTSIDE_DIAMETER,
+	MOIRE_CIRCLE_THICKNESS,
+	MOIRE_GAP_WIDTH,
+	MOIRE_NUMBER_OF_CIRCLES,
+	MOIRE_CROSSHAIR_THICKNESS,
+	MOIRE_CROSSHAIR_LENGTH,
+	MOIRE_ROTATION
+} AMACRO_MOIRE_INDEX;
+
+typedef enum {
+	THERMAL_START_X,
+	THERMAN_START_Y,
+	THERMAL_OUTSIDE_DIAMETER,
+	THERMAL_INSIDE_DIAMETER,
+	THERMAL_CROSSHAIR_THICKNESS,
+	THERMAL_ROTATION
+} AMACRO_THERMAL_INDEX;
+    
+typedef enum {
+	LINE20_EXPOSURE,
+	LINE20_LINE_WIDTH,
+	LINE20_START_X,
+	LINE20_START_Y,
+	LINE20_END_X,
+	LINE20_END_Y,
+	LINE20_ROTATION
+} AMACRO_LINE20_INDEX;
+
+enum {
+	LINE21_EXPOSURE,
+	LINE21_WIDTH,
+	LINE21_HEIGHT,
+	LINE21_START_X,
+	LINE21_START_Y,
+	LINE21_ROTATION
+} AMACRO_LINE21_INDEX;
+
+enum {
+	LINE22_EXPOSURE,
+	LINE22_WIDTH,
+	LINE22_HEIGHT,
+	LINE22_LOWER_LEFT_X,
+	LINE22_LOWER_LEFT_Y,
+	LINE22_ROTATION
+} AMACRO_LINE22_INDEX;
+
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int 
 image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-    gerb_transf_t *transf,
-    enum polarity_t polarity);
+	     int scale, double trans_x, double trans_y,
+	     enum polarity_t polarity);
+
 
 #endif /* DRAW_H */
+
+int
+render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image);

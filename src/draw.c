@@ -36,365 +36,395 @@
 #include <gtk/gtk.h>
 
 #include "draw.h"
-#include "draw_amacro.h"
 #include "gerb_error.h"
-#include "gerb_transf.h"
+#include <cairo/cairo.h>
 
-#undef round
-#define round(x) ceil((double)(x))
+/*
+ * Stack declarations and operations to be used by the simple engine that
+ * executes the parsed aperture macros.
+ */
+typedef struct {
+	double *stack;
+	int sp;
+} macro_stack_t;
+
+
+static macro_stack_t *
+new_stack(unsigned int nuf_push)
+{
+	const int extra_stack_size = 10;
+	macro_stack_t *s;
+
+	s = (macro_stack_t *)malloc(sizeof(macro_stack_t));
+	if (!s) {
+		free(s);
+		return NULL;
+	}
+	memset(s, 0, sizeof(macro_stack_t));
+
+	s->stack = (double *)malloc(sizeof(double) * (nuf_push + extra_stack_size));
+	if (!s->stack) {
+		free(s->stack);
+		return NULL;
+	}
+
+	memset(s->stack, 0, sizeof(double) * (nuf_push + extra_stack_size));
+	s->sp = 0;
+
+	return s;
+} /* new_stack */
+
+
+static void
+free_stack(macro_stack_t *s)
+{
+	if (s && s->stack)
+		free(s->stack);
+
+	if (s)
+		free(s);
+
+	return;
+} /* free_stack */
+
+
+static void
+push(macro_stack_t *s, double val)
+{
+	s->stack[s->sp++] = val;
+	return;
+} /* push */
+
+
+static double
+pop(macro_stack_t *s)
+{
+	return s->stack[--s->sp];
+} /* pop */
+
 
 
 /*
  * Draws a circle _centered_ at x,y with diameter dia
  */
 static void 
-gerbv_draw_circle(GdkPixmap *pixmap, GdkGC *gc, 
-		  gint filled, gint x, gint y, gint dia)
+gerbv_draw_circle(cairo_t *cairoTarget, gdouble diameter)
 {
-    static const gint full_circle = 23360;
-    gint real_x = x - dia / 2;
-    gint real_y = y - dia / 2;
-    
-    gdk_draw_arc(pixmap, gc, filled, real_x, real_y, dia, dia, 0, full_circle);
-    
-    return;
-} /* gerbv_draw_circle */
-
+	cairo_arc (cairoTarget, 0, 0, diameter/2.0, 0, 2.0*M_PI);
+	return;
+}
 
 /*
  * Draws a rectangle _centered_ at x,y with sides x_side, y_side
  */
-static void 
-gerbv_draw_rectangle(GdkPixmap *pixmap, GdkGC *gc, 
-		     gint filled, gint x, gint y, gint x_side, gint y_side)
+static void
+gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height)
 {
-    
-    gint real_x = x - x_side / 2;
-    gint real_y = y - y_side / 2;
-    
-    gdk_draw_rectangle(pixmap, gc, filled, real_x, real_y, x_side, y_side);
-    
-    return;
-} /* gerbv_draw_rectangle */
-
+	cairo_rectangle (cairoTarget, - width / 2.0, - height / 2.0, width, height);
+	return;
+}
 
 /*
  * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
  */ 
 static void
-gerbv_draw_oval(GdkPixmap *pixmap, GdkGC *gc, 
-		gint filled, gint x, gint y, gint x_axis, gint y_axis)
+gerbv_draw_oval(cairo_t *cairoTarget, gdouble width, gdouble height)
 {
-    gint delta = 0;
-    GdkGC *local_gc = gdk_gc_new(pixmap);
-
-    gdk_gc_copy(local_gc, gc);
-
-    if (x_axis > y_axis) {
-	/* Draw in x axis */
-	delta = x_axis / 2 - y_axis / 2;
-	gdk_gc_set_line_attributes(local_gc, y_axis, 
-				   GDK_LINE_SOLID, 
-				   GDK_CAP_ROUND, 
-				   GDK_JOIN_MITER);
-	gdk_draw_line(pixmap, local_gc, x - delta, y, x + delta, y);
-    } else {
-	/* Draw in y axis */
-	delta = y_axis / 2 - x_axis / 2;
-	gdk_gc_set_line_attributes(local_gc, x_axis, 
-				   GDK_LINE_SOLID, 
-				   GDK_CAP_ROUND, 
-				   GDK_JOIN_MITER);
-	gdk_draw_line(pixmap, local_gc, x, y - delta, x, y + delta);
-    }
-
-    gdk_gc_unref(local_gc);
-
-    return;
-} /* gerbv_draw_oval */
-
+	// cairo doesn't have a function to draw ovals, so we must
+	//  draw an arc and stretch it by scaling different x and y values
+	cairo_save (cairoTarget);
+	cairo_scale (cairoTarget, 1.0 / (height / 2.0), 1.0 / (width / 2.0));
+	gerbv_draw_circle (cairoTarget, 1);
+	cairo_restore (cairoTarget);
+	return;
+}
 
 /*
- * Draws an arc 
- * Draws an arc _centered_ at x,y
- * direction:  0 counterclockwise, 1 clockwise
- */
+ * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
+ */ 
 static void
-gerbv_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
-	       int x, int y,
-	       int width, int height,
-	       double angle1, double angle2)
+gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideRadius,
+		gdouble numberOfSides, gdouble degreesOfRotation)
 {
-    gint real_x = x - width / 2;
-    gint real_y = y - height / 2;
-
-    gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, width, height, 
-		 (gint)angle1 * 64.0, (gint)(angle2 - angle1) * 64.0);
-    
-    return;
-} /* gerbv_draw_arc */
-
-
-/** Convert a gerber image to a GDK clip mask to be used when creating pixmap.
-    This is a central step to displaying the gerberdata on screen after it has been parsed and prepared for being drawn
- */
-int
-image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     gerb_transf_t *transf, enum polarity_t polarity)
-{
-    GdkGC *gc = gdk_gc_new(*pixmap);
-    GdkGC *pgc = gdk_gc_new(*pixmap);
-    GdkGCValues gc_values;
-    struct gerb_net *net;
-    gint x1, y1, x2, y2;
-    int p1, p2, p3;
-    int cir_width = 0, cir_height = 0;
-    int cp_x = 0, cp_y = 0;
-    GdkPoint *points = NULL;
-    int curr_point_idx = 0;
-    int in_parea_fill = 0;
-    GdkColor transparent, opaque;
-    gerb_transf_t trf;
-
-
-    if (image == NULL || image->netlist == NULL) {
-	/*
-	 * Destroy GCs before exiting
-	 */
-	gdk_gc_unref(gc);
-	gdk_gc_unref(pgc);
+	int i, numberOfSidesInteger = (int) numberOfSides;
 	
-	return 0;
-    }
-    
-    /*TODO effects of both:combine global transf with image->transf*/
-    trf = *transf;
-    
-    
-    /* Set up the two "colors" we have */
-    opaque.pixel = 0; /* opaque will not let color through */
-    transparent.pixel = 1; /* transparent will let color through */ 
-
-    /*
-     * Clear clipmask and set draw color depending image on image polarity
-     */
-    if (polarity == NEGATIVE) {
-	gdk_gc_set_foreground(gc, &transparent);
-	gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
-	gdk_gc_set_foreground(gc, &opaque);
-    } else {
-	gdk_gc_set_foreground(gc, &opaque);
-	gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
-	gdk_gc_set_foreground(gc, &transparent);
-    }
-
-    for (net = image->netlist->next ; net != NULL; net = net->next) {
-        double x1d, y1d, x2d, y2d;
-        double x, y; /*for circle centre*/
-        int x_stop, y_stop; /* not transformed x2,y2 */
-        trf.scale = transf->scale;
-        if (net->unit == MM) 
-            trf.scale /= 25.4;
-
-	/*
-	 * Scale points with window scaling and translate them
-	 */
-        gerb_transf_apply(image->info->offset_a + net->start_x,image->info->offset_b - net->start_y,
-            &trf, &x1d, &y1d);
-        gerb_transf_apply(image->info->offset_a + net->stop_x,image->info->offset_b - net->stop_y,
-            &trf, &x2d, &y2d);    
-        x1 = (int)round(x1d);
-        y1 = (int)round(y1d);
-        x2 = (int)round(x2d);/*CHECK ME: Why integer cast?*/
-        y2 = (int)round(y2d);
-        x_stop = (int)round(image->info->offset_a + net->stop_x);
-        y_stop = (int)round(image->info->offset_b - net->stop_y);
-
-	/* 
-	 * If circle segment, scale and translate that one too
-	 */
-	if (net->cirseg) {
-	    cir_width = (int)round(net->cirseg->width * trf.scale); /*CHECK ME later: take into account rotation and other matrix trafos*/
-	    cir_height = (int)round(net->cirseg->height * trf.scale);
-            gerb_transf_apply(image->info->offset_a + net->cirseg->cp_x,image->info->offset_b - net->cirseg->cp_y,
-            &trf, &x, &y);  
-	    cp_x = (int)round(x);
-	    cp_y = (int)round(y);
-            /* FIXME recalculate angles as well */
+	cairo_rotate (cairoTarget, degreesOfRotation * M_PI/2);
+	cairo_move_to (cairoTarget, outsideRadius, 0);
+	for (i=0; i<numberOfSidesInteger; i++){
+		gdouble angle = i / numberOfSidesInteger * M_PI * 2;
+		cairo_line_to (cairoTarget, sinf(angle) * outsideRadius,
+				cosf(angle) * outsideRadius);
 	}
+	return;
+}
 
-	/*
-	 * Set GdkFunction depending on if this (gerber) layer is inverted
-	 * and allow for the photoplot being negative.
-	 */
-	gdk_gc_set_function(gc, GDK_COPY);
-	if ((net->layer_polarity == CLEAR) != (polarity == NEGATIVE))
-	    gdk_gc_set_foreground(gc, &opaque);
-	else
-	    gdk_gc_set_foreground(gc, &transparent);
-
-	/*
-	 * Polygon Area Fill routines
-	 */
-	switch (net->interpolation) {
-	case PAREA_START :
-	    points = (GdkPoint *)malloc(sizeof(GdkPoint) *  net->nuf_pcorners);
-	    if (points == NULL) {
-		GERB_FATAL_ERROR("Malloc failed\n");
-	    }
-	    memset(points, 0, sizeof(GdkPoint) *  net->nuf_pcorners);
-	    curr_point_idx = 0;
-	    in_parea_fill = 1;
-	    continue;
-	case PAREA_END :
-	    gdk_gc_copy(pgc, gc); 
-	    gdk_gc_set_line_attributes(pgc, 1, 
-				       GDK_LINE_SOLID, 
-				       GDK_CAP_PROJECTING, 
-				       GDK_JOIN_MITER);
-	    gdk_draw_polygon(*pixmap, pgc, 1, points, curr_point_idx);
-	    free(points);
-	    points = NULL;
-	    in_parea_fill = 0;
-	    continue;
-	default :
-	    break;
-	}
-
-	if (in_parea_fill) {
-	    points[curr_point_idx].x = x2;
-	    points[curr_point_idx].y = y2;
-	    curr_point_idx++;
-	    continue;
-	}
-
-	/*
-	 * If aperture state is off we allow use of undefined apertures.
-	 * This happens when gerber files starts, but hasn't decided on 
-	 * which aperture to use.
-	 */
-	if (image->aperture[net->aperture] == NULL) {
-	    if (net->aperture_state != OFF)
-		GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
-	    continue;
-	}
-
-	/*
-	 * "Normal" aperture drawing routines
-	 */
-        trf.scale = transf->scale; /*TODO must be  changed once image->transf and transf are combined*/
-	if (image->aperture[net->aperture]->unit == MM)
-	    trf.scale /=  25.4;
-
-
-	switch (net->aperture_state) {
-	case ON :
-	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * trf.scale);
-	    if (image->aperture[net->aperture]->type == RECTANGLE)
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID, 
-					   GDK_CAP_PROJECTING, 
-					   GDK_JOIN_MITER);
-	    else
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID, 
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
-
-	    switch (net->interpolation) {
-	    case LINEARx10 :
-	    case LINEARx01 :
-	    case LINEARx001 :
-		GERB_MESSAGE("Linear != x1\n");
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_ON_OFF_DASH, 
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
-		gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID,
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
-		break;
-	    case LINEARx1 :
-		gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
-		break;
-	    case CW_CIRCULAR :
-	    case CCW_CIRCULAR :
-                /* FIXME: angles have to be transformed (rotated)! */
-		gerbv_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
-			       net->cirseg->angle1, net->cirseg->angle2);
-		break;		
-	    default :
-		break;
-	    }
-	    break;
-	case OFF :
-	    break;
-	case FLASH :
-	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * trf.scale);
-	    p2 = (int)round(image->aperture[net->aperture]->parameter[1] * trf.scale);
-	    p3 = (int)round(image->aperture[net->aperture]->parameter[2] * trf.scale);
-	    
-	    switch (image->aperture[net->aperture]->type) {
-	    case CIRCLE :
-		gerbv_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
-               /*
-                * If circle has an inner diameter we must remove
-                * that part of the circle to make a hole in it.
-                */
-		if (p2) {
-		    gdk_gc_get_values(gc, &gc_values);
-		    if (gc_values.foreground.pixel == opaque.pixel)
-			gdk_gc_set_foreground(gc, &transparent);
-		    else
-			gdk_gc_set_foreground(gc, &opaque);
-		    
-		    if (p3) 
-			gerbv_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p2, p3);
-		    else
-			gerbv_draw_circle(*pixmap, gc, TRUE, x2, y2, p2);
-
-		    if (gc_values.foreground.pixel == opaque.pixel) 
-			gdk_gc_set_foreground(gc, &opaque);
-		    else
-			gdk_gc_set_foreground(gc, &transparent);
+static void 
+gerbv_draw_aperature_hole(cairo_t *cairoTarget, gdouble dimensionX, gdouble dimensionY)
+{
+	if (dimensionX) {
+		if (dimensionY) {
+			gerbv_draw_rectangle (cairoTarget, dimensionX, dimensionY);
 		}
-		break;
-	    case RECTANGLE:
-		gerbv_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p1, p2);
-		break;
-	    case OVAL :
-		gerbv_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
-		break;
-	    case POLYGON :
-		GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
-		gerbv_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
-		break;
-	    case MACRO :
-		gerbv_draw_amacro(*pixmap, gc, 
-				  image->aperture[net->aperture]->amacro->program,
-				  image->aperture[net->aperture]->amacro->nuf_push,
-				  image->aperture[net->aperture]->parameter,
-				  &trf, x2, y2);
-		break;
-	    default :
-		GERB_MESSAGE("Unknown aperture type\n");
-		return 0;
-	    }
-	    break;
-	default :
-	    GERB_MESSAGE("Unknown aperture state\n");
-	    return 0;
+		else {
+			gerbv_draw_circle (cairoTarget, dimensionX);
+		}
 	}
-    }
+	return;
+}
 
-    /*
-     * Destroy GCs before exiting
-     */
-    gdk_gc_unref(gc);
-    gdk_gc_unref(pgc);
-    
-    return 1;
+int
+gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf_push,
+		  gdouble *parameters)
+{
+	macro_stack_t *s = new_stack(nuf_push);
+	instruction_t *ip;
+	int handled = 1;
 
-} /* image2pixmap */
+	for(ip = program; ip != NULL; ip = ip->next) {
+		switch(ip->opcode) {
+			case NOP:
+				break;
+			case PUSH :
+				push(s, ip->data.fval);
+				break;
+			case PPUSH :
+				push(s, parameters[ip->data.ival - 1]);
+				break;
+			case ADD :
+				push(s, pop(s) + pop(s));
+				break;
+			case SUB :
+				push(s, -pop(s) + pop(s));
+				break;
+			case MUL :
+				push(s, pop(s) * pop(s));
+				break;
+			case DIV :
+				push(s, 1 / ((pop(s) / pop(s))));
+				break;
+			case PRIM :
+			    /* 
+			     * This handles the exposure thing in the aperture macro
+			     * The exposure is always the first element on stack independent
+			     * of aperture macro.
+			     */
+				if (ip->data.ival == 1) {
+			    		gerbv_draw_circle (cairoTarget, s->stack[CIRCLE_DIAMETER] / 2);
+				}
+				else if (ip->data.ival == 4) {
+					int pointCounter,numberOfPoints;
+					numberOfPoints = (int) s->stack[OUTLINE_NUMBER_OF_POINTS];
+					
+					cairo_rotate (cairoTarget, s->stack[numberOfPoints * 2 + OUTLINE_ROTATION]);
+					cairo_move_to (cairoTarget, s->stack[OUTLINE_FIRST_X], s->stack[OUTLINE_FIRST_Y]);
+
+					for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
+						cairo_line_to (cairoTarget, s->stack[pointCounter * 2 + OUTLINE_FIRST_X],
+						s->stack[pointCounter * 2 + OUTLINE_FIRST_Y]);
+					}
+
+					// although the gerber specs allow for an open outline,
+					//  I interpret it to mean the outline should be closed by the
+					//  rendering softare automatically, since there is no dimension
+					//  for line thickness.
+					cairo_close_path (cairoTarget);
+				}
+				else if (ip->data.ival == 5) {
+					gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER] / 2.0,
+						s->stack[POLYGON_NUMBER_OF_POINTS], s->stack[POLYGON_ROTATION]);
+				}
+				else if (ip->data.ival == 6) {
+					gdouble diameter, gap;
+				    	int circleIndex;
+				    	
+				    	diameter = s->stack[MOIRE_OUTSIDE_DIAMETER] -  s->stack[MOIRE_CIRCLE_THICKNESS] / 2.0;
+				    	gap = s->stack[MOIRE_GAP_WIDTH] + s->stack[MOIRE_CIRCLE_THICKNESS];
+				    	cairo_set_line_width (cairoTarget, s->stack[MOIRE_CIRCLE_THICKNESS]);
+				    	
+				    	for (circleIndex = 0; circleIndex < (int)s->stack[MOIRE_NUMBER_OF_CIRCLES];  circleIndex++) {
+				    		gdouble currentDiameter = (diameter - gap * circleIndex);
+				    		gerbv_draw_circle (cairoTarget, currentDiameter/2);
+				    		cairo_stroke (cairoTarget);
+				    	}
+				    	
+				    	gdouble crosshairRadius = (s->stack[MOIRE_CROSSHAIR_THICKNESS] / 2.0);
+				    	
+				    	cairo_move_to (cairoTarget, -crosshairRadius, 0);
+				    	cairo_line_to (cairoTarget, crosshairRadius, 0);
+				    	cairo_stroke (cairoTarget);
+				    	
+				    	cairo_move_to (cairoTarget, 0, -crosshairRadius);
+				    	cairo_line_to (cairoTarget, 0, crosshairRadius);
+				    	cairo_stroke (cairoTarget);
+				}
+				else if (ip->data.ival == 7) {
+					//TODO: code thermal code
+				}
+				else if ((ip->data.ival == 2)||(ip->data.ival == 20)) {
+			  		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION]);
+			    		cairo_set_line_width (cairoTarget, s->stack[LINE20_LINE_WIDTH]);
+			    		cairo_move_to (cairoTarget, s->stack[LINE20_START_X], s->stack[LINE20_START_Y]);
+				    	cairo_line_to (cairoTarget, s->stack[LINE20_END_X], s->stack[LINE20_END_Y]);
+				    	cairo_stroke (cairoTarget);
+				}
+				else if (ip->data.ival == 21) {
+			    		gdouble halfWidth, halfHeight;
+			    		
+			    		halfWidth = s->stack[LINE21_WIDTH] / 2.0;
+			    		halfHeight = s->stack[LINE21_HEIGHT] / 2.0;
+		    			cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION]);
+		    			cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
+		    				s->stack[LINE21_WIDTH], s->stack[LINE21_HEIGHT]);
+		    		}
+				else if (ip->data.ival == 22) {
+			    		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION]);
+			    		cairo_rectangle (cairoTarget, s->stack[LINE22_LOWER_LEFT_X],
+		    				s->stack[LINE22_LOWER_LEFT_Y], s->stack[LINE22_WIDTH],
+		    				s->stack[LINE22_HEIGHT]);
+				}
+				else {
+					handled = 0;
+				}
+				cairo_fill (cairoTarget);
+			    /* 
+			     * Here we reset the stack pointer. It's not general correct
+			     * correct to do this, but since I know how the compiler works
+			     * I can do this. The correct way to do this should be to 
+			     * subtract number of used elements in each primitive operation.
+			     */
+				s->sp = 0;
+				break;
+			default :
+				break;
+		}
+	}
+	free_stack(s);
+	return handled;
+} /* gerbv_draw_amacro */
+
+
+int
+render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
+{
+	struct gerb_net *net;
+	gboolean isDrawingLine=FALSE;
+	double x1, y1, x2, y2;
+	int in_parea_fill = 0,drawing_parea_fill = 0;
+	gdouble p1, p2, p3, p4, p5;
+
+	for (net = image->netlist->next ; net != NULL; net = net->next) {
+		x1 = net->start_x;
+		y1 = net->start_y;
+		x2 = net->stop_x;
+		y2 = net->stop_y;
+
+		/*
+		* Polygon Area Fill routines
+		*/
+		switch (net->interpolation) {
+			case PAREA_START :
+				in_parea_fill = 1;
+				continue;
+			case PAREA_END :
+				cairo_fill (cairoTarget);
+				in_parea_fill = 0;
+				continue;
+			default :
+				break;
+		}
+		if (in_parea_fill) {
+			if (!drawing_parea_fill) {
+				cairo_move_to (cairoTarget, x1,y1);
+				drawing_parea_fill=TRUE;
+			}
+			cairo_line_to (cairoTarget, x2,y2);
+			continue;
+		}
+	
+		/*
+		 * If aperture state is off we allow use of undefined apertures.
+		 * This happens when gerber files starts, but hasn't decided on 
+		 * which aperture to use.
+		 */
+		if (image->aperture[net->aperture] == NULL) {
+			if (net->aperture_state != OFF)
+				GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
+			continue;
+		}
+		switch (net->aperture_state) {
+			case ON :
+				if (image->aperture[net->aperture]->type == RECTANGLE) {
+					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
+				}
+				else {
+					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+				}
+				switch (net->interpolation) {
+					case LINEARx10 :
+					case LINEARx01 :
+					case LINEARx001 :
+					case LINEARx1 :
+						cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+						cairo_move_to (cairoTarget, x1,y1);
+						cairo_line_to (cairoTarget, x2,y2);
+						cairo_stroke (cairoTarget);
+						break;
+					case CW_CIRCULAR :
+					case CCW_CIRCULAR :
+						//gerbv_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
+						//	       net->cirseg->angle1, net->cirseg->angle2);
+						break;	
+					default :
+						break;
+				}
+				break;
+			case OFF :
+				break;
+			case FLASH :
+				p1 = image->aperture[net->aperture]->parameter[0];
+				p2 = image->aperture[net->aperture]->parameter[1];
+				p3 = image->aperture[net->aperture]->parameter[2];
+				p4 = image->aperture[net->aperture]->parameter[3];
+				p5 = image->aperture[net->aperture]->parameter[4];
+
+				cairo_save (cairoTarget);
+				cairo_translate (cairoTarget, x2, y2);
+
+				switch (image->aperture[net->aperture]->type) {
+					case CIRCLE :
+						gerbv_draw_circle(cairoTarget, p1);
+						gerbv_draw_aperature_hole (cairoTarget, p2, p3);
+						break;
+					case RECTANGLE :
+						gerbv_draw_rectangle(cairoTarget, p1, p2);
+						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
+						break;
+					case OVAL :
+						gerbv_draw_oval(cairoTarget, p1, p2);
+						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
+						break;
+					case POLYGON :
+						gerbv_draw_polygon(cairoTarget, p1, p2, p3);
+						gerbv_draw_aperature_hole (cairoTarget, p4, p5);
+						break;
+					case MACRO :
+						gerbv_draw_amacro(cairoTarget, 
+								  image->aperture[net->aperture]->amacro->program,
+								  image->aperture[net->aperture]->amacro->nuf_push,
+								  image->aperture[net->aperture]->parameter);
+						break;
+					default :
+						GERB_MESSAGE("Unknown aperture type\n");
+						return 0;
+				}
+				// and finally fill the path
+				cairo_fill (cairoTarget);
+				cairo_restore (cairoTarget);
+				break;
+			default :
+				GERB_MESSAGE("Unknown aperture state\n");
+				return 0;
+		}
+	}
+	return 1;
+}

@@ -122,11 +122,11 @@ png_export(GdkPixmap* imagetosave, char* filename)
 		     * Translation is to get it inside the allocated pixmap,
 		     * which is not always centered perfectly for GTK/X.
 		     */
-		    image2pixmap(&clipmask, screen.file[i]->image, screen.transf, 
+//		    image2pixmap(&clipmask, screen.file[i]->image, screen.transf, 
                                 /*screen.transf->scale, 
 				 -dmin_x*screen.transf->scale,
 				 dmax_y*screen.transf->scale, */
-				 screen.file[i]->image->info->polarity);
+//				 screen.file[i]->image->info->polarity);
 		    /* 
 		     * Set clipmask and draw the clipped out image onto the
 		     * screen pixmap. Afterwards we remove the clipmask, else

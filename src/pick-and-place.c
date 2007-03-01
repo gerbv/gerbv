@@ -67,7 +67,7 @@
 #undef min
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
-//! Parses a string representing float number with a unit, default is mm
+//! Parses a string representing float number with a unit, default is mil
 /** @param char a string to be screened for unit
     @return a correctly converted double */
 double pick_and_place_get_float_unit(char *str)
