@@ -152,8 +152,8 @@ gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideRadius,
 	cairo_move_to (cairoTarget, outsideRadius, 0);
 	for (i=0; i<numberOfSidesInteger; i++){
 		gdouble angle = i / numberOfSidesInteger * M_PI * 2;
-		cairo_line_to (cairoTarget, sinf(angle) * outsideRadius,
-				cosf(angle) * outsideRadius);
+		cairo_line_to (cairoTarget, sin(angle) * outsideRadius,
+				cos(angle) * outsideRadius);
 	}
 	return;
 }
