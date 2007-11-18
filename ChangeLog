@@ -1,3 +1,14 @@
+2007-07-23  joost witteveen  <joostje@komputilo.org>
+	
+	* Implement support for %SR% extended gerber commands.
+
+	* Fix endless loop bug when gerbv encountered an unknown
+          % code: the '%' case in parse_gerb() did not check for EOF.
+
+	* Setting the initial scale (image->info->min_x, min_y) went
+          wrong for %MOMM% gerber files, as the if() statements
+          compared to the unscaled cur_net->stop_x.
+	
 2007-02-27  Stefan Petersen  <spe@localhost.localdomain>
 
 	* src/gerbv_screen.h: Fixed segfault with patch from Miguel Freitas.
@@ -1644,4 +1655,6 @@
 	  Now the scheme backend receives the name of the parsed file
 	* scheme/gerb-ps.scm: Utilizes the above feature by creating output
 	  filename by prepending input filename with ".ps"
+	
+
 	
