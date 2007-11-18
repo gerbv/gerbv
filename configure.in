@@ -138,6 +138,7 @@ AC_DEFINE([USE_INTERFACE],[1],[Use extension interface of Scheme interpreter])
 
 AC_OUTPUT(	Makefile \
 		src/Makefile \
+		scheme/Makefile \
 		man/Makefile \
 		man/gerbv.1 \
 		doc/PNG-print/Makefile \

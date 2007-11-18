@@ -17,9 +17,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
+/*21 Feb 2007 patch for metric drill files:
+  1) METRIC/INCH commands (partly) parsed to define units of the header
+  2) units of the header and the program body are independent
+  3) ICI command parsed in the header
+*/
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -69,7 +73,8 @@ enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED,
 		     DRILL_M_HEADER, DRILL_M_ENDHEADER,
 		     DRILL_M_METRIC, DRILL_M_IMPERIAL,
 		     DRILL_M_BEGINPATTERN, DRILL_M_ENDPATTERN,
-		     DRILL_M_CANNEDTEXT, DRILL_M_TIPCHECK};
+		     DRILL_M_CANNEDTEXT, DRILL_M_TIPCHECK, 
+		     DRILL_M_METRICHEADER, DRILL_M_IMPERIALHEADER};
 
 enum drill_g_code_t {DRILL_G_ABSOLUTE, DRILL_G_INCREMENTAL,
 		     DRILL_G_ZEROSET, DRILL_G_UNKNOWN,
@@ -84,7 +89,7 @@ typedef struct drill_state {
     int coordinate_mode;
     double origin_x;
     double origin_y;
-    enum unit_t unit;
+    enum unit_t unit, header_unit;
 } drill_state_t;
 
 /* Local function prototypes */
@@ -159,6 +164,32 @@ parse_drillfile(gerb_file_t *fd)
 		break;
 	    }
 	    break;
+	case 'I':
+	    if (state->curr_section != DRILL_HEADER) break;
+	    {int c = gerb_fgetc(fd);
+	     	switch (c) {
+	      	case 'N':
+		    if ('C' == gerb_fgetc(fd)) 
+		    if ('H' == gerb_fgetc(fd)) {
+			eat_line(fd);
+			state->header_unit = INCH;
+		    }
+		    break;
+	      	case 'C':
+		    if ('I' == gerb_fgetc(fd)) 
+		    if (',' == gerb_fgetc(fd)) 
+		    if ('O' == gerb_fgetc(fd)) { 
+			if ('N' == (c = gerb_fgetc(fd)))
+			    state->coordinate_mode = DRILL_MODE_INCREMENTAL;
+			else if ('F' == c) if ('F' == gerb_fgetc(fd)) 
+			    state->coordinate_mode = DRILL_MODE_ABSOLUTE;
+			eat_line(fd);
+		    }
+		    break;
+		}
+	    }
+	    eat_line(fd);
+	    break;
 	case 'M':
 	    switch(drill_parse_M_code(fd, image)) {
 	    case DRILL_M_HEADER :
@@ -190,6 +221,9 @@ parse_drillfile(gerb_file_t *fd)
 	    case DRILL_M_ENDREWIND :
 		free(state);
 		return image;
+		break;
+	    case DRILL_M_METRICHEADER :
+		state->header_unit = MM;
 		break;
 	    default:
 		GERB_COMPILE_ERROR("Strange M code found.\n");
@@ -553,7 +587,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 	    size = read_double(fd, 1);
 
-	    if(state->unit == MM) {
+	    if(state->header_unit == MM) {
 		size /= 25.4;
 	    } else if(size >= 4.0) {
 		/* If the drill size is >= 4 inches, assume that this
@@ -687,8 +721,14 @@ drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 	return DRILL_M_ENDHEADER;
     } else if (strncmp(op, "97", 2) == 0 || strncmp(op, "98", 2) == 0) {
 	return DRILL_M_CANNEDTEXT;
-    }
-
+    } else if (strncmp(op, "ET", 2) == 0) {
+	if ('R' == gerb_fgetc(fd)) 
+	if ('I' == gerb_fgetc(fd)) 
+	if ('C' == gerb_fgetc(fd)) {
+		eat_line(fd);
+		return DRILL_M_METRICHEADER;
+	}
+    } 
     return DRILL_M_UNKNOWN;
 
 } /* drill_parse_M_code */
@@ -774,6 +814,7 @@ new_state(drill_state_t *state)
 	state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 	state->origin_x = 0.0;
 	state->origin_y = 0.0;
+	state->header_unit = INCH;
     }
     return state;
 } /* new_state */

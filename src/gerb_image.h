@@ -54,6 +54,15 @@ typedef struct gerb_cirseg {
     double angle2;
 } gerb_cirseg_t;
 
+typedef struct gerb_step_and_repeat{                /* SR parameters */
+  int X;
+  int Y;
+  double dist_X;
+  double dist_Y;
+} gerb_step_and_repeat_t;
+  
+
+
 
 typedef struct gerb_net {
     double start_x;
@@ -68,6 +77,7 @@ typedef struct gerb_net {
     int nuf_pcorners; /* If interpolation=PAREA_START, corners in polygon */
     struct gerb_cirseg *cirseg;
     struct gerb_net *next;
+    struct gerb_step_and_repeat *step_and_repeat;  /* SR parameters, NULL if not set */
 } gerb_net_t;
 
 
@@ -108,12 +118,7 @@ typedef struct gerb_image_info {
     enum encoding_t encoding;
     double scale_factor_A;  /* SF parameters */
     double scale_factor_B;
-    struct {                /* SR parameters */
-	int X;
-	int Y;
-	double dist_X;
-	double dist_Y;
-    } step_and_repeat;
+    struct gerb_step_and_repeat step_and_repeat;  /* SR parameters */
 } gerb_image_info_t;
 
 

@@ -185,6 +185,25 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
     }
 
     for (net = image->netlist->next ; net != NULL; net = net->next) {
+      int repeat_X=1, repeat_Y=1;
+      double repeat_dist_X, repeat_dist_Y;
+      int repeat_i, repeat_j;
+
+      /*
+       * If step_and_repeat (%SR%) used, repeat the drawing;
+       * if step_and_repeat not used, net->step_and_repeat will be NULL, and
+       * we repeat everything just once.
+       */
+      if(net->step_and_repeat != NULL){
+	repeat_X = net->step_and_repeat->X;
+	repeat_Y = net->step_and_repeat->Y;
+	repeat_dist_X = net->step_and_repeat->dist_X;
+	repeat_dist_Y = net->step_and_repeat->dist_Y;
+      }
+      for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
+	for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
+	  double sr_x = repeat_i * repeat_dist_X;
+	  double sr_y = repeat_j * repeat_dist_Y;
 	
 	if (net->unit == MM) 
 	    unit_scale = scale / 25.4;
@@ -194,13 +213,13 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	/*
 	 * Scale points with window scaling and translate them
 	 */
-	x1 = (int)round((image->info->offset_a + net->start_x) * unit_scale +
+	x1 = (int)round((image->info->offset_a + net->start_x + sr_x) * unit_scale +
 			trans_x);
-	y1 = (int)round((image->info->offset_b - net->start_y) * unit_scale +
+	y1 = (int)round((image->info->offset_b - net->start_y - sr_y) * unit_scale +
 			trans_y);
-	x2 = (int)round((image->info->offset_a + net->stop_x) * unit_scale +
+	x2 = (int)round((image->info->offset_a + net->stop_x + sr_x) * unit_scale +
 			trans_x);
-	y2 = (int)round((image->info->offset_b - net->stop_y) * unit_scale +
+	y2 = (int)round((image->info->offset_b - net->stop_y - sr_y) * unit_scale +
 			trans_y);
 
 	/* 
@@ -378,7 +397,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	    return 0;
 	}
     }
-
+      }
+    }
     /*
      * Destroy GCs before exiting
      */

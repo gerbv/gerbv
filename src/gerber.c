@@ -76,6 +76,7 @@ static void calc_cirseg_mq(struct gerb_net *net, int cw,
 			   double delta_cp_x, double delta_cp_y);
 static gerb_net_t *gen_circle_segments(gerb_net_t *curr_net,
 				       int cw, int *nuf_pcorners);
+static void setminmax(double *min, double *max, double pos, double aperture);
 
 gerb_image_t *
 parse_gerb(gerb_file_t *fd)
@@ -206,7 +207,11 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case '%':
 	    parse_rs274x(fd, image, state);
-	    while (gerb_fgetc(fd) != '%');
+	    while (1){
+	      char c=gerb_fgetc(fd);
+	      if(c==EOF || c=='%')
+		break;
+	    }
 	    break;
 	case '*':
 	    if (state->changed == 0) break;
@@ -351,6 +356,17 @@ parse_gerb(gerb_file_t *fd)
 	    else 
 		aperture_size = 0.0;
 
+	    if ((image->info->step_and_repeat.X != 1) ||  
+		(image->info->step_and_repeat.Y != 1) ){
+	      curr_net->step_and_repeat=(struct gerb_step_and_repeat *)malloc(sizeof(struct gerb_step_and_repeat));
+	      if(curr_net->step_and_repeat == NULL)
+		GERB_FATAL_ERROR("malloc curr_net->step_and_repeat failed\n");
+	      memcpy(curr_net->step_and_repeat, 
+		     &(image->info->step_and_repeat), 
+		     sizeof(struct gerb_step_and_repeat));
+	    }
+	    
+
 	    /*
 	     * For next round we save the current position as
 	     * the previous position
@@ -370,14 +386,31 @@ parse_gerb(gerb_file_t *fd)
 	    else 
 		scale = 1.0;
 
-	    if (image->info->min_x > curr_net->stop_x)
-		image->info->min_x = (curr_net->stop_x - aperture_size) / scale;
-	    if (image->info->min_y > curr_net->stop_y)
-		image->info->min_y = (curr_net->stop_y - aperture_size) / scale;
-	    if (image->info->max_x < curr_net->stop_x)
-		image->info->max_x = (curr_net->stop_x + aperture_size) / scale;
-	    if (image->info->max_y < curr_net->stop_y)
-		image->info->max_y = (curr_net->stop_y + aperture_size) / scale;
+	    {
+	      double repeat_off_X=0, repeat_off_Y=0;
+	      
+	      /*
+	       * If step_and_repeat (%SR%) is used, check min_x,max_y etc for the
+	       * ends of the step_and_repeat lattice. This goes wrong in the case of
+	       * negative dist_X or dist_Y, in which case we should compare against
+	       * the startpoints of the lines, not the stoppoints, but that seems an
+	       * uncommon case (and the error isn't very big any way).
+	       *
+	       */
+	      if(curr_net->step_and_repeat != NULL){
+		repeat_off_X = (curr_net->step_and_repeat->X - 1)*
+		  curr_net->step_and_repeat->dist_X;
+		repeat_off_Y = (curr_net->step_and_repeat->Y - 1)*
+		  curr_net->step_and_repeat->dist_Y;
+	      }
+	      setminmax(&(image->info->min_x), &(image->info->max_x), 
+			(curr_net->stop_x + repeat_off_X ) / scale, 
+			aperture_size / scale);
+	      
+	      setminmax(&(image->info->min_y), &(image->info->max_y), 
+			(curr_net->stop_y + repeat_off_Y) / scale,
+			aperture_size / scale);
+	    }
 	    
 	    break;
 	case 10 :   /* White space */
@@ -841,13 +874,19 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    default:
 		GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
 	    }
+
+	    /*
+	     * Repeating 0 times in any direction would disable the whole plot, and
+	     * is probably not intended. At least one other tool (viewmate) seems
+	     * to interpret 0-time repeating as repeating just once too.
+	     */
+	    if(image->info->step_and_repeat.X == 0)
+	      image->info->step_and_repeat.X = 1;
+	    if(image->info->step_and_repeat.Y == 0)
+	      image->info->step_and_repeat.Y = 1;
+	      
 	    op[0] = gerb_fgetc(fd);
 	}
-	if ((image->info->step_and_repeat.X != 1) || 
-	    (image->info->step_and_repeat.Y != 1) ||
-	    (fabs(image->info->step_and_repeat.dist_X) > 0.000001) ||
-	    (fabs(image->info->step_and_repeat.dist_Y) > 0.000001))
-	    NOT_IMPL(fd, "%SR%");
 	break;	    
     case A2I('R','O'): /* Rotate */
 	NOT_IMPL(fd, "%RO%");
@@ -1205,3 +1244,12 @@ gen_circle_segments(gerb_net_t *curr_net, int cw, int *nuf_pcorners)
 
     return curr_net;
 } /* gen_circle_segments */
+
+
+void
+setminmax(double *min, double *max, double pos, double aperture){
+  if(*min > (pos-aperture))
+    *min=pos-aperture;
+  if(*max < (pos+aperture))
+    *max=pos+aperture;
+}
