@@ -154,6 +154,23 @@ GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 
 ############################################################
 #
+# Cairo checks
+#
+
+PKG_CHECK_MODULES(CAIRO, cairo >= 1.0.0, , [AC_MSG_ERROR([
+*** Cairo is not installed - please install first ***
+Please review the following errors:
+$CAIRO_PKG_ERRORS])]
+)
+
+CAIRO_VER=`$PKG_CONFIG cairo --modversion`
+
+#
+#
+############################################################
+
+############################################################
+#
 # libpng checks
 #
 

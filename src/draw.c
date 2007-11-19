@@ -148,12 +148,13 @@ gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideRadius,
 {
 	int i, numberOfSidesInteger = (int) numberOfSides;
 	
-	cairo_rotate (cairoTarget, degreesOfRotation * M_PI/2);
+	cairo_rotate (cairoTarget, degreesOfRotation * M_PI/180);
 	cairo_move_to (cairoTarget, outsideRadius, 0);
-	for (i=0; i<numberOfSidesInteger; i++){
-		gdouble angle = i / numberOfSidesInteger * M_PI * 2;
-		cairo_line_to (cairoTarget, sin(angle) * outsideRadius,
-				cos(angle) * outsideRadius);
+	/* skip first point, since we've moved there already */
+	for (i=1; i< (int)numberOfSidesInteger; i++){
+		gdouble angle = (double) i / numberOfSidesInteger * M_PI * 2;
+		cairo_line_to (cairoTarget, cos(angle) * outsideRadius,
+				sin(angle) * outsideRadius);
 	}
 	return;
 }
@@ -208,14 +209,15 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 			     * The exposure is always the first element on stack independent
 			     * of aperture macro.
 			     */
+				cairo_new_path(cairoTarget);
 				if (ip->data.ival == 1) {
-			    		gerbv_draw_circle (cairoTarget, s->stack[CIRCLE_DIAMETER] / 2);
+			    		gerbv_draw_circle (cairoTarget, s->stack[CIRCLE_DIAMETER]);
 				}
 				else if (ip->data.ival == 4) {
 					int pointCounter,numberOfPoints;
 					numberOfPoints = (int) s->stack[OUTLINE_NUMBER_OF_POINTS];
 					
-					cairo_rotate (cairoTarget, s->stack[numberOfPoints * 2 + OUTLINE_ROTATION]);
+					cairo_rotate (cairoTarget, s->stack[numberOfPoints * 2 + OUTLINE_ROTATION - 2] * M_PI/180);
 					cairo_move_to (cairoTarget, s->stack[OUTLINE_FIRST_X], s->stack[OUTLINE_FIRST_Y]);
 
 					for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
@@ -223,32 +225,38 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 						s->stack[pointCounter * 2 + OUTLINE_FIRST_Y]);
 					}
 
-					// although the gerber specs allow for an open outline,
-					//  I interpret it to mean the outline should be closed by the
-					//  rendering softare automatically, since there is no dimension
-					//  for line thickness.
+					/* although the gerber specs allow for an open outline,
+					   I interpret it to mean the outline should be closed by the
+					   rendering softare automatically, since there is no dimension
+					   for line thickness.
+					*/
 					cairo_close_path (cairoTarget);
 				}
 				else if (ip->data.ival == 5) {
+					cairo_move_to (cairoTarget, s->stack[POLYGON_CENTER_X],
+						s->stack[POLYGON_CENTER_Y]);
 					gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER] / 2.0,
 						s->stack[POLYGON_NUMBER_OF_POINTS], s->stack[POLYGON_ROTATION]);
+					cairo_close_path(cairoTarget);
 				}
 				else if (ip->data.ival == 6) {
 					gdouble diameter, gap;
 				    	int circleIndex;
 				    	
-				    	diameter = s->stack[MOIRE_OUTSIDE_DIAMETER] -  s->stack[MOIRE_CIRCLE_THICKNESS] / 2.0;
+				    	cairo_rotate (cairoTarget, s->stack[MOIRE_ROTATION] * M_PI/180);
+				    	diameter = s->stack[MOIRE_OUTSIDE_DIAMETER] -  s->stack[MOIRE_CIRCLE_THICKNESS];
 				    	gap = s->stack[MOIRE_GAP_WIDTH] + s->stack[MOIRE_CIRCLE_THICKNESS];
 				    	cairo_set_line_width (cairoTarget, s->stack[MOIRE_CIRCLE_THICKNESS]);
 				    	
 				    	for (circleIndex = 0; circleIndex < (int)s->stack[MOIRE_NUMBER_OF_CIRCLES];  circleIndex++) {
-				    		gdouble currentDiameter = (diameter - gap * circleIndex);
-				    		gerbv_draw_circle (cairoTarget, currentDiameter/2);
+				    		gdouble currentDiameter = (diameter - gap * (float) circleIndex);
+				    		gerbv_draw_circle (cairoTarget, currentDiameter);
 				    		cairo_stroke (cairoTarget);
 				    	}
 				    	
-				    	gdouble crosshairRadius = (s->stack[MOIRE_CROSSHAIR_THICKNESS] / 2.0);
+				    	gdouble crosshairRadius = (s->stack[MOIRE_CROSSHAIR_LENGTH] / 2.0);
 				    	
+				    	cairo_set_line_width (cairoTarget, s->stack[MOIRE_CROSSHAIR_THICKNESS]);
 				    	cairo_move_to (cairoTarget, -crosshairRadius, 0);
 				    	cairo_line_to (cairoTarget, crosshairRadius, 0);
 				    	cairo_stroke (cairoTarget);
@@ -258,11 +266,36 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 				    	cairo_stroke (cairoTarget);
 				}
 				else if (ip->data.ival == 7) {
-					//TODO: code thermal code
+					gdouble diameter, ci_thickness;
+					gint i;
+					cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
+					
+					ci_thickness = (s->stack[THERMAL_OUTSIDE_DIAMETER] - 
+						s->stack[THERMAL_INSIDE_DIAMETER]) / 2.0;
+					diameter = (s->stack[THERMAL_INSIDE_DIAMETER] + ci_thickness);
+					
+					/* draw non-filled circle */
+					cairo_set_line_width (cairoTarget, ci_thickness);
+					gerbv_draw_circle(cairoTarget, diameter);
+					cairo_stroke (cairoTarget);
+					/* draw crosshairs */
+					cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
+					cairo_set_line_width (cairoTarget,s->stack[THERMAL_CROSSHAIR_THICKNESS]);
+					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
+					/* do initial rotation */
+					cairo_rotate (cairoTarget, s->stack[THERMAL_ROTATION] * M_PI/180);
+					for (i=0; i<4; i++) {
+						cairo_move_to (cairoTarget, 0.0, 0.0);
+						cairo_line_to (cairoTarget, s->stack[THERMAL_OUTSIDE_DIAMETER] / 2.0, 0.0);
+						cairo_rotate (cairoTarget, 90 * M_PI/180);
+					}
+					cairo_stroke (cairoTarget);
+					cairo_set_operator (cairoTarget, oldOperator);	
 				}
 				else if ((ip->data.ival == 2)||(ip->data.ival == 20)) {
-			  		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION]);
+			  		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION] * M_PI/180);
 			    		cairo_set_line_width (cairoTarget, s->stack[LINE20_LINE_WIDTH]);
+			    		cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
 			    		cairo_move_to (cairoTarget, s->stack[LINE20_START_X], s->stack[LINE20_START_Y]);
 				    	cairo_line_to (cairoTarget, s->stack[LINE20_END_X], s->stack[LINE20_END_Y]);
 				    	cairo_stroke (cairoTarget);
@@ -272,12 +305,12 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 			    		
 			    		halfWidth = s->stack[LINE21_WIDTH] / 2.0;
 			    		halfHeight = s->stack[LINE21_HEIGHT] / 2.0;
-		    			cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION]);
+		    			cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION] * M_PI/180);
 		    			cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
 		    				s->stack[LINE21_WIDTH], s->stack[LINE21_HEIGHT]);
 		    		}
 				else if (ip->data.ival == 22) {
-			    		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION]);
+			    		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION] * M_PI/180);
 			    		cairo_rectangle (cairoTarget, s->stack[LINE22_LOWER_LEFT_X],
 		    				s->stack[LINE22_LOWER_LEFT_Y], s->stack[LINE22_WIDTH],
 		    				s->stack[LINE22_HEIGHT]);
@@ -338,6 +371,13 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 		x2 = net->stop_x + sr_x;
 		y2 = net->stop_y + sr_y;
 
+		if ((net->layer_polarity == CLEAR)) {
+			cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
+		}
+		else {
+			cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
+		}
+	    
 		/*
 		* Polygon Area Fill routines
 		*/
@@ -346,6 +386,12 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 				in_parea_fill = 1;
 				continue;
 			case PAREA_END :
+				cairo_close_path(cairoTarget);
+				/* also create a thin border to make sure there are no
+				 * slivers of space between adjacent polygons
+				 */
+				//cairo_set_line_width (cairoTarget, 0.002);
+				//cairo_stroke_preserve (cairoTarget);
 				cairo_fill (cairoTarget);
 				in_parea_fill = 0;
 				continue;
@@ -357,7 +403,12 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 				cairo_move_to (cairoTarget, x1,y1);
 				drawing_parea_fill=TRUE;
 			}
-			cairo_line_to (cairoTarget, x2,y2);
+			if (net->aperture_state == ON) {
+				cairo_line_to (cairoTarget, x2,y2);
+			}
+			else {
+				cairo_move_to (cairoTarget, x2,y2);
+			}
 			continue;
 		}
 	
@@ -391,14 +442,15 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 						break;
 					case CW_CIRCULAR :
 					case CCW_CIRCULAR :
-						//gerbv_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
-						//	       net->cirseg->angle1, net->cirseg->angle2);
+						/*gerbv_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
+							       net->cirseg->angle1, net->cirseg->angle2); */
 						break;	
 					default :
 						break;
 				}
 				break;
 			case OFF :
+				cairo_move_to (cairoTarget, x1,y1);
 				break;
 			case FLASH :
 				p1 = image->aperture[net->aperture]->parameter[0];
@@ -437,7 +489,7 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 						GERB_MESSAGE("Unknown aperture type\n");
 						return 0;
 				}
-				// and finally fill the path
+				/* and finally fill the path */
 				cairo_fill (cairoTarget);
 				cairo_restore (cairoTarget);
 				break;

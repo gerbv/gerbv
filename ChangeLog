@@ -1,3 +1,16 @@
+2007-11-19  Julian Lamb
+
+	* src/draw.[ch], examples/am-test/am-test.gbx: Complete the conversion to
+	  the cairo rendering code. All aperature macros now render correctly, as
+	  well as clear layer polarities. Note that several bugs were found in
+	  the old aperature macro rendering functions (some rotations were not
+	  done correctly, and the moire and thermal outer diameters weren't
+	  correctly rendered) and those were fixed in the cairo conversion. The
+	  am-test.gbx file was modified slightly to test these fixes.
+	* src/pick-and-place.c: Added an additional sanity check to make sure we
+	  don't accidentally open some gerber files as PNP place files.
+	* configure.in: Add explicit cairo check.
+
 2007-02-28  Julian Lamb
 
 	* src/draw.[ch], src/draw_amacro.[ch], src/gerbv.c: Start converting

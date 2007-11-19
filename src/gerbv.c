@@ -1453,9 +1453,9 @@ redraw_pixmap(GtkWidget *widget, int restart)
     }
     
     /* Stop the idle-function if we are not within an idle-call */
-   //if (state.valid) {
-	//stop_idle_redraw_pixmap(widget);
-    //}
+   /* if (state.valid) {
+	stop_idle_redraw_pixmap(widget);
+   } */
     retval = FALSE;
     
     /* Called first when opening window and then when resizing window */
@@ -2053,21 +2053,24 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 	/* get a cairo_t */
 	cr = gdk_cairo_create (widget->window);
-
-	// draw a rectangle exactly the same size as the visible area,
-	//  and make it the clip area
+	cairo_set_tolerance (cr,2.0);
+	
+	/* draw a rectangle exactly the same size as the visible area,
+	 * and make it the clip area
+	 */
 	cairo_rectangle (cr,event->area.x, event->area.y,
 		event->area.width, event->area.height);
 	cairo_clip (cr);
-
-	// translate the draw area before drawing
+	
+	/* translate the draw area before drawing */
 	cairo_translate (cr,-screen.trans_x,-screen.trans_y);
 
-	// scale the drawing by the specified scale factor (inverting y since
-	//  cairo y axis points down)
+	/* scale the drawing by the specified scale factor (inverting y since
+	 * cairo y axis points down)
+	 */ 
 	cairo_scale (cr,(float) screen.transf->scale,-(float) screen.transf->scale);
 	
-	// fill the background with the appropriate color
+	/* fill the background with the appropriate color */
 	cairo_set_source_rgba (cr, (double) screen.background->red/G_MAXUINT16,
 		(double) screen.background->green/G_MAXUINT16,
 		(double) screen.background->blue/G_MAXUINT16, 1);
@@ -2093,12 +2096,13 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 			// cairo_push_group_with_content   (cr,CAIRO_CONTENT_COLOR);
 			// g_warning ("color %f",(float)screen.file[i]->color->green);
+			
 			cairo_set_source_rgba (cr, (double) screen.file[i]->color->red/G_MAXUINT16,
 				(double) screen.file[i]->color->green/G_MAXUINT16,
 				(double) screen.file[i]->color->blue/G_MAXUINT16, 1);
 			
-			// for now, scale the cairo context if the units are mms
-			// TODO: normalize all gerb_image data to mm during parsing
+			/* for now, scale the cairo context if the units are mms */
+			/* TODO: normalize all gerb_image data to mm during parsing */
 			cairo_save (cr);
 			if ((screen.file[i]->image->netlist->next)&&
 				(screen.file[i]->image->netlist->next->unit==MM)) {
@@ -2110,8 +2114,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 			//cairo_pop_group_to_source       (cr);
 			//cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
 			//cairo_paint_with_alpha(cr,0.7);
-			//cairo_set_operator (cr, CAIRO_OPERATOR_ATOP);
-			// renderImage (, screen.file[i]->image, polarity);
+			//cairo_set_operator (cr, CAIRO_OPERATOR_ATOP);			
 		}
 	}
 
@@ -2200,7 +2203,7 @@ draw_measure_distance(void)
 
     if (screen.state != MEASURE)
 	return;
-#if !defined (__MINGW32__) //taken out because of different drawing behaviour under win32 resulting in a smear
+#if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
     memset(&values, 0, sizeof(values));
     values.function = GDK_XOR;
     values.foreground = *screen.dist_measure_color;
@@ -2528,7 +2531,7 @@ main(int argc, char *argv[])
     screen.execpath = "";
 #endif    
     screen.transf = gerb_transf_new();
-    screen.transf->scale = 0.0; // will force reinitialization of the screen later
+    screen.transf->scale = 0.0; /* will force reinitialization of the screen later */
 
     setup_init();
 	
