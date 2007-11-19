@@ -404,12 +404,21 @@ parse_gerb(gerb_file_t *fd)
 		repeat_off_Y = (curr_net->step_and_repeat->Y - 1)*
 		  curr_net->step_and_repeat->dist_Y;
 	      }
+
+	      setminmax(&(image->info->min_x), &(image->info->max_x),
+			(curr_net->stop_x) / scale,
+			aperture_size / scale);
+	      
 	      setminmax(&(image->info->min_x), &(image->info->max_x),
 			(curr_net->stop_x + repeat_off_X ) / scale,
 			aperture_size / scale);
 	      
 	      setminmax(&(image->info->min_y), &(image->info->max_y),
 			(curr_net->stop_y + repeat_off_Y) / scale,
+			aperture_size / scale);
+
+	      setminmax(&(image->info->min_y), &(image->info->max_y),
+			(curr_net->stop_y) / scale,
 			aperture_size / scale);
 	    }
 	    

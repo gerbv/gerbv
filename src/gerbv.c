@@ -1113,7 +1113,8 @@ autoscale(void)
     double max_width = LONG_MIN, max_height = LONG_MIN;
     double x_scale, y_scale;
     int i;
-    
+    gerb_image_info_t *info;
+
     if (screen.drawing_area == NULL)
 	return;
 
@@ -1125,25 +1126,25 @@ autoscale(void)
     for(i = 0; i < MAX_FILES; i++) {
     /*check if not only screen.file[] exists, but also if it is not a search and select layer*/
         if ((screen.file[i]) && (screen.file[i]->image != NULL)){
-            
-            /* 
-             * Find the biggest image and use as a size reference
-             */
-	    screen.gerber_bbox.x1 = MIN(screen.gerber_bbox.x1,
-					screen.file[i]->image->info->min_x +
-					screen.file[i]->image->info->offset_a_in);
-	    screen.gerber_bbox.y1 = MIN(screen.gerber_bbox.y1,
-					screen.file[i]->image->info->min_y +
-					screen.file[i]->image->info->offset_b_in);
-	    screen.gerber_bbox.x2 = MAX(screen.gerber_bbox.x2,
-					screen.file[i]->image->info->max_x +
-					screen.file[i]->image->info->offset_a_in);
-	    screen.gerber_bbox.y2 = MAX(screen.gerber_bbox.y2,
-					screen.file[i]->image->info->max_y +
-					screen.file[i]->image->info->offset_b_in);
-        }
+	  
+	  info = screen.file[i]->image->info;
+	  /* 
+	   * Find the biggest image and use as a size reference
+	   */
+	  screen.gerber_bbox.x1 = MIN(screen.gerber_bbox.x1,
+				      info->min_x +
+				      info->offset_a_in);
+	  screen.gerber_bbox.y1 = MIN(screen.gerber_bbox.y1,
+				      info->min_y +
+				      info->offset_b_in);
+	  screen.gerber_bbox.x2 = MAX(screen.gerber_bbox.x2,
+				      info->max_x +
+				      info->offset_a_in);
+	  screen.gerber_bbox.y2 = MAX(screen.gerber_bbox.y2,
+				      info->max_y +
+				      info->offset_b_in);
+	}
     }
-
 
     max_width = screen.gerber_bbox.x2 - screen.gerber_bbox.x1;
     max_height = screen.gerber_bbox.y2 - screen.gerber_bbox.y1;
@@ -1166,13 +1167,10 @@ autoscale(void)
     /*
      * Calculate translation
      */
-    if (x_scale < y_scale) {
-	screen.trans_x = 0;
-	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.transf->scale*(max_height))/2.0)+screen.drawing_area->allocation.height);
-    } else {
-	screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.transf->scale*(max_width))/2.0));
-	screen.trans_y = 0;
-    }
+    
+    screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.transf->scale*(max_height))/2.0)+screen.drawing_area->allocation.height);
+    screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.transf->scale*(max_width))/2.0));
+    
 
     /* Initialize clipping bbox to contain entire image */
     screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
