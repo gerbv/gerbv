@@ -2042,7 +2042,6 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 	int i;
 	GdkWindow *window;
 	int retval = TRUE;
-	static struct gerbv_redraw_state state;
 
 	window = gtk_widget_get_parent_window(widget);
 	/* This might be lengthy, show that we're busy by changing the pointer */
@@ -2512,8 +2511,12 @@ main(int argc, char *argv[])
     gint      width, height;
     int       read_opt;
     int       i;
-    int       req_width = -1, req_height = -1, req_x = 0, req_y = 0;
-    char      *rest, *project_filename = NULL;
+    int       req_width = -1, req_height = -1;
+#ifdef HAVE_GETOPT_LONG
+    int       req_x = 0, req_y = 0;
+    char      *rest;
+#endif
+    char      *project_filename = NULL;
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt

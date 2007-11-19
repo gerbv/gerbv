@@ -57,6 +57,14 @@ typedef struct gerb_cirseg {
 } gerb_cirseg_t;
 
 
+typedef struct gerb_step_and_repeat { /* SR parameters */
+    int X;
+    int Y;
+    double dist_X;
+    double dist_Y;
+} gerb_step_and_repeat_t;
+  
+
 typedef struct gerb_net {
     double start_x;
     double start_y;
@@ -71,6 +79,7 @@ typedef struct gerb_net {
     struct gerb_cirseg *cirseg;
     struct gerb_net *next;
     GString *label;
+    struct gerb_step_and_repeat *step_and_repeat;  /* SR parameters, NULL if not set */
 } gerb_net_t;
 
 
@@ -111,12 +120,7 @@ typedef struct gerb_image_info {
     enum encoding_t encoding;
     double scale_factor_A;  /* SF parameters */
     double scale_factor_B;
-    struct {                /* SR parameters */
-	int X;
-	int Y;
-	double dist_X;
-	double dist_Y;
-    } step_and_repeat;
+    struct gerb_step_and_repeat step_and_repeat;  /* SR parameters */
 } gerb_image_info_t;
 
 

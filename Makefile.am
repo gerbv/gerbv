@@ -19,7 +19,7 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-SUBDIRS = src man doc example desktop
+SUBDIRS = src man doc example desktop scheme
 
 MOSTLYCLEANFILES = *~ *.o gerbv
 CLEANFILES = *~ *.o gerbv

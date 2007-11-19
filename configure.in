@@ -218,7 +218,8 @@ AC_OUTPUT(	Makefile \
 		example/orcad/Makefile \
 		example/Mentor-BoardStation/Makefile \
 		example/Makefile \
-		desktop/Makefile )
+		desktop/Makefile \
+		scheme/Makefile )
         
 AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:
