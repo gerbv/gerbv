@@ -1,3 +1,8 @@
+2007-11-20  Julian Lamb
+
+	* src/draw.c: Add rendering code for arcs. Also, fix the rendiring of oval
+	  aperatures.
+
 2007-11-19  Julian Lamb
 
 	* src/draw.[ch], examples/am-test/am-test.gbx: Complete the conversion to

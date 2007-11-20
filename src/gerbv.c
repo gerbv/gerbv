@@ -2094,7 +2094,7 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 				polarity = screen.file[i]->image->info->polarity;
 			}
 
-			// cairo_push_group_with_content   (cr,CAIRO_CONTENT_COLOR);
+			//cairo_push_group_with_content   (cr,CAIRO_CONTENT_COLOR);
 			// g_warning ("color %f",(float)screen.file[i]->color->green);
 			
 			cairo_set_source_rgba (cr, (double) screen.file[i]->color->red/G_MAXUINT16,

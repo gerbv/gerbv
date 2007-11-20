@@ -130,10 +130,11 @@ gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height)
 static void
 gerbv_draw_oval(cairo_t *cairoTarget, gdouble width, gdouble height)
 {
-	// cairo doesn't have a function to draw ovals, so we must
-	//  draw an arc and stretch it by scaling different x and y values
+	/* cairo doesn't have a function to draw ovals, so we must
+	 * draw an arc and stretch it by scaling different x and y values
+	 */
 	cairo_save (cairoTarget);
-	cairo_scale (cairoTarget, 1.0 / (height / 2.0), 1.0 / (width / 2.0));
+	cairo_scale (cairoTarget, height, width);
 	gerbv_draw_circle (cairoTarget, 1);
 	cairo_restore (cairoTarget);
 	return;
@@ -212,6 +213,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 				cairo_new_path(cairoTarget);
 				if (ip->data.ival == 1) {
 			    		gerbv_draw_circle (cairoTarget, s->stack[CIRCLE_DIAMETER]);
+			    		cairo_fill (cairoTarget);
 				}
 				else if (ip->data.ival == 4) {
 					int pointCounter,numberOfPoints;
@@ -222,7 +224,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 
 					for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
 						cairo_line_to (cairoTarget, s->stack[pointCounter * 2 + OUTLINE_FIRST_X],
-						s->stack[pointCounter * 2 + OUTLINE_FIRST_Y]);
+							s->stack[pointCounter * 2 + OUTLINE_FIRST_Y]);
 					}
 
 					/* although the gerber specs allow for an open outline,
@@ -230,14 +232,14 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 					   rendering softare automatically, since there is no dimension
 					   for line thickness.
 					*/
-					cairo_close_path (cairoTarget);
+					cairo_fill (cairoTarget);
 				}
 				else if (ip->data.ival == 5) {
 					cairo_move_to (cairoTarget, s->stack[POLYGON_CENTER_X],
 						s->stack[POLYGON_CENTER_Y]);
 					gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER] / 2.0,
 						s->stack[POLYGON_NUMBER_OF_POINTS], s->stack[POLYGON_ROTATION]);
-					cairo_close_path(cairoTarget);
+					cairo_fill (cairoTarget);
 				}
 				else if (ip->data.ival == 6) {
 					gdouble diameter, gap;
@@ -258,9 +260,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 				    	
 				    	cairo_set_line_width (cairoTarget, s->stack[MOIRE_CROSSHAIR_THICKNESS]);
 				    	cairo_move_to (cairoTarget, -crosshairRadius, 0);
-				    	cairo_line_to (cairoTarget, crosshairRadius, 0);
-				    	cairo_stroke (cairoTarget);
-				    	
+				    	cairo_line_to (cairoTarget, crosshairRadius, 0);    	
 				    	cairo_move_to (cairoTarget, 0, -crosshairRadius);
 				    	cairo_line_to (cairoTarget, 0, crosshairRadius);
 				    	cairo_stroke (cairoTarget);
@@ -308,17 +308,19 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 		    			cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION] * M_PI/180);
 		    			cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
 		    				s->stack[LINE21_WIDTH], s->stack[LINE21_HEIGHT]);
+		    			cairo_fill (cairoTarget);
 		    		}
 				else if (ip->data.ival == 22) {
 			    		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION] * M_PI/180);
 			    		cairo_rectangle (cairoTarget, s->stack[LINE22_LOWER_LEFT_X],
 		    				s->stack[LINE22_LOWER_LEFT_Y], s->stack[LINE22_WIDTH],
 		    				s->stack[LINE22_HEIGHT]);
+		    			cairo_fill (cairoTarget);
 				}
 				else {
 					handled = 0;
 				}
-				cairo_fill (cairoTarget);
+				
 			    /* 
 			     * Here we reset the stack pointer. It's not general correct
 			     * correct to do this, but since I know how the compiler works
@@ -340,7 +342,7 @@ int
 render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 {
     struct gerb_net *net;
-    double x1, y1, x2, y2;
+    double x1, y1, x2, y2, cp_x=0, cp_y=0;
     int in_parea_fill = 0,drawing_parea_fill = 0;
     gdouble p1, p2, p3, p4, p5;
     
@@ -365,12 +367,17 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 		double sr_x = repeat_i * repeat_dist_X;
 		double sr_y = repeat_j * repeat_dist_Y;
 		
-
 		x1 = net->start_x + sr_x;
 		y1 = net->start_y + sr_y;
 		x2 = net->stop_x + sr_x;
 		y2 = net->stop_y + sr_y;
 
+		/* translate circular x,y data as well */
+		if (net->cirseg) {
+			cp_x = net->cirseg->cp_x + sr_x;
+			cp_y = net->cirseg->cp_y + sr_y;
+		}
+	
 		if ((net->layer_polarity == CLEAR)) {
 			cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
 		}
@@ -442,9 +449,26 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 						break;
 					case CW_CIRCULAR :
 					case CCW_CIRCULAR :
-						/*gerbv_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
-							       net->cirseg->angle1, net->cirseg->angle2); */
-						break;	
+						/* cairo doesn't have a function to draw oval arcs, so we must
+						 * draw an arc and stretch it by scaling different x and y values
+						 */
+						cairo_new_path(cairoTarget);
+						cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+						cairo_save (cairoTarget);
+						cairo_translate(cairoTarget, cp_x, cp_y);
+						cairo_scale (cairoTarget, net->cirseg->height,
+							net->cirseg->width);
+						if (net->cirseg->angle2 > net->cirseg->angle1) {
+							cairo_arc (cairoTarget, 0.0, 0.0, 0.5, net->cirseg->angle1 * M_PI/180,
+								net->cirseg->angle2 * M_PI/180);
+						}
+						else {
+							cairo_arc_negative (cairoTarget, 0.0, 0.0, 0.5, net->cirseg->angle1 * M_PI/180,
+								net->cirseg->angle2 * M_PI/180);
+						}
+						cairo_restore (cairoTarget);
+						cairo_stroke (cairoTarget);
+						break;
 					default :
 						break;
 				}
@@ -493,7 +517,7 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 				cairo_fill (cairoTarget);
 				cairo_restore (cairoTarget);
 				break;
-			default :
+			default:
 				GERB_MESSAGE("Unknown aperture state\n");
 				return 0;
 		}
