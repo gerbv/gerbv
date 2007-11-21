@@ -21,10 +21,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <glib.h>
 #include <math.h>
+#include "gerb_error.h"
 #include "gerb_image.h"
 
 /** Allocates a new gerb_image structure
@@ -155,15 +160,27 @@ gerb_verify_error_t
 gerb_image_verify(gerb_image_t *image)
 {
     gerb_verify_error_t error = GERB_IMAGE_OK;
-    int i;
+    int i, n_nets;;
+    gerb_net_t *net;
 
     if (image->netlist == NULL) error |= GERB_IMAGE_MISSING_NETLIST;
     if (image->format == NULL)  error |= GERB_IMAGE_MISSING_FORMAT;
     if (image->info == NULL)    error |= GERB_IMAGE_MISSING_INFO;
 
-    for (i = 0; i < APERTURE_MAX && image->aperture[i] == NULL; i++);
-    if (i == APERTURE_MAX) error |= GERB_IMAGE_MISSING_APERTURES;
-    
+    /* Count how many nets we have */
+    n_nets = 0;
+    if (image->netlist != NULL) {
+      for (net = image->netlist->next ; net != NULL; net = net->next) {
+	n_nets++;
+      }
+    }
+
+    /* If we have nets but no apertures are defined, then complain */
+    if( n_nets > 0) {
+      for (i = 0; i < APERTURE_MAX && image->aperture[i] == NULL; i++);
+      if (i == APERTURE_MAX) error |= GERB_IMAGE_MISSING_APERTURES;
+    }
+
     return error;
 } /* gerb_image_verify */
 
