@@ -141,11 +141,13 @@ if test "$PKG_CONFIG" = "no"; then
 fi      
 
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.8.0, , [AC_MSG_ERROR([
-*** GTK+-2.0 not installed - please install first ***
+*** Required version of GTK+-2.0 not installed - please install first ***
 Please review the following errors:
 $GTK_PKG_ERRORS])]
 )
 
+GTK_CFLAGS=`$PKG_CONFIG gtk+-2.0 --cflags`
+GTK_LIBS=`$PKG_CONFIG gtk+-2.0 --libs`
 GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 
 #
@@ -158,11 +160,13 @@ GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 #
 
 PKG_CHECK_MODULES(CAIRO, cairo >= 1.0.0, , [AC_MSG_ERROR([
-*** Cairo is not installed - please install first ***
+*** Required version of Cairo is not installed - please install first ***
 Please review the following errors:
 $CAIRO_PKG_ERRORS])]
 )
 
+CAIRO_CFLAGS=`$PKG_CONFIG --cflags cairo `
+CAIRO_LIBS=`$PKG_CONFIG --libs cairo`
 CAIRO_VER=`$PKG_CONFIG cairo --modversion`
 
 #
@@ -212,10 +216,24 @@ AC_SUBST(OTHERPATHSEP)
 
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
+
 AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
 
+AC_SUBST(GTK_CFLAGS)
+AC_SUBST(GTK_LIBS)
+
+AC_SUBST(CAIRO_CFLAGS)
+AC_SUBST(CAIRO_LIBS)
+
 AC_SUBST(WIN32_CFLAGS)
+
+CFLAGS="$GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS $WIN32_CFLAGS"
+AC_SUBST(CFLAGS)
+
+LIBS="$GDK_PIXBUF_LIBS $PNG_LIBS $GTK_LIBS $CAIRO_LIBS"
+AC_SUBST(LIBS)
+
 
 ############################################################
 #
@@ -262,6 +280,7 @@ AC_MSG_RESULT([
 
    CPPFLAGS:                 $CPPFLAGS
    CFLAGS:                   $CFLAGS
+   LDFLAGS:                  $LDFLAGS
    LIBS:                     $LIBS
 
 ])

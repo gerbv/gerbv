@@ -26,6 +26,7 @@
 
 #include <gdk/gdk.h>
 #include "gerber.h"
+#include <cairo.h>
 
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
@@ -109,8 +110,9 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 	     int scale, double trans_x, double trans_y,
 	     enum polarity_t polarity);
 
+int 
+render_image_to_cairo_target(cairo_t *cairoTarget, 
+			     struct gerb_image *image);
 
 #endif /* DRAW_H */
 
-int
-render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image);

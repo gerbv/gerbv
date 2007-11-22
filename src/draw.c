@@ -37,7 +37,7 @@
 
 #include "draw.h"
 #include "gerb_error.h"
-#include <cairo/cairo.h>
+#include <cairo.h>
 
 /*
  * Stack declarations and operations to be used by the simple engine that
