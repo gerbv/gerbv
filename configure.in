@@ -146,8 +146,6 @@ Please review the following errors:
 $GTK_PKG_ERRORS])]
 )
 
-GTK_CFLAGS=`$PKG_CONFIG gtk+-2.0 --cflags`
-GTK_LIBS=`$PKG_CONFIG gtk+-2.0 --libs`
 GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 
 #
@@ -165,8 +163,6 @@ Please review the following errors:
 $CAIRO_PKG_ERRORS])]
 )
 
-CAIRO_CFLAGS=`$PKG_CONFIG --cflags cairo `
-CAIRO_LIBS=`$PKG_CONFIG --libs cairo`
 CAIRO_VER=`$PKG_CONFIG cairo --modversion`
 
 #
@@ -282,6 +278,9 @@ AC_MSG_RESULT([
    CFLAGS:                   $CFLAGS
    LDFLAGS:                  $LDFLAGS
    LIBS:                     $LIBS
+
+   GTK Version:              $GTK_VER
+   Cairo Version:            $CAIRO_VER
 
 ])
 
