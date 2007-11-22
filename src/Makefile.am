@@ -39,7 +39,7 @@ dist_scmdata_DATA = init.scm
 INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@ @PNG_CFLAGS@
 gerbv_LDADD = @GTK_LIBS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@
 
-AM_CFLAGS=-Wall -DBACKEND_DIR='"$(scmdatadir)"'
+AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"'
 
 MOSTLYCLEANFILES = *~ *.o gerbv
 CLEANFILES = *~ *.o .#* .deps/* gerbv
