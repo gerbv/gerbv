@@ -19,12 +19,12 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-scmdatadir = @BACKEND_DIR@
-scmdata_DATA = gerb-ps.scm gerb-debug.scm
+scmdatadir = $(datarootdir)/gerbv/scheme/
+dist_scmdata_DATA = gerb-ps.scm gerb-debug.scm
 
 EXTRA_DIST = gbx2ps.scm  parse-gerber.scm  pgt.scm
 
 MOSTLYCLEANFILES = core *~
-CLEANFILES = core *~
-DISTCLEANFILES = core *~ Makefile
-MAINTAINERCLEANFILES = core *~ Makefile
+CLEANFILES = core *~ *.o
+DISTCLEANFILES = core *~ *.o Makefile
+MAINTAINERCLEANFILES = core *~ *.o Makefile Makefile.in 

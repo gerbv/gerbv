@@ -31,8 +31,7 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h draw.c \
 		opdefines.h project.c project.h scheme-private.h scheme.c \
 		scheme.h setup.c setup.h tooltable.c tooltable.h
 
-scmdatadir = @BACKEND_DIR@
-##  scmdatadir = $(datarootdir)/gerbv/scheme/
+scmdatadir = $(datarootdir)/gerbv/scheme/
 dist_scmdata_DATA = init.scm
 
 INCLUDES = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@ @PNG_CFLAGS@
@@ -41,6 +40,6 @@ gerbv_LDADD = @GTK_LIBS@ @GDK_PIXBUF_LIBS@ @PNG_LIBS@
 AM_CFLAGS=-Wall -DBACKEND_DIR='"$(scmdatadir)"'
 
 MOSTLYCLEANFILES = *~ *.o gerbv
-CLEANFILES = *~ *.o .#* .deps/* gerbv
+CLEANFILES = *~ *.o .deps/* gerbv .#* 
 DISTCLEANFILES = *~ *.o gerbv Makefile
-MAINTAINERCLEANFILES = *~ *.o gerbv Makefile
+MAINTAINERCLEANFILES = *~ *.o gerbv Makefile Makefile.in
