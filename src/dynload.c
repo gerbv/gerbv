@@ -76,7 +76,7 @@ static HMODULE dl_attach(const char *module) {
 
 static FARPROC dl_proc(HMODULE mo, const char *proc) {
   const char *errmsg;
-  FARPROC fp=dlsym(mo,proc);
+  FARPROC fp= (FARPROC) dlsym(mo,proc);
   if ((errmsg = dlerror()) == 0) {
     return fp;
   }
