@@ -1106,13 +1106,8 @@ autoscale(void)
     /*
      * Calculate translation
      */
-    if (x_scale < y_scale) {
-	screen.trans_x = 0;
-	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.scale*(max_height))/2.0));
-    } else {
-	screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.scale*(max_width))/2.0));
-	screen.trans_y = 0;
-    }
+    screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.scale*(max_height))/2.0));
+    screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.scale*(max_width))/2.0));
 
     /* Initialize clipping bbox to contain entire image */
     screen.clip_bbox.x1 = -screen.trans_x/(double)screen.scale;
