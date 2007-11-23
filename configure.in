@@ -201,34 +201,14 @@ fi
 #
 ############################################################
 
-#AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Program version])
 
 AC_CHECK_HEADERS(unistd.h getopt.h string.h sys/mman.h sys/types.h sys/stat.h stdlib.h regex.h libgen.h)
 
 AC_CHECK_FUNCS(getopt_long)
 
-AC_SUBST(PATHSEP)
-AC_SUBST(OTHERPATHSEP)
-
-AC_SUBST(GDK_PIXBUF_CFLAGS)
-AC_SUBST(GDK_PIXBUF_LIBS)
-
-AC_SUBST(PNG_CFLAGS)
-AC_SUBST(PNG_LIBS)
-
-AC_SUBST(GTK_CFLAGS)
-AC_SUBST(GTK_LIBS)
-
-AC_SUBST(CAIRO_CFLAGS)
-AC_SUBST(CAIRO_LIBS)
-
-AC_SUBST(WIN32_CFLAGS)
 
 CFLAGS="$GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS $WIN32_CFLAGS"
-AC_SUBST(CFLAGS)
-
 LIBS="$GDK_PIXBUF_LIBS $PNG_LIBS $GTK_LIBS $CAIRO_LIBS"
-AC_SUBST(LIBS)
 
 
 ############################################################
