@@ -22,6 +22,3 @@
 EXTRA_DIST=README.txt top.gbx top_sr.gbx
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

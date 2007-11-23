@@ -23,5 +23,3 @@ man_MANS = gerbv.1
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~ gerbv.1
-DISTCLEANFILES = *~ Makefile gerbv.1
-MAINTAINERCLEANFILES = *~ Makefile gerbv.1

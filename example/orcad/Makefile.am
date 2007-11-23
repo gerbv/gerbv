@@ -23,8 +23,4 @@ EXTRA_DIST=ast.ps README.txt rs232_cm.bot rs232_cm.smt rs232_cm.top \
 	rs232_cm.asb rs232_cm.drd rs232_cm.ssb rs232_cm.ast rs232_cm.smb \
 	rs232_cm.sst thruhole.tap
 
-
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

@@ -22,6 +22,3 @@
 EXTRA_DIST=am-test.gbx
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

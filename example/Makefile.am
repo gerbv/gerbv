@@ -23,6 +23,3 @@ SUBDIRS = am-test cslk dan eaglecad1 ekf2 jj Mentor-BoardStation nollezappare \
 	 numpres orcad
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

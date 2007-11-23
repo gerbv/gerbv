@@ -22,6 +22,3 @@
 EXTRA_DIST=l1-1.grb l1-2.grb l1-3.grb l1-orig.grb README.txt
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

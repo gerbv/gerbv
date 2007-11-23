@@ -22,6 +22,3 @@
 EXTRA_DIST = gerbv.desktop gerbv.png
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

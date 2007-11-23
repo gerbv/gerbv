@@ -26,6 +26,3 @@ EXTRA_DIST= numpres.pcb.output_group1.grb numpres.pcb.output_group2.grb \
 
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

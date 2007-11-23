@@ -22,6 +22,3 @@
 EXTRA_DIST=artwork_1.grb README.txt
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

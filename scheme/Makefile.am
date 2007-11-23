@@ -25,6 +25,3 @@ dist_scmdata_DATA = gerb-ps.scm gerb-debug.scm
 EXTRA_DIST = gbx2ps.scm  parse-gerber.scm  pgt.scm
 
 MOSTLYCLEANFILES = core *~
-CLEANFILES = core *~
-DISTCLEANFILES = core *~ Makefile
-MAINTAINERCLEANFILES = core *~ Makefile

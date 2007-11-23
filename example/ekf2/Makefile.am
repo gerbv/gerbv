@@ -24,6 +24,3 @@ EXTRA_DIST=README.txt l0.grb l1.grb l2.grb l3.grb l4.grb l5.grb \
 	sieb0.grb sieb1.grb  drill0.exc drill1.exc drill20.exc drill30.exc
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

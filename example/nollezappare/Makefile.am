@@ -22,6 +22,3 @@
 EXTRA_DIST=AssemblyTop.gdo ThruHolePlated.ncd EtchLayer2Bottom.gdo
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

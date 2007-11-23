@@ -22,6 +22,3 @@
 EXTRA_DIST=cslk.gbx cslk.ps README.txt
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

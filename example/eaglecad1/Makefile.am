@@ -22,6 +22,3 @@
 EXTRA_DIST=top-cop.gbx top-cop.pdf
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

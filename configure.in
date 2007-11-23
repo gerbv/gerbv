@@ -186,7 +186,7 @@ if test "$exportpng" = "yes" ; then
 	AC_MSG_RESULT([$PNG_CFLAGS])
 
 	AC_MSG_CHECKING([for libpng libs])
-	PNG_LIBS="`$LIBPNG_CONFIG --libs`"
+	PNG_LIBS="`$LIBPNG_CONFIG --ldflags`"
 	AC_MSG_RESULT([$PNG_LIBS])
 dnl	AC_CHECK_LIB($PNG_LIBS, png_write_info,, 
 dnl	AC_MSG_ERROR(*** Must have libpng to get export-png to work))

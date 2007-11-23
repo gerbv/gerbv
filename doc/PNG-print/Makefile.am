@@ -22,6 +22,3 @@
 EXTRA_DIST=gimp-window.jpg  PNGPrintMiniHowto.txt
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

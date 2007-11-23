@@ -22,6 +22,3 @@ INFO = doxygen ../Doxygen.nopreprocessing
 EXTRA_DIST =  
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

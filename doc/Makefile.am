@@ -24,6 +24,3 @@ SUBDIRS = PNG-print eagle html
 EXTRA_DIST = Doxyfile.nopreprocessing aperturemacro.txt sources.txt image2pixmap.fig projectfiles.txt
 
 MOSTLYCLEANFILES = *~
-CLEANFILES = *~
-DISTCLEANFILES = *~ Makefile
-MAINTAINERCLEANFILES = *~ Makefile Makefile.in

@@ -21,7 +21,3 @@
 
 SUBDIRS = src man doc example desktop scheme
 
-MOSTLYCLEANFILES = *~ *.o gerbv
-CLEANFILES = *~ *.o gerbv
-DISTCLEANFILES = *~ *.o gerbv Makefile stamp-h*
-MAINTAINERCLEANFILES = *~ *.o gerbv Makefile config.* stamp-h*
