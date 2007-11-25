@@ -52,6 +52,9 @@
 #include "gerb_error.h"
 #include "tooltable.h"
 
+/* #define dprintf printf */
+#define dprintf if(0)printf
+
 #define NOT_IMPL(fd, s) do { \
                              GERB_MESSAGE("Not Implemented:%s\n", s); \
                            } while(0)
@@ -125,6 +128,10 @@ parse_drillfile(gerb_file_t *fd)
     curr_net = image->netlist;
 
     state->unit = drill_guess_format(fd, image);
+    state->header_unit = state->unit;
+
+    dprintf ("%s:  drill_guess_format gave %s\n", __FUNCTION__, 
+	     state->unit == MM ? "mm" : "inch");
 
     if (image && image->format ){
 	x_scale = pow(10.0, (double)image->format->x_dec);
@@ -338,6 +345,8 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     int i;
     enum unit_t unit;
 
+    dprintf ("drill_guess_format(%d, %p)\n", fd, image);
+
     state = new_state(state);
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
@@ -349,6 +358,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 
     /* This is just a special case of the normal parser */
     while ((read = gerb_fgetc(fd)) != EOF && !done) {
+      dprintf( "%s:  read = \'%c\'\n", __FUNCTION__, read);
 	switch ((char)read) {
 	case ';' :
 	case 'F' :
@@ -420,6 +430,8 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     }
 
     /* Unfortunately, inches seem more common, so that's the default */
+    dprintf ("%s: metric_score = %d, inch_score = %d\n", __FUNCTION__,
+	     metric_score, inch_score);
     if(metric_score > inch_score) {
 	unit = MM;
     } else {
@@ -547,6 +559,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     if ((tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX)) 
 	GERB_COMPILE_ERROR("Tool out of bounds: %d\n", tool_num);
 
+    dprintf ("%s: tool_num = %d\n", __FUNCTION__, tool_num);
     /* Set the current tool to the correct one */
     state->current_tool = tool_num;
 
@@ -560,6 +573,8 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 	    size = read_double(fd, 1);
 
+	    dprintf ("%s: Read a size of %g %s\n", __FUNCTION__, size,
+		     state->header_unit == MM ? "mm" : "inch");
 	    if(state->header_unit == MM) {
 		size /= 25.4;
 	    } else if(size >= 4.0) {
@@ -788,6 +803,7 @@ new_state(drill_state_t *state)
 	state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 	state->origin_x = 0.0;
 	state->origin_y = 0.0;
+	state->unit = INCH;
 	state->header_unit = INCH;
     }
     return state;
