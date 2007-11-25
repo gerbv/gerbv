@@ -121,6 +121,7 @@ parse_drillfile(gerb_file_t *fd)
     curr_net = image->netlist;
 
     state->unit = drill_guess_format(fd, image);
+    state->header_unit = state->unit;
 
     if (image && image->format ){
 	x_scale = pow(10.0, (double)image->format->x_dec);
@@ -814,6 +815,7 @@ new_state(drill_state_t *state)
 	state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 	state->origin_x = 0.0;
 	state->origin_y = 0.0;
+	state->unit = INCH;
 	state->header_unit = INCH;
     }
     return state;
