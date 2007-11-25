@@ -64,6 +64,10 @@
 #endif /* EXPORT_PNG */
 #include "tooltable.h"
 
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#define dprintf if(DEBUG) printf
+
+
 #define WIN_TITLE "Gerber Viewer : "
 
 
