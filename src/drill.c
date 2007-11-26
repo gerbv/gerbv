@@ -44,7 +44,7 @@
 #include <unistd.h>
 #endif
 
-
+#include "common.h"
 #include "drill.h"
 #include "gerb_error.h"
 #include "tooltable.h"
