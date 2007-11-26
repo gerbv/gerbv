@@ -33,6 +33,9 @@ AM_CONFIG_HEADER(config.h)
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
 
+dnl Debug printing
+AC_DEFINE(DEBUG,0,[#define DEBUG 1 for debug printing])
+
 ############################################################
 #
 # Checks for cygwin/mingw32

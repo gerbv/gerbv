@@ -52,8 +52,8 @@
 #include "gerb_error.h"
 #include "tooltable.h"
 
-/* #define dprintf printf */
-#define dprintf if(0)printf
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#define dprintf if(DEBUG) printf
 
 #define NOT_IMPL(fd, s) do { \
                              GERB_MESSAGE("Not Implemented:%s\n", s); \
