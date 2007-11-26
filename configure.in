@@ -66,6 +66,20 @@ esac
 # Checks for our configure args
 #
 
+dnl --enable-debug
+debug=no
+AC_ARG_ENABLE(debug,
+    [  --enable-debug          Enable fairly verbose debug output],
+    [
+        if test $enableval = "yes"; then
+		debug=yes
+	fi
+    ],
+    [
+	debug=no
+    ])
+AC_DEFINE(DEBUG,,[Define to 1 to enable debugging code])
+
 dnl --enable-exportpng
 AC_ARG_ENABLE(exportpng,
     [  --disable-exportpng     Disable PNG export.],
@@ -207,7 +221,7 @@ AC_CHECK_HEADERS(unistd.h getopt.h string.h sys/mman.h sys/types.h sys/stat.h st
 AC_CHECK_FUNCS(getopt_long)
 
 
-CFLAGS="$GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS $WIN32_CFLAGS"
+CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS $WIN32_CFLAGS"
 LIBS="$GDK_PIXBUF_LIBS $PNG_LIBS $GTK_LIBS $CAIRO_LIBS"
 
 
