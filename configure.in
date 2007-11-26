@@ -33,9 +33,6 @@ AM_CONFIG_HEADER(config.h)
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
 
-dnl Debug printing
-AC_DEFINE(DEBUG,0,[#define this for debug printing])
-
 ############################################################
 #
 # Checks for cygwin/mingw32
@@ -68,6 +65,20 @@ esac
 # 
 # Checks for our configure args
 #
+
+dnl --enable-debug
+debug=0
+AC_ARG_ENABLE(debug,
+    [  --enable-debug          Enable fairly verbose debug output],
+    [
+        if test $enableval = "yes"; then
+                debug=1
+        fi
+    ],
+    [
+        debug=0
+    ])
+AC_DEFINE_UNQUOTED(DEBUG, $debug, [Define to 1 to enable debugging code])
 
 dnl --enable-exportpng
 AC_ARG_ENABLE(exportpng,
