@@ -125,6 +125,7 @@ const char path_separator = '/';
 #define SAVE_AS_PROJECT 1
 #define OPEN_PROJECT 2
 
+static void show_about_dialog(GtkWidget *widget, gpointer data);
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void draw_zoom_outline(gboolean centered);
 static void draw_measure_distance();
@@ -224,6 +225,9 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/Setup/_Units",  NULL,     NULL,             0, "<Branch>"},
     {"/Setup/_Units/m_ils",NULL, unit_func, GERBV_MILS, "<RadioItem>"},
     {"/Setup/_Units/_mm",NULL, unit_func, GERBV_MMS, "/Setup/Units/mils"},
+
+    {"/Help/About",          NULL,     show_about_dialog, 0, NULL},
+
 };
 
 static GtkItemFactoryEntry popup_menu_items[] = {
@@ -234,6 +238,32 @@ static GtkItemFactoryEntry popup_menu_items[] = {
     {"/Invert Color", NULL, invert_color, 0, NULL},
     {"/Swap with Below", NULL, swap_layers, 1, NULL},
 };
+
+
+void
+show_about_dialog(GtkWidget *widget, gpointer data)
+{
+    const gchar *string = "";
+    string = g_strconcat(string, "gerbv -- a Gerber (RS-274/X) viewer.\n\n");
+    string = g_strconcat(string, "This is gerbv version ");
+    string = g_strconcat(string, g_strdup_printf("%s\n", VERSION));
+    string = g_strconcat(string, "gerbv is part of the gEDA Project.\n");
+    string = g_strconcat(string, 
+	       "For more information, browse to http://geda.seul.org/");
+
+    screen.win.about_dialog = 
+	gtk_message_dialog_new(NULL,
+			       GTK_DIALOG_MODAL,
+			       GTK_MESSAGE_INFO,
+			       GTK_BUTTONS_OK,
+			       "%s",
+			       string);
+
+    gtk_dialog_run (GTK_DIALOG (screen.win.about_dialog));
+    gtk_widget_destroy (screen.win.about_dialog);
+
+    return;
+} /* show_about_dialog */
 
 
 void

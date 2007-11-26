@@ -79,6 +79,7 @@ typedef struct {
 	GtkWidget *scale;
 	GtkWidget *log;
 	GtkWidget *project;
+	GtkWidget *about_dialog;
     } win;
 
     gerbv_fileinfo_t *file[MAX_FILES];
