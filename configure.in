@@ -67,18 +67,18 @@ esac
 #
 
 dnl --enable-debug
-debug=no
+debug=0
 AC_ARG_ENABLE(debug,
     [  --enable-debug          Enable fairly verbose debug output],
     [
         if test $enableval = "yes"; then
-		debug=yes
+		debug=1
 	fi
     ],
     [
-	debug=no
+	debug=0
     ])
-AC_DEFINE(DEBUG,,[Define to 1 to enable debugging code])
+AC_DEFINE_UNQUOTED(DEBUG, $debug, [Define to 1 to enable debugging code])
 
 dnl --enable-exportpng
 AC_ARG_ENABLE(exportpng,
