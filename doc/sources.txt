@@ -39,8 +39,7 @@ http://www.precma.com/informatica/tutorial.htm
 
 
 * Excellon Drill Format
-http://www.excellon.com/applicationengineering/manuals/program.htm
-
+http://www.excellon.com/manuals/program.htm
 
 * Example on other free (as in free speech) implementations
 I try to list as many program as possible living up to the standards on
