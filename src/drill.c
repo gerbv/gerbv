@@ -52,6 +52,8 @@
 #include "gerb_error.h"
 #include "tooltable.h"
 
+#include "common.h"
+
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
@@ -345,7 +347,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     int i;
     enum unit_t unit;
 
-    dprintf ("drill_guess_format(%d, %p)\n", fd, image);
+    dprintf ("%s: drill_guess_format(%p, %p)\n", __FUNCTION__, fd, image);
 
     state = new_state(state);
     if (state == NULL)
