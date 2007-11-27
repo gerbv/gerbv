@@ -1,3 +1,9 @@
+2007-11-26  Julian Lamb
+
+	* src/draw-gdk.[ch],src/gerber.c: Add gdk rendering code back in so it can
+	  be compiled if cairo isn't available.
+	* src/gerber.c: Fix g_strconcat calls by adding NULL to end of arguments.
+	  
 2007-11-20  Julian Lamb
 
 	* src/draw.c: Add rendering code for arcs. Also, fix the rendiring of oval

@@ -101,6 +101,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 
 #define WIN_TITLE "Gerber Viewer"
 
+//#define RENDER_USING_GDK 1
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {
@@ -244,12 +245,12 @@ void
 show_about_dialog(GtkWidget *widget, gpointer data)
 {
     const gchar *string = "";
-    string = g_strconcat(string, "gerbv -- a Gerber (RS-274/X) viewer.\n\n");
-    string = g_strconcat(string, "This is gerbv version ");
-    string = g_strconcat(string, g_strdup_printf("%s\n", VERSION));
-    string = g_strconcat(string, "gerbv is part of the gEDA Project.\n");
+    string = g_strconcat(string, "gerbv -- a Gerber (RS-274/X) viewer.\n\n",NULL);
+    string = g_strconcat(string, "This is gerbv version ",NULL);
+    string = g_strconcat(string, g_strdup_printf("%s\n", VERSION),NULL);
+    string = g_strconcat(string, "gerbv is part of the gEDA Project.\n",NULL);
     string = g_strconcat(string, 
-	       "For more information, browse to http://geda.seul.org/");
+	       "For more information, browse to http://geda.seul.org/",NULL);
 
     screen.win.about_dialog = 
 	gtk_message_dialog_new(NULL,
@@ -1197,8 +1198,11 @@ autoscale(void)
     /*
      * Calculate translation
      */
-    
-    screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.transf->scale*(max_height))/2.0)+screen.drawing_area->allocation.height);
+#ifdef RENDER_USING_GDK
+	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.transf->scale*(max_height))/2.0));
+#else
+	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.transf->scale*(max_height))/2.0)+screen.drawing_area->allocation.height);
+#endif
     screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.transf->scale*(max_width))/2.0));
     
 
@@ -1578,8 +1582,90 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	state.valid = 1;
     }
     
+#ifdef RENDER_USING_GDK
 
-    
+    /*
+     * Set superimposing function.
+     */
+    gdk_gc_set_function(gc, screen.si_func);
+
+
+    /* 
+     * This now allows drawing several layers on top of each other.
+     * Higher layer numbers have higher priority in the Z-order. 
+     */
+    for(i = state.file_index; i < MAX_FILES; i++) {
+	if (g_main_pending()) {
+	    /* return TRUE to keep this idle function active */
+	    retval = TRUE;
+	    start_idle_redraw_pixmap(widget);
+	    state.file_index = i;
+	    goto redraw_pixmap_end;
+	}
+	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
+	    screen.file[i]) {
+	    enum polarity_t polarity;
+
+	    if (screen.file[i]->inverted) {
+		if (screen.file[i]->image->info->polarity == POSITIVE)
+		    polarity = NEGATIVE;
+		else
+		    polarity = POSITIVE;
+	    } else {
+		polarity = screen.file[i]->image->info->polarity;
+	    }
+
+	    /*
+	     * Show progress in status bar
+	     */
+	    snprintf(screen.statusbar.msgstr, MAX_STATUSMSGLEN,
+		     "%d %s...",
+		     i, screen.file[i]->basename);
+	    update_statusbar(&screen);
+
+	    /*
+	     * Fill up image with all the foreground color. Excess pixels
+	     * will be removed by clipmask.
+	     */
+	    gdk_gc_set_foreground(gc, screen.file[i]->color);
+	    gdk_draw_rectangle(state.curr_pixmap, gc, TRUE, 0, 0, -1, -1);
+
+	    /*
+	     * Translation is to get it inside the allocated pixmap,
+	     * which is not always centered perfectly for GTK/X.
+	     */
+	    image2pixmap(&(state.clipmask),
+			 screen.file[i]->image, screen.transf->scale, 
+			 (screen.clip_bbox.x1-dmin_x)*screen.transf->scale,
+			 (screen.clip_bbox.y1+dmax_y)*screen.transf->scale,
+			 polarity);
+
+	    /* 
+	     * Set clipmask and draw the clipped out image onto the
+	     * screen pixmap. Afterwards we remove the clipmask, else
+	     * it will screw things up when run this loop again.
+	     */
+	    gdk_gc_set_clip_mask(gc, state.clipmask);
+	    gdk_gc_set_clip_origin(gc, 0, 0);
+	    gdk_draw_pixmap(screen.pixmap, gc, state.curr_pixmap, -screen.off_x, -screen.off_y, 0, 0, -1, -1);
+	    gdk_gc_set_clip_mask(gc, NULL);
+	}
+    }
+
+    screen.statusbar.msgstr[0] = '\0';
+    update_statusbar(&screen);
+    /* Clean up */
+    state.valid = 0;
+    /* Free up pixmaps */
+    if (state.curr_pixmap) {
+	gdk_pixmap_unref(state.curr_pixmap);
+    }
+    if (state.clipmask) {
+	gdk_pixmap_unref(state.clipmask);
+    }
+
+#endif
+
     update_rect.x = 0, update_rect.y = 0;
     update_rect.width =	widget->allocation.width;
     update_rect.height = widget->allocation.height;
@@ -2066,6 +2152,93 @@ motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 static gint
 expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
+
+#ifdef RENDER_USING_GDK
+
+    GdkPixmap *new_pixmap;
+    GdkGC *gc = gdk_gc_new(widget->window);
+
+    /*
+     * Create a pixmap with default background
+     */
+    new_pixmap = gdk_pixmap_new(widget->window,
+				widget->allocation.width,
+				widget->allocation.height,
+				-1);
+
+    gdk_gc_set_foreground(gc, screen.background);
+
+    gdk_draw_rectangle(new_pixmap, gc, TRUE, 
+		       event->area.x, event->area.y,
+		       event->area.width, event->area.height);
+    
+    /*
+     * Copy gerber pixmap onto background if we have one to copy.
+     * Do translation at the same time.
+     */
+    if (screen.pixmap != NULL) {
+	gdk_draw_pixmap(new_pixmap,
+			widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+			screen.pixmap, 
+			event->area.x + screen.off_x, 
+			event->area.y + screen.off_y, 
+			event->area.x, event->area.y,
+			event->area.width, event->area.height);
+    }
+
+    /*
+     * Draw the whole thing onto screen
+     */
+    gdk_draw_pixmap(widget->window,
+		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+		    new_pixmap,
+		    event->area.x, event->area.y,
+		    event->area.x, event->area.y,
+		    event->area.width, event->area.height);
+#ifdef GERBV_DEBUG_OUTLINE
+    {
+	    double dx, dy;
+
+	    dx = screen.gerber_bbox.x2-screen.gerber_bbox.x1;
+	    dy = screen.gerber_bbox.y2-screen.gerber_bbox.y1;
+	    gdk_gc_set_foreground(gc, screen.dist_measure_color);
+	    gdk_draw_rectangle(widget->window, gc, FALSE, 
+			       (screen.gerber_bbox.x1-1.1)*screen.scale - screen.trans_x,
+			       ((screen.gerber_bbox.y1-0.6)*screen.scale - screen.trans_y),
+			       dx*screen.scale,
+			       dy*screen.scale);
+    }
+#endif /* DEBUG_GERBV_OUTLINE */
+
+    gdk_pixmap_unref(new_pixmap);
+    gdk_gc_unref(gc);
+
+    /*
+     * Draw Zooming outline if we are in that mode
+     */
+    if (screen.state == ZOOM_OUTLINE) {
+	draw_zoom_outline(screen.centered_outline_zoom);
+    } else if (screen.state == MEASURE) {
+	draw_measure_distance();
+    }
+    /*
+     * Raise popup windows if they happen to disappear
+     */
+    if (screen.win.load_file && screen.win.load_file->window)
+	gdk_window_raise(screen.win.load_file->window);
+    if (screen.win.color_selection && screen.win.color_selection->window)
+	gdk_window_raise(screen.win.color_selection->window);
+    if (screen.win.export_png && screen.win.export_png->window)
+	gdk_window_raise(screen.win.export_png->window);
+    if (screen.win.scale && screen.win.scale->window)
+	gdk_window_raise(screen.win.scale->window);
+    if (screen.win.log && screen.win.log->window)
+	gdk_window_raise(screen.win.log->window);
+
+    return FALSE;
+    
+#else   
+    
 	cairo_t *cr;
 	int i;
 	GdkWindow *window;
@@ -2156,6 +2329,8 @@ expose_event (GtkWidget *widget, GdkEventExpose *event)
 	}
 
 	return retval;
+
+#endif
 } /* expose_event */
 
 
@@ -2876,4 +3051,4 @@ main(int argc, char *argv[])
     gtk_main();
     
     return 0;
-} /* main */
+} /* main */ 
