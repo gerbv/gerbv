@@ -186,7 +186,7 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 
     for (net = image->netlist->next ; net != NULL; net = net->next) {
       int repeat_X=1, repeat_Y=1;
-      double repeat_dist_X, repeat_dist_Y;
+      double repeat_dist_X=0, repeat_dist_Y=0;
       int repeat_i, repeat_j;
 
       /*

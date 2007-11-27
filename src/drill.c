@@ -342,7 +342,7 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     int i;
     enum unit_t unit;
 
-    dprintf ("drill_guess_format(%d, %p)\n", fd, image);
+    dprintf ("drill_guess_format(%p, %p)\n", fd, image);
 
     state = new_state(state);
     if (state == NULL)
