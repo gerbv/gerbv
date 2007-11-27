@@ -25,3 +25,5 @@ MOSTLYCLEANFILES = *~ *.o gerbv
 CLEANFILES = *~ *.o gerbv
 DISTCLEANFILES = *~ *.o gerbv stamp-h* Makefile configure 
 MAINTAINERCLEANFILES = *~ *.o gerbv Makefile Makefile.in config.* stamp-h*
+
+EXTRA_DIST = CONTRIBUTORS HACKING 

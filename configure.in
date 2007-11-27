@@ -25,7 +25,7 @@ dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 AC_INIT(src/gerbv.c)
 
 dnl Initialize automake
-AM_INIT_AUTOMAKE(gerbv, 1.0.2)
+AM_INIT_AUTOMAKE(gerbv, 1.0.3)
 
 dnl Create a configuration header 
 AM_CONFIG_HEADER(config.h)

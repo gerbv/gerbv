@@ -73,3 +73,10 @@ some_function(int par1, int par2)
 
 In a function there should be maximum one empty line in a row.
 Between functions there should be two empty lines.
+
+Patches
+---------
+Please create patches against the CVS trunk.  Don't create 
+patches against any of the branches remaining in CVS -- 
+they are obsolete and will soon go away. 
+
