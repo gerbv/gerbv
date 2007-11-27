@@ -244,13 +244,19 @@ static GtkItemFactoryEntry popup_menu_items[] = {
 void
 show_about_dialog(GtkWidget *widget, gpointer data)
 {
-    const gchar *string = "";
-    string = g_strconcat(string, "gerbv -- a Gerber (RS-274/X) viewer.\n\n",NULL);
-    string = g_strconcat(string, "This is gerbv version ",NULL);
-    string = g_strconcat(string, g_strdup_printf("%s\n", VERSION),NULL);
-    string = g_strconcat(string, "gerbv is part of the gEDA Project.\n",NULL);
-    string = g_strconcat(string, 
-	       "For more information, browse to http://geda.seul.org/",NULL);
+    gchar *string;
+
+    string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
+        "This is gerbv version %s\n"
+        "Compiled on %s at %s\n"
+        "\n"
+        "gerbv is part of the gEDA Project.\n"
+        "\n"
+        "For more information see:\n"
+        "  gerbv homepage: http://gerbv.sf.net\n"
+        "  gEDA homepage: http://www.geda.seul.org\n"
+        "  gEDA Wiki: http://geda.seul.org/dokuwiki/doku.php?id=geda\n\n",
+        VERSION, __DATE__, __TIME__);
 
     screen.win.about_dialog = 
 	gtk_message_dialog_new(NULL,
@@ -263,6 +269,7 @@ show_about_dialog(GtkWidget *widget, gpointer data)
     gtk_dialog_run (GTK_DIALOG (screen.win.about_dialog));
     gtk_widget_destroy (screen.win.about_dialog);
 
+    g_free (string);
     return;
 } /* show_about_dialog */
 
