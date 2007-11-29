@@ -105,7 +105,7 @@ dnl --enable-unit-mm : Set default unit for coordinates in status bar to mm
 AC_ARG_ENABLE(unit-mm,
     [  --enable-unit-mm        Set default unit for coordinates in status bar to mm],
     [
-        if test $enableval = "yes"; then
+        if test "$enableval" = "yes"; then
 		default_unit="mm"
 	fi
     ])
@@ -113,6 +113,29 @@ if test "$default_unit" = "mm"; then
 	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MMS, [Default unit to display in statusbar])
 else
 	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MILS, [Default unit to display in statusbar])
+fi
+
+dnl --disable-cairo
+use_cairo=yes
+AC_ARG_ENABLE(cairo,
+    [  --disable-cairo         Disable the use of cairo for rendering],
+    [
+        if test $enableval = "yes"; then
+		use_cairo=yes
+	else
+		use_cairo=no
+	fi
+    ],
+    [
+	use_cairo=yes
+    ])
+
+AM_CONDITIONAL(USE_CAIRO, test x$use_cairo = xyes)
+if test "$use_cairo" != "yes"; then
+	RENDERER=gdk
+	AC_DEFINE(RENDER_USING_GDK, , [Define to use gdk instead of cairo for rendering])
+else
+	RENDERER=cairo
 fi
 
 #
@@ -182,13 +205,20 @@ GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 # Cairo checks
 #
 
+
+ 
+if test "$use_cairo" = "yes"; then
 PKG_CHECK_MODULES(CAIRO, cairo >= 1.0.0, , [AC_MSG_ERROR([
-*** Required version of Cairo is not installed - please install first ***
+*** Required version of Cairo is not installed - please install first   ***
+*** Alternatively, you may disable cairo rendering with --disable-cairo ***
 Please review the following errors:
 $CAIRO_PKG_ERRORS])]
 )
 
 CAIRO_VER=`$PKG_CONFIG cairo --modversion`
+else
+CAIRO_VER="N/A"
+fi
 
 #
 #
@@ -286,6 +316,8 @@ AC_MSG_RESULT([
 
    GTK Version:              $GTK_VER
    Cairo Version:            $CAIRO_VER
+
+   Rendering engine:         $RENDERER
 
 ])
 

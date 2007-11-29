@@ -48,7 +48,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif
 
 #include <assert.h>
@@ -100,8 +100,6 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 
 
 #define WIN_TITLE "Gerber Viewer"
-
-//#define RENDER_USING_GDK 1
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {

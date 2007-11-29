@@ -23,8 +23,8 @@
 
 bin_PROGRAMS = gerbv
 
-gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h common.h draw.c \
-		draw.h draw-gdk.c draw-gdk.h drill.c drill.h dynload.c \
+gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h common.h \
+		${DRAW} drill.c drill.h dynload.c \
 		dynload.h exportimage.c exportimage.h gerb_error.h \
 		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
 		gerber.h gerbv.c gerbv_icon.h gerbv_screen.h log.c log.h \
@@ -32,6 +32,17 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h common.h draw.
 		scheme.h setup.c setup.h tooltable.c tooltable.h \
 		pick-and-place.c pick-and-place.h gerb_transf.c gerb_transf.h \
 		csv.c csv.h csv_defines.h
+
+CAIRO_DRAW=	draw.c draw.h
+GDK_DRAW=	draw-gdk.c draw-gdk.h
+
+if USE_CAIRO
+DRAW=		${CAIRO_DRAW}
+else
+DRAW=		${GDK_DRAW}
+endif
+
+EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW}
 
 scmdatadir = $(datarootdir)/gerbv/scheme/
 dist_scmdata_DATA = init.scm
