@@ -59,7 +59,8 @@
 #include "project.h"
 #include "scheme-private.h"
 
-
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#define dprintf if(DEBUG) printf
 
 static project_list_t *plist_top = NULL;
 
@@ -132,6 +133,8 @@ define_layer(scheme *sc, pointer args)
     int layerno;
     project_list_t *plist_tmp = NULL;
 
+    dprintf("--> entering project.c:define_layer\n");
+
     if (!sc->vptr->is_pair(args)){
 	GERB_MESSAGE("define-layer!: Too few arguments\n");
 	return sc->F;
@@ -146,6 +149,10 @@ define_layer(scheme *sc, pointer args)
     }
 
     layerno = sc->vptr->ivalue(car_el);
+    dprintf("    layerno = %d\n", layerno);
+    if (screen.last_loaded <= layerno) {
+	screen.last_loaded = layerno;
+    }
 
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);

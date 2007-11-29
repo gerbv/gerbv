@@ -41,6 +41,8 @@
 #include "gerb_error.h"
 #include "gerb_file.h"
 
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#define dprintf if(DEBUG) printf
 
 gerb_file_t *
 gerb_fopen(char *filename)
@@ -48,19 +50,21 @@ gerb_fopen(char *filename)
     gerb_file_t *fd;
     struct stat statinfo;
     
-
+    dprintf("---> Entering gerb_fopen, filename = %s\n", filename);
 #ifdef HAVE_SYS_MMAN_H
     fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
     if (fd == NULL) {
 	return NULL;
     }
 
+    dprintf("     Doing fopen\n");
     fd->fd = fopen(filename, "r");
     if (fd->fd == NULL) {
 	free(fd);
 	return NULL;
     }
 
+    dprintf("     Doing fstat\n");
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
     if (fstat(fd->fileno, &statinfo) < 0) {
@@ -68,18 +72,24 @@ gerb_fopen(char *filename)
 	free(fd);
 	return NULL;
     }
+
+    dprintf("     Checking S_ISREG\n");
     if (!S_ISREG(statinfo.st_mode)) {
 	fclose(fd->fd);
 	free(fd);
 	errno = EISDIR;
 	return NULL;
     }
+
+    dprintf("     Checking statinfo.st_size\n");
     if ((int)statinfo.st_size == 0) {
 	fclose(fd->fd);
 	free(fd);
 	errno = EIO; /* More compatible with the world outside Linux */
 	return NULL;
     }
+
+    dprintf("     Doing mmap\n");
     fd->datalen = (int)statinfo.st_size;
     fd->data = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, 
 			    fd->fileno, 0);
@@ -135,6 +145,8 @@ gerb_fopen(char *filename)
 	return NULL;
     }
 #endif
+
+    dprintf("<--- Leaving gerb_fopen\n");
     return fd;
 } /* gerb_fopen */
 

@@ -1,3 +1,9 @@
+2007-11-29  Stuart Brorson sdb (at) cloud9 (dot) net
+	* src/gerb_file.c, src/gerber.c, src/gerbv.c, src/gerbv_screen.h,
+	src/project.c:  Added "File -> Open Gerber(s)" dialog.  Added 
+	int screen.last_loaded which keeps track of where to insert the next
+	Gerber to be loaded.
+	
 2007-11-26  Julian Lamb
 
 	* src/draw-gdk.[ch],src/gerber.c: Add gdk rendering code back in so it can

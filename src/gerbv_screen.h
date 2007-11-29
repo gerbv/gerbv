@@ -79,11 +79,14 @@ typedef struct {
 	GtkWidget *scale;
 	GtkWidget *log;
 	GtkWidget *project;
+	GtkWidget *gerber;
 	GtkWidget *about_dialog;
     } win;
 
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
+    int last_loaded;
+
     char *path;
     char *execpath;    /* Path to executed version of gerbv */
     char *project;     /* Current project to simplify save next time */

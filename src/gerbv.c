@@ -97,7 +97,8 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include "tooltable.h"
 #include "pick-and-place.h"
 
-
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#define dprintf if(DEBUG) printf
 
 #define WIN_TITLE "Gerber Viewer"
 
@@ -137,6 +138,7 @@ static void export_png_popup(GtkWidget *widget, gpointer data);
 #endif /* EXPORT_PNG */
 static void cb_ok_project(GtkWidget *widget, gpointer data);
 static void project_popup(GtkWidget *widget, gpointer data);
+static void gerber_popup(GtkWidget *widget, gpointer data);
 static void project_save_cb(GtkWidget *widget, gpointer data);
 static void unload_file(GtkWidget *widget, gpointer data);
 static void reload_files(GtkWidget *widget, gpointer data);
@@ -193,7 +195,8 @@ destroy(GtkWidget *widget, gpointer data)
 
 static GtkItemFactoryEntry menu_items[] = {
     {"/_File",               NULL,     NULL,             0, "<Branch>"},
-    {"/File/_Open Project...",NULL,    project_popup,    OPEN_PROJECT, NULL},
+    {"/File/_Open Gerber File(s)...",NULL,    gerber_popup,     0, NULL},
+    {"/File/_Open Project File...",NULL,    project_popup,    OPEN_PROJECT, NULL},
     {"/File/_Save Project As...",NULL, project_popup,    SAVE_AS_PROJECT,NULL},
     {"/File/_Save Project",  NULL,     project_save_cb,  0, NULL},
     {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
@@ -656,10 +659,10 @@ cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
     char *filename;
 
     filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-    if (open_image(filename, screen.curr_index, FALSE) != -1) {
+    if (open_image(filename, ++screen.last_loaded, FALSE) != -1) {
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-				     (screen.layer_button[screen.curr_index]),
+				     (screen.layer_button[screen.last_loaded]),
 				     TRUE);
 
 #ifdef HAVE_LIBGEN_H    
@@ -955,6 +958,7 @@ cb_ok_project(GtkWidget *widget, gpointer data)
 } /* cb_ok_project */
 
 
+
 static void 
 project_popup(GtkWidget *widget, gpointer data)
 {
@@ -997,6 +1001,60 @@ project_popup(GtkWidget *widget, gpointer data)
     
     return;
 } /* project_popup */
+
+
+/* This function implements the dialog window which allows you to
+ * specify one or more Gerber files to input into the session.
+ */
+static void 
+gerber_popup(GtkWidget *widget, gpointer data)
+{
+
+    GSList *filenames;
+    GSList *filename;
+
+    screen.win.gerber = 
+	gtk_file_chooser_dialog_new ("Open Gerner file(s)...",
+				     NULL,
+				     GTK_FILE_CHOOSER_ACTION_OPEN,
+				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
+				     NULL);
+
+    g_object_set (screen.win.gerber,
+		  /* GtkFileChooser */
+		  "select-multiple", TRUE,
+		  NULL);
+
+    gtk_widget_show (screen.win.gerber);
+    if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
+	filenames =
+	    gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER (screen.win.gerber));
+    }
+    gtk_widget_destroy (screen.win.gerber);
+
+    /* Now try to open all gerbers specified */
+    for (filename=filenames; filename; filename=filename->next) {
+	dprintf("Opening filename = %s\n", filename->data);
+    
+	if (open_image(filename->data, ++screen.last_loaded, FALSE) == -1) {
+	    GERB_MESSAGE("could not read %s[%d]", filename->data,
+			 screen.last_loaded);
+	} else {
+	    dprintf("     Successfully opened file!\n");	
+
+	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
+					 (screen.layer_button[screen.last_loaded]),
+					 TRUE);
+	}
+    }
+    g_slist_free(filenames);
+    
+    redraw_pixmap(screen.drawing_area, TRUE);
+    return;
+
+} /* gerber_popup */
+
 
 static void
 project_save_cb(GtkWidget *widget, gpointer data)
@@ -1708,12 +1766,16 @@ open_image(char *filename, int idx, int reload)
 	return -1;
     }
     
+    dprintf("In open_image, about to try opening filename = %s\n", filename);
+
     fd = gerb_fopen(filename);
     if (fd == NULL) {
 	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
 	return -1;
     }
     
+    dprintf("In open_image, successfully opened file.  Now parse it....\n");
+
     if(drill_file_p(fd))
 	parsed_image = parse_drillfile(fd);
     else if (pick_and_place_check_file_type(fd))
@@ -1760,6 +1822,7 @@ open_image(char *filename, int idx, int reload)
 	screen.file[idx]->image = parsed_image;
 	return 0;
     } else {
+	/* Load new file. */
 	screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
 	if (screen.file[idx] == NULL)
 	    GERB_FATAL_ERROR("malloc screen.file[idx] failed\n");
@@ -2742,6 +2805,10 @@ main(int argc, char *argv[])
 #endif    
     screen.transf = gerb_transf_new();
     screen.transf->scale = 0.0; /* will force reinitialization of the screen later */
+
+    screen.last_loaded = -1;  /* Will be updated to 0 
+			       * when first Gerber is loaded 
+			       */
 
     setup_init();
 	
