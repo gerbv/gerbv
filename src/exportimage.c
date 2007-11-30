@@ -41,7 +41,13 @@
 #include <png.h>
 
 #include "exportimage.h"
-#include "draw.h"
+
+#ifdef RENDER_USING_GDK
+  #include "draw-gdk.h"
+#else
+  #include "draw.h"
+#endif
+
 #include "gerbv_screen.h"
 
 /* Function prototypes */

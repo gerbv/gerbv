@@ -73,7 +73,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include <gdk/gdkkeysyms.h>
 
 #ifdef HAVE_GETOPT_H
-#include <getopt.h>
+  #include <getopt.h>
 #endif
 
 #include <pango/pango.h>
@@ -84,7 +84,13 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
-#include "draw.h"
+
+#ifdef RENDER_USING_GDK
+  #include "draw-gdk.h"
+#else
+  #include "draw.h"
+#endif
+
 #include "color.h"
 #include "gerbv_screen.h"
 #include "gerbv_icon.h"

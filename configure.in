@@ -115,10 +115,10 @@ else
 	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MILS, [Default unit to display in statusbar])
 fi
 
-dnl --disable-cairo
-use_cairo=yes
+dnl --enable-cairo
+use_cairo=no
 AC_ARG_ENABLE(cairo,
-    [  --disable-cairo         Disable the use of cairo for rendering],
+    [  --enable-cairo         Enable the use of cairo for rendering],
     [
         if test $enableval = "yes"; then
 		use_cairo=yes
@@ -127,7 +127,7 @@ AC_ARG_ENABLE(cairo,
 	fi
     ],
     [
-	use_cairo=yes
+	use_cairo=no
     ])
 
 AM_CONDITIONAL(USE_CAIRO, test x$use_cairo = xyes)
@@ -145,10 +145,11 @@ fi
 
 ############################################################
 #
+# Preliminary checks
+#
 
 dnl Build time sanity check... (?)
 AM_SANITY_CHECK
-
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -162,6 +163,13 @@ if test "x$GCC" = "xyes"; then
 	fi
 fi
 
+# Check for pkg-config
+AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+if test "$PKG_CONFIG" = "no"; then
+	AC_MSG_ERROR([Cannot find pkg-config, make sure it is installed and in your PATH])
+fi      
+
+#
 #
 #
 ############################################################
@@ -179,20 +187,36 @@ AC_CHECK_LIB(m, sin)
 
 ############################################################
 #
-# GTK checks
+# GTK and cairo checks
 #
 
-# Check for pkg-config
-AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-if test "$PKG_CONFIG" = "no"; then
-	AC_MSG_ERROR([Cannot find pkg-config, make sure it is installed and in your PATH])
-fi      
+ 
+if test "$use_cairo" = "yes"; then
+
+PKG_CHECK_MODULES(CAIRO, cairo >= 1.0.0, , [AC_MSG_ERROR([
+*** Cairo > 1.0.0 required but not found.  Please install first   ***
+Please review the following errors:
+$CAIRO_PKG_ERRORS])]
+)
 
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.8.0, , [AC_MSG_ERROR([
-*** Required version of GTK+-2.0 not installed - please install first ***
+*** GTK >= 2.8 required for install with cairo, but not found.  Please upgrade your version of GTK. ***
 Please review the following errors:
 $GTK_PKG_ERRORS])]
 )
+
+CAIRO_VER=`$PKG_CONFIG cairo --modversion`
+
+else
+
+PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.4.0, , [AC_MSG_ERROR([
+*** GTK >= 2.4 required for non-cairo install, but not found.  Please upgrade your version of GTK. ***
+Please review the following errors:
+$GTK_PKG_ERRORS])]
+)
+
+CAIRO_VER="N/A"
+fi
 
 GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 
@@ -200,29 +224,6 @@ GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 #
 ############################################################
 
-############################################################
-#
-# Cairo checks
-#
-
-
- 
-if test "$use_cairo" = "yes"; then
-PKG_CHECK_MODULES(CAIRO, cairo >= 1.0.0, , [AC_MSG_ERROR([
-*** Required version of Cairo is not installed - please install first   ***
-*** Alternatively, you may disable cairo rendering with --disable-cairo ***
-Please review the following errors:
-$CAIRO_PKG_ERRORS])]
-)
-
-CAIRO_VER=`$PKG_CONFIG cairo --modversion`
-else
-CAIRO_VER="N/A"
-fi
-
-#
-#
-############################################################
 
 ############################################################
 #
