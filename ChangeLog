@@ -1,3 +1,9 @@
+2007-11-30  Stuart Brorson sdb (at) cloud9 (dot) net
+	*  configure.in, src/exportimage.c, src/gerbv.c,
+	src/pick-and-place.c:
+	Modify build system so you must explicitly --enable-cairo to
+	build using cairo, otherwise build using GDK by default.
+	
 2007-11-29  Stuart Brorson sdb (at) cloud9 (dot) net
 	* src/gerb_file.c, src/gerber.c, src/gerbv.c, src/gerbv_screen.h,
 	src/project.c:  Added "File -> Open Gerber(s)" dialog.  Added 
