@@ -52,6 +52,9 @@ typedef enum {GERBV_MILS, GERBV_MMS} gerbv_unit_t;
 typedef struct {
     gerb_image_t *image;
     GdkColor *color;
+    guint16 alpha;
+    gboolean isVisible;
+    gpointer privateRenderData;
     char *name;
     char *basename;
     char inverted;

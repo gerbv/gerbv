@@ -1,3 +1,12 @@
+2007-11-30  Julian Lamb
+	* src/callbacks.[ch],src/interface.[ch],src/gerbv.c: Split out all gui
+	  code out of gerbv.c and put it into the standard callbacks/interface
+	  files. Started to overhaul gui during the process. Also, speed up the
+	  feel of the cairo rendering by rendering layers to a cairo_pattern_t,
+	  then compositing using these patterns. This allows the user to pan and
+	  get much quicker response while the CPU renders the new view in the
+	  background.
+
 2007-11-30  Stuart Brorson sdb (at) cloud9 (dot) net
 	*  configure.in, src/exportimage.c, src/gerbv.c,
 	src/pick-and-place.c:

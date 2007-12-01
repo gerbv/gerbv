@@ -80,7 +80,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 
 #include <locale.h>
 
-
+#include "support.h"
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
@@ -93,7 +93,6 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 
 #include "color.h"
 #include "gerbv_screen.h"
-#include "gerbv_icon.h"
 #include "log.h"
 #include "setup.h"
 #include "project.h"
@@ -102,11 +101,11 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #endif /* EXPORT_PNG */
 #include "tooltable.h"
 #include "pick-and-place.h"
+#include "interface.h"
+#include "callbacks.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
-
-#define WIN_TITLE "Gerber Viewer"
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {
@@ -115,6 +114,57 @@ typedef struct {
     int scale;
 } gerbv_zoom_data_t;
 
+
+GdkColor defaultColors[MAX_FILES] = {
+	{0,115,115,222},
+	{0,255,127,115},
+	{0,193,0,224},
+	{0,117,242,103},
+	{0,0,195,195},
+	{0,213,253,51},
+	{0,209,27,104},
+	{0,255,197,51},
+	{0,186,186,186},
+	{0,211,211,255},
+	{0,253,210,206},
+	{0,236,194,242},
+	{0,208,249,204},
+	{0,183,255,255},
+	{0,241,255,183},
+	{0,255,202,225},
+	{0,253,238,197},
+	{0,226,226,226}
+};
+
+#ifdef HAVE_GETOPT_LONG
+int longopt_val = 0;
+int longopt_idx = 0;
+const struct option longopts[] = {
+    /* name              has_arg            flag  val */
+    {"version",          no_argument,       NULL,    'V'},
+    {"help",             no_argument,       NULL,    'h'},
+    {"batch",            required_argument, NULL,    'b'},
+    {"log",              required_argument, NULL,    'l'},
+    {"tools",            required_argument, NULL,    't'},
+    {"project",          required_argument, NULL,    'p'},
+    {"dump",             no_argument,       NULL,    'd'},
+    {"geometry",         required_argument, &longopt_val, 1},
+    /* GDK/GDK debug flags to be "let through" */
+    {"gtk-module",       required_argument, &longopt_val, 2},
+    {"g-fatal-warnings", no_argument,       &longopt_val, 2},
+    {"gtk-debug",        required_argument, &longopt_val, 2},
+    {"gtk-no-debug",     required_argument, &longopt_val, 2},
+    {"gdk-debug",        required_argument, &longopt_val, 2},
+    {"gdk-no-debug",     required_argument, &longopt_val, 2},
+    {"display",          required_argument, &longopt_val, 2},
+    {"sync",             no_argument,       &longopt_val, 2},
+    {"no-xshm",          no_argument,       &longopt_val, 2},
+    {"name",             required_argument, &longopt_val, 2},
+    {"class",            required_argument, &longopt_val, 2},
+    {0, 0, 0, 0},
+};
+#endif /* HAVE_GETOPT_LONG*/
+const char *opt_options = "Vhl:t:p:d";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
@@ -126,1041 +176,15 @@ const char path_separator = '\\';
 const char path_separator = '/';
 #endif
 
-
-#define SAVE_PROJECT 0
-#define SAVE_AS_PROJECT 1
-#define OPEN_PROJECT 2
-
-static void show_about_dialog(GtkWidget *widget, gpointer data);
-static gint expose_event (GtkWidget *widget, GdkEventExpose *event);
-static void draw_zoom_outline(gboolean centered);
-static void draw_measure_distance();
-static void swap_layers(GtkWidget *widget, gpointer data);
-static void color_selection_popup(GtkWidget *widget, gpointer data);
-static void invert_color(GtkWidget *widget, gpointer data);
-static void load_file_popup(GtkWidget *widget, gpointer data);
-#ifdef EXPORT_PNG
-static void export_png_popup(GtkWidget *widget, gpointer data);
-#endif /* EXPORT_PNG */
-static void cb_ok_project(GtkWidget *widget, gpointer data);
-static void project_popup(GtkWidget *widget, gpointer data);
-static void gerber_popup(GtkWidget *widget, gpointer data);
-static void project_save_cb(GtkWidget *widget, gpointer data);
-static void unload_file(GtkWidget *widget, gpointer data);
-static void reload_files(GtkWidget *widget, gpointer data);
-static void menu_zoom(GtkWidget *widget, gpointer data);
-static void si_func(GtkWidget *widget, gpointer data);
-static void unit_func(GtkWidget *widget, gpointer data);
-static void all_layers_on(GtkWidget *widget, gpointer data);
-static void all_layers_off(GtkWidget *widget, gpointer data);
-static void load_project(project_list_t *project_list);
-static void zoom(GtkWidget *widget, gpointer data);
-static void zoom_outline(GtkWidget *widget, GdkEventButton *event);
+void load_project(project_list_t *project_list);
 gint redraw_pixmap(GtkWidget *widget, int restart);
-static int open_image(char *filename, int idx, int reload);
-void update_statusbar(gerbv_screen_t *scr);
-
-static void menu_ask_zoom (GtkWidget * widget, gpointer data);
-static GtkWidget *create_ZoomFactorWindow (void);
-static void zoom_spinbutton1_realize (GtkWidget * widget, gpointer user_data);
-GtkWidget *lookup_widget (GtkWidget * widget, const gchar * widget_name);
-static void zoom_ok_button_clicked (GtkButton * button, gpointer user_data);
-static void zoom_cancel_button_clicked (GtkButton * button, gpointer user_data);
-
-void rename_main_window(char *filename, GtkWidget *main_win);
-
-void
-destroy(GtkWidget *widget, gpointer data)
-{
-    int i;
-
-    for (i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i] && screen.file[i]->image)
-	    free_gerb_image(screen.file[i]->image);
-	if (screen.file[i] && screen.file[i]->color)
-	    free(screen.file[i]->color);
-	if (screen.file[i] && screen.file[i]->name)
-	    free(screen.file[i]->name);
-	if (screen.file[i])
-	    free(screen.file[i]);
-    }
-
-    /* Free all colors allocated */
-    if (screen.background)
-	free(screen.background);
-    if (screen.zoom_outline_color)
-	free(screen.zoom_outline_color);
-    if (screen.dist_measure_color)
-	free(screen.dist_measure_color);
-
-    setup_destroy();
-
-    gtk_main_quit();
-} /* destroy */
-
-
-static GtkItemFactoryEntry menu_items[] = {
-    {"/_File",               NULL,     NULL,             0, "<Branch>"},
-    {"/File/_Open Gerber File(s)...",NULL,    gerber_popup,     0, NULL},
-    {"/File/_Open Project File...",NULL,    project_popup,    OPEN_PROJECT, NULL},
-    {"/File/_Save Project As...",NULL, project_popup,    SAVE_AS_PROJECT,NULL},
-    {"/File/_Save Project",  NULL,     project_save_cb,  0, NULL},
-    {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
-#ifdef EXPORT_PNG
-    {"/File/_Export",        NULL,     NULL,             0, "<Branch>"},
-    {"/File/_Export/PNG...", NULL,     export_png_popup, 0, NULL},
-    {"/File/sep1",           NULL,     NULL,             0, "<Separator>"},
-#endif /* EXPORT_PNG */
-    {"/File/Reload",         "<alt>R", reload_files,     0, NULL},
-    {"/File/sep2",           NULL,     NULL,             0, "<Separator>"},
-    {"/File/_Quit",          "<alt>Q", destroy,          0, NULL},
-    {"/_Zoom",               NULL,     NULL,             0, "<Branch>"},
-    {"/Zoom/_Out",           "<alt>O", menu_zoom,        ZOOM_OUT, NULL},
-    {"/Zoom/_In",            "<alt>I", menu_zoom,        ZOOM_IN, NULL},
-    {"/Zoom/sep3",           NULL,     NULL,             0,  "<Separator>"},
-    {"/Zoom/_Fit",           NULL,     menu_zoom,        ZOOM_FIT, NULL},
-    {"/Zoom/_Set scale",     NULL,     menu_ask_zoom,    0, NULL},
-    {"/_Setup",              NULL,     NULL,             0, "<Branch>"},
-
-    {"/Setup/_Superimpose",  NULL,     NULL,             0, "<Branch>"},
-    {"/Setup/_Superimpose/Copy",NULL, si_func, 0, "<RadioItem>"},
-    {"/Setup/_Superimpose/And", NULL, si_func, GDK_AND,  "/Setup/Superimpose/Copy"},
-    {"/Setup/_Superimpose/Or",  NULL, si_func, GDK_OR,   "/Setup/Superimpose/Copy"},
-    {"/Setup/_Superimpose/Xor", NULL, si_func, GDK_XOR,  "/Setup/Superimpose/Copy"},
-    {"/Setup/_Superimpose/Invert", NULL, si_func, GDK_INVERT,  "/Setup/Superimpose/Copy"},
-
-    {"/Setup/_Background Color",NULL, color_selection_popup, 1, NULL},
-    {"/Setup/_Units",  NULL,     NULL,             0, "<Branch>"},
-    {"/Setup/_Units/m_ils",NULL, unit_func, GERBV_MILS, "<RadioItem>"},
-    {"/Setup/_Units/_mm",NULL, unit_func, GERBV_MMS, "/Setup/Units/mils"},
-
-    {"/Help/About",          NULL,     show_about_dialog, 0, NULL},
-
-};
-
-static GtkItemFactoryEntry popup_menu_items[] = {
-    {"/Swap with Above", NULL, swap_layers, 0, NULL},
-    {"/Layer Color...", NULL, color_selection_popup, 0, NULL},
-    {"/Load File...", NULL, load_file_popup, 0, NULL},
-    {"/Unload File...", NULL, unload_file, 0, NULL},
-    {"/Invert Color", NULL, invert_color, 0, NULL},
-    {"/Swap with Below", NULL, swap_layers, 1, NULL},
-};
+int open_image(char *filename, int idx, int reload);
 
 
 void
-show_about_dialog(GtkWidget *widget, gpointer data)
-{
-    gchar *string;
-
-    string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
-        "This is gerbv version %s\n"
-        "Compiled on %s at %s\n"
-        "\n"
-        "gerbv is part of the gEDA Project.\n"
-        "\n"
-        "For more information see:\n"
-        "  gerbv homepage: http://gerbv.sf.net\n"
-        "  gEDA homepage: http://www.geda.seul.org\n"
-        "  gEDA Wiki: http://geda.seul.org/dokuwiki/doku.php?id=geda\n\n",
-        VERSION, __DATE__, __TIME__);
-
-    screen.win.about_dialog = 
-	gtk_message_dialog_new(NULL,
-			       GTK_DIALOG_MODAL,
-			       GTK_MESSAGE_INFO,
-			       GTK_BUTTONS_OK,
-			       "%s",
-			       string);
-
-    gtk_dialog_run (GTK_DIALOG (screen.win.about_dialog));
-    gtk_widget_destroy (screen.win.about_dialog);
-
-    g_free (string);
-    return;
-} /* show_about_dialog */
-
-
-void
-create_menubar(GtkWidget *window, GtkWidget **menubar)
-{
-    int nmenu_items = sizeof(menu_items) / sizeof(menu_items[0]);
-    GtkItemFactory *item_factory;
-    GtkAccelGroup  *accel_group;
-    
-    accel_group = gtk_accel_group_new();
-
-    /* This function initializes the item factory.
-       Param 1: The type of menu - can be GTK_TYPE_MENU_BAR, GTK_TYPE_MENU,
-       or GTK_TYPE_OPTION_MENU.
-       Param 2: The path of the menu.
-       Param 3: A pointer to a gtk_accel_group. The item factory sets up
-       the accelerator table while generating menus.
-    */
-    
-    item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>", 
-					accel_group);
-    /* This function generates the menu items. Pass the item factory,
-       the number of items in the array, the array itself, and any
-       callback data for the menu items. */
-    gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, NULL);
-    
-    /* Attach the new accelerator group to the window */
-    gtk_window_add_accel_group (GTK_WINDOW(window), accel_group);
-    
-    if(menubar) {
-	GtkWidget *menuEntry;
-
-	/* Finally, return the actual menu bar created by the item factory. */
-	*menubar = gtk_item_factory_get_widget(item_factory, "<main>");
-	/* Set menu selection to reflect the current active unit */
-	if (GERBV_DEFAULT_UNIT == GERBV_MMS) {
-	    menuEntry = gtk_item_factory_get_widget(item_factory, "/Setup/Units/mm");
-	    gtk_menu_item_activate(GTK_MENU_ITEM(menuEntry));
-	}
-    }
-} /* create_menubar */
-
-
-/*
- * By redesigning create_menubar we can probably do without this function
- */
-static void
-create_popupmenu(GtkWidget **popupmenu)
-{
-    int nmenu_items = sizeof(popup_menu_items) / sizeof(popup_menu_items[0]);
-    GtkItemFactory *item_factory;
-
-    item_factory = gtk_item_factory_new(GTK_TYPE_MENU, "<popup>", NULL);
-    gtk_item_factory_create_items(item_factory, nmenu_items, popup_menu_items,
-				  NULL);
-    
-    if(popupmenu)
-	/* Finally, return the actual menu bar created by the item factory. */
-	*popupmenu = gtk_item_factory_get_widget(item_factory, "<popup>");
-
-    return;
-} /* create_popupmenu */
-
-
-void
-set_window_icon (GtkWidget * this_window)
-{
-    GdkPixmap *pixmap;
-    GdkBitmap *mask;
-
-    pixmap = gdk_pixmap_create_from_xpm_d (this_window->window, &mask,
-&this_window->style->bg[GTK_STATE_NORMAL], gerbv_icon_xpm);
-    gdk_window_set_icon (this_window->window, NULL, pixmap, mask);
-
-    return;
-} /* set_window_icon */
-
-
-static void
-cb_layer_button(GtkWidget *widget, gpointer data)
-{
-    long idx = (long)data;
-
-    if (screen.file[idx] == NULL)
-	return;
-
-    screen.curr_index = idx;
-
-    /* Redraw the image(s) */
-    redraw_pixmap(screen.drawing_area, TRUE);
-
-} /* cb_layer_button */
-
-
-static gint
-layer_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-			 gpointer button)
-{
-    GdkEventButton *event_button;
-
-    if (event->type != GDK_BUTTON_PRESS) {
-	return FALSE;
-    }
-
-    event_button = (GdkEventButton *) event;
-
-    /*
-     * Only button 3 accepted
-     */
-    if (event_button->button != 3) {
-	return FALSE;
-    }
-
-    gtk_menu_popup(GTK_MENU(screen.popup_menu), NULL, NULL, NULL, NULL, 
-		   event_button->button, event_button->time);
-    
-    screen.curr_index = (long int)button;
-
-    return TRUE;
-} /*layer_button_press_event */
-
-
-static GtkWidget *
-create_layer_buttons(int nuf_buttons)
-{
-    GtkWidget *button = NULL;
-    GtkWidget *box = NULL;
-    GdkColor  *color;
-    GtkStyle  *defstyle, *newstyle;
-    GtkTooltips *tooltips = gtk_tooltips_new();
-    char      info[5];
-    long int  bi;
-
-    box = gtk_vbox_new(TRUE, 0);
-
-    /* 
-     * Create style to be used by "all layer" buttons
-     */
-    color = alloc_color(0, 0, 0, "white");
-    defstyle = gtk_widget_get_default_style();
-    newstyle = gtk_style_copy(defstyle);
-    newstyle->bg[GTK_STATE_NORMAL] = *color;
-    newstyle->bg[GTK_STATE_ACTIVE] = *color;
-    newstyle->bg[GTK_STATE_PRELIGHT] = *color;
-
-    /*
-     * Create On button with callback, color and tooltips
-     */
-    button = gtk_button_new_with_label("On");
-    gtk_signal_connect(GTK_OBJECT(button), "button_press_event",
-		       GTK_SIGNAL_FUNC(all_layers_on), 
-		       (gpointer)NULL);
-    gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
-    gtk_widget_set_style(button, newstyle);
-    gtk_tooltips_set_tip(tooltips, button, "Turn On All Layers", NULL); 
-
-    /*
-     * Create Off button with callback, color and tooltips
-     */
-    button = gtk_button_new_with_label("Off");
-    gtk_signal_connect(GTK_OBJECT(button), "button_press_event",
-		       GTK_SIGNAL_FUNC(all_layers_off), 
-		       (gpointer)NULL);
-    gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
-    gtk_widget_set_style(button, newstyle);
-    gtk_tooltips_set_tip(tooltips, button, "Turn Off All Layers", NULL); 
-
-    /*
-     * Create the rest of the buttons
-     */
-    for (bi = 0; bi < nuf_buttons; bi++) {
-	snprintf(info, sizeof(info), "%ld", bi);
-	button = gtk_toggle_button_new_with_label(info);
-
-	gtk_signal_connect(GTK_OBJECT(button), "toggled", 
-			   GTK_SIGNAL_FUNC(cb_layer_button),
-			   (gpointer)bi);
-	gtk_signal_connect(GTK_OBJECT(button), "button_press_event",
-			   GTK_SIGNAL_FUNC(layer_button_press_event), 
-			   (gpointer)bi);
-
-	gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
-	screen.layer_button[bi] = button;
-    }
-
-    return box;
-} /* create_layer_buttons */
-
-
-static void
-color_selection_destroy(GtkWidget *widget, gpointer data)
-{
-    /* Remove modal grab and destroy color selection dialog */
-    gtk_grab_remove(screen.win.color_selection);
-    gtk_widget_destroy(screen.win.color_selection);
-    screen.win.color_selection = NULL;
-} /* color_selection_destroy */
-
-
-static void
-color_selection_ok(GtkWidget *widget, gpointer data)
-{
-    int background = (long int)data;
-    GtkColorSelection *colorsel;
-    gdouble color[4];
-    GtkStyle *oldstyle, *newstyle;
-
-    /* Get selected color */
-    colorsel = GTK_COLOR_SELECTION(GTK_COLOR_SELECTION_DIALOG
-				   (screen.win.color_selection)->colorsel);
-    gtk_color_selection_get_color(colorsel, color);
-
-    /* Allocate new color  */
-    if (background) {
-	free(screen.background);
-	screen.background = 
-	    alloc_color((int)(color[0] * MAX_COLOR_RESOLUTION),
-			(int)(color[1] * MAX_COLOR_RESOLUTION),
-			(int)(color[2] * MAX_COLOR_RESOLUTION),
-			NULL);
-    } else {
-	free(screen.file[screen.curr_index]->color);
-	screen.file[screen.curr_index]->color = 
-	    alloc_color((int)(color[0] * MAX_COLOR_RESOLUTION), 
-			(int)(color[1] * MAX_COLOR_RESOLUTION), 
-			(int)(color[2] * MAX_COLOR_RESOLUTION), 
-			NULL);
-    }
-
-    /* Redraw image on screen */
-    redraw_pixmap(screen.drawing_area, TRUE);
-
-    /* Change color on button too */
-    if (!background) {
-	oldstyle = gtk_widget_get_style(screen.layer_button[screen.curr_index]);
-	newstyle = gtk_style_copy(oldstyle);
-	newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[screen.curr_index]->color);
-	newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[screen.curr_index]->color);
-	newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[screen.curr_index]->color);
-	gtk_widget_set_style(screen.layer_button[screen.curr_index], newstyle);
-    }
-
-    /* Remove modal grab and destroy color selection dialog */
-    gtk_grab_remove(screen.win.color_selection);
-    gtk_widget_destroy(screen.win.color_selection);
-    screen.win.color_selection = NULL;
-
-    return;
-} /* cb_ok_color_selection */
-
-
-static void 
-swap_layers(GtkWidget *widget, gpointer data)
-{
-    gerbv_fileinfo_t *temp_file;
-    GtkStyle *s1, *s2;
-    GtkTooltipsData *td1, *td2;
-    int idx;
-
-    if (screen.file[screen.curr_index] == NULL) return;
-
-    if (data == 0) {
-	/* Moving Up */
-	if (screen.curr_index == 0) return;
-	if (screen.file[screen.curr_index - 1] == NULL) return;
-	idx = -1;
-    } else { 
-	/* Moving Down */
-	if (screen.curr_index == MAX_FILES - 1) return;
-	if (screen.file[screen.curr_index + 1] == NULL) return;
-	idx = 1;
-    }
-
-    /* Swap file */
-    temp_file = screen.file[screen.curr_index];
-    screen.file[screen.curr_index] = screen.file[screen.curr_index + idx];
-    screen.file[screen.curr_index + idx] = temp_file;
-
-    /* Swap color on button */
-    s1 = gtk_widget_get_style(screen.layer_button[screen.curr_index]);
-    s2 = gtk_widget_get_style(screen.layer_button[screen.curr_index + idx]);
-    gtk_widget_set_style(screen.layer_button[screen.curr_index + idx], s1);
-    gtk_widget_set_style(screen.layer_button[screen.curr_index], s2);
-
-    /* Swap tooltips on button */
-    td1 = gtk_tooltips_data_get(screen.layer_button[screen.curr_index]);
-    td2 = gtk_tooltips_data_get(screen.layer_button[screen.curr_index + idx]);
-    gtk_tooltips_set_tip(td1->tooltips, td1->widget,
-			 screen.file[screen.curr_index]->name, NULL);
-    gtk_tooltips_set_tip(td2->tooltips, td2->widget,
-			 screen.file[screen.curr_index + idx]->name, NULL);
-
-
-    redraw_pixmap(screen.drawing_area, TRUE);
-    
-} /* swap_layers */
-
-
-static void
-color_selection_popup(GtkWidget *widget, gpointer data)
-{
-    gdouble curr_color[4];
-    int background = (long int)data;
-
-    if (!background && (screen.file[screen.curr_index] == NULL))
-	return;
-
-    screen.win.color_selection = gtk_color_selection_dialog_new("Color Selection");
-
-    gtk_color_selection_set_update_policy
-	(GTK_COLOR_SELECTION
-	 (GTK_COLOR_SELECTION_DIALOG(screen.win.color_selection)->colorsel),
-	 GTK_UPDATE_CONTINUOUS);
-
-    gtk_signal_connect
-	(GTK_OBJECT
-	 (GTK_COLOR_SELECTION_DIALOG(screen.win.color_selection)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(color_selection_destroy), NULL);
-
-    gtk_signal_connect
-	(GTK_OBJECT
-	 (GTK_COLOR_SELECTION_DIALOG(screen.win.color_selection)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(color_selection_ok), data);
-
-    gtk_signal_connect(GTK_OBJECT(screen.win.color_selection), "destroy",
-		       GTK_SIGNAL_FUNC(color_selection_destroy),
-		       NULL);
-
-    /* Get current color and use it as a start in color selection dialog */
-    if (background) {
-	curr_color[0] = (gdouble)screen.background->red / 
-	    (gdouble)MAX_COLOR_RESOLUTION;
-	curr_color[1] = (gdouble)screen.background->green / 
-	    (gdouble)MAX_COLOR_RESOLUTION;
-	curr_color[2] = (gdouble)screen.background->blue / 
-	    (gdouble)MAX_COLOR_RESOLUTION;
-	curr_color[3] = 0.0; /* Actually don't know how to get this value */
-    }else {
-	curr_color[0] = (gdouble)screen.file[screen.curr_index]->color->red / 
-	    (gdouble)MAX_COLOR_RESOLUTION;
-	curr_color[1] = (gdouble)screen.file[screen.curr_index]->color->green /
-	    (gdouble)MAX_COLOR_RESOLUTION;
-	curr_color[2] = (gdouble)screen.file[screen.curr_index]->color->blue / 
-	    (gdouble)MAX_COLOR_RESOLUTION;
-	curr_color[3] = 0.0; /* Actually don't know how to get this value */
-    }
-
-    /* Now set this color in color selection dialog */
-    gtk_color_selection_set_color
-	(GTK_COLOR_SELECTION(GTK_COLOR_SELECTION_DIALOG
-			     (screen.win.color_selection)->colorsel),
-	 curr_color);
-
-    /* Display widget */
-    gtk_widget_show(screen.win.color_selection);
-
-    /* Make widget modal */
-    gtk_grab_add(screen.win.color_selection);
-
-    return;
-} /* color_selection_popup */
-
-
-static void 
-invert_color(GtkWidget *widget, gpointer data)
-{
-    if (!screen.file[screen.curr_index])
-	return;
-
-    if (screen.file[screen.curr_index]->inverted)
-	screen.file[screen.curr_index]->inverted = 0;
-    else
-	screen.file[screen.curr_index]->inverted = 1;
-
-    redraw_pixmap(screen.drawing_area, TRUE);
-	
-    return;
-} /* invert_color */
-
-
-static void
-cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
-{
-    char *filename;
-
-    filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-    if (open_image(filename, ++screen.last_loaded, FALSE) != -1) {
-
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-				     (screen.layer_button[screen.last_loaded]),
-				     TRUE);
-
-#ifdef HAVE_LIBGEN_H    
-
-	/*
-	 * Remember where we loaded file from last time
-	 */
-	filename = dirname(filename);
-#endif        
-	if (screen.path)
-	    free(screen.path);
-	screen.path = (char *)malloc(strlen(filename) + 2);
-	if (screen.path == NULL)
-	    GERB_FATAL_ERROR("malloc screen.path failed\n");
-	strcpy(screen.path, filename);
-	screen.path = strncat(screen.path, "/", 1);
-	
-	/* Make loaded image appear on screen */
-	redraw_pixmap(screen.drawing_area, TRUE);
-    }
-
-    gtk_grab_remove(screen.win.load_file);
-    gtk_widget_destroy(screen.win.load_file);
-    screen.win.load_file = NULL;
-
-    return;
-} /* cb_ok_load_file */
-
-
-static void
-cb_cancel_load_file(GtkWidget *widget, gpointer data)
-{
-    gtk_grab_remove(screen.win.load_file);
-    gtk_widget_destroy(screen.win.load_file);
-    screen.win.load_file = NULL;
-
-    return;
-} /* cb_cancel_load_file */
-
-
-static void
-load_file_popup(GtkWidget *widget, gpointer data)
-{
-    screen.win.load_file = gtk_file_selection_new("Select File To View");
-
-    if (screen.path)
-	gtk_file_selection_set_filename
-	    (GTK_FILE_SELECTION(screen.win.load_file), screen.path);
-
-    gtk_signal_connect(GTK_OBJECT(screen.win.load_file), "destroy",
-		       GTK_SIGNAL_FUNC(cb_cancel_load_file),
-		       NULL);
-    gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.load_file)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_ok_load_file), 
-	 (gpointer)screen.win.load_file);
-    gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.load_file)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_cancel_load_file), 
-	 (gpointer)screen.win.load_file);
-    
-    gtk_widget_show(screen.win.load_file);
-
-    gtk_grab_add(screen.win.load_file);
-    
-    return;
-} /* load_file_popup */
-
-
-#ifdef EXPORT_PNG
-static void
-cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
-{
-    char *filename;
-    gboolean result;
-    GdkWindow *window;
-
-    filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-
-    /* This might be lengthy, show that we're busy by changing the pointer */
-    window = gtk_widget_get_parent_window(widget);
-    if (window) {
-	GdkCursor *cursor;
-
-	cursor = gdk_cursor_new(GDK_WATCH);
-	gdk_window_set_cursor(window, cursor);
-	gdk_cursor_destroy(cursor);
-    }
-
-    /* Export PNG */
-#ifdef EXPORT_DISPLAYED_IMAGE
-    result = png_export(screen.pixmap, filename);
-#else
-    result = png_export(NULL, filename);
-#endif /* EXPORT_DISPLAYED_IMAGE */
-    if (!result) {
-	GERB_MESSAGE("Failed to save PNG at %s\n", filename);
-    }
-
-    /* Return default pointer shape */
-    if (window) {
-	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
-    }
-
-    /*
-     * Remember where we loaded file from last time
-     */
-#ifdef HAVE_LIBGEN_H     
-    filename = dirname(filename);
-#endif    
-    if (screen.path)
-	free(screen.path);
-    screen.path = (char *)malloc(strlen(filename) + 2);
-    if (screen.path == NULL)
-	GERB_FATAL_ERROR("malloc screen.path failed\n");
-    strcpy(screen.path, filename);
-    screen.path = strncat(screen.path, "/", 1);
-   
-    gtk_grab_remove(screen.win.export_png);
-    
-    screen.win.export_png = NULL;
-
-    return;
-} /* cb_ok_export_png */
-
-
-static void
-export_png_popup(GtkWidget *widget, gpointer data)
-{
-    screen.win.export_png = gtk_file_selection_new("Save PNG filename");
-
-    if (screen.path)
-	gtk_file_selection_set_filename
-	    (GTK_FILE_SELECTION(screen.win.export_png), screen.path);
-
-    gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_ok_export_png), 
-	 (gpointer)screen.win.export_png);
-    gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.win.export_png);
-    gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.win.export_png);
-    
-    gtk_widget_show(screen.win.export_png);
-
-    gtk_grab_add(screen.win.export_png);
-    
-    return;
-} /* export_png_popup */
-
-#endif /* EXPORT_PNG */
-
-
-static void
-cb_ok_project(GtkWidget *widget, gpointer data)
-{
-    char *filename = NULL;
-    project_list_t *project_list = NULL, *tmp;
-    int idx;
-    
-    if (screen.win.project) {
-	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
-
-	/*
-	 * Remember where we loaded file from last time
-	 */
-	if (screen.path)
-	    free(screen.path);
-	screen.path = (char *)malloc(strlen(filename) + 2);
-	if (screen.path == NULL)
-	    GERB_FATAL_ERROR("malloc screen.path failed\n");
-	strcpy(screen.path, filename);
-#ifdef HAVE_LIBGEN_H        
-	dirname(screen.path);
-#endif        
-	screen.path = strncat(screen.path, "/", 1);
-    }
-
-    switch ((long)data) {
-    case OPEN_PROJECT:
-	
-	project_list = read_project_file(filename);
-
-	if (project_list) {
-	    load_project(project_list);
-	    /*
-	     * Save project filename for later use
-	     */
-	    if (screen.project) {
-		free(screen.project);
-		screen.project = NULL;
-	    }
-	    screen.project = (char *)malloc(strlen(filename) + 1);
-	    if (screen.project == NULL)
-		GERB_FATAL_ERROR("malloc screen.project failed\n");
-	    memset((void *)screen.project, 0, strlen(filename) + 1);
-	    strncpy(screen.project, filename, strlen(filename));
-            rename_main_window(filename, NULL);
-	    redraw_pixmap(screen.drawing_area, TRUE);
-	} else {
-	    GERB_MESSAGE("Failed to load project\n");
-	    goto cb_ok_project_end;
-	}
-	all_layers_on(NULL, NULL);
-	break;
-    case SAVE_AS_PROJECT:
-	/*
-	 * Save project filename for later use
-	 */
-	if (screen.project) {
-	    free(screen.project);
-	    screen.project = NULL;
-	}
-	screen.project = (char *)malloc(strlen(filename) + 1);
-	if (screen.project == NULL)
-	    GERB_FATAL_ERROR("malloc screen.project failed\n");
-	memset((void *)screen.project, 0, strlen(filename) + 1);
-	strncpy(screen.project, filename, strlen(filename));
-	rename_main_window(filename, NULL);
-	
-    case SAVE_PROJECT:
-	if (!screen.project) {
-	    GERB_MESSAGE("Missing project filename\n");
-	    goto cb_ok_project_end;
-	}
-	
-	if (screen.path) {
-	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
-	    if (project_list == NULL)
-		GERB_FATAL_ERROR("malloc project_list failed\n");
-	    memset(project_list, 0, sizeof(project_list_t));
-	    project_list->next = project_list;
-	    project_list->layerno = -1;
-	    project_list->filename = screen.path;
-	    project_list->rgb[0] = screen.background->red;
-	    project_list->rgb[1] = screen.background->green;
-	    project_list->rgb[2] = screen.background->blue;
-	    project_list->next = NULL;
-	}
-	
-	for (idx = 0; idx < MAX_FILES; idx++) {
-	    if (screen.file[idx] &&  screen.file[idx]->color) {
-		tmp = (project_list_t *)malloc(sizeof(project_list_t));
-		if (tmp == NULL) 
-		    GERB_FATAL_ERROR("malloc tmp failed\n");
-		memset(tmp, 0, sizeof(project_list_t));
-		tmp->next = project_list;
-		tmp->layerno = idx;
-		
-		tmp->filename = screen.file[idx]->name;
-		tmp->rgb[0] = screen.file[idx]->color->red;
-		tmp->rgb[1] = screen.file[idx]->color->green;
-		tmp->rgb[2] = screen.file[idx]->color->blue;
-		tmp->inverted = screen.file[idx]->inverted;
-		project_list = tmp;
-	    }
-	}
-	
-	if (write_project_file(screen.project, project_list)) {
-	    GERB_MESSAGE("Failed to write project\n");
-	    goto cb_ok_project_end;
-	}
-	break;
-    default:
-	GERB_FATAL_ERROR("Unknown operation in cb_ok_project\n");
-    }
-#ifdef HAVE_LIBGEN_H
-    /*
-     * Remember where we loaded file from last time
-     */
-    filename = dirname(filename);
-#endif 
-    if (screen.path)
-	    free(screen.path);
-    screen.path = (char *)malloc(strlen(filename) + 2);
-    if (screen.path == NULL)
-	GERB_FATAL_ERROR("malloc screen.path failed\n");
-    strcpy(screen.path, filename);
-    screen.path = strncat(screen.path, "/", 1);
-
- cb_ok_project_end:
-    if (screen.win.project) {
-	gtk_grab_remove(screen.win.project);
-    	screen.win.project = NULL;
-    }
-
-    return;
-} /* cb_ok_project */
-
-
-
-static void 
-project_popup(GtkWidget *widget, gpointer data)
-{
-
-    switch ((long)data) {
-    case SAVE_AS_PROJECT:
-    case SAVE_PROJECT:
-	screen.win.project = gtk_file_selection_new("Save project filename");
-	break;
-    case OPEN_PROJECT:
-    	screen.win.project = gtk_file_selection_new("Open project filename");
-	break;
-    default:
-	GERB_FATAL_ERROR("Unknown operation in project_popup\n");
-    }
-
-    if (screen.project)
-	gtk_file_selection_set_filename
-	    (GTK_FILE_SELECTION(screen.win.project), screen.project);
-    else if (screen.path)
-	gtk_file_selection_set_filename
-	    (GTK_FILE_SELECTION(screen.win.project), screen.path);
-    
-    gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_ok_project), data);
-    gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.win.project);
-    gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.win.project);
-    
-
-    gtk_widget_show(screen.win.project);
-
-    gtk_grab_add(screen.win.project);
-    
-    return;
-} /* project_popup */
-
-
-/* This function implements the dialog window which allows you to
- * specify one or more Gerber files to input into the session.
- */
-static void 
-gerber_popup(GtkWidget *widget, gpointer data)
-{
-
-    GSList *filenames;
-    GSList *filename;
-
-    screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Open Gerner file(s)...",
-				     NULL,
-				     GTK_FILE_CHOOSER_ACTION_OPEN,
-				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
-				     NULL);
-
-    g_object_set (screen.win.gerber,
-		  /* GtkFileChooser */
-		  "select-multiple", TRUE,
-		  NULL);
-
-    gtk_widget_show (screen.win.gerber);
-    if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-	filenames =
-	    gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER (screen.win.gerber));
-    }
-    gtk_widget_destroy (screen.win.gerber);
-
-    /* Now try to open all gerbers specified */
-    for (filename=filenames; filename; filename=filename->next) {
-	dprintf("Opening filename = %s\n", filename->data);
-    
-	if (open_image(filename->data, ++screen.last_loaded, FALSE) == -1) {
-	    GERB_MESSAGE("could not read %s[%d]", filename->data,
-			 screen.last_loaded);
-	} else {
-	    dprintf("     Successfully opened file!\n");	
-
-	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-					 (screen.layer_button[screen.last_loaded]),
-					 TRUE);
-	}
-    }
-    g_slist_free(filenames);
-    
-    redraw_pixmap(screen.drawing_area, TRUE);
-    return;
-
-} /* gerber_popup */
-
-
-static void
-project_save_cb(GtkWidget *widget, gpointer data)
-{
-
-    if (!screen.project) 
-        project_popup(widget, (gpointer) SAVE_AS_PROJECT);
-    else 
-        cb_ok_project(widget, (gpointer) SAVE_PROJECT);
-
-}
-
-static void
-all_layers_on(GtkWidget *widget, gpointer data)
-{
-    int idx;
-    for (idx = 0; idx < MAX_FILES; idx++) {
-	if (screen.file[idx]) {
-	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-					 (screen.layer_button[idx]),TRUE);
-	}
-    }
-} /* all_layers_on */
-
-
-static void
-all_layers_off(GtkWidget *widget, gpointer data)
-{
-    int idx;
-    for (idx = 0; idx < MAX_FILES; idx++) {
-	if (screen.file[idx]) {
-	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-					 (screen.layer_button[idx]),FALSE);
-	}
-    }
-} /* all_layers_off */
-
-
-static void
-unload_file(GtkWidget *widget, gpointer data)
-{
-    int         idx = screen.curr_index;
-    GtkStyle   *defstyle;
-    
-    if (screen.file[idx] == NULL)
-	return;
-
-    /*
-     * Deselect the layer we're unloading so it's not left in the pixmap
-     */
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[idx]),
-				 FALSE);
-
-    /* 
-     * Remove color on layer button (set default style) 
-     */
-    defstyle = gtk_widget_get_default_style();
-    gtk_widget_set_style(screen.layer_button[idx], defstyle);
-
-    /* 
-     * Remove tool tips 
-     */
-    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx], 
-			 NULL, NULL); 
-
-    /* 
-     * Remove data struct 
-     */
-    free_gerb_image(screen.file[idx]->image);  screen.file[idx]->image = NULL;
-    free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
-    free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
-    free(screen.file[idx]);  screen.file[idx] = NULL;
-
-    return;
-} /* unload_file */
-
-
-static void
-reload_files(GtkWidget *widget, gpointer data)
-{
-    int idx;
-
-    for (idx = 0; idx < MAX_FILES; idx++) {
-	    if (screen.file[idx] && screen.file[idx]->name) {
-	        if (open_image(screen.file[idx]->name, idx, TRUE) == -1)
-		    return;
-	    }
-    }
-    
-    redraw_pixmap(screen.drawing_area, TRUE);
-
-    return;
-} /* reload_files */
-
-
-static void
 load_project(project_list_t *project_list)
 {
     project_list_t *pl_tmp;
-    GtkStyle       *defstyle, *newstyle;
      
     while (project_list) {
 	if (project_list->layerno == -1) {
@@ -1184,15 +208,6 @@ load_project(project_list_t *project_list)
 						  project_list->rgb[1],
 						  project_list->rgb[2], NULL);
 	    
-	    /* 
-	     * Also change color on layer button
-	     */
-	    defstyle = gtk_widget_get_default_style();
-	    newstyle = gtk_style_copy(defstyle);
-	    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[idx]->color);
-	    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
-	    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
-	    gtk_widget_set_style(screen.layer_button[idx], newstyle);
 	    
 	    screen.file[idx]->inverted = project_list->inverted;
 	}
@@ -1333,17 +348,9 @@ idle_redraw_pixmap(gpointer data)
 } /* idle_redraw_pixmap */
 
 
-static void
-menu_zoom(GtkWidget *widget, gpointer data)
-{
-    gerbv_zoom_data_t z_data = { (gerbv_zoom_dir_t)data, NULL };
-
-    zoom(widget, &z_data);
-} /* menu_zoom */
-
 
 /* Superimpose function */
-static void 
+void 
 si_func(GtkWidget *widget, gpointer data)
 {
 
@@ -1360,7 +367,7 @@ si_func(GtkWidget *widget, gpointer data)
 
 
 /* Unit function, sets unit for statusbar */
-static void 
+void 
 unit_func(GtkWidget *widget, gpointer data)
 {
 
@@ -1374,135 +381,6 @@ unit_func(GtkWidget *widget, gpointer data)
 
     return;
 } /* unit_func() */
-
-
-/* Zoom function */
-static void
-zoom(GtkWidget *widget, gpointer data)
-{
-    double us_midx, us_midy;	/* unscaled translation for screen center */
-    int half_w, half_h;		/* cache for half window dimensions */
-    int mouse_delta_x = 0;	/* Delta for mouse to window center */
-    int mouse_delta_y = 0;
-    gerbv_zoom_data_t *z_data = (gerbv_zoom_data_t *) data;
-
-    half_w = screen.drawing_area->allocation.width / 2;
-    half_h = screen.drawing_area->allocation.height / 2;
-
-    if (z_data->z_dir == ZOOM_IN_CMOUSE ||
-	z_data->z_dir == ZOOM_OUT_CMOUSE) {
-	mouse_delta_x = half_w - z_data->z_event->x;
-	mouse_delta_y = half_h - z_data->z_event->y;
-	screen.trans_x -= mouse_delta_x;
-	screen.trans_y -= mouse_delta_y;
-    }
-
-    us_midx = (screen.trans_x + half_w)/(double) screen.transf->scale;
-    us_midy = (screen.trans_y + half_h)/(double) screen.transf->scale;
-
-    switch(z_data->z_dir) {
-    case ZOOM_IN : /* Zoom In */
-    case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
-	screen.transf->scale += screen.transf->scale/10;
-	screen.trans_x = screen.transf->scale * us_midx - half_w;
-	screen.trans_y = screen.transf->scale * us_midy - half_h;
-	break;
-    case ZOOM_OUT :  /* Zoom Out */
-    case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
-	if (screen.transf->scale > 10) {
-	    screen.transf->scale -= screen.transf->scale/10;
-	    screen.trans_x = screen.transf->scale * us_midx - half_w;
-	    screen.trans_y = screen.transf->scale * us_midy - half_h;
-	}
-	break;
-    case ZOOM_FIT : /* Zoom Fit */
-	autoscale();
-	break;
-    case ZOOM_SET : /*explicit scale set by user */
-	screen.transf->scale = z_data->scale;
-	screen.trans_x = screen.transf->scale * us_midx - half_w;
-	screen.trans_y = screen.transf->scale * us_midy - half_h;
-        break;
-    default :
-	GERB_MESSAGE("Illegal zoom direction %ld\n", (long int)data);
-    }
-
-    if (z_data->z_dir == ZOOM_IN_CMOUSE ||
-	z_data->z_dir == ZOOM_OUT_CMOUSE) {
-	screen.trans_x += mouse_delta_x;
-	screen.trans_y += mouse_delta_y;
-    }
-
-    /* Update clipping bbox */
-    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
-    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;    
-
-    /* Redraw screen */
-    redraw_pixmap(screen.drawing_area, TRUE);
-    
-    return;
-} /* zoom */
-
-
-/** Will determine the outline of the zoomed regions.
-In case region to be zoomed is too small (which correspondes e.g. to a double click) it is interpreted as a right-click and will be used to identify a part from the CURRENT selection, which is drawn on screen*/
-static void
-zoom_outline(GtkWidget *widget, GdkEventButton *event)
-{
-    int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
-    double us_x1, us_y1, us_x2, us_y2;
-    int half_w, half_h;		/* cache for half window dimensions */
-    
-    half_w = screen.drawing_area->allocation.width / 2;
-    half_h = screen.drawing_area->allocation.height / 2;
-
-    x1 = MIN(screen.start_x, event->x);
-    y1 = MIN(screen.start_y, event->y);
-    x2 = MAX(screen.start_x, event->x);
-    y2 = MAX(screen.start_y, event->y);
-    dx = x2-x1;
-    dy = y2-y1;
-
-    if ((dx < 4) && (dy < 4)) {
-		update_statusbar(&screen);
-		goto zoom_outline_end;
-    }
-    
-    if (screen.centered_outline_zoom) {
-		/* Centered outline mode */
-		x1 = screen.start_x - dx;
-		y1 = screen.start_y - dy;
-		dx *= 2;
-		dy *= 2;
-    }
-    
-    us_x1 = (screen.trans_x + x1)/(double) screen.transf->scale;
-    us_y1 = (screen.trans_y + y1)/(double) screen.transf->scale;
-    us_x2 = (screen.trans_x + x2)/(double) screen.transf->scale;
-    us_y2 = (screen.trans_y + y2)/(double) screen.transf->scale;
-    
-    screen.transf->scale = MIN(screen.drawing_area->allocation.width/(double)(us_x2 - us_x1),
-			       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
-    screen.trans_x = screen.transf->scale * (us_x1 + (us_x2 - us_x1)/2) - half_w;
-    screen.trans_y = screen.transf->scale * (us_y1 + (us_y2 - us_y1)/2) - half_h;;
-    screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
-    screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
-    
- zoom_outline_end:
-    /* Redraw screen */
-    redraw_pixmap(screen.drawing_area, TRUE);
-} /* zoom_outline */
-
-
-GtkWidget *
-create_drawing_area(gint win_width, gint win_height)
-{
-    GtkWidget *drawing_area;
-    
-    drawing_area = gtk_drawing_area_new();
-    
-    return drawing_area;
-} /* create_drawing_area */
 
 /* Keep redraw state when preempting to process certain events */
 struct gerbv_redraw_state {
@@ -1650,7 +528,15 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	
 	state.valid = 1;
     }
-    
+
+	if (g_main_pending()) {
+	    /* return TRUE to keep this idle function active */
+	    retval = TRUE;
+	    start_idle_redraw_pixmap(widget);
+	    state.file_index = i;
+	    goto redraw_pixmap_end;
+	}
+	  
 #ifdef RENDER_USING_GDK
 
     /*
@@ -1664,15 +550,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
      * Higher layer numbers have higher priority in the Z-order. 
      */
     for(i = state.file_index; i < MAX_FILES; i++) {
-	if (g_main_pending()) {
-	    /* return TRUE to keep this idle function active */
-	    retval = TRUE;
-	    start_idle_redraw_pixmap(widget);
-	    state.file_index = i;
-	    goto redraw_pixmap_end;
-	}
-	if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
-	    screen.file[i]) {
+	if (screen.file[i] && screen.file[i]->isVisible) {
 	    enum polarity_t polarity;
 
 	    if (screen.file[i]->inverted) {
@@ -1732,6 +610,68 @@ redraw_pixmap(GtkWidget *widget, int restart)
     if (state.clipmask) {
 	gdk_pixmap_unref(state.clipmask);
     }
+    
+#else
+	cairo_t *cr;
+
+	window = gtk_widget_get_parent_window(widget);
+	/* This might be lengthy, show that we're busy by changing the pointer */
+	if (window) {
+		GdkCursor *cursor;
+
+		cursor = gdk_cursor_new(GDK_WATCH);
+		gdk_window_set_cursor(window, cursor);
+		gdk_cursor_destroy(cursor);
+	}
+
+	/* get a cairo_t */
+	cairo_surface_t* cs=cairo_image_surface_create (CAIRO_FORMAT_RGB24, state.max_width, state.max_height);
+      cr= cairo_create(cs);
+
+	/* speed up rendering by reducing quality by a small amount (default
+	   is 1.0 */
+	cairo_set_tolerance (cr,1.5);
+	
+	/* translate the draw area before drawing */
+	cairo_translate (cr,-screen.trans_x,-screen.trans_y);
+
+	/* scale the drawing by the specified scale factor (inverting y since
+	 * cairo y axis points down)
+	 */ 
+	cairo_scale (cr,(float) screen.transf->scale,-(float) screen.transf->scale);
+	
+	/* 
+	* This now allows drawing several layers on top of each other.
+	* Higher layer numbers have higher priority in the Z-order. 
+	*/
+	for(i = 0; i < MAX_FILES; i++) {
+		if (screen.file[i]) {
+			cairo_pattern_t *testp = NULL;
+						
+			cairo_push_group   (cr);
+			
+			cairo_set_source_rgba (cr, (double) screen.file[i]->color->red/G_MAXUINT16,
+				(double) screen.file[i]->color->green/G_MAXUINT16,
+				(double) screen.file[i]->color->blue/G_MAXUINT16, 1);
+			
+			/* for now, scale the cairo context if the units are mms */
+			/* TODO: normalize all gerb_image data to mm during parsing */
+			//cairo_save (cr);
+			if ((screen.file[i]->image->netlist->next)&&
+				(screen.file[i]->image->netlist->next->unit==MM)) {
+				cairo_scale (cr, 1.0/25.4, 1.0/25.4);
+			}
+			render_image_to_cairo_target (cr, screen.file[i]->image);
+			//cairo_restore (cr);
+			testp = cairo_pop_group (cr);
+			if (screen.file[i]->privateRenderData) {
+				cairo_pattern_destroy ((cairo_pattern_t *) screen.file[i]->privateRenderData);
+			}
+			screen.file[i]->privateRenderData = (gpointer) testp;
+		}
+	}
+	cairo_surface_destroy (cs);
+	cairo_destroy (cr);	
 
 #endif
 
@@ -1755,13 +695,11 @@ redraw_pixmap(GtkWidget *widget, int restart)
     return retval;
 } /* redraw_pixmap */
 
-
-static int
+int
 open_image(char *filename, int idx, int reload)
 {
     gerb_file_t *fd;
     int r, g, b;
-    GtkStyle *defstyle, *newstyle;
     gerb_image_t *parsed_image;
     gerb_verify_error_t error = GERB_IMAGE_OK;
     char *cptr;
@@ -1864,931 +802,20 @@ open_image(char *filename, int idx, int reload)
 	screen.file[idx]->basename = screen.file[idx]->name;
     }
     
-    /*
-     * Calculate a "clever" random color based on index.
-     */
-    r = (12341 + 657371 * idx) % (int)(MAX_COLOR_RESOLUTION);
-    g = (23473 + 434382 * idx) % (int)(MAX_COLOR_RESOLUTION);
-    b = (90341 + 123393 * idx) % (int)(MAX_COLOR_RESOLUTION);
+    r = defaultColors[idx].red*256;
+    g = defaultColors[idx].green*256;
+    b = defaultColors[idx].blue*256;
     
     screen.file[idx]->color = alloc_color(r, g, b, NULL);
-    
-    /* 
-     * Set color on layer button
-     */
-    defstyle = gtk_widget_get_default_style();
-    newstyle = gtk_style_copy(defstyle);
-    newstyle->bg[GTK_STATE_NORMAL] = *(screen.file[idx]->color);
-    newstyle->bg[GTK_STATE_ACTIVE] = *(screen.file[idx]->color);
-    newstyle->bg[GTK_STATE_PRELIGHT] = *(screen.file[idx]->color);
-    gtk_widget_set_style(screen.layer_button[idx], newstyle);
-    
-    /* 
-     * Tool tips on button is the file name 
-     */
-    gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx],
-			 filename, NULL);                                
+    screen.file[idx]->alpha = 45535;
+    screen.file[idx]->isVisible = TRUE;                     
     
     return 0;
 } /* open_image */
 
-
-static gint
-configure_event (GtkWidget *widget, GdkEventConfigure *event)
-{
-    return redraw_pixmap(widget, TRUE);
-} /* configure_event */
-
-
-static gint
-button_press_event (GtkWidget *widget, GdkEventButton *event)
-{
-    gerbv_zoom_data_t data;
-    gboolean do_zoom = FALSE;
-    
-    switch (event->button) {
-    case 1 :
-	if((event->state & GDK_SHIFT_MASK) == 0) {
-	    /* Plain panning */
-	    screen.state = MOVE;
-	    screen.last_x = widget->allocation.height - event->x;
-	    screen.last_y = widget->allocation.width  - event->y;
-	} else {
-	    GdkCursor *cursor;
-	    
-	    screen.state = MEASURE;
-	    screen.start_x = event->x;
-	    screen.start_y = event->y;
-	    
-	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
-	    gdk_window_set_cursor(gtk_widget_get_parent_window(widget),
-				  cursor);
-	    gdk_cursor_destroy(cursor);
-	    
-	}
-	break;
-    case 2 :
-	/* And now, some Veribest-like mouse commands for
-	   all us who dislike scroll wheels ;) */
-	do_zoom = TRUE;
-	if((event->state & GDK_SHIFT_MASK) != 0) {
-	    /* Middle button + shift == zoom in */
-	    data.z_dir = ZOOM_IN_CMOUSE;
-	} else {
-	    /* Only middle button == zoom out */
-	    data.z_dir = ZOOM_OUT_CMOUSE;
-	}
-	break;
-    case 3 :
-	/* Zoom outline mode initiated */
-	screen.state = ZOOM_OUTLINE;
-	screen.start_x = event->x;
-	screen.start_y = event->y;
-	screen.centered_outline_zoom = event->state & GDK_SHIFT_MASK;
-	break;
-    case 4 : /* Scroll wheel */
-	data.z_dir = ZOOM_IN_CMOUSE;
-	do_zoom = TRUE;
-	break;
-    case 5 :  /* Scroll wheel */
-	data.z_dir = ZOOM_OUT_CMOUSE;
-	do_zoom = TRUE;
-	break;
-    default:
-	break;
-    }
-    
-    if (do_zoom) {
-	data.z_event = event;
-	zoom(widget, &data);
-    }
-    
-    return TRUE;
-} /* button_press_event */
-
-
-/* Scroll wheel */
-static gint
-scroll_event(GtkWidget *widget, GdkEventScroll *event)
-{
-    gerbv_zoom_data_t data;
-
-    switch (event->direction) {
-    case GDK_SCROLL_UP:
-	data.z_dir = ZOOM_IN_CMOUSE;
-	break;
-    case GDK_SCROLL_DOWN:
-	data.z_dir = ZOOM_OUT_CMOUSE;
-	break;
-    case GDK_SCROLL_LEFT: 
-	/* Ignore */
-	return TRUE;
-    case GDK_SCROLL_RIGHT:
-	/* Ignore */
-	return TRUE;
-    default:
-	return TRUE;
-    }
-
-    /* XXX Ugly hack */
-    data.z_event = (GdkEventButton *)event;
-    zoom(widget, &data);
-
-    return TRUE;
-} /* scroll_event */
-
-
-static gint
-button_release_event (GtkWidget *widget, GdkEventButton *event)
-{
-    if (event->type == GDK_BUTTON_RELEASE) {
-	if (screen.state == MOVE) {
-	    screen.state = NORMAL;
-	    /* Redraw the image(s) */
-	    screen.off_x = 0;
-	    screen.off_y = 0;
-	    redraw_pixmap(screen.drawing_area, TRUE);
-	} else if (screen.state == ZOOM_OUTLINE) {
-	    screen.state = NORMAL;
-	    zoom_outline(widget, event);
-	} else if (!(event->state & GDK_SHIFT_MASK)) {
-	    gdk_window_set_cursor(gtk_widget_get_parent_window(widget),
-				  GERBV_DEF_CURSOR);
-	}
-	screen.last_x = screen.last_y = 0;
-	screen.state = NORMAL;
-    }
-
-    return TRUE;
-} /* button_release_event */
-
-
-static gint
-key_press_event (GtkWidget *widget, GdkEventKey *event)
-{
-    GdkCursor *cursor;
-    gerbv_zoom_data_t z_data;
-
-    switch (screen.state) {
-    case NORMAL:
-	switch(event->keyval) {
-	case GDK_Shift_L:
-	case GDK_Shift_R:
-	    cursor = gdk_cursor_new(GDK_CROSSHAIR);
-	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
-				  cursor);
-	    gdk_cursor_destroy(cursor);
-	    break;
-	case GDK_Alt_L:
-	case GDK_Alt_R: 
-	    screen.state = ALT_PRESSED;
-	    screen.selected_layer = -1;
-	    break;
-	case GDK_f:
-	case GDK_F:
-	    autoscale();
-	    redraw_pixmap(screen.drawing_area, TRUE);
-	    break;
-	case GDK_z:
-	    z_data.z_dir = ZOOM_IN;
-	    zoom(widget, &z_data);
-	    break;
-	case GDK_Z:
-	    z_data.z_dir = ZOOM_OUT;
-	    zoom(widget, &z_data);
-	    break;
-	default:
-	    break;
-	}
-	break;
-    case ALT_PRESSED:
-	if ((event->keyval >= GDK_KP_0) &&
-	    (event->keyval <= GDK_KP_9)) {
-	    if (screen.selected_layer == -1) 
-		screen.selected_layer = event->keyval - GDK_KP_0;
-	    else
-		screen.selected_layer = 10 * screen.selected_layer + 
-		    (event->keyval - GDK_KP_0);
-	}
-	break;
-    default:
-	break;
-    }
-	    
-    /* Escape may be used to abort outline zoom and just plain repaint */
-    if (event->keyval == GDK_Escape) {
-	GdkRectangle update_rect;
-
-	screen.state = NORMAL;
-
-	screen.statusbar.diststr[0] = '\0';
-	update_statusbar(&screen);
-
-	update_rect.x = 0, update_rect.y = 0;
-	update_rect.width =	widget->allocation.width;
-	update_rect.height = widget->allocation.height;
-
-	/*
-	 * Calls expose_event
-	 */
-	gtk_widget_draw(widget, &update_rect);
-    }
-
-    return TRUE;
-} /* key_press_event */
-
-
-#define TOGGLE_BUTTON(button) gtk_toggle_button_set_active( \
-                                      GTK_TOGGLE_BUTTON(button),\
-				 !gtk_toggle_button_get_active( \
-                                      GTK_TOGGLE_BUTTON(button)));
-
-static gint
-key_release_event (GtkWidget *widget, GdkEventKey *event)
-{
-    switch (screen.state) {
-    case NORMAL:
-	if((event->keyval == GDK_Shift_L) ||
-	   (event->keyval == GDK_Shift_R)) {
-	    gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
-				  GERBV_DEF_CURSOR);
-	}
-	break;
-    case ALT_PRESSED:
-	if ((event->keyval == GDK_Alt_L) ||
-	     (event->keyval == GDK_Alt_R)) {
-	    if ((screen.selected_layer != -1) &&
-		(screen.selected_layer < MAX_FILES)){
-		TOGGLE_BUTTON(screen.layer_button[screen.selected_layer]);
-	    }
-	    screen.state = NORMAL;
-	}
-    default:
-	break;
-    }
-    
-    return TRUE;
-} /* key_release_event */
-
-
-static gint
-motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
-{
-    int x, y;
-    GdkModifierType state;
-    GdkRectangle update_rect;
-    
-    if (event->is_hint)
-	gdk_window_get_pointer (event->window, &x, &y, &state);
-    else {
-	x = event->x;
-	y = event->y;
-	state = event->state;
-    }
-    
-    if (screen.pixmap != NULL) {
-	double X, Y;
-	
-	X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.transf->scale;
-	Y = (screen.gerber_bbox.y2 - (y+screen.trans_y)/(double)screen.transf->scale);
-	if (screen.unit == GERBV_MILS) {
-	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		     "X,Y (%7.1f, %7.1f)mils",
-		     COORD2MILS(X), COORD2MILS(Y));
-	} else /* unit is GERBV_MMS */ {
-	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		     "X,Y (%7.2f, %7.2f)mm",
-		     COORD2MMS(X), COORD2MMS(Y));
-	}
-	update_statusbar(&screen);
-	
-	switch (screen.state) {
-	case MOVE: {
-	    
-	    x = widget->allocation.height - x;
-	    y = widget->allocation.width - y;
-	    
-	    if (screen.last_x != 0 || screen.last_y != 0) {
-		screen.trans_x = screen.trans_x + x - screen.last_x;
-		screen.trans_y = screen.trans_y + y - screen.last_y;
-
-		screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
-		screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
-		
-		/* Move pixmap to get a snappier feel of movement */
-		screen.off_x += x - screen.last_x;
-		screen.off_y += y - screen.last_y;
-	    }
-	    screen.last_x = x;
-	    screen.last_y = y;
-	    
-	    update_rect.x = 0, update_rect.y = 0;
-	    update_rect.width  = widget->allocation.width;
-	    update_rect.height = widget->allocation.height;
-
-	    /*
-	     * Calls expose_event
-	     */
-	    gtk_widget_draw(widget, &update_rect);
-
-	    break;
-	}
-	case ZOOM_OUTLINE: {
-	    if (screen.last_x || screen.last_y)
-		draw_zoom_outline(screen.centered_outline_zoom);
-
-	    screen.last_x = x;
-	    screen.last_y = y;
-
-	    draw_zoom_outline(screen.centered_outline_zoom);
-	    break;
-	}
-	case MEASURE: {
-	    if (screen.last_x || screen.last_y)
-		draw_measure_distance();
-
-	    screen.last_x = x;
-	    screen.last_y = y;
-
-	    draw_measure_distance();
-	    break;
-	}
-	default:
-	    break;
-	}
-    }
-    
-    return TRUE;
-} /* motion_notify_event */
-
-
-/* Redraw the screen from the backing pixmap */
-static gint
-expose_event (GtkWidget *widget, GdkEventExpose *event)
-{
-
-#ifdef RENDER_USING_GDK
-
-    GdkPixmap *new_pixmap;
-    GdkGC *gc = gdk_gc_new(widget->window);
-
-    /*
-     * Create a pixmap with default background
-     */
-    new_pixmap = gdk_pixmap_new(widget->window,
-				widget->allocation.width,
-				widget->allocation.height,
-				-1);
-
-    gdk_gc_set_foreground(gc, screen.background);
-
-    gdk_draw_rectangle(new_pixmap, gc, TRUE, 
-		       event->area.x, event->area.y,
-		       event->area.width, event->area.height);
-    
-    /*
-     * Copy gerber pixmap onto background if we have one to copy.
-     * Do translation at the same time.
-     */
-    if (screen.pixmap != NULL) {
-	gdk_draw_pixmap(new_pixmap,
-			widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-			screen.pixmap, 
-			event->area.x + screen.off_x, 
-			event->area.y + screen.off_y, 
-			event->area.x, event->area.y,
-			event->area.width, event->area.height);
-    }
-
-    /*
-     * Draw the whole thing onto screen
-     */
-    gdk_draw_pixmap(widget->window,
-		    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-		    new_pixmap,
-		    event->area.x, event->area.y,
-		    event->area.x, event->area.y,
-		    event->area.width, event->area.height);
-#ifdef GERBV_DEBUG_OUTLINE
-    {
-	    double dx, dy;
-
-	    dx = screen.gerber_bbox.x2-screen.gerber_bbox.x1;
-	    dy = screen.gerber_bbox.y2-screen.gerber_bbox.y1;
-	    gdk_gc_set_foreground(gc, screen.dist_measure_color);
-	    gdk_draw_rectangle(widget->window, gc, FALSE, 
-			       (screen.gerber_bbox.x1-1.1)*screen.scale - screen.trans_x,
-			       ((screen.gerber_bbox.y1-0.6)*screen.scale - screen.trans_y),
-			       dx*screen.scale,
-			       dy*screen.scale);
-    }
-#endif /* DEBUG_GERBV_OUTLINE */
-
-    gdk_pixmap_unref(new_pixmap);
-    gdk_gc_unref(gc);
-
-    /*
-     * Draw Zooming outline if we are in that mode
-     */
-    if (screen.state == ZOOM_OUTLINE) {
-	draw_zoom_outline(screen.centered_outline_zoom);
-    } else if (screen.state == MEASURE) {
-	draw_measure_distance();
-    }
-    /*
-     * Raise popup windows if they happen to disappear
-     */
-    if (screen.win.load_file && screen.win.load_file->window)
-	gdk_window_raise(screen.win.load_file->window);
-    if (screen.win.color_selection && screen.win.color_selection->window)
-	gdk_window_raise(screen.win.color_selection->window);
-    if (screen.win.export_png && screen.win.export_png->window)
-	gdk_window_raise(screen.win.export_png->window);
-    if (screen.win.scale && screen.win.scale->window)
-	gdk_window_raise(screen.win.scale->window);
-    if (screen.win.log && screen.win.log->window)
-	gdk_window_raise(screen.win.log->window);
-
-    return FALSE;
-    
-#else   
-    
-	cairo_t *cr;
-	int i;
-	GdkWindow *window;
-	int retval = TRUE;
-
-	window = gtk_widget_get_parent_window(widget);
-	/* This might be lengthy, show that we're busy by changing the pointer */
-	if (window) {
-		GdkCursor *cursor;
-
-		cursor = gdk_cursor_new(GDK_WATCH);
-		gdk_window_set_cursor(window, cursor);
-		gdk_cursor_destroy(cursor);
-	}
-
-	/* get a cairo_t */
-	cr = gdk_cairo_create (widget->window);
-	cairo_set_tolerance (cr,2.0);
-	
-	/* draw a rectangle exactly the same size as the visible area,
-	 * and make it the clip area
-	 */
-	cairo_rectangle (cr,event->area.x, event->area.y,
-		event->area.width, event->area.height);
-	cairo_clip (cr);
-	
-	/* translate the draw area before drawing */
-	cairo_translate (cr,-screen.trans_x,-screen.trans_y);
-
-	/* scale the drawing by the specified scale factor (inverting y since
-	 * cairo y axis points down)
-	 */ 
-	cairo_scale (cr,(float) screen.transf->scale,-(float) screen.transf->scale);
-	
-	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) screen.background->red/G_MAXUINT16,
-		(double) screen.background->green/G_MAXUINT16,
-		(double) screen.background->blue/G_MAXUINT16, 1);
-	cairo_paint (cr);
-	
-	/* 
-	* This now allows drawing several layers on top of each other.
-	* Higher layer numbers have higher priority in the Z-order. 
-	*/
-	for(i = 0; i < MAX_FILES; i++) {
-		if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
-		screen.file[i]) {
-			enum polarity_t polarity;
-
-			if (screen.file[i]->inverted) {
-				if (screen.file[i]->image->info->polarity == POSITIVE)
-				polarity = NEGATIVE;
-				else
-				polarity = POSITIVE;
-			} else {
-				polarity = screen.file[i]->image->info->polarity;
-			}
-
-			//cairo_push_group_with_content   (cr,CAIRO_CONTENT_COLOR);
-			// g_warning ("color %f",(float)screen.file[i]->color->green);
-			
-			cairo_set_source_rgba (cr, (double) screen.file[i]->color->red/G_MAXUINT16,
-				(double) screen.file[i]->color->green/G_MAXUINT16,
-				(double) screen.file[i]->color->blue/G_MAXUINT16, 1);
-			
-			/* for now, scale the cairo context if the units are mms */
-			/* TODO: normalize all gerb_image data to mm during parsing */
-			cairo_save (cr);
-			if ((screen.file[i]->image->netlist->next)&&
-				(screen.file[i]->image->netlist->next->unit==MM)) {
-				cairo_scale (cr, 1.0/25.4, 1.0/25.4);
-			}
-			render_image_to_cairo_target (cr, screen.file[i]->image);
-			cairo_restore (cr);
-			
-			//cairo_pop_group_to_source       (cr);
-			//cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
-			//cairo_paint_with_alpha(cr,0.7);
-			//cairo_set_operator (cr, CAIRO_OPERATOR_ATOP);			
-		}
-	}
-
-	cairo_destroy (cr);
-
-	/* Return default pointer shape */
-	if (window) {
-	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
-	}
-
-	return retval;
-
-#endif
-} /* expose_event */
-
-
-
-static void
-draw_zoom_outline(gboolean centered)
-{
-    GdkGC *gc;
-    GdkGCValues values;
-    GdkGCValuesMask values_mask;
-    gint x1, y1, x2, y2, dx, dy;
-
-    memset(&values, 0, sizeof(values));
-    values.function = GDK_XOR;
-    values.foreground = *screen.zoom_outline_color;
-    values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-    gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
-
-    x1 = MIN(screen.start_x, screen.last_x);
-    y1 = MIN(screen.start_y, screen.last_y);
-    x2 = MAX(screen.start_x, screen.last_x);
-    y2 = MAX(screen.start_y, screen.last_y);
-    dx = x2-x1;
-    dy = y2-y1;
-
-    if (centered) {
-	/* Centered outline mode */
-	x1 = screen.start_x - dx;
-	y1 = screen.start_y - dy;
-	dx *= 2;
-	dy *= 2;
-	x2 = x1+dx;
-	y2 = y1+dy;
-    }
-
-    gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
-    gdk_gc_unref(gc);
-
-    /* Draw actual zoom area in dashed lines */
-    memset(&values, 0, sizeof(values));
-    values.function = GDK_XOR;
-    values.foreground = *screen.dist_measure_color;
-    values.line_style = GDK_LINE_ON_OFF_DASH;
-    values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND | GDK_GC_LINE_STYLE;
-    gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				values_mask);
-
-    if ((dy == 0) || ((double)dx/dy > (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height)) {
-	    dy = dx * (double)screen.drawing_area->allocation.height/screen.drawing_area->allocation.width;
-    } else {
-	    dx = dy * (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height;
-    }
-
-    gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, (x1+x2-dx)/2, (y1+y2-dy)/2, dx, dy);
-
-    gdk_gc_unref(gc);
-} /* draw_zoom_outline */
-
-
-/** Displays a measured distance graphically on screen and in statusbar.
-    activated when using SHIFT and mouse dragged to measure distances\n
-    under win32 graphical annotations are currently disabled (GTK 2.47)*/
-static void
-draw_measure_distance(void)
-{
-#if !defined (__MINGW32__) 
-
-    GdkGC *gc;
-    GdkGCValues values;
-    GdkGCValuesMask values_mask;
-    GdkFont *font;
-#endif   
-    gint x1, y1, x2, y2;
-    double delta, dx, dy;
-
-    if (screen.state != MEASURE)
-	return;
-#if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
-    memset(&values, 0, sizeof(values));
-    values.function = GDK_XOR;
-    values.foreground = *screen.dist_measure_color;
-    values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-    gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				values_mask);
-    font = gdk_font_load(setup.dist_fontname);
-#endif
-    x1 = MIN(screen.start_x, screen.last_x);
-    y1 = MIN(screen.start_y, screen.last_y);
-    x2 = MAX(screen.start_x, screen.last_x);
-    y2 = MAX(screen.start_y, screen.last_y);
-
-	dx = (x2 - x1)/(double) screen.transf->scale;
-	dy = (y2 - y1)/(double) screen.transf->scale;
-	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
-    
-#if !defined (__MINGW32__)
-    gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
-		  screen.start_y, screen.last_x, screen.last_y);
-    if (font == NULL) {
-	GERB_MESSAGE("Failed to load font '%s'\n", setup.dist_fontname);
-    } else {
-	gchar string[65];
-	gint lbearing, rbearing, width, ascent, descent;
-	gint linefeed;	/* Pseudonym for inter line gap */
-
-	snprintf(string, sizeof(string),
-		 "[dist %7.1f, dX %7.1f, dY %7.1f] mils",
-		 COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
-
-	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
-			   &ascent, &descent);
-	gdk_draw_string(screen.drawing_area->window, font, gc,
-			(x1+x2)/2-width/2, (y1+y2)/2, string);
-
-	linefeed = ascent+descent;
-	linefeed *= (double)1.2;
-
-	snprintf(string, sizeof(string),
-		 "[dist %7.2f, dX %7.2f, dY %7.2f] mm",
-		 COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
-
-	gdk_string_extents(font, string, &lbearing, &rbearing, &width,
-			   &ascent, &descent);
-	gdk_draw_string(screen.drawing_area->window, font, gc,
-			(x1+x2)/2 - width/2, (y1+y2)/2 + linefeed, string);
-
-	gdk_font_unref(font);
-#endif
-	/*
-	 * Update statusbar
-	 */
-	if (screen.unit == GERBV_MILS) {
-	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     " dist,dX,dY (%7.1f, %7.1f, %7.1f)mils",
-		     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
-	} else /* unit is GERBV_MMS */ {
-	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     " dist,dX,dY (%7.2f, %7.2f, %7.2f)mm",
-		     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
-	}
-	update_statusbar(&screen);
-
-#if !defined (__MINGW32__)
-    }
-    gdk_gc_unref(gc);
-#endif     
-} /* draw_measure_distance */
-
-/** Displays additional information in the statusbar.
-    The Statusbar is divided into three sections:\n
-    statusbar.coordstr for coords\n
-    statusbar.diststr for displaying measured distances or the designator 
-    (right click on a graphically marked and also actively selected part)\n
-    statusbar.msg for e.g. showing progress of actions*/
- void 
-update_statusbar(gerbv_screen_t *scr)
-{
-    char str[MAX_STATUSMSGLEN+1];
-
-    snprintf(str, MAX_STATUSMSGLEN, " %-*s|%-*s|%.*s",
-	     MAX_COORDLEN-1, scr->statusbar.coordstr,
-	     MAX_DISTLEN-1, scr->statusbar.diststr,
-	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr);
-    if (scr->statusbar.msg != NULL) {
-	    gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
-    }
-} /* update_statusbar */
-
-
-static void
-menu_ask_zoom (GtkWidget * widget, gpointer data)
-{
-    screen.win.scale = create_ZoomFactorWindow();
-    gtk_widget_show(screen.win.scale);
-    gtk_grab_add(screen.win.scale);
-} /* menu_ask_zoom */
-    
-
-static GtkWidget *
-create_ZoomFactorWindow(void)
-{
-    GtkWidget *ZoomFactorWindow;
-    GtkWidget *table2;
-    GtkObject *zoom_spinbutton1_adj;
-    GtkWidget *zoom_spinbutton1;
-    GtkWidget *zoom_cancel_button;
-    GtkWidget *zoom_ok_button;
-    GtkWidget *zoomwindowlabel;
-    
-    ZoomFactorWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_object_set_data (GTK_OBJECT (ZoomFactorWindow), "ZoomFactorWindow",
-			 ZoomFactorWindow);
-    gtk_window_set_title (GTK_WINDOW (ZoomFactorWindow), "Set Scale");
-    /* XXX Hardcoded window size values */
-    gtk_window_set_default_size(GTK_WINDOW(ZoomFactorWindow), 180, 50);
-    
-    table2 = gtk_table_new (2, 2, FALSE);
-    gtk_widget_ref (table2);
-    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow), "table2", table2,
-			      (GtkDestroyNotify) gtk_widget_unref);
-    gtk_widget_show (table2);
-    gtk_container_add (GTK_CONTAINER (ZoomFactorWindow), table2);
-    
-    zoom_spinbutton1_adj = gtk_adjustment_new (1, 1, 65535, 1, 10, 10);
-    zoom_spinbutton1 =
-	gtk_spin_button_new (GTK_ADJUSTMENT (zoom_spinbutton1_adj), 1, 0);
-    gtk_widget_ref (zoom_spinbutton1);
-    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow),
-			      "zoom_spinbutton1", zoom_spinbutton1,
-			      (GtkDestroyNotify) gtk_widget_unref);
-    gtk_widget_show (zoom_spinbutton1);
-    gtk_table_attach (GTK_TABLE (table2), zoom_spinbutton1, 1, 2, 0, 1,
-		      (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-		      (GtkAttachOptions) (0), 0, 0);
-
-    zoom_cancel_button = gtk_button_new_with_label ("Cancel");
-    gtk_widget_ref (zoom_cancel_button);
-    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow),
-			      "zoom_cancel_button", zoom_cancel_button,
-			      (GtkDestroyNotify) gtk_widget_unref);
-    gtk_widget_show (zoom_cancel_button);
-    gtk_table_attach (GTK_TABLE (table2), zoom_cancel_button, 1, 2, 1, 2,
-		      (GtkAttachOptions) (GTK_FILL),
-		      (GtkAttachOptions) (0), 0, 0);
-
-    zoom_ok_button = gtk_button_new_with_label ("OK");
-    gtk_widget_ref (zoom_ok_button);
-    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow), "zoom_ok_button",
-			      zoom_ok_button,
-			      (GtkDestroyNotify) gtk_widget_unref);
-    gtk_widget_show (zoom_ok_button);
-    gtk_table_attach (GTK_TABLE (table2), zoom_ok_button, 0, 1, 1, 2,
-		      (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-		      (GtkAttachOptions) (0), 0, 0);
-
-    zoomwindowlabel = gtk_label_new ("Zoom factor:");
-    gtk_widget_ref (zoomwindowlabel);
-    gtk_object_set_data_full (GTK_OBJECT (ZoomFactorWindow),
-			      "zoomwindowlabel", zoomwindowlabel,
-			      (GtkDestroyNotify) gtk_widget_unref);
-    gtk_widget_show (zoomwindowlabel);
-    gtk_table_attach (GTK_TABLE (table2), zoomwindowlabel, 0, 1, 0, 1,
-		      (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-		      (GtkAttachOptions) (0), 0, 0);
-    gtk_misc_set_alignment (GTK_MISC (zoomwindowlabel), 0, 0.5);
-
-    gtk_signal_connect(GTK_OBJECT(ZoomFactorWindow), "destroy",
-		       GTK_SIGNAL_FUNC(zoom_cancel_button_clicked),
-		       NULL);
-    gtk_signal_connect (GTK_OBJECT (zoom_spinbutton1), "realize",
-			GTK_SIGNAL_FUNC (zoom_spinbutton1_realize), NULL);
-    gtk_signal_connect (GTK_OBJECT (zoom_cancel_button), "clicked",
-			GTK_SIGNAL_FUNC (zoom_cancel_button_clicked),
-			(gpointer) ZoomFactorWindow);
-    gtk_signal_connect (GTK_OBJECT (zoom_ok_button), "clicked",
-			GTK_SIGNAL_FUNC (zoom_ok_button_clicked),
-			(gpointer) ZoomFactorWindow);
-
-    return ZoomFactorWindow;
-} /* create_ZoomFactorWindow */
-
-
-void
-zoom_spinbutton1_realize(GtkWidget * widget, gpointer user_data)
-{
-    gtk_spin_button_set_value ((GtkSpinButton *) widget,
-			       (gfloat) screen.transf->scale);
-} /* zoom_spinbutton1_realize */
-
-
-static void
-zoom_ok_button_clicked(GtkButton * button, gpointer user_data)
-{
-    GtkSpinButton *ZoomSpin;
-    int newscale;
-    gerbv_zoom_data_t z_data;
-
-    ZoomSpin = (GtkSpinButton *) lookup_widget ((GtkWidget *) button,
-						"zoom_spinbutton1");
-    newscale = gtk_spin_button_get_value_as_int (ZoomSpin);
-    z_data.z_dir = ZOOM_SET;
-    z_data.z_event = NULL;
-    z_data.scale = newscale;
-    zoom (screen.drawing_area, &z_data);
-
-    gtk_grab_remove(screen.win.scale);
-    gtk_widget_destroy (screen.win.scale);
-    screen.win.scale = NULL;
-} /* zoom_ok_button_clicked */
-
-
-static void
-zoom_cancel_button_clicked(GtkButton * button, gpointer user_data)
-{
-    gtk_grab_remove(screen.win.scale);
-    gtk_widget_destroy(screen.win.scale);
-    screen.win.scale = NULL;
-} /* zoom_cancel_button_clicked */
-
-
-GtkWidget *
-lookup_widget (GtkWidget * widget, const gchar * widget_name)
-{
-    GtkWidget *parent, *found_widget;
-
-    for (;;) {
-	if (GTK_IS_MENU (widget))
-	    parent = gtk_menu_get_attach_widget (GTK_MENU (widget));
-	else
-	    parent = widget->parent;
-	if (parent == NULL)
-	    break;
-	widget = parent;
-    }
-
-    found_widget = (GtkWidget *) gtk_object_get_data (GTK_OBJECT (widget),
-						      widget_name);
-    if (!found_widget)
-	g_warning ("Widget not found: %s", widget_name);
-    return found_widget;
-} /* lookup_widget */
-
-
-void
-rename_main_window(char *filename, GtkWidget *main_win)
-{
-    char *win_title;
-    static GtkWidget *win=NULL;
-    size_t len;
-
-    if( main_win != NULL )
-	win = main_win;
-
-    assert(win != NULL);
-
-    len = strlen(WIN_TITLE) + strlen(VERSION) + 2 + strlen(filename) + 1;
-    win_title = (char *)malloc(len);
-    if (win_title == NULL)
-	GERB_FATAL_ERROR("malloc win_title failed\n");
-    snprintf(win_title, len, "%s%s: %s", WIN_TITLE, VERSION, filename);
-    gtk_window_set_title(GTK_WINDOW(win), win_title);
-    free(win_title);
-				 
-}
-
-#ifdef HAVE_GETOPT_LONG
-int longopt_val = 0;
-int longopt_idx = 0;
-const struct option longopts[] = {
-    /* name              has_arg            flag  val */
-    {"version",          no_argument,       NULL,    'V'},
-    {"help",             no_argument,       NULL,    'h'},
-    {"batch",            required_argument, NULL,    'b'},
-    {"log",              required_argument, NULL,    'l'},
-    {"tools",            required_argument, NULL,    't'},
-    {"project",          required_argument, NULL,    'p'},
-    {"dump",             no_argument,       NULL,    'd'},
-    {"geometry",         required_argument, &longopt_val, 1},
-    /* GDK/GDK debug flags to be "let through" */
-    {"gtk-module",       required_argument, &longopt_val, 2},
-    {"g-fatal-warnings", no_argument,       &longopt_val, 2},
-    {"gtk-debug",        required_argument, &longopt_val, 2},
-    {"gtk-no-debug",     required_argument, &longopt_val, 2},
-    {"gdk-debug",        required_argument, &longopt_val, 2},
-    {"gdk-no-debug",     required_argument, &longopt_val, 2},
-    {"display",          required_argument, &longopt_val, 2},
-    {"sync",             no_argument,       &longopt_val, 2},
-    {"no-xshm",          no_argument,       &longopt_val, 2},
-    {"name",             required_argument, &longopt_val, 2},
-    {"class",            required_argument, &longopt_val, 2},
-    {0, 0, 0, 0},
-};
-#endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "Vhl:t:p:d";
-
 int
 main(int argc, char *argv[])
 {
-    GtkWidget *main_win;
-    GtkWidget *vbox;
-    GtkWidget *hbox;
-    GtkWidget *menubar;
-    GtkStyle  *textStyle;
-    gint      width, height;
     int       read_opt;
     int       i;
     int       req_width = -1, req_height = -1;
@@ -2934,99 +961,6 @@ main(int argc, char *argv[])
 	    printf("Not handled option [%d=%c]\n", read_opt, read_opt);
 	}
     }
-    
-    /*
-     * Init GTK+
-     */
-    gtk_init(&argc, &argv);
-
-    /* 
-     * Good defaults according to Ales. Gives aspect ratio of 1.3333...
-     */
-    if ((req_width != -1) && (req_height != -1)) {
-	width = req_width;
-	height = req_height;
-    } else {
-    	GdkScreen *screen;
-    	int nmonitors;
-    
-    	screen = gdk_screen_get_default();
-    	nmonitors = gdk_screen_get_n_monitors(screen);
-    
-    	width = gdk_screen_get_width(screen) * 3/4 / nmonitors;
-    	height = gdk_screen_get_height(screen) * 3/4 / nmonitors;
-    }
-
-    /*
-     * Setup some GTK+ defaults
-     */
-    screen.tooltips = gtk_tooltips_new();        
-    screen.background = alloc_color(0, 0, 0, "black");
-    screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
-    screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
-
-    /*
-     * Set console error log handler. The default gives us error levels in
-     * in the beginning which I don't want.
-     */
-    g_log_set_handler (NULL, 
-		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
-		       gerbv_console_log_handler, NULL); 
-
-    /* Set default unit to the configured default */
-    screen.unit = GERBV_DEFAULT_UNIT;
-
-    /*
-     * Main window 
-     */
-    main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    rename_main_window("", main_win);
-    gtk_window_set_default_size((GtkWindow *)main_win, width, height);
-    g_signal_connect(GTK_OBJECT(main_win), "delete_event", G_CALLBACK(destroy), NULL);
-
-    /* 
-     * vbox contains menubar and hbox
-     */
-    vbox = gtk_vbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(main_win), vbox);
-    
-    create_menubar(main_win, &menubar);
-    gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
-    
-    /* 
-     * hbox contains drawing area and image select area
-     */
-    hbox = gtk_hbox_new(FALSE, 0);
-    
-    /*
-     * Create drawing area
-     */
-    screen.drawing_area = create_drawing_area(width, height);
-    gtk_box_pack_start(GTK_BOX(hbox), screen.drawing_area, TRUE, TRUE, 0);
-    
-    /*
-     * Build layer buttons with popup menus
-     */
-    create_popupmenu(&screen.popup_menu);
-    gtk_box_pack_start(GTK_BOX(hbox), create_layer_buttons(MAX_FILES), 
-		       FALSE, FALSE, 0);
-
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
-
-    /*
-     * Add status bar (three sections: messages, abs and rel coords)
-     */
-    hbox = gtk_hbox_new(FALSE, 0);
-    screen.statusbar.msg = gtk_label_new("");
-    gtk_label_set_justify(GTK_LABEL(screen.statusbar.msg), GTK_JUSTIFY_LEFT);
-    textStyle = gtk_style_new();
-    textStyle->font_desc = pango_font_description_from_string(setup.status_fontname);
-    gtk_widget_set_style(GTK_WIDGET(screen.statusbar.msg), textStyle);
-    screen.statusbar.msgstr[0] = '\0';
-    screen.statusbar.coordstr[0] = '\0';
-    screen.statusbar.diststr[0] = '\0';
-    gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msg, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 
     /*
      * If project is given, load that one and use it for files and colors.
@@ -3034,6 +968,8 @@ main(int argc, char *argv[])
      * This limits you to either give files on the commandline or just load
      * a project.
      */
+     
+    gtk_init (&argc, &argv);
     if (project_filename) {
 	project_list_t *project_list;
 
@@ -3074,59 +1010,21 @@ main(int argc, char *argv[])
 	    if (open_image(argv[i], i - optind, FALSE) == -1)
 		exit(-1);
     }
-
+    
     /*
-     * Set gtk error log handler
+     * Set console error log handler. The default gives us error levels in
+     * in the beginning which I don't want.
      */
-#if !defined (__MINGW32__)     
     g_log_set_handler (NULL, 
 		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
-		       gerbv_gtk_log_handler, NULL); 
-#endif                       
+		       gerbv_console_log_handler, NULL); 
 
-    /*
-     * Connect all events on drawing area 
-     */    
-    gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "expose_event",
-		       GTK_SIGNAL_FUNC(expose_event), NULL);
-    gtk_signal_connect(GTK_OBJECT(screen.drawing_area),"configure_event",
-		       GTK_SIGNAL_FUNC(configure_event), NULL);
-    gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "motion_notify_event",
-		       GTK_SIGNAL_FUNC(motion_notify_event), NULL);
-    gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "button_press_event",
-		       GTK_SIGNAL_FUNC(button_press_event), NULL);
-    gtk_signal_connect(GTK_OBJECT(screen.drawing_area), "button_release_event",
-		       GTK_SIGNAL_FUNC(button_release_event), NULL);
-    gtk_signal_connect_after(GTK_OBJECT(main_win), "key_press_event",
-		       GTK_SIGNAL_FUNC(key_press_event), NULL);
-    gtk_signal_connect_after(GTK_OBJECT(main_win), "key_release_event",
-		       GTK_SIGNAL_FUNC(key_release_event), NULL);
-    gtk_signal_connect_after(GTK_OBJECT(main_win), "scroll_event",
-		       GTK_SIGNAL_FUNC(scroll_event), NULL);
+    /* Set default unit to the configured default */
+    screen.unit = GERBV_DEFAULT_UNIT;
 
-    gtk_widget_set_events(screen.drawing_area, GDK_EXPOSURE_MASK
-			  | GDK_LEAVE_NOTIFY_MASK
-			  | GDK_BUTTON_PRESS_MASK
-			  | GDK_BUTTON_RELEASE_MASK
-			  | GDK_KEY_PRESS_MASK
-			  | GDK_KEY_RELEASE_MASK
-			  | GDK_POINTER_MOTION_MASK
-			  | GDK_POINTER_MOTION_HINT_MASK
-			  | GDK_SCROLL_MASK
-			  );
+ 
+    interface_create_gui (req_width, req_height);
 
-    gtk_widget_show_all(main_win);
-    set_window_icon(main_win);
-
-    /* It seems this has to be done after the button is shown for
-       the first time, or we get a segmentation fault */
-    if (project_filename)
-	all_layers_on(NULL, NULL);
-    else
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[0]),
-				     TRUE);               
-
-    gtk_main();
-    
     return 0;
-} /* main */ 
+} /* main */
+
