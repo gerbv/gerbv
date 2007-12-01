@@ -42,7 +42,6 @@
 #endif
 
 #include <math.h>
-#include "support.h"
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
@@ -64,6 +63,7 @@
 #define SAVE_PROJECT 0
 #define SAVE_AS_PROJECT 1
 #define OPEN_PROJECT 2
+#  define _(String) (String)
 
 extern gerbv_screen_t screen;
 
@@ -399,13 +399,13 @@ on_about1_activate                     (GtkMenuItem     *menuitem,
 {
 	GtkWidget *aboutdialog1;
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
-	gchar *translators = _("translator-credits");
+	//gchar *translators = _("translator-credits");
 
 	aboutdialog1 = gtk_about_dialog_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);
 	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
 	gtk_about_dialog_set_name (GTK_ABOUT_DIALOG (aboutdialog1), _("Application Name"));
-	gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators);
+	//gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators);
 
 	gchar *string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 	      "This is gerbv version %s\n"

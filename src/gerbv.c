@@ -80,7 +80,6 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 
 #include <locale.h>
 
-#include "support.h"
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
