@@ -193,8 +193,8 @@ AC_CHECK_LIB(m, sin)
  
 if test "$use_cairo" = "yes"; then
 
-	PKG_CHECK_MODULES(CAIRO, cairo >= 1.0.0, , [AC_MSG_ERROR([
-*** Cairo > 1.0.0 required but not found.  Please install first or if
+	PKG_CHECK_MODULES(CAIRO, cairo >= 1.4.0, , [AC_MSG_ERROR([
+*** Cairo > 1.4.0 required but not found.  Please install first or if
 you wish to use the old GDK rendering (with possible loss of some 
 functionality) then use the --disable-cairo argument to configure  ***
 Please review the following errors:
