@@ -90,8 +90,17 @@ typedef struct {
     int scale;
 } gerbv_zoom_data_t;
 
+
 void
-on_open_project1_activate                      (GtkMenuItem     *menuitem,
+on_new_activate                        (GtkMenuItem     *menuitem,
+                                        gpointer         user_data)
+{
+
+}
+
+
+void
+on_open_project_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	screen.win.project = gtk_file_selection_new("Open project filename");
@@ -118,8 +127,9 @@ on_open_project1_activate                      (GtkMenuItem     *menuitem,
 	gtk_grab_add(screen.win.project);
 }
 
+
 void
-on_open_layer1_activate                      (GtkMenuItem     *menuitem,
+on_open_layer_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	GSList *filenames=NULL;
@@ -166,17 +176,9 @@ on_open_layer1_activate                      (GtkMenuItem     *menuitem,
 	return;
 }
 
-void
-on_new1_activate                       (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-
-}
-
-
 
 void
-on_save1_activate                      (GtkMenuItem     *menuitem,
+on_revert_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -184,7 +186,7 @@ on_save1_activate                      (GtkMenuItem     *menuitem,
 
 
 void
-on_save_as1_activate                   (GtkMenuItem     *menuitem,
+on_save_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -192,7 +194,7 @@ on_save_as1_activate                   (GtkMenuItem     *menuitem,
 
 
 void
-on_cut1_activate                       (GtkMenuItem     *menuitem,
+on_save_as_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -200,7 +202,7 @@ on_cut1_activate                       (GtkMenuItem     *menuitem,
 
 
 void
-on_copy1_activate                      (GtkMenuItem     *menuitem,
+on_export_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -208,7 +210,7 @@ on_copy1_activate                      (GtkMenuItem     *menuitem,
 
 
 void
-on_paste1_activate                     (GtkMenuItem     *menuitem,
+on_postscript_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -216,7 +218,7 @@ on_paste1_activate                     (GtkMenuItem     *menuitem,
 
 
 void
-on_delete1_activate                    (GtkMenuItem     *menuitem,
+on_png_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -224,7 +226,7 @@ on_delete1_activate                    (GtkMenuItem     *menuitem,
 
 
 void
-on_revert1_activate                    (GtkMenuItem     *menuitem,
+on_pdf_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -232,7 +234,7 @@ on_revert1_activate                    (GtkMenuItem     *menuitem,
 
 
 void
-on_import1_activate                    (GtkMenuItem     *menuitem,
+on_svg_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -240,7 +242,7 @@ on_import1_activate                    (GtkMenuItem     *menuitem,
 
 
 void
-on_postscript1_activate                (GtkMenuItem     *menuitem,
+on_print_activate                      (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -248,7 +250,7 @@ on_postscript1_activate                (GtkMenuItem     *menuitem,
 
 
 void
-on_png1_activate                       (GtkMenuItem     *menuitem,
+on_zoom_in_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -256,7 +258,7 @@ on_png1_activate                       (GtkMenuItem     *menuitem,
 
 
 void
-on_pdf1_activate                       (GtkMenuItem     *menuitem,
+on_zoom_out_activate                   (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -264,7 +266,7 @@ on_pdf1_activate                       (GtkMenuItem     *menuitem,
 
 
 void
-on_svg1_activate                       (GtkMenuItem     *menuitem,
+on_fit_to_window_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -272,7 +274,7 @@ on_svg1_activate                       (GtkMenuItem     *menuitem,
 
 
 void
-on_print1_activate                     (GtkMenuItem     *menuitem,
+on_analyze_activelayers_activate       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -280,7 +282,7 @@ on_print1_activate                     (GtkMenuItem     *menuitem,
 
 
 void
-on_project_properties1_activate        (GtkMenuItem     *menuitem,
+on_validate_active_layers_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -288,7 +290,7 @@ on_project_properties1_activate        (GtkMenuItem     *menuitem,
 
 
 void
-on_gerber_properties1_activate         (GtkMenuItem     *menuitem,
+on_control_gerber_options_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -296,7 +298,7 @@ on_gerber_properties1_activate         (GtkMenuItem     *menuitem,
 
 
 void
-on_zoom_in1_activate                   (GtkMenuItem     *menuitem,
+on_pointer_tool_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -304,7 +306,7 @@ on_zoom_in1_activate                   (GtkMenuItem     *menuitem,
 
 
 void
-on_zoom_out1_activate                  (GtkMenuItem     *menuitem,
+on_zoom_tool_activate                  (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -312,7 +314,7 @@ on_zoom_out1_activate                  (GtkMenuItem     *menuitem,
 
 
 void
-on_fit_to_window1_activate             (GtkMenuItem     *menuitem,
+on_measure_tool_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -320,7 +322,7 @@ on_fit_to_window1_activate             (GtkMenuItem     *menuitem,
 
 
 void
-on_tools1_activate                     (GtkMenuItem     *menuitem,
+on_online_manual_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -328,43 +330,7 @@ on_tools1_activate                     (GtkMenuItem     *menuitem,
 
 
 void
-on_pointer_tool1_activate              (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-
-}
-
-
-void
-on_zoom_tool1_activate                 (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-
-}
-
-
-void
-on_measure_tool1_activate              (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-
-}
-
-
-void
-on_online_manual1_activate             (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-
-}
-
-
-
-
-
-
-void
-on_quit1_activate                      (GtkMenuItem     *menuitem,
+on_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	int i;
@@ -394,11 +360,8 @@ on_quit1_activate                      (GtkMenuItem     *menuitem,
 }
 
 
-
-
-
 void
-on_about1_activate                     (GtkMenuItem     *menuitem,
+on_about_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	GtkWidget *aboutdialog1;
@@ -428,6 +391,7 @@ on_about1_activate                     (GtkMenuItem     *menuitem,
 
 	gtk_widget_show_all(aboutdialog1);
 }
+
 
 /* Zoom function */
 void
@@ -908,7 +872,8 @@ callback_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *eve
 		    /*
 		     * Calls expose_event
 		     */
-		    gtk_widget_draw(widget, &update_rect);
+		     gtk_widget_draw (widget, &update_rect);
+		    //gdk_window_invalidate_rect(widget->window, &widget->allocation,FALSE);
 
 		    break;
 		}
@@ -1102,7 +1067,8 @@ callback_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 		/*
 		 * Calls expose_event
 		 */
-		gtk_widget_draw(widget, &update_rect);
+		 gtk_widget_draw (widget, &update_rect);
+		//gdk_window_invalidate_rect(widget->window, &widget->allocation,FALSE);
 	}
 
 	return TRUE;

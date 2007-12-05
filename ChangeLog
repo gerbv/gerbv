@@ -1,3 +1,10 @@
+2007-12-04  Julian Lamb
+	* src/callbacks.[ch],src/interface.[ch]: Rename GTK widgets to more
+	  recognizable names for better code legibility. Change sidebar to a
+	  notebook view and add a messages tab. Organize statusbar layout. Add
+	  "analyze" menu and move CAM related functions to it. Clean up toolbars
+	  and combine into a single toolbar.
+	  
 2007-11-30  Julian Lamb
 	* src/callbacks.[ch],src/interface.[ch],src/gerbv.c: Split out all gui
 	  code out of gerbv.c and put it into the standard callbacks/interface

@@ -681,7 +681,8 @@ redraw_pixmap(GtkWidget *widget, int restart)
     /*
      * Calls expose_event
      */
-    gtk_widget_draw(widget, &update_rect);
+    gtk_widget_draw (widget, &update_rect);
+    //gdk_window_invalidate_rect(widget->window, &widget->allocation,FALSE);
     
  redraw_pixmap_end:
     /* Return default pointer shape */
