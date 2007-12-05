@@ -1,5 +1,5 @@
 
-	CODING STANDARD FOR GERBV
+=======	CODING STANDARD FOR GERBV =======
 
 $Id$
 
@@ -73,3 +73,93 @@ some_function(int par1, int par2)
 
 In a function there should be maximum one empty line in a row.
 Between functions there should be two empty lines.
+
+======= GERBV'S INTERNAL WORKINGS =======
+
+Here are some rough notes about how gerbv works.  These notes were
+taken during the development of version 1.1.0, so things may have 
+changed since then.  The idea behind these notes is to help new 
+developers understand the program flow.  Please add/modify these
+notes as you work on gerbv and come to understand its workings.
+
+----------------------------------------------------------------
+Structs:
+
+screen -- top level struct of info about all Gerber images superimposed.
+Global variable.  Individual Gerber images(layers) are accessed as
+screen.file[i]->image
+
+gerb_image_t -- This holds a parsed representation of each Gerber file
+in the project.
+
+gerb_state_t --
+
+----------------------------------------------------------------
+Important files:
+
+gerbv.c contains the definitions of the various windows and events.
+        it also contains main().
+
+gerber.c is the place where Gerber codes are read and acted upon.  Writes
+         results into structs "state" and "image"
+
+draw.c: makes calls to cairo stuff to draw objects on screen.
+
+draw-gdk.c:  Makes calls to GDK stuff to draw objects on the
+             screen.  It holds the fcn image2pixmap,
+             which converts image data to a GDK pixmap.
+
+----------------------------------------------------------------
+Important functions
+
+gerber.c:parse_gerb:  Parses gerber, returns gerb_image
+
+gerbv.c:redraw_pixmap is the thing which actually 
+draws the Gerber files on the
+screen.  It is called by several callbacks to draw the screen.  It takes a
+pointer to the screen widget (screen.drawing_area)
+
+image2pixmap is the thing which actually does the drawing onto the drawing
+area.
+
+
+----------------------------------------------------------------
+Use cases:
+
+====
+gerbv starts.  main() called.   Sets up screen.  Handles command line flags.
+Inits GTK, then goes into GTK event loop.
+
+User does "file -> open Gerber(s)".  Callback XXXX is called.  It
+calls open_image to open the Gerber file.  Then redraw_pixmap is called
+to redraw the screen for the user.
+
+open_image does this:
+  1.  Calls gerb_fopen, which returns a file descriptor
+  2.  Calls parse_gerb, which returns a gerb_image_t*.
+  3.  Mallocs memory for the new file.
+  4.  Stores the filename in screen.file[idx]->name
+  5.  Sets the basename for the file.
+  6.  Sets the colors for the image.
+  7.  Return
+
+parse_gerb does this:
+  0.  Mallocs and creates a new state (gerb_state_t)
+  1.  Creates a new gerb image (gerb_image_t) using new_gerb_image
+  2.  Attaches new netlist using curr_net = image->netlist;
+  3.  Reads chars from the opened Gerber file, and does a dispatch
+      based upon which char is found.  Example: for a G code,
+      parse_G_code is called.
+  4.  If the found char is a *, then wrap up processing for this
+      code by:
+      1.  Malloc memory for a new net element in the curr_net list.
+      2.  Update state and image members depending upon what this
+          code has been.
+  5.  Loop to next code.
+  6.  Returns built up gerb image
+
+parse_G_code (and parse_*_code) does this:
+  1.  Calls gerb_fgetint to get the number of the code, then does
+      a dispatch depending upon which number is found.
+  2.  Depending upon the number, state-> is modified.
+  3.  Return
