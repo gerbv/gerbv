@@ -49,7 +49,13 @@
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
-#include "draw.h"
+
+#ifdef RENDER_USING_GDK
+  #include "draw-gdk.h"
+#else
+  #include "draw.h"
+#endif
+
 #include "color.h"
 #include "gerbv_screen.h"
 #include "log.h"
