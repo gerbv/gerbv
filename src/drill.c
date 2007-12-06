@@ -827,8 +827,10 @@ read_double(gerb_file_t *fd, double scale_factor)
 
     read = gerb_fgetc(fd);
     while(read != EOF && i < sizeof(temp) &&
-	  (isdigit(read) || read == '.' || read == '+' || read == '-')) {
+	  (isdigit(read) || read == '.' || read == ',' || read == '+' || read == '-')) {
 	if(read == ',' || read == '.') decimal_point = TRUE;
+	if(read == ',')
+	    read = '.'; /* adjust for strtod() */
 	temp[i++] = (char)read;
 	read = gerb_fgetc(fd);
     }

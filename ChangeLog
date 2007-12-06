@@ -1,4 +1,8 @@
 2007-12-05  Julian Lamb
+	* src/drill.c: Fix parsing of drill files with commas in
+	  place of decimals (bug #1844100).
+
+2007-12-05  Julian Lamb
 	* src/draw.c,src/draw-gtk.c: Fix rendering of lines drawn with rectangular 
 	  aperatures (bug #1834944 and #1704942). Thanks to ineiev for the gdk
 	  patch, which was reworked to apply to the cairo rendering too.
