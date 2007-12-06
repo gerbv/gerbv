@@ -344,7 +344,7 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
     struct gerb_net *net;
     double x1, y1, x2, y2, cp_x=0, cp_y=0;
     int in_parea_fill = 0,drawing_parea_fill = 0;
-    gdouble p1, p2, p3, p4, p5;
+    gdouble p1, p2, p3, p4, p5, dx, dy;
     
     for (net = image->netlist->next ; net != NULL; net = net->next) {
 	int repeat_X=1, repeat_Y=1;
@@ -431,21 +431,49 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 		}
 		switch (net->aperture_state) {
 			case ON :
-				if (image->aperture[net->aperture]->type == RECTANGLE) {
-					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
-				}
-				else {
-					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
-				}
 				switch (net->interpolation) {
 					case LINEARx10 :
 					case LINEARx01 :
 					case LINEARx001 :
 					case LINEARx1 :
-						cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
-						cairo_move_to (cairoTarget, x1,y1);
-						cairo_line_to (cairoTarget, x2,y2);
-						cairo_stroke (cairoTarget);
+						switch (image->aperture[net->aperture]->type) {
+							case CIRCLE :
+								cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+								cairo_move_to (cairoTarget, x1,y1);
+								cairo_line_to (cairoTarget, x2,y2);
+								cairo_stroke (cairoTarget);
+								break;
+							case RECTANGLE :				
+								dx = (image->aperture[net->aperture]->parameter[0]/ 2);
+								dy = (image->aperture[net->aperture]->parameter[1]/ 2);
+								if(x1 > x2)
+									dx = -dx;
+								if(y1 > y2)
+									dy = -dy;
+								cairo_new_path(cairoTarget);
+								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+								cairo_move_to (cairoTarget, x1 - dx, y1 - dy);
+								cairo_line_to (cairoTarget, x1 - dx, y1 + dy);
+								cairo_line_to (cairoTarget, x2 - dx, y2 + dy);
+								cairo_line_to (cairoTarget, x2 + dx, y2 + dy);
+								cairo_line_to (cairoTarget, x2 + dx, y2 - dy);
+								cairo_line_to (cairoTarget, x1 + dx, y1 - dy);
+								cairo_fill (cairoTarget);
+								break;
+							/* for now, just render ovals or polygons like a circle */
+							case OVAL :
+							case POLYGON :
+								cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+								cairo_move_to (cairoTarget, x1,y1);
+								cairo_line_to (cairoTarget, x2,y2);
+								cairo_stroke (cairoTarget);
+								break;
+							/* macros can only be flashed, so ignore any that might be here */
+							default :
+								break;
+						}
 						break;
 					case CW_CIRCULAR :
 					case CCW_CIRCULAR :

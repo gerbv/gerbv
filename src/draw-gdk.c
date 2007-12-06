@@ -990,8 +990,27 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 					   GDK_JOIN_MITER);
 		break;
 	    case LINEARx1 :
-		gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
-		break;
+		if (image->aperture[net->aperture]->type != RECTANGLE)
+			gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
+		else {
+			gint dx, dy;
+			GdkPoint poly[6];
+
+			dx = (int)round(image->aperture[net->aperture]->parameter[0]
+						* unit_scale / 2);
+			dy = (int)round(image->aperture[net->aperture]->parameter[1]
+						* unit_scale / 2);
+			if(x1 > x2) dx = -dx;
+			if(y1 > y2) dy = -dy;
+			poly[0].x = x1 - dx; poly[0].y = y1 - dy;
+			poly[1].x = x1 - dx; poly[1].y = y1 + dy;
+			poly[2].x = x2 - dx; poly[2].y = y2 + dy;
+			poly[3].x = x2 + dx; poly[3].y = y2 + dy;
+			poly[4].x = x2 + dx; poly[4].y = y2 - dy;
+			poly[5].x = x1 + dx; poly[5].y = y1 - dy;
+			gdk_draw_polygon(*pixmap, gc, 1, poly, 6);
+		}
+ 		break;
 	    case CW_CIRCULAR :
 	    case CCW_CIRCULAR :
 		gerbv_gdk_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
