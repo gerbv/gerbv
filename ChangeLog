@@ -1,3 +1,8 @@
+2007-12-06  Julian Lamb
+	* src/callbacks.c,src/gerbv.c: Add private implementation of
+	  gdk_cairo_create to allow compilation with gtk < 2.8. Fixed bug in gerbv
+	  which was causing gdk rendering to skip frames sometimes.
+
 2007-12-05  Julian Lamb
 	* src/gerber.c,src/drill.h,src/gerb_image.h: Fix memory corruption issue
 	  with G54 codes not checking if aperture numbers were within bounds (bug

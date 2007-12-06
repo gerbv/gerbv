@@ -543,12 +543,11 @@ redraw_pixmap(GtkWidget *widget, int restart)
      */
     gdk_gc_set_function(gc, screen.si_func);
 
-
     /* 
      * This now allows drawing several layers on top of each other.
      * Higher layer numbers have higher priority in the Z-order. 
      */
-    for(i = state.file_index; i < MAX_FILES; i++) {
+    for(i = 0; i < MAX_FILES; i++) {
 	if (screen.file[i] && screen.file[i]->isVisible) {
 	    enum polarity_t polarity;
 

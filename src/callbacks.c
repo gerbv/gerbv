@@ -27,6 +27,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>
 
 #ifdef HAVE_STDLIB_H
@@ -54,6 +55,7 @@
   #include "draw-gdk.h"
 #else
   #include "draw.h"
+  #include <cairo-xlib.h>
 #endif
 
 #include "color.h"
@@ -95,6 +97,51 @@ typedef struct {
     GdkEventButton *z_event;
     int scale;
 } gerbv_zoom_data_t;
+
+static cairo_t *
+callbacks_gdk_cairo_create (GdkDrawable *target)
+{
+	int width, height;
+	int x_off=0, y_off=0;
+	cairo_t *cr;
+	cairo_surface_t *surface;
+	GdkDrawable *drawable = target;
+	GdkVisual *visual;
+
+	if (GDK_IS_WINDOW(target)) {
+	      /* query the window's backbuffer if it has one */
+		GdkWindow *window = GDK_WINDOW(target);
+	      gdk_window_get_internal_paint_info (window,
+	                                          &drawable, &x_off, &y_off);
+	}
+	visual = gdk_drawable_get_visual (drawable);
+	gdk_drawable_get_size (drawable, &width, &height);
+
+	if (visual) {
+	      surface = cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
+	                                          GDK_DRAWABLE_XID (drawable),
+	                                          GDK_VISUAL_XVISUAL (visual),
+	                                          width, height);
+	} else if (gdk_drawable_get_depth (drawable) == 1) {
+	      surface = cairo_xlib_surface_create_for_bitmap
+	      (GDK_PIXMAP_XDISPLAY (drawable),
+	            GDK_PIXMAP_XID (drawable),
+	            GDK_SCREEN_XSCREEN (gdk_drawable_get_screen (drawable)),
+	            width, height);
+	} else {
+		g_warning ("Using Cairo rendering requires the drawable argument to\n"
+	                  "have a specified colormap. All windows have a colormap,\n"
+	            "however, pixmaps only have colormap by default if they\n"
+	                  "were created with a non-NULL window argument. Otherwise\n"
+	                  "a colormap must be set on them with "
+	                  "gdk_drawable_set_colormap");
+	      return NULL;
+	}
+	cairo_surface_set_device_offset (surface, -x_off, -y_off);
+	cr = cairo_create (surface);
+	cairo_surface_destroy (surface);
+	return cr;
+}
 
 
 void
@@ -767,7 +814,7 @@ callback_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	window = gtk_widget_get_parent_window(widget);
 
 	/* get a cairo_t */
-	cr = gdk_cairo_create (widget->window);
+	cr = callbacks_gdk_cairo_create (widget->window);
 	
 	/* translate the draw area before drawing */
 	cairo_translate (cr,-screen.trans_x,-screen.trans_y);
