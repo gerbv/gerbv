@@ -500,8 +500,13 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 	break;
     case 54: /* Tool prepare */
 	/* XXX Maybe uneccesary??? */
-	if (gerb_fgetc(fd) == 'D')
-	    state->curr_aperture = gerb_fgetint(fd, NULL);
+	if (gerb_fgetc(fd) == 'D') {
+		int a = gerb_fgetint(fd, NULL);
+		if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX))
+			state->curr_aperture = a;
+		else 
+			GERB_COMPILE_ERROR("Aperture out of bounds:%d\n", a);
+	}
 	else
 	    GERB_COMPILE_WARNING("Strange code after G54\n");
 	break;

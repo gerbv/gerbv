@@ -1,4 +1,12 @@
 2007-12-05  Julian Lamb
+	* src/gerber.c,src/drill.h,src/gerb_image.h: Fix memory corruption issue
+	  with G54 codes not checking if aperture numbers were within bounds (bug
+	  #1843983). Also, bumped up max aperture number from 999 to 9999 based on
+	  reports of some CAD packages using numbers this hig (even though it
+	  clearly says 999 is the highest number in the RS274X spec). This will
+	  increase memory usage somewhat, but hopefully should be acceptable.
+
+2007-12-05  Julian Lamb
 	* src/drill.c: Fix parsing of drill files with commas in
 	  place of decimals (bug #1844100).
 

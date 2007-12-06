@@ -34,7 +34,7 @@ extern "C" {
 #include <glib.h>
 	
 #define APERTURE_MIN 10
-#define APERTURE_MAX 999
+#define APERTURE_MAX 9999
 	
 enum aperture_state_t {OFF, ON, FLASH};
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
