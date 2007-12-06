@@ -98,6 +98,7 @@ typedef struct {
     int scale;
 } gerbv_zoom_data_t;
 
+#ifndef RENDER_USING_GDK
 static cairo_t *
 callbacks_gdk_cairo_create (GdkDrawable *target)
 {
@@ -142,6 +143,7 @@ callbacks_gdk_cairo_create (GdkDrawable *target)
 	cairo_surface_destroy (surface);
 	return cr;
 }
+#endif
 
 
 void

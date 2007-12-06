@@ -135,7 +135,7 @@ if test "$use_cairo" = "yes"; then
 	RENDERER=cairo
 else
 	RENDERER=gdk
-	AC_DEFINE(RENDER_USING_GDK, , [Define to use gdk instead of cairo for rendering])
+	AC_DEFINE(RENDER_USING_GDK, 1, [Define to use gdk instead of cairo for rendering])
 fi
 
 #
