@@ -1,4 +1,11 @@
 2007-12-07  Julian Lamb
+	* src/drill.c: Fix warning messages on some drill files (bug #1316247).
+	  The drill parser did not zero out new gerbv_aperture_t structures, which
+	  sometimes allowed junk in the param[x] portions, which confused the
+	  parser and gave warnings and potentially incorrectly rendered drill
+	  holes.
+
+2007-12-07  Julian Lamb
 	* src/draw.c: Fix thermal rendering bug (bug #1024000) in the cairo
 	  rendering code (this bug is not easily fixable in the GDK code, but
 	  it is being obsoleted soon).
