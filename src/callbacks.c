@@ -145,7 +145,6 @@ callbacks_gdk_cairo_create (GdkDrawable *target)
 }
 #endif
 
-
 void
 on_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)

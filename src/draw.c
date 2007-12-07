@@ -134,7 +134,7 @@ gerbv_draw_oval(cairo_t *cairoTarget, gdouble width, gdouble height)
 	 * draw an arc and stretch it by scaling different x and y values
 	 */
 	cairo_save (cairoTarget);
-	cairo_scale (cairoTarget, height, width);
+	cairo_scale (cairoTarget, width, height);
 	gerbv_draw_circle (cairoTarget, 1);
 	cairo_restore (cairoTarget);
 	return;
@@ -274,6 +274,10 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 						s->stack[THERMAL_INSIDE_DIAMETER]) / 2.0;
 					diameter = (s->stack[THERMAL_INSIDE_DIAMETER] + ci_thickness);
 					
+					/* we don't want to delete any previously rendered items on
+					   this layer, so we need to render the thermal to a private
+					   group and then composite it on top of the existing layer */
+					cairo_push_group (cairoTarget);
 					/* draw non-filled circle */
 					cairo_set_line_width (cairoTarget, ci_thickness);
 					gerbv_draw_circle(cairoTarget, diameter);
@@ -290,7 +294,9 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 						cairo_rotate (cairoTarget, 90 * M_PI/180);
 					}
 					cairo_stroke (cairoTarget);
-					cairo_set_operator (cairoTarget, oldOperator);	
+					cairo_set_operator (cairoTarget, oldOperator);
+					cairo_pop_group_to_source (cairoTarget);
+					cairo_paint (cairoTarget);
 				}
 				else if ((ip->data.ival == 2)||(ip->data.ival == 20)) {
 			  		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION] * M_PI/180);

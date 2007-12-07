@@ -1,3 +1,8 @@
+2007-12-07  Julian Lamb
+	* src/draw.c: Fix thermal rendering bug (bug #1024000) in the cairo
+	  rendering code (this bug is not easily fixable in the GDK code, but
+	  it is being obsoleted soon).
+
 2007-12-06  Julian Lamb
 	* src/callbacks.c,src/gerbv.c: Add private implementation of
 	  gdk_cairo_create to allow compilation with gtk < 2.8. Fixed bug in gerbv
