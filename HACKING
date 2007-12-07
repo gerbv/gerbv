@@ -1,4 +1,3 @@
-
 =======	CODING STANDARD FOR GERBV =======
 
 $Id$
@@ -74,6 +73,7 @@ some_function(int par1, int par2)
 In a function there should be maximum one empty line in a row.
 Between functions there should be two empty lines.
 
+
 ======= GERBV'S INTERNAL WORKINGS =======
 
 Here are some rough notes about how gerbv works.  These notes were
@@ -83,16 +83,56 @@ developers understand the program flow.  Please add/modify these
 notes as you work on gerbv and come to understand its workings.
 
 ----------------------------------------------------------------
-Structs:
+Important datastructures (this list is not complete, but rather
+tries to touch upon the high points of the datastructures used):
 
 screen -- top level struct of info about all Gerber images superimposed.
-Global variable.  Individual Gerber images(layers) are accessed as
-screen.file[i]->image
+  Global variable.  Individual Gerber images(layers) are accessed as
+  screen.file[i]->image.  This is a global variable, invoked by 
+  "extern gerbv_screen_t screen" in every fcn which uses it.
+  Defined in gerbv_screen.h.
 
-gerb_image_t -- This holds a parsed representation of each Gerber file
-in the project.
+  Selected members:
+  screen->drawing_area -- This is the window showing the layers (Gerbers)
+  screen->pixmap
+  screen->win -- various windows presented to the user.
+  screen->state
+  screen->file[idx] -- This holds info relating to the input 
+                       layer (Gerber) files.  Defined 
+                       as gerbv_fileinfo_t in gerbv_screen.h
 
-gerb_state_t --
+  screen->file[idx]->color
+  screen->file[idx]->name
+  screen->file[idx]->isVisible
+  screen->file[idx]->gerber_stats -- struct hold info about codes
+                                     encountered while reading gerber files.
+  screen->file[idx]->drill_stats -- struct hold info about codes
+                                     encountered while reading drill files.
+
+  screen->file[idx]->image -- Holds a parsed representation 
+                     of each Gerber file in the project.  The data 
+                     held in this struct is used in the drawing 
+                     programs (image2pixmap) to draw the screen.
+                     Each layer lives on a separate index (idx). 
+                     defined as gerb_image_t in gerb_image.h
+
+  screen->file[idx]->image->aperture -- Holds aperture info pertaining
+                                        to this Gerber layer.
+					Defined as gerb_aperture_t
+					in gerb_image.h
+  screen->file[idx]->image->format
+  screen->file[idx]->image->netlist -- This holds info relating 
+                                       to the elements in the
+                                       layer (Gerber) files.  
+                                       Defined as gerb_net_t
+				       in gerb_image.h
+
+
+gerb_state_t -- This variable keeps track of the state of the 
+  CAM job as the Gerber file is parsed.  It is updated with
+  each code read in, and is also used duing parsing to hold 
+  state information which can be modified by the incoming codes.
+  Its use is local to gerber.c
 
 ----------------------------------------------------------------
 Important files:
@@ -101,33 +141,42 @@ gerbv.c contains the definitions of the various windows and events.
         it also contains main().
 
 gerber.c is the place where Gerber codes are read and acted upon.  Writes
-         results into structs "state" and "image"
+         results into struct "image", which is used later to create 
+         the drawing on the screen.
 
-draw.c: makes calls to cairo stuff to draw objects on screen.
+drill.c Is the place where drill files are read and acted upon.  
+         (Pretty obvious, huh?)  Writes results into struct "image",
+         which is used later to create the drawing on the screen.
 
-draw-gdk.c:  Makes calls to GDK stuff to draw objects on the
+draw.c: Loops through image->netlist and makes calls to 
+        cairo stuff to draw objects on screen.
+
+draw-gdk.c:  Loops through image->netlist and makes 
+             calls to GDK stuff to draw objects on the
              screen.  It holds the fcn image2pixmap,
              which converts image data to a GDK pixmap.
 
 ----------------------------------------------------------------
 Important functions
 
-gerber.c:parse_gerb:  Parses gerber, returns gerb_image
+gerber.c:parse_gerb:  Parses gerber, returns gerb_image.
 
 gerbv.c:redraw_pixmap is the thing which actually 
 draws the Gerber files on the
 screen.  It is called by several callbacks to draw the screen.  It takes a
 pointer to the screen widget (screen.drawing_area)
 
-image2pixmap is the thing which actually does the drawing onto the drawing
-area.
+image2pixmap (gdk) or render_image_to_cairo_target (cairo) 
+is the thing which actually does the drawing onto the drawing
+area.  
 
 
 ----------------------------------------------------------------
 Use cases:
 
 ====
-gerbv starts.  main() called.   Sets up screen.  Handles command line flags.
+gerbv starts.  Global variable screen is declared.
+ main() called.   Sets up screen.  Handles command line flags.
 Inits GTK, then goes into GTK event loop.
 
 User does "file -> open Gerber(s)".  Callback XXXX is called.  It
@@ -137,14 +186,15 @@ to redraw the screen for the user.
 open_image does this:
   1.  Calls gerb_fopen, which returns a file descriptor
   2.  Calls parse_gerb, which returns a gerb_image_t*.
-  3.  Mallocs memory for the new file.
+  3.  Attaches new image to screen.file[idx]->image.
   4.  Stores the filename in screen.file[idx]->name
   5.  Sets the basename for the file.
   6.  Sets the colors for the image.
-  7.  Return
+  7.  Return -1 upon error or 0 upon success.
 
 parse_gerb does this:
-  0.  Mallocs and creates a new state (gerb_state_t)
+  0.  Mallocs and creates a new state (gerb_state_t).  State is local
+      to parse_gerb.
   1.  Creates a new gerb image (gerb_image_t) using new_gerb_image
   2.  Attaches new netlist using curr_net = image->netlist;
   3.  Reads chars from the opened Gerber file, and does a dispatch
@@ -156,10 +206,21 @@ parse_gerb does this:
       2.  Update state and image members depending upon what this
           code has been.
   5.  Loop to next code.
-  6.  Returns built up gerb image
+  6.  Returns built up gerb image (gerb_image_t *)
 
-parse_G_code (and parse_*_code) does this:
+parse_G_code (and parse_<*>_code) does this:
   1.  Calls gerb_fgetint to get the number of the code, then does
       a dispatch depending upon which number is found.
-  2.  Depending upon the number, state-> is modified.
-  3.  Return
+  2.  Depending upon the code (number), state-> is modified.
+  3.  Return void.
+
+redraw_pixmap does this:
+  1.  Set up global drawing parameters
+  2.  Creates a new screen.pixmap
+  3.  Loops over visible files (images) in state.file_index list
+  4.  Calls image2pixmap (gdk) or render_image_to_cairo_target (cairo) 
+      on each image.
+  5.  Redraws the top level window.
+  6.  Returns TRUE or FALSE to control idle function (???)
+
+
