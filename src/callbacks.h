@@ -172,3 +172,8 @@ load_file_popup(GtkWidget *widget, gpointer data);
 void 
 update_statusbar(gerbv_screen_t *scr);
 
+gint
+redraw_pixmap(GtkWidget *widget, int restart);
+
+void
+autoscale(void);

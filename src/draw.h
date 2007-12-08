@@ -106,11 +106,6 @@ enum {
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int 
-image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
-	     int scale, double trans_x, double trans_y,
-	     enum polarity_t polarity);
-
-int 
 render_image_to_cairo_target(cairo_t *cairoTarget, 
 			     struct gerb_image *image);
 

@@ -32,6 +32,7 @@
 #include <gdk/gdk.h>
 
 #include "gerb_image.h"
+#include "gerber.h"
 
 #define INITIAL_SCALE 200
 #define MAX_ERRMSGLEN 25
@@ -58,6 +59,8 @@ typedef struct {
     char *name;
     char *basename;
     char inverted;
+    gerber_stats_t *gerber_stats;
+    /* gerber_stats_t *drill_stats; */
 } gerbv_fileinfo_t;
 
 typedef struct {

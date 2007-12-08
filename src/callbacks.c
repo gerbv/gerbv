@@ -77,6 +77,9 @@
 #define OPEN_PROJECT 2
 #  define _(String) (String)
 
+/**Global variable to keep track of what's happening on the screen.
+   Declared extern in gerbv_screen.h
+ */
 extern gerbv_screen_t screen;
 
 void
@@ -84,12 +87,6 @@ load_project(project_list_t *project_list);
 
 int
 open_image(char *filename, int idx, int reload);
-
-gint
-redraw_pixmap(GtkWidget *widget, int restart);
-
-void
-autoscale(void);
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {
@@ -425,7 +422,7 @@ on_about_activate                     (GtkMenuItem     *menuitem,
 	aboutdialog1 = gtk_about_dialog_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);
 	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
-	gtk_about_dialog_set_name (GTK_ABOUT_DIALOG (aboutdialog1), _("Application Name"));
+	gtk_about_dialog_set_name (GTK_ABOUT_DIALOG (aboutdialog1), _("Gerbv"));
 	//gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators);
 
 	gchar *string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
@@ -1387,7 +1384,7 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
 	return;
 } /* cb_ok_export_png */
 
-
+/* ------------------------------------------------------------------ */
 void
 export_png_popup(GtkWidget *widget, gpointer data)
 {
@@ -1419,7 +1416,7 @@ export_png_popup(GtkWidget *widget, gpointer data)
 
 #endif /* EXPORT_PNG */
 
-
+/* ------------------------------------------------------------------ */
 /** Displays additional information in the statusbar.
     The Statusbar is divided into three sections:\n
     statusbar.coordstr for coords\n
@@ -1440,6 +1437,7 @@ update_statusbar(gerbv_screen_t *scr)
 	}
 } /* update_statusbar */
 
+/* ------------------------------------------------------------------ */
 void
 reload_files(GtkWidget *widget, gpointer data)
 {
@@ -1457,6 +1455,7 @@ reload_files(GtkWidget *widget, gpointer data)
 	return;
 } /* reload_files */
 
+/* ------------------------------------------------------------------ */
 void
 unload_file(GtkWidget *widget, gpointer data)
 {
@@ -1508,6 +1507,7 @@ project_save_cb(GtkWidget *widget, gpointer data)
 }
 */
 
+/* ------------------------------------------------------------------ */
 void
 cb_ok_project(GtkWidget *widget, gpointer data)
 {

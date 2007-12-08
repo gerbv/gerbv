@@ -83,6 +83,8 @@ static gerb_net_t *gen_circle_segments(gerb_net_t *curr_net,
 
 static void setminmax(double *min, double *max, double pos, double aperture);
 
+
+/* ------------------------------------------------------------------ */
 gerb_image_t *
 parse_gerb(gerb_file_t *fd)
 {
@@ -152,7 +154,7 @@ parse_gerb(gerb_file_t *fd)
 		break;
 	    default:
 		GERB_FATAL_ERROR("Strange M code found.\n");
-	    }
+	    } /* switch(parse_M_code) */
 	    break;
 	case 'X':
 	    // dprintf("... Found X code\n");
@@ -227,7 +229,7 @@ parse_gerb(gerb_file_t *fd)
 		break;
 	    }
 	    break;
-	case '*':
+	case '*':  
 	    // dprintf("... Found * code\n");
 	    if (state->changed == 0) break;
 	    state->changed = 0;
@@ -289,7 +291,7 @@ parse_gerb(gerb_file_t *fd)
 		break;
 	    default :
 		break;
-	    }
+	    }  /* switch(state->interpolation) */
 
 	    /* 
 	     * Count number of points in Polygon Area 
@@ -335,7 +337,7 @@ parse_gerb(gerb_file_t *fd)
 		}
 
 		state->parea_start_node->nuf_pcorners++;
-	    }
+	    }  /* if (state->in_parea_fill && state->parea_start_node) */
 
 	    curr_net->interpolation = state->interpolation;
 
@@ -445,7 +447,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	default:
 	    GERB_COMPILE_ERROR("Found unknown character (whitespace?) %c[%d]\n", read, read);
-	}
+	}  /* switch((char) (read & 0xff)) */
     }
     
     GERB_COMPILE_ERROR("File is missing gerber End-Of-File\n");
@@ -456,6 +458,7 @@ parse_gerb(gerb_file_t *fd)
 } /* parse_gerb */
 
 
+/* ------------------------------------------------------------------- */
 static void 
 parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 {
@@ -538,6 +541,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 } /* parse_G_code */
 
 
+/* ------------------------------------------------------------------ */
 static void 
 parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 {
@@ -569,6 +573,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 } /* parse_D_code */
 
 
+/* ------------------------------------------------------------------ */
 static int
 parse_M_code(gerb_file_t *fd)
 {
@@ -590,6 +595,7 @@ parse_M_code(gerb_file_t *fd)
 } /* parse_M_code */
 
 
+/* ------------------------------------------------------------------ */
 static void 
 parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 {
@@ -931,6 +937,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 } /* parse_rs274x */
 
 
+/* ------------------------------------------------------------------ */
 static int 
 parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 			  amacro_t *amacro)
@@ -1010,6 +1017,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 } /* parse_aperture_definition */
 
 
+/* ------------------------------------------------------------------ */
 static void 
 calc_cirseg_sq(struct gerb_net *net, int cw, 
 	       double delta_cp_x, double delta_cp_y)
@@ -1144,6 +1152,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 } /* calc_cirseg_sq */
 
 
+/* ------------------------------------------------------------------ */
 static void 
 calc_cirseg_mq(struct gerb_net *net, int cw, 
 	       double delta_cp_x, double delta_cp_y)
@@ -1205,6 +1214,7 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 } /* calc_cirseg_mq */
 
 
+/* ------------------------------------------------------------------ */
 static gerb_net_t *
 gen_circle_segments(gerb_net_t *curr_net, int cw, int *nuf_pcorners)
 {
@@ -1277,6 +1287,8 @@ gen_circle_segments(gerb_net_t *curr_net, int cw, int *nuf_pcorners)
     return curr_net;
 } /* gen_circle_segments */
 
+
+/* ------------------------------------------------------------------ */
 static void
 setminmax(double *min, double *max, double pos, double aperture)
 {
@@ -1287,3 +1299,33 @@ setminmax(double *min, double *max, double pos, double aperture)
   if(*max < (pos+aperture))
     *max=pos+aperture;
 }
+
+
+
+/* ------------------------------------------------------------------ */
+static gerber_stats_t *
+gerber_stats_new()
+{
+    gerber_stats_t *stats;
+    
+    stats->G1 = 0;
+    stats->G2 = 0;
+    stats->G3 = 0;
+    stats->G4 = 0;
+    stats->G10 = 0;
+    stats->G11 = 0;
+    stats->G12 = 0;
+    stats->G36 = 0;
+    stats->G37 = 0;
+    stats->G54 = 0;
+    stats->G55 = 0;
+    stats->G70 = 0;
+    stats->G71 = 0;
+    stats->G74 = 0;
+    stats->G75 = 0;
+    stats->G90 = 0;
+    stats->G91 = 0;
+    stats->G_unknown = 0;
+
+    return stats;
+}  /* gerber_stats_new */
