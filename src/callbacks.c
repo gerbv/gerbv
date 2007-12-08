@@ -67,11 +67,14 @@
 #include "callbacks.h"
 #include "interface.h"
 
+#include "render.h"
+
 #ifdef EXPORT_PNG
 #include "exportimage.h"
 #endif /* EXPORT_PNG */
 
 #define dprintf if(DEBUG) printf
+
 #define SAVE_PROJECT 0
 #define SAVE_AS_PROJECT 1
 #define OPEN_PROJECT 2
@@ -324,16 +327,145 @@ on_fit_to_window_activate              (GtkMenuItem     *menuitem,
 }
 
 
+/* --------------------------------------------------------- */
 void
-on_analyze_activelayers_activate       (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+on_analyze_active_gerbers_activate(GtkMenuItem *menuitem, 
+				 gpointer user_data)
 {
+    gerb_stats_t *stats_report;
+    gchar *G_report_string;
+    gchar *D_report_string;
+    gchar *M_report_string;
+    gchar *misc_report_string;
+    
+    stats_report = generate_gerber_analysis();
+
+    G_report_string = g_strdup_printf("G code statistics   \n");
+    G_report_string = g_strdup_printf("%sG0 = %d\n", G_report_string, stats_report->G0);
+    G_report_string = g_strdup_printf("%sG1 = %d\n", G_report_string, stats_report->G1);
+    G_report_string = g_strdup_printf("%sG2 = %d\n", G_report_string, stats_report->G2);
+    G_report_string = g_strdup_printf("%sG3 = %d\n", G_report_string, stats_report->G3);
+    G_report_string = g_strdup_printf("%sG4 = %d\n", G_report_string, stats_report->G4);
+    G_report_string = g_strdup_printf("%sG10 = %d\n", G_report_string, stats_report->G10);
+    G_report_string = g_strdup_printf("%sG11 = %d\n", G_report_string, stats_report->G11);
+    G_report_string = g_strdup_printf("%sG12 = %d\n", G_report_string, stats_report->G12);
+    G_report_string = g_strdup_printf("%sG36 = %d\n", G_report_string, stats_report->G36);
+    G_report_string = g_strdup_printf("%sG37 = %d\n", G_report_string, stats_report->G37);
+    G_report_string = g_strdup_printf("%sG54 = %d\n", G_report_string, stats_report->G54);
+    G_report_string = g_strdup_printf("%sG55 = %d\n", G_report_string, stats_report->G55);
+    G_report_string = g_strdup_printf("%sG70 = %d\n", G_report_string, stats_report->G70);
+    G_report_string = g_strdup_printf("%sG71 = %d\n", G_report_string, stats_report->G71);
+    G_report_string = g_strdup_printf("%sG74 = %d\n", G_report_string, stats_report->G74);
+    G_report_string = g_strdup_printf("%sG75 = %d\n", G_report_string, stats_report->G75);
+    G_report_string = g_strdup_printf("%sG90 = %d\n", G_report_string, stats_report->G90);
+    G_report_string = g_strdup_printf("%sG91 = %d\n", G_report_string, stats_report->G91);
+    G_report_string = g_strdup_printf("%sUnknown G codes = %d\n", 
+				      G_report_string, stats_report->G_unknown);
+
+
+    D_report_string = g_strdup_printf("D code statistics   \n");
+    D_report_string = g_strdup_printf("%sD1 = %d\n", D_report_string, stats_report->D1);
+    D_report_string = g_strdup_printf("%sD2 = %d\n", D_report_string, stats_report->D2);
+    D_report_string = g_strdup_printf("%sD3 = %d\n", D_report_string, stats_report->D3);
+    /* Insert stuff about user defined codes here */
+    D_report_string = g_strdup_printf("%sUndefined D codes = %d\n", 
+				      D_report_string, stats_report->D_unknown);
+    D_report_string = g_strdup_printf("%sD code Errors = %d\n", 
+				      D_report_string, stats_report->D_error);
+
+
+    M_report_string = g_strdup_printf("M code statistics   \n");
+    M_report_string = g_strdup_printf("%sM0 = %d\n", M_report_string, stats_report->M0);
+    M_report_string = g_strdup_printf("%sM1 = %d\n", M_report_string, stats_report->M1);
+    M_report_string = g_strdup_printf("%sM2 = %d\n", M_report_string, stats_report->M2);
+    M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
+				      M_report_string, stats_report->M_unknown);
+
+
+    misc_report_string = g_strdup_printf("Misc code statistics   \n");
+    misc_report_string = g_strdup_printf("%sX = %d\n", misc_report_string, stats_report->X);
+    misc_report_string = g_strdup_printf("%sY = %d\n", misc_report_string, stats_report->Y);
+    misc_report_string = g_strdup_printf("%sI = %d\n", misc_report_string, stats_report->I);
+    misc_report_string = g_strdup_printf("%sJ = %d\n", misc_report_string, stats_report->J);
+    misc_report_string = g_strdup_printf("%s* = %d\n", misc_report_string, stats_report->star);
+    misc_report_string = g_strdup_printf("%sUnknown codes = %d\n", 
+				      misc_report_string, stats_report->unknown);
+
+
+
+    /* Create top level dialog window for report */
+    GtkWidget *analyze_active_gerbers;
+    analyze_active_gerbers = gtk_dialog_new_with_buttons("Gerber codes report",
+							NULL,
+							GTK_DIALOG_DESTROY_WITH_PARENT,
+							GTK_STOCK_OK,
+							GTK_RESPONSE_ACCEPT,
+							NULL);
+    gtk_container_set_border_width (GTK_CONTAINER (analyze_active_gerbers), 5);
+    gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_gerbers), 
+				     GTK_RESPONSE_ACCEPT);
+    g_signal_connect (G_OBJECT(analyze_active_gerbers),
+		      "response",
+		      G_CALLBACK (gtk_widget_destroy), 
+		      GTK_WIDGET(analyze_active_gerbers));
+
+
+    /* Create GtkLabel to hold G code text */
+    GtkWidget *G_report_label = gtk_label_new (G_report_string);
+    gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
+    g_free(G_report_string);
+
+    /* Create GtkLabel to hold D code text */
+    GtkWidget *D_report_label = gtk_label_new (D_report_string);
+    gtk_misc_set_alignment(GTK_MISC(D_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(D_report_label), 13, 13);
+    g_free(D_report_string);
+
+    /* Create GtkLabel to hold M code text */
+    GtkWidget *M_report_label = gtk_label_new (M_report_string);
+    gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
+    g_free(M_report_string);
+
+    /* Create GtkLabel to hold misc code text */
+    GtkWidget *misc_report_label = gtk_label_new (misc_report_string);
+    gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
+    g_free(misc_report_string);
+
+    /* Create tabbed notebook widget and add report label widgets. */
+    GtkNotebook *notebook = gtk_notebook_new();
+    
+    gtk_notebook_append_page(notebook,
+			     GTK_WIDGET(G_report_label),
+			     gtk_label_new("G codes"));
+    
+    gtk_notebook_append_page(notebook,
+			     GTK_WIDGET(D_report_label),
+			     gtk_label_new("D codes"));
+    
+    gtk_notebook_append_page(notebook,
+			     GTK_WIDGET(M_report_label),
+			     gtk_label_new("M codes"));
+    
+    gtk_notebook_append_page(notebook,
+			     GTK_WIDGET(misc_report_label),
+			     gtk_label_new("Misc. codes"));
+    
+    
+    /* Now put notebook into dialog window and show the whole thing */
+    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_gerbers)->vbox),
+		      GTK_WIDGET(notebook));
+    gtk_widget_show_all(analyze_active_gerbers);
+	
+    return;
 
 }
 
-
+/* --------------------------------------------------------- */
 void
-on_validate_active_layers_activate     (GtkMenuItem     *menuitem,
+on_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 

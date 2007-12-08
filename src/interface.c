@@ -120,8 +120,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *fit_to_window;
 	GtkWidget *menuitem_analyze;
 	GtkWidget *menuitem_analyze_menu;
-	GtkWidget *analyze_active_layers;
-	GtkWidget *validate_active_layers;
+	GtkWidget *analyze_active_gerbers;
+	GtkWidget *analyze_active_drill;
 	GtkWidget *control_gerber_options;
 	GtkWidget *menubar_tools;
 	GtkWidget *menubar_tools_menu;
@@ -228,10 +228,10 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (image33);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
 
-	open_layer = gtk_menu_item_new_with_mnemonic (_("Open _Layer"));
+	open_layer = gtk_menu_item_new_with_mnemonic (_("Open _Layer(s)"));
 	gtk_widget_show (open_layer);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_layer);
-	gtk_tooltips_set_tip (tooltips, open_layer, _("Open a Gerber, drill, or pick and place file"), NULL);
+	gtk_tooltips_set_tip (tooltips, open_layer, _("Open Gerber, drill, or pick and place file(s)"), NULL);
 
 	revert = gtk_image_menu_item_new_from_stock ("gtk-revert-to-saved", accel_group);
 	gtk_widget_show (revert);
@@ -327,13 +327,13 @@ interface_create_gui (int req_width, int req_height)
 	menuitem_analyze_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_analyze), menuitem_analyze_menu);
 
-	analyze_active_layers = gtk_menu_item_new_with_mnemonic (_("_Analyze active layers"));
-	gtk_widget_show (analyze_active_layers);
-	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_layers);
+	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze active Gerber layers"));
+	gtk_widget_show (analyze_active_gerbers);
+	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_gerbers);
 
-	validate_active_layers = gtk_menu_item_new_with_mnemonic (_("_Validate active layers"));
-	gtk_widget_show (validate_active_layers);
-	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), validate_active_layers);
+	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze active drill layers"));
+	gtk_widget_show (analyze_active_drill);
+	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_drill);
 
 	control_gerber_options = gtk_menu_item_new_with_mnemonic (_("Control Gerber options"));
 	gtk_widget_show (control_gerber_options);
@@ -521,8 +521,10 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (scrolledwindow1);
 	gtk_box_pack_start (GTK_BOX (vbox10), scrolledwindow1, TRUE, TRUE, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (scrolledwindow1), 2);
-	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), 
+					GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow1), 
+					     GTK_SHADOW_IN);
 
 	hbox1 = gtk_hbox_new (TRUE, 0);
 	gtk_widget_show (hbox1);
@@ -562,7 +564,9 @@ interface_create_gui (int req_width, int req_height)
 
 	Layer_label = gtk_label_new (_("Layers"));
 	gtk_widget_show (Layer_label);
-	gtk_notebook_set_tab_label (GTK_NOTEBOOK (sidepane_notebook), gtk_notebook_get_nth_page (GTK_NOTEBOOK (sidepane_notebook), 0), Layer_label);
+	gtk_notebook_set_tab_label (GTK_NOTEBOOK (sidepane_notebook), 
+				    gtk_notebook_get_nth_page (GTK_NOTEBOOK (sidepane_notebook), 0), 
+				    Layer_label);
 
 	vbox11 = gtk_vbox_new (FALSE, 2);
 	gtk_widget_show (vbox11);
@@ -572,7 +576,8 @@ interface_create_gui (int req_width, int req_height)
 	messages_scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (messages_scrolledwindow);
 	gtk_box_pack_start (GTK_BOX (vbox11), messages_scrolledwindow, TRUE, TRUE, 0);
-	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (messages_scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (messages_scrolledwindow), 
+					GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
 	message_textview = gtk_text_view_new ();
 	gtk_widget_show (message_textview);
@@ -633,6 +638,11 @@ interface_create_gui (int req_width, int req_height)
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_right, TRUE, TRUE, 0);
 	gtk_misc_set_alignment (GTK_MISC (statusbar_label_right), 0, 0.5);
 
+
+/* ----------------------------------------------------------------------- */
+/*
+ *  Connect signals to widgets
+ */
 	g_signal_connect ((gpointer) new, "activate",
 	                  G_CALLBACK (on_new_activate),
 	                  NULL);
@@ -681,11 +691,11 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) fit_to_window, "activate",
 	                  G_CALLBACK (on_fit_to_window_activate),
 	                  NULL);
-	g_signal_connect ((gpointer) analyze_active_layers, "activate",
-	                  G_CALLBACK (on_analyze_activelayers_activate),
+	g_signal_connect ((gpointer) analyze_active_gerbers, "activate",
+	                  G_CALLBACK (on_analyze_active_gerbers_activate),
 	                  NULL);
-	g_signal_connect ((gpointer) validate_active_layers, "activate",
-	                  G_CALLBACK (on_validate_active_layers_activate),
+	g_signal_connect ((gpointer) analyze_active_drill, "activate",
+	                  G_CALLBACK (on_analyze_active_drill_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) control_gerber_options, "activate",
 	                  G_CALLBACK (on_control_gerber_options_activate),

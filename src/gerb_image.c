@@ -40,17 +40,20 @@ new_gerb_image(gerb_image_t *image)
 {
     free_gerb_image(image);
     
+    /* Malloc space for image */
     if ((image = (gerb_image_t *)malloc(sizeof(gerb_image_t))) == NULL) {
 	return NULL;
     }
     memset((void *)image, 0, sizeof(gerb_image_t));
     
+    /* Malloc space for image->netlist */
     if ((image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t))) == NULL) {
 	free(image);
 	return NULL;
     }
     memset((void *)image->netlist, 0, sizeof(gerb_net_t));
     
+    /* Malloc space for image->info */
     if ((image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t))) == NULL) {
 	free(image->netlist);
 	free(image);
@@ -58,6 +61,7 @@ new_gerb_image(gerb_image_t *image)
     }
     memset((void *)image->info, 0, sizeof(gerb_image_info_t));
     
+    /* Malloc space for image->transf */
     if ((image->transf = gerb_transf_new()) == NULL) {
         free(image->info);
         free(image->netlist);
@@ -65,7 +69,15 @@ new_gerb_image(gerb_image_t *image)
 	return NULL;
     }
 
-    
+    /* Malloc space for image->stats */
+    if ((image->stats = gerb_stats_new()) == NULL) {
+        free(image->info);
+        free(image->netlist);
+	free(image->transf);
+	free(image);
+	return NULL;
+    }
+
     image->info->min_x = HUGE_VAL;
     image->info->min_y = HUGE_VAL;
     image->info->max_x = -HUGE_VAL;
@@ -134,7 +146,9 @@ free_gerb_image(gerb_image_t *image)
 	tmp = NULL;
     }
     
- //   gerb_transf_free(image->transf);
+    /* FIXME -- must write these functions. */
+    /*   gerb_transf_free(image->transf); */
+    /*   gerb_stats_free(image->stats); */
 
     /*
      * Free and reset the final image

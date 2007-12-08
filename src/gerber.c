@@ -31,6 +31,7 @@
 #include "config.h"
 #include "gerber.h"
 #include "gerb_error.h"
+#include "gerb_stats.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -66,9 +67,10 @@ typedef struct gerb_state {
 
 /* Local function prototypes */
 static void parse_G_code(gerb_file_t *fd, gerb_state_t *state, 
-			 gerb_format_t *format);
-static void parse_D_code(gerb_file_t *fd, gerb_state_t *state);
-static int parse_M_code(gerb_file_t *fd);
+			 gerb_image_t *image);
+static void parse_D_code(gerb_file_t *fd, gerb_state_t *state, 
+			 gerb_image_t *image);
+static int parse_M_code(gerb_file_t *fd, gerb_image_t *image);
 static void parse_rs274x(gerb_file_t *fd, gerb_image_t *image, 
 			 gerb_state_t *state);
 static int parse_aperture_definition(gerb_file_t *fd, 
@@ -103,7 +105,10 @@ parse_gerb(gerb_file_t *fd)
      * reading files using %f format */
     setlocale(LC_NUMERIC, "C" );
 
-    
+    /* 
+     * Create new state.  This is used locally to keep track
+     * of the photoplotter's state as the Gerber is read in.
+     */
     state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
@@ -121,7 +126,7 @@ parse_gerb(gerb_file_t *fd)
     state->unit = INCH;
 
     /* 
-     * Create new image
+     * Create new image.  This will be returned.
      */
     image = new_gerb_image(image);
     if (image == NULL)
@@ -137,15 +142,15 @@ parse_gerb(gerb_file_t *fd)
 	switch ((char)(read & 0xff)) {
 	case 'G':
 	    // dprintf("... Found G code\n");
-	    parse_G_code(fd, state, image->format);
+	    parse_G_code(fd, state, image);
 	    break;
 	case 'D':
 	    // dprintf("... Found D code\n");
-	    parse_D_code(fd, state);
+	    parse_D_code(fd, state, image);
 	    break;
 	case 'M':
 	    // dprintf("... Found M code\n");
-	    switch(parse_M_code(fd)) {
+	    switch(parse_M_code(fd, image)) {
 	    case 1 :
 	    case 2 :
 	    case 3 :
@@ -158,6 +163,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case 'X':
 	    // dprintf("... Found X code\n");
+	    image->stats->X++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == TRAILING) {
 
@@ -185,6 +191,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case 'Y':
 	    // dprintf("... Found Y code\n");
+	    image->stats->Y++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == TRAILING) {
 
@@ -212,11 +219,13 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case 'I':
 	    // dprintf("... Found I code\n");
+	    image->stats->I++;
 	    state->delta_cp_x = gerb_fgetint(fd, NULL);
 	    state->changed = 1;
 	    break;
 	case 'J':
 	    // dprintf("... Found J code\n");
+	    image->stats->J++;
 	    state->delta_cp_y = gerb_fgetint(fd, NULL);
 	    state->changed = 1;
 	    break;
@@ -231,6 +240,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case '*':  
 	    // dprintf("... Found * code\n");
+	    image->stats->star++;
 	    if (state->changed == 0) break;
 	    state->changed = 0;
 
@@ -446,6 +456,7 @@ parse_gerb(gerb_file_t *fd)
 	case '\t' :
 	    break;
 	default:
+	    image->stats->unknown++;
 	    GERB_COMPILE_ERROR("Found unknown character (whitespace?) %c[%d]\n", read, read);
 	}  /* switch((char) (read & 0xff)) */
     }
@@ -460,46 +471,58 @@ parse_gerb(gerb_file_t *fd)
 
 /* ------------------------------------------------------------------- */
 static void 
-parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
+parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 {
     int  op_int;
+    gerb_format_t *format = image->format;
+    gerb_stats_t *stats = image->stats;
 
     op_int=gerb_fgetint(fd, NULL);
     
     switch(op_int) {
     case 0:  /* Move */
 	/* Is this doing anything really? */
+	stats->G0++;
 	break;
     case 1:  /* Linear Interpolation (1X scale) */
 	state->interpolation = LINEARx1;
+	stats->G1++;
 	break;
     case 2:  /* Clockwise Linear Interpolation */
 	state->interpolation = CW_CIRCULAR;
+	stats->G2++;
 	break;
     case 3:  /* Counter Clockwise Linear Interpolation */
 	state->interpolation = CCW_CIRCULAR;
+	stats->G3++;
 	break;
     case 4:  /* Ignore Data Block */
 	/* Don't do anything, just read 'til * */
 	while (gerb_fgetc(fd) != '*');
+	stats->G4++;
 	break;
     case 10: /* Linear Interpolation (10X scale) */
 	state->interpolation = LINEARx10;
+	stats->G10++;
 	break;
     case 11: /* Linear Interpolation (0.1X scale) */
 	state->interpolation = LINEARx01;
+	stats->G11++;
 	break;
     case 12: /* Linear Interpolation (0.01X scale) */
 	state->interpolation = LINEARx001;
+	stats->G12++;
 	break;
     case 36: /* Turn on Polygon Area Fill */
 	state->prev_interpolation = state->interpolation;
 	state->interpolation = PAREA_START;
 	state->changed = 1;
+	stats->G36++;
 	break;
     case 37: /* Turn off Polygon Area Fill */
 	state->interpolation = PAREA_END;
 	state->changed = 1;
+	stats->G37++;
 	break;
     case 54: /* Tool prepare */
 	/* XXX Maybe uneccesary??? */
@@ -509,32 +532,44 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 			state->curr_aperture = a;
 		else 
 			GERB_COMPILE_ERROR("Aperture out of bounds:%d\n", a);
-	}
-	else
+	} else {
 	    GERB_COMPILE_WARNING("Strange code after G54\n");
+	    /* Must insert error count here */
+	}
+	stats->G54++;
 	break;
     case 55: /* Prepare for flash */
+	stats->G55++;
 	break;
     case 70: /* Specify inches */
 	state->unit = INCH;
+	stats->G70++;
 	break;
     case 71: /* Specify millimeters */
 	state->unit = MM;
+	stats->G71++;
 	break;
     case 74: /* Disable 360 circular interpolation */
 	state->mq_on = 0;
+	stats->G74++;
 	break;
     case 75: /* Enable 360 circular interpolation */
 	state->mq_on = 1;
+	stats->G75++;
 	break;
     case 90: /* Specify absolut format */
 	if (format) format->coordinate = ABSOLUTE;
+	stats->G90++;
 	break;
     case 91: /* Specify incremental format */
 	if (format) format->coordinate = INCREMENTAL;
+	stats->G91++;
 	break;
     default:
 	GERB_COMPILE_ERROR("Strange/unhandled G code : %d\n", op_int);
+	stats->G_unknown++;
+	/* Enter error count here */
+	break;
     }
     
     return;
@@ -543,30 +578,42 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_format_t *format)
 
 /* ------------------------------------------------------------------ */
 static void 
-parse_D_code(gerb_file_t *fd, gerb_state_t *state)
+parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 {
     int a;
+    gerb_stats_t *stats = image->stats;
     
     a = gerb_fgetint(fd, NULL);
     switch(a) {
     case 1 : /* Exposure on */
 	state->aperture_state = ON;
 	state->changed = 1;
+	stats->D1++;
 	break;
     case 2 : /* Exposure off */
 	state->aperture_state = OFF;
 	state->changed = 1;
+	stats->D2++;
 	break;
     case 3 : /* Flash aperture */
 	state->aperture_state = FLASH;
 	state->changed = 1;
+	stats->D3++;
 	break;
     default: /* Aperture in use */
-	if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) 
+	if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
+	    /* Must introduce some way to keep track of user defined
+	     * apertures
+	     */
 	    state->curr_aperture = a;
-	else
+	    /* gerb_stats_inc_D_code(stats, a); */
+	}
+	else {
 	    GERB_COMPILE_ERROR("Aperture out of bounds:%d\n", a);
+	    stats->D_error++;
+	}
 	state->changed = 0;
+	break;
     }
     
     return;
@@ -575,21 +622,26 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state)
 
 /* ------------------------------------------------------------------ */
 static int
-parse_M_code(gerb_file_t *fd)
+parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 {
     int op_int;
+    gerb_stats_t *stats = image->stats;
 
     op_int=gerb_fgetint(fd, NULL);
 
     switch (op_int) {
     case 0:  /* Program stop */
+	stats->M0++;
 	return 1;
     case 1:  /* Optional stop */
+	stats->M1++;
 	return 2;
     case 2:  /* End of program */
+	stats->M2++;
 	return 3;
     default:
 	GERB_COMPILE_ERROR("Strange M code [%d]\n", op_int);
+	stats->M_unknown++;
     }
     return 0;
 } /* parse_M_code */
@@ -1305,31 +1357,3 @@ setminmax(double *min, double *max, double pos, double aperture)
 }
 
 
-
-/* ------------------------------------------------------------------ */
-static gerber_stats_t *
-gerber_stats_new()
-{
-    gerber_stats_t *stats;
-    
-    stats->G1 = 0;
-    stats->G2 = 0;
-    stats->G3 = 0;
-    stats->G4 = 0;
-    stats->G10 = 0;
-    stats->G11 = 0;
-    stats->G12 = 0;
-    stats->G36 = 0;
-    stats->G37 = 0;
-    stats->G54 = 0;
-    stats->G55 = 0;
-    stats->G70 = 0;
-    stats->G71 = 0;
-    stats->G74 = 0;
-    stats->G75 = 0;
-    stats->G90 = 0;
-    stats->G91 = 0;
-    stats->G_unknown = 0;
-
-    return stats;
-}  /* gerber_stats_new */

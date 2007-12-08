@@ -46,6 +46,7 @@
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
+#include "gerb_stats.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -521,3 +522,27 @@ redraw_pixmap(GtkWidget *widget, int restart)
     dprintf("<---- leaving redraw_pixmap.\n");
     return retval;
 } /* redraw_pixmap */
+
+
+/* ------------------------------------------------------------------ */
+/* Fill out the gerber statistics table */
+gerb_stats_t *
+generate_gerber_analysis(void)
+{
+    int i;
+    gerb_stats_t *stats;
+    gerb_stats_t *instats;
+
+    stats = gerb_stats_new();
+
+    /* Loop through open layers and compile statistics */
+    for(i = 0; i < MAX_FILES; i++) {
+	if (screen.file[i] && screen.file[i]->isVisible) {
+	    instats = screen.file[i]->image->stats;
+	    gerb_stats_add_layer(stats, instats);
+	}
+    }
+    
+    return stats;
+
+}

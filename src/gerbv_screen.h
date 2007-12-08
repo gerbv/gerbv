@@ -59,8 +59,6 @@ typedef struct {
     char *name;
     char *basename;
     char inverted;
-    gerber_stats_t *gerber_stats;
-    /* gerber_stats_t *drill_stats; */
 } gerbv_fileinfo_t;
 
 typedef struct {

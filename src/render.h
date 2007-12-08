@@ -22,10 +22,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-
+#include "gerber.h"
 
 /* Keep redraw state when preempting to process certain events */
-static struct gerbv_redraw_state_t {
+struct gerbv_redraw_state_t {
     int valid;			/* Set to nonzero when data is valid */
     int file_index;
     GdkPixmap *curr_pixmap;
@@ -34,3 +34,6 @@ static struct gerbv_redraw_state_t {
     int max_height;
     int files_loaded;
 };
+
+gerb_stats_t *generate_gerber_analysis(void);
+

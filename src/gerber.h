@@ -41,39 +41,4 @@ gerb_image_t *parse_gerb(gerb_file_t *fd);
 }
 #endif
 
-typedef struct {
-    int unknown;
-
-    int G1;
-    int G2;
-    int G3;
-    int G4;
-    int G10;
-    int G11;
-    int G12;
-    int G36;
-    int G37;
-    int G54;
-    int G55;
-    int G70;
-    int G71;
-    int G74;
-    int G75;
-    int G90;
-    int G91;
-    int G_unknown;
-
-    int D1;
-    int D2;
-    int D3;
-    int D_unknown;
-
-    int M0;
-    int M1;
-    int M2;
-    int M_unknown;
-
-} gerber_stats_t;
-
-
 #endif /* GERBER_H */

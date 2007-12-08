@@ -87,11 +87,11 @@ on_fit_to_window_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_analyze_activelayers_activate       (GtkMenuItem     *menuitem,
+on_analyze_active_gerbers_activate       (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_validate_active_layers_activate     (GtkMenuItem     *menuitem,
+on_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
