@@ -397,6 +397,7 @@ render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 		switch (net->interpolation) {
 			case PAREA_START :
 				in_parea_fill = 1;
+				cairo_new_path(cairoTarget);
 				continue;
 			case PAREA_END :
 				cairo_close_path(cairoTarget);

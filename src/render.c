@@ -204,12 +204,8 @@ autoscale(void)
     /*
      * Calculate translation
      */
-#ifdef RENDER_USING_GDK
 	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.transf->scale*(max_height))/2.0));
-#else
-	screen.trans_y = -(int)((double)((screen.drawing_area->allocation.height-screen.transf->scale*(max_height))/2.0)+screen.drawing_area->allocation.height);
-#endif
-    screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.transf->scale*(max_width))/2.0));
+	screen.trans_x = -(int)((double)((screen.drawing_area->allocation.width-screen.transf->scale*(max_width))/2.0));
     
 
     /* Initialize clipping bbox to contain entire image */
@@ -460,7 +456,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
     cairo_set_tolerance (cr,1.5);
     
     /* translate the draw area before drawing */
-    cairo_translate (cr,-screen.trans_x,-screen.trans_y);
+    cairo_translate (cr,-screen.trans_x-(screen.gerber_bbox.x1*(float) screen.transf->scale),-screen.trans_y+(screen.gerber_bbox.y2*(float) screen.transf->scale));
     
     /* scale the drawing by the specified scale factor (inverting y since
      * cairo y axis points down)
@@ -483,14 +479,15 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	    
 	    /* for now, scale the cairo context if the units are mms */
 	    /* TODO: normalize all gerb_image data to mm during parsing */
-	    //cairo_save (cr);
+	    cairo_save (cr);
 	    if ((screen.file[i]->image->netlist->next)&&
 		(screen.file[i]->image->netlist->next->unit==MM)) {
 		cairo_scale (cr, 1.0/25.4, 1.0/25.4);
 	    }
 	    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);
 	    render_image_to_cairo_target (cr, screen.file[i]->image);
-	    //cairo_restore (cr);
+	    /* make sure we cancel any previous scaling for mm */
+	    cairo_restore (cr);
 	    testp = cairo_pop_group (cr);
 	    if (screen.file[i]->privateRenderData) {
 		cairo_pattern_destroy ((cairo_pattern_t *) screen.file[i]->privateRenderData);

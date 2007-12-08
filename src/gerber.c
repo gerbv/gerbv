@@ -861,12 +861,16 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     case A2I('A','M'): /* Aperture Macro */
 	tmp_amacro = image->amacro;
 	image->amacro = parse_aperture_macro(fd);
-	image->amacro->next = tmp_amacro;
+	if (image->amacro) {
+		image->amacro->next = tmp_amacro;
 #ifdef AMACRO_DEBUG
-	print_program(image->amacro);
+		print_program(image->amacro);
 #endif
+	}
+	else {
+		GERB_COMPILE_ERROR("Failed to parse aperture macro");
+	}
 	break;
-
 	/* Layer */
     case A2I('L','N'): /* Layer Name */
 	state->curr_layername = gerb_fgetstring(fd, '*');

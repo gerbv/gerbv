@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <glib.h>
 
 #include "amacro.h"
 
@@ -76,17 +77,21 @@ parse_aperture_macro(gerb_file_t *fd)
 {
     amacro_t *amacro;
     instruction_t *ip = NULL;
-    int primitive = 0;
+    int primitive = 0, c;
     enum opcodes math_op = NOP;
     int comma = 0, neg = 0; /* negative numbers succeding , */
-
+    gboolean continueLoop = TRUE;
     amacro = new_amacro();
 
     /*
      * Get macroname
      */
     amacro->name = gerb_fgetstring(fd, '*');
-
+    c = gerb_fgetc(fd);	/* skip '*' */
+    if (c == EOF) {
+		continueLoop = FALSE;
+	}
+    
     /*
      * Since I'm lazy I have a dummy head. Therefore the first 
      * instruction in all programs will be NOP.
@@ -94,15 +99,15 @@ parse_aperture_macro(gerb_file_t *fd)
     amacro->program = new_instruction();
     ip = amacro->program;
 
-    while(1) {
+    while(continueLoop) {
 	/*
 	 * First element describes which primitive element to use
 	 */
 	if (primitive == 0) {
 	    primitive = gerb_fgetint(fd, NULL);
 	}
-
-	switch (gerb_fgetc(fd)) {
+	c = gerb_fgetc(fd);
+	switch (c) {
 	case '$':
 	    ip->next = new_instruction(); /* XXX Check return value */
 	    ip = ip->next;
@@ -208,7 +213,12 @@ parse_aperture_macro(gerb_file_t *fd)
 	    /* Whitespace */
 	    break;
 	}
+	if (c == EOF) {
+		continueLoop = FALSE;
+	}
     }
+    g_free (amacro);
+    return NULL;
 }
 
 
