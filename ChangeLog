@@ -1,3 +1,8 @@
+2007-12-07  SDB
+	* render.c, render.h, Many other files:  Started to refactor
+	gerbv.  Also start to incorporate statistics gathering stuff
+	into gerber.[hc].
+	
 2007-12-07  Julian Lamb
 	* src/drill.c: Fix warning messages on some drill files (bug #1316247).
 	  The drill parser did not zero out new gerbv_aperture_t structures, which

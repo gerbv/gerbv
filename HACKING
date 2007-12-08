@@ -137,24 +137,33 @@ gerb_state_t -- This variable keeps track of the state of the
 ----------------------------------------------------------------
 Important files:
 
-gerbv.c contains the definitions of the various windows and events.
-        it also contains main().
+Here's a summary of gerbv's file hierarchy, from top to bottom:
 
-gerber.c is the place where Gerber codes are read and acted upon.  Writes
-         results into struct "image", which is used later to create 
-         the drawing on the screen.
+1. gerbv.c -- holds main() and other top level fcns.  
 
-drill.c Is the place where drill files are read and acted upon.  
-         (Pretty obvious, huh?)  Writes results into struct "image",
-         which is used later to create the drawing on the screen.
+2. callbacks.[hc], interface.[hc] -- Hold GUI widgets (interface) and 
+   callbacks (callbacks).
 
-draw.c: Loops through image->netlist and makes calls to 
-        cairo stuff to draw objects on screen.
+3. render.[hc] -- holds the top-level rendering stuff with lots of looping
+   code, like redraw_pixmap,  image2pixmap, and
+   render_image_to_cairo_target.  This is the place that other,
+   non-GUI exporters should get called from (export_png, export_pdf,
+   etc).  
 
-draw-gdk.c:  Loops through image->netlist and makes 
-             calls to GDK stuff to draw objects on the
-             screen.  It holds the fcn image2pixmap,
-             which converts image data to a GDK pixmap.
+4. draw.[hc], draw-gdk.[hc] -- these hold the low level utilities
+   which draw objects onto screen.drawing_area.  Each is specific to
+   the corresponding rendering engine.
+
+Then on the side we have:
+
+*  gerb_file.[hc]. gerb_image.[hc], etc -- functions related to dealing
+   with the important structs in the program.  This can be expanded as we
+   include gerb_analyze.[hc] etc.
+
+*  gerber.[hc]  drill.[hc]  pick_and_place.[hc]  -- files holding the
+   stuff which parses and processes the respective types of CAM files.
+
+*  Many others to be documented......
 
 ----------------------------------------------------------------
 Important functions
