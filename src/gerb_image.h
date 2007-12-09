@@ -46,7 +46,7 @@ enum coordinate_t {ABSOLUTE, INCREMENTAL};
 enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
 		      CW_CIRCULAR, CCW_CIRCULAR, PAREA_START, PAREA_END};
 enum encoding_t {NONE, ASCII, EBCDIC, BCD, ISO_ASCII, EIA };
-
+enum layertype_t {GERBER, DRILL, PICK_AND_PLACE};
 
 typedef struct gerb_cirseg {
     double cp_x;
@@ -126,13 +126,14 @@ typedef struct gerb_image_info {
 
 
 typedef struct gerb_image {
+    enum layertype_t layertype;
     gerb_aperture_t *aperture[APERTURE_MAX];
     amacro_t *amacro;
     gerb_format_t *format;
     gerb_image_info_t *info;
     gerb_net_t *netlist;
     gerb_transf_t *transf;
-    gerb_stats_t *stats;
+    gpointer stats;  /* gerb_stats_t or drill_stats_t plugs in here */
 } gerb_image_t;
 
 

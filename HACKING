@@ -158,7 +158,7 @@ Then on the side we have:
 
 *  gerb_file.[hc]. gerb_image.[hc], etc -- functions related to dealing
    with the important structs in the program.  This can be expanded as we
-   include gerb_analyze.[hc] etc.
+   include gerb_stats.[hc] etc.
 
 *  gerber.[hc]  drill.[hc]  pick_and_place.[hc]  -- files holding the
    stuff which parses and processes the respective types of CAM files.

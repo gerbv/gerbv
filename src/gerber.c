@@ -98,6 +98,7 @@ parse_gerb(gerb_file_t *fd)
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
     double aperture_size;
     double scale;
+    gerb_stats_t *stats;
     
     /* added by t.motylewski@bfad.de
      * many locales redefine "." as "," and so on, 
@@ -132,6 +133,9 @@ parse_gerb(gerb_file_t *fd)
     if (image == NULL)
 	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
+    image->layertype = GERBER;
+    image->stats = gerb_stats_new();
+    stats = image->stats;
 
     /*
      * Start parsing
@@ -163,7 +167,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case 'X':
 	    // dprintf("... Found X code\n");
-	    image->stats->X++;
+	    stats->X++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == TRAILING) {
 
@@ -191,7 +195,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case 'Y':
 	    // dprintf("... Found Y code\n");
-	    image->stats->Y++;
+	    stats->Y++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == TRAILING) {
 
@@ -219,13 +223,13 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case 'I':
 	    // dprintf("... Found I code\n");
-	    image->stats->I++;
+	    stats->I++;
 	    state->delta_cp_x = gerb_fgetint(fd, NULL);
 	    state->changed = 1;
 	    break;
 	case 'J':
 	    // dprintf("... Found J code\n");
-	    image->stats->J++;
+	    stats->J++;
 	    state->delta_cp_y = gerb_fgetint(fd, NULL);
 	    state->changed = 1;
 	    break;
@@ -240,7 +244,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case '*':  
 	    // dprintf("... Found * code\n");
-	    image->stats->star++;
+	    stats->star++;
 	    if (state->changed == 0) break;
 	    state->changed = 0;
 
@@ -456,7 +460,7 @@ parse_gerb(gerb_file_t *fd)
 	case '\t' :
 	    break;
 	default:
-	    image->stats->unknown++;
+	    stats->unknown++;
 	    GERB_COMPILE_ERROR("Found unknown character (whitespace?) %c[%d]\n", read, read);
 	}  /* switch((char) (read & 0xff)) */
     }

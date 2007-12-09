@@ -47,10 +47,10 @@
 #include <unistd.h>
 #endif
 
-
 #include "drill.h"
 #include "gerb_error.h"
 #include "tooltable.h"
+#include "gerb_stats.h"
 
 #include "common.h"
 
@@ -119,19 +119,26 @@ parse_drillfile(gerb_file_t *fd)
     gerb_net_t *curr_net = NULL;
     int read;
     double x_scale = 1, y_scale = 1;
+    drill_stats_t *stats;
 
+    /* Create local state variable to track photoplotter state */
     state = new_state(state);
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
 
+    /* Create new image for this layer */
+    dprintf("In parse_drillfile, about to create image for this layer\n");
     image = new_gerb_image(image);
     if (image == NULL)
 	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
+    image->layertype = DRILL;
+    image->stats = drill_stats_new();
+    stats = image->stats;
 
+    /* Guess information about drill format & units */
     state->unit = drill_guess_format(fd, image);
     state->header_unit = state->unit;
-
     dprintf ("%s:  drill_guess_format gave %s\n", __FUNCTION__, 
 	     state->unit == MM ? "mm" : "inch");
 
@@ -142,7 +149,7 @@ parse_drillfile(gerb_file_t *fd)
 
     while ((read = gerb_fgetc(fd)) != EOF) {
 
-	switch ((char)read) {
+	switch ((char) read) {
 	case ';' :
 	    /* Comment found. Eat rest of line */
 	    eat_line(fd);
@@ -347,20 +354,24 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
     int i;
     enum unit_t unit;
 
-    dprintf ("%s: drill_guess_format(%p, %p)\n", __FUNCTION__, fd, image);
+    dprintf("----> Entering drill_guess_format ...\n");
+    dprintf("   ... %s: drill_guess_format(%p, %p)\n", 
+	                      __FUNCTION__, fd, image);
 
     state = new_state(state);
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
+    dprintf("   ... in drill_guess_format, done creating state   ...\n");
 
     image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
     if (image->format == NULL) 
 	GERB_FATAL_ERROR("malloc format failed\n");
     memset((void *)image->format, 0, sizeof(gerb_format_t));
+    dprintf("   ... in drill_guess_format, done creating image->format   ...\n");
 
     /* This is just a special case of the normal parser */
     while ((read = gerb_fgetc(fd)) != EOF && !done) {
-      dprintf( "%s:  read = \'%c\'\n", __FUNCTION__, read);
+	dprintf( "%s:  read = \'%c\'\n", __FUNCTION__, read);
 	switch ((char)read) {
 	case ';' :
 	case 'F' :
@@ -480,6 +491,8 @@ drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
 
     free(state);
     fd->ptr = 0;
+
+    dprintf("<---- .... Leaving drill_guess_format.\n");
 
     return unit;
 }
@@ -680,6 +693,9 @@ drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
+    drill_stats_t *stats = image->stats;
+
+    dprintf("---> entering drill_parse_M_code ...\n");
 
     read[0] = gerb_fgetc(fd);
     read[1] = gerb_fgetc(fd);
@@ -690,40 +706,65 @@ drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
     op[0] = read[0], op[1] = read[1], op[2] = 0;
  
     if (strncmp(op, "00", 2) == 0) {
+	stats->M00++;
 	return DRILL_M_END;
     } else if (strncmp(op, "01", 2) == 0) {
+	stats->M01++;
 	return DRILL_M_ENDPATTERN;
     } else if (strncmp(op, "18", 2) == 0) {
+	stats->M18++;
 	return DRILL_M_TIPCHECK;
-    } else if (strncmp(op, "25", 2) == 0 || strncmp(op, "31", 2) == 0) {
+    } else if (strncmp(op, "25", 2) == 0) {
+	stats->M25++;
+	return DRILL_M_BEGINPATTERN;
+    } else if (strncmp(op, "31", 2) == 0) {
+	stats->M31++;
 	return DRILL_M_BEGINPATTERN;
     } else if (strncmp(op, "30", 2) == 0) {
+	stats->M30++;
 	return DRILL_M_ENDREWIND;
     } else if (strncmp(op, "45", 2) == 0) {
+	stats->M45++;
 	return DRILL_M_LONGMESSAGE;
     } else if (strncmp(op, "47", 2) == 0) {
+	stats->M47++;
 	return DRILL_M_MESSAGE;
     } else if (strncmp(op, "48", 2) == 0) {
+	stats->M48++;
 	return DRILL_M_HEADER;
     } else if (strncmp(op, "71", 2) == 0) {
 	eat_line(fd);
+	stats->M71++;
 	return DRILL_M_METRIC;
     } else if (strncmp(op, "72", 2) == 0) {
 	eat_line(fd);
+	stats->M72++;
 	return DRILL_M_IMPERIAL;
     } else if (strncmp(op, "95", 2) == 0) {
+	stats->M95++;
 	return DRILL_M_ENDHEADER;
-    } else if (strncmp(op, "97", 2) == 0 || strncmp(op, "98", 2) == 0) {
+    } else if (strncmp(op, "97", 2) == 0) {
+	stats->M97++;
+	return DRILL_M_CANNEDTEXT;
+    } else if (strncmp(op, "98", 2) == 0) {
+	stats->M98++;
 	return DRILL_M_CANNEDTEXT;
     } else if (strncmp(op, "ET", 2) == 0) {
-       if ('R' == gerb_fgetc(fd))
-       if ('I' == gerb_fgetc(fd))
-       if ('C' == gerb_fgetc(fd)) {
-               eat_line(fd);
-               return DRILL_M_METRICHEADER;
-       }
-    }
-
+	if ('R' == gerb_fgetc(fd)) {
+	    eat_line(fd);
+	    stats->METR++;	    
+	    return DRILL_M_METRICHEADER;
+	} else if ('I' == gerb_fgetc(fd)) {
+	    eat_line(fd);
+	    stats->METI++;	    
+	    return DRILL_M_METRICHEADER;
+	} else if ('C' == gerb_fgetc(fd)) {
+	    eat_line(fd);
+	    stats->METC++;	    
+	    return DRILL_M_METRICHEADER;
+	}
+    } 
+    stats->M_unknown++;
     return DRILL_M_UNKNOWN;
 
 } /* drill_parse_M_code */
@@ -733,6 +774,9 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
+    drill_stats_t *stats = image->stats;
+
+    dprintf("---> entering drill_parse_G_code ...\n");
 
     read[0] = gerb_fgetc(fd);
     read[1] = gerb_fgetc(fd);
@@ -743,23 +787,33 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
     op[0] = read[0], op[1] = read[1], op[2] = 0;
 
     if (strncmp(op, "00", 2) == 0) {
+	stats->G00++;
 	return DRILL_G_ROUT;
     } else if (strncmp(op, "01", 2) == 0) {
+	stats->G01++;
 	return DRILL_G_LINEARMOVE;
     } else if (strncmp(op, "02", 2) == 0) {
+	stats->G02++;
 	return DRILL_G_CWMOVE;
     } else if (strncmp(op, "03", 2) == 0) {
+	stats->G03++;
 	return DRILL_G_CCWMOVE;
     } else if (strncmp(op, "05", 2) == 0) {
+	stats->G05++;
 	return DRILL_G_DRILL;
     } else if (strncmp(op, "90", 2) == 0) {
+	stats->G90++;
 	return DRILL_G_ABSOLUTE;
     } else if (strncmp(op, "91", 2) == 0) {
+	stats->G91++;
 	return DRILL_G_INCREMENTAL;
     } else if (strncmp(op, "93", 2) == 0) {
+	stats->G93++;
 	return DRILL_G_ZEROSET;
+    } else {
+	stats->G_unknown++;
+	return DRILL_G_UNKNOWN;
     }
-    return DRILL_G_UNKNOWN;
 
 } /* drill_parse_G_code */
 

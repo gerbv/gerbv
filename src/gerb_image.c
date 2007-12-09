@@ -69,14 +69,8 @@ new_gerb_image(gerb_image_t *image)
 	return NULL;
     }
 
-    /* Malloc space for image->stats */
-    if ((image->stats = gerb_stats_new()) == NULL) {
-        free(image->info);
-        free(image->netlist);
-	free(image->transf);
-	free(image);
-	return NULL;
-    }
+    /* Set aside position for stats struct */
+    image->stats = (gpointer) NULL;
 
     image->info->min_x = HUGE_VAL;
     image->info->min_y = HUGE_VAL;

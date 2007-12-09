@@ -537,12 +537,37 @@ generate_gerber_analysis(void)
 
     /* Loop through open layers and compile statistics */
     for(i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i] && screen.file[i]->isVisible) {
+	if (screen.file[i] && 
+	    screen.file[i]->isVisible &&
+	    (screen.file[i]->image->layertype == GERBER) ) {
 	    instats = screen.file[i]->image->stats;
 	    gerb_stats_add_layer(stats, instats);
 	}
     }
     
     return stats;
+}
 
+/* ------------------------------------------------------------------ */
+/* Fill out the drill file statistics table */
+gerb_stats_t *
+generate_drill_analysis(void)
+{
+    int i;
+    gerb_stats_t *stats;
+    gerb_stats_t *instats;
+
+    stats = gerb_stats_new();
+
+    /* Loop through open layers and compile statistics */
+    for(i = 0; i < MAX_FILES; i++) {
+	if (screen.file[i] && 
+	    screen.file[i]->isVisible &&
+	    (screen.file[i]->image->layertype == DRILL) ) {
+	    instats = screen.file[i]->image->stats;
+	    gerb_stats_add_layer(stats, instats);
+	}
+    }
+    
+    return stats;
 }

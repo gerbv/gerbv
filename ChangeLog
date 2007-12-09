@@ -1,3 +1,8 @@
+2007-1209  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/drill.c, src/render.[hc],
+	src/gerb_image.[hc], src/gerb_stats.[hc]:  Added 
+	beginnings of statistics report for drill files.
+
 2007-12-09  Julian Lamb
 	* src/gerbv.c,src/callbacks.c: Reattach project open/save stuff in gui
 	  and separate out some of the code back to gerbv.c.

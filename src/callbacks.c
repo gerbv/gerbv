@@ -441,21 +441,21 @@ on_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     g_free(misc_report_string);
 
     /* Create tabbed notebook widget and add report label widgets. */
-    GtkNotebook *notebook = (GtkNotebook *) gtk_notebook_new();
+    GtkWidget *notebook = gtk_notebook_new();
     
-    gtk_notebook_append_page(notebook,
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(G_report_label),
 			     gtk_label_new("G codes"));
     
-    gtk_notebook_append_page(notebook,
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(D_report_label),
 			     gtk_label_new("D codes"));
     
-    gtk_notebook_append_page(notebook,
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(M_report_label),
 			     gtk_label_new("M codes"));
     
-    gtk_notebook_append_page(notebook,
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(misc_report_label),
 			     gtk_label_new("Misc. codes"));
     
@@ -474,10 +474,143 @@ void
 on_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+    drill_stats_t *stats_report;
+    gchar *G_report_string;
+    gchar *M_report_string;
+    gchar *T_report_string;
+    gchar *misc_report_string;
+    
+    stats_report = generate_drill_analysis();
+
+    G_report_string = g_strdup_printf("G code statistics   \n");
+    G_report_string = g_strdup_printf("%sG00 = %d\n", 
+				      G_report_string, stats_report->G00);
+    G_report_string = g_strdup_printf("%sG01 = %d\n", 
+				      G_report_string, stats_report->G01);
+    G_report_string = g_strdup_printf("%sG02 = %d\n", 
+				      G_report_string, stats_report->G02);
+    G_report_string = g_strdup_printf("%sG03 = %d\n", 
+				      G_report_string, stats_report->G03);
+    G_report_string = g_strdup_printf("%sG05 = %d\n", 
+				      G_report_string, stats_report->G05);
+    G_report_string = g_strdup_printf("%sG90 = %d\n", 
+				      G_report_string, stats_report->G90);
+    G_report_string = g_strdup_printf("%sG91 = %d\n", 
+				      G_report_string, stats_report->G91);
+    G_report_string = g_strdup_printf("%sG93 = %d\n", 
+				      G_report_string, stats_report->G93);
+    G_report_string = g_strdup_printf("%sUnknown G codes = %d\n", 
+				      G_report_string, stats_report->G_unknown);
+
+    M_report_string = g_strdup_printf("M code statistics   \n");
+    M_report_string = g_strdup_printf("%sM00 = %d\n", 
+				      M_report_string, stats_report->M00);
+    M_report_string = g_strdup_printf("%sM01 = %d\n", 
+				      M_report_string, stats_report->M01);
+    M_report_string = g_strdup_printf("%sM18 = %d\n", 
+				      M_report_string, stats_report->M18);
+    M_report_string = g_strdup_printf("%sM25 = %d\n", 
+				      M_report_string, stats_report->M25);
+    M_report_string = g_strdup_printf("%sM30 = %d\n", 
+				      M_report_string, stats_report->M30);
+    M_report_string = g_strdup_printf("%sM31 = %d\n", 
+				      M_report_string, stats_report->M31);
+    M_report_string = g_strdup_printf("%sM45 = %d\n", 
+				      M_report_string, stats_report->M45);
+    M_report_string = g_strdup_printf("%sM47 = %d\n", 
+				      M_report_string, stats_report->M47);
+    M_report_string = g_strdup_printf("%sM48 = %d\n", 
+				      M_report_string, stats_report->M48);
+    M_report_string = g_strdup_printf("%sM71 = %d\n", 
+				      M_report_string, stats_report->M71);
+    M_report_string = g_strdup_printf("%sM72 = %d\n", 
+				      M_report_string, stats_report->M72);
+    M_report_string = g_strdup_printf("%sM95 = %d\n", 
+				      M_report_string, stats_report->M95);
+    M_report_string = g_strdup_printf("%sM97 = %d\n", 
+				      M_report_string, stats_report->M97);
+    M_report_string = g_strdup_printf("%sM98 = %d\n", 
+				      M_report_string, stats_report->M98);
+    M_report_string = g_strdup_printf("%sMETR = %d\n", 
+				      M_report_string, stats_report->METR);
+    M_report_string = g_strdup_printf("%sMETI = %d\n", 
+				      M_report_string, stats_report->METI);
+    M_report_string = g_strdup_printf("%sMETC = %d\n", 
+				      M_report_string, stats_report->METC);
+    M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
+				      M_report_string, stats_report->M_unknown);
+
+
+    misc_report_string = g_strdup_printf("Misc code statistics   \n");
+    misc_report_string = g_strdup_printf("%scomments = %d\n", 
+					 misc_report_string, stats_report->comment);
+    misc_report_string = g_strdup_printf("%sUnknown codes = %d\n", 
+					 misc_report_string, stats_report->unknown);
+
+
+
+    /* Create top level dialog window for report */
+    GtkWidget *analyze_active_drill;
+    analyze_active_drill = gtk_dialog_new_with_buttons("Drill file codes report",
+							NULL,
+							GTK_DIALOG_DESTROY_WITH_PARENT,
+							GTK_STOCK_OK,
+							GTK_RESPONSE_ACCEPT,
+							NULL);
+    gtk_container_set_border_width (GTK_CONTAINER (analyze_active_drill), 5);
+    gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_drill), 
+				     GTK_RESPONSE_ACCEPT);
+    g_signal_connect (G_OBJECT(analyze_active_drill),
+		      "response",
+		      G_CALLBACK (gtk_widget_destroy), 
+		      GTK_WIDGET(analyze_active_drill));
+
+
+    /* Create GtkLabel to hold G code text */
+    GtkWidget *G_report_label = gtk_label_new (G_report_string);
+    gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
+    g_free(G_report_string);
+
+    /* Create GtkLabel to hold M code text */
+    GtkWidget *M_report_label = gtk_label_new (M_report_string);
+    gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
+    g_free(M_report_string);
+
+    /* Create GtkLabel to hold misc code text */
+    GtkWidget *misc_report_label = gtk_label_new (misc_report_string);
+    gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
+    g_free(misc_report_string);
+
+    /* Create tabbed notebook widget and add report label widgets. */
+    GtkWidget *notebook = gtk_notebook_new();
+    
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			     GTK_WIDGET(G_report_label),
+			     gtk_label_new("G codes"));
+    
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			     GTK_WIDGET(M_report_label),
+			     gtk_label_new("M codes"));
+    
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			     GTK_WIDGET(misc_report_label),
+			     gtk_label_new("Misc. codes"));
+    
+    
+    /* Now put notebook into dialog window and show the whole thing */
+    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_drill)->vbox),
+		      GTK_WIDGET(notebook));
+    gtk_widget_show_all(analyze_active_drill);
+	
+    return;
+
 
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_control_gerber_options_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -485,7 +618,7 @@ on_control_gerber_options_activate     (GtkMenuItem     *menuitem,
 
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_pointer_tool_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -493,7 +626,7 @@ on_pointer_tool_activate               (GtkMenuItem     *menuitem,
 
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_zoom_tool_activate                  (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -501,7 +634,7 @@ on_zoom_tool_activate                  (GtkMenuItem     *menuitem,
 
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_measure_tool_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -509,7 +642,7 @@ on_measure_tool_activate               (GtkMenuItem     *menuitem,
 
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_online_manual_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -517,7 +650,7 @@ on_online_manual_activate              (GtkMenuItem     *menuitem,
 
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -548,7 +681,7 @@ on_quit_activate                       (GtkMenuItem     *menuitem,
 	gtk_main_quit();
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_about_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -581,7 +714,7 @@ on_about_activate                     (GtkMenuItem     *menuitem,
 	gtk_widget_show_all(aboutdialog1);
 }
 
-
+/* --------------------------------------------------------- */
 /* Zoom function */
 void
 zoom(GtkWidget *widget, gpointer data)
@@ -650,8 +783,12 @@ zoom(GtkWidget *widget, gpointer data)
 } /* zoom */
 
 
+/* --------------------------------------------------------- */
 /** Will determine the outline of the zoomed regions.
-In case region to be zoomed is too small (which correspondes e.g. to a double click) it is interpreted as a right-click and will be used to identify a part from the CURRENT selection, which is drawn on screen*/
+ * In case region to be zoomed is too small (which correspondes
+ * e.g. to a double click) it is interpreted as a right-click 
+ * and will be used to identify a part from the CURRENT selection, 
+ * which is drawn on screen*/
 void
 zoom_outline(GtkWidget *widget, GdkEventButton *event)
 {
@@ -699,6 +836,7 @@ zoom_outline_end:
 	redraw_pixmap(screen.drawing_area, TRUE);
 } /* zoom_outline */
 
+/* --------------------------------------------------------- */
 static void
 draw_zoom_outline(gboolean centered)
 {

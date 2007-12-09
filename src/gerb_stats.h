@@ -70,9 +70,49 @@ typedef struct {
 
 } gerb_stats_t;
 
+typedef struct {
+    int comment;
+    int F;
+
+    int G00;
+    int G01;
+    int G02;
+    int G03;
+    int G05;
+    int G90;
+    int G91;
+    int G93;
+    int G_unknown;
+
+    int M00;
+    int M01;
+    int M18;
+    int M25;
+    int M30;
+    int M31;
+    int M45;
+    int M47;
+    int M48;
+    int M71;
+    int M72;
+    int M95;
+    int M97;
+    int M98;
+    int METR;
+    int METI;
+    int METC;
+    int M_unknown;
+
+    int unknown;
+
+} drill_stats_t;
 
 gerb_stats_t * gerb_stats_new(void);
 void gerb_stats_add_layer(gerb_stats_t *accum_stats, 
 			  gerb_stats_t *input_stats);
+
+drill_stats_t * drill_stats_new(void);
+void drill_stats_add_layer(drill_stats_t *accum_stats, 
+			   drill_stats_t *input_stats);
 
 #endif /* GERB_STATS_H */
