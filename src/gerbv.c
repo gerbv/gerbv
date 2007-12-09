@@ -182,7 +182,99 @@ void load_project(project_list_t *project_list);
 int open_image(char *filename, int idx, int reload);
 
 
-/* ------------------------------------------------------------------ */
+void gerbv_open_project_from_filename (gchar *filename) {
+	project_list_t *project_list = NULL;
+	
+	dprintf("Opening project = %s\n", (gchar *) filename);
+	project_list = read_project_file(filename);
+	if (project_list) {
+	    load_project(project_list);
+	    /*
+	     * Save project filename for later use
+	     */
+	    if (screen.project) {
+		g_free(screen.project);
+		screen.project = NULL;
+	    }
+	    screen.project = g_strdup (filename);
+	    if (screen.project == NULL)
+		GERB_FATAL_ERROR("malloc screen.project failed\n");
+	    rename_main_window(filename, NULL);
+	} else {
+	    GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
+				 screen.last_loaded);
+	}
+}
+
+void gerbv_open_layer_from_filename (gchar *filename) {	
+	dprintf("Opening filename = %s\n", (gchar *) filename);
+
+	if (open_image(filename, ++screen.last_loaded, FALSE) == -1) {
+		GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
+			 screen.last_loaded);
+	} else {
+		dprintf("     Successfully opened file!\n");	
+	}
+}
+
+void gerbv_save_project_from_filename (gchar *filename) {
+	project_list_t *project_list = NULL, *tmp;
+	int idx;
+    
+	if (screen.path) {
+	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
+	    if (project_list == NULL)
+		GERB_FATAL_ERROR("malloc project_list failed\n");
+	    memset(project_list, 0, sizeof(project_list_t));
+	    project_list->next = project_list;
+	    project_list->layerno = -1;
+	    project_list->filename = screen.path;
+	    project_list->rgb[0] = screen.background->red;
+	    project_list->rgb[1] = screen.background->green;
+	    project_list->rgb[2] = screen.background->blue;
+	    project_list->next = NULL;
+	}
+	
+	for (idx = 0; idx < MAX_FILES; idx++) {
+	    if (screen.file[idx] &&  screen.file[idx]->color) {
+		tmp = (project_list_t *)malloc(sizeof(project_list_t));
+		if (tmp == NULL) 
+		    GERB_FATAL_ERROR("malloc tmp failed\n");
+		memset(tmp, 0, sizeof(project_list_t));
+		tmp->next = project_list;
+		tmp->layerno = idx;
+		
+		tmp->filename = screen.file[idx]->name;
+		tmp->rgb[0] = screen.file[idx]->color->red;
+		tmp->rgb[1] = screen.file[idx]->color->green;
+		tmp->rgb[2] = screen.file[idx]->color->blue;
+		tmp->inverted = screen.file[idx]->inverted;
+		project_list = tmp;
+	    }
+	}
+	
+	if (write_project_file(screen.project, project_list)) {
+	    GERB_MESSAGE("Failed to write project\n");
+	}
+}
+
+void gerbv_save_as_project_from_filename (gchar *filename) {
+	
+	/*
+	 * Save project filename for later use
+	 */
+	if (screen.project) {
+	    g_free(screen.project);
+	    screen.project = NULL;
+	}
+	screen.project = g_strdup(filename);
+	if (screen.project == NULL)
+	    GERB_FATAL_ERROR("malloc screen.project failed\n");
+	rename_main_window(filename, NULL);
+	gerbv_save_project_from_filename (filename);
+}
+
+
 void
 load_project(project_list_t *project_list)
 {
@@ -580,9 +672,10 @@ main(int argc, char *argv[])
 	}
 
     } else {
-	for(i = optind ; i < argc; i++)
+	for(i = optind ; i < argc; i++) {
 	    if (open_image(argv[i], i - optind, FALSE) == -1)
 		exit(-1);
+	}
     }
     
     /*

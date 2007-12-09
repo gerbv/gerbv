@@ -715,13 +715,19 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) about, "activate",
 	                  G_CALLBACK (on_about_activate),
 	                  NULL);
-  
-	/* End of Glade generated code */
 
+	/* End of Glade generated code */
+	g_signal_connect ((gpointer) toolbutton_open, "clicked",
+	                  G_CALLBACK (on_open_project_activate),
+	                  NULL);
+	g_signal_connect ((gpointer) toolbutton_save, "clicked",
+	                  G_CALLBACK (on_save_activate),
+	                  NULL);
+                                                       
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
 	                  
 	GtkWidget *drawingarea;
-	gint width, height;              
+	gint width, height;
               
 	gtk_window_add_accel_group (GTK_WINDOW (mainWindow), accel_group);
 

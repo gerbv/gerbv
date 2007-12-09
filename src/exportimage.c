@@ -50,6 +50,7 @@
 
 #include "gerbv_screen.h"
 
+#ifdef RENDER_USING_GDK
 /* Function prototypes */
 static gboolean pixbuf_to_file_as_png (GdkPixbuf *pixbuf, char *filename);
 
@@ -114,9 +115,18 @@ png_export(GdkPixmap* imagetosave, char* filename)
 /*              screen.transf->offset[1] = dmax_y; */
             
 	    for(i = 0; i < MAX_FILES; i++) {
-		if (GTK_TOGGLE_BUTTON(screen.layer_button[i])->active &&
-		    screen.file[i]) {
-		
+		if (screen.file[i] && screen.file[i]->isVisible) {
+ 		    enum polarity_t polarity;
+ 
+ 		    if (screen.file[i]->inverted) {
+ 			if (screen.file[i]->image->info->polarity == POSITIVE)
+ 			    polarity = NEGATIVE;
+ 			else
+ 			    polarity = POSITIVE;
+ 		    } else {
+ 			polarity = screen.file[i]->image->info->polarity;
+ 		    }
+
 		    /*
 		     * Fill up image with all the foreground color. Excess
 		     * pixels will be removed by clipmask.
@@ -128,11 +138,11 @@ png_export(GdkPixmap* imagetosave, char* filename)
 		     * Translation is to get it inside the allocated pixmap,
 		     * which is not always centered perfectly for GTK/X.
 		     */
-//		    image2pixmap(&clipmask, screen.file[i]->image, screen.transf, 
-                                /*screen.transf->scale, 
+		    image2pixmap(&clipmask, screen.file[i]->image, screen.transf, 
+                                screen.transf->scale, 
 				 -dmin_x*screen.transf->scale,
-				 dmax_y*screen.transf->scale, */
-//				 screen.file[i]->image->info->polarity);
+				 dmax_y*screen.transf->scale, 
+				 polarity);
 		    /* 
 		     * Set clipmask and draw the clipped out image onto the
 		     * screen pixmap. Afterwards we remove the clipmask, else
@@ -245,5 +255,9 @@ pixbuf_to_file_as_png(GdkPixbuf *pixbuf, char *filename)
 	fclose (handle);
 	return TRUE;
 } /* pixbuf_to_file_as_png */
+#else
 
+
+
+#endif
 #endif /* EXPORT_PNG */

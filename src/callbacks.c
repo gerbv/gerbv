@@ -85,11 +85,12 @@
  */
 extern gerbv_screen_t screen;
 
-void
-load_project(project_list_t *project_list);
-
-int
-open_image(char *filename, int idx, int reload);
+void load_project(project_list_t *project_list);
+int open_image(char *filename, int idx, int reload);
+void gerbv_open_layer_from_filename (gchar *filename);
+void gerbv_open_project_from_filename (gchar *filename);
+void gerbv_save_as_project_from_filename (gchar *filename);
+void gerbv_save_project_from_filename (gchar *filename);
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {
@@ -130,12 +131,6 @@ callbacks_gdk_cairo_create (GdkDrawable *target)
 	            GDK_SCREEN_XSCREEN (gdk_drawable_get_screen (drawable)),
 	            width, height);
 	} else {
-		g_warning ("Using Cairo rendering requires the drawable argument to\n"
-	                  "have a specified colormap. All windows have a colormap,\n"
-	            "however, pixmaps only have colormap by default if they\n"
-	                  "were created with a non-NULL window argument. Otherwise\n"
-	                  "a colormap must be set on them with "
-	                  "gdk_drawable_set_colormap");
 	      return NULL;
 	}
 	cairo_surface_set_device_offset (surface, -x_off, -y_off);
@@ -157,28 +152,28 @@ void
 on_open_project_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	screen.win.project = gtk_file_selection_new("Open project filename");
+	gchar *filename=NULL;
 
-	if (screen.project)
-		gtk_file_selection_set_filename
-		    (GTK_FILE_SELECTION(screen.win.project), screen.project);
-	else if (screen.path)
-		gtk_file_selection_set_filename
-		    (GTK_FILE_SELECTION(screen.win.project), screen.path);
+	screen.win.gerber = 
+	gtk_file_chooser_dialog_new ("Open project file...",
+				     NULL,
+				     GTK_FILE_CHOOSER_ACTION_OPEN,
+				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
+				     NULL);
 
-	gtk_signal_connect (GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_ok_project), user_data);
-	gtk_signal_connect_object (GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.win.project);
-	gtk_signal_connect_object (GTK_OBJECT(GTK_FILE_SELECTION(screen.win.project)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.win.project);
+	gtk_widget_show (screen.win.gerber);
+	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
+		filename =
+		    gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+	}
+	gtk_widget_destroy (screen.win.gerber);
 
+	if (filename)
+		gerbv_open_project_from_filename (filename);
 
-	gtk_widget_show(screen.win.project);
-
-	gtk_grab_add(screen.win.project);
+	redraw_pixmap(screen.drawing_area, TRUE);
+	return;
 }
 
 
@@ -197,10 +192,7 @@ on_open_layer_activate                 (GtkMenuItem     *menuitem,
 				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
 				     NULL);
 
-	g_object_set (screen.win.gerber,
-		  /* GtkFileChooser */
-		  "select-multiple", TRUE,
-		  NULL);
+	g_object_set (screen.win.gerber, "select-multiple", TRUE, NULL);
 
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
@@ -211,18 +203,7 @@ on_open_layer_activate                 (GtkMenuItem     *menuitem,
 
 	/* Now try to open all gerbers specified */
 	for (filename=filenames; filename; filename=filename->next) {
-		dprintf("Opening filename = %s\n", (gchar *) filename->data);
-
-		if (open_image(filename->data, ++screen.last_loaded, FALSE) == -1) {
-			GERB_MESSAGE("could not read %s[%d]", (gchar *) filename->data,
-				 screen.last_loaded);
-		} else {
-			dprintf("     Successfully opened file!\n");	
-
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-						 (screen.layer_button[screen.last_loaded]),
-						 TRUE);
-		}
+		gerbv_open_layer_from_filename (filename->data);
 	}
 	g_slist_free(filenames);
 
@@ -243,7 +224,12 @@ void
 on_save_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-
+	if (screen.project)
+		gerbv_save_project_from_filename (screen.project);
+	else
+		on_save_as_activate (menuitem, user_data);
+	redraw_pixmap(screen.drawing_area, TRUE);
+	return;
 }
 
 
@@ -251,7 +237,27 @@ void
 on_save_as_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	gchar *filename=NULL;
 
+	screen.win.gerber = 
+	gtk_file_chooser_dialog_new ("Save project as...",
+				     NULL,
+				     GTK_FILE_CHOOSER_ACTION_SAVE,
+				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				     GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
+				     NULL);
+
+	gtk_widget_show (screen.win.gerber);
+	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+	}
+	gtk_widget_destroy (screen.win.gerber);
+
+	if (filename)
+		gerbv_save_as_project_from_filename (filename);
+
+	redraw_pixmap(screen.drawing_area, TRUE);
+	return;
 }
 
 
@@ -435,7 +441,7 @@ on_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     g_free(misc_report_string);
 
     /* Create tabbed notebook widget and add report label widgets. */
-    GtkNotebook *notebook = gtk_notebook_new();
+    GtkNotebook *notebook = (GtkNotebook *) gtk_notebook_new();
     
     gtk_notebook_append_page(notebook,
 			     GTK_WIDGET(G_report_label),
@@ -1455,7 +1461,7 @@ void
 cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
 {
 	char *filename;
-	gboolean result;
+	gboolean result=FALSE;
 	GdkWindow *window;
 
 	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
@@ -1471,11 +1477,13 @@ cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
 	}
 
 	/* Export PNG */
+#ifdef RENDER_USING_GDK
 #ifdef EXPORT_DISPLAYED_IMAGE
 	result = png_export(screen.pixmap, filename);
 #else
 	result = png_export(NULL, filename);
 #endif /* EXPORT_DISPLAYED_IMAGE */
+#endif
 	if (!result) {
 		GERB_MESSAGE("Failed to save PNG at %s\n", filename);
 	}

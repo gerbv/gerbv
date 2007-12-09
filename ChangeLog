@@ -1,3 +1,7 @@
+2007-12-09  Julian Lamb
+	* src/gerbv.c,src/callbacks.c: Reattach project open/save stuff in gui
+	  and separate out some of the code back to gerbv.c.
+	  
 2007-12-08  Julian Lamb
 	* src/render.c,src/callbacks.c: Fix translation code for cairo renderer
 	  so things are correctly centered on the screen after a zoom-to-fit. Fix
