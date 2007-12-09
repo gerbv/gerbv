@@ -572,11 +572,14 @@ generate_drill_analysis(void)
     return stats;
 }
 
+
+#ifndef RENDER_USING_GDK
 void render_project_to_cairo_target (cairo_t *cr) {
 	int i;
 	
 	/* translate the draw area before drawing */
-	cairo_translate (cr,-screen.trans_x-(screen.gerber_bbox.x1*(float) screen.transf->scale),-screen.trans_y+(screen.gerber_bbox.y2*(float) screen.transf->scale));
+	cairo_translate (cr,-screen.trans_x-(screen.gerber_bbox.x1*(float) screen.transf->scale),
+			 -screen.trans_y+(screen.gerber_bbox.y2*(float) screen.transf->scale));
 	/* scale the drawing by the specified scale factor (inverting y since
 	 * cairo y axis points down)
 	 */ 
@@ -615,3 +618,5 @@ void render_project_to_cairo_target (cairo_t *cr) {
 		}
 	}
 }
+
+#endif
