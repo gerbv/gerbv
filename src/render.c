@@ -486,7 +486,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 		cairo_scale (cr, 1.0/25.4, 1.0/25.4);
 	    }
 	    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);
-	    render_image_to_cairo_target (cr, screen.file[i]->image);
+	    draw_image_to_cairo_target (cr, screen.file[i]->image);
 	    /* make sure we cancel any previous scaling for mm */
 	    cairo_restore (cr);
 	    testp = cairo_pop_group (cr);
@@ -570,4 +570,48 @@ generate_drill_analysis(void)
     }
     
     return stats;
+}
+
+void render_project_to_cairo_target (cairo_t *cr) {
+	int i;
+	
+	/* translate the draw area before drawing */
+	cairo_translate (cr,-screen.trans_x-(screen.gerber_bbox.x1*(float) screen.transf->scale),-screen.trans_y+(screen.gerber_bbox.y2*(float) screen.transf->scale));
+	/* scale the drawing by the specified scale factor (inverting y since
+	 * cairo y axis points down)
+	 */ 
+	cairo_scale (cr,(float) screen.transf->scale,-(float) screen.transf->scale);
+	
+	/* fill the background with the appropriate color */
+	cairo_set_source_rgba (cr, (double) screen.background->red/G_MAXUINT16,
+		(double) screen.background->green/G_MAXUINT16,
+		(double) screen.background->blue/G_MAXUINT16, 1);
+	cairo_paint (cr);
+	
+	/* 
+	* This now allows drawing several layers on top of each other.
+	* Higher layer numbers have higher priority in the Z-order. 
+	*/
+	for(i = 0; i < MAX_FILES; i++) {
+		if (screen.file[i] && screen.file[i]->isVisible && screen.file[i]->privateRenderData) {
+			enum polarity_t polarity;
+
+			if (screen.file[i]->inverted) {
+				if (screen.file[i]->image->info->polarity == POSITIVE)
+				polarity = NEGATIVE;
+				else
+				polarity = POSITIVE;
+			} else {
+				polarity = screen.file[i]->image->info->polarity;
+			}
+			
+                  cairo_set_source (cr,(cairo_pattern_t *)screen.file[i]->privateRenderData);
+			if ((double) screen.file[i]->alpha < 65535) {				
+				cairo_paint_with_alpha(cr,(double) screen.file[i]->alpha/G_MAXUINT16);
+			}
+			else {
+				cairo_paint (cr);
+			}
+		}
+	}
 }

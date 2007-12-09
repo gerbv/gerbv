@@ -47,10 +47,6 @@ on_save_as_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_export_activate                     (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
 on_postscript_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
@@ -177,3 +173,12 @@ redraw_pixmap(GtkWidget *widget, int restart);
 
 void
 autoscale(void);
+
+void
+callbacks_handle_log_messages(const gchar *log_domain,
+		      GLogLevelFlags log_level,
+		      const gchar *message, 
+		      gpointer user_data);
+
+void
+callback_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data);

@@ -6,6 +6,10 @@
 2007-12-09  Julian Lamb
 	* src/gerbv.c,src/callbacks.c: Reattach project open/save stuff in gui
 	  and separate out some of the code back to gerbv.c.
+	* gerbv.c,callbacks.c,interface.c,others: Implement export-to-file for
+	  PNG, PDF, SVG, and PS. Start implementing print functionality. More
+	  cleanup of old gui code. Move log handler over to new message textview
+	  in the sidebar.
 	  
 2007-12-08  Julian Lamb
 	* src/render.c,src/callbacks.c: Fix translation code for cairo renderer

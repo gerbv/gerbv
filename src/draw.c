@@ -345,7 +345,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 
 
 int
-render_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
+draw_image_to_cairo_target (cairo_t *cairoTarget, struct gerb_image *image)
 {
     struct gerb_net *net;
     double x1, y1, x2, y2, cp_x=0, cp_y=0;

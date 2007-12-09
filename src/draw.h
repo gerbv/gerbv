@@ -27,6 +27,9 @@
 #include <gdk/gdk.h>
 #include "gerber.h"
 #include <cairo.h>
+#include <cairo-ps.h>
+#include <cairo-svg.h>
+#include <cairo-pdf.h>
 
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
@@ -106,7 +109,7 @@ enum {
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int 
-render_image_to_cairo_target(cairo_t *cairoTarget, 
+draw_image_to_cairo_target(cairo_t *cairoTarget, 
 			     struct gerb_image *image);
 
 #endif /* DRAW_H */

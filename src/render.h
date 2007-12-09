@@ -36,5 +36,6 @@ struct gerbv_redraw_state_t {
 };
 
 gerb_stats_t *generate_gerber_analysis(void);
+void render_project_to_cairo_target (cairo_t *cr);
 gerb_stats_t *generate_drill_analysis(void);
 

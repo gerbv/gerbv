@@ -91,6 +91,13 @@ void gerbv_open_layer_from_filename (gchar *filename);
 void gerbv_open_project_from_filename (gchar *filename);
 void gerbv_save_as_project_from_filename (gchar *filename);
 void gerbv_save_project_from_filename (gchar *filename);
+void gerbv_revert_all_files (void);
+void gerbv_unload_all_layers (void);
+void gerbv_export_to_png_file (int width, int height, gchar *filename);
+void gerbv_export_to_pdf_file (gchar *filename);
+void gerbv_export_to_postscript_file (gchar *filename);
+void gerbv_export_to_svg_file (gchar *filename);
+
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {
@@ -144,7 +151,13 @@ void
 on_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-
+	/* first, unload all files */
+	if (screen.project) {
+	    g_free(screen.project);
+	    screen.project = NULL;
+	}
+	gerbv_unload_all_layers ();
+	on_save_as_activate (menuitem, user_data);
 }
 
 
@@ -216,7 +229,7 @@ void
 on_revert_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-
+	gerbv_revert_all_files ();
 }
 
 
@@ -262,18 +275,30 @@ on_save_as_activate                    (GtkMenuItem     *menuitem,
 
 
 void
-on_export_activate                     (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-
-}
-
-
-void
 on_postscript_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	gchar *filename=NULL;
 
+	screen.win.gerber = 
+	gtk_file_chooser_dialog_new ("Save project as...", NULL,
+				     GTK_FILE_CHOOSER_ACTION_SAVE,
+				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				     NULL);
+
+	gtk_widget_show (screen.win.gerber);
+	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+	}
+	
+	if (filename) {
+		gerbv_export_to_postscript_file (filename);
+	}
+	gtk_widget_destroy (screen.win.gerber);
+
+	redraw_pixmap(screen.drawing_area, TRUE);
+	return;
 }
 
 
@@ -281,7 +306,28 @@ void
 on_png_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	gchar *filename=NULL;
 
+	screen.win.gerber = 
+	gtk_file_chooser_dialog_new ("Save project as...", NULL,
+				     GTK_FILE_CHOOSER_ACTION_SAVE,
+				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				     NULL);
+
+	gtk_widget_show (screen.win.gerber);
+	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+	}
+	
+	if (filename) {
+		gerbv_export_to_png_file (screen.drawing_area->allocation.width,
+			screen.drawing_area->allocation.height, filename);
+	}
+	gtk_widget_destroy (screen.win.gerber);
+
+	redraw_pixmap(screen.drawing_area, TRUE);
+	return;
 }
 
 
@@ -289,7 +335,27 @@ void
 on_pdf_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	gchar *filename=NULL;
 
+	screen.win.gerber = 
+	gtk_file_chooser_dialog_new ("Save project as...", NULL,
+				     GTK_FILE_CHOOSER_ACTION_SAVE,
+				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				     NULL);
+
+	gtk_widget_show (screen.win.gerber);
+	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+	}
+	
+	if (filename) {
+		gerbv_export_to_pdf_file (filename);
+	}
+	gtk_widget_destroy (screen.win.gerber);
+
+	redraw_pixmap(screen.drawing_area, TRUE);
+	return;
 }
 
 
@@ -297,17 +363,61 @@ void
 on_svg_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	gchar *filename=NULL;
 
+	screen.win.gerber = 
+	gtk_file_chooser_dialog_new ("Save project as...", NULL,
+				     GTK_FILE_CHOOSER_ACTION_SAVE,
+				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				     NULL);
+
+	gtk_widget_show (screen.win.gerber);
+	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+	}
+	
+	if (filename) {
+		gerbv_export_to_svg_file (filename);
+	}
+	gtk_widget_destroy (screen.win.gerber);
+
+	redraw_pixmap(screen.drawing_area, TRUE);
+	return;
 }
 
+#ifdef HAVE_GTK_2_10
+static void
+callbacks_print_render_page (GtkPrintOperation *operation,
+           GtkPrintContext   *context,
+           gint               page_nr,
+           gpointer           user_data)
+{
+	cairo_t *cr;
+	
+	//cr = gtk_print_context_get_cairo_context (context);
+	//render_project_to_cairo_target (cr);
+	//cairo_destroy (cr);
+}
 
 void
 on_print_activate                      (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	GtkPrintOperation *print;
+	GtkPrintOperationResult res;
 
+	print = gtk_print_operation_new ();
+
+	//g_signal_connect (print, "begin_print", G_CALLBACK (begin_print), NULL);
+	g_signal_connect (print, "draw_page", G_CALLBACK (callbacks_print_render_page), NULL);
+
+	res = gtk_print_operation_run (print, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
+	                              (GtkWindow *) screen.win.topLevelWindow , NULL);
+
+	g_object_unref (print);
 }
-
+#endif
 
 void
 on_zoom_in_activate                    (GtkMenuItem     *menuitem,
@@ -1062,72 +1172,17 @@ callback_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	else if (screen.state == MEASURE) {
 		draw_measure_distance();
 	}
-	/*
-	* Raise popup windows if they happen to disappear
-	*/
-	if (screen.win.load_file && screen.win.load_file->window)
-		gdk_window_raise(screen.win.load_file->window);
-	if (screen.win.color_selection && screen.win.color_selection->window)
-		gdk_window_raise(screen.win.color_selection->window);
-	if (screen.win.export_png && screen.win.export_png->window)
-		gdk_window_raise(screen.win.export_png->window);
-	if (screen.win.scale && screen.win.scale->window)
-		gdk_window_raise(screen.win.scale->window);
-	if (screen.win.log && screen.win.log->window)
-		gdk_window_raise(screen.win.log->window);
 
 	return FALSE;
     
-#else   
-    
+#else    
 	cairo_t *cr;
-	int i;
-	int retval = TRUE;
 
 	/* get a cairo_t */
 	cr = callbacks_gdk_cairo_create (widget->window);
-	
-	/* translate the draw area before drawing */
-	cairo_translate (cr,-screen.trans_x-(screen.gerber_bbox.x1*(float) screen.transf->scale),-screen.trans_y+(screen.gerber_bbox.y2*(float) screen.transf->scale));
-	/* scale the drawing by the specified scale factor (inverting y since
-	 * cairo y axis points down)
-	 */ 
-	cairo_scale (cr,(float) screen.transf->scale,-(float) screen.transf->scale);
-	
-	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) screen.background->red/G_MAXUINT16,
-		(double) screen.background->green/G_MAXUINT16,
-		(double) screen.background->blue/G_MAXUINT16, 1);
-	cairo_paint (cr);
-	
-	/* 
-	* This now allows drawing several layers on top of each other.
-	* Higher layer numbers have higher priority in the Z-order. 
-	*/
-	for(i = 0; i < MAX_FILES; i++) {
-		if (screen.file[i] && screen.file[i]->isVisible && screen.file[i]->privateRenderData) {
-			enum polarity_t polarity;
-
-			if (screen.file[i]->inverted) {
-				if (screen.file[i]->image->info->polarity == POSITIVE)
-				polarity = NEGATIVE;
-				else
-				polarity = POSITIVE;
-			} else {
-				polarity = screen.file[i]->image->info->polarity;
-			}
-			
-                  cairo_set_source (cr,(cairo_pattern_t *)screen.file[i]->privateRenderData);
-			if ((double) screen.file[i]->alpha < 65535) {				
-				cairo_paint_with_alpha(cr,(double) screen.file[i]->alpha/G_MAXUINT16);
-			}
-			else {
-				cairo_paint (cr);
-			}
-		}
-	}
+	render_project_to_cairo_target (cr);
 	cairo_destroy (cr);
-	return retval;
+	return FALSE;
 #endif
 }
 
@@ -1515,175 +1570,6 @@ invert_color(GtkWidget *widget, gpointer data)
 } /* invert_color */
 
 
-void
-cb_ok_load_file(GtkWidget *widget, GtkFileSelection *fs)
-{
-	char *filename;
-
-	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-	if (open_image(filename, ++screen.last_loaded, FALSE) != -1) {
-
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON
-					     (screen.layer_button[screen.last_loaded]),
-					     TRUE);
-
-#ifdef HAVE_LIBGEN_H    
-
-		/*
-		 * Remember where we loaded file from last time
-		 */
-		filename = dirname(filename);
-#endif        
-		if (screen.path)
-		    g_free(screen.path);
-		screen.path = (char *)malloc(strlen(filename) + 2);
-		if (screen.path == NULL)
-		    GERB_FATAL_ERROR("malloc screen.path failed\n");
-		strcpy(screen.path, filename);
-		screen.path = strncat(screen.path, "/", 1);
-
-		/* Make loaded image appear on screen */
-		redraw_pixmap(screen.drawing_area, TRUE);
-	}
-
-	gtk_grab_remove(screen.win.load_file);
-	gtk_widget_destroy(screen.win.load_file);
-	screen.win.load_file = NULL;
-
-	return;
-} /* cb_ok_load_file */
-
-
-void
-cb_cancel_load_file(GtkWidget *widget, gpointer data)
-{
-	gtk_grab_remove(screen.win.load_file);
-	gtk_widget_destroy(screen.win.load_file);
-	screen.win.load_file = NULL;
-
-	return;
-} /* cb_cancel_load_file */
-
-
-void
-load_file_popup(GtkWidget *widget, gpointer data)
-{
-	screen.win.load_file = gtk_file_selection_new("Select File To View");
-
-	if (screen.path)
-		gtk_file_selection_set_filename
-		    (GTK_FILE_SELECTION(screen.win.load_file), screen.path);
-
-	gtk_signal_connect(GTK_OBJECT(screen.win.load_file), "destroy",
-		       GTK_SIGNAL_FUNC(cb_cancel_load_file),
-		       NULL);
-	gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.load_file)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_ok_load_file), 
-	 (gpointer)screen.win.load_file);
-	gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.load_file)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_cancel_load_file), 
-	 (gpointer)screen.win.load_file);
-
-	gtk_widget_show(screen.win.load_file);
-
-	gtk_grab_add(screen.win.load_file);
-
-	return;
-} /* load_file_popup */
-
-
-#ifdef EXPORT_PNG
-void
-cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs)
-{
-	char *filename;
-	gboolean result=FALSE;
-	GdkWindow *window;
-
-	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs));
-
-	/* This might be lengthy, show that we're busy by changing the pointer */
-	window = gtk_widget_get_parent_window(widget);
-	if (window) {
-		GdkCursor *cursor;
-
-		cursor = gdk_cursor_new(GDK_WATCH);
-		gdk_window_set_cursor(window, cursor);
-		gdk_cursor_destroy(cursor);
-	}
-
-	/* Export PNG */
-#ifdef RENDER_USING_GDK
-#ifdef EXPORT_DISPLAYED_IMAGE
-	result = png_export(screen.pixmap, filename);
-#else
-	result = png_export(NULL, filename);
-#endif /* EXPORT_DISPLAYED_IMAGE */
-#endif
-	if (!result) {
-		GERB_MESSAGE("Failed to save PNG at %s\n", filename);
-	}
-
-	/* Return default pointer shape */
-	if (window) {
-		gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
-	}
-
-	/*
-	* Remember where we loaded file from last time
-	*/
-#ifdef HAVE_LIBGEN_H     
-	filename = dirname(filename);
-#endif    
-	if (screen.path)
-		g_free(screen.path);
-	screen.path = (char *)malloc(strlen(filename) + 2);
-	if (screen.path == NULL)
-		GERB_FATAL_ERROR("malloc screen.path failed\n");
-	strcpy(screen.path, filename);
-	screen.path = strncat(screen.path, "/", 1);
-
-	gtk_grab_remove(screen.win.export_png);
-
-	screen.win.export_png = NULL;
-
-	return;
-} /* cb_ok_export_png */
-
-/* ------------------------------------------------------------------ */
-void
-export_png_popup(GtkWidget *widget, gpointer data)
-{
-	screen.win.export_png = gtk_file_selection_new("Save PNG filename");
-
-	if (screen.path)
-		gtk_file_selection_set_filename
-		    (GTK_FILE_SELECTION(screen.win.export_png), screen.path);
-
-	gtk_signal_connect
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(cb_ok_export_png), 
-	 (gpointer)screen.win.export_png);
-	gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->ok_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.win.export_png);
-	gtk_signal_connect_object
-	(GTK_OBJECT(GTK_FILE_SELECTION(screen.win.export_png)->cancel_button),
-	 "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-	 (gpointer)screen.win.export_png);
-
-	gtk_widget_show(screen.win.export_png);
-
-	gtk_grab_add(screen.win.export_png);
-
-	return;
-} /* export_png_popup */
-
-#endif /* EXPORT_PNG */
-
 /* ------------------------------------------------------------------ */
 /** Displays additional information in the statusbar.
     The Statusbar is divided into three sections:\n
@@ -1705,210 +1591,112 @@ update_statusbar(gerbv_screen_t *scr)
 	}
 } /* update_statusbar */
 
-/* ------------------------------------------------------------------ */
 void
-reload_files(GtkWidget *widget, gpointer data)
-{
-	int idx;
+callback_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data) {
+	GtkTextBuffer *textbuffer;
+	GtkTextIter start, end;
 
-	for (idx = 0; idx < MAX_FILES; idx++) {
-	    if (screen.file[idx] && screen.file[idx]->name) {
-	        if (open_image(screen.file[idx]->name, idx, TRUE) == -1)
-		    return;
-	    }
-	}
-
-	redraw_pixmap(screen.drawing_area, TRUE);
-
-	return;
-} /* reload_files */
-
-/* ------------------------------------------------------------------ */
-void
-unload_file(GtkWidget *widget, gpointer data)
-{
-	int         idx = screen.curr_index;
-	GtkStyle   *defstyle;
-
-	if (screen.file[idx] == NULL)
-		return;
-
-	/*
-	* Deselect the layer we're unloading so it's not left in the pixmap
-	*/
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(screen.layer_button[idx]),
-				 FALSE);
-
-	/* 
-	* Remove color on layer button (set default style) 
-	*/
-	defstyle = gtk_widget_get_default_style();
-	gtk_widget_set_style(screen.layer_button[idx], defstyle);
-
-	/* 
-	* Remove tool tips 
-	*/
-	gtk_tooltips_set_tip(screen.tooltips, screen.layer_button[idx], 
-			 NULL, NULL); 
-
-	/* 
-	* Remove data struct 
-	*/
-	free_gerb_image(screen.file[idx]->image);  screen.file[idx]->image = NULL;
-	g_free(screen.file[idx]->color);  screen.file[idx]->color = NULL;
-	g_free(screen.file[idx]->name);  screen.file[idx]->name = NULL;
-	g_free(screen.file[idx]);  screen.file[idx] = NULL;
-
-	return;
-} /* unload_file */
-
-/*
-void
-project_save_cb(GtkWidget *widget, gpointer data)
-{
-
-    if (!screen.project) 
-        project_popup(widget, (gpointer) SAVE_AS_PROJECT);
-    else 
-        cb_ok_project(widget, (gpointer) SAVE_PROJECT);
-
+	textbuffer = gtk_text_view_get_buffer((GtkTextView*)screen.win.messageTextView);
+	gtk_text_buffer_get_start_iter(textbuffer, &start);
+	gtk_text_buffer_get_end_iter(textbuffer, &end);
+	gtk_text_buffer_delete (textbuffer, &start, &end);
 }
-*/
-
-/* ------------------------------------------------------------------ */
+                                                        
 void
-cb_ok_project(GtkWidget *widget, gpointer data)
-{
-    char *filename = NULL;
-    project_list_t *project_list = NULL, *tmp;
-    int idx;
-    
-    if (screen.win.project) {
-	filename = (char *)gtk_file_selection_get_filename(GTK_FILE_SELECTION(screen.win.project));
+callbacks_handle_log_messages(const gchar *log_domain,
+		      GLogLevelFlags log_level,
+		      const gchar *message, 
+		      gpointer user_data) {
+	GtkTextBuffer *textbuffer = NULL;
+	GtkTextIter iter;
+	GtkTextTag *tag;
+	GtkTextMark *StartMark = NULL, *StopMark = NULL;
+	GtkTextIter StartIter, StopIter;
+
+	textbuffer = gtk_text_view_get_buffer((GtkTextView*)screen.win.messageTextView);
+
+	/* create a mark for the end of the text. */
+	gtk_text_buffer_get_end_iter(textbuffer, &iter);
+
+	/* get the current end position of the text (it will be the
+	      start of the new text. */
+	StartMark = gtk_text_buffer_create_mark(textbuffer,
+					    "NewTextStart", &iter, TRUE);
+
+	tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
+	                              "blue_foreground");
+	/* the tag does not exist: create it and let them exist in the tag table.*/
+	if (tag == NULL)    {
+		tag = gtk_text_buffer_create_tag(textbuffer, "black_foreground",
+		                              "foreground", "black", NULL);
+		tag = gtk_text_buffer_create_tag(textbuffer, "blue_foreground",
+		                              "foreground", "blue", NULL);
+		tag = gtk_text_buffer_create_tag(textbuffer, "red_foreground",
+		                              "foreground", "red", NULL);
+		tag = gtk_text_buffer_create_tag(textbuffer, "darkred_foreground",
+		                              "foreground", "darkred", NULL);
+		tag = gtk_text_buffer_create_tag(textbuffer, "darkblue_foreground",
+		                              "foreground", "darkblue", NULL);
+		tag = gtk_text_buffer_create_tag (textbuffer, "darkgreen_foreground",
+		                              "foreground", "darkgreen", NULL);
+		tag = gtk_text_buffer_create_tag (textbuffer,
+		                              "saddlebrown_foreground",
+		                              "foreground", "saddlebrown", NULL);
+	}
+
+	/* 
+	* See rgb.txt for the color names definition 
+	* (on my PC it is on /usr/X11R6/lib/X11/rgb.txt)
+	*/
+	switch (log_level & G_LOG_LEVEL_MASK) {
+	case G_LOG_LEVEL_ERROR:
+	/* a message of this kind aborts the application calling abort() */
+	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
+	                                    "red_foreground");
+
+	break;
+	case G_LOG_LEVEL_CRITICAL:
+	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
+	                                    "red_foreground");
+	break;
+	case G_LOG_LEVEL_WARNING:
+	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
+	                                    "darkred_foreground");
+	break;
+	case G_LOG_LEVEL_MESSAGE:
+	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
+	                                    "darkblue_foreground");
+	break;
+	case G_LOG_LEVEL_INFO:
+	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
+	                                    "drakgreen_foreground");
+	break;
+	case G_LOG_LEVEL_DEBUG:
+	tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
+					"saddlebrown_foreground");
+	break;
+	default:
+	      tag = gtk_text_tag_table_lookup (gtk_text_buffer_get_tag_table(textbuffer),
+	                                    "black_foreground");
+	break;
+	}
 
 	/*
-	 * Remember where we loaded file from last time
-	 */
-	if (screen.path)
-	    g_free(screen.path);
-	screen.path = (char *)malloc(strlen(filename) + 2);
-	if (screen.path == NULL)
-	    GERB_FATAL_ERROR("malloc screen.path failed\n");
-	strcpy(screen.path, filename);
-#ifdef HAVE_LIBGEN_H        
-	dirname(screen.path);
-#endif        
-	screen.path = strncat(screen.path, "/", 1);
-    }
+	* Fatal aborts application. We will try to get the message out anyhow.
+	*/
+	if (log_level & G_LOG_FLAG_FATAL)
+	fprintf(stderr, "Fatal error : %s\n", message);
 
-    switch ((long)data) {
-    case OPEN_PROJECT:
-	
-	project_list = read_project_file(filename);
+	gtk_text_buffer_insert(textbuffer, &iter, message, -1);
 
-	if (project_list) {
-	    load_project(project_list);
-	    /*
-	     * Save project filename for later use
-	     */
-	    if (screen.project) {
-		g_free(screen.project);
-		screen.project = NULL;
-	    }
-	    screen.project = (char *)malloc(strlen(filename) + 1);
-	    if (screen.project == NULL)
-		GERB_FATAL_ERROR("malloc screen.project failed\n");
-	    memset((void *)screen.project, 0, strlen(filename) + 1);
-	    strncpy(screen.project, filename, strlen(filename));
-            rename_main_window(filename, NULL);
-	    redraw_pixmap(screen.drawing_area, TRUE);
-	} else {
-	    GERB_MESSAGE("Failed to load project\n");
-	    goto cb_ok_project_end;
-	}
-	//all_layers_on(NULL, NULL);
-	break;
-    case SAVE_AS_PROJECT:
-	/*
-	 * Save project filename for later use
-	 */
-	if (screen.project) {
-	    g_free(screen.project);
-	    screen.project = NULL;
-	}
-	screen.project = (char *)malloc(strlen(filename) + 1);
-	if (screen.project == NULL)
-	    GERB_FATAL_ERROR("malloc screen.project failed\n");
-	memset((void *)screen.project, 0, strlen(filename) + 1);
-	strncpy(screen.project, filename, strlen(filename));
-	rename_main_window(filename, NULL);
-	
-    case SAVE_PROJECT:
-	if (!screen.project) {
-	    GERB_MESSAGE("Missing project filename\n");
-	    goto cb_ok_project_end;
-	}
-	
-	if (screen.path) {
-	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
-	    if (project_list == NULL)
-		GERB_FATAL_ERROR("malloc project_list failed\n");
-	    memset(project_list, 0, sizeof(project_list_t));
-	    project_list->next = project_list;
-	    project_list->layerno = -1;
-	    project_list->filename = screen.path;
-	    project_list->rgb[0] = screen.background->red;
-	    project_list->rgb[1] = screen.background->green;
-	    project_list->rgb[2] = screen.background->blue;
-	    project_list->next = NULL;
-	}
-	
-	for (idx = 0; idx < MAX_FILES; idx++) {
-	    if (screen.file[idx] &&  screen.file[idx]->color) {
-		tmp = (project_list_t *)malloc(sizeof(project_list_t));
-		if (tmp == NULL) 
-		    GERB_FATAL_ERROR("malloc tmp failed\n");
-		memset(tmp, 0, sizeof(project_list_t));
-		tmp->next = project_list;
-		tmp->layerno = idx;
-		
-		tmp->filename = screen.file[idx]->name;
-		tmp->rgb[0] = screen.file[idx]->color->red;
-		tmp->rgb[1] = screen.file[idx]->color->green;
-		tmp->rgb[2] = screen.file[idx]->color->blue;
-		tmp->inverted = screen.file[idx]->inverted;
-		project_list = tmp;
-	    }
-	}
-	
-	if (write_project_file(screen.project, project_list)) {
-	    GERB_MESSAGE("Failed to write project\n");
-	    goto cb_ok_project_end;
-	}
-	break;
-    default:
-	GERB_FATAL_ERROR("Unknown operation in cb_ok_project\n");
-    }
-#ifdef HAVE_LIBGEN_H
-    /*
-     * Remember where we loaded file from last time
-     */
-    filename = dirname(filename);
-#endif 
-    if (screen.path)
-	   g_free(screen.path);
-    screen.path = (char *)malloc(strlen(filename) + 2);
-    if (screen.path == NULL)
-	GERB_FATAL_ERROR("malloc screen.path failed\n");
-    strcpy(screen.path, filename);
-    screen.path = strncat(screen.path, "/", 1);
+	gtk_text_buffer_get_end_iter(textbuffer, &iter);
 
- cb_ok_project_end:
-    if (screen.win.project) {
-	gtk_grab_remove(screen.win.project);
-    	screen.win.project = NULL;
-    }
+	StopMark = gtk_text_buffer_create_mark(textbuffer,
+					   "NewTextStop", &iter, TRUE);
 
-    return;
-} /* cb_ok_project */
+	gtk_text_buffer_get_iter_at_mark(textbuffer, &StartIter, StartMark);
+	gtk_text_buffer_get_iter_at_mark(textbuffer, &StopIter, StopMark);
+
+	gtk_text_buffer_apply_tag(textbuffer, tag, &StartIter, &StopIter);
+}
 

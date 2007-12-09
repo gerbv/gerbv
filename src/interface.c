@@ -104,13 +104,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *separatormenuitem1;
 	GtkWidget *export;
 	GtkWidget *export_menu;
-	GtkWidget *postscript;
 	GtkWidget *png;
-	GtkWidget *pdf;
-	GtkWidget *svg;
 	GtkWidget *separator1;
-	GtkWidget *print;
-	GtkWidget *separator2;
 	GtkWidget *quit;
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
@@ -142,8 +137,12 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *toolbutton_revert;
 	GtkWidget *toolbutton_save;
 	GtkWidget *separatortoolitem1;
+#ifdef HAVE_GTK_2_10
+	GtkWidget *print;
 	GtkWidget *toolbutton_print;
+	GtkWidget *separator2;
 	GtkWidget *separatortoolitem2;
+#endif
 	GtkWidget *toolbutton_zoom_in;
 	GtkWidget *toolbutton_zoom_out;
 	GtkWidget *tmp_image;
@@ -257,16 +256,16 @@ interface_create_gui (int req_width, int req_height)
 	export_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (export), export_menu);
 
-	postscript = gtk_menu_item_new_with_mnemonic (_("PostScript"));
-	gtk_widget_show (postscript);
-	gtk_container_add (GTK_CONTAINER (export_menu), postscript);
-	gtk_tooltips_set_tip (tooltips, postscript, _("Export project to a PostScript file"), NULL);
-
 	png = gtk_menu_item_new_with_mnemonic (_("PNG"));
 	gtk_widget_show (png);
 	gtk_container_add (GTK_CONTAINER (export_menu), png);
 	gtk_tooltips_set_tip (tooltips, png, _("Export project to a PNG file"), NULL);
 
+#ifndef RENDER_USING_GDK
+	GtkWidget *pdf;
+	GtkWidget *svg;
+	GtkWidget *postscript;
+	
 	pdf = gtk_menu_item_new_with_mnemonic (_("PDF"));
 	gtk_widget_show (pdf);
 	gtk_container_add (GTK_CONTAINER (export_menu), pdf);
@@ -276,12 +275,19 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (svg);
 	gtk_container_add (GTK_CONTAINER (export_menu), svg);
 	gtk_tooltips_set_tip (tooltips, svg, _("Export project to a SVG file"), NULL);
+	
+	postscript = gtk_menu_item_new_with_mnemonic (_("PostScript"));
+	gtk_widget_show (postscript);
+	gtk_container_add (GTK_CONTAINER (export_menu), postscript);
+	gtk_tooltips_set_tip (tooltips, postscript, _("Export project to a PostScript file"), NULL);
+#endif
 
 	separator1 = gtk_separator_menu_item_new ();
 	gtk_widget_show (separator1);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
 	gtk_widget_set_sensitive (separator1, FALSE);
-
+	
+#ifdef HAVE_GTK_2_10
 	print = gtk_image_menu_item_new_from_stock ("gtk-print", accel_group);
 	gtk_widget_show (print);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), print);
@@ -290,6 +296,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (separator2);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator2);
 	gtk_widget_set_sensitive (separator2, FALSE);
+#endif
 
 	quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
 	gtk_widget_show (quit);
@@ -425,6 +432,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (separatortoolitem1);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem1);
 
+#ifdef HAVE_GTK_2_10
 	toolbutton_print = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-print");
 	gtk_widget_show (toolbutton_print);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_print);
@@ -432,6 +440,7 @@ interface_create_gui (int req_width, int req_height)
 	separatortoolitem2 = (GtkWidget*) gtk_separator_tool_item_new ();
 	gtk_widget_show (separatortoolitem2);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem2);
+#endif
 
 	toolbutton_zoom_in = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-zoom-in");
 	gtk_widget_show (toolbutton_zoom_in);
@@ -661,24 +670,25 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) save_as, "activate",
 	                  G_CALLBACK (on_save_as_activate),
 	                  NULL);
-	g_signal_connect ((gpointer) export, "activate",
-	                  G_CALLBACK (on_export_activate),
-	                  NULL);
-	g_signal_connect ((gpointer) postscript, "activate",
-	                  G_CALLBACK (on_postscript_activate),
-	                  NULL);
 	g_signal_connect ((gpointer) png, "activate",
 	                  G_CALLBACK (on_png_activate),
 	                  NULL);
+#ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) pdf, "activate",
 	                  G_CALLBACK (on_pdf_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) svg, "activate",
 	                  G_CALLBACK (on_svg_activate),
 	                  NULL);
+	g_signal_connect ((gpointer) postscript, "activate",
+	                  G_CALLBACK (on_postscript_activate),
+	                  NULL);
+#endif
+#ifdef HAVE_GTK_2_10
 	g_signal_connect ((gpointer) print, "activate",
 	                  G_CALLBACK (on_print_activate),
 	                  NULL);
+#endif
 	g_signal_connect ((gpointer) quit, "activate",
 	                  G_CALLBACK (on_quit_activate),
 	                  NULL);
@@ -717,13 +727,27 @@ interface_create_gui (int req_width, int req_height)
 	                  NULL);
 
 	/* End of Glade generated code */
-	g_signal_connect ((gpointer) toolbutton_open, "clicked",
-	                  G_CALLBACK (on_open_project_activate),
+	g_signal_connect ((gpointer) toolbutton_new, "clicked",
+	                  G_CALLBACK (on_new_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_save, "clicked",
 	                  G_CALLBACK (on_save_activate),
 	                  NULL);
-                                                       
+	g_signal_connect ((gpointer) toolbutton_open, "clicked",
+	                  G_CALLBACK (on_open_project_activate),
+	                  NULL);
+	g_signal_connect ((gpointer) toolbutton_revert, "clicked",
+	                  G_CALLBACK (on_revert_activate),
+	                  NULL);
+	g_signal_connect ((gpointer) clear_messages_button, "clicked",
+	                  G_CALLBACK (callback_clear_messages_button_clicked),
+	                  NULL);
+#ifdef HAVE_GTK_2_10
+	g_signal_connect ((gpointer) toolbutton_print, "clicked",
+	                  G_CALLBACK (on_print_activate),
+	                  NULL);
+#endif
+	                                                               
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
 	                  
 	GtkWidget *drawingarea;
@@ -860,9 +884,9 @@ interface_create_gui (int req_width, int req_height)
 	* Set gtk error log handler
 	*/
 #if !defined (__MINGW32__)     
-	g_log_set_handler (NULL, 
-		G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
-		gerbv_gtk_log_handler, NULL); 
+    g_log_set_handler (NULL, 
+		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
+		       callbacks_handle_log_messages, NULL); 
 #endif     
   
 	/*
@@ -894,7 +918,8 @@ interface_create_gui (int req_width, int req_height)
 
 	gtk_window_set_default_size((GtkWindow *)mainWindow, width, height);
 	gtk_widget_show_all (mainWindow);
-	
+	screen.win.topLevelWindow = mainWindow;
+	screen.win.messageTextView = message_textview;
 	rename_main_window("",mainWindow);
 
 	set_window_icon (mainWindow);

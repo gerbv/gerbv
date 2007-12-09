@@ -77,11 +77,9 @@ typedef struct {
     gerbv_unit_t unit;
 
     struct {
-	GtkWidget *load_file;
-	GtkWidget *color_selection;
-	GtkWidget *export_png;
-	GtkWidget *scale;
 	GtkWidget *log;
+	GtkWidget *topLevelWindow;
+	GtkWidget *messageTextView;
 	GtkWidget *project;
 	GtkWidget *gerber;
 	GtkWidget *about_dialog;

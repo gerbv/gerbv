@@ -102,6 +102,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include "pick-and-place.h"
 #include "interface.h"
 #include "callbacks.h"
+#include "render.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -220,6 +221,7 @@ void gerbv_open_layer_from_filename (gchar *filename) {
 void gerbv_save_project_from_filename (gchar *filename) {
 	project_list_t *project_list = NULL, *tmp;
 	int idx;
+	gchar *pathName=NULL;
     
 	if (screen.path) {
 	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
@@ -256,6 +258,17 @@ void gerbv_save_project_from_filename (gchar *filename) {
 	if (write_project_file(screen.project, project_list)) {
 	    GERB_MESSAGE("Failed to write project\n");
 	}
+#ifdef HAVE_LIBGEN_H
+	/*
+	* Remember where we loaded file from last time
+	*/
+	pathName = dirname(filename);
+#endif
+	if (screen.path)
+		g_free(screen.path);
+	screen.path = g_strconcat (pathName,"/",NULL);
+	if (screen.path == NULL)
+		GERB_FATAL_ERROR("malloc screen.path failed\n");
 }
 
 void gerbv_save_as_project_from_filename (gchar *filename) {
@@ -272,6 +285,85 @@ void gerbv_save_as_project_from_filename (gchar *filename) {
 	    GERB_FATAL_ERROR("malloc screen.project failed\n");
 	rename_main_window(filename, NULL);
 	gerbv_save_project_from_filename (filename);
+}
+
+void gerbv_revert_all_files (void) {
+	int idx;
+
+	for (idx = 0; idx < MAX_FILES; idx++) {
+	    if (screen.file[idx] && screen.file[idx]->name) {
+	        if (open_image(screen.file[idx]->name, idx, TRUE) == -1)
+		    return;
+	    }
+	}
+	/* Redraw screen */
+	redraw_pixmap(screen.drawing_area, TRUE);
+}
+
+void gerbv_unload_layer (int index) {
+	free_gerb_image(screen.file[index]->image);  screen.file[index]->image = NULL;
+	g_free(screen.file[index]->color);
+	screen.file[index]->color = NULL;
+	g_free(screen.file[index]->name);
+	screen.file[index]->name = NULL;
+	g_free(screen.file[index]);
+	screen.file[index] = NULL;
+}
+
+void gerbv_unload_all_layers (void) {
+	int idx;
+
+	for (idx = 0; idx < MAX_FILES; idx++) {
+	    if (screen.file[idx] && screen.file[idx]->name) {
+	        gerbv_unload_layer (idx);
+	    }
+	}
+}
+
+void gerbv_export_to_png_file (int width, int height, gchar *filename) {
+#ifdef RENDER_USING_GDK
+		(void) png_export(screen.pixmap, filename);
+#else
+		cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
+                                                         width, height);
+            cairo_t *cairoTarget = cairo_create (cSurface);
+            render_project_to_cairo_target (cairoTarget);
+		cairo_surface_write_to_png (cSurface, filename);
+		cairo_destroy (cairoTarget);
+		cairo_surface_destroy (cSurface);
+#endif
+}
+
+void gerbv_export_to_pdf_file (gchar *filename) {
+#ifndef RENDER_USING_GDK
+		cairo_surface_t *cSurface = cairo_pdf_surface_create (filename, 828, 576);
+            cairo_t *cairoTarget = cairo_create (cSurface);
+            render_project_to_cairo_target (cairoTarget);
+		cairo_destroy (cairoTarget);
+		cairo_surface_destroy (cSurface);
+#endif
+}
+
+void gerbv_export_to_postscript_file (gchar *filename) {
+#ifndef RENDER_USING_GDK
+		cairo_surface_t *cSurface = cairo_ps_surface_create (filename, 828, 576);
+            cairo_t *cairoTarget = cairo_create (cSurface);
+            render_project_to_cairo_target (cairoTarget);
+		cairo_surface_write_to_png (cSurface, filename);
+		cairo_destroy (cairoTarget);
+		cairo_surface_destroy (cSurface);
+#endif
+}
+
+void gerbv_export_to_svg_file (gchar *filename) {
+#ifndef RENDER_USING_GDK
+		cairo_surface_t *cSurface = cairo_svg_surface_create (filename, 828, 576);
+            cairo_t *cairoTarget = cairo_create (cSurface);
+            render_project_to_cairo_target (cairoTarget);
+		cairo_surface_write_to_png (cSurface, filename);
+		cairo_destroy (cairoTarget);
+		cairo_surface_destroy (cSurface);
+#endif
 }
 
 
@@ -637,59 +729,16 @@ main(int argc, char *argv[])
      */
     gtk_init (&argc, &argv);
     if (project_filename) {
-	project_list_t *project_list;
-
-	project_list = read_project_file(project_filename);
-	
-	if (project_list) {
-	    load_project(project_list);
-	    if (screen.project) {
-		free(screen.project);
-		screen.project = NULL;
-	    }
-	    screen.project = (char *)malloc(strlen(project_filename) + 1);
-	    if (screen.project == NULL)
-		GERB_FATAL_ERROR("malloc screen.project failed\n");
-	    memset((void *)screen.project, 0, strlen(project_filename) + 1);
-	    strncpy(screen.project, project_filename, strlen(project_filename));
-	    /*
-	     * Remember where we loaded file from last time
-	     */
-	    if (screen.path)
-		free(screen.path);
-	    screen.path = (char *)malloc(strlen(project_filename) + 2);
-	    if (screen.path == NULL)
-		GERB_FATAL_ERROR("malloc screen.path failed\n");
-	    strcpy(screen.path, project_filename);
-#ifdef HAVE_LIBGEN_H             
-	    dirname(screen.path);
-#endif
-	    screen.path = strncat(screen.path, "/", 1);
-	    
-            rename_main_window(screen.project, NULL);
-	} else {
-	    GERB_MESSAGE("Failed to load project\n");
-	}
-
+    	gerbv_open_project_from_filename (project_filename);
     } else {
 	for(i = optind ; i < argc; i++) {
-	    if (open_image(argv[i], i - optind, FALSE) == -1)
-		exit(-1);
+		gerbv_open_layer_from_filename (argv[i]);
 	}
     }
     
-    /*
-     * Set console error log handler. The default gives us error levels in
-     * in the beginning which I don't want.
-     */
-    g_log_set_handler (NULL, 
-		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
-		       gerbv_console_log_handler, NULL); 
-
     /* Set default unit to the configured default */
     screen.unit = GERBV_DEFAULT_UNIT;
 
- 
     interface_create_gui (req_width, req_height);
 
     return 0;
