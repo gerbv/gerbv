@@ -590,7 +590,7 @@ void render_project_to_cairo_target (cairo_t *cr) {
 		(double) screen.background->green/G_MAXUINT16,
 		(double) screen.background->blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
-	
+
 	/* 
 	* This now allows drawing several layers on top of each other.
 	* Higher layer numbers have higher priority in the Z-order. 

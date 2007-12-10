@@ -37,7 +37,7 @@
 #define INITIAL_SCALE 200
 #define MAX_ERRMSGLEN 25
 #define MAX_COORDLEN 28
-#define MAX_DISTLEN 45
+#define MAX_DISTLEN 90
 #define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
 
 /* Macros to convert between unscaled gerber coordinates and other units */
@@ -48,7 +48,7 @@
 
 typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE, ALT_PRESSED} gerbv_state_t;
 
-typedef enum {GERBV_MILS, GERBV_MMS} gerbv_unit_t;
+typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
 
 typedef struct {
     gerb_image_t *image;
@@ -80,6 +80,12 @@ typedef struct {
 	GtkWidget *log;
 	GtkWidget *topLevelWindow;
 	GtkWidget *messageTextView;
+	GtkWidget *statusMessageLeft;
+	GtkWidget *statusMessageRight;
+	GtkWidget *statusUnitComboBox;
+	GtkWidget *layerTree;
+	GtkWidget *colorSelectionDialog;
+	gint colorSelectionIndex;
 	GtkWidget *project;
 	GtkWidget *gerber;
 	GtkWidget *about_dialog;
@@ -97,7 +103,6 @@ typedef struct {
     gerbv_bbox_t gerber_bbox;
 
     GtkTooltips *tooltips;
-    GtkWidget *layer_button[MAX_FILES];
     GtkWidget *popup_menu;
     struct {
 	GtkWidget *msg;

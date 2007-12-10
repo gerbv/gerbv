@@ -629,20 +629,20 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (hbox5);
 	gtk_box_pack_start (GTK_BOX (vbox2), hbox5, FALSE, FALSE, 0);
 
-	statusbar_label_left = gtk_label_new (_("label3"));
+	statusbar_label_left = gtk_label_new (_("(   0.0,  0.0 )"));
 	gtk_widget_show (statusbar_label_left);
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_left, FALSE, FALSE, 0);
-	gtk_widget_set_size_request (statusbar_label_left, 100, -1);
-
+	gtk_widget_set_size_request (statusbar_label_left, 150, -1);
+	gtk_label_set_justify ((GtkLabel *) statusbar_label_left, GTK_JUSTIFY_RIGHT);
+	
 	combobox2 = gtk_combo_box_new_text ();
 	gtk_widget_show (combobox2);
 	gtk_box_pack_start (GTK_BOX (hbox5), combobox2, FALSE, FALSE, 0);
 	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox2), _("mil"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox2), _("mm"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox2), _("in"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox2), _("px"));
 
-	statusbar_label_right = gtk_label_new (_("label4"));
+	statusbar_label_right = gtk_label_new (_(""));
 	gtk_widget_show (statusbar_label_right);
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_right, TRUE, TRUE, 0);
 	gtk_misc_set_alignment (GTK_MISC (statusbar_label_right), 0, 0.5);
@@ -751,9 +751,22 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (on_print_activate),
 	                  NULL);
 #endif
-	                                                               
-	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
+	g_signal_connect ((gpointer) combobox2, "changed",
+	                  G_CALLBACK (callback_statusbar_unit_combo_box_changed),
+	                  NULL);
 	                  
+	g_signal_connect ((gpointer) button4, "clicked",
+	                  G_CALLBACK (callbacks_add_layer_button_clicked), NULL);
+	g_signal_connect ((gpointer) button7, "clicked",
+	                  G_CALLBACK (callbacks_remove_layer_button_clicked), NULL);
+	g_signal_connect ((gpointer) button5, "clicked",
+	                  G_CALLBACK (callbacks_move_layer_down_button_clicked), NULL);
+	g_signal_connect ((gpointer) button6, "clicked",
+	                  G_CALLBACK (callbacks_move_layer_up_clicked), NULL);
+
+	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 0);
+	   
 	GtkWidget *drawingarea;
 	gint width, height;
               
@@ -764,58 +777,11 @@ interface_create_gui (int req_width, int req_height)
 	gtk_table_attach (GTK_TABLE (main_view_table), drawingarea, 1, 2, 1, 2,
 	                  (GtkAttachOptions) (GTK_FILL),
 	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
-	            
-	/*
-	screen.statusbar.msg = gtk_label_new("");
-	gtk_label_set_justify(GTK_LABEL(screen.statusbar.msg), GTK_JUSTIFY_LEFT);
-	GtkStyle  *textStyle = gtk_style_new();
-	textStyle->font_desc = pango_font_description_from_string(setup.status_fontname);
-	gtk_widget_set_style(GTK_WIDGET(screen.statusbar.msg), textStyle);
-	screen.statusbar.msgstr[0] = '\0';
-	screen.statusbar.coordstr[0] = '\0';
-	screen.statusbar.diststr[0] = '\0';
-	gtk_box_pack_start(GTK_BOX(hbox), screen.statusbar.msg, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	*/  
-  
-  
+	             
 	GtkListStore *list_store;
 
-	GtkTreeIter iter;
-	gint i;
-
-	list_store = gtk_list_store_new (4,
-	                              G_TYPE_STRING,
-	                              G_TYPE_STRING,
-	                              G_TYPE_STRING,
-	                              G_TYPE_BOOLEAN);
-
-	for (i = 0; i < 5; i++)	{
-
-		/* Add a new row to the model */
-		gtk_list_store_append (list_store, &iter);
-		gtk_list_store_set (list_store, &iter,
-		                        0, " File-xx.gbr",
-		                        1, "blue",
-		                        2, "Color",
-		                        3,  TRUE,
-		                        -1);
-
-		/* As the store will keep a copy of the string internally, we
-		      * free some_data.
-		      */
-	}
-
-	/* Modify a particular row 
-	path = gtk_tree_path_new_from_string ("4");
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (list_store),
-	                        &iter,
-	                        path);
-	gtk_tree_path_free (path);
-	gtk_list_store_set (list_store, &iter,
-	                  COLUMN_BOOLEAN, TRUE,
-	                  -1); */
-
+	list_store = gtk_list_store_new (4,	G_TYPE_INT, G_TYPE_BOOLEAN,
+		GDK_TYPE_PIXBUF, G_TYPE_STRING);
 
 	GtkWidget *tree;
 
@@ -826,32 +792,39 @@ interface_create_gui (int req_width, int req_height)
 	renderer = gtk_cell_renderer_toggle_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Visible",
 	                                                renderer,
-	                                                "active", 3,
+	                                                "active", 1,
 	                                                NULL);
-	gtk_tree_view_column_set_min_width  ((GtkTreeViewColumn *)column,40);
+	gtk_tree_view_column_set_min_width  ((GtkTreeViewColumn *)column,25);
+	gtk_signal_connect(GTK_OBJECT(renderer), "toggled",
+		       GTK_SIGNAL_FUNC(callbacks_layer_tree_visibility_button_toggled), NULL);
+		       
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
 
-	renderer = gtk_cell_renderer_text_new ();
+	renderer = gtk_cell_renderer_pixbuf_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Color",
 	                                                renderer,
-	                                                "background", 1,
-	                                                "text", 2,
-	                                                NULL);
-
-
+	                                                "pixbuf", 2, NULL);
+	gtk_signal_connect(GTK_OBJECT(renderer), "activate",
+		       GTK_SIGNAL_FUNC(callbacks_layer_tree_visibility_button_toggled), NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
 
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Name",
 	                                                renderer,
-	                                                "text", 0,
+	                                                "text", 3,
 	                                                NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
 
-	//gtk_tree_view_set_headers_visible   ((GtkTreeView *)tree, FALSE);
-
+	gtk_tree_view_set_headers_visible   ((GtkTreeView *)tree, FALSE);
+	gtk_signal_connect(GTK_OBJECT(tree), "button-press-event",
+		GTK_SIGNAL_FUNC(callbacks_layer_tree_button_press), NULL);
+	
 	gtk_container_add (GTK_CONTAINER (scrolledwindow1), tree);
-
+	
+	GtkTreeSelection *selection;
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
+	gtk_tree_selection_set_mode (selection, GTK_SELECTION_BROWSE);
+	
 
 	/*
 	* Connect all events on drawing area 
@@ -872,7 +845,9 @@ interface_create_gui (int req_width, int req_height)
 		       GTK_SIGNAL_FUNC(callback_window_key_release_event), NULL);
 	gtk_signal_connect_after(GTK_OBJECT(mainWindow), "scroll_event",
 		       GTK_SIGNAL_FUNC(callback_window_scroll_event), NULL);
-
+	gtk_signal_connect_after(GTK_OBJECT(mainWindow), "delete_event",
+		       GTK_SIGNAL_FUNC(on_quit_activate), NULL);       
+	
 	gtk_widget_set_events(drawingarea, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
 			  | GDK_BUTTON_PRESS_MASK
@@ -924,9 +899,15 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show_all (mainWindow);
 	screen.win.topLevelWindow = mainWindow;
 	screen.win.messageTextView = message_textview;
+	screen.win.statusMessageLeft = statusbar_label_left;
+	screen.win.statusMessageRight = statusbar_label_right;
+	screen.win.statusUnitComboBox = combobox2;
+	screen.win.layerTree = tree;
+	
 	rename_main_window("",mainWindow);
-
+	
 	set_window_icon (mainWindow);
+	callbacks_update_layer_tree ();
 	gtk_main();
 }
 

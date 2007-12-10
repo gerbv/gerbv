@@ -93,11 +93,12 @@ void gerbv_save_as_project_from_filename (gchar *filename);
 void gerbv_save_project_from_filename (gchar *filename);
 void gerbv_revert_all_files (void);
 void gerbv_unload_all_layers (void);
+void gerbv_unload_layer (int index);
 void gerbv_export_to_png_file (int width, int height, gchar *filename);
 void gerbv_export_to_pdf_file (gchar *filename);
 void gerbv_export_to_postscript_file (gchar *filename);
 void gerbv_export_to_svg_file (gchar *filename);
-
+void gerbv_change_layer_order (gint oldPosition, gint newPosition);
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef struct {
@@ -189,6 +190,7 @@ on_open_project_activate               (GtkMenuItem     *menuitem,
 		gerbv_open_project_from_filename (filename);
 
 	redraw_pixmap(screen.drawing_area, TRUE);
+	callbacks_update_layer_tree();
 	return;
 }
 
@@ -225,6 +227,7 @@ on_open_layer_activate                 (GtkMenuItem     *menuitem,
 	g_slist_free(filenames);
 
 	redraw_pixmap(screen.drawing_area, TRUE);
+	callbacks_update_layer_tree();
 	return;
 }
 
@@ -596,10 +599,9 @@ on_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
     drill_stats_t *stats_report;
     gchar *G_report_string;
     gchar *M_report_string;
-    gchar *T_report_string;
     gchar *misc_report_string;
     
-    stats_report = generate_drill_analysis();
+    stats_report = (drill_stats_t *) generate_drill_analysis();
 
     G_report_string = g_strdup_printf("G code statistics   \n");
     G_report_string = g_strdup_printf("%sG00 = %d\n", 
@@ -774,26 +776,15 @@ void
 on_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	int i;
-
-	for (i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i] && screen.file[i]->image)
-	    free_gerb_image(screen.file[i]->image);
-	if (screen.file[i] && screen.file[i]->color)
-	    g_free(screen.file[i]->color);
-	if (screen.file[i] && screen.file[i]->name)
-	    g_free(screen.file[i]->name);
-	if (screen.file[i])
-	    g_free(screen.file[i]);
-	}
+	gerbv_unload_all_layers ();
 
 	/* Free all colors allocated */
 	if (screen.background)
-	g_free(screen.background);
+		g_free(screen.background);
 	if (screen.zoom_outline_color)
-	g_free(screen.zoom_outline_color);
+		g_free(screen.zoom_outline_color);
 	if (screen.dist_measure_color)
-	g_free(screen.dist_measure_color);
+		g_free(screen.dist_measure_color);
 
 	setup_destroy();
 
@@ -829,8 +820,233 @@ on_about_activate                     (GtkMenuItem     *menuitem,
 	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), string);
 	g_free (string);
 	/* Store pointers to all widgets, for use by lookup_widget(). */
-
+	g_signal_connect (G_OBJECT(aboutdialog1),"response",
+		      G_CALLBACK (gtk_widget_destroy), GTK_WIDGET(aboutdialog1));
 	gtk_widget_show_all(aboutdialog1);
+}
+
+void
+callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
+                                                        gchar *path,
+                                                        gpointer user_data){
+	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
+			((GtkTreeView *) screen.win.layerTree);
+	GtkTreeIter iter;
+	gboolean newVisibility=TRUE;
+	gint index;
+	
+	gtk_tree_model_get_iter_from_string ((GtkTreeModel *)list_store, &iter, path);
+	gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &index, -1);
+
+	if (screen.file[index]->isVisible)
+		 newVisibility = FALSE;
+	screen.file[index]->isVisible = newVisibility;
+
+      callbacks_update_layer_tree ();
+      redraw_pixmap(screen.drawing_area, TRUE);
+}
+
+gint
+get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
+{
+	GList *cols;
+	gint   num;
+	
+	g_return_val_if_fail ( col != NULL, -1 );
+	g_return_val_if_fail ( col->tree_view != NULL, -1 );
+	cols = gtk_tree_view_get_columns(GTK_TREE_VIEW(col->tree_view));
+	num = g_list_index(cols, (gpointer) col);
+	g_list_free(cols);
+	return num;
+}
+
+void
+callbacks_color_selector_cancel_clicked (GtkWidget *widget, gpointer user_data) {
+	gtk_widget_destroy (screen.win.colorSelectionDialog);
+	screen.win.colorSelectionDialog = NULL;
+}
+
+void
+callbacks_add_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
+	on_open_layer_activate (NULL, NULL);
+}
+
+void
+callbacks_select_row (gint rowIndex) {
+	GtkTreeSelection *selection;
+	GtkTreeIter       iter;
+	
+	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
+			((GtkTreeView *) screen.win.layerTree);
+
+	selection = gtk_tree_view_get_selection((GtkTreeView *) screen.win.layerTree);
+	if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store), &iter, NULL, rowIndex)) {
+		gtk_tree_selection_select_iter (selection, &iter);
+	}
+}
+
+
+gint
+callbacks_get_selected_row_index  (void) {
+	GtkTreeSelection *selection;
+	GtkTreeIter       iter;
+	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
+			((GtkTreeView *) screen.win.layerTree);
+	gint index=-1;
+	
+	/* This will only work in single or browse selection mode! */
+	selection = gtk_tree_view_get_selection((GtkTreeView *) screen.win.layerTree);
+	if (gtk_tree_selection_get_selected(selection, NULL, &iter)) {
+		gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &index, -1);
+		return index;
+	}
+	return index;
+}
+
+void
+callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
+	gint index=callbacks_get_selected_row_index();
+	
+	if ((index >= 0) && (index <= screen.last_loaded)) {
+		gerbv_unload_layer (index);
+	      callbacks_update_layer_tree ();
+	      callbacks_select_row (index);
+	      redraw_pixmap(screen.drawing_area, TRUE);	
+	}
+}
+
+void
+callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_data) {
+	gint index=callbacks_get_selected_row_index();
+	
+	if ((index >= 0) && (index < screen.last_loaded)) {
+		gerbv_change_layer_order (index, index + 1);
+	      callbacks_update_layer_tree ();
+	      callbacks_select_row (index + 1);
+	      redraw_pixmap(screen.drawing_area, TRUE);
+	}
+}
+
+void
+callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
+	gint index=callbacks_get_selected_row_index();
+	
+	if (index > 0) {
+		gerbv_change_layer_order (index, index - 1);
+	      callbacks_update_layer_tree ();
+	      callbacks_select_row (index - 1);
+	      redraw_pixmap(screen.drawing_area, TRUE);	
+	}
+}
+               
+void
+callbacks_color_selector_ok_clicked (GtkWidget *widget, gpointer user_data) {
+	GtkColorSelectionDialog *cs = (GtkColorSelectionDialog *) screen.win.colorSelectionDialog;
+	GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
+	gint rowIndex = screen.win.colorSelectionIndex;
+	
+	screen.file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
+	gtk_color_selection_get_current_color (colorsel, screen.file[rowIndex]->color);
+	gtk_widget_destroy (screen.win.colorSelectionDialog);
+	screen.win.colorSelectionDialog = NULL;
+	callbacks_update_layer_tree ();
+      redraw_pixmap(screen.drawing_area, TRUE);
+}
+
+
+gboolean
+callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
+                                   gpointer user_data) {
+      GtkTreePath *path;
+      GtkTreeIter iter;
+      GtkTreeViewColumn *column;
+      gint x,y;
+      gint rowIndex, columnIndex;
+      
+      GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
+			((GtkTreeView *) screen.win.layerTree);
+      
+      if (gtk_tree_view_get_path_at_pos  ((GtkTreeView *) widget, event->x, event->y,
+      	&path, &column, &x, &y)) {
+	      if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, path)) {
+			gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &rowIndex, -1);
+			columnIndex = get_col_number_from_tree_view_column (column);
+			if ((columnIndex == 1) && (rowIndex <= screen.last_loaded)){
+				if (!screen.win.colorSelectionDialog) {
+					GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
+					GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
+					
+					screen.win.colorSelectionDialog = (GtkWidget *) cs;
+					screen.win.colorSelectionIndex = rowIndex;
+					gtk_color_selection_set_current_color (colorsel,
+						screen.file[rowIndex]->color);
+		#ifndef RENDER_USING_GDK
+					gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
+					gtk_color_selection_set_current_alpha (colorsel, screen.file[rowIndex]->alpha);
+		#endif
+					gtk_widget_show((GtkWidget *)cs);
+					g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
+						G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);
+					g_signal_connect (G_OBJECT(cs->cancel_button),"clicked",
+						G_CALLBACK (callbacks_color_selector_cancel_clicked), NULL);
+					/* stop signal propagation if the user clicked on the color swatch */
+					return TRUE;
+				}
+			}
+		}
+	}
+	return FALSE;
+}
+                            
+void
+callbacks_update_layer_tree (void) {
+	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
+			((GtkTreeView *) screen.win.layerTree);
+	gint idx;
+	GtkTreeIter iter;
+	GtkTreeSelection *selection;
+
+	if (gtk_tree_model_get_iter_first ((GtkTreeModel *)list_store, &iter)) {
+		while (gtk_list_store_remove (list_store, &iter)) {
+		}
+	}
+                                                         
+	for (idx = 0; idx < MAX_FILES; idx++) {
+		if (screen.file[idx] && screen.file[idx]->color) {
+			GdkPixbuf    *pixbuf;
+			guint32 color;
+			
+			unsigned char red, green, blue, alpha;
+			
+			red = (unsigned char) (screen.file[idx]->color->red * 255 / G_MAXUINT16) ;
+			green = (unsigned char) (screen.file[idx]->color->green * 255 / G_MAXUINT16) ;
+			blue = (unsigned char) (screen.file[idx]->color->blue *255 / G_MAXUINT16) ;
+			alpha = (unsigned char) (screen.file[idx]->alpha * 255 / G_MAXUINT16) ;
+			
+			color = (red )* (256*256*256) + (green ) * (256*256) + (blue )* (256) + (alpha );
+			pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);
+			gdk_pixbuf_fill (pixbuf, color);
+
+			gtk_list_store_append (list_store, &iter);
+			gtk_list_store_set (list_store, &iter,
+						0, idx,
+						1, screen.file[idx]->isVisible,
+						2, pixbuf,
+		                        3, screen.file[idx]->name,
+		                        -1);
+		      /* pixbuf has a refcount of 2 now, as the list store has added its own reference */
+		      g_object_unref(pixbuf);
+		}
+	}
+	
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(screen.win.layerTree));
+	
+	/* if no line is selected yet, select the first row (if it has data) */
+	if (!gtk_tree_selection_get_selected (selection, NULL, &iter)) {
+		if (gtk_tree_model_get_iter_first ((GtkTreeModel *)list_store, &iter)) {
+			gtk_tree_selection_select_iter (selection, &iter);
+		}
+	}
 }
 
 /* --------------------------------------------------------- */
@@ -926,7 +1142,7 @@ zoom_outline(GtkWidget *widget, GdkEventButton *event)
 	dy = y2-y1;
 
 	if ((dx < 4) && (dy < 4)) {
-		update_statusbar(&screen);
+		callbacks_update_statusbar();
 		goto zoom_outline_end;
 	}
 
@@ -1055,47 +1271,27 @@ draw_measure_distance(void)
 		GERB_MESSAGE("Failed to load font '%s'\n", setup.dist_fontname);
 	} 
 	else {
-		gchar string[65];
-		gint lbearing, rbearing, width, ascent, descent;
-		gint linefeed;	/* Pseudonym for inter line gap */
-
-		snprintf(string, sizeof(string),
-			 "[dist %7.1f, dX %7.1f, dY %7.1f] mils",
-			 COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
-
-		gdk_string_extents(font, string, &lbearing, &rbearing, &width,
-				   &ascent, &descent);
-		gdk_draw_string(screen.drawing_area->window, font, gc,
-				(x1+x2)/2-width/2, (y1+y2)/2, string);
-
-		linefeed = ascent+descent;
-		linefeed *= (double)1.2;
-
-		snprintf(string, sizeof(string),
-			 "[dist %7.2f, dX %7.2f, dY %7.2f] mm",
-			 COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
-
-		gdk_string_extents(font, string, &lbearing, &rbearing, &width,
-				   &ascent, &descent);
-		gdk_draw_string(screen.drawing_area->window, font, gc,
-				(x1+x2)/2 - width/2, (y1+y2)/2 + linefeed, string);
-
-		gdk_font_unref(font);
 #endif
 		/*
 		 * Update statusbar
 		 */
 		if (screen.unit == GERBV_MILS) {
 		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     " dist,dX,dY (%7.1f, %7.1f, %7.1f)mils",
+			     "Measured distance: %7.1f mils (%7.1f X, %7.1f Y)",
 			     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
 		} 
-		else /* unit is GERBV_MMS */ {
+		else if (screen.unit == GERBV_MMS) {
 		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     " dist,dX,dY (%7.2f, %7.2f, %7.2f)mm",
+			     "Measured distance: %7.1f mms (%7.1f X, %7.1f Y)",
 			     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
 		}
-		update_statusbar(&screen);
+		else {
+		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+			     "Measured distance: %3.4f inches (%3.4f X, %3.4f Y)",
+			     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
+			     COORD2MILS(dy) / 1000.0);
+		}
+		callbacks_update_statusbar();
 
 #if !defined (__MINGW32__)
 	}
@@ -1217,14 +1413,18 @@ callback_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *eve
 		Y = (screen.gerber_bbox.y2 - (y+screen.trans_y)/(double)screen.transf->scale);
 		if (screen.unit == GERBV_MILS) {
 		    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-			     "X,Y (%7.1f, %7.1f)mils",
+			     "(%7.1f, %7.1f)",
 			     COORD2MILS(X), COORD2MILS(Y));
-		} else /* unit is GERBV_MMS */ {
+		} else if (screen.unit == GERBV_MMS) {
 		    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-			     "X,Y (%7.2f, %7.2f)mm",
+			     "(%7.2f, %7.2f)",
 			     COORD2MMS(X), COORD2MMS(Y));
+		} else {
+		    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+			     "(%3.4f, %3.4f)",
+			     COORD2MILS(X) / 1000.0, COORD2MILS(Y) / 1000.0);
 		}
-		update_statusbar(&screen);
+		callbacks_update_statusbar();
 
 		switch (screen.state) {
 		case MOVE: {
@@ -1439,7 +1639,7 @@ callback_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 		screen.state = NORMAL;
 
 		screen.statusbar.diststr[0] = '\0';
-		update_statusbar(&screen);
+		callbacks_update_statusbar();
 
 		update_rect.x = 0, update_rect.y = 0;
 		update_rect.width =	widget->allocation.width;
@@ -1513,72 +1713,6 @@ callback_window_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 } /* scroll_event */
 
 
-
-void 
-swap_layers(GtkWidget *widget, gpointer data)
-{
-	gerbv_fileinfo_t *temp_file;
-	GtkStyle *s1, *s2;
-	GtkTooltipsData *td1, *td2;
-	int idx;
-
-	if (screen.file[screen.curr_index] == NULL) return;
-
-	if (data == 0) {
-		/* Moving Up */
-		if (screen.curr_index == 0) return;
-		if (screen.file[screen.curr_index - 1] == NULL) return;
-		idx = -1;
-	}
-	else { 
-		/* Moving Down */
-		if (screen.curr_index == MAX_FILES - 1) return;
-		if (screen.file[screen.curr_index + 1] == NULL) return;
-		idx = 1;
-	}
-
-	/* Swap file */
-	temp_file = screen.file[screen.curr_index];
-	screen.file[screen.curr_index] = screen.file[screen.curr_index + idx];
-	screen.file[screen.curr_index + idx] = temp_file;
-
-	/* Swap color on button */
-	s1 = gtk_widget_get_style(screen.layer_button[screen.curr_index]);
-	s2 = gtk_widget_get_style(screen.layer_button[screen.curr_index + idx]);
-	gtk_widget_set_style(screen.layer_button[screen.curr_index + idx], s1);
-	gtk_widget_set_style(screen.layer_button[screen.curr_index], s2);
-
-	/* Swap tooltips on button */
-	td1 = gtk_tooltips_data_get(screen.layer_button[screen.curr_index]);
-	td2 = gtk_tooltips_data_get(screen.layer_button[screen.curr_index + idx]);
-	gtk_tooltips_set_tip(td1->tooltips, td1->widget,
-			 screen.file[screen.curr_index]->name, NULL);
-	gtk_tooltips_set_tip(td2->tooltips, td2->widget,
-			 screen.file[screen.curr_index + idx]->name, NULL);
-
-
-	redraw_pixmap(screen.drawing_area, TRUE);
-    
-} /* swap_layers */
-
-
-void 
-invert_color(GtkWidget *widget, gpointer data)
-{
-	if (!screen.file[screen.curr_index])
-		return;
-
-	if (screen.file[screen.curr_index]->inverted)
-		screen.file[screen.curr_index]->inverted = 0;
-	else
-		screen.file[screen.curr_index]->inverted = 1;
-
-	redraw_pixmap(screen.drawing_area, TRUE);
-
-	return;
-} /* invert_color */
-
-
 /* ------------------------------------------------------------------ */
 /** Displays additional information in the statusbar.
     The Statusbar is divided into three sections:\n
@@ -1587,18 +1721,24 @@ invert_color(GtkWidget *widget, gpointer data)
     (right click on a graphically marked and also actively selected part)\n
     statusbar.msg for e.g. showing progress of actions*/
 void 
-update_statusbar(gerbv_screen_t *scr)
+callbacks_update_statusbar(void)
 {
-	char str[MAX_STATUSMSGLEN+1];
-
-	snprintf(str, MAX_STATUSMSGLEN, " %-*s|%-*s|%.*s",
-	     MAX_COORDLEN-1, scr->statusbar.coordstr,
-	     MAX_DISTLEN-1, scr->statusbar.diststr,
-	     MAX_ERRMSGLEN-1, scr->statusbar.msgstr);
-	if (scr->statusbar.msg != NULL) {
-		gtk_label_set_text(GTK_LABEL(scr->statusbar.msg), str);
+	if (screen.statusbar.coordstr != NULL) {
+		gtk_label_set_text(GTK_LABEL(screen.win.statusMessageLeft), screen.statusbar.coordstr);
 	}
-} /* update_statusbar */
+	if (screen.statusbar.diststr != NULL) {
+		gtk_label_set_text(GTK_LABEL(screen.win.statusMessageRight), screen.statusbar.diststr);
+	}
+}
+
+void
+callback_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
+	int activeRow = gtk_combo_box_get_active (widget);
+	
+	if (activeRow >= 0) {
+		screen.unit = activeRow;	
+	}
+}
 
 void
 callback_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data) {

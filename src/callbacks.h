@@ -151,7 +151,7 @@ void
 reload_files(GtkWidget *widget, gpointer data);
 
 void 
-update_statusbar(gerbv_screen_t *scr);
+callbacks_update_statusbar(void);
 
 void
 export_png_popup(GtkWidget *widget, gpointer data);
@@ -182,3 +182,27 @@ callbacks_handle_log_messages(const gchar *log_domain,
 
 void
 callback_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data);
+
+void
+callback_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data);
+
+void
+callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
+                                                        gchar *path,
+                                                        gpointer user_data);
+
+void
+callbacks_update_layer_tree (void);
+
+gboolean
+callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
+                                   gpointer user_data);
+
+void callbacks_add_layer_button_clicked  (GtkButton *button, gpointer   user_data);
+
+void callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data);
+
+void callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_data);
+
+void callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data);
+

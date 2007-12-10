@@ -301,6 +301,8 @@ void gerbv_revert_all_files (void) {
 }
 
 void gerbv_unload_layer (int index) {
+	gint i;
+	
 	free_gerb_image(screen.file[index]->image);  screen.file[index]->image = NULL;
 	g_free(screen.file[index]->color);
 	screen.file[index]->color = NULL;
@@ -308,17 +310,53 @@ void gerbv_unload_layer (int index) {
 	screen.file[index]->name = NULL;
 	g_free(screen.file[index]);
 	screen.file[index] = NULL;
+	
+	/* slide all later layers down to fill the empty slot */
+	for (i=index; i<MAX_FILES; i++) {
+		screen.file[i]=screen.file[i+1];
+	}
+	screen.last_loaded--;
 }
 
 void gerbv_unload_all_layers (void) {
-	int idx;
+	int index;
 
-	for (idx = 0; idx < MAX_FILES; idx++) {
-	    if (screen.file[idx] && screen.file[idx]->name) {
-	        gerbv_unload_layer (idx);
+	for (index = 0; index < MAX_FILES; index++) {
+	    if (screen.file[index] && screen.file[index]->name) {
+	        gerbv_unload_layer (index);
 	    }
 	}
 }
+
+void gerbv_change_layer_order (gint oldPosition, gint newPosition) {
+	gerbv_fileinfo_t *temp_file;
+	int index;
+
+	temp_file = screen.file[oldPosition];
+	
+	if (oldPosition < newPosition){
+		for (index=oldPosition; index<newPosition; index++) {
+			screen.file[index]=screen.file[index+1];
+		}
+	}
+	else {
+		for (index=oldPosition; index>newPosition; index--) {
+			screen.file[index]=screen.file[index-1];
+		}
+	}
+	screen.file[newPosition]=temp_file;
+}
+
+
+#ifndef RENDER_USING_GDK
+void gerbv_render_to_surface_and_destroy (cairo_surface_t *cSurface, gchar *filename) {
+      cairo_t *cairoTarget = cairo_create (cSurface);
+      render_project_to_cairo_target (cairoTarget);
+	cairo_surface_write_to_png (cSurface, filename);
+	cairo_destroy (cairoTarget);
+	cairo_surface_destroy (cSurface);
+}
+#endif
 
 #ifdef EXPORT_PNG
 void gerbv_export_to_png_file (int width, int height, gchar *filename) {
@@ -327,11 +365,7 @@ void gerbv_export_to_png_file (int width, int height, gchar *filename) {
 #else
 		cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
                                                          width, height);
-            cairo_t *cairoTarget = cairo_create (cSurface);
-            render_project_to_cairo_target (cairoTarget);
-		cairo_surface_write_to_png (cSurface, filename);
-		cairo_destroy (cairoTarget);
-		cairo_surface_destroy (cSurface);
+            gerbv_render_to_surface_and_destroy (cSurface, filename);
 #endif
 }
 #endif /* EXPORT_PNG */
@@ -339,32 +373,21 @@ void gerbv_export_to_png_file (int width, int height, gchar *filename) {
 void gerbv_export_to_pdf_file (gchar *filename) {
 #ifndef RENDER_USING_GDK
 		cairo_surface_t *cSurface = cairo_pdf_surface_create (filename, 828, 576);
-            cairo_t *cairoTarget = cairo_create (cSurface);
-            render_project_to_cairo_target (cairoTarget);
-		cairo_destroy (cairoTarget);
-		cairo_surface_destroy (cSurface);
+            gerbv_render_to_surface_and_destroy (cSurface, filename);
 #endif
 }
 
 void gerbv_export_to_postscript_file (gchar *filename) {
 #ifndef RENDER_USING_GDK
 		cairo_surface_t *cSurface = cairo_ps_surface_create (filename, 828, 576);
-            cairo_t *cairoTarget = cairo_create (cSurface);
-            render_project_to_cairo_target (cairoTarget);
-		cairo_surface_write_to_png (cSurface, filename);
-		cairo_destroy (cairoTarget);
-		cairo_surface_destroy (cSurface);
+            gerbv_render_to_surface_and_destroy (cSurface, filename);
 #endif
 }
 
 void gerbv_export_to_svg_file (gchar *filename) {
 #ifndef RENDER_USING_GDK
 		cairo_surface_t *cSurface = cairo_svg_surface_create (filename, 828, 576);
-            cairo_t *cairoTarget = cairo_create (cSurface);
-            render_project_to_cairo_target (cairoTarget);
-		cairo_surface_write_to_png (cSurface, filename);
-		cairo_destroy (cairoTarget);
-		cairo_surface_destroy (cSurface);
+            gerbv_render_to_surface_and_destroy (cSurface, filename);
 #endif
 }
 
@@ -427,26 +450,6 @@ si_func(GtkWidget *widget, gpointer data)
 
     return;
 }
-
-
-/* ------------------------------------------------------------------ */
-/* Unit function, sets unit for statusbar */
-void 
-unit_func(GtkWidget *widget, gpointer data)
-{
-
-    if ((gerbv_unit_t)data  == screen.unit)
-	return;
-    
-    screen.unit = (gerbv_unit_t)data;
-
-    /* Redraw the status bar */
-    update_statusbar(&screen);
-
-    return;
-} /* unit_func() */
-
-
 
 /* ------------------------------------------------------------------ */
 int

@@ -1,4 +1,10 @@
-2007-1209  Stuart Brorson (sdb@cloud9.net)
+2007-12-10  Julian Lamb
+	* src/gerbv.c,src/callbacks.c,others: Get basic layer management gui up
+	  and running. This includes visibility toggling, color picking, and basic
+	  row management using the buttons at the bottom. A popup menu will also
+	  be added when the user right clicks.
+
+2007-12-09  Stuart Brorson (sdb@cloud9.net)
 	* src/callbacks.c, src/drill.c, src/render.[hc],
 	src/gerb_image.[hc], src/gerb_stats.[hc]:  Added 
 	beginnings of statistics report for drill files.

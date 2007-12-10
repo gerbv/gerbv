@@ -274,7 +274,6 @@ pick_and_place_parse_file(gerb_file_t *fd)
 				pnpPartData.shape = PART_SHAPE_STD;
 			}
 			else {
-				g_warning ("unkn");
 				pnpPartData.length = 10.0;
 				pnpPartData.width = 10.0;
 				pnpPartData.shape = PART_SHAPE_UNKNOWN;
