@@ -670,9 +670,12 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) save_as, "activate",
 	                  G_CALLBACK (on_save_as_activate),
 	                  NULL);
+#ifdef EXPORT_PNG
 	g_signal_connect ((gpointer) png, "activate",
 	                  G_CALLBACK (on_png_activate),
 	                  NULL);
+#endif
+
 #ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) pdf, "activate",
 	                  G_CALLBACK (on_pdf_activate),
@@ -684,6 +687,7 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (on_postscript_activate),
 	                  NULL);
 #endif
+
 #ifdef HAVE_GTK_2_10
 	g_signal_connect ((gpointer) print, "activate",
 	                  G_CALLBACK (on_print_activate),

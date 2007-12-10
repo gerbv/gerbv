@@ -106,6 +106,7 @@ typedef struct {
     int scale;
 } gerbv_zoom_data_t;
 
+/* --------------------------------------------------------- */
 #ifndef RENDER_USING_GDK
 static cairo_t *
 callbacks_gdk_cairo_create (GdkDrawable *target)
@@ -147,6 +148,7 @@ callbacks_gdk_cairo_create (GdkDrawable *target)
 }
 #endif
 
+/* --------------------------------------------------------- */
 void
 on_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -161,6 +163,7 @@ on_new_activate                        (GtkMenuItem     *menuitem,
 }
 
 
+/* --------------------------------------------------------- */
 void
 on_open_project_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -190,6 +193,7 @@ on_open_project_activate               (GtkMenuItem     *menuitem,
 }
 
 
+/* --------------------------------------------------------- */
 void
 on_open_layer_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -224,7 +228,7 @@ on_open_layer_activate                 (GtkMenuItem     *menuitem,
 	return;
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_revert_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -232,7 +236,7 @@ on_revert_activate                     (GtkMenuItem     *menuitem,
 	gerbv_revert_all_files ();
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_save_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -245,7 +249,7 @@ on_save_activate                       (GtkMenuItem     *menuitem,
 	return;
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_save_as_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -273,7 +277,7 @@ on_save_as_activate                    (GtkMenuItem     *menuitem,
 	return;
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_postscript_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -302,6 +306,8 @@ on_postscript_activate                 (GtkMenuItem     *menuitem,
 }
 
 
+/* --------------------------------------------------------- */
+#ifdef EXPORT_PNG
 void
 on_png_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -329,8 +335,9 @@ on_png_activate                        (GtkMenuItem     *menuitem,
 	redraw_pixmap(screen.drawing_area, TRUE);
 	return;
 }
+#endif /* EXPORT_PNG */
 
-
+/* --------------------------------------------------------- */
 void
 on_pdf_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -358,7 +365,7 @@ on_pdf_activate                        (GtkMenuItem     *menuitem,
 	return;
 }
 
-
+/* --------------------------------------------------------- */
 void
 on_svg_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -386,6 +393,7 @@ on_svg_activate                        (GtkMenuItem     *menuitem,
 	return;
 }
 
+/* --------------------------------------------------------- */
 #ifdef HAVE_GTK_2_10
 static void
 callbacks_print_render_page (GtkPrintOperation *operation,
@@ -400,6 +408,7 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 	//cairo_destroy (cr);
 }
 
+/* --------------------------------------------------------- */
 void
 on_print_activate                      (GtkMenuItem     *menuitem,
                                         gpointer         user_data)

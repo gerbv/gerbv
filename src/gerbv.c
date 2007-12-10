@@ -320,6 +320,7 @@ void gerbv_unload_all_layers (void) {
 	}
 }
 
+#ifdef EXPORT_PNG
 void gerbv_export_to_png_file (int width, int height, gchar *filename) {
 #ifdef RENDER_USING_GDK
 		(void) png_export(screen.pixmap, filename);
@@ -333,6 +334,7 @@ void gerbv_export_to_png_file (int width, int height, gchar *filename) {
 		cairo_surface_destroy (cSurface);
 #endif
 }
+#endif /* EXPORT_PNG */
 
 void gerbv_export_to_pdf_file (gchar *filename) {
 #ifndef RENDER_USING_GDK
