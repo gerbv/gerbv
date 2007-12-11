@@ -824,7 +824,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkTreeSelection *selection;
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_BROWSE);
-	
+	gtk_tree_view_set_enable_search (GTK_TREE_VIEW (tree), FALSE);
 
 	/*
 	* Connect all events on drawing area 
