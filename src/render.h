@@ -44,6 +44,11 @@ gerb_stats_t *generate_drill_analysis(void);
   void render_project_to_cairo_target (cairo_t *cr);
 #endif
 
+gint
+redraw_pixmap(GtkWidget *widget, int restart);
+
+void
+autoscale(void);
 
 
 

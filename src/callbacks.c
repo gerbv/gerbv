@@ -944,8 +944,9 @@ callbacks_color_selector_ok_clicked (GtkWidget *widget, gpointer user_data) {
 	GtkColorSelectionDialog *cs = (GtkColorSelectionDialog *) screen.win.colorSelectionDialog;
 	GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
 	gint rowIndex = screen.win.colorSelectionIndex;
-	
+#ifndef RENDER_USING_GDK
 	screen.file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
+#endif
 	gtk_color_selection_get_current_color (colorsel, screen.file[rowIndex]->color);
 	gtk_widget_destroy (screen.win.colorSelectionDialog);
 	screen.win.colorSelectionDialog = NULL;
@@ -980,10 +981,10 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 					screen.win.colorSelectionIndex = rowIndex;
 					gtk_color_selection_set_current_color (colorsel,
 						screen.file[rowIndex]->color);
-		#ifndef RENDER_USING_GDK
+#ifndef RENDER_USING_GDK
 					gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
 					gtk_color_selection_set_current_alpha (colorsel, screen.file[rowIndex]->alpha);
-		#endif
+#endif
 					gtk_widget_show((GtkWidget *)cs);
 					g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
 						G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);

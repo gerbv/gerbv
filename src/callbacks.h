@@ -139,42 +139,6 @@ gboolean
 callback_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event);
 
 void
-cb_ok_project(GtkWidget *widget, gpointer data);
-
-void
-project_save_cb(GtkWidget *widget, gpointer data);
-
-void
-unload_file(GtkWidget *widget, gpointer data);
-
-void
-reload_files(GtkWidget *widget, gpointer data);
-
-void 
-callbacks_update_statusbar(void);
-
-void
-export_png_popup(GtkWidget *widget, gpointer data);
-
-void
-cb_ok_export_png(GtkWidget *widget, GtkFileSelection *fs);
-
-void
-cb_cancel_load_file(GtkWidget *widget, gpointer data);
-
-void
-load_file_popup(GtkWidget *widget, gpointer data);
-
-void 
-update_statusbar(gerbv_screen_t *scr);
-
-gint
-redraw_pixmap(GtkWidget *widget, int restart);
-
-void
-autoscale(void);
-
-void
 callbacks_handle_log_messages(const gchar *log_domain,
 		      GLogLevelFlags log_level,
 		      const gchar *message, 
@@ -190,6 +154,8 @@ void
 callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
                                                         gchar *path,
                                                         gpointer user_data);
+void 
+callbacks_update_statusbar(void);
 
 void
 callbacks_update_layer_tree (void);

@@ -390,13 +390,13 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	    snprintf(screen.statusbar.msgstr, MAX_STATUSMSGLEN,
 		     "%d %s...",
 		     i, screen.file[i]->basename);
-	    update_statusbar(&screen);
+	    callbacks_update_statusbar();
 
 	    /*
 	     * Fill up image with all the foreground color. Excess pixels
 	     * will be removed by clipmask.
 	     */
-	    gdk_gc_set_foreground(gc, screen.file[i]->color);
+	    gdk_gc_set_rgb_fg_color(gc, screen.file[i]->color);
 	    gdk_draw_rectangle(state.curr_pixmap, gc, TRUE, 0, 0, -1, -1);
 
 	    /*
@@ -423,7 +423,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
     }
 
     screen.statusbar.msgstr[0] = '\0';
-    update_statusbar(&screen);
+    callbacks_update_statusbar();
     /* Clean up */
     state.valid = 0;
     /* Free up pixmaps */
