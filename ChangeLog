@@ -3,6 +3,9 @@
 	  and running. This includes visibility toggling, color picking, and basic
 	  row management using the buttons at the bottom. A popup menu will also
 	  be added when the user right clicks.
+	* src/gerber.c: Fix polygon rendering bug (bug #1190809). This was due
+	  to the gerber parser not storing the correct polarity when closing
+	  a polygon.
 
 2007-12-09  Stuart Brorson (sdb@cloud9.net)
 	* src/callbacks.c, src/drill.c, src/render.[hc],

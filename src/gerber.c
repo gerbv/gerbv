@@ -320,11 +320,15 @@ parse_gerb(gerb_file_t *fd)
 		if (state->aperture_state == OFF &&
 		    state->interpolation != PAREA_START) {
 		    curr_net->interpolation = PAREA_END;
+		    curr_net->layer_polarity = state->layer_polarity;
+		    curr_net->unit = state->unit;
+			
 		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 		    if (curr_net->next == NULL)
 			GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 		    curr_net = curr_net->next;
 		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+
 
 		    curr_net->interpolation = PAREA_START;
 		    state->parea_start_node = curr_net;
