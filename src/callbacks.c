@@ -836,14 +836,20 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 	gint index;
 	
 	gtk_tree_model_get_iter_from_string ((GtkTreeModel *)list_store, &iter, path);
-	gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &index, -1);
+	
+	GtkTreePath *treePath = gtk_tree_path_new_from_string (path);
+	if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, treePath)) {
+	      gint *indeces;
+	      
+	      indeces = gtk_tree_path_get_indices (treePath);
+	      index = indeces[0];
+		if (screen.file[index]->isVisible)
+			 newVisibility = FALSE;
+		screen.file[index]->isVisible = newVisibility;
 
-	if (screen.file[index]->isVisible)
-		 newVisibility = FALSE;
-	screen.file[index]->isVisible = newVisibility;
-
-      callbacks_update_layer_tree ();
-      redraw_pixmap(screen.drawing_area, TRUE);
+	      callbacks_update_layer_tree ();
+	      redraw_pixmap(screen.drawing_area, TRUE);
+	}
 }
 
 gint
