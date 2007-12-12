@@ -137,7 +137,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *toolbutton_revert;
 	GtkWidget *toolbutton_save;
 	GtkWidget *separatortoolitem1;
-#ifdef HAVE_GTK_2_10
+#if GTK_CHECK_VERSION(2,10,0)
 	GtkWidget *print;
 	GtkWidget *toolbutton_print;
 	GtkWidget *separator2;
@@ -287,7 +287,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
 	gtk_widget_set_sensitive (separator1, FALSE);
 	
-#ifdef HAVE_GTK_2_10
+#if GTK_CHECK_VERSION(2,10,0)
 	print = gtk_image_menu_item_new_from_stock ("gtk-print", accel_group);
 	gtk_widget_show (print);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), print);
@@ -432,7 +432,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (separatortoolitem1);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem1);
 
-#ifdef HAVE_GTK_2_10
+#if GTK_CHECK_VERSION(2,10,0)
 	toolbutton_print = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-print");
 	gtk_widget_show (toolbutton_print);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_print);
@@ -688,7 +688,7 @@ interface_create_gui (int req_width, int req_height)
 	                  NULL);
 #endif
 
-#ifdef HAVE_GTK_2_10
+#if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) print, "activate",
 	                  G_CALLBACK (on_print_activate),
 	                  NULL);
@@ -746,7 +746,7 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) clear_messages_button, "clicked",
 	                  G_CALLBACK (callback_clear_messages_button_clicked),
 	                  NULL);
-#ifdef HAVE_GTK_2_10
+#if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) toolbutton_print, "clicked",
 	                  G_CALLBACK (on_print_activate),
 	                  NULL);

@@ -397,14 +397,14 @@ on_svg_activate                        (GtkMenuItem     *menuitem,
 }
 
 /* --------------------------------------------------------- */
-#ifdef HAVE_GTK_2_10
+#if GTK_CHECK_VERSION(2,10,0)
 static void
 callbacks_print_render_page (GtkPrintOperation *operation,
            GtkPrintContext   *context,
            gint               page_nr,
            gpointer           user_data)
 {
-	cairo_t *cr;
+	//cairo_t *cr;
 	
 	//cr = gtk_print_context_get_cairo_context (context);
 	//render_project_to_cairo_target (cr);
@@ -940,7 +940,6 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
 	if (index > 0) {
-		g_warning ("changing %d %d\n",index,index-1);
 		gerbv_change_layer_order (index, index - 1);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (index - 1);
