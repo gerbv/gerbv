@@ -300,7 +300,8 @@ redraw_pixmap(GtkWidget *widget, int restart)
     } else {
 	invalidate_redraw_state(&state);
     }
-    
+ 
+
     /* Check for useful data in saved state or initialise state */
     if (!state.valid) {
 	int width = 0, height = 0;
@@ -318,7 +319,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	memset(&state, 0, sizeof(state));
 	
 	state.files_loaded = file_loaded;
-	
+
 	/*
 	 * Pixmap size is always size of window, no
 	 * matter how the scale.
@@ -326,7 +327,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	gdk_window_get_size(widget->window, &width, &height);	
 	state.max_width = width;
 	state.max_height = height;
-	
+
 	/* 
 	 * Remove old pixmap, allocate a new one, draw the background.
 	 */
@@ -336,7 +337,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 				       state.max_height,  -1);
 	gdk_gc_set_foreground(gc, screen.background);
 	gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
-	
+#ifdef RENDER_USING_GDK	
 	/*
 	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
 	 */
@@ -346,7 +347,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	state.clipmask = gdk_pixmap_new(widget->window,
 					state.max_width,
 					state.max_height,  1);
-	
+#endif
 	state.valid = 1;
     }
 
@@ -359,7 +360,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
 	goto redraw_pixmap_end;
     }
 	  
-#ifdef RENDER_USING_GDK
+#ifdef RENDER_USING_GDK	
     dprintf("   .... Now try rendering the drawing using GDK .... \n");
     /*
      * Set superimposing function.
@@ -433,7 +434,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
     if (state.clipmask) {
 	gdk_pixmap_unref(state.clipmask);
     }
-    
+    gdk_gc_unref(gc);
 #else
     dprintf("    .... Now try rendering the drawing using cairo .... \n");
     cairo_t *cr;
@@ -516,9 +517,7 @@ redraw_pixmap(GtkWidget *widget, int restart)
     if (window) {
 	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
     }
-    
-    gdk_gc_unref(gc);
-    
+       
     dprintf("<---- leaving redraw_pixmap.\n");
     return retval;
 } /* redraw_pixmap */

@@ -84,6 +84,7 @@ typedef struct {
 	GtkWidget *statusMessageRight;
 	GtkWidget *statusUnitComboBox;
 	GtkWidget *layerTree;
+	gboolean treeIsUpdating;
 	GtkWidget *colorSelectionDialog;
 	gint colorSelectionIndex;
 	GtkWidget *project;

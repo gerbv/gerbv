@@ -1,3 +1,7 @@
+2007-12-11  Julian Lamb
+	* src/callbacks.c,src/interface,src/render.c: Get drag and drop working
+	  for layer sidebar. Fix memory leak for cairo rendering.
+
 2007-12-10  Julian Lamb
 	* src/gerbv.c,src/callbacks.c,others: Get basic layer management gui up
 	  and running. This includes visibility toggling, color picking, and basic

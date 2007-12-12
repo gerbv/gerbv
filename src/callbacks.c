@@ -892,13 +892,21 @@ callbacks_get_selected_row_index  (void) {
 	GtkTreeIter       iter;
 	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
 			((GtkTreeView *) screen.win.layerTree);
-	gint index=-1;
+	gint index=-1,i=0;
 	
 	/* This will only work in single or browse selection mode! */
 	selection = gtk_tree_view_get_selection((GtkTreeView *) screen.win.layerTree);
 	if (gtk_tree_selection_get_selected(selection, NULL, &iter)) {
-		gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &index, -1);
-		return index;
+		while (gtk_tree_model_iter_nth_child ((GtkTreeModel *)list_store,
+				&iter, NULL, i)){
+			if (gtk_tree_selection_iter_is_selected (selection, &iter)) {
+				return i;
+			}
+			i++;
+     		}	
+                                                         
+		//gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &index, -1);
+		//return index;
 	}
 	return index;
 }
@@ -932,13 +940,47 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
 	if (index > 0) {
+		g_warning ("changing %d %d\n",index,index-1);
 		gerbv_change_layer_order (index, index - 1);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (index - 1);
 	      redraw_pixmap(screen.drawing_area, TRUE);	
 	}
 }
-               
+
+void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
+                              GtkTreeIter  *oIter, gpointer      user_data) {
+	
+	if ((!screen.win.treeIsUpdating)&&(path != NULL)) {
+		gint *indeces=NULL,oldPosition,newPosition;
+	
+		indeces = gtk_tree_path_get_indices (path);
+		if (indeces) {
+			newPosition = indeces[0];
+			oldPosition = callbacks_get_selected_row_index ();
+			if (oldPosition < newPosition) {
+				newPosition--;
+			}
+			else {
+				oldPosition--;
+			}
+			gerbv_change_layer_order (oldPosition, newPosition);
+
+			redraw_pixmap(screen.drawing_area, TRUE);
+			
+			/* select the new line */
+			GtkTreeSelection *selection;
+			GtkTreeIter iter;
+			GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
+				((GtkTreeView *) screen.win.layerTree);
+			
+			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(screen.win.layerTree));
+			if (gtk_tree_model_get_iter ((GtkTreeModel *)list_store, &iter, path))
+				gtk_tree_selection_select_iter (selection, &iter);
+		}
+	}
+}
+
 void
 callbacks_color_selector_ok_clicked (GtkWidget *widget, gpointer user_data) {
 	GtkColorSelectionDialog *cs = (GtkColorSelectionDialog *) screen.win.colorSelectionDialog;
@@ -962,7 +1004,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
       GtkTreeIter iter;
       GtkTreeViewColumn *column;
       gint x,y;
-      gint rowIndex, columnIndex;
+      gint columnIndex;
       
       GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
 			((GtkTreeView *) screen.win.layerTree);
@@ -970,28 +1012,32 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
       if (gtk_tree_view_get_path_at_pos  ((GtkTreeView *) widget, event->x, event->y,
       	&path, &column, &x, &y)) {
 	      if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, path)) {
-			gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &rowIndex, -1);
-			columnIndex = get_col_number_from_tree_view_column (column);
-			if ((columnIndex == 1) && (rowIndex <= screen.last_loaded)){
-				if (!screen.win.colorSelectionDialog) {
-					GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
-					GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
-					
-					screen.win.colorSelectionDialog = (GtkWidget *) cs;
-					screen.win.colorSelectionIndex = rowIndex;
-					gtk_color_selection_set_current_color (colorsel,
-						screen.file[rowIndex]->color);
-#ifndef RENDER_USING_GDK
-					gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
-					gtk_color_selection_set_current_alpha (colorsel, screen.file[rowIndex]->alpha);
-#endif
-					gtk_widget_show((GtkWidget *)cs);
-					g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
-						G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);
-					g_signal_connect (G_OBJECT(cs->cancel_button),"clicked",
-						G_CALLBACK (callbacks_color_selector_cancel_clicked), NULL);
-					/* stop signal propagation if the user clicked on the color swatch */
-					return TRUE;
+	      	gint *indeces;
+	      	indeces = gtk_tree_path_get_indices (path);
+	      	if (indeces) {
+				//gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &rowIndex, -1);
+				columnIndex = get_col_number_from_tree_view_column (column);
+				if ((columnIndex == 1) && (indeces[0] <= screen.last_loaded)){
+					if (!screen.win.colorSelectionDialog) {
+						GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
+						GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
+						
+						screen.win.colorSelectionDialog = (GtkWidget *) cs;
+						screen.win.colorSelectionIndex = indeces[0];
+						gtk_color_selection_set_current_color (colorsel,
+							screen.file[indeces[0]]->color);
+	#ifndef RENDER_USING_GDK
+						gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
+						gtk_color_selection_set_current_alpha (colorsel, screen.file[indeces[0]]->alpha);
+	#endif
+						gtk_widget_show((GtkWidget *)cs);
+						g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
+							G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);
+						g_signal_connect (G_OBJECT(cs->cancel_button),"clicked",
+							G_CALLBACK (callbacks_color_selector_cancel_clicked), NULL);
+						/* stop signal propagation if the user clicked on the color swatch */
+						return TRUE;
+					}
 				}
 			}
 		}
@@ -1006,47 +1052,59 @@ callbacks_update_layer_tree (void) {
 	gint idx;
 	GtkTreeIter iter;
 	GtkTreeSelection *selection;
-
-	if (gtk_tree_model_get_iter_first ((GtkTreeModel *)list_store, &iter)) {
-		while (gtk_list_store_remove (list_store, &iter)) {
-		}
-	}
-                                                         
-	for (idx = 0; idx < MAX_FILES; idx++) {
-		if (screen.file[idx] && screen.file[idx]->color) {
-			GdkPixbuf    *pixbuf;
-			guint32 color;
-			
-			unsigned char red, green, blue, alpha;
-			
-			red = (unsigned char) (screen.file[idx]->color->red * 255 / G_MAXUINT16) ;
-			green = (unsigned char) (screen.file[idx]->color->green * 255 / G_MAXUINT16) ;
-			blue = (unsigned char) (screen.file[idx]->color->blue *255 / G_MAXUINT16) ;
-			alpha = (unsigned char) (screen.file[idx]->alpha * 255 / G_MAXUINT16) ;
-			
-			color = (red )* (256*256*256) + (green ) * (256*256) + (blue )* (256) + (alpha );
-			pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);
-			gdk_pixbuf_fill (pixbuf, color);
-
-			gtk_list_store_append (list_store, &iter);
-			gtk_list_store_set (list_store, &iter,
-						0, idx,
-						1, screen.file[idx]->isVisible,
-						2, pixbuf,
-		                        3, screen.file[idx]->name,
-		                        -1);
-		      /* pixbuf has a refcount of 2 now, as the list store has added its own reference */
-		      g_object_unref(pixbuf);
-		}
-	}
+	gint oldSelectedRow;
 	
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(screen.win.layerTree));
-	
-	/* if no line is selected yet, select the first row (if it has data) */
-	if (!gtk_tree_selection_get_selected (selection, NULL, &iter)) {
-		if (gtk_tree_model_get_iter_first ((GtkTreeModel *)list_store, &iter)) {
-			gtk_tree_selection_select_iter (selection, &iter);
+	if (!screen.win.treeIsUpdating) {
+		screen.win.treeIsUpdating = TRUE;
+		
+		oldSelectedRow = callbacks_get_selected_row_index();
+		if (oldSelectedRow < 0)
+			oldSelectedRow = 0;
+		gtk_list_store_clear (list_store);
+
+		for (idx = 0; idx < MAX_FILES; idx++) {
+			if (screen.file[idx]) {
+				GdkPixbuf    *pixbuf;
+				guint32 color;
+				
+				unsigned char red, green, blue, alpha;
+				
+				red = (unsigned char) (screen.file[idx]->color->red * 255 / G_MAXUINT16) ;
+				green = (unsigned char) (screen.file[idx]->color->green * 255 / G_MAXUINT16) ;
+				blue = (unsigned char) (screen.file[idx]->color->blue *255 / G_MAXUINT16) ;
+				alpha = (unsigned char) (screen.file[idx]->alpha * 255 / G_MAXUINT16) ;
+				
+				color = (red )* (256*256*256) + (green ) * (256*256) + (blue )* (256) + (alpha );
+				pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);
+				gdk_pixbuf_fill (pixbuf, color);
+
+				gtk_list_store_append (list_store, &iter);
+				
+				/* strip the filename to the base */
+				gchar *baseName = g_path_get_basename (screen.file[idx]->name);
+				gtk_list_store_set (list_store, &iter,
+							0, screen.file[idx]->isVisible,
+							1, pixbuf,
+			                        2, baseName,
+			                        -1);
+			      g_free (baseName);
+			      /* pixbuf has a refcount of 2 now, as the list store has added its own reference */
+			      g_object_unref(pixbuf);
+			}
 		}
+		
+		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(screen.win.layerTree));
+		
+		/* if no line is selected yet, select the first row (if it has data) */
+		/* or, select the line that was previously selected */
+		
+		if (!gtk_tree_selection_get_selected (selection, NULL, &iter)) {
+			if (gtk_tree_model_iter_nth_child ((GtkTreeModel *) list_store,
+							&iter, NULL, oldSelectedRow)) {
+				gtk_tree_selection_select_iter (selection, &iter);
+			}
+		}
+		screen.win.treeIsUpdating = FALSE;
 	}
 }
 
@@ -1380,8 +1438,8 @@ callback_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	}
 
 	return FALSE;
-    
-#else    
+
+#else
 	cairo_t *cr;
 
 	/* get a cairo_t */

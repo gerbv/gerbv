@@ -172,3 +172,6 @@ void callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   us
 
 void callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data);
 
+void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
+                              GtkTreeIter  *oIter, gpointer      user_data);
+                             

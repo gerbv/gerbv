@@ -780,9 +780,11 @@ interface_create_gui (int req_width, int req_height)
 	             
 	GtkListStore *list_store;
 
-	list_store = gtk_list_store_new (4,	G_TYPE_INT, G_TYPE_BOOLEAN,
+	list_store = gtk_list_store_new (3,	G_TYPE_BOOLEAN,
 		GDK_TYPE_PIXBUF, G_TYPE_STRING);
+		
 
+		
 	GtkWidget *tree;
 
 	tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (list_store));
@@ -792,7 +794,7 @@ interface_create_gui (int req_width, int req_height)
 	renderer = gtk_cell_renderer_toggle_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Visible",
 	                                                renderer,
-	                                                "active", 1,
+	                                                "active", 0,
 	                                                NULL);
 	gtk_tree_view_column_set_min_width  ((GtkTreeViewColumn *)column,25);
 	gtk_signal_connect(GTK_OBJECT(renderer), "toggled",
@@ -803,29 +805,30 @@ interface_create_gui (int req_width, int req_height)
 	renderer = gtk_cell_renderer_pixbuf_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Color",
 	                                                renderer,
-	                                                "pixbuf", 2, NULL);
-	gtk_signal_connect(GTK_OBJECT(renderer), "activate",
-		       GTK_SIGNAL_FUNC(callbacks_layer_tree_visibility_button_toggled), NULL);
+	                                                "pixbuf", 1, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
 
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Name",
 	                                                renderer,
-	                                                "text", 3,
+	                                                "text", 2,
 	                                                NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
 
 	gtk_tree_view_set_headers_visible   ((GtkTreeView *)tree, FALSE);
 	gtk_signal_connect(GTK_OBJECT(tree), "button-press-event",
 		GTK_SIGNAL_FUNC(callbacks_layer_tree_button_press), NULL);
-	
 	gtk_container_add (GTK_CONTAINER (scrolledwindow1), tree);
 	
 	GtkTreeSelection *selection;
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_BROWSE);
 	gtk_tree_view_set_enable_search (GTK_TREE_VIEW (tree), FALSE);
+	gtk_tree_view_set_reorderable (GTK_TREE_VIEW (tree), TRUE);
 
+	g_signal_connect (G_OBJECT(list_store), "row-inserted",
+			  G_CALLBACK (callbacks_layer_tree_row_inserted), NULL);
+			  		
 	/*
 	* Connect all events on drawing area 
 	*/    
@@ -903,6 +906,7 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.statusMessageRight = statusbar_label_right;
 	screen.win.statusUnitComboBox = combobox2;
 	screen.win.layerTree = tree;
+	screen.win.treeIsUpdating = FALSE;
 	
 	rename_main_window("",mainWindow);
 	
