@@ -107,16 +107,6 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
-typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, 
-	      ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, 
-	      ZOOM_SET } gerbv_zoom_dir_t;
-
-typedef struct {
-    gerbv_zoom_dir_t z_dir;
-    GdkEventButton *z_event;
-    int scale;
-} gerbv_zoom_data_t;
-
 GdkColor defaultColors[MAX_FILES] = {
 	{0,115,115,222},
 	{0,255,127,115},
@@ -179,9 +169,7 @@ const char path_separator = '/';
 #endif
 
 void load_project(project_list_t *project_list);
-/* gint redraw_pixmap(GtkWidget *widget, int restart); */
 int open_image(char *filename, int idx, int reload);
-
 
 void gerbv_open_project_from_filename (gchar *filename) {
 	project_list_t *project_list = NULL;
@@ -200,7 +188,6 @@ void gerbv_open_project_from_filename (gchar *filename) {
 	    screen.project = g_strdup (filename);
 	    if (screen.project == NULL)
 		GERB_FATAL_ERROR("malloc screen.project failed\n");
-	    rename_main_window(filename, NULL);
 	} else {
 	    GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
 				 screen.last_loaded);
@@ -283,7 +270,6 @@ void gerbv_save_as_project_from_filename (gchar *filename) {
 	screen.project = g_strdup(filename);
 	if (screen.project == NULL)
 	    GERB_FATAL_ERROR("malloc screen.project failed\n");
-	rename_main_window(filename, NULL);
 	gerbv_save_project_from_filename (filename);
 }
 
@@ -296,8 +282,6 @@ void gerbv_revert_all_files (void) {
 		    return;
 	    }
 	}
-	/* Redraw screen */
-	redraw_pixmap(screen.drawing_area, TRUE);
 }
 
 void gerbv_unload_layer (int index) {
@@ -444,10 +428,6 @@ si_func(GtkWidget *widget, gpointer data)
 	return;
     
     screen.si_func = (GdkFunction)data;
-
-    /* Redraw the image(s) */
-    redraw_pixmap(screen.drawing_area, TRUE);
-
     return;
 }
 

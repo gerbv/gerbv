@@ -180,12 +180,14 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *Message_label;
 	GtkWidget *vbox2;
 	GtkWidget *main_view_table;
-	GtkWidget *hruler;
-	GtkWidget *vruler;
+	GtkWidget *hRuler;
+	GtkWidget *vRuler;
 	GtkWidget *hbox5;
 	GtkWidget *statusbar_label_left;
 	GtkWidget *combobox2;
 	GtkWidget *statusbar_label_right;
+	GtkWidget *drawingarea, *hAdjustment, *vAdjustment, *hScrollbar, *vScrollbar;
+	
 	GtkAccelGroup *accel_group;
 	GtkTooltips *tooltips;
 
@@ -607,24 +609,42 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (vbox2);
 	gtk_paned_pack2 (GTK_PANED (hpaned1), vbox2, TRUE, TRUE);
 
-	main_view_table = gtk_table_new (2, 2, FALSE);
+	main_view_table = gtk_table_new (3, 3, FALSE);
 	gtk_widget_show (main_view_table);
 	gtk_box_pack_start (GTK_BOX (vbox2), main_view_table, TRUE, TRUE, 0);
 
-	hruler = gtk_hruler_new ();
-	gtk_widget_show (hruler);
-	gtk_table_attach (GTK_TABLE (main_view_table), hruler, 1, 2, 0, 1,
+	hRuler = gtk_hruler_new ();
+	gtk_widget_show (hRuler);
+	gtk_table_attach (GTK_TABLE (main_view_table), hRuler, 1, 2, 0, 1,
 	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
 	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
-	gtk_ruler_set_range (GTK_RULER (hruler), 0, 10, 8.56051, 10);
+	gtk_ruler_set_range (GTK_RULER (hRuler), 0, 100, 8.56051, 10);
 
-	vruler = gtk_vruler_new ();
-	gtk_widget_show (vruler);
-	gtk_table_attach (GTK_TABLE (main_view_table), vruler, 0, 1, 1, 2,
+	vRuler = gtk_vruler_new ();
+	gtk_widget_show (vRuler);
+	gtk_table_attach (GTK_TABLE (main_view_table), vRuler, 0, 1, 1, 2,
 	                  (GtkAttachOptions) (GTK_FILL),
 	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
-	gtk_ruler_set_range (GTK_RULER (vruler), 0, 10, 8.37341, 10);
+	gtk_ruler_set_range (GTK_RULER (vRuler), 0, 100, 8.37341, 10);
 
+	drawingarea = gtk_drawing_area_new();
+	gtk_table_attach (GTK_TABLE (main_view_table), drawingarea, 1, 2, 1, 2,
+	                  (GtkAttachOptions) (GTK_FILL),
+	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+	
+	hAdjustment = (GtkWidget *) gtk_adjustment_new (0.0, -1000.0, 1000.0, 1000.0, 1000.0, 500.0);
+	vAdjustment = (GtkWidget *) gtk_adjustment_new (0.0, -1000.0, 1000.0, 1000.0, 1000.0, 500.0);
+	
+	hScrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (hAdjustment));
+	gtk_table_attach (GTK_TABLE (main_view_table), hScrollbar, 1, 2, 2, 3,
+	                  (GtkAttachOptions) (GTK_FILL),
+	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
+	                  
+	vScrollbar = gtk_vscrollbar_new (GTK_ADJUSTMENT (vAdjustment));
+	gtk_table_attach (GTK_TABLE (main_view_table), vScrollbar, 2, 3, 1, 2,
+	                  (GtkAttachOptions) (GTK_FILL),
+	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
+	
 	hbox5 = gtk_hbox_new (FALSE, 10);
 	gtk_widget_show (hbox5);
 	gtk_box_pack_start (GTK_BOX (vbox2), hbox5, FALSE, FALSE, 0);
@@ -653,106 +673,115 @@ interface_create_gui (int req_width, int req_height)
  *  Connect signals to widgets
  */
 	g_signal_connect ((gpointer) new, "activate",
-	                  G_CALLBACK (on_new_activate),
+	                  G_CALLBACK (callbacks_new_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) open_project, "activate",
-	                  G_CALLBACK (on_open_project_activate),
+	                  G_CALLBACK (callbacks_open_project_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) open_layer, "activate",
-	                  G_CALLBACK (on_open_layer_activate),
+	                  G_CALLBACK (callbacks_open_layer_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) revert, "activate",
-	                  G_CALLBACK (on_revert_activate),
+	                  G_CALLBACK (callbacks_revert_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) save, "activate",
-	                  G_CALLBACK (on_save_activate),
+	                  G_CALLBACK (callbacks_save_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) save_as, "activate",
-	                  G_CALLBACK (on_save_as_activate),
-	                  NULL);
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_AS);
 #ifdef EXPORT_PNG
 	g_signal_connect ((gpointer) png, "activate",
-	                  G_CALLBACK (on_png_activate),
-	                  NULL);
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                 (gpointer)  CALLBACKS_SAVE_FILE_PNG);
 #endif
 
 #ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) pdf, "activate",
-	                  G_CALLBACK (on_pdf_activate),
-	                  NULL);
+	                 G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_PDF);
 	g_signal_connect ((gpointer) svg, "activate",
-	                  G_CALLBACK (on_svg_activate),
-	                  NULL);
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_SVG);
 	g_signal_connect ((gpointer) postscript, "activate",
-	                  G_CALLBACK (on_postscript_activate),
-	                  NULL);
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_PS);
 #endif
 
 #if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) print, "activate",
-	                  G_CALLBACK (on_print_activate),
+	                  G_CALLBACK (callbacks_print_activate),
 	                  NULL);
 #endif
 	g_signal_connect ((gpointer) quit, "activate",
-	                  G_CALLBACK (on_quit_activate),
+	                  G_CALLBACK (callbacks_quit_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) zoom_in, "activate",
-	                  G_CALLBACK (on_zoom_in_activate),
+	                  G_CALLBACK (callbacks_zoom_in_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) zoom_out, "activate",
-	                  G_CALLBACK (on_zoom_out_activate),
+	                  G_CALLBACK (callbacks_zoom_out_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) fit_to_window, "activate",
-	                  G_CALLBACK (on_fit_to_window_activate),
+	                  G_CALLBACK (callbacks_fit_to_window_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) analyze_active_gerbers, "activate",
-	                  G_CALLBACK (on_analyze_active_gerbers_activate),
+	                  G_CALLBACK (callbacks_analyze_active_gerbers_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) analyze_active_drill, "activate",
-	                  G_CALLBACK (on_analyze_active_drill_activate),
+	                  G_CALLBACK (callbacks_analyze_active_drill_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) control_gerber_options, "activate",
-	                  G_CALLBACK (on_control_gerber_options_activate),
+	                  G_CALLBACK (callbacks_control_gerber_options_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) pointer_tool, "activate",
-	                  G_CALLBACK (on_pointer_tool_activate),
+	                  G_CALLBACK (callbacks_pointer_tool_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) zoom_tool, "activate",
-	                  G_CALLBACK (on_zoom_tool_activate),
+	                  G_CALLBACK (callbacks_zoom_tool_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) measure_tool, "activate",
-	                  G_CALLBACK (on_measure_tool_activate),
+	                  G_CALLBACK (callbacks_measure_tool_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) online_manual, "activate",
-	                  G_CALLBACK (on_online_manual_activate),
+	                  G_CALLBACK (callbacks_online_manual_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) about, "activate",
-	                  G_CALLBACK (on_about_activate),
+	                  G_CALLBACK (callbacks_about_activate),
 	                  NULL);
 
 	/* End of Glade generated code */
 	g_signal_connect ((gpointer) toolbutton_new, "clicked",
-	                  G_CALLBACK (on_new_activate),
+	                  G_CALLBACK (callbacks_new_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_save, "clicked",
-	                  G_CALLBACK (on_save_activate),
+	                  G_CALLBACK (callbacks_save_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_open, "clicked",
-	                  G_CALLBACK (on_open_project_activate),
+	                  G_CALLBACK (callbacks_open_project_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_revert, "clicked",
-	                  G_CALLBACK (on_revert_activate),
+	                  G_CALLBACK (callbacks_revert_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) clear_messages_button, "clicked",
-	                  G_CALLBACK (callback_clear_messages_button_clicked),
+	                  G_CALLBACK (callbacks_clear_messages_button_clicked),
 	                  NULL);
 #if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) toolbutton_print, "clicked",
-	                  G_CALLBACK (on_print_activate),
+	                  G_CALLBACK (callbacks_print_activate),
 	                  NULL);
 #endif
+	g_signal_connect ((gpointer) toolbutton_zoom_in, "clicked",
+	                  G_CALLBACK (callbacks_zoom_in_activate),
+	                  NULL);
+	g_signal_connect ((gpointer) toolbutton_zoom_out, "clicked",
+	                  G_CALLBACK (callbacks_zoom_out_activate),
+	                  NULL);
+	g_signal_connect ((gpointer) toolbutton_zoom_fit, "clicked",
+	                  G_CALLBACK (callbacks_fit_to_window_activate),
+	                  NULL);                
 	g_signal_connect ((gpointer) combobox2, "changed",
-	                  G_CALLBACK (callback_statusbar_unit_combo_box_changed),
+	                  G_CALLBACK (callbacks_statusbar_unit_combo_box_changed),
 	                  NULL);
 	                  
 	g_signal_connect ((gpointer) button4, "clicked",
@@ -764,19 +793,18 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) button6, "clicked",
 	                  G_CALLBACK (callbacks_move_layer_up_clicked), NULL);
 
+	g_signal_connect ((gpointer) hAdjustment, "value-changed",
+	                  G_CALLBACK (callbacks_hadjustment_value_changed), NULL);
+	g_signal_connect ((gpointer) vAdjustment, "value-changed",
+	                  G_CALLBACK (callbacks_vadjustment_value_changed), NULL);
+
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 0);
 	   
-	GtkWidget *drawingarea;
 	gint width, height;
               
 	gtk_window_add_accel_group (GTK_WINDOW (mainWindow), accel_group);
 
-	drawingarea = gtk_drawing_area_new();
-	screen.drawing_area=drawingarea;
-	gtk_table_attach (GTK_TABLE (main_view_table), drawingarea, 1, 2, 1, 2,
-	                  (GtkAttachOptions) (GTK_FILL),
-	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
 	             
 	GtkListStore *list_store;
 
@@ -833,23 +861,23 @@ interface_create_gui (int req_width, int req_height)
 	* Connect all events on drawing area 
 	*/    
 	gtk_signal_connect(GTK_OBJECT(drawingarea), "expose_event",
-		       GTK_SIGNAL_FUNC(callback_drawingarea_expose_event), NULL);
+		       GTK_SIGNAL_FUNC(callbacks_drawingarea_expose_event), NULL);
 	gtk_signal_connect(GTK_OBJECT(drawingarea),"configure_event",
-		       GTK_SIGNAL_FUNC(callback_drawingarea_configure_event), NULL);
+		       GTK_SIGNAL_FUNC(callbacks_drawingarea_configure_event), NULL);
 	gtk_signal_connect(GTK_OBJECT(drawingarea), "motion_notify_event",
-		       GTK_SIGNAL_FUNC(callback_drawingarea_motion_notify_event), NULL);
+		       GTK_SIGNAL_FUNC(callbacks_drawingarea_motion_notify_event), NULL);
 	gtk_signal_connect(GTK_OBJECT(drawingarea), "button_press_event",
-		       GTK_SIGNAL_FUNC(callback_drawingarea_button_press_event), NULL);
+		       GTK_SIGNAL_FUNC(callbacks_drawingarea_button_press_event), NULL);
 	gtk_signal_connect(GTK_OBJECT(drawingarea), "button_release_event",
-		       GTK_SIGNAL_FUNC(callback_drawingarea_button_release_event), NULL);
+		       GTK_SIGNAL_FUNC(callbacks_drawingarea_button_release_event), NULL);
 	gtk_signal_connect_after(GTK_OBJECT(mainWindow), "key_press_event",
-		       GTK_SIGNAL_FUNC(callback_window_key_press_event), NULL);
+		       GTK_SIGNAL_FUNC(callbacks_window_key_press_event), NULL);
 	gtk_signal_connect_after(GTK_OBJECT(mainWindow), "key_release_event",
-		       GTK_SIGNAL_FUNC(callback_window_key_release_event), NULL);
+		       GTK_SIGNAL_FUNC(callbacks_window_key_release_event), NULL);
 	gtk_signal_connect_after(GTK_OBJECT(mainWindow), "scroll_event",
-		       GTK_SIGNAL_FUNC(callback_window_scroll_event), NULL);
+		       GTK_SIGNAL_FUNC(callbacks_window_scroll_event), NULL);
 	gtk_signal_connect_after(GTK_OBJECT(mainWindow), "delete_event",
-		       GTK_SIGNAL_FUNC(on_quit_activate), NULL);       
+		       GTK_SIGNAL_FUNC(callbacks_quit_activate), NULL);       
 	
 	gtk_widget_set_events(drawingarea, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
@@ -878,8 +906,11 @@ interface_create_gui (int req_width, int req_height)
 	screen.background = alloc_color(0, 0, 0, "white");
 	screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
 	screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
-
-
+	screen.drawing_area=drawingarea;
+	screen.win.hAdjustment = hAdjustment;
+	screen.win.vAdjustment = vAdjustment;
+	screen.win.hRuler = hRuler;
+	screen.win.vRuler = vRuler;	
 	/* 
 	* Good defaults according to Ales. Gives aspect ratio of 1.3333...
 	*/

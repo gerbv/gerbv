@@ -50,5 +50,17 @@ redraw_pixmap(GtkWidget *widget, int restart);
 void
 autoscale(void);
 
+void
+zoom(GtkWidget *widget, gpointer data);
+
+void
+zoom_outline(GtkWidget *widget, GdkEventButton *event);
+
+void
+draw_zoom_outline(gboolean centered);
+
+void
+draw_measure_distance(void);
+
 
 

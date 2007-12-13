@@ -100,13 +100,6 @@ void gerbv_export_to_postscript_file (gchar *filename);
 void gerbv_export_to_svg_file (gchar *filename);
 void gerbv_change_layer_order (gint oldPosition, gint newPosition);
 
-typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
-typedef struct {
-    gerbv_zoom_dir_t z_dir;
-    GdkEventButton *z_event;
-    int scale;
-} gerbv_zoom_data_t;
-
 /* --------------------------------------------------------- */
 #ifndef RENDER_USING_GDK
 static cairo_t *
@@ -151,7 +144,7 @@ callbacks_gdk_cairo_create (GdkDrawable *target)
 
 /* --------------------------------------------------------- */
 void
-on_new_activate                        (GtkMenuItem     *menuitem,
+callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	/* first, unload all files */
@@ -160,13 +153,13 @@ on_new_activate                        (GtkMenuItem     *menuitem,
 	    screen.project = NULL;
 	}
 	gerbv_unload_all_layers ();
-	on_save_as_activate (menuitem, user_data);
+	callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_FILE_AS);
 }
 
 
 /* --------------------------------------------------------- */
 void
-on_open_project_activate               (GtkMenuItem     *menuitem,
+callbacks_open_project_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gchar *filename=NULL;
@@ -197,7 +190,7 @@ on_open_project_activate               (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_open_layer_activate                 (GtkMenuItem     *menuitem,
+callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	GSList *filenames=NULL;
@@ -233,166 +226,78 @@ on_open_layer_activate                 (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_revert_activate                     (GtkMenuItem     *menuitem,
+callbacks_revert_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gerbv_revert_all_files ();
+	redraw_pixmap(screen.drawing_area, TRUE);
 }
 
 /* --------------------------------------------------------- */
 void
-on_save_activate                       (GtkMenuItem     *menuitem,
+callbacks_save_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	if (screen.project)
 		gerbv_save_project_from_filename (screen.project);
 	else
-		on_save_as_activate (menuitem, user_data);
+		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_FILE_AS);
 	redraw_pixmap(screen.drawing_area, TRUE);
 	return;
 }
 
 /* --------------------------------------------------------- */
 void
-on_save_as_activate                    (GtkMenuItem     *menuitem,
+callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gchar *filename=NULL;
-
+	gint processType = (gint) user_data;
+	gchar *windowTitle=NULL;
+	
+	if (processType == CALLBACKS_SAVE_FILE_AS)
+		windowTitle = g_strdup ("Save project as...");
+	else if (processType == CALLBACKS_SAVE_FILE_PS)
+		windowTitle = g_strdup ("Export PS file as...");
+	else if (processType == CALLBACKS_SAVE_FILE_PDF)
+		windowTitle = g_strdup ("Export PDF file as...");
+	else if (processType == CALLBACKS_SAVE_FILE_SVG)
+		windowTitle = g_strdup ("Export SVG file as...");
+	else if (processType == CALLBACKS_SAVE_FILE_PNG)
+		windowTitle = g_strdup ("Export PNG file as...");
+	
 	screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Save project as...",
-				     NULL,
+	gtk_file_chooser_dialog_new (windowTitle, NULL,
 				     GTK_FILE_CHOOSER_ACTION_SAVE,
 				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				     GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
 				     NULL);
-
-	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
-	}
-	gtk_widget_destroy (screen.win.gerber);
-
-	if (filename)
-		gerbv_save_as_project_from_filename (filename);
-
-	redraw_pixmap(screen.drawing_area, TRUE);
-	return;
-}
-
-/* --------------------------------------------------------- */
-void
-on_postscript_activate                 (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-	gchar *filename=NULL;
-
-	screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Save project as...", NULL,
-				     GTK_FILE_CHOOSER_ACTION_SAVE,
-				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-				     NULL);
-
-	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
-	}
+	g_free (windowTitle);
 	
-	if (filename) {
-		gerbv_export_to_postscript_file (filename);
+	gtk_widget_show (screen.win.gerber);
+	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
-	redraw_pixmap(screen.drawing_area, TRUE);
-	return;
-}
-
-
-/* --------------------------------------------------------- */
+	if (filename) {
+		if (processType == CALLBACKS_SAVE_FILE_AS) {
+			gerbv_save_as_project_from_filename (filename);
+			rename_main_window(filename, NULL);
+		}
+		else if (processType == CALLBACKS_SAVE_FILE_PS)
+			gerbv_export_to_postscript_file (filename);
+		else if (processType == CALLBACKS_SAVE_FILE_PDF)
+			gerbv_export_to_pdf_file (filename);
+		else if (processType == CALLBACKS_SAVE_FILE_SVG)
+			gerbv_export_to_svg_file (filename);
 #ifdef EXPORT_PNG
-void
-on_png_activate                        (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-	gchar *filename=NULL;
-
-	screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Save project as...", NULL,
-				     GTK_FILE_CHOOSER_ACTION_SAVE,
-				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-				     NULL);
-
-	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+		else if (processType == CALLBACKS_SAVE_FILE_PNG)
+			gerbv_export_to_png_file (screen.drawing_area->allocation.width,
+				screen.drawing_area->allocation.height, filename);
+#endif
+		redraw_pixmap(screen.drawing_area, TRUE);
 	}
-	
-	if (filename) {
-		gerbv_export_to_png_file (screen.drawing_area->allocation.width,
-			screen.drawing_area->allocation.height, filename);
-	}
-	gtk_widget_destroy (screen.win.gerber);
-
-	redraw_pixmap(screen.drawing_area, TRUE);
-	return;
-}
-#endif /* EXPORT_PNG */
-
-/* --------------------------------------------------------- */
-void
-on_pdf_activate                        (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-	gchar *filename=NULL;
-
-	screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Save project as...", NULL,
-				     GTK_FILE_CHOOSER_ACTION_SAVE,
-				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-				     NULL);
-
-	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
-	}
-	
-	if (filename) {
-		gerbv_export_to_pdf_file (filename);
-	}
-	gtk_widget_destroy (screen.win.gerber);
-
-	redraw_pixmap(screen.drawing_area, TRUE);
-	return;
-}
-
-/* --------------------------------------------------------- */
-void
-on_svg_activate                        (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-	gchar *filename=NULL;
-
-	screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Save project as...", NULL,
-				     GTK_FILE_CHOOSER_ACTION_SAVE,
-				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-				     NULL);
-
-	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
-	}
-	
-	if (filename) {
-		gerbv_export_to_svg_file (filename);
-	}
-	gtk_widget_destroy (screen.win.gerber);
-
-	redraw_pixmap(screen.drawing_area, TRUE);
 	return;
 }
 
@@ -413,7 +318,7 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 
 /* --------------------------------------------------------- */
 void
-on_print_activate                      (GtkMenuItem     *menuitem,
+callbacks_print_activate                      (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	GtkPrintOperation *print;
@@ -432,32 +337,39 @@ on_print_activate                      (GtkMenuItem     *menuitem,
 #endif
 
 void
-on_zoom_in_activate                    (GtkMenuItem     *menuitem,
+callbacks_zoom_in_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	gerbv_zoom_data_t z_data;
 
+	z_data.z_dir = ZOOM_IN;
+	zoom(NULL, &z_data);
 }
 
 
 void
-on_zoom_out_activate                   (GtkMenuItem     *menuitem,
+callbacks_zoom_out_activate                   (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+	gerbv_zoom_data_t z_data;
 
+	z_data.z_dir = ZOOM_OUT;
+	zoom(NULL, &z_data);
 }
 
 
 void
-on_fit_to_window_activate              (GtkMenuItem     *menuitem,
+callbacks_fit_to_window_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-
+	autoscale();
+	redraw_pixmap(screen.drawing_area, TRUE);
 }
 
 
 /* --------------------------------------------------------- */
 void
-on_analyze_active_gerbers_activate(GtkMenuItem *menuitem, 
+callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem, 
 				 gpointer user_data)
 {
     gerb_stats_t *stats_report;
@@ -593,7 +505,7 @@ on_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
+callbacks_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
     drill_stats_t *stats_report;
@@ -733,7 +645,7 @@ on_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_control_gerber_options_activate     (GtkMenuItem     *menuitem,
+callbacks_control_gerber_options_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -741,7 +653,7 @@ on_control_gerber_options_activate     (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_pointer_tool_activate               (GtkMenuItem     *menuitem,
+callbacks_pointer_tool_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -749,7 +661,7 @@ on_pointer_tool_activate               (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_zoom_tool_activate                  (GtkMenuItem     *menuitem,
+callbacks_zoom_tool_activate                  (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -757,7 +669,7 @@ on_zoom_tool_activate                  (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_measure_tool_activate               (GtkMenuItem     *menuitem,
+callbacks_measure_tool_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -765,7 +677,7 @@ on_measure_tool_activate               (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_online_manual_activate              (GtkMenuItem     *menuitem,
+callbacks_online_manual_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 
@@ -773,7 +685,7 @@ on_online_manual_activate              (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_quit_activate                       (GtkMenuItem     *menuitem,
+callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gerbv_unload_all_layers ();
@@ -793,7 +705,7 @@ on_quit_activate                       (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-on_about_activate                     (GtkMenuItem     *menuitem,
+callbacks_about_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	GtkWidget *aboutdialog1;
@@ -825,6 +737,61 @@ on_about_activate                     (GtkMenuItem     *menuitem,
 	gtk_widget_show_all(aboutdialog1);
 }
 
+gdouble callbacks_calculate_actual_distance (gdouble inputDimension) {
+	gdouble returnValue = 0.0;
+	
+	if (screen.unit == GERBV_MILS) {
+	    returnValue = COORD2MILS(inputDimension);
+	} else if (screen.unit == GERBV_MMS) {
+	    returnValue = COORD2MMS(inputDimension);
+	} else {
+	    returnValue = COORD2MILS(inputDimension)/1000;
+	}
+	return returnValue;
+}
+void callbacks_update_ruler_pointers (void) {
+	double xPosition, yPosition;
+
+	xPosition = screen.gerber_bbox.x1 + (screen.last_x + screen.trans_x)/(double)screen.transf->scale;
+	yPosition = screen.gerber_bbox.y2 + (screen.last_y - screen.trans_y)/(double)screen.transf->scale;
+
+	xPosition = callbacks_calculate_actual_distance (xPosition);
+	yPosition = callbacks_calculate_actual_distance (yPosition);
+	//g_object_set (G_OBJECT (screen.win.hRuler), "position", xPosition, NULL);
+	//g_object_set (G_OBJECT (screen.win.vRuler), "position", yPosition, NULL);
+}
+
+void callbacks_update_ruler_scales (void) {
+	double xStart, xEnd, yStart, yEnd;
+
+	xStart = screen.gerber_bbox.x1 + (screen.trans_x)/(double)screen.transf->scale;
+	xEnd = screen.gerber_bbox.x2 + (screen.trans_x)/(double)screen.transf->scale;
+	yStart = (screen.gerber_bbox.y1 + (screen.trans_y)/(double)screen.transf->scale);
+	yEnd = (screen.gerber_bbox.y2 + (screen.trans_y)/(double)screen.transf->scale);
+	
+	xStart = callbacks_calculate_actual_distance (xStart);
+	xEnd = callbacks_calculate_actual_distance (xEnd);
+	yStart = callbacks_calculate_actual_distance (yStart);
+	yEnd = callbacks_calculate_actual_distance (yEnd);
+	
+	//gtk_ruler_set_range (GTK_RULER (screen.win.hRuler), xStart, xEnd, 0, xEnd - xStart);
+	//gtk_ruler_set_range (GTK_RULER (screen.win.vRuler), yStart, yEnd, 0, yEnd - yStart);
+}
+
+void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment,
+			gpointer user_data){
+	gdouble newValue;
+	
+	newValue = gtk_adjustment_get_value (adjustment);
+}
+
+void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
+			gpointer user_data){
+	gdouble newValue;
+	
+	newValue = gtk_adjustment_get_value (adjustment);			
+}
+
 void
 callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
                                                         gchar *path,
@@ -853,7 +820,7 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 }
 
 gint
-get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
+callbacks_get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
 {
 	GList *cols;
 	gint   num;
@@ -874,14 +841,13 @@ callbacks_color_selector_cancel_clicked (GtkWidget *widget, gpointer user_data) 
 
 void
 callbacks_add_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
-	on_open_layer_activate (NULL, NULL);
+	callbacks_open_layer_activate (NULL, NULL);
 }
 
 void
 callbacks_select_row (gint rowIndex) {
 	GtkTreeSelection *selection;
 	GtkTreeIter       iter;
-	
 	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
 			((GtkTreeView *) screen.win.layerTree);
 
@@ -910,9 +876,6 @@ callbacks_get_selected_row_index  (void) {
 			}
 			i++;
      		}	
-                                                         
-		//gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &index, -1);
-		//return index;
 	}
 	return index;
 }
@@ -954,21 +917,20 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 }
 
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
-                              GtkTreeIter  *oIter, gpointer      user_data) {
-	
+                              GtkTreeIter  *oIter, gpointer user_data) {
+      gint *indeces=NULL,oldPosition,newPosition;
+      
 	if ((!screen.win.treeIsUpdating)&&(path != NULL)) {
-		gint *indeces=NULL,oldPosition,newPosition;
-	
 		indeces = gtk_tree_path_get_indices (path);
 		if (indeces) {
 			newPosition = indeces[0];
 			oldPosition = callbacks_get_selected_row_index ();
-			if (oldPosition < newPosition) {
+			/* compensate for the fact that the old row has already
+			   been removed */
+			if (oldPosition < newPosition)
 				newPosition--;
-			}
-			else {
+			else
 				oldPosition--;
-			}
 			gerbv_change_layer_order (oldPosition, newPosition);
 
 			redraw_pixmap(screen.drawing_area, TRUE);
@@ -1021,7 +983,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 	      	indeces = gtk_tree_path_get_indices (path);
 	      	if (indeces) {
 				//gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &rowIndex, -1);
-				columnIndex = get_col_number_from_tree_view_column (column);
+				columnIndex = callbacks_get_col_number_from_tree_view_column (column);
 				if ((columnIndex == 1) && (indeces[0] <= screen.last_loaded)){
 					if (!screen.win.colorSelectionDialog) {
 						GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
@@ -1031,10 +993,10 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 						screen.win.colorSelectionIndex = indeces[0];
 						gtk_color_selection_set_current_color (colorsel,
 							screen.file[indeces[0]]->color);
-	#ifndef RENDER_USING_GDK
+#ifndef RENDER_USING_GDK
 						gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
 						gtk_color_selection_set_current_alpha (colorsel, screen.file[indeces[0]]->alpha);
-	#endif
+#endif
 						gtk_widget_show((GtkWidget *)cs);
 						g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
 							G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);
@@ -1049,7 +1011,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 	}
 	return FALSE;
 }
-                            
+
 void
 callbacks_update_layer_tree (void) {
 	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
@@ -1113,265 +1075,16 @@ callbacks_update_layer_tree (void) {
 	}
 }
 
-/* --------------------------------------------------------- */
-/* Zoom function */
-void
-zoom(GtkWidget *widget, gpointer data)
-{
-	double us_midx, us_midy;	/* unscaled translation for screen center */
-	int half_w, half_h;		/* cache for half window dimensions */
-	int mouse_delta_x = 0;	/* Delta for mouse to window center */
-	int mouse_delta_y = 0;
-	gerbv_zoom_data_t *z_data = (gerbv_zoom_data_t *) data;
-
-	half_w = screen.drawing_area->allocation.width / 2;
-	half_h = screen.drawing_area->allocation.height / 2;
-
-	if (z_data->z_dir == ZOOM_IN_CMOUSE ||
-		z_data->z_dir == ZOOM_OUT_CMOUSE) {
-		mouse_delta_x = half_w - z_data->z_event->x;
-		mouse_delta_y = half_h - z_data->z_event->y;
-		screen.trans_x -= mouse_delta_x;
-		screen.trans_y -= mouse_delta_y;
-	}
-
-	us_midx = (screen.trans_x + half_w)/(double) screen.transf->scale;
-	us_midy = (screen.trans_y + half_h)/(double) screen.transf->scale;
-
-	switch(z_data->z_dir) {
-		case ZOOM_IN : /* Zoom In */
-		case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
-		screen.transf->scale += screen.transf->scale/10;
-		screen.trans_x = screen.transf->scale * us_midx - half_w;
-		screen.trans_y = screen.transf->scale * us_midy - half_h;
-		break;
-		case ZOOM_OUT :  /* Zoom Out */
-		case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
-		if (screen.transf->scale > 10) {
-		    screen.transf->scale -= screen.transf->scale/10;
-		    screen.trans_x = screen.transf->scale * us_midx - half_w;
-		    screen.trans_y = screen.transf->scale * us_midy - half_h;
-		}
-		break;
-		case ZOOM_FIT : /* Zoom Fit */
-		autoscale();
-		break;
-		case ZOOM_SET : /*explicit scale set by user */
-		screen.transf->scale = z_data->scale;
-		screen.trans_x = screen.transf->scale * us_midx - half_w;
-		screen.trans_y = screen.transf->scale * us_midy - half_h;
-		      break;
-		default :
-		GERB_MESSAGE("Illegal zoom direction %ld\n", (long int)data);
-	}
-
-	if (z_data->z_dir == ZOOM_IN_CMOUSE ||
-		z_data->z_dir == ZOOM_OUT_CMOUSE) {
-		screen.trans_x += mouse_delta_x;
-		screen.trans_y += mouse_delta_y;
-	}
-
-	/* Update clipping bbox */
-	screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
-	screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;    
-
-	/* Redraw screen */
-	redraw_pixmap(screen.drawing_area, TRUE);
-
-	return;
-} /* zoom */
-
-
-/* --------------------------------------------------------- */
-/** Will determine the outline of the zoomed regions.
- * In case region to be zoomed is too small (which correspondes
- * e.g. to a double click) it is interpreted as a right-click 
- * and will be used to identify a part from the CURRENT selection, 
- * which is drawn on screen*/
-void
-zoom_outline(GtkWidget *widget, GdkEventButton *event)
-{
-	int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
-	double us_x1, us_y1, us_x2, us_y2;
-	int half_w, half_h;		/* cache for half window dimensions */
-
-	half_w = screen.drawing_area->allocation.width / 2;
-	half_h = screen.drawing_area->allocation.height / 2;
-
-	x1 = MIN(screen.start_x, event->x);
-	y1 = MIN(screen.start_y, event->y);
-	x2 = MAX(screen.start_x, event->x);
-	y2 = MAX(screen.start_y, event->y);
-	dx = x2-x1;
-	dy = y2-y1;
-
-	if ((dx < 4) && (dy < 4)) {
-		callbacks_update_statusbar();
-		goto zoom_outline_end;
-	}
-
-	if (screen.centered_outline_zoom) {
-		/* Centered outline mode */
-		x1 = screen.start_x - dx;
-		y1 = screen.start_y - dy;
-		dx *= 2;
-		dy *= 2;
-	}
-
-	us_x1 = (screen.trans_x + x1)/(double) screen.transf->scale;
-	us_y1 = (screen.trans_y + y1)/(double) screen.transf->scale;
-	us_x2 = (screen.trans_x + x2)/(double) screen.transf->scale;
-	us_y2 = (screen.trans_y + y2)/(double) screen.transf->scale;
-
-	screen.transf->scale = MIN(screen.drawing_area->allocation.width/(double)(us_x2 - us_x1),
-			       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
-	screen.trans_x = screen.transf->scale * (us_x1 + (us_x2 - us_x1)/2) - half_w;
-	screen.trans_y = screen.transf->scale * (us_y1 + (us_y2 - us_y1)/2) - half_h;;
-	screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
-	screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
-
-zoom_outline_end:
-	/* Redraw screen */
-	redraw_pixmap(screen.drawing_area, TRUE);
-} /* zoom_outline */
-
-/* --------------------------------------------------------- */
-static void
-draw_zoom_outline(gboolean centered)
-{
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
-	gint x1, y1, x2, y2, dx, dy;
-
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.foreground = *screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
-
-	x1 = MIN(screen.start_x, screen.last_x);
-	y1 = MIN(screen.start_y, screen.last_y);
-	x2 = MAX(screen.start_x, screen.last_x);
-	y2 = MAX(screen.start_y, screen.last_y);
-	dx = x2-x1;
-	dy = y2-y1;
-
-	if (centered) {
-		/* Centered outline mode */
-		x1 = screen.start_x - dx;
-		y1 = screen.start_y - dy;
-		dx *= 2;
-		dy *= 2;
-		x2 = x1+dx;
-		y2 = y1+dy;
-	}
-
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
-	gdk_gc_unref(gc);
-
-	/* Draw actual zoom area in dashed lines */
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.foreground = *screen.dist_measure_color;
-	values.line_style = GDK_LINE_ON_OFF_DASH;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND | GDK_GC_LINE_STYLE;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				values_mask);
-
-	if ((dy == 0) || ((double)dx/dy > (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height)) {
-		dy = dx * (double)screen.drawing_area->allocation.height/screen.drawing_area->allocation.width;
-	} 
-	else {
-		dx = dy * (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height;
-	}
-
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, (x1+x2-dx)/2, (y1+y2-dy)/2, dx, dy);
-
-	gdk_gc_unref(gc);
-} /* draw_zoom_outline */
-
-
-/** Displays a measured distance graphically on screen and in statusbar.
-    activated when using SHIFT and mouse dragged to measure distances\n
-    under win32 graphical annotations are currently disabled (GTK 2.47)*/
-static void
-draw_measure_distance(void)
-{
-#if !defined (__MINGW32__) 
-
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
-	GdkFont *font;
-#endif   
-	gint x1, y1, x2, y2;
-	double delta, dx, dy;
-
-	if (screen.state != MEASURE)
-		return;
-#if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.foreground = *screen.dist_measure_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				values_mask);
-	font = gdk_font_load(setup.dist_fontname);
-#endif
-	x1 = MIN(screen.start_x, screen.last_x);
-	y1 = MIN(screen.start_y, screen.last_y);
-	x2 = MAX(screen.start_x, screen.last_x);
-	y2 = MAX(screen.start_y, screen.last_y);
-
-	dx = (x2 - x1)/(double) screen.transf->scale;
-	dy = (y2 - y1)/(double) screen.transf->scale;
-	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
-    
-#if !defined (__MINGW32__)
-	gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
-		  screen.start_y, screen.last_x, screen.last_y);
-	if (font == NULL) {
-		GERB_MESSAGE("Failed to load font '%s'\n", setup.dist_fontname);
-	} 
-	else {
-#endif
-		/*
-		 * Update statusbar
-		 */
-		if (screen.unit == GERBV_MILS) {
-		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     "Measured distance: %7.1f mils (%7.1f X, %7.1f Y)",
-			     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
-		} 
-		else if (screen.unit == GERBV_MMS) {
-		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     "Measured distance: %7.1f mms (%7.1f X, %7.1f Y)",
-			     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
-		}
-		else {
-		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     "Measured distance: %3.4f inches (%3.4f X, %3.4f Y)",
-			     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
-			     COORD2MILS(dy) / 1000.0);
-		}
-		callbacks_update_statusbar();
-
-#if !defined (__MINGW32__)
-	}
-	gdk_gc_unref(gc);
-#endif     
-} /* draw_measure_distance */
 
 gboolean
-callback_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event)
+callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event)
 {
 	return redraw_pixmap(widget, TRUE);
 }
 
 
 gboolean
-callback_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
+callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
 
 #ifdef RENDER_USING_GDK
@@ -1456,7 +1169,7 @@ callback_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 }
 
 gboolean
-callback_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
+callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 {
 	int x, y;
 	GdkModifierType state;
@@ -1546,12 +1259,12 @@ callback_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *eve
 		    break;
 		}
 	}
-
+	callbacks_update_ruler_pointers ();
 	return TRUE;
 } /* motion_notify_event */
 
 gboolean
-callback_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *event)
+callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
 	gerbv_zoom_data_t data;
 	gboolean do_zoom = FALSE;
@@ -1618,7 +1331,7 @@ callback_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *even
 
 
 gboolean
-callback_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *event)
+callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *event)
 { 
 	if (event->type == GDK_BUTTON_RELEASE) {
 		if (screen.state == MOVE) {
@@ -1645,7 +1358,7 @@ callback_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *ev
 
 
 gboolean
-callback_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
+callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
 	GdkCursor *cursor;
 	gerbv_zoom_data_t z_data;
@@ -1720,7 +1433,7 @@ callback_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 } /* key_press_event */
 
 gboolean
-callback_window_key_release_event (GtkWidget *widget, GdkEventKey *event)
+callbacks_window_key_release_event (GtkWidget *widget, GdkEventKey *event)
 {
 	switch (screen.state) {
 		case NORMAL:
@@ -1730,15 +1443,6 @@ callback_window_key_release_event (GtkWidget *widget, GdkEventKey *event)
 						  GERBV_DEF_CURSOR);
 			}
 			break;
-		case ALT_PRESSED:
-			if ((event->keyval == GDK_Alt_L) ||
-			     (event->keyval == GDK_Alt_R)) {
-			    if ((screen.selected_layer != -1) &&
-				(screen.selected_layer < MAX_FILES)){
-				//TOGGLE_BUTTON(screen.layer_button[screen.selected_layer]);
-			    }
-			    screen.state = NORMAL;
-			}
 		default:
 			break;
 	}
@@ -1748,7 +1452,7 @@ callback_window_key_release_event (GtkWidget *widget, GdkEventKey *event)
 
 /* Scroll wheel */
 gboolean
-callback_window_scroll_event(GtkWidget *widget, GdkEventScroll *event)
+callbacks_window_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 {
 	gerbv_zoom_data_t data;
 
@@ -1796,7 +1500,7 @@ callbacks_update_statusbar(void)
 }
 
 void
-callback_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
+callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
 	int activeRow = gtk_combo_box_get_active (widget);
 	
 	if (activeRow >= 0) {
@@ -1805,7 +1509,7 @@ callback_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_da
 }
 
 void
-callback_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data) {
+callbacks_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data) {
 	GtkTextBuffer *textbuffer;
 	GtkTextIter start, end;
 
@@ -1816,10 +1520,8 @@ callback_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data
 }
                                                         
 void
-callbacks_handle_log_messages(const gchar *log_domain,
-		      GLogLevelFlags log_level,
-		      const gchar *message, 
-		      gpointer user_data) {
+callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
+		      const gchar *message, gpointer user_data) {
 	GtkTextBuffer *textbuffer = NULL;
 	GtkTextIter iter;
 	GtkTextTag *tag;
@@ -1898,7 +1600,7 @@ callbacks_handle_log_messages(const gchar *log_domain,
 	* Fatal aborts application. We will try to get the message out anyhow.
 	*/
 	if (log_level & G_LOG_FLAG_FATAL)
-	fprintf(stderr, "Fatal error : %s\n", message);
+		fprintf(stderr, "Fatal error : %s\n", message);
 
 	gtk_text_buffer_insert(textbuffer, &iter, message, -1);
 

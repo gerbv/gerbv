@@ -76,6 +76,255 @@
  */
 extern gerbv_screen_t screen;
 
+/* --------------------------------------------------------- */
+/* Zoom function */
+void
+zoom(GtkWidget *widget, gpointer data)
+{
+	double us_midx, us_midy;	/* unscaled translation for screen center */
+	int half_w, half_h;		/* cache for half window dimensions */
+	int mouse_delta_x = 0;	/* Delta for mouse to window center */
+	int mouse_delta_y = 0;
+	gerbv_zoom_data_t *z_data = (gerbv_zoom_data_t *) data;
+
+	half_w = screen.drawing_area->allocation.width / 2;
+	half_h = screen.drawing_area->allocation.height / 2;
+
+	if (z_data->z_dir == ZOOM_IN_CMOUSE ||
+		z_data->z_dir == ZOOM_OUT_CMOUSE) {
+		mouse_delta_x = half_w - z_data->z_event->x;
+		mouse_delta_y = half_h - z_data->z_event->y;
+		screen.trans_x -= mouse_delta_x;
+		screen.trans_y -= mouse_delta_y;
+	}
+
+	us_midx = (screen.trans_x + half_w)/(double) screen.transf->scale;
+	us_midy = (screen.trans_y + half_h)/(double) screen.transf->scale;
+
+	switch(z_data->z_dir) {
+		case ZOOM_IN : /* Zoom In */
+		case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
+		screen.transf->scale += screen.transf->scale/3;
+		screen.trans_x = screen.transf->scale * us_midx - half_w;
+		screen.trans_y = screen.transf->scale * us_midy - half_h;
+		break;
+		case ZOOM_OUT :  /* Zoom Out */
+		case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
+		if (screen.transf->scale > 10) {
+		    screen.transf->scale -= screen.transf->scale/3;
+		    screen.trans_x = screen.transf->scale * us_midx - half_w;
+		    screen.trans_y = screen.transf->scale * us_midy - half_h;
+		}
+		break;
+		case ZOOM_FIT : /* Zoom Fit */
+		autoscale();
+		break;
+		case ZOOM_SET : /*explicit scale set by user */
+		screen.transf->scale = z_data->scale;
+		screen.trans_x = screen.transf->scale * us_midx - half_w;
+		screen.trans_y = screen.transf->scale * us_midy - half_h;
+		      break;
+		default :
+		GERB_MESSAGE("Illegal zoom direction %ld\n", (long int)data);
+	}
+
+	if (z_data->z_dir == ZOOM_IN_CMOUSE ||
+		z_data->z_dir == ZOOM_OUT_CMOUSE) {
+		screen.trans_x += mouse_delta_x;
+		screen.trans_y += mouse_delta_y;
+	}
+
+	/* Update clipping bbox */
+	screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
+	screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;    
+
+	/* Redraw screen */
+	redraw_pixmap(screen.drawing_area, TRUE);
+
+	return;
+} /* zoom */
+
+
+/* --------------------------------------------------------- */
+/** Will determine the outline of the zoomed regions.
+ * In case region to be zoomed is too small (which correspondes
+ * e.g. to a double click) it is interpreted as a right-click 
+ * and will be used to identify a part from the CURRENT selection, 
+ * which is drawn on screen*/
+void
+zoom_outline(GtkWidget *widget, GdkEventButton *event)
+{
+	int x1, y1, x2, y2, dx, dy;	/* Zoom outline (UR and LL corners) */
+	double us_x1, us_y1, us_x2, us_y2;
+	int half_w, half_h;		/* cache for half window dimensions */
+
+	half_w = screen.drawing_area->allocation.width / 2;
+	half_h = screen.drawing_area->allocation.height / 2;
+
+	x1 = MIN(screen.start_x, event->x);
+	y1 = MIN(screen.start_y, event->y);
+	x2 = MAX(screen.start_x, event->x);
+	y2 = MAX(screen.start_y, event->y);
+	dx = x2-x1;
+	dy = y2-y1;
+
+	if ((dx < 4) && (dy < 4)) {
+		callbacks_update_statusbar();
+		goto zoom_outline_end;
+	}
+	if (screen.centered_outline_zoom) {
+		/* Centered outline mode */
+		x1 = screen.start_x - dx;
+		y1 = screen.start_y - dy;
+		dx *= 2;
+		dy *= 2;
+	}
+
+	us_x1 = (screen.trans_x + x1)/(double) screen.transf->scale;
+	us_y1 = (screen.trans_y + y1)/(double) screen.transf->scale;
+	us_x2 = (screen.trans_x + x2)/(double) screen.transf->scale;
+	us_y2 = (screen.trans_y + y2)/(double) screen.transf->scale;
+
+	screen.transf->scale = MIN(screen.drawing_area->allocation.width/(double)(us_x2 - us_x1),
+			       screen.drawing_area->allocation.height/(double)(us_y2 - us_y1));
+	screen.trans_x = screen.transf->scale * (us_x1 + (us_x2 - us_x1)/2) - half_w;
+	screen.trans_y = screen.transf->scale * (us_y1 + (us_y2 - us_y1)/2) - half_h;;
+	screen.clip_bbox.x1 = -screen.trans_x/(double)screen.transf->scale;
+	screen.clip_bbox.y1 = -screen.trans_y/(double)screen.transf->scale;
+
+zoom_outline_end:
+	/* Redraw screen */
+	redraw_pixmap(screen.drawing_area, TRUE);
+} /* zoom_outline */
+
+/* --------------------------------------------------------- */
+void
+draw_zoom_outline(gboolean centered)
+{
+	GdkGC *gc;
+	GdkGCValues values;
+	GdkGCValuesMask values_mask;
+	gint x1, y1, x2, y2, dx, dy;
+
+	memset(&values, 0, sizeof(values));
+	values.function = GDK_XOR;
+	values.foreground = *screen.zoom_outline_color;
+	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
+	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
+
+	x1 = MIN(screen.start_x, screen.last_x);
+	y1 = MIN(screen.start_y, screen.last_y);
+	x2 = MAX(screen.start_x, screen.last_x);
+	y2 = MAX(screen.start_y, screen.last_y);
+	dx = x2-x1;
+	dy = y2-y1;
+
+	if (centered) {
+		/* Centered outline mode */
+		x1 = screen.start_x - dx;
+		y1 = screen.start_y - dy;
+		dx *= 2;
+		dy *= 2;
+		x2 = x1+dx;
+		y2 = y1+dy;
+	}
+
+	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
+	gdk_gc_unref(gc);
+
+	/* Draw actual zoom area in dashed lines */
+	memset(&values, 0, sizeof(values));
+	values.function = GDK_XOR;
+	values.foreground = *screen.dist_measure_color;
+	values.line_style = GDK_LINE_ON_OFF_DASH;
+	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND | GDK_GC_LINE_STYLE;
+	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
+				values_mask);
+
+	if ((dy == 0) || ((double)dx/dy > (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height)) {
+		dy = dx * (double)screen.drawing_area->allocation.height/screen.drawing_area->allocation.width;
+	} 
+	else {
+		dx = dy * (double)screen.drawing_area->allocation.width/screen.drawing_area->allocation.height;
+	}
+
+	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, (x1+x2-dx)/2, (y1+y2-dy)/2, dx, dy);
+
+	gdk_gc_unref(gc);
+} /* draw_zoom_outline */
+
+
+/** Displays a measured distance graphically on screen and in statusbar.
+    activated when using SHIFT and mouse dragged to measure distances\n
+    under win32 graphical annotations are currently disabled (GTK 2.47)*/
+void
+draw_measure_distance(void)
+{
+#if !defined (__MINGW32__) 
+
+	GdkGC *gc;
+	GdkGCValues values;
+	GdkGCValuesMask values_mask;
+	GdkFont *font;
+#endif   
+	gint x1, y1, x2, y2;
+	double delta, dx, dy;
+
+	if (screen.state != MEASURE)
+		return;
+#if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
+	memset(&values, 0, sizeof(values));
+	values.function = GDK_XOR;
+	values.foreground = *screen.dist_measure_color;
+	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
+	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
+				values_mask);
+	font = gdk_font_load(setup.dist_fontname);
+#endif
+	x1 = MIN(screen.start_x, screen.last_x);
+	y1 = MIN(screen.start_y, screen.last_y);
+	x2 = MAX(screen.start_x, screen.last_x);
+	y2 = MAX(screen.start_y, screen.last_y);
+
+	dx = (x2 - x1)/(double) screen.transf->scale;
+	dy = (y2 - y1)/(double) screen.transf->scale;
+	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
+    
+#if !defined (__MINGW32__)
+	gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
+		  screen.start_y, screen.last_x, screen.last_y);
+	if (font == NULL) {
+		GERB_MESSAGE("Failed to load font '%s'\n", setup.dist_fontname);
+	} 
+	else {
+#endif
+		/*
+		 * Update statusbar
+		 */
+		if (screen.unit == GERBV_MILS) {
+		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+			     "Measured distance: %7.1f mils (%7.1f X, %7.1f Y)",
+			     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
+		} 
+		else if (screen.unit == GERBV_MMS) {
+		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+			     "Measured distance: %7.1f mms (%7.1f X, %7.1f Y)",
+			     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
+		}
+		else {
+		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+			     "Measured distance: %3.4f inches (%3.4f X, %3.4f Y)",
+			     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
+			     COORD2MILS(dy) / 1000.0);
+		}
+		callbacks_update_statusbar();
+
+#if !defined (__MINGW32__)
+	}
+	gdk_gc_unref(gc);
+#endif     
+} /* draw_measure_distance */
+
 
 /* ------------------------------------------------------------------ */
 /* Invalidate state, free up pixmaps if necessary */

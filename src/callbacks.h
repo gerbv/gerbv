@@ -21,122 +21,113 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+enum {
+	CALLBACKS_SAVE_FILE_AS,
+	CALLBACKS_SAVE_FILE_PS,
+	CALLBACKS_SAVE_FILE_PDF,
+	CALLBACKS_SAVE_FILE_SVG,
+	CALLBACKS_SAVE_FILE_PNG
+} CALLBACKS_SAVE_FILE_TYPE;
 
 void
-on_new_activate                        (GtkMenuItem     *menuitem,
+callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_open_project_activate               (GtkMenuItem     *menuitem,
+callbacks_open_project_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_open_layer_activate                 (GtkMenuItem     *menuitem,
+callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_revert_activate                     (GtkMenuItem     *menuitem,
+callbacks_revert_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_save_activate                       (GtkMenuItem     *menuitem,
+callbacks_save_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_save_as_activate                    (GtkMenuItem     *menuitem,
+callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_postscript_activate                 (GtkMenuItem     *menuitem,
+callbacks_print_activate                      (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_png_activate                        (GtkMenuItem     *menuitem,
+callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_pdf_activate                        (GtkMenuItem     *menuitem,
+callbacks_zoom_in_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_svg_activate                        (GtkMenuItem     *menuitem,
+callbacks_zoom_out_activate                   (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_print_activate                      (GtkMenuItem     *menuitem,
+callbacks_fit_to_window_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_quit_activate                       (GtkMenuItem     *menuitem,
+callbacks_analyze_active_gerbers_activate       (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_zoom_in_activate                    (GtkMenuItem     *menuitem,
+callbacks_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_zoom_out_activate                   (GtkMenuItem     *menuitem,
+callbacks_control_gerber_options_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_fit_to_window_activate              (GtkMenuItem     *menuitem,
+callbacks_pointer_tool_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_analyze_active_gerbers_activate       (GtkMenuItem     *menuitem,
+callbacks_zoom_tool_activate                  (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
+callbacks_measure_tool_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_control_gerber_options_activate     (GtkMenuItem     *menuitem,
+callbacks_online_manual_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-on_pointer_tool_activate               (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
-on_zoom_tool_activate                  (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
-on_measure_tool_activate               (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
-on_online_manual_activate              (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
-on_about_activate                      (GtkMenuItem     *menuitem,
+callbacks_about_activate                      (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 gboolean
-callback_window_scroll_event(GtkWidget *widget, GdkEventScroll *event);
+callbacks_window_scroll_event(GtkWidget *widget, GdkEventScroll *event);
 
 gboolean
-callback_window_key_release_event (GtkWidget *widget, GdkEventKey *event);
+callbacks_window_key_release_event (GtkWidget *widget, GdkEventKey *event);
 
 gboolean
-callback_window_key_press_event (GtkWidget *widget, GdkEventKey *event);
+callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event);
 
 gboolean
-callback_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *event);
+callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *event);
 
 gboolean
-callback_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *event);
+callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *event);
 
 gboolean
-callback_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event);
+callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event);
 
 gboolean
-callback_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event);
+callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event);
 
 gboolean
-callback_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event);
+callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event);
 
 void
 callbacks_handle_log_messages(const gchar *log_domain,
@@ -145,10 +136,10 @@ callbacks_handle_log_messages(const gchar *log_domain,
 		      gpointer user_data);
 
 void
-callback_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data);
+callbacks_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data);
 
 void
-callback_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data);
+callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data);
 
 void
 callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
@@ -174,4 +165,9 @@ void callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data);
 
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
                               GtkTreeIter  *oIter, gpointer      user_data);
-                             
+
+void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment,
+			gpointer user_data);
+
+void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
+			gpointer user_data);

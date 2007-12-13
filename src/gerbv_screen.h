@@ -87,6 +87,10 @@ typedef struct {
 	gboolean treeIsUpdating;
 	GtkWidget *colorSelectionDialog;
 	gint colorSelectionIndex;
+	GtkWidget *hAdjustment;
+	GtkWidget *vAdjustment;
+	GtkWidget *hRuler;
+	GtkWidget *vRuler;
 	GtkWidget *project;
 	GtkWidget *gerber;
 	GtkWidget *about_dialog;
@@ -134,6 +138,13 @@ typedef struct {
 
     int dump_parsed_image;
 } gerbv_screen_t;
+
+typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
+typedef struct {
+    gerbv_zoom_dir_t z_dir;
+    GdkEventButton *z_event;
+    int scale;
+} gerbv_zoom_data_t;
 
 extern gerbv_screen_t screen;
 

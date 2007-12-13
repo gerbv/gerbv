@@ -1,3 +1,12 @@
+2007-12-12  Julian Lamb
+	* src/gerbv.c: Fix half of bug #1443885 by eliminating segfault when
+	  project file has layer files that won't load.
+	* src/callbacks.[ch],src/interface.c,src/render.[ch]: Big
+	  cleanup of callbacks.c and start moving zoom code to render.c in
+	  preparation for separating out zoom info from screen struct (allowing
+	  for exporting to file and improving code readability). Add in scrollbars
+	  and start hooking up rulers and scrollbar to panning.
+
 2007-12-11  Julian Lamb
 	* src/callbacks.c,src/interface,src/render.c: Get drag and drop working
 	  for layer sidebar. Fix memory leak for cairo rendering.
