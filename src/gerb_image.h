@@ -39,9 +39,9 @@ extern "C" {
 	
 enum aperture_state_t {OFF, ON, FLASH};
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
-enum unit_t {INCH, MM};
+enum unit_t {INCH, MM, UNIT_UNSPECIFIED};
 enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
-enum omit_zeros_t {LEADING, TRAILING, EXPLICIT};
+enum omit_zeros_t {LEADING, TRAILING, EXPLICIT, ZEROS_UNSPECIFIED};
 enum coordinate_t {ABSOLUTE, INCREMENTAL};
 enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
 		      CW_CIRCULAR, CCW_CIRCULAR, PAREA_START, PAREA_END};

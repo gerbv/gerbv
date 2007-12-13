@@ -564,12 +564,6 @@ callbacks_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
 				      M_report_string, stats_report->M97);
     M_report_string = g_strdup_printf("%sM98 = %d\n", 
 				      M_report_string, stats_report->M98);
-    M_report_string = g_strdup_printf("%sMETR = %d\n", 
-				      M_report_string, stats_report->METR);
-    M_report_string = g_strdup_printf("%sMETI = %d\n", 
-				      M_report_string, stats_report->METI);
-    M_report_string = g_strdup_printf("%sMETC = %d\n", 
-				      M_report_string, stats_report->METC);
     M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
 				      M_report_string, stats_report->M_unknown);
 

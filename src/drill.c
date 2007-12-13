@@ -90,6 +90,11 @@ enum drill_g_code_t {DRILL_G_ABSOLUTE, DRILL_G_INCREMENTAL,
 		     DRILL_G_ROUT, DRILL_G_DRILL,
 		     DRILL_G_LINEARMOVE, DRILL_G_CWMOVE, DRILL_G_CCWMOVE};
 
+enum number_fmt_t {FMT_00_0000 /* INCH */,
+		   FMT_000_000 /* METRIC 6-digit, 1 um */,
+		   FMT_000_00  /* METRIC 5-digit, 10 um */,
+		   FMT_0000_00 /* METRIC 6-digit, 10 um */};
+
 typedef struct drill_state {
     double curr_x;
     double curr_y;
@@ -98,17 +103,25 @@ typedef struct drill_state {
     int coordinate_mode;
     double origin_x;
     double origin_y;
-    enum unit_t unit, header_unit;
+    enum unit_t unit;
+    /* number_format is used throughout the file itself.
+
+       header_number_format is used to parse the tool definition C
+       codes within the header.  It is fixed to FMT_00_0000 for INCH
+       measures, and FMT_000_000 (1 um resolution) for metric
+       measures. */
+    enum number_fmt_t number_format, header_number_format;
+    /* Used as a backup when temporarily switching to INCH. */
+    enum number_fmt_t backup_number_format;
 } drill_state_t;
 
 /* Local function prototypes */
-static enum unit_t drill_guess_format(gerb_file_t *fd, gerb_image_t *image);
 static int drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image);
-static int drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image);
+static int drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image);
 static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image);
-static void drill_parse_coordinate(gerb_file_t *fd, char firstchar, double scale_factor, drill_state_t *state);
+static void drill_parse_coordinate(gerb_file_t *fd, char firstchar, gerb_image_t *image, drill_state_t *state);
 static drill_state_t *new_state(drill_state_t *state);
-static double read_double(gerb_file_t *fd, double scale_factor);
+static double read_double(gerb_file_t *fd, enum number_fmt_t fmt, enum omit_zeros_t omit_zeros);
 static void eat_line(gerb_file_t *fd);
 
 gerb_image_t *
@@ -118,7 +131,6 @@ parse_drillfile(gerb_file_t *fd)
     gerb_image_t *image = NULL;
     gerb_net_t *curr_net = NULL;
     int read;
-    double x_scale = 1, y_scale = 1;
     drill_stats_t *stats;
 
     /* Create local state variable to track photoplotter state */
@@ -136,16 +148,20 @@ parse_drillfile(gerb_file_t *fd)
     image->stats = drill_stats_new();
     stats = image->stats;
 
-    /* Guess information about drill format & units */
-    state->unit = drill_guess_format(fd, image);
-    state->header_unit = state->unit;
+    state = new_state(state);
+    if (state == NULL)
+	GERB_FATAL_ERROR("malloc state failed\n");
+    dprintf("   ... in drill_guess_format, done creating state   ...\n");
+
+    image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
+    if (image->format == NULL)
+	GERB_FATAL_ERROR("malloc format failed\n");
+    memset((void *)image->format, 0, sizeof(gerb_format_t));
+    image->format->omit_zeros = ZEROS_UNSPECIFIED;
+    dprintf("   ... in drill_guess_format, done creating image->format   ...\n");
+
     dprintf ("%s:  drill_guess_format gave %s\n", __FUNCTION__, 
 	     state->unit == MM ? "mm" : "inch");
-
-    if (image && image->format ){
-	x_scale = pow(10.0, (double)image->format->x_dec);
-	y_scale = pow(10.0, (double)image->format->y_dec);
-    }
 
     while ((read = gerb_fgetc(fd)) != EOF) {
 
@@ -175,7 +191,7 @@ parse_drillfile(gerb_file_t *fd)
 	    case DRILL_G_ZEROSET :
 		if((read = gerb_fgetc(fd)) == EOF)
 		    GERB_COMPILE_ERROR("Unexpected EOF\n");
-		drill_parse_coordinate(fd, (char)read, 1.0 / x_scale, state);
+		drill_parse_coordinate(fd, (char)read, image, state);
 		state->origin_x = state->curr_x;
 		state->origin_y = state->curr_y;
 		break;
@@ -185,45 +201,97 @@ parse_drillfile(gerb_file_t *fd)
 	    }
 	    break;
        case 'I':
-           if (state->curr_section != DRILL_HEADER) break;
-           {int c = gerb_fgetc(fd);
-               switch (c) {
-               case 'N':
-                   if ('C' == gerb_fgetc(fd))
-                   if ('H' == gerb_fgetc(fd)) {
-                       eat_line(fd);
-                       state->header_unit = INCH;
-                   }
-                   break;
-               case 'C':
-                   if ('I' == gerb_fgetc(fd))
-                   if (',' == gerb_fgetc(fd))
-                   if ('O' == gerb_fgetc(fd)) {
-                       if ('N' == (c = gerb_fgetc(fd)))
-                           state->coordinate_mode = DRILL_MODE_INCREMENTAL;
-                       else if ('F' == c) if ('F' == gerb_fgetc(fd))
-                           state->coordinate_mode = DRILL_MODE_ABSOLUTE;
-                       eat_line(fd);
-                   }
-                   break;
-               }
-           }
-           eat_line(fd);
-           break;
+	   if (state->curr_section != DRILL_HEADER) break;
+	   {int c = gerb_fgetc(fd);
+	       switch (c) {
+	       case 'N':
+		   if ('C' == gerb_fgetc(fd))
+		   if ('H' == gerb_fgetc(fd)) {
+		       state->unit = INCH;
+		       /* Look for TZ/LZ */
+		       if (',' == gerb_fgetc(fd)) {
+			   c = gerb_fgetc(fd);
+			   if (c != EOF && 'Z' == gerb_fgetc(fd)) {
+			       switch (c) {
+			       case 'L':
+				   image->format->omit_zeros = TRAILING;
+				   state->header_number_format =
+				       state->number_format = FMT_00_0000;
+				   break;
+
+			       case 'T':
+				   image->format->omit_zeros = LEADING;
+				   state->header_number_format =
+				       state->number_format = FMT_00_0000;
+				   break;
+
+			       default:
+				   GERB_COMPILE_WARNING("Junk after INCH command\n");
+				   break;
+			       }
+			   } else {
+			       GERB_COMPILE_WARNING("Junk after INCH command\n");
+			   }
+		       }
+		   }
+		   break;
+	       case 'C':
+		   if ('I' == gerb_fgetc(fd))
+		   if (',' == gerb_fgetc(fd))
+		   if ('O' == gerb_fgetc(fd)) {
+		       if ('N' == (c = gerb_fgetc(fd)))
+			   state->coordinate_mode = DRILL_MODE_INCREMENTAL;
+		       else if ('F' == c) if ('F' == gerb_fgetc(fd))
+			   state->coordinate_mode = DRILL_MODE_ABSOLUTE;
+		   }
+		   break;
+	       }
+	       eat_line(fd);
+	   }
+	   break;
 
 	case 'M':
-	    switch(drill_parse_M_code(fd, image)) {
+	    switch(drill_parse_M_code(fd, state, image)) {
 	    case DRILL_M_HEADER :
 		state->curr_section = DRILL_HEADER;
 		break;
 	    case DRILL_M_ENDHEADER :
 		state->curr_section = DRILL_DATA;
+
+		if (image->format->omit_zeros == ZEROS_UNSPECIFIED) {
+		    /* Excellon says they default to specify leading
+		       zeros, i.e. omit trailing zeros.	 The Excellon
+		       files floating around that don't specify the
+		       leading/trailing zeros in the header seem to
+		       contradict to this though.
+
+		       XXX We should probably ask the user. */
+		    GERB_COMPILE_WARNING("End of Excellon header reached but no "
+					 "leading/trailing zero handling specified.\n"
+					 "Assume trailing zeros.\n");
+		    image->format->omit_zeros = LEADING;
+		}
 		break;
 	    case DRILL_M_METRIC :
-		/* This is taken care of elsewhere */
+		if (state->unit == UNIT_UNSPECIFIED &&
+		    state->curr_section != DRILL_HEADER) {
+		    GERB_COMPILE_WARNING("M71 code found but no METRIC specification in header.\n"
+					 "Recalculating tool sizes as mm.\n");
+		    int tool_num;
+		    for (tool_num = TOOL_MIN; tool_num < TOOL_MAX; tool_num++) {
+			if (image->aperture[tool_num])
+			    image->aperture[tool_num]->parameter[0] /= 25.4;
+		    }
+		}
+		state->number_format = state->backup_number_format;
+		state->unit = MM;
 		break;
 	    case DRILL_M_IMPERIAL :
-		/* This is taken care of elsewhere */
+		if (state->number_format != FMT_00_0000)
+		    /* save metric format definition for later */
+		    state->backup_number_format = state->number_format;
+		state->number_format = FMT_00_0000;
+		state->unit = INCH;
 		break;
 	    case DRILL_M_LONGMESSAGE :
 	    case DRILL_M_MESSAGE :
@@ -244,7 +312,7 @@ parse_drillfile(gerb_file_t *fd)
 		return image;
 		break;
 	    case DRILL_M_METRICHEADER :
-	      state->header_unit = MM;
+	      state->unit = MM;
 	      break;
 	    default:
 		GERB_COMPILE_ERROR("Strange M code found.\n");
@@ -261,7 +329,7 @@ parse_drillfile(gerb_file_t *fd)
 	case 'X':
 	case 'Y':
 	    /* Hole coordinate found. Do some parsing */
-	    drill_parse_coordinate(fd, read, 1.0 / x_scale, state);
+	    drill_parse_coordinate(fd, read, image, state);
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    if (curr_net->next == NULL)
@@ -337,166 +405,6 @@ parse_drillfile(gerb_file_t *fd)
 
     return image;
 } /* parse_drillfile */
-
-/* Guess the format of the input file.
-   Rewinds file when done */
-static enum unit_t
-drill_guess_format(gerb_file_t *fd, gerb_image_t *image)
-{
-    int inch_score = 0;
-    int metric_score = 0;
-    int length, max_length = 0;
-    int leading_zeros, max_leading_zeros = 0;
-    int trailing_zeros, max_trailing_zeros = 0;
-    int read;
-    drill_state_t *state = NULL;
-    int done = FALSE;
-    int i;
-    enum unit_t unit;
-
-    dprintf("----> Entering drill_guess_format ...\n");
-    dprintf("   ... %s: drill_guess_format(%p, %p)\n", 
-	                      __FUNCTION__, fd, image);
-
-    state = new_state(state);
-    if (state == NULL)
-	GERB_FATAL_ERROR("malloc state failed\n");
-    dprintf("   ... in drill_guess_format, done creating state   ...\n");
-
-    image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
-    if (image->format == NULL) 
-	GERB_FATAL_ERROR("malloc format failed\n");
-    memset((void *)image->format, 0, sizeof(gerb_format_t));
-    dprintf("   ... in drill_guess_format, done creating image->format   ...\n");
-
-    /* This is just a special case of the normal parser */
-    while ((read = gerb_fgetc(fd)) != EOF && !done) {
-	dprintf( "%s:  read = \'%c\'\n", __FUNCTION__, read);
-	switch ((char)read) {
-	case ';' :
-	case 'F' :
-	case 'G':
-	case 'S':
-	case 'T':
-	    eat_line(fd);
-	    break;
-	case 'M':
-	    switch(drill_parse_M_code(fd, image)) {
-	    case DRILL_M_METRIC :
-		metric_score += 10;
-		break;
-	    case DRILL_M_IMPERIAL :
-		inch_score += 10;
-		break;
-	    case DRILL_M_END :
-		done = TRUE;
-	    default:
-		break;
-	    }
-	    break;
-
-	case 'X':
-	case 'Y':
-	    /* How many leading zeros? */
-	    length = 0;
-	    leading_zeros = 0;
-	    trailing_zeros = 0;
-	    {
-		/* This state machine is a bit ugly, so it'll probably
-		   have to be rewritten sometime */
-		int local_state = 0;
-		while ((read = gerb_fgetc(fd)) != EOF &&
-		       (isdigit(read) || read == '+' || read == '-'
-			|| read == ',' || read == '.')) {
-		    if(read != '+' && read != '-' 
-		       && read != ',' && read != '.') length ++;
-		    switch (local_state) {
-		    case 0:
-			if(read == '0') {
-			    leading_zeros++;
-			} else {
-			    local_state++;
-			}
-			break;
-		    case 1:
-			if(read =='0') {
-			    trailing_zeros++;
-			}
-		    }
-		}
-	    }
-	    max_length = max(max_length, length);
-	    max_leading_zeros = max(max_leading_zeros, leading_zeros);
-	    max_trailing_zeros = max(max_trailing_zeros, trailing_zeros);
-	    break;
-
-	case '%':
-	    state->curr_section = DRILL_HEADER;
-	    break;
-	case 10 :   /* White space */
-	case 13 :
-	case ' ' :
-	case '\t' :
-	default:
-	    break;
-	}
-    }
-
-    /* Unfortunately, inches seem more common, so that's the default */
-    dprintf ("%s: metric_score = %d, inch_score = %d\n", __FUNCTION__,
-	     metric_score, inch_score);
-    if(metric_score > inch_score) {
-	unit = MM;
-    } else {
-	unit = INCH;
-    }
-
-    /* Knowing about trailing zero suppression is more important,
-       so it takes precedence here. */
-    if (max_trailing_zeros == 0) {
-	/* No trailing zero anywhere. It's probable they're suppressed */
-	image->format->omit_zeros = TRAILING;
-    } else if(max_leading_zeros == 0) {
-	/* No leading zero anywhere. It's probable they're suppressed */
-	image->format->omit_zeros = LEADING;
-    } else if (max_trailing_zeros >= max_leading_zeros ) {
-	image->format->omit_zeros = TRAILING;
-    } else {
- 	image->format->omit_zeros = LEADING;
-    }
-
-    /* Almost every file seems to use 2.x format (where x is 3-4) */
-    image->format->x_dec = max_length - 2;
-    image->format->y_dec = max_length - 2;
-
-    /* A bit of a kludge (Or maybe wild ass guess would be more correct.
-       It seems to work, though.) It tries to cover all cases I've
-       found where the format has to be adjusted from the above
-       calculation. */
-    if( (image->format->omit_zeros == LEADING ||
-	 (max_leading_zeros == 0 && max_trailing_zeros == 0) ) &&
-	image->format->x_dec <=3 && unit == INCH) {
-
-	image->format->x_dec += 1;
-	image->format->y_dec += 1;
-    }
-
-    /* Restore the necessary things back to their default state */
-    for (i = 0; i < APERTURE_MAX; i++) {
-	if (image->aperture[i] != NULL) {
-	    free(image->aperture[i]);
-	    image->aperture[i] = NULL;
-	}
-    }
-
-    free(state);
-    fd->ptr = 0;
-
-    dprintf("<---- .... Leaving drill_guess_format.\n");
-
-    return unit;
-}
-
 
 /*
  * Checks for signs that this is a drill file
@@ -586,11 +494,11 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	switch((char)temp) {
 	case 'C':
 
-	    size = read_double(fd, 1);
+	    size = read_double(fd, state->header_number_format, TRAILING);
 
 	    dprintf ("%s: Read a size of %g %s\n", __FUNCTION__, size,
-		     state->header_unit == MM ? "mm" : "inch");
-	    if(state->header_unit == MM) {
+		     state->unit == MM ? "mm" : "inch");
+	    if(state->unit == MM) {
 		size /= 25.4;
 	    } else if(size >= 4.0) {
 		/* If the drill size is >= 4 inches, assume that this
@@ -689,7 +597,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 
 static int
-drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
+drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
@@ -749,21 +657,96 @@ drill_parse_M_code(gerb_file_t *fd, gerb_image_t *image)
     } else if (strncmp(op, "98", 2) == 0) {
 	stats->M98++;
 	return DRILL_M_CANNEDTEXT;
-    } else if (strncmp(op, "ET", 2) == 0) {
-	if ('R' == gerb_fgetc(fd)) {
-	    eat_line(fd);
-	    stats->METR++;	    
-	    return DRILL_M_METRICHEADER;
-	} else if ('I' == gerb_fgetc(fd)) {
-	    eat_line(fd);
-	    stats->METI++;	    
-	    return DRILL_M_METRICHEADER;
-	} else if ('C' == gerb_fgetc(fd)) {
-	    eat_line(fd);
-	    stats->METC++;	    
+    } else if (state->curr_section == DRILL_HEADER &&
+	       strncmp(op, "ET", 2) == 0) {
+	/* METRIC is not an actual M code but a command that is only
+	   acceptable within the header.
+
+	   The syntax is
+	   METRIC[,{TZ|LZ}][,{000.000|000.00|0000.00}]
+	*/
+	if ('R' == gerb_fgetc(fd) &&
+	    'I' == gerb_fgetc(fd) &&
+	    'C' == gerb_fgetc(fd)) {
+	again:
+	    if (',' == gerb_fgetc(fd)) {
+		int c;
+
+		/* Is it tzlz, or zerofmt? */
+		switch ((c = gerb_fgetc(fd))) {
+		case 'T':
+		case 'L':
+		    if ('Z' != gerb_fgetc(fd))
+			goto junk;
+		    if (c == 'L')
+			image->format->omit_zeros = TRAILING;
+		    else
+			image->format->omit_zeros = LEADING;
+		    /* Default metric number format is 6-digit, 1 um
+		       resolution.  The header number format (for T#C#
+		       definitions) is fixed to that, while the number
+		       format within the file can differ. */
+		    state->header_number_format =
+			state->number_format = FMT_000_000;
+		    c = gerb_fgetc(fd);
+		    gerb_ungetc(fd);
+		    if (c == ',')
+			/* anticipate number format will follow */
+			goto again;
+		    break;
+
+		case '0':
+		    if ('0' != gerb_fgetc(fd) ||
+			'0' != gerb_fgetc(fd))
+			goto junk;
+		    /* We just parsed three 0s, the remainder options
+		       so far are: .000 | .00 | 0.00 */
+		    read[0] = gerb_fgetc(fd);
+		    read[1] = gerb_fgetc(fd);
+		    if (read[0] == EOF || read[1] == EOF)
+			goto junk;
+		    op[0] = read[0];
+		    op[1] = read[1];
+		    if (strcmp(op, "0.") == 0) {
+			/* expecting FMT_0000_00,
+			   two trailing 0s must follow */
+			if ('0' != gerb_fgetc(fd) ||
+			    '0' != gerb_fgetc(fd))
+			    goto junk;
+			eat_line(fd);
+			state->number_format = FMT_0000_00;
+			break;
+		    }
+		    if (strcmp(op, ".0") != 0)
+			goto junk;
+		    /* must be either FMT_000_000 or FMT_000_00, depending
+		       on whether one or two 0s are following */
+		    if ('0' != gerb_fgetc(fd))
+			goto junk;
+		    if ('0' == gerb_fgetc(fd))
+			state->number_format = FMT_000_000;
+		    else {
+			gerb_ungetc(fd);
+			state->number_format = FMT_000_00;
+		    }
+		    eat_line(fd);
+		    break;
+
+		default:
+		junk:
+		    GERB_COMPILE_WARNING("Junk after METRIC command\n");
+		    gerb_ungetc(fd);
+		    eat_line(fd);
+		    break;
+		}
+	    } else {
+		gerb_ungetc(fd);
+		eat_line(fd);
+	    }
+
 	    return DRILL_M_METRICHEADER;
 	}
-    } 
+    }
     stats->M_unknown++;
     return DRILL_M_UNKNOWN;
 
@@ -822,28 +805,28 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
    Returns nothing, but modifies state */
 static void
 drill_parse_coordinate(gerb_file_t *fd, char firstchar,
-		       double scale_factor, drill_state_t *state)
+		       gerb_image_t *image, drill_state_t *state)
 
 {
     char read;
 
     if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
 	if(firstchar == 'X') {
-	    state->curr_x = read_double(fd, scale_factor);
+	    state->curr_x = read_double(fd, state->number_format, image->format->omit_zeros);
 	    if((read = (char)gerb_fgetc(fd)) == 'Y') {
-		state->curr_y = read_double(fd, scale_factor);
+		state->curr_y = read_double(fd, state->number_format, image->format->omit_zeros);
 	    }
 	} else {
-	    state->curr_y = read_double(fd, scale_factor);
+	    state->curr_y = read_double(fd, state->number_format, image->format->omit_zeros);
 	}
     } else if(state->coordinate_mode == DRILL_MODE_INCREMENTAL) {
 	if(firstchar == 'X') {
-	    state->curr_x += read_double(fd, scale_factor);
+	    state->curr_x += read_double(fd, state->number_format, image->format->omit_zeros);
 	    if((read = (char)gerb_fgetc(fd)) == 'Y') {
-		state->curr_y += read_double(fd, scale_factor);
+		state->curr_y += read_double(fd, state->number_format, image->format->omit_zeros);
 	    }
 	} else {
-	    state->curr_y += read_double(fd, scale_factor);
+	    state->curr_y += read_double(fd, state->number_format, image->format->omit_zeros);
 	}
     }
 
@@ -863,22 +846,23 @@ new_state(drill_state_t *state)
 	state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 	state->origin_x = 0.0;
 	state->origin_y = 0.0;
-	state->unit = INCH;
-	state->header_unit = INCH;
+	state->unit = UNIT_UNSPECIFIED;
+	state->backup_number_format = FMT_000_000; /* only used for METRIC */
+	state->header_number_format = state->number_format = FMT_00_0000; /* i. e. INCH */
     }
     return state;
 } /* new_state */
 
 
 /* Reads one double from fd and returns it.
-   If a decimal point is found, the scale factor is not used. */
+   If a decimal point is found, fmt is not used. */
 static double
-read_double(gerb_file_t *fd, double scale_factor)
+read_double(gerb_file_t *fd, enum number_fmt_t fmt, enum omit_zeros_t omit_zeros)
 {
     int read;
     char temp[0x20];
-    int i = 0;
-    double result = 0;
+    int i = 0, ndigits = 0;
+    double result;
     int decimal_point = FALSE;
 
     memset(temp, 0, sizeof(temp));
@@ -889,13 +873,67 @@ read_double(gerb_file_t *fd, double scale_factor)
 	if(read == ',' || read == '.') decimal_point = TRUE;
 	if(read == ',')
 	    read = '.'; /* adjust for strtod() */
+	if(isdigit(read)) ndigits++;
 	temp[i++] = (char)read;
 	read = gerb_fgetc(fd);
     }
+    temp[i] = 0;
 
     gerb_ungetc(fd);
-    result = strtod(temp, NULL);
-    if(!decimal_point) result *= scale_factor;
+    if (decimal_point) {
+	result = strtod(temp, NULL);
+    } else {
+	int wantdigits;
+	double scale;
+
+	/* Nothing to take care for when leading zeros are
+	   omitted. */
+	if (omit_zeros == TRAILING) {
+	    switch (fmt) {
+	    case FMT_00_0000:
+	    case FMT_000_000:
+	    case FMT_0000_00:
+		wantdigits = 6;
+		break;
+
+	    case FMT_000_00:
+		wantdigits = 5;
+		break;
+
+	    default:
+		/* cannot happen, just plugs a compiler warning */
+		return 0;
+	    }
+
+	    /* fill missing trailing digits */
+	    while (ndigits < wantdigits) {
+		temp[i++] = '0';
+		ndigits++;
+	    }
+	    temp[i] = 0;
+	}
+
+	switch (fmt) {
+	case FMT_00_0000:
+	    scale = 1E-4;
+	    break;
+
+	case FMT_000_000:
+	    scale = 1E-3;
+	    break;
+
+	case FMT_000_00:
+	case FMT_0000_00:
+	    scale = 1E-2;
+	    break;
+
+	default:
+	    /* cannot happen, just plugs a compiler warning */
+	    return 0;
+	}
+
+	result = strtod(temp, NULL) * scale;
+    }
 
     return result;
 } /* read_double */

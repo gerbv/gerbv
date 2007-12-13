@@ -98,9 +98,6 @@ typedef struct {
     int M95;
     int M97;
     int M98;
-    int METR;
-    int METI;
-    int METC;
     int M_unknown;
 
     int unknown;
