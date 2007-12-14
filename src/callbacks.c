@@ -101,7 +101,7 @@ void gerbv_export_to_svg_file (gchar *filename);
 void gerbv_change_layer_order (gint oldPosition, gint newPosition);
 
 /* --------------------------------------------------------- */
-#ifndef RENDER_USING_GDK
+#if 0 //ndef RENDER_USING_GDK
 static cairo_t *
 callbacks_gdk_cairo_create (GdkDrawable *target)
 {
@@ -809,7 +809,11 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 		screen.file[index]->isVisible = newVisibility;
 
 	      callbacks_update_layer_tree ();
-	      redraw_pixmap(screen.drawing_area, TRUE);
+#ifdef RENDER_USING_GDK
+		redraw_pixmap(screen.drawing_area, TRUE);
+#else
+		render_recreate_composite_surface (screen.drawing_area);
+#endif 
 	}
 }
 
@@ -1069,10 +1073,33 @@ callbacks_update_layer_tree (void) {
 	}
 }
 
-
 gboolean
 callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event)
 {
+#ifndef RENDER_USING_GDK
+	
+	GdkDrawable *drawable = widget->window;
+	
+	int x_off=0, y_off=0;
+	GdkVisual *visual;
+	if (GDK_IS_WINDOW(widget->window)) {
+	      /* query the window's backbuffer if it has one */
+		GdkWindow *window = GDK_WINDOW(widget->window);
+	      gdk_window_get_internal_paint_info (window,
+	                                          &drawable, &x_off, &y_off);
+	}
+	visual = gdk_drawable_get_visual (drawable);
+	gdk_drawable_get_size (drawable, &screen.canvasWidth, &screen.canvasHeight);
+	if (!screen.windowSurface) {
+		screen.windowSurface = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
+	                                          GDK_DRAWABLE_XID (drawable),
+	                                          GDK_VISUAL_XVISUAL (visual),
+	                                          screen.canvasWidth, screen.canvasHeight);
+	}
+#endif
+	if (screen.transf->scale < 0.001) {
+		autoscale();
+	}
 	return redraw_pixmap(widget, TRUE);
 }
 
@@ -1080,7 +1107,6 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 gboolean
 callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
-
 #ifdef RENDER_USING_GDK
 
 	GdkPixmap *new_pixmap;
@@ -1123,18 +1149,6 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 		    event->area.x, event->area.y,
 		    event->area.x, event->area.y,
 		    event->area.width, event->area.height);
-#ifdef GERBV_DEBUG_OUTLINE
-	double dx, dy;
-
-	dx = screen.gerber_bbox.x2-screen.gerber_bbox.x1;
-	dy = screen.gerber_bbox.y2-screen.gerber_bbox.y1;
-	gdk_gc_set_foreground(gc, screen.dist_measure_color);
-	gdk_draw_rectangle(widget->window, gc, FALSE, 
-		       (screen.gerber_bbox.x1-1.1)*screen.scale - screen.trans_x,
-		       ((screen.gerber_bbox.y1-0.6)*screen.scale - screen.trans_y),
-		       dx*screen.scale,
-		       dy*screen.scale);
-#endif /* DEBUG_GERBV_OUTLINE */
 
 	gdk_pixmap_unref(new_pixmap);
 	gdk_gc_unref(gc);
@@ -1153,13 +1167,35 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 #else
 	cairo_t *cr;
+	int width, height;
+	cairo_surface_t *buffert;
+	int x_off=0, y_off=0;
+	GdkDrawable *drawable = widget->window;
+	GdkVisual *visual;
 
-	/* get a cairo_t */
-	cr = callbacks_gdk_cairo_create (widget->window);
+	if (GDK_IS_WINDOW(widget->window)) {
+	      /* query the window's backbuffer if it has one */
+		GdkWindow *window = GDK_WINDOW(widget->window);
+	      gdk_window_get_internal_paint_info (window,
+	                                          &drawable, &x_off, &y_off);
+	}
+	visual = gdk_drawable_get_visual (drawable);
+	gdk_drawable_get_size (drawable, &width, &height);
+
+	buffert = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
+	                                          GDK_DRAWABLE_XID (drawable),
+	                                          GDK_VISUAL_XVISUAL (visual),
+	                                          event->area.width, event->area.height);
+		       
+	cr = cairo_create (buffert);
+	cairo_translate (cr, -event->area.x - screen.off_x, -event->area.y - screen.off_y);
 	render_project_to_cairo_target (cr);
 	cairo_destroy (cr);
+	cairo_surface_destroy (buffert);
+        
 	return FALSE;
 #endif
+
 }
 
 gboolean
@@ -1177,7 +1213,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		state = event->state;
 	}
 
-	if (screen.pixmap != NULL) {
+	//if (screen.pixmap != NULL) {
 		double X, Y;
 
 		X = screen.gerber_bbox.x1 + (x+screen.trans_x)/(double)screen.transf->scale;
@@ -1224,8 +1260,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		    /*
 		     * Calls expose_event
 		     */
-		     gtk_widget_draw (widget, &update_rect);
-		    //gdk_window_invalidate_rect(widget->window, &widget->allocation,FALSE);
+		 gdk_window_invalidate_rect (widget->window, &update_rect, FALSE);
 
 		    break;
 		}
@@ -1252,7 +1287,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		default:
 		    break;
 		}
-	}
+	//}
 	callbacks_update_ruler_pointers ();
 	return TRUE;
 } /* motion_notify_event */
@@ -1419,8 +1454,7 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 		/*
 		 * Calls expose_event
 		 */
-		 gtk_widget_draw (widget, &update_rect);
-		//gdk_window_invalidate_rect(widget->window, &widget->allocation,FALSE);
+		gdk_window_invalidate_rect (widget->window, &update_rect, FALSE);
 	}
 
 	return TRUE;
@@ -1522,6 +1556,9 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 	GtkTextMark *StartMark = NULL, *StopMark = NULL;
 	GtkTextIter StartIter, StopIter;
 
+	if (!screen.win.messageTextView)
+		return;
+		
 	textbuffer = gtk_text_view_get_buffer((GtkTextView*)screen.win.messageTextView);
 
 	/* create a mark for the end of the text. */

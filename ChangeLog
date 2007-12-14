@@ -1,3 +1,10 @@
+2007-12-14  Julian Lamb
+	* render,callbacks: Fully separate GDK and cairo rendering code to help
+	  speed analization. Change from storing intermediate cairo patterns to
+	  xlib surfaces for speed improvement. Eliminate image compositing on
+	  each expose_event in order to make panning feel much quicker.
+	  Temporarily disable idle function to fix GDK memory leaks and crashes.
+	  
 2007-12-12  Julian Lamb
 	* src/gerbv.c: Fix half of bug #1443885 by eliminating segfault when
 	  project file has layer files that won't load.

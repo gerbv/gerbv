@@ -171,3 +171,5 @@ void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment,
 
 void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
 			gpointer user_data);
+cairo_surface_t *
+callbacks_create_window_surface (GtkWidget *widget);

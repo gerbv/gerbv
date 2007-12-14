@@ -367,7 +367,7 @@ start_idle_redraw_pixmap(GtkWidget *data)
 void
 stop_idle_redraw_pixmap(GtkWidget *data)
 {
-    if (!idle_redraw_pixmap_active) {
+    if (idle_redraw_pixmap_active) {
 	gtk_idle_remove_by_data ((gpointer)data);
 	idle_redraw_pixmap_active = FALSE;
     }
@@ -477,299 +477,280 @@ autoscale(void)
 gint
 redraw_pixmap(GtkWidget *widget, int restart)
 {
-    int i;
-    double dmax_x = LONG_MIN, dmax_y = LONG_MIN;
-    double dmin_x = LONG_MAX, dmin_y = LONG_MAX;
-    GdkGC *gc = gdk_gc_new(widget->window);
-    GdkRectangle update_rect;
-    int file_loaded = 0;
-    GdkWindow *window;
-    int retval = TRUE;
-    struct gerbv_redraw_state_t state;
+#ifdef RENDER_USING_GDK		
+	int i;
+	double dmax_x = LONG_MIN, dmax_y = LONG_MIN;
+	double dmin_x = LONG_MAX, dmin_y = LONG_MAX;
+	GdkGC *gc = gdk_gc_new(widget->window);
+	GdkRectangle update_rect;
+	int file_loaded = 0;
+	GdkWindow *window;
+	int retval = TRUE;
+	struct gerbv_redraw_state_t state;
 
-    /* Must initialize at least this value in state */
-    state.valid = 0;
+	/* Must initialize at least this value in state */
+	state.valid = 0;
 
-    dprintf("----> Entering redraw_pixmap...\n");
-    
-    window = gtk_widget_get_parent_window(widget);
-    /* This might be lengthy, show that we're busy by changing the pointer */
-    if (window) {
-	GdkCursor *cursor;
-	
-	cursor = gdk_cursor_new(GDK_WATCH);
-	gdk_window_set_cursor(window, cursor);
-	gdk_cursor_destroy(cursor);
-    }
-    
-    /* Stop the idle-function if we are not within an idle-call */
-   /* if (state.valid) {
+	dprintf("----> Entering redraw_pixmap...\n");
+
+	window = gtk_widget_get_parent_window(widget);
+	/* This might be lengthy, show that we're busy by changing the pointer */
+	if (window) {
+		GdkCursor *cursor;
+
+		cursor = gdk_cursor_new(GDK_WATCH);
+		gdk_window_set_cursor(window, cursor);
+		gdk_cursor_destroy(cursor);
+	}
+
+	/* Stop the idle-function if we are not within an idle-call */
+	/* if (state.valid) {
 	stop_idle_redraw_pixmap(widget);
-   } */
-    retval = FALSE;
-    
-    /* Called first when opening window and then when resizing window */
-    for(i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i]) {
-	    file_loaded++;
-	}
-    }
-    
-    /*
-     * Setup scale etc first time we load a file
-     */
-    if (file_loaded && screen.transf->scale < 0.001) {
-	autoscale();
-	invalidate_redraw_state(&state);
-    }
-    
-    /*
-     * Find the biggest image and use as a size reference
-     */
-    dmax_x = screen.gerber_bbox.x2;
-    dmax_y = screen.gerber_bbox.y2;
-    
-    /*
-     * Also find the smallest coordinates to see if we have negative
-     * ones that must be compensated for.
-     */
-    dmin_x = screen.gerber_bbox.x1;
-    dmin_y = screen.gerber_bbox.y1;
-    
-    /* Should we restart drawing, or try to load a saved state? */
-    if (!restart && state.valid) {
-	if (file_loaded != state.files_loaded) {
-	    invalidate_redraw_state(&state);
-	}
-	
-	if ((state.max_width != screen.drawing_area->allocation.width ||
-	     state.max_height != screen.drawing_area->allocation.height)) {
-	    invalidate_redraw_state(&state);
-	}
-    } else {
-	invalidate_redraw_state(&state);
-    }
- 
+	} */
+	retval = FALSE;
 
-    /* Check for useful data in saved state or initialise state */
-    if (!state.valid) {
-	int width = 0, height = 0;
-	
-	/*
-	 * Paranoia check; size in width or height is zero
-	 */
-	if (!file_loaded) {
-	    dprintf("   .... Oh, no!  No file found! .... \n");
-	    retval = FALSE;
-	    goto redraw_pixmap_end;
+	/* Called first when opening window and then when resizing window */
+	for(i = 0; i < MAX_FILES; i++) {
+		if (screen.file[i]) {
+		    file_loaded++;
+		}
 	}
-	
-	/* Clear state */
-	memset(&state, 0, sizeof(state));
-	
-	state.files_loaded = file_loaded;
 
 	/*
-	 * Pixmap size is always size of window, no
-	 * matter how the scale.
-	 */
-	gdk_window_get_size(widget->window, &width, &height);	
-	state.max_width = width;
-	state.max_height = height;
+	* Setup scale etc first time we load a file
+	*/
+	if (file_loaded && screen.transf->scale < 0.001) {
+		autoscale();
+		invalidate_redraw_state(&state);
+	}
+
+	/*
+	* Find the biggest image and use as a size reference
+	*/
+	dmax_x = screen.gerber_bbox.x2;
+	dmax_y = screen.gerber_bbox.y2;
+
+	/*
+	* Also find the smallest coordinates to see if we have negative
+	* ones that must be compensated for.
+	*/
+	dmin_x = screen.gerber_bbox.x1;
+	dmin_y = screen.gerber_bbox.y1;
+
+	/* Should we restart drawing, or try to load a saved state? */
+	if (!restart && state.valid) {
+		if (file_loaded != state.files_loaded) {
+			invalidate_redraw_state(&state);
+		}
+
+		if ((state.max_width != screen.drawing_area->allocation.width ||
+			state.max_height != screen.drawing_area->allocation.height)) {
+			invalidate_redraw_state(&state);
+		}
+	} else {
+		invalidate_redraw_state(&state);
+	}
+
+
+	/* Check for useful data in saved state or initialise state */
+	if (!state.valid) {
+		int width = 0, height = 0;
+
+		/*
+		 * Paranoia check; size in width or height is zero
+		 */
+		if (!file_loaded) {
+			dprintf("   .... Oh, no!  No file found! .... \n");
+			retval = FALSE;
+			goto redraw_pixmap_end;
+		}
+
+		/* Clear state */
+		memset(&state, 0, sizeof(state));
+
+		state.files_loaded = file_loaded;
+
+		/*
+		 * Pixmap size is always size of window, no
+		 * matter how the scale.
+		 */
+		gdk_window_get_size(widget->window, &width, &height);	
+		state.max_width = width;
+		state.max_height = height;
+
+		/* 
+		 * Remove old pixmap, allocate a new one, draw the background.
+		 */
+		if (screen.pixmap) 
+		    gdk_pixmap_unref(screen.pixmap);
+		screen.pixmap = gdk_pixmap_new(widget->window, state.max_width,
+					       state.max_height,  -1);
+		gdk_gc_set_foreground(gc, screen.background);
+		gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
+
+		/*
+		 * Allocate the pixmap and the clipmask (a one pixel pixmap)
+		 */
+		state.curr_pixmap = gdk_pixmap_new(widget->window,
+						   state.max_width,
+						   state.max_height,  -1);
+		state.clipmask = gdk_pixmap_new(widget->window,
+						state.max_width,
+						state.max_height,  1);
+		state.valid = 1;
+	}
+
+	if (g_main_pending()) {
+		/* return TRUE to keep this idle function active */
+		dprintf("   .... Oh, no!  Found pending event to process! .... \n");
+		//retval = TRUE;
+		//start_idle_redraw_pixmap(widget);
+		//state.file_index = i;
+		//goto redraw_pixmap_end;
+	}
+	  
+	dprintf("   .... Now try rendering the drawing using GDK .... \n");
+	/*
+	* Set superimposing function.
+	*/
+	gdk_gc_set_function(gc, screen.si_func);
 
 	/* 
-	 * Remove old pixmap, allocate a new one, draw the background.
-	 */
-	if (screen.pixmap) 
-	    gdk_pixmap_unref(screen.pixmap);
-	screen.pixmap = gdk_pixmap_new(widget->window, state.max_width,
-				       state.max_height,  -1);
-	gdk_gc_set_foreground(gc, screen.background);
-	gdk_draw_rectangle(screen.pixmap, gc, TRUE, 0, 0, -1, -1);
-#ifdef RENDER_USING_GDK	
-	/*
-	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
-	 */
-	state.curr_pixmap = gdk_pixmap_new(widget->window,
-					   state.max_width,
-					   state.max_height,  -1);
-	state.clipmask = gdk_pixmap_new(widget->window,
-					state.max_width,
-					state.max_height,  1);
-#endif
-	state.valid = 1;
-    }
+	* This now allows drawing several layers on top of each other.
+	* Higher layer numbers have higher priority in the Z-order. 
+	*/
+	for(i = 0; i < MAX_FILES; i++) {
+		if (screen.file[i] && screen.file[i]->isVisible) {
+			enum polarity_t polarity;
 
-    if (g_main_pending()) {
-	/* return TRUE to keep this idle function active */
-	dprintf("   .... Oh, no!  Found pending event to process! .... \n");
-	retval = TRUE;
-	start_idle_redraw_pixmap(widget);
-	state.file_index = i;
-	goto redraw_pixmap_end;
-    }
-	  
-#ifdef RENDER_USING_GDK	
-    dprintf("   .... Now try rendering the drawing using GDK .... \n");
-    /*
-     * Set superimposing function.
-     */
-    gdk_gc_set_function(gc, screen.si_func);
+			if (screen.file[i]->inverted) {
+				if (screen.file[i]->image->info->polarity == POSITIVE)
+					polarity = NEGATIVE;
+				else
+					polarity = POSITIVE;
+			} else {
+				polarity = screen.file[i]->image->info->polarity;
+			}
 
+			/*
+			* Fill up image with all the foreground color. Excess pixels
+			* will be removed by clipmask.
+			*/
+			gdk_gc_set_rgb_fg_color(gc, screen.file[i]->color);
+			gdk_draw_rectangle(state.curr_pixmap, gc, TRUE, 0, 0, -1, -1);
 
-    /* 
-     * This now allows drawing several layers on top of each other.
-     * Higher layer numbers have higher priority in the Z-order. 
-     */
-    for(i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i] && screen.file[i]->isVisible) {
-	    enum polarity_t polarity;
+			/*
+			* Translation is to get it inside the allocated pixmap,
+			* which is not always centered perfectly for GTK/X.
+			*/
+			dprintf("  .... calling image2pixmap on image %d...\n", i);
+			image2pixmap(&(state.clipmask), screen.file[i]->image, screen.transf->scale, 
+				(screen.clip_bbox.x1-dmin_x)*screen.transf->scale,
+				(screen.clip_bbox.y1+dmax_y)*screen.transf->scale,
+				polarity);
 
-	    if (screen.file[i]->inverted) {
-		if (screen.file[i]->image->info->polarity == POSITIVE)
-		    polarity = NEGATIVE;
-		else
-		    polarity = POSITIVE;
-	    } else {
-		polarity = screen.file[i]->image->info->polarity;
-	    }
-
-	    /*
-	     * Show progress in status bar
-	     */
-	    snprintf(screen.statusbar.msgstr, MAX_STATUSMSGLEN,
-		     "%d %s...",
-		     i, screen.file[i]->basename);
-	    callbacks_update_statusbar();
-
-	    /*
-	     * Fill up image with all the foreground color. Excess pixels
-	     * will be removed by clipmask.
-	     */
-	    gdk_gc_set_rgb_fg_color(gc, screen.file[i]->color);
-	    gdk_draw_rectangle(state.curr_pixmap, gc, TRUE, 0, 0, -1, -1);
-
-	    /*
-	     * Translation is to get it inside the allocated pixmap,
-	     * which is not always centered perfectly for GTK/X.
-	     */
-	    dprintf("  .... calling image2pixmap on image %d...\n", i);
-	    image2pixmap(&(state.clipmask),
-			 screen.file[i]->image, screen.transf->scale, 
-			 (screen.clip_bbox.x1-dmin_x)*screen.transf->scale,
-			 (screen.clip_bbox.y1+dmax_y)*screen.transf->scale,
-			 polarity);
-
-	    /* 
-	     * Set clipmask and draw the clipped out image onto the
-	     * screen pixmap. Afterwards we remove the clipmask, else
-	     * it will screw things up when run this loop again.
-	     */
-	    gdk_gc_set_clip_mask(gc, state.clipmask);
-	    gdk_gc_set_clip_origin(gc, 0, 0);
-	    gdk_draw_pixmap(screen.pixmap, gc, state.curr_pixmap, -screen.off_x, -screen.off_y, 0, 0, -1, -1);
-	    gdk_gc_set_clip_mask(gc, NULL);
+			/* 
+			* Set clipmask and draw the clipped out image onto the
+			* screen pixmap. Afterwards we remove the clipmask, else
+			* it will screw things up when run this loop again.
+			*/
+			gdk_gc_set_clip_mask(gc, state.clipmask);
+			gdk_gc_set_clip_origin(gc, 0, 0);
+			gdk_draw_pixmap(screen.pixmap, gc, state.curr_pixmap, 0,
+				0, 0, 0, -1, -1);
+			gdk_gc_set_clip_mask(gc, NULL);
+		}
 	}
-    }
 
-    screen.statusbar.msgstr[0] = '\0';
-    callbacks_update_statusbar();
-    /* Clean up */
-    state.valid = 0;
-    /* Free up pixmaps */
-    if (state.curr_pixmap) {
-	gdk_pixmap_unref(state.curr_pixmap);
-    }
-    if (state.clipmask) {
-	gdk_pixmap_unref(state.clipmask);
-    }
-    gdk_gc_unref(gc);
+	/* Clean up */
+	state.valid = 0;
+	/* Free up pixmaps */
+	if (state.curr_pixmap) {
+		gdk_pixmap_unref(state.curr_pixmap);
+	}
+	if (state.clipmask) {
+		gdk_pixmap_unref(state.clipmask);
+	}
+	gdk_gc_unref(gc);
+	update_rect.x = 0;
+	update_rect.y = 0;
+	update_rect.width = widget->allocation.width;
+	update_rect.height = widget->allocation.height;
+
+	/* Calls expose_event */
+	gdk_window_invalidate_rect (widget->window, &update_rect, FALSE);
+redraw_pixmap_end:
+	/* Return default pointer shape */
+	if (window) {
+		gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
+	}
+	dprintf("<---- leaving redraw_pixmap.\n");
+	return retval;
 #else
-    dprintf("    .... Now try rendering the drawing using cairo .... \n");
-    cairo_t *cr;
+	int i;
+	int retval = TRUE;
+/*
+	GTimer* profileTimer = g_timer_new ();
+*/
+	dprintf("    .... Now try rendering the drawing using cairo .... \n");
 
-    window = gtk_widget_get_parent_window(widget);
-    /* This might be lengthy, show that we're busy by changing the pointer */
-    if (window) {
-	GdkCursor *cursor;
-	
-	cursor = gdk_cursor_new(GDK_WATCH);
-	gdk_window_set_cursor(window, cursor);
-	gdk_cursor_destroy(cursor);
-    }
-    
-    /* get a cairo_t */
-    cairo_surface_t* cs=cairo_image_surface_create (CAIRO_FORMAT_RGB24, state.max_width, state.max_height);
-    cr= cairo_create(cs);
-    
-    /* speed up rendering by reducing quality by a small amount (default
-       is 1.0 */
-    cairo_set_tolerance (cr,1.5);
-    
-    /* translate the draw area before drawing */
-    cairo_translate (cr,-screen.trans_x-(screen.gerber_bbox.x1*(float) screen.transf->scale),-screen.trans_y+(screen.gerber_bbox.y2*(float) screen.transf->scale));
-    
-    /* scale the drawing by the specified scale factor (inverting y since
-     * cairo y axis points down)
-     */ 
-    cairo_scale (cr,(float) screen.transf->scale,-(float) screen.transf->scale);
-    
-    /* 
-     * This now allows drawing several layers on top of each other.
-     * Higher layer numbers have higher priority in the Z-order. 
-     */
-    for(i = 0; i < MAX_FILES; i++) {
-	if (screen.file[i] && screen.file[i]->isVisible) {
-	    cairo_pattern_t *testp = NULL;
-	    
-	    cairo_push_group   (cr);
-	    
-	    cairo_set_source_rgba (cr, (double) screen.file[i]->color->red/G_MAXUINT16,
-				   (double) screen.file[i]->color->green/G_MAXUINT16,
-				   (double) screen.file[i]->color->blue/G_MAXUINT16, 1);
-	    
-	    /* for now, scale the cairo context if the units are mms */
-	    /* TODO: normalize all gerb_image data to mm during parsing */
-	    cairo_save (cr);
-	    if ((screen.file[i]->image->netlist->next)&&
-		(screen.file[i]->image->netlist->next->unit==MM)) {
-		cairo_scale (cr, 1.0/25.4, 1.0/25.4);
-	    }
-	    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);
-	    draw_image_to_cairo_target (cr, screen.file[i]->image);
-	    /* make sure we cancel any previous scaling for mm */
-	    cairo_restore (cr);
-	    testp = cairo_pop_group (cr);
-	    if (screen.file[i]->privateRenderData) {
-		cairo_pattern_destroy ((cairo_pattern_t *) screen.file[i]->privateRenderData);
-	    }
-	    screen.file[i]->privateRenderData = (gpointer) testp;
+	/* 
+	* This now allows drawing several layers on top of each other.
+	* Higher layer numbers have higher priority in the Z-order. 
+	*/
+	for(i = 0; i < MAX_FILES; i++) {
+		if (screen.file[i] && screen.file[i]->isVisible) {
+			cairo_t *cr;
+
+			if (screen.file[i]->privateRenderData) 
+				cairo_surface_destroy ((cairo_surface_t *) screen.file[i]->privateRenderData);
+
+			screen.file[i]->privateRenderData = 
+				(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+				CAIRO_CONTENT_COLOR_ALPHA, screen.canvasWidth, screen.canvasHeight);
+
+			cr= cairo_create(screen.file[i]->privateRenderData );
+
+			/* speed up rendering by reducing quality by a small amount (default is 1.0) */
+			cairo_set_tolerance (cr,1.5);
+
+			/* translate the draw area before drawing */
+			cairo_translate (cr,-screen.trans_x-(screen.gerber_bbox.x1*(float) screen.transf->scale),
+				-screen.trans_y+(screen.gerber_bbox.y2*(float) screen.transf->scale));
+
+			/* scale the drawing by the specified scale factor (inverting y since
+				cairo y axis points down) */
+			cairo_scale (cr,(float) screen.transf->scale,-(float) screen.transf->scale);
+
+			cairo_set_source_rgba (cr, (double) screen.file[i]->color->red/G_MAXUINT16,
+				(double) screen.file[i]->color->green/G_MAXUINT16,
+				(double) screen.file[i]->color->blue/G_MAXUINT16, 1);
+
+			/* for now, scale the cairo context if the units are mms */
+			/* TODO: normalize all gerb_image data to mm during parsing */
+			if ((screen.file[i]->image->netlist->next)&&
+				(screen.file[i]->image->netlist->next->unit==MM)) {
+				cairo_scale (cr, 1.0/25.4, 1.0/25.4);
+			}
+			dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);
+
+			draw_image_to_cairo_target (cr, screen.file[i]->image);
+			cairo_destroy (cr);
+		}
 	}
-    }
-    cairo_surface_destroy (cs);
-    cairo_destroy (cr);	
+	render_recreate_composite_surface (widget);
 
+/*
+	g_timer_stop (profileTimer);
+	gulong timerMicros;
+
+	gdouble timerSeconds = g_timer_elapsed (profileTimer, &timerMicros);
+	g_warning ("Timer: %f seconds, %ld micros\n",timerSeconds,timerMicros);
+	g_timer_destroy (profileTimer);  
+*/
+	return retval;
 #endif
-
-    update_rect.x = 0, update_rect.y = 0;
-    update_rect.width =	widget->allocation.width;
-    update_rect.height = widget->allocation.height;
-    
-    /*
-     * Calls expose_event
-     */
-    gtk_widget_draw (widget, &update_rect);
-    //gdk_window_invalidate_rect(widget->window, &widget->allocation,FALSE);
-    
- redraw_pixmap_end:
-    /* Return default pointer shape */
-    if (window) {
-	gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
-    }
-       
-    dprintf("<---- leaving redraw_pixmap.\n");
-    return retval;
-} /* redraw_pixmap */
+}
 
 
 /* ------------------------------------------------------------------ */
@@ -822,49 +803,56 @@ generate_drill_analysis(void)
 
 
 #ifndef RENDER_USING_GDK
+void render_recreate_composite_surface (GtkWidget *widget) {
+	gint i;
+	GdkRectangle update_rect;
+	
+	if (screen.bufferSurface) {
+		cairo_surface_destroy (screen.bufferSurface);
+		screen.bufferSurface = NULL;
+	}
+	if (!screen.windowSurface)
+		return;
+
+	screen.bufferSurface= cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+	                                    CAIRO_CONTENT_COLOR, screen.canvasWidth, screen.canvasHeight);
+
+	cairo_t *cr= cairo_create(screen.bufferSurface);
+
+	for(i = 0; i < MAX_FILES; i++) {
+		if (screen.file[i] && screen.file[i]->isVisible) {
+			cairo_set_source_surface (cr, (cairo_surface_t *) screen.file[i]->privateRenderData,
+			                              0, 0);
+
+			if ((double) screen.file[i]->alpha < 65535) {
+				cairo_paint_with_alpha(cr,(double) screen.file[i]->alpha/G_MAXUINT16);
+			}
+			else {
+				cairo_paint (cr);
+			}    
+		}
+	}
+	cairo_destroy (cr);
+	
+	update_rect.x = 0;
+	update_rect.y = 0;
+	update_rect.width = widget->allocation.width;
+	update_rect.height = widget->allocation.height;
+
+	/* Calls expose_event */
+	gdk_window_invalidate_rect (widget->window, &update_rect, FALSE);
+}
+
 void render_project_to_cairo_target (cairo_t *cr) {
-	int i;
-	
-	/* translate the draw area before drawing */
-	cairo_translate (cr,-screen.trans_x-(screen.gerber_bbox.x1*(float) screen.transf->scale),
-			 -screen.trans_y+(screen.gerber_bbox.y2*(float) screen.transf->scale));
-	/* scale the drawing by the specified scale factor (inverting y since
-	 * cairo y axis points down)
-	 */ 
-	cairo_scale (cr,(float) screen.transf->scale,-(float) screen.transf->scale);
-	
 	/* fill the background with the appropriate color */
 	cairo_set_source_rgba (cr, (double) screen.background->red/G_MAXUINT16,
 		(double) screen.background->green/G_MAXUINT16,
 		(double) screen.background->blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
 
-	/* 
-	* This now allows drawing several layers on top of each other.
-	* Higher layer numbers have higher priority in the Z-order. 
-	*/
-	for(i = 0; i < MAX_FILES; i++) {
-		if (screen.file[i] && screen.file[i]->isVisible && screen.file[i]->privateRenderData) {
-			enum polarity_t polarity;
-
-			if (screen.file[i]->inverted) {
-				if (screen.file[i]->image->info->polarity == POSITIVE)
-				polarity = NEGATIVE;
-				else
-				polarity = POSITIVE;
-			} else {
-				polarity = screen.file[i]->image->info->polarity;
-			}
-			
-                  cairo_set_source (cr,(cairo_pattern_t *)screen.file[i]->privateRenderData);
-			if ((double) screen.file[i]->alpha < 65535) {				
-				cairo_paint_with_alpha(cr,(double) screen.file[i]->alpha/G_MAXUINT16);
-			}
-			else {
-				cairo_paint (cr);
-			}
-		}
-	}
+	cairo_set_source_surface (cr, (cairo_surface_t *) screen.bufferSurface, 0 , 0);
+                                                   
+	cairo_paint (cr);
 }
 
 #endif

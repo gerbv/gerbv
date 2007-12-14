@@ -41,11 +41,14 @@ gerb_stats_t *generate_drill_analysis(void);
 #ifdef RENDER_USING_GDK
 /* Nothing for now */
 #else
-  void render_project_to_cairo_target (cairo_t *cr);
+	void render_recreate_composite_surface (GtkWidget *widget);
+  	void render_project_to_cairo_target (cairo_t *cr);
 #endif
 
 gint
 redraw_pixmap(GtkWidget *widget, int restart);
+
+
 
 void
 autoscale(void);
@@ -62,5 +65,7 @@ draw_zoom_outline(gboolean centered);
 void
 draw_measure_distance(void);
 
+void
+autoscale(void);
 
 

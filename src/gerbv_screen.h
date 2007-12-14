@@ -95,7 +95,10 @@ typedef struct {
 	GtkWidget *gerber;
 	GtkWidget *about_dialog;
     } win;
-
+    gpointer windowSurface;
+    gpointer bufferSurface;
+    gint canvasWidth;
+    gint canvasHeight;
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
     int last_loaded;

@@ -53,6 +53,7 @@
 
 #include "callbacks.h"
 #include "interface.h"
+#include "render.h"
 
 #define WIN_TITLE "Gerber Viewer"
 #  define _(String) (String)
@@ -894,16 +895,16 @@ interface_create_gui (int req_width, int req_height)
 	* Set gtk error log handler
 	*/
 #if !defined (__MINGW32__)     
-    g_log_set_handler (NULL, 
-		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
-		       callbacks_handle_log_messages, NULL); 
+  //  g_log_set_handler (NULL, 
+//		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
+//		       callbacks_handle_log_messages, NULL); 
 #endif     
   
 	/*
 	* Setup some GTK+ defaults
 	*/
 	screen.tooltips = gtk_tooltips_new();        
-	screen.background = alloc_color(0, 0, 0, "white");
+	screen.background = alloc_color(0, 0, 0, "black");
 	screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
 	screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
 	screen.drawing_area=drawingarea;
@@ -930,6 +931,7 @@ interface_create_gui (int req_width, int req_height)
 	}
 
 	gtk_window_set_default_size((GtkWindow *)mainWindow, width, height);
+
 	gtk_widget_show_all (mainWindow);
 	screen.win.topLevelWindow = mainWindow;
 	screen.win.messageTextView = message_textview;
@@ -940,9 +942,10 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.treeIsUpdating = FALSE;
 	
 	rename_main_window("",mainWindow);
-	
+
 	set_window_icon (mainWindow);
 	callbacks_update_layer_tree ();
+	
 	gtk_main();
 }
 
