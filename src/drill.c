@@ -117,11 +117,15 @@ typedef struct drill_state {
 
 /* Local function prototypes */
 static int drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image);
-static int drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image);
-static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image);
-static void drill_parse_coordinate(gerb_file_t *fd, char firstchar, gerb_image_t *image, drill_state_t *state);
+static int drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, 
+			      gerb_image_t *image);
+static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, 
+			      gerb_image_t *image);
+static void drill_parse_coordinate(gerb_file_t *fd, char firstchar, 
+				   gerb_image_t *image, drill_state_t *state);
 static drill_state_t *new_state(drill_state_t *state);
-static double read_double(gerb_file_t *fd, enum number_fmt_t fmt, enum omit_zeros_t omit_zeros);
+static double read_double(gerb_file_t *fd, enum number_fmt_t fmt, 
+			  enum omit_zeros_t omit_zeros);
 static void eat_line(gerb_file_t *fd);
 
 gerb_image_t *
@@ -145,8 +149,10 @@ parse_drillfile(gerb_file_t *fd)
 	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
     image->layertype = DRILL;
-    image->stats = drill_stats_new();
-    stats = image->stats;
+    stats = drill_stats_new();
+    if (stats == NULL)
+	GERB_FATAL_ERROR("malloc stats failed\n");
+    image->drill_stats = stats;
 
     state = new_state(state);
     if (state == NULL)
@@ -163,6 +169,8 @@ parse_drillfile(gerb_file_t *fd)
     dprintf ("%s:  drill_guess_format gave %s\n", __FUNCTION__, 
 	     state->unit == MM ? "mm" : "inch");
 
+    /* Now parse file for real. */
+    dprintf("In parse_drillfile, now parse drillfile for real\n");
     while ((read = gerb_fgetc(fd)) != EOF) {
 
 	switch ((char) read) {
@@ -331,6 +339,16 @@ parse_drillfile(gerb_file_t *fd)
 	    /* Hole coordinate found. Do some parsing */
 	    drill_parse_coordinate(fd, read, image, state);
 
+	    /* Add one to drill stats */
+
+	    dprintf("before calling increment_drill_counter, count = %d\n",
+		    image->drill_stats->drill_list->drill_count);
+	    drill_stats_increment_drill_counter(image->drill_stats->drill_list,
+						state->current_tool);
+	    dprintf("after calling increment_drill_counter, count = %d\n",
+		    image->drill_stats->drill_list->drill_count);
+
+
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    if (curr_net->next == NULL)
 		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
@@ -463,6 +481,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     int done = FALSE;
     int temp;
     double size;
+    drill_stats_t *stats;
 
     /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
        broken headers from Orcad, which is crap */
@@ -489,13 +508,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     /* Check for a size definition */
     temp = gerb_fgetc(fd);
 
+    /* This bit of code looks for a tool definition by scanning for strings
+     * of form TxxC, TxxF, TxxS.  */
     while(!done) {
 	
 	switch((char)temp) {
 	case 'C':
-
 	    size = read_double(fd, state->header_number_format, TRAILING);
-
 	    dprintf ("%s: Read a size of %g %s\n", __FUNCTION__, size,
 		     state->unit == MM ? "mm" : "inch");
 	    if(state->unit == MM) {
@@ -533,6 +552,15 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		    image->aperture[tool_num]->unit = INCH;
 		}
 	    }
+	    
+	    /* Add the tool whose definition we just found into the list
+	     * of tools for this layer used to generate statistics. */
+	    stats = image->drill_stats;
+	    drill_stats_add_to_drill_list(stats->drill_list, 
+					  tool_num, 
+					  size, 
+					  g_strdup_printf("%s", (state->unit == MM ? "mm" : "inch")));
+
 	    break;
 
 	case 'F':
@@ -547,11 +575,12 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	    gerb_ungetc(fd);
 	    done = TRUE;
 	    break;
-	}
+	}  /* switch((char)temp) */
+
 	if( (temp = gerb_fgetc(fd)) == EOF) {
 	    GERB_COMPILE_ERROR("(very) Unexpected end of file found\n");
 	}
-    }
+    }   /* while(!done) */
 
     /* Catch the tools that aren't defined.
        This isn't strictly a good thing, but at least something is shown */
@@ -590,7 +619,16 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	image->aperture[tool_num]->type = CIRCLE;
 	image->aperture[tool_num]->nuf_parameters = 1;
         image->aperture[tool_num]->parameter[0] = dia;
-    }
+
+	/* Add the tool whose definition we just found into the list
+	 * of tools for this layer used to generate statistics. */
+	stats = image->drill_stats;
+	drill_stats_add_to_drill_list(stats->drill_list, 
+				      tool_num, 
+				      dia, 
+				      g_strdup_printf("%s", (state->unit == MM ? "mm" : "inch")));
+	
+    } /* if(image->aperture[tool_num] == NULL) */	
     
     return tool_num;
 } /* drill_parse_T_code */
@@ -601,7 +639,8 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
-    drill_stats_t *stats = image->stats;
+    drill_stats_t *stats = image->drill_stats;
+    int result;
 
     dprintf("---> entering drill_parse_M_code ...\n");
 
@@ -615,45 +654,45 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
  
     if (strncmp(op, "00", 2) == 0) {
 	stats->M00++;
-	return DRILL_M_END;
+	result = DRILL_M_END;
     } else if (strncmp(op, "01", 2) == 0) {
 	stats->M01++;
-	return DRILL_M_ENDPATTERN;
+	result = DRILL_M_ENDPATTERN;
     } else if (strncmp(op, "18", 2) == 0) {
 	stats->M18++;
-	return DRILL_M_TIPCHECK;
+	result = DRILL_M_TIPCHECK;
     } else if (strncmp(op, "25", 2) == 0) {
 	stats->M25++;
-	return DRILL_M_BEGINPATTERN;
+	result = DRILL_M_BEGINPATTERN;
     } else if (strncmp(op, "31", 2) == 0) {
 	stats->M31++;
-	return DRILL_M_BEGINPATTERN;
+	result = DRILL_M_BEGINPATTERN;
     } else if (strncmp(op, "30", 2) == 0) {
 	stats->M30++;
-	return DRILL_M_ENDREWIND;
+	result = DRILL_M_ENDREWIND;
     } else if (strncmp(op, "45", 2) == 0) {
 	stats->M45++;
-	return DRILL_M_LONGMESSAGE;
+	result = DRILL_M_LONGMESSAGE;
     } else if (strncmp(op, "47", 2) == 0) {
 	stats->M47++;
-	return DRILL_M_MESSAGE;
+	result = DRILL_M_MESSAGE;
     } else if (strncmp(op, "48", 2) == 0) {
 	stats->M48++;
-	return DRILL_M_HEADER;
+	result = DRILL_M_HEADER;
     } else if (strncmp(op, "71", 2) == 0) {
 	eat_line(fd);
 	stats->M71++;
-	return DRILL_M_METRIC;
+	result = DRILL_M_METRIC;
     } else if (strncmp(op, "72", 2) == 0) {
 	eat_line(fd);
 	stats->M72++;
-	return DRILL_M_IMPERIAL;
+	result = DRILL_M_IMPERIAL;
     } else if (strncmp(op, "95", 2) == 0) {
 	stats->M95++;
-	return DRILL_M_ENDHEADER;
+	result = DRILL_M_ENDHEADER;
     } else if (strncmp(op, "97", 2) == 0) {
 	stats->M97++;
-	return DRILL_M_CANNEDTEXT;
+	result = DRILL_M_CANNEDTEXT;
     } else if (strncmp(op, "98", 2) == 0) {
 	stats->M98++;
 	return DRILL_M_CANNEDTEXT;
@@ -746,10 +785,13 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 	    return DRILL_M_METRICHEADER;
 	}
+    } else {
+	stats->M_unknown++;
+	result = DRILL_M_UNKNOWN;
     }
-    stats->M_unknown++;
-    return DRILL_M_UNKNOWN;
 
+    dprintf("<----  ...leaving drill_parse_M_code.\n");
+    return result;
 } /* drill_parse_M_code */
 
 static int
@@ -757,8 +799,9 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
-    drill_stats_t *stats = image->stats;
-
+    drill_stats_t *stats = image->drill_stats;
+    int result;
+    
     dprintf("---> entering drill_parse_G_code ...\n");
 
     read[0] = gerb_fgetc(fd);
@@ -771,32 +814,35 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
 
     if (strncmp(op, "00", 2) == 0) {
 	stats->G00++;
-	return DRILL_G_ROUT;
+	result = DRILL_G_ROUT;
     } else if (strncmp(op, "01", 2) == 0) {
 	stats->G01++;
-	return DRILL_G_LINEARMOVE;
+	result = DRILL_G_LINEARMOVE;
     } else if (strncmp(op, "02", 2) == 0) {
 	stats->G02++;
-	return DRILL_G_CWMOVE;
+	result = DRILL_G_CWMOVE;
     } else if (strncmp(op, "03", 2) == 0) {
 	stats->G03++;
-	return DRILL_G_CCWMOVE;
+	result = DRILL_G_CCWMOVE;
     } else if (strncmp(op, "05", 2) == 0) {
 	stats->G05++;
-	return DRILL_G_DRILL;
+	result = DRILL_G_DRILL;
     } else if (strncmp(op, "90", 2) == 0) {
 	stats->G90++;
-	return DRILL_G_ABSOLUTE;
+	result = DRILL_G_ABSOLUTE;
     } else if (strncmp(op, "91", 2) == 0) {
 	stats->G91++;
-	return DRILL_G_INCREMENTAL;
+	result = DRILL_G_INCREMENTAL;
     } else if (strncmp(op, "93", 2) == 0) {
 	stats->G93++;
-	return DRILL_G_ZEROSET;
+	result = DRILL_G_ZEROSET;
     } else {
 	stats->G_unknown++;
-	return DRILL_G_UNKNOWN;
+	result = DRILL_G_UNKNOWN;
     }
+
+    dprintf("<----  ...leaving drill_parse_G_code.\n");
+    return result;
 
 } /* drill_parse_G_code */
 
@@ -808,7 +854,7 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 		       gerb_image_t *image, drill_state_t *state)
 
 {
-    char read;
+    int read;
 
     if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
 	if(firstchar == 'X') {

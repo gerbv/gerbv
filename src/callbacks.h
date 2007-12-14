@@ -21,6 +21,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+
+
 enum {
 	CALLBACKS_SAVE_FILE_AS,
 	CALLBACKS_SAVE_FILE_PS,
@@ -171,5 +173,8 @@ void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment,
 
 void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
 			gpointer user_data);
+
+#ifndef RENDER_USING_GDK
 cairo_surface_t *
 callbacks_create_window_surface (GtkWidget *widget);
+#endif

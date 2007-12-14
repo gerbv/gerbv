@@ -24,6 +24,7 @@
 #ifndef GERB_STATS_H
 #define GERB_STATS_H
 
+#include <gdk/gdk.h>  /* This imports gboolean type */
 
 typedef struct {
     int G0;
@@ -67,10 +68,18 @@ typedef struct {
     int star;
     int unknown;
 
-
 } gerb_stats_t;
 
+typedef struct drill_list {
+    int drill_num;
+    double drill_size;
+    char *drill_unit;
+    int drill_count;
+    struct drill_list *next;
+} drill_list_t;
+
 typedef struct {
+    drill_list_t *drill_list;
     int comment;
     int F;
 
@@ -104,12 +113,24 @@ typedef struct {
 
 } drill_stats_t;
 
+
+/* ===================  Prototypes ================ */
 gerb_stats_t * gerb_stats_new(void);
 void gerb_stats_add_layer(gerb_stats_t *accum_stats, 
 			  gerb_stats_t *input_stats);
-
 drill_stats_t * drill_stats_new(void);
 void drill_stats_add_layer(drill_stats_t *accum_stats, 
 			   drill_stats_t *input_stats);
+gboolean drill_stats_in_drill_list(drill_list_t *drill_list, int drill_num);
+drill_list_t *drill_stats_new_drill_list(void);
+void drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
+				   int drill_num_in, double drill_size_in,
+				   char *drill_unit_in);
+void drill_stats_increment_drill_counter(drill_list_t *drill_list_in,
+					 int drill_num_in);
+void drill_stats_add_to_drill_counter(drill_list_t *drill_list_in,
+				      int drill_num_in,
+				      int increment);
+
 
 #endif /* GERB_STATS_H */

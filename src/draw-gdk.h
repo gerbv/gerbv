@@ -26,6 +26,7 @@
 
 #include <gdk/gdk.h>
 #include "gerber.h"
+#include "gerb_image.h"
 
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
@@ -34,7 +35,7 @@
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int 
-image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
+image2pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
 	     int scale, double trans_x, double trans_y,
 	     enum polarity_t polarity);
 

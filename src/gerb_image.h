@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-#include <glib.h>
+#include <glib.h> /* To pick up gpointer */
 	
 #define APERTURE_MIN 10
 #define APERTURE_MAX 9999
@@ -125,7 +125,7 @@ typedef struct gerb_image_info {
 } gerb_image_info_t;
 
 
-typedef struct gerb_image {
+typedef struct {
     enum layertype_t layertype;
     gerb_aperture_t *aperture[APERTURE_MAX];
     amacro_t *amacro;
@@ -133,7 +133,8 @@ typedef struct gerb_image {
     gerb_image_info_t *info;
     gerb_net_t *netlist;
     gerb_transf_t *transf;
-    gpointer stats;  /* gerb_stats_t or drill_stats_t plugs in here */
+    gerb_stats_t *gerb_stats;
+    drill_stats_t *drill_stats;
 } gerb_image_t;
 
 

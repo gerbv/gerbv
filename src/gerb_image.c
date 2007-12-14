@@ -70,7 +70,8 @@ new_gerb_image(gerb_image_t *image)
     }
 
     /* Set aside position for stats struct */
-    image->stats = (gpointer) NULL;
+    image->gerb_stats = NULL;
+    image->drill_stats = NULL;
 
     image->info->min_x = HUGE_VAL;
     image->info->min_y = HUGE_VAL;
@@ -142,7 +143,8 @@ free_gerb_image(gerb_image_t *image)
     
     /* FIXME -- must write these functions. */
     /*   gerb_transf_free(image->transf); */
-    /*   gerb_stats_free(image->stats); */
+    /*   gerb_stats_free(image->gerb_stats); */
+    /*   gerb_stats_free(image->drill_stats); */
 
     /*
      * Free and reset the final image

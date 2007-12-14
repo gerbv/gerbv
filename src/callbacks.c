@@ -505,13 +505,15 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 /* --------------------------------------------------------- */
 void
-callbacks_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
+callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
     drill_stats_t *stats_report;
     gchar *G_report_string;
     gchar *M_report_string;
     gchar *misc_report_string;
+    drill_list_t *my_drill_list;
+    gchar *drill_report_string;
     
     stats_report = (drill_stats_t *) generate_drill_analysis();
 
@@ -575,6 +577,24 @@ callbacks_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
 					 misc_report_string, stats_report->unknown);
 
 
+    drill_report_string = g_strdup_printf("%10s   %11s  %8s  %8s\n", 
+					  "Drill no.", "Dia.", "Units", "Count");
+    for(my_drill_list = stats_report->drill_list; 
+	my_drill_list != NULL; 
+	my_drill_list = my_drill_list->next) {
+	dprintf("Creating drill_report_string, drill_num = %d\n", my_drill_list->drill_num);
+	dprintf("Creating drill_report_string, drill_size = %g\n", my_drill_list->drill_size);
+	dprintf("Creating drill_report_string, drill_unit = %s\n", my_drill_list->drill_unit);
+	dprintf("Creating drill_report_string, drill_count = %d\n", my_drill_list->drill_count);
+	
+	drill_report_string = g_strdup_printf("%s%10d   %8.3f  %8s  %8d\n", 
+					      drill_report_string,
+					      my_drill_list->drill_num,
+					      my_drill_list->drill_size,
+					      my_drill_list->drill_unit,
+					      my_drill_list->drill_count);
+    }
+
 
     /* Create top level dialog window for report */
     GtkWidget *analyze_active_drill;
@@ -611,6 +631,12 @@ callbacks_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
     gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
     g_free(misc_report_string);
 
+    /* Create GtkLabel to hold drills used text */
+    GtkWidget *drill_report_label = gtk_label_new (drill_report_string);
+    gtk_misc_set_alignment(GTK_MISC(drill_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(drill_report_label), 13, 13);
+    g_free(drill_report_string);
+
     /* Create tabbed notebook widget and add report label widgets. */
     GtkWidget *notebook = gtk_notebook_new();
     
@@ -625,6 +651,10 @@ callbacks_analyze_active_drill_activate     (GtkMenuItem     *menuitem,
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(misc_report_label),
 			     gtk_label_new("Misc. codes"));
+    
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			     GTK_WIDGET(drill_report_label),
+			     gtk_label_new("Drills used"));
     
     
     /* Now put notebook into dialog window and show the whole thing */

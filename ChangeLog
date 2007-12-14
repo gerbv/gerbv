@@ -1,3 +1,8 @@
+2007-12-14  Stuart Brorson (sdb@cloud9.net)
+	* Too many files to mention:  Start adding list of drills found 
+	to drill statistics reported.  Now "analyze->active drill layers"
+	reports each drill defined, and the number of times it is used.
+	
 2007-12-14  Julian Lamb
 	* render,callbacks: Fully separate GDK and cairo rendering code to help
 	  speed analization. Change from storing intermediate cairo patterns to

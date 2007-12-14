@@ -37,6 +37,7 @@
 
 #include "draw-gdk.h"
 #include "gerb_error.h"
+#include "gerb_image.h"
 
 #undef round
 #define round(x) ceil((double)(x))
@@ -800,7 +801,7 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int
-image2pixmap(GdkPixmap **pixmap, struct gerb_image *image, 
+image2pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
 	     int scale, double trans_x, double trans_y,
 	     enum polarity_t polarity)
 {

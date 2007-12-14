@@ -769,7 +769,7 @@ generate_gerber_analysis(void)
 	if (screen.file[i] && 
 	    screen.file[i]->isVisible &&
 	    (screen.file[i]->image->layertype == GERBER) ) {
-	    instats = screen.file[i]->image->stats;
+	    instats = screen.file[i]->image->gerb_stats;
 	    gerb_stats_add_layer(stats, instats);
 	}
     }
@@ -779,22 +779,22 @@ generate_gerber_analysis(void)
 
 /* ------------------------------------------------------------------ */
 /* Fill out the drill file statistics table */
-gerb_stats_t *
+drill_stats_t *
 generate_drill_analysis(void)
 {
     int i;
-    gerb_stats_t *stats;
-    gerb_stats_t *instats;
+    drill_stats_t *stats;
+    drill_stats_t *instats;
 
-    stats = gerb_stats_new();
+    stats = drill_stats_new();
 
     /* Loop through open layers and compile statistics */
     for(i = 0; i < MAX_FILES; i++) {
 	if (screen.file[i] && 
 	    screen.file[i]->isVisible &&
 	    (screen.file[i]->image->layertype == DRILL) ) {
-	    instats = screen.file[i]->image->stats;
-	    gerb_stats_add_layer(stats, instats);
+	    instats = screen.file[i]->image->drill_stats;
+	    drill_stats_add_layer(stats, instats);
 	}
     }
     
@@ -802,6 +802,7 @@ generate_drill_analysis(void)
 }
 
 
+/* ------------------------------------------------------------------ */
 #ifndef RENDER_USING_GDK
 void render_recreate_composite_surface (GtkWidget *widget) {
 	gint i;

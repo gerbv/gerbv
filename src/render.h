@@ -36,7 +36,7 @@ struct gerbv_redraw_state_t {
 };
 
 gerb_stats_t *generate_gerber_analysis(void);
-gerb_stats_t *generate_drill_analysis(void);
+drill_stats_t *generate_drill_analysis(void);
 
 #ifdef RENDER_USING_GDK
 /* Nothing for now */

@@ -134,8 +134,8 @@ parse_gerb(gerb_file_t *fd)
 	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
     image->layertype = GERBER;
-    image->stats = gerb_stats_new();
-    stats = image->stats;
+    image->gerb_stats = gerb_stats_new();
+    stats = image->gerb_stats;
 
     /*
      * Start parsing
@@ -483,7 +483,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 {
     int  op_int;
     gerb_format_t *format = image->format;
-    gerb_stats_t *stats = image->stats;
+    gerb_stats_t *stats = image->gerb_stats;
 
     op_int=gerb_fgetint(fd, NULL);
     
@@ -589,7 +589,7 @@ static void
 parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 {
     int a;
-    gerb_stats_t *stats = image->stats;
+    gerb_stats_t *stats = image->gerb_stats;
     
     a = gerb_fgetint(fd, NULL);
     switch(a) {
@@ -633,7 +633,7 @@ static int
 parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 {
     int op_int;
-    gerb_stats_t *stats = image->stats;
+    gerb_stats_t *stats = image->gerb_stats;
 
     op_int=gerb_fgetint(fd, NULL);
 
