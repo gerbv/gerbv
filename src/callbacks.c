@@ -259,7 +259,7 @@ callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gchar *filename=NULL;
-	gint processType = (gint) user_data;
+	gint processType = GPOINTER_TO_INT (user_data);
 	gchar *windowTitle=NULL;
 	
 	if (processType == CALLBACKS_SAVE_FILE_AS)
