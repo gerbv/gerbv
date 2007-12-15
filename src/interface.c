@@ -146,7 +146,6 @@ interface_create_gui (int req_width, int req_height)
 #endif
 	GtkWidget *toolbutton_zoom_in;
 	GtkWidget *toolbutton_zoom_out;
-	GtkWidget *tmp_image;
 	GtkWidget *toolbutton_zoom_fit;
 	GtkWidget *separatortoolitem3;
 	GtkWidget *toolbutton_analyze;
@@ -453,9 +452,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (toolbutton_zoom_out);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_zoom_out);
 
-	tmp_image = gtk_image_new_from_stock ("gtk-zoom-in", tmp_toolbar_icon_size);
-	gtk_widget_show (tmp_image);
-	toolbutton_zoom_fit = (GtkWidget*) gtk_tool_button_new (tmp_image, "");
+	toolbutton_zoom_fit = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-zoom-fit");
 	gtk_widget_show (toolbutton_zoom_fit);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_zoom_fit);
 

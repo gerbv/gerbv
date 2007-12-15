@@ -385,7 +385,8 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gchar *M_report_string;
     gchar *misc_report_string;
     gchar *general_report_string;
-
+    
+    /* First get a report of stats accumulated from all layers */
     stats_report = generate_gerber_analysis();
 
     general_report_string = g_strdup_printf("General information\n");
