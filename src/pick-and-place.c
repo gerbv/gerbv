@@ -204,9 +204,9 @@ pick_and_place_parse_file(gerb_file_t *fd)
 		//printf("direct:%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, ret %d\n", row[0], row[1], row[2],row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], ret);       
 		//g_warning ("FFF %s %s\n",row[8],row[6]);
 		if (row[0] && row[8]) { // here could be some better check for the syntax
-			sprintf (pnpPartData.designator, "%.*s", sizeof(pnpPartData.designator)-1, row[0]);
-			sprintf (pnpPartData.footprint, "%.*s", sizeof(pnpPartData.footprint)-1, row[1]);
-			sprintf (pnpPartData.layer, "%.*s", sizeof(pnpPartData.layer)-1, row[8]);
+			snprintf (pnpPartData.designator, sizeof(pnpPartData.designator)-1, "%s", row[0]);
+			snprintf (pnpPartData.footprint, sizeof(pnpPartData.footprint)-1, "%s", row[1]);
+			snprintf (pnpPartData.layer, sizeof(pnpPartData.layer)-1, "%s", row[8]);
 			if (row[10] != NULL) {
 				if ( ! g_utf8_validate(row[10], -1, NULL)) {
 					gchar * str = g_convert(row[10], strlen(row[10]), "UTF-8", "ISO-8859-1",
@@ -214,11 +214,11 @@ pick_and_place_parse_file(gerb_file_t *fd)
 					// I have not decided yet whether it is better to use always
 					// "ISO-8859-1" or current locale.
 					// str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
-					sprintf (pnpPartData.comment, "%.*s", sizeof(pnpPartData.comment)-1, str);
+					snprintf (pnpPartData.comment, sizeof(pnpPartData.comment)-1, "%s", str);
 					g_free(str);
 				}
 				else {
-					sprintf (pnpPartData.comment, "%.*s", sizeof(pnpPartData.comment)-1, row[10]);
+					snprintf (pnpPartData.comment, sizeof(pnpPartData.comment)-1, "%s", row[10]);
 				}
 			}
 			/*
@@ -236,9 +236,9 @@ pick_and_place_parse_file(gerb_file_t *fd)
 		 * TODO: implement better checking for format
 		 */
 		else if (row[0] && row[1] && row[2] && row[3] && row[4] && row[5] && row[6]) {
-			sprintf (pnpPartData.designator, "%.*s", sizeof(pnpPartData.designator)-1, row[0]);
-			sprintf (pnpPartData.footprint, "%.*s", sizeof(pnpPartData.footprint)-1, row[1]);		
-			sprintf (pnpPartData.layer, "%.*s", sizeof(pnpPartData.layer)-1, row[6]);	
+			snprintf (pnpPartData.designator, sizeof(pnpPartData.designator)-1, "%s", row[0]);
+			snprintf (pnpPartData.footprint, sizeof(pnpPartData.footprint)-1, "%s", row[1]);		
+			snprintf (pnpPartData.layer, sizeof(pnpPartData.layer)-1, "%s", row[6]);	
 			pnpPartData.mid_x = pick_and_place_get_float_unit(row[3]);
 			pnpPartData.mid_y = pick_and_place_get_float_unit(row[4]);
 			pnpPartData.pad_x = pnpPartData.mid_x + 1;
