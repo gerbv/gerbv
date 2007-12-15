@@ -110,7 +110,7 @@ enum {
  */
 int 
 draw_image_to_cairo_target(cairo_t *cairoTarget, 
-			     struct gerb_image *image);
+			    gerb_image_t *image);
 
 #endif /* DRAW_H */
 

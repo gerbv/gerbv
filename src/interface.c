@@ -895,9 +895,9 @@ interface_create_gui (int req_width, int req_height)
 	* Set gtk error log handler
 	*/
 #if !defined (__MINGW32__)     
-  //  g_log_set_handler (NULL, 
-//		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
-//		       callbacks_handle_log_messages, NULL); 
+	g_log_set_handler (NULL, 
+		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
+		       callbacks_handle_log_messages, NULL); 
 #endif     
   
 	/*

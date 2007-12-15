@@ -590,7 +590,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	image->aperture[tool_num] =
 	    (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 	/* make sure we zero out all aperature parameters */
-	//memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
+	memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
 	if (image->aperture[tool_num] == NULL) {
 	    GERB_FATAL_ERROR("malloc tool failed\n");
 	}
