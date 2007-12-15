@@ -539,7 +539,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		    image->aperture[tool_num] =
 			(gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
 		    /* make sure we zero out all aperature parameters */
-		    //memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
+		    memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
 		    if (image->aperture[tool_num] == NULL) {
 			GERB_FATAL_ERROR("malloc tool failed\n");
 		    }
@@ -618,7 +618,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 	image->aperture[tool_num]->type = CIRCLE;
 	image->aperture[tool_num]->nuf_parameters = 1;
-        image->aperture[tool_num]->parameter[0] = dia;
+	image->aperture[tool_num]->parameter[0] = dia;
 
 	/* Add the tool whose definition we just found into the list
 	 * of tools for this layer used to generate statistics. */
@@ -640,7 +640,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     char op[3] = "  ";
     int  read[3];
     drill_stats_t *stats = image->drill_stats;
-    int result;
+    int result=0;
 
     dprintf("---> entering drill_parse_M_code ...\n");
 

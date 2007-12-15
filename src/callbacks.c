@@ -181,9 +181,12 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 
 	if (filename)
 		gerbv_open_project_from_filename (filename);
-
+	if (screen.transf->scale < 0.001) {
+		autoscale();
+	}
 	redraw_pixmap(screen.drawing_area, TRUE);
 	callbacks_update_layer_tree();
+
 	return;
 }
 
@@ -218,9 +221,13 @@ callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
 		gerbv_open_layer_from_filename (filename->data);
 	}
 	g_slist_free(filenames);
-
+	
+	if (screen.transf->scale < 0.001) {
+		autoscale();
+	}
 	redraw_pixmap(screen.drawing_area, TRUE);
 	callbacks_update_layer_tree();
+
 	return;
 }
 
@@ -1127,7 +1134,7 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	                                          screen.canvasWidth, screen.canvasHeight);
 	}
 #endif
-	if (screen.transf->scale < 0.001) {
+	if ((screen.last_loaded != -1)&&(screen.transf->scale < 0.001)) {
 		autoscale();
 	}
 	return redraw_pixmap(widget, TRUE);
