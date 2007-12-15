@@ -384,8 +384,13 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gchar *D_report_string;
     gchar *M_report_string;
     gchar *misc_report_string;
-    
+    gchar *general_report_string;
+
     stats_report = generate_gerber_analysis();
+
+    general_report_string = g_strdup_printf("General information\n");
+    general_report_string = g_strdup_printf("%sActive layer count = %d\n", 
+					    general_report_string, stats_report->layer_count);
 
     G_report_string = g_strdup_printf("G code statistics   \n");
     G_report_string = g_strdup_printf("%sG0 = %d\n", G_report_string, stats_report->G0);
@@ -457,6 +462,12 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		      GTK_WIDGET(analyze_active_gerbers));
 
 
+    /* Create GtkLabel to hold general report text */
+    GtkWidget *general_report_label = gtk_label_new (general_report_string);
+    gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
+    g_free(general_report_string);
+
     /* Create GtkLabel to hold G code text */
     GtkWidget *G_report_label = gtk_label_new (G_report_string);
     gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
@@ -483,6 +494,10 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
     /* Create tabbed notebook widget and add report label widgets. */
     GtkWidget *notebook = gtk_notebook_new();
+    
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			     GTK_WIDGET(general_report_label),
+			     gtk_label_new("General"));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(G_report_label),
@@ -521,8 +536,13 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     gchar *misc_report_string;
     drill_list_t *my_drill_list;
     gchar *drill_report_string;
+    gchar *general_report_string;
     
     stats_report = (drill_stats_t *) generate_drill_analysis();
+
+    general_report_string = g_strdup_printf("General information\n");
+    general_report_string = g_strdup_printf("%sActive layer count = %d\n", 
+					    general_report_string, stats_report->layer_count);
 
     G_report_string = g_strdup_printf("G code statistics   \n");
     G_report_string = g_strdup_printf("%sG00 = %d\n", 
@@ -619,6 +639,11 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 		      G_CALLBACK (gtk_widget_destroy), 
 		      GTK_WIDGET(analyze_active_drill));
 
+    /* Create GtkLabel to hold general report text */
+    GtkWidget *general_report_label = gtk_label_new (general_report_string);
+    gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
+    g_free(general_report_string);
 
     /* Create GtkLabel to hold G code text */
     GtkWidget *G_report_label = gtk_label_new (G_report_string);
@@ -647,6 +672,10 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     /* Create tabbed notebook widget and add report label widgets. */
     GtkWidget *notebook = gtk_notebook_new();
     
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			     GTK_WIDGET(general_report_label),
+			     gtk_label_new("General"));
+
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(G_report_label),
 			     gtk_label_new("G codes"));

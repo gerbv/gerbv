@@ -32,7 +32,8 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h common.h \
 		scheme.h setup.c setup.h tooltable.c tooltable.h \
 		pick-and-place.c pick-and-place.h gerb_transf.c gerb_transf.h \
 		csv.c csv.h csv_defines.h callbacks.c callbacks.h interface.c \
-		interface.h render.c render.h gerb_stats.c gerb_stats.h
+		interface.h render.c render.h gerb_stats.c gerb_stats.h \
+		drill_stats.c drill_stats.h
 
 CAIRO_DRAW=	draw.c draw.h
 GDK_DRAW=	draw-gdk.c draw-gdk.h

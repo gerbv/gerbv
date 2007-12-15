@@ -47,6 +47,7 @@
 #include "drill.h"
 #include "gerb_error.h"
 #include "gerb_stats.h"
+#include "drill_stats.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"

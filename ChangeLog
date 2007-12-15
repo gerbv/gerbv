@@ -1,4 +1,12 @@
 2007-12-14  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/render.c:  Added "General" tab to reports 
+	windows for both Gerbers and Drills.
+	* src/Makefile.am, src/drill.c, src/gerb_image.h,
+	src/gerb_stats.[hc], src/drill_stats.[hc]:  Refactor drill_stats
+	stuff to its own files in accordance with our function naming 
+	scheme.
+
+2007-12-14  Stuart Brorson (sdb@cloud9.net)
 	* Too many files to mention:  Start adding list of drills found 
 	to drill statistics reported.  Now "analyze->active drill layers"
 	reports each drill defined, and the number of times it is used.

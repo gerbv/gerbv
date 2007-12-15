@@ -27,6 +27,7 @@
 #include "amacro.h"
 #include "gerb_transf.h"
 #include "gerb_stats.h"
+#include "drill_stats.h"
 
 #ifdef __cplusplus
 extern "C" {
