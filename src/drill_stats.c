@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  *   drill_stats.c -- a part of gerbv.
  *
- *   Copyright (C) Stuart Brorson (sdb@cloud9.net)
+ *   Copyright (C) 2007 Stuart Brorson (sdb@cloud9.net)
  *
  * $Id$
  *
@@ -172,7 +172,7 @@ drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
 
     drill_list_t *drill_list_new;
     drill_list_t *drill;
-    drill_list_t *drill_last;
+    drill_list_t *drill_last = NULL;
 
     dprintf("   ---> Entering drill_stats_add_to_drill_list, first drill_num in list = %d ...\n", 
 	    drill_list_in->drill_num);
