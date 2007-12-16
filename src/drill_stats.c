@@ -224,6 +224,37 @@ drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
 
 /* ------------------------------------------------------- */
 void
+drill_stats_modify_drill_list(drill_list_t *drill_list_in, 
+			      int drill_num_in, double drill_size_in,
+			      char *drill_unit_in) {
+
+    drill_list_t *drill;
+
+    dprintf("   ---> Entering drill_stats_modify_drill_list, first drill_num in list = %d ...\n", 
+	    drill_list_in->drill_num);
+
+    /* Look for this drill num in list */
+    for(drill = drill_list_in; 
+	drill != NULL; 
+	drill = (drill_list_t *) drill->next) {
+	dprintf("checking this drill_num %d against that in list %d.\n", 
+		drill_num_in, drill->drill_num);
+	if (drill_num_in == drill->drill_num) {
+	    dprintf("   .... Found it, now update it ....\n");
+	    drill->drill_size = drill_size_in;
+	    if (drill->drill_unit) 
+		g_free(drill->drill_unit);
+	    drill->drill_unit = g_strdup_printf("%s", drill_unit_in);
+	    dprintf("   <---- ... Modified drill.  leaving drill_stats_modify_drill_list.\n");
+	    return;
+	}
+    }
+    dprintf("   <---- ... Did not find drill.  leaving drill_stats_modify_drill_list.\n");
+    return;
+}
+
+/* ------------------------------------------------------- */
+void
 drill_stats_increment_drill_counter(drill_list_t *drill_list_in, 
 				    int drill_num_in) {
 

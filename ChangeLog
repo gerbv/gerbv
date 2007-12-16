@@ -1,3 +1,8 @@
+2007-12-16  Stuart Brorson (sdb@cloud9.net)
+	* src/drill.[hc], src/drill_stats.[hc]:
+	Fixed bug noticed by Joerg involving display of statistics 
+	in drill file with M71 calling out metric units.
+	
 2007-12-14  Stuart Brorson (sdb@cloud9.net)
 	* src/callbacks.c, src/render.c:  Added "General" tab to reports 
 	windows for both Gerbers and Drills.

@@ -31,7 +31,7 @@ extern "C" {
 #include "gerb_image.h"
 #include "gerb_file.h"
 
-#define TOOL_MIN 0
+#define TOOL_MIN 1  /* T00 code is reserved for unload tool command */
 #define TOOL_MAX 9999
 
 gerb_image_t *parse_drillfile(gerb_file_t *fd);

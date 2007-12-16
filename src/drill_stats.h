@@ -82,6 +82,9 @@ drill_list_t *drill_stats_new_drill_list(void);
 void drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
 				   int drill_num_in, double drill_size_in,
 				   char *drill_unit_in);
+void drill_stats_modify_drill_list(drill_list_t *drill_list_in,
+				   int drill_num_in, double drill_size_in,
+				   char *drill_unit_in);
 void drill_stats_increment_drill_counter(drill_list_t *drill_list_in,
 					 int drill_num_in);
 void drill_stats_add_to_drill_counter(drill_list_t *drill_list_in,

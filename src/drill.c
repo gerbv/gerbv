@@ -285,10 +285,24 @@ parse_drillfile(gerb_file_t *fd)
 		    state->curr_section != DRILL_HEADER) {
 		    GERB_COMPILE_WARNING("M71 code found but no METRIC specification in header.\n"
 					 "Recalculating tool sizes as mm.\n");
+
 		    int tool_num;
+		    double size;
+		    stats = image->drill_stats;
 		    for (tool_num = TOOL_MIN; tool_num < TOOL_MAX; tool_num++) {
-			if (image->aperture[tool_num])
+			if (image->aperture && image->aperture[tool_num]) {
+			    /* First update stats.   Do this before changing drill dias.
+			     * Maybe also put error into stats? */
+			    size = image->aperture[tool_num]->parameter[0];
+			    drill_stats_modify_drill_list(stats->drill_list, 
+							  tool_num, 
+							  size, 
+							  "MM");
+			    /* Now go back and update all tool dias, since
+			     * tools are displayed in inch units
+			     */
 			    image->aperture[tool_num]->parameter[0] /= 25.4;
+			}
 		    }
 		}
 		state->number_format = state->backup_number_format;
@@ -339,15 +353,9 @@ parse_drillfile(gerb_file_t *fd)
 	    /* Hole coordinate found. Do some parsing */
 	    drill_parse_coordinate(fd, read, image, state);
 
-	    /* Add one to drill stats */
-
-	    dprintf("before calling increment_drill_counter, count = %d\n",
-		    image->drill_stats->drill_list->drill_count);
+	    /* Add one to drill stats  for the current tool */
 	    drill_stats_increment_drill_counter(image->drill_stats->drill_list,
 						state->current_tool);
-	    dprintf("after calling increment_drill_counter, count = %d\n",
-		    image->drill_stats->drill_list->drill_count);
-
 
 	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
 	    if (curr_net->next == NULL)
@@ -530,7 +538,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		size /= 1000.0;
 	    }
 
-	    if(size <= 0 || size >= 10000) {
+	    if(size <= 0. || size >= 10000.) {
 		GERB_COMPILE_ERROR("Tool is wrong size: %g\n", size);
 	    } else {
 		if(image->aperture[tool_num] != NULL) {
@@ -580,7 +588,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	if( (temp = gerb_fgetc(fd)) == EOF) {
 	    GERB_COMPILE_ERROR("(very) Unexpected end of file found\n");
 	}
-    }   /* while(!done) */
+    }   /* while(!done) */  /* Done looking at tool definitions */
 
     /* Catch the tools that aren't defined.
        This isn't strictly a good thing, but at least something is shown */
@@ -622,12 +630,15 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 	/* Add the tool whose definition we just found into the list
 	 * of tools for this layer used to generate statistics. */
-	stats = image->drill_stats;
-	drill_stats_add_to_drill_list(stats->drill_list, 
-				      tool_num, 
-				      dia, 
-				      g_strdup_printf("%s", (state->unit == MM ? "mm" : "inch")));
-	
+	if (tool_num != 0) {  /* Only add non-zero tool nums.  
+			       * Zero = unload command. */
+	    stats = image->drill_stats;
+	    drill_stats_add_to_drill_list(stats->drill_list, 
+					  tool_num, 
+					  dia, 
+					  g_strdup_printf("%s", 
+							  (state->unit == MM ? "mm" : "inch")));
+	}
     } /* if(image->aperture[tool_num] == NULL) */	
     
     return tool_num;
