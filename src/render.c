@@ -795,7 +795,9 @@ generate_drill_analysis(void)
 	    screen.file[i]->isVisible &&
 	    (screen.file[i]->image->layertype == DRILL) ) {
 	    instats = screen.file[i]->image->drill_stats;
-	    drill_stats_add_layer(stats, instats);
+	    /* add this batch of stats.  Send the layer 
+	     * index for error reporting */
+	    drill_stats_add_layer(stats, instats, i+1);
 	}
     }
     

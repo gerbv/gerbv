@@ -538,13 +538,52 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     drill_list_t *my_drill_list;
     gchar *drill_report_string;
     gchar *general_report_string;
-    
-    stats_report = (drill_stats_t *) generate_drill_analysis();
+    gchar *error_report_string;
+    error_list_t *my_error_list;
+    gchar *error_level = NULL;
 
+    stats_report = (drill_stats_t *) generate_drill_analysis();
+    
+    /* General and error window strings */
     general_report_string = g_strdup_printf("General information\n");
     general_report_string = g_strdup_printf("%sActive layer count = %d\n", 
 					    general_report_string, stats_report->layer_count);
 
+    if (stats_report->error_list->error_text == NULL) {
+	error_report_string = g_strdup_printf("\n\nNo errors found in drill file(s)!\n"); 
+    } else {
+	error_report_string = g_strdup_printf("\n\nErrors found in drill file(s):\n"); 
+	for(my_error_list = stats_report->error_list; 
+	    my_error_list != NULL; 
+	    my_error_list = my_error_list->next) {
+	    switch(my_error_list->type) {
+		case FATAL: /* We should never get this one since the 
+			     * program should terminate first.... */
+		    error_level = g_strdup_printf("FATAL --");
+		    break;
+		case ERROR:
+		    error_level = g_strdup_printf("ERROR --");
+		    break;
+		case WARNING:
+		    error_level = g_strdup_printf("WARNING --");
+		    break;
+		case NOTE:
+		    error_level = g_strdup_printf("NOTE --");
+		    break;
+	    }
+	    error_report_string = g_strdup_printf("%sLayer %d: %s %s", 
+						  error_report_string,
+						  my_error_list->layer,
+						  error_level,
+						  my_error_list->error_text);
+	}
+    }
+
+    general_report_string = g_strdup_printf("%s%s", 
+					    general_report_string,
+					    error_report_string);
+
+    /* G code window strings */
     G_report_string = g_strdup_printf("G code statistics   \n");
     G_report_string = g_strdup_printf("%sG00 = %d\n", 
 				      G_report_string, stats_report->G00);
@@ -565,6 +604,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     G_report_string = g_strdup_printf("%sUnknown G codes = %d\n", 
 				      G_report_string, stats_report->G_unknown);
 
+    /* M code window strings */
     M_report_string = g_strdup_printf("M code statistics   \n");
     M_report_string = g_strdup_printf("%sM00 = %d\n", 
 				      M_report_string, stats_report->M00);
@@ -597,25 +637,20 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
 				      M_report_string, stats_report->M_unknown);
 
-
+    /* misc report strings */
     misc_report_string = g_strdup_printf("Misc code statistics   \n");
     misc_report_string = g_strdup_printf("%scomments = %d\n", 
 					 misc_report_string, stats_report->comment);
     misc_report_string = g_strdup_printf("%sUnknown codes = %d\n", 
 					 misc_report_string, stats_report->unknown);
 
-
+    /* drill report window strings */
     drill_report_string = g_strdup_printf("%10s   %11s  %8s  %8s\n", 
 					  "Drill no.", "Dia.", "Units", "Count");
     for(my_drill_list = stats_report->drill_list; 
 	my_drill_list != NULL; 
 	my_drill_list = my_drill_list->next) {
 	if (my_drill_list->drill_num == -1) break;  /* No dill list */
-	dprintf("Creating drill_report_string, drill_num = %d\n", my_drill_list->drill_num);
-	dprintf("Creating drill_report_string, drill_size = %g\n", my_drill_list->drill_size);
-	dprintf("Creating drill_report_string, drill_unit = %s\n", my_drill_list->drill_unit);
-	dprintf("Creating drill_report_string, drill_count = %d\n", my_drill_list->drill_count);
-	
 	drill_report_string = g_strdup_printf("%s%10d   %8.3f  %8s  %8d\n", 
 					      drill_report_string,
 					      my_drill_list->drill_num,

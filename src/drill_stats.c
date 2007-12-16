@@ -44,7 +44,8 @@ drill_stats_t *
 drill_stats_new(void) {
 
     drill_stats_t *stats;
-    drill_list_t *list;
+    drill_list_t *drill_list;
+    error_list_t *error_list;
 
     /* Malloc space for new stats struct.  Return NULL if error. */
     if ((stats = (drill_stats_t *)malloc(sizeof(drill_stats_t))) == NULL) {
@@ -55,10 +56,16 @@ drill_stats_new(void) {
     memset((void *)stats, 0, sizeof(drill_stats_t));
 
     /* Initialize drill list */
-    list = drill_stats_new_drill_list();
-    if (list == NULL)
+    drill_list = drill_stats_new_drill_list();
+    if (drill_list == NULL)
         GERB_FATAL_ERROR("malloc drill_list failed\n");
-    stats->drill_list = (drill_list_t *) list;
+    stats->drill_list = (drill_list_t *) drill_list;
+
+    /* Initialize error list */
+    error_list = drill_stats_new_error_list();
+    if (error_list == NULL)
+        GERB_FATAL_ERROR("malloc error_list failed\n");
+    stats->error_list = (error_list_t *) error_list;
 
     return stats;
 }
@@ -67,9 +74,11 @@ drill_stats_new(void) {
 /* ------------------------------------------------------- */
 void
 drill_stats_add_layer(drill_stats_t *accum_stats, 
-		      drill_stats_t *input_stats) {
+		      drill_stats_t *input_stats,
+		      int this_layer) {
 
     drill_list_t *drill;
+    error_list_t *error;
 
     dprintf("--->  Entering drill_stats_add_layer ..... \n");
 
@@ -123,6 +132,18 @@ drill_stats_add_layer(drill_stats_t *accum_stats,
 	drill_stats_add_to_drill_counter(accum_stats->drill_list,
 					 drill->drill_num,
 					 drill->drill_count);
+    }
+
+    /* ==== Now deal with the error list ==== */
+    for (error = input_stats->error_list;
+         error != NULL;
+	 error = error->next) {
+	if (error->error_text != NULL) {
+	    drill_stats_add_error(accum_stats->error_list,
+				  this_layer,
+				  error->error_text,
+				  error->type);
+	}
     }
 
     dprintf("<---  .... Leaving drill_stats_add_layer.\n");
@@ -265,7 +286,7 @@ drill_stats_increment_drill_counter(drill_list_t *drill_list_in,
 	if (drill_num_in == drill->drill_num) {
 	    drill->drill_count++;
 	    dprintf("         .... incrementing drill count.  drill_num = %d, drill_count = %d.\n",
-		    drill_list_in->drill_num, drill_list_in->drill_count);
+		    drill_list_in->drill_num, drill->drill_count);
 	    dprintf("   <---- .... Leaving drill_stats_increment_drill_counter after incrementing counter.\n");
 	    return;
 	}
@@ -288,4 +309,89 @@ drill_stats_add_to_drill_counter(drill_list_t *drill_list_in,
 	    return;
 	}
     }
+}
+
+
+/* ------------------------------------------------------- */
+error_list_t *
+drill_stats_new_error_list() {
+    error_list_t *error_list;
+
+    /* Malloc space for new error_list struct.  Return NULL if error. */
+    if ((error_list = (error_list_t *)malloc(sizeof(error_list_t))) == NULL) {
+        return NULL;
+    }
+
+    error_list->layer = -1;
+    error_list->error_text = NULL;
+    error_list->next = NULL;
+    return error_list;
+} 
+
+
+
+/* ------------------------------------------------------- */
+void
+drill_stats_add_error(error_list_t *error_list_in, 
+		      int layer, const char *error_text,
+		      enum error_type_t type) {
+
+    error_list_t *error_list_new;
+    error_list_t *error_last = NULL;
+    error_list_t *error;
+
+    dprintf("   ----> Entering drill_stats_add_error......\n");
+
+    /* Replace embedded error messages */
+    switch (type) {
+	case FATAL:
+	    GERB_FATAL_ERROR(error_text);
+	    break;
+	case ERROR:
+	    GERB_COMPILE_ERROR(error_text);
+	    break;
+	case WARNING:
+	    GERB_COMPILE_WARNING(error_text);
+	    break;
+	case NOTE:
+	    break;
+    }
+
+
+    /* First handle case where this is the first list element */
+    if (error_list_in->error_text == NULL) {
+	error_list_in->layer = layer;
+	error_list_in->error_text = g_strdup_printf("%s", error_text);
+	error_list_in->type = type;
+	error_list_in->next = NULL;
+	dprintf("   <---- .... Leaving drill_stats_add_error after adding first error message.\n");
+	return;
+    }
+
+    /* Next check to see if this error is already in the list */
+    for(error = error_list_in; error != NULL; error = error->next) {
+	if ((strcmp(error->error_text, error_text) == 0) && 
+	    (error->layer == layer) ) {
+	    return;  /* This error text is already in the error list */
+	}
+	error_last = error;  /* point to last element in error list */
+    }
+    /* This error text is unique.  Therefore, add it to the list */
+
+    /* Now malloc space for new error list element */
+    error_list_new = (error_list_t *) malloc(sizeof(error_list_t));
+    if (error_list_new == NULL) {
+	GERB_FATAL_ERROR("malloc error_list failed\n");
+    }
+    
+    /* Set member elements */
+    error_list_new->layer = layer;
+    error_list_new->error_text = g_strdup_printf("%s", error_text);
+    error_list_new->type = type;
+    error_list_new->next = NULL;
+    error_last->next = error_list_new;
+
+    dprintf("   <---- .... Leaving drill_stats_add_error after adding new error message.\n");
+    return;
+
 }

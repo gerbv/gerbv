@@ -25,6 +25,8 @@
 #define GERB_ERROR_H
 #include <glib.h>
 
+enum error_type_t {FATAL, ERROR, WARNING, NOTE};
+
 #define GERB_FATAL_ERROR(t...) g_log(NULL, G_LOG_LEVEL_ERROR, ##t);
 #define GERB_COMPILE_ERROR(t...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, ##t);
 #define GERB_COMPILE_WARNING(t...)  g_log(NULL, G_LOG_LEVEL_WARNING, ##t);

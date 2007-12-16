@@ -24,8 +24,8 @@
 #ifndef DRILL_STATS_H
 #define DRILL_STATS_H
 
-#include <gdk/gdk.h>  /* This imports gboolean type */
-
+#include <gdk/gdk.h>      /* This imports gboolean type */
+#include "gerb_error.h"   /* This gives us the enum error_type_t */
 
 typedef struct drill_list {
     int drill_num;
@@ -35,9 +35,17 @@ typedef struct drill_list {
     struct drill_list *next;
 } drill_list_t;
 
+typedef struct error_list {
+    int layer;
+    char *error_text;
+    enum error_type_t type;
+    struct error_list *next;
+} error_list_t;
+
 typedef struct {
     int layer_count;
-
+    
+    error_list_t *error_list;
     drill_list_t *drill_list;
     int comment;
     int F;
@@ -76,7 +84,7 @@ typedef struct {
 /* ===================  Prototypes ================ */
 drill_stats_t * drill_stats_new(void);
 void drill_stats_add_layer(drill_stats_t *accum_stats, 
-			   drill_stats_t *input_stats);
+			   drill_stats_t *input_stats, int this_layer);
 gboolean drill_stats_in_drill_list(drill_list_t *drill_list, int drill_num);
 drill_list_t *drill_stats_new_drill_list(void);
 void drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
@@ -90,6 +98,10 @@ void drill_stats_increment_drill_counter(drill_list_t *drill_list_in,
 void drill_stats_add_to_drill_counter(drill_list_t *drill_list_in,
 				      int drill_num_in,
 				      int increment);
+error_list_t *drill_stats_new_error_list(void);
+void drill_stats_add_error(error_list_t *error_list_in,
+			   int layer, const char *error_text, 
+			   enum error_type_t type);
 
 
 #endif /* DRILL_STATS_H */

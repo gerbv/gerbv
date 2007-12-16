@@ -157,14 +157,12 @@ parse_drillfile(gerb_file_t *fd)
     state = new_state(state);
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
-    dprintf("   ... in drill_guess_format, done creating state   ...\n");
 
     image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
     if (image->format == NULL)
 	GERB_FATAL_ERROR("malloc format failed\n");
     memset((void *)image->format, 0, sizeof(gerb_format_t));
     image->format->omit_zeros = ZEROS_UNSPECIFIED;
-    dprintf("   ... in drill_guess_format, done creating image->format   ...\n");
 
     dprintf ("%s:  drill_guess_format gave %s\n", __FUNCTION__, 
 	     state->unit == MM ? "mm" : "inch");
@@ -186,7 +184,10 @@ parse_drillfile(gerb_file_t *fd)
 	    /* Most G codes aren't used, for now */
 	    switch(drill_parse_G_code(fd, image)) {
 	    case DRILL_G_ROUT :
-		GERB_COMPILE_ERROR("Rout mode data is not supported\n");
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      "Rout mode data is not supported\n",
+				      ERROR);
 		break;
 	    case DRILL_G_DRILL :
 		break;
@@ -198,7 +199,10 @@ parse_drillfile(gerb_file_t *fd)
 		break;
 	    case DRILL_G_ZEROSET :
 		if((read = gerb_fgetc(fd)) == EOF)
-		    GERB_COMPILE_ERROR("Unexpected EOF\n");
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      "Unexpected EOF found.\n",
+				      ERROR);
 		drill_parse_coordinate(fd, (char)read, image, state);
 		state->origin_x = state->curr_x;
 		state->origin_y = state->curr_y;
@@ -234,11 +238,17 @@ parse_drillfile(gerb_file_t *fd)
 				   break;
 
 			       default:
-				   GERB_COMPILE_WARNING("Junk after INCH command\n");
+				   drill_stats_add_error(stats->error_list,
+							 -1,
+							 "Found junk after INCH command\n",
+							 WARNING);
 				   break;
 			       }
 			   } else {
-			       GERB_COMPILE_WARNING("Junk after INCH command\n");
+				   drill_stats_add_error(stats->error_list,
+							 -1,
+							 "Found junk after INCH command\n",
+							 WARNING);
 			   }
 		       }
 		   }
@@ -274,6 +284,7 @@ parse_drillfile(gerb_file_t *fd)
 		       contradict to this though.
 
 		       XXX We should probably ask the user. */
+
 		    GERB_COMPILE_WARNING("End of Excellon header reached but no "
 					 "leading/trailing zero handling specified.\n"
 					 "Assume trailing zeros.\n");
@@ -283,9 +294,14 @@ parse_drillfile(gerb_file_t *fd)
 	    case DRILL_M_METRIC :
 		if (state->unit == UNIT_UNSPECIFIED &&
 		    state->curr_section != DRILL_HEADER) {
-		    GERB_COMPILE_WARNING("M71 code found but no METRIC specification in header.\n"
-					 "Recalculating tool sizes as mm.\n");
-
+		    drill_stats_add_error(stats->error_list,
+					  -1,
+					  "M71 code found but no METRIC specification in header.\n",
+					  ERROR);
+		    drill_stats_add_error(stats->error_list,
+					  -1,
+					  "Assuming all tool sizes are MM.\n",
+					  WARNING);
 		    int tool_num;
 		    double size;
 		    stats = image->drill_stats;
@@ -337,7 +353,10 @@ parse_drillfile(gerb_file_t *fd)
 	      state->unit = MM;
 	      break;
 	    default:
-		GERB_COMPILE_ERROR("Strange M code found.\n");
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      "Undefined M code found.\n",
+				      ERROR);
 	    }
 	    break;
 
@@ -416,16 +435,24 @@ parse_drillfile(gerb_file_t *fd)
 	default:
 	    if(state->curr_section == DRILL_HEADER) {
 		/* Unrecognised crap in the header is thrown away */
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      "Undefined codes found in header.\n",
+				      ERROR);
 		eat_line(fd);
 	    } else {
-		GERB_COMPILE_ERROR(
-			"Warning: Found ill fitting character '%c' [0x%02x] inside data, ignoring\n",
-			read, read);
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Undefined character '%c' [0x%02x] found inside data, ignoring\n",
+						      read, read),
+				      ERROR);
 	    }
 	}
     }
-
-    GERB_COMPILE_ERROR("Warning: File is missing drill End-Of-File\n");
+    drill_stats_add_error(stats->error_list,
+			  -1,
+			  "No EOF found in drill file.\n",
+			  ERROR);
 
     free(state);
 
@@ -489,27 +516,41 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     int done = FALSE;
     int temp;
     double size;
-    drill_stats_t *stats;
+    drill_stats_t *stats = NULL;
 
     /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
        broken headers from Orcad, which is crap */
     temp = gerb_fgetc(fd);
     if( !(isdigit(temp) != 0 || temp == '+' || temp =='-') ) {
 	if(temp != EOF) {
-	    GERB_COMPILE_ERROR(
-		    "Warning: Junk text found in place of tool definition.\n"
-		    "         Please ask your CAD vendor to stop doing that.\n");
+	    drill_stats_add_error(stats->error_list,
+				  -1,
+				  "Junk text found in place of tool definition.\n",
+				  ERROR);
+	    drill_stats_add_error(stats->error_list,
+				  -1,
+				  "Ignorning junk text.\n",
+				  WARNING);
+
 	    eat_line(fd);
 	}
 	return -1;
     }
     gerb_ungetc(fd);
 
-    tool_num = gerb_fgetint(fd, NULL);
-    if ((tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX)) 
-	GERB_COMPILE_ERROR("Tool out of bounds: %d\n", tool_num);
+    tool_num = (int) gerb_fgetint(fd, NULL);
+    dprintf ("In %s: handling tool_num = %d\n", __FUNCTION__, tool_num);
 
-    dprintf ("%s: tool_num = %d\n", __FUNCTION__, tool_num);
+    if (tool_num == 0) 
+	break; /* T00 is a command to unload the drill */
+
+    if ( (tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX) ) {
+	drill_stats_add_error(stats->error_list,
+			      -1,
+			      g_strdup_printf("Drill number out of bounds: %d.\n", tool_num),
+			      ERROR);
+    }
+
     /* Set the current tool to the correct one */
     state->current_tool = tool_num;
 
@@ -533,16 +574,28 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		   The limit being 4 inches is because the smallest drill
 		   I've ever seen used is 0,3mm(about 12mil). Half of that
 		   seemed a bit too small a margin, so a third it is */
-		GERB_COMPILE_WARNING("Read a tool diameter of %g. ", size);
-		GERB_COMPILE_WARNING("Assuming this is mils and your CAD tool is broken.\n");
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Read a drill of diameter %g inches.\n", size),
+				      ERROR); 
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Assuming units are mils.\n"),
+				      WARNING); 
 		size /= 1000.0;
 	    }
 
 	    if(size <= 0. || size >= 10000.) {
-		GERB_COMPILE_ERROR("Tool is wrong size: %g\n", size);
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Unreasonable drill size found for drill %d: %g\n", tool_num, size),
+				      ERROR);
 	    } else {
 		if(image->aperture[tool_num] != NULL) {
-		    GERB_COMPILE_ERROR("Tool is already defined\n");
+		    drill_stats_add_error(stats->error_list,
+					  -1,
+					  g_strdup_printf("Found redefinition of drill %d.\n", tool_num),
+					  ERROR);
 		} else {
 		    image->aperture[tool_num] =
 			(gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
