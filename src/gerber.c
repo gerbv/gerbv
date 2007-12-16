@@ -351,7 +351,9 @@ parse_gerb(gerb_file_t *fd)
 		    curr_net->interpolation = state->interpolation;
 		    curr_net->layer_polarity = state->layer_polarity;
 		    curr_net->unit = state->unit;	    
-		    curr_net = gen_circle_segments(curr_net, state->interpolation == CW_CIRCULAR, &(state->parea_start_node->nuf_pcorners));
+		    curr_net = gen_circle_segments(curr_net, 
+						   state->interpolation == CW_CIRCULAR, 
+						   &(state->parea_start_node->nuf_pcorners));
 		}
 
 		state->parea_start_node->nuf_pcorners++;
@@ -701,6 +703,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    break;
 	}
 	break;
+
     case A2I('F','S'): /* Format Statement */
 	image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
 	if (image->format == NULL) 
@@ -915,6 +918,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->unit;
 	    image->aperture[ano] = a;
+	    /* FIXME:  Add aperture list stuff here */
 	} else
 	    GERB_COMPILE_ERROR("Aperture number out of bounds : %d\n", ano);
 	break;
@@ -1012,6 +1016,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     amacro_t *curr_amacro;
     
     if (gerb_fgetc(fd) != 'D')
+	/* Insert AD error here */
 	return -1;
     
     /*

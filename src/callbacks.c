@@ -610,6 +610,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     for(my_drill_list = stats_report->drill_list; 
 	my_drill_list != NULL; 
 	my_drill_list = my_drill_list->next) {
+	if (my_drill_list->drill_num == -1) break;  /* No dill list */
 	dprintf("Creating drill_report_string, drill_num = %d\n", my_drill_list->drill_num);
 	dprintf("Creating drill_report_string, drill_size = %g\n", my_drill_list->drill_size);
 	dprintf("Creating drill_report_string, drill_unit = %s\n", my_drill_list->drill_unit);
