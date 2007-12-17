@@ -163,6 +163,34 @@ if test "x$GCC" = "xyes"; then
 	fi
 fi
 
+# Check for ImageMagick tools used by the testsuite
+AC_PATH_PROG(ANIMATE, animate, notfound)
+AC_PATH_PROG(COMPARE, compare, notfound)
+AC_PATH_PROG(CONVERT, convert, notfound)
+AC_PATH_PROG(DISPLAY, display, notfound)
+AC_PATH_PROG(MONTAGE, montage, notfound)
+missing_magick=""
+test "${ANIMATE}" != "notfound" || missing_magick="${missing_magick} animate"
+test "${COMPARE}" != "notfound" || missing_magick="${missing_magick} compare"
+test "${CONVERT}" != "notfound" || missing_magick="${missing_magick} convert"
+test "${DISPLAY}" != "notfound" || missing_magick="${missing_magick} display"
+test "${MONTAGE}" != "notfound" || missing_magick="${missing_magick} montage"
+
+AC_MSG_CHECKING([if all ImageMagick tools needed for the testsuite were found])
+if test "X${missing_magick}" != "X" ; then
+	AC_MSG_RESULT([no.  The testsuite will be disabled because the following
+tools from the ImageMagick suite were not found:
+${missing_magick}
+No loss in gerbv functionality should be experienced, you just will not
+be able to run the regression testsuite.
+])
+	have_magick=no
+else
+	AC_MSG_RESULT([yes])
+	have_magick=yes
+fi
+AM_CONDITIONAL(HAVE_MAGICK, test x$have_magick = xyes)
+
 # Check for pkg-config
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 if test "$PKG_CONFIG" = "no"; then
@@ -299,7 +327,9 @@ AC_OUTPUT(	Makefile \
 		man/Makefile \
 		man/gerbv.1 \
 		scheme/Makefile \
-		src/Makefile )
+		src/Makefile \
+		test/Makefile \
+		test/golden/Makefile )
         
 AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:

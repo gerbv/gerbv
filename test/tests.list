@@ -1,0 +1,146 @@
+# $Id$
+#
+# Copyright (c) 2003, 2004, 2005, 2006, 2007 Dan McMahill
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of version 2 of the GNU General Public License as
+#  published by the Free Software Foundation
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+# All rights reserved.
+#
+# This code was derived from code written by Dan McMahill as part of the
+# latex-mk testsuite.  The original code was covered by a BSD license
+# but the copyright holder is releasing the version for gerbv under the GPL.
+#
+#
+# Format:
+#
+# test_name | layout file(s) | [optional arguments to gerbv] | [mismatch]
+#
+# test_name - a single string with no spaces, tabs, *, +, ? (i.e. any "special"
+# characters) that identifies the test.
+#
+# layout file(s) - a list of layout files.  Files listed are relative to
+# the $(top_srcdir)/tests/inputs directory.
+#
+# [optional arguments to gerbv] If specified, this last field will be used as 
+# the gerbv export command line.  Otherwise a default set of options will be
+# used.
+#
+# [mismatch] If specified as "mismatch" (no quotes), then the given layout
+# should *not* match the reference layout.  This can be thought of as a test
+# on the testsuite to make sure we can properly detect when two PNG files
+# do not match.
+#
+#
+######################################################################
+# ---------------------------------------------
+# Existing layouts from the examples/ directory
+# ---------------------------------------------
+######################################################################
+#
+example_mentor_boardstation | ../example/Mentor-BoardStation/artwork_1.grb
+#
+#
+example_am_test             | ../example/am-test/am-test.gbx
+#
+#
+example_cslk                | ../example/cslk/cslk.gbx
+#
+#
+example_dan_top             | ../example/dan/top.gbx
+example_dan_top_sr          | ../example/dan/top_sr.gbx
+#
+#
+example_eaglecad1           | ../example/eaglecad1/top-cop.gbx
+# This one is RS274-D
+# example_ekf1
+#
+#
+example_ekf2_d1             | ../example/ekf2/d1.grb
+example_ekf2_drill0         | ../example/ekf2/drill0.exc
+example_ekf2_drill1         | ../example/ekf2/drill1.exc
+example_ekf2_drill20        | ../example/ekf2/drill20.exc
+example_ekf2_drill30        | ../example/ekf2/drill30.exc
+example_ekf2_gnd            | ../example/ekf2/gnd.grb
+example_ekf2_l0             | ../example/ekf2/l0.grb
+example_ekf2_l1             | ../example/ekf2/l1.grb
+example_ekf2_l2             | ../example/ekf2/l2.grb
+example_ekf2_l3             | ../example/ekf2/l3.grb
+example_ekf2_l4             | ../example/ekf2/l4.grb
+example_ekf2_l5             | ../example/ekf2/l5.grb
+example_ekf2_pow            | ../example/ekf2/pow.grb
+example_ekf2_pow3           | ../example/ekf2/pow3.grb
+example_ekf2_resplan        | ../example/ekf2/resplan.grb
+example_ekf2_sieb0          | ../example/ekf2/sieb0.grb
+example_ekf2_sieb1          | ../example/ekf2/sieb1.grb
+example_ekf2_stp0           | ../example/ekf2/stp0.grb
+example_ekf2_stp1           | ../example/ekf2/stp1.grb
+#
+#
+example_exposure            | ../example/exposure/example.grb
+#
+#
+example_jj_l1-1             | ../example/jj/l1-1.grb
+example_jj_l1-2             | ../example/jj/l1-2.grb
+example_jj_l1-3             | ../example/jj/l1-3.grb
+example_jj_l1-orig          | ../example/jj/l1-orig.grb
+#
+#
+example_nollezappare_EtchLayer2Bottom. | ../example/nollezappare/EtchLayer2Bottom.gdo
+example_nollezappare_ThruHolePlated    | ../example/nollezappare/ThruHolePlated.ncd
+#
+#
+example_numpres_numpres_pcb_output_componentmask  | ../example/numpres/numpres.pcb.output_componentmask.grb
+example_numpres_numpres_pcb_output_componentsilk  | ../example/numpres/numpres.pcb.output_componentsilk.grb
+example_numpres_numpres.pcb.output_group1         | ../example/numpres/numpres.pcb.output_group1.grb
+example_numpres_numpres.pcb.output_group2         | ../example/numpres/numpres.pcb.output_group2.grb
+example_numpres_numpres.pcb.output_plated-drill   | ../example/numpres/numpres.pcb.output_plated-drill.grb
+example_numpres_numpres.pcb.output_soldermask     | ../example/numpres/numpres.pcb.output_soldermask.grb
+example_numpres_numpres.pcb.output_unplated-drill | ../example/numpres/numpres.pcb.output_unplated-drill.grb
+#
+#
+example_orcad_rs232_cm_asb  | ../example/orcad/rs232_cm.asb
+example_orcad_rs232_cm_ast  | ../example/orcad/rs232_cm.ast
+example_orcad_rs232_cm_bot  | ../example/orcad/rs232_cm.bot
+example_orcad_rs232_cm_drd  | ../example/orcad/rs232_cm.drd
+example_orcad_rs232_cm_smb  | ../example/orcad/rs232_cm.smb
+example_orcad_rs232_cm_smt  | ../example/orcad/rs232_cm.smt
+example_orcad_rs232_cm_ssb  | ../example/orcad/rs232_cm.ssb
+example_orcad_rs232_cm_sst  | ../example/orcad/rs232_cm.sst
+example_orcad_rs232_cm_top  | ../example/orcad/rs232_cm.top
+example_orcad_thruhole_tap  | ../example/orcad/thruhole.tap
+#
+#
+example_pick_and_place_LED  | ../example/pick-and-place/LED.xy
+#
+#
+example_polarity_6_vbat  | ../example/polarity/6_vbat.gbr
+#
+# not sure what all to do with this one
+# example_protel_pnp
+#
+# test aperture macro number 7
+#
+example_thermal_bpB  | ../example/thermal/bpB.GP1
+example_thermal_dsp  | ../example/thermal/dsp.GP1
+#
+#
+example_trailing_cd1r2.1_sieb0  | ../example/trailing/cd1r2.1_sieb0.off
+example_trailing_cd1r2.1_sieb1  | ../example/trailing/cd1r2.1_sieb1.off
+#
+#
+######################################################################
+# ---------------------------------------------
+# Layouts designed for the testsuite
+# ---------------------------------------------
+######################################################################
+#
