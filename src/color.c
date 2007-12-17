@@ -32,7 +32,7 @@
  * Allocates a color in the systems colormap.
  */
 GdkColor *
-alloc_color(int r, int g, int b, char *colorname)
+alloc_color_old(int r, int g, int b, char *colorname)
 {
     GdkColor *color;
 

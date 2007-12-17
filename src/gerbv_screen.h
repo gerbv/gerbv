@@ -52,7 +52,7 @@ typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
 
 typedef struct {
     gerb_image_t *image;
-    GdkColor *color;
+    GdkColor color;
     guint16 alpha;
     gboolean isVisible;
     gpointer privateRenderData;
@@ -70,10 +70,10 @@ typedef struct {
 typedef struct {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
-    GdkColor  *background;
+    GdkColor  background;
     GdkFunction si_func; /* Function used for superimposing layers */
-    GdkColor  *zoom_outline_color;
-    GdkColor  *dist_measure_color;
+    GdkColor  zoom_outline_color;
+    GdkColor  dist_measure_color;
     gerbv_unit_t unit;
 
     struct {
@@ -97,8 +97,8 @@ typedef struct {
     } win;
     gpointer windowSurface;
     gpointer bufferSurface;
-    gint canvasWidth;
-    gint canvasHeight;
+  //  gint canvasWidth;
+  //  gint canvasHeight;
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
     int last_loaded;
@@ -108,7 +108,7 @@ typedef struct {
     char *project;     /* Current project to simplify save next time */
     
     /* Bounding box for all loaded gerber images. Initialized by autoscale() */
-    gerbv_bbox_t gerber_bbox;
+  //  gerbv_bbox_t gerber_bbox;
 
     GtkTooltips *tooltips;
     GtkWidget *popup_menu;
@@ -131,13 +131,13 @@ typedef struct {
     gint start_x;		/* Zoom box/measure start coordinates */
     gint start_y;
 
-    int trans_x; /* Translate offset */
-    int trans_y;
-    gerb_transf_t *transf; /*handles all tranformations:Mirroring, scaling and translation*/
+ //   int trans_x; /* Translate offset */
+ //   int trans_y;
+ //   gerb_transf_t *transf; /*handles all tranformations:Mirroring, scaling and translation*/
 
     gint off_x;			/* Offset current pixmap when panning */
     gint off_y;
-    gerbv_bbox_t clip_bbox;	/* Clipping bounding box */
+//    gerbv_bbox_t clip_bbox;	/* Clipping bounding box */
 
     int dump_parsed_image;
 } gerbv_screen_t;

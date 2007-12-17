@@ -324,10 +324,9 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator5);
 	gtk_widget_set_sensitive (separator5, FALSE);
 
-	fit_to_window = gtk_menu_item_new_with_mnemonic (_("_Fit to Window"));
+	fit_to_window = gtk_image_menu_item_new_from_stock ("gtk-zoom-fit", accel_group);
 	gtk_widget_show (fit_to_window);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), fit_to_window);
-	gtk_tooltips_set_tip (tooltips, fit_to_window, _("Zoom to fit the project within the window"), NULL);
 
 	menuitem_analyze = gtk_menu_item_new_with_mnemonic (_("_Analyze"));
 	gtk_widget_show (menuitem_analyze);
@@ -900,10 +899,12 @@ interface_create_gui (int req_width, int req_height)
 	/*
 	* Setup some GTK+ defaults
 	*/
-	screen.tooltips = gtk_tooltips_new();        
-	screen.background = alloc_color(0, 0, 0, "black");
-	screen.zoom_outline_color  = alloc_color(0, 0, 0, "gray");
-	screen.dist_measure_color  = alloc_color(0, 0, 0, "lightblue");
+	screen.tooltips = gtk_tooltips_new();
+	GdkColor color1 = {0, 0, 0, 0}, color2 = {0, 5000, 5000, 5000},
+			color3 = {0, 30000, 30000, 65000};       
+	screen.background = color1;
+	screen.zoom_outline_color  = color2;
+	screen.dist_measure_color  = color3;
 	screen.drawing_area=drawingarea;
 	screen.win.hAdjustment = hAdjustment;
 	screen.win.vAdjustment = vAdjustment;

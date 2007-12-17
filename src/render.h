@@ -35,37 +35,51 @@ struct gerbv_redraw_state_t {
     int files_loaded;
 };
 
+typedef struct {
+	gdouble scaleFactor;
+	gdouble lowerLeftX;
+	gdouble lowerLeftY;
+	gdouble renderQuality; /* 1.0 is best, 2.0 is worst */
+	gint displayWidth;
+	gint displayHeight;
+} gerbv_render_info_t;
+
 gerb_stats_t *generate_gerber_analysis(void);
 drill_stats_t *generate_drill_analysis(void);
 
 #ifdef RENDER_USING_GDK
 /* Nothing for now */
 #else
-	void render_recreate_composite_surface (GtkWidget *widget);
+	void render_recreate_composite_surface ();
   	void render_project_to_cairo_target (cairo_t *cr);
 #endif
 
-gint
-redraw_pixmap(GtkWidget *widget, int restart);
-
-
+void
+render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY);
 
 void
-autoscale(void);
+render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event);
 
 void
-zoom(GtkWidget *widget, gpointer data);
+render_draw_zoom_outline(gboolean centered);
 
 void
-zoom_outline(GtkWidget *widget, GdkEventButton *event);
+render_draw_measure_distance(void);
 
 void
-draw_zoom_outline(gboolean centered);
+render_zoom_to_fit_display (gerbv_render_info_t *renderInfo);
 
-void
-draw_measure_distance(void);
+void render_refresh_rendered_image_on_screen (void);
 
-void
-autoscale(void);
 
+void render_force_expose_event_for_screen (void);
+
+#ifndef RENDER_USING_GDK
+void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
+						gerbv_render_info_t *renderInfo);
+void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_render_info_t *renderInfo);
+void render_all_layers_to_cairo_target (cairo_t *cr, gerbv_render_info_t *renderInfo);
+#endif
+
+void render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo);
 

@@ -1,3 +1,13 @@
+2007-12-17  Julian Lamb
+	* render,callbacks,interface: Restructure the whole rendering process by
+	  separating out all zoom and pan information from the global variable
+	  "screen". This was necessary to allow rendering without having a gtk
+	  window open, allowing for export from command line and many others.
+	  Also, the translation and zoom code is much more readable due to the
+	  elimination of many variables. Also, the GDK color allocations were
+	  eliminated to allow rendering without existing GDK colormaps in place.
+	* gerbv.c: Create the basic framework for exporting from the command line.	
+
 2007-12-16  Stuart Brorson (sdb@cloud9.net)
 	* src/callbacks.c, src/render.c, src/gerber.c,
 	src/gerb_error.h, src/gerb_stats.[hc]:  Implemented reporting

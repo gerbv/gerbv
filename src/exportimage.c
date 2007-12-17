@@ -27,158 +27,136 @@
 #include <config.h>
 #endif
 
-/*
- * Included only if requested at configure time
- */
-#ifdef EXPORT_PNG
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <math.h>
 
+#include <math.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <png.h>
-
+#include "gerbv_screen.h"
+#include "render.h"
 #include "exportimage.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
 #else
   #include "draw.h"
+  #include <cairo.h>
 #endif
 
 #include "gerbv_screen.h"
 
+extern gerbv_render_info_t screenRenderInfo;
+
 #ifdef RENDER_USING_GDK
-/* Function prototypes */
-static gboolean pixbuf_to_file_as_png (GdkPixbuf *pixbuf, char *filename);
-
-gboolean
-png_export(GdkPixmap* imagetosave, char* filename)
-{
-	GdkPixbuf *tempPixBuf=NULL;
-	GdkColormap *colormap=NULL; 
-	GdkPixmap *curr_pixmap = NULL, *out_pixmap = NULL, *clipmask = NULL;
-	GdkGC *gc = NULL;
-	int width = 0, height = 0, i;
-	double dmin_x, dmin_y, dmax_x, dmax_y;
-	gboolean result = FALSE;
-	
-	colormap = gdk_colormap_get_system();
-	if (colormap == NULL)
-	    return FALSE;
-	
-	if (imagetosave) {
-	    gdk_window_get_size(imagetosave, &width, &height);
-	    tempPixBuf = gdk_pixbuf_get_from_drawable(tempPixBuf, imagetosave, 
-						      colormap, 
-						      0, 0, 0, 0, 
-						      width, height);
-	} else {
-
-	    /*
-	     * Max and min of image gives the size of the image.
-	     */
-	    dmax_x = screen.gerber_bbox.x2;
-	    dmax_y = screen.gerber_bbox.y2;
-	    dmin_x = screen.gerber_bbox.x1;
-	    dmin_y = screen.gerber_bbox.y1;
-	    
-	    /*
-	     * Width and height to scaled full size.
-	     */
-	    width = (int)floor((dmax_x - dmin_x) * 
-			       (double)screen.transf->scale);
-	    height = (int)floor((dmax_y - dmin_y) * 
-			    (double)screen.transf->scale);
-	    
-	    /*
-	     * Allocate the pixmap and the clipmask (a one pixel pixmap)
-	     */
-	    gc = gdk_gc_new(screen.drawing_area->window);
-	    curr_pixmap = gdk_pixmap_new(screen.drawing_area->window, width, height,  -1);
-	    out_pixmap = gdk_pixmap_new(screen.drawing_area->window, width, height,  -1);
-	    clipmask = gdk_pixmap_new(screen.drawing_area->window, width, height,  1);
-	    
-	    /* 
-	     * Set background color 
-	     */
-	    gdk_gc_set_foreground(gc, screen.background);
-	    gdk_draw_rectangle (out_pixmap, gc, TRUE, 0,0, width, height);
-
-	    /* 
-	     * This now allows drawing several layers on top of each other.
-	     * Higher layer numbers have higher priority in the Z-order. 
-	     */
-/*              screen.transf->offset[0] = -dmin_x; */
-/*              screen.transf->offset[1] = dmax_y; */
-            
-	    for(i = 0; i < MAX_FILES; i++) {
-		if (screen.file[i] && screen.file[i]->isVisible) {
- 		    enum polarity_t polarity;
- 
- 		    if (screen.file[i]->inverted) {
- 			if (screen.file[i]->image->info->polarity == POSITIVE)
- 			    polarity = NEGATIVE;
- 			else
- 			    polarity = POSITIVE;
- 		    } else {
- 			polarity = screen.file[i]->image->info->polarity;
- 		    }
-
-		    /*
-		     * Fill up image with all the foreground color. Excess
-		     * pixels will be removed by clipmask.
-		     */
-		    gdk_gc_set_foreground(gc, screen.file[i]->color);
-		    gdk_draw_rectangle(curr_pixmap, gc, TRUE, 0, 0, -1, -1);
-		    
-		    /*
-		     * Translation is to get it inside the allocated pixmap,
-		     * which is not always centered perfectly for GTK/X.
-		     */
-		    image2pixmap(&clipmask, screen.file[i]->image,
-                                screen.transf->scale, 
-				 -dmin_x*screen.transf->scale,
-				 dmax_y*screen.transf->scale, 
-				 polarity);
-		    /* 
-		     * Set clipmask and draw the clipped out image onto the
-		     * screen pixmap. Afterwards we remove the clipmask, else
-		     * it will screw things up when run this loop again.
-		     */
-		    gdk_gc_set_clip_mask(gc, clipmask);
-		    gdk_gc_set_clip_origin(gc, 0, 0);
-		    gdk_draw_pixmap(out_pixmap, gc, curr_pixmap, 0,	0,
-				    0, 0, -1, -1);
-		    gdk_gc_set_clip_mask(gc, NULL);
-		}
-	    }
-	    tempPixBuf = gdk_pixbuf_get_from_drawable(tempPixBuf, out_pixmap,
-						      colormap,
-						      0, 0, 0, 0, 
-						      width, height);
-	}
-
-	if (tempPixBuf == NULL)
-	    return FALSE;
-
-	result = pixbuf_to_file_as_png (tempPixBuf, filename);
-	
-	gdk_pixbuf_unref(tempPixBuf);
-	gdk_colormap_unref(colormap);
-	if (curr_pixmap) gdk_pixmap_unref(curr_pixmap);
-	if (out_pixmap) gdk_pixmap_unref(out_pixmap);
-	if (clipmask) gdk_pixmap_unref(clipmask);
-	if (gc) gdk_gc_unref(gc);
-
-	return result;
-} /* png_export */
-
-
 static gboolean 
-pixbuf_to_file_as_png(GdkPixbuf *pixbuf, char *filename)
+exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, char *filename);
+#endif
+
+#ifndef RENDER_USING_GDK
+void exportimage_render_to_surface_and_destroy (cairo_surface_t *cSurface, gerbv_render_info_t *renderInfo,
+						gchar *filename) {
+      cairo_t *cairoTarget = cairo_create (cSurface);
+      
+      render_all_layers_to_cairo_target_for_vector_output (cairoTarget, renderInfo);
+	cairo_destroy (cairoTarget);
+	cairo_surface_destroy (cSurface);
+}
+
+
+#endif
+
+#ifdef EXPORT_PNG
+void exportimage_export_to_png_file_autoscaled (int widthInPixels, int heightInPixels, gchar *filename) {
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, widthInPixels, heightInPixels};
+	
+	render_zoom_to_fit_display (&renderInfo);
+	exportimage_export_to_png_file (&renderInfo, filename);
+}
+
+void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar *filename) {
+#ifdef RENDER_USING_GDK
+
+	GdkPixmap *renderedPixmap = gdk_pixmap_new (NULL, renderInfo->displayWidth,
+								renderInfo->displayHeight, 24);
+	GdkColormap *colormap=NULL;
+	GdkPixbuf *tempPixbuf=NULL;
+	
+	render_to_pixmap_using_gdk (renderedPixmap, renderInfo);
+	colormap = gdk_drawable_get_colormap(renderedPixmap);
+	if ((tempPixbuf = gdk_pixbuf_get_from_drawable(tempPixbuf, renderedPixmap, 
+					      colormap, 0, 0, 0, 0, 
+					      renderInfo->displayWidth, renderInfo->displayHeight))) {
+		exportimage_save_pixbuf_to_file (tempPixbuf, filename);
+		gdk_pixbuf_unref(tempPixbuf);
+	}
+	gdk_pixmap_unref(renderedPixmap);
+	
+	//png_export (NULL, filename);
+#else
+	cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
+                                                         renderInfo->displayWidth, renderInfo->displayHeight);
+
+      cairo_t *cairoTarget = cairo_create (cSurface);
+      
+      render_all_layers_to_cairo_target (cairoTarget, renderInfo);
+	cairo_surface_write_to_png (cSurface, filename);
+	cairo_destroy (cairoTarget);
+	cairo_surface_destroy (cSurface);
+#endif
+}
+#endif
+
+void exportimage_export_to_pdf_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, widthInPoints, heightInPoints};
+	
+	render_zoom_to_fit_display (&renderInfo);
+	exportimage_export_to_pdf_file (&renderInfo, filename);
+}
+
+void exportimage_export_to_pdf_file (gerbv_render_info_t *renderInfo, gchar *filename) {
+#ifndef RENDER_USING_GDK
+	cairo_surface_t *cSurface = cairo_pdf_surface_create (filename, renderInfo->displayWidth,
+								renderInfo->displayHeight);
+
+      exportimage_render_to_surface_and_destroy (cSurface, renderInfo, filename);
+#endif
+}
+
+void exportimage_export_to_postscript_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, widthInPoints, heightInPoints};
+	
+	render_zoom_to_fit_display (&renderInfo);
+	exportimage_export_to_postscript_file (&renderInfo, filename);
+}
+
+void exportimage_export_to_postscript_file (gerbv_render_info_t *renderInfo, gchar *filename) {
+#ifndef RENDER_USING_GDK
+	cairo_surface_t *cSurface = cairo_ps_surface_create (filename, renderInfo->displayWidth,
+								renderInfo->displayHeight);
+      exportimage_render_to_surface_and_destroy (cSurface, renderInfo, filename);
+#endif
+}
+
+void exportimage_export_to_svg_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, widthInPoints, heightInPoints};
+	
+	render_zoom_to_fit_display (&renderInfo);
+	exportimage_export_to_svg_file (&renderInfo, filename);
+}
+
+void exportimage_export_to_svg_file (gerbv_render_info_t *renderInfo, gchar *filename) {
+#ifndef RENDER_USING_GDK
+	cairo_surface_t *cSurface = cairo_svg_surface_create (filename, renderInfo->displayWidth,
+								renderInfo->displayHeight);
+      exportimage_render_to_surface_and_destroy (cSurface, renderInfo, filename);
+#endif
+}
+
+#ifdef RENDER_USING_GDK
+static gboolean 
+exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, char *filename)
 {
 	FILE *handle;
 	int width, height, depth, rowstride;
@@ -255,9 +233,5 @@ pixbuf_to_file_as_png(GdkPixbuf *pixbuf, char *filename)
 	fclose (handle);
 	return TRUE;
 } /* pixbuf_to_file_as_png */
-#else
-
-
-
 #endif
-#endif /* EXPORT_PNG */
+
