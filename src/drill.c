@@ -521,6 +521,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
        broken headers from Orcad, which is crap */
     temp = gerb_fgetc(fd);
+    dprintf("Found a char %d after the T\n", temp);
     if( !(isdigit(temp) != 0 || temp == '+' || temp =='-') ) {
 	if(temp != EOF) {
 	    drill_stats_add_error(stats->error_list,

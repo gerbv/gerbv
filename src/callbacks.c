@@ -433,32 +433,74 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
     /* Now compile stats related to reading G codes */
     G_report_string = g_strdup_printf("G code statistics   \n");
-    G_report_string = g_strdup_printf("%sG0 = %d\n", G_report_string, stats_report->G0);
-    G_report_string = g_strdup_printf("%sG1 = %d\n", G_report_string, stats_report->G1);
-    G_report_string = g_strdup_printf("%sG2 = %d\n", G_report_string, stats_report->G2);
-    G_report_string = g_strdup_printf("%sG3 = %d\n", G_report_string, stats_report->G3);
-    G_report_string = g_strdup_printf("%sG4 = %d\n", G_report_string, stats_report->G4);
-    G_report_string = g_strdup_printf("%sG10 = %d\n", G_report_string, stats_report->G10);
-    G_report_string = g_strdup_printf("%sG11 = %d\n", G_report_string, stats_report->G11);
-    G_report_string = g_strdup_printf("%sG12 = %d\n", G_report_string, stats_report->G12);
-    G_report_string = g_strdup_printf("%sG36 = %d\n", G_report_string, stats_report->G36);
-    G_report_string = g_strdup_printf("%sG37 = %d\n", G_report_string, stats_report->G37);
-    G_report_string = g_strdup_printf("%sG54 = %d\n", G_report_string, stats_report->G54);
-    G_report_string = g_strdup_printf("%sG55 = %d\n", G_report_string, stats_report->G55);
-    G_report_string = g_strdup_printf("%sG70 = %d\n", G_report_string, stats_report->G70);
-    G_report_string = g_strdup_printf("%sG71 = %d\n", G_report_string, stats_report->G71);
-    G_report_string = g_strdup_printf("%sG74 = %d\n", G_report_string, stats_report->G74);
-    G_report_string = g_strdup_printf("%sG75 = %d\n", G_report_string, stats_report->G75);
-    G_report_string = g_strdup_printf("%sG90 = %d\n", G_report_string, stats_report->G90);
-    G_report_string = g_strdup_printf("%sG91 = %d\n", G_report_string, stats_report->G91);
+    G_report_string = g_strdup_printf("%sG0 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G0,
+				      "Move");
+    G_report_string = g_strdup_printf("%sG1 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G1,
+				      "1X linear interpolation");
+    G_report_string = g_strdup_printf("%sG2 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G2,
+				      "CW interpolation");
+    G_report_string = g_strdup_printf("%sG3 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G3,
+				      "CCW interpolation");
+    G_report_string = g_strdup_printf("%sG4 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G4,
+				      "Ignore block");
+    G_report_string = g_strdup_printf("%sG10 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G10,
+				      "10X linear interpolation");
+    G_report_string = g_strdup_printf("%sG11 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G11,
+				      "0.1X linear interpolation");
+    G_report_string = g_strdup_printf("%sG12 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G12,
+				      "0.01X linear interpolation");
+    G_report_string = g_strdup_printf("%sG36 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G36,
+				      "Poly fill on");
+    G_report_string = g_strdup_printf("%sG37 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G37,
+				      "Poly fill off");
+    G_report_string = g_strdup_printf("%sG54 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G54,
+				      "Tool prepare");
+    G_report_string = g_strdup_printf("%sG55 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G55,
+				      "Flash prepare");
+    G_report_string = g_strdup_printf("%sG70 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G70,
+				      "Units = inches");
+    G_report_string = g_strdup_printf("%sG71 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G71,
+				      "Units = mm");
+    G_report_string = g_strdup_printf("%sG74 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G74,
+				      "Disable 360 circ. interpolation");
+    G_report_string = g_strdup_printf("%sG75 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G75,
+				      "Enable 360 circ. interpolation");
+    G_report_string = g_strdup_printf("%sG90 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G90,
+				      "Absolute units");
+    G_report_string = g_strdup_printf("%sG91 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G91,
+				      "Incremental units");
     G_report_string = g_strdup_printf("%sUnknown G codes = %d\n", 
 				      G_report_string, stats_report->G_unknown);
 
 
     D_report_string = g_strdup_printf("D code statistics   \n");
-    D_report_string = g_strdup_printf("%sD1 = %d\n", D_report_string, stats_report->D1);
-    D_report_string = g_strdup_printf("%sD2 = %d\n", D_report_string, stats_report->D2);
-    D_report_string = g_strdup_printf("%sD3 = %d\n", D_report_string, stats_report->D3);
+    D_report_string = g_strdup_printf("%sD1 = %-6d (%s)\n", 
+				      D_report_string, stats_report->D1,
+				      "Exposure on");
+    D_report_string = g_strdup_printf("%sD2 = %-6d (%s)\n", 
+				      D_report_string, stats_report->D2,
+				      "Exposure off");
+    D_report_string = g_strdup_printf("%sD3 = %-6d (%s)\n", 
+				      D_report_string, stats_report->D3,
+				      "Flash aperture");
     /* Insert stuff about user defined codes here */
     D_report_string = g_strdup_printf("%sUndefined D codes = %d\n", 
 				      D_report_string, stats_report->D_unknown);
@@ -467,9 +509,15 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 
     M_report_string = g_strdup_printf("M code statistics   \n");
-    M_report_string = g_strdup_printf("%sM0 = %d\n", M_report_string, stats_report->M0);
-    M_report_string = g_strdup_printf("%sM1 = %d\n", M_report_string, stats_report->M1);
-    M_report_string = g_strdup_printf("%sM2 = %d\n", M_report_string, stats_report->M2);
+    M_report_string = g_strdup_printf("%sM0 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M0,
+				      "Program start");
+    M_report_string = g_strdup_printf("%sM1 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M1,
+				      "Program stop");
+    M_report_string = g_strdup_printf("%sM2 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M2,
+				      "Program end");
     M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
 				      M_report_string, stats_report->M_unknown);
 

@@ -162,7 +162,10 @@ parse_gerb(gerb_file_t *fd)
 		return image;
 		break;
 	    default:
-		GERB_FATAL_ERROR("Strange M code found.\n");
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     "Unknown M code found.\n",
+				     ERROR);
 	    } /* switch(parse_M_code) */
 	    break;
 	case 'X':
@@ -814,25 +817,44 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    case 'X' :
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    GERB_COMPILE_ERROR("Illegal format size : %c\n", (char)op[0]);
+		    gerb_stats_add_error(stats->error_list,
+					 -1,
+					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
+					 ERROR);
 		image->format->x_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    GERB_COMPILE_ERROR("Illegal format size : %c\n", (char)op[0]);
+		    gerb_stats_add_error(stats->error_list,
+					 -1,
+					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
+					 ERROR);
 		image->format->x_dec = op[0] - '0';
 		break;
 	    case 'Y':
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    GERB_COMPILE_ERROR("Illegal format size : %c\n", (char)op[0]);
+		    gerb_stats_add_error(stats->error_list,
+					 -1,
+					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
+					 ERROR);
 		image->format->y_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    GERB_COMPILE_ERROR("Illegal format size : %c\n", (char)op[0]);
+		    gerb_stats_add_error(stats->error_list,
+					 -1,
+					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
+					 ERROR);
 		image->format->y_dec = op[0] - '0';
 		break;
 	    default :
-		GERB_COMPILE_ERROR("Not handled  type of format statement [%c]\n", op[0]);
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     g_strdup_printf("Invalid format statement [%c]\n", op[0]),
+				     ERROR);
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     "Ignoring invalid format statement.\n",
+				     WARNING);
 	    }
 	}
 	break;
@@ -845,8 +867,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    GERB_COMPILE_ERROR("Unexpected EOF found.\n");
-
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Unexpected EOF found.\n",
+				 ERROR);
 	switch (A2I(op[0],op[1])) {
 	case A2I('I','N'):
 	    state->unit = INCH;
@@ -855,7 +879,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    state->unit = MM;
 	    break;
 	default:
-	    GERB_COMPILE_ERROR("Illegal unit:%c%c\n", op[0], op[1]);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Illegal unit:%c%c\n", op[0], op[1]),
+				 ERROR);
 	}
 	break;
     case A2I('O','F'): /* Offset */
@@ -877,7 +904,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 		image->info->offset_b_in = image->info->offset_b / scale;
 		break;
 	    default :
-		GERB_COMPILE_ERROR("Wrong character in offset:%c\n", op[0]);
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     g_strdup_printf("Wrong character in offset:%c\n", op[0]),
+				     ERROR);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -905,8 +935,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    GERB_COMPILE_ERROR("Unexpected EOF found.\n");
-
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Unexpected EOF found.\n",
+				 ERROR);
 	switch (A2I(op[0],op[1])) {
 	case A2I('A','S'):
 	    image->info->encoding = ASCII;
@@ -924,7 +956,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->info->encoding = EIA;
 	    break;
 	default:
-	    GERB_COMPILE_ERROR("Strange inputcode : %c%c\n", op[0], op[1]);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Unknown input code (IC): %c%c\n", op[0], op[1]),
+				 ERROR);
 	}
 	break;
 
@@ -943,7 +978,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	for (ano = 0; ano < 3; ano++) {
 	    op[0] = gerb_fgetc(fd);
 	    if (op[0] == EOF)
-		GERB_COMPILE_ERROR("Unexpected EOF found.\n");
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     "Unexpected EOF while reading image polarity (IP)\n",
+				     ERROR);
 	    str[ano] = (char)op[0];
 	}
 	
@@ -952,8 +990,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	else if (strncmp(str, "NEG", 3) == 0)
 	    image->info->polarity = NEGATIVE;
 	else 
-	    GERB_COMPILE_ERROR("Strange polarity : %c%c%c\n", str[0], str[1], str[2]);
-	
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Unknown polarity : %c%c%c\n", str[0], str[1], str[2]),
+				 ERROR);
 	break;
     case A2I('I','R'): /* Image Rotation */
 	tmp = gerb_fgetint(fd, NULL);
@@ -976,7 +1016,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->aperture[ano] = a;
 	    /* FIXME:  Add aperture list stuff here */
 	} else
-	    GERB_COMPILE_ERROR("Aperture number out of bounds : %d\n", ano);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Aperture number out of bounds : %d\n", ano),
+				 ERROR);
 	break;
     case A2I('A','M'): /* Aperture Macro */
 	tmp_amacro = image->amacro;
@@ -988,7 +1031,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 #endif
 	}
 	else {
-		GERB_COMPILE_ERROR("Failed to parse aperture macro");
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Failed to parse aperture macro\n",
+				 ERROR);
 	}
 	break;
 	/* Layer */
@@ -1004,7 +1050,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    state->layer_polarity = CLEAR;
 	    break;
 	default:
-	    GERB_COMPILE_WARNING("Strange Layer Polarity: %c\n", op[0]);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Unknown Layer Polarity: %c\n", op[0]),
+				 ERROR);
 	}
 	break;
     case A2I('K','O'): /* Knock Out */
@@ -1034,7 +1083,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 		image->info->step_and_repeat.dist_Y = gerb_fgetdouble(fd);
 		break;
 	    default:
-		GERB_COMPILE_ERROR("Step-and-repeat parameter error\n");
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     "Step-and-repeat parameter error\n",
+				     ERROR);
 	    }
 
 	    /*
@@ -1054,7 +1106,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
       NOT_IMPL(fd, "%RO%");
       break;
     default:
-      GERB_COMPILE_ERROR("Unknown extension found %%%c%c%%\n", op[0], op[1]);
+    gerb_stats_add_error(stats->error_list,
+			 -1,
+			 g_strdup_printf("Unknown RS-274X extension found %%%c%c%%\n", op[0], op[1]),
+			 ERROR);
     }
     
     return;
