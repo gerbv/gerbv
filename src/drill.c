@@ -548,7 +548,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     dprintf ("In %s: handling tool_num = %d\n", __FUNCTION__, tool_num);
 
     if (tool_num == 0) 
-	break; /* T00 is a command to unload the drill */
+	return tool_num; /* T00 is a command to unload the drill */
 
     if ( (tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX) ) {
 	drill_stats_add_error(stats->error_list,
