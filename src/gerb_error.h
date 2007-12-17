@@ -27,6 +27,14 @@
 
 enum error_type_t {FATAL, ERROR, WARNING, NOTE};
 
+typedef struct error_list {
+    int layer;
+    char *error_text;
+    enum error_type_t type;
+    struct error_list *next;
+} error_list_t;
+
+
 #define GERB_FATAL_ERROR(t...) g_log(NULL, G_LOG_LEVEL_ERROR, ##t);
 #define GERB_COMPILE_ERROR(t...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, ##t);
 #define GERB_COMPILE_WARNING(t...)  g_log(NULL, G_LOG_LEVEL_WARNING, ##t);

@@ -35,13 +35,6 @@ typedef struct drill_list {
     struct drill_list *next;
 } drill_list_t;
 
-typedef struct error_list {
-    int layer;
-    char *error_text;
-    enum error_type_t type;
-    struct error_list *next;
-} error_list_t;
-
 typedef struct {
     int layer_count;
     

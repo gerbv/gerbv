@@ -385,14 +385,53 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gchar *M_report_string;
     gchar *misc_report_string;
     gchar *general_report_string;
+    gchar *error_report_string;
+    error_list_t *my_error_list;
+    gchar *error_level = NULL;
+
     
-    /* First get a report of stats accumulated from all layers */
+    /* First get a report of stats & errors accumulated from all layers */
     stats_report = generate_gerber_analysis();
 
     general_report_string = g_strdup_printf("General information\n");
     general_report_string = g_strdup_printf("%sActive layer count = %d\n", 
 					    general_report_string, stats_report->layer_count);
 
+    if (stats_report->error_list->error_text == NULL) {
+	error_report_string = g_strdup_printf("\n\nNo errors found in Gerber file(s)!\n"); 
+    } else {
+	error_report_string = g_strdup_printf("\n\nErrors found in Gerber file(s):\n"); 
+	for(my_error_list = stats_report->error_list; 
+	    my_error_list != NULL; 
+	    my_error_list = my_error_list->next) {
+	    switch(my_error_list->type) {
+		case FATAL: /* We should never get this one since the 
+			     * program should terminate first.... */
+		    error_level = g_strdup_printf("FATAL --");
+		    break;
+		case ERROR:
+		    error_level = g_strdup_printf("ERROR --");
+		    break;
+		case WARNING:
+		    error_level = g_strdup_printf("WARNING --");
+		    break;
+		case NOTE:
+		    error_level = g_strdup_printf("NOTE --");
+		    break;
+	    }
+	    error_report_string = g_strdup_printf("%sLayer %d: %s %s", 
+						  error_report_string,
+						  my_error_list->layer,
+						  error_level,
+						  my_error_list->error_text);
+	}
+    }
+
+    general_report_string = g_strdup_printf("%s%s", 
+					    general_report_string,
+					    error_report_string);
+
+    /* Now compile stats related to reading G codes */
     G_report_string = g_strdup_printf("G code statistics   \n");
     G_report_string = g_strdup_printf("%sG0 = %d\n", G_report_string, stats_report->G0);
     G_report_string = g_strdup_printf("%sG1 = %d\n", G_report_string, stats_report->G1);

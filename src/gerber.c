@@ -467,11 +467,18 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	default:
 	    stats->unknown++;
-	    GERB_COMPILE_ERROR("Found unknown character (whitespace?) %c[%d]\n", read, read);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Found unknown character (whitespace?) %c[%d]\n", 
+						 read, read),
+				 ERROR);
 	}  /* switch((char) (read & 0xff)) */
     }
     
-    GERB_COMPILE_ERROR("File is missing gerber End-Of-File\n");
+    gerb_stats_add_error(stats->error_list,
+			  -1,
+			  "File is missing Gerber EOF code.\n",
+			  ERROR);
 
     dprintf("               ... done parsing Gerber file\n");
     
@@ -541,9 +548,15 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 		if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX))
 			state->curr_aperture = a;
 		else 
-			GERB_COMPILE_ERROR("Aperture out of bounds:%d\n", a);
+		    gerb_stats_add_error(stats->error_list,
+					 -1,
+					 g_strdup_printf("Found aperture out of bounds while parsing G code: %d\n", a),
+					 ERROR);
 	} else {
-	    GERB_COMPILE_WARNING("Strange code after G54\n");
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Found unexpected code after G54\n",
+				 ERROR);
 	    /* Must insert error count here */
 	}
 	stats->G54++;
@@ -576,7 +589,15 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	stats->G91++;
 	break;
     default:
-	GERB_COMPILE_ERROR("Strange/unhandled G code : %d\n", op_int);
+	gerb_stats_add_error(stats->error_list,
+			     -1,
+			     g_strdup_printf("Encountered unknown G code : G%d\n", op_int),
+			     ERROR);
+	gerb_stats_add_error(stats->error_list,
+			     -1,
+			     g_strdup_printf("Ignorning unknown G code\n"),
+			     WARNING);
+
 	stats->G_unknown++;
 	/* Enter error count here */
 	break;
@@ -619,7 +640,10 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	    /* gerb_stats_inc_D_code(stats, a); */
 	}
 	else {
-	    GERB_COMPILE_ERROR("Aperture out of bounds:%d\n", a);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Found aperture out of bounds while parsing D code: %d\n", a),
+				 ERROR);
 	    stats->D_error++;
 	}
 	state->changed = 0;
@@ -650,7 +674,14 @@ parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 	stats->M2++;
 	return 3;
     default:
-	GERB_COMPILE_ERROR("Strange M code [%d]\n", op_int);
+	gerb_stats_add_error(stats->error_list,
+			     -1,
+			     g_strdup_printf("Encountered unknown M code : M%d\n", op_int),
+			     ERROR);
+	gerb_stats_add_error(stats->error_list,
+			     -1,
+			     g_strdup_printf("Ignorning unknown M code\n"),
+			     WARNING);
 	stats->M_unknown++;
     }
     return 0;
@@ -668,12 +699,16 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     amacro_t *tmp_amacro;
     int ano;
     double scale;
+    gerb_stats_t *stats=image->gerb_stats;
     
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
-	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
+	gerb_stats_add_error(stats->error_list,
+			     -1,
+			     "Unexpected EOF found.\n",
+			     ERROR);
 
     switch (A2I(op[0], op[1])){
 
@@ -683,7 +718,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    GERB_COMPILE_ERROR("Unexpected EOF found.\n");
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Unexpected EOF found.\n",
+				 ERROR);
 	
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
@@ -695,7 +733,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[1] = gerb_fgetc(fd);
 
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    GERB_COMPILE_ERROR("Unexpected EOF found.\n");
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Unexpected EOF found.\n",
+				 ERROR);
 
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
@@ -721,7 +762,14 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->format->omit_zeros = EXPLICIT;
 	    break;
 	default:
-	    GERB_MESSAGE("EagleCad bug detected: Defaults to omit leading zeroes\n");
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "EagleCad bug detected: Undefined handling of zeros in format code\n", 
+				 ERROR);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Defaulting to omitting leading zeros.\n", 
+				 WARNING);
 	    gerb_ungetc(fd);
 	    image->format->omit_zeros = LEADING;
 	}
@@ -734,7 +782,15 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    image->format->coordinate = INCREMENTAL;
 	    break;
 	default:
-	    GERB_COMPILE_ERROR("Format error: coordinate = %c\n", op[0]);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Invalid coordinate type defined in format code.\n", 
+				 ERROR);
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Defaulting to absolute.\n", 
+				 WARNING);
+	    image->format->coordinate = ABSOLUTE;
 	}
 
 	while((op[0] = gerb_fgetc(fd)) != '*') {

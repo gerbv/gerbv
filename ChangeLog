@@ -1,4 +1,10 @@
 2007-12-16  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/render.c, src/gerber.c,
+	src/gerb_error.h, src/gerb_stats.[hc]:  Implemented reporting
+	of parse errors (with error level) found dring parsing of the 
+	Gerber files.
+	
+2007-12-16  Stuart Brorson (sdb@cloud9.net)
 	* src/callbacks.c, src/render.c, src/gerb_error.h,
 	src/drill.c, src/drill_stats.[hc]:  Implemented reporting
 	of all parse errors (with error level) found during 

@@ -771,7 +771,7 @@ generate_gerber_analysis(void)
 	    screen.file[i]->isVisible &&
 	    (screen.file[i]->image->layertype == GERBER) ) {
 	    instats = screen.file[i]->image->gerb_stats;
-	    gerb_stats_add_layer(stats, instats);
+	    gerb_stats_add_layer(stats, instats, i+1);
 	}
     }
     
