@@ -746,7 +746,9 @@ main(int argc, char *argv[])
 			renderInfo.displayHeight = userSuppliedHeight;
 			
 		if (exportType == 1) {
+#ifdef EXPORT_PNG
 			exportimage_export_to_png_file (&renderInfo, exportFilename);
+#endif
 		}
 		else if (exportType == 2) {
 			exportimage_export_to_pdf_file (&renderInfo, exportFilename);

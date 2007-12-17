@@ -154,6 +154,7 @@ void exportimage_export_to_svg_file (gerbv_render_info_t *renderInfo, gchar *fil
 #endif
 }
 
+#ifdef EXPORT_PNG
 #ifdef RENDER_USING_GDK
 static gboolean 
 exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, char *filename)
@@ -234,4 +235,4 @@ exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, char *filename)
 	return TRUE;
 } /* pixbuf_to_file_as_png */
 #endif
-
+#endif
