@@ -285,9 +285,14 @@ parse_drillfile(gerb_file_t *fd)
 
 		       XXX We should probably ask the user. */
 
-		    GERB_COMPILE_WARNING("End of Excellon header reached but no "
-					 "leading/trailing zero handling specified.\n"
-					 "Assume trailing zeros.\n");
+		    drill_stats_add_error(stats->error_list,
+					  -1,
+					  "End of Excellon header reached but no leading/trailing zero handling specified.\n",
+					  ERROR);
+		    drill_stats_add_error(stats->error_list,
+					  -1,
+					  "Assuming leading zeros.\n",
+					  WARNING);
 		    image->format->omit_zeros = LEADING;
 		}
 		break;
@@ -640,7 +645,10 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	}  /* switch((char)temp) */
 
 	if( (temp = gerb_fgetc(fd)) == EOF) {
-	    GERB_COMPILE_ERROR("(very) Unexpected end of file found\n");
+	    drill_stats_add_error(stats->error_list,
+				  -1,
+				  "Unexpected EOF encountered header of drill file.\n",
+				  ERROR);
 	}
     }   /* while(!done) */  /* Done looking at tool definitions */
 
@@ -671,10 +679,14 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
              * tool definitions inside the file never seem to use T00 at all.
              */
             if(tool_num != 0) {
-                GERB_COMPILE_ERROR(
-		    "Warning: Tool %02d used without being defined\n",
-		    tool_num);
-                GERB_COMPILE_ERROR("Setting a default size of %g\"\n", dia);
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Tool %02d used without being defined\n", tool_num),
+				      ERROR);
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Setting a default size of %g\"\n", dia),
+				      WARNING);
             }
 	}
 
@@ -713,8 +725,10 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     read[1] = gerb_fgetc(fd);
 
     if ((read[0] == EOF) || (read[1] == EOF))
-	GERB_COMPILE_WARNING("Unexpected EOF found.\n");
-
+	drill_stats_add_error(stats->error_list,
+			      -1,
+			      "Unexpected EOF found while parsing M code.\n",
+			      ERROR);
     op[0] = read[0], op[1] = read[1], op[2] = 0;
  
     if (strncmp(op, "00", 2) == 0) {
@@ -838,7 +852,10 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 		default:
 		junk:
-		    GERB_COMPILE_WARNING("Junk after METRIC command\n");
+		    drill_stats_add_error(stats->error_list,
+					  -1,
+					  "Found junk after METRIC command\n",
+					  WARNING);
 		    gerb_ungetc(fd);
 		    eat_line(fd);
 		    break;
@@ -873,7 +890,10 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
     read[1] = gerb_fgetc(fd);
 
     if ((read[0] == EOF) || (read[1] == EOF))
-	GERB_COMPILE_ERROR("Unexpected EOF found.\n");
+	drill_stats_add_error(stats->error_list,
+			      -1,
+			      "Unexpected EOF found while parsing G code.\n",
+			      ERROR);
 
     op[0] = read[0], op[1] = read[1], op[2] = 0;
 
