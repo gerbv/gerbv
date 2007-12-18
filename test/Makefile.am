@@ -1,7 +1,7 @@
 ## $Id$
 ##
 
-SUBDIRS=	golden
+SUBDIRS=	golden inputs
 
 TESTS_ENVIRONMENT=	\
 	ANIMATE=${ANIMATE} \
@@ -17,10 +17,14 @@ check_SCRIPTS=		${RUN_TESTS}
 
 if HAVE_MAGICK
 # uncomment when the testsuite is actually ready.
-#TESTS=	${RUN_TESTS}
+TESTS=	${RUN_TESTS}
 endif
 
-DISTCLEANFILES=	configure.lineno 
+DISTCLEANFILES=	configure.lineno
 
 EXTRA_DIST=	${RUN_TESTS} tests.list README.txt
+
+# these are created by 'make check'
+clean-local:
+	-rm -rf mismatch outputs
 

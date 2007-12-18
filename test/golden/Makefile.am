@@ -2,5 +2,60 @@
 ##
 
 # awk 'BEGIN{FS="|"} /^[a-zA-Z0-9]/ {x=$1; gsub(/[ \t]*$/, ".png", x); printf("\t%s \\\n", x)}' tests.list >> golden/Makefile.am 
-EXTRA_DIST=
+EXTRA_DIST= \
+	example_mentor_boardstation.png \
+	example_am_test.png \
+	example_cslk.png \
+	example_dan_top.png \
+	example_dan_top_sr.png \
+	example_eaglecad1.png \
+	example_ekf2_d1.png \
+	example_ekf2_drill0.png \
+	example_ekf2_drill1.png \
+	example_ekf2_drill20.png \
+	example_ekf2_drill30.png \
+	example_ekf2_gnd.png \
+	example_ekf2_l0.png \
+	example_ekf2_l1.png \
+	example_ekf2_l2.png \
+	example_ekf2_l3.png \
+	example_ekf2_l4.png \
+	example_ekf2_l5.png \
+	example_ekf2_pow.png \
+	example_ekf2_pow3.png \
+	example_ekf2_resplan.png \
+	example_ekf2_sieb0.png \
+	example_ekf2_sieb1.png \
+	example_ekf2_stp0.png \
+	example_ekf2_stp1.png \
+	example_exposure.png \
+	example_jj_l1-1.png \
+	example_jj_l1-2.png \
+	example_jj_l1-3.png \
+	example_jj_l1-orig.png \
+	example_nollezappare_EtchLayer2Bottom..png \
+	example_nollezappare_ThruHolePlated.png \
+	example_numpres_numpres_pcb_output_componentmask.png \
+	example_numpres_numpres_pcb_output_componentsilk.png \
+	example_numpres_numpres.pcb.output_group1.png \
+	example_numpres_numpres.pcb.output_group2.png \
+	example_numpres_numpres.pcb.output_plated-drill.png \
+	example_numpres_numpres.pcb.output_soldermask.png \
+	example_numpres_numpres.pcb.output_unplated-drill.png \
+	example_orcad_rs232_cm_asb.png \
+	example_orcad_rs232_cm_ast.png \
+	example_orcad_rs232_cm_bot.png \
+	example_orcad_rs232_cm_drd.png \
+	example_orcad_rs232_cm_smb.png \
+	example_orcad_rs232_cm_smt.png \
+	example_orcad_rs232_cm_ssb.png \
+	example_orcad_rs232_cm_sst.png \
+	example_orcad_rs232_cm_top.png \
+	example_orcad_thruhole_tap.png \
+	example_pick_and_place_LED.png \
+	example_polarity_6_vbat.png \
+	example_thermal_bpB.png \
+	example_thermal_dsp.png \
+	example_trailing_cd1r2.1_sieb0.png \
+	example_trailing_cd1r2.1_sieb1.png 
 
