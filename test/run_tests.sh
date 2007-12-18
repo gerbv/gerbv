@@ -159,8 +159,41 @@ pass=0
 skip=0
 tot=0
 
+cat << EOF
+
+srcdir                ${srcdir}
+top_srcdir            ${top_srcdir}
+
+AWK                   ${AWK}
+ERRDIR                ${ERRDIR}
+GERBV                 ${GERBV}
+GERBV_DEFAULT_FLAGS   ${GERBV_DEFAULT_FLAGS}
+INDIR                 ${INDIR}
+OUTDIR                ${OUTDIR}
+REFDIR                ${REFDIR}
+TESTLIST              ${TESTLIST}
+
+ImageMagick Tools:
+
+ANIMATE               ${ANIMATE}
+COMPARE               ${COMPARE}
+COMPOSITE             ${COMPOSITE}
+CONVERT               ${CONVERT}
+DISPLAY               ${DISPLAY}
+MONTAGE               ${MONTAGE}
+
+EOF
+
 for t in $all_tests ; do
+    show_sep
+    echo "Test:  $t"
+
     tot=`expr $tot + 1`
+
+    ######################################################################
+    #
+    # extract the details for the test
+    #
 
     gerbv_flags="${GERBV_DEFAULT_FLAGS}"
 
@@ -184,11 +217,19 @@ for t in $all_tests ; do
 	gerbv_flags="${args}"
     fi
 
+    ######################################################################
+    #
+    # check to see if the files we need exist
+    #
+
     missing_files=no
+    path_files=""
     for f in $files ; do
-	if test ! -f $f ; then
+	if test ! -f ${INDIR}/${f} ; then
 	    echo "ERROR:  File $f specified as part of the $t test does not exist"
 	    missing_files=yes
+	else
+	    path_files="${path_files} ${INDIR}/${f}"
 	fi
     done
     if test "$missing_files" = "yes" ; then
@@ -197,14 +238,18 @@ for t in $all_tests ; do
 	continue
     fi
     
+    ######################################################################
+    #
+    # export the layout to PNG
+    #
 
-    # normalize messages like:
-    # make: stopped in /export/disk1/src/local-cvs/localsrc/misc/latex-mk/testsuite/run/dir1
-    # to avoid developer paths
-    show_sep
-    echo "Test:  $t"
-    echo "${GERBV} ${gerbv_flags} --output=${outpng} ${files}"
-    ${GERBV} ${gerbv_flags} --output=${outpng} ${files}
+    echo "${GERBV} ${gerbv_flags} --output=${outpng} ${path_files}"
+    ${GERBV} ${gerbv_flags} --output=${outpng} ${path_files}
+
+    ######################################################################
+    #
+    # compare to the golden PNG file
+    #
 
     if test "X$regen" != "Xyes" ; then
 	if test -f ${REFDIR}/${t}.png ; then
