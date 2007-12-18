@@ -166,12 +166,14 @@ fi
 # Check for ImageMagick tools used by the testsuite
 AC_PATH_PROG(ANIMATE, animate, notfound)
 AC_PATH_PROG(COMPARE, compare, notfound)
+AC_PATH_PROG(COMPOSITE, composite, notfound)
 AC_PATH_PROG(CONVERT, convert, notfound)
 AC_PATH_PROG(DISPLAY, display, notfound)
 AC_PATH_PROG(MONTAGE, montage, notfound)
 missing_magick=""
 test "${ANIMATE}" != "notfound" || missing_magick="${missing_magick} animate"
 test "${COMPARE}" != "notfound" || missing_magick="${missing_magick} compare"
+test "${COMPOSITE}" != "notfound" || missing_magick="${missing_magick} composite"
 test "${CONVERT}" != "notfound" || missing_magick="${missing_magick} convert"
 test "${DISPLAY}" != "notfound" || missing_magick="${missing_magick} display"
 test "${MONTAGE}" != "notfound" || missing_magick="${missing_magick} montage"
