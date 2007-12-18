@@ -109,6 +109,7 @@ srcdir=${srcdir:-.}
 # various ImageMagick tools
 ANIMATE=${ANIMATE:-animate}
 COMPARE=${COMPARE:-compare}
+COMPOSITE=${COMPOSITE:-composite}
 CONVERT=${CONVERT:-convert}
 DISPLAY=${DISPLAY:-display}
 MONTAGE=${MONTAGE:-montage}
@@ -168,10 +169,17 @@ for t in $all_tests ; do
     errdir="${ERRDIR}/${t}"
 
     # test_name | layout file(s) | [optional arguments to gerbv] | [mismatch]
+    name=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST | $AWK 'BEGIN{FS="|"} {print $1}'`
     files=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST | $AWK 'BEGIN{FS="|"} {print $2}'`
     args=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST | $AWK 'BEGIN{FS="|"} {print $3}'`
     mismatch=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST | $AWK 'BEGIN{FS="|"} {if($2 == "mismatch"){print "yes"}else{print "no"}}'`
-    
+   
+    if test "X${name}" = "X" ; then
+	echo "ERROR:  Specified test ${t} does not appear to exist"
+	skip=`expr $skip + 1`
+	continue
+    fi
+
     if test "X${args}" != "X" ; then
 	gerbv_flags="${args}"
     fi
@@ -195,12 +203,8 @@ for t in $all_tests ; do
     # to avoid developer paths
     show_sep
     echo "Test:  $t"
-
-    cat <<EOF
-
-${GERBV} ${gerbv_flags} --output=${outpng} ${files}
-
-EOF
+    echo "${GERBV} ${gerbv_flags} --output=${outpng} ${files}"
+    ${GERBV} ${gerbv_flags} --output=${outpng} ${files}
 
     if test "X$regen" != "Xyes" ; then
 	if test -f ${REFDIR}/${t}.png ; then
@@ -215,12 +219,13 @@ EOF
 		${COMPARE} ${refpng} ${outpng} ${errdir}/compare.png
 		${COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png
 		${CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png
-
-		# FIXME -- can I animate to a file
-		#${CONVERT} -label "%f" ${refpng} ${outpng} miff:- | \
-		#${MONTAGE} - -geometry +0+0 -tile 1x1 miff:- | \
-		#${ANIMATE} -delay 0.5 -loop 0 -
-
+cat > ${errdir}/animate.sh << EOF
+#!/bin/sh
+${CONVERT} -label "%f" ${refpng} ${outpng} miff:- | \
+${MONTAGE} - -geometry +0+0 -tile 1x1 miff:- | \
+${ANIMATE} -delay 0.5 -loop 0 -
+EOF
+		chmod a+x ${errdir}/animate.sh
 		fail=`expr $fail + 1`
 	    fi
 	else
