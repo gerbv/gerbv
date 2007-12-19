@@ -50,6 +50,7 @@
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
+#include "gerb_aperture.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -214,9 +215,7 @@ callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
 	}
 	g_slist_free(filenames);
 	
-	if (screen.last_loaded == 0) {
-		render_zoom_to_fit_display (&screenRenderInfo);
-	}
+	render_zoom_to_fit_display (&screenRenderInfo);
 	render_refresh_rendered_image_on_screen();
 	callbacks_update_layer_tree();
 
@@ -379,10 +378,12 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     /* First get a report of stats & errors accumulated from all layers */
     stats_report = generate_gerber_analysis();
 
+    /* General info report */
     general_report_string = g_strdup_printf("General information\n");
     general_report_string = g_strdup_printf("%sActive layer count = %d\n", 
 					    general_report_string, stats_report->layer_count);
 
+    /* Error report */
     if (stats_report->error_list->error_text == NULL) {
 	error_report_string = g_strdup_printf("\n\nNo errors found in Gerber file(s)!\n"); 
     } else {
