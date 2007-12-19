@@ -356,8 +356,10 @@ load_project(project_list_t *project_list)
 			/* 
 			* Change color from default to from the project list
 			*/
-			screen.file[idx]->color = colorTemplate;	    
-
+			screen.file[idx]->color = colorTemplate;
+#ifdef RENDER_USING_GDK	    
+			gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
+#endif
 			screen.file[idx]->inverted = project_list->inverted;
 		}
 next_layer:
@@ -484,6 +486,9 @@ open_image(char *filename, int idx, int reload)
 
 	GdkColor colorTemplate = {0, r, g, b};
 	screen.file[idx]->color = colorTemplate;
+#ifdef RENDER_USING_GDK
+	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
+#endif
 	screen.file[idx]->alpha = 45535;
 	screen.file[idx]->isVisible = TRUE;                     
 
@@ -704,6 +709,11 @@ main(int argc, char *argv[])
 		}
 	}
 
+	/* even for command line exporting, GDK renderer needs gtk started up */
+#ifdef RENDER_USING_GDK
+	gtk_init (&argc, &argv);
+#endif
+
 	/*
 	* If project is given, load that one and use it for files and colors.
 	* Else load files (eventually) given on the command line.
@@ -718,10 +728,6 @@ main(int argc, char *argv[])
 		}
 	}
 
-	/* even for command line exporting, GDK renderer needs gtk started up */
-#ifdef RENDER_USING_GDK
-	gtk_init (&argc, &argv);
-#endif
 	screen.unit = GERBV_DEFAULT_UNIT;
 
 	if (exportFromCommandline) {

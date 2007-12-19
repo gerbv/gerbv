@@ -210,7 +210,6 @@ render_draw_zoom_outline(gboolean centered)
 	values.foreground = screen.zoom_outline_color;
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
-	gdk_gc_set_rgb_fg_color(gc, &screen.zoom_outline_color);
 	
 	x1 = MIN(screen.start_x, screen.last_x);
 	y1 = MIN(screen.start_y, screen.last_y);
@@ -240,7 +239,6 @@ render_draw_zoom_outline(gboolean centered)
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND | GDK_GC_LINE_STYLE;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
-	gdk_gc_set_rgb_fg_color(gc, &screen.dist_measure_color);
 	
 	if ((dy == 0) || ((double)dx/dy > (double)screen.drawing_area->allocation.width/
 				screen.drawing_area->allocation.height)) {
@@ -284,7 +282,6 @@ render_draw_measure_distance(void)
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
-	gdk_gc_set_rgb_fg_color(gc, &screen.dist_measure_color);
 	font = gdk_font_load(setup.dist_fontname);
 #endif
 	x1 = MIN(screen.start_x, screen.last_x);
@@ -617,7 +614,7 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 			* Fill up image with all the foreground color. Excess pixels
 			* will be removed by clipmask.
 			*/
-			gdk_gc_set_rgb_fg_color(gc, &screen.file[i]->color);
+			gdk_gc_set_foreground(gc, &screen.file[i]->color);
 			gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
 
 			/*
