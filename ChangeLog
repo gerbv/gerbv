@@ -1,3 +1,7 @@
+2007-12-20  Stuart Brorson (sdb@cloud9.net)
+	* callbacks.c:  Add scrollbars to Gerber aperture report window
+	since the report can grow to be very long.
+	
 2007-12-20  Julian Lamb
 	* render.c,callbacks.c,interface.c: Connect rulers and scrollbars and start
 	  getting them functional.

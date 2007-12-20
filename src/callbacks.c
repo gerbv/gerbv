@@ -575,6 +575,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 							GTK_RESPONSE_ACCEPT,
 							NULL);
     gtk_container_set_border_width (GTK_CONTAINER (analyze_active_gerbers), 5);
+    
     gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_gerbers), 
 				     GTK_RESPONSE_ACCEPT);
     g_signal_connect (G_OBJECT(analyze_active_gerbers),
@@ -618,6 +619,15 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gtk_misc_set_alignment(GTK_MISC(aperture_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(aperture_report_label), 13, 13);
     g_free(aperture_report_string);
+    
+    /* Put aperture definintion text into scrolled window */
+    GtkWidget *aperture_report_window = gtk_scrolled_window_new (NULL, NULL);
+    /* This throws a warning.  Must find different approach.... */
+    gtk_layout_set_size(GTK_LAYOUT(aperture_report_window),
+			200,
+			300);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(aperture_report_window),
+					  GTK_WIDGET(aperture_report_label));
 
     /* Create tabbed notebook widget and add report label widgets. */
     GtkWidget *notebook = gtk_notebook_new();
@@ -643,13 +653,14 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			     gtk_label_new("Misc. codes"));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(aperture_report_label),
+			     GTK_WIDGET(aperture_report_window),
 			     gtk_label_new("Aperture definitions"));
     
     
     /* Now put notebook into dialog window and show the whole thing */
     gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_gerbers)->vbox),
 		      GTK_WIDGET(notebook));
+    
     gtk_widget_show_all(analyze_active_gerbers);
 	
     return;
