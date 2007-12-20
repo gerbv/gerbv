@@ -1416,7 +1416,7 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 #ifdef RENDER_USING_GDK
 
 	GdkPixmap *new_pixmap;
-	GdkGC *gc = gdk_gc_new(widget->window);cal
+	GdkGC *gc = gdk_gc_new(widget->window);
 
 	/*
 	* Create a pixmap with default background
