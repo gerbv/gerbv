@@ -27,11 +27,11 @@
 
 enum error_type_t {FATAL, ERROR, WARNING, NOTE};
 
-typedef struct error_list {
+typedef struct error_list_t {
     int layer;
     char *error_text;
     enum error_type_t type;
-    struct error_list *next;
+    struct error_list_t *next;
 } error_list_t;
 
 

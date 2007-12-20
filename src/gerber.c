@@ -75,7 +75,7 @@ static void parse_rs274x(gerb_file_t *fd, gerb_image_t *image,
 			 gerb_state_t *state);
 static int parse_aperture_definition(gerb_file_t *fd, 
 				     gerb_aperture_t *aperture,
-				     amacro_t *amacro);
+				     gerb_image_t *image);
 static void calc_cirseg_sq(struct gerb_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_mq(struct gerb_net *net, int cw, 
@@ -135,7 +135,7 @@ parse_gerb(gerb_file_t *fd)
     curr_net = image->netlist;
     image->layertype = GERBER;
     image->gerb_stats = gerb_stats_new();
-    stats = image->gerb_stats;
+    stats = (gerb_stats_t *) image->gerb_stats;
 
     /*
      * Start parsing
@@ -1010,16 +1010,22 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	if (a == NULL)
 	    GERB_FATAL_ERROR("malloc aperture failed\n");
 	memset((void *)a, 0, sizeof(gerb_aperture_t));
-	ano = parse_aperture_definition(fd, a, image->amacro);
+	ano = parse_aperture_definition(fd, a, image);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->unit;
 	    image->aperture[ano] = a;
-	    /* FIXME:  Add aperture list stuff here */
-	} else
+	    gerb_stats_add_aperture(stats->aperture_list,
+				    -1, ano, 
+				    a->type,
+				    a->parameter);
+	} else {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Aperture number out of bounds : %d\n", ano),
 				 ERROR);
+	}
+	/* Add aperture info to stats->aperture_list here */
+
 	break;
     case A2I('A','M'): /* Aperture Macro */
 	tmp_amacro = image->amacro;
@@ -1119,13 +1125,15 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 /* ------------------------------------------------------------------ */
 static int 
 parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
-			  amacro_t *amacro)
+			  gerb_image_t *image)
 {
     int ano, i;
     char *ad;
     char *token;
     amacro_t *curr_amacro;
-    
+    amacro_t *amacro = image->amacro;
+    gerb_stats_t *stats = image->gerb_stats;
+
     if (gerb_fgetc(fd) != 'D')
 	/* Insert AD error here */
 	return -1;

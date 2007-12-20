@@ -334,6 +334,7 @@ callbacks_print_activate                      (GtkMenuItem     *menuitem,
 }
 #endif
 
+/* --------------------------------------------------------- */
 void
 callbacks_zoom_in_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -341,7 +342,7 @@ callbacks_zoom_in_activate                    (GtkMenuItem     *menuitem,
 	render_zoom_display (ZOOM_IN, 0, 0, 0);
 }
 
-
+/* --------------------------------------------------------- */
 void
 callbacks_zoom_out_activate                   (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -349,7 +350,7 @@ callbacks_zoom_out_activate                   (GtkMenuItem     *menuitem,
 	render_zoom_display (ZOOM_OUT, 0, 0, 0);
 }
 
-
+/* --------------------------------------------------------- */
 void
 callbacks_fit_to_window_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -373,8 +374,9 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gchar *error_report_string;
     error_list_t *my_error_list;
     gchar *error_level = NULL;
+    gchar *aperture_report_string;
+    gerb_aperture_list_t *my_aperture_list;
 
-    
     /* First get a report of stats & errors accumulated from all layers */
     stats_report = generate_gerber_analysis();
 
@@ -518,7 +520,51 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     misc_report_string = g_strdup_printf("%sUnknown codes = %d\n", 
 				      misc_report_string, stats_report->unknown);
 
+    /* Aperture report */
+    dprintf("About to define ap_type\n");
+    char *ap_type[] = {"CIRCLE", "RECTANGLE", "OVAL", "POLYGON", "MACRO"};
 
+    /*
+    ap_type[0] = "CIRCLE";
+    ap_type[1] = "RECTANGLE";
+    ap_type[2] = "OVAL";
+    ap_type[3] = "POLYGON";
+    ap_type[4] = "MACRO";
+    */
+
+    /*
+    ap_type[0] = g_strdup_printf("CIRCLE");
+    ap_type[1] = g_strdup_printf("RECTANGLE");
+    ap_type[2] = g_strdup_printf("OVAL");
+    ap_type[3] = g_strdup_printf("POLYGON");
+    ap_type[4] = g_strdup_printf("MACRO");
+    */
+
+    dprintf("Done defining ap_type, now process it\n");
+    if (stats_report->aperture_list->number == -1) {
+	aperture_report_string = 
+	    g_strdup_printf("\n\nNo aperture definitions found in Gerber file(s)!\n"); 
+    } else {
+	aperture_report_string = 
+	    g_strdup_printf("\n\nApertures defined in Gerber file(s):\n"); 
+	aperture_report_string = g_strdup_printf("%s %-7s  %-8s   %-9s           %-11s\n",
+						 aperture_report_string,
+						 "Layer",
+						 "D code",
+						 "Aperture",
+						 "Param[0]");
+	for(my_aperture_list = stats_report->aperture_list; 
+	    my_aperture_list != NULL; 
+	    my_aperture_list = my_aperture_list->next) {
+
+	    aperture_report_string = g_strdup_printf("%s %-7d     D%-d       %-9s           %8.3f\n", 
+						     aperture_report_string,
+						     my_aperture_list->layer,
+						     my_aperture_list->number,
+						     ap_type[my_aperture_list->type],
+						     my_aperture_list->parameter[0]);
+	}
+    }
 
     /* Create top level dialog window for report */
     GtkWidget *analyze_active_gerbers;
@@ -567,6 +613,12 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
     g_free(misc_report_string);
 
+    /* Create GtkLabel to hold aperture defnintion text */
+    GtkWidget *aperture_report_label = gtk_label_new (aperture_report_string);
+    gtk_misc_set_alignment(GTK_MISC(aperture_report_label), 0, 0);
+    gtk_misc_set_padding(GTK_MISC(aperture_report_label), 13, 13);
+    g_free(aperture_report_string);
+
     /* Create tabbed notebook widget and add report label widgets. */
     GtkWidget *notebook = gtk_notebook_new();
     
@@ -589,6 +641,10 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(misc_report_label),
 			     gtk_label_new("Misc. codes"));
+    
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			     GTK_WIDGET(aperture_report_label),
+			     gtk_label_new("Aperture definitions"));
     
     
     /* Now put notebook into dialog window and show the whole thing */

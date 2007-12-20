@@ -1,3 +1,9 @@
+2007-12-19  Stuart Brorson (sdb@cloud9.net)
+	* src/gerber.c, src/gerb_stats.[hc], src/gerb_image.h,
+	src/gerb_error.h, src/callbacks.c:  Implemented reporting
+	of apertures found in Gerber files.  Added to Gerber 
+	reports window.
+	
 2007-12-17  Julian Lamb
 	* render,callbacks,interface: Restructure the whole rendering process by
 	  separating out all zoom and pan information from the global variable

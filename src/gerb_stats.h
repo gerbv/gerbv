@@ -24,12 +24,24 @@
 #ifndef GERB_STATS_H
 #define GERB_STATS_H
 
-#include <gdk/gdk.h>  /* This imports gboolean type */
 #include "gerb_error.h"
+#include "gerb_aperture.h"
+
+/* the gerb_aperture_list is used to keep track of 
+ * apertures used in stats reporting */
+typedef struct gerb_aperture_list_t {
+    int number;
+    int layer;
+    int count;
+    enum aperture_t type;
+    double parameter[5];
+    struct gerb_aperture_list_t *next;
+} gerb_aperture_list_t;
+
 
 typedef struct {
-
-    error_list_t *error_list;
+    struct error_list_t *error_list;
+    struct gerb_aperture_list_t *aperture_list;
 
     int layer_count;
     int G0;
@@ -86,4 +98,8 @@ void gerb_stats_add_error(error_list_t *error_list_in,
                            int layer, const char *error_text,
                            enum error_type_t type);
 
+gerb_aperture_list_t *gerb_stats_new_aperture_list(void);
+void gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
+			     int layer, int number, enum aperture_t type,
+			     double parameter[5]);
 #endif /* GERB_STATS_H */

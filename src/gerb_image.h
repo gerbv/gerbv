@@ -24,7 +24,7 @@
 #ifndef GERB_IMAGE_H
 #define GERB_IMAGE_H
 
-#include "amacro.h"
+#include "gerb_aperture.h"
 #include "gerb_transf.h"
 #include "gerb_stats.h"
 #include "drill_stats.h"
@@ -34,13 +34,7 @@ extern "C" {
 #endif
 
 #include <glib.h> /* To pick up gpointer */
-	
-#define APERTURE_MIN 10
-#define APERTURE_MAX 9999
-	
-enum aperture_state_t {OFF, ON, FLASH};
-enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
-enum unit_t {INCH, MM, UNIT_UNSPECIFIED};
+ 
 enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
 enum omit_zeros_t {LEADING, TRAILING, EXPLICIT, ZEROS_UNSPECIFIED};
 enum coordinate_t {ABSOLUTE, INCREMENTAL};
@@ -84,14 +78,6 @@ typedef struct gerb_net {
     struct gerb_step_and_repeat *step_and_repeat;  /* SR parameters, NULL if not set */
 } gerb_net_t;
 
-
-typedef struct gerb_aperture {
-    enum aperture_t type;
-    amacro_t *amacro;
-    double parameter[5];
-    int nuf_parameters;
-    enum unit_t unit;
-} gerb_aperture_t;
 
 
 typedef struct gerb_format {

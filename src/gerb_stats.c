@@ -33,6 +33,7 @@
 #include "gerb_error.h"
 #include "gerb_stats.h"
 
+
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
@@ -44,6 +45,7 @@ gerb_stats_new(void) {
 
     gerb_stats_t *stats;
     error_list_t *error_list;
+    gerb_aperture_list_t *aperture_list;
 
     /* Malloc space for new stats struct.  Return NULL if error. */
     if ((stats = (gerb_stats_t *)malloc(sizeof(gerb_stats_t))) == NULL) {
@@ -59,6 +61,12 @@ gerb_stats_new(void) {
         GERB_FATAL_ERROR("malloc error_list failed\n");
     stats->error_list = (error_list_t *) error_list;
 
+    /* Initialize aperture list */
+    aperture_list = gerb_stats_new_aperture_list();
+    if (aperture_list == NULL)
+        GERB_FATAL_ERROR("malloc aperture_list failed\n");
+    stats->aperture_list = (gerb_aperture_list_t *) aperture_list;
+
     return stats;
 }
 
@@ -68,8 +76,11 @@ void
 gerb_stats_add_layer(gerb_stats_t *accum_stats, 
 		     gerb_stats_t *input_stats,
 		     int this_layer) {
+    
+    dprintf("---> Entering gerb_stats_add_layer ... \n");
 
     error_list_t *error;
+    gerb_aperture_list_t *aperture;
 
     accum_stats->layer_count++;
     accum_stats->G0 += input_stats->G0;
@@ -124,6 +135,20 @@ gerb_stats_add_layer(gerb_stats_t *accum_stats,
         }
     }
 
+    /* ==== Now deal with the aperture list ==== */
+    for (aperture = input_stats->aperture_list;
+         aperture != NULL;
+         aperture = aperture->next) {
+        if (aperture->number != -1) {
+            gerb_stats_add_aperture(accum_stats->aperture_list,
+				    this_layer,
+				    aperture->number,
+				    aperture->type,
+				    aperture->parameter);
+        }
+    }
+
+    dprintf("<---- .... Leaving gerb_stats_add_layer. \n");
 
     return;
 }
@@ -201,6 +226,87 @@ gerb_stats_add_error(error_list_t *error_list_in,
     error_list_new->type = type;
     error_list_new->next = NULL;
     error_last->next = error_list_new;
+
+    return;
+}
+
+/* ------------------------------------------------------- */
+gerb_aperture_list_t *
+gerb_stats_new_aperture_list() {
+    gerb_aperture_list_t *aperture_list;
+    int i;
+
+    /* Malloc space for new aperture_list struct.  Return NULL if error. */
+    if ((aperture_list = (gerb_aperture_list_t *)malloc(sizeof(gerb_aperture_list_t))) 
+	 == NULL) {
+        return NULL;
+    }
+
+    aperture_list->number = -1;
+    aperture_list->type = 0;
+    for (i = 0; i<=5; i++) {
+	aperture_list->parameter[i] = 0.0;
+    }
+    aperture_list->next = NULL;
+    return aperture_list;
+}
+
+
+/* ------------------------------------------------------- */
+void
+gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
+			int layer, int number, enum aperture_t type,
+			double parameter[]) {
+
+    gerb_aperture_list_t *aperture_list_new;
+    gerb_aperture_list_t *aperture_last = NULL;
+    gerb_aperture_list_t *aperture;
+
+    dprintf("   --->  Entering gerb_stats_add_aperture ....\n"); 
+
+    /* First handle case where this is the first list element */
+    if (aperture_list_in->number == -1) {
+	dprintf("     .... Adding first aperture to list ... \n"); 
+	dprintf("     .... Aperture type = %d ... \n", type); 
+        aperture_list_in->number = number;
+        aperture_list_in->type = type;
+	aperture_list_in->layer = layer;
+        aperture_list_in->parameter[0] = parameter[0];
+	/* How to deal with remaining parameters??? */
+        aperture_list_in->next = NULL;
+        return;
+    }
+
+    /* Next check to see if this aperture is already in the list */
+    for(aperture = aperture_list_in; 
+	aperture != NULL; 
+	aperture = aperture->next) {
+        if ((aperture->number == number) &&
+            (aperture->layer == layer) ) {
+            return;  /* This aperture is already in the aperture list */
+        }
+        aperture_last = aperture;  /* point to last element in list */
+    }
+    /* This aperture number is unique.  Therefore, add it to the list */
+    dprintf("     .... Adding another aperture to list ... \n"); 
+    dprintf("     .... Aperture type = %d ... \n", type); 
+	
+    /* Now malloc space for new aperture list element */
+    aperture_list_new = (gerb_aperture_list_t *) malloc(sizeof(gerb_aperture_list_t));
+    if (aperture_list_new == NULL) {
+        GERB_FATAL_ERROR("malloc aperture_list failed\n");
+    }
+
+    /* Set member elements */
+    aperture_list_new->layer = layer;
+    aperture_list_new->number = number;
+    aperture_list_new->type = type;
+    aperture_list_new->next = NULL;
+    aperture_list_new->parameter[0] = parameter[0];
+    /* How to deal with remaining parameters??? */
+    aperture_last->next = aperture_list_new;
+
+    dprintf("   <---  .... Leaving gerb_stats_add_aperture.\n"); 
 
     return;
 }
