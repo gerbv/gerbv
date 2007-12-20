@@ -71,9 +71,6 @@ render_zoom_to_fit_display (gerbv_render_info_t *renderInfo);
 
 void render_refresh_rendered_image_on_screen (void);
 
-
-void render_force_expose_event_for_screen (void);
-
 #ifndef RENDER_USING_GDK
 void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 						gerbv_render_info_t *renderInfo);

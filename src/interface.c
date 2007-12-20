@@ -615,14 +615,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_table_attach (GTK_TABLE (main_view_table), hRuler, 1, 2, 0, 1,
 	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
 	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
-	gtk_ruler_set_range (GTK_RULER (hRuler), 0, 100, 8.56051, 10);
+	gtk_ruler_set_range (GTK_RULER (hRuler), 0, 100, 8.56051, 1000);
 
 	vRuler = gtk_vruler_new ();
 	gtk_widget_show (vRuler);
 	gtk_table_attach (GTK_TABLE (main_view_table), vRuler, 0, 1, 1, 2,
 	                  (GtkAttachOptions) (GTK_FILL),
 	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
-	gtk_ruler_set_range (GTK_RULER (vRuler), 0, 100, 8.37341, 10);
+	gtk_ruler_set_range (GTK_RULER (vRuler), 0, 100, 8.37341, 1000);
 
 	drawingarea = gtk_drawing_area_new();
 	gtk_table_attach (GTK_TABLE (main_view_table), drawingarea, 1, 2, 1, 2,
@@ -794,7 +794,14 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_hadjustment_value_changed), NULL);
 	g_signal_connect ((gpointer) vAdjustment, "value-changed",
 	                  G_CALLBACK (callbacks_vadjustment_value_changed), NULL);
-
+	g_signal_connect ((gpointer) hScrollbar, "button-press-event",
+	                  G_CALLBACK (callbacks_scrollbar_button_pressed), NULL);                 
+	g_signal_connect ((gpointer) hScrollbar, "button-release-event",
+	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);
+	g_signal_connect ((gpointer) vScrollbar, "button-press-event",
+	                  G_CALLBACK (callbacks_scrollbar_button_pressed), NULL);                 
+	g_signal_connect ((gpointer) vScrollbar, "button-release-event",
+	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);               
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 0);
 	   

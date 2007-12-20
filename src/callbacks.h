@@ -123,6 +123,12 @@ gboolean
 callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *event);
 
 gboolean
+callbacks_scrollbar_button_released (GtkWidget *widget, GdkEventButton *event);
+
+gboolean
+callbacks_scrollbar_button_pressed (GtkWidget *widget, GdkEventButton *event);
+
+gboolean
 callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event);
 
 gboolean
@@ -168,11 +174,17 @@ void callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data);
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
                               GtkTreeIter  *oIter, gpointer      user_data);
 
+void callbacks_update_scrollbar_limits (void);
+
+void callbacks_update_scrollbar_positions (void);
+
 void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment,
 			gpointer user_data);
 
 void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
 			gpointer user_data);
+
+void callbacks_force_expose_event_for_screen (void);
 
 #ifndef RENDER_USING_GDK
 cairo_surface_t *

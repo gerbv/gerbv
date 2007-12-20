@@ -50,7 +50,7 @@
 #include "gerber.h"
 #include "drill.h"
 #include "gerb_error.h"
-#include "gerb_aperture.h"
+//#include "gerb_aperture.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -968,14 +968,21 @@ gdouble callbacks_calculate_actual_distance (gdouble inputDimension) {
 	}
 	return returnValue;
 }
+
 void callbacks_update_ruler_pointers (void) {
 	double xPosition, yPosition;
 
 	xPosition = screenRenderInfo.lowerLeftX + (screen.last_x / screenRenderInfo.scaleFactor);
-	yPosition = screenRenderInfo.lowerLeftY + (screen.last_y / screenRenderInfo.scaleFactor);
+	yPosition = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - screen.last_y) / screenRenderInfo.scaleFactor);
 
-	//g_object_set (G_OBJECT (screen.win.hRuler), "position", xPosition, NULL);
-	//g_object_set (G_OBJECT (screen.win.vRuler), "position", yPosition, NULL);
+	/* make sure we use inches instead of mils here, since the unit text gets
+	   too crowded */
+	if (screen.unit != GERBV_MILS) {
+		xPosition = callbacks_calculate_actual_distance (xPosition);
+		yPosition = callbacks_calculate_actual_distance (yPosition);
+	}
+	g_object_set (G_OBJECT (screen.win.hRuler), "position", xPosition, NULL);
+	g_object_set (G_OBJECT (screen.win.vRuler), "position", yPosition, NULL);
 }
 
 void callbacks_update_ruler_scales (void) {
@@ -985,23 +992,97 @@ void callbacks_update_ruler_scales (void) {
 	xEnd = screenRenderInfo.lowerLeftX + (screenRenderInfo.displayWidth / screenRenderInfo.scaleFactor);
 	yStart = screenRenderInfo.lowerLeftY;
 	yEnd = screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor);
-	
-	//gtk_ruler_set_range (GTK_RULER (screen.win.hRuler), xStart, xEnd, 0, xEnd - xStart);
-	//gtk_ruler_set_range (GTK_RULER (screen.win.vRuler), yStart, yEnd, 0, yEnd - yStart);
+
+	/* make sure we use inches instead of mils here, since the unit text gets
+	   too crowded */
+	if (screen.unit != GERBV_MILS) {
+		xStart = callbacks_calculate_actual_distance (xStart);
+		xEnd = callbacks_calculate_actual_distance (xEnd);
+		yStart = callbacks_calculate_actual_distance (yStart);
+		yEnd = callbacks_calculate_actual_distance (yEnd);
+	}
+	/* make sure the widgets actually exist before setting (in case this gets
+	   called before everything is realized */
+	if (screen.win.hRuler)
+		gtk_ruler_set_range (GTK_RULER (screen.win.hRuler), xStart, xEnd, 0, xEnd - xStart);
+	/* reverse y min and max, since the ruler starts at the top */
+	if (screen.win.vRuler)
+		gtk_ruler_set_range (GTK_RULER (screen.win.vRuler), yEnd, yStart, 0, yEnd - yStart);
 }
 
-void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment,
-			gpointer user_data){
-	gdouble newValue;
+void callbacks_update_scrollbar_limits (void){
+	gerbv_render_info_t tempRenderInfo = {1.0, 0, 0, 1.0, screenRenderInfo.displayWidth,
+			screenRenderInfo.displayHeight};
+	GtkAdjustment *hAdjust = (GtkAdjustment *)screen.win.hAdjustment;
+	GtkAdjustment *vAdjust = (GtkAdjustment *)screen.win.vAdjustment;
 	
-	newValue = gtk_adjustment_get_value (adjustment);
+	render_zoom_to_fit_display (&tempRenderInfo);
+	hAdjust->lower = tempRenderInfo.lowerLeftX;
+	hAdjust->upper = tempRenderInfo.lowerLeftX + (tempRenderInfo.displayWidth / tempRenderInfo.scaleFactor);
+	hAdjust->page_size = screenRenderInfo.displayWidth / screenRenderInfo.scaleFactor;
+	hAdjust->page_increment = hAdjust->page_size;
+	hAdjust->step_increment = hAdjust->page_size / 10.0;
+	
+	vAdjust->lower = tempRenderInfo.lowerLeftY;
+	vAdjust->upper = tempRenderInfo.lowerLeftY + (tempRenderInfo.displayHeight / tempRenderInfo.scaleFactor);
+	vAdjust->page_size = screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor;
+	vAdjust->page_increment = vAdjust->page_size;
+	vAdjust->step_increment = vAdjust->page_size / 10.0;
+	
+	callbacks_update_scrollbar_positions ();
 }
 
-void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
-			gpointer user_data){
-	gdouble newValue;
+void callbacks_update_scrollbar_positions (void){
+	gdouble positionX,positionY;
 	
-	newValue = gtk_adjustment_get_value (adjustment);			
+	positionX = screenRenderInfo.lowerLeftX;
+	if (positionX < ((GtkAdjustment *)screen.win.hAdjustment)->lower)
+		positionX = ((GtkAdjustment *)screen.win.hAdjustment)->lower;
+	if (positionX > (((GtkAdjustment *)screen.win.hAdjustment)->upper - ((GtkAdjustment *)screen.win.hAdjustment)->page_size))
+		positionX = (((GtkAdjustment *)screen.win.hAdjustment)->upper - ((GtkAdjustment *)screen.win.hAdjustment)->page_size);
+	
+	gtk_adjustment_set_value ((GtkAdjustment *)screen.win.hAdjustment, positionX);
+	
+	positionY = ((GtkAdjustment *)screen.win.vAdjustment)->upper - (screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor));
+	if (positionY < ((GtkAdjustment *)screen.win.vAdjustment)->lower)
+		positionY = ((GtkAdjustment *)screen.win.vAdjustment)->lower;
+	if (positionY > (((GtkAdjustment *)screen.win.vAdjustment)->upper - ((GtkAdjustment *)screen.win.vAdjustment)->page_size))
+		positionY = (((GtkAdjustment *)screen.win.vAdjustment)->upper - ((GtkAdjustment *)screen.win.vAdjustment)->page_size);
+	gtk_adjustment_set_value ((GtkAdjustment *)screen.win.vAdjustment, positionY);
+
+}
+
+gboolean
+callbacks_scrollbar_button_released (GtkWidget *widget, GdkEventButton *event){
+	screen.off_x = 0;
+	screen.off_y = 0;
+	screen.state = NORMAL;
+	render_refresh_rendered_image_on_screen();
+	return FALSE;
+}
+
+gboolean
+callbacks_scrollbar_button_pressed (GtkWidget *widget, GdkEventButton *event){
+	//screen.last_x = ((GtkAdjustment *)screen.win.hAdjustment)->value;
+	screen.state = SCROLLBAR;
+	return FALSE;
+}
+
+
+void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment, gpointer user_data){
+	/* make sure we're actually using the scrollbar to make sure we don't reset
+	   lowerLeftX during a scrollbar redraw during something else */
+	if (screen.state == SCROLLBAR) {
+		screenRenderInfo.lowerLeftX = gtk_adjustment_get_value (adjustment);
+	}
+}
+
+void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment, gpointer user_data){
+	/* make sure we're actually using the scrollbar to make sure we don't reset
+	   lowerLeftY during a scrollbar redraw during something else */
+	if (screen.state == SCROLLBAR) {
+		screenRenderInfo.lowerLeftY = adjustment->upper - gtk_adjustment_get_value (adjustment) - (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor);		
+	}
 }
 
 void
@@ -1031,7 +1112,7 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 		render_refresh_rendered_image_on_screen();
 #else
 		render_recreate_composite_surface (screen.drawing_area);
-		render_force_expose_event_for_screen ();
+		callbacks_force_expose_event_for_screen ();
 #endif 
 	}
 }
@@ -1334,7 +1415,7 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 #ifdef RENDER_USING_GDK
 
 	GdkPixmap *new_pixmap;
-	GdkGC *gc = gdk_gc_new(widget->window);
+	GdkGC *gc = gdk_gc_new(widget->window);cal
 
 	/*
 	* Create a pixmap with default background
@@ -1436,69 +1517,58 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		state = event->state;
 	}
 
-	//if (screen.pixmap != NULL) {
-		double X, Y;
+	double X, Y;
 
-		X = screenRenderInfo.lowerLeftX + (x / screenRenderInfo.scaleFactor);
-		Y = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - y)
-				/ screenRenderInfo.scaleFactor);
+	X = screenRenderInfo.lowerLeftX + (x / screenRenderInfo.scaleFactor);
+	Y = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - y)
+			/ screenRenderInfo.scaleFactor);
 
-		if (screen.unit == GERBV_MILS) {
-		    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-			     "(%7.1f, %7.1f)",
-			     COORD2MILS(X), COORD2MILS(Y));
-		} else if (screen.unit == GERBV_MMS) {
-		    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-			     "(%7.2f, %7.2f)",
-			     COORD2MMS(X), COORD2MMS(Y));
-		} else {
-		    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-			     "(%3.4f, %3.4f)",
-			     COORD2MILS(X) / 1000.0, COORD2MILS(Y) / 1000.0);
-		}
-		callbacks_update_statusbar();
+	if (screen.unit == GERBV_MILS) {
+	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+		     "(%7.1f, %7.1f)",
+		     COORD2MILS(X), COORD2MILS(Y));
+	} else if (screen.unit == GERBV_MMS) {
+	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+		     "(%7.2f, %7.2f)",
+		     COORD2MMS(X), COORD2MMS(Y));
+	} else {
+	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+		     "(%3.4f, %3.4f)",
+		     COORD2MILS(X) / 1000.0, COORD2MILS(Y) / 1000.0);
+	}
 
-		switch (screen.state) {
+	switch (screen.state) {
 		case MOVE: {
-		    
-		    //x = widget->allocation.height - x;
-		    //y = widget->allocation.width - y;
-		    
 		    if (screen.last_x != 0 || screen.last_y != 0) {
 			/* Move pixmap to get a snappier feel of movement */
 			screen.off_x += x - screen.last_x;
 			screen.off_y += y - screen.last_y;
 		    }
-		    screen.last_x = x;
-		    screen.last_y = y;
-		    
-		    render_force_expose_event_for_screen ();
+		    screenRenderInfo.lowerLeftX -= ((x - screen.last_x) / screenRenderInfo.scaleFactor);
+		    screenRenderInfo.lowerLeftY += ((y - screen.last_y) / screenRenderInfo.scaleFactor);
+		    callbacks_force_expose_event_for_screen ();
+		    callbacks_update_scrollbar_positions ();
 		    break;
 		}
 		case ZOOM_OUTLINE: {
 		    if (screen.last_x || screen.last_y)
 			render_draw_zoom_outline(screen.centered_outline_zoom);
-
-		    screen.last_x = x;
-		    screen.last_y = y;
-
 		    render_draw_zoom_outline(screen.centered_outline_zoom);
 		    break;
 		}
 		case MEASURE: {
 		    if (screen.last_x || screen.last_y)
 			render_draw_measure_distance();
-
-		    screen.last_x = x;
-		    screen.last_y = y;
-
 		    render_draw_measure_distance();
 		    break;
 		}
 		default:
 		    break;
-		}
-	//}
+	}
+	screen.last_x = x;
+	screen.last_y = y;
+		    
+	callbacks_update_statusbar();
 	callbacks_update_ruler_pointers ();
 	return TRUE;
 } /* motion_notify_event */
@@ -1567,8 +1637,6 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 	if (event->type == GDK_BUTTON_RELEASE) {
 		if (screen.state == MOVE) {
 		    screen.state = NORMAL;	   
-		    screenRenderInfo.lowerLeftX -= ((screen.off_x) / screenRenderInfo.scaleFactor);
-		    screenRenderInfo.lowerLeftY += ((screen.off_y) / screenRenderInfo.scaleFactor);
 		    screen.off_x = 0;
 		    screen.off_y = 0;
 		    render_refresh_rendered_image_on_screen();
@@ -1727,6 +1795,7 @@ callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_d
 	if (activeRow >= 0) {
 		screen.unit = activeRow;	
 	}
+	callbacks_update_ruler_scales();
 }
 
 void
@@ -1837,5 +1906,24 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 	gtk_text_buffer_get_iter_at_mark(textbuffer, &StopIter, StopMark);
 
 	gtk_text_buffer_apply_tag(textbuffer, tag, &StartIter, &StopIter);
+}
+
+
+void callbacks_force_expose_event_for_screen (void){
+
+	GdkRectangle update_rect;
+	
+	update_rect.x = 0;
+	update_rect.y = 0;
+	update_rect.width = screenRenderInfo.displayWidth;
+	update_rect.height = screenRenderInfo.displayHeight;
+
+	/* Calls expose_event */
+	gdk_window_invalidate_rect (screen.drawing_area->window, &update_rect, FALSE);
+	
+	/* update other gui things that could have changed */
+	callbacks_update_ruler_scales();
+	callbacks_update_scrollbar_limits();
+	callbacks_update_scrollbar_positions();
 }
 
