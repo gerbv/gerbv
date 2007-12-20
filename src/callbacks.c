@@ -1398,12 +1398,13 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	                                          screenRenderInfo.displayHeight);
 	}
 #endif
-	if ((screen.last_loaded != -1)&&(screenRenderInfo.scaleFactor < 0.001)) {
+	/* if this is the first time, go ahead and call autoscale even if we don't
+	   have a model loaded */
+	if (screenRenderInfo.scaleFactor < 0.001) {
 		/* speed up rendering by reducing quality by a small amount (default is 1.0) */
 		screenRenderInfo.renderQuality = 1.5;
 		render_zoom_to_fit_display (&screenRenderInfo);
 	}
-	
 	render_refresh_rendered_image_on_screen();
 	return TRUE;
 }

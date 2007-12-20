@@ -355,6 +355,14 @@ render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
 	max_width = (x2 - x1)*1.05;
 	max_height = (y2 - y1)*1.05;
 
+	/* if the values aren't sane (probably we have no models loaded), then
+	   put in some defaults */
+	if ((max_width < 0.01) || (max_height < 0.01)) {
+		renderInfo->lowerLeftX = 0.0;
+		renderInfo->lowerLeftY = 0.0;
+		renderInfo->scaleFactor = 50;
+		return;
+	}
 	/*
 	* Calculate scale for both x axis and y axis
 	*/
