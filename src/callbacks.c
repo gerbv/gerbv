@@ -623,9 +623,9 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     /* Put aperture definintion text into scrolled window */
     GtkWidget *aperture_report_window = gtk_scrolled_window_new (NULL, NULL);
     /* This throws a warning.  Must find different approach.... */
-    gtk_layout_set_size(GTK_LAYOUT(aperture_report_window),
-			200,
-			300);
+    gtk_widget_set_size_request(GTK_WIDGET(aperture_report_window),
+				200,
+				300);
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(aperture_report_window),
 					  GTK_WIDGET(aperture_report_label));
 
