@@ -43,7 +43,7 @@ alloc_color_old(int r, int g, int b, char *colorname)
     if (b < 0 || b > MAX_COLOR_RESOLUTION)
 	GERB_MESSAGE("Blue out range: %d\n", b);
 
-    color = (struct _GdkColor *)malloc(sizeof(struct _GdkColor));
+    color = (struct _GdkColor *)g_malloc(sizeof(struct _GdkColor));
     if (color == NULL)
 	return NULL;
 

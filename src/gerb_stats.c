@@ -48,7 +48,7 @@ gerb_stats_new(void) {
     gerb_aperture_list_t *aperture_list;
 
     /* Malloc space for new stats struct.  Return NULL if error. */
-    if ((stats = (gerb_stats_t *)malloc(sizeof(gerb_stats_t))) == NULL) {
+    if ((stats = (gerb_stats_t *)g_malloc(sizeof(gerb_stats_t))) == NULL) {
         return NULL;
     }
 
@@ -159,7 +159,7 @@ gerb_stats_new_error_list() {
     error_list_t *error_list;
 
     /* Malloc space for new error_list struct.  Return NULL if error. */
-    if ((error_list = (error_list_t *)malloc(sizeof(error_list_t))) == NULL) {
+    if ((error_list = (error_list_t *)g_malloc(sizeof(error_list_t))) == NULL) {
         return NULL;
     }
 
@@ -215,7 +215,7 @@ gerb_stats_add_error(error_list_t *error_list_in,
     /* This error text is unique.  Therefore, add it to the list */
 
     /* Now malloc space for new error list element */
-    error_list_new = (error_list_t *) malloc(sizeof(error_list_t));
+    error_list_new = (error_list_t *) g_malloc(sizeof(error_list_t));
     if (error_list_new == NULL) {
         GERB_FATAL_ERROR("malloc error_list failed\n");
     }
@@ -237,7 +237,7 @@ gerb_stats_new_aperture_list() {
     int i;
 
     /* Malloc space for new aperture_list struct.  Return NULL if error. */
-    if ((aperture_list = (gerb_aperture_list_t *)malloc(sizeof(gerb_aperture_list_t))) 
+    if ((aperture_list = (gerb_aperture_list_t *)g_malloc(sizeof(gerb_aperture_list_t))) 
 	 == NULL) {
         return NULL;
     }
@@ -292,7 +292,7 @@ gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
     dprintf("     .... Aperture type = %d ... \n", type); 
 	
     /* Now malloc space for new aperture list element */
-    aperture_list_new = (gerb_aperture_list_t *) malloc(sizeof(gerb_aperture_list_t));
+    aperture_list_new = (gerb_aperture_list_t *) g_malloc(sizeof(gerb_aperture_list_t));
     if (aperture_list_new == NULL) {
         GERB_FATAL_ERROR("malloc aperture_list failed\n");
     }

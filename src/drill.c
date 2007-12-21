@@ -158,7 +158,7 @@ parse_drillfile(gerb_file_t *fd)
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
 
-    image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
+    image->format = (gerb_format_t *)g_malloc(sizeof(gerb_format_t));
     if (image->format == NULL)
 	GERB_FATAL_ERROR("malloc format failed\n");
     memset((void *)image->format, 0, sizeof(gerb_format_t));
@@ -351,7 +351,7 @@ parse_drillfile(gerb_file_t *fd)
 		/* M00 has optional arguments */
 		eat_line(fd);
 	    case DRILL_M_ENDREWIND :
-		free(state);
+		g_free(state);
 		return image;
 		break;
 	    case DRILL_M_METRICHEADER :
@@ -381,7 +381,7 @@ parse_drillfile(gerb_file_t *fd)
 	    drill_stats_increment_drill_counter(image->drill_stats->drill_list,
 						state->current_tool);
 
-	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 	    if (curr_net->next == NULL)
 		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 	    curr_net = curr_net->next;
@@ -459,7 +459,7 @@ parse_drillfile(gerb_file_t *fd)
 			  "No EOF found in drill file.\n",
 			  ERROR);
 
-    free(state);
+    g_free(state);
 
     return image;
 } /* parse_drillfile */
@@ -604,7 +604,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 					  ERROR);
 		} else {
 		    image->aperture[tool_num] =
-			(gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
+			(gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
 		    /* make sure we zero out all aperature parameters */
 		    memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
 		    if (image->aperture[tool_num] == NULL) {
@@ -658,7 +658,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
         double dia;
 
 	image->aperture[tool_num] =
-	    (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
+	    (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
 	/* make sure we zero out all aperature parameters */
 	memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
 	if (image->aperture[tool_num] == NULL) {
@@ -969,7 +969,7 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 static drill_state_t *
 new_state(drill_state_t *state)
 {
-    state = (drill_state_t *)malloc(sizeof(drill_state_t));
+    state = (drill_state_t *)g_malloc(sizeof(drill_state_t));
     if (state != NULL) {
 	/* Init structure */
 	memset((void *)state, 0, sizeof(drill_state_t));

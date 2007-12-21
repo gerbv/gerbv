@@ -52,7 +52,7 @@ gerb_fopen(char *filename)
     
     dprintf("---> Entering gerb_fopen, filename = %s\n", filename);
 #ifdef HAVE_SYS_MMAN_H
-    fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
+    fd = (gerb_file_t *)g_malloc(sizeof(gerb_file_t));
     if (fd == NULL) {
 	return NULL;
     }
@@ -60,7 +60,7 @@ gerb_fopen(char *filename)
     dprintf("     Doing fopen\n");
     fd->fd = fopen(filename, "r");
     if (fd->fd == NULL) {
-	free(fd);
+	g_free(fd);
 	return NULL;
     }
 
@@ -69,14 +69,14 @@ gerb_fopen(char *filename)
     fd->fileno = fileno(fd->fd);
     if (fstat(fd->fileno, &statinfo) < 0) {
 	fclose(fd->fd);
-	free(fd);
+	g_free(fd);
 	return NULL;
     }
 
     dprintf("     Checking S_ISREG\n");
     if (!S_ISREG(statinfo.st_mode)) {
 	fclose(fd->fd);
-	free(fd);
+	g_free(fd);
 	errno = EISDIR;
 	return NULL;
     }
@@ -84,7 +84,7 @@ gerb_fopen(char *filename)
     dprintf("     Checking statinfo.st_size\n");
     if ((int)statinfo.st_size == 0) {
 	fclose(fd->fd);
-	free(fd);
+	g_free(fd);
 	errno = EIO; /* More compatible with the world outside Linux */
 	return NULL;
     }
@@ -95,19 +95,19 @@ gerb_fopen(char *filename)
 			    fd->fileno, 0);
     if(fd->data == MAP_FAILED) {
 	fclose(fd->fd);
-	free(fd);
+	g_free(fd);
 	fd = NULL;
     }
 #else
     /* all systems without mmap, not only MINGW32 */
-    fd = (gerb_file_t *)malloc(sizeof(gerb_file_t));
+    fd = (gerb_file_t *)g_malloc(sizeof(gerb_file_t));
     if (fd == NULL) {
 	return NULL;
     }
 
     if (stat(filename, &statinfo) < 0) {
 	fclose(fd->fd);
-	free(fd);
+	g_free(fd);
         return NULL;
     }
     
@@ -116,18 +116,18 @@ gerb_fopen(char *filename)
     fd->fileno = fileno(fd->fd);
     if (fstat(fd->fileno, &statinfo) < 0) {
 	fclose(fd->fd);
-	free(fd);
+	g_free(fd);
 	return NULL;
     }	
     if (!S_ISREG(statinfo.st_mode)) {
 	fclose(fd->fd);
-	free(fd);
+	g_free(fd);
 	errno = EISDIR;
 	return NULL;
     }
     if ((int)statinfo.st_size == 0) {
 	fclose(fd->fd);
-	free(fd);
+	g_free(fd);
 	errno = EIO; /* More compatible with the world outside Linux */
 	return NULL;
     }
@@ -135,13 +135,13 @@ gerb_fopen(char *filename)
     fd->data = calloc(1, statinfo.st_size + 1);
     if (fd->data == NULL) {
         fclose(fd->fd);
-        free(fd);
+        g_free(fd);
         return NULL;
     }
     if (fread((void*)fd->data, 1, statinfo.st_size, fd->fd) == NULL) {
         fclose(fd->fd);
-	free(fd->data);
-        free(fd);
+	g_free(fd->data);
+        g_free(fd);
 	return NULL;
     }
 #endif
@@ -228,7 +228,7 @@ gerb_fgetstring(gerb_file_t *fd, char term)
 
     len = strend - (fd->data + fd->ptr);
 
-    newstr = (char *)malloc(len + 1);
+    newstr = (char *)g_malloc(len + 1);
     if (newstr == NULL)
 	return NULL;
     strncpy(newstr, fd->data + fd->ptr, len);
@@ -257,11 +257,11 @@ gerb_fclose(gerb_file_t *fd)
 	if (munmap(fd->data, fd->datalen) < 0)
 	    GERB_FATAL_ERROR("munmap:%s", strerror(errno));
 #else
-	free(fd->data);
+	g_free(fd->data);
 #endif   
 	if (fclose(fd->fd) == EOF)
 	    GERB_FATAL_ERROR("fclose:%s", strerror(errno));
-	free(fd);
+	g_free(fd);
     }
 
     return;
@@ -291,7 +291,7 @@ gerb_find_file(char *filename, char **paths)
 		len = strlen(paths[i]) - 1;
 	    else
 		len = tmp - paths[i] - 1;
-	    env_name = (char *)malloc(len + 1);
+	    env_name = (char *)g_malloc(len + 1);
 	    if (env_name == NULL)
 		return NULL;
 	    strncpy(env_name, (char *)(paths[i] + 1), len);
@@ -299,12 +299,12 @@ gerb_find_file(char *filename, char **paths)
 
 	    env_value = getenv(env_name);
 	    if (env_value == NULL) break;
-	    curr_path = (char *)malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
+	    curr_path = (char *)g_malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
 	    if (curr_path == NULL)
 		return NULL;
 	    strcpy(curr_path, env_value);
 	    strcat(curr_path, &paths[i][len + 1]);
-	    free(env_name);
+	    g_free(env_name);
 	} else {
 	    curr_path = paths[i];
 	}
@@ -312,7 +312,7 @@ gerb_find_file(char *filename, char **paths)
 	/*
 	 * Build complete path (inc. filename) and check if file exists.
 	 */
-	complete_path = (char *)malloc(strlen(curr_path) + strlen(filename) + 2);
+	complete_path = (char *)g_malloc(strlen(curr_path) + strlen(filename) + 2);
 	if (complete_path == NULL)
 	    return NULL;
 	strcpy(complete_path, curr_path);
@@ -323,7 +323,7 @@ gerb_find_file(char *filename, char **paths)
 	if (access(complete_path, R_OK) != -1)
 	    break;
 
-	free(complete_path);
+	g_free(complete_path);
 	complete_path = NULL;
     }
 

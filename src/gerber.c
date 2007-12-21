@@ -110,7 +110,7 @@ parse_gerb(gerb_file_t *fd)
      * Create new state.  This is used locally to keep track
      * of the photoplotter's state as the Gerber is read in.
      */
-    state = (gerb_state_t *)malloc(sizeof(gerb_state_t));
+    state = (gerb_state_t *)g_malloc(sizeof(gerb_state_t));
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
 
@@ -158,7 +158,7 @@ parse_gerb(gerb_file_t *fd)
 	    case 1 :
 	    case 2 :
 	    case 3 :
-		free(state);
+		g_free(state);
 		return image;
 		break;
 	    default:
@@ -251,7 +251,7 @@ parse_gerb(gerb_file_t *fd)
 	    if (state->changed == 0) break;
 	    state->changed = 0;
 
-	    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 	    if (curr_net->next == NULL)
 		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 	    curr_net = curr_net->next;
@@ -276,7 +276,7 @@ parse_gerb(gerb_file_t *fd)
 
 	    switch (state->interpolation) {
 	    case CW_CIRCULAR :
-		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+		curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));
 		if (curr_net->cirseg == NULL)
 		    GERB_FATAL_ERROR("malloc curr_net->cirseg failed\n");
 		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
@@ -286,7 +286,7 @@ parse_gerb(gerb_file_t *fd)
 		    calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case CCW_CIRCULAR :
-		curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+		curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));
 		if (curr_net->cirseg == NULL)
 		    GERB_FATAL_ERROR("malloc curr_net->cirseg failed\n");
 		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
@@ -326,7 +326,7 @@ parse_gerb(gerb_file_t *fd)
 		    curr_net->layer_polarity = state->layer_polarity;
 		    curr_net->unit = state->unit;
 			
-		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+		    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 		    if (curr_net->next == NULL)
 			GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 		    curr_net = curr_net->next;
@@ -335,7 +335,7 @@ parse_gerb(gerb_file_t *fd)
 
 		    curr_net->interpolation = PAREA_START;
 		    state->parea_start_node = curr_net;
-		    curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+		    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 		    if (curr_net->next == NULL)
 			GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 		    curr_net = curr_net->next;
@@ -399,7 +399,7 @@ parse_gerb(gerb_file_t *fd)
 	    if ((image->info->step_and_repeat.X != 1) ||
 		(image->info->step_and_repeat.Y != 1) ){
 	      curr_net->step_and_repeat = (struct gerb_step_and_repeat *) 
-		malloc(sizeof(struct gerb_step_and_repeat));
+		g_malloc(sizeof(struct gerb_step_and_repeat));
 	      if(curr_net->step_and_repeat == NULL)
 		GERB_FATAL_ERROR("malloc curr_net->step_and_repeat failed\n");
 	      memcpy(curr_net->step_and_repeat,
@@ -749,7 +749,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	break;
 
     case A2I('F','S'): /* Format Statement */
-	image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
+	image->format = (gerb_format_t *)g_malloc(sizeof(gerb_format_t));
 	if (image->format == NULL) 
 	    GERB_FATAL_ERROR("Failed malloc for format\n");
 	memset((void *)image->format, 0, sizeof(gerb_format_t));
@@ -1006,7 +1006,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	
 	/* Aperture parameters */
     case A2I('A','D'): /* Aperture Description */
-	a = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
+	a = (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
 	if (a == NULL)
 	    GERB_FATAL_ERROR("malloc aperture failed\n");
 	memset((void *)a, 0, sizeof(gerb_aperture_t));
@@ -1199,7 +1199,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 
     gerb_ungetc(fd);
 
-    free(ad);
+    g_free(ad);
 
     return ano;
 } /* parse_aperture_definition */
@@ -1443,7 +1443,7 @@ gen_circle_segments(gerb_net_t *curr_net, int cw, int *nuf_pcorners)
 	/*
 	 * create a new net, and copy current into it, (but not cirseg)
 	 */
-	new_net = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+	new_net = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 	if (new_net == NULL)
 	    GERB_FATAL_ERROR("malloc new_net failed\n");
 	*new_net = *curr_net;

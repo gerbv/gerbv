@@ -41,31 +41,31 @@ new_gerb_image(gerb_image_t *image)
     free_gerb_image(image);
     
     /* Malloc space for image */
-    if ((image = (gerb_image_t *)malloc(sizeof(gerb_image_t))) == NULL) {
+    if ((image = (gerb_image_t *)g_malloc(sizeof(gerb_image_t))) == NULL) {
 	return NULL;
     }
     memset((void *)image, 0, sizeof(gerb_image_t));
     
     /* Malloc space for image->netlist */
-    if ((image->netlist = (gerb_net_t *)malloc(sizeof(gerb_net_t))) == NULL) {
-	free(image);
+    if ((image->netlist = (gerb_net_t *)g_malloc(sizeof(gerb_net_t))) == NULL) {
+	g_free(image);
 	return NULL;
     }
     memset((void *)image->netlist, 0, sizeof(gerb_net_t));
     
     /* Malloc space for image->info */
-    if ((image->info = (gerb_image_info_t *)malloc(sizeof(gerb_image_info_t))) == NULL) {
-	free(image->netlist);
-	free(image);
+    if ((image->info = (gerb_image_info_t *)g_malloc(sizeof(gerb_image_info_t))) == NULL) {
+	g_free(image->netlist);
+	g_free(image);
 	return NULL;
     }
     memset((void *)image->info, 0, sizeof(gerb_image_info_t));
     
     /* Malloc space for image->transf */
     if ((image->transf = gerb_transf_new()) == NULL) {
-        free(image->info);
-        free(image->netlist);
-	free(image);
+        g_free(image->info);
+        g_free(image->netlist);
+	g_free(image);
 	return NULL;
     }
 
@@ -99,7 +99,7 @@ free_gerb_image(gerb_image_t *image)
      */
     for (i = 0; i < APERTURE_MAX; i++) 
 	if (image->aperture[i] != NULL) {
-	    free(image->aperture[i]);
+	    g_free(image->aperture[i]);
 	    image->aperture[i] = NULL;
 	}
 
@@ -113,15 +113,15 @@ free_gerb_image(gerb_image_t *image)
      * Free format
      */
     if (image->format)
-	free(image->format);
+	g_free(image->format);
     
     /*
      * Free info
      */
     if (image->info) {
 	if (image->info->name)
-	    free(image->info->name);
-	free(image->info);
+	    g_free(image->info->name);
+	g_free(image->info);
     }
     
     /*
@@ -131,13 +131,13 @@ free_gerb_image(gerb_image_t *image)
 	tmp = net; 
 	net = net->next; 
 	if (tmp->cirseg != NULL) {
-	    free(tmp->cirseg);
+	    g_free(tmp->cirseg);
 	    tmp->cirseg = NULL;
 	}
 	if (tmp->label) {
 		g_string_free (tmp->label, TRUE);
 	}
-	free(tmp);
+	g_free(tmp);
 	tmp = NULL;
     }
     
@@ -149,7 +149,7 @@ free_gerb_image(gerb_image_t *image)
     /*
      * Free and reset the final image
      */
-    free(image);
+    g_free(image);
     image = NULL;
     
     return;

@@ -55,16 +55,16 @@ new_stack(unsigned int nuf_push)
 	const int extra_stack_size = 10;
 	macro_stack_t *s;
 
-	s = (macro_stack_t *)malloc(sizeof(macro_stack_t));
+	s = (macro_stack_t *)g_malloc(sizeof(macro_stack_t));
 	if (!s) {
-		free(s);
+		g_free(s);
 		return NULL;
 	}
 	memset(s, 0, sizeof(macro_stack_t));
 
-	s->stack = (double *)malloc(sizeof(double) * (nuf_push + extra_stack_size));
+	s->stack = (double *)g_malloc(sizeof(double) * (nuf_push + extra_stack_size));
 	if (!s->stack) {
-		free(s->stack);
+		g_free(s->stack);
 		return NULL;
 	}
 
@@ -79,10 +79,10 @@ static void
 free_stack(macro_stack_t *s)
 {
 	if (s && s->stack)
-		free(s->stack);
+		g_free(s->stack);
 
 	if (s)
-		free(s);
+		g_free(s);
 
 	return;
 } /* free_stack */

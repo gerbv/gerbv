@@ -48,7 +48,7 @@ drill_stats_new(void) {
     error_list_t *error_list;
 
     /* Malloc space for new stats struct.  Return NULL if error. */
-    if ((stats = (drill_stats_t *)malloc(sizeof(drill_stats_t))) == NULL) {
+    if ((stats = (drill_stats_t *)g_malloc(sizeof(drill_stats_t))) == NULL) {
         return NULL;
     }
 
@@ -172,7 +172,7 @@ drill_stats_new_drill_list() {
     drill_list_t *drill_list;
 
     /* Malloc space for new drill_list struct.  Return NULL if error. */
-    if ((drill_list = (drill_list_t *)malloc(sizeof(drill_list_t))) == NULL) {
+    if ((drill_list = (drill_list_t *)g_malloc(sizeof(drill_list_t))) == NULL) {
         return NULL;
     }
 
@@ -224,7 +224,7 @@ drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
     }
 
     /* Now malloc space for new drill list element */
-    drill_list_new = (drill_list_t *) malloc(sizeof(drill_list_t));
+    drill_list_new = (drill_list_t *) g_malloc(sizeof(drill_list_t));
     if (drill_list_new == NULL) {
 	GERB_FATAL_ERROR("malloc format failed\n");
     }
@@ -264,7 +264,7 @@ drill_stats_modify_drill_list(drill_list_t *drill_list_in,
 	    dprintf("   .... Found it, now update it ....\n");
 	    drill->drill_size = drill_size_in;
 	    if (drill->drill_unit) 
-		free(drill->drill_unit);
+		g_free(drill->drill_unit);
 	    drill->drill_unit = g_strdup_printf("%s", drill_unit_in);
 	    dprintf("   <---- ... Modified drill.  leaving drill_stats_modify_drill_list.\n");
 	    return;
@@ -318,7 +318,7 @@ drill_stats_new_error_list() {
     error_list_t *error_list;
 
     /* Malloc space for new error_list struct.  Return NULL if error. */
-    if ((error_list = (error_list_t *)malloc(sizeof(error_list_t))) == NULL) {
+    if ((error_list = (error_list_t *)g_malloc(sizeof(error_list_t))) == NULL) {
         return NULL;
     }
 
@@ -379,7 +379,7 @@ drill_stats_add_error(error_list_t *error_list_in,
     /* This error text is unique.  Therefore, add it to the list */
 
     /* Now malloc space for new error list element */
-    error_list_new = (error_list_t *) malloc(sizeof(error_list_t));
+    error_list_new = (error_list_t *) g_malloc(sizeof(error_list_t));
     if (error_list_new == NULL) {
 	GERB_FATAL_ERROR("malloc error_list failed\n");
     }

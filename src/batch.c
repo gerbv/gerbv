@@ -268,16 +268,16 @@ batch(char *backend, char *filename)
      * path[2] = BACKEND_DIR defined with ./configure --with-backend-dir=XX,
      *           default /usr/local/share/gerbv/scheme
      */
-    if ((path[0] = (char *)malloc(strlen(".") + 1)) == NULL)
+    if ((path[0] = (char *)g_malloc(strlen(".") + 1)) == NULL)
 	err(1, "Malloc failed\n");
     strcpy(path[0], ".");
 
-    if ((path[1] = (char *)malloc(strlen(home) + strlen("/.gerbv/scheme") + 1)) == NULL)
+    if ((path[1] = (char *)g_malloc(strlen(home) + strlen("/.gerbv/scheme") + 1)) == NULL)
 	err(1, "Malloc failed\n");
     strcpy(path[1], home);
     strcat(path[1], "/.gerbv/scheme");
 
-    if ((path[2] = (char *)malloc(strlen(BACKEND_DIR) + 1)) == NULL)
+    if ((path[2] = (char *)g_malloc(strlen(BACKEND_DIR) + 1)) == NULL)
 	err(1, "Malloc failed\n");
     strcpy(path[2], BACKEND_DIR);
 
@@ -285,13 +285,13 @@ batch(char *backend, char *filename)
      * Search for backend along the paths. Break when you find one.
      */
     for (i = 0; i < sizeof(path)/sizeof(path[0]); i++) {
-	complete_path = (char *)malloc(strlen(path[i]) + strlen(backend) + 2);
+	complete_path = (char *)g_malloc(strlen(path[i]) + strlen(backend) + 2);
 	strcpy(complete_path, path[i]);
 	strcat(complete_path, "/");
 	strcat(complete_path, backend);
 	if (access(complete_path, R_OK) != -1)
 	    break;
-	free(complete_path);
+	g_free(complete_path);
 	complete_path = NULL;
     }
 
@@ -299,7 +299,7 @@ batch(char *backend, char *filename)
      * Make sure all allocated path strings above are deallocated
      */
     for (i = 0; i < sizeof(path)/sizeof(path[0]); i++) {
-	free(path[i]);
+	g_free(path[i]);
 	path[i] = NULL;
     }
 
@@ -362,7 +362,7 @@ batch(char *backend, char *filename)
     /*
      * Cleanup
      */
-    free(complete_path);
+    g_free(complete_path);
     complete_path = NULL;
     
     free_gerb_image(image);

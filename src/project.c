@@ -157,7 +157,7 @@ define_layer(scheme *sc, pointer args)
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);
 
-    plist_tmp = (project_list_t *)malloc(sizeof(project_list_t));
+    plist_tmp = (project_list_t *)g_malloc(sizeof(project_list_t));
     memset(plist_tmp, 0, sizeof(project_list_t));
     plist_tmp->next = plist_top;
     plist_top = plist_tmp;
@@ -311,7 +311,7 @@ write_project_file(char *filename, project_list_t *project)
 	fprintf(fd, "\n");
 	tmp = p;
 	p = p->next;
-	free(tmp);
+	g_free(tmp);
 	tmp = NULL;
     }
 

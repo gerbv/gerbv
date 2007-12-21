@@ -187,7 +187,7 @@ void gerbv_open_project_from_filename (gchar *filename) {
 	     * Save project filename for later use
 	     */
 	    if (screen.project) {
-		free(screen.project);
+		g_free(screen.project);
 		screen.project = NULL;
 	    }
 	    screen.project = g_strdup (filename);
@@ -216,7 +216,7 @@ void gerbv_save_project_from_filename (gchar *filename) {
 	gchar *pathName=NULL;
     
 	if (screen.path) {
-	    project_list = (project_list_t *)malloc(sizeof(project_list_t));
+	    project_list = (project_list_t *)g_malloc(sizeof(project_list_t));
 	    if (project_list == NULL)
 		GERB_FATAL_ERROR("malloc project_list failed\n");
 	    memset(project_list, 0, sizeof(project_list_t));
@@ -231,7 +231,7 @@ void gerbv_save_project_from_filename (gchar *filename) {
 	
 	for (idx = 0; idx < MAX_FILES; idx++) {
 	    if (screen.file[idx]) {
-		tmp = (project_list_t *)malloc(sizeof(project_list_t));
+		tmp = (project_list_t *)g_malloc(sizeof(project_list_t));
 		if (tmp == NULL) 
 		    GERB_FATAL_ERROR("malloc tmp failed\n");
 		memset(tmp, 0, sizeof(project_list_t));
@@ -257,7 +257,7 @@ void gerbv_save_project_from_filename (gchar *filename) {
 	pathName = dirname(filename);
 #endif
 	if (screen.path)
-		free(screen.path);
+		g_free(screen.path);
 	screen.path = g_strconcat (pathName,"/",NULL);
 	if (screen.path == NULL)
 		GERB_FATAL_ERROR("malloc screen.path failed\n");
@@ -269,7 +269,7 @@ void gerbv_save_as_project_from_filename (gchar *filename) {
 	 * Save project filename for later use
 	 */
 	if (screen.project) {
-	    free(screen.project);
+	    g_free(screen.project);
 	    screen.project = NULL;
 	}
 	screen.project = g_strdup(filename);
@@ -293,9 +293,9 @@ void gerbv_unload_layer (int index) {
 	gint i;
 	
 	free_gerb_image(screen.file[index]->image);  screen.file[index]->image = NULL;
-	free(screen.file[index]->name);
+	g_free(screen.file[index]->name);
 	screen.file[index]->name = NULL;
-	free(screen.file[index]);
+	g_free(screen.file[index]);
 	screen.file[index] = NULL;
 	
 	/* slide all later layers down to fill the empty slot */
@@ -365,8 +365,8 @@ load_project(project_list_t *project_list)
 next_layer:
 		pl_tmp = project_list;
 		project_list = project_list->next;
-		free(pl_tmp->filename);
-		free(pl_tmp);
+		g_free(pl_tmp->filename);
+		g_free(pl_tmp);
 	}
 	return;
 } /* load_project */
@@ -445,7 +445,7 @@ open_image(char *filename, int idx, int reload)
 		return 0;
 	} else {
 		/* Load new file. */
-		screen.file[idx] = (gerbv_fileinfo_t *)malloc(sizeof(gerbv_fileinfo_t));
+		screen.file[idx] = (gerbv_fileinfo_t *)g_malloc(sizeof(gerbv_fileinfo_t));
 		if (screen.file[idx] == NULL)
 		    GERB_FATAL_ERROR("malloc screen.file[idx] failed\n");
 		memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
@@ -455,7 +455,7 @@ open_image(char *filename, int idx, int reload)
 	/*
 	* Store filename for eventual reload
 	*/
-	screen.file[idx]->name = (char *)malloc(strlen(filename) + 1);
+	screen.file[idx]->name = (char *)g_malloc(strlen(filename) + 1);
 	if (screen.file[idx]->name == NULL)
 		GERB_FATAL_ERROR("malloc screen.file[idx]->name failed\n");
 	strcpy(screen.file[idx]->name, filename);
@@ -469,7 +469,7 @@ open_image(char *filename, int idx, int reload)
 		int len;
 
 		len = strlen(cptr);
-		screen.file[idx]->basename = (char *)malloc(len + 1);
+		screen.file[idx]->basename = (char *)g_malloc(len + 1);
 		if (screen.file[idx]->basename) {
 		    strncpy(screen.file[idx]->basename, cptr+1, len);
 		    screen.file[idx]->basename[len] = '\0';

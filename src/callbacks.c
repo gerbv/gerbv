@@ -144,7 +144,7 @@ callbacks_new_activate                        (GtkMenuItem     *menuitem,
 {
 	/* first, unload all files */
 	if (screen.project) {
-	    free(screen.project);
+	    g_free(screen.project);
 	    screen.project = NULL;
 	}
 	gerbv_unload_all_layers ();
@@ -588,37 +588,37 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     GtkWidget *general_report_label = gtk_label_new (general_report_string);
     gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
-    free(general_report_string);
+    g_free(general_report_string);
 
     /* Create GtkLabel to hold G code text */
     GtkWidget *G_report_label = gtk_label_new (G_report_string);
     gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
-    free(G_report_string);
+    g_free(G_report_string);
 
     /* Create GtkLabel to hold D code text */
     GtkWidget *D_report_label = gtk_label_new (D_report_string);
     gtk_misc_set_alignment(GTK_MISC(D_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(D_report_label), 13, 13);
-    free(D_report_string);
+    g_free(D_report_string);
 
     /* Create GtkLabel to hold M code text */
     GtkWidget *M_report_label = gtk_label_new (M_report_string);
     gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
-    free(M_report_string);
+    g_free(M_report_string);
 
     /* Create GtkLabel to hold misc code text */
     GtkWidget *misc_report_label = gtk_label_new (misc_report_string);
     gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
-    free(misc_report_string);
+    g_free(misc_report_string);
 
     /* Create GtkLabel to hold aperture defnintion text */
     GtkWidget *aperture_report_label = gtk_label_new (aperture_report_string);
     gtk_misc_set_alignment(GTK_MISC(aperture_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(aperture_report_label), 13, 13);
-    free(aperture_report_string);
+    g_free(aperture_report_string);
     
     /* Put aperture definintion text into scrolled window */
     GtkWidget *aperture_report_window = gtk_scrolled_window_new (NULL, NULL);
@@ -821,31 +821,31 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     GtkWidget *general_report_label = gtk_label_new (general_report_string);
     gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
-    free(general_report_string);
+    g_free(general_report_string);
 
     /* Create GtkLabel to hold G code text */
     GtkWidget *G_report_label = gtk_label_new (G_report_string);
     gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
-    free(G_report_string);
+    g_free(G_report_string);
 
     /* Create GtkLabel to hold M code text */
     GtkWidget *M_report_label = gtk_label_new (M_report_string);
     gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
-    free(M_report_string);
+    g_free(M_report_string);
 
     /* Create GtkLabel to hold misc code text */
     GtkWidget *misc_report_label = gtk_label_new (misc_report_string);
     gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
-    free(misc_report_string);
+    g_free(misc_report_string);
 
     /* Create GtkLabel to hold drills used text */
     GtkWidget *drill_report_label = gtk_label_new (drill_report_string);
     gtk_misc_set_alignment(GTK_MISC(drill_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(drill_report_label), 13, 13);
-    free(drill_report_string);
+    g_free(drill_report_string);
 
     /* Create tabbed notebook widget and add report label widgets. */
     GtkWidget *notebook = gtk_notebook_new();

@@ -31,7 +31,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-
+#include <glib.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -40,7 +40,7 @@
 
 void gerb_transf_free(gerb_transf_t* transf)
 {
-    free(transf);
+    g_free(transf);
     
 }/*gerb_transf_t*/
 
@@ -49,7 +49,7 @@ gerb_transf_t* gerb_transf_new(void)
 {
     gerb_transf_t *transf;
     
-    transf = malloc(sizeof(gerb_transf_t));
+    transf = g_malloc(sizeof(gerb_transf_t));
     gerb_transf_reset(transf);
     return transf;
     

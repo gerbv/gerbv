@@ -215,7 +215,7 @@ pick_and_place_parse_file(gerb_file_t *fd)
 					// "ISO-8859-1" or current locale.
 					// str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
 					snprintf (pnpPartData.comment, sizeof(pnpPartData.comment)-1, "%s", str);
-					free(str);
+					g_free(str);
 				}
 				else {
 					snprintf (pnpPartData.comment, sizeof(pnpPartData.comment)-1, "%s", row[10]);
@@ -339,7 +339,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 		GERB_FATAL_ERROR("malloc image failed\n");
 	}
 	
-	image->format = (gerb_format_t *)malloc(sizeof(gerb_format_t));
+	image->format = (gerb_format_t *)g_malloc(sizeof(gerb_format_t));
 	if (image->format == NULL) {
 		GERB_FATAL_ERROR("malloc format failed\n");
 	}
@@ -359,7 +359,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	image->info->step_and_repeat.dist_X = 0.0;
 	image->info->step_and_repeat.dist_Y = 0.0;
 
-	image->aperture[0] = (gerb_aperture_t *)malloc(sizeof(gerb_aperture_t));
+	image->aperture[0] = (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
 	memset((void *) image->aperture[0], 0, sizeof(gerb_aperture_t));
 	image->aperture[0]->type = CIRCLE;
 	image->aperture[0]->amacro = NULL;
@@ -374,7 +374,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	for (i = 0; i < parsedPickAndPlaceData->len; i++) {
 		PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
 		float radius;                         
-		curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+		curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 		curr_net = curr_net->next;
 		assert(curr_net);
 		memset((void *)curr_net, 0, sizeof(gerb_net_t));
@@ -405,7 +405,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 				curr_net->label = g_string_new (partData.designator);
 			}
 
-			curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
 			assert(curr_net);
 			memset((void *)curr_net, 0, sizeof(gerb_net_t));
@@ -421,7 +421,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 
-			curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
 			assert(curr_net);
 			memset((void *)curr_net, 0, sizeof(gerb_net_t));
@@ -437,7 +437,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 
-			curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
 			assert(curr_net);
 			memset((void *)curr_net, 0, sizeof(gerb_net_t));
@@ -453,7 +453,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 
-			curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
 			assert(curr_net);
 			memset((void *)curr_net, 0, sizeof(gerb_net_t));
@@ -475,7 +475,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 				curr_net->aperture_state = ON;
 				curr_net->interpolation = LINEARx1;
 
-				curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+				curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 				curr_net = curr_net->next;
 				assert(curr_net);
 				memset((void *)curr_net, 0, sizeof(gerb_net_t));
@@ -504,7 +504,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 
-			curr_net->next = (gerb_net_t *)malloc(sizeof(gerb_net_t));
+			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
 			assert(curr_net);
 			memset((void *)curr_net, 0, sizeof(gerb_net_t));
@@ -519,7 +519,7 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->unit = MM;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = CW_CIRCULAR;
-			curr_net->cirseg = (gerb_cirseg_t *)malloc(sizeof(gerb_cirseg_t));
+			curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));
 			memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 			curr_net->cirseg->angle1 = 0.0;
 			curr_net->cirseg->angle2 = 360.0;

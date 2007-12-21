@@ -37,9 +37,9 @@ new_instruction()
 {
     instruction_t *instruction;
 
-    instruction = (instruction_t *)malloc(sizeof(instruction_t));
+    instruction = (instruction_t *)g_malloc(sizeof(instruction_t));
     if (instruction == NULL) {
-	free(instruction);
+	g_free(instruction);
 	return NULL;
     }
 
@@ -57,9 +57,9 @@ new_amacro()
 {
     amacro_t *amacro;
 
-    amacro = (amacro_t *)malloc(sizeof(amacro_t));
+    amacro = (amacro_t *)g_malloc(sizeof(amacro_t));
     if (amacro == NULL) {
-	free(amacro);
+	g_free(amacro);
 	return NULL;
     }
 
@@ -230,20 +230,20 @@ free_amacro(amacro_t *amacro)
     
     am1 = amacro;
     while (am1 != NULL) {
-	free(am1->name);
+	g_free(am1->name);
 	am1->name = NULL;
 
 	instr1 = am1->program;
 	while (instr1 != NULL) {
 	    instr2 = instr1;
 	    instr1 = instr1->next;
-	    free(instr2);
+	    g_free(instr2);
 	    instr2 = NULL;
 	}
 
 	am2 = am1;
 	am1 = am1->next;
-	free(am2);
+	g_free(am2);
 	am2 = NULL;
     }
 	

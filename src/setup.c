@@ -21,6 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#include <glib.h>
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
@@ -42,14 +43,14 @@ setup_init(void)
 
     memset((void *)&setup, 0, sizeof(setup_t));
 
-    fontstring = (char *)malloc(strlen(DEF_DISTFONTNAME) + 1);
+    fontstring = (char *)g_malloc(strlen(DEF_DISTFONTNAME) + 1);
     if (fontstring == NULL)
 	return;
     memset((void *)fontstring, 0, strlen(DEF_DISTFONTNAME) + 1);
     strncpy(fontstring, DEF_DISTFONTNAME, strlen(DEF_DISTFONTNAME));
     setup.dist_fontname = fontstring;
 
-    fontstring = (char *)malloc(strlen(DEF_STATUSFONTNAME) + 1);
+    fontstring = (char *)g_malloc(strlen(DEF_STATUSFONTNAME) + 1);
     if (fontstring == NULL)
 	return;
     memset((void *)fontstring, 0, strlen(DEF_STATUSFONTNAME) + 1);
@@ -63,7 +64,7 @@ void
 setup_destroy(void)
 {
     if (setup.dist_fontname)
-	free(setup.dist_fontname);
+	g_free(setup.dist_fontname);
     if (setup.status_fontname)
-	free(setup.status_fontname);
+	g_free(setup.status_fontname);
 }

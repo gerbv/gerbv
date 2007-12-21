@@ -58,16 +58,16 @@ new_stack(unsigned int nuf_push)
     const int extra_stack_size = 10;
     macro_stack_t *s;
 
-    s = (macro_stack_t *)malloc(sizeof(macro_stack_t));
+    s = (macro_stack_t *)g_malloc(sizeof(macro_stack_t));
     if (!s) {
-	free(s);
+	g_free(s);
 	return NULL;
     }
     memset(s, 0, sizeof(macro_stack_t));
 
-    s->stack = (double *)malloc(sizeof(double) * (nuf_push + extra_stack_size));
+    s->stack = (double *)g_malloc(sizeof(double) * (nuf_push + extra_stack_size));
     if (!s->stack) {
-	free(s->stack);
+	g_free(s->stack);
 	return NULL;
     }
 
@@ -82,10 +82,10 @@ static void
 free_stack(macro_stack_t *s)
 {
     if (s && s->stack)
-	free(s->stack);
+	g_free(s->stack);
 
     if (s)
-	free(s);
+	g_free(s);
 
     return;
 } /* free_stack */
@@ -202,9 +202,9 @@ gerbv_gdk_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 
 
     nuf_points = (int)s->stack[nuf_points_idx];
-    points = (GdkPoint *)malloc(sizeof(GdkPoint) * nuf_points);
+    points = (GdkPoint *)g_malloc(sizeof(GdkPoint) * nuf_points);
     if (!points) {
-	free(points);
+	g_free(points);
 	return;
     }
 
@@ -241,7 +241,7 @@ gerbv_gdk_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 			       GDK_JOIN_MITER);
     gdk_draw_polygon(pixmap, local_gc, closed_shape, points, nuf_points);
 
-    free(points);
+    g_free(points);
 
     gdk_gc_unref(local_gc);
 
@@ -270,9 +270,9 @@ gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 	return;
 
     nuf_vertices = (int)s->stack[nuf_vertices_idx];
-    points = (GdkPoint *)malloc(sizeof(GdkPoint) * nuf_vertices);
+    points = (GdkPoint *)g_malloc(sizeof(GdkPoint) * nuf_vertices);
     if (!points) {
-	free(points);
+	g_free(points);
 	return;
     }
 
@@ -297,7 +297,7 @@ gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 
     gdk_gc_unref(local_gc);
 
-    free(points);
+    g_free(points);
     return;
 } /* gerbv_gdk_draw_prim5 */
 
@@ -912,7 +912,7 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	 */
 	switch (net->interpolation) {
 	case PAREA_START :
-	    points = (GdkPoint *)malloc(sizeof(GdkPoint) *  net->nuf_pcorners);
+	    points = (GdkPoint *)g_malloc(sizeof(GdkPoint) *  net->nuf_pcorners);
 	    if (points == NULL) {
 		GERB_FATAL_ERROR("Malloc failed\n");
 	    }
@@ -927,7 +927,7 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 				       GDK_CAP_PROJECTING, 
 				       GDK_JOIN_MITER);
 	    gdk_draw_polygon(*pixmap, pgc, 1, points, curr_point_idx);
-	    free(points);
+	    g_free(points);
 	    points = NULL;
 	    in_parea_fill = 0;
 	    continue;
