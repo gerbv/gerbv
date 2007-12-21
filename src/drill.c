@@ -605,11 +605,11 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		} else {
 		    image->aperture[tool_num] =
 			(gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
-		    /* make sure we zero out all aperature parameters */
-		    memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
 		    if (image->aperture[tool_num] == NULL) {
 			GERB_FATAL_ERROR("malloc tool failed\n");
 		    }
+		    /* make sure we zero out all aperature parameters */
+		    memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
 		    /* There's really no way of knowing what unit the tools
 		       are defined in without sneaking a peek in the rest of
 		       the file first. That's done in drill_guess_format() */
@@ -659,11 +659,11 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 	image->aperture[tool_num] =
 	    (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
-	/* make sure we zero out all aperature parameters */
-	memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
 	if (image->aperture[tool_num] == NULL) {
 	    GERB_FATAL_ERROR("malloc tool failed\n");
 	}
+	/* make sure we zero out all aperature parameters */
+	memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
 
         /* See if we have the tool table */
         dia = GetToolDiameter_Inches(tool_num);
