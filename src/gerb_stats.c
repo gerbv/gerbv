@@ -236,15 +236,17 @@ gerb_stats_new_aperture_list() {
     gerb_aperture_list_t *aperture_list;
     int i;
 
+    dprintf("Mallocing new gerb aperture list\n");
     /* Malloc space for new aperture_list struct.  Return NULL if error. */
     if ((aperture_list = (gerb_aperture_list_t *)g_malloc(sizeof(gerb_aperture_list_t))) 
 	 == NULL) {
         return NULL;
     }
 
+    dprintf("   Placing values in certain structs.\n");
     aperture_list->number = -1;
     aperture_list->type = 0;
-    for (i = 0; i<=5; i++) {
+    for (i = 0; i<5; i++) {
 	aperture_list->parameter[i] = 0.0;
     }
     aperture_list->next = NULL;
