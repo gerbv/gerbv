@@ -145,15 +145,15 @@ parse_gerb(gerb_file_t *fd)
     while ((read = gerb_fgetc(fd)) != EOF) {
 	switch ((char)(read & 0xff)) {
 	case 'G':
-	    // dprintf("... Found G code\n");
+	    dprintf("... Found G code\n");
 	    parse_G_code(fd, state, image);
 	    break;
 	case 'D':
-	    // dprintf("... Found D code\n");
+	    dprintf("... Found D code\n");
 	    parse_D_code(fd, state, image);
 	    break;
 	case 'M':
-	    // dprintf("... Found M code\n");
+	    dprintf("... Found M code\n");
 	    switch(parse_M_code(fd, image)) {
 	    case 1 :
 	    case 2 :
@@ -169,7 +169,7 @@ parse_gerb(gerb_file_t *fd)
 	    } /* switch(parse_M_code) */
 	    break;
 	case 'X':
-	    // dprintf("... Found X code\n");
+	    dprintf("... Found X code\n");
 	    stats->X++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == TRAILING) {
@@ -197,7 +197,7 @@ parse_gerb(gerb_file_t *fd)
 	    state->changed = 1;
 	    break;
 	case 'Y':
-	    // dprintf("... Found Y code\n");
+	    dprintf("... Found Y code\n");
 	    stats->Y++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == TRAILING) {
@@ -225,19 +225,19 @@ parse_gerb(gerb_file_t *fd)
 	    state->changed = 1;
 	    break;
 	case 'I':
-	    // dprintf("... Found I code\n");
+	    dprintf("... Found I code\n");
 	    stats->I++;
 	    state->delta_cp_x = gerb_fgetint(fd, NULL);
 	    state->changed = 1;
 	    break;
 	case 'J':
-	    // dprintf("... Found J code\n");
+	    dprintf("... Found J code\n");
 	    stats->J++;
 	    state->delta_cp_y = gerb_fgetint(fd, NULL);
 	    state->changed = 1;
 	    break;
 	case '%':
-	    // dprintf("... Found % code\n");
+	    dprintf("... Found %% code\n");
 	    parse_rs274x(fd, image, state);
 	    while (1){
 	      char c=gerb_fgetc(fd);
@@ -246,7 +246,7 @@ parse_gerb(gerb_file_t *fd)
 	    }
 	    break;
 	case '*':  
-	    // dprintf("... Found * code\n");
+	    dprintf("... Found * code\n");
 	    stats->star++;
 	    if (state->changed == 0) break;
 	    state->changed = 0;
@@ -1132,7 +1132,6 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     char *token;
     amacro_t *curr_amacro;
     amacro_t *amacro = image->amacro;
-    gerb_stats_t *stats = image->gerb_stats;
 
     if (gerb_fgetc(fd) != 'D')
 	/* Insert AD error here */

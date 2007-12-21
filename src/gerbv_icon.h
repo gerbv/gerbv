@@ -1,4 +1,8 @@
 /* XPM */
+
+#define USE_NEW_ICON
+
+#ifdef USE_NEW_ICON
 /* This is the new icon */
 static char *gerbv_icon_xpm[] = {
 /* columns rows colors chars-per-pixel */
@@ -158,8 +162,10 @@ static char *gerbv_icon_xpm[] = {
 "*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.2 *.*.*.*.*.*.*.*.*.*.*.*.*.*.*."
 };
 
+#else 
+
 /* This is the old icon.  To get it back, just rename it. */
-static char * gerbv_icon_xpm_old[] = {
+static char * gerbv_icon_xpm[] = {
 "48 48 244 2",
 "  	c None",
 ". 	c #1F8888",
@@ -453,3 +459,5 @@ static char * gerbv_icon_xpm_old[] = {
 "                                                                                                ",
 "                                                                                                ",
 "                                                                                                "};
+
+#endif
