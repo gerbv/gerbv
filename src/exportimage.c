@@ -217,7 +217,7 @@ exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, char *filename)
 	png_write_info (png_ptr, info_ptr);
 	
 	/* Build up a vector of row pointers */	
-	row_ptr = (png_byte **)g_malloc(height * sizeof(png_byte *));
+	row_ptr = (png_byte **)malloc(height * sizeof(png_byte *));
 	for (i = 0; i < height; i++) {
 	    row_ptr[i] = (png_byte *)pixels;
 	    pixels += rowstride;
@@ -225,7 +225,7 @@ exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, char *filename)
 
 	/* Write it and free the row vector */
 	png_write_image(png_ptr, row_ptr);
-	g_free(row_ptr);
+	free(row_ptr);
 
 	/* Finish of PNG writing */
 	png_write_end (png_ptr, info_ptr);

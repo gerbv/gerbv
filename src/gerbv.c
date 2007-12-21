@@ -187,7 +187,7 @@ void gerbv_open_project_from_filename (gchar *filename) {
 	     * Save project filename for later use
 	     */
 	    if (screen.project) {
-		g_free(screen.project);
+		free(screen.project);
 		screen.project = NULL;
 	    }
 	    screen.project = g_strdup (filename);
@@ -257,7 +257,7 @@ void gerbv_save_project_from_filename (gchar *filename) {
 	pathName = dirname(filename);
 #endif
 	if (screen.path)
-		g_free(screen.path);
+		free(screen.path);
 	screen.path = g_strconcat (pathName,"/",NULL);
 	if (screen.path == NULL)
 		GERB_FATAL_ERROR("malloc screen.path failed\n");
@@ -269,7 +269,7 @@ void gerbv_save_as_project_from_filename (gchar *filename) {
 	 * Save project filename for later use
 	 */
 	if (screen.project) {
-	    g_free(screen.project);
+	    free(screen.project);
 	    screen.project = NULL;
 	}
 	screen.project = g_strdup(filename);
@@ -293,9 +293,9 @@ void gerbv_unload_layer (int index) {
 	gint i;
 	
 	free_gerb_image(screen.file[index]->image);  screen.file[index]->image = NULL;
-	g_free(screen.file[index]->name);
+	free(screen.file[index]->name);
 	screen.file[index]->name = NULL;
-	g_free(screen.file[index]);
+	free(screen.file[index]);
 	screen.file[index] = NULL;
 	
 	/* slide all later layers down to fill the empty slot */
@@ -766,7 +766,7 @@ main(int argc, char *argv[])
 			exportimage_export_to_postscript_file (&renderInfo, exportFilename);
 		}
 		if (freeFilename)
-			g_free (exportFilename);
+			free (exportFilename);
 		/* exit now and don't start up gtk if this is a command line export */
 		exit(1);
 	}

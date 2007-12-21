@@ -264,7 +264,7 @@ drill_stats_modify_drill_list(drill_list_t *drill_list_in,
 	    dprintf("   .... Found it, now update it ....\n");
 	    drill->drill_size = drill_size_in;
 	    if (drill->drill_unit) 
-		g_free(drill->drill_unit);
+		free(drill->drill_unit);
 	    drill->drill_unit = g_strdup_printf("%s", drill_unit_in);
 	    dprintf("   <---- ... Modified drill.  leaving drill_stats_modify_drill_list.\n");
 	    return;

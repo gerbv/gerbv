@@ -217,7 +217,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		continueLoop = FALSE;
 	}
     }
-    g_free (amacro);
+    free (amacro);
     return NULL;
 }
 

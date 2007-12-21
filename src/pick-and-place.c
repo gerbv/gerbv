@@ -215,7 +215,7 @@ pick_and_place_parse_file(gerb_file_t *fd)
 					// "ISO-8859-1" or current locale.
 					// str = g_locale_to_utf8(row[10], -1, NULL, NULL, NULL);
 					snprintf (pnpPartData.comment, sizeof(pnpPartData.comment)-1, "%s", str);
-					g_free(str);
+					free(str);
 				}
 				else {
 					snprintf (pnpPartData.comment, sizeof(pnpPartData.comment)-1, "%s", row[10]);
