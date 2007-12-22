@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <glib.h>
 
 #include "amacro.h"
 
@@ -37,9 +36,9 @@ new_instruction()
 {
     instruction_t *instruction;
 
-    instruction = (instruction_t *)g_malloc(sizeof(instruction_t));
+    instruction = (instruction_t *)malloc(sizeof(instruction_t));
     if (instruction == NULL) {
-	g_free(instruction);
+	free(instruction);
 	return NULL;
     }
 
@@ -57,9 +56,9 @@ new_amacro()
 {
     amacro_t *amacro;
 
-    amacro = (amacro_t *)g_malloc(sizeof(amacro_t));
+    amacro = (amacro_t *)malloc(sizeof(amacro_t));
     if (amacro == NULL) {
-	g_free(amacro);
+	free(amacro);
 	return NULL;
     }
 
@@ -77,10 +76,11 @@ parse_aperture_macro(gerb_file_t *fd)
 {
     amacro_t *amacro;
     instruction_t *ip = NULL;
-    int primitive = 0, c;
+    int primitive = 0, c, found_primitive = 0;
     enum opcodes math_op = NOP;
     int comma = 0, neg = 0; /* negative numbers succeding , */
-    gboolean continueLoop = TRUE;
+    unsigned char continueLoop = 1;
+
     amacro = new_amacro();
 
     /*
@@ -89,8 +89,8 @@ parse_aperture_macro(gerb_file_t *fd)
     amacro->name = gerb_fgetstring(fd, '*');
     c = gerb_fgetc(fd);	/* skip '*' */
     if (c == EOF) {
-		continueLoop = FALSE;
-	}
+	continueLoop = 0;
+    }
     
     /*
      * Since I'm lazy I have a dummy head. Therefore the first 
@@ -98,14 +98,9 @@ parse_aperture_macro(gerb_file_t *fd)
      */
     amacro->program = new_instruction();
     ip = amacro->program;
-
+    
     while(continueLoop) {
-	/*
-	 * First element describes which primitive element to use
-	 */
-	if (primitive == 0) {
-	    primitive = gerb_fgetint(fd, NULL);
-	}
+	
 	c = gerb_fgetc(fd);
 	switch (c) {
 	case '$':
@@ -127,15 +122,20 @@ parse_aperture_macro(gerb_file_t *fd)
 	     * Check is due to some gerber files has spurious empty lines.
 	     * (EagleCad of course).
 	     */
-	    if (primitive != 0) {
+	    if (found_primitive) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
 		ip->opcode = PRIM;
 		ip->data.ival = primitive;
 		primitive = 0;
+		found_primitive = 0;
 	    }
 	    break;
 	case ',':
+	    if (!found_primitive) {
+		found_primitive = 1;
+		break;
+	    }
 	    if (math_op != NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
@@ -185,6 +185,16 @@ parse_aperture_macro(gerb_file_t *fd)
 	    comma = 0;
 	    break;
 	case '0':
+	    /*
+	     * Comments in aperture macros are a definition starting with
+	     * zero and ends with a '*'
+	     */
+	    if (!found_primitive && (primitive == 0)) {
+		/* Comment continues 'til next *, just throw it away */
+		gerb_fgetstring(fd, '*');
+		c = gerb_fgetc(fd); /* Read the '*' */
+		break;
+	    }
 	case '1':
 	case '2':
 	case '3':
@@ -194,6 +204,14 @@ parse_aperture_macro(gerb_file_t *fd)
 	case '7':
 	case '8':
 	case '9':
+	    /* 
+	     * First number in an aperture macro describes the primitive
+	     * as a numerical value
+	     */
+	    if (!found_primitive) {
+		primitive = (primitive * 10) + (c - '0');
+		break;
+	    }
 	    (void)gerb_ungetc(fd);
 	    ip->next = new_instruction(); /* XXX Check return value */
 	    ip = ip->next;
@@ -214,7 +232,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    break;
 	}
 	if (c == EOF) {
-		continueLoop = FALSE;
+	    continueLoop = 0;
 	}
     }
     free (amacro);
@@ -230,20 +248,20 @@ free_amacro(amacro_t *amacro)
     
     am1 = amacro;
     while (am1 != NULL) {
-	g_free(am1->name);
+	free(am1->name);
 	am1->name = NULL;
 
 	instr1 = am1->program;
 	while (instr1 != NULL) {
 	    instr2 = instr1;
 	    instr1 = instr1->next;
-	    g_free(instr2);
+	    free(instr2);
 	    instr2 = NULL;
 	}
 
 	am2 = am1;
 	am1 = am1->next;
-	g_free(am2);
+	free(am2);
 	am2 = NULL;
     }
 	
