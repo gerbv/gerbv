@@ -281,6 +281,30 @@ fi
 #
 ############################################################
 
+############################################################
+#
+# ElectricFence
+with_efence=no
+AC_MSG_CHECKING([if ElectricFence debugging should be enabled])
+AC_ARG_ENABLE([efence], 
+[  --enable-efence         Link with ElectricFence for malloc debugging [default=no]],
+[
+if test "X$enable_efence" != "Xno" ; then
+	AC_MSG_RESULT([yes])
+	AC_CHECK_LIB(efence,main,,
+	AC_MSG_ERROR([You have requested ElectricFence debugging but -lefence could not be found]))
+		with_efence=yes
+else    
+	AC_MSG_RESULT([no])
+fi      
+],
+[
+AC_MSG_RESULT([no])
+])
+
+#
+#
+############################################################
 
 AC_CHECK_HEADERS(unistd.h getopt.h string.h sys/mman.h sys/types.h sys/stat.h stdlib.h regex.h libgen.h)
 
@@ -288,7 +312,7 @@ AC_CHECK_FUNCS(getopt_long)
 
 
 CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS $WIN32_CFLAGS"
-LIBS="$GDK_PIXBUF_LIBS $PNG_LIBS $GTK_LIBS $CAIRO_LIBS"
+LIBS="$LIBS $GDK_PIXBUF_LIBS $PNG_LIBS $GTK_LIBS $CAIRO_LIBS"
 
 
 ############################################################
@@ -351,6 +375,8 @@ AC_MSG_RESULT([
    Cairo Version:            $CAIRO_VER
 
    Rendering engine:         $RENDERER
+
+   Electric Fence Debugging: $with_efence
 
 ])
 
