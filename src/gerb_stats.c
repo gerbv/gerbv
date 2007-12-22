@@ -245,9 +245,10 @@ gerb_stats_new_aperture_list() {
 
     dprintf("   Placing values in certain structs.\n");
     aperture_list->number = -1;
+    aperture_list->count = 0;
     aperture_list->type = 0;
     for (i = 0; i<5; i++) {
-	aperture_list->parameter[i] = 0.0;
+	(aperture_list->parameter)[i] = 0.0;
     }
     aperture_list->next = NULL;
     return aperture_list;
@@ -258,11 +259,12 @@ gerb_stats_new_aperture_list() {
 void
 gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
 			int layer, int number, enum aperture_t type,
-			double parameter[]) {
+			double parameter[5]) {
 
     gerb_aperture_list_t *aperture_list_new;
     gerb_aperture_list_t *aperture_last = NULL;
     gerb_aperture_list_t *aperture;
+    int i;
 
     dprintf("   --->  Entering gerb_stats_add_aperture ....\n"); 
 
@@ -273,8 +275,9 @@ gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
         aperture_list_in->number = number;
         aperture_list_in->type = type;
 	aperture_list_in->layer = layer;
-        aperture_list_in->parameter[0] = parameter[0];
-	/* How to deal with remaining parameters??? */
+	for(i=0; i<5; i++) { 
+	    (aperture_list_in->parameter)[i] = parameter[i];
+	}
         aperture_list_in->next = NULL;
         return;
     }
@@ -304,8 +307,9 @@ gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
     aperture_list_new->number = number;
     aperture_list_new->type = type;
     aperture_list_new->next = NULL;
-    aperture_list_new->parameter[0] = parameter[0];
-    /* How to deal with remaining parameters??? */
+    for(i=0; i<5; i++) { 
+	(aperture_list_new->parameter)[i] = parameter[i];
+    }
     aperture_last->next = aperture_list_new;
 
     dprintf("   <---  .... Leaving gerb_stats_add_aperture.\n"); 

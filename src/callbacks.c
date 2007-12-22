@@ -547,22 +547,30 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     } else {
 	aperture_report_string = 
 	    g_strdup_printf("\n\nApertures defined in Gerber file(s):\n"); 
-	aperture_report_string = g_strdup_printf("%s %-7s  %-8s   %-9s           %-11s\n",
-						 aperture_report_string,
-						 "Layer",
-						 "D code",
-						 "Aperture",
-						 "Param[0]");
+	aperture_report_string = 
+	    g_strdup_printf("%s %-7s  %-8s   %-9s         %-11s  %-11s  %-11s\n",
+			    aperture_report_string,
+			    "Layer",
+			    "D code",
+			    "Aperture",
+			    "Param[0]",
+			    "Param[1]",
+			    "Param[2]"
+		);
 	for(my_aperture_list = stats_report->aperture_list; 
 	    my_aperture_list != NULL; 
 	    my_aperture_list = my_aperture_list->next) {
 
-	    aperture_report_string = g_strdup_printf("%s %-7d     D%-d       %-9s           %8.3f\n", 
-						     aperture_report_string,
-						     my_aperture_list->layer,
-						     my_aperture_list->number,
-						     ap_type[my_aperture_list->type],
-						     my_aperture_list->parameter[0]);
+	    aperture_report_string = 
+		g_strdup_printf("%s %-7d     D%-d       %-9s         %8.3f    %8.3f    %8.3f\n", 
+				aperture_report_string,
+				my_aperture_list->layer,
+				my_aperture_list->number,
+				ap_type[my_aperture_list->type],
+				my_aperture_list->parameter[0],
+				my_aperture_list->parameter[1],
+				my_aperture_list->parameter[2]
+		    );
 	}
     }
 
