@@ -47,6 +47,7 @@ typedef struct {
     int G01;
     int G02;
     int G03;
+    int G04;
     int G05;
     int G90;
     int G91;

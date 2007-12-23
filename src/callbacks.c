@@ -739,55 +739,80 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
     /* G code window strings */
     G_report_string = g_strdup_printf("G code statistics   \n");
-    G_report_string = g_strdup_printf("%sG00 = %d\n", 
-				      G_report_string, stats_report->G00);
-    G_report_string = g_strdup_printf("%sG01 = %d\n", 
-				      G_report_string, stats_report->G01);
-    G_report_string = g_strdup_printf("%sG02 = %d\n", 
-				      G_report_string, stats_report->G02);
-    G_report_string = g_strdup_printf("%sG03 = %d\n", 
-				      G_report_string, stats_report->G03);
-    G_report_string = g_strdup_printf("%sG05 = %d\n", 
-				      G_report_string, stats_report->G05);
-    G_report_string = g_strdup_printf("%sG90 = %d\n", 
-				      G_report_string, stats_report->G90);
-    G_report_string = g_strdup_printf("%sG91 = %d\n", 
-				      G_report_string, stats_report->G91);
-    G_report_string = g_strdup_printf("%sG93 = %d\n", 
-				      G_report_string, stats_report->G93);
+    G_report_string = g_strdup_printf("%sG00 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G00,
+				      "Rout mode");
+    G_report_string = g_strdup_printf("%sG01 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G01,
+				      "1X linear interpolation");
+    G_report_string = g_strdup_printf("%sG02 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G02,
+				      "CW interpolation");
+    G_report_string = g_strdup_printf("%sG03 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G03,
+				      "CCW interpolation");
+    G_report_string = g_strdup_printf("%sG04 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G04,
+				      "Variable dwell");
+    G_report_string = g_strdup_printf("%sG05 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G05,
+				      "Drill mode");
+    G_report_string = g_strdup_printf("%sG90 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G90,
+				      "Absolute units");
+    G_report_string = g_strdup_printf("%sG91 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G91,
+				      "Incremental units");
+    G_report_string = g_strdup_printf("%sG93 = %-6d (%s)\n", 
+				      G_report_string, stats_report->G93,
+				      "Zero set");
     G_report_string = g_strdup_printf("%sUnknown G codes = %d\n", 
 				      G_report_string, stats_report->G_unknown);
 
     /* M code window strings */
     M_report_string = g_strdup_printf("M code statistics   \n");
-    M_report_string = g_strdup_printf("%sM00 = %d\n", 
-				      M_report_string, stats_report->M00);
-    M_report_string = g_strdup_printf("%sM01 = %d\n", 
-				      M_report_string, stats_report->M01);
-    M_report_string = g_strdup_printf("%sM18 = %d\n", 
-				      M_report_string, stats_report->M18);
-    M_report_string = g_strdup_printf("%sM25 = %d\n", 
-				      M_report_string, stats_report->M25);
-    M_report_string = g_strdup_printf("%sM30 = %d\n", 
-				      M_report_string, stats_report->M30);
-    M_report_string = g_strdup_printf("%sM31 = %d\n", 
-				      M_report_string, stats_report->M31);
-    M_report_string = g_strdup_printf("%sM45 = %d\n", 
-				      M_report_string, stats_report->M45);
-    M_report_string = g_strdup_printf("%sM47 = %d\n", 
-				      M_report_string, stats_report->M47);
-    M_report_string = g_strdup_printf("%sM48 = %d\n", 
-				      M_report_string, stats_report->M48);
-    M_report_string = g_strdup_printf("%sM71 = %d\n", 
-				      M_report_string, stats_report->M71);
-    M_report_string = g_strdup_printf("%sM72 = %d\n", 
-				      M_report_string, stats_report->M72);
-    M_report_string = g_strdup_printf("%sM95 = %d\n", 
-				      M_report_string, stats_report->M95);
-    M_report_string = g_strdup_printf("%sM97 = %d\n", 
-				      M_report_string, stats_report->M97);
-    M_report_string = g_strdup_printf("%sM98 = %d\n", 
-				      M_report_string, stats_report->M98);
+    M_report_string = g_strdup_printf("%sM00 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M00,
+				      "End of program");
+    M_report_string = g_strdup_printf("%sM01 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M01,
+				      "End of pattern");
+    M_report_string = g_strdup_printf("%sM18 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M18,
+				      "Tool tip check");
+    M_report_string = g_strdup_printf("%sM25 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M25,
+				      "Begin pattern");
+    M_report_string = g_strdup_printf("%sM30 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M30,
+				      "End program rewind");
+    M_report_string = g_strdup_printf("%sM31 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M31,
+				      "Begin pattern");
+    M_report_string = g_strdup_printf("%sM45 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M45,
+				      "Long message");
+    M_report_string = g_strdup_printf("%sM47 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M47,
+				      "Operator message");
+    M_report_string = g_strdup_printf("%sM48 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M48,
+				      "Begin program header");
+    M_report_string = g_strdup_printf("%sM71 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M71,
+				      "Metric units");
+    M_report_string = g_strdup_printf("%sM72 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M72,
+				      "English units");
+    M_report_string = g_strdup_printf("%sM95 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M95,
+				      "End program header");
+    M_report_string = g_strdup_printf("%sM97 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M97,
+				      "Canned text");
+    M_report_string = g_strdup_printf("%sM98 = %-6d (%s)\n", 
+				      M_report_string, stats_report->M98,
+				      "Canned text");
     M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
 				      M_report_string, stats_report->M_unknown);
 
