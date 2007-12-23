@@ -524,22 +524,6 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     dprintf("About to define ap_type\n");
     char *ap_type[] = {"CIRCLE", "RECTANGLE", "OVAL", "POLYGON", "MACRO"};
 
-    /*
-    ap_type[0] = "CIRCLE";
-    ap_type[1] = "RECTANGLE";
-    ap_type[2] = "OVAL";
-    ap_type[3] = "POLYGON";
-    ap_type[4] = "MACRO";
-    */
-
-    /*
-    ap_type[0] = g_strdup_printf("CIRCLE");
-    ap_type[1] = g_strdup_printf("RECTANGLE");
-    ap_type[2] = g_strdup_printf("OVAL");
-    ap_type[3] = g_strdup_printf("POLYGON");
-    ap_type[4] = g_strdup_printf("MACRO");
-    */
-
     dprintf("Done defining ap_type, now process it\n");
     if (stats_report->aperture_list->number == -1) {
 	aperture_report_string = 
@@ -548,7 +532,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	aperture_report_string = 
 	    g_strdup_printf("\n\nApertures defined in Gerber file(s):\n"); 
 	aperture_report_string = 
-	    g_strdup_printf("%s %-7s  %-8s   %-9s         %-11s  %-11s  %-11s\n",
+	    g_strdup_printf("%s %-6s %-8s %12s  %8s %8s %8s\n",
 			    aperture_report_string,
 			    "Layer",
 			    "D code",
@@ -562,7 +546,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	    my_aperture_list = my_aperture_list->next) {
 
 	    aperture_report_string = 
-		g_strdup_printf("%s %-7d     D%-d       %-9s         %8.3f    %8.3f    %8.3f\n", 
+		g_strdup_printf("%s %-6d    D%-4d%13s  %8.3f %8.3f %8.3f\n", 
 				aperture_report_string,
 				my_aperture_list->layer,
 				my_aperture_list->number,
@@ -591,41 +575,62 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		      G_CALLBACK (gtk_widget_destroy), 
 		      GTK_WIDGET(analyze_active_gerbers));
 
+    /* Use fixed width font for all reports */
+    PangoFontDescription *font = 
+	pango_font_description_from_string ("monospace");
 
     /* Create GtkLabel to hold general report text */
     GtkWidget *general_report_label = gtk_label_new (general_report_string);
     gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(general_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(general_report_label),
+			    font);
     g_free(general_report_string);
 
     /* Create GtkLabel to hold G code text */
     GtkWidget *G_report_label = gtk_label_new (G_report_string);
     gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(G_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(G_report_label),
+			    font);
     g_free(G_report_string);
 
     /* Create GtkLabel to hold D code text */
     GtkWidget *D_report_label = gtk_label_new (D_report_string);
     gtk_misc_set_alignment(GTK_MISC(D_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(D_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(D_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(D_report_label),
+			    font);
     g_free(D_report_string);
 
     /* Create GtkLabel to hold M code text */
     GtkWidget *M_report_label = gtk_label_new (M_report_string);
     gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(M_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(M_report_label),
+			    font);
     g_free(M_report_string);
 
     /* Create GtkLabel to hold misc code text */
     GtkWidget *misc_report_label = gtk_label_new (misc_report_string);
     gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(misc_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(misc_report_label),
+			    font);
     g_free(misc_report_string);
 
     /* Create GtkLabel to hold aperture defnintion text */
     GtkWidget *aperture_report_label = gtk_label_new (aperture_report_string);
     gtk_misc_set_alignment(GTK_MISC(aperture_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(aperture_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(aperture_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(aperture_report_label),
+			    font);
     g_free(aperture_report_string);
     
     /* Put aperture definintion text into scrolled window */
@@ -794,13 +799,13 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 					 misc_report_string, stats_report->unknown);
 
     /* drill report window strings */
-    drill_report_string = g_strdup_printf("%10s   %11s  %8s  %8s\n", 
+    drill_report_string = g_strdup_printf("%10s %8s %8s %8s\n", 
 					  "Drill no.", "Dia.", "Units", "Count");
     for(my_drill_list = stats_report->drill_list; 
 	my_drill_list != NULL; 
 	my_drill_list = my_drill_list->next) {
 	if (my_drill_list->drill_num == -1) break;  /* No dill list */
-	drill_report_string = g_strdup_printf("%s%10d   %8.3f  %8s  %8d\n", 
+	drill_report_string = g_strdup_printf("%s%10d %8.3f %8s %8d\n", 
 					      drill_report_string,
 					      my_drill_list->drill_num,
 					      my_drill_list->drill_size,
@@ -808,6 +813,9 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 					      my_drill_list->drill_count);
     }
 
+    /* Use fixed width font for all reports */
+    PangoFontDescription *font = 
+	pango_font_description_from_string ("monospace");
 
     /* Create top level dialog window for report */
     GtkWidget *analyze_active_drill;
@@ -829,30 +837,45 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     GtkWidget *general_report_label = gtk_label_new (general_report_string);
     gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(general_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(general_report_label),
+			    font);
     g_free(general_report_string);
 
     /* Create GtkLabel to hold G code text */
     GtkWidget *G_report_label = gtk_label_new (G_report_string);
     gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(G_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(G_report_label),
+			    font);
     g_free(G_report_string);
 
     /* Create GtkLabel to hold M code text */
     GtkWidget *M_report_label = gtk_label_new (M_report_string);
     gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(M_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(M_report_label),
+			    font);
     g_free(M_report_string);
 
     /* Create GtkLabel to hold misc code text */
     GtkWidget *misc_report_label = gtk_label_new (misc_report_string);
     gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(misc_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(misc_report_label),
+			    font);
     g_free(misc_report_string);
 
     /* Create GtkLabel to hold drills used text */
     GtkWidget *drill_report_label = gtk_label_new (drill_report_string);
     gtk_misc_set_alignment(GTK_MISC(drill_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(drill_report_label), 13, 13);
+    gtk_label_set_selectable(GTK_LABEL(drill_report_label), TRUE);
+    gtk_widget_modify_font (GTK_WIDGET(drill_report_label),
+			    font);
     g_free(drill_report_string);
 
     /* Create tabbed notebook widget and add report label widgets. */
