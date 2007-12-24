@@ -1,3 +1,12 @@
+2007-12-23  Julian Lamb
+	* gerber.c, many files: Start reorganization of some gerb_image
+	  parameters in preparation for adding final Gerber commands
+	  like rotation, mirroring, and knockout. Also, normalize all
+	  dimensions to inches in the image in order to simplify
+	  rendering.
+	* tests/inputs/test-...: Add first three testsuite files to test
+	  new commands.
+
 2007-12-20  Stuart Brorson (sdb@cloud9.net)
 	* callbacks.c:  Add scrollbars to Gerber aperture report window
 	since the report can grow to be very long.

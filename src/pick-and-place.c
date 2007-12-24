@@ -166,7 +166,7 @@ pick_and_place_parse_file(gerb_file_t *fd)
 		int len = strlen(buf)-1;
 		int i_length=0, i_width = 0;
 		
-		lineCounter += 1;/*next line*/
+		lineCounter += 1; /*next line*/
 		if(lineCounter<2) {
 			// TODO in principle column names could be read and interpreted
 			continue; // skip the first line with names of columns
@@ -346,30 +346,21 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	memset((void *)image->format, 0, sizeof(gerb_format_t));
 
 	curr_net = image->netlist;
+	curr_net->layer = image->layers;
+	curr_net->state = image->states;	
 	image->info->min_x = 10;
 	image->info->min_y = 10;
 	image->info->max_x = -10;
 	image->info->max_y = -10;
-	image->info->scale_factor_A = 1.0;
-	image->info->scale_factor_B = 1.0;
-	image->info->offset_a = 0.0;
-	image->info->offset_b = 0.0;
-	image->info->step_and_repeat.X = 1.0;
-	image->info->step_and_repeat.Y = 1.0;
-	image->info->step_and_repeat.dist_X = 0.0;
-	image->info->step_and_repeat.dist_Y = 0.0;
 
 	image->aperture[0] = (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
 	memset((void *) image->aperture[0], 0, sizeof(gerb_aperture_t));
 	image->aperture[0]->type = CIRCLE;
 	image->aperture[0]->amacro = NULL;
 	image->aperture[0]->parameter[0] = 0.4;
-	image->aperture[0]->parameter[1] = 0.0;
-	image->aperture[0]->parameter[2] = 0.0;
-	image->aperture[0]->parameter[3] = 0.0;
-	image->aperture[0]->parameter[4] = 0.0;
 	image->aperture[0]->nuf_parameters = 1;
 	image->aperture[0]->unit = MM;
+	curr_net->state->unit = MM;
 
 	for (i = 0; i < parsedPickAndPlaceData->len; i++) {
 		PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
@@ -378,6 +369,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 		curr_net = curr_net->next;
 		assert(curr_net);
 		memset((void *)curr_net, 0, sizeof(gerb_net_t));
+		curr_net->layer = image->layers;
+		curr_net->state = image->states;	
 		partData.rotation *= M_PI/180; /* convert deg to rad */
 		
 		if ((partData.shape == PART_SHAPE_RECTANGLE) ||
@@ -393,8 +386,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			      &curr_net->stop_x, &curr_net->stop_y);
 
 			curr_net->aperture = 0;
-			curr_net->layer_polarity = POSITIVE;
-			curr_net->unit = MM;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 			
@@ -416,8 +407,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 				&curr_net->stop_x, &curr_net->stop_y);
 
 			curr_net->aperture = 0;
-			curr_net->layer_polarity = POSITIVE;
-			curr_net->unit = MM;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 
@@ -432,8 +421,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			      &curr_net->stop_x, &curr_net->stop_y);
 			            
 			curr_net->aperture = 0;
-			curr_net->layer_polarity = POSITIVE;
-			curr_net->unit = MM;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 
@@ -448,8 +435,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			      &curr_net->stop_x, &curr_net->stop_y);
 			      
 			curr_net->aperture = 0;
-			curr_net->layer_polarity = POSITIVE;
-			curr_net->unit = MM;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 
@@ -470,8 +455,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 				      &curr_net->stop_x, &curr_net->stop_y);
 				      
 				curr_net->aperture = 0;
-				curr_net->layer_polarity = POSITIVE;
-				curr_net->unit = MM;
 				curr_net->aperture_state = ON;
 				curr_net->interpolation = LINEARx1;
 
@@ -485,8 +468,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 				      &curr_net->stop_x, &curr_net->stop_y);     
 			}
 	            curr_net->aperture = 0;
-	            curr_net->layer_polarity = POSITIVE;
-	            curr_net->unit = MM;
 	            curr_net->aperture_state = ON;
 	            curr_net->interpolation = LINEARx1;
 			/* calculate a rough radius for the min/max screen calcs later */
@@ -499,8 +480,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->stop_y = partData.pad_y;
 
 			curr_net->aperture = 0;
-			curr_net->layer_polarity = POSITIVE;
-			curr_net->unit = MM;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
 
@@ -515,8 +494,6 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->stop_y = partData.pad_y;
 
 			curr_net->aperture = 0;
-			curr_net->layer_polarity = POSITIVE;
-			curr_net->unit = MM;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = CW_CIRCULAR;
 			curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));

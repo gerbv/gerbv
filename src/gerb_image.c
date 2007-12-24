@@ -78,8 +78,15 @@ new_gerb_image(gerb_image_t *image)
     image->info->max_x = -HUGE_VAL;
     image->info->max_y = -HUGE_VAL;
 
-    image->info->step_and_repeat.X = 1;
-    image->info->step_and_repeat.Y = 1;
+    /* create our first layer and fill with non-zero default values */
+    image->layers = g_new0 (gerb_layer_t, 1);
+    image->layers->stepAndRepeat.X = 1;
+    image->layers->stepAndRepeat.Y = 1;
+    
+    /* create our first netstate and fill with non-zero default values */
+    image->states = g_new0 (gerb_netstate_t, 1);
+    image->states->scaleA = 1;
+    image->states->scaleB = 1;
 
     return image;
 }
@@ -90,6 +97,8 @@ free_gerb_image(gerb_image_t *image)
 {
     int i;
     gerb_net_t *net, *tmp;
+    gerb_layer_t *layer;
+    gerb_netstate_t *state;
     
     if(image==NULL)
         return;
@@ -140,7 +149,18 @@ free_gerb_image(gerb_image_t *image)
 	g_free(tmp);
 	tmp = NULL;
     }
-    
+    for (layer = image->layers; layer != NULL; ) {
+    	gerb_layer_t *tempLayer = layer;
+    	
+    	layer = layer->next;
+    	g_free (tempLayer);
+    }
+    for (state = image->states; state != NULL; ) {
+    	gerb_netstate_t *tempState = state;
+    	
+    	state = state->next;
+    	g_free (tempState);
+    }
     /* FIXME -- must write these functions. */
     /*   gerb_transf_free(image->transf); */
     /*   gerb_stats_free(image->gerb_stats); */
@@ -279,3 +299,27 @@ gerb_image_dump(gerb_image_t *image)
 	net = net->next;
     }
 } /* gerb_image_dump */
+
+gerb_layer_t *
+gerb_image_return_new_layer (gerb_layer_t *previousLayer){
+	gerb_layer_t *newLayer = g_new0 (gerb_layer_t, 1);
+	
+	*newLayer = *previousLayer;
+	previousLayer->next = newLayer;
+	newLayer->next = NULL;
+	
+	return newLayer;
+}
+
+gerb_netstate_t *
+gerb_image_return_new_netstate (gerb_netstate_t *previousState){
+	gerb_netstate_t *newState = g_new0 (gerb_netstate_t, 1);
+	
+	*newState = *previousState;
+	previousState->next = newState;
+	newState->scaleA = 1.0;
+	newState->scaleB = 1.0;
+	newState->next = NULL;
+	
+	return newState;
+}

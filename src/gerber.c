@@ -36,16 +36,9 @@
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
-#define NOT_IMPL(fd, s) do { \
-                             GERB_MESSAGE("Not Implemented:%s\n", s); \
-                             while (gerb_fgetc(fd) != (int)'*'); \
-                           } while(0)
-	
-
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 
 typedef struct gerb_state {
-    enum unit_t unit;
     int curr_x;
     int curr_y;
     int prev_x;
@@ -54,12 +47,12 @@ typedef struct gerb_state {
     int delta_cp_y;
     int curr_aperture;
     int changed;
-    enum polarity_t layer_polarity;
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
     enum interpolation_t prev_interpolation;
     gerb_net_t *parea_start_node;
-    char *curr_layername;
+    gerb_layer_t *layer;
+    gerb_netstate_t *state;
     int in_parea_fill;
     int mq_on;
 } gerb_state_t;
@@ -118,13 +111,6 @@ parse_gerb(gerb_file_t *fd)
      * Set some defaults
      */
     memset((void *)state, 0, sizeof(gerb_state_t));
-    state->layer_polarity = DARK;
-
-    /* 
-     * "Inches are assumed if units are not specified"
-     * rs274xrevd_e.pdf, p. 39
-     */
-    state->unit = INCH;
 
     /* 
      * Create new image.  This will be returned.
@@ -136,13 +122,22 @@ parse_gerb(gerb_file_t *fd)
     image->layertype = GERBER;
     image->gerb_stats = gerb_stats_new();
     stats = (gerb_stats_t *) image->gerb_stats;
-
+    /* set active layer and netstate to point to first default one created */
+    state->layer = image->layers;
+    state->state = image->states;
+    curr_net->layer = state->layer;
+    curr_net->state = state->state;
     /*
      * Start parsing
      */
     dprintf("In parse_gerb, starting to parse file...\n");
 
     while ((read = gerb_fgetc(fd)) != EOF) {
+        /* figure out the scale, since we need to normailize all dimensions to inches */
+        if (state->state->unit == MM)
+            scale = 25.4;
+        else
+            scale = 1.0;
 	switch ((char)(read & 0xff)) {
 	case 'G':
 	    dprintf("... Found G code\n");
@@ -256,7 +251,8 @@ parse_gerb(gerb_file_t *fd)
 		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 	    curr_net = curr_net->next;
 	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-
+	    curr_net->layer = state->layer;
+	    curr_net->state = state->state;
 	    /*
 	     * Scale to given coordinate format
 	     * XXX only "omit leading zeros".
@@ -265,7 +261,8 @@ parse_gerb(gerb_file_t *fd)
 		x_scale = pow(10.0, (double)image->format->x_dec);
 		y_scale = pow(10.0, (double)image->format->y_dec);
 	    }
-	    
+	    x_scale *= scale;
+	    y_scale *= scale;
 	    curr_net->start_x = (double)state->prev_x / x_scale;
 	    curr_net->start_y = (double)state->prev_y / y_scale;
 	    curr_net->stop_x = (double)state->curr_x / x_scale;
@@ -323,15 +320,14 @@ parse_gerb(gerb_file_t *fd)
 		if (state->aperture_state == OFF &&
 		    state->interpolation != PAREA_START) {
 		    curr_net->interpolation = PAREA_END;
-		    curr_net->layer_polarity = state->layer_polarity;
-		    curr_net->unit = state->unit;
 			
 		    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 		    if (curr_net->next == NULL)
 			GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 		    curr_net = curr_net->next;
 		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-
+		    curr_net->layer = state->layer;
+		    curr_net->state = state->state;
 
 		    curr_net->interpolation = PAREA_START;
 		    state->parea_start_node = curr_net;
@@ -340,7 +336,9 @@ parse_gerb(gerb_file_t *fd)
 			GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 		    curr_net = curr_net->next;
 		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-
+		    curr_net->layer = state->layer;
+		    curr_net->state = state->state;
+		    
 		    curr_net->start_x = (double)state->prev_x / x_scale;
 		    curr_net->start_y = (double)state->prev_y / y_scale;
 		    curr_net->stop_x = (double)state->curr_x / x_scale;
@@ -351,9 +349,7 @@ parse_gerb(gerb_file_t *fd)
 		 * if this outline is circular, approximate it with short lines
 		 */
 		if (curr_net->cirseg) {
-		    curr_net->interpolation = state->interpolation;
-		    curr_net->layer_polarity = state->layer_polarity;
-		    curr_net->unit = state->unit;	    
+		    curr_net->interpolation = state->interpolation;	    
 		    curr_net = gen_circle_segments(curr_net, 
 						   state->interpolation == CW_CIRCULAR, 
 						   &(state->parea_start_node->nuf_pcorners));
@@ -377,8 +373,7 @@ parse_gerb(gerb_file_t *fd)
 	    /*
 	     * Save layer polarity and unit
 	     */
-	    curr_net->layer_polarity = state->layer_polarity;
-	    curr_net->unit = state->unit;	    
+	    curr_net->layer = state->layer;  
 
 	    state->delta_cp_x = 0.0;
 	    state->delta_cp_y = 0.0;
@@ -396,18 +391,6 @@ parse_gerb(gerb_file_t *fd)
 	    else 
 		aperture_size = 0.0;
 
-	    if ((image->info->step_and_repeat.X != 1) ||
-		(image->info->step_and_repeat.Y != 1) ){
-	      curr_net->step_and_repeat = (struct gerb_step_and_repeat *) 
-		g_malloc(sizeof(struct gerb_step_and_repeat));
-	      if(curr_net->step_and_repeat == NULL)
-		GERB_FATAL_ERROR("malloc curr_net->step_and_repeat failed\n");
-	      memcpy(curr_net->step_and_repeat,
-		     &(image->info->step_and_repeat),
-		     sizeof(struct gerb_step_and_repeat));
-	    }
-
-
 	    /*
 	     * For next round we save the current position as
 	     * the previous position
@@ -422,7 +405,7 @@ parse_gerb(gerb_file_t *fd)
 	    if ((curr_net->aperture == 0) && !state->in_parea_fill) 
 		break;
 
-	    if (curr_net->unit == MM)
+	    if (image->aperture[curr_net->aperture]->unit == MM)
 		scale = 25.4;
 	    else 
 		scale = 1.0;
@@ -438,27 +421,43 @@ parse_gerb(gerb_file_t *fd)
 	       * uncommon case (and the error isn't very big any way).
 	       *
 	       */
-	      if(curr_net->step_and_repeat != NULL){
-		repeat_off_X = (curr_net->step_and_repeat->X - 1)*
-		  curr_net->step_and_repeat->dist_X;
-		repeat_off_Y = (curr_net->step_and_repeat->Y - 1)*
-		  curr_net->step_and_repeat->dist_Y;
-	      }
+		repeat_off_X = (state->layer->stepAndRepeat.X - 1)*
+		  state->layer->stepAndRepeat.dist_X;
+		repeat_off_Y = (state->layer->stepAndRepeat.Y - 1)*
+		  state->layer->stepAndRepeat.dist_Y;
 
+	      /* check both the start and stop of the aperture points against
+	         a running min/max counter */
 	      setminmax(&(image->info->min_x), &(image->info->max_x),
-			(curr_net->stop_x) / scale,
+			(curr_net->stop_x),
 			aperture_size / scale);
 	      
 	      setminmax(&(image->info->min_x), &(image->info->max_x),
-			(curr_net->stop_x + repeat_off_X ) / scale,
+			(curr_net->stop_x + repeat_off_X ),
 			aperture_size / scale);
 	      
 	      setminmax(&(image->info->min_y), &(image->info->max_y),
-			(curr_net->stop_y + repeat_off_Y) / scale,
+			(curr_net->stop_y + repeat_off_Y),
 			aperture_size / scale);
 
 	      setminmax(&(image->info->min_y), &(image->info->max_y),
-			(curr_net->stop_y) / scale,
+			(curr_net->stop_y),
+			aperture_size / scale);
+
+	      setminmax(&(image->info->min_x), &(image->info->max_x),
+			(curr_net->start_x),
+			aperture_size / scale);
+	      
+	      setminmax(&(image->info->min_x), &(image->info->max_x),
+			(curr_net->start_x + repeat_off_X ),
+			aperture_size / scale);
+	      
+	      setminmax(&(image->info->min_y), &(image->info->max_y),
+			(curr_net->start_y + repeat_off_Y),
+			aperture_size / scale);
+
+	      setminmax(&(image->info->min_y), &(image->info->max_y),
+			(curr_net->start_y),
 			aperture_size / scale);
 	    }
 	    
@@ -568,11 +567,13 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	stats->G55++;
 	break;
     case 70: /* Specify inches */
-	state->unit = INCH;
+	state->state = gerb_image_return_new_netstate (state->state);
+	state->state->unit = INCH;
 	stats->G70++;
 	break;
     case 71: /* Specify millimeters */
-	state->unit = MM;
+	state->state = gerb_image_return_new_netstate (state->state);
+	state->state->unit = MM;
 	stats->G71++;
 	break;
     case 74: /* Disable 360 circular interpolation */
@@ -701,9 +702,12 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     gerb_aperture_t *a = NULL;
     amacro_t *tmp_amacro;
     int ano;
-    double scale;
     gerb_stats_t *stats=image->gerb_stats;
+    gdouble scale = 1.0;
     
+    if (state->state->unit == MM)
+    	scale = 25.4;
+
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
     
@@ -719,6 +723,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     case A2I('A','S'): /* Axis Select */
 	op[0] = gerb_fgetc(fd);
 	op[1] = gerb_fgetc(fd);
+	state->state = gerb_image_return_new_netstate (state->state);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
 	    gerb_stats_add_error(stats->error_list,
@@ -728,8 +733,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
-	    NOT_IMPL(fd, "%MI with reversed axis not supported%");
-	    break;
+		state->state->axisSelect = SWAPAB;
+	}
+	else {
+		state->state->axisSelect = NOSELECT;
 	}
 
 	op[0] = gerb_fgetc(fd);
@@ -743,8 +750,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
-	    NOT_IMPL(fd, "%MI with reversed axis not supported%");
-	    break;
+		state->state->axisSelect = SWAPAB;
+	}
+	else {
+		state->state->axisSelect = NOSELECT;
 	}
 	break;
 
@@ -859,10 +868,40 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	}
 	break;
     case A2I('M','I'): /* Mirror Image */
-	NOT_IMPL(fd, "%MI%");
-	break;
+	op[0] = gerb_fgetc(fd);
+	state->state = gerb_image_return_new_netstate (state->state);
+	
+	while (op[0] != '*') {
+            gint readValue=0;
+	    switch (op[0]) {
+	    case 'A' :
+		readValue = gerb_fgetint(fd, NULL);
+		if (readValue == 1) {
+			if (state->state->mirrorState == FLIPB)
+				state->state->mirrorState=FLIPAB;
+			else
+				state->state->mirrorState=FLIPA;
+		}
+		break;
+	    case 'B' :
+		readValue = gerb_fgetint(fd, NULL);
+		if (readValue == 1) {
+			if (state->state->mirrorState == FLIPA)
+				state->state->mirrorState=FLIPAB;
+			else
+				state->state->mirrorState=FLIPB;
+		}
+		break;
+	    default :
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     g_strdup_printf("Wrong character in mirror:%c\n", op[0]),
+				     ERROR);
+	    }
+	    op[0] = gerb_fgetc(fd);
+	}
+	break;  
     case A2I('M','O'): /* Mode of Units */
-
 	op[0] = gerb_fgetc(fd);
 	op[1] = gerb_fgetc(fd);
 	
@@ -873,10 +912,12 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 				 ERROR);
 	switch (A2I(op[0],op[1])) {
 	case A2I('I','N'):
-	    state->unit = INCH;
+	    state->state = gerb_image_return_new_netstate (state->state);
+	    state->state->unit = INCH;
 	    break;
 	case A2I('M','M'):
-	    state->unit = MM;
+	    state->state = gerb_image_return_new_netstate (state->state);
+	    state->state->unit = MM;
 	    break;
 	default:
 	    gerb_stats_add_error(stats->error_list,
@@ -888,20 +929,13 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     case A2I('O','F'): /* Offset */
 	op[0] = gerb_fgetc(fd);
 	
-        if (state->unit == MM)
-            scale = 25.4;
-        else
-            scale = 1.0;
-	
 	while (op[0] != '*') {
 	    switch (op[0]) {
 	    case 'A' :
-		image->info->offset_a = gerb_fgetdouble(fd);
-		image->info->offset_a_in = image->info->offset_a / scale;
+		state->state->offsetA = gerb_fgetdouble(fd);
 		break;
 	    case 'B' :
-		image->info->offset_b = gerb_fgetdouble(fd);
-		image->info->offset_b_in = image->info->offset_b / scale;
+		state->state->offsetB = gerb_fgetdouble(fd);
 		break;
 	    default :
 		gerb_stats_add_error(stats->error_list,
@@ -911,19 +945,36 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
-	return;
+	break;    
+    case A2I('I','O'): /* Image offset */
+	op[0] = gerb_fgetc(fd);
+	
+	while (op[0] != '*') {
+	    switch (op[0]) {
+	    case 'A' :
+		image->info->offsetA = gerb_fgetdouble(fd) / scale;
+		break;
+	    case 'B' :
+		image->info->offsetB = gerb_fgetdouble(fd) / scale;
+		break;
+	    default :
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     g_strdup_printf("Wrong character in offset:%c\n", op[0]),
+				     ERROR);
+	    }
+	    op[0] = gerb_fgetc(fd);
+	}
+	break;
     case A2I('S','F'): /* Scale Factor */
 	if (gerb_fgetc(fd) == 'A')
-	    image->info->scale_factor_A = gerb_fgetdouble(fd);
+	    state->state->scaleA = gerb_fgetdouble(fd);
 	else 
 	    gerb_ungetc(fd);
 	if (gerb_fgetc(fd) == 'B')
-	    image->info->scale_factor_B = gerb_fgetdouble(fd);
+	    state->state->scaleB = gerb_fgetdouble(fd);
 	else 
 	    gerb_ungetc(fd);
-	if ((fabs(image->info->scale_factor_A - 1.0) > 0.00001) ||
-	    (fabs(image->info->scale_factor_B - 1.0) > 0.00001))
-	    NOT_IMPL(fd, "%SF% != 1.0");
 	break;
     case A2I('I','C'): /* Input Code */
 	/* Thanks to Stephen Adam for providing this information. As he writes:
@@ -965,13 +1016,41 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 
 	/* Image parameters */
     case A2I('I','J'): /* Image Justify */
-	NOT_IMPL(fd, "%IJ%");
+	op[0] = gerb_fgetc(fd);
+	image->info->imageJustifyTypeA = LOWERLEFT;
+	image->info->imageJustifyTypeB = LOWERLEFT;
+	image->info->imageJustifyOffset = 0.0;
+	while (op[0] != '*') {
+	    switch (op[0]) {
+	    case 'A' :
+	    	op[0] = gerb_fgetc(fd);
+	    	if (op[0] == 'C')
+	    		image->info->imageJustifyTypeA = CENTERJUSTIFY;
+	    	else if (op[0] == 'C')
+	    		image->info->imageJustifyTypeA = LOWERLEFT;
+	    	else
+	    		gerb_ungetc (fd);
+		break;
+	    case 'B' :
+		op[0] = gerb_fgetc(fd);
+	    	if (op[0] == 'C')
+	    		image->info->imageJustifyTypeB = CENTERJUSTIFY;
+	    	else if (op[0] == 'C')
+	    		image->info->imageJustifyTypeB = LOWERLEFT;
+	    	else
+	    		gerb_ungetc (fd);
+		break;
+	    default :
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     g_strdup_printf("Wrong character in image justify:%c\n", op[0]),
+				     ERROR);
+	    }
+	    op[0] = gerb_fgetc(fd);
+	}
 	break;
     case A2I('I','N'): /* Image Name */
 	image->info->name = gerb_fgetstring(fd, '*');
-	break;
-    case A2I('I','O'): /* Image Offset */
-	NOT_IMPL(fd, "%IO%");
 	break;
     case A2I('I','P'): /* Image Polarity */
 	
@@ -997,11 +1076,20 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	break;
     case A2I('I','R'): /* Image Rotation */
 	tmp = gerb_fgetint(fd, NULL);
-	if (tmp != 0)
-	    NOT_IMPL(fd, "%IR%");
+	if (tmp == 90)
+	    image->info->imageRotation = M_PI / 2.0;
+	else if (tmp == 180)
+	    image->info->imageRotation = M_PI;
+	else if (tmp == 270)
+	    image->info->imageRotation = 3.0 * M_PI / 2.0;
+	else 
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Image rotation must be 0, 90, 180 or 270 (is actually %d)\n", tmp),
+				 ERROR);
 	break;
     case A2I('P','F'): /* Plotter Film */
-	NOT_IMPL(fd, "%PF%");
+	image->info->plotterFilm = gerb_fgetstring(fd, '*');
 	break;
 	
 	/* Aperture parameters */
@@ -1012,7 +1100,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	memset((void *)a, 0, sizeof(gerb_aperture_t));
 	ano = parse_aperture_definition(fd, a, image);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
-	    a->unit = state->unit;
+	    a->unit = state->state->unit;
 	    image->aperture[ano] = a;
 	    gerb_stats_add_aperture(stats->aperture_list,
 				    -1, ano, 
@@ -1045,15 +1133,17 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	break;
 	/* Layer */
     case A2I('L','N'): /* Layer Name */
-	state->curr_layername = gerb_fgetstring(fd, '*');
+        state->layer = gerb_image_return_new_layer (state->layer);
+	state->layer->name = gerb_fgetstring(fd, '*');
 	break;
     case A2I('L','P'): /* Layer Polarity */
+        state->layer = gerb_image_return_new_layer (state->layer);
 	switch (gerb_fgetc(fd)) {
 	case 'D': /* Dark Polarity (default) */
-	    state->layer_polarity = DARK;
+	    state->layer->polarity = DARK;
 	    break;
 	case 'C': /* Clear Polarity */
-	    state->layer_polarity = CLEAR;
+	    state->layer->polarity = CLEAR;
 	    break;
 	default:
 	    gerb_stats_add_error(stats->error_list,
@@ -1063,30 +1153,81 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	}
 	break;
     case A2I('K','O'): /* Knock Out */
-	NOT_IMPL(fd, "%KO%");
+        state->layer = gerb_image_return_new_layer (state->layer);
+        op[0] = gerb_fgetc(fd);
+	if (op[0] == '*') { /* Disable previous SR parameters */
+	    state->layer->knockout.type = NOKNOCKOUT;
+	    break;
+	}
+	else if (op[0] == 'C') {
+	    state->layer->knockout.polarity = NEGATIVE;
+	}
+	else if (op[0] == 'D') {
+	    state->layer->knockout.polarity = POSITIVE;
+	}
+	else {
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Knockout must supply a polarity (C, D, or *)\n",				 ERROR);
+	}
+	state->layer->knockout.lowerLeftX = 0.0;
+	state->layer->knockout.lowerLeftY = 0.0;
+	state->layer->knockout.width = 0.0;
+	state->layer->knockout.height = 0.0;
+	state->layer->knockout.border = 0.0;
+	op[0] = gerb_fgetc(fd);
+	while (op[0] != '*') { 
+	    switch (op[0]) {
+	    case 'X':
+	        state->layer->knockout.type = FIXED;
+		state->layer->knockout.lowerLeftX = gerb_fgetdouble(fd);
+		break;
+	    case 'Y':
+	        state->layer->knockout.type = FIXED;
+		state->layer->knockout.lowerLeftY = gerb_fgetdouble(fd);
+		break;
+	    case 'I':
+	        state->layer->knockout.type = FIXED;
+		state->layer->knockout.width = gerb_fgetdouble(fd);
+		break;
+	    case 'J':
+	        state->layer->knockout.type = FIXED;
+		state->layer->knockout.height = gerb_fgetdouble(fd);
+		break;
+	    case 'K':
+	        state->layer->knockout.type = BORDER;
+	        state->layer->knockout.border = gerb_fgetdouble(fd);
+	    default:
+		gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Unknown variable in knockout",				 ERROR);
+	    }
+	}
 	break;
     case A2I('S','R'): /* Step and Repeat */
+        /* start by generating a new layer (duplicating previous layer settings */
+        state->layer = gerb_image_return_new_layer (state->layer);
 	op[0] = gerb_fgetc(fd);
 	if (op[0] == '*') { /* Disable previous SR parameters */
-	    image->info->step_and_repeat.X = 1;
-	    image->info->step_and_repeat.Y = 1;
-	    image->info->step_and_repeat.dist_X = 0.0;
-	    image->info->step_and_repeat.dist_Y = 0.0;
+	    state->layer->stepAndRepeat.X = 1;
+	    state->layer->stepAndRepeat.Y = 1;
+	    state->layer->stepAndRepeat.dist_X = 0.0;
+	    state->layer->stepAndRepeat.dist_Y = 0.0;
 	    break;
 	}
 	while (op[0] != '*') { 
 	    switch (op[0]) {
 	    case 'X':
-		image->info->step_and_repeat.X = gerb_fgetint(fd, NULL);
+		state->layer->stepAndRepeat.X = gerb_fgetint(fd, NULL);
 		break;
 	    case 'Y':
-		image->info->step_and_repeat.Y = gerb_fgetint(fd, NULL);
+		state->layer->stepAndRepeat.Y = gerb_fgetint(fd, NULL);
 		break;
 	    case 'I':
-		image->info->step_and_repeat.dist_X = gerb_fgetdouble(fd);
+		state->layer->stepAndRepeat.dist_X = gerb_fgetdouble(fd);
 		break;
 	    case 'J':
-		image->info->step_and_repeat.dist_Y = gerb_fgetdouble(fd);
+		state->layer->stepAndRepeat.dist_Y = gerb_fgetdouble(fd);
 		break;
 	    default:
 		gerb_stats_add_error(stats->error_list,
@@ -1100,16 +1241,26 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	     * is probably not intended. At least one other tool (viewmate) seems
 	     * to interpret 0-time repeating as repeating just once too.
 	     */
-	    if(image->info->step_and_repeat.X == 0)
-	      image->info->step_and_repeat.X = 1;
-	    if(image->info->step_and_repeat.Y == 0)
-	      image->info->step_and_repeat.Y = 1;
+	    if(state->layer->stepAndRepeat.X == 0)
+	      state->layer->stepAndRepeat.X = 1;
+	    if(state->layer->stepAndRepeat.Y == 0)
+	      state->layer->stepAndRepeat.Y = 1;
 	    
 	    op[0] = gerb_fgetc(fd);
 	}
-	break;	    
-    case A2I('R','O'): /* Rotate */
-      NOT_IMPL(fd, "%RO%");
+	break;
+    /* is this an actual RS274X command??  It isn't explainined in the spec... */
+    case A2I('R','O'):
+      state->layer = gerb_image_return_new_layer (state->layer);
+      
+      state->layer->rotation = gerb_fgetdouble(fd);
+      op[0] = gerb_fgetc(fd);
+      if (op[0] != '*') {
+          gerb_stats_add_error(stats->error_list,
+				     -1,
+				     "Error in layer rotation comman\n",
+				     ERROR);
+      }
       break;
     default:
     gerb_stats_add_error(stats->error_list,
@@ -1187,6 +1338,8 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     for (token = strtok(NULL, "X"), i = 0; token != NULL; 
 	 token = strtok(NULL, "X"), i++) {
 	errno = 0;
+	/* we can't normalize these numbers for in/mm, since some may be integers used
+	   for macros */
 	aperture->parameter[i] = strtod(token, NULL);
 	if (errno) {
             GERB_COMPILE_WARNING("Failed to read aperture parameters\n");

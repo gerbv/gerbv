@@ -148,6 +148,8 @@ parse_drillfile(gerb_file_t *fd)
     if (image == NULL)
 	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
+    curr_net->layer = image->layers;
+    curr_net->state = image->states;
     image->layertype = DRILL;
     stats = drill_stats_new();
     if (stats == NULL)
@@ -386,7 +388,8 @@ parse_drillfile(gerb_file_t *fd)
 		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 	    curr_net = curr_net->next;
 	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-
+   	    curr_net->layer = image->layers;
+	    curr_net->state = image->states;
 	    curr_net->start_x = (double)state->curr_x;
 	    curr_net->start_y = (double)state->curr_y;
 	    /* KLUDGE. This function isn't allowed to return anything
@@ -396,7 +399,7 @@ parse_drillfile(gerb_file_t *fd)
 		curr_net->start_y /= 25.4;
 		/* KLUDGE. All images, regardless of input format,
 		   are returned in INCH format */
-		curr_net->unit = INCH;
+		curr_net->state->unit = INCH;
 	    }
 
 	    curr_net->stop_x = curr_net->start_x - state->origin_x;

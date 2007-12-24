@@ -42,6 +42,10 @@ enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001,
 		      CW_CIRCULAR, CCW_CIRCULAR, PAREA_START, PAREA_END};
 enum encoding_t {NONE, ASCII, EBCDIC, BCD, ISO_ASCII, EIA };
 enum layertype_t {GERBER, DRILL, PICK_AND_PLACE};
+enum knockout_t {NOKNOCKOUT, FIXED, BORDER};
+enum mirror_state_t {NOMIRROR, FLIPA, FLIPB, FLIPAB};
+enum axis_select_t {NOSELECT, SWAPAB};
+enum image_justify_type_t {LOWERLEFT, CENTERJUSTIFY};
 
 typedef struct gerb_cirseg {
     double cp_x;
@@ -52,14 +56,42 @@ typedef struct gerb_cirseg {
     double angle2;
 } gerb_cirseg_t;
 
-
 typedef struct gerb_step_and_repeat { /* SR parameters */
     int X;
     int Y;
     double dist_X;
     double dist_Y;
 } gerb_step_and_repeat_t;
-  
+ 
+typedef struct {
+    enum knockout_t type;
+    enum polarity_t polarity;
+    gdouble lowerLeftX;
+    gdouble lowerLeftY;
+    gdouble width;
+    gdouble height;
+    gdouble border;
+} gerb_knockout_t;
+ 
+typedef struct {
+    gerb_step_and_repeat_t stepAndRepeat;
+    gerb_knockout_t knockout;
+    gdouble rotation;
+    enum polarity_t polarity; 
+    gchar *name;
+    gpointer next;
+} gerb_layer_t;
+
+typedef struct {
+    enum axis_select_t axisSelect;
+    enum mirror_state_t mirrorState;
+    enum unit_t unit;
+    gdouble offsetA;
+    gdouble offsetB;
+    gdouble scaleA;
+    gdouble scaleB;
+    gpointer next;
+} gerb_netstate_t;
 
 typedef struct gerb_net {
     double start_x;
@@ -67,18 +99,15 @@ typedef struct gerb_net {
     double stop_x;
     double stop_y;
     int aperture;
-    enum polarity_t layer_polarity; 
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
-    enum unit_t unit;
     int nuf_pcorners; /* If interpolation=PAREA_START, corners in polygon */
     struct gerb_cirseg *cirseg;
     struct gerb_net *next;
     GString *label;
-    struct gerb_step_and_repeat *step_and_repeat;  /* SR parameters, NULL if not set */
+    gerb_layer_t *layer;
+    gerb_netstate_t *state;
 } gerb_net_t;
-
-
 
 typedef struct gerb_format {
     enum omit_zeros_t omit_zeros;
@@ -101,20 +130,21 @@ typedef struct gerb_image_info {
     double min_y;
     double max_x;
     double max_y;
-    double offset_a;     /* may be inches or mm */
-    double offset_b;     /* may be inches or mm */
-    double offset_a_in;  /* always inches */
-    double offset_b_in;  /* always inches */
+    double offsetA;
+    double offsetB;
     enum encoding_t encoding;
-    double scale_factor_A;  /* SF parameters */
-    double scale_factor_B;
-    struct gerb_step_and_repeat step_and_repeat;  /* SR parameters */
+    double imageRotation;
+    enum image_justify_type_t imageJustifyTypeA;
+    enum image_justify_type_t imageJustifyTypeB;
+    gdouble imageJustifyOffset;
+    gchar *plotterFilm;
 } gerb_image_info_t;
-
 
 typedef struct {
     enum layertype_t layertype;
     gerb_aperture_t *aperture[APERTURE_MAX];
+    gerb_layer_t *layers;
+    gerb_netstate_t *states;
     amacro_t *amacro;
     gerb_format_t *format;
     gerb_image_info_t *info;
@@ -153,6 +183,12 @@ gerb_verify_error_t gerb_image_verify(gerb_image_t *image);
 
 /* Dumps a written version of image to stdout */
 void gerb_image_dump(gerb_image_t *image);
+
+gerb_layer_t *
+gerb_image_return_new_layer (gerb_layer_t *previousLayer);
+
+gerb_netstate_t *
+gerb_image_return_new_netstate (gerb_netstate_t *previousState);
 
 #ifdef __cplusplus
 }

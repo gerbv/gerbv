@@ -1318,14 +1318,17 @@ callbacks_color_selector_ok_clicked (GtkWidget *widget, gpointer user_data) {
 	GtkColorSelectionDialog *cs = (GtkColorSelectionDialog *) screen.win.colorSelectionDialog;
 	GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
 	gint rowIndex = screen.win.colorSelectionIndex;
+	
+	gtk_color_selection_get_current_color (colorsel, &screen.file[rowIndex]->color);
 #ifndef RENDER_USING_GDK
 	screen.file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
+#else
+	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[rowIndex]->color, FALSE, TRUE);
 #endif
-	gtk_color_selection_get_current_color (colorsel, &screen.file[rowIndex]->color);
 	gtk_widget_destroy (screen.win.colorSelectionDialog);
 	screen.win.colorSelectionDialog = NULL;
 	callbacks_update_layer_tree ();
-      render_refresh_rendered_image_on_screen();
+	render_refresh_rendered_image_on_screen();
 }
 
 

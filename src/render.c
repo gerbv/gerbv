@@ -344,10 +344,10 @@ render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
 			/* 
 			* Find the biggest image and use as a size reference
 			*/
-			x1 = MIN(x1, info->min_x + info->offset_a_in);
-			y1 = MIN(y1, info->min_y + info->offset_b_in);
-			x2 = MAX(x2, info->max_x + info->offset_a_in);
-			y2 = MAX(y2, info->max_y + info->offset_b_in);
+			x1 = MIN(x1, info->min_x + info->offsetA);
+			y1 = MIN(y1, info->min_y + info->offsetB);
+			x2 = MAX(x2, info->max_x + info->offsetA);
+			y2 = MAX(y2, info->max_y + info->offsetB);
 		}
 	}
 
@@ -507,13 +507,6 @@ void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
 		(double) fileInfo->color.green/G_MAXUINT16,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
-
-	/* for now, scale the cairo context if the units are mms */
-	/* TODO: normalize all gerb_image data to mm during parsing */
-	if ((fileInfo->image->netlist->next)&&
-		(fileInfo->image->netlist->next->unit==MM)) {
-		cairo_scale (cr, 1.0/25.4, 1.0/25.4);
-	}
 
 	draw_image_to_cairo_target (cr, fileInfo->image);
 }

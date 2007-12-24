@@ -145,3 +145,7 @@ example_trailing_cd1r2.1_sieb1  | ../../example/trailing/cd1r2.1_sieb1.off
 # ---------------------------------------------
 ######################################################################
 #
+test-layer-mode-1  | test-layer-mode-1.gbx
+test-image-offset-1  | test-image-offset-1.gbx
+test-image-offset-2  | test-image-offset-2.gbx
+

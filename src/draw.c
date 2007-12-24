@@ -350,8 +350,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
     struct gerb_net *net;
     double x1, y1, x2, y2, cp_x=0, cp_y=0;
     int in_parea_fill = 0,drawing_parea_fill = 0;
-    gdouble p1, p2, p3, p4, p5, dx, dy;
+    gdouble p1, p2, p3, p4, p5, dx, dy, scale;
     
+    /* do initial image translation, etc */
+    cairo_translate (cairoTarget, image->info->offsetA, image->info->offsetB);
     for (net = image->netlist->next ; net != NULL; net = net->next) {
 	int repeat_X=1, repeat_Y=1;
 	double repeat_dist_X = 0, repeat_dist_Y = 0;
@@ -359,15 +361,11 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 	
 	/*
 	 * If step_and_repeat (%SR%) used, repeat the drawing;
-	 * if step_and_repeat not used, net->step_and_repeat will be NULL, and
-	 * we repeat everything just once.
 	 */
-	if(net->step_and_repeat != NULL){
-	    repeat_X = net->step_and_repeat->X;
-	    repeat_Y = net->step_and_repeat->Y;
-	    repeat_dist_X = net->step_and_repeat->dist_X;
-	    repeat_dist_Y = net->step_and_repeat->dist_Y;
-	}
+	repeat_X = net->layer->stepAndRepeat.X;
+	repeat_Y = net->layer->stepAndRepeat.Y;
+	repeat_dist_X = net->layer->stepAndRepeat.dist_X;
+	repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
 	for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
 	    for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
 		double sr_x = repeat_i * repeat_dist_X;
@@ -384,7 +382,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 			cp_y = net->cirseg->cp_y + sr_y;
 		}
 	
-		if ((net->layer_polarity == CLEAR)) {
+		if ((net->layer->polarity == CLEAR)) {
 			cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
 		}
 		else {
@@ -425,7 +423,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 			}
 			continue;
 		}
-	
+						
 		/*
 		 * If aperture state is off we allow use of undefined apertures.
 		 * This happens when gerber files starts, but hasn't decided on 
@@ -436,6 +434,12 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 				GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
 			continue;
 		}
+			
+		if (image->aperture[net->aperture]->unit == MM)
+			scale = 25.4;
+		else
+			scale = 1.0;
+			
 		switch (net->aperture_state) {
 			case ON :
 				switch (net->interpolation) {
@@ -446,20 +450,20 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 						switch (image->aperture[net->aperture]->type) {
 							case CIRCLE :
 								cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
-								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
 								cairo_move_to (cairoTarget, x1,y1);
 								cairo_line_to (cairoTarget, x2,y2);
 								cairo_stroke (cairoTarget);
 								break;
 							case RECTANGLE :				
-								dx = (image->aperture[net->aperture]->parameter[0]/ 2);
-								dy = (image->aperture[net->aperture]->parameter[1]/ 2);
+								dx = (image->aperture[net->aperture]->parameter[0]/ 2 / scale);
+								dy = (image->aperture[net->aperture]->parameter[1]/ 2 / scale);
 								if(x1 > x2)
 									dx = -dx;
 								if(y1 > y2)
 									dy = -dy;
 								cairo_new_path(cairoTarget);
-								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
 								cairo_move_to (cairoTarget, x1 - dx, y1 - dy);
 								cairo_line_to (cairoTarget, x1 - dx, y1 + dy);
 								cairo_line_to (cairoTarget, x2 - dx, y2 + dy);
@@ -472,7 +476,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 							case OVAL :
 							case POLYGON :
 								cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
-								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
 								cairo_move_to (cairoTarget, x1,y1);
 								cairo_line_to (cairoTarget, x2,y2);
 								cairo_stroke (cairoTarget);
@@ -488,7 +492,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 						 * draw an arc and stretch it by scaling different x and y values
 						 */
 						cairo_new_path(cairoTarget);
-						cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+						cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
 						cairo_save (cairoTarget);
 						cairo_translate(cairoTarget, cp_x, cp_y);
 						cairo_scale (cairoTarget, net->cirseg->height,
@@ -523,26 +527,29 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 
 				switch (image->aperture[net->aperture]->type) {
 					case CIRCLE :
-						gerbv_draw_circle(cairoTarget, p1);
-						gerbv_draw_aperature_hole (cairoTarget, p2, p3);
+						gerbv_draw_circle(cairoTarget, p1 / scale);
+						gerbv_draw_aperature_hole (cairoTarget, p2 / scale, p3 / scale);
 						break;
 					case RECTANGLE :
-						gerbv_draw_rectangle(cairoTarget, p1, p2);
-						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
+						gerbv_draw_rectangle(cairoTarget, p1 / scale, p2 / scale);
+						gerbv_draw_aperature_hole (cairoTarget, p3 / scale, p4 / scale);
 						break;
 					case OVAL :
-						gerbv_draw_oval(cairoTarget, p1, p2);
-						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
+						gerbv_draw_oval(cairoTarget, p1 / scale, p2 / scale);
+						gerbv_draw_aperature_hole (cairoTarget, p3 / scale, p4 / scale);
 						break;
 					case POLYGON :
-						gerbv_draw_polygon(cairoTarget, p1, p2, p3);
-						gerbv_draw_aperature_hole (cairoTarget, p4, p5);
+						gerbv_draw_polygon(cairoTarget, p1 / scale, p2 / scale, p3 / scale);
+						gerbv_draw_aperature_hole (cairoTarget, p4 / scale, p5 / scale);
 						break;
 					case MACRO :
+						cairo_save (cairoTarget);
+						cairo_scale (cairoTarget, 1/scale, 1/scale);
 						gerbv_draw_amacro(cairoTarget, 
 								  image->aperture[net->aperture]->amacro->program,
 								  image->aperture[net->aperture]->amacro->nuf_push,
 								  image->aperture[net->aperture]->parameter);
+						cairo_restore (cairoTarget);
 						break;
 					default :
 						GERB_MESSAGE("Unknown aperture type\n");

@@ -852,37 +852,30 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
       double repeat_dist_X=0.0, repeat_dist_Y=0.0;
       int repeat_i, repeat_j;
 
-      /*
-       * If step_and_repeat (%SR%) used, repeat the drawing;
-       * if step_and_repeat not used, net->step_and_repeat will be NULL, and
-       * we repeat everything just once.
-       */
-      if(net->step_and_repeat != NULL){
-	repeat_X = net->step_and_repeat->X;
-	repeat_Y = net->step_and_repeat->Y;
-	repeat_dist_X = net->step_and_repeat->dist_X;
-	repeat_dist_Y = net->step_and_repeat->dist_Y;
-      }
+	/*
+	 * If step_and_repeat (%SR%) used, repeat the drawing;
+	 */
+	repeat_X = net->layer->stepAndRepeat.X;
+	repeat_Y = net->layer->stepAndRepeat.Y;
+	repeat_dist_X = net->layer->stepAndRepeat.dist_X;
+	repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
       for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
 	for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
 	  double sr_x = repeat_i * repeat_dist_X;
 	  double sr_y = repeat_j * repeat_dist_Y;
 	
-	if (net->unit == MM) 
-	    unit_scale = scale / 25.4;
-	else 
-	    unit_scale = scale;
+      unit_scale = scale;
 
 	/*
 	 * Scale points with window scaling and translate them
 	 */
-	x1 = (int)round((image->info->offset_a + net->start_x + sr_x) * unit_scale +
+	x1 = (int)round((image->info->offsetA + net->start_x + sr_x) * unit_scale +
 			trans_x);
-	y1 = (int)round((image->info->offset_b - net->start_y - sr_y) * unit_scale +
+	y1 = (int)round((-image->info->offsetB - net->start_y - sr_y) * unit_scale +
 			trans_y);
-	x2 = (int)round((image->info->offset_a + net->stop_x + sr_x) * unit_scale +
+	x2 = (int)round((image->info->offsetA + net->stop_x + sr_x) * unit_scale +
 			trans_x);
-	y2 = (int)round((image->info->offset_b - net->stop_y - sr_y) * unit_scale +
+	y2 = (int)round((-image->info->offsetB - net->stop_y - sr_y) * unit_scale +
 			trans_y);
 
 	/* 
@@ -891,9 +884,9 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	if (net->cirseg) {
 	    cir_width = (int)round(net->cirseg->width * unit_scale);
 	    cir_height = (int)round(net->cirseg->height * unit_scale);
-	    cp_x = (int)round((image->info->offset_a + net->cirseg->cp_x) *
+	    cp_x = (int)round((image->info->offsetA + net->cirseg->cp_x) *
 			      unit_scale + trans_x);
-	    cp_y = (int)round((image->info->offset_b - net->cirseg->cp_y) *
+	    cp_y = (int)round((image->info->offsetB - net->cirseg->cp_y) *
 			      unit_scale + trans_y);
 	}
 
@@ -902,7 +895,7 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	 * and allow for the photoplot being negative.
 	 */
 	gdk_gc_set_function(gc, GDK_COPY);
-	if ((net->layer_polarity == CLEAR) != (polarity == NEGATIVE))
+	if ((net->layer->polarity == CLEAR) != (polarity == NEGATIVE))
 	    gdk_gc_set_foreground(gc, &opaque);
 	else
 	    gdk_gc_set_foreground(gc, &transparent);
@@ -953,13 +946,10 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	    continue;
 	}
 
-	/*
-	 * "Normal" aperture drawing routines
-	 */
 	if (image->aperture[net->aperture]->unit == MM)
-	    unit_scale = scale / 25.4;
+		unit_scale /= 25.4;
 	else
-	    unit_scale = scale;
+		unit_scale = scale;
 
 	switch (net->aperture_state) {
 	case ON :
