@@ -46,6 +46,7 @@ gerb_stats_new(void) {
     gerb_stats_t *stats;
     error_list_t *error_list;
     gerb_aperture_list_t *aperture_list;
+    gerb_aperture_list_t *D_code_list;
 
     /* Malloc space for new stats struct.  Return NULL if error. */
     if ((stats = (gerb_stats_t *)g_malloc(sizeof(gerb_stats_t))) == NULL) {
@@ -67,11 +68,22 @@ gerb_stats_new(void) {
         GERB_FATAL_ERROR("malloc aperture_list failed\n");
     stats->aperture_list = (gerb_aperture_list_t *) aperture_list;
 
+    /* Initialize D codes list */
+    D_code_list = gerb_stats_new_aperture_list();
+    if (D_code_list == NULL)
+        GERB_FATAL_ERROR("malloc D_code_list failed\n");
+    stats->D_code_list = (gerb_aperture_list_t *) D_code_list;
+
     return stats;
 }
 
 
 /* ------------------------------------------------------- */
+/* This fcn is called with a two gerb_stats_t structs:
+ * accum_stats, which holds a list of stats accumulated for
+ * all layers.  This will be reported in the report window.
+ * input_stats, which holds a list of the stats in this layer
+ * to be added to the accumulated list.  */
 void
 gerb_stats_add_layer(gerb_stats_t *accum_stats, 
 		     gerb_stats_t *input_stats,
@@ -81,6 +93,7 @@ gerb_stats_add_layer(gerb_stats_t *accum_stats,
 
     error_list_t *error;
     gerb_aperture_list_t *aperture;
+    gerb_aperture_list_t *D_code;
 
     accum_stats->layer_count++;
     accum_stats->G0 += input_stats->G0;
@@ -106,7 +119,23 @@ gerb_stats_add_layer(gerb_stats_t *accum_stats,
     accum_stats->D1 += input_stats->D1;
     accum_stats->D2 += input_stats->D2;
     accum_stats->D3 += input_stats->D3;
-    /* Must also accomodate user defined */
+    /* Create list of user-defined D codes from aperture list */
+    for (D_code = input_stats->D_code_list;
+         D_code != NULL;
+         D_code = D_code->next) {
+        if (D_code->number != -1) {
+	  dprintf("     .... In gerb_stats_add_layer, D code section, adding number = %d to accum_stats D list ...\n",
+		  D_code->number);
+	  gerb_stats_add_to_D_list(accum_stats->D_code_list,
+				   D_code->number);
+	  dprintf("     .... In gerb_stats_add_layer, D code section, calling increment_D_count with count %d ...\n", 
+		  D_code->count);
+	  gerb_stats_increment_D_list_count(accum_stats->D_code_list,
+					    D_code->number,
+					    D_code->count,
+					    accum_stats->error_list);
+      }
+    }
     accum_stats->D_unknown += input_stats->D_unknown;
     accum_stats->D_error += input_stats->D_error;
 
@@ -140,6 +169,7 @@ gerb_stats_add_layer(gerb_stats_t *accum_stats,
          aperture != NULL;
          aperture = aperture->next) {
         if (aperture->number != -1) {
+	  dprintf("    .... in gerb_stats_add_layer, aperture list section, calling add_aperture with count = %d ...\n", aperture->count);
             gerb_stats_add_aperture(accum_stats->aperture_list,
 				    this_layer,
 				    aperture->number,
@@ -248,7 +278,7 @@ gerb_stats_new_aperture_list() {
     aperture_list->count = 0;
     aperture_list->type = 0;
     for (i = 0; i<5; i++) {
-	(aperture_list->parameter)[i] = 0.0;
+	aperture_list->parameter[i] = 0.0;
     }
     aperture_list->next = NULL;
     return aperture_list;
@@ -270,15 +300,16 @@ gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
 
     /* First handle case where this is the first list element */
     if (aperture_list_in->number == -1) {
-	dprintf("     .... Adding first aperture to list ... \n"); 
+	dprintf("     .... Adding first aperture to aperture list ... \n"); 
 	dprintf("     .... Aperture type = %d ... \n", type); 
         aperture_list_in->number = number;
         aperture_list_in->type = type;
 	aperture_list_in->layer = layer;
 	for(i=0; i<5; i++) { 
-	    (aperture_list_in->parameter)[i] = parameter[i];
+	    aperture_list_in->parameter[i] = parameter[i];
 	}
         aperture_list_in->next = NULL;
+	dprintf("   <---  .... Leaving gerb_stats_add_aperture.\n"); 
         return;
     }
 
@@ -288,7 +319,9 @@ gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
 	aperture = aperture->next) {
         if ((aperture->number == number) &&
             (aperture->layer == layer) ) {
-            return;  /* This aperture is already in the aperture list */
+	  dprintf("     .... This aperture is already in the list ... \n"); 
+	    dprintf("   <---  .... Leaving gerb_stats_add_aperture.\n"); 
+            return;  
         }
         aperture_last = aperture;  /* point to last element in list */
     }
@@ -308,12 +341,97 @@ gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
     aperture_list_new->type = type;
     aperture_list_new->next = NULL;
     for(i=0; i<5; i++) { 
-	(aperture_list_new->parameter)[i] = parameter[i];
+	aperture_list_new->parameter[i] = parameter[i];
     }
     aperture_last->next = aperture_list_new;
 
     dprintf("   <---  .... Leaving gerb_stats_add_aperture.\n"); 
 
+    return;
+}
+
+/* ------------------------------------------------------- */
+void
+gerb_stats_add_to_D_list(gerb_aperture_list_t *D_list_in,
+			 int number) {
+  
+  gerb_aperture_list_t *D_list;
+  gerb_aperture_list_t *D_list_last=NULL;
+  gerb_aperture_list_t *D_list_new;
+
+    dprintf("   ----> Entering add_to_D_list, numbr = %d\n", number);
+
+    /* First handle case where this is the first list element */
+    if (D_list_in->number == -1) {
+	dprintf("     .... Adding first D code to D code list ... \n"); 
+	dprintf("     .... Aperture number = %d ... \n", number); 
+        D_list_in->number = number;
+	D_list_in->count = 0;
+        D_list_in->next = NULL;
+	dprintf("   <---  .... Leaving add_to_D_list.\n"); 
+        return;
+    }
+
+    /* Look to see if this is already in list */
+    for(D_list = D_list_in; 
+	D_list != NULL; 
+	D_list = D_list->next) {
+        if (D_list->number == number) {
+  	    dprintf("    .... Found in D list .... \n");
+	    dprintf("   <---  .... Leaving add_to_D_list.\n"); 
+            return;  
+        }
+        D_list_last = D_list;  /* point to last element in list */
+    }
+
+    /* This aperture number is unique.  Therefore, add it to the list */
+    dprintf("     .... Adding another D code to D code list ... \n"); 
+	
+    /* Malloc space for new aperture list element */
+    D_list_new = (gerb_aperture_list_t *) g_malloc(sizeof(gerb_aperture_list_t));
+    if (D_list_new == NULL) {
+        GERB_FATAL_ERROR("malloc D_list failed\n");
+    }
+
+    /* Set member elements */
+    D_list_new->number = number;
+    D_list_new->count = 0;
+    D_list_new->next = NULL;
+    D_list_last->next = D_list_new;
+
+    dprintf("   <---  .... Leaving add_to_D_list.\n"); 
+
+    return;
+}
+
+/* ------------------------------------------------------- */
+void
+gerb_stats_increment_D_list_count(gerb_aperture_list_t *D_list_in,
+				    int number, 
+				    int count,
+				    error_list_t *error) {
+  
+    gerb_aperture_list_t *D_list;
+
+    dprintf("   Entering inc_D_list_count, numbr = %d, count = %d\n", number, count);
+
+    /* Find D code in list and increment it */
+    for(D_list = D_list_in; 
+	D_list != NULL; 
+	D_list = D_list->next) {
+        if (D_list->number == number) {
+	    D_list->count += count;  /* Add to this aperture count, then return */
+            return;  
+        }
+    }
+
+    /* This D number is not defined.  Therefore, flag error */
+    dprintf("    .... Didn't find this D code in defined list .... \n");
+    dprintf("   <---  .... Leaving inc_D_list_count.\n"); 
+    gerb_stats_add_error(error,
+			 -1,
+			 "Undefined aperture number called out in D code.\n",
+			 ERROR);
     return;
 }
 

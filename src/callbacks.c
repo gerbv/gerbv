@@ -490,6 +490,22 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     D_report_string = g_strdup_printf("%sD3 = %-6d (%s)\n", 
 				      D_report_string, stats_report->D3,
 				      "Flash aperture");
+    /* Now add list of user-defined D codes (apertures) */
+    if (stats_report->D_code_list->number != -1) {
+      for(my_aperture_list = stats_report->D_code_list; 
+	  my_aperture_list != NULL; 
+	  my_aperture_list = my_aperture_list->next) {
+	
+	D_report_string = 
+	  g_strdup_printf("%sD%d = %-6d (%s)\n",
+			  D_report_string,
+			  my_aperture_list->number,
+			  my_aperture_list->count,
+			  "User defined aperture"
+			  );
+      }
+    }
+
     /* Insert stuff about user defined codes here */
     D_report_string = g_strdup_printf("%sUndefined D codes = %d\n", 
 				      D_report_string, stats_report->D_unknown);
@@ -606,6 +622,15 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			    font);
     g_free(D_report_string);
 
+    /* Put D code report text into scrolled window */
+    GtkWidget *D_code_report_window = gtk_scrolled_window_new (NULL, NULL);
+    /* This throws a warning.  Must find different approach.... */
+    gtk_widget_set_size_request(GTK_WIDGET(D_code_report_window),
+				200,
+				300);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(D_code_report_window),
+					  GTK_WIDGET(D_report_label));
+
     /* Create GtkLabel to hold M code text */
     GtkWidget *M_report_label = gtk_label_new (M_report_string);
     gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
@@ -654,7 +679,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			     gtk_label_new("G codes"));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(D_report_label),
+			     GTK_WIDGET(D_code_report_window),
 			     gtk_label_new("D codes"));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),

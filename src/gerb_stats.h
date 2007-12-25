@@ -42,6 +42,7 @@ typedef struct gerb_aperture_list_t {
 typedef struct {
     struct error_list_t *error_list;
     struct gerb_aperture_list_t *aperture_list;
+    struct gerb_aperture_list_t *D_code_list;
 
     int layer_count;
     int G0;
@@ -102,4 +103,11 @@ gerb_aperture_list_t *gerb_stats_new_aperture_list(void);
 void gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
 			     int layer, int number, enum aperture_t type,
 			     double parameter[5]);
+void gerb_stats_add_to_D_list(gerb_aperture_list_t *D_list_in,
+			      int number);
+void gerb_stats_increment_D_list_count(gerb_aperture_list_t *D_list_in,
+				       int number, 
+				       int count,
+				       error_list_t *error); 
+
 #endif /* GERB_STATS_H */

@@ -547,13 +547,19 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	/* XXX Maybe uneccesary??? */
 	if (gerb_fgetc(fd) == 'D') {
 		int a = gerb_fgetint(fd, NULL);
-		if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX))
+		if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
 			state->curr_aperture = a;
-		else 
+		dprintf("     In parse_G_code, case 54, found D and adding 1 to no %d in D_list ...\n", a);
+		gerb_stats_increment_D_list_count(stats->D_code_list, 
+						  a, 
+						  1,
+						  stats->error_list); 
+		} else { 
 		    gerb_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Found aperture out of bounds while parsing G code: %d\n", a),
 					 ERROR);
+		}
 	} else {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
@@ -619,6 +625,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
     gerb_stats_t *stats = image->gerb_stats;
     
     a = gerb_fgetint(fd, NULL);
+    dprintf("     In parse_D_code, found D number = %d ... \n", a);
     switch(a) {
     case 1 : /* Exposure on */
 	state->aperture_state = ON;
@@ -640,15 +647,18 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	    /* Must introduce some way to keep track of user defined
 	     * apertures
 	     */
-	    state->curr_aperture = a;
-	    /* gerb_stats_inc_D_code(stats, a); */
-	}
-	else {
-	    gerb_stats_add_error(stats->error_list,
-				 -1,
-				 g_strdup_printf("Found aperture out of bounds while parsing D code: %d\n", a),
-				 ERROR);
-	    stats->D_error++;
+	  state->curr_aperture = a;
+	  dprintf("     In parse_D_code, adding 1 to D_list ...\n");
+	  gerb_stats_increment_D_list_count(stats->D_code_list, 
+					    a, 
+					    1,
+					    stats->error_list); 
+	} else {
+	      gerb_stats_add_error(stats->error_list,
+				   -1,
+				   g_strdup_printf("Found aperture out of bounds while parsing D code: %d\n", a),
+				   ERROR);
+	      stats->D_error++;
 	}
 	state->changed = 0;
 	break;
@@ -1102,10 +1112,13 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->state->unit;
 	    image->aperture[ano] = a;
+	    dprintf("     In parse_rs274x, adding new aperture to aperture list ...\n");
 	    gerb_stats_add_aperture(stats->aperture_list,
 				    -1, ano, 
 				    a->type,
 				    a->parameter);
+	    gerb_stats_add_to_D_list(stats->D_code_list,
+				     ano);
 	} else {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,

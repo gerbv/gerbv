@@ -1,3 +1,7 @@
+2007-12-25  Stuart Brorson (sdb@cloud9.net)
+	* src/gerber.c, src/callbacks.c, src/gerb_stats.[hc]:
+	Added reporting of all D codes used to Gerber reports window.
+
 2007-12-23  Julian Lamb
 	* gerber.c, many files: Start reorganization of some gerb_image
 	  parameters in preparation for adding final Gerber commands
