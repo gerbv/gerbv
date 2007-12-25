@@ -396,16 +396,16 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	    switch(my_error_list->type) {
 		case FATAL: /* We should never get this one since the 
 			     * program should terminate first.... */
-		    error_level = g_strdup_printf("FATAL --");
+		    error_level = g_strdup_printf("FATAL: ");
 		    break;
 		case ERROR:
-		    error_level = g_strdup_printf("ERROR --");
+		    error_level = g_strdup_printf("ERROR: ");
 		    break;
 		case WARNING:
-		    error_level = g_strdup_printf("WARNING --");
+		    error_level = g_strdup_printf("WARNING: ");
 		    break;
 		case NOTE:
-		    error_level = g_strdup_printf("NOTE --");
+		    error_level = g_strdup_printf("NOTE: ");
 		    break;
 	    }
 	    error_report_string = g_strdup_printf("%sLayer %d: %s %s", 
@@ -738,16 +738,16 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 	    switch(my_error_list->type) {
 		case FATAL: /* We should never get this one since the 
 			     * program should terminate first.... */
-		    error_level = g_strdup_printf("FATAL --");
+		    error_level = g_strdup_printf("FATAL: ");
 		    break;
 		case ERROR:
-		    error_level = g_strdup_printf("ERROR --");
+		    error_level = g_strdup_printf("ERROR: ");
 		    break;
 		case WARNING:
-		    error_level = g_strdup_printf("WARNING --");
+		    error_level = g_strdup_printf("WARNING: ");
 		    break;
 		case NOTE:
-		    error_level = g_strdup_printf("NOTE --");
+		    error_level = g_strdup_printf("NOTE: ");
 		    break;
 	    }
 	    error_report_string = g_strdup_printf("%sLayer %d: %s %s", 
@@ -951,15 +951,12 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 			     GTK_WIDGET(drill_report_label),
 			     gtk_label_new("Drills used"));
     
-    
     /* Now put notebook into dialog window and show the whole thing */
     gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_drill)->vbox),
 		      GTK_WIDGET(notebook));
     gtk_widget_show_all(analyze_active_drill);
 	
     return;
-
-
 }
 
 /* --------------------------------------------------------- */

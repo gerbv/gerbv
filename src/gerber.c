@@ -133,7 +133,8 @@ parse_gerb(gerb_file_t *fd)
     dprintf("In parse_gerb, starting to parse file...\n");
 
     while ((read = gerb_fgetc(fd)) != EOF) {
-        /* figure out the scale, since we need to normailize all dimensions to inches */
+        /* figure out the scale, since we need to normailize 
+	   all dimensions to inches */
         if (state->state->unit == MM)
             scale = 25.4;
         else

@@ -127,6 +127,8 @@ static drill_state_t *new_state(drill_state_t *state);
 static double read_double(gerb_file_t *fd, enum number_fmt_t fmt, 
 			  enum omit_zeros_t omit_zeros);
 static void eat_line(gerb_file_t *fd);
+static char *get_line(gerb_file_t *fd);
+
 
 gerb_image_t *
 parse_drillfile(gerb_file_t *fd)
@@ -340,10 +342,12 @@ parse_drillfile(gerb_file_t *fd)
 		break;
 	    case DRILL_M_LONGMESSAGE :
 	    case DRILL_M_MESSAGE :
-		/* Until we have a console, these are ignored */
 	    case DRILL_M_CANNEDTEXT :
-		/* Ignored, probably permanently */
-		eat_line(fd);
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Message embedded in drill file: '%s'\n", 
+						      get_line(fd)),
+				      NOTE);
 		break;
 	    case DRILL_M_NOT_IMPLEMENTED :
 	    case DRILL_M_ENDPATTERN :
@@ -368,7 +372,10 @@ parse_drillfile(gerb_file_t *fd)
 	    break;
 
 	case 'S':
-	    /* Spindle speed. Silently ignored */
+	    drill_stats_add_error(stats->error_list,
+				  -1,
+				  "Drill file sets spindle speed -- ignoring.\n",
+				  NOTE);
 	    eat_line(fd);
 	    break;
 	case 'T':
@@ -447,7 +454,12 @@ parse_drillfile(gerb_file_t *fd)
 				      -1,
 				      "Undefined codes found in header.\n",
 				      ERROR);
-		eat_line(fd);
+		gerb_ungetc(fd);
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Undefined header line = '%s'\n",
+						      get_line(fd)),
+				      NOTE);
 	    } else {
 		drill_stats_add_error(stats->error_list,
 				      -1,
@@ -538,10 +550,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 				  ERROR);
 	    drill_stats_add_error(stats->error_list,
 				  -1,
+				  g_strdup_printf("Junk text = %s\n", 
+						  get_line(fd)),
+				  NOTE);
+	    drill_stats_add_error(stats->error_list,
+				  -1,
 				  "Ignorning junk text.\n",
 				  WARNING);
-
-	    eat_line(fd);
 	}
 	return -1;
     }
@@ -1085,3 +1100,17 @@ eat_line(gerb_file_t *fd)
 	read = gerb_fgetc(fd);
     }
 } /* eat_line */
+
+static char *
+get_line(gerb_file_t *fd)
+{
+    int read = gerb_fgetc(fd);
+    char *retstring = "";
+
+    while(read != 10 && read != 13) {
+	if (read == EOF) return retstring;
+	retstring = g_strdup_printf("%s%c", retstring, read);
+	read = gerb_fgetc(fd);
+    }
+    return retstring;
+} /* get_line */
