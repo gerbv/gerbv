@@ -57,5 +57,8 @@ EXTRA_DIST= \
 	example_thermal_bpB.png \
 	example_thermal_dsp.png \
 	example_trailing_cd1r2.1_sieb0.png \
-	example_trailing_cd1r2.1_sieb1.png 
+	example_trailing_cd1r2.1_sieb1.png \
+	test-image-offset-1.png \
+	test-image-offset-2.png \
+	test-layer-mode-1.png
 

@@ -274,8 +274,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 				pnpPartData.shape = PART_SHAPE_STD;
 			}
 			else {
-				pnpPartData.length = 10.0;
-				pnpPartData.width = 10.0;
+				pnpPartData.length = 0.4;
+				pnpPartData.width = 0.4;
 				pnpPartData.shape = PART_SHAPE_UNKNOWN;
 			}
 		}  
@@ -357,10 +357,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	memset((void *) image->aperture[0], 0, sizeof(gerb_aperture_t));
 	image->aperture[0]->type = CIRCLE;
 	image->aperture[0]->amacro = NULL;
-	image->aperture[0]->parameter[0] = 0.4;
+	image->aperture[0]->parameter[0] = 0.02;
 	image->aperture[0]->nuf_parameters = 1;
-	image->aperture[0]->unit = MM;
-	curr_net->state->unit = MM;
 
 	for (i = 0; i < parsedPickAndPlaceData->len; i++) {
 		PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
@@ -388,6 +386,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture = 0;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
+			curr_net->layer = image->layers;
+			curr_net->state = image->states;
 			
 			/* assign a label to this first draw primitive, in case we want
 			   to render some text next to the mark
@@ -409,6 +409,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture = 0;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
+			curr_net->layer = image->layers;
+			curr_net->state = image->states;
 
 			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
@@ -423,6 +425,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture = 0;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
+			curr_net->layer = image->layers;
+			curr_net->state = image->states;
 
 			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
@@ -437,6 +441,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture = 0;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
+			curr_net->layer = image->layers;
+			curr_net->state = image->states;
 
 			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
@@ -457,6 +463,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 				curr_net->aperture = 0;
 				curr_net->aperture_state = ON;
 				curr_net->interpolation = LINEARx1;
+				curr_net->layer = image->layers;
+				curr_net->state = image->states;
 
 				curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 				curr_net = curr_net->next;
@@ -470,6 +478,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 	            curr_net->aperture = 0;
 	            curr_net->aperture_state = ON;
 	            curr_net->interpolation = LINEARx1;
+			curr_net->layer = image->layers;
+			curr_net->state = image->states;
 			/* calculate a rough radius for the min/max screen calcs later */
 			radius = max (partData.length/2, partData.width/2) + 1;
             }
@@ -482,6 +492,8 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture = 0;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = LINEARx1;
+			curr_net->layer = image->layers;
+			curr_net->state = image->states;
 
 			curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 			curr_net = curr_net->next;
@@ -496,6 +508,9 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 			curr_net->aperture = 0;
 			curr_net->aperture_state = ON;
 			curr_net->interpolation = CW_CIRCULAR;
+			curr_net->layer = image->layers;
+			curr_net->state = image->states;
+			
 			curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));
 			memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
 			curr_net->cirseg->angle1 = 0.0;
@@ -510,10 +525,10 @@ pick_and_place_convert_pnp_data_to_image (GArray *parsedPickAndPlaceData) {
 		/* update min and max numbers so the screen zoom-to-fit
 		   function will work
 		 */
-		image->info->min_x = min(image->info->min_x, (partData.pad_x - radius)/25.4);
-		image->info->min_y = min(image->info->min_y, (partData.pad_y - radius)/25.4);
-		image->info->max_x = max(image->info->max_x, (partData.pad_x + radius)/25.4);
-		image->info->max_y = max(image->info->max_y, (partData.pad_y + radius)/25.4);
+		image->info->min_x = min(image->info->min_x, (partData.pad_x - radius));
+		image->info->min_y = min(image->info->min_y, (partData.pad_y - radius));
+		image->info->max_x = max(image->info->max_x, (partData.pad_x + radius));
+		image->info->max_y = max(image->info->max_y, (partData.pad_y + radius));
 	}
 	curr_net->next = NULL;
 	    

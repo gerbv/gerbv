@@ -387,10 +387,17 @@ parse_gerb(gerb_file_t *fd)
 	     */
 	    if ((curr_net->aperture != 0) && 
 		(image->aperture[curr_net->aperture] != NULL) &&
-		(image->aperture[curr_net->aperture]->type != MACRO))
+		(image->aperture[curr_net->aperture]->type != MACRO)) {
 		aperture_size = image->aperture[curr_net->aperture]->parameter[0];
-	    else 
+		if (image->aperture[curr_net->aperture]->unit == MM)
+			scale = 25.4;
+		else 
+			scale = 1.0;
+	    }
+	    else {
 		aperture_size = 0.0;
+		scale = 1.0;
+	    }
 
 	    /*
 	     * For next round we save the current position as
@@ -406,10 +413,7 @@ parse_gerb(gerb_file_t *fd)
 	    if ((curr_net->aperture == 0) && !state->in_parea_fill) 
 		break;
 
-	    if (image->aperture[curr_net->aperture]->unit == MM)
-		scale = 25.4;
-	    else 
-		scale = 1.0;
+	    
 
 	    {
 	      double repeat_off_X=0, repeat_off_Y=0;
