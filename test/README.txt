@@ -3,6 +3,29 @@
 
 Please read this file before making any modifications to the test suite.
 
+
+
+**********************************************************************
+**********************************************************************
+* Updating existing "golden" files
+**********************************************************************
+**********************************************************************
+
+./run_tests.sh --regen <testname>
+
+will regenerate the golden file for <testname>.  I suggest saving
+off a copy and using ImageMagick to look for the differences visually.
+The run_tests.sh script has examples of comparing .png files.  Make
+sure the changes are only the expected ones and then check the new
+files back into cvs.  Do not blindly update these files as that defeats
+the purpose of the tests.
+
+**********************************************************************
+**********************************************************************
+* Adding New Tests
+**********************************************************************
+**********************************************************************
+
 ----------------------------------------------------------------------
 Create input files
 ----------------------------------------------------------------------
