@@ -1,3 +1,12 @@
+2007-12-28  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/drill.c, src/gerb_stats.[hc], src/gerber.c
+	src/gerbv_screen.h, src/interface.c, src/pick-and-place.c:
+	Added more checks for file type. This should fix problem
+	of segfaults when reading RS-274D.  Make messages text window
+	(in sidepane) pop up if an error or warning is written to it so
+	user can immediately see problems.  Robustified a few areas
+	of stats gathering code.	
+	
 2007-12-25  Stuart Brorson (sdb@cloud9.net)
 	* src/gerber.c, src/callbacks.c, src/gerb_stats.[hc]:
 	Added reporting of all D codes used to Gerber reports window.

@@ -91,6 +91,7 @@ typedef struct {
 	GtkWidget *vAdjustment;
 	GtkWidget *hRuler;
 	GtkWidget *vRuler;
+	GtkWidget *sidepane_notebook;
 	GtkWidget *project;
 	GtkWidget *gerber;
 	GtkWidget *about_dialog;

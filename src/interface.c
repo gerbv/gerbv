@@ -922,6 +922,7 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.vAdjustment = vAdjustment;
 	screen.win.hRuler = hRuler;
 	screen.win.vRuler = vRuler;	
+	screen.win.sidepane_notebook = sidepane_notebook;
 	/* 
 	* Good defaults according to Ales. Gives aspect ratio of 1.3333...
 	*/

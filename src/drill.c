@@ -546,7 +546,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	if(temp != EOF) {
 	    drill_stats_add_error(stats->error_list,
 				  -1,
-				  "Junk text found in place of tool definition.\n",
+				  "Orcad bug: Junk text found in place of tool definition.\n",
 				  ERROR);
 	    drill_stats_add_error(stats->error_list,
 				  -1,

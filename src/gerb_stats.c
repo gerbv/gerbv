@@ -169,7 +169,6 @@ gerb_stats_add_layer(gerb_stats_t *accum_stats,
          aperture != NULL;
          aperture = aperture->next) {
         if (aperture->number != -1) {
-	  dprintf("    .... in gerb_stats_add_layer, aperture list section, calling add_aperture with count = %d ...\n", aperture->count);
             gerb_stats_add_aperture(accum_stats->aperture_list,
 				    this_layer,
 				    aperture->number,
@@ -405,7 +404,7 @@ gerb_stats_add_to_D_list(gerb_aperture_list_t *D_list_in,
 }
 
 /* ------------------------------------------------------- */
-void
+int 
 gerb_stats_increment_D_list_count(gerb_aperture_list_t *D_list_in,
 				    int number, 
 				    int count,
@@ -421,7 +420,7 @@ gerb_stats_increment_D_list_count(gerb_aperture_list_t *D_list_in,
 	D_list = D_list->next) {
         if (D_list->number == number) {
 	    D_list->count += count;  /* Add to this aperture count, then return */
-            return;  
+            return 0;  /* Return 0 for success */  
         }
     }
 
@@ -432,6 +431,6 @@ gerb_stats_increment_D_list_count(gerb_aperture_list_t *D_list_in,
 			 -1,
 			 "Undefined aperture number called out in D code.\n",
 			 ERROR);
-    return;
+    return -1;  /* Return -1 for failure */
 }
 

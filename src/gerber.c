@@ -649,19 +649,24 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	break;
     default: /* Aperture in use */
 	if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
-	    /* Must introduce some way to keep track of user defined
-	     * apertures
-	     */
 	  state->curr_aperture = a;
+
 	  dprintf("     In parse_D_code, adding 1 to D_list ...\n");
-	  gerb_stats_increment_D_list_count(stats->D_code_list, 
+	  int retcode = gerb_stats_increment_D_list_count(stats->D_code_list, 
 					    a, 
 					    1,
-					    stats->error_list); 
+					    stats->error_list);
+	  if (retcode == -1) {
+	      gerb_stats_add_error(stats->error_list,
+				   -1,
+				   g_strdup_printf("Found undefined D code: D%d\n", a),
+				   ERROR);
+	      stats->D_unknown++;
+	  }
 	} else {
 	      gerb_stats_add_error(stats->error_list,
 				   -1,
-				   g_strdup_printf("Found aperture out of bounds while parsing D code: %d\n", a),
+				   g_strdup_printf("Found aperture number out of bounds while parsing D code: %d\n", a),
 				   ERROR);
 	      stats->D_error++;
 	}

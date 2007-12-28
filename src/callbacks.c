@@ -1976,19 +1976,26 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 	/* a message of this kind aborts the application calling abort() */
 	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
 	                                    "red_foreground");
-
+	      gtk_notebook_set_current_page(GTK_NOTEBOOK(screen.win.sidepane_notebook), 1);
+	      gtk_widget_show(screen.win.sidepane_notebook);
 	break;
 	case G_LOG_LEVEL_CRITICAL:
 	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
 	                                    "red_foreground");
+	      gtk_notebook_set_current_page(GTK_NOTEBOOK(screen.win.sidepane_notebook), 1);
+	      gtk_widget_show(screen.win.sidepane_notebook);
 	break;
 	case G_LOG_LEVEL_WARNING:
 	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
 	                                    "darkred_foreground");
+	      gtk_notebook_set_current_page(GTK_NOTEBOOK(screen.win.sidepane_notebook), 1);
+	      gtk_widget_show(screen.win.sidepane_notebook);
 	break;
 	case G_LOG_LEVEL_MESSAGE:
 	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
 	                                    "darkblue_foreground");
+	      gtk_notebook_set_current_page(GTK_NOTEBOOK(screen.win.sidepane_notebook), 1);
+	      gtk_widget_show(screen.win.sidepane_notebook);
 	break;
 	case G_LOG_LEVEL_INFO:
 	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),

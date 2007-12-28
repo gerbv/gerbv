@@ -334,7 +334,26 @@ pick_and_place_check_file_type(gerb_file_t *fd)
 
 	/* Abort if we see a G54 */
 	if ((len > 3) && (strncmp(buf,"G54", 3) == 0)) {
+	    return FALSE;  
+	}
 
+	/* Abort if we see a D01 */
+	if ((len > 3) && (strncmp(buf,"D01", 3) == 0)) {
+	    return FALSE;  
+	}
+
+	/* Abort if we see a D1 */
+	if ((len > 2) && (strncmp(buf,"D1", 2) == 0)) {
+	    return FALSE;  
+	}
+
+	/* Abort if we see a D03 */
+	if ((len > 3) && (strncmp(buf,"D03", 3) == 0)) {
+	    return FALSE;  
+	}
+
+	/* Abort if we see a D3 */
+	if ((len > 2) && (strncmp(buf,"D3", 2) == 0)) {
 	    return FALSE;  
 	}
 
@@ -350,6 +369,11 @@ pick_and_place_check_file_type(gerb_file_t *fd)
 
 	/* abort if we see a M02 code */
 	if ((len > 3) && (strncmp(buf,"M02", 3) == 0)) {
+	    return FALSE;
+	}
+
+	/* abort if we see a %ADD code */
+	if ((len > 4) && (strncmp(buf,"%ADD", 4) == 0)) {
 	    return FALSE;
 	}
     }
