@@ -1020,12 +1020,6 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
 	//gchar *translators = _("translator-credits");
 
-	aboutdialog1 = gtk_about_dialog_new ();
-	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);
-	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
-	gtk_about_dialog_set_name (GTK_ABOUT_DIALOG (aboutdialog1), _("Gerbv"));
-	//gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators);
-
 	gchar *string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 	      "This is gerbv version %s\n"
 	      "Compiled on %s at %s\n"
@@ -1037,12 +1031,40 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	      "  gEDA homepage: http://www.geda.seul.org\n"
 	      "  gEDA Wiki: http://geda.seul.org/dokuwiki/doku.php?id=geda\n\n",
 	      VERSION, __DATE__, __TIME__);
+
+#if GTK_CHECK_VERSION(2,6,0) 
+	aboutdialog1 = gtk_about_dialog_new ();
+	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);
+	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
+	gtk_about_dialog_set_name (GTK_ABOUT_DIALOG (aboutdialog1), _("Gerbv"));
+	//gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators);
+
 	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), string);
-	free (string);
+#else
+	aboutdialog1 = gtk_message_dialog_new (	GTK_WINDOW (screen.win.topLevelWindow),
+					       GTK_DIALOG_DESTROY_WITH_PARENT,
+					       GTK_MESSAGE_INFO,
+					       GTK_BUTTONS_CLOSE,
+					       string
+					       );
+	
+	/* Destroy the dialog when the user responds to it (e.g. clicks a button) */
+	g_signal_connect_swapped (aboutdialog1, "response",
+				  G_CALLBACK (gtk_widget_destroy),
+				  aboutdialog1);
+	
+#endif
+
+	g_free (string);
+
+#if GTK_CHECK_VERSION(2,6,0)
 	/* Store pointers to all widgets, for use by lookup_widget(). */
 	g_signal_connect (G_OBJECT(aboutdialog1),"response",
 		      G_CALLBACK (gtk_widget_destroy), GTK_WIDGET(aboutdialog1));
+#endif
+
 	gtk_widget_show_all(aboutdialog1);
+
 }
 
 gdouble callbacks_calculate_actual_distance (gdouble inputDimension) {
