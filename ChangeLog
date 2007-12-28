@@ -1,3 +1,15 @@
+2007-12-28  Julian Lamb
+	* gerber.c, many files: Finish implementing all remaining Gerber functions
+	  (offsets, mirrors, rotations, knockout, axis select, scale factors,
+	  and justify). Rework the min/max calculation routines for much more
+	  accurate autoscaling.  Also, much updating was needed to allow the new
+	  Gerber functions to autoscale correctly (e.g. scaling needs multiply all
+	  the min/max values by the image scale factor, etc).
+	* tests/inputs/test-...: Add test files for all Gerber functions.
+	* tests/golden/*: Update all the golden files, since the autoscaling
+	  rework made all the old golden files fail, since the scale factor is now
+	  slightly off from the previous ones, making them fail.
+
 2007-12-28  Stuart Brorson (sdb@cloud9.net)
 	* src/callbacks.c, src/drill.c, src/gerb_stats.[hc], src/gerber.c
 	src/gerbv_screen.h, src/interface.c, src/pick-and-place.c:

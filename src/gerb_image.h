@@ -45,7 +45,7 @@ enum layertype_t {GERBER, DRILL, PICK_AND_PLACE};
 enum knockout_t {NOKNOCKOUT, FIXED, BORDER};
 enum mirror_state_t {NOMIRROR, FLIPA, FLIPB, FLIPAB};
 enum axis_select_t {NOSELECT, SWAPAB};
-enum image_justify_type_t {LOWERLEFT, CENTERJUSTIFY};
+enum image_justify_type_t {NOJUSTIFY, LOWERLEFT, CENTERJUSTIFY};
 
 typedef struct gerb_cirseg {
     double cp_x;
@@ -64,6 +64,7 @@ typedef struct gerb_step_and_repeat { /* SR parameters */
 } gerb_step_and_repeat_t;
  
 typedef struct {
+    gboolean firstInstance;
     enum knockout_t type;
     enum polarity_t polarity;
     gdouble lowerLeftX;
@@ -136,7 +137,10 @@ typedef struct gerb_image_info {
     double imageRotation;
     enum image_justify_type_t imageJustifyTypeA;
     enum image_justify_type_t imageJustifyTypeB;
-    gdouble imageJustifyOffset;
+    gdouble imageJustifyOffsetA;
+    gdouble imageJustifyOffsetB;
+    gdouble imageJustifyOffsetActualA;
+    gdouble imageJustifyOffsetActualB;
     gchar *plotterFilm;
 } gerb_image_info_t;
 

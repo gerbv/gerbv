@@ -55,6 +55,7 @@ Y12000X12700D03*
 G04 Draw Thermal in box 2*
 G04 ..switch to inches for coordinates*
 G70*
+Y500X2500D02*
 G54D12*
 Y500X2500D03*
 

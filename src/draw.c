@@ -38,7 +38,7 @@
 #include "draw.h"
 #include "gerb_error.h"
 #include <cairo.h>
-
+	
 /*
  * Stack declarations and operations to be used by the simple engine that
  * executes the parsed aperture macros.
@@ -175,8 +175,8 @@ gerbv_draw_aperature_hole(cairo_t *cairoTarget, gdouble dimensionX, gdouble dime
 }
 
 int
-gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf_push,
-		  gdouble *parameters)
+gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
+	instruction_t *program, unsigned int nuf_push, gdouble *parameters)
 {
 	macro_stack_t *s = new_stack(nuf_push);
 	instruction_t *ip;
@@ -283,7 +283,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 					gerbv_draw_circle(cairoTarget, diameter);
 					cairo_stroke (cairoTarget);
 					/* draw crosshairs */
-					cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
+					cairo_set_operator (cairoTarget, clearOperator);
 					cairo_set_line_width (cairoTarget,s->stack[THERMAL_CROSSHAIR_THICKNESS]);
 					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
 					/* do initial rotation */
@@ -343,29 +343,134 @@ gerbv_draw_amacro(cairo_t *cairoTarget, instruction_t *program, unsigned int nuf
 	return handled;
 } /* gerbv_draw_amacro */
 
+void
+draw_apply_netstate_transformation (cairo_t *cairoTarget, gerb_netstate_t *state) {
+	/* apply scale factor */
+	cairo_scale (cairoTarget, state->scaleA, state->scaleB);
+	/* apply offset */
+	cairo_translate (cairoTarget, state->offsetA, state->offsetB);
+	/* apply mirror */
+	switch (state->mirrorState) {
+		case FLIPA:
+			cairo_scale (cairoTarget, -1, 1);
+			break;
+		case FLIPB:
+			cairo_scale (cairoTarget, 1, -1);
+			break;
+		case FLIPAB:
+			cairo_scale (cairoTarget, -1, -1);
+			break;
+		default:
+			break;
+	}
+	/* finally, apply axis select */
+	if (state->axisSelect == SWAPAB) {
+		/* we do this by rotating 270 (counterclockwise, then mirroring
+		   the Y axis */
+		cairo_rotate (cairoTarget, 3 * M_PI / 2);
+		cairo_scale (cairoTarget, 1, -1);
+	}
+}
 
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 {
-    struct gerb_net *net;
-    double x1, y1, x2, y2, cp_x=0, cp_y=0;
-    int in_parea_fill = 0,drawing_parea_fill = 0;
-    gdouble p1, p2, p3, p4, p5, dx, dy, scale;
-    
-    /* do initial image translation, etc */
-    cairo_translate (cairoTarget, image->info->offsetA, image->info->offsetB);
-    for (net = image->netlist->next ; net != NULL; net = net->next) {
+	struct gerb_net *net;
+	double x1, y1, x2, y2, cp_x=0, cp_y=0;
+	int in_parea_fill = 0,drawing_parea_fill = 0;
+	gdouble p1, p2, p3, p4, p5, dx, dy, scale;
+	gerb_netstate_t *oldState;
+	gerb_layer_t *oldLayer;
 	int repeat_X=1, repeat_Y=1;
 	double repeat_dist_X = 0, repeat_dist_Y = 0;
 	int repeat_i, repeat_j;
+	cairo_operator_t drawOperatorClear, drawOperatorDark;
 	
-	/*
-	 * If step_and_repeat (%SR%) used, repeat the drawing;
-	 */
-	repeat_X = net->layer->stepAndRepeat.X;
-	repeat_Y = net->layer->stepAndRepeat.Y;
-	repeat_dist_X = net->layer->stepAndRepeat.dist_X;
-	repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
+    /* do initial justify */
+	cairo_translate (cairoTarget, image->info->imageJustifyOffsetActualA,
+		 image->info->imageJustifyOffsetActualB);
+
+    /* offset image */
+    cairo_translate (cairoTarget, image->info->offsetA, image->info->offsetB);
+    /* do image rotation */
+    cairo_rotate (cairoTarget, image->info->imageRotation);
+    /* load in polarity operators depending on the image polarity */
+    if (image->info->polarity == NEGATIVE) {
+    	drawOperatorClear = CAIRO_OPERATOR_OVER;
+    	drawOperatorDark = CAIRO_OPERATOR_CLEAR;
+    	cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
+    	cairo_paint (cairoTarget);
+    	cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
+    }
+    else {
+      drawOperatorClear = CAIRO_OPERATOR_CLEAR;
+    	drawOperatorDark = CAIRO_OPERATOR_OVER;
+    }
+    /* next, push two cairo states to simulate the first layer and netstate
+       translations (these will be popped when another layer or netstate is
+       started */
+    cairo_save (cairoTarget);
+    cairo_save (cairoTarget);
+    /* store the current layer and netstate so we know when they change */
+    oldLayer = image->layers;
+    oldState = image->states;
+    for (net = image->netlist->next ; net != NULL; net = net->next) {
+
+	/* check if this is a new layer */
+	if (net->layer != oldLayer){
+		/* it's a new layer, so recalculate the new transformation matrix
+		   for it */
+		cairo_restore (cairoTarget);
+		cairo_restore (cairoTarget);
+		cairo_save (cairoTarget);
+		/* do any rotations */
+		cairo_rotate (cairoTarget, net->layer->rotation);
+		/* handle the layer polarity */
+		if ((net->layer->polarity == CLEAR)) {
+			cairo_set_operator (cairoTarget, drawOperatorClear);
+		}
+		else {
+			cairo_set_operator (cairoTarget, drawOperatorDark);
+		}
+		/* check for changes to step and repeat */
+		repeat_X = net->layer->stepAndRepeat.X;
+		repeat_Y = net->layer->stepAndRepeat.Y;
+		repeat_dist_X = net->layer->stepAndRepeat.dist_X;
+		repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
+		/* draw any knockout areas */
+		if (net->layer->knockout.firstInstance == TRUE) {
+			cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
+			if (net->layer->knockout.polarity == CLEAR) {
+				cairo_set_operator (cairoTarget, drawOperatorClear);
+			}
+			else {
+				cairo_set_operator (cairoTarget, drawOperatorDark);
+			}
+			cairo_new_path (cairoTarget);
+			cairo_rectangle (cairoTarget, net->layer->knockout.lowerLeftX - net->layer->knockout.border,
+					net->layer->knockout.lowerLeftY - net->layer->knockout.border,
+					net->layer->knockout.width + (net->layer->knockout.border*2),
+					net->layer->knockout.height + (net->layer->knockout.border*2));
+			cairo_fill (cairoTarget);
+			cairo_set_operator (cairoTarget, oldOperator);
+		}
+		/* finally, reapply old netstate transformation */
+		cairo_save (cairoTarget);
+		draw_apply_netstate_transformation (cairoTarget, net->state);
+		oldLayer = net->layer;
+	}
+	/* check if this is a new netstate */
+	if (net->state != oldState){
+		/* pop the transformation matrix back to the "pre-state" state and
+		   resave it */
+		cairo_restore (cairoTarget);
+		cairo_save (cairoTarget);
+		/* it's a new state, so recalculate the new transformation matrix
+		   for it */
+		draw_apply_netstate_transformation (cairoTarget, net->state);
+		oldState = net->state;	
+	}
+
 	for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
 	    for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
 		double sr_x = repeat_i * repeat_dist_X;
@@ -381,14 +486,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 			cp_x = net->cirseg->cp_x + sr_x;
 			cp_y = net->cirseg->cp_y + sr_y;
 		}
-	
-		if ((net->layer->polarity == CLEAR)) {
-			cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
-		}
-		else {
-			cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
-		}
-	    
+
 		/*
 		* Polygon Area Fill routines
 		*/
@@ -439,7 +537,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 			scale = 25.4;
 		else
 			scale = 1.0;
-			
+		
 		switch (net->aperture_state) {
 			case ON :
 				switch (net->interpolation) {
@@ -545,7 +643,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 					case MACRO :
 						cairo_save (cairoTarget);
 						cairo_scale (cairoTarget, 1/scale, 1/scale);
-						gerbv_draw_amacro(cairoTarget, 
+						gerbv_draw_amacro(cairoTarget, drawOperatorClear,
 								  image->aperture[net->aperture]->amacro->program,
 								  image->aperture[net->aperture]->amacro->nuf_push,
 								  image->aperture[net->aperture]->parameter);
@@ -566,5 +664,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 	    }
 	}
     }
+    /* restore the initial two state saves */
+    cairo_restore (cairoTarget);
+    cairo_restore (cairoTarget);
 	return 1;
 }

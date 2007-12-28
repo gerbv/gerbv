@@ -58,7 +58,19 @@ EXTRA_DIST= \
 	example_thermal_dsp.png \
 	example_trailing_cd1r2.1_sieb0.png \
 	example_trailing_cd1r2.1_sieb1.png \
+	test-image-justify-1.png \
+	test-image-justify-2.png \
 	test-image-offset-1.png \
+	test-image-rotation-1.png \
+	test-image-polarity-1.png \
 	test-image-offset-2.png \
-	test-layer-mode-1.png
+	test-layer-axis-select-1.png \
+	test-layer-knockout-1.png \
+	test-layer-knockout-2.png \
+	test-layer-mirror-image-1.png \
+	test-layer-mode-1.png \
+	test-layer-offset-1.png \
+	test-layer-rotation-1.png \
+	test-layer-scale-factor-1.png \
+	test-layer-step-and_repeat-1.png
 

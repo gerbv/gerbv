@@ -82,6 +82,7 @@ new_gerb_image(gerb_image_t *image)
     image->layers = g_new0 (gerb_layer_t, 1);
     image->layers->stepAndRepeat.X = 1;
     image->layers->stepAndRepeat.Y = 1;
+    image->layers->polarity = DARK;
     
     /* create our first netstate and fill with non-zero default values */
     image->states = g_new0 (gerb_netstate_t, 1);
@@ -306,6 +307,8 @@ gerb_image_return_new_layer (gerb_layer_t *previousLayer){
 	
 	*newLayer = *previousLayer;
 	previousLayer->next = newLayer;
+	/* clear this boolean so we only draw the knockout once */
+	newLayer->knockout.firstInstance = FALSE;
 	newLayer->next = NULL;
 	
 	return newLayer;

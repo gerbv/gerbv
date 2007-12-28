@@ -28,6 +28,10 @@
 #include <locale.h>
 #include <errno.h>
 
+#ifndef RENDER_USING_GDK
+  #include <cairo.h>
+#endif
+
 #include "config.h"
 #include "gerber.h"
 #include "gerb_error.h"
@@ -76,8 +80,21 @@ static void calc_cirseg_mq(struct gerb_net *net, int cw,
 static gerb_net_t *gen_circle_segments(gerb_net_t *curr_net,
 				       int cw, int *nuf_pcorners);
 
-static void setminmax(double *min, double *max, double pos, double aperture);
+static void gerber_update_min_and_max (gdouble *minX, gdouble *minY,
+	gdouble *maxX, gdouble *maxY, gdouble x, gdouble y, gdouble apertureSize);
 
+static void
+gerber_update_any_running_knockout_measurements (gerb_image_t *image);
+
+static void
+gerber_calculate_final_justify_effects (gerb_image_t *image);
+
+gboolean knockoutMeasure = FALSE;
+gdouble knockoutLimitXmin,knockoutLimitYmin,knockoutLimitXmax,knockoutLimitYmax;
+gerb_layer_t *knockoutLayer = NULL;
+#ifndef RENDER_USING_GDK
+	cairo_matrix_t currentMatrix;
+#endif  
 
 /* ------------------------------------------------------------------ */
 gerb_image_t *
@@ -92,7 +109,7 @@ parse_gerb(gerb_file_t *fd)
     double aperture_size;
     double scale;
     gerb_stats_t *stats;
-    
+
     /* added by t.motylewski@bfad.de
      * many locales redefine "." as "," and so on, 
      * so sscanf and strtod has problems when
@@ -127,6 +144,7 @@ parse_gerb(gerb_file_t *fd)
     state->state = image->states;
     curr_net->layer = state->layer;
     curr_net->state = state->state;
+
     /*
      * Start parsing
      */
@@ -154,6 +172,8 @@ parse_gerb(gerb_file_t *fd)
 	    case 1 :
 	    case 2 :
 	    case 3 :
+	      gerber_update_any_running_knockout_measurements (image);
+	      gerber_calculate_final_justify_effects(image);
 		g_free(state);
 		return image;
 		break;
@@ -413,9 +433,9 @@ parse_gerb(gerb_file_t *fd)
 	    if ((curr_net->aperture == 0) && !state->in_parea_fill) 
 		break;
 
-	    
-
-	    {
+	    /* only update the min/max values if we are drawing and have an
+	       aperture size */
+	    if ((curr_net->aperture_state != OFF)){
 	      double repeat_off_X=0, repeat_off_Y=0;
 	      
 	      /*
@@ -431,39 +451,75 @@ parse_gerb(gerb_file_t *fd)
 		repeat_off_Y = (state->layer->stepAndRepeat.Y - 1)*
 		  state->layer->stepAndRepeat.dist_Y;
 
+
+#ifndef RENDER_USING_GDK
+		cairo_matrix_init (&currentMatrix, 1, 0, 0, 1, 0, 0);
+		/* offset image */
+		cairo_matrix_translate (&currentMatrix, image->info->offsetA, image->info->offsetB);
+		/* do image rotation */
+		cairo_matrix_rotate (&currentMatrix, image->info->imageRotation);
+		/* it's a new layer, so recalculate the new transformation matrix
+		   for it */
+		/* do any rotations */
+		cairo_matrix_rotate (&currentMatrix, state->layer->rotation);
+			
+		/* calculate current layer and state transformation matrices */
+		/* apply scale factor */
+		cairo_matrix_scale (&currentMatrix, state->state->scaleA, state->state->scaleB);
+		/* apply offset */
+		cairo_matrix_translate (&currentMatrix, state->state->offsetA, state->state->offsetB);
+		/* apply mirror */
+		switch (state->state->mirrorState) {
+			case FLIPA:
+				cairo_matrix_scale (&currentMatrix, -1, 1);
+				break;
+			case FLIPB:
+				cairo_matrix_scale (&currentMatrix, 1, -1);
+				break;
+			case FLIPAB:
+				cairo_matrix_scale (&currentMatrix, -1, -1);
+				break;
+			default:
+				break;
+		}
+		/* finally, apply axis select */
+		if (state->state->axisSelect == SWAPAB) {
+			/* we do this by rotating 270 (counterclockwise, then mirroring
+			   the Y axis */
+			cairo_matrix_rotate (&currentMatrix, 3 * M_PI / 2);
+			cairo_matrix_scale (&currentMatrix, 1, -1);
+		}
+#endif
+
 	      /* check both the start and stop of the aperture points against
 	         a running min/max counter */
-	      setminmax(&(image->info->min_x), &(image->info->max_x),
-			(curr_net->stop_x),
-			aperture_size / scale);
-	      
-	      setminmax(&(image->info->min_x), &(image->info->max_x),
-			(curr_net->stop_x + repeat_off_X ),
-			aperture_size / scale);
-	      
-	      setminmax(&(image->info->min_y), &(image->info->max_y),
-			(curr_net->stop_y + repeat_off_Y),
-			aperture_size / scale);
+	      /* Note: only check start coordinate if this isn't a flash, since
+	         the start point may be bogus if it is a flash */
+	      if (curr_net->aperture_state != FLASH) {
+		      gerber_update_min_and_max (&image->info->min_x, &image->info->min_y,
+		      	&image->info->max_x, &image->info->max_y, curr_net->start_x,
+		      	curr_net->start_y, aperture_size / 2.0 / scale);
+		      gerber_update_min_and_max (&image->info->min_x, &image->info->min_y,
+		      	&image->info->max_x, &image->info->max_y, curr_net->start_x + repeat_off_X,
+		      	curr_net->start_y + repeat_off_Y, aperture_size / 2.0 / scale);
+	      }
+	      gerber_update_min_and_max (&image->info->min_x, &image->info->min_y,
+	      	&image->info->max_x, &image->info->max_y, curr_net->stop_x,
+	      	curr_net->stop_y, aperture_size / 2.0 / scale);
+	      gerber_update_min_and_max (&image->info->min_x, &image->info->min_y,
+	      	&image->info->max_x, &image->info->max_y, curr_net->stop_x + repeat_off_X,
+	      	curr_net->stop_y + repeat_off_Y, aperture_size / 2.0 / scale);
 
-	      setminmax(&(image->info->min_y), &(image->info->max_y),
-			(curr_net->stop_y),
-			aperture_size / scale);
-
-	      setminmax(&(image->info->min_x), &(image->info->max_x),
-			(curr_net->start_x),
-			aperture_size / scale);
-	      
-	      setminmax(&(image->info->min_x), &(image->info->max_x),
-			(curr_net->start_x + repeat_off_X ),
-			aperture_size / scale);
-	      
-	      setminmax(&(image->info->min_y), &(image->info->max_y),
-			(curr_net->start_y + repeat_off_Y),
-			aperture_size / scale);
-
-	      setminmax(&(image->info->min_y), &(image->info->max_y),
-			(curr_net->start_y),
-			aperture_size / scale);
+		if (knockoutMeasure) {
+			if (curr_net->aperture_state != FLASH) {
+			      gerber_update_min_and_max (&knockoutLimitXmin, &knockoutLimitYmin, 
+			      	&knockoutLimitXmax, &knockoutLimitYmax, curr_net->start_x,
+			      	curr_net->start_y, aperture_size / 2.0 / scale);
+		      }
+		      gerber_update_min_and_max (&knockoutLimitXmin, &knockoutLimitYmin, 
+		      	&knockoutLimitXmax, &knockoutLimitYmax, curr_net->stop_x,
+		      	curr_net->stop_y, aperture_size / 2.0 / scale);		
+		}
 	    }
 	    
 	    break;
@@ -488,7 +544,8 @@ parse_gerb(gerb_file_t *fd)
 			  ERROR);
 
     dprintf("               ... done parsing Gerber file\n");
-    
+    gerber_update_any_running_knockout_measurements (image);
+    gerber_calculate_final_justify_effects(image);
     return image;
 } /* parse_gerb */
 
@@ -952,10 +1009,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	while (op[0] != '*') {
 	    switch (op[0]) {
 	    case 'A' :
-		state->state->offsetA = gerb_fgetdouble(fd);
+		state->state->offsetA = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'B' :
-		state->state->offsetB = gerb_fgetdouble(fd);
+		state->state->offsetB = gerb_fgetdouble(fd) / scale;
 		break;
 	    default :
 		gerb_stats_add_error(stats->error_list,
@@ -1039,26 +1096,31 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	op[0] = gerb_fgetc(fd);
 	image->info->imageJustifyTypeA = LOWERLEFT;
 	image->info->imageJustifyTypeB = LOWERLEFT;
-	image->info->imageJustifyOffset = 0.0;
+	image->info->imageJustifyOffsetA = 0.0;
+	image->info->imageJustifyOffsetB = 0.0;
 	while (op[0] != '*') {
 	    switch (op[0]) {
 	    case 'A' :
 	    	op[0] = gerb_fgetc(fd);
 	    	if (op[0] == 'C')
 	    		image->info->imageJustifyTypeA = CENTERJUSTIFY;
-	    	else if (op[0] == 'C')
+	    	else if (op[0] == 'L')
 	    		image->info->imageJustifyTypeA = LOWERLEFT;
-	    	else
+	    	else {
 	    		gerb_ungetc (fd);
+	    		image->info->imageJustifyOffsetA = gerb_fgetdouble(fd) / scale;
+	    	}
 		break;
 	    case 'B' :
 		op[0] = gerb_fgetc(fd);
 	    	if (op[0] == 'C')
 	    		image->info->imageJustifyTypeB = CENTERJUSTIFY;
-	    	else if (op[0] == 'C')
+	    	else if (op[0] == 'L')
 	    		image->info->imageJustifyTypeB = LOWERLEFT;
-	    	else
+	    	else {
 	    		gerb_ungetc (fd);
+	    		image->info->imageJustifyOffsetB = gerb_fgetdouble(fd) / scale;
+	    	}
 		break;
 	    default :
 		gerb_stats_add_error(stats->error_list,
@@ -1177,16 +1239,19 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	break;
     case A2I('K','O'): /* Knock Out */
         state->layer = gerb_image_return_new_layer (state->layer);
+        gerber_update_any_running_knockout_measurements (image);
+        /* reset any previous knockout measurements */
+        knockoutMeasure = FALSE;
         op[0] = gerb_fgetc(fd);
 	if (op[0] == '*') { /* Disable previous SR parameters */
 	    state->layer->knockout.type = NOKNOCKOUT;
 	    break;
 	}
 	else if (op[0] == 'C') {
-	    state->layer->knockout.polarity = NEGATIVE;
+	    state->layer->knockout.polarity = CLEAR;
 	}
 	else if (op[0] == 'D') {
-	    state->layer->knockout.polarity = POSITIVE;
+	    state->layer->knockout.polarity = DARK;
 	}
 	else {
 	    gerb_stats_add_error(stats->error_list,
@@ -1198,33 +1263,44 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	state->layer->knockout.width = 0.0;
 	state->layer->knockout.height = 0.0;
 	state->layer->knockout.border = 0.0;
+	state->layer->knockout.firstInstance = TRUE;
 	op[0] = gerb_fgetc(fd);
 	while (op[0] != '*') { 
 	    switch (op[0]) {
 	    case 'X':
 	        state->layer->knockout.type = FIXED;
-		state->layer->knockout.lowerLeftX = gerb_fgetdouble(fd);
+		state->layer->knockout.lowerLeftX = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'Y':
 	        state->layer->knockout.type = FIXED;
-		state->layer->knockout.lowerLeftY = gerb_fgetdouble(fd);
+		state->layer->knockout.lowerLeftY = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'I':
 	        state->layer->knockout.type = FIXED;
-		state->layer->knockout.width = gerb_fgetdouble(fd);
+		state->layer->knockout.width = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'J':
 	        state->layer->knockout.type = FIXED;
-		state->layer->knockout.height = gerb_fgetdouble(fd);
+		state->layer->knockout.height = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'K':
 	        state->layer->knockout.type = BORDER;
-	        state->layer->knockout.border = gerb_fgetdouble(fd);
+	        state->layer->knockout.border = gerb_fgetdouble(fd) / scale;
+	        /* this is a bordered knockout, so we need to start measuring the
+	           size of a square bordering all future components */
+	        knockoutMeasure = TRUE;
+	        knockoutLimitXmin = HUGE_VAL;
+	        knockoutLimitYmin = HUGE_VAL;
+	        knockoutLimitXmax = -HUGE_VAL;
+	        knockoutLimitYmax = -HUGE_VAL;
+	        knockoutLayer = state->layer;
+	        break;
 	    default:
 		gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Unknown variable in knockout",				 ERROR);
 	    }
+	    op[0] = gerb_fgetc(fd);
 	}
 	break;
     case A2I('S','R'): /* Step and Repeat */
@@ -1247,10 +1323,10 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 		state->layer->stepAndRepeat.Y = gerb_fgetint(fd, NULL);
 		break;
 	    case 'I':
-		state->layer->stepAndRepeat.dist_X = gerb_fgetdouble(fd);
+		state->layer->stepAndRepeat.dist_X = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'J':
-		state->layer->stepAndRepeat.dist_Y = gerb_fgetdouble(fd);
+		state->layer->stepAndRepeat.dist_Y = gerb_fgetdouble(fd) / scale;
 		break;
 	    default:
 		gerb_stats_add_error(stats->error_list,
@@ -1276,7 +1352,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     case A2I('R','O'):
       state->layer = gerb_image_return_new_layer (state->layer);
       
-      state->layer->rotation = gerb_fgetdouble(fd);
+      state->layer->rotation = gerb_fgetdouble(fd) * M_PI / 180;
       op[0] = gerb_fgetc(fd);
       if (op[0] != '*') {
           gerb_stats_add_error(stats->error_list,
@@ -1650,17 +1726,77 @@ gen_circle_segments(gerb_net_t *curr_net, int cw, int *nuf_pcorners)
     return curr_net;
 } /* gen_circle_segments */
 
-
-/* ------------------------------------------------------------------ */
 static void
-setminmax(double *min, double *max, double pos, double aperture)
-{
-
-  if(*min > (pos-aperture))
-    *min=pos-aperture;
-
-  if(*max < (pos+aperture))
-    *max=pos+aperture;
+gerber_update_any_running_knockout_measurements (gerb_image_t *image){
+	if (knockoutMeasure) {
+		knockoutLayer->knockout.lowerLeftX = knockoutLimitXmin;
+		knockoutLayer->knockout.lowerLeftY = knockoutLimitYmin;
+		knockoutLayer->knockout.width = knockoutLimitXmax - knockoutLimitXmin;
+		knockoutLayer->knockout.height = knockoutLimitYmax - knockoutLimitYmin;
+		knockoutMeasure = FALSE;
+	}
 }
 
+static void
+gerber_calculate_final_justify_effects (gerb_image_t *image){
+	gdouble translateA = 0.0, translateB = 0.0;
+	
+	if (image->info->imageJustifyTypeA != NOJUSTIFY) {
+		if (image->info->imageJustifyTypeA == CENTERJUSTIFY)
+			translateA = (image->info->max_x - image->info->min_x) / 2.0;
+		else
+			translateA = -image->info->min_x;
+	}
+	if (image->info->imageJustifyTypeB != NOJUSTIFY) {
+		if (image->info->imageJustifyTypeB == CENTERJUSTIFY)
+			translateB = (image->info->max_y - image->info->min_y) / 2.0;
+		else
+			translateB = -image->info->min_y;
+	}
+	/* update the min/max values so the autoscale function can correctly
+	   centered a justified image */
+	image->info->min_x += translateA+ image->info->imageJustifyOffsetA;
+	image->info->max_x += translateA+ image->info->imageJustifyOffsetA;
+	image->info->min_y += translateB+ image->info->imageJustifyOffsetB;
+	image->info->max_y += translateB+ image->info->imageJustifyOffsetB;
+	/* store the absolute offset for the justify so we can quickly offset
+	   the rendered picture during drawing */
+	image->info->imageJustifyOffsetActualA = translateA + image->info->imageJustifyOffsetA;
+	image->info->imageJustifyOffsetActualB = translateB + image->info->imageJustifyOffsetB;
+}
+
+
+static void
+gerber_update_min_and_max (gdouble *minX, gdouble *minY, gdouble *maxX, gdouble *maxY,
+					gdouble x, gdouble y, gdouble apertureSize){
+	gdouble ourX1 = x - apertureSize, ourY1 = y - apertureSize;
+	gdouble ourX2 = x + apertureSize, ourY2 = y + apertureSize;
+
+#ifndef RENDER_USING_GDK
+	/* transform the point to the final rendered position, accounting
+	   for any scaling, offsets, mirroring, etc */
+	/* NOTE: we need to already add/subtract in the aperture size since
+	   the final rendering may be scaled */
+	cairo_matrix_transform_point (&currentMatrix, &ourX1, &ourY1);
+	cairo_matrix_transform_point (&currentMatrix, &ourX2, &ourY2);
+#endif
+	/* check both points against the min/max, since depending on the rotation,
+	   mirroring, etc, either point could possibly be a min or max */
+	if(*minX > ourX1)
+		*minX = ourX1;
+	if(*minX > ourX2)
+		*minX = ourX2;
+	if(*maxX < ourX1)
+		*maxX = ourX1;
+	if(*maxX < ourX2)
+		*maxX = ourX2;
+	if(*minY > ourY1)
+		*minY = ourY1;
+	if(*minY > ourY2)
+		*minY = ourY2;
+	if(*maxY < ourY1)
+		*maxY = ourY1;
+	if(*maxY < ourY2)
+		*maxY = ourY2;
+}
 

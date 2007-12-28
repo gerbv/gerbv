@@ -344,10 +344,18 @@ render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
 			/* 
 			* Find the biggest image and use as a size reference
 			*/
+#ifdef RENDER_USING_GDK
 			x1 = MIN(x1, info->min_x + info->offsetA);
 			y1 = MIN(y1, info->min_y + info->offsetB);
 			x2 = MAX(x2, info->max_x + info->offsetA);
 			y2 = MAX(y2, info->max_y + info->offsetB);
+#else
+			/* cairo info already has offset calculated into min/max */
+			x1 = MIN(x1, info->min_x);
+			y1 = MIN(y1, info->min_y);
+			x2 = MAX(x2, info->max_x);
+			y2 = MAX(y2, info->max_y);
+#endif
 		}
 	}
 
