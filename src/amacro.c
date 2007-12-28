@@ -28,11 +28,15 @@
 
 #include "amacro.h"
 
+enum amacro_parse_state {AMACRO_FIRST_CHARACTE,
+			 AMACRO_PRIMITIVE,
+			 AMACRO_REGISTER_FOUND,
+};
 /*
  * Allocates a new instruction structure
  */
 static instruction_t *
-new_instruction()
+new_instruction(void)
 {
     instruction_t *instruction;
 
@@ -52,7 +56,7 @@ new_instruction()
  * Allocates a new amacro structure
  */
 static amacro_t *
-new_amacro()
+new_amacro(void)
 {
     amacro_t *amacro;
 
@@ -80,6 +84,7 @@ parse_aperture_macro(gerb_file_t *fd)
     enum opcodes math_op = NOP;
     int comma = 0, neg = 0; /* negative numbers succeding , */
     unsigned char continueLoop = 1;
+    int equate = 0;
 
     amacro = new_amacro();
 
@@ -104,12 +109,16 @@ parse_aperture_macro(gerb_file_t *fd)
 	c = gerb_fgetc(fd);
 	switch (c) {
 	case '$':
-	    ip->next = new_instruction(); /* XXX Check return value */
-	    ip = ip->next;
-	    ip->opcode = PPUSH;
-	    amacro->nuf_push++;
-	    ip->data.ival = gerb_fgetint(fd, NULL);
-	    comma = 0;
+	    if (found_primitive) {
+		ip->next = new_instruction(); /* XXX Check return value */
+		ip = ip->next;
+		ip->opcode = PPUSH;
+		amacro->nuf_push++;
+		ip->data.ival = gerb_fgetint(fd, NULL);
+		comma = 0;
+	    } else {
+		equate = gerb_fgetint(fd, NULL);
+	    }
 	    break;
 	case '*':
 	    if (math_op != NOP) {
@@ -125,10 +134,21 @@ parse_aperture_macro(gerb_file_t *fd)
 	    if (found_primitive) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = PRIM;
-		ip->data.ival = primitive;
+		if (equate) {
+		    ip->opcode = PPOP;
+		    ip->data.ival = equate;
+		} else {
+		    ip->opcode = PRIM;
+		    ip->data.ival = primitive;
+		}
+		equate = 0;
 		primitive = 0;
 		found_primitive = 0;
+	    }
+	    break;
+	case '=':
+	    if (equate) {
+		found_primitive = 1;
 	    }
 	    break;
 	case ',':
@@ -283,6 +303,9 @@ print_program(amacro_t *amacro)
 	case PUSH: 
 	    printf(" PUSH %f\n", ip->data.fval);
 	    break;
+	case PPOP:
+	    printf(" PPOP %d\n", ip->data.ival);
+	    break;
 	case PPUSH:
 	    printf(" PPUSH %d\n", ip->data.ival);
 	    break;
@@ -305,5 +328,6 @@ print_program(amacro_t *amacro)
 	    printf("  ERROR!\n");
 	    break;
 	}
+	fflush(stdout);
     }
 } /* print_program */

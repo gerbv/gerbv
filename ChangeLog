@@ -1,3 +1,10 @@
+2007-12-28  Stefan Petersen  <spe@spe-laptop>
+
+	* src/draw.c, src/amacro.[hc]: gerbv can handle comments
+	  and calculations in aperture macros. Unfortunate this 
+	  uncovered some errors in how aperture macros are drawn.
+	  That will be next issue.
+
 2007-12-28  Julian Lamb
 	* gerber.c, many files: Finish implementing all remaining Gerber functions
 	  (offsets, mirrors, rotations, knockout, axis select, scale factors,
@@ -19,6 +26,7 @@
 	user can immediately see problems.  Robustified a few areas
 	of stats gathering code.	
 	
+
 2007-12-25  Stuart Brorson (sdb@cloud9.net)
 	* src/gerber.c, src/callbacks.c, src/gerb_stats.[hc]:
 	Added reporting of all D codes used to Gerber reports window.

@@ -44,62 +44,62 @@
  * executes the parsed aperture macros.
  */
 typedef struct {
-	double *stack;
-	int sp;
+    double *stack;
+    int sp;
 } macro_stack_t;
 
 
 static macro_stack_t *
 new_stack(unsigned int nuf_push)
 {
-	const int extra_stack_size = 10;
-	macro_stack_t *s;
+    const int extra_stack_size = 10;
+    macro_stack_t *s;
 
-	s = (macro_stack_t *)g_malloc(sizeof(macro_stack_t));
-	if (!s) {
-		g_free(s);
-		return NULL;
-	}
-	memset(s, 0, sizeof(macro_stack_t));
-
-	s->stack = (double *)g_malloc(sizeof(double) * (nuf_push + extra_stack_size));
-	if (!s->stack) {
-		g_free(s->stack);
-		return NULL;
-	}
-
-	memset(s->stack, 0, sizeof(double) * (nuf_push + extra_stack_size));
-	s->sp = 0;
-
-	return s;
+    s = (macro_stack_t *)malloc(sizeof(macro_stack_t));
+    if (!s) {
+	free(s);
+	return NULL;
+    }
+    memset(s, 0, sizeof(macro_stack_t));
+    
+    s->stack = (double *)malloc(sizeof(double) * (nuf_push + extra_stack_size));
+    if (!s->stack) {
+	free(s->stack);
+	return NULL;
+    }
+    
+    memset(s->stack, 0, sizeof(double) * (nuf_push + extra_stack_size));
+    s->sp = 0;
+    
+    return s;
 } /* new_stack */
 
 
 static void
 free_stack(macro_stack_t *s)
 {
-	if (s && s->stack)
-		g_free(s->stack);
-
-	if (s)
-		g_free(s);
-
-	return;
+    if (s && s->stack)
+	free(s->stack);
+    
+    if (s)
+	free(s);
+    
+    return;
 } /* free_stack */
 
 
 static void
 push(macro_stack_t *s, double val)
 {
-	s->stack[s->sp++] = val;
-	return;
+    s->stack[s->sp++] = val;
+    return;
 } /* push */
 
 
 static double
 pop(macro_stack_t *s)
 {
-	return s->stack[--s->sp];
+    return s->stack[--s->sp];
 } /* pop */
 
 
@@ -110,9 +110,10 @@ pop(macro_stack_t *s)
 static void 
 gerbv_draw_circle(cairo_t *cairoTarget, gdouble diameter)
 {
-	cairo_arc (cairoTarget, 0, 0, diameter/2.0, 0, 2.0*M_PI);
-	return;
-}
+    cairo_arc (cairoTarget, 0, 0, diameter/2.0, 0, 2.0*M_PI);
+    return;
+} /* gerbv_draw_circle */
+
 
 /*
  * Draws a rectangle _centered_ at x,y with sides x_side, y_side
@@ -120,9 +121,10 @@ gerbv_draw_circle(cairo_t *cairoTarget, gdouble diameter)
 static void
 gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height)
 {
-	cairo_rectangle (cairoTarget, - width / 2.0, - height / 2.0, width, height);
-	return;
-}
+    cairo_rectangle (cairoTarget, - width / 2.0, - height / 2.0, width, height);
+    return;
+} /* gerbv_draw_rectangle */
+
 
 /*
  * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
@@ -130,221 +132,226 @@ gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height)
 static void
 gerbv_draw_oval(cairo_t *cairoTarget, gdouble width, gdouble height)
 {
-	/* cairo doesn't have a function to draw ovals, so we must
-	 * draw an arc and stretch it by scaling different x and y values
-	 */
-	cairo_save (cairoTarget);
-	cairo_scale (cairoTarget, width, height);
-	gerbv_draw_circle (cairoTarget, 1);
-	cairo_restore (cairoTarget);
-	return;
-}
+    /* cairo doesn't have a function to draw ovals, so we must
+     * draw an arc and stretch it by scaling different x and y values
+     */
+    cairo_save (cairoTarget);
+    cairo_scale (cairoTarget, width, height);
+    gerbv_draw_circle (cairoTarget, 1);
+    cairo_restore (cairoTarget);
+    return;
+} /* gerbv_draw_oval */
+
 
 /*
  * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
  */ 
 static void
 gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideRadius,
-		gdouble numberOfSides, gdouble degreesOfRotation)
+		   gdouble numberOfSides, gdouble degreesOfRotation)
 {
-	int i, numberOfSidesInteger = (int) numberOfSides;
-	
-	cairo_rotate (cairoTarget, degreesOfRotation * M_PI/180);
-	cairo_move_to (cairoTarget, outsideRadius, 0);
-	/* skip first point, since we've moved there already */
-	for (i=1; i< (int)numberOfSidesInteger; i++){
-		gdouble angle = (double) i / numberOfSidesInteger * M_PI * 2;
-		cairo_line_to (cairoTarget, cos(angle) * outsideRadius,
-				sin(angle) * outsideRadius);
-	}
-	return;
-}
+    int i, numberOfSidesInteger = (int) numberOfSides;
+    
+    cairo_rotate(cairoTarget, degreesOfRotation * M_PI/180);
+    cairo_move_to(cairoTarget, outsideRadius, 0);
+    /* skip first point, since we've moved there already */
+    for (i = 1; i < (int)numberOfSidesInteger; i++){
+	gdouble angle = (double) i / numberOfSidesInteger * M_PI * 2.0;
+	cairo_line_to (cairoTarget, cos(angle) * outsideRadius,
+		       sin(angle) * outsideRadius);
+    }
+    return;
+} /* gerbv_draw_polygon */
+
 
 static void 
 gerbv_draw_aperature_hole(cairo_t *cairoTarget, gdouble dimensionX, gdouble dimensionY)
 {
-	if (dimensionX) {
-		if (dimensionY) {
-			gerbv_draw_rectangle (cairoTarget, dimensionX, dimensionY);
-		}
-		else {
-			gerbv_draw_circle (cairoTarget, dimensionX);
-		}
+    if (dimensionX) {
+	if (dimensionY) {
+	    gerbv_draw_rectangle (cairoTarget, dimensionX, dimensionY);
+	} else {
+	    gerbv_draw_circle (cairoTarget, dimensionX);
 	}
-	return;
-}
+    }
+    return;
+} /* gerbv_draw_aperature_hole */
+
 
 int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	instruction_t *program, unsigned int nuf_push, gdouble *parameters)
 {
-	macro_stack_t *s = new_stack(nuf_push);
-	instruction_t *ip;
-	int handled = 1;
-
-	for(ip = program; ip != NULL; ip = ip->next) {
-		switch(ip->opcode) {
-			case NOP:
-				break;
-			case PUSH :
-				push(s, ip->data.fval);
-				break;
-			case PPUSH :
-				push(s, parameters[ip->data.ival - 1]);
-				break;
-			case ADD :
-				push(s, pop(s) + pop(s));
-				break;
-			case SUB :
-				push(s, -pop(s) + pop(s));
-				break;
-			case MUL :
-				push(s, pop(s) * pop(s));
-				break;
-			case DIV :
-				push(s, 1 / ((pop(s) / pop(s))));
-				break;
-			case PRIM :
-			    /* 
-			     * This handles the exposure thing in the aperture macro
-			     * The exposure is always the first element on stack independent
-			     * of aperture macro.
-			     */
-				cairo_new_path(cairoTarget);
-				if (ip->data.ival == 1) {
-			    		gerbv_draw_circle (cairoTarget, s->stack[CIRCLE_DIAMETER]);
-			    		cairo_fill (cairoTarget);
-				}
-				else if (ip->data.ival == 4) {
-					int pointCounter,numberOfPoints;
-					numberOfPoints = (int) s->stack[OUTLINE_NUMBER_OF_POINTS];
-					
-					cairo_rotate (cairoTarget, s->stack[numberOfPoints * 2 + OUTLINE_ROTATION - 2] * M_PI/180);
-					cairo_move_to (cairoTarget, s->stack[OUTLINE_FIRST_X], s->stack[OUTLINE_FIRST_Y]);
-
-					for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
-						cairo_line_to (cairoTarget, s->stack[pointCounter * 2 + OUTLINE_FIRST_X],
-							s->stack[pointCounter * 2 + OUTLINE_FIRST_Y]);
-					}
-
-					/* although the gerber specs allow for an open outline,
-					   I interpret it to mean the outline should be closed by the
-					   rendering softare automatically, since there is no dimension
-					   for line thickness.
-					*/
-					cairo_fill (cairoTarget);
-				}
-				else if (ip->data.ival == 5) {
-					cairo_move_to (cairoTarget, s->stack[POLYGON_CENTER_X],
-						s->stack[POLYGON_CENTER_Y]);
-					gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER] / 2.0,
-						s->stack[POLYGON_NUMBER_OF_POINTS], s->stack[POLYGON_ROTATION]);
-					cairo_fill (cairoTarget);
-				}
-				else if (ip->data.ival == 6) {
-					gdouble diameter, gap;
-				    	int circleIndex;
-				    	
-				    	cairo_rotate (cairoTarget, s->stack[MOIRE_ROTATION] * M_PI/180);
-				    	diameter = s->stack[MOIRE_OUTSIDE_DIAMETER] -  s->stack[MOIRE_CIRCLE_THICKNESS];
-				    	gap = s->stack[MOIRE_GAP_WIDTH] + s->stack[MOIRE_CIRCLE_THICKNESS];
-				    	cairo_set_line_width (cairoTarget, s->stack[MOIRE_CIRCLE_THICKNESS]);
-				    	
-				    	for (circleIndex = 0; circleIndex < (int)s->stack[MOIRE_NUMBER_OF_CIRCLES];  circleIndex++) {
-				    		gdouble currentDiameter = (diameter - gap * (float) circleIndex);
-				    		gerbv_draw_circle (cairoTarget, currentDiameter);
-				    		cairo_stroke (cairoTarget);
-				    	}
-				    	
-				    	gdouble crosshairRadius = (s->stack[MOIRE_CROSSHAIR_LENGTH] / 2.0);
-				    	
-				    	cairo_set_line_width (cairoTarget, s->stack[MOIRE_CROSSHAIR_THICKNESS]);
-				    	cairo_move_to (cairoTarget, -crosshairRadius, 0);
-				    	cairo_line_to (cairoTarget, crosshairRadius, 0);    	
-				    	cairo_move_to (cairoTarget, 0, -crosshairRadius);
-				    	cairo_line_to (cairoTarget, 0, crosshairRadius);
-				    	cairo_stroke (cairoTarget);
-				}
-				else if (ip->data.ival == 7) {
-					gdouble diameter, ci_thickness;
-					gint i;
-					cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
-					
-					ci_thickness = (s->stack[THERMAL_OUTSIDE_DIAMETER] - 
-						s->stack[THERMAL_INSIDE_DIAMETER]) / 2.0;
-					diameter = (s->stack[THERMAL_INSIDE_DIAMETER] + ci_thickness);
-					
-					/* we don't want to delete any previously rendered items on
-					   this layer, so we need to render the thermal to a private
-					   group and then composite it on top of the existing layer */
-					cairo_push_group (cairoTarget);
-					/* draw non-filled circle */
-					cairo_set_line_width (cairoTarget, ci_thickness);
-					gerbv_draw_circle(cairoTarget, diameter);
-					cairo_stroke (cairoTarget);
-					/* draw crosshairs */
-					cairo_set_operator (cairoTarget, clearOperator);
-					cairo_set_line_width (cairoTarget,s->stack[THERMAL_CROSSHAIR_THICKNESS]);
-					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
-					/* do initial rotation */
-					cairo_rotate (cairoTarget, s->stack[THERMAL_ROTATION] * M_PI/180);
-					for (i=0; i<4; i++) {
-						cairo_move_to (cairoTarget, 0.0, 0.0);
-						cairo_line_to (cairoTarget, s->stack[THERMAL_OUTSIDE_DIAMETER] / 2.0, 0.0);
-						cairo_rotate (cairoTarget, 90 * M_PI/180);
-					}
-					cairo_stroke (cairoTarget);
-					cairo_set_operator (cairoTarget, oldOperator);
-					cairo_pop_group_to_source (cairoTarget);
-					cairo_paint (cairoTarget);
-				}
-				else if ((ip->data.ival == 2)||(ip->data.ival == 20)) {
-			  		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION] * M_PI/180);
-			    		cairo_set_line_width (cairoTarget, s->stack[LINE20_LINE_WIDTH]);
-			    		cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
-			    		cairo_move_to (cairoTarget, s->stack[LINE20_START_X], s->stack[LINE20_START_Y]);
-				    	cairo_line_to (cairoTarget, s->stack[LINE20_END_X], s->stack[LINE20_END_Y]);
-				    	cairo_stroke (cairoTarget);
-				}
-				else if (ip->data.ival == 21) {
-			    		gdouble halfWidth, halfHeight;
-			    		
-			    		halfWidth = s->stack[LINE21_WIDTH] / 2.0;
-			    		halfHeight = s->stack[LINE21_HEIGHT] / 2.0;
-		    			cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION] * M_PI/180);
-		    			cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
-		    				s->stack[LINE21_WIDTH], s->stack[LINE21_HEIGHT]);
-		    			cairo_fill (cairoTarget);
-		    		}
-				else if (ip->data.ival == 22) {
-			    		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION] * M_PI/180);
-			    		cairo_rectangle (cairoTarget, s->stack[LINE22_LOWER_LEFT_X],
-		    				s->stack[LINE22_LOWER_LEFT_Y], s->stack[LINE22_WIDTH],
-		    				s->stack[LINE22_HEIGHT]);
-		    			cairo_fill (cairoTarget);
-				}
-				else {
-					handled = 0;
-				}
-				
-			    /* 
-			     * Here we reset the stack pointer. It's not general correct
-			     * correct to do this, but since I know how the compiler works
-			     * I can do this. The correct way to do this should be to 
-			     * subtract number of used elements in each primitive operation.
-			     */
-				s->sp = 0;
-				break;
-			default :
-				break;
+    macro_stack_t *s = new_stack(nuf_push);
+    instruction_t *ip;
+    int handled = 1;
+    
+    for(ip = program; ip != NULL; ip = ip->next) {
+	switch(ip->opcode) {
+	case NOP:
+	    break;
+	case PUSH :
+	    push(s, ip->data.fval);
+	    break;
+	case PPUSH :
+	    push(s, parameters[ip->data.ival - 1]);
+	    break;
+        case PPOP:
+            parameters[ip->data.ival - 1] = pop(s);
+            break;
+	case ADD :
+	    push(s, pop(s) + pop(s));
+	    break;
+	case SUB :
+	    push(s, -pop(s) + pop(s));
+	    break;
+	case MUL :
+	    push(s, pop(s) * pop(s));
+	    break;
+	case DIV :
+	    push(s, 1 / ((pop(s) / pop(s))));
+	    break;
+	case PRIM :
+	    /* 
+	     * This handles the exposure thing in the aperture macro
+	     * The exposure is always the first element on stack independent
+	     * of aperture macro.
+	     */
+	    cairo_new_path(cairoTarget);
+	    if (ip->data.ival == 1) {
+		gerbv_draw_circle (cairoTarget, s->stack[CIRCLE_DIAMETER]);
+		cairo_fill (cairoTarget);
+	    } else if (ip->data.ival == 4) {
+		int pointCounter,numberOfPoints;
+		numberOfPoints = (int) s->stack[OUTLINE_NUMBER_OF_POINTS];
+		
+		cairo_rotate (cairoTarget, s->stack[numberOfPoints * 2 + OUTLINE_ROTATION - 2] * M_PI/180);
+		cairo_move_to (cairoTarget, s->stack[OUTLINE_FIRST_X], s->stack[OUTLINE_FIRST_Y]);
+		
+		for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
+		    cairo_line_to (cairoTarget, s->stack[pointCounter * 2 + OUTLINE_FIRST_X],
+				   s->stack[pointCounter * 2 + OUTLINE_FIRST_Y]);
 		}
+		
+		/* although the gerber specs allow for an open outline,
+		   I interpret it to mean the outline should be closed by the
+		   rendering softare automatically, since there is no dimension
+		   for line thickness.
+		*/
+		cairo_fill (cairoTarget);
+
+	    } else if (ip->data.ival == 5) {
+		cairo_move_to (cairoTarget, s->stack[POLYGON_CENTER_X],
+			       s->stack[POLYGON_CENTER_Y]);
+		gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER] / 2.0,
+				   s->stack[POLYGON_NUMBER_OF_POINTS], s->stack[POLYGON_ROTATION]);
+		cairo_fill (cairoTarget);
+		
+	    } else if (ip->data.ival == 6) {
+		gdouble diameter, gap;
+		int circleIndex;
+		
+		cairo_rotate (cairoTarget, s->stack[MOIRE_ROTATION] * M_PI/180);
+		diameter = s->stack[MOIRE_OUTSIDE_DIAMETER] -  s->stack[MOIRE_CIRCLE_THICKNESS];
+		gap = s->stack[MOIRE_GAP_WIDTH] + s->stack[MOIRE_CIRCLE_THICKNESS];
+		cairo_set_line_width (cairoTarget, s->stack[MOIRE_CIRCLE_THICKNESS]);
+		
+		for (circleIndex = 0; circleIndex < (int)s->stack[MOIRE_NUMBER_OF_CIRCLES];  circleIndex++) {
+		    gdouble currentDiameter = (diameter - gap * (float) circleIndex);
+		    gerbv_draw_circle (cairoTarget, currentDiameter);
+		    cairo_stroke (cairoTarget);
+		}
+		
+		gdouble crosshairRadius = (s->stack[MOIRE_CROSSHAIR_LENGTH] / 2.0);
+		
+		cairo_set_line_width (cairoTarget, s->stack[MOIRE_CROSSHAIR_THICKNESS]);
+		cairo_move_to (cairoTarget, -crosshairRadius, 0);
+		cairo_line_to (cairoTarget, crosshairRadius, 0);    	
+		cairo_move_to (cairoTarget, 0, -crosshairRadius);
+		cairo_line_to (cairoTarget, 0, crosshairRadius);
+		cairo_stroke (cairoTarget);
+
+	    } else if (ip->data.ival == 7) {
+		gdouble diameter, ci_thickness;
+		gint i;
+		cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
+		
+		ci_thickness = (s->stack[THERMAL_OUTSIDE_DIAMETER] - 
+				s->stack[THERMAL_INSIDE_DIAMETER]) / 2.0;
+		diameter = (s->stack[THERMAL_INSIDE_DIAMETER] + ci_thickness);
+		
+		/* we don't want to delete any previously rendered items on
+		   this layer, so we need to render the thermal to a private
+		   group and then composite it on top of the existing layer */
+		cairo_push_group (cairoTarget);
+		/* draw non-filled circle */
+		cairo_set_line_width (cairoTarget, ci_thickness);
+		gerbv_draw_circle(cairoTarget, diameter);
+		cairo_stroke (cairoTarget);
+		/* draw crosshairs */
+		cairo_set_operator (cairoTarget, clearOperator);
+		cairo_set_line_width (cairoTarget,s->stack[THERMAL_CROSSHAIR_THICKNESS]);
+		cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
+		/* do initial rotation */
+		cairo_rotate (cairoTarget, s->stack[THERMAL_ROTATION] * M_PI/180);
+		for (i=0; i<4; i++) {
+		    cairo_move_to (cairoTarget, 0.0, 0.0);
+		    cairo_line_to (cairoTarget, s->stack[THERMAL_OUTSIDE_DIAMETER] / 2.0, 0.0);
+		    cairo_rotate (cairoTarget, 90 * M_PI/180);
+		}
+		cairo_stroke (cairoTarget);
+		cairo_set_operator (cairoTarget, oldOperator);
+		cairo_pop_group_to_source (cairoTarget);
+		cairo_paint (cairoTarget);
+
+	    } else if ((ip->data.ival == 2)||(ip->data.ival == 20)) {
+		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION] * M_PI/180);
+		cairo_set_line_width (cairoTarget, s->stack[LINE20_LINE_WIDTH]);
+		cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
+		cairo_move_to (cairoTarget, s->stack[LINE20_START_X], s->stack[LINE20_START_Y]);
+		cairo_line_to (cairoTarget, s->stack[LINE20_END_X], s->stack[LINE20_END_Y]);
+		cairo_stroke (cairoTarget);
+
+	    } else if (ip->data.ival == 21) {
+		gdouble halfWidth, halfHeight;
+	
+		halfWidth = s->stack[LINE21_WIDTH] / 2.0;
+		halfHeight = s->stack[LINE21_HEIGHT] / 2.0;
+		cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION] * M_PI/180);
+		cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
+				 s->stack[LINE21_WIDTH], s->stack[LINE21_HEIGHT]);
+		cairo_fill (cairoTarget);
+		
+	    } else if (ip->data.ival == 22) {
+		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION] * M_PI/180);
+		cairo_rectangle (cairoTarget, s->stack[LINE22_LOWER_LEFT_X],
+				 s->stack[LINE22_LOWER_LEFT_Y], s->stack[LINE22_WIDTH],
+				 s->stack[LINE22_HEIGHT]);
+		cairo_fill (cairoTarget);
+	    } else {
+		handled = 0;
+	    }
+	    
+	    /* 
+	     * Here we reset the stack pointer. It's not general correct
+	     * correct to do this, but since I know how the compiler works
+	     * I can do this. The correct way to do this should be to 
+	     * subtract number of used elements in each primitive operation.
+	     */
+	    s->sp = 0;
+	    break;
+	default :
+	    break;
 	}
-	free_stack(s);
-	return handled;
+    }
+    free_stack(s);
+    return handled;
 } /* gerbv_draw_amacro */
 
+
 void
-draw_apply_netstate_transformation (cairo_t *cairoTarget, gerb_netstate_t *state) {
+draw_apply_netstate_transformation (cairo_t *cairoTarget, gerb_netstate_t *state) 
+{
 	/* apply scale factor */
 	cairo_scale (cairoTarget, state->scaleA, state->scaleB);
 	/* apply offset */
