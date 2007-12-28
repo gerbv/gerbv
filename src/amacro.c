@@ -76,9 +76,11 @@ parse_aperture_macro(gerb_file_t *fd)
 {
     amacro_t *amacro;
     instruction_t *ip = NULL;
-    int primitive = 0;
+    int primitive = 0, c, found_primitive = 0;
     enum opcodes math_op = NOP;
     int comma = 0, neg = 0; /* negative numbers succeding , */
+    unsigned char continueLoop = 1;
+    int equate = 0;
 
     amacro = new_amacro();
 
@@ -86,6 +88,10 @@ parse_aperture_macro(gerb_file_t *fd)
      * Get macroname
      */
     amacro->name = gerb_fgetstring(fd, '*');
+    c = gerb_fgetc(fd);	/* skip '*' */
+    if (c == EOF) {
+	continueLoop = 0;
+    }
 
     /*
      * Since I'm lazy I have a dummy head. Therefore the first 
@@ -94,22 +100,21 @@ parse_aperture_macro(gerb_file_t *fd)
     amacro->program = new_instruction();
     ip = amacro->program;
 
-    while(1) {
-	/*
-	 * First element describes which primitive element to use
-	 */
-	if (primitive == 0) {
-	    primitive = gerb_fgetint(fd, NULL);
-	}
+    while(continueLoop) {
 
-	switch (gerb_fgetc(fd)) {
+	c = gerb_fgetc(fd);
+	switch (c) {
 	case '$':
-	    ip->next = new_instruction(); /* XXX Check return value */
-	    ip = ip->next;
-	    ip->opcode = PPUSH;
-	    amacro->nuf_push++;
-	    ip->data.ival = gerb_fgetint(fd, NULL);
-	    comma = 0;
+	    if (found_primitive) {
+		ip->next = new_instruction(); /* XXX Check return value */
+		ip = ip->next;
+		ip->opcode = PPUSH;
+		amacro->nuf_push++;
+		ip->data.ival = gerb_fgetint(fd, NULL);
+		comma = 0;
+	    } else {
+		equate = gerb_fgetint(fd, NULL);
+	    }
 	    break;
 	case '*':
 	    if (math_op != NOP) {
@@ -122,15 +127,31 @@ parse_aperture_macro(gerb_file_t *fd)
 	     * Check is due to some gerber files has spurious empty lines.
 	     * (EagleCad of course).
 	     */
-	    if (primitive != 0) {
+	    if (found_primitive) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = PRIM;
-		ip->data.ival = primitive;
+		if (equate) {
+		    ip->opcode = PPOP;
+		    ip->data.ival = equate;
+		} else {
+		    ip->opcode = PRIM;
+		    ip->data.ival = primitive;
+		}
 		primitive = 0;
+		found_primitive = 0;
+		equate = 0;
+	    }
+	    break;
+	case '=':
+	    if (equate) {
+		found_primitive = 1;
 	    }
 	    break;
 	case ',':
+	    if (!found_primitive) {
+		found_primitive = 1;
+		break;
+	    }
 	    if (math_op != NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
@@ -180,6 +201,16 @@ parse_aperture_macro(gerb_file_t *fd)
 	    comma = 0;
 	    break;
 	case '0':
+	    /*
+	     * Comments in aperture macros are a definition starting with
+	     * zero and ends with a '*'
+	     */
+	    if (!found_primitive && (primitive == 0)) {
+		/* Comment continues 'til next *, just throw it away */
+		gerb_fgetstring(fd, '*');
+		c = gerb_fgetc(fd); /* Read the '*' */
+		break;
+	    }
 	case '1':
 	case '2':
 	case '3':
@@ -189,6 +220,14 @@ parse_aperture_macro(gerb_file_t *fd)
 	case '7':
 	case '8':
 	case '9':
+	    /* 
+	     * First number in an aperture macro describes the primitive
+	     * as a numerical value
+	     */
+	    if (!found_primitive) {
+		primitive = (primitive * 10) + (c - '0');
+		break;
+	    }
 	    (void)gerb_ungetc(fd);
 	    ip->next = new_instruction(); /* XXX Check return value */
 	    ip = ip->next;
@@ -208,7 +247,12 @@ parse_aperture_macro(gerb_file_t *fd)
 	    /* Whitespace */
 	    break;
 	}
+	if (c == EOF) {
+	    continueLoop = 0;
+	}
     }
+    free(amacro);
+    return NULL;
 }
 
 
@@ -257,6 +301,9 @@ print_program(amacro_t *amacro)
 	    break;
 	case PPUSH:
 	    printf(" PPUSH %d\n", ip->data.ival);
+	    break;
+	case PPOP:
+	    printf(" PPOP %d\n", ip->data.ival);
 	    break;
 	case ADD:
 	    printf(" ADD\n");

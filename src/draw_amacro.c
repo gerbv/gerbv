@@ -641,6 +641,9 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
         case PPUSH :
 	    push(s, parameters[ip->data.ival - 1]);
 	    break;
+	case PPOP:
+	    parameters[ip->data.ival - 1] = pop(s);
+	    break;
 	case ADD :
 	    push(s, pop(s) + pop(s));
 	    break;
@@ -686,6 +689,7 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		gerbv_draw_prim22(pixmap, gc, s, scale, x, y);
 		break;
 	    default :
+		fprintf(stderr, "Primitive unknown %d\n", ip->data.ival);
 		handled = 0;
 	    }
 	    /* 

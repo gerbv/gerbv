@@ -31,6 +31,8 @@
 #include "gerber.h"
 #include "gerb_error.h"
 
+//#define AMACRO_DEBUG
+
 #define NOT_IMPL(fd, s) do { \
                              GERB_MESSAGE("Not Implemented:%s\n", s); \
                              while (gerb_fgetc(fd) != (int)'*'); \
