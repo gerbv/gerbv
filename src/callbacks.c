@@ -1032,7 +1032,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	      "  gEDA Wiki: http://geda.seul.org/dokuwiki/doku.php?id=geda\n\n",
 	      VERSION, __DATE__, __TIME__);
 
-#if GTK_CHECK_VERSION(2,6,0) 
+#if GTK_CHECK_VERSION(2,6,0)
 	aboutdialog1 = gtk_about_dialog_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);
 	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
@@ -1047,7 +1047,9 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					       GTK_BUTTONS_CLOSE,
 					       string
 					       );
-	
+
+	gtk_window_set_title ( GTK_WINDOW (aboutdialog1), _("About Gerber Viewer"));
+
 	/* Destroy the dialog when the user responds to it (e.g. clicks a button) */
 	g_signal_connect_swapped (aboutdialog1, "response",
 				  G_CALLBACK (gtk_widget_destroy),
