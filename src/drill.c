@@ -536,7 +536,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     int done = FALSE;
     int temp;
     double size;
-    drill_stats_t *stats = NULL;
+    drill_stats_t *stats = image->drill_stats;
 
     /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
        broken headers from Orcad, which is crap */
