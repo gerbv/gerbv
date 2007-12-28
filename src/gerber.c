@@ -28,14 +28,15 @@
 #include <locale.h>
 #include <errno.h>
 
-#ifndef RENDER_USING_GDK
-  #include <cairo.h>
-#endif
 
 #include "config.h"
 #include "gerber.h"
 #include "gerb_error.h"
 #include "gerb_stats.h"
+
+#ifndef RENDER_USING_GDK
+  #include <cairo.h>
+#endif
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
