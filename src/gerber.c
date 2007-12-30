@@ -558,6 +558,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
     int  op_int;
     gerb_format_t *format = image->format;
     gerb_stats_t *stats = image->gerb_stats;
+    int c;
 
     op_int=gerb_fgetint(fd, NULL);
     
@@ -580,7 +581,10 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	break;
     case 4:  /* Ignore Data Block */
 	/* Don't do anything, just read 'til * */
-	while (gerb_fgetc(fd) != '*');
+	c = gerb_fgetc(fd);
+	while ((c != EOF) && (c != '*')) {
+		c = gerb_fgetc(fd);
+	}
 	stats->G4++;
 	break;
     case 10: /* Linear Interpolation (10X scale) */
@@ -882,8 +886,8 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 				 WARNING);
 	    image->format->coordinate = ABSOLUTE;
 	}
-
-	while((op[0] = gerb_fgetc(fd)) != '*') {
+	op[0] = gerb_fgetc(fd);
+	while((op[0] != '*')&&(op[0] != EOF)) {
 	    switch (op[0]) {
 	    case 'N':
 		op[0] = (char)gerb_fgetc(fd);
@@ -943,13 +947,14 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 				     "Ignoring invalid format statement.\n",
 				     WARNING);
 	    }
+	    op[0] = gerb_fgetc(fd);
 	}
 	break;
     case A2I('M','I'): /* Mirror Image */
 	op[0] = gerb_fgetc(fd);
 	state->state = gerb_image_return_new_netstate (state->state);
 	
-	while (op[0] != '*') {
+	while ((op[0] != '*')&&(op[0] != EOF)) {
             gint readValue=0;
 	    switch (op[0]) {
 	    case 'A' :
@@ -1007,7 +1012,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     case A2I('O','F'): /* Offset */
 	op[0] = gerb_fgetc(fd);
 	
-	while (op[0] != '*') {
+	while ((op[0] != '*')&&(op[0] != EOF)) {
 	    switch (op[0]) {
 	    case 'A' :
 		state->state->offsetA = gerb_fgetdouble(fd) / scale;
@@ -1027,7 +1032,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     case A2I('I','O'): /* Image offset */
 	op[0] = gerb_fgetc(fd);
 	
-	while (op[0] != '*') {
+	while ((op[0] != '*')&&(op[0] != EOF)) {
 	    switch (op[0]) {
 	    case 'A' :
 		image->info->offsetA = gerb_fgetdouble(fd) / scale;
@@ -1099,7 +1104,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	image->info->imageJustifyTypeB = LOWERLEFT;
 	image->info->imageJustifyOffsetA = 0.0;
 	image->info->imageJustifyOffsetB = 0.0;
-	while (op[0] != '*') {
+	while ((op[0] != '*')&&(op[0] != EOF)) {
 	    switch (op[0]) {
 	    case 'A' :
 	    	op[0] = gerb_fgetc(fd);
@@ -1266,7 +1271,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	state->layer->knockout.border = 0.0;
 	state->layer->knockout.firstInstance = TRUE;
 	op[0] = gerb_fgetc(fd);
-	while (op[0] != '*') { 
+	while ((op[0] != '*')&&(op[0] != EOF)) { 
 	    switch (op[0]) {
 	    case 'X':
 	        state->layer->knockout.type = FIXED;
@@ -1315,7 +1320,7 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    state->layer->stepAndRepeat.dist_Y = 0.0;
 	    break;
 	}
-	while (op[0] != '*') { 
+	while ((op[0] != '*')&&(op[0] != EOF)) { 
 	    switch (op[0]) {
 	    case 'X':
 		state->layer->stepAndRepeat.X = gerb_fgetint(fd, NULL);
