@@ -88,18 +88,6 @@ callbacks_control_gerber_options_activate     (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-callbacks_pointer_tool_activate               (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
-callbacks_zoom_tool_activate                  (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
-callbacks_measure_tool_activate               (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
 callbacks_online_manual_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
@@ -185,6 +173,9 @@ void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
 			gpointer user_data);
 
 void callbacks_force_expose_event_for_screen (void);
+
+void
+callbacks_change_tool  (GtkButton *button, gpointer   user_data);
 
 #ifndef RENDER_USING_GDK
 cairo_surface_t *

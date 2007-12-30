@@ -69,6 +69,9 @@ render_draw_measure_distance(void);
 void
 render_zoom_to_fit_display (gerbv_render_info_t *renderInfo);
 
+void
+render_translate_to_fit_display (gerbv_render_info_t *renderInfo);
+
 void render_refresh_rendered_image_on_screen (void);
 
 #ifndef RENDER_USING_GDK

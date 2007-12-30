@@ -234,7 +234,7 @@ render_draw_zoom_outline(gboolean centered)
 	/* Draw actual zoom area in dashed lines */
 	memset(&values, 0, sizeof(values));
 	values.function = GDK_XOR;
-	values.foreground = screen.dist_measure_color;
+	values.foreground = screen.zoom_outline_color;
 	values.line_style = GDK_LINE_ON_OFF_DASH;
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND | GDK_GC_LINE_STYLE;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
@@ -273,8 +273,6 @@ render_draw_measure_distance(void)
 	gint x1, y1, x2, y2;
 	double delta, dx, dy;
 
-	if (screen.state != MEASURE)
-		return;
 #if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
 	memset(&values, 0, sizeof(values));
 	values.function = GDK_XOR;
@@ -328,6 +326,24 @@ render_draw_measure_distance(void)
 #endif     
 } /* draw_measure_distance */
 
+void
+render_translate_to_fit_display (gerbv_render_info_t *renderInfo) {
+	double x1=HUGE_VAL,y1=HUGE_VAL;
+	int i;
+	gerb_image_info_t *info;
+	
+	for(i = 0; i < MAX_FILES; i++) {
+		if ((screen.file[i]) && (screen.file[i]->isVisible)){
+			info = screen.file[i]->image->info;
+
+			/* cairo info already has offset calculated into min/max */
+			x1 = MIN(x1, info->min_x);
+			y1 = MIN(y1, info->min_y);
+		}
+	}
+	renderInfo->lowerLeftX = x1;
+	renderInfo->lowerLeftY = y1;
+}
 
 /* ------------------------------------------------------------------ */
 void

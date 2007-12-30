@@ -1,5 +1,12 @@
-2007-12-28  Stefan Petersen  <spe@spe-laptop>
+2007-12-30  Julian Lamb
+	* callbacks.[ch], interface.c, others: Implement three "tools", namely
+	  the pointer, zoom, and measure tool and hookup to the existing gui
+	  stubs. Also, display an informative message in the message bar explaining
+	  how to use the active tool (similar to Inkscape). Do some miscellaneous
+	  cleanups in the gui code and rendering.
+	* callbacks.c, render.[ch]: Get basic printing support working.
 
+2007-12-28  Stefan Petersen  <spe@spe-laptop>
 	* src/draw.c, src/amacro.[hc]: gerbv can handle comments
 	  and calculations in aperture macros. Unfortunate this 
 	  uncovered some errors in how aperture macros are drawn.

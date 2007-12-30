@@ -138,11 +138,13 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *toolbutton_revert;
 	GtkWidget *toolbutton_save;
 	GtkWidget *separatortoolitem1;
+#ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
 	GtkWidget *print;
 	GtkWidget *toolbutton_print;
 	GtkWidget *separator2;
 	GtkWidget *separatortoolitem2;
+#endif
 #endif
 	GtkWidget *toolbutton_zoom_in;
 	GtkWidget *toolbutton_zoom_out;
@@ -288,7 +290,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (separator1);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
 	gtk_widget_set_sensitive (separator1, FALSE);
-	
+#ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
 	print = gtk_image_menu_item_new_from_stock ("gtk-print", accel_group);
 	gtk_widget_show (print);
@@ -299,7 +301,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator2);
 	gtk_widget_set_sensitive (separator2, FALSE);
 #endif
-
+#endif
 	quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
 	gtk_widget_show (quit);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), quit);
@@ -432,7 +434,7 @@ interface_create_gui (int req_width, int req_height)
 	separatortoolitem1 = (GtkWidget*) gtk_separator_tool_item_new ();
 	gtk_widget_show (separatortoolitem1);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem1);
-
+#ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
 	toolbutton_print = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-print");
 	gtk_widget_show (toolbutton_print);
@@ -442,7 +444,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (separatortoolitem2);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem2);
 #endif
-
+#endif
 	toolbutton_zoom_in = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-zoom-in");
 	gtk_widget_show (toolbutton_zoom_in);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_zoom_in);
@@ -478,7 +480,6 @@ interface_create_gui (int req_width, int req_height)
 	toggletoolbutton_pointer = (GtkWidget*) gtk_toggle_tool_button_new_from_stock ("gtk-apply");
 	gtk_widget_show (toggletoolbutton_pointer);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pointer);
-	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (toggletoolbutton_pointer), TRUE);
 
 	toggletoolbutton_zoom = (GtkWidget*) gtk_toggle_tool_button_new_from_stock ("gtk-apply");
 	gtk_widget_show (toggletoolbutton_zoom);
@@ -487,7 +488,7 @@ interface_create_gui (int req_width, int req_height)
 	toggletoolbutton_measure = (GtkWidget*) gtk_toggle_tool_button_new_from_stock ("gtk-apply");
 	gtk_widget_show (toggletoolbutton_measure);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_measure);
-
+	
 	hpaned1 = gtk_hpaned_new ();
 	gtk_widget_show (hpaned1);
 	gtk_box_pack_start (GTK_BOX (vbox1), hpaned1, TRUE, TRUE, 0);
@@ -602,10 +603,11 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (Message_label);
 	gtk_notebook_set_tab_label (GTK_NOTEBOOK (sidepane_notebook), gtk_notebook_get_nth_page (GTK_NOTEBOOK (sidepane_notebook), 1), Message_label);
 
-	vbox2 = gtk_vbox_new (FALSE, 0);
+	vbox2 = gtk_vbox_new (FALSE, 4);
 	gtk_widget_show (vbox2);
 	gtk_paned_pack2 (GTK_PANED (hpaned1), vbox2, TRUE, TRUE);
-
+	gtk_container_set_border_width (GTK_CONTAINER (vbox2), 4);
+	
 	main_view_table = gtk_table_new (3, 3, FALSE);
 	gtk_widget_show (main_view_table);
 	gtk_box_pack_start (GTK_BOX (vbox2), main_view_table, TRUE, TRUE, 0);
@@ -649,7 +651,7 @@ interface_create_gui (int req_width, int req_height)
 	statusbar_label_left = gtk_label_new (_("(   0.0,  0.0 )"));
 	gtk_widget_show (statusbar_label_left);
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_left, FALSE, FALSE, 0);
-	gtk_widget_set_size_request (statusbar_label_left, 150, -1);
+	gtk_widget_set_size_request (statusbar_label_left, 130, -1);
 	gtk_label_set_justify ((GtkLabel *) statusbar_label_left, GTK_JUSTIFY_RIGHT);
 	
 	combobox2 = gtk_combo_box_new_text ();
@@ -703,12 +705,13 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) postscript, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_PS);
-#endif
+
 
 #if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) print, "activate",
 	                  G_CALLBACK (callbacks_print_activate),
 	                  NULL);
+#endif
 #endif
 	g_signal_connect ((gpointer) quit, "activate",
 	                  G_CALLBACK (callbacks_quit_activate),
@@ -732,14 +735,11 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_control_gerber_options_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) pointer_tool, "activate",
-	                  G_CALLBACK (callbacks_pointer_tool_activate),
-	                  NULL);
+	                  G_CALLBACK (callbacks_change_tool), (gpointer) 0);
 	g_signal_connect ((gpointer) zoom_tool, "activate",
-	                  G_CALLBACK (callbacks_zoom_tool_activate),
-	                  NULL);
+	                  G_CALLBACK (callbacks_change_tool), (gpointer) 1);
 	g_signal_connect ((gpointer) measure_tool, "activate",
-	                  G_CALLBACK (callbacks_measure_tool_activate),
-	                  NULL);
+	                  G_CALLBACK (callbacks_change_tool), (gpointer) 2);
 	g_signal_connect ((gpointer) online_manual, "activate",
 	                  G_CALLBACK (callbacks_online_manual_activate),
 	                  NULL);
@@ -763,10 +763,12 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) clear_messages_button, "clicked",
 	                  G_CALLBACK (callbacks_clear_messages_button_clicked),
 	                  NULL);
+#ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) toolbutton_print, "clicked",
 	                  G_CALLBACK (callbacks_print_activate),
 	                  NULL);
+#endif
 #endif
 	g_signal_connect ((gpointer) toolbutton_zoom_in, "clicked",
 	                  G_CALLBACK (callbacks_zoom_in_activate),
@@ -776,7 +778,13 @@ interface_create_gui (int req_width, int req_height)
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_zoom_fit, "clicked",
 	                  G_CALLBACK (callbacks_fit_to_window_activate),
-	                  NULL);                
+	                  NULL);
+	g_signal_connect ((gpointer) toggletoolbutton_pointer, "clicked",
+	                  G_CALLBACK (callbacks_change_tool), (gpointer) 0);
+	g_signal_connect ((gpointer) toggletoolbutton_zoom, "clicked",
+	                  G_CALLBACK (callbacks_change_tool), (gpointer) 1);
+	g_signal_connect ((gpointer) toggletoolbutton_measure, "clicked",
+	                  G_CALLBACK (callbacks_change_tool), (gpointer) 2);
 	g_signal_connect ((gpointer) combobox2, "changed",
 	                  G_CALLBACK (callbacks_statusbar_unit_combo_box_changed),
 	                  NULL);
@@ -907,8 +915,8 @@ interface_create_gui (int req_width, int req_height)
 	* Setup some GTK+ defaults
 	*/
 	screen.tooltips = gtk_tooltips_new();
-	GdkColor color1 = {0, 0, 0, 0}, color2 = {0, 5000, 5000, 5000},
-			color3 = {0, 30000, 30000, 65000};       
+	GdkColor color1 = {0, 0, 0, 0}, color2 = {0, 50000, 50000, 50000},
+			color3 = {0, 60000, 30000, 65000};       
 	screen.background = color1;
 	screen.zoom_outline_color  = color2;
 	screen.dist_measure_color  = color3;
@@ -923,6 +931,10 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.hRuler = hRuler;
 	screen.win.vRuler = vRuler;	
 	screen.win.sidepane_notebook = sidepane_notebook;
+
+	screen.win.toolButtonPointer = toggletoolbutton_pointer;
+	screen.win.toolButtonZoom = toggletoolbutton_zoom;
+	screen.win.toolButtonMeasure = toggletoolbutton_measure;
 	/* 
 	* Good defaults according to Ales. Gives aspect ratio of 1.3333...
 	*/
@@ -951,7 +963,7 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.statusUnitComboBox = combobox2;
 	screen.win.layerTree = tree;
 	screen.win.treeIsUpdating = FALSE;
-	
+	callbacks_change_tool (NULL, 0);
 	rename_main_window("",mainWindow);
 
 	set_window_icon (mainWindow);

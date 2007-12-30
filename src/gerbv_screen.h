@@ -46,8 +46,8 @@
 #define COORD2MILS(c) ((c)*1000.0)
 #define COORD2MMS(c) ((c)*25.4)
 
-typedef enum {NORMAL, MOVE, ZOOM_OUTLINE, MEASURE, ALT_PRESSED, SCROLLBAR} gerbv_state_t;
-
+typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED, SCROLLBAR} gerbv_state_t;
+typedef enum {POINTER, ZOOM, MEASURE} gerbv_tool_t;
 typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
 
 typedef struct {
@@ -95,11 +95,13 @@ typedef struct {
 	GtkWidget *project;
 	GtkWidget *gerber;
 	GtkWidget *about_dialog;
+	GtkWidget *toolButtonPointer;
+	GtkWidget *toolButtonZoom;
+	GtkWidget *toolButtonMeasure;
+	gboolean updatingTools;
     } win;
     gpointer windowSurface;
     gpointer bufferSurface;
-  //  gint canvasWidth;
-  //  gint canvasHeight;
     gerbv_fileinfo_t *file[MAX_FILES];
     int curr_index;
     int last_loaded;
@@ -107,9 +109,6 @@ typedef struct {
     char *path;
     char *execpath;    /* Path to executed version of gerbv */
     char *project;     /* Current project to simplify save next time */
-    
-    /* Bounding box for all loaded gerber images. Initialized by autoscale() */
-  //  gerbv_bbox_t gerber_bbox;
 
     GtkTooltips *tooltips;
     GtkWidget *popup_menu;
@@ -121,9 +120,8 @@ typedef struct {
     } statusbar;
 
     gerbv_state_t state;
+    gerbv_tool_t tool;
     gboolean centered_outline_zoom;
-
- //   int scale;
 
     int selected_layer;         /* Selected layer by Alt+keypad */
 
@@ -132,13 +130,8 @@ typedef struct {
     gint start_x;		/* Zoom box/measure start coordinates */
     gint start_y;
 
- //   int trans_x; /* Translate offset */
- //   int trans_y;
- //   gerb_transf_t *transf; /*handles all tranformations:Mirroring, scaling and translation*/
-
     gint off_x;			/* Offset current pixmap when panning */
     gint off_y;
-//    gerbv_bbox_t clip_bbox;	/* Clipping bounding box */
 
     int dump_parsed_image;
 } gerbv_screen_t;
