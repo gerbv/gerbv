@@ -1225,7 +1225,7 @@ callbacks_unselect_all_tool_buttons (void) {
 
 void
 callbacks_change_tool (GtkButton *button, gpointer   user_data) {
-	gint toolNumber = (gint) user_data;
+	gint toolNumber = GPOINTER_TO_INT (user_data);
 	
 	/* make sure se don't get caught in endless recursion here */
 	if (screen.win.updatingTools)
