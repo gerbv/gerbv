@@ -28,6 +28,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <glib.h>
 #include "gerb_image.h"
 #include "gerb_file.h"
 
@@ -35,7 +36,7 @@ extern "C" {
 #define TOOL_MAX 9999
 
 gerb_image_t *parse_drillfile(gerb_file_t *fd);
-int drill_file_p(gerb_file_t *fd);
+gboolean drill_file_p(gerb_file_t *fd);
 
 #ifdef __cplusplus
 }

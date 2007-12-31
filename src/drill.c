@@ -32,6 +32,7 @@
 #endif
 
 #include <stdlib.h>
+#include <glib.h>
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -61,11 +62,8 @@
                              GERB_MESSAGE("Not Implemented:%s\n", s); \
                            } while(0)
 
-/* I couldn't possibly code without these */
-#undef TRUE
-#define TRUE 1
-#undef FALSE
-#define FALSE 0
+#define MAXL 200
+
 
 #undef max
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -129,7 +127,7 @@ static double read_double(gerb_file_t *fd, enum number_fmt_t fmt,
 static void eat_line(gerb_file_t *fd);
 static char *get_line(gerb_file_t *fd);
 
-
+/* -------------------------------------------------------------- */
 gerb_image_t *
 parse_drillfile(gerb_file_t *fd)
 {
@@ -479,53 +477,82 @@ parse_drillfile(gerb_file_t *fd)
     return image;
 } /* parse_drillfile */
 
+
+/* -------------------------------------------------------------- */
 /*
  * Checks for signs that this is a drill file
- * Returns 1 if it is, 0 if not.
+ * Returns TRUE if it is, FALSE if not.
  */
-int
+gboolean
 drill_file_p(gerb_file_t *fd)
 {
-    int read;
+  char *buf;
+  int len = 0;
+  char *letter;
+  int ascii;
+  int zero = 48; /* ascii 0 */
+  int nine = 57; /* ascii 9 */
+  int i;
+  gboolean found_binary = FALSE;
+  gboolean found_M48 = FALSE;
+  gboolean found_T = FALSE;
+  gboolean found_X = FALSE;
+  gboolean found_Y = FALSE;
+ 
+  buf = g_malloc(MAXL);
+  if (buf == NULL) 
+    GERB_FATAL_ERROR("malloc buf failed while checking for drill file.\n");
 
-    while ((read = gerb_fgetc(fd)) != EOF) {
-        switch ((char)read) {
-        case 'M':
-            if(gerb_fgetc(fd) == '4') {
-		if(gerb_fgetc(fd) == '8') {
-                /* Drill file header command found,
-                   this could very well be a drill file */
-		fd->ptr = 0;
-                return 1;
-		}
-	    }
-	    eat_line(fd);
-            break;
-	case 'T':
-	    /* Something that looks like a tool definition found.
-	       Special case to allow files from Orcad, which sucks. */
-	    fd->ptr = 0;
-	    return 1;
-	case 'X':
-	case 'Y':
-	    /* First coordinate reached without finding any sign of this
-	       being a drill file. Stop parsing and return. */
-	    fd->ptr = 0;
-	    return 0;
-	case 10 :  /* Ignore CR/LF */
-	case 13 :
-	    break;
-        default : /* Eat every line that starts with something uninteresting */
-            eat_line(fd);
-            break;
-        }
+  while (fgets(buf, MAXL, fd->fd) != NULL) {
+    len = strlen(buf);
+
+    /* First look through the file for indications of its type */
+
+    /* check that file is not binary (non-printing chars */
+    for (i = 0; i < len; i++) {
+      ascii = (int) buf[i];
+      if ((ascii > 128) || (ascii < 0)) {
+        found_binary = TRUE;
+      }
     }
-    /* This is, in all likelyhood, not a drill file */
-    fd->ptr = 0;
-    return 0;
+
+    if (g_strstr_len(buf, len, "M48")) {
+      found_M48 = TRUE;
+    }
+
+    if (g_strstr_len(buf, len, "T")) {
+      if (found_X || found_Y)
+	found_T = FALSE;  /* Found T after X or Y */
+      else
+	found_T = TRUE;
+      /* It would be nice to verify numbers follow T */
+    }
+
+    /* look for X<number> or Y<number> */
+    if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
+      ascii = (int) letter[1]; /* grab char after X */
+      if ((ascii >= zero) && (ascii <= nine)) {
+	found_X = TRUE;
+      }
+    }
+    if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
+      ascii = (int) letter[1]; /* grab char after Y */
+      if ((ascii >= zero) && (ascii <= nine)) {
+	found_Y = TRUE;
+      }
+    }
+  }
+  rewind(fd->fd);
+  free(buf);
+
+  /* Now form logical expression determining if this is a drill file */
+  if ( (((found_X || found_Y) && found_T) || found_M48) && 
+       !found_binary) 
+    return TRUE;
+  else return FALSE;
 }
 
-
+/* -------------------------------------------------------------- */
 /* Parse tool definition. This can get a bit tricky since it can
    appear in the header and/or data section.
    Returns tool number on success, -1 on error */
@@ -533,7 +560,7 @@ static int
 drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 {
     int tool_num;
-    int done = FALSE;
+    gboolean done = FALSE;
     int temp;
     double size;
     drill_stats_t *stats = image->drill_stats;
@@ -729,6 +756,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 } /* drill_parse_T_code */
 
 
+/* -------------------------------------------------------------- */
 static int
 drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 {
@@ -894,6 +922,8 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     return result;
 } /* drill_parse_M_code */
 
+
+/* -------------------------------------------------------------- */
 static int
 drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
 {
@@ -950,6 +980,7 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
 } /* drill_parse_G_code */
 
 
+/* -------------------------------------------------------------- */
 /* Parse on drill file coordinate.
    Returns nothing, but modifies state */
 static void
@@ -1003,6 +1034,7 @@ new_state(drill_state_t *state)
 } /* new_state */
 
 
+/* -------------------------------------------------------------- */
 /* Reads one double from fd and returns it.
    If a decimal point is found, fmt is not used. */
 static double
@@ -1012,7 +1044,7 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, enum omit_zeros_t omit_zeros
     char temp[0x20];
     int i = 0, ndigits = 0;
     double result;
-    int decimal_point = FALSE;
+    gboolean decimal_point = FALSE;
 
     memset(temp, 0, sizeof(temp));
 
@@ -1088,6 +1120,7 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, enum omit_zeros_t omit_zeros
 } /* read_double */
 
 
+/* -------------------------------------------------------------- */
 /* Eats all characters up to and including 
    the first one of CR or LF */
 static void
@@ -1101,6 +1134,8 @@ eat_line(gerb_file_t *fd)
     }
 } /* eat_line */
 
+
+/* -------------------------------------------------------------- */
 static char *
 get_line(gerb_file_t *fd)
 {

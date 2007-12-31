@@ -43,6 +43,8 @@
 
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 
+#define MAXL 200
+
 typedef struct gerb_state {
     int curr_x;
     int curr_y;
@@ -84,8 +86,8 @@ static gerb_net_t *gen_circle_segments(gerb_net_t *curr_net,
 static void gerber_update_min_and_max (gdouble *minX, gdouble *minY,
 	gdouble *maxX, gdouble *maxY, gdouble x, gdouble y, gdouble apertureSize);
 
-static void
-gerber_update_any_running_knockout_measurements (gerb_image_t *image);
+
+static void gerber_update_any_running_knockout_measurements (gerb_image_t *image);
 
 static void
 gerber_calculate_final_justify_effects (gerb_image_t *image);
@@ -549,6 +551,195 @@ parse_gerb(gerb_file_t *fd)
     gerber_calculate_final_justify_effects(image);
     return image;
 } /* parse_gerb */
+
+
+/* ------------------------------------------------------------------- */
+/*
+ * Checks for signs that this is a RS-274X file
+ * Returns TRUE if it is, FALSE if not.
+ */
+gboolean
+gerber_is_rs274x_p(gerb_file_t *fd) {
+  char *buf;
+  int len = 0;
+  char *letter;
+  int ascii;
+  int zero = 48;  /* ascii 0 */
+  int nine = 57;  /* ascii 9 */
+  int i;
+  gboolean found_binary = FALSE;
+  gboolean found_ADD = FALSE;
+  gboolean found_D0 = FALSE;
+  gboolean found_D2 = FALSE;
+  gboolean found_M0 = FALSE;
+  gboolean found_M2 = FALSE;
+  gboolean found_star = FALSE;
+  gboolean found_X = FALSE;
+  gboolean found_Y = FALSE;
+
+  buf = (char *) g_malloc(MAXL);
+  if (buf == NULL) 
+    GERB_FATAL_ERROR("malloc buf failed while checking for rs274x.\n");
+
+  while (fgets(buf, MAXL, fd->fd) != NULL) {
+    len = strlen(buf);
+    
+    /* First look through the file for indications of its type */
+
+    /* check that file is not binary (non-printing chars */
+    for (i = 0; i < len; i++) {
+      ascii = (int) buf[i];
+      if ((ascii > 128) || (ascii < 0)) {
+        found_binary = TRUE;
+      }
+    }
+    if (g_strstr_len(buf, len, "%ADD")) {
+      found_ADD = TRUE;
+    }
+    if (g_strstr_len(buf, len, "D00")) {
+      found_D0 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "D2")) {
+      found_D2 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "D02")) {
+      found_D2 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "M0")) {
+      found_M0 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "M00")) {
+      found_M0 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "M2")) {
+      found_M2 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "M02")) {
+      found_M2 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "*")) {
+      found_star = TRUE;
+    }
+    /* look for X<number> or Y<number> */
+    if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
+      ascii = (int) letter[1]; /* grab char after X */
+      if ((ascii >= zero) && (ascii <= nine)) {
+	found_X = TRUE;
+      }
+    }
+    if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
+      ascii = (int) letter[1]; /* grab char after Y */
+      if ((ascii >= zero) && (ascii <= nine)) {
+	found_Y = TRUE;
+      }
+    }
+  }
+  rewind(fd->fd);
+  free(buf);
+
+  /* Now form logical expression determining if the file is RS-274X */
+  if ((found_D0 || found_D2 || found_M0 || found_M2) && 
+      found_ADD && found_star && (found_X || found_Y) &&
+      !found_binary) 
+    return TRUE;
+  else return FALSE;
+
+} /* gerber_is_rs274x */
+
+
+/* ------------------------------------------------------------------- */
+/*
+ * Checks for signs that this is a RS-274D file
+ * Returns TRUE if it is, FALSE if not.
+ */
+gboolean
+gerber_is_rs274d_p(gerb_file_t *fd) {
+  char *buf;
+  int len = 0;
+  char *letter;
+  int ascii;
+  int zero = 48; /* ascii 0 */
+  int nine = 57; /* ascii 9 */
+  int i;
+  gboolean found_binary = FALSE;
+  gboolean found_ADD = FALSE;
+  gboolean found_D0 = FALSE;
+  gboolean found_D2 = FALSE;
+  gboolean found_M0 = FALSE;
+  gboolean found_M2 = FALSE;
+  gboolean found_star = FALSE;
+  gboolean found_X = FALSE;
+  gboolean found_Y = FALSE;
+
+  buf = g_malloc(MAXL);
+  if (buf == NULL) 
+    GERB_FATAL_ERROR("malloc buf failed while checking for rs274d.\n");
+
+  while (fgets(buf, MAXL, fd->fd) != NULL) {
+    len = strlen(buf);
+    
+    /* First look through the file for indications of its type */
+
+    /* check that file is not binary (non-printing chars */
+    for (i = 0; i < len; i++) {
+      ascii = (int) buf[i];
+      if ((ascii > 128) || (ascii < 0)) {
+        found_binary = TRUE;
+      }
+    }
+
+    if (g_strstr_len(buf, len, "%ADD")) {
+      found_ADD = TRUE;
+    }
+    if (g_strstr_len(buf, len, "D00")) {
+      found_D0 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "D2")) {
+      found_D2 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "D02")) {
+      found_D2 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "M0")) {
+      found_M0 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "M00")) {
+      found_M0 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "M2")) {
+      found_M2 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "M02")) {
+      found_M2 = TRUE;
+    }
+    if (g_strstr_len(buf, len, "*")) {
+      found_star = TRUE;
+    }
+    /* look for X<number> or Y<number> */
+    if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
+      ascii = (int) letter[1]; /* grab char after X */
+      if ((ascii >= zero) && (ascii <= nine)) {
+	found_X = TRUE;
+      }
+    }
+    if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
+      ascii = (int) letter[1]; /* grab char after Y */
+      if ((ascii >= zero) && (ascii <= nine)) {
+	found_Y = TRUE;
+      }
+    }
+  }
+  rewind(fd->fd);
+  free(buf);
+
+  /* Now form logical expression determining if the file is RS-274D */
+  if ((found_D0 || found_D2 || found_M0 || found_M2) && 
+      !found_ADD && found_star && (found_X || found_Y) && 
+      !found_binary) 
+    return TRUE;
+  else return FALSE;
+
+} /* gerber_is_rs274d */
 
 
 /* ------------------------------------------------------------------- */

@@ -1,3 +1,10 @@
+2007-12-31  Stuart Brorson (sdb@cloud9.net)
+        * src/drill.[hc], gerber.[hc], gerbv.c, pick-and-place.[hc]:
+        Overhauled checks for file type.  Now all file types (Gerber,
+        drill, pick-place) are FALSE by default, and only are TRUE
+        when positive of file type indications are found.  Also added
+        specific check for RS-284-D, and throw error if -D is found.
+	
 2007-12-30  Julian Lamb
 	* callbacks.[ch], interface.c, others: Implement three "tools", namely
 	  the pointer, zoom, and measure tool and hookup to the existing gui

@@ -34,6 +34,8 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <glib.h>
+#include <gtk/gtk.h> /* What's this for? */
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -44,7 +46,6 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <locale.h>
-#include <gtk/gtk.h>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -72,6 +73,9 @@
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #undef min
 #define min(a,b) ((a) < (b) ? (a) : (b))
+
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#define dprintf if(DEBUG) printf
 
 //! Parses a string representing float number with a unit, default is mil
 /** @param char a string to be screened for unit
@@ -300,8 +304,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	parsedLines += 1;
     }   
     gerb_transf_free(tr_rot);
-    fd->ptr=0;
-    rewind(fd->fd);
+    /* fd->ptr=0; */
+    /* rewind(fd->fd); */
 	
     /* so a sanity check and see if this is a valid pnp file */
     if ((((float) parsedLines / (float) lineCounter) < 0.3) ||
@@ -326,59 +330,145 @@ pick_and_place_parse_file(gerb_file_t *fd)
 gboolean
 pick_and_place_check_file_type(gerb_file_t *fd)
 {
-    char buf[MAXL];
-    int len = 0;
+  char *buf;
+  int len = 0;
+  int i;
+  guint8 ascii;
+  char *letter;
+  int zero = 48; /* ascii 0 */
+  int nine = 57; /* ascii 9 */
+  gboolean found_binary = FALSE;
+  gboolean found_G54 = FALSE;
+  gboolean found_M0 = FALSE;
+  gboolean found_M2 = FALSE;
+  gboolean found_G2 = FALSE;
+  gboolean found_ADD = FALSE;
+  gboolean found_comma = FALSE;
+  gboolean found_R = FALSE;
+  gboolean found_U = FALSE;
+  gboolean found_C = FALSE;
+  gboolean found_footprint = FALSE;
+  gboolean found_boardside = FALSE;
 
-    while (fgets(buf, MAXL, fd->fd) != NULL) {
-	len = strlen(buf);
+  buf = g_malloc(MAXL);
+  if (buf == NULL)
+    GERB_FATAL_ERROR("malloc buf failed while checking for pick-place file.\n");
 
-	/* Abort if we see a G54 */
-	if ((len > 3) && (strncmp(buf,"G54", 3) == 0)) {
-	    return FALSE;  
-	}
+  while (fgets(buf, MAXL, fd->fd) != NULL) {
+    len = strlen(buf);
+     
+    /* First look through the file for indications of its type */
 
-	/* Abort if we see a D01 */
-	if ((len > 3) && (strncmp(buf,"D01", 3) == 0)) {
-	    return FALSE;  
-	}
+    /* #if 0 */  
+    /* check for non-binary file */
+    /* This breaks the protel CSV P-n-P file readin since it has
+     * non-printing (extended) ascii chars. */
+    for (i = 0; i < len; i++) {
+      ascii = (guint8) buf[i];
+      if (ascii > 128) {
+	found_binary = TRUE;
+      }
+    }
+    /* #endif */
 
-	/* Abort if we see a D1 */
-	if ((len > 2) && (strncmp(buf,"D1", 2) == 0)) {
-	    return FALSE;  
-	}
-
-	/* Abort if we see a D03 */
-	if ((len > 3) && (strncmp(buf,"D03", 3) == 0)) {
-	    return FALSE;  
-	}
-
-	/* Abort if we see a D3 */
-	if ((len > 2) && (strncmp(buf,"D3", 2) == 0)) {
-	    return FALSE;  
-	}
-
-	/* abort if we see a G04 code */
-	if ((len > 3) && (strncmp(buf,"G04", 3) == 0)) {
-	    return FALSE;
-	}
-
-	/* abort if we see a M00 code */
-	if ((len > 3) && (strncmp(buf,"M00", 3) == 0)) {
-	    return FALSE;
-	}
-
-	/* abort if we see a M02 code */
-	if ((len > 3) && (strncmp(buf,"M02", 3) == 0)) {
-	    return FALSE;
-	}
-
-	/* abort if we see a %ADD code */
-	if ((len > 4) && (strncmp(buf,"%ADD", 4) == 0)) {
-	    return FALSE;
-	}
+    if (g_strstr_len(buf, len, "G54")) {
+      found_G54 = TRUE;
     }
 
+    if (g_strstr_len(buf, len, "M00")) {
+      found_M0 = TRUE;
+    }
+
+    if (g_strstr_len(buf, len, "M02")) {
+      found_M2 = TRUE;
+    }
+
+    if (g_strstr_len(buf, len, "G02")) {
+      found_G2 = TRUE;
+    }
+
+    if (g_strstr_len(buf, len, "ADD")) {
+      found_ADD = TRUE;
+    }
+
+    if (g_strstr_len(buf, len, ",")) {
+      found_comma = TRUE;
+    }
+
+    /* Look for refdes -- This is dumb, but what else can we do? */
+    if ((letter = g_strstr_len(buf, len, "R")) != NULL) {
+      ascii = (guint8) letter[1]; /* grab char after R */
+      if ((ascii >= zero) && (ascii <= nine)) {
+        found_R = TRUE;
+      }
+    }
+    if ((letter = g_strstr_len(buf, len, "C")) != NULL) {
+      ascii = (guint8) letter[1]; /* grab char after C */
+      if ((ascii >= zero) && (ascii <= nine)) {
+        found_C = TRUE;
+      }
+    }
+    if ((letter = g_strstr_len(buf, len, "U")) != NULL) {
+      ascii = (guint8) letter[1]; /* grab char after U */
+      if ((ascii >= zero) && (ascii <= nine)) {
+        found_U = TRUE;
+      }
+    }
+
+    /* Now look for certain common footprints.  In principle
+     * you don't need a pick-place file if you're not using
+     * SMT components.....  */
+    if (g_strstr_len(buf, len, "0201")) {
+      found_footprint = TRUE;
+    }
+    if (g_strstr_len(buf, len, "0402")) {
+      found_footprint = TRUE;
+    }
+    if (g_strstr_len(buf, len, "0603")) {
+      found_footprint = TRUE;
+    }
+    if (g_strstr_len(buf, len, "0805")) {
+      found_footprint = TRUE;
+    }
+    if (g_strstr_len(buf, len, "1206")) {
+      found_footprint = TRUE;
+    }
+
+    /* Look for board side indicator since this is required
+     * by many vendors */
+    if (g_strstr_len(buf, len, "top")) {
+      found_boardside = TRUE;
+    }
+    if (g_strstr_len(buf, len, "Top")) {
+      found_boardside = TRUE;
+    }
+    if (g_strstr_len(buf, len, "TOP")) {
+      found_boardside = TRUE;
+    }
+    /* Also look for evidence of "Layer" in header.... */
+    if (g_strstr_len(buf, len, "ayer")) {
+      found_boardside = TRUE;
+    }
+    if (g_strstr_len(buf, len, "AYER")) {
+      found_boardside = TRUE;
+    }
+
+  }
+  rewind(fd->fd);
+  free(buf);
+
+  /* Now form logical expression determining if this is a pick-place file */
+  if (found_binary) return FALSE;
+  else if (found_G54) return FALSE;
+  else if (found_M0) return FALSE;
+  else if (found_M2) return FALSE;
+  else if (found_G2) return FALSE;
+  else if (found_ADD) return FALSE;
+  else if (found_comma && (found_R || found_C || found_U) && 
+	   (found_footprint || found_boardside)) 
     return TRUE;
+  else return FALSE;
+
 } /* pick_and_place_check_file_type */
 
 
@@ -396,7 +486,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData)
     gerb_net_t *curr_net = NULL;
     int i;
     gerb_transf_t *tr_rot = gerb_transf_new();
-    
+    drill_stats_t *stats;  /* Eventually replace with pick_place_stats */
+
     image = new_gerb_image(image);
     if (image == NULL) {
 	GERB_FATAL_ERROR("malloc image failed\n");
@@ -408,6 +499,13 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData)
     }
     memset((void *)image->format, 0, sizeof(gerb_format_t));
     
+    image->layertype = PICK_AND_PLACE;
+    stats = drill_stats_new();
+    if (stats == NULL)
+        GERB_FATAL_ERROR("malloc pick_place_stats failed\n");
+    image->drill_stats = stats;
+
+
     curr_net = image->netlist;
     curr_net->layer = image->layers;
     curr_net->state = image->states;	

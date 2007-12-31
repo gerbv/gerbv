@@ -68,6 +68,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include <unistd.h>
 #endif
 
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -194,7 +195,7 @@ void gerbv_open_project_from_filename (gchar *filename) {
 	    if (screen.project == NULL)
 		GERB_FATAL_ERROR("malloc screen.project failed\n");
 	} else {
-	    GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
+	    GERB_MESSAGE("could not read %s[%d]\n", (gchar *) filename,
 				 screen.last_loaded);
 	}
 }
@@ -203,8 +204,9 @@ void gerbv_open_layer_from_filename (gchar *filename) {
 	dprintf("Opening filename = %s\n", (gchar *) filename);
 
 	if (open_image(filename, ++screen.last_loaded, FALSE) == -1) {
-		GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
+		GERB_MESSAGE("could not read %s[%d]\n", (gchar *) filename,
 			 screen.last_loaded);
+		screen.last_loaded--;
 	} else {
 		dprintf("     Successfully opened file!\n");	
 	}
@@ -348,7 +350,7 @@ load_project(project_list_t *project_list)
 			int  idx =  project_list->layerno;
 
 			if (open_image(project_list->filename, idx, FALSE) == -1) {
-				GERB_MESSAGE("could not read %s[%d]", project_list->filename,
+				GERB_MESSAGE("could not read %s[%d]\n", project_list->filename,
 				idx);
 				goto next_layer;
 			}
@@ -392,18 +394,35 @@ open_image(char *filename, int idx, int reload)
 
 	fd = gerb_fopen(filename);
 	if (fd == NULL) {
-		GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
-		return -1;
+	  GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
+	  return -1;
 	}
 
-	dprintf("In open_image, successfully opened file.  Now parse it....\n");
+	dprintf("In open_image, successfully opened file.  Now check its type....\n");
+	/* Here's where we decide what file type we have */
+	if (gerber_is_rs274x_p(fd)) {
+	  dprintf("Found RS-274X file\n");
+	  parsed_image = parse_gerb(fd);
 
-	if(drill_file_p(fd))
-		parsed_image = parse_drillfile(fd);
-	else if (pick_and_place_check_file_type(fd))
-		parsed_image = pick_and_place_parse_file_to_image (fd);
-	else 
-		parsed_image = parse_gerb(fd);
+	} else if(drill_file_p(fd)) {
+	  dprintf("Found drill file\n");
+	  parsed_image = parse_drillfile(fd);
+
+	} else if (pick_and_place_check_file_type(fd)) {
+	  dprintf("Found pick-n-place file\n");
+	  parsed_image = pick_and_place_parse_file_to_image(fd);
+
+	} else if (gerber_is_rs274d_p(fd)) {
+	  dprintf("Found RS-274D file");
+	  GERB_COMPILE_ERROR("%s: Found RS-274D file -- not supported by gerbv.\n", filename);
+	  parsed_image = NULL;
+
+	} else {
+	  /* This is not a known file */
+	  dprintf("Unknown filetype");
+	  GERB_COMPILE_ERROR("%s: Unknown file type.\n", filename);
+	  parsed_image = NULL;
+	}
 
 	if (parsed_image == NULL) {
 		return -1;
@@ -414,6 +433,7 @@ open_image(char *filename, int idx, int reload)
 	/*
 	* Do error check before continuing
 	*/
+	dprintf("In open_image, now error check file....\n");
 	error = gerb_image_verify(parsed_image);
 	if (error) {
 		GERB_COMPILE_ERROR("%s: Parse error:\n", filename);

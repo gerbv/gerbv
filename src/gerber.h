@@ -29,6 +29,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <glib.h>
 #include "gerb_image.h"
 #include "gerb_file.h"
 
@@ -36,6 +37,8 @@ extern "C" {
  * parse gerber file pointed to by fd
  */
 gerb_image_t *parse_gerb(gerb_file_t *fd);
+gboolean gerber_is_rs274x_p(gerb_file_t *fd);
+gboolean gerber_is_rs274d_p(gerb_file_t *fd);
 
 #ifdef __cplusplus
 }
