@@ -446,16 +446,26 @@ void render_refresh_rendered_image_on_screen (void) {
 	* Higher layer numbers have higher priority in the Z-order. 
 	*/
 	for(i = 0; i < MAX_FILES; i++) {
-		if (screen.file[i] && screen.file[i]->isVisible) {
+		if (screen.file[i]) {
 			cairo_t *cr;
 
 			if (screen.file[i]->privateRenderData) 
 				cairo_surface_destroy ((cairo_surface_t *) screen.file[i]->privateRenderData);
 
-			screen.file[i]->privateRenderData = 
-				(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-				CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth, screenRenderInfo.displayHeight);
-
+			/* save a little time by rendering the bottom layer without alpha, since
+			   it doesn't need it for compositing */
+			if (i == 0) {
+				screen.file[i]->privateRenderData = 
+					(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+					CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
+					screenRenderInfo.displayHeight);
+			}
+			else {
+				screen.file[i]->privateRenderData = 
+					(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+					CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
+					screenRenderInfo.displayHeight);
+			}
 			cr= cairo_create(screen.file[i]->privateRenderData );
 			render_layer_to_cairo_target (cr, screen.file[i], &screenRenderInfo);
 			dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
@@ -470,7 +480,7 @@ void render_refresh_rendered_image_on_screen (void) {
 
 	gdouble timerSeconds = g_timer_elapsed (profileTimer, &timerMicros);
 	g_warning ("Timer: %f seconds, %ld micros\n",timerSeconds,timerMicros);
-	g_timer_destroy (profileTimer);  
+	g_timer_destroy (profileTimer);
 */
 
 
@@ -517,8 +527,19 @@ void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 	
 	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactor);
 	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactor);
-			
-	cairo_set_tolerance (cr, renderInfo->renderQuality);
+	
+	if (renderInfo->renderType == 0) {
+		cairo_set_tolerance (cr, 1.5);
+		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
+	}
+	else if (renderInfo->renderType == 1) {
+		cairo_set_tolerance (cr, 2);
+		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
+	}
+	else if (renderInfo->renderType == 2) {
+		cairo_set_tolerance (cr, 1);
+		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
+	}
 
 	/* translate the draw area before drawing.  We must translate the whole
 	   drawing down an additional displayHeight to account for the negative
@@ -555,8 +576,8 @@ void render_recreate_composite_surface () {
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			cairo_set_source_surface (cr, (cairo_surface_t *) screen.file[i]->privateRenderData,
 			                              0, 0);
-
-			if ((double) screen.file[i]->alpha < 65535) {
+			/* ignore alpha if we are in high-speed render mode */
+			if (((double) screen.file[i]->alpha < 65535)&&(screenRenderInfo.renderType != 1)) {
 				cairo_paint_with_alpha(cr,(double) screen.file[i]->alpha/G_MAXUINT16);
 			}
 			else {
@@ -602,8 +623,22 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 	clipmask = gdk_pixmap_new(NULL, renderInfo->displayWidth,
 						renderInfo->displayHeight, 1);
 							
-	//gdk_gc_set_function(gc, screen.si_func);
-
+	if (renderInfo->renderType == 0) {
+		gdk_gc_set_function(gc, GDK_COPY);
+	}
+	else if (renderInfo->renderType == 1) {
+		gdk_gc_set_function(gc, GDK_AND);
+	}
+	else if (renderInfo->renderType == 2) {
+		gdk_gc_set_function(gc, GDK_OR);
+	}
+	else if (renderInfo->renderType == 3) {
+		gdk_gc_set_function(gc, GDK_XOR);
+	}
+	else {
+		gdk_gc_set_function(gc, GDK_COPY);
+	}
+	
 	/* 
 	* This now allows drawing several layers on top of each other.
 	* Higher layer numbers have higher priority in the Z-order. 

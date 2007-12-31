@@ -1,3 +1,15 @@
+2007-12-31  Julian Lamb
+	* gerbv.c: Rework project filename saving to save all layers with relative
+	  pathnames, relative to the project file location. This allows projects
+	  to be relocated, and fixes the second half of bug# 1443885.
+	* gerbv.c: More work on command line parsing.
+	* interface.c, render.c, callbacks.c: Reimplement different rendering modes
+	  into the sidepane combobox for GDK. For cairo, allow the user to change the
+	  quality vs speed.
+	* pick-and-place.c, draw.c: Correct pick and place parsing to use inches
+	  for the basic unit. Render names of pick-and-place components to help
+	  check placement.
+	
 2007-12-31  Stuart Brorson (sdb@cloud9.net)
         * src/drill.[hc], gerber.[hc], gerbv.c, pick-and-place.[hc]:
         Overhauled checks for file type.  Now all file types (Gerber,

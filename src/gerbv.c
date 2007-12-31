@@ -174,8 +174,7 @@ const char path_separator = '\\';
 const char path_separator = '/';
 #endif
 
-void load_project(project_list_t *project_list);
-int open_image(char *filename, int idx, int reload);
+int gerbv_open_image(char *filename, int idx, int reload);
 
 void gerbv_open_project_from_filename (gchar *filename) {
 	project_list_t *project_list = NULL;
@@ -183,7 +182,48 @@ void gerbv_open_project_from_filename (gchar *filename) {
 	dprintf("Opening project = %s\n", (gchar *) filename);
 	project_list = read_project_file(filename);
 	if (project_list) {
-	    load_project(project_list);
+		project_list_t *pl_tmp;
+		
+		while (project_list) {
+			GdkColor colorTemplate = {0,project_list->rgb[0],
+				project_list->rgb[1],project_list->rgb[2]};
+			if (project_list->layerno == -1) {
+				screen.background = colorTemplate;
+			} else {
+				int  idx =  project_list->layerno;
+				gchar *fullName = NULL;
+				gchar *dirName = NULL;
+				
+				if (!g_path_is_absolute (project_list->filename)) {
+					/* build the full pathname to the layer */
+					dirName = g_path_get_dirname (filename);
+					fullName = g_build_filename (dirName, project_list->filename, NULL);
+				}
+				else {
+					fullName = g_strdup (project_list->filename);
+				}
+				if (gerbv_open_image(fullName, idx, FALSE) == -1) {
+					GERB_MESSAGE("could not read %s[%d]", fullName, idx);
+					goto next_layer;
+				}
+				g_free (dirName);
+				g_free (fullName);
+				/* 
+				* Change color from default to from the project list
+				*/
+				screen.file[idx]->color = colorTemplate;
+#ifdef RENDER_USING_GDK	    
+				gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
+#endif
+				screen.file[idx]->inverted = project_list->inverted;
+			}
+		next_layer:
+			pl_tmp = project_list;
+			project_list = project_list->next;
+			g_free(pl_tmp->filename);
+			g_free(pl_tmp);
+		}
+
 	    /*
 	     * Save project filename for later use
 	     */
@@ -203,8 +243,9 @@ void gerbv_open_project_from_filename (gchar *filename) {
 void gerbv_open_layer_from_filename (gchar *filename) {	
 	dprintf("Opening filename = %s\n", (gchar *) filename);
 
-	if (open_image(filename, ++screen.last_loaded, FALSE) == -1) {
-		GERB_MESSAGE("could not read %s[%d]\n", (gchar *) filename,
+
+	if (gerbv_open_image(filename, ++screen.last_loaded, FALSE) == -1) {
+		GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
 			 screen.last_loaded);
 		screen.last_loaded--;
 	} else {
@@ -215,32 +256,33 @@ void gerbv_open_layer_from_filename (gchar *filename) {
 void gerbv_save_project_from_filename (gchar *filename) {
 	project_list_t *project_list = NULL, *tmp;
 	int idx;
-	gchar *pathName=NULL;
-    
-	if (screen.path) {
-	    project_list = (project_list_t *)g_malloc(sizeof(project_list_t));
-	    if (project_list == NULL)
-		GERB_FATAL_ERROR("malloc project_list failed\n");
-	    memset(project_list, 0, sizeof(project_list_t));
-	    project_list->next = project_list;
-	    project_list->layerno = -1;
-	    project_list->filename = screen.path;
-	    project_list->rgb[0] = screen.background.red;
-	    project_list->rgb[1] = screen.background.green;
-	    project_list->rgb[2] = screen.background.blue;
-	    project_list->next = NULL;
-	}
+	gchar *dirName = g_path_get_dirname (filename);
+
+	project_list = g_new0 (project_list_t, 1);
+	project_list->next = project_list;
+	project_list->layerno = -1;
+	project_list->filename = screen.path;
+	project_list->rgb[0] = screen.background.red;
+	project_list->rgb[1] = screen.background.green;
+	project_list->rgb[2] = screen.background.blue;
+	project_list->next = NULL;
 	
 	for (idx = 0; idx < MAX_FILES; idx++) {
 	    if (screen.file[idx]) {
-		tmp = (project_list_t *)g_malloc(sizeof(project_list_t));
-		if (tmp == NULL) 
-		    GERB_FATAL_ERROR("malloc tmp failed\n");
-		memset(tmp, 0, sizeof(project_list_t));
+		tmp = g_new0 (project_list_t, 1);
 		tmp->next = project_list;
 		tmp->layerno = idx;
 		
-		tmp->filename = screen.file[idx]->name;
+		/* figure out the relative path to the layer from the project
+		   directory */
+		if (strncmp (dirName, screen.file[idx]->name, strlen(dirName)) == 0) {
+			/* skip over the common dirname and the separator */
+			tmp->filename = (screen.file[idx]->name + strlen(dirName) + 1);
+		}
+		/* if we can't figure out a relative path, just save the absolute one */
+		else {
+			tmp->filename = screen.file[idx]->name;
+		}
 		tmp->rgb[0] = screen.file[idx]->color.red;
 		tmp->rgb[1] = screen.file[idx]->color.green;
 		tmp->rgb[2] = screen.file[idx]->color.blue;
@@ -252,17 +294,7 @@ void gerbv_save_project_from_filename (gchar *filename) {
 	if (write_project_file(screen.project, project_list)) {
 	    GERB_MESSAGE("Failed to write project\n");
 	}
-#ifdef HAVE_LIBGEN_H
-	/*
-	* Remember where we loaded file from last time
-	*/
-	pathName = dirname(filename);
-#endif
-	if (screen.path)
-		g_free(screen.path);
-	screen.path = g_strconcat (pathName,"/",NULL);
-	if (screen.path == NULL)
-		GERB_FATAL_ERROR("malloc screen.path failed\n");
+	g_free (dirName);
 }
 
 void gerbv_save_as_project_from_filename (gchar *filename) {
@@ -285,7 +317,7 @@ void gerbv_revert_all_files (void) {
 
 	for (idx = 0; idx < MAX_FILES; idx++) {
 	    if (screen.file[idx] && screen.file[idx]->name) {
-	        if (open_image(screen.file[idx]->name, idx, TRUE) == -1)
+	        if (gerbv_open_image(screen.file[idx]->name, idx, TRUE) == -1)
 		    return;
 	    }
 	}
@@ -336,53 +368,15 @@ void gerbv_change_layer_order (gint oldPosition, gint newPosition) {
 	screen.file[newPosition]=temp_file;
 }
 
-void
-load_project(project_list_t *project_list)
-{
-	project_list_t *pl_tmp;
-	GdkColor colorTemplate = {0,project_list->rgb[0],
-			project_list->rgb[1],project_list->rgb[2]};
-
-	while (project_list) {
-		if (project_list->layerno == -1) {
-			screen.background = colorTemplate;
-		} else {
-			int  idx =  project_list->layerno;
-
-			if (open_image(project_list->filename, idx, FALSE) == -1) {
-				GERB_MESSAGE("could not read %s[%d]\n", project_list->filename,
-				idx);
-				goto next_layer;
-			}
-
-			/* 
-			* Change color from default to from the project list
-			*/
-			screen.file[idx]->color = colorTemplate;
-#ifdef RENDER_USING_GDK	    
-			gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
-#endif
-			screen.file[idx]->inverted = project_list->inverted;
-		}
-next_layer:
-		pl_tmp = project_list;
-		project_list = project_list->next;
-		g_free(pl_tmp->filename);
-		g_free(pl_tmp);
-	}
-	return;
-} /* load_project */
-
 
 /* ------------------------------------------------------------------ */
 int
-open_image(char *filename, int idx, int reload)
+gerbv_open_image(char *filename, int idx, int reload)
 {
 	gerb_file_t *fd;
 	int r, g, b;
 	gerb_image_t *parsed_image;
 	gerb_verify_error_t error = GERB_IMAGE_OK;
-	char *cptr;
 
 	if (idx >= MAX_FILES) {
 		GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
@@ -475,30 +469,7 @@ open_image(char *filename, int idx, int reload)
 	/*
 	* Store filename for eventual reload
 	*/
-	screen.file[idx]->name = (char *)g_malloc(strlen(filename) + 1);
-	if (screen.file[idx]->name == NULL)
-		GERB_FATAL_ERROR("malloc screen.file[idx]->name failed\n");
-	strcpy(screen.file[idx]->name, filename);
-
-	/*
-	* Try to get a basename for the file
-	*/
-
-	cptr = strrchr(filename, path_separator);
-	if (cptr) {
-		int len;
-
-		len = strlen(cptr);
-		screen.file[idx]->basename = (char *)g_malloc(len + 1);
-		if (screen.file[idx]->basename) {
-		    strncpy(screen.file[idx]->basename, cptr+1, len);
-		    screen.file[idx]->basename[len] = '\0';
-		} else {
-		    screen.file[idx]->basename = screen.file[idx]->name;
-		}
-	} else {
-		screen.file[idx]->basename = screen.file[idx]->name;
-	}
+	screen.file[idx]->name = g_strdup (filename);
 
 	r = defaultColors[idx].red*256;
 	g = defaultColors[idx].green*256;
@@ -528,10 +499,10 @@ main(int argc, char *argv[])
 	char      *rest;
 #endif
 	char      *project_filename = NULL;
-	gboolean exportFromCommandline = FALSE;
+	gboolean exportFromCommandline = FALSE, userSuppliedOrigin=FALSE;
 	gint exportType = 0;
 	gchar *exportFilename = NULL;
-	gdouble userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,
+	gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,
 			userSuppliedScale=0.0;
 	gint userSuppliedWidth=0, userSuppliedHeight=0;
 	/*
@@ -544,14 +515,14 @@ main(int argc, char *argv[])
 	screen.execpath = dirname(argv[0]);
 #else 
 	screen.execpath = "";
-#endif    
-
+#endif
+	/* default to using the current directory path for our starting guesses
+	   on future file loads */
+	screen.path = g_get_current_dir ();
 	screen.last_loaded = -1;  /* Will be updated to 0 
 		       * when first Gerber is loaded 
 		       */
-
 	setup_init();
-
 	/*
 	* Now process command line flags
 	*/
@@ -613,6 +584,22 @@ main(int argc, char *argv[])
 				printf("gerbv version %s\n", VERSION);
 				printf("(C) Stefan Petersen (spe@stacken.kth.se)\n");
 				exit(0);
+			case 'g' :
+				if (optarg == NULL) {
+					fprintf(stderr, "You must give an origin in the format <lower left X,lower left Y>.\n");
+					exit(1);
+				}
+				if (strlen (optarg) > 20) {
+					fprintf(stderr, "Specified origin is not recognized.\n");
+					exit(1);
+				}
+				sscanf (optarg,"%f,%f",&userSuppliedOriginX,&userSuppliedOriginY);
+				if ((abs(userSuppliedOriginX) > 20) || (abs(userSuppliedOriginY) > 20)) {
+					fprintf(stderr, "Specified origin is out of bounds.\n");
+					exit(1);
+				}
+				userSuppliedOrigin = TRUE;
+				break;
 			case 'l' :
 				if (optarg == NULL) {
 					fprintf(stderr, "You must give a filename to send log to\n");
@@ -627,6 +614,37 @@ main(int argc, char *argv[])
 					exit(1);
 				}
 				project_filename = optarg;
+				break;
+			case 'r' :
+				if (optarg == NULL) {
+					fprintf(stderr, "You must give a resolution in the format <width,height>.\n");
+					exit(1);
+				}
+				if (strlen (optarg) > 20) {
+					fprintf(stderr, "Specified resolution is not recognized.\n");
+					exit(1);
+				}
+				sscanf (optarg,"%d,%d",&userSuppliedWidth,&userSuppliedHeight);
+				if (((userSuppliedWidth < 1) || (userSuppliedHeight < 1)) ||
+					((userSuppliedWidth > 2000) || (userSuppliedHeight > 2000))) {
+					fprintf(stderr, "Specified resolution is out of bounds.\n");
+					exit(1);
+				}
+				break;
+			case 's' :
+				if (optarg == NULL) {
+					fprintf(stderr, "You must give a scale in the format <scale>.\n");
+					exit(1);
+				}
+				if (strlen (optarg) > 10) {
+					fprintf(stderr, "Specified scale is not recognized.\n");
+					exit(1);
+				}
+				sscanf (optarg,"%f",&userSuppliedScale);
+				if ((userSuppliedScale < 0.001) || (userSuppliedHeight > 2000)) {
+					fprintf(stderr, "Specified scale is out of bounds.\n");
+					exit(1);
+				}
 				break;
 			case 't' :
 				if (optarg == NULL) {
@@ -690,14 +708,16 @@ main(int argc, char *argv[])
 				fprintf(stderr, "  --project=<prjfile>|-p <prjfile> : Load project file <prjfile>\n");
 				fprintf(stderr, "  --tools=<toolfile>|-t <toolfile> : Read Excellon tools from file <toolfile>\n");
 #ifdef RENDER_USING_GDK
-				fprintf(stderr, "  --export=>png>|-x <png> : Export rendered picture to a PNG file\n");
+				fprintf(stderr, "  --export=<png>|-x <png> : Export rendered picture to a PNG file\n");
 #else
 				fprintf(stderr, "  --export=<png/pdf/ps/svg>|-x <png/pdf/ps/svg> : Export rendered picture to the specified file format\n");
 #endif
 				fprintf(stderr, "  --output=<filename>|-o <filename> : Export to the file <filename>\n");
 				fprintf(stderr, "  --foreground=<hexcolor>|-f <hexcolor> : Use foreground color <hexcolor>\n");
+				/*
 				fprintf(stderr, "  --background=<hexcolor>|-b <hexcolor> : Use background color <hexcolor>\n");
 				fprintf(stderr, "  --resolution=<width,height>|-r <width,height> : Use resolution <width> and <height>\n");
+				*/
 				fprintf(stderr, "  --scale=<scale>|-s <scale> : Use the specified scale value <scale>\n");
 				fprintf(stderr, "  --origin=<x,y>|-g <x,y> : Use the specified origin to the lower left corner\n");
 				exit(1);
@@ -716,8 +736,10 @@ main(int argc, char *argv[])
 				fprintf(stderr, "  -x <png/pdf/ps/svg> : Export rendered picture to the specified file format\n");
 #endif
 				fprintf(stderr, "  -o <filename> : Export to the file <filename>\n");
+				/*
 				fprintf(stderr, "  -f <hexcolor> : Use foreground color <hexcolor>\n");
 				fprintf(stderr, "  -b <hexcolor> : Use background color <hexcolor>\n");
+				*/
 				fprintf(stderr, "  -r <width,height> : Use resolution <width> and <height>\n");
 				fprintf(stderr, "  -s <scale> : Use the specified scale value <scale>\n");
 				fprintf(stderr, "  -g <x,y> : Use the specified origin to the lower left corner\n");				
@@ -741,10 +763,35 @@ main(int argc, char *argv[])
 	* a project.
 	*/
 	if (project_filename) {
-		gerbv_open_project_from_filename (project_filename);
+		/* calculate the absolute pathname to the project if the user
+		   used a relative path */
+		g_free (screen.path);
+		if (!g_path_is_absolute(project_filename)) {
+			gchar *fullName = g_build_filename (g_get_current_dir (),
+				project_filename, NULL);
+			gerbv_open_project_from_filename (fullName);
+			screen.path = g_path_get_dirname (fullName);
+			g_free (fullName);
+		}
+		else {
+			gerbv_open_project_from_filename (project_filename);
+			screen.path = g_path_get_dirname (project_filename);
+		}
+		
 	} else {
 		for(i = optind ; i < argc; i++) {
-			gerbv_open_layer_from_filename (argv[i]);
+			g_free (screen.path);
+			if (!g_path_is_absolute(argv[i])) {
+				gchar *fullName = g_build_filename (g_get_current_dir (),
+					argv[i], NULL);
+				gerbv_open_layer_from_filename (fullName);
+				screen.path = g_path_get_dirname (fullName);
+				g_free (fullName);
+			}
+			else {
+				gerbv_open_layer_from_filename (argv[i]);
+				screen.path = g_path_get_dirname (argv[i]);
+			}
 		}
 	}
 
@@ -752,24 +799,33 @@ main(int argc, char *argv[])
 
 	if (exportFromCommandline) {
 		/* load the info struct with the default values */
-		gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, 640, 480};
+#ifdef RENDER_USING_GDK
+		gerbv_render_info_t renderInfo = {1.0, 0, 0, 0, 640, 480};
+#else
+		gerbv_render_info_t renderInfo = {1.0, 0, 0, 2, 640, 480};
+#endif	
 		gboolean freeFilename = FALSE;
 		
 		if (!exportFilename) {
 			exportFilename = g_strdup ("output.png");
 			freeFilename = TRUE;
 		}
-		render_zoom_to_fit_display (&renderInfo);
-		if (userSuppliedScale > 0.001)
-			renderInfo.scaleFactor = userSuppliedScale;
-		if (abs(userSuppliedOriginX) > 0.001 )
-			renderInfo.lowerLeftX = userSuppliedOriginX;
-		if (abs(userSuppliedOriginY) > 0.001 )
-			renderInfo.lowerLeftY = userSuppliedOriginY;	
 		if (userSuppliedWidth)
 			renderInfo.displayWidth = userSuppliedWidth;
 		if (userSuppliedHeight)
 			renderInfo.displayHeight = userSuppliedHeight;
+
+		if (userSuppliedScale > 0.001)
+			renderInfo.scaleFactor = userSuppliedScale;
+		else
+			render_zoom_to_fit_display (&renderInfo);
+
+		if (userSuppliedOrigin) {
+			if (abs(userSuppliedOriginX) > 0.001 )
+				renderInfo.lowerLeftX = userSuppliedOriginX;
+			if (abs(userSuppliedOriginY) > 0.001 )
+				renderInfo.lowerLeftY = userSuppliedOriginY;
+		}
 			
 		if (exportType == 1) {
 #ifdef EXPORT_PNG

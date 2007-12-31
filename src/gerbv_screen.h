@@ -56,8 +56,7 @@ typedef struct {
     guint16 alpha;
     gboolean isVisible;
     gpointer privateRenderData;
-    char *name;
-    char *basename;
+    char *name; /* this should be the full pathname to the file */
     char inverted;
 } gerbv_fileinfo_t;
 
@@ -71,7 +70,6 @@ typedef struct {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
     GdkColor  background;
-    GdkFunction si_func; /* Function used for superimposing layers */
     GdkColor  zoom_outline_color;
     GdkColor  dist_measure_color;
     gerbv_unit_t unit;
@@ -106,9 +104,9 @@ typedef struct {
     int curr_index;
     int last_loaded;
 
-    char *path;
-    char *execpath;    /* Path to executed version of gerbv */
-    char *project;     /* Current project to simplify save next time */
+    gchar *path;
+    gchar *execpath;    /* Path to executed version of gerbv */
+    gchar *project;     /* Current project to simplify save next time */
 
     GtkTooltips *tooltips;
     GtkWidget *popup_menu;

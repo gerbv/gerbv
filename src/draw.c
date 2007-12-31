@@ -493,7 +493,19 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 			cp_x = net->cirseg->cp_x + sr_x;
 			cp_y = net->cirseg->cp_y + sr_y;
 		}
-
+		
+		/* render any labels attached to this net */
+		/* NOTE: this is currently only used on PNP files, so we may
+		   make some assumptions here... */
+		if (net->label) {
+			cairo_set_font_size (cairoTarget, 0.1);
+			cairo_save (cairoTarget);
+			
+			cairo_move_to (cairoTarget, x1, y1);
+			cairo_scale (cairoTarget, 1, -1);
+			cairo_show_text (cairoTarget, net->label->str);
+			cairo_restore (cairoTarget);	
+		}
 		/*
 		* Polygon Area Fill routines
 		*/

@@ -39,7 +39,7 @@ typedef struct {
 	gdouble scaleFactor;
 	gdouble lowerLeftX;
 	gdouble lowerLeftY;
-	gdouble renderQuality; /* 1.0 is best, 2.0 is worst */
+	gint renderType; /* 0 is default */
 	gint displayWidth;
 	gint displayHeight;
 } gerbv_render_info_t;

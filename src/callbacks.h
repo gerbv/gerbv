@@ -138,6 +138,9 @@ void
 callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data);
 
 void
+callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer user_data);
+
+void
 callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
                                                         gchar *path,
                                                         gpointer user_data);

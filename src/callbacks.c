@@ -124,11 +124,15 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
 				     NULL);
-
+	gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
+		screen.path);
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
 		filename =
 		    gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+		/* update the last folder */
+		g_free (screen.path);
+		screen.path = gtk_file_chooser_get_current_folder ((GtkFileChooser *) screen.win.gerber);
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
@@ -159,11 +163,15 @@ callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
 				     NULL);
 
 	g_object_set (screen.win.gerber, "select-multiple", TRUE, NULL);
-
+	gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
+		screen.path);
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
 		filenames =
 		    gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER (screen.win.gerber));
+		/* update the last folder */
+		g_free (screen.path);
+		screen.path = gtk_file_chooser_get_current_folder ((GtkFileChooser *) screen.win.gerber);
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
@@ -275,7 +283,7 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 {
 #ifndef RENDER_USING_GDK
 	GtkPrintSettings *pSettings = gtk_print_operation_get_print_settings (operation);
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0,
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 2,
 		(gint) gtk_print_context_get_width (context),
 		(gint) gtk_print_context_get_height (context)};
 	cairo_t *cr;
@@ -1087,7 +1095,7 @@ void callbacks_update_ruler_scales (void) {
 }
 
 void callbacks_update_scrollbar_limits (void){
-	gerbv_render_info_t tempRenderInfo = {1.0, 0, 0, 1.0, screenRenderInfo.displayWidth,
+	gerbv_render_info_t tempRenderInfo = {1.0, 0, 0, 0, screenRenderInfo.displayWidth,
 			screenRenderInfo.displayHeight};
 	GtkAdjustment *hAdjust = (GtkAdjustment *)screen.win.hAdjustment;
 	GtkAdjustment *vAdjust = (GtkAdjustment *)screen.win.vAdjustment;
@@ -1532,8 +1540,6 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	/* if this is the first time, go ahead and call autoscale even if we don't
 	   have a model loaded */
 	if (screenRenderInfo.scaleFactor < 0.001) {
-		/* speed up rendering by reducing quality by a small amount (default is 1.0) */
-		screenRenderInfo.renderQuality = 1.5;
 		render_zoom_to_fit_display (&screenRenderInfo);
 	}
 	render_refresh_rendered_image_on_screen();
@@ -1897,6 +1903,13 @@ callbacks_update_statusbar(void)
 	if (screen.statusbar.diststr != NULL) {
 		gtk_label_set_text(GTK_LABEL(screen.win.statusMessageRight), screen.statusbar.diststr);
 	}
+}
+
+void
+callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
+	int activeRow = gtk_combo_box_get_active (widget);
+	
+	screenRenderInfo.renderType = activeRow;
 }
 
 void

@@ -89,11 +89,10 @@ pick_and_place_get_float_unit(char *str)
 	/* float, optional space, optional unit mm,cm,in,mil */
 	sscanf(str, "%lf %40s", &x, unit);
 	if(strstr(unit,"in")) {
-	    x *= 25.4;
 	} else if(strstr(unit, "cm")) {
-	    x *= 10.0;
+	    x /= 2.54;
 	} else { /* default to mils */
-		x *= 0.0254;	
+		x /= 1000;	
 	}
 	return x;
 } /* pick_and_place_get_float_unit*/
@@ -262,8 +261,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    snprintf (pnpPartData.layer, sizeof(pnpPartData.layer)-1, "%s", row[6]);	
 	    pnpPartData.mid_x = pick_and_place_get_float_unit(row[3]);
 	    pnpPartData.mid_y = pick_and_place_get_float_unit(row[4]);
-	    pnpPartData.pad_x = pnpPartData.mid_x + 1;
-	    pnpPartData.pad_y = pnpPartData.mid_y + 1;
+	    pnpPartData.pad_x = pnpPartData.mid_x + 0.04;
+	    pnpPartData.pad_y = pnpPartData.mid_y + 0.04;
 	    sscanf(row[5], "%lf", &pnpPartData.rotation); // no units, always deg
 	    /* check for coordinate sanity, and abort if it fails
 	     * Note: this is mainly to catch comment lines that get parsed
@@ -295,8 +294,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 		pnpPartData.width = 2 * tmp_y;
 		pnpPartData.shape = PART_SHAPE_STD;
 	    } else {
-		pnpPartData.length = 0.4;
-		pnpPartData.width = 0.4;
+		pnpPartData.length = 0.015;
+		pnpPartData.width = 0.015;
 		pnpPartData.shape = PART_SHAPE_UNKNOWN;
 	    }
 	}  
@@ -489,10 +488,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData)
     curr_net = image->netlist;
     curr_net->layer = image->layers;
     curr_net->state = image->states;	
-    image->info->min_x = 10;
-    image->info->min_y = 10;
-    image->info->max_x = -10;
-    image->info->max_y = -10;
+    image->info->min_x = HUGE_VAL;
+    image->info->min_y = HUGE_VAL;
+    image->info->max_x = -HUGE_VAL;
+    image->info->max_y = -HUGE_VAL;
 
     image->aperture[0] = (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
     memset((void *) image->aperture[0], 0, sizeof(gerb_aperture_t));

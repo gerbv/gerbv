@@ -514,18 +514,23 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (hbox4);
 	gtk_box_pack_start (GTK_BOX (vbox10), hbox4, FALSE, FALSE, 0);
 
-	label1 = gtk_label_new (_("Overlay method: "));
+	label1 = gtk_label_new (_("Rendering: "));
 	gtk_widget_show (label1);
 	gtk_box_pack_start (GTK_BOX (hbox4), label1, FALSE, FALSE, 0);
 
 	combobox1 = gtk_combo_box_new_text ();
 	gtk_widget_show (combobox1);
 	gtk_box_pack_start (GTK_BOX (hbox4), combobox1, TRUE, TRUE, 0);
+#ifdef RENDER_USING_GDK
 	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Normal"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Subtract"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Overlap"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("And"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Or"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Xor"));
-
+#else
+	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Normal"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("High speed"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("High quality"));
+#endif
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwindow1);
 	gtk_box_pack_start (GTK_BOX (vbox10), scrolledwindow1, TRUE, TRUE, 0);
@@ -785,6 +790,9 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 1);
 	g_signal_connect ((gpointer) toggletoolbutton_measure, "clicked",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 2);
+	g_signal_connect ((gpointer) combobox1, "changed",
+	                  G_CALLBACK (callbacks_sidepane_render_type_combo_box_changed),
+	                  NULL);
 	g_signal_connect ((gpointer) combobox2, "changed",
 	                  G_CALLBACK (callbacks_statusbar_unit_combo_box_changed),
 	                  NULL);

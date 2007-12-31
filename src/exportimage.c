@@ -69,8 +69,11 @@ void exportimage_render_to_surface_and_destroy (cairo_surface_t *cSurface, gerbv
 
 #ifdef EXPORT_PNG
 void exportimage_export_to_png_file_autoscaled (int widthInPixels, int heightInPixels, gchar *filename) {
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, widthInPixels, heightInPixels};
-	
+#ifdef RENDER_USING_GDK
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 0, widthInPixels, heightInPixels};
+#else
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 2, widthInPixels, heightInPixels};
+#endif	
 	render_zoom_to_fit_display (&renderInfo);
 	exportimage_export_to_png_file (&renderInfo, filename);
 }
@@ -109,7 +112,7 @@ void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar *fil
 #endif
 
 void exportimage_export_to_pdf_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, widthInPoints, heightInPoints};
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 2, widthInPoints, heightInPoints};
 	
 	render_zoom_to_fit_display (&renderInfo);
 	exportimage_export_to_pdf_file (&renderInfo, filename);
@@ -125,7 +128,7 @@ void exportimage_export_to_pdf_file (gerbv_render_info_t *renderInfo, gchar *fil
 }
 
 void exportimage_export_to_postscript_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, widthInPoints, heightInPoints};
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 2, widthInPoints, heightInPoints};
 	
 	render_zoom_to_fit_display (&renderInfo);
 	exportimage_export_to_postscript_file (&renderInfo, filename);
@@ -140,7 +143,7 @@ void exportimage_export_to_postscript_file (gerbv_render_info_t *renderInfo, gch
 }
 
 void exportimage_export_to_svg_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 1.0, widthInPoints, heightInPoints};
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 2, widthInPoints, heightInPoints};
 	
 	render_zoom_to_fit_display (&renderInfo);
 	exportimage_export_to_svg_file (&renderInfo, filename);
