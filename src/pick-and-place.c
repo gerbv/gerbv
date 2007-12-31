@@ -347,7 +347,6 @@ pick_and_place_check_file_type(gerb_file_t *fd)
   gboolean found_R = FALSE;
   gboolean found_U = FALSE;
   gboolean found_C = FALSE;
-  gboolean found_footprint = FALSE;
   gboolean found_boardside = FALSE;
 
   buf = g_malloc(MAXL);
@@ -415,25 +414,6 @@ pick_and_place_check_file_type(gerb_file_t *fd)
       }
     }
 
-    /* Now look for certain common footprints.  In principle
-     * you don't need a pick-place file if you're not using
-     * SMT components.....  */
-    if (g_strstr_len(buf, len, "0201")) {
-      found_footprint = TRUE;
-    }
-    if (g_strstr_len(buf, len, "0402")) {
-      found_footprint = TRUE;
-    }
-    if (g_strstr_len(buf, len, "0603")) {
-      found_footprint = TRUE;
-    }
-    if (g_strstr_len(buf, len, "0805")) {
-      found_footprint = TRUE;
-    }
-    if (g_strstr_len(buf, len, "1206")) {
-      found_footprint = TRUE;
-    }
-
     /* Look for board side indicator since this is required
      * by many vendors */
     if (g_strstr_len(buf, len, "top")) {
@@ -465,7 +445,7 @@ pick_and_place_check_file_type(gerb_file_t *fd)
   else if (found_G2) return FALSE;
   else if (found_ADD) return FALSE;
   else if (found_comma && (found_R || found_C || found_U) && 
-	   (found_footprint || found_boardside)) 
+	   found_boardside) 
     return TRUE;
   else return FALSE;
 
