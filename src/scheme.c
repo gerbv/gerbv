@@ -579,7 +579,7 @@ static int alloc_cellseg(scheme *sc, int n) {
 	  sc->alloc_seg[i] = cp;
 	  /* adjust in TYPE_BITS-bit boundary */
 	  if((unsigned)cp%adj!=0) {
-	    cp=(char*)(adj*((long)cp/adj+1));
+	    cp=(char*)(adj*((unsigned long)cp/adj+1));
 	  }
         /* insert new segment in address order */
 	  newp=(pointer)cp;
@@ -1924,8 +1924,8 @@ static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
 
 static pointer find_slot_in_env(scheme *sc, pointer env, pointer hdl, int all) 
 { 
-  pointer x,y; 
-  int location; 
+  pointer x = sc->NIL, y = sc->NIL; 
+  int location = 0; 
 
   for (x = env; x != sc->NIL; x = cdr(x)) { 
     if (is_vector(car(x))) { 
