@@ -1,3 +1,17 @@
+2008-01-01  Stefan Petersen  <spe>
+
+	Aperture macro debugging spree:
+	* src/draw_amacro.c: X and Y of aperture macro primitive 1 is
+	  apperently offset from real x and y.
+	* draw_amacro.[hc], draw.c: Make a local copy of parameters when
+	  drawing aperture macros. New parameter to function is number of 
+	  parameters.
+	* gerb_image.h, gerber.c: Increase parameter storage and check
+	  that it is enough when parsing. (In HEAD).
+	* amacro.c handles comments and calculation macros. (In HEAD).
+
+-- 1.0.3 ---
+	
 2007-11-23 16:56  Dan McMahill <danmc at users dot sourceforge dot net>
 
 	* src/: gerber.c, gerbv.c: get zoom->fit and the initial autoscaled
