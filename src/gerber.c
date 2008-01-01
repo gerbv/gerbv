@@ -1579,7 +1579,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     char *token;
     amacro_t *curr_amacro;
     amacro_t *amacro = image->amacro;
-
+    
     if (gerb_fgetc(fd) != 'D')
 	/* Insert AD error here */
 	return -1;
@@ -1633,9 +1633,13 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
      */
     for (token = strtok(NULL, "X"), i = 0; token != NULL; 
 	 token = strtok(NULL, "X"), i++) {
+	if (i == APERTURE_PARAMETERS_MAX) {
+	    GERB_COMPILE_WARNING("Maximum number of allowed parameters exceeded\n");
+	    break;
+	}
 	errno = 0;
-	/* we can't normalize these numbers for in/mm, since some may be integers used
-	   for macros */
+	/* we can't normalize these numbers for in/mm, since some may be 
+	   integers used for macros */
 	aperture->parameter[i] = strtod(token, NULL);
 	if (errno) {
             GERB_COMPILE_WARNING("Failed to read aperture parameters\n");

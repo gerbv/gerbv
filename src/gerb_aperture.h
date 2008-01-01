@@ -2,7 +2,7 @@
  * gEDA - GNU Electronic Design Automation
  * This files is a part of gerbv.
  *
- *   Copyright (C) 2007-2001 Stuart Brorson (sdb@cloud9.net)
+ *   Copyright (C) 2007-2008 Stuart Brorson (sdb@cloud9.net)
  *
  * $Id$
  *
@@ -26,7 +26,9 @@
 	
 #define APERTURE_MIN 10
 #define APERTURE_MAX 9999
- 
+
+#define APERTURE_PARAMETERS_MAX 10
+
 #include "amacro.h"
 
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
@@ -36,7 +38,7 @@ enum unit_t {INCH, MM, UNIT_UNSPECIFIED};
 typedef struct gerb_aperture {
     enum aperture_t type;
     amacro_t *amacro;
-    double parameter[5];
+    double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     enum unit_t unit;
 } gerb_aperture_t;
