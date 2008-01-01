@@ -385,6 +385,8 @@ image2pixmap(GdkPixmap **pixmap, struct gerb_image *image,
 				  image->aperture[net->aperture]->amacro->program,
 				  image->aperture[net->aperture]->amacro->nuf_push,
 				  image->aperture[net->aperture]->parameter,
+				  image->aperture[net->aperture]->nuf_parameters,
+				  
 				  unit_scale, x2, y2);
 		break;
 	    default :
