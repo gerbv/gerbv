@@ -33,6 +33,8 @@ extern "C" {
 	
 #define APERTURE_MIN 10
 #define APERTURE_MAX 999
+
+#define APERTURE_PARAMETERS_MAX 10
 	
 enum aperture_state_t {OFF, ON, FLASH};
 enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO};
@@ -84,7 +86,7 @@ typedef struct gerb_net {
 typedef struct gerb_aperture {
     enum aperture_t type;
     amacro_t *amacro;
-    double parameter[5];
+    double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     enum unit_t unit;
 } gerb_aperture_t;

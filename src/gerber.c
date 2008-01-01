@@ -970,6 +970,10 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
      */
     for (token = strtok(NULL, "X"), i = 0; token != NULL; 
 	 token = strtok(NULL, "X"), i++) {
+	if (i == APERTURE_PARAMETERS_MAX) {
+	    GERB_COMPILE_WARNING("Maximum number of parameters exceeded\n");
+	    break;
+	}
 	errno = 0;
 	aperture->parameter[i] = strtod(token, NULL);
 	if (errno) {
