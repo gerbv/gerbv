@@ -36,6 +36,8 @@
 #include <gtk/gtk.h>
 
 #include "draw_amacro.h"
+#include "gerb_image.h"
+#include "gerb_error.h"
 
 #undef round
 #define round(x) floor((double)(x) + 0.5)
@@ -630,7 +632,7 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 int
 gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		  instruction_t *program, unsigned int nuf_push,
-		  const double *parameters, int nuf_parameters, int scale, 
+		  const double *parameters, int scale, 
 		  gint x, gint y)
 {
     macro_stack_t *s = new_stack(nuf_push);
@@ -639,10 +641,10 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
     double *lp; /* Local copy of parameters */
     double tmp[2] = {0.0, 0.0};
 
-    lp = (double *)malloc(sizeof(double) * nuf_parameters);
+    lp = (double *)malloc(sizeof(double) * APERTURE_PARAMETERS_MAX);
     if (lp == NULL)
 	return -1;
-    memcpy(lp, parameters, sizeof(double) * nuf_parameters);
+    memcpy(lp, parameters, sizeof(double) * APERTURE_PARAMETERS_MAX);
     
     for(ip = program; ip != NULL; ip = ip->next) {
 	switch(ip->opcode) {
@@ -652,9 +654,17 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	    push(s, ip->data.fval);
 	    break;
         case PPUSH :
+	    if (ip->data.ival > APERTURE_PARAMETERS_MAX) {
+		GERB_COMPILE_WARNING("Tries to write outside of defined parameter register\n");
+		break;
+	    }
 	    push(s, lp[ip->data.ival - 1]);
 	    break;
 	case PPOP:
+	    if (ip->data.ival > APERTURE_PARAMETERS_MAX) {
+		GERB_COMPILE_WARNING("Tries to write outside of defined parameter register\n");
+		break;
+	    }
 	    lp[ip->data.ival - 1] = pop(s);
 	    break;
 	case ADD :
