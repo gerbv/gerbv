@@ -1,6 +1,10 @@
 2008-01-01  Stefan Petersen  <spe>
 
 	Aperture macro debugging spree:
+	* src/draw_amacro.c: Y axis should have offset negated due to 
+	  difference in screen Y direction and cartesian Y direction.
+	  Operation SUB and DIV must have a separate pop operation to
+	  make sure pop operations are in the correct order.
 	* src/draw_amacro.c: X and Y of aperture macro primitive 1 is
 	  apperently offset from real x and y.
 	* draw_amacro.[hc], draw.c: Make a local copy of parameters when
