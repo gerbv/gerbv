@@ -147,12 +147,15 @@ gerbv_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
     const int diameter_idx = 1;
     const gint full_circle = 23360;
     GdkGC *local_gc = gdk_gc_new(pixmap);
-    gint dia    = round(fabs(s->stack[diameter_idx] * scale));
+    gint dia    = round(fabs(s->stack[diameter_idx] * (double)scale));
     gint real_x = x - dia / 2;
     gint real_y = y - dia / 2;
     GdkColor color;
 
     gdk_gc_copy(local_gc, gc);
+
+    real_x += (int)(s->stack[2] * (double)scale);
+    real_y += (int)(s->stack[3] * (double)scale);
 
     /* Exposure */
     if (s->stack[exposure_idx] == 0.0) {
