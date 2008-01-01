@@ -33,6 +33,7 @@
  */
 int gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		      instruction_t *program, unsigned int nuf_push,
-		      double *parameters, int scale, gint x, gint y);
+		      const double *parameters, int nuf_parameters, int scale, 
+		      gint x, gint y);
 
 #endif /* DRAW_AMACRO_H */

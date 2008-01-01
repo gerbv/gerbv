@@ -625,11 +625,18 @@ gerbv_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 int
 gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		  instruction_t *program, unsigned int nuf_push,
-		  double *parameters, int scale, gint x, gint y)
+		  const double *parameters, int nuf_parameters, int scale, 
+		  gint x, gint y)
 {
     macro_stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
     int handled = 1;
+    double *lp; /* Local copy of parameters */
+
+    lp = (double *)malloc(sizeof(double) * nuf_parameters);
+    if (lp == NULL)
+	return -1;
+    memcpy(lp, parameters, sizeof(double) * nuf_parameters);
     
     for(ip = program; ip != NULL; ip = ip->next) {
 	switch(ip->opcode) {
@@ -639,10 +646,10 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	    push(s, ip->data.fval);
 	    break;
         case PPUSH :
-	    push(s, parameters[ip->data.ival - 1]);
+	    push(s, lp[ip->data.ival - 1]);
 	    break;
 	case PPOP:
-	    parameters[ip->data.ival - 1] = pop(s);
+	    lp[ip->data.ival - 1] = pop(s);
 	    break;
 	case ADD :
 	    push(s, pop(s) + pop(s));
@@ -705,6 +712,8 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	}
     }
     free_stack(s);
+
+    free(lp);
 
     return handled;
 } /* gerbv_draw_amacro */
