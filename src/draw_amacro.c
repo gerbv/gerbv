@@ -100,10 +100,15 @@ push(macro_stack_t *s, double val)
 } /* push */
 
 
-static double
-pop(macro_stack_t *s)
+static int
+pop(macro_stack_t *s, double *value)
 {
-    return s->stack[--s->sp];
+    if (s->sp == 0) {
+	fprintf(stderr, "Tried to pop an empty stack\n");
+	return -1;
+    }
+    *value = s->stack[--s->sp];
+    return 0;
 } /* pop */
 
 
@@ -651,11 +656,19 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	case NOP:
 	    break;
 	case PUSH :
+	    if (s->sp > nuf_push) {
+		GERB_COMPILE_WARNING("PUSH ERROR\n");
+		break;
+	    }
 	    push(s, ip->data.fval);
 	    break;
         case PPUSH :
 	    if (ip->data.ival > APERTURE_PARAMETERS_MAX) {
 		GERB_COMPILE_WARNING("Tries to write outside of defined parameter register\n");
+		break;
+	    }
+	    if (s->sp > nuf_push) {
+		GERB_COMPILE_WARNING("PUSH ERROR\n");
 		break;
 	    }
 	    push(s, lp[ip->data.ival - 1]);
@@ -665,22 +678,54 @@ gerbv_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		GERB_COMPILE_WARNING("Tries to write outside of defined parameter register\n");
 		break;
 	    }
-	    lp[ip->data.ival - 1] = pop(s);
+	    if (pop(s, &tmp[0]) < 0) {
+		fprintf(stderr, "PPOP error\n");
+		return -1;
+	    }
+	    lp[ip->data.ival - 1] = tmp[0];
 	    break;
 	case ADD :
-	    push(s, pop(s) + pop(s));
+	    if (pop(s, &tmp[0]) < 0) {
+		fprintf(stderr, "ADD error\n");
+		return -1;
+	    }
+	    if (pop(s, &tmp[1]) < 0) {
+		fprintf(stderr, "ADD error\n");
+		return -1;
+	    }
+	    push(s, tmp[0] + tmp[1]);
 	    break;
 	case SUB :
-	    tmp[0] = pop(s);
-	    tmp[1] = pop(s);
+	    if (pop(s, &tmp[0]) < 0) {
+		fprintf(stderr, "SUB error\n");
+		return -1;
+	    }
+	    if (pop(s, &tmp[1]) < 0) {
+		fprintf(stderr, "SUB error\n");
+		return -1;
+	    }
 	    push(s, tmp[1] - tmp[0]);
 	    break;
 	case MUL :
-	    push(s, pop(s) * pop(s));
+	    if (pop(s, &tmp[0]) < 0) {
+		fprintf(stderr, "MUL error\n");
+		return -1;
+	    }
+	    if (pop(s, &tmp[1]) < 0) {
+		fprintf(stderr, "MUL error\n");
+		return -1;
+	    }
+	    push(s, tmp[0] * tmp[1]);
 	    break;
 	case DIV :
-	    tmp[0] = pop(s);
-	    tmp[1] = pop(s);
+	    if (pop(s, &tmp[0]) < 0) {
+		fprintf(stderr, "DIV error\n");
+		return -1;
+	    }
+	    if (pop(s, &tmp[1]) < 0) {
+		fprintf(stderr, "DIV error\n");
+		return -1;
+	    }
 	    push(s, tmp[1] / tmp[0]);
 	    break;
 	case PRIM :
