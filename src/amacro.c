@@ -78,7 +78,8 @@ parse_aperture_macro(gerb_file_t *fd)
     instruction_t *ip = NULL;
     int primitive = 0, c, found_primitive = 0;
     enum opcodes math_op = NOP;
-    int comma = 0, neg = 0; /* negative numbers succeding , */
+    int comma = 0; /* Just read an operator (one of '*+X/) */
+    int neg = 0; /* negative numbers succeding , */
     unsigned char continueLoop = 1;
     int equate = 0;
 
@@ -167,6 +168,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		ip->opcode = math_op;
 	    }
 	    math_op = ADD;
+	    comma = 1;
 	    break;
 	case '-':
 	    if (comma) {
@@ -188,7 +190,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		ip->opcode = math_op;
 	    }
 	    math_op = DIV;
-	    comma = 0;
+	    comma = 1;
 	    break;
 	case 'X':
 	case 'x':
@@ -198,7 +200,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		ip->opcode = math_op;
 	    }
 	    math_op = MUL;
-	    comma = 0;
+	    comma = 1;
 	    break;
 	case '0':
 	    /*
