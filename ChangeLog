@@ -1,6 +1,9 @@
 2008-01-01  Stefan Petersen  <spe>
 
 	Aperture macro debugging spree:
+	* src/amacro.c: Treat mathematical operators except minus (+X/)
+	  as after a comma. From Mentor we got $4=$5X-0.0500*. Thanks jj.
+	  And Mentor...
 	* src/draw_amacro.c: Y axis should have offset negated due to 
 	  difference in screen Y direction and cartesian Y direction.
 	  Operation SUB and DIV must have a separate pop operation to
