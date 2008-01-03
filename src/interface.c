@@ -54,6 +54,7 @@
 #include "callbacks.h"
 #include "interface.h"
 #include "render.h"
+#include "icons.h"
 
 #define WIN_TITLE "Gerber Viewer"
 #  define _(String) (String)
@@ -193,7 +194,16 @@ interface_create_gui (int req_width, int req_height)
 	GtkAccelGroup *accel_group;
 	GtkTooltips *tooltips;
 
-	tooltips = gtk_tooltips_new ();
+	/* Inline icons */
+	GdkPixbuf *zoompixbuf;
+	GtkWidget *zoomimage;
+	GdkPixbuf *measurepixbuf;
+	GtkWidget *measureimage;
+	GdkPixbuf *movepixbuf;
+	GtkWidget *moveimage;
+
+
+	tooltips = gtk_tooltips_new();
 
 	accel_group = gtk_accel_group_new ();
 
@@ -477,15 +487,27 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (separatortoolitem4);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem4);
 
-	toggletoolbutton_pointer = (GtkWidget*) gtk_toggle_tool_button_new_from_stock ("gtk-apply");
+	toggletoolbutton_pointer = (GtkWidget*) gtk_toggle_tool_button_new();
+	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
+	moveimage = gtk_image_new_from_pixbuf(movepixbuf);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_pointer),
+					moveimage);
 	gtk_widget_show (toggletoolbutton_pointer);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pointer);
 
-	toggletoolbutton_zoom = (GtkWidget*) gtk_toggle_tool_button_new_from_stock ("gtk-apply");
+	toggletoolbutton_zoom = (GtkWidget*) gtk_toggle_tool_button_new();
+	zoompixbuf = gdk_pixbuf_new_from_inline(-1, lzoom, FALSE, NULL);
+	zoomimage = gtk_image_new_from_pixbuf(zoompixbuf);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_zoom),
+					zoomimage);
 	gtk_widget_show (toggletoolbutton_zoom);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_zoom);
 
-	toggletoolbutton_measure = (GtkWidget*) gtk_toggle_tool_button_new_from_stock ("gtk-apply");
+	toggletoolbutton_measure = (GtkWidget*) gtk_toggle_tool_button_new();
+	measurepixbuf = gdk_pixbuf_new_from_inline(-1, ruler, FALSE, NULL);
+	measureimage = gtk_image_new_from_pixbuf(measurepixbuf);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_measure),
+					measureimage);
 	gtk_widget_show (toggletoolbutton_measure);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_measure);
 	
