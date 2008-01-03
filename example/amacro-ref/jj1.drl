@@ -1,0 +1,35 @@
+; Version : LOCAL
+; Job     : D:\EKF\CAD\Mentor\Projects\c\cxx\cxxry\pcb\cxxry.pcb
+; User    : PC35:gn
+; Date    : Tue Sep 05 11:37:18 2006
+; Format  : 3.3 / Absolute / MM / Leading
+; Contents: Thru / Mill / Plated
+M48
+METRIC,TZ
+FMAT,2
+ICI,OFF
+T03C0.8000
+T02C1.0000
+%
+M71
+G90
+G93X0Y0
+T03
+G00X2550Y80000
+M15
+G01Y79500
+Y80500
+M16
+T02
+G00X8250Y77300
+M15
+G01X8550
+X7950
+M16
+G00X8250Y82700
+M15
+G01X8550
+X7950
+M17
+T00
+M30 
