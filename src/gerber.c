@@ -41,6 +41,8 @@
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
+//#define AMACRO_DEBUG
+
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 
 #define MAXL 200

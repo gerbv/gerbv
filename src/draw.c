@@ -110,7 +110,7 @@ pop(macro_stack_t *s)
 static void 
 gerbv_draw_circle(cairo_t *cairoTarget, gdouble diameter)
 {
-    cairo_arc (cairoTarget, 0, 0, diameter/2.0, 0, 2.0*M_PI);
+    cairo_arc (cairoTarget, 0.0, 0.0, diameter/2.0, 0, 2.0*M_PI);
     return;
 } /* gerbv_draw_circle */
 
@@ -185,6 +185,11 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
     macro_stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
     int handled = 1;
+    double lp[APERTURE_PARAMETERS_MAX];
+    double tmp[2] = {0.0, 0.0};
+    
+    /* Local copy of parameters so we don't change the content */
+    memcpy(lp, parameters, sizeof(double) * APERTURE_PARAMETERS_MAX);
     
     for(ip = program; ip != NULL; ip = ip->next) {
 	switch(ip->opcode) {
@@ -194,22 +199,26 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	    push(s, ip->data.fval);
 	    break;
 	case PPUSH :
-	    push(s, parameters[ip->data.ival - 1]);
+	    push(s, lp[ip->data.ival - 1]);
 	    break;
         case PPOP:
-            parameters[ip->data.ival - 1] = pop(s);
+            lp[ip->data.ival - 1] = pop(s);
             break;
 	case ADD :
 	    push(s, pop(s) + pop(s));
 	    break;
 	case SUB :
-	    push(s, -pop(s) + pop(s));
+	    tmp[0] = pop(s);
+	    tmp[1] = pop(s);
+	    push(s, tmp[1] - tmp[0]);
 	    break;
 	case MUL :
 	    push(s, pop(s) * pop(s));
 	    break;
 	case DIV :
-	    push(s, 1 / ((pop(s) / pop(s))));
+	    tmp[0] = pop(s);
+	    tmp[1] = pop(s);
+	    push(s, tmp[1] / tmp[0]);
 	    break;
 	case PRIM :
 	    /* 
@@ -293,8 +302,8 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_set_line_width (cairoTarget,s->stack[THERMAL_CROSSHAIR_THICKNESS]);
 		cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
 		/* do initial rotation */
-		cairo_rotate (cairoTarget, s->stack[THERMAL_ROTATION] * M_PI/180);
-		for (i=0; i<4; i++) {
+		cairo_rotate (cairoTarget, s->stack[THERMAL_ROTATION] * M_PI/180.0);
+		for (i = 0; i < 4; i++) {
 		    cairo_move_to (cairoTarget, 0.0, 0.0);
 		    cairo_line_to (cairoTarget, s->stack[THERMAL_OUTSIDE_DIAMETER] / 2.0, 0.0);
 		    cairo_rotate (cairoTarget, 90 * M_PI/180);
@@ -305,7 +314,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_paint (cairoTarget);
 
 	    } else if ((ip->data.ival == 2)||(ip->data.ival == 20)) {
-		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION] * M_PI/180);
+		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION] * M_PI/180.0);
 		cairo_set_line_width (cairoTarget, s->stack[LINE20_LINE_WIDTH]);
 		cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
 		cairo_move_to (cairoTarget, s->stack[LINE20_START_X], s->stack[LINE20_START_Y]);
@@ -317,13 +326,13 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	
 		halfWidth = s->stack[LINE21_WIDTH] / 2.0;
 		halfHeight = s->stack[LINE21_HEIGHT] / 2.0;
-		cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION] * M_PI/180);
+		cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION] * M_PI/180.0);
 		cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
 				 s->stack[LINE21_WIDTH], s->stack[LINE21_HEIGHT]);
 		cairo_fill (cairoTarget);
 		
 	    } else if (ip->data.ival == 22) {
-		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION] * M_PI/180);
+		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION] * M_PI/180.0);
 		cairo_rectangle (cairoTarget, s->stack[LINE22_LOWER_LEFT_X],
 				 s->stack[LINE22_LOWER_LEFT_Y], s->stack[LINE22_WIDTH],
 				 s->stack[LINE22_HEIGHT]);
