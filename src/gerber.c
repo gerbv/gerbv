@@ -1581,10 +1581,15 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     char *token;
     amacro_t *curr_amacro;
     amacro_t *amacro = image->amacro;
-    
-    if (gerb_fgetc(fd) != 'D')
-	/* Insert AD error here */
+    gerb_stats_t *stats = image->gerb_stats;
+
+    if (gerb_fgetc(fd) != 'D') {
+	gerb_stats_add_error(stats->error_list,
+			     -1,
+			     g_strdup_printf("Found AD code with no following 'D'.\n"),
+			     ERROR);	
 	return -1;
+    }
     
     /*
      * Get aperture no
@@ -1636,7 +1641,10 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     for (token = strtok(NULL, "X"), i = 0; token != NULL; 
 	 token = strtok(NULL, "X"), i++) {
 	if (i == APERTURE_PARAMETERS_MAX) {
-	    GERB_COMPILE_WARNING("Maximum number of allowed parameters exceeded\n");
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Maximum number of allowed parameters exceeded in aperture %d\n", ano),
+				 ERROR);
 	    break;
 	}
 	errno = 0;
@@ -1644,7 +1652,10 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 	   integers used for macros */
 	aperture->parameter[i] = strtod(token, NULL);
 	if (errno) {
-            GERB_COMPILE_WARNING("Failed to read aperture parameters\n");
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Failed to read all parameters exceeded in aperture %d\n", ano),
+				 WARNING);
             aperture->parameter[i] = 0.0;
         }
     }
