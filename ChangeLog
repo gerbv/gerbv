@@ -1,3 +1,7 @@
+2008-1-2  Stuart Brorson (sdb@cloud9.net)
+	* src/Makefile.am, src/icons.h, src/interface.c:
+	Added icons for toggletool buttons: move, zoom, and measure.
+
 2007-12-31  Julian Lamb
 	* gerbv.c: Rework project filename saving to save all layers with relative
 	  pathnames, relative to the project file location. This allows projects
