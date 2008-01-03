@@ -177,10 +177,32 @@ gerbv_draw_aperature_hole(cairo_t *cairoTarget, gdouble dimensionX, gdouble dime
     return;
 } /* gerbv_draw_aperature_hole */
 
+gboolean
+draw_update_macro_exposure (cairo_t *cairoTarget, cairo_operator_t clearOperator,
+		cairo_operator_t darkOperator, gdouble exposureSetting){
+	if (exposureSetting == 0.0) {
+		return FALSE;
+	}
+	else if (exposureSetting == 0.0) {
+		cairo_set_operator (cairoTarget, darkOperator);
+	}
+	else if (exposureSetting == 2.0) {
+		/* reverse current exposure setting */
+		cairo_operator_t currentOperator = cairo_get_operator (cairoTarget);
+		if (currentOperator == clearOperator) {
+			cairo_set_operator (cairoTarget, darkOperator);
+		}
+		else {
+			cairo_set_operator (cairoTarget, clearOperator);
+		}
+	}
+	return TRUE;
+}
 
 int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
-	instruction_t *program, unsigned int nuf_push, gdouble *parameters)
+	cairo_operator_t darkOperator, instruction_t *program, unsigned int nuf_push,
+	gdouble *parameters)
 {
     macro_stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
@@ -226,40 +248,53 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	     * The exposure is always the first element on stack independent
 	     * of aperture macro.
 	     */
+	    cairo_save (cairoTarget);
 	    cairo_new_path(cairoTarget);
+	    cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
+
 	    if (ip->data.ival == 1) {
-		gerbv_draw_circle (cairoTarget, s->stack[CIRCLE_DIAMETER]);
-		cairo_fill (cairoTarget);
+	      if (draw_update_macro_exposure (cairoTarget, clearOperator, 
+	      		darkOperator, s->stack[CIRCLE_EXPOSURE])){
+		    	cairo_translate (cairoTarget, s->stack[CIRCLE_X_CENTER],
+				       s->stack[CIRCLE_Y_CENTER]);
+			gerbv_draw_circle (cairoTarget, s->stack[CIRCLE_DIAMETER]);
+			cairo_fill (cairoTarget);
+		}
 	    } else if (ip->data.ival == 4) {
 		int pointCounter,numberOfPoints;
 		numberOfPoints = (int) s->stack[OUTLINE_NUMBER_OF_POINTS];
 		
-		cairo_rotate (cairoTarget, s->stack[numberOfPoints * 2 + OUTLINE_ROTATION - 2] * M_PI/180);
-		cairo_move_to (cairoTarget, s->stack[OUTLINE_FIRST_X], s->stack[OUTLINE_FIRST_Y]);
-		
-		for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
-		    cairo_line_to (cairoTarget, s->stack[pointCounter * 2 + OUTLINE_FIRST_X],
-				   s->stack[pointCounter * 2 + OUTLINE_FIRST_Y]);
+		if (draw_update_macro_exposure (cairoTarget, clearOperator, 
+					darkOperator, s->stack[OUTLINE_EXPOSURE])){
+			cairo_rotate (cairoTarget, s->stack[numberOfPoints * 2 + OUTLINE_ROTATION - 2] * M_PI/180);
+			cairo_move_to (cairoTarget, s->stack[OUTLINE_FIRST_X], s->stack[OUTLINE_FIRST_Y]);
+			
+			for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
+			    cairo_line_to (cairoTarget, s->stack[pointCounter * 2 + OUTLINE_FIRST_X],
+					   s->stack[pointCounter * 2 + OUTLINE_FIRST_Y]);
+			}
+			/* although the gerber specs allow for an open outline,
+			   I interpret it to mean the outline should be closed by the
+			   rendering softare automatically, since there is no dimension
+			   for line thickness.
+			*/
+			cairo_fill (cairoTarget);
 		}
-		
-		/* although the gerber specs allow for an open outline,
-		   I interpret it to mean the outline should be closed by the
-		   rendering softare automatically, since there is no dimension
-		   for line thickness.
-		*/
-		cairo_fill (cairoTarget);
-
 	    } else if (ip->data.ival == 5) {
-		cairo_move_to (cairoTarget, s->stack[POLYGON_CENTER_X],
-			       s->stack[POLYGON_CENTER_Y]);
-		gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER] / 2.0,
-				   s->stack[POLYGON_NUMBER_OF_POINTS], s->stack[POLYGON_ROTATION]);
-		cairo_fill (cairoTarget);
-		
+	      if (draw_update_macro_exposure (cairoTarget, clearOperator, 
+	      			darkOperator, s->stack[POLYGON_EXPOSURE])){
+			cairo_translate (cairoTarget, s->stack[POLYGON_CENTER_X],
+				       s->stack[POLYGON_CENTER_Y]);
+			gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER] / 2.0,
+					   s->stack[POLYGON_NUMBER_OF_POINTS], s->stack[POLYGON_ROTATION]);
+			cairo_fill (cairoTarget);
+		}
 	    } else if (ip->data.ival == 6) {
 		gdouble diameter, gap;
 		int circleIndex;
 		
+		cairo_translate (cairoTarget, s->stack[MOIRE_CENTER_X],
+			       s->stack[MOIRE_CENTER_Y]);
 		cairo_rotate (cairoTarget, s->stack[MOIRE_ROTATION] * M_PI/180);
 		diameter = s->stack[MOIRE_OUTSIDE_DIAMETER] -  s->stack[MOIRE_CIRCLE_THICKNESS];
 		gap = s->stack[MOIRE_GAP_WIDTH] + s->stack[MOIRE_CIRCLE_THICKNESS];
@@ -281,66 +316,67 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_stroke (cairoTarget);
 
 	    } else if (ip->data.ival == 7) {
-		gdouble diameter, ci_thickness;
 		gint i;
-		cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
+		gdouble startAngle1, startAngle2, endAngle1, endAngle2;
 		
-		ci_thickness = (s->stack[THERMAL_OUTSIDE_DIAMETER] - 
-				s->stack[THERMAL_INSIDE_DIAMETER]) / 2.0;
-		diameter = (s->stack[THERMAL_INSIDE_DIAMETER] + ci_thickness);
-		
-		/* we don't want to delete any previously rendered items on
-		   this layer, so we need to render the thermal to a private
-		   group and then composite it on top of the existing layer */
-		cairo_push_group (cairoTarget);
-		/* draw non-filled circle */
-		cairo_set_line_width (cairoTarget, ci_thickness);
-		gerbv_draw_circle(cairoTarget, diameter);
-		cairo_stroke (cairoTarget);
-		/* draw crosshairs */
-		cairo_set_operator (cairoTarget, clearOperator);
-		cairo_set_line_width (cairoTarget,s->stack[THERMAL_CROSSHAIR_THICKNESS]);
-		cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
-		/* do initial rotation */
+		cairo_translate (cairoTarget, s->stack[THERMAL_CENTER_X],
+			       s->stack[THERMAL_CENTER_Y]);
 		cairo_rotate (cairoTarget, s->stack[THERMAL_ROTATION] * M_PI/180.0);
+		startAngle1 = atan (s->stack[THERMAL_CROSSHAIR_THICKNESS]/s->stack[THERMAL_INSIDE_DIAMETER]);
+		endAngle1 = M_PI/2 - 2*startAngle1;
+		endAngle2 = atan (s->stack[THERMAL_CROSSHAIR_THICKNESS]/s->stack[THERMAL_OUTSIDE_DIAMETER]);
+		startAngle2 = M_PI/2 - 2*endAngle2;
 		for (i = 0; i < 4; i++) {
-		    cairo_move_to (cairoTarget, 0.0, 0.0);
-		    cairo_line_to (cairoTarget, s->stack[THERMAL_OUTSIDE_DIAMETER] / 2.0, 0.0);
-		    cairo_rotate (cairoTarget, 90 * M_PI/180);
+			cairo_arc (cairoTarget, 0, 0, s->stack[THERMAL_INSIDE_DIAMETER]/2.0, startAngle1, endAngle1);
+			cairo_rel_line_to (cairoTarget, 0, s->stack[THERMAL_CROSSHAIR_THICKNESS]);
+			cairo_arc_negative (cairoTarget, 0, 0, s->stack[THERMAL_OUTSIDE_DIAMETER]/2.0,
+				startAngle2, endAngle2);
+			cairo_rel_line_to (cairoTarget, -s->stack[THERMAL_CROSSHAIR_THICKNESS],0);
+			cairo_fill (cairoTarget);
+			cairo_rotate (cairoTarget, 90 * M_PI/180);
 		}
-		cairo_stroke (cairoTarget);
-		cairo_set_operator (cairoTarget, oldOperator);
-		cairo_pop_group_to_source (cairoTarget);
-		cairo_paint (cairoTarget);
-
 	    } else if ((ip->data.ival == 2)||(ip->data.ival == 20)) {
-		cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION] * M_PI/180.0);
-		cairo_set_line_width (cairoTarget, s->stack[LINE20_LINE_WIDTH]);
-		cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
-		cairo_move_to (cairoTarget, s->stack[LINE20_START_X], s->stack[LINE20_START_Y]);
-		cairo_line_to (cairoTarget, s->stack[LINE20_END_X], s->stack[LINE20_END_Y]);
-		cairo_stroke (cairoTarget);
-
+	      if (draw_update_macro_exposure (cairoTarget, clearOperator, 
+	      			darkOperator, s->stack[LINE20_EXPOSURE])){
+			cairo_set_line_width (cairoTarget, s->stack[LINE20_LINE_WIDTH]);
+			cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
+			cairo_rotate (cairoTarget, s->stack[LINE20_ROTATION] * M_PI/180.0);
+			cairo_move_to (cairoTarget, s->stack[LINE20_START_X], s->stack[LINE20_START_Y]);
+			cairo_line_to (cairoTarget, s->stack[LINE20_END_X], s->stack[LINE20_END_Y]);
+			cairo_stroke (cairoTarget);
+		}
 	    } else if (ip->data.ival == 21) {
 		gdouble halfWidth, halfHeight;
-	
-		halfWidth = s->stack[LINE21_WIDTH] / 2.0;
-		halfHeight = s->stack[LINE21_HEIGHT] / 2.0;
-		cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION] * M_PI/180.0);
-		cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
-				 s->stack[LINE21_WIDTH], s->stack[LINE21_HEIGHT]);
-		cairo_fill (cairoTarget);
 		
+		if (draw_update_macro_exposure (cairoTarget, clearOperator,
+						darkOperator, s->stack[LINE22_EXPOSURE])){
+			halfWidth = s->stack[LINE21_WIDTH] / 2.0;
+			halfHeight = s->stack[LINE21_HEIGHT] / 2.0;
+			cairo_translate (cairoTarget, s->stack[LINE21_CENTER_X], s->stack[LINE21_CENTER_Y]);
+			cairo_rotate (cairoTarget, s->stack[LINE21_ROTATION] * M_PI/180.0);
+			cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
+					 s->stack[LINE21_WIDTH], s->stack[LINE21_HEIGHT]);
+			cairo_fill (cairoTarget);
+		}	
 	    } else if (ip->data.ival == 22) {
-		cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION] * M_PI/180.0);
-		cairo_rectangle (cairoTarget, s->stack[LINE22_LOWER_LEFT_X],
-				 s->stack[LINE22_LOWER_LEFT_Y], s->stack[LINE22_WIDTH],
-				 s->stack[LINE22_HEIGHT]);
-		cairo_fill (cairoTarget);
+	    	gdouble halfWidth, halfHeight;
+		
+		if (draw_update_macro_exposure (cairoTarget, clearOperator,
+					darkOperator, s->stack[LINE22_EXPOSURE])){
+			halfWidth = s->stack[LINE22_WIDTH] / 2.0;
+			halfHeight = s->stack[LINE22_HEIGHT] / 2.0;
+			cairo_translate (cairoTarget, s->stack[LINE22_LOWER_LEFT_X],
+					s->stack[LINE22_LOWER_LEFT_Y]);
+			cairo_rotate (cairoTarget, s->stack[LINE22_ROTATION] * M_PI/180.0);
+			cairo_rectangle (cairoTarget, 0, 0,
+					s->stack[LINE22_WIDTH], s->stack[LINE22_HEIGHT]);
+			cairo_fill (cairoTarget);
+		}
 	    } else {
 		handled = 0;
 	    }
-	    
+	    cairo_set_operator (cairoTarget, oldOperator);
+	    cairo_restore (cairoTarget);
 	    /* 
 	     * Here we reset the stack pointer. It's not general correct
 	     * correct to do this, but since I know how the compiler works
@@ -352,6 +388,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	default :
 	    break;
 	}
+	
     }
     free_stack(s);
     return handled;
@@ -671,7 +708,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 					case MACRO :
 						cairo_save (cairoTarget);
 						cairo_scale (cairoTarget, 1/scale, 1/scale);
-						gerbv_draw_amacro(cairoTarget, drawOperatorClear,
+						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 								  image->aperture[net->aperture]->amacro->program,
 								  image->aperture[net->aperture]->amacro->nuf_push,
 								  image->aperture[net->aperture]->parameter);

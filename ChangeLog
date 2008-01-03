@@ -1,3 +1,12 @@
+2007-01-03  Julian Lamb
+	* draw.c: Fix some amacro rendering problems that Stefan uncovered.
+	* draw.c: Change the thermal rendering logic to do rendering without
+	  push/pop operations, so that vector output will work (previously, the
+	  cairo export defaulted to an image export for thermal rendering).
+	* render.c: Fix autoscaling for new amacro test (although the hack will be
+	  unnecessary after we reorder the amacro rendering process to correctly
+	  calculate the extents of each flashed macro aperture).
+	  
 2008-1-2  Stuart Brorson (sdb@cloud9.net)
 	* src/Makefile.am, src/icons.h, src/interface.c:
 	Added icons for toggletool buttons: move, zoom, and measure.
