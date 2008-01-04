@@ -150,10 +150,11 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *toolbutton_zoom_in;
 	GtkWidget *toolbutton_zoom_out;
 	GtkWidget *toolbutton_zoom_fit;
-	GtkWidget *separatortoolitem3;
-	GtkWidget *toolbutton_analyze;
-	GtkWidget *toolbutton_validate;
-	GtkWidget *toolbutton_control;
+	/* Implement these tool buttons later when we have icons */
+/*	GtkWidget *separatortoolitem3; */
+/*	GtkWidget *toolbutton_analyze; */
+/*	GtkWidget *toolbutton_validate;*/
+/*	GtkWidget *toolbutton_control; */
 	GtkWidget *separatortoolitem4;
 	GtkWidget *toggletoolbutton_pointer;
 	GtkWidget *toggletoolbutton_zoom;
@@ -467,6 +468,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (toolbutton_zoom_fit);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_zoom_fit);
 
+/* Turn these on later when we have icons for these buttons */
+/*
 	separatortoolitem3 = (GtkWidget*) gtk_separator_tool_item_new ();
 	gtk_widget_show (separatortoolitem3);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem3);
@@ -482,6 +485,7 @@ interface_create_gui (int req_width, int req_height)
 	toolbutton_control = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-apply");
 	gtk_widget_show (toolbutton_control);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_control);
+*/
 
 	separatortoolitem4 = (GtkWidget*) gtk_separator_tool_item_new ();
 	gtk_widget_show (separatortoolitem4);
