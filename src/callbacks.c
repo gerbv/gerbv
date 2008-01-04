@@ -100,13 +100,18 @@ void
 callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	/* first, unload all files */
+	/* Unload all layers and then clear layer window */
+	gerbv_unload_all_layers ();
+	callbacks_update_layer_tree ();
+
+	/* Destroy project info */
 	if (screen.project) {
 	    g_free(screen.project);
 	    screen.project = NULL;
 	}
-	gerbv_unload_all_layers ();
-	callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_FILE_AS);
+
+	render_refresh_rendered_image_on_screen();
+
 }
 
 
