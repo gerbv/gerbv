@@ -57,7 +57,7 @@
 #include "icons.h"
 
 #define WIN_TITLE "Gerber Viewer"
-#  define _(String) (String)
+#define _(String) (String)
 
 void
 rename_main_window(char *filename, GtkWidget *main_win)
@@ -203,6 +203,7 @@ interface_create_gui (int req_width, int req_height)
 	GdkPixbuf *movepixbuf;
 	GtkWidget *moveimage;
 
+	GtkStockItem item;
 
 	tooltips = gtk_tooltips_new();
 
@@ -233,7 +234,7 @@ interface_create_gui (int req_width, int req_height)
 	                        GDK_n, (GdkModifierType) GDK_CONTROL_MASK,
 	                        GTK_ACCEL_VISIBLE);
 
-	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open Project"));
+	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open Project..."));
 	gtk_widget_show (open_project);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_project);
 	gtk_tooltips_set_tip (tooltips, open_project, _("Open an existing Gerber Viewer project"), NULL);
@@ -242,7 +243,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (image33);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
 
-	open_layer = gtk_menu_item_new_with_mnemonic (_("Open _Layer(s)"));
+	open_layer = gtk_menu_item_new_with_mnemonic (_("Open _Layer(s)..."));
 	gtk_widget_show (open_layer);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_layer);
 	gtk_tooltips_set_tip (tooltips, open_layer, _("Open Gerber, drill, or pick and place file(s)"), NULL);
@@ -255,6 +256,12 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_show (save);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save);
 
+	if (gtk_stock_lookup("gtk-save-as", &item)) {
+	    gchar new[] = "Save _As..."; 
+	    item.label = new;
+	    gtk_stock_add(&item, 1);
+	}
+	
 	save_as = gtk_image_menu_item_new_from_stock ("gtk-save-as", accel_group);
 	gtk_widget_show (save_as);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as);
@@ -271,27 +278,27 @@ interface_create_gui (int req_width, int req_height)
 	export_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (export), export_menu);
 
-	png = gtk_menu_item_new_with_mnemonic (_("PNG"));
+	png = gtk_menu_item_new_with_mnemonic (_("PNG..."));
 	gtk_widget_show (png);
 	gtk_container_add (GTK_CONTAINER (export_menu), png);
-	gtk_tooltips_set_tip (tooltips, png, _("Export project to a PNG file"), NULL);
+	gtk_tooltips_set_tip (tooltips, png, _("Export project to a PNG file..."), NULL);
 
 #ifndef RENDER_USING_GDK
 	GtkWidget *pdf;
 	GtkWidget *svg;
 	GtkWidget *postscript;
 	
-	pdf = gtk_menu_item_new_with_mnemonic (_("PDF"));
+	pdf = gtk_menu_item_new_with_mnemonic (_("PDF..."));
 	gtk_widget_show (pdf);
 	gtk_container_add (GTK_CONTAINER (export_menu), pdf);
-	gtk_tooltips_set_tip (tooltips, pdf, _("Export project to a PDF file"), NULL);
+	gtk_tooltips_set_tip (tooltips, pdf, _("Export project to a PDF file..."), NULL);
 
-	svg = gtk_menu_item_new_with_mnemonic (_("SVG"));
+	svg = gtk_menu_item_new_with_mnemonic (_("SVG..."));
 	gtk_widget_show (svg);
 	gtk_container_add (GTK_CONTAINER (export_menu), svg);
 	gtk_tooltips_set_tip (tooltips, svg, _("Export project to a SVG file"), NULL);
 	
-	postscript = gtk_menu_item_new_with_mnemonic (_("PostScript"));
+	postscript = gtk_menu_item_new_with_mnemonic (_("PostScript..."));
 	gtk_widget_show (postscript);
 	gtk_container_add (GTK_CONTAINER (export_menu), postscript);
 	gtk_tooltips_set_tip (tooltips, postscript, _("Export project to a PostScript file"), NULL);
@@ -303,6 +310,12 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_set_sensitive (separator1, FALSE);
 #ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
+	if (gtk_stock_lookup("gtk-print", &item)) {
+	    gchar new[] = "_Print..."; 
+	    item.label = new;
+	    gtk_stock_add(&item, 1);
+	}
+
 	print = gtk_image_menu_item_new_from_stock ("gtk-print", accel_group);
 	gtk_widget_show (print);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), print);
@@ -348,15 +361,15 @@ interface_create_gui (int req_width, int req_height)
 	menuitem_analyze_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_analyze), menuitem_analyze_menu);
 
-	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze active Gerber layers"));
+	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze active Gerber layers..."));
 	gtk_widget_show (analyze_active_gerbers);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_gerbers);
 
-	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze active drill layers"));
+	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze active drill layers..."));
 	gtk_widget_show (analyze_active_drill);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_drill);
 
-	control_gerber_options = gtk_menu_item_new_with_mnemonic (_("Control Gerber options"));
+	control_gerber_options = gtk_menu_item_new_with_mnemonic (_("Control Gerber options..."));
 	gtk_widget_show (control_gerber_options);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), control_gerber_options);
 
@@ -398,12 +411,12 @@ interface_create_gui (int req_width, int req_height)
 	menuitem10_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem10), menuitem10_menu);
 
-	online_manual = gtk_menu_item_new_with_mnemonic (_("_Online Manual"));
+	online_manual = gtk_menu_item_new_with_mnemonic (_("_Online Manual..."));
 	gtk_widget_show (online_manual);
 	gtk_container_add (GTK_CONTAINER (menuitem10_menu), online_manual);
 	gtk_tooltips_set_tip (tooltips, online_manual, _("View the online help documentation"), NULL);
 
-	about = gtk_image_menu_item_new_with_mnemonic (_("_About GerberViewer"));
+	about = gtk_image_menu_item_new_with_mnemonic (_("_About GerberViewer..."));
 	gtk_widget_show (about);
 	gtk_container_add (GTK_CONTAINER (menuitem10_menu), about);
 	gtk_tooltips_set_tip (tooltips, about, _("View information about this software"), NULL);

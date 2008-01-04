@@ -1,6 +1,10 @@
 2008-01-04  Stefan Petersen  <spe>
 
-	* draw-gdk.c: Fixed aperture macro drawing in GDK target as well.
+	* src/interface.c: Changed menu entries where another window is popped
+	  up so text ends in three dots. "Save as" and "Print" uses built in
+	  GTK operations, so the hack there got not so nice. Is there other 
+	  ways, like predefined with the three dots?
+	* src/draw-gdk.c: Fixed aperture macro drawing in GDK target as well.
 
 2008-01-03  Julian Lamb
 	* draw.c: Fix some amacro rendering problems that Stefan uncovered.
