@@ -1,4 +1,8 @@
-2007-01-03  Julian Lamb
+2008-01-04  Stefan Petersen  <spe>
+
+	* draw-gdk.c: Fixed aperture macro drawing in GDK target as well.
+
+2008-01-03  Julian Lamb
 	* draw.c: Fix some amacro rendering problems that Stefan uncovered.
 	* draw.c: Change the thermal rendering logic to do rendering without
 	  push/pop operations, so that vector output will work (previously, the

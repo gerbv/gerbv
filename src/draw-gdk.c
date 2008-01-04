@@ -146,6 +146,8 @@ gerbv_gdk_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 {
     const int exposure_idx = 0;
     const int diameter_idx = 1;
+    const int x_offset_idx = 2;
+    const int y_offset_idx = 3;
     const gint full_circle = 23360;
     GdkGC *local_gc = gdk_gc_new(pixmap);
     gint dia    = round(fabs(s->stack[diameter_idx] * scale));
@@ -154,6 +156,9 @@ gerbv_gdk_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
     GdkColor color;
 
     gdk_gc_copy(local_gc, gc);
+
+    real_x += (int)(s->stack[x_offset_idx] * (double)scale);
+    real_y -= (int)(s->stack[y_offset_idx] * (double)scale);
 
     /* Exposure */
     if (s->stack[exposure_idx] == 0.0) {
@@ -631,6 +636,13 @@ gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
     macro_stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
     int handled = 1;
+    double *lp; /* Local copy of parameters */
+    double tmp[2] = {0.0, 0.0};
+
+    lp = (double *)malloc(sizeof(double) * APERTURE_PARAMETERS_MAX);
+    if (lp == NULL)
+	return -1;
+    memcpy(lp, parameters, sizeof(double) * APERTURE_PARAMETERS_MAX);
     
     for(ip = program; ip != NULL; ip = ip->next) {
 	switch(ip->opcode) {
@@ -640,19 +652,26 @@ gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 	    push(s, ip->data.fval);
 	    break;
         case PPUSH :
-	    push(s, parameters[ip->data.ival - 1]);
+	    push(s, lp[ip->data.ival - 1]);
+	    break;
+	case PPOP:
+	    lp[ip->data.ival - 1] = pop(s);
 	    break;
 	case ADD :
 	    push(s, pop(s) + pop(s));
 	    break;
 	case SUB :
-	    push(s, -pop(s) + pop(s));
+	    tmp[0] = pop(s);
+	    tmp[1] = pop(s);
+	    push(s, tmp[1] - tmp[0]);
 	    break;
 	case MUL :
 	    push(s, pop(s) * pop(s));
 	    break;
 	case DIV :
-	    push(s, 1 / ((pop(s) / pop(s))));
+	    tmp[0] = pop(s);
+	    tmp[1] = pop(s);
+	    push(s, tmp[1] / tmp[0]);
 	    break;
 	case PRIM :
 	    /* 
