@@ -1255,7 +1255,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPointer), TRUE);
 			screen.tool = POINTER;
 			screen.state = NORMAL;
-			gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
 						  GERBV_DEF_CURSOR);
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
 				 "Click to select. Right click and drag to zoom.");
@@ -1265,7 +1265,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.tool = PAN;
 			screen.state = NORMAL;
 			cursor = gdk_cursor_new(GDK_FLEUR);
-			gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
 					  cursor);
 			gdk_cursor_destroy(cursor);
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
@@ -1276,7 +1276,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.tool = ZOOM;
 			screen.state = NORMAL;
 			cursor = gdk_cursor_new(GDK_SIZING);
-			gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
 					      cursor);
 			gdk_cursor_destroy(cursor);
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
@@ -1287,7 +1287,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.tool = MEASURE;
 			screen.state = NORMAL;
 			cursor = gdk_cursor_new(GDK_CROSSHAIR);
-			gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
 					  cursor);
 			gdk_cursor_destroy(cursor);
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, "Click and drag to measure a distance.");

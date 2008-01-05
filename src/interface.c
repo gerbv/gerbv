@@ -955,6 +955,7 @@ interface_create_gui (int req_width, int req_height)
 	
 	gtk_widget_set_events(drawingarea, GDK_EXPOSURE_MASK
 			  | GDK_LEAVE_NOTIFY_MASK
+			  | GDK_ENTER_NOTIFY_MASK
 			  | GDK_BUTTON_PRESS_MASK
 			  | GDK_BUTTON_RELEASE_MASK
 			  | GDK_KEY_PRESS_MASK
