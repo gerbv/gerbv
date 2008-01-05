@@ -1236,15 +1236,18 @@ callbacks_unselect_all_tool_buttons (void) {
 
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 	gint toolNumber = GPOINTER_TO_INT (user_data);
+	GdkCursor *cursor;
 	
 	/* make sure se don't get caught in endless recursion here */
 	if (screen.win.updatingTools)
 		return;
 	screen.win.updatingTools = TRUE;
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPointer), FALSE);
+	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), FALSE);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonZoom), FALSE);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), FALSE);
 	switch (toolNumber) {
@@ -1254,21 +1257,35 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.state = NORMAL;
 			gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
 						  GERBV_DEF_CURSOR);
-			snprintf(screen.statusbar.diststr, MAX_DISTLEN, "Click and drag to pan. Right click and drag to zoom.");
+			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+				 "Click to select. Right click and drag to zoom.");
 			break;
 		case 1:
+			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), TRUE);
+			screen.tool = PAN;
+			screen.state = NORMAL;
+			cursor = gdk_cursor_new(GDK_FLEUR);
+			gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
+					  cursor);
+			gdk_cursor_destroy(cursor);
+			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+				 "Click and drag to pan. Right click and drag to zoom.");
+			break;
+		case 2:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonZoom), TRUE);
 			screen.tool = ZOOM;
 			screen.state = NORMAL;
+			cursor = gdk_cursor_new(GDK_SIZING);
 			gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
-						  GERBV_DEF_CURSOR);
-			snprintf(screen.statusbar.diststr, MAX_DISTLEN, "Click or drag around an area to zoom in. Shift+click to zoom out.");
+					      cursor);
+			gdk_cursor_destroy(cursor);
+			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+				 "Click or drag around an area to zoom in. Shift+click to zoom out.");
 			break;
-		case 2:
+		case 3:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), TRUE);
 			screen.tool = MEASURE;
 			screen.state = NORMAL;
-			GdkCursor *cursor;
 			cursor = gdk_cursor_new(GDK_CROSSHAIR);
 			gdk_window_set_cursor(gtk_widget_get_parent_window(screen.drawing_area),
 					  cursor);
@@ -1729,6 +1746,10 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 	switch (event->button) {
 		case 1 :
 			if (screen.tool == POINTER) {
+				/* select */
+			        break; /* No op for now */
+			}
+			else if (screen.tool == PAN) {
 				/* Plain panning */
 				screen.state = IN_MOVE;
 				screen.last_x = event->x;
@@ -1806,9 +1827,9 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 		}
 		
 		if (screen.tool == POINTER) {
+		}
+		else if (screen.tool == PAN) {
 			screen.state = NORMAL;
-			gdk_window_set_cursor(gtk_widget_get_parent_window(widget),
-					  GERBV_DEF_CURSOR);
 		}
 		else if (screen.tool == ZOOM) {
 		}

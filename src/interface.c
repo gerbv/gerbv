@@ -157,6 +157,7 @@ interface_create_gui (int req_width, int req_height)
 /*	GtkWidget *toolbutton_control; */
 	GtkWidget *separatortoolitem4;
 	GtkWidget *toggletoolbutton_pointer;
+	GtkWidget *toggletoolbutton_pan;
 	GtkWidget *toggletoolbutton_zoom;
 	GtkWidget *toggletoolbutton_measure;
 	GtkWidget *hpaned1;
@@ -196,6 +197,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkTooltips *tooltips;
 
 	/* Inline icons */
+	GdkPixbuf *pointerpixbuf;
+	GtkWidget *pointerimage;
 	GdkPixbuf *zoompixbuf;
 	GtkWidget *zoomimage;
 	GdkPixbuf *measurepixbuf;
@@ -505,12 +508,20 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem4);
 
 	toggletoolbutton_pointer = (GtkWidget*) gtk_toggle_tool_button_new();
-	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
-	moveimage = gtk_image_new_from_pixbuf(movepixbuf);
+	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
+	pointerimage = gtk_image_new_from_pixbuf(pointerpixbuf);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_pointer),
-					moveimage);
+					pointerimage);
 	gtk_widget_show (toggletoolbutton_pointer);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pointer);
+
+	toggletoolbutton_pan = (GtkWidget*) gtk_toggle_tool_button_new();
+	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
+	moveimage = gtk_image_new_from_pixbuf(movepixbuf);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_pan),
+					moveimage);
+	gtk_widget_show (toggletoolbutton_pan);
+	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pan);
 
 	toggletoolbutton_zoom = (GtkWidget*) gtk_toggle_tool_button_new();
 	zoompixbuf = gdk_pixbuf_new_from_inline(-1, lzoom, FALSE, NULL);
@@ -823,12 +834,16 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) toolbutton_zoom_fit, "clicked",
 	                  G_CALLBACK (callbacks_fit_to_window_activate),
 	                  NULL);
+
 	g_signal_connect ((gpointer) toggletoolbutton_pointer, "clicked",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 0);
-	g_signal_connect ((gpointer) toggletoolbutton_zoom, "clicked",
+	g_signal_connect ((gpointer) toggletoolbutton_pan, "clicked",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 1);
-	g_signal_connect ((gpointer) toggletoolbutton_measure, "clicked",
+	g_signal_connect ((gpointer) toggletoolbutton_zoom, "clicked",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 2);
+	g_signal_connect ((gpointer) toggletoolbutton_measure, "clicked",
+	                  G_CALLBACK (callbacks_change_tool), (gpointer) 3);
+
 	g_signal_connect ((gpointer) combobox1, "changed",
 	                  G_CALLBACK (callbacks_sidepane_render_type_combo_box_changed),
 	                  NULL);
@@ -980,6 +995,7 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.sidepane_notebook = sidepane_notebook;
 
 	screen.win.toolButtonPointer = toggletoolbutton_pointer;
+	screen.win.toolButtonPan = toggletoolbutton_pan;
 	screen.win.toolButtonZoom = toggletoolbutton_zoom;
 	screen.win.toolButtonMeasure = toggletoolbutton_measure;
 	/* 

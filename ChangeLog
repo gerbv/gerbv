@@ -1,3 +1,8 @@
+2008-1-4  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/gerbv_screen.h, src/icons.h, 
+	src/interface.c: Added pointer button to toggletools on task
+	bar.
+	
 2008-01-04  Stefan Petersen  <spe>
 
 	* src/interface.c: Changed menu entries where another window is popped

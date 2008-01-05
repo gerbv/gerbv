@@ -47,7 +47,7 @@
 #define COORD2MMS(c) ((c)*25.4)
 
 typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED, SCROLLBAR} gerbv_state_t;
-typedef enum {POINTER, ZOOM, MEASURE} gerbv_tool_t;
+typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
 typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
 
 typedef struct {
@@ -94,6 +94,7 @@ typedef struct {
 	GtkWidget *gerber;
 	GtkWidget *about_dialog;
 	GtkWidget *toolButtonPointer;
+	GtkWidget *toolButtonPan;
 	GtkWidget *toolButtonZoom;
 	GtkWidget *toolButtonMeasure;
 	gboolean updatingTools;
