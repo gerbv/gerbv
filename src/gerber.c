@@ -73,8 +73,8 @@ static void parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 static void parse_D_code(gerb_file_t *fd, gerb_state_t *state, 
 			 gerb_image_t *image);
 static int parse_M_code(gerb_file_t *fd, gerb_image_t *image);
-static void parse_rs274x(gerb_file_t *fd, gerb_image_t *image, 
-			 gerb_state_t *state);
+static void parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
+	gerb_state_t *state, gerb_net_t *curr_net, gerb_stats_t *stats, gchar *directoryPath);
 static int parse_aperture_definition(gerb_file_t *fd, 
 				     gerb_aperture_t *aperture,
 				     gerb_image_t *image);
@@ -100,61 +100,17 @@ gerb_layer_t *knockoutLayer = NULL;
 #ifndef RENDER_USING_GDK
 	cairo_matrix_t currentMatrix;
 #endif  
-
-/* ------------------------------------------------------------------ */
-gerb_image_t *
-parse_gerb(gerb_file_t *fd)
-{
-    gerb_state_t *state = NULL;
-    gerb_image_t *image = NULL;
-    gerb_net_t *curr_net = NULL;
+    
+gboolean
+gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_state_t *state,
+	gerb_net_t *curr_net, gerb_stats_t *stats, gerb_file_t *fd, gchar *directoryPath) {
     int read, coord, len;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
     double aperture_size;
     double scale;
-    gerb_stats_t *stats;
-
-    /* added by t.motylewski@bfad.de
-     * many locales redefine "." as "," and so on, 
-     * so sscanf and strtod has problems when
-     * reading files using %f format */
-    setlocale(LC_NUMERIC, "C" );
-
-    /* 
-     * Create new state.  This is used locally to keep track
-     * of the photoplotter's state as the Gerber is read in.
-     */
-    state = (gerb_state_t *)g_malloc(sizeof(gerb_state_t));
-    if (state == NULL)
-	GERB_FATAL_ERROR("malloc state failed\n");
-
-    /*
-     * Set some defaults
-     */
-    memset((void *)state, 0, sizeof(gerb_state_t));
-
-    /* 
-     * Create new image.  This will be returned.
-     */
-    image = new_gerb_image(image);
-    if (image == NULL)
-	GERB_FATAL_ERROR("malloc image failed\n");
-    curr_net = image->netlist;
-    image->layertype = GERBER;
-    image->gerb_stats = gerb_stats_new();
-    stats = (gerb_stats_t *) image->gerb_stats;
-    /* set active layer and netstate to point to first default one created */
-    state->layer = image->layers;
-    state->state = image->states;
-    curr_net->layer = state->layer;
-    curr_net->state = state->state;
-
-    /*
-     * Start parsing
-     */
-    dprintf("In parse_gerb, starting to parse file...\n");
-
+    gboolean foundEOF = FALSE;
+    
     while ((read = gerb_fgetc(fd)) != EOF) {
         /* figure out the scale, since we need to normailize 
 	   all dimensions to inches */
@@ -177,10 +133,7 @@ parse_gerb(gerb_file_t *fd)
 	    case 1 :
 	    case 2 :
 	    case 3 :
-	      gerber_update_any_running_knockout_measurements (image);
-	      gerber_calculate_final_justify_effects(image);
-		g_free(state);
-		return image;
+	      foundEOF = TRUE;
 		break;
 	    default:
 		gerb_stats_add_error(stats->error_list,
@@ -259,7 +212,7 @@ parse_gerb(gerb_file_t *fd)
 	    break;
 	case '%':
 	    dprintf("... Found %% code\n");
-	    parse_rs274x(fd, image, state);
+	    parse_rs274x(levelOfRecursion, fd, image, state, curr_net, stats, directoryPath);
 	    while (1){
 	      char c=gerb_fgetc(fd);
 	      if(c==EOF || c=='%')
@@ -532,22 +485,81 @@ parse_gerb(gerb_file_t *fd)
 	case 13 :
 	case ' ' :
 	case '\t' :
+	case 0 :
 	    break;
 	default:
 	    stats->unknown++;
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
-				 g_strdup_printf("Found unknown character (whitespace?) %c[%d]\n", 
+				 g_strdup_printf("Found unknown character (whitespace?) [%d]%c\n", 
 						 read, read),
 				 ERROR);
 	}  /* switch((char) (read & 0xff)) */
     }
+    return foundEOF;
+}
+
+/* ------------------------------------------------------------------ */
+gerb_image_t *
+parse_gerb(gerb_file_t *fd, gchar *directoryPath)
+{
+    gerb_state_t *state = NULL;
+    gerb_image_t *image = NULL;
+    gerb_net_t *curr_net = NULL;
+    gerb_stats_t *stats;
+    gboolean foundEOF = FALSE;
     
-    gerb_stats_add_error(stats->error_list,
+    /* added by t.motylewski@bfad.de
+     * many locales redefine "." as "," and so on, 
+     * so sscanf and strtod has problems when
+     * reading files using %f format */
+    setlocale(LC_NUMERIC, "C" );
+
+    /* 
+     * Create new state.  This is used locally to keep track
+     * of the photoplotter's state as the Gerber is read in.
+     */
+    state = (gerb_state_t *)g_malloc(sizeof(gerb_state_t));
+    if (state == NULL)
+	GERB_FATAL_ERROR("malloc state failed\n");
+
+    /*
+     * Set some defaults
+     */
+    memset((void *)state, 0, sizeof(gerb_state_t));
+
+    /* 
+     * Create new image.  This will be returned.
+     */
+    image = new_gerb_image(image);
+    if (image == NULL)
+	GERB_FATAL_ERROR("malloc image failed\n");
+    curr_net = image->netlist;
+    image->layertype = GERBER;
+    image->gerb_stats = gerb_stats_new();
+    stats = (gerb_stats_t *) image->gerb_stats;
+    /* set active layer and netstate to point to first default one created */
+    state->layer = image->layers;
+    state->state = image->states;
+    curr_net->layer = state->layer;
+    curr_net->state = state->state;
+
+    /*
+     * Start parsing
+     */
+    dprintf("In parse_gerb, starting to parse file...\n");
+    foundEOF = gerber_parse_file_segment (1, image, state, curr_net, stats,
+    				fd, directoryPath);
+
+    
+    if (!foundEOF) {
+    	gerb_stats_add_error(stats->error_list,
 			  -1,
 			  "File is missing Gerber EOF code.\n",
 			  ERROR);
-
+    }
+    g_free(state);
+    
     dprintf("               ... done parsing Gerber file\n");
     gerber_update_any_running_knockout_measurements (image);
     gerber_calculate_final_justify_effects(image);
@@ -969,7 +981,8 @@ parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 
 /* ------------------------------------------------------------------ */
 static void 
-parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
+parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state,
+	gerb_net_t *curr_net, gerb_stats_t *stats, gchar *directoryPath)
 {
     int op[2];
     char str[3];
@@ -977,7 +990,6 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
     gerb_aperture_t *a = NULL;
     amacro_t *tmp_amacro;
     int ano;
-    gerb_stats_t *stats=image->gerb_stats;
     gdouble scale = 1.0;
     
     if (state->state->unit == MM)
@@ -1221,7 +1233,42 @@ parse_rs274x(gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state)
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
-	break;    
+	break;
+    case A2I('I','F'): /* Include file */
+      {
+		gchar *includeFilename = gerb_fgetstring(fd, '*');
+
+		if (includeFilename) {
+			gchar *fullPath;
+			if (!g_path_is_absolute(includeFilename)) {
+				fullPath = g_build_filename (directoryPath, includeFilename, NULL);
+			}
+			else {
+				fullPath = g_strdup (includeFilename);
+			}
+			if (levelOfRecursion < 10) {
+				
+				
+				gerb_file_t *includefd = NULL;
+				includefd = gerb_fopen(fullPath);
+				if (includefd) {
+					gerber_parse_file_segment (levelOfRecursion + 1, image, state, curr_net, stats, includefd, directoryPath);
+					gerb_fclose(includefd);
+				}
+				else {
+					gerb_stats_add_error(stats->error_list, -1,
+			     			g_strdup_printf("Included file cannot be found:%s\n",fullPath), ERROR);
+				}
+				g_free (fullPath);
+			}
+			else {
+				gerb_stats_add_error(stats->error_list, -1,
+			     		g_strdup_printf("Parser encountered more than 10 levels of include file recursion, which is not allowed by the RS-274X spec\n"), ERROR);
+			}
+			
+		}
+	}
+	break;
     case A2I('I','O'): /* Image offset */
 	op[0] = gerb_fgetc(fd);
 	

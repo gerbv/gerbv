@@ -72,5 +72,6 @@ EXTRA_DIST= \
 	test-layer-offset-1.png \
 	test-layer-rotation-1.png \
 	test-layer-scale-factor-1.png \
-	test-layer-step-and_repeat-1.png
+	test-layer-step-and_repeat-1.png \
+	test-include-file-1.png
 

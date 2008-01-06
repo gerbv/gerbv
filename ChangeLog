@@ -17,6 +17,8 @@
 	  using alpha correctly, so all test files now render with a slightly
 	  different color (since the black can bleed through the blue color
 	  a tiny bit).
+	* gerber.c: Add support for include files (%IF) in the parser, which
+	  hopefully completes 100% implementation of the RS-274X spec (yay!).
 
 2008-1-4  Stuart Brorson (sdb@cloud9.net)
 	* src/callbacks.c, src/gerbv_screen.h, src/icons.h, 

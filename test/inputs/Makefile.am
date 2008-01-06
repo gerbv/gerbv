@@ -17,4 +17,6 @@ EXTRA_DIST= \
 	test-layer-offset-1.gbx \
 	test-layer-rotation-1.gbx \
 	test-layer-scale-factor-1.gbx \
-	test-layer-step-and_repeat-1.gbx
+	test-layer-step-and_repeat-1.gbx \
+	test-include-file-1.gbx \
+	include-file-1.gbx

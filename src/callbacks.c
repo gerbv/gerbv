@@ -1504,7 +1504,8 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 			}
 		}
 	}
-	else if (event->button == 3) {
+	/* don't pop up the menu if we don't have any loaded files */
+	else if ((event->button == 3)&&(screen.last_loaded >= 0)) {
 		gtk_menu_popup(GTK_MENU(screen.win.layerTreePopupMenu), NULL, NULL, NULL, NULL, 
 			   event->button, event->time);
 	}

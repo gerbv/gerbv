@@ -398,8 +398,11 @@ gerbv_open_image(char *filename, int idx, int reload)
 	/* Here's where we decide what file type we have */
 	if (gerber_is_rs274x_p(fd)) {
 	  dprintf("Found RS-274X file\n");
-	  parsed_image = parse_gerb(fd);
-
+	  /* figure out the directory path in case parse_gerb needs to
+	     load any include files */
+	  gchar *currentLoadDirectory = g_path_get_dirname (filename);
+	  parsed_image = parse_gerb(fd, currentLoadDirectory);
+	  g_free (currentLoadDirectory);
 	} else if(drill_file_p(fd)) {
 	  dprintf("Found drill file\n");
 	  parsed_image = parse_drillfile(fd);
