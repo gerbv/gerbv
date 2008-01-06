@@ -27,12 +27,15 @@
 #include <glib.h>
 #include <locale.h>
 #include <errno.h>
+#include <ctype.h>
 
 
 #include "config.h"
 #include "gerber.h"
 #include "gerb_error.h"
 #include "gerb_stats.h"
+
+//#define AMACRO_DEBUG
 
 #ifndef RENDER_USING_GDK
   #include <cairo.h>
@@ -98,7 +101,7 @@ gboolean knockoutMeasure = FALSE;
 gdouble knockoutLimitXmin,knockoutLimitYmin,knockoutLimitXmax,knockoutLimitYmax;
 gerb_layer_t *knockoutLayer = NULL;
 #ifndef RENDER_USING_GDK
-	cairo_matrix_t currentMatrix;
+cairo_matrix_t currentMatrix;
 #endif  
     
 gboolean
@@ -133,7 +136,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	    case 1 :
 	    case 2 :
 	    case 3 :
-	      foundEOF = TRUE;
+		foundEOF = TRUE;
 		break;
 	    default:
 		gerb_stats_add_error(stats->error_list,
@@ -147,7 +150,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	    stats->X++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == TRAILING) {
-
+		
 		switch ((image->format->x_int + image->format->x_dec) - len) {
 		case 5:
 		    coord *= 10;
@@ -214,9 +217,9 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	    dprintf("... Found %% code\n");
 	    parse_rs274x(levelOfRecursion, fd, image, state, curr_net, stats, directoryPath);
 	    while (1){
-	      char c=gerb_fgetc(fd);
-	      if(c==EOF || c=='%')
-		break;
+		char c=gerb_fgetc(fd);
+		if(c==EOF || c=='%')
+		    break;
 	    }
 	    break;
 	case '*':  
@@ -224,7 +227,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	    stats->star++;
 	    if (state->changed == 0) break;
 	    state->changed = 0;
-
+	    
 	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 	    if (curr_net->next == NULL)
 		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
@@ -248,8 +251,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	    curr_net->stop_y = (double)state->curr_y / y_scale;
 	    delta_cp_x = (double)state->delta_cp_x / x_scale;
 	    delta_cp_y = (double)state->delta_cp_y / y_scale;
-
-
+	    
+	    
 	    switch (state->interpolation) {
 	    case CW_CIRCULAR :
 		curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));
@@ -336,9 +339,9 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 
 		state->parea_start_node->nuf_pcorners++;
 	    }  /* if (state->in_parea_fill && state->parea_start_node) */
-
+	    
 	    curr_net->interpolation = state->interpolation;
-
+	    
 	    /*
 	     * If we detected the end of Polygon Area Fill we go back to
 	     * the interpolation we had before that.
@@ -368,11 +371,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 		(image->aperture[curr_net->aperture]->type != MACRO)) {
 		aperture_size = image->aperture[curr_net->aperture]->parameter[0];
 		if (image->aperture[curr_net->aperture]->unit == MM)
-			scale = 25.4;
+		    scale = 25.4;
 		else 
-			scale = 1.0;
-	    }
-	    else {
+		    scale = 1.0;
+	    } else {
 		aperture_size = 0.0;
 		scale = 1.0;
 	    }
@@ -390,93 +392,121 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	     */
 	    if ((curr_net->aperture == 0) && !state->in_parea_fill) 
 		break;
-
+	    
 	    /* only update the min/max values if we are drawing and have an
 	       aperture size */
 	    if ((curr_net->aperture_state != OFF)){
-	      double repeat_off_X=0, repeat_off_Y=0;
-	      
-	      /*
-	       * If step_and_repeat (%SR%) is used, check min_x,max_y etc for the
-	       * ends of the step_and_repeat lattice. This goes wrong in the case of
-	       * negative dist_X or dist_Y, in which case we should compare against
-	       * the startpoints of the lines, not the stoppoints, but that seems an
-	       * uncommon case (and the error isn't very big any way).
-	       *
-	       */
+		double repeat_off_X = 0.0, repeat_off_Y = 0.0;
+		
+		/*
+		 * If step_and_repeat (%SR%) is used, check min_x,max_y etc for
+		 * the ends of the step_and_repeat lattice. This goes wrong in 
+		 * the case of negative dist_X or dist_Y, in which case we 
+		 * should compare against the startpoints of the lines, not 
+		 * the stoppoints, but that seems an uncommon case (and the 
+		 * error isn't very big any way).
+		 */
 		repeat_off_X = (state->layer->stepAndRepeat.X - 1)*
-		  state->layer->stepAndRepeat.dist_X;
+		    state->layer->stepAndRepeat.dist_X;
 		repeat_off_Y = (state->layer->stepAndRepeat.Y - 1)*
-		  state->layer->stepAndRepeat.dist_Y;
-
-
+		    state->layer->stepAndRepeat.dist_Y;
+		
+		
 #ifndef RENDER_USING_GDK
 		cairo_matrix_init (&currentMatrix, 1, 0, 0, 1, 0, 0);
 		/* offset image */
-		cairo_matrix_translate (&currentMatrix, image->info->offsetA, image->info->offsetB);
+		cairo_matrix_translate (&currentMatrix, image->info->offsetA, 
+					image->info->offsetB);
 		/* do image rotation */
 		cairo_matrix_rotate (&currentMatrix, image->info->imageRotation);
-		/* it's a new layer, so recalculate the new transformation matrix
-		   for it */
+		/* it's a new layer, so recalculate the new transformation 
+		 * matrix for it */
 		/* do any rotations */
 		cairo_matrix_rotate (&currentMatrix, state->layer->rotation);
 			
 		/* calculate current layer and state transformation matrices */
 		/* apply scale factor */
-		cairo_matrix_scale (&currentMatrix, state->state->scaleA, state->state->scaleB);
+		cairo_matrix_scale (&currentMatrix, state->state->scaleA, 
+				    state->state->scaleB);
 		/* apply offset */
-		cairo_matrix_translate (&currentMatrix, state->state->offsetA, state->state->offsetB);
+		cairo_matrix_translate (&currentMatrix, state->state->offsetA,
+					state->state->offsetB);
 		/* apply mirror */
 		switch (state->state->mirrorState) {
-			case FLIPA:
-				cairo_matrix_scale (&currentMatrix, -1, 1);
-				break;
-			case FLIPB:
-				cairo_matrix_scale (&currentMatrix, 1, -1);
-				break;
-			case FLIPAB:
-				cairo_matrix_scale (&currentMatrix, -1, -1);
-				break;
-			default:
-				break;
+		case FLIPA:
+		    cairo_matrix_scale (&currentMatrix, -1, 1);
+		    break;
+		case FLIPB:
+		    cairo_matrix_scale (&currentMatrix, 1, -1);
+		    break;
+		case FLIPAB:
+		    cairo_matrix_scale (&currentMatrix, -1, -1);
+		    break;
+		default:
+		    break;
 		}
 		/* finally, apply axis select */
 		if (state->state->axisSelect == SWAPAB) {
-			/* we do this by rotating 270 (counterclockwise, then mirroring
-			   the Y axis */
-			cairo_matrix_rotate (&currentMatrix, 3 * M_PI / 2);
-			cairo_matrix_scale (&currentMatrix, 1, -1);
+		    /* we do this by rotating 270 (counterclockwise, then 
+		     *  mirroring the Y axis 
+		     */
+		    cairo_matrix_rotate (&currentMatrix, 3 * M_PI / 2);
+		    cairo_matrix_scale (&currentMatrix, 1, -1);
 		}
 #endif
 
-	      /* check both the start and stop of the aperture points against
-	         a running min/max counter */
-	      /* Note: only check start coordinate if this isn't a flash, since
-	         the start point may be bogus if it is a flash */
-	      if (curr_net->aperture_state != FLASH) {
-		      gerber_update_min_and_max (&image->info->min_x, &image->info->min_y,
-		      	&image->info->max_x, &image->info->max_y, curr_net->start_x,
-		      	curr_net->start_y, aperture_size / 2.0 / scale);
-		      gerber_update_min_and_max (&image->info->min_x, &image->info->min_y,
-		      	&image->info->max_x, &image->info->max_y, curr_net->start_x + repeat_off_X,
-		      	curr_net->start_y + repeat_off_Y, aperture_size / 2.0 / scale);
-	      }
-	      gerber_update_min_and_max (&image->info->min_x, &image->info->min_y,
-	      	&image->info->max_x, &image->info->max_y, curr_net->stop_x,
-	      	curr_net->stop_y, aperture_size / 2.0 / scale);
-	      gerber_update_min_and_max (&image->info->min_x, &image->info->min_y,
-	      	&image->info->max_x, &image->info->max_y, curr_net->stop_x + repeat_off_X,
-	      	curr_net->stop_y + repeat_off_Y, aperture_size / 2.0 / scale);
-
+		/* check both the start and stop of the aperture points against
+		   a running min/max counter */
+		/* Note: only check start coordinate if this isn't a flash, 
+		   since the start point may be bogus if it is a flash */
+		if (curr_net->aperture_state != FLASH) {
+		    gerber_update_min_and_max (&image->info->min_x, 
+					       &image->info->min_y,
+					       &image->info->max_x, 
+					       &image->info->max_y, 
+					       curr_net->start_x,
+					       curr_net->start_y, 
+					       aperture_size / 2.0 / scale);
+		    gerber_update_min_and_max (&image->info->min_x, 
+					       &image->info->min_y,
+					       &image->info->max_x, 
+					       &image->info->max_y, 
+					       curr_net->start_x + repeat_off_X,
+					       curr_net->start_y + repeat_off_Y,
+					       aperture_size / 2.0 / scale);
+		}
+		gerber_update_min_and_max (&image->info->min_x, 
+					   &image->info->min_y,
+					   &image->info->max_x,
+					   &image->info->max_y, 
+					   curr_net->stop_x,
+					   curr_net->stop_y, 
+					   aperture_size / 2.0 / scale);
+		gerber_update_min_and_max (&image->info->min_x, 
+					   &image->info->min_y,
+					   &image->info->max_x, 
+					   &image->info->max_y, 
+					   curr_net->stop_x + repeat_off_X,
+					   curr_net->stop_y + repeat_off_Y, 
+					   aperture_size / 2.0 / scale);
+		
 		if (knockoutMeasure) {
-			if (curr_net->aperture_state != FLASH) {
-			      gerber_update_min_and_max (&knockoutLimitXmin, &knockoutLimitYmin, 
-			      	&knockoutLimitXmax, &knockoutLimitYmax, curr_net->start_x,
-			      	curr_net->start_y, aperture_size / 2.0 / scale);
-		      }
-		      gerber_update_min_and_max (&knockoutLimitXmin, &knockoutLimitYmin, 
-		      	&knockoutLimitXmax, &knockoutLimitYmax, curr_net->stop_x,
-		      	curr_net->stop_y, aperture_size / 2.0 / scale);		
+		    if (curr_net->aperture_state != FLASH) {
+			gerber_update_min_and_max (&knockoutLimitXmin, 
+						   &knockoutLimitYmin, 
+						   &knockoutLimitXmax, 
+						   &knockoutLimitYmax, 
+						   curr_net->start_x,
+						   curr_net->start_y, 
+						   aperture_size / 2.0 / scale);
+		    }
+		    gerber_update_min_and_max (&knockoutLimitXmin, 
+					       &knockoutLimitYmin, 
+					       &knockoutLimitXmax, 
+					       &knockoutLimitYmax, 
+					       curr_net->stop_x,
+					       curr_net->stop_y, 
+					       aperture_size / 2.0 / scale);
 		}
 	    }
 	    
@@ -498,6 +528,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
     }
     return foundEOF;
 }
+
 
 /* ------------------------------------------------------------------ */
 gerb_image_t *
@@ -522,7 +553,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
     state = (gerb_state_t *)g_malloc(sizeof(gerb_state_t));
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
-
+    
     /*
      * Set some defaults
      */
@@ -549,14 +580,14 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
      */
     dprintf("In parse_gerb, starting to parse file...\n");
     foundEOF = gerber_parse_file_segment (1, image, state, curr_net, stats,
-    				fd, directoryPath);
+					  fd, directoryPath);
 
     
     if (!foundEOF) {
     	gerb_stats_add_error(stats->error_list,
-			  -1,
-			  "File is missing Gerber EOF code.\n",
-			  ERROR);
+			     -1,
+			     "File is missing Gerber EOF code.\n",
+			     ERROR);
     }
     g_free(state);
     
@@ -573,90 +604,85 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
  * Returns TRUE if it is, FALSE if not.
  */
 gboolean
-gerber_is_rs274x_p(gerb_file_t *fd) {
-  char *buf;
-  int len = 0;
-  char *letter;
-  int ascii;
-  int zero = 48;  /* ascii 0 */
-  int nine = 57;  /* ascii 9 */
-  int i;
-  gboolean found_binary = FALSE;
-  gboolean found_ADD = FALSE;
-  gboolean found_D0 = FALSE;
-  gboolean found_D2 = FALSE;
-  gboolean found_M0 = FALSE;
-  gboolean found_M2 = FALSE;
-  gboolean found_star = FALSE;
-  gboolean found_X = FALSE;
-  gboolean found_Y = FALSE;
-
-  buf = (char *) g_malloc(MAXL);
-  if (buf == NULL) 
-    GERB_FATAL_ERROR("malloc buf failed while checking for rs274x.\n");
-
-  while (fgets(buf, MAXL, fd->fd) != NULL) {
-    len = strlen(buf);
+gerber_is_rs274x_p(gerb_file_t *fd) 
+{
+    char *buf;
+    int len = 0;
+    char *letter;
+    int i;
+    gboolean found_binary = FALSE;
+    gboolean found_ADD = FALSE;
+    gboolean found_D0 = FALSE;
+    gboolean found_D2 = FALSE;
+    gboolean found_M0 = FALSE;
+    gboolean found_M2 = FALSE;
+    gboolean found_star = FALSE;
+    gboolean found_X = FALSE;
+    gboolean found_Y = FALSE;
     
-    /* First look through the file for indications of its type */
+    buf = (char *) g_malloc(MAXL);
+    if (buf == NULL) 
+	GERB_FATAL_ERROR("malloc buf failed while checking for rs274x.\n");
+    
+    while (fgets(buf, MAXL, fd->fd) != NULL) {
+	len = strlen(buf);
+    
+	/* First look through the file for indications of its type */
+	
+	/* check that file is not binary (non-printing chars and white spaces)*/
+	for (i = 0; i < len; i++) {
+	    if (!isprint(buf[i]) && (buf[i] != '\r') && 
+		(buf[i] != '\n') && (buf[i] != '\t')) {
+		found_binary = TRUE;
+	    }
+	}
+	if (g_strstr_len(buf, len, "%ADD")) {
+	    found_ADD = TRUE;
+	}
+	if (g_strstr_len(buf, len, "D00")) {
+	    found_D0 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "D02")) {
+	    found_D2 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M0")) {
+	    found_M0 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M00")) {
+	    found_M0 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M2")) {
+	    found_M2 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M02")) {
+	    found_M2 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "*")) {
+	    found_star = TRUE;
+	}
+	/* look for X<number> or Y<number> */
+	if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
+	    if (isdigit(letter[1])) { /* grab char after X */
+		found_X = TRUE;
+	    }
+	}
+	if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
+	    if (isdigit(letter[1])) { /* grab char after Y */
+		found_Y = TRUE;
+	    }
+	}
+    }
+    rewind(fd->fd);
+    free(buf);
+    
+    /* Now form logical expression determining if the file is RS-274X */
+    if ((found_D0 || found_D2 || found_M0 || found_M2) && 
+	found_ADD && found_star && (found_X || found_Y) &&
+	!found_binary) 
+	return TRUE;
 
-    /* check that file is not binary (non-printing chars */
-    for (i = 0; i < len; i++) {
-      ascii = (int) buf[i];
-      if ((ascii > 128) || (ascii < 0)) {
-        found_binary = TRUE;
-      }
-    }
-    if (g_strstr_len(buf, len, "%ADD")) {
-      found_ADD = TRUE;
-    }
-    if (g_strstr_len(buf, len, "D00")) {
-      found_D0 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "D2")) {
-      found_D2 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "D02")) {
-      found_D2 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "M0")) {
-      found_M0 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "M00")) {
-      found_M0 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "M2")) {
-      found_M2 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "M02")) {
-      found_M2 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "*")) {
-      found_star = TRUE;
-    }
-    /* look for X<number> or Y<number> */
-    if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
-      ascii = (int) letter[1]; /* grab char after X */
-      if ((ascii >= zero) && (ascii <= nine)) {
-	found_X = TRUE;
-      }
-    }
-    if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
-      ascii = (int) letter[1]; /* grab char after Y */
-      if ((ascii >= zero) && (ascii <= nine)) {
-	found_Y = TRUE;
-      }
-    }
-  }
-  rewind(fd->fd);
-  free(buf);
-
-  /* Now form logical expression determining if the file is RS-274X */
-  if ((found_D0 || found_D2 || found_M0 || found_M2) && 
-      found_ADD && found_star && (found_X || found_Y) &&
-      !found_binary) 
-    return TRUE;
-  else return FALSE;
+    
+    return FALSE;
 
 } /* gerber_is_rs274x */
 
@@ -667,91 +693,84 @@ gerber_is_rs274x_p(gerb_file_t *fd) {
  * Returns TRUE if it is, FALSE if not.
  */
 gboolean
-gerber_is_rs274d_p(gerb_file_t *fd) {
-  char *buf;
-  int len = 0;
-  char *letter;
-  int ascii;
-  int zero = 48; /* ascii 0 */
-  int nine = 57; /* ascii 9 */
-  int i;
-  gboolean found_binary = FALSE;
-  gboolean found_ADD = FALSE;
-  gboolean found_D0 = FALSE;
-  gboolean found_D2 = FALSE;
-  gboolean found_M0 = FALSE;
-  gboolean found_M2 = FALSE;
-  gboolean found_star = FALSE;
-  gboolean found_X = FALSE;
-  gboolean found_Y = FALSE;
-
-  buf = g_malloc(MAXL);
-  if (buf == NULL) 
-    GERB_FATAL_ERROR("malloc buf failed while checking for rs274d.\n");
-
-  while (fgets(buf, MAXL, fd->fd) != NULL) {
-    len = strlen(buf);
+gerber_is_rs274d_p(gerb_file_t *fd) 
+{
+    char *buf;
+    int len = 0;
+    char *letter;
+    int i;
+    gboolean found_binary = FALSE;
+    gboolean found_ADD = FALSE;
+    gboolean found_D0 = FALSE;
+    gboolean found_D2 = FALSE;
+    gboolean found_M0 = FALSE;
+    gboolean found_M2 = FALSE;
+    gboolean found_star = FALSE;
+    gboolean found_X = FALSE;
+    gboolean found_Y = FALSE;
     
-    /* First look through the file for indications of its type */
+    buf = malloc(MAXL);
+    if (buf == NULL) 
+	GERB_FATAL_ERROR("malloc buf failed while checking for rs274d.\n");
 
-    /* check that file is not binary (non-printing chars */
-    for (i = 0; i < len; i++) {
-      ascii = (int) buf[i];
-      if ((ascii > 128) || (ascii < 0)) {
-        found_binary = TRUE;
-      }
+    while (fgets(buf, MAXL, fd->fd) != NULL) {
+	len = strlen(buf);
+    
+	/* First look through the file for indications of its type */
+    
+	/* check that file is not binary (non-printing chars */
+	for (i = 0; i < len; i++) {
+	    if (!isprint(buf[i]) && (buf[i] != '\r') && 
+		(buf[i] != '\n') && (buf[i] != '\t')) {
+		found_binary = TRUE;
+	    }
+	}
+	
+	if (g_strstr_len(buf, len, "%ADD")) {
+	    found_ADD = TRUE;
+	}
+	if (g_strstr_len(buf, len, "D00")) {
+	    found_D0 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "D02")) {
+	    found_D2 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M0")) {
+	    found_M0 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M00")) {
+	    found_M0 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M02")) {
+	    found_M2 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "*")) {
+	    found_star = TRUE;
+	}
+	/* look for X<number> or Y<number> */
+	if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
+	    /* grab char after X */
+	    if (isdigit(letter[1])) {
+		found_X = TRUE;
+	    }
+	}
+	if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
+	    /* grab char after Y */
+	    if (isdigit(letter[1])) {
+		found_Y = TRUE;
+	    }
+	}
     }
+    rewind(fd->fd);
+    free(buf);
 
-    if (g_strstr_len(buf, len, "%ADD")) {
-      found_ADD = TRUE;
-    }
-    if (g_strstr_len(buf, len, "D00")) {
-      found_D0 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "D2")) {
-      found_D2 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "D02")) {
-      found_D2 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "M0")) {
-      found_M0 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "M00")) {
-      found_M0 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "M2")) {
-      found_M2 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "M02")) {
-      found_M2 = TRUE;
-    }
-    if (g_strstr_len(buf, len, "*")) {
-      found_star = TRUE;
-    }
-    /* look for X<number> or Y<number> */
-    if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
-      ascii = (int) letter[1]; /* grab char after X */
-      if ((ascii >= zero) && (ascii <= nine)) {
-	found_X = TRUE;
-      }
-    }
-    if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
-      ascii = (int) letter[1]; /* grab char after Y */
-      if ((ascii >= zero) && (ascii <= nine)) {
-	found_Y = TRUE;
-      }
-    }
-  }
-  rewind(fd->fd);
-  free(buf);
+    /* Now form logical expression determining if the file is RS-274D */
+    if ((found_D0 || found_D2 || found_M0 || found_M2) && 
+	!found_ADD && found_star && (found_X || found_Y) && 
+	!found_binary) 
+	return TRUE;
 
-  /* Now form logical expression determining if the file is RS-274D */
-  if ((found_D0 || found_D2 || found_M0 || found_M2) && 
-      !found_ADD && found_star && (found_X || found_Y) && 
-      !found_binary) 
-    return TRUE;
-  else return FALSE;
+    return FALSE;
 
 } /* gerber_is_rs274d */
 
@@ -818,20 +837,20 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
     case 54: /* Tool prepare */
 	/* XXX Maybe uneccesary??? */
 	if (gerb_fgetc(fd) == 'D') {
-		int a = gerb_fgetint(fd, NULL);
-		if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
-			state->curr_aperture = a;
+	    int a = gerb_fgetint(fd, NULL);
+	    if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
+		state->curr_aperture = a;
 		dprintf("     In parse_G_code, case 54, found D and adding 1 to no %d in D_list ...\n", a);
 		gerb_stats_increment_D_list_count(stats->D_code_list, 
 						  a, 
 						  1,
 						  stats->error_list); 
-		} else { 
-		    gerb_stats_add_error(stats->error_list,
-					 -1,
-					 g_strdup_printf("Found aperture out of bounds while parsing G code: %d\n", a),
-					 ERROR);
-		}
+	    } else { 
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     g_strdup_printf("Found aperture out of bounds while parsing G code: %d\n", a),
+				     ERROR);
+	    }
 	} else {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
@@ -879,7 +898,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 			     -1,
 			     g_strdup_printf("Ignorning unknown G code\n"),
 			     WARNING);
-
+	
 	stats->G_unknown++;
 	/* Enter error count here */
 	break;
@@ -916,26 +935,26 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	break;
     default: /* Aperture in use */
 	if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
-	  state->curr_aperture = a;
-
-	  dprintf("     In parse_D_code, adding 1 to D_list ...\n");
-	  int retcode = gerb_stats_increment_D_list_count(stats->D_code_list, 
-					    a, 
-					    1,
-					    stats->error_list);
-	  if (retcode == -1) {
-	      gerb_stats_add_error(stats->error_list,
-				   -1,
-				   g_strdup_printf("Found undefined D code: D%d\n", a),
-				   ERROR);
-	      stats->D_unknown++;
-	  }
+	    state->curr_aperture = a;
+	    
+	    dprintf("     In parse_D_code, adding 1 to D_list ...\n");
+	    int retcode = gerb_stats_increment_D_list_count(stats->D_code_list, 
+							    a, 
+							    1,
+							    stats->error_list);
+	    if (retcode == -1) {
+		gerb_stats_add_error(stats->error_list,
+				     -1,
+				     g_strdup_printf("Found undefined D code: D%d\n", a),
+				     ERROR);
+		stats->D_unknown++;
+	    }
 	} else {
-	      gerb_stats_add_error(stats->error_list,
-				   -1,
-				   g_strdup_printf("Found aperture number out of bounds while parsing D code: %d\n", a),
-				   ERROR);
-	      stats->D_error++;
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 g_strdup_printf("Found aperture number out of bounds while parsing D code: %d\n", a),
+				 ERROR);
+	    stats->D_error++;
 	}
 	state->changed = 0;
 	break;
@@ -951,9 +970,9 @@ parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 {
     int op_int;
     gerb_stats_t *stats = image->gerb_stats;
-
+    
     op_int=gerb_fgetint(fd, NULL);
-
+    
     switch (op_int) {
     case 0:  /* Program stop */
 	stats->M0++;
@@ -981,8 +1000,9 @@ parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 
 /* ------------------------------------------------------------------ */
 static void 
-parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_state_t *state,
-	gerb_net_t *curr_net, gerb_stats_t *stats, gchar *directoryPath)
+parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, 
+	     gerb_state_t *state, gerb_net_t *curr_net, gerb_stats_t *stats, 
+	     gchar *directoryPath)
 {
     int op[2];
     char str[3];
@@ -994,7 +1014,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
     
     if (state->state->unit == MM)
     	scale = 25.4;
-
+    
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
     
@@ -1005,8 +1025,10 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 			     ERROR);
 
     switch (A2I(op[0], op[1])){
-
-      /* Directive parameters */
+	
+	/* 
+	 * Directive parameters 
+	 */
     case A2I('A','S'): /* Axis Select */
 	op[0] = gerb_fgetc(fd);
 	op[1] = gerb_fgetc(fd);
@@ -1020,27 +1042,25 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 	
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
-		state->state->axisSelect = SWAPAB;
-	}
-	else {
-		state->state->axisSelect = NOSELECT;
+	    state->state->axisSelect = SWAPAB;
+	} else {
+	    state->state->axisSelect = NOSELECT;
 	}
 
 	op[0] = gerb_fgetc(fd);
 	op[1] = gerb_fgetc(fd);
-
+	
 	if ((op[0] == EOF) || (op[1] == EOF))
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
 				 ERROR);
-
+	
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
-		state->state->axisSelect = SWAPAB;
-	}
-	else {
-		state->state->axisSelect = NOSELECT;
+	    state->state->axisSelect = SWAPAB;
+	} else {
+	    state->state->axisSelect = NOSELECT;
 	}
 	break;
 
@@ -1165,19 +1185,19 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 	    case 'A' :
 		readValue = gerb_fgetint(fd, NULL);
 		if (readValue == 1) {
-			if (state->state->mirrorState == FLIPB)
-				state->state->mirrorState=FLIPAB;
-			else
-				state->state->mirrorState=FLIPA;
+		    if (state->state->mirrorState == FLIPB)
+			state->state->mirrorState=FLIPAB;
+		    else
+			state->state->mirrorState=FLIPA;
 		}
 		break;
 	    case 'B' :
 		readValue = gerb_fgetint(fd, NULL);
 		if (readValue == 1) {
-			if (state->state->mirrorState == FLIPA)
-				state->state->mirrorState=FLIPAB;
-			else
-				state->state->mirrorState=FLIPB;
+		    if (state->state->mirrorState == FLIPA)
+			state->state->mirrorState=FLIPAB;
+		    else
+			state->state->mirrorState=FLIPB;
 		}
 		break;
 	    default :
@@ -1235,38 +1255,34 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 	}
 	break;
     case A2I('I','F'): /* Include file */
-      {
-		gchar *includeFilename = gerb_fgetstring(fd, '*');
-
-		if (includeFilename) {
-			gchar *fullPath;
-			if (!g_path_is_absolute(includeFilename)) {
-				fullPath = g_build_filename (directoryPath, includeFilename, NULL);
-			}
-			else {
-				fullPath = g_strdup (includeFilename);
-			}
-			if (levelOfRecursion < 10) {
-				
-				
-				gerb_file_t *includefd = NULL;
-				includefd = gerb_fopen(fullPath);
-				if (includefd) {
-					gerber_parse_file_segment (levelOfRecursion + 1, image, state, curr_net, stats, includefd, directoryPath);
-					gerb_fclose(includefd);
-				}
-				else {
-					gerb_stats_add_error(stats->error_list, -1,
-			     			g_strdup_printf("Included file cannot be found:%s\n",fullPath), ERROR);
-				}
-				g_free (fullPath);
-			}
-			else {
-				gerb_stats_add_error(stats->error_list, -1,
-			     		g_strdup_printf("Parser encountered more than 10 levels of include file recursion, which is not allowed by the RS-274X spec\n"), ERROR);
-			}
-			
+	{
+	    gchar *includeFilename = gerb_fgetstring(fd, '*');
+	    
+	    if (includeFilename) {
+		gchar *fullPath;
+		if (!g_path_is_absolute(includeFilename)) {
+		    fullPath = g_build_filename (directoryPath, includeFilename, NULL);
+		} else {
+		    fullPath = g_strdup (includeFilename);
 		}
+		if (levelOfRecursion < 10) {
+		    gerb_file_t *includefd = NULL;
+		    
+		    includefd = gerb_fopen(fullPath);
+		    if (includefd) {
+			gerber_parse_file_segment (levelOfRecursion + 1, image, state, curr_net, stats, includefd, directoryPath);
+			gerb_fclose(includefd);
+		    } else {
+			gerb_stats_add_error(stats->error_list, -1,
+					     g_strdup_printf("Included file cannot be found:%s\n",fullPath), ERROR);
+		    }
+		    g_free (fullPath);
+		} else {
+		    gerb_stats_add_error(stats->error_list, -1,
+					 g_strdup_printf("Parser encountered more than 10 levels of include file recursion, which is not allowed by the RS-274X spec\n"), ERROR);
+		}
+		
+	    }
 	}
 	break;
     case A2I('I','O'): /* Image offset */
@@ -1336,7 +1352,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 				 ERROR);
 	}
 	break;
-
+	
 	/* Image parameters */
     case A2I('I','J'): /* Image Justify */
 	op[0] = gerb_fgetc(fd);
@@ -1348,24 +1364,24 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 	    switch (op[0]) {
 	    case 'A' :
 	    	op[0] = gerb_fgetc(fd);
-	    	if (op[0] == 'C')
-	    		image->info->imageJustifyTypeA = CENTERJUSTIFY;
-	    	else if (op[0] == 'L')
-	    		image->info->imageJustifyTypeA = LOWERLEFT;
-	    	else {
-	    		gerb_ungetc (fd);
-	    		image->info->imageJustifyOffsetA = gerb_fgetdouble(fd) / scale;
+	    	if (op[0] == 'C') {
+		    image->info->imageJustifyTypeA = CENTERJUSTIFY;
+	    	} else if (op[0] == 'L') {
+		    image->info->imageJustifyTypeA = LOWERLEFT;
+	    	} else {
+		    gerb_ungetc (fd);
+		    image->info->imageJustifyOffsetA = gerb_fgetdouble(fd) / scale;
 	    	}
 		break;
 	    case 'B' :
 		op[0] = gerb_fgetc(fd);
-	    	if (op[0] == 'C')
-	    		image->info->imageJustifyTypeB = CENTERJUSTIFY;
-	    	else if (op[0] == 'L')
-	    		image->info->imageJustifyTypeB = LOWERLEFT;
-	    	else {
-	    		gerb_ungetc (fd);
-	    		image->info->imageJustifyOffsetB = gerb_fgetdouble(fd) / scale;
+	    	if (op[0] == 'C') {
+		    image->info->imageJustifyTypeB = CENTERJUSTIFY;
+	    	} else if (op[0] == 'L') {
+		    image->info->imageJustifyTypeB = LOWERLEFT;
+	    	} else {
+		    gerb_ungetc (fd);
+		    image->info->imageJustifyOffsetB = gerb_fgetdouble(fd) / scale;
 	    	}
 		break;
 	    default :
@@ -1444,18 +1460,17 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 				 ERROR);
 	}
 	/* Add aperture info to stats->aperture_list here */
-
+	
 	break;
     case A2I('A','M'): /* Aperture Macro */
 	tmp_amacro = image->amacro;
 	image->amacro = parse_aperture_macro(fd);
 	if (image->amacro) {
-		image->amacro->next = tmp_amacro;
+	    image->amacro->next = tmp_amacro;
 #ifdef AMACRO_DEBUG
-		print_program(image->amacro);
+	    print_program(image->amacro);
 #endif
-	}
-	else {
+	} else {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Failed to parse aperture macro\n",
@@ -1492,17 +1507,15 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 	if (op[0] == '*') { /* Disable previous SR parameters */
 	    state->layer->knockout.type = NOKNOCKOUT;
 	    break;
-	}
-	else if (op[0] == 'C') {
+	} else if (op[0] == 'C') {
 	    state->layer->knockout.polarity = CLEAR;
-	}
-	else if (op[0] == 'D') {
+	} else if (op[0] == 'D') {
 	    state->layer->knockout.polarity = DARK;
-	}
-	else {
+	} else {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
-				 "Knockout must supply a polarity (C, D, or *)\n",				 ERROR);
+				 "Knockout must supply a polarity (C, D, or *)\n",
+				 ERROR);
 	}
 	state->layer->knockout.lowerLeftX = 0.0;
 	state->layer->knockout.lowerLeftY = 0.0;
@@ -1543,8 +1556,9 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 	        break;
 	    default:
 		gerb_stats_add_error(stats->error_list,
-				 -1,
-				 "Unknown variable in knockout",				 ERROR);
+				     -1,
+				     "Unknown variable in knockout",
+				     ERROR);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1580,38 +1594,38 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, gerb_s
 				     "Step-and-repeat parameter error\n",
 				     ERROR);
 	    }
-
+	    
 	    /*
 	     * Repeating 0 times in any direction would disable the whole plot, and
 	     * is probably not intended. At least one other tool (viewmate) seems
 	     * to interpret 0-time repeating as repeating just once too.
 	     */
 	    if(state->layer->stepAndRepeat.X == 0)
-	      state->layer->stepAndRepeat.X = 1;
+		state->layer->stepAndRepeat.X = 1;
 	    if(state->layer->stepAndRepeat.Y == 0)
-	      state->layer->stepAndRepeat.Y = 1;
+		state->layer->stepAndRepeat.Y = 1;
 	    
 	    op[0] = gerb_fgetc(fd);
 	}
 	break;
-    /* is this an actual RS274X command??  It isn't explainined in the spec... */
+	/* is this an actual RS274X command??  It isn't explainined in the spec... */
     case A2I('R','O'):
-      state->layer = gerb_image_return_new_layer (state->layer);
-      
-      state->layer->rotation = gerb_fgetdouble(fd) * M_PI / 180;
-      op[0] = gerb_fgetc(fd);
-      if (op[0] != '*') {
-          gerb_stats_add_error(stats->error_list,
-				     -1,
-				     "Error in layer rotation comman\n",
-				     ERROR);
-      }
-      break;
+	state->layer = gerb_image_return_new_layer (state->layer);
+	
+	state->layer->rotation = gerb_fgetdouble(fd) * M_PI / 180;
+	op[0] = gerb_fgetc(fd);
+	if (op[0] != '*') {
+	    gerb_stats_add_error(stats->error_list,
+				 -1,
+				 "Error in layer rotation comman\n",
+				 ERROR);
+	}
+	break;
     default:
-    gerb_stats_add_error(stats->error_list,
-			 -1,
-			 g_strdup_printf("Unknown RS-274X extension found %%%c%c%%\n", op[0], op[1]),
-			 ERROR);
+	gerb_stats_add_error(stats->error_list,
+			     -1,
+			     g_strdup_printf("Unknown RS-274X extension found %%%c%c%%\n", op[0], op[1]),
+			     ERROR);
     }
     
     return;
@@ -1629,7 +1643,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     amacro_t *curr_amacro;
     amacro_t *amacro = image->amacro;
     gerb_stats_t *stats = image->gerb_stats;
-
+    
     if (gerb_fgetc(fd) != 'D') {
 	gerb_stats_add_error(stats->error_list,
 			     -1,
@@ -1642,13 +1656,13 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
      * Get aperture no
      */
     ano = gerb_fgetint(fd, NULL);
-
+    
     /*
      * Read in the whole aperture defintion and tokenize it
      */
     ad = gerb_fgetstring(fd, '*');
     token = strtok(ad, ",");
-
+    
     if (strlen(token) == 1) {
 	switch (token[0]) {
 	case 'C':
@@ -1681,7 +1695,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 	    curr_amacro = curr_amacro->next;
 	}
     }
-
+    
     /*
      * Parse all parameters
      */
@@ -1708,11 +1722,11 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     }
     
     aperture->nuf_parameters = i;
-
+    
     gerb_ungetc(fd);
-
+    
     g_free(ad);
-
+    
     return ano;
 } /* parse_aperture_definition */
 
@@ -1988,76 +2002,86 @@ gen_circle_segments(gerb_net_t *curr_net, int cw, int *nuf_pcorners)
 } /* gen_circle_segments */
 
 static void
-gerber_update_any_running_knockout_measurements (gerb_image_t *image){
-	if (knockoutMeasure) {
-		knockoutLayer->knockout.lowerLeftX = knockoutLimitXmin;
-		knockoutLayer->knockout.lowerLeftY = knockoutLimitYmin;
-		knockoutLayer->knockout.width = knockoutLimitXmax - knockoutLimitXmin;
-		knockoutLayer->knockout.height = knockoutLimitYmax - knockoutLimitYmin;
-		knockoutMeasure = FALSE;
-	}
-}
-
-static void
-gerber_calculate_final_justify_effects (gerb_image_t *image){
-	gdouble translateA = 0.0, translateB = 0.0;
-	
-	if (image->info->imageJustifyTypeA != NOJUSTIFY) {
-		if (image->info->imageJustifyTypeA == CENTERJUSTIFY)
-			translateA = (image->info->max_x - image->info->min_x) / 2.0;
-		else
-			translateA = -image->info->min_x;
-	}
-	if (image->info->imageJustifyTypeB != NOJUSTIFY) {
-		if (image->info->imageJustifyTypeB == CENTERJUSTIFY)
-			translateB = (image->info->max_y - image->info->min_y) / 2.0;
-		else
-			translateB = -image->info->min_y;
-	}
-	/* update the min/max values so the autoscale function can correctly
-	   centered a justified image */
-	image->info->min_x += translateA+ image->info->imageJustifyOffsetA;
-	image->info->max_x += translateA+ image->info->imageJustifyOffsetA;
-	image->info->min_y += translateB+ image->info->imageJustifyOffsetB;
-	image->info->max_y += translateB+ image->info->imageJustifyOffsetB;
-	/* store the absolute offset for the justify so we can quickly offset
-	   the rendered picture during drawing */
-	image->info->imageJustifyOffsetActualA = translateA + image->info->imageJustifyOffsetA;
-	image->info->imageJustifyOffsetActualB = translateB + image->info->imageJustifyOffsetB;
+gerber_update_any_running_knockout_measurements (gerb_image_t *image)
+{
+    if (knockoutMeasure) {
+	knockoutLayer->knockout.lowerLeftX = knockoutLimitXmin;
+	knockoutLayer->knockout.lowerLeftY = knockoutLimitYmin;
+	knockoutLayer->knockout.width = knockoutLimitXmax - knockoutLimitXmin;
+	knockoutLayer->knockout.height = knockoutLimitYmax - knockoutLimitYmin;
+	knockoutMeasure = FALSE;
+    }
 }
 
 
 static void
-gerber_update_min_and_max (gdouble *minX, gdouble *minY, gdouble *maxX, gdouble *maxY,
-					gdouble x, gdouble y, gdouble apertureSize){
-	gdouble ourX1 = x - apertureSize, ourY1 = y - apertureSize;
-	gdouble ourX2 = x + apertureSize, ourY2 = y + apertureSize;
+gerber_calculate_final_justify_effects(gerb_image_t *image)
+{
+    gdouble translateA = 0.0, translateB = 0.0;
+    
+    if (image->info->imageJustifyTypeA != NOJUSTIFY) {
+	if (image->info->imageJustifyTypeA == CENTERJUSTIFY)
+	    translateA = (image->info->max_x - image->info->min_x) / 2.0;
+	else
+	    translateA = -image->info->min_x;
+    }
+    if (image->info->imageJustifyTypeB != NOJUSTIFY) {
+	if (image->info->imageJustifyTypeB == CENTERJUSTIFY)
+	    translateB = (image->info->max_y - image->info->min_y) / 2.0;
+	else
+	    translateB = -image->info->min_y;
+    }
 
+    /* update the min/max values so the autoscale function can correctly
+       centered a justified image */
+    image->info->min_x += translateA+ image->info->imageJustifyOffsetA;
+    image->info->max_x += translateA+ image->info->imageJustifyOffsetA;
+    image->info->min_y += translateB+ image->info->imageJustifyOffsetB;
+    image->info->max_y += translateB+ image->info->imageJustifyOffsetB;
+ 
+   /* store the absolute offset for the justify so we can quickly offset
+       the rendered picture during drawing */
+    image->info->imageJustifyOffsetActualA = translateA + 
+	image->info->imageJustifyOffsetA;
+    image->info->imageJustifyOffsetActualB = translateB + 
+	image->info->imageJustifyOffsetB;
+} /* gerber_calculate_final_justify_effects */
+
+
+static void
+gerber_update_min_and_max(gdouble *minX, gdouble *minY, 
+			  gdouble *maxX, gdouble *maxY,
+			  gdouble x, gdouble y, gdouble apertureSize)
+{
+    gdouble ourX1 = x - apertureSize, ourY1 = y - apertureSize;
+    gdouble ourX2 = x + apertureSize, ourY2 = y + apertureSize;
+    
 #ifndef RENDER_USING_GDK
-	/* transform the point to the final rendered position, accounting
-	   for any scaling, offsets, mirroring, etc */
-	/* NOTE: we need to already add/subtract in the aperture size since
-	   the final rendering may be scaled */
-	cairo_matrix_transform_point (&currentMatrix, &ourX1, &ourY1);
-	cairo_matrix_transform_point (&currentMatrix, &ourX2, &ourY2);
+    /* transform the point to the final rendered position, accounting
+       for any scaling, offsets, mirroring, etc */
+    /* NOTE: we need to already add/subtract in the aperture size since
+       the final rendering may be scaled */
+    cairo_matrix_transform_point (&currentMatrix, &ourX1, &ourY1);
+    cairo_matrix_transform_point (&currentMatrix, &ourX2, &ourY2);
 #endif
-	/* check both points against the min/max, since depending on the rotation,
-	   mirroring, etc, either point could possibly be a min or max */
-	if(*minX > ourX1)
-		*minX = ourX1;
-	if(*minX > ourX2)
-		*minX = ourX2;
-	if(*maxX < ourX1)
-		*maxX = ourX1;
-	if(*maxX < ourX2)
-		*maxX = ourX2;
-	if(*minY > ourY1)
-		*minY = ourY1;
-	if(*minY > ourY2)
-		*minY = ourY2;
-	if(*maxY < ourY1)
-		*maxY = ourY1;
-	if(*maxY < ourY2)
-		*maxY = ourY2;
-}
+
+    /* check both points against the min/max, since depending on the rotation,
+       mirroring, etc, either point could possibly be a min or max */
+    if(*minX > ourX1)
+	*minX = ourX1;
+    if(*minX > ourX2)
+	*minX = ourX2;
+    if(*maxX < ourX1)
+	*maxX = ourX1;
+    if(*maxX < ourX2)
+	*maxX = ourX2;
+    if(*minY > ourY1)
+	*minY = ourY1;
+    if(*minY > ourY2)
+	*minY = ourY2;
+    if(*maxY < ourY1)
+	*maxY = ourY1;
+    if(*maxY < ourY2)
+	*maxY = ourY2;
+} /* gerber_update_min_and_max */
 

@@ -19,6 +19,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+#ifndef PICK_AND_PLACE_H
+#define PICK_AND_PLACE_H
+
 #include <glib.h>
  
 /** maximum size of strings. */
@@ -48,14 +51,10 @@ typedef struct {
     unsigned int nuf_push;  /* Nuf pushes to estimate stack size */
 } PnpPartData;
 
-double
-pick_and_place_get_float_unit(char *str);
+GArray *pick_and_place_parse_file (gerb_file_t *fd);
 
-GArray *
-pick_and_place_parse_file (gerb_file_t *fd);
+gerb_image_t *pick_and_place_parse_file_to_image (gerb_file_t *fd);
 
-gerb_image_t *
-pick_and_place_parse_file_to_image (gerb_file_t *fd);
+gboolean pick_and_place_check_file_type (gerb_file_t *fd);
 
-gboolean
-pick_and_place_check_file_type (gerb_file_t *fd);
+#endif /* PICK_AND_PLACE_H */

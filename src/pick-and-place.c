@@ -45,6 +45,7 @@
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
 
+#include <ctype.h>
 #include <locale.h>
 
 #ifdef HAVE_GETOPT_H
@@ -80,21 +81,23 @@
 //! Parses a string representing float number with a unit, default is mil
 /** @param char a string to be screened for unit
     @return a correctly converted double */
-double 
+static double 
 pick_and_place_get_float_unit(char *str)
 {
-	double x = 0.0;
-	char unit[41];
+    double x = 0.0;
+    char unit[41];
 
-	/* float, optional space, optional unit mm,cm,in,mil */
-	sscanf(str, "%lf %40s", &x, unit);
-	if(strstr(unit,"in")) {
-	} else if(strstr(unit, "cm")) {
-	    x /= 2.54;
-	} else { /* default to mils */
-		x /= 1000;	
-	}
-	return x;
+    /* float, optional space, optional unit mm,cm,in,mil */
+    sscanf(str, "%lf %40s", &x, unit);
+    if(strstr(unit,"in")) {
+	;
+    } else if(strstr(unit, "cm")) {
+	x /= 2.54;
+    } else { /* default to mils */
+	x /= 1000;	
+    }
+
+    return x;
 } /* pick_and_place_get_float_unit*/
 
 
@@ -109,7 +112,7 @@ pick_and_place_screen_for_delimiter(char *str, int n)
     int idx, idx_max = 0;
 
     memset(counter, 0, sizeof(counter));
-    for(ptr=str; *ptr; ptr++) {
+    for(ptr = str; *ptr; ptr++) {
 	switch(*ptr) {
 	case '|':
 	    idx = 0;
@@ -132,13 +135,13 @@ pick_and_place_screen_for_delimiter(char *str, int n)
 	    idx_max = idx;
 	}
     }
-
+    
     if (counter[idx_max] > n) {
 	return (unsigned char) delimiter[idx_max];
     } else {
 	return -1;
     }
-}/*pnp_screen_for_delimiter*/
+} /* pnp_screen_for_delimiter */
 
 
 /**Parses the PNP data.
@@ -329,125 +332,121 @@ pick_and_place_parse_file(gerb_file_t *fd)
 gboolean
 pick_and_place_check_file_type(gerb_file_t *fd)
 {
-  char *buf;
-  int len = 0;
-  int i;
-  guint8 ascii;
-  char *letter;
-  int zero = 48; /* ascii 0 */
-  int nine = 57; /* ascii 9 */
-  gboolean found_binary = FALSE;
-  gboolean found_G54 = FALSE;
-  gboolean found_M0 = FALSE;
-  gboolean found_M2 = FALSE;
-  gboolean found_G2 = FALSE;
-  gboolean found_ADD = FALSE;
-  gboolean found_comma = FALSE;
-  gboolean found_R = FALSE;
-  gboolean found_U = FALSE;
-  gboolean found_C = FALSE;
-  gboolean found_boardside = FALSE;
+    char *buf;
+    int len = 0;
+    int i;
+    char *letter;
+    gboolean found_binary = FALSE;
+    gboolean found_G54 = FALSE;
+    gboolean found_M0 = FALSE;
+    gboolean found_M2 = FALSE;
+    gboolean found_G2 = FALSE;
+    gboolean found_ADD = FALSE;
+    gboolean found_comma = FALSE;
+    gboolean found_R = FALSE;
+    gboolean found_U = FALSE;
+    gboolean found_C = FALSE;
+    gboolean found_boardside = FALSE;
 
-  buf = g_malloc(MAXL);
-  if (buf == NULL)
-    GERB_FATAL_ERROR("malloc buf failed while checking for pick-place file.\n");
+    buf = malloc(MAXL);
+    if (buf == NULL)
+	GERB_FATAL_ERROR("malloc buf failed while checking for pick-place file.\n");
 
-  while (fgets(buf, MAXL, fd->fd) != NULL) {
-    len = strlen(buf);
+    while (fgets(buf, MAXL, fd->fd) != NULL) {
+	len = strlen(buf);
      
-    /* First look through the file for indications of its type */
+	/* First look through the file for indications of its type */
+	
+	/* check for non-binary file */
+	for (i = 0; i < len; i++) {
+	    if (!isprint(buf[i]) && (buf[i] != '\r') && 
+                (buf[i] != '\n') && (buf[i] != '\t')) {
+		found_binary = TRUE;
+	    }
+	}
+	
+	if (g_strstr_len(buf, len, "G54")) {
+	    found_G54 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M00")) {
+	    found_M0 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "M02")) {
+	    found_M2 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "G02")) {
+	    found_G2 = TRUE;
+	}
+	if (g_strstr_len(buf, len, "ADD")) {
+	    found_ADD = TRUE;
+	}
+	if (g_strstr_len(buf, len, ",")) {
+	    found_comma = TRUE;
+	}
+	/* Semicolon can be separator too */
+	if (g_strstr_len(buf, len, ";")) {
+	    found_comma = TRUE;
+	}
+	
+	/* Look for refdes -- This is dumb, but what else can we do? */
+	if ((letter = g_strstr_len(buf, len, "R")) != NULL) {
+	    if (isdigit(letter[1])) { /* grab char after R */
+		found_R = TRUE;
+	    }
+	}
+	if ((letter = g_strstr_len(buf, len, "C")) != NULL) {
+	    if (isdigit(letter[1])) { /* grab char after C */
+		found_C = TRUE;
+	    }
+	}
+	if ((letter = g_strstr_len(buf, len, "U")) != NULL) {
+	    if (isdigit(letter[1])) { /* grab char after U */
+		found_U = TRUE;
+	    }
+	}
+	
+	/* Look for board side indicator since this is required
+	 * by many vendors */
+	if (g_strstr_len(buf, len, "top")) {
+	    found_boardside = TRUE;
+	}
+	if (g_strstr_len(buf, len, "Top")) {
+	    found_boardside = TRUE;
+	}
+	if (g_strstr_len(buf, len, "TOP")) {
+	    found_boardside = TRUE;
+	}
+	/* Also look for evidence of "Layer" in header.... */
+	if (g_strstr_len(buf, len, "ayer")) {
+	    found_boardside = TRUE;
+	}
+	if (g_strstr_len(buf, len, "AYER")) {
+	    found_boardside = TRUE;
+	}
+	
+    }
+    rewind(fd->fd);
+    free(buf);
 
-    /* #if 0 */  
-    /* check for non-binary file */
-    /* This breaks the protel CSV P-n-P file readin since it has
-     * non-printing (extended) ascii chars. */
-    for (i = 0; i < len; i++) {
-      ascii = (guint8) buf[i];
-      if (ascii > 128) {
-	found_binary = TRUE;
-      }
-    }
-    /* #endif */
-
-    if (g_strstr_len(buf, len, "G54")) {
-      found_G54 = TRUE;
-    }
-
-    if (g_strstr_len(buf, len, "M00")) {
-      found_M0 = TRUE;
-    }
-
-    if (g_strstr_len(buf, len, "M02")) {
-      found_M2 = TRUE;
-    }
-
-    if (g_strstr_len(buf, len, "G02")) {
-      found_G2 = TRUE;
-    }
-
-    if (g_strstr_len(buf, len, "ADD")) {
-      found_ADD = TRUE;
-    }
-
-    if (g_strstr_len(buf, len, ",")) {
-      found_comma = TRUE;
-    }
-
-    /* Look for refdes -- This is dumb, but what else can we do? */
-    if ((letter = g_strstr_len(buf, len, "R")) != NULL) {
-      ascii = (guint8) letter[1]; /* grab char after R */
-      if ((ascii >= zero) && (ascii <= nine)) {
-        found_R = TRUE;
-      }
-    }
-    if ((letter = g_strstr_len(buf, len, "C")) != NULL) {
-      ascii = (guint8) letter[1]; /* grab char after C */
-      if ((ascii >= zero) && (ascii <= nine)) {
-        found_C = TRUE;
-      }
-    }
-    if ((letter = g_strstr_len(buf, len, "U")) != NULL) {
-      ascii = (guint8) letter[1]; /* grab char after U */
-      if ((ascii >= zero) && (ascii <= nine)) {
-        found_U = TRUE;
-      }
-    }
-
-    /* Look for board side indicator since this is required
-     * by many vendors */
-    if (g_strstr_len(buf, len, "top")) {
-      found_boardside = TRUE;
-    }
-    if (g_strstr_len(buf, len, "Top")) {
-      found_boardside = TRUE;
-    }
-    if (g_strstr_len(buf, len, "TOP")) {
-      found_boardside = TRUE;
-    }
-    /* Also look for evidence of "Layer" in header.... */
-    if (g_strstr_len(buf, len, "ayer")) {
-      found_boardside = TRUE;
-    }
-    if (g_strstr_len(buf, len, "AYER")) {
-      found_boardside = TRUE;
-    }
-
-  }
-  rewind(fd->fd);
-  free(buf);
-
-  /* Now form logical expression determining if this is a pick-place file */
-  if (found_binary) return FALSE;
-  else if (found_G54) return FALSE;
-  else if (found_M0) return FALSE;
-  else if (found_M2) return FALSE;
-  else if (found_G2) return FALSE;
-  else if (found_ADD) return FALSE;
-  else if (found_comma && (found_R || found_C || found_U) && 
-	   found_boardside) 
-    return TRUE;
-  else return FALSE;
-
+    /* Now form logical expression determining if this is a pick-place file */
+    if (found_binary) 
+	return FALSE;
+    if (found_G54) 
+	return FALSE;
+    if (found_M0) 
+	return FALSE;
+    if (found_M2) 
+	return FALSE;
+    if (found_G2) 
+	return FALSE;
+    if (found_ADD) 
+	return FALSE;
+    if (found_comma && (found_R || found_C || found_U) && 
+	found_boardside) 
+	return TRUE;
+    
+    return FALSE;
+    
 } /* pick_and_place_check_file_type */
 
 
