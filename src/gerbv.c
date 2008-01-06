@@ -344,7 +344,7 @@ void gerbv_unload_all_layers (void) {
 
 	/* Must count down since gerbv_unload_layer collapses
 	 * layers down.  Otherwise, layers slide past the index */
-	for (index = MAX_FILES; index >= 0; index--) {
+	for (index = MAX_FILES-1 ; index >= 0; index--) {
 	    if (screen.file[index] && screen.file[index]->name) {
 	        gerbv_unload_layer (index);
 	    }
