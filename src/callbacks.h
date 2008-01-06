@@ -192,6 +192,9 @@ void callbacks_force_expose_event_for_screen (void);
 void
 callbacks_change_tool  (GtkButton *button, gpointer   user_data);
 
+void
+callbacks_switch_to_correct_cursor (void);
+
 #ifndef RENDER_USING_GDK
 cairo_surface_t *
 callbacks_create_window_surface (GtkWidget *widget);

@@ -1270,6 +1270,27 @@ callbacks_switch_to_normal_tool_cursor (gint toolNumber) {
 	}
 }
 
+void
+callbacks_switch_to_correct_cursor (void) {
+	GdkCursor *cursor;
+
+	if (screen.state == IN_MOVE) {
+		cursor = gdk_cursor_new(GDK_FLEUR);
+		gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+				  cursor);
+		gdk_cursor_destroy(cursor);
+		return;
+	}
+	else if (screen.state == IN_ZOOM_OUTLINE) {
+		cursor = gdk_cursor_new(GDK_SIZING);
+		gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+				  cursor);
+		gdk_cursor_destroy(cursor);
+		return;
+	}
+	callbacks_switch_to_normal_tool_cursor (screen.tool);
+}
+
 /* --------------------------------------------------------- */
 void
 callbacks_change_tool (GtkButton *button, gpointer   user_data) {
@@ -1858,6 +1879,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 		default:
 			break;
 	}
+	callbacks_switch_to_correct_cursor ();
 	return TRUE;
 }
 

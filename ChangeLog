@@ -5,6 +5,8 @@
 	  "bottom" labels to layer names.
 	* draw.c, draw-gdk.c, gerb_aperture.h: Add rendering code in preparation
 	  for aperture macro reordering.
+	* render.c, callbacks.c: Add in watch cursor during rendering to provide
+	  feedback to user.
 	  
 2008-01-05  Julian Lamb
 	* interface.c: Remove a billion glade-generated gtk_widget_show function

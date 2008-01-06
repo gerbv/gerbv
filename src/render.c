@@ -408,39 +408,25 @@ render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
 }
 
 void render_refresh_rendered_image_on_screen (void) {
-#ifdef RENDER_USING_GDK
-	GdkWindow *window;
-
+	GdkCursor *cursor;
+	
 	dprintf("----> Entering redraw_pixmap...\n");
-
-	window = gtk_widget_get_parent_window(screen.drawing_area);
-	/* This might be lengthy, show that we're busy by changing the pointer */
-	if (window) {
-		GdkCursor *cursor;
-
-		cursor = gdk_cursor_new(GDK_WATCH);
-		gdk_window_set_cursor(window, cursor);
-		gdk_cursor_destroy(cursor);
-	}
-
+	cursor = gdk_cursor_new(GDK_WATCH);
+	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
+	gdk_cursor_destroy(cursor);
+	
+#ifdef RENDER_USING_GDK
 	if (screen.pixmap) 
 	    gdk_pixmap_unref(screen.pixmap);
 	screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
 				screenRenderInfo.displayHeight, -1);
 	render_to_pixmap_using_gdk (screen.pixmap, &screenRenderInfo);
 	
-	/* Return default pointer shape */
-	if (window) {
-		gdk_window_set_cursor(window, GERBV_DEF_CURSOR);
-	}
 	dprintf("<---- leaving redraw_pixmap.\n");
 #else
 	int i;
-/*
-	GTimer* profileTimer = g_timer_new ();
-*/
-	dprintf("    .... Now try rendering the drawing using cairo .... \n");
 
+	dprintf("    .... Now try rendering the drawing using cairo .... \n");
 	/* 
 	* This now allows drawing several layers on top of each other.
 	* Higher layer numbers have higher priority in the Z-order. 
@@ -473,18 +459,9 @@ void render_refresh_rendered_image_on_screen (void) {
 		}
 	}
 	render_recreate_composite_surface ();
-
-/*
-	g_timer_stop (profileTimer);
-	gulong timerMicros;
-
-	gdouble timerSeconds = g_timer_elapsed (profileTimer, &timerMicros);
-	g_warning ("Timer: %f seconds, %ld micros\n",timerSeconds,timerMicros);
-	g_timer_destroy (profileTimer);
-*/
-
-
 #endif
+	/* remove watch cursor and switch back to normal cursor */
+	callbacks_switch_to_correct_cursor ();
 	callbacks_force_expose_event_for_screen();
 }
 
