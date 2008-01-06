@@ -358,11 +358,13 @@ interface_create_gui (int req_width, int req_height)
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_analyze), menuitem_analyze_menu);
 
 	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze active Gerber layers..."));
-	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, "Examine a detailed anaylsis of the contents of all active Gerber layers", NULL);
+	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, 
+			      "Examine a detailed anaylsis of the contents of all active Gerber layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_gerbers);
 
 	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze active drill layers..."));
-	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, "Examine a detailed anaylsis of the contents of all active drill layers", NULL);
+	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, 
+			      "Examine a detailed anaylsis of the contents of all active drill layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_drill);
 
 	/* Wait and add in for 2.1??
@@ -627,7 +629,9 @@ interface_create_gui (int req_width, int req_height)
 	gtk_box_pack_start (GTK_BOX (vbox11), clear_messages_button, FALSE, FALSE, 0);
 
 	Message_label = gtk_label_new (_("Messages"));
-	gtk_notebook_set_tab_label (GTK_NOTEBOOK (sidepane_notebook), gtk_notebook_get_nth_page (GTK_NOTEBOOK (sidepane_notebook), 1), Message_label);
+	gtk_notebook_set_tab_label (GTK_NOTEBOOK (sidepane_notebook), 
+				    gtk_notebook_get_nth_page (GTK_NOTEBOOK (sidepane_notebook), 1), 
+				    Message_label);
 
 	vbox2 = gtk_vbox_new (FALSE, 4);
 	gtk_paned_pack2 (GTK_PANED (hpaned1), vbox2, TRUE, TRUE);
@@ -1052,7 +1056,10 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.statusUnitComboBox = combobox2;
 	screen.win.layerTree = tree;
 	screen.win.treeIsUpdating = FALSE;
-	callbacks_change_tool (NULL, 0);
+
+	/* Make pan tool default */
+	callbacks_change_tool (NULL, (gpointer) 1);
+
 	rename_main_window("",mainWindow);
 
 	set_window_icon (mainWindow);
