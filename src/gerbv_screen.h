@@ -98,6 +98,7 @@ typedef struct {
 	GtkWidget *toolButtonZoom;
 	GtkWidget *toolButtonMeasure;
 	gboolean updatingTools;
+	GtkWidget *layerTreePopupMenu;
     } win;
     gpointer windowSurface;
     gpointer bufferSurface;

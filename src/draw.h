@@ -112,7 +112,7 @@ typedef enum {
  */
 int 
 draw_image_to_cairo_target(cairo_t *cairoTarget, 
-			    gerb_image_t *image);
+			    gerb_image_t *image, gboolean invertLayer);
 
 #endif /* DRAW_H */
 

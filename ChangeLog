@@ -1,3 +1,23 @@
+2008-01-04  Julian Lamb
+	* interface.c: Remove a billion glade-generated gtk_widget_show function
+	  calls, since they aren't needed with gtk_widget_show_all.
+	* interface.c: Add tooltips for all menus and buttons.
+	* interface.c: Update menus for new pointer tool and remove reference
+	  to control gerber option, since it's out for 2.0.
+	* callbacks.c: Make middle mouse button the default pan tool, and update
+	  the mouse cursor is the user is panning or zooming with middle/right
+	  mouse buttons.
+	* interface.c,callback.c: Add right click menu to the layer tree and add
+	  column to indicate any modifications to the layer (for now, we just
+	  show "I" for an inverted layer). Add back in support for individually
+	  inverted layers. Also, fix XOR and OR rendering modes for GDK.
+	* render.c: Fix bug in alpha usage, which wasn't allowing transparency
+	  on exported images.
+	* tests/golden/*: Update all golden files, since the png export wasn't
+	  using alpha correctly, so all test files now render with a slightly
+	  different color (since the black can bleed through the blue color
+	  a tiny bit).
+
 2008-1-4  Stuart Brorson (sdb@cloud9.net)
 	* src/callbacks.c, src/gerbv_screen.h, src/icons.h, 
 	src/interface.c: Added pointer button to toggletools on task

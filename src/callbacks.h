@@ -144,6 +144,13 @@ void
 callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
                                                         gchar *path,
                                                         gpointer user_data);
+gboolean
+callbacks_drawingarea_leave_notify_event (GtkWidget *widget, GdkEventCrossing *event,
+					gpointer user_data);
+gboolean
+callbacks_drawingarea_enter_notify_event (GtkWidget *widget, GdkEventCrossing *event,
+					gpointer user_data);
+
 void 
 callbacks_update_statusbar(void);
 
@@ -164,6 +171,11 @@ void callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data);
 
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
                               GtkTreeIter  *oIter, gpointer      user_data);
+void
+callbacks_invert_layer_clicked (GtkButton *button, gpointer   user_data);
+
+void
+callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data);
 
 void callbacks_update_scrollbar_limits (void);
 

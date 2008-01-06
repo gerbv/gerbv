@@ -516,7 +516,7 @@ void render_all_layers_to_cairo_target (cairo_t *cr, gerbv_render_info_t *render
 			cairo_push_group (cr);
 			render_layer_to_cairo_target (cr, screen.file[i], renderInfo);
 			cairo_pop_group_to_source (cr);
-			cairo_paint_with_alpha (cr, screen.file[i]->alpha);		
+			cairo_paint_with_alpha (cr, (double) screen.file[i]->alpha/G_MAXUINT16);
 		}
 	}
 }
@@ -552,8 +552,8 @@ void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
 		(double) fileInfo->color.green/G_MAXUINT16,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
-
-	draw_image_to_cairo_target (cr, fileInfo->image);
+	
+	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->inverted);
 }
 
 void render_recreate_composite_surface () {
@@ -611,7 +611,6 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 	/* 
 	 * Remove old pixmap, allocate a new one, draw the background.
 	 */
-
 	gdk_gc_set_foreground(gc, &screen.background);
 	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, -1, -1);
 
@@ -623,22 +622,6 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 	clipmask = gdk_pixmap_new(NULL, renderInfo->displayWidth,
 						renderInfo->displayHeight, 1);
 							
-	if (renderInfo->renderType == 0) {
-		gdk_gc_set_function(gc, GDK_COPY);
-	}
-	else if (renderInfo->renderType == 1) {
-		gdk_gc_set_function(gc, GDK_AND);
-	}
-	else if (renderInfo->renderType == 2) {
-		gdk_gc_set_function(gc, GDK_OR);
-	}
-	else if (renderInfo->renderType == 3) {
-		gdk_gc_set_function(gc, GDK_XOR);
-	}
-	else {
-		gdk_gc_set_function(gc, GDK_COPY);
-	}
-	
 	/* 
 	* This now allows drawing several layers on top of each other.
 	* Higher layer numbers have higher priority in the Z-order. 
@@ -661,8 +644,24 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 			* will be removed by clipmask.
 			*/
 			gdk_gc_set_foreground(gc, &screen.file[i]->color);
+			
+			/* switch back to regular draw function for the initial
+			   bitmap clear */
+			gdk_gc_set_function(gc, GDK_COPY);
 			gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
-
+			
+			if (renderInfo->renderType == 0) {
+				gdk_gc_set_function(gc, GDK_COPY);
+			}
+			else if (renderInfo->renderType == 2) {
+				gdk_gc_set_function(gc, GDK_OR);
+			}
+			else if (renderInfo->renderType == 3) {
+				gdk_gc_set_function(gc, GDK_XOR);
+			}
+			else {
+				gdk_gc_set_function(gc, GDK_COPY);
+			}
 			/*
 			* Translation is to get it inside the allocated pixmap,
 			* which is not always centered perfectly for GTK/X.

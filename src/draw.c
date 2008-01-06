@@ -323,9 +323,9 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			       s->stack[THERMAL_CENTER_Y]);
 		cairo_rotate (cairoTarget, s->stack[THERMAL_ROTATION] * M_PI/180.0);
 		startAngle1 = atan (s->stack[THERMAL_CROSSHAIR_THICKNESS]/s->stack[THERMAL_INSIDE_DIAMETER]);
-		endAngle1 = M_PI/2 - 2*startAngle1;
+		endAngle1 = M_PI/2 - startAngle1;
 		endAngle2 = atan (s->stack[THERMAL_CROSSHAIR_THICKNESS]/s->stack[THERMAL_OUTSIDE_DIAMETER]);
-		startAngle2 = M_PI/2 - 2*endAngle2;
+		startAngle2 = M_PI/2 - endAngle2;
 		for (i = 0; i < 4; i++) {
 			cairo_arc (cairoTarget, 0, 0, s->stack[THERMAL_INSIDE_DIAMETER]/2.0, startAngle1, endAngle1);
 			cairo_rel_line_to (cairoTarget, 0, s->stack[THERMAL_CROSSHAIR_THICKNESS]);
@@ -426,7 +426,8 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerb_netstate_t *state
 }
 
 int
-draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
+draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
+						gboolean invertLayer)
 {
 	struct gerb_net *net;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
@@ -438,6 +439,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 	double repeat_dist_X = 0, repeat_dist_Y = 0;
 	int repeat_i, repeat_j;
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
+	gboolean invertPolarity = FALSE;
 	
     /* do initial justify */
 	cairo_translate (cairoTarget, image->info->imageJustifyOffsetActualA,
@@ -448,7 +450,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
     /* do image rotation */
     cairo_rotate (cairoTarget, image->info->imageRotation);
     /* load in polarity operators depending on the image polarity */
-    if (image->info->polarity == NEGATIVE) {
+    invertPolarity = invertLayer;
+    if (image->info->polarity == NEGATIVE)
+    	invertPolarity = !invertPolarity;
+    if (invertPolarity) {
     	drawOperatorClear = CAIRO_OPERATOR_OVER;
     	drawOperatorDark = CAIRO_OPERATOR_CLEAR;
     	cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
@@ -729,7 +734,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image)
 	    }
 	}
     }
-    /* restore the initial two state saves */
+    /* restore the initial two state saves (one for layer, one for netstate)*/
     cairo_restore (cairoTarget);
     cairo_restore (cairoTarget);
 	return 1;

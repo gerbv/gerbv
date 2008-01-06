@@ -255,15 +255,14 @@ callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
 			rename_main_window(filename, NULL);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_PS)
-			exportimage_export_to_postscript_file_autoscaled (500, 800, filename);
+			exportimage_export_to_postscript_file (&screenRenderInfo, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_PDF)
-			exportimage_export_to_pdf_file_autoscaled (500, 800, filename);
+			exportimage_export_to_pdf_file (&screenRenderInfo, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_SVG)
-			exportimage_export_to_svg_file_autoscaled (500, 800, filename);
+			exportimage_export_to_svg_file (&screenRenderInfo, filename);
 #ifdef EXPORT_PNG
 		else if (processType == CALLBACKS_SAVE_FILE_PNG)
-			exportimage_export_to_png_file_autoscaled (screen.drawing_area->allocation.width,
-				screen.drawing_area->allocation.height, filename);
+			exportimage_export_to_png_file (&screenRenderInfo, filename);
 #endif
 		render_refresh_rendered_image_on_screen();
 	}
@@ -981,9 +980,7 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gerbv_unload_all_layers ();
-
 	setup_destroy();
-
 	gtk_main_quit();
 }
 
@@ -1236,11 +1233,42 @@ callbacks_unselect_all_tool_buttons (void) {
 
 }
 
+void
+callbacks_switch_to_normal_tool_cursor (gint toolNumber) {
+	GdkCursor *cursor;
+
+	switch (toolNumber) {
+		case POINTER:
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+						  GERBV_DEF_CURSOR);
+			break;
+		case PAN:
+			cursor = gdk_cursor_new(GDK_FLEUR);
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+					  cursor);
+			gdk_cursor_destroy(cursor);
+			break;
+		case ZOOM:
+			cursor = gdk_cursor_new(GDK_SIZING);
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+					      cursor);
+			gdk_cursor_destroy(cursor);
+			break;
+		case MEASURE:
+			cursor = gdk_cursor_new(GDK_CROSSHAIR);
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+					  cursor);
+			gdk_cursor_destroy(cursor);
+			break;
+		default:
+			break;
+	}
+}
+
 /* --------------------------------------------------------- */
 void
 callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 	gint toolNumber = GPOINTER_TO_INT (user_data);
-	GdkCursor *cursor;
 	
 	/* make sure se don't get caught in endless recursion here */
 	if (screen.win.updatingTools)
@@ -1251,50 +1279,37 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonZoom), FALSE);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), FALSE);
 	switch (toolNumber) {
-		case 0:
+		case POINTER:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPointer), TRUE);
 			screen.tool = POINTER;
 			screen.state = NORMAL;
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-						  GERBV_DEF_CURSOR);
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
 				 "Click to select. Right click and drag to zoom.");
 			break;
-		case 1:
+		case PAN:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), TRUE);
 			screen.tool = PAN;
 			screen.state = NORMAL;
-			cursor = gdk_cursor_new(GDK_FLEUR);
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-					  cursor);
-			gdk_cursor_destroy(cursor);
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
 				 "Click and drag to pan. Right click and drag to zoom.");
 			break;
-		case 2:
+		case ZOOM:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonZoom), TRUE);
 			screen.tool = ZOOM;
 			screen.state = NORMAL;
-			cursor = gdk_cursor_new(GDK_SIZING);
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-					      cursor);
-			gdk_cursor_destroy(cursor);
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
 				 "Click or drag around an area to zoom in. Shift+click to zoom out.");
 			break;
-		case 3:
+		case MEASURE:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), TRUE);
 			screen.tool = MEASURE;
 			screen.state = NORMAL;
-			cursor = gdk_cursor_new(GDK_CROSSHAIR);
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-					  cursor);
-			gdk_cursor_destroy(cursor);
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, "Click and drag to measure a distance.");
 			break;
 		default:
 			break;
 	}
+	callbacks_switch_to_normal_tool_cursor (toolNumber);
 	callbacks_update_statusbar();
 	screen.win.updatingTools = FALSE;
 	callbacks_force_expose_event_for_screen();
@@ -1422,7 +1437,45 @@ callbacks_color_selector_ok_clicked (GtkWidget *widget, gpointer user_data) {
 	render_refresh_rendered_image_on_screen();
 }
 
+void
+callbacks_show_color_picker_dialog (gint index){
+	if (!screen.win.colorSelectionDialog) {
+		GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
+		GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
+		
+		screen.win.colorSelectionDialog = (GtkWidget *) cs;
+		screen.win.colorSelectionIndex = index;
+		gtk_color_selection_set_current_color (colorsel,
+			&screen.file[index]->color);
+#ifndef RENDER_USING_GDK
+		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
+		gtk_color_selection_set_current_alpha (colorsel, screen.file[index]->alpha);
+#endif
+		gtk_widget_show((GtkWidget *)cs);
+		g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
+			G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);
+		g_signal_connect (G_OBJECT(cs->cancel_button),"clicked",
+			G_CALLBACK (callbacks_color_selector_cancel_clicked), NULL);
+		/* stop signal propagation if the user clicked on the color swatch */
+	}
+}
 
+void
+callbacks_invert_layer_clicked  (GtkButton *button, gpointer   user_data) {
+	gint index=callbacks_get_selected_row_index();
+	
+	screen.file[index]->inverted = !screen.file[index]->inverted;
+	render_refresh_rendered_image_on_screen ();
+	callbacks_update_layer_tree ();
+}
+
+void
+callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) {
+	gint index=callbacks_get_selected_row_index();
+
+	callbacks_show_color_picker_dialog (index);
+}
+					
 gboolean
 callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
                                    gpointer user_data) {
@@ -1434,39 +1487,26 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
       
       GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
 			((GtkTreeView *) screen.win.layerTree);
-      
-      if (gtk_tree_view_get_path_at_pos  ((GtkTreeView *) widget, event->x, event->y,
-      	&path, &column, &x, &y)) {
-	      if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, path)) {
-	      	gint *indeces;
-	      	indeces = gtk_tree_path_get_indices (path);
-	      	if (indeces) {
-				//gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &rowIndex, -1);
-				columnIndex = callbacks_get_col_number_from_tree_view_column (column);
-				if ((columnIndex == 1) && (indeces[0] <= screen.last_loaded)){
-					if (!screen.win.colorSelectionDialog) {
-						GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
-						GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
-						
-						screen.win.colorSelectionDialog = (GtkWidget *) cs;
-						screen.win.colorSelectionIndex = indeces[0];
-						gtk_color_selection_set_current_color (colorsel,
-							&screen.file[indeces[0]]->color);
-#ifndef RENDER_USING_GDK
-						gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
-						gtk_color_selection_set_current_alpha (colorsel, screen.file[indeces[0]]->alpha);
-#endif
-						gtk_widget_show((GtkWidget *)cs);
-						g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
-							G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);
-						g_signal_connect (G_OBJECT(cs->cancel_button),"clicked",
-							G_CALLBACK (callbacks_color_selector_cancel_clicked), NULL);
-						/* stop signal propagation if the user clicked on the color swatch */
+      if (event->button == 1) {
+	      if (gtk_tree_view_get_path_at_pos  ((GtkTreeView *) widget, event->x, event->y,
+	      	&path, &column, &x, &y)) {
+		      if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, path)) {
+		      	gint *indeces;
+		      	indeces = gtk_tree_path_get_indices (path);
+		      	if (indeces) {
+					//gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &rowIndex, -1);
+					columnIndex = callbacks_get_col_number_from_tree_view_column (column);
+					if ((columnIndex == 1) && (indeces[0] <= screen.last_loaded)){
+						callbacks_show_color_picker_dialog (indeces[0]);
 						return TRUE;
 					}
 				}
 			}
 		}
+	}
+	else if (event->button == 3) {
+		gtk_menu_popup(GTK_MENU(screen.win.layerTreePopupMenu), NULL, NULL, NULL, NULL, 
+			   event->button, event->time);
 	}
 	return FALSE;
 }
@@ -1508,12 +1548,20 @@ callbacks_update_layer_tree (void) {
 				
 				/* strip the filename to the base */
 				gchar *baseName = g_path_get_basename (screen.file[idx]->name);
+				gchar *modifiedCode;
+				if (screen.file[idx]->inverted) {
+					modifiedCode = g_strdup ("I");
+				}
+				else
+					modifiedCode = g_strdup ("");
 				gtk_list_store_set (list_store, &iter,
 							0, screen.file[idx]->isVisible,
 							1, pixbuf,
 			                        2, baseName,
+			                        3, modifiedCode,
 			                        -1);
-			      free (baseName);
+			      g_free (baseName);
+			      g_free (modifiedCode);
 			      /* pixbuf has a refcount of 2 now, as the list store has added its own reference */
 			      g_object_unref(pixbuf);
 			}
@@ -1743,6 +1791,8 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 gboolean
 callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
+	GdkCursor *cursor;
+	
 	switch (event->button) {
 		case 1 :
 			if (screen.tool == POINTER) {
@@ -1771,17 +1821,13 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			}
 			break;
 		case 2 :
-			/* And now, some Veribest-like mouse commands for
-			   all us who dislike scroll wheels ;) */
-			if (screen.tool == POINTER) {
-				if((event->state & GDK_SHIFT_MASK) != 0) {
-				    /* Middle button + shift == zoom in */
-				    render_zoom_display (ZOOM_IN_CMOUSE, 0, event->x, event->y);
-				} else {
-				    /* Only middle button == zoom out */
-				    render_zoom_display (ZOOM_OUT_CMOUSE, 0, event->x, event->y);
-				}
-			}
+			screen.state = IN_MOVE;
+			screen.last_x = event->x;
+			screen.last_y = event->y;
+			cursor = gdk_cursor_new(GDK_FLEUR);
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+					  cursor);
+			gdk_cursor_destroy(cursor);
 			break;
 		case 3 :
 			/* Zoom outline mode initiated */
@@ -1789,6 +1835,10 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			screen.start_x = event->x;
 			screen.start_y = event->y;
 			screen.centered_outline_zoom = event->state & GDK_SHIFT_MASK;
+			cursor = gdk_cursor_new(GDK_SIZING);
+			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+					  cursor);
+			gdk_cursor_destroy(cursor);
 			break;
 		case 4 : /* Scroll wheel */
 			render_zoom_display (ZOOM_IN_CMOUSE, 0, event->x, event->y);
@@ -1808,9 +1858,10 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 { 
 	if (event->type == GDK_BUTTON_RELEASE) {
 		if (screen.state == IN_MOVE) {  
-		    screen.off_x = 0;
-		    screen.off_y = 0;
-		    render_refresh_rendered_image_on_screen();
+			screen.off_x = 0;
+			screen.off_y = 0;
+			render_refresh_rendered_image_on_screen();
+			callbacks_switch_to_normal_tool_cursor (screen.tool);
 		}
 		else if (screen.state == IN_ZOOM_OUTLINE) {
 			if ((event->state & GDK_SHIFT_MASK) != 0) {
@@ -1824,8 +1875,8 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 			}
 			else
 				render_calculate_zoom_from_outline (widget, event);
+			callbacks_switch_to_normal_tool_cursor (screen.tool);
 		}
-		
 		if (screen.tool == POINTER) {
 		}
 		else if (screen.tool == PAN) {
@@ -1936,6 +1987,11 @@ callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer 
 	int activeRow = gtk_combo_box_get_active (widget);
 	
 	screenRenderInfo.renderType = activeRow;
+#ifdef RENDER_USING_GDK
+	render_refresh_rendered_image_on_screen();
+#else
+	render_recreate_composite_surface (screen.drawing_area);
+#endif
 }
 
 void
