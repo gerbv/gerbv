@@ -8,7 +8,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 2 of trhe License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -1558,8 +1558,6 @@ callbacks_update_layer_tree (void) {
 
 				gtk_list_store_append (list_store, &iter);
 				
-				/* strip the filename to the base */
-				gchar *baseName = g_path_get_basename (screen.file[idx]->name);
 				gchar *modifiedCode;
 				if (screen.file[idx]->inverted) {
 					modifiedCode = g_strdup ("I");
@@ -1569,10 +1567,9 @@ callbacks_update_layer_tree (void) {
 				gtk_list_store_set (list_store, &iter,
 							0, screen.file[idx]->isVisible,
 							1, pixbuf,
-			                        2, baseName,
+			                        2, screen.file[idx]->name,
 			                        3, modifiedCode,
 			                        -1);
-			      g_free (baseName);
 			      g_free (modifiedCode);
 			      /* pixbuf has a refcount of 2 now, as the list store has added its own reference */
 			      g_object_unref(pixbuf);
@@ -2002,11 +1999,7 @@ callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer 
 	int activeRow = gtk_combo_box_get_active (widget);
 	
 	screenRenderInfo.renderType = activeRow;
-#ifdef RENDER_USING_GDK
 	render_refresh_rendered_image_on_screen();
-#else
-	render_recreate_composite_surface (screen.drawing_area);
-#endif
 }
 
 void

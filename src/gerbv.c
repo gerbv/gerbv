@@ -337,7 +337,6 @@ gerbv_revert_all_files(void)
     }
 } /* gerbv_revert_all_files */
 
-
 void 
 gerbv_unload_layer(int index) 
 {
@@ -355,7 +354,6 @@ gerbv_unload_layer(int index)
     }
     screen.last_loaded--;
 } /* gerbv_unload_layer */
-
 
 void 
 gerbv_unload_all_layers (void) 
@@ -391,69 +389,13 @@ gerbv_change_layer_order(gint oldPosition, gint newPosition)
     }
     screen.file[newPosition] = temp_file;
 } /* gerbv_change_layer_order */
- 
 
-/* ------------------------------------------------------------------ */
-static int
-gerbv_open_image(char *filename, int idx, int reload)
-{
-    gerb_file_t *fd;
-    int r, g, b;
-    gerb_image_t *parsed_image;
+gint
+gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
+			gchar *filename, gchar *baseName, int idx, int reload){
     gerb_verify_error_t error = GERB_IMAGE_OK;
+    int r, g, b; 
     
-    if (idx >= MAX_FILES) {
-	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
-		     filename);
-	return -1;
-    }
-    
-    dprintf("In open_image, about to try opening filename = %s\n", filename);
-    
-    fd = gerb_fopen(filename);
-    if (fd == NULL) {
-	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
-	return -1;
-    }
-    
-    dprintf("In open_image, successfully opened file.  Now check its type....\n");
-    /* Here's where we decide what file type we have */
-    if (gerber_is_rs274x_p(fd)) {
-	dprintf("Found RS-274X file\n");
-	/* figure out the directory path in case parse_gerb needs to
-	 * load any include files */
-	gchar *currentLoadDirectory = g_path_get_dirname (filename);
-	parsed_image = parse_gerb(fd, currentLoadDirectory);
-	g_free (currentLoadDirectory);
-    } else if(drill_file_p(fd)) {
-	dprintf("Found drill file\n");
-	parsed_image = parse_drillfile(fd);
-	
-    } else if (pick_and_place_check_file_type(fd)) {
-	dprintf("Found pick-n-place file\n");
-	parsed_image = pick_and_place_parse_file_to_image(fd);
-	
-    } else if (gerber_is_rs274d_p(fd)) {
-	dprintf("Found RS-274D file");
-	GERB_COMPILE_ERROR("%s: Found RS-274D file -- not supported by gerbv.\n", filename);
-	parsed_image = NULL;
-
-    } else {
-	/* This is not a known file */
-	dprintf("Unknown filetype");
-	GERB_COMPILE_ERROR("%s: Unknown file type.\n", filename);
-	parsed_image = NULL;
-    }
-    
-    if (parsed_image == NULL) {
-	return -1;
-    }
-
-    gerb_fclose(fd);
-
-    /*
-     * Do error check before continuing
-     */
     dprintf("In open_image, now error check file....\n");
     error = gerb_image_verify(parsed_image);
     if (error) {
@@ -496,7 +438,8 @@ gerbv_open_image(char *filename, int idx, int reload)
     /*
      * Store filename for eventual reload
      */
-    screen.file[idx]->name = g_strdup (filename);
+    screen.file[idx]->fullPathname = g_strdup (filename);
+    screen.file[idx]->name = g_strdup (baseName);
     
     r = defaultColors[idx].red*256;
     g = defaultColors[idx].green*256;
@@ -508,9 +451,92 @@ gerbv_open_image(char *filename, int idx, int reload)
     gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
 #endif
     screen.file[idx]->alpha = 45535;
-    screen.file[idx]->isVisible = TRUE;                     
+    screen.file[idx]->isVisible = TRUE;
+    return 1;
+}
+
+/* ------------------------------------------------------------------ */
+static int
+gerbv_open_image(char *filename, int idx, int reload)
+{
+    gerb_file_t *fd;
+    gerb_image_t *parsed_image = NULL, *parsed_image2 = NULL;
+    gint retv = -1;
+    gboolean isPnpFile = FALSE;
     
-    return 0;
+    if (idx >= MAX_FILES) {
+	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
+		     filename);
+	return -1;
+    }
+    
+    dprintf("In open_image, about to try opening filename = %s\n", filename);
+    
+    fd = gerb_fopen(filename);
+    if (fd == NULL) {
+	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
+	return -1;
+    }
+    
+    dprintf("In open_image, successfully opened file.  Now check its type....\n");
+    /* Here's where we decide what file type we have */
+    if (gerber_is_rs274x_p(fd)) {
+	dprintf("Found RS-274X file\n");
+	/* figure out the directory path in case parse_gerb needs to
+	 * load any include files */
+	gchar *currentLoadDirectory = g_path_get_dirname (filename);
+	parsed_image = parse_gerb(fd, currentLoadDirectory);
+	g_free (currentLoadDirectory);
+    } else if(drill_file_p(fd)) {
+	dprintf("Found drill file\n");
+	parsed_image = parse_drillfile(fd);
+	
+    } else if (pick_and_place_check_file_type(fd)) {
+	dprintf("Found pick-n-place file\n");
+	pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
+	isPnpFile = TRUE;
+    } else if (gerber_is_rs274d_p(fd)) {
+	dprintf("Found RS-274D file");
+	GERB_COMPILE_ERROR("%s: Found RS-274D file -- not supported by gerbv.\n", filename);
+	parsed_image = NULL;
+
+    } else {
+	/* This is not a known file */
+	dprintf("Unknown filetype");
+	GERB_COMPILE_ERROR("%s: Unknown file type.\n", filename);
+	parsed_image = NULL;
+    }
+    
+    gerb_fclose(fd);
+    if (parsed_image == NULL) {
+	return -1;
+    }
+    
+    if (parsed_image) {
+	/* strip the filename to the base */
+	gchar *baseName = g_path_get_basename (filename);
+	gchar *displayedName;
+	if (isPnpFile)
+		displayedName = g_strconcat (baseName, " (top)",NULL);
+	else
+		displayedName = g_strdup (baseName);
+    	retv = gerbv_add_parsed_image_to_project (parsed_image, filename, displayedName, idx, reload);
+    	g_free (baseName);
+    	g_free (displayedName);
+    }
+    /* for PNP place files, we may need to add a second image for the other
+       board side */
+    if (parsed_image2) {
+      /* strip the filename to the base */
+	gchar *baseName = g_path_get_basename (filename);
+	gchar *displayedName;
+	displayedName = g_strconcat (baseName, " (bottom)",NULL);
+    	retv = gerbv_add_parsed_image_to_project (parsed_image2, filename, displayedName, idx + 1, reload);
+    	g_free (baseName);
+    	g_free (displayedName);
+    }
+
+    return retv;
 } /* open_image */
 
 

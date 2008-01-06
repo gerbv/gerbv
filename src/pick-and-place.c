@@ -264,8 +264,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    snprintf (pnpPartData.layer, sizeof(pnpPartData.layer)-1, "%s", row[6]);	
 	    pnpPartData.mid_x = pick_and_place_get_float_unit(row[3]);
 	    pnpPartData.mid_y = pick_and_place_get_float_unit(row[4]);
-	    pnpPartData.pad_x = pnpPartData.mid_x + 0.04;
-	    pnpPartData.pad_y = pnpPartData.mid_y + 0.04;
+	    pnpPartData.pad_x = pnpPartData.mid_x + 0.03;
+	    pnpPartData.pad_y = pnpPartData.mid_y + 0.03;
 	    sscanf(row[5], "%lf", &pnpPartData.rotation); // no units, always deg
 	    /* check for coordinate sanity, and abort if it fails
 	     * Note: this is mainly to catch comment lines that get parsed
@@ -458,13 +458,29 @@ pick_and_place_check_file_type(gerb_file_t *fd)
  *	------------------------------------------------------------------
  */
 gerb_image_t *
-pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData) 
+pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint boardSide) 
 {
     gerb_image_t *image = NULL;
     gerb_net_t *curr_net = NULL;
     int i;
     gerb_transf_t *tr_rot = gerb_transf_new();
     drill_stats_t *stats;  /* Eventually replace with pick_place_stats */
+    gboolean foundElement = FALSE;
+    
+    /* step through and make sure we have an element on the layer before
+       we actually create a new image for it and fill it */
+    for (i = 0; i < parsedPickAndPlaceData->len; i++) {
+	PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
+	
+	if ((boardSide == 0) && !((partData.layer[0]=='b') || (partData.layer[0]=='B')))
+		continue;
+	if ((boardSide == 1) && !((partData.layer[0]=='t') || (partData.layer[0]=='T')))
+		continue;
+		
+	foundElement = TRUE;
+    }
+    if (!foundElement)
+    	return NULL;
 
     image = new_gerb_image(image);
     if (image == NULL) {
@@ -509,14 +525,48 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData)
 	curr_net->layer = image->layers;
 	curr_net->state = image->states;	
 	partData.rotation *= M_PI/180; /* convert deg to rad */
-		
+	/* check if the entry is on the specified layer */
+	if ((boardSide == 0) && !((partData.layer[0]=='b') || (partData.layer[0]=='B')))
+		continue;
+	if ((boardSide == 1) && !((partData.layer[0]=='t') || (partData.layer[0]=='T')))
+		continue;	
 	if ((partData.shape == PART_SHAPE_RECTANGLE) ||
 	    (partData.shape == PART_SHAPE_STD)) {
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
 	    gerb_transf_reset(tr_rot);
-	    gerb_transf_rotate(tr_rot, partData.rotation);
-	    gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
 	    
+	    gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
+	    /* unrotate the part to make sure the label is in the same location */
+	    gerb_transf_rotate(tr_rot, -partData.rotation);
+	    /* this first net is just a label holder, so calculate the lower
+	       left location to line up above the element */
+	    gerb_transf_apply(-partData.length/2,partData.width/2, tr_rot, 
+			      &curr_net->start_x, &curr_net->start_y);
+	    gerb_transf_apply(-partData.length/2,partData.width/2, tr_rot, 
+			      &curr_net->stop_x, &curr_net->stop_y);
+	    /* re-rotate back to the correct orientation */
+	    gerb_transf_rotate(tr_rot, partData.rotation);
+	    
+	    curr_net->aperture = 0;
+	    curr_net->aperture_state = OFF;
+	    curr_net->interpolation = LINEARx1;
+	    curr_net->layer = image->layers;
+	    curr_net->state = image->states;
+	    
+	    /* assign a label to this first draw primitive, in case we want
+	     * to render some text next to the mark
+	     */
+	    if (strlen (partData.designator) > 0) {
+		curr_net->label = g_string_new (partData.designator);
+	    }
+	    
+	    /* rotate 180 to line up with PCB standard notation */
+	    gerb_transf_rotate(tr_rot, M_PI);
+	    
+	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	    curr_net = curr_net->next;
+	    assert(curr_net);
+	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
 	    gerb_transf_apply(partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
 	    gerb_transf_apply(-partData.length/2, partData.width/2, tr_rot, 
@@ -528,12 +578,6 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData)
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
-	    /* assign a label to this first draw primitive, in case we want
-	     * to render some text next to the mark
-	     */
-	    if (strlen (partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
 	    
 	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 	    curr_net = curr_net->next;
@@ -620,7 +664,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData)
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    /* calculate a rough radius for the min/max screen calcs later */
-	    radius = max (partData.length/2, partData.width/2) + 1;
+	    radius = max (partData.length/2, partData.width/2);
 	} else {
 	    curr_net->start_x = partData.mid_x;
 	    curr_net->start_y = partData.mid_y;
@@ -665,15 +709,14 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData)
 	 * update min and max numbers so the screen zoom-to-fit 
 	 *function will work
 	 */
-	image->info->min_x = min(image->info->min_x, (partData.pad_x - radius));
-	image->info->min_y = min(image->info->min_y, (partData.pad_y - radius));
-	image->info->max_x = max(image->info->max_x, (partData.pad_x + radius));
-	image->info->max_y = max(image->info->max_y, (partData.pad_y + radius));
+	image->info->min_x = min(image->info->min_x, (partData.mid_x - radius - 0.02));
+	image->info->min_y = min(image->info->min_y, (partData.mid_y - radius - 0.02));
+	image->info->max_x = max(image->info->max_x, (partData.mid_x + radius + 0.02));
+	image->info->max_y = max(image->info->max_y, (partData.mid_y + radius + 0.02));
     }
     curr_net->next = NULL;
     
     gerb_transf_free(tr_rot);
-    g_array_free (parsedPickAndPlaceData, TRUE);
     return image;
 } /* pick_and_place_parse_file_to_image */
 
@@ -686,13 +729,15 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData)
  *       this function, since it does very little sanity checking itself.
  *	------------------------------------------------------------------
  */
-gerb_image_t *
-pick_and_place_parse_file_to_image(gerb_file_t *fd) 
-{
-    gerb_image_t *image;
-    
+void
+pick_and_place_parse_file_to_images(gerb_file_t *fd, gerb_image_t **topImage,
+			gerb_image_t **bottomImage) 
+{ 
     GArray *parsedPickAndPlaceData = pick_and_place_parse_file (fd);
-    image = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData);
 
-    return image;
+    *bottomImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 0);
+    *topImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 1);
+
+    g_array_free (parsedPickAndPlaceData, TRUE);
 } /* pick_and_place_parse_file_to_image */
+

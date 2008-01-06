@@ -56,8 +56,9 @@ typedef struct {
     guint16 alpha;
     gboolean isVisible;
     gpointer privateRenderData;
-    char *name; /* this should be the full pathname to the file */
-    char inverted;
+    gchar *fullPathname; /* this should be the full pathname to the file */
+    gchar *name;
+    gboolean inverted;
 } gerbv_fileinfo_t;
 
 typedef struct {

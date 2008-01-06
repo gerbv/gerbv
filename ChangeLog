@@ -1,4 +1,10 @@
-2008-01-04  Julian Lamb
+2008-01-06  Julian Lamb
+	* pick-and-place.c, gerbv.c: Render top and bottom layers in separate
+	  layers (if they exist). Rotate parts correctly and fix min/max 
+	  calcualtions so autoscaling works correctly. Also, add "top" and 
+	  "bottom" labels to layer names.
+	  
+2008-01-05  Julian Lamb
 	* interface.c: Remove a billion glade-generated gtk_widget_show function
 	  calls, since they aren't needed with gtk_widget_show_all.
 	* interface.c: Add tooltips for all menus and buttons.
