@@ -1171,6 +1171,7 @@ void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment, gpointer us
 	}
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
                                                         gchar *path,
@@ -1203,6 +1204,7 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 	}
 }
 
+/* --------------------------------------------------------- */
 gint
 callbacks_get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
 {
@@ -1217,17 +1219,20 @@ callbacks_get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
 	return num;
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_color_selector_cancel_clicked (GtkWidget *widget, gpointer user_data) {
 	gtk_widget_destroy (screen.win.colorSelectionDialog);
 	screen.win.colorSelectionDialog = NULL;
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_add_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
 	callbacks_open_layer_activate (NULL, NULL);
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_unselect_all_tool_buttons (void) {
 
@@ -1298,7 +1303,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.tool = ZOOM;
 			screen.state = NORMAL;
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 "Click or drag around an area to zoom in. Shift+click to zoom out.");
+				 "Click and drag to zoom in. Shift+click to zoom out.");
 			break;
 		case MEASURE:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), TRUE);
@@ -1315,6 +1320,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 	callbacks_force_expose_event_for_screen();
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_select_row (gint rowIndex) {
 	GtkTreeSelection *selection;
@@ -1328,7 +1334,7 @@ callbacks_select_row (gint rowIndex) {
 	}
 }
 
-
+/* --------------------------------------------------------- */
 gint
 callbacks_get_selected_row_index  (void) {
 	GtkTreeSelection *selection;
@@ -1351,6 +1357,7 @@ callbacks_get_selected_row_index  (void) {
 	return index;
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
@@ -1363,6 +1370,7 @@ callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data)
 	}
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
@@ -1375,6 +1383,7 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 	}
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
@@ -1387,6 +1396,7 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 	}
 }
 
+/* --------------------------------------------------------- */
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
                               GtkTreeIter  *oIter, gpointer user_data) {
       gint *indeces=NULL,oldPosition,newPosition;
@@ -1419,6 +1429,7 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 	}
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_color_selector_ok_clicked (GtkWidget *widget, gpointer user_data) {
 	GtkColorSelectionDialog *cs = (GtkColorSelectionDialog *) screen.win.colorSelectionDialog;
@@ -1919,6 +1930,9 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 					break;
 				case GDK_F3:
 					callbacks_change_tool (NULL, (gpointer) 2);
+					break;
+				case GDK_F4:
+					callbacks_change_tool (NULL, (gpointer) 3);
 					break;
 				default:
 					break;
