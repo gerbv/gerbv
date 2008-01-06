@@ -628,6 +628,494 @@ gerbv_gdk_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 } /* gerbv_gdk_draw_prim22 */
 
 
+/*
+ * Doesn't handle explicit x,y yet
+ */
+static void
+gerbv_gdk_draw_prim1_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
+		 int scale, gint x, gint y)
+{
+    const int exposure_idx = 0;
+    const int diameter_idx = 1;
+    const int x_offset_idx = 2;
+    const int y_offset_idx = 3;
+    const gint full_circle = 23360;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    gint dia    = round(fabs(parameters[diameter_idx] * scale));
+    gint real_x = x - dia / 2;
+    gint real_y = y - dia / 2;
+    GdkColor color;
+
+    gdk_gc_copy(local_gc, gc);
+
+    real_x += (int)(parameters[x_offset_idx] * (double)scale);
+    real_y -= (int)(parameters[y_offset_idx] * (double)scale);
+
+    /* Exposure */
+    if (parameters[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
+
+    gdk_gc_set_line_attributes(local_gc, 
+			       1, /* outline always 1 pixels */
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
+
+    /* 
+     * A filled circle 
+     */
+    gdk_draw_arc(pixmap, local_gc, 1, real_x, real_y, dia, dia, 
+		 0, full_circle);
+
+    gdk_gc_unref(local_gc);
+
+    return;
+} /* gerbv_gdk_draw_prim1 */
+
+
+/*
+ * Doesn't handle explicit x,y yet
+ * Questions:
+ *  - should start point be included in number of points?
+ *  - how thick is the outline?
+ */
+static void
+gerbv_gdk_draw_prim4_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
+		 int scale, gint x, gint y)
+{
+    const int exposure_idx = 0;
+    const int nuf_points_idx = 1;
+    const int first_x_idx = 2;
+    const int first_y_idx = 3;
+    const int rotext_idx = 4;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    int nuf_points, point, closed_shape;
+    double rotation;
+    GdkPoint *points;
+    GdkColor color;
+
+
+    nuf_points = (int)parameters[nuf_points_idx];
+    points = (GdkPoint *)g_malloc(sizeof(GdkPoint) * nuf_points);
+    if (!points) {
+	g_free(points);
+	return;
+    }
+
+    /*
+     * Closed (ie filled as I interpret it) shape if first and last point
+     * are the same.
+     */
+    closed_shape = 
+	(fabs(parameters[first_x_idx] - parameters[nuf_points * 2 + first_x_idx]) < 0.0001) &&
+	(fabs(parameters[first_y_idx] - parameters[nuf_points * 2 + first_y_idx]) < 0.0001);
+
+    rotation = parameters[nuf_points * 2 + rotext_idx];
+    for (point = 0; point < nuf_points; point++) {
+	points[point].x = (int)round(scale * parameters[point * 2 + first_x_idx]);
+	points[point].y = -(int)round(scale * parameters[point * 2 + first_y_idx]);
+	if (rotation > 0.1)
+	    points[point] = rotate_point(points[point], rotation);
+	points[point].x += x;
+	points[point].y += y;
+    }
+
+    gdk_gc_copy(local_gc, gc);
+
+    /* Exposure */
+    if (parameters[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
+
+    gdk_gc_set_line_attributes(local_gc, 
+			       1, /* outline always 1 pixels */
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
+    gdk_draw_polygon(pixmap, local_gc, closed_shape, points, nuf_points);
+
+    g_free(points);
+
+    gdk_gc_unref(local_gc);
+
+    return;
+} /* gerbv_gdk_draw_prim4 */
+
+
+/*
+ * Doesn't handle explicit x,y yet
+ */
+static void
+gerbv_gdk_draw_prim5_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
+		 int scale, gint x, gint y)
+{
+    const int exposure_idx = 0;
+    const int nuf_vertices_idx = 1;
+    const int diameter_idx = 4;
+    const int rotation_idx = 5;
+    int nuf_vertices, i;
+    double vertex, tick, rotation, radius;
+    GdkPoint *points;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    GdkColor color;
+
+    nuf_vertices = (int)parameters[nuf_vertices_idx];
+    points = (GdkPoint *)g_malloc(sizeof(GdkPoint) * nuf_vertices);
+    if (!points) {
+	g_free(points);
+	return;
+    }
+
+    gdk_gc_copy(local_gc, gc);
+
+    /* Exposure */
+    if (parameters[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
+
+    tick = 2 * M_PI / (double)nuf_vertices;
+    rotation = -parameters[rotation_idx] * M_PI / 180.0;
+    radius = parameters[diameter_idx] / 2.0;
+    for (i = 0; i < nuf_vertices; i++) {
+	vertex =  tick * (double)i + rotation;
+	points[i].x = (int)round(scale * radius * cos(vertex)) + x;
+	points[i].y = (int)round(scale * radius * sin(vertex)) + y;
+    }
+
+    gdk_draw_polygon(pixmap, local_gc, 1, points, nuf_vertices);
+
+    gdk_gc_unref(local_gc);
+
+    g_free(points);
+    return;
+} /* gerbv_gdk_draw_prim5 */
+
+
+/*
+ * Doesn't handle and explicit x,y yet
+ * Questions:
+ *  - is "gap" distance between edges of circles or distance between
+ *    center of line of circle?
+ */
+static void
+gerbv_gdk_draw_prim6_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
+		 int scale, gint x, gint y)
+{
+    const int outside_dia_idx = 2;
+    const int ci_thickness_idx = 3;
+    const int gap_idx = 4;
+    const int nuf_circles_idx = 5;
+    const int ch_thickness_idx = 6;
+    const int ch_length_idx = 7;
+    const int rotation_idx = 8;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    double real_dia;
+    double real_gap;
+    int circle;
+    GdkPoint crosshair[4];
+    int point;
+
+    gdk_gc_copy(local_gc, gc);
+    gdk_gc_set_line_attributes(local_gc, 
+			       (int)round(scale * parameters[ci_thickness_idx]),
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
+
+    real_dia = parameters[outside_dia_idx] -  parameters[ci_thickness_idx] / 2.0;
+    real_gap = parameters[gap_idx] + parameters[ci_thickness_idx];
+
+    for (circle = 0; circle != (int)parameters[nuf_circles_idx];  circle++) {
+	/* 
+	 * Non filled circle 
+	 */
+	const gint full_circle = 23360;
+	gint dia = (real_dia - real_gap * circle) * scale;
+	gdk_draw_arc(pixmap, local_gc, 0, x - dia / 2, y - dia / 2, 
+		     dia, dia, 0, full_circle);
+			  
+    }
+
+    /*
+     * Cross Hair 
+     */
+    memset(crosshair, 0, sizeof(GdkPoint) * 4);
+    crosshair[0].x = (int)((parameters[ch_length_idx] / 2.0) * scale);
+    /*crosshair[0].y = 0;*/
+    crosshair[1].x = -crosshair[0].x;
+    /*crosshair[1].y = 0;*/
+    /*crosshair[2].x = 0;*/
+    crosshair[2].y = crosshair[0].x;
+    /*crosshair[3].x = 0;*/
+    crosshair[3].y = -crosshair[0].x;
+
+    gdk_gc_set_line_attributes(local_gc, 
+			       (int)round(scale * parameters[ch_thickness_idx]),
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
+
+    for (point = 0; point < 4; point++) {
+	crosshair[point] = rotate_point(crosshair[point], 
+					parameters[rotation_idx]);
+	crosshair[point].x += x;
+	crosshair[point].y += y;
+    }
+    gdk_draw_line(pixmap, local_gc, 
+		  crosshair[0].x, crosshair[0].y, 
+		  crosshair[1].x, crosshair[1].y);
+    gdk_draw_line(pixmap, local_gc, 
+		  crosshair[2].x, crosshair[2].y, 
+		  crosshair[3].x, crosshair[3].y);
+
+    gdk_gc_unref(local_gc);
+
+    return;
+} /* gerbv_gdk_draw_prim6 */
+
+
+static void
+gerbv_gdk_draw_prim7_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
+		 int scale, gint x, gint y)
+{
+    const int outside_dia_idx = 2;
+    const int inside_dia_idx = 3;
+    const int ch_thickness_idx = 4;
+    const int rotation_idx = 5;
+    const gint full_circle = 23360;
+    GdkGCValues gc_val;
+    int diameter, i;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    GdkPoint point[4];
+    double ci_thickness = (parameters[outside_dia_idx] - 
+			parameters[inside_dia_idx]) / 2.0;
+
+    gdk_gc_copy(local_gc, gc);
+    gdk_gc_set_line_attributes(local_gc, 
+			       (int)round(scale * ci_thickness),
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
+
+    /* 
+     * Non filled circle 
+     */
+    diameter = (parameters[inside_dia_idx] + ci_thickness) * scale;
+    gdk_draw_arc(pixmap, local_gc, 0, x - diameter / 2, y - diameter / 2, 
+		 diameter, diameter, 0, full_circle);
+
+    /*
+     * Cross hair
+     */ 
+    /* Calculate the end points of the crosshair */    
+    /* GDK doesn't always remove all of the circle (round of error probably)
+       I extend the crosshair line with 2 (one pixel in each end) to make 
+       sure all of the circle is removed with the crosshair */
+    for (i = 0; i < 4; i++) {
+	point[i].x = round((parameters[outside_dia_idx] / 2.0) * scale) + 2;
+	point[i].y = 0;
+	point[i] = rotate_point(point[i], parameters[rotation_idx] + 90 * i);
+	point[i].x += x;
+	point[i].y += y;
+    }
+
+    gdk_gc_set_line_attributes(local_gc, 
+			       (int)round(scale * parameters[ch_thickness_idx]),
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
+
+    /* The cross hair should "cut out" parts of the circle, hence inverse */
+    gdk_gc_get_values(local_gc, &gc_val);
+    if (gc_val.foreground.pixel == 1)
+	gc_val.foreground.pixel = 0;
+    else
+	gc_val.foreground.pixel = 1;
+    gdk_gc_set_foreground(local_gc, &(gc_val.foreground));
+
+    /* Draw the actual cross */
+    gdk_draw_line(pixmap, local_gc, 
+		  point[0].x, point[0].y, point[2].x, point[2].y);
+    gdk_draw_line(pixmap, local_gc,
+		  point[1].x, point[1].y, point[3].x, point[3].y);
+
+    gdk_gc_unref(local_gc);
+
+    return;
+} /* gerbv_gdk_draw_prim7 */
+
+
+/*
+ * Doesn't handle and explicit x,y yet
+ */
+static void
+gerbv_gdk_draw_prim20_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
+		  int scale, gint x, gint y)
+{
+    const int exposure_idx = 0;
+    const int linewidth_idx = 1;
+    const int start_x_idx = 2;
+    const int start_y_idx = 3;
+    const int end_x_idx = 4;
+    const int end_y_idx = 5;
+    const int rotation_idx = 6;
+    const int nuf_points = 2;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    GdkPoint points[nuf_points];
+    GdkColor color;
+    int i;
+
+    gdk_gc_copy(local_gc, gc);
+
+    /* Exposure */
+    if (parameters[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
+
+    gdk_gc_set_line_attributes(local_gc, 
+			       (int)round(scale * parameters[linewidth_idx]),
+			       GDK_LINE_SOLID, 
+			       GDK_CAP_BUTT, 
+			       GDK_JOIN_MITER);
+
+    points[0].x = (parameters[start_x_idx] * scale);
+    points[0].y = (parameters[start_y_idx] * scale);
+    points[1].x = (parameters[end_x_idx] * scale);
+    points[1].y = (parameters[end_y_idx] * scale);
+
+    for (i = 0; i < nuf_points; i++) {
+	points[i] = rotate_point(points[i], parameters[rotation_idx]);
+	points[i].x = x + points[i].x;
+	points[i].y = y - points[i].y;
+    }
+
+    gdk_draw_line(pixmap, local_gc, 
+		  points[0].x, points[0].y, 
+		  points[1].x, points[1].y);
+    
+    gdk_gc_unref(local_gc);
+
+    return;
+} /* gerbv_gdk_draw_prim20 */
+
+
+/*
+ * Doesn't handle explicit x,y yet
+ */
+static void
+gerbv_gdk_draw_prim21_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
+		  int scale, gint x, gint y)
+{
+    const int exposure_idx = 0;
+    const int width_idx = 1;
+    const int height_idx = 2;
+    const int rotation_idx = 5;
+    const int nuf_points = 4;
+    GdkPoint points[nuf_points];
+    GdkColor color;
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    int half_width, half_height;
+    int i;
+
+    half_width = (int)round(parameters[width_idx] * scale / 2.0);
+    half_height =(int)round(parameters[height_idx] * scale / 2.0);
+
+    points[0].x = half_width;
+    points[0].y = half_height;
+
+    points[1].x = half_width;
+    points[1].y = -half_height;
+
+    points[2].x = -half_width;
+    points[2].y = -half_height;
+
+    points[3].x = -half_width;
+    points[3].y = half_height;
+
+    for (i = 0; i < nuf_points; i++) {
+	points[i] = rotate_point(points[i], parameters[rotation_idx]);
+	points[i].x += x;
+	points[i].y += y;
+    }
+
+    gdk_gc_copy(local_gc, gc);
+
+    /* Exposure */
+    if (parameters[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
+
+    gdk_draw_polygon(pixmap, local_gc, 1, points, nuf_points);
+
+    gdk_gc_unref(local_gc);
+
+    return;
+} /* gerbv_gdk_draw_prim21 */
+
+
+/*
+ * Doesn't handle explicit x,y yet
+ */
+static void
+gerbv_gdk_draw_prim22_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
+		  int scale, gint x, gint y)
+{
+    const int exposure_idx = 0;
+    const int width_idx = 1;
+    const int height_idx = 2;
+    const int x_lower_left_idx = 3;
+    const int y_lower_left_idx = 4;
+    const int rotation_idx = 5;
+    const int nuf_points = 4;
+    GdkPoint points[nuf_points];
+    GdkGC *local_gc = gdk_gc_new(pixmap);
+    GdkColor color;
+    int i;
+
+    points[0].x = (int)round(parameters[x_lower_left_idx] * scale);
+    points[0].y = (int)round(parameters[y_lower_left_idx] * scale);
+
+    points[1].x = (int)round((parameters[x_lower_left_idx] + parameters[width_idx])
+			     * scale);
+    points[1].y = (int)round(parameters[y_lower_left_idx] * scale);
+
+    points[2].x = (int)round((parameters[x_lower_left_idx]  + parameters[width_idx])
+			     * scale);
+    points[2].y = (int)round((parameters[y_lower_left_idx]  - parameters[height_idx])
+			     * scale);
+
+    points[3].x = (int)round(parameters[x_lower_left_idx] * scale);
+    points[3].y = (int)round((parameters[y_lower_left_idx] - parameters[height_idx])
+			     * scale);
+
+    for (i = 0; i < nuf_points; i++) {
+	points[i] = rotate_point(points[i], parameters[rotation_idx]);
+	points[i].x += x;
+	points[i].y += y;
+    }
+    
+    gdk_gc_copy(local_gc, gc);
+
+    /* Exposure */
+    if (parameters[exposure_idx] == 0.0) {
+	color.pixel = 0;
+	gdk_gc_set_foreground(local_gc, &color);
+    }
+
+    gdk_draw_polygon(pixmap, local_gc, 1, points, nuf_points);
+
+    gdk_gc_unref(local_gc);
+
+    return;
+} /* gerbv_gdk_draw_prim22 */
+
+
 int
 gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		  instruction_t *program, unsigned int nuf_push,
@@ -1077,6 +1565,30 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 				  image->aperture[net->aperture]->amacro->nuf_push,
 				  image->aperture[net->aperture]->parameter,
 				  unit_scale, x2, y2);
+		break;
+	    case MACRO_CIRCLE :
+	    	gerbv_gdk_draw_prim1_new(*pixmap, gc, image->aperture[net->aperture]->parameter, scale, x2, y2);
+		break;
+	    case MACRO_OUTLINE :
+		gerbv_gdk_draw_prim4_new(*pixmap, gc, image->aperture[net->aperture]->parameter, scale, x2, y2);
+		break;
+	    case MACRO_POLYGON :
+		gerbv_gdk_draw_prim5_new(*pixmap, gc, image->aperture[net->aperture]->parameter, scale, x2, y2);
+		break;
+	    case MACRO_MOIRE :
+		gerbv_gdk_draw_prim6_new(*pixmap, gc, image->aperture[net->aperture]->parameter, scale, x2, y2);
+		break;
+	    case MACRO_THERMAL :
+		gerbv_gdk_draw_prim7_new(*pixmap, gc, image->aperture[net->aperture]->parameter, scale, x2, y2);
+		break;
+	    case MACRO_LINE20  :
+		gerbv_gdk_draw_prim20_new(*pixmap, gc, image->aperture[net->aperture]->parameter, scale, x2, y2);
+		break;
+	    case MACRO_LINE21 :
+		gerbv_gdk_draw_prim21_new(*pixmap, gc, image->aperture[net->aperture]->parameter, scale, x2, y2);
+		break;
+	    case MACRO_LINE22 :
+		gerbv_gdk_draw_prim22_new(*pixmap, gc, image->aperture[net->aperture]->parameter, scale, x2, y2);
 		break;
 	    default :
 		GERB_MESSAGE("Unknown aperture type\n");

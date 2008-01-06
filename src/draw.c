@@ -199,6 +199,136 @@ draw_update_macro_exposure (cairo_t *cairoTarget, cairo_operator_t clearOperator
 	return TRUE;
 }
 
+void
+draw_macro_primitive (gint macroType, cairo_t *cairoTarget, cairo_operator_t clearOperator,
+				cairo_operator_t darkOperator, gdouble *parameters){
+	cairo_new_path(cairoTarget);
+	cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
+
+	if (macroType == 1) {
+		if (draw_update_macro_exposure (cairoTarget, clearOperator, 
+				darkOperator, parameters[CIRCLE_EXPOSURE])){
+		    	cairo_translate (cairoTarget, parameters[CIRCLE_X_CENTER],
+				       parameters[CIRCLE_Y_CENTER]);
+			gerbv_draw_circle (cairoTarget, parameters[CIRCLE_DIAMETER]);
+			cairo_fill (cairoTarget);
+		}
+	} else if (macroType == 4) {
+		int pointCounter,numberOfPoints;
+		numberOfPoints = (int) parameters[OUTLINE_NUMBER_OF_POINTS];
+
+		if (draw_update_macro_exposure (cairoTarget, clearOperator, 
+					darkOperator, parameters[OUTLINE_EXPOSURE])){
+			cairo_rotate (cairoTarget, parameters[numberOfPoints * 2 + OUTLINE_ROTATION - 2] * M_PI/180);
+			cairo_move_to (cairoTarget, parameters[OUTLINE_FIRST_X], parameters[OUTLINE_FIRST_Y]);
+			
+			for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
+			    cairo_line_to (cairoTarget, parameters[pointCounter * 2 + OUTLINE_FIRST_X],
+					   parameters[pointCounter * 2 + OUTLINE_FIRST_Y]);
+			}
+			/* although the gerber specs allow for an open outline,
+			   I interpret it to mean the outline should be closed by the
+			   rendering softare automatically, since there is no dimension
+			   for line thickness.
+			*/
+			cairo_fill (cairoTarget);
+		}
+	} else if (macroType == 5) {
+		if (draw_update_macro_exposure (cairoTarget, clearOperator, 
+					darkOperator, parameters[POLYGON_EXPOSURE])){
+			cairo_translate (cairoTarget, parameters[POLYGON_CENTER_X],
+				       parameters[POLYGON_CENTER_Y]);
+			gerbv_draw_polygon(cairoTarget, parameters[POLYGON_DIAMETER] / 2.0,
+					  parameters[POLYGON_NUMBER_OF_POINTS], parameters[POLYGON_ROTATION]);
+			cairo_fill (cairoTarget);
+		}
+	} else if (macroType == 6) {
+		gdouble diameter, gap;
+		int circleIndex;
+
+		cairo_translate (cairoTarget, parameters[MOIRE_CENTER_X],
+			       parameters[MOIRE_CENTER_Y]);
+		cairo_rotate (cairoTarget, parameters[MOIRE_ROTATION] * M_PI/180);
+		diameter = parameters[MOIRE_OUTSIDE_DIAMETER] -  parameters[MOIRE_CIRCLE_THICKNESS];
+		gap = parameters[MOIRE_GAP_WIDTH] + parameters[MOIRE_CIRCLE_THICKNESS];
+		cairo_set_line_width (cairoTarget, parameters[MOIRE_CIRCLE_THICKNESS]);
+
+		for (circleIndex = 0; circleIndex < (int)parameters[MOIRE_NUMBER_OF_CIRCLES];  circleIndex++) {
+		    gdouble currentDiameter = (diameter - gap * (float) circleIndex);
+		    gerbv_draw_circle (cairoTarget, currentDiameter);
+		    cairo_stroke (cairoTarget);
+		}
+
+		gdouble crosshairRadius = (parameters[MOIRE_CROSSHAIR_LENGTH] / 2.0);
+
+		cairo_set_line_width (cairoTarget, parameters[MOIRE_CROSSHAIR_THICKNESS]);
+		cairo_move_to (cairoTarget, -crosshairRadius, 0);
+		cairo_line_to (cairoTarget, crosshairRadius, 0);    	
+		cairo_move_to (cairoTarget, 0, -crosshairRadius);
+		cairo_line_to (cairoTarget, 0, crosshairRadius);
+		cairo_stroke (cairoTarget);
+
+	} else if (macroType == 7) {
+		gint i;
+		gdouble startAngle1, startAngle2, endAngle1, endAngle2;
+
+		cairo_translate (cairoTarget, parameters[THERMAL_CENTER_X],
+			       parameters[THERMAL_CENTER_Y]);
+		cairo_rotate (cairoTarget, parameters[THERMAL_ROTATION] * M_PI/180.0);
+		startAngle1 = atan (parameters[THERMAL_CROSSHAIR_THICKNESS]/parameters[THERMAL_INSIDE_DIAMETER]);
+		endAngle1 = M_PI/2 - startAngle1;
+		endAngle2 = atan (parameters[THERMAL_CROSSHAIR_THICKNESS]/parameters[THERMAL_OUTSIDE_DIAMETER]);
+		startAngle2 = M_PI/2 - endAngle2;
+		for (i = 0; i < 4; i++) {
+			cairo_arc (cairoTarget, 0, 0, parameters[THERMAL_INSIDE_DIAMETER]/2.0, startAngle1, endAngle1);
+			cairo_rel_line_to (cairoTarget, 0, parameters[THERMAL_CROSSHAIR_THICKNESS]);
+			cairo_arc_negative (cairoTarget, 0, 0, parameters[THERMAL_OUTSIDE_DIAMETER]/2.0,
+				startAngle2, endAngle2);
+			cairo_rel_line_to (cairoTarget, -parameters[THERMAL_CROSSHAIR_THICKNESS],0);
+			cairo_fill (cairoTarget);
+			cairo_rotate (cairoTarget, 90 * M_PI/180);
+		}
+	} else if ((macroType == 2)||(macroType == 20)) {
+		if (draw_update_macro_exposure (cairoTarget, clearOperator, 
+					darkOperator, parameters[LINE20_EXPOSURE])){
+			cairo_set_line_width (cairoTarget, parameters[LINE20_LINE_WIDTH]);
+			cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
+			cairo_rotate (cairoTarget, parameters[LINE20_ROTATION] * M_PI/180.0);
+			cairo_move_to (cairoTarget, parameters[LINE20_START_X], parameters[LINE20_START_Y]);
+			cairo_line_to (cairoTarget, parameters[LINE20_END_X], parameters[LINE20_END_Y]);
+			cairo_stroke (cairoTarget);
+		}
+	} else if (macroType == 21) {
+		gdouble halfWidth, halfHeight;
+
+		if (draw_update_macro_exposure (cairoTarget, clearOperator,
+						darkOperator, parameters[LINE22_EXPOSURE])){
+			halfWidth = parameters[LINE21_WIDTH] / 2.0;
+			halfHeight = parameters[LINE21_HEIGHT] / 2.0;
+			cairo_translate (cairoTarget, parameters[LINE21_CENTER_X], parameters[LINE21_CENTER_Y]);
+			cairo_rotate (cairoTarget, parameters[LINE21_ROTATION] * M_PI/180.0);
+			cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
+					 parameters[LINE21_WIDTH], parameters[LINE21_HEIGHT]);
+			cairo_fill (cairoTarget);
+		}	
+	} else if (macroType == 22) {
+		gdouble halfWidth, halfHeight;
+
+		if (draw_update_macro_exposure (cairoTarget, clearOperator,
+					darkOperator, parameters[LINE22_EXPOSURE])){
+			halfWidth = parameters[LINE22_WIDTH] / 2.0;
+			halfHeight = parameters[LINE22_HEIGHT] / 2.0;
+			cairo_translate (cairoTarget, parameters[LINE22_LOWER_LEFT_X],
+					parameters[LINE22_LOWER_LEFT_Y]);
+			cairo_rotate (cairoTarget, parameters[LINE22_ROTATION] * M_PI/180.0);
+			cairo_rectangle (cairoTarget, 0, 0,
+					parameters[LINE22_WIDTH], parameters[LINE22_HEIGHT]);
+			cairo_fill (cairoTarget);
+		}
+	}
+	cairo_set_operator (cairoTarget, oldOperator);
+}
+							
 int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	cairo_operator_t darkOperator, instruction_t *program, unsigned int nuf_push,
@@ -711,14 +841,24 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 						gerbv_draw_aperature_hole (cairoTarget, p4 / scale, p5 / scale);
 						break;
 					case MACRO :
-						cairo_save (cairoTarget);
 						cairo_scale (cairoTarget, 1/scale, 1/scale);
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 								  image->aperture[net->aperture]->amacro->program,
 								  image->aperture[net->aperture]->amacro->nuf_push,
 								  image->aperture[net->aperture]->parameter);
-						cairo_restore (cairoTarget);
 						break;
+					case MACRO_CIRCLE :
+					case MACRO_OUTLINE :
+					case MACRO_POLYGON :
+					case MACRO_MOIRE :
+					case MACRO_THERMAL :
+					case MACRO_LINE20 :
+					case MACRO_LINE21 :
+					case MACRO_LINE22 :
+						draw_macro_primitive (image->aperture[net->aperture]->type,
+							cairoTarget, drawOperatorClear, drawOperatorDark,
+							image->aperture[net->aperture]->parameter);
+						break;	    
 					default :
 						GERB_MESSAGE("Unknown aperture type\n");
 						return 0;

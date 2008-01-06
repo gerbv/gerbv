@@ -3,6 +3,8 @@
 	  layers (if they exist). Rotate parts correctly and fix min/max 
 	  calcualtions so autoscaling works correctly. Also, add "top" and 
 	  "bottom" labels to layer names.
+	* draw.c, draw-gdk.c, gerb_aperture.h: Add rendering code in preparation
+	  for aperture macro reordering.
 	  
 2008-01-05  Julian Lamb
 	* interface.c: Remove a billion glade-generated gtk_widget_show function
