@@ -1386,8 +1386,13 @@ callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data)
 	if ((index >= 0) && (index <= screen.last_loaded)) {
 		gerbv_unload_layer (index);
 	      callbacks_update_layer_tree ();
-	      callbacks_select_row (index);
-	      render_refresh_rendered_image_on_screen();
+	      callbacks_select_row (0);
+#ifdef RENDER_USING_GDK
+		render_refresh_rendered_image_on_screen();
+#else
+		render_recreate_composite_surface (screen.drawing_area);
+		callbacks_force_expose_event_for_screen ();
+#endif 
 	}
 }
 
@@ -1400,7 +1405,12 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 		gerbv_change_layer_order (index, index + 1);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (index + 1);
-	      render_refresh_rendered_image_on_screen();
+#ifdef RENDER_USING_GDK
+		render_refresh_rendered_image_on_screen();
+#else
+		render_recreate_composite_surface (screen.drawing_area);
+		callbacks_force_expose_event_for_screen ();
+#endif 
 	}
 }
 
@@ -1413,7 +1423,12 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 		gerbv_change_layer_order (index, index - 1);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (index - 1);
-	      render_refresh_rendered_image_on_screen();
+#ifdef RENDER_USING_GDK
+		render_refresh_rendered_image_on_screen();
+#else
+		render_recreate_composite_surface (screen.drawing_area);
+		callbacks_force_expose_event_for_screen ();
+#endif 
 	}
 }
 
@@ -1471,7 +1486,9 @@ callbacks_color_selector_ok_clicked (GtkWidget *widget, gpointer user_data) {
 
 void
 callbacks_show_color_picker_dialog (gint index){
-	if (!screen.win.colorSelectionDialog) {
+	/* don't do anything if a color dialog already exists */
+	if (!GTK_IS_WIDGET(screen.win.colorSelectionDialog)) {
+		screen.win.colorSelectionDialog = NULL;
 		GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
 		GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
 		
@@ -1479,16 +1496,15 @@ callbacks_show_color_picker_dialog (gint index){
 		screen.win.colorSelectionIndex = index;
 		gtk_color_selection_set_current_color (colorsel,
 			&screen.file[index]->color);
-#ifndef RENDER_USING_GDK
+	#ifndef RENDER_USING_GDK
 		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
 		gtk_color_selection_set_current_alpha (colorsel, screen.file[index]->alpha);
-#endif
+	#endif
 		gtk_widget_show((GtkWidget *)cs);
 		g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
 			G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);
 		g_signal_connect (G_OBJECT(cs->cancel_button),"clicked",
 			G_CALLBACK (callbacks_color_selector_cancel_clicked), NULL);
-		/* stop signal propagation if the user clicked on the color swatch */
 	}
 }
 
@@ -1530,7 +1546,6 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 					columnIndex = callbacks_get_col_number_from_tree_view_column (column);
 					if ((columnIndex == 1) && (indeces[0] <= screen.last_loaded)){
 						callbacks_show_color_picker_dialog (indeces[0]);
-						return TRUE;
 					}
 				}
 			}
@@ -1541,6 +1556,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 		gtk_menu_popup(GTK_MENU(screen.win.layerTreePopupMenu), NULL, NULL, NULL, NULL, 
 			   event->button, event->time);
 	}
+	/* always allow the click to propagate and make sure the line is activated */
 	return FALSE;
 }
 

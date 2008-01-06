@@ -431,27 +431,17 @@ void render_refresh_rendered_image_on_screen (void) {
 	* This now allows drawing several layers on top of each other.
 	* Higher layer numbers have higher priority in the Z-order. 
 	*/
-	for(i = 0; i < MAX_FILES; i++) {
+	for(i = MAX_FILES-1; i >= 0; i--) {
 		if (screen.file[i]) {
 			cairo_t *cr;
 
 			if (screen.file[i]->privateRenderData) 
 				cairo_surface_destroy ((cairo_surface_t *) screen.file[i]->privateRenderData);
 
-			/* save a little time by rendering the bottom layer without alpha, since
-			   it doesn't need it for compositing */
-			if (i == 0) {
-				screen.file[i]->privateRenderData = 
-					(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-					CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
-					screenRenderInfo.displayHeight);
-			}
-			else {
-				screen.file[i]->privateRenderData = 
-					(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-					CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
-					screenRenderInfo.displayHeight);
-			}
+			screen.file[i]->privateRenderData = 
+				(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+				CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
+				screenRenderInfo.displayHeight);
 			cr= cairo_create(screen.file[i]->privateRenderData );
 			render_layer_to_cairo_target (cr, screen.file[i], &screenRenderInfo);
 			dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
@@ -470,7 +460,7 @@ void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_ren
 	int i;
 	
 	/* don't paint background for vector output, since it isn't needed */
-	for(i = 0; i < MAX_FILES; i++) {
+	for(i = MAX_FILES-1; i >= 0; i--) {
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			/* since compositing layers properly destroys the vector data,
 			   we just draw right on top of the last layer (producing errors
@@ -488,7 +478,7 @@ void render_all_layers_to_cairo_target (cairo_t *cr, gerbv_render_info_t *render
 		(double) screen.background.blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
 	
-	for(i = 0; i < MAX_FILES; i++) {
+	for(i = MAX_FILES-1; i >= 0; i--) {
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			cairo_push_group (cr);
 			render_layer_to_cairo_target (cr, screen.file[i], renderInfo);
@@ -549,7 +539,7 @@ void render_recreate_composite_surface () {
 
 	cairo_t *cr= cairo_create(screen.bufferSurface);
 
-	for(i = 0; i < MAX_FILES; i++) {
+	for(i = MAX_FILES-1; i >= 0; i--) {
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			cairo_set_source_surface (cr, (cairo_surface_t *) screen.file[i]->privateRenderData,
 			                              0, 0);
@@ -603,7 +593,7 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 	* This now allows drawing several layers on top of each other.
 	* Higher layer numbers have higher priority in the Z-order. 
 	*/
-	for(i = 0; i < MAX_FILES; i++) {
+	for(i = MAX_FILES-1; i >= 0; i--) {
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			enum polarity_t polarity;
 
@@ -679,7 +669,7 @@ generate_gerber_analysis(void)
     stats = gerb_stats_new();
 
     /* Loop through open layers and compile statistics */
-    for(i = 0; i < MAX_FILES; i++) {
+    for(i = MAX_FILES-1; i >= 0; i--) {
 	if (screen.file[i] && 
 	    screen.file[i]->isVisible &&
 	    (screen.file[i]->image->layertype == GERBER) ) {
@@ -704,7 +694,7 @@ generate_drill_analysis(void)
     stats = drill_stats_new();
 
     /* Loop through open layers and compile statistics */
-    for(i = 0; i < MAX_FILES; i++) {
+    for(i = MAX_FILES-1; i >= 0; i--) {
 	if (screen.file[i] && 
 	    screen.file[i]->isVisible &&
 	    (screen.file[i]->image->layertype == DRILL) ) {

@@ -1,13 +1,19 @@
 2008-01-06  Julian Lamb
 	* pick-and-place.c, gerbv.c: Render top and bottom layers in separate
 	  layers (if they exist). Rotate parts correctly and fix min/max 
-	  calcualtions so autoscaling works correctly. Also, add "top" and 
+	  calculations so autoscaling works correctly. Also, add "top" and 
 	  "bottom" labels to layer names.
 	* draw.c, draw-gdk.c, gerb_aperture.h: Add rendering code in preparation
 	  for aperture macro reordering.
 	* render.c, callbacks.c: Add in watch cursor during rendering to provide
 	  feedback to user.
-	  
+	* callbacks.c: Tweak the color dialog checks to make sure it works after
+	  destroying the dialog via the window manager. For cairo, speedup
+	  rendering during layer actions by simply recompositing the final image
+	  instead of redrawing everything. On layer deletion, reselect the first
+	  row to always make sure a line is active.
+	* render.c: Reorder rendering so top layer is displayed on top.
+
 2008-01-05  Julian Lamb
 	* interface.c: Remove a billion glade-generated gtk_widget_show function
 	  calls, since they aren't needed with gtk_widget_show_all.
