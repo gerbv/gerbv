@@ -117,7 +117,15 @@ void
 callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-
+	if (screen.last_loaded >= 0) {
+		GtkWidget *dialog = interface_create_alert_dialog ("Starting a new project will cause all currently open layers to be closed",
+			"Do you want to proceed?");
+		if (gtk_dialog_run ((GtkDialog*)dialog) != GTK_RESPONSE_OK) {
+			gtk_widget_destroy (dialog);
+			return;
+		}
+		gtk_widget_destroy (dialog);
+	}
 	/* Unload all layers and then clear layer window */
 	gerbv_unload_all_layers ();
 	callbacks_update_layer_tree ();
@@ -157,7 +165,15 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
-
+	if (screen.last_loaded >= 0) {
+		GtkWidget *dialog = interface_create_alert_dialog ("Opening a project will cause all currently open layers to be closed",
+			"Do you want to proceed?");
+		if (gtk_dialog_run ((GtkDialog*)dialog) != GTK_RESPONSE_OK) {
+			gtk_widget_destroy (dialog);
+			return;
+		}
+		gtk_widget_destroy (dialog);
+	}
 
 	if (filename)
 		gerbv_open_project_from_filename (filename);
@@ -1125,14 +1141,14 @@ void callbacks_update_ruler_scales (void) {
 	yEnd = screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor);
 
 	/* mils can get super crowded with large boards, but inches are too
-	   large for most boards.  So, we leave mils in for now (I think most
-	   good GTK graphics apps implement their own ruler widgets due to the
-	   many limitations of the GTK one */
-	xStart = callbacks_calculate_actual_distance (xStart);
-	xEnd = callbacks_calculate_actual_distance (xEnd);
-	yStart = callbacks_calculate_actual_distance (yStart);
-	yEnd = callbacks_calculate_actual_distance (yEnd);
-
+	   large for most boards.  So, we leave mils in for now and just switch
+	   to inches if the scale factor gets too small */
+	if (!((screen.unit == GERBV_MILS) && (screenRenderInfo.scaleFactor < 80))) {
+		xStart = callbacks_calculate_actual_distance (xStart);
+		xEnd = callbacks_calculate_actual_distance (xEnd);
+		yStart = callbacks_calculate_actual_distance (yStart);
+		yEnd = callbacks_calculate_actual_distance (yEnd);
+	}
 	/* make sure the widgets actually exist before setting (in case this gets
 	   called before everything is realized */
 	if (screen.win.hRuler)

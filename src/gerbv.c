@@ -106,7 +106,8 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
-static GdkColor defaultColors[] = {
+#define NUMBER_OF_DEFAULT_COLORS 18
+static GdkColor defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{0,115,115,222},
 	{0,255,127,115},
 	{0,193,0,224},
@@ -442,10 +443,9 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
     screen.file[idx]->name = g_strdup (baseName);
     
     {
-	int ndc = sizeof (defaultColors) / sizeof (GdkColor);
-	r = defaultColors[idx % ndc].red*256;
-	g = defaultColors[idx % ndc].green*256;
-	b = defaultColors[idx % ndc].blue*256;
+	r = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].red*256;
+	g = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].green*256;
+	b = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].blue*256;
     }
 
     GdkColor colorTemplate = {0, r, g, b};

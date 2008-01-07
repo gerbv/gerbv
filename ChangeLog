@@ -1,3 +1,14 @@
+2008-01-07  Julian Lamb
+	* interface.c, callbacks.c: Add in warning dialogs if user starts a new
+	  project or opens a project with existing layers to make sure they
+	  don't accidentally close all layers.
+	* callbacks.c: Add in some logic to switch to inches in the rulers if the
+	  scale gets too small in mils.  Change the default unit back to mils.
+	* interface.c: Recognize the default unit and start the unit combo box
+	  to the right one.
+	* render.c: Change the default screen size scale factor to where mils
+	  can reasonably show up on the rulers.
+	  
 2008-01-06  Julian Lamb
 	* pick-and-place.c, gerbv.c: Render top and bottom layers in separate
 	  layers (if they exist). Rotate parts correctly and fix min/max 

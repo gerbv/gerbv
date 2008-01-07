@@ -849,7 +849,12 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) vScrollbar, "button-release-event",
 	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);               
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 2);
+	if (screen.unit == GERBV_MILS)
+		gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 0);
+	else if (screen.unit == GERBV_MMS)
+		gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 1);
+	else
+		gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 2);
 	   
 	gint width, height;
               
@@ -1079,6 +1084,57 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_sidepane_render_type_combo_box_changed),
 	                  NULL);
 	gtk_main();
+}
+
+GtkWidget*
+interface_create_alert_dialog (gchar *primaryText, gchar *secondaryText)
+{
+  GtkWidget *dialog1;
+  GtkWidget *dialog_vbox1;
+  GtkWidget *hbox1;
+  GtkWidget *image1;
+  GtkWidget *label1;
+  GtkWidget *dialog_action_area1;
+  GtkWidget *cancelbutton1;
+  GtkWidget *okbutton1;
+
+  dialog1 = gtk_dialog_new ();
+  gtk_container_set_border_width (GTK_CONTAINER (dialog1), 6);
+  gtk_window_set_resizable (GTK_WINDOW (dialog1), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (dialog1), GDK_WINDOW_TYPE_HINT_DIALOG);
+  gtk_dialog_set_has_separator (GTK_DIALOG (dialog1), FALSE);
+
+  dialog_vbox1 = GTK_DIALOG (dialog1)->vbox;
+
+  hbox1 = gtk_hbox_new (FALSE, 12);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox1), hbox1, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox1), 6);
+
+  image1 = gtk_image_new_from_icon_name ("gtk-dialog-warning", GTK_ICON_SIZE_DIALOG);
+  gtk_box_pack_start (GTK_BOX (hbox1), image1, TRUE, TRUE, 0);
+  gtk_misc_set_alignment (GTK_MISC (image1), 0.5, 0);
+
+  gchar *labelMessage = g_strconcat ("<span weight=\"bold\" size=\"larger\">",primaryText,
+  		"</span>\n<span/>\n",secondaryText,NULL);
+  label1 = gtk_label_new (labelMessage);
+  g_free (labelMessage);
+  gtk_box_pack_start (GTK_BOX (hbox1), label1, FALSE, FALSE, 0);
+  gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
+  gtk_label_set_line_wrap (GTK_LABEL (label1), TRUE);
+
+  dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
+
+  cancelbutton1 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1), cancelbutton1, GTK_RESPONSE_CANCEL);
+  GTK_WIDGET_SET_FLAGS (cancelbutton1, GTK_CAN_DEFAULT);
+
+  okbutton1 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1), okbutton1, GTK_RESPONSE_OK);
+  GTK_WIDGET_SET_FLAGS (okbutton1, GTK_CAN_DEFAULT);
+
+  gtk_widget_show_all (dialog1);
+  return dialog1;
 }
 
 

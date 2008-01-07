@@ -365,7 +365,7 @@ render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
 	if ((max_width < 0.01) && (max_height < 0.01)) {
 		renderInfo->lowerLeftX = 0.0;
 		renderInfo->lowerLeftY = 0.0;
-		renderInfo->scaleFactor = 50;
+		renderInfo->scaleFactor = 200;
 		return;
 	}
 	/*
