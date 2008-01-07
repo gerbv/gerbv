@@ -105,7 +105,8 @@ typedef struct {
     } win;
     gpointer windowSurface;
     gpointer bufferSurface;
-    gerbv_fileinfo_t *file[MAX_FILES];
+    int max_files;
+    gerbv_fileinfo_t **file;
     int curr_index;
     int last_loaded;
 

@@ -94,13 +94,6 @@ AC_ARG_ENABLE(exportpng,
   	AC_DEFINE(EXPORT_PNG,,[Support for export of PNG's])
     ])
 
-dnl --with-maxfiles : sets maximum number of simultaneous loaded files
-AC_ARG_WITH(maxfiles,
-    [  --with-maxfiles         Maximum number of simultaneous loaded files (default 20).],
-	AC_DEFINE_UNQUOTED(MAX_FILES, $withval,[Maximum number of simultaneous loaded files]),
-	AC_DEFINE(MAX_FILES, 20, [Maximum number of simultaneous loaded files])
-)
-
 dnl --enable-unit-mm : Set default unit for coordinates in status bar to mm
 AC_ARG_ENABLE(unit-mm,
     [  --enable-unit-mm        Set default unit for coordinates in status bar to mm],

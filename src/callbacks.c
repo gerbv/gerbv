@@ -319,7 +319,7 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 
 	render_translate_to_fit_display (&renderInfo);
 	cr = gtk_print_context_get_cairo_context (context);
-	for(i = 0; i < MAX_FILES; i++) {
+	for(i = 0; i < screen.max_files; i++) {
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			//cairo_push_group (cr);
 			render_layer_to_cairo_target (cr, screen.file[i], &renderInfo);
@@ -1627,7 +1627,7 @@ callbacks_update_layer_tree (void) {
 			oldSelectedRow = 0;
 		gtk_list_store_clear (list_store);
 
-		for (idx = 0; idx < MAX_FILES; idx++) {
+		for (idx = 0; idx < screen.max_files; idx++) {
 			if (screen.file[idx]) {
 				GdkPixbuf    *pixbuf;
 				guint32 color;

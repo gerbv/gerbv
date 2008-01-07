@@ -106,7 +106,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
-GdkColor defaultColors[MAX_FILES] = {
+static GdkColor defaultColors[] = {
 	{0,115,115,222},
 	{0,255,127,115},
 	{0,193,0,224},
@@ -275,7 +275,7 @@ gerbv_save_project_from_filename(gchar *filename)
     project_list->rgb[2] = screen.background.blue;
     project_list->next = NULL;
     
-    for (idx = 0; idx < MAX_FILES; idx++) {
+    for (idx = 0; idx < screen.max_files; idx++) {
 	if (screen.file[idx]) {
 	    tmp = g_new0 (project_list_t, 1);
 	    tmp->next = project_list;
@@ -329,7 +329,7 @@ gerbv_revert_all_files(void)
 {
     int idx;
     
-    for (idx = 0; idx < MAX_FILES; idx++) {
+    for (idx = 0; idx < screen.max_files; idx++) {
 	if (screen.file[idx] && screen.file[idx]->name) {
 	    if (gerbv_open_image(screen.file[idx]->name, idx, TRUE) == -1)
 		return;
@@ -349,7 +349,7 @@ gerbv_unload_layer(int index)
     screen.file[index] = NULL;
     
     /* slide all later layers down to fill the empty slot */
-    for (i=index; i<MAX_FILES; i++) {
+    for (i=index; i<screen.max_files; i++) {
 	screen.file[i]=screen.file[i+1];
     }
     screen.last_loaded--;
@@ -362,7 +362,7 @@ gerbv_unload_all_layers (void)
 
     /* Must count down since gerbv_unload_layer collapses
      * layers down.  Otherwise, layers slide past the index */
-    for (index = MAX_FILES-1 ; index >= 0; index--) {
+    for (index = screen.max_files-1 ; index >= 0; index--) {
 	if (screen.file[index] && screen.file[index]->name) {
 	    gerbv_unload_layer (index);
 	}
@@ -441,10 +441,13 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
     screen.file[idx]->fullPathname = g_strdup (filename);
     screen.file[idx]->name = g_strdup (baseName);
     
-    r = defaultColors[idx].red*256;
-    g = defaultColors[idx].green*256;
-    b = defaultColors[idx].blue*256;
-    
+    {
+	int ndc = sizeof (defaultColors) / sizeof (GdkColor);
+	r = defaultColors[idx % ndc].red*256;
+	g = defaultColors[idx % ndc].green*256;
+	b = defaultColors[idx % ndc].blue*256;
+    }
+
     GdkColor colorTemplate = {0, r, g, b};
     screen.file[idx]->color = colorTemplate;
 #ifdef RENDER_USING_GDK
@@ -464,10 +467,18 @@ gerbv_open_image(char *filename, int idx, int reload)
     gint retv = -1;
     gboolean isPnpFile = FALSE;
     
-    if (idx >= MAX_FILES) {
-	GERB_MESSAGE("Couldn't open %s. Maximum number of files opened.\n",
-		     filename);
-	return -1;
+    /* if too many, then grow the file list */
+    if (idx >= screen.max_files) {
+	screen.file = (gerbv_fileinfo_t **) realloc (screen.file, (screen.max_files + 1) * sizeof (gerbv_fileinfo_t *));
+
+
+	if (screen.file == NULL)
+	    {
+		fprintf (stderr, "realloc failed\n");
+		exit (1);
+	    }
+	screen.file[screen.max_files] = NULL;
+	screen.max_files++;
     }
     
     dprintf("In open_image, about to try opening filename = %s\n", filename);
@@ -575,6 +586,14 @@ main(int argc, char *argv[])
     screen.last_loaded = -1;  /* Will be updated to 0 
 			       * when first Gerber is loaded 
 			       */
+    screen.max_files = 1;
+    screen.file = (gerbv_fileinfo_t **) calloc (screen.max_files, sizeof (gerbv_fileinfo_t *));
+    if (screen.file == NULL)
+	{
+	    fprintf (stderr, "malloc failed\n");
+	    exit (1);
+	}
+
     setup_init();
 
     /*
