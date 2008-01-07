@@ -155,6 +155,9 @@ void
 callbacks_update_statusbar(void);
 
 void
+callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy);
+
+void
 callbacks_update_layer_tree (void);
 
 gboolean

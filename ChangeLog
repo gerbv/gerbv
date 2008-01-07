@@ -13,6 +13,19 @@
 	  instead of redrawing everything. On layer deletion, reselect the first
 	  row to always make sure a line is active.
 	* render.c: Reorder rendering so top layer is displayed on top.
+	* callbacks.c, render.c: Get unit changing combobox to work more elegantly
+	  by updating all relevent fields immediately after changing units. Re-
+	  enable mils on the rulers, since inches were just too large to be
+	  usable for most boards.
+	* interface.c: Get gui to gracefully shrink to a small size to support
+	  small screen resolutions. Prevent the sidebar from shrinking smaller
+	  than looks respectable. Change analysis tools to refer to "visible"
+	  layers rather than "active" layers to prevent confusion with the
+	  highlighted row in the layer tree. Add a frame around the statusbar to
+	  make it more visually appealing. Remove the "online manual" menu item
+	  since we don't actually have one yet.
+	* draw.c: Change oval rendering to oblong, since that's probably what is
+	  actually intended (GDK rendering already did this).
 
 2008-01-05  Julian Lamb
 	* interface.c: Remove a billion glade-generated gtk_widget_show function

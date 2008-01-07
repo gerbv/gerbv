@@ -127,25 +127,21 @@ gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height)
 
 
 /*
- * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
+ * Draws an oblong _centered_ at x,y with x axis x_axis and y axis y_axis
  */ 
 static void
-gerbv_draw_oval(cairo_t *cairoTarget, gdouble width, gdouble height)
+gerbv_draw_oblong(cairo_t *cairoTarget, gdouble width, gdouble height)
 {
-    /* cairo doesn't have a function to draw ovals, so we must
-     * draw an arc and stretch it by scaling different x and y values
-     */
-    cairo_save (cairoTarget);
-    cairo_scale (cairoTarget, width, height);
-    gerbv_draw_circle (cairoTarget, 1);
-    cairo_restore (cairoTarget);
+    cairo_new_path (cairoTarget);
+    cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+    cairo_set_line_width (cairoTarget, height);
+    cairo_move_to (cairoTarget, -width/2.0, 0);
+    cairo_line_to (cairoTarget, width/2.0, 0);
+    cairo_stroke (cairoTarget);
     return;
 } /* gerbv_draw_oval */
 
 
-/*
- * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
- */ 
 static void
 gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideRadius,
 		   gdouble numberOfSides, gdouble degreesOfRotation)
@@ -833,7 +829,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 						gerbv_draw_aperature_hole (cairoTarget, p3 / scale, p4 / scale);
 						break;
 					case OVAL :
-						gerbv_draw_oval(cairoTarget, p1 / scale, p2 / scale);
+						gerbv_draw_oblong(cairoTarget, p1 / scale, p2 / scale);
 						gerbv_draw_aperature_hole (cairoTarget, p3 / scale, p4 / scale);
 						break;
 					case POLYGON :

@@ -95,11 +95,29 @@ void gerbv_unload_all_layers (void);
 void gerbv_unload_layer (int index);
 void gerbv_change_layer_order (gint oldPosition, gint newPosition);
 
-/* --------------------------------------------------------- */
+GtkWidget *
+callbacks_generate_alert_dialog (gchar *primaryText, gchar *secondaryText){
+	GtkWidget *dialog, *label;
+
+	dialog = gtk_dialog_new_with_buttons (primaryText,
+	                                    (GtkWindow *)screen.win.topLevelWindow,
+	                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+	                                    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	                                    GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+	                                    NULL);
+	label = gtk_label_new (secondaryText);
+	/* Add the label, and show everything we've added to the dialog. */
+	gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
+	                  label);
+	gtk_widget_show_all (dialog);
+	return dialog;
+}
+
 void
 callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
+
 	/* Unload all layers and then clear layer window */
 	gerbv_unload_all_layers ();
 	callbacks_update_layer_tree ();
@@ -109,9 +127,7 @@ callbacks_new_activate                        (GtkMenuItem     *menuitem,
 	    g_free(screen.project);
 	    screen.project = NULL;
 	}
-
 	render_refresh_rendered_image_on_screen();
-
 }
 
 
@@ -141,6 +157,8 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
+
+
 	if (filename)
 		gerbv_open_project_from_filename (filename);
 	render_zoom_to_fit_display (&screenRenderInfo);
@@ -160,7 +178,7 @@ callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
 	GSList *filename=NULL;
 
 	screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Open Gerber file(s)...",
+	gtk_file_chooser_dialog_new ("Open Gerber, drill, or pick & place file(s)...",
 				     NULL,
 				     GTK_FILE_CHOOSER_ACTION_OPEN,
 				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -1106,14 +1124,15 @@ void callbacks_update_ruler_scales (void) {
 	yStart = screenRenderInfo.lowerLeftY;
 	yEnd = screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor);
 
-	/* make sure we use inches instead of mils here, since the unit text gets
-	   too crowded */
-	if (screen.unit != GERBV_MILS) {
-		xStart = callbacks_calculate_actual_distance (xStart);
-		xEnd = callbacks_calculate_actual_distance (xEnd);
-		yStart = callbacks_calculate_actual_distance (yStart);
-		yEnd = callbacks_calculate_actual_distance (yEnd);
-	}
+	/* mils can get super crowded with large boards, but inches are too
+	   large for most boards.  So, we leave mils in for now (I think most
+	   good GTK graphics apps implement their own ruler widgets due to the
+	   many limitations of the GTK one */
+	xStart = callbacks_calculate_actual_distance (xStart);
+	xEnd = callbacks_calculate_actual_distance (xEnd);
+	yStart = callbacks_calculate_actual_distance (yStart);
+	yEnd = callbacks_calculate_actual_distance (yEnd);
+
 	/* make sure the widgets actually exist before setting (in case this gets
 	   called before everything is realized */
 	if (screen.win.hRuler)
@@ -1477,8 +1496,12 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 				oldPosition--;
 			gerbv_change_layer_order (oldPosition, newPosition);
 
+#ifdef RENDER_USING_GDK
 			render_refresh_rendered_image_on_screen();
-			
+#else
+			render_recreate_composite_surface (screen.drawing_area);
+			callbacks_force_expose_event_for_screen ();
+#endif	
 			/* select the new line */
 			GtkTreeSelection *selection;
 			GtkTreeIter iter;
@@ -1784,26 +1807,20 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 }
 
-gboolean
-callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
-{
-	int x, y;
-	GdkModifierType state;
-
-	if (event->is_hint)
-		gdk_window_get_pointer (event->window, &x, &y, &state);
-	else {
-		x = event->x;
-		y = event->y;
-		state = event->state;
-	}
-
+void
+callbacks_update_statusbar_coordinates (gint x, gint y) {
 	double X, Y;
 
-	X = screenRenderInfo.lowerLeftX + (x / screenRenderInfo.scaleFactor);
-	Y = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - y)
+	/* make sure we don't divide by zero (which is possible if the gui
+	   isn't displayed yet */
+	if (screenRenderInfo.scaleFactor > 0.001) {
+		X = screenRenderInfo.lowerLeftX + (x / screenRenderInfo.scaleFactor);
+		Y = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - y)
 			/ screenRenderInfo.scaleFactor);
-
+	}
+	else {
+		X = Y = 0.0;
+	}
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     "(%7.1f, %7.1f)",
@@ -1816,6 +1833,22 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     "(%3.4f, %3.4f)",
 		     COORD2MILS(X) / 1000.0, COORD2MILS(Y) / 1000.0);
+	}
+	callbacks_update_statusbar();
+}
+
+gboolean
+callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
+{
+	int x, y;
+	GdkModifierType state;
+
+	if (event->is_hint)
+		gdk_window_get_pointer (event->window, &x, &y, &state);
+	else {
+		x = event->x;
+		y = event->y;
+		state = event->state;
 	}
 
 	switch (screen.state) {
@@ -1855,8 +1888,8 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 			screen.last_x = x;
 			screen.last_y = y;
 			break;
-	}   
-	callbacks_update_statusbar();
+	}
+	callbacks_update_statusbar_coordinates (x, y);
 	callbacks_update_ruler_pointers ();
 	return TRUE;
 } /* motion_notify_event */
@@ -2051,12 +2084,35 @@ callbacks_window_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 void
 callbacks_update_statusbar(void)
 {
-	if (screen.statusbar.coordstr != NULL) {
+	if ((screen.statusbar.coordstr != NULL)&&(GTK_IS_LABEL(screen.win.statusMessageLeft))) {
 		gtk_label_set_text(GTK_LABEL(screen.win.statusMessageLeft), screen.statusbar.coordstr);
 	}
-	if (screen.statusbar.diststr != NULL) {
+	if ((screen.statusbar.diststr != NULL)&&(GTK_IS_LABEL(screen.win.statusMessageRight))) {
 		gtk_label_set_text(GTK_LABEL(screen.win.statusMessageRight), screen.statusbar.diststr);
 	}
+}
+
+void
+callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
+	gdouble delta = sqrt(dx*dx + dy*dy);
+	
+	if (screen.unit == GERBV_MILS) {
+	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+		     "Measured distance: %7.1f mils (%7.1f X, %7.1f Y)",
+		     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
+	} 
+	else if (screen.unit == GERBV_MMS) {
+	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+		     "Measured distance: %7.1f mms (%7.1f X, %7.1f Y)",
+		     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
+	}
+	else {
+	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+		     "Measured distance: %3.4f inches (%3.4f X, %3.4f Y)",
+		     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
+		     COORD2MILS(dy) / 1000.0);
+	}
+	callbacks_update_statusbar();
 }
 
 void
@@ -2075,6 +2131,12 @@ callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_d
 		screen.unit = activeRow;	
 	}
 	callbacks_update_ruler_scales();
+	callbacks_update_statusbar_coordinates (screen.last_x, screen.last_y);
+	
+	if (screen.tool == MEASURE)
+		callbacks_update_statusbar_measured_distance (screen.win.lastMeasuredX,
+							screen.win.lastMeasuredY);
+		
 }
 
 void

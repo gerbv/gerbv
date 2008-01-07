@@ -130,7 +130,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *measure_tool;
 	GtkWidget *menuitem10;
 	GtkWidget *menuitem10_menu;
-	GtkWidget *online_manual;
+	/*GtkWidget *online_manual;*/
 	GtkWidget *about;
 	GtkWidget *image34;
 	GtkWidget *toolbar_hbox;
@@ -357,14 +357,14 @@ interface_create_gui (int req_width, int req_height)
 	menuitem_analyze_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_analyze), menuitem_analyze_menu);
 
-	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze active Gerber layers..."));
+	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze visible Gerber layers..."));
 	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, 
-			      "Examine a detailed anaylsis of the contents of all active Gerber layers", NULL);
+			      "Examine a detailed anaylsis of the contents of all visible Gerber layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_gerbers);
 
-	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze active drill layers..."));
+	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze visible drill layers..."));
 	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, 
-			      "Examine a detailed anaylsis of the contents of all active drill layers", NULL);
+			      "Examine a detailed anaylsis of the contents of all visible drill layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_drill);
 
 	/* Wait and add in for 2.1??
@@ -427,11 +427,11 @@ interface_create_gui (int req_width, int req_height)
 
 	menuitem10_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem10), menuitem10_menu);
-
+	/* Not ready for 2.0
 	online_manual = gtk_menu_item_new_with_mnemonic (_("_Online Manual..."));
 	gtk_container_add (GTK_CONTAINER (menuitem10_menu), online_manual);
 	gtk_tooltips_set_tip (tooltips, online_manual, "View the online help documentation", NULL);
-
+	*/
 	about = gtk_image_menu_item_new_with_mnemonic (_("_About GerberViewer..."));
 	gtk_container_add (GTK_CONTAINER (menuitem10_menu), about);
 	gtk_tooltips_set_tip (tooltips, about, "View information about this software", NULL);
@@ -541,11 +541,13 @@ interface_create_gui (int req_width, int req_height)
 	gtk_paned_set_position (GTK_PANED (hpaned1), 225);
 
 	sidepane_vbox = gtk_vbox_new (FALSE, 0);
-	gtk_paned_pack1 (GTK_PANED (hpaned1), sidepane_vbox, FALSE, TRUE);
-	gtk_widget_set_size_request (sidepane_vbox, 92, -1);
+	gtk_widget_set_size_request (sidepane_vbox, 150, -1);
+	
+	gtk_paned_pack1 (GTK_PANED (hpaned1), sidepane_vbox, TRUE, FALSE);
 	gtk_container_set_border_width (GTK_CONTAINER (sidepane_vbox), 5);
 
 	sidepane_notebook = gtk_notebook_new ();
+	gtk_widget_set_size_request (sidepane_notebook, 100, -1);
 	gtk_box_pack_start (GTK_BOX (sidepane_vbox), sidepane_notebook, TRUE, TRUE, 0);
 
 	vbox10 = gtk_vbox_new (FALSE, 3);
@@ -634,7 +636,7 @@ interface_create_gui (int req_width, int req_height)
 				    Message_label);
 
 	vbox2 = gtk_vbox_new (FALSE, 4);
-	gtk_paned_pack2 (GTK_PANED (hpaned1), vbox2, TRUE, TRUE);
+	gtk_paned_pack2 (GTK_PANED (hpaned1), vbox2, TRUE, FALSE);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox2), 4);
 	
 	main_view_table = gtk_table_new (3, 3, FALSE);
@@ -669,9 +671,12 @@ interface_create_gui (int req_width, int req_height)
 	gtk_table_attach (GTK_TABLE (main_view_table), vScrollbar, 2, 3, 1, 2,
 	                  (GtkAttachOptions) (GTK_FILL),
 	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
+	                  
+	GtkWidget *frame1 = gtk_frame_new (NULL);
+	gtk_box_pack_start (GTK_BOX (vbox2), frame1, FALSE, FALSE, 0);
 	
 	hbox5 = gtk_hbox_new (FALSE, 10);
-	gtk_box_pack_start (GTK_BOX (vbox2), hbox5, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER(frame1), hbox5);
 
 	statusbar_label_left = gtk_label_new (_("(   0.0,  0.0 )"));
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_left, FALSE, FALSE, 0);
@@ -686,6 +691,7 @@ interface_create_gui (int req_width, int req_height)
 
 	statusbar_label_right = gtk_label_new (_(""));
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_right, TRUE, TRUE, 0);
+	gtk_label_set_ellipsize ((GtkLabel *)statusbar_label_right, PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment (GTK_MISC (statusbar_label_right), 0, 0.5);
 
 
@@ -766,9 +772,11 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 2);
 	g_signal_connect ((gpointer) measure_tool, "activate",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 3);
+	/*
 	g_signal_connect ((gpointer) online_manual, "activate",
 	                  G_CALLBACK (callbacks_online_manual_activate),
 	                  NULL);
+	*/
 	g_signal_connect ((gpointer) about, "activate",
 	                  G_CALLBACK (callbacks_about_activate),
 	                  NULL);

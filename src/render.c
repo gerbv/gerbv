@@ -271,7 +271,7 @@ render_draw_measure_distance(void)
 	GdkFont *font;
 #endif   
 	gint x1, y1, x2, y2;
-	double delta, dx, dy;
+	double dx, dy;
 
 #if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
 	memset(&values, 0, sizeof(values));
@@ -289,7 +289,6 @@ render_draw_measure_distance(void)
 
 	dx = (x2 - x1)/ screenRenderInfo.scaleFactor;
 	dy = (y2 - y1)/ screenRenderInfo.scaleFactor;
-	delta = sqrt(dx*dx + dy*dy); /* Pythagoras */
     
 #if !defined (__MINGW32__)
 	gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
@@ -299,27 +298,9 @@ render_draw_measure_distance(void)
 	} 
 	else {
 #endif
-		/*
-		 * Update statusbar
-		 */
-		if (screen.unit == GERBV_MILS) {
-		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     "Measured distance: %7.1f mils (%7.1f X, %7.1f Y)",
-			     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
-		} 
-		else if (screen.unit == GERBV_MMS) {
-		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     "Measured distance: %7.1f mms (%7.1f X, %7.1f Y)",
-			     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
-		}
-		else {
-		    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			     "Measured distance: %3.4f inches (%3.4f X, %3.4f Y)",
-			     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
-			     COORD2MILS(dy) / 1000.0);
-		}
-		callbacks_update_statusbar();
-
+		screen.win.lastMeasuredX = dx;
+		screen.win.lastMeasuredY = dy;
+		callbacks_update_statusbar_measured_distance (dx, dy);
 #if !defined (__MINGW32__)
 	}
 	gdk_gc_unref(gc);
