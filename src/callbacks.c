@@ -8,7 +8,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of trhe License, or
+ * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -991,28 +991,63 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 {
 	GtkWidget *aboutdialog1;
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
-	//gchar *translators = _("translator-credits");
+	/* gchar *translators = _("translator-credits"); */
 
 	gchar *string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
-	      "This is gerbv version %s\n"
-	      "Compiled on %s at %s\n"
-	      "\n"
-	      "gerbv is part of the gEDA Project.\n"
-	      "\n"
-	      "For more information see:\n"
-	      "  gerbv homepage: http://gerbv.sf.net\n"
-	      "  gEDA homepage: http://www.geda.seul.org\n"
-	      "  gEDA Wiki: http://geda.seul.org/dokuwiki/doku.php?id=geda\n\n",
-	      VERSION, __DATE__, __TIME__);
+					  "This is gerbv version %s\n"
+					  "Compiled on %s at %s\n"
+					  "\n"
+					  "gerbv is part of the gEDA Project.\n"
+					  "\n"
+					  "For more information see:\n"
+					  "  gerbv homepage: http://gerbv.sf.net\n"
+					  "  gEDA homepage: http://www.geda.seul.org\n"
+					  "  gEDA Wiki: http://geda.seul.org/dokuwiki/doku.php?id=geda\n\n",
+					  VERSION, __DATE__, __TIME__);
 
 #if GTK_CHECK_VERSION(2,6,0)
+	gchar *license = g_strdup_printf("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
+					 "Copyright (C) 2000-2007 Stefan Petersen\n\n"
+					 "This program is free software: you can redistribute it and/or modify\n"
+					 "it under the terms of the GNU General Public License as published by\n"
+					 "the Free Software Foundation, either version 2 of the License, or\n"
+					 "(at your option) any later version.\n\n"
+					 "This program is distributed in the hope that it will be useful,\n"
+					 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+					 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+					 "GNU General Public License for more details.\n\n"
+					 "You should have received a copy of the GNU General Public License\n"
+					 "along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+
+	/* Note:  set_authors works strangely.... */
+	const gchar *authors[11] = {"Project founder:  Stefan Petersen\n",
+				    "Contributors:",
+				    "Julian Lamb",
+				    "Stuart Brorson",
+				    "Dan McMahill",
+				    "Andreas Andersson aka Pitch",
+				    "Anders Eriksson",
+				    "Juergen Haas",
+				    "Tomasz Motylewski",
+				    "... and many others.",
+				    NULL};
+
 	aboutdialog1 = gtk_about_dialog_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);
 	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
 	gtk_about_dialog_set_name (GTK_ABOUT_DIALOG (aboutdialog1), _("Gerbv"));
-	//gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators);
 
+	/* gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators); */
 	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), string);
+	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), NULL);
+	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG (aboutdialog1), license);
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG (aboutdialog1), authors);
+
+	g_signal_connect (G_OBJECT(aboutdialog1),"response",
+		      G_CALLBACK (gtk_widget_destroy), GTK_WIDGET(aboutdialog1));
+
+	g_free (string);
+	g_free (license);
 #else
 	aboutdialog1 = gtk_message_dialog_new (	GTK_WINDOW (screen.win.topLevelWindow),
 					       GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1027,18 +1062,10 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	g_signal_connect_swapped (aboutdialog1, "response",
 				  G_CALLBACK (gtk_widget_destroy),
 				  aboutdialog1);
-	
-#endif
-
 	g_free (string);
-
-#if GTK_CHECK_VERSION(2,6,0)
-	/* Store pointers to all widgets, for use by lookup_widget(). */
-	g_signal_connect (G_OBJECT(aboutdialog1),"response",
-		      G_CALLBACK (gtk_widget_destroy), GTK_WIDGET(aboutdialog1));
 #endif
 
-	gtk_widget_show_all(aboutdialog1);
+	gtk_widget_show_all(GTK_WIDGET(aboutdialog1));
 
 }
 
