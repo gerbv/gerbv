@@ -849,7 +849,7 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) vScrollbar, "button-release-event",
 	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);               
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 0);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 2);
 	   
 	gint width, height;
               
