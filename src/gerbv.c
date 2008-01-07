@@ -350,7 +350,7 @@ gerbv_unload_layer(int index)
     screen.file[index] = NULL;
     
     /* slide all later layers down to fill the empty slot */
-    for (i=index; i<screen.max_files; i++) {
+    for (i=index; i<(screen.max_files-1); i++) {
 	screen.file[i]=screen.file[i+1];
     }
     screen.last_loaded--;
