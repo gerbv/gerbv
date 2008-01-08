@@ -1046,15 +1046,19 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					 "along with this program.  If not, see <http://www.gnu.org/licenses/>.");
 
 	/* Note:  set_authors works strangely.... */
-	const gchar *authors[11] = {"Project founder:  Stefan Petersen\n",
+	const gchar *authors[15] = {"Project founder:  Stefan Petersen\n",
 				    "Contributors:",
 				    "Julian Lamb",
 				    "Stuart Brorson",
 				    "Dan McMahill",
+				    "Joerg Wunsch",
 				    "Andreas Andersson aka Pitch",
 				    "Anders Eriksson",
 				    "Juergen Haas",
 				    "Tomasz Motylewski",
+				    "Joost Witteveen",
+				    "Trevor Blackwell",
+				    "David Carr",
 				    "... and many others.",
 				    NULL};
 
@@ -1065,9 +1069,9 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 
 	/* gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators); */
 	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), string);
-	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), NULL);
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG (aboutdialog1), license);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG (aboutdialog1), authors);
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG (aboutdialog1), NULL);
 
 	g_signal_connect (G_OBJECT(aboutdialog1),"response",
 		      G_CALLBACK (gtk_widget_destroy), GTK_WIDGET(aboutdialog1));
