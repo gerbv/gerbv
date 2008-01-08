@@ -353,6 +353,8 @@ gerbv_unload_layer(int index)
     for (i=index; i<(screen.max_files-1); i++) {
 	screen.file[i]=screen.file[i+1];
     }
+    /* make sure the final spot is clear */
+    screen.file[screen.max_files-1] = NULL;
     screen.last_loaded--;
 } /* gerbv_unload_layer */
 
