@@ -1279,13 +1279,6 @@ callbacks_get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
 
 /* --------------------------------------------------------- */
 void
-callbacks_color_selector_cancel_clicked (GtkWidget *widget, gpointer user_data) {
-	gtk_widget_destroy (screen.win.colorSelectionDialog);
-	screen.win.colorSelectionDialog = NULL;
-}
-
-/* --------------------------------------------------------- */
-void
 callbacks_add_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
 	callbacks_open_layer_activate (NULL, NULL);
 }
@@ -1527,47 +1520,35 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 	}
 }
 
-/* --------------------------------------------------------- */
-void
-callbacks_color_selector_ok_clicked (GtkWidget *widget, gpointer user_data) {
-	GtkColorSelectionDialog *cs = (GtkColorSelectionDialog *) screen.win.colorSelectionDialog;
-	GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
-	gint rowIndex = screen.win.colorSelectionIndex;
-	
-	gtk_color_selection_get_current_color (colorsel, &screen.file[rowIndex]->color);
-#ifndef RENDER_USING_GDK
-	screen.file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
-#else
-	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[rowIndex]->color, FALSE, TRUE);
-#endif
-	gtk_widget_destroy (screen.win.colorSelectionDialog);
-	screen.win.colorSelectionDialog = NULL;
-	callbacks_update_layer_tree ();
-	render_refresh_rendered_image_on_screen();
-}
-
 void
 callbacks_show_color_picker_dialog (gint index){
-	/* don't do anything if a color dialog already exists */
-	if (!GTK_IS_WIDGET(screen.win.colorSelectionDialog)) {
-		screen.win.colorSelectionDialog = NULL;
-		GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
+	screen.win.colorSelectionDialog = NULL;
+	GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
+	GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
+	
+	screen.win.colorSelectionDialog = (GtkWidget *) cs;
+	screen.win.colorSelectionIndex = index;
+	gtk_color_selection_set_current_color (colorsel, &screen.file[index]->color);
+#ifndef RENDER_USING_GDK
+	gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
+	gtk_color_selection_set_current_alpha (colorsel, screen.file[index]->alpha);
+#endif
+	gtk_widget_show_all((GtkWidget *)cs);
+	if (gtk_dialog_run ((GtkDialog*)cs) == GTK_RESPONSE_OK) {
 		GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
+		gint rowIndex = screen.win.colorSelectionIndex;
 		
-		screen.win.colorSelectionDialog = (GtkWidget *) cs;
-		screen.win.colorSelectionIndex = index;
-		gtk_color_selection_set_current_color (colorsel,
-			&screen.file[index]->color);
-	#ifndef RENDER_USING_GDK
-		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
-		gtk_color_selection_set_current_alpha (colorsel, screen.file[index]->alpha);
-	#endif
-		gtk_widget_show((GtkWidget *)cs);
-		g_signal_connect (G_OBJECT(cs->ok_button),"clicked",
-			G_CALLBACK (callbacks_color_selector_ok_clicked), NULL);
-		g_signal_connect (G_OBJECT(cs->cancel_button),"clicked",
-			G_CALLBACK (callbacks_color_selector_cancel_clicked), NULL);
+		gtk_color_selection_get_current_color (colorsel, &screen.file[rowIndex]->color);
+#ifndef RENDER_USING_GDK
+		screen.file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
+#else
+		gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[rowIndex]->color, FALSE, TRUE);
+#endif
+		callbacks_update_layer_tree ();
+		render_refresh_rendered_image_on_screen();
 	}
+	gtk_widget_destroy ((GtkWidget *)cs);
+	screen.win.colorSelectionDialog = NULL;
 }
 
 void
@@ -1604,11 +1585,13 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 		      	gint *indeces;
 		      	indeces = gtk_tree_path_get_indices (path);
 		      	if (indeces) {
-					//gtk_tree_model_get((GtkTreeModel *)list_store, &iter, 0, &rowIndex, -1);
 					columnIndex = callbacks_get_col_number_from_tree_view_column (column);
 					if ((columnIndex == 1) && (indeces[0] <= screen.last_loaded)){
 						callbacks_show_color_picker_dialog (indeces[0]);
 					}
+					/* don't propagate the signal, since drag and drop can
+					   sometimes activated during color selection */
+					return TRUE;
 				}
 			}
 		}

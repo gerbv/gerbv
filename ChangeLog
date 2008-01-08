@@ -1,3 +1,8 @@
+2008-01-08  Julian Lamb
+	* callbacks.c: Change color dialog to "blocking", which prevents user
+	  from modifying layer orders while it is running and preventing
+	  possible problems with the layer tree code.
+
 2008-01-07  Julian Lamb
 	* interface.c, callbacks.c: Add in warning dialogs if user starts a new
 	  project or opens a project with existing layers to make sure they
