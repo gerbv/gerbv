@@ -284,8 +284,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	 */
 	if(sscanf(pnpPartData.footprint, "%02d%02d", &i_length, &i_width) == 2) {
 	    // parse footprints like 0805 or 1206
-	    pnpPartData.length = 0.254 * i_length;
-	    pnpPartData.width = 0.254 * i_width;
+	    pnpPartData.length = 0.01 * i_length;
+	    pnpPartData.width = 0.01 * i_width;
 	    pnpPartData.shape = PART_SHAPE_RECTANGLE;
 	} else { 
 	    gerb_transf_reset(tr_rot);
@@ -700,6 +700,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->cirseg->cp_y = partData.mid_y;
 	    radius = sqrt((partData.pad_x-partData.mid_x)*(partData.pad_x-partData.mid_x) +
 			  (partData.pad_y-partData.mid_y)*(partData.pad_y-partData.mid_y));
+	    if (radius < 0.001)
+	    	radius = 0.1;
 	    curr_net->cirseg->width = 2*radius; /* fabs(pad_x-mid_x) */
 	    curr_net->cirseg->height = 2*radius;
 	}

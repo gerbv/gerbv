@@ -12,6 +12,10 @@
 	  new one seems to be having issues...
 	* gerbv.c, others: Add a dialog to confirm the user wants to open a file
 	  with invalid ASCII characters.
+	* pick-and-place.c: Make sure we check cir_seg height and width are > 0,
+	  otherwise it can cause cairo rendering problems.
+	* draw.c: Reduce label text font size, since the protel-pnp example file
+	  reveals problems fitting the text on the image.
 
 2008-01-06  Julian Lamb
 	* pick-and-place.c, gerbv.c: Render top and bottom layers in separate

@@ -602,11 +602,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
     /* next, push two cairo states to simulate the first layer and netstate
        translations (these will be popped when another layer or netstate is
        started */
+
     cairo_save (cairoTarget);
     cairo_save (cairoTarget);
     /* store the current layer and netstate so we know when they change */
     oldLayer = image->layers;
     oldState = image->states;
+
     for (net = image->netlist->next ; net != NULL; net = net->next) {
 
 	/* check if this is a new layer */
@@ -673,7 +675,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 		y1 = net->start_y + sr_y;
 		x2 = net->stop_x + sr_x;
 		y2 = net->stop_y + sr_y;
-
+           
 		/* translate circular x,y data as well */
 		if (net->cirseg) {
 			cp_x = net->cirseg->cp_x + sr_x;
@@ -684,13 +686,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 		/* NOTE: this is currently only used on PNP files, so we may
 		   make some assumptions here... */
 		if (net->label) {
-			cairo_set_font_size (cairoTarget, 0.1);
+			cairo_set_font_size (cairoTarget, 0.05);
 			cairo_save (cairoTarget);
 			
 			cairo_move_to (cairoTarget, x1, y1);
 			cairo_scale (cairoTarget, 1, -1);
 			cairo_show_text (cairoTarget, net->label->str);
-			cairo_restore (cairoTarget);	
+			cairo_restore (cairoTarget);
 		}
 		/*
 		* Polygon Area Fill routines
@@ -742,7 +744,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 			scale = 25.4;
 		else
 			scale = 1.0;
-		
 		switch (net->aperture_state) {
 			case ON :
 				switch (net->interpolation) {
@@ -808,8 +809,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 							cairo_arc_negative (cairoTarget, 0.0, 0.0, 0.5, net->cirseg->angle1 * M_PI/180,
 								net->cirseg->angle2 * M_PI/180);
 						}
-						cairo_restore (cairoTarget);
 						cairo_stroke (cairoTarget);
+						cairo_restore (cairoTarget);
 						break;
 					default :
 						break;
@@ -879,8 +880,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 	    }
 	}
     }
+
     /* restore the initial two state saves (one for layer, one for netstate)*/
     cairo_restore (cairoTarget);
     cairo_restore (cairoTarget);
+
 	return 1;
 }
