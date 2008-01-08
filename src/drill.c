@@ -495,6 +495,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
   int i;
   gboolean found_binary = FALSE;
   gboolean found_M48 = FALSE;
+  gboolean found_percent = FALSE;
   gboolean found_T = FALSE;
   gboolean found_X = FALSE;
   gboolean found_Y = FALSE;
@@ -517,12 +518,20 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     }
 
     if (g_strstr_len(buf, len, "M48")) {
-      found_M48 = TRUE;
+	if (found_percent) {
+	  found_M48 = FALSE; /* Found M48 after % */
+	} else {
+	  found_M48 = TRUE;
+	}
+    }
+
+    if (g_strstr_len(buf, len, "%")) {
+      found_percent = TRUE;
     }
 
     if (g_strstr_len(buf, len, "T")) {
-      if (found_X || found_Y)
-	found_T = FALSE;  /* Found T after X or Y */
+      if (!found_T && (found_X || found_Y))
+	found_T = FALSE;  /* Found first T after X or Y */
       else
 	found_T = TRUE;
       /* It would be nice to verify numbers follow T */
@@ -546,7 +555,9 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
   free(buf);
   *returnFoundBinary = found_binary;
   /* Now form logical expression determining if this is a drill file */
-  if ((((found_X || found_Y) && found_T) || found_M48)) 
+  if ( ((found_X || found_Y) && found_T) && 
+       (found_M48 || found_percent)
+     ) 
     return TRUE;
   else return FALSE;
 }
