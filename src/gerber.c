@@ -604,7 +604,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
  * Returns TRUE if it is, FALSE if not.
  */
 gboolean
-gerber_is_rs274x_p(gerb_file_t *fd) 
+gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary) 
 {
     char *buf;
     int len = 0;
@@ -675,10 +675,10 @@ gerber_is_rs274x_p(gerb_file_t *fd)
     rewind(fd->fd);
     free(buf);
     
+    *returnFoundBinary = found_binary;
     /* Now form logical expression determining if the file is RS-274X */
     if ((found_D0 || found_D2 || found_M0 || found_M2) && 
-	found_ADD && found_star && (found_X || found_Y) &&
-	!found_binary) 
+	found_ADD && found_star && (found_X || found_Y)) 
 	return TRUE;
 
     

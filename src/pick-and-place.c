@@ -330,7 +330,7 @@ pick_and_place_parse_file(gerb_file_t *fd)
  *	------------------------------------------------------------------
  */
 gboolean
-pick_and_place_check_file_type(gerb_file_t *fd)
+pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary)
 {
     char *buf;
     int len = 0;
@@ -429,8 +429,7 @@ pick_and_place_check_file_type(gerb_file_t *fd)
     free(buf);
 
     /* Now form logical expression determining if this is a pick-place file */
-    if (found_binary) 
-	return FALSE;
+    *returnFoundBinary = found_binary;
     if (found_G54) 
 	return FALSE;
     if (found_M0) 

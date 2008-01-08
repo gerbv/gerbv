@@ -36,7 +36,8 @@ extern "C" {
 #define TOOL_MAX 9999
 
 gerb_image_t *parse_drillfile(gerb_file_t *fd);
-gboolean drill_file_p(gerb_file_t *fd);
+gboolean
+drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary);
 
 #ifdef __cplusplus
 }

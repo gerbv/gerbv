@@ -484,7 +484,7 @@ parse_drillfile(gerb_file_t *fd)
  * Returns TRUE if it is, FALSE if not.
  */
 gboolean
-drill_file_p(gerb_file_t *fd)
+drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 {
   char *buf;
   int len = 0;
@@ -544,10 +544,9 @@ drill_file_p(gerb_file_t *fd)
   }
   rewind(fd->fd);
   free(buf);
-
+  *returnFoundBinary = found_binary;
   /* Now form logical expression determining if this is a drill file */
-  if ( (((found_X || found_Y) && found_T) || found_M48) && 
-       !found_binary) 
+  if ((((found_X || found_Y) && found_T) || found_M48)) 
     return TRUE;
   else return FALSE;
 }

@@ -1086,8 +1086,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_main();
 }
 
-GtkWidget*
-interface_create_alert_dialog (gchar *primaryText, gchar *secondaryText)
+gboolean
+interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText)
 {
   GtkWidget *dialog1;
   GtkWidget *dialog_vbox1;
@@ -1097,6 +1097,7 @@ interface_create_alert_dialog (gchar *primaryText, gchar *secondaryText)
   GtkWidget *dialog_action_area1;
   GtkWidget *cancelbutton1;
   GtkWidget *okbutton1;
+  gboolean returnVal = FALSE;
 
   dialog1 = gtk_dialog_new ();
   gtk_container_set_border_width (GTK_CONTAINER (dialog1), 6);
@@ -1134,7 +1135,13 @@ interface_create_alert_dialog (gchar *primaryText, gchar *secondaryText)
   GTK_WIDGET_SET_FLAGS (okbutton1, GTK_CAN_DEFAULT);
 
   gtk_widget_show_all (dialog1);
-  return dialog1;
+
+  if (gtk_dialog_run ((GtkDialog*)dialog1) == GTK_RESPONSE_OK) {
+	returnVal = TRUE;
+  }
+  gtk_widget_destroy (dialog1);
+		
+  return returnVal;
 }
 
 

@@ -8,7 +8,11 @@
 	  to the right one.
 	* render.c: Change the default screen size scale factor to where mils
 	  can reasonably show up on the rulers.
-	  
+	* draw.c: Revert back to old oval rendering for the time being, since the
+	  new one seems to be having issues...
+	* gerbv.c, others: Add a dialog to confirm the user wants to open a file
+	  with invalid ASCII characters.
+
 2008-01-06  Julian Lamb
 	* pick-and-place.c, gerbv.c: Render top and bottom layers in separate
 	  layers (if they exist). Rotate parts correctly and fix min/max 

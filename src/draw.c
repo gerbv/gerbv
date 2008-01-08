@@ -132,12 +132,21 @@ gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height)
 static void
 gerbv_draw_oblong(cairo_t *cairoTarget, gdouble width, gdouble height)
 {
+    /*
     cairo_new_path (cairoTarget);
     cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
     cairo_set_line_width (cairoTarget, height);
-    cairo_move_to (cairoTarget, -width/2.0, 0);
-    cairo_line_to (cairoTarget, width/2.0, 0);
+    cairo_move_to (cairoTarget, -width/2.0 + height/2.0, 0);
+    cairo_line_to (cairoTarget, width/2.0 - height/2.0, 0);
     cairo_stroke (cairoTarget);
+    */
+    /* cairo doesn't have a function to draw ovals, so we must
+     * draw an arc and stretch it by scaling different x and y values
+     */
+    cairo_save (cairoTarget);
+    cairo_scale (cairoTarget, width, height);
+    gerbv_draw_circle (cairoTarget, 1);
+    cairo_restore (cairoTarget);
     return;
 } /* gerbv_draw_oval */
 

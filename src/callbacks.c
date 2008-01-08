@@ -118,13 +118,9 @@ callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	if (screen.last_loaded >= 0) {
-		GtkWidget *dialog = interface_create_alert_dialog ("Starting a new project will cause all currently open layers to be closed",
-			"Do you want to proceed?");
-		if (gtk_dialog_run ((GtkDialog*)dialog) != GTK_RESPONSE_OK) {
-			gtk_widget_destroy (dialog);
+		if (!interface_get_alert_dialog_response ("Starting a new project will cause all currently open layers to be closed",
+			"Do you want to proceed?"))
 			return;
-		}
-		gtk_widget_destroy (dialog);
 	}
 	/* Unload all layers and then clear layer window */
 	gerbv_unload_all_layers ();
@@ -166,13 +162,9 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 	gtk_widget_destroy (screen.win.gerber);
 
 	if (screen.last_loaded >= 0) {
-		GtkWidget *dialog = interface_create_alert_dialog ("Opening a project will cause all currently open layers to be closed",
-			"Do you want to proceed?");
-		if (gtk_dialog_run ((GtkDialog*)dialog) != GTK_RESPONSE_OK) {
-			gtk_widget_destroy (dialog);
+		if (!interface_get_alert_dialog_response ("Opening a project will cause all currently open layers to be closed",
+			"Do you want to proceed?"))
 			return;
-		}
-		gtk_widget_destroy (dialog);
 	}
 
 	if (filename)

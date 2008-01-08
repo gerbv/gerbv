@@ -465,7 +465,8 @@ gerbv_open_image(char *filename, int idx, int reload)
     gerb_file_t *fd;
     gerb_image_t *parsed_image = NULL, *parsed_image2 = NULL;
     gint retv = -1;
-    gboolean isPnpFile = FALSE;
+    gboolean isPnpFile = FALSE, foundBinary, forceLoadFile = FALSE;
+    
     
     /* if too many, then grow the file list */
     if (idx >= screen.max_files) {
@@ -491,21 +492,52 @@ gerbv_open_image(char *filename, int idx, int reload)
     
     dprintf("In open_image, successfully opened file.  Now check its type....\n");
     /* Here's where we decide what file type we have */
-    if (gerber_is_rs274x_p(fd)) {
+    /* Note: if the file has some invalid characters in it but still appears to
+       be a valid file, we check with the user if he wants to continue (only
+       if user opens the layer from the menu...if from the command line, we go
+       ahead and try to load it anyways) */
+
+    if (gerber_is_rs274x_p(fd, &foundBinary)) {
 	dprintf("Found RS-274X file\n");
-	/* figure out the directory path in case parse_gerb needs to
-	 * load any include files */
-	gchar *currentLoadDirectory = g_path_get_dirname (filename);
-	parsed_image = parse_gerb(fd, currentLoadDirectory);
-	g_free (currentLoadDirectory);
-    } else if(drill_file_p(fd)) {
+	if ((foundBinary)&&(screen.win.topLevelWindow)) {
+		gchar *primaryText = g_strdup_printf ("File %s appears to be a RS-274X file, but contains characters which are not valid ASCII",g_path_get_basename(filename));
+		if (interface_get_alert_dialog_response (primaryText,
+			"Invalid characters may cause problems with the parser. Do you still want to continue?"))
+			forceLoadFile = TRUE;
+		g_free (primaryText);
+	}
+	if ((!(screen.win.topLevelWindow))||(!foundBinary || forceLoadFile)) {
+		/* figure out the directory path in case parse_gerb needs to
+		 * load any include files */
+		gchar *currentLoadDirectory = g_path_get_dirname (filename);
+		parsed_image = parse_gerb(fd, currentLoadDirectory);
+		g_free (currentLoadDirectory);
+	}
+    } else if(drill_file_p(fd, &foundBinary)) {
 	dprintf("Found drill file\n");
-	parsed_image = parse_drillfile(fd);
+	if ((foundBinary)&&(screen.win.topLevelWindow)) {
+		gchar *primaryText = g_strdup_printf ("File %s appears to be a drill file, but contains characters which are not valid ASCII",g_path_get_basename(filename));
+		if (interface_get_alert_dialog_response (primaryText,
+			"Invalid characters may cause problems with the parser. Do you still want to continue?"))
+			forceLoadFile = TRUE;
+		g_free (primaryText);
+	}
+	if ((!(screen.win.topLevelWindow))||(!foundBinary || forceLoadFile))
+		parsed_image = parse_drillfile(fd);
 	
-    } else if (pick_and_place_check_file_type(fd)) {
+    } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
 	dprintf("Found pick-n-place file\n");
-	pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
-	isPnpFile = TRUE;
+	if ((foundBinary)&&(screen.win.topLevelWindow)) {
+		gchar *primaryText = g_strdup_printf ("File %s appears to be a pick and place file, but contains characters which are not valid ASCII",g_path_get_basename(filename));
+		if (interface_get_alert_dialog_response (primaryText,
+			"Invalid characters may cause problems with the parser. Do you still want to continue?"))
+			forceLoadFile = TRUE;
+		g_free (primaryText);
+	}
+	if ((!(screen.win.topLevelWindow))||(!foundBinary || forceLoadFile)) {
+		pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
+		isPnpFile = TRUE;
+	}
     } else if (gerber_is_rs274d_p(fd)) {
 	dprintf("Found RS-274D file");
 	GERB_COMPILE_ERROR("%s: Found RS-274D file -- not supported by gerbv.\n", filename);

@@ -29,6 +29,6 @@ void rename_main_window(char *filename, GtkWidget *main_win);
 void
 set_window_icon (GtkWidget * this_window);
 
-GtkWidget*
-interface_create_alert_dialog (gchar *primaryText, gchar *secondaryText);
+gboolean
+interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText);
 
