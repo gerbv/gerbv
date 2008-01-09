@@ -495,6 +495,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
   int i;
   gboolean found_binary = FALSE;
   gboolean found_M48 = FALSE;
+  gboolean found_M30 = FALSE;
   gboolean found_percent = FALSE;
   gboolean found_T = FALSE;
   gboolean found_X = FALSE;
@@ -517,19 +518,22 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
       }
     }
 
+    /* Check for M48 = start of drill header */
     if (g_strstr_len(buf, len, "M48")) {
+	  found_M48 = TRUE; 
+    }
+
+    /* Check for M30 = end of drill program */
+    if (g_strstr_len(buf, len, "M30")) {
 	if (found_percent) {
-	  found_M48 = FALSE; /* Found M48 after % */
-	} else {
-	  found_M48 = TRUE;
+	  found_M30 = TRUE; /* Found M30 after % = good */
 	}
     }
 
-    /* Check for % on its own line */
+    /* Check for % on its own line at end of header */
     if ((letter = g_strstr_len(buf, len, "%")) != NULL) {
-      if (!isprint(letter[1])) {
+      if ((letter[1] ==  '\r') || (letter[1] ==  '\n'))
 	found_percent = TRUE;
-      }
     }
 
     /* Check for T<number> */
@@ -561,12 +565,18 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
   rewind(fd->fd);
   free(buf);
   *returnFoundBinary = found_binary;
+
   /* Now form logical expression determining if this is a drill file */
   if ( ((found_X || found_Y) && found_T) && 
-       (found_M48 || found_percent)
+       (found_M48 || (found_percent && found_M30))
      ) 
     return TRUE;
-  else return FALSE;
+  else if (found_M48 && found_T && found_percent && found_M30)
+      /* Pathological case of drill file with valid header 
+	 and EOF but no drill XY locations. */
+    return TRUE;
+  else 
+    return FALSE;
 }
 
 /* -------------------------------------------------------------- */
