@@ -1019,9 +1019,15 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
 	/* gchar *translators = _("translator-credits"); */
 
+#ifdef RENDER_USING_GDK
+#define RENDERER "gdk"
+#else
+#define RENDERER "cairo"
+#endif
 	gchar *string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 					  "This is gerbv version %s\n"
 					  "Compiled on %s at %s\n"
+					  "Renderer (compile time setting):  %s\n"
 					  "\n"
 					  "gerbv is part of the gEDA Project.\n"
 					  "\n"
@@ -1029,8 +1035,9 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					  "  gerbv homepage: http://gerbv.sf.net\n"
 					  "  gEDA homepage: http://www.geda.seul.org\n"
 					  "  gEDA Wiki: http://geda.seul.org/dokuwiki/doku.php?id=geda\n\n",
-					  VERSION, __DATE__, __TIME__);
+					  VERSION, __DATE__, __TIME__, RENDERER);
 
+#undef RENDERER
 #if GTK_CHECK_VERSION(2,6,0)
 	gchar *license = g_strdup_printf("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 					 "Copyright (C) 2000-2007 Stefan Petersen\n\n"
