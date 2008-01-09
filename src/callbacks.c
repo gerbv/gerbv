@@ -1588,10 +1588,10 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 					columnIndex = callbacks_get_col_number_from_tree_view_column (column);
 					if ((columnIndex == 1) && (indeces[0] <= screen.last_loaded)){
 						callbacks_show_color_picker_dialog (indeces[0]);
+						/* don't propagate the signal, since drag and drop can
+					   	sometimes activated during color selection */
+						return TRUE;
 					}
-					/* don't propagate the signal, since drag and drop can
-					   sometimes activated during color selection */
-					return TRUE;
 				}
 			}
 		}
