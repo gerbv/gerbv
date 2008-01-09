@@ -1118,9 +1118,7 @@ void callbacks_update_ruler_pointers (void) {
 	xPosition = screenRenderInfo.lowerLeftX + (screen.last_x / screenRenderInfo.scaleFactor);
 	yPosition = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - screen.last_y) / screenRenderInfo.scaleFactor);
 
-	/* make sure we use inches instead of mils here, since the unit text gets
-	   too crowded */
-	if (screen.unit != GERBV_MILS) {
+	if (!((screen.unit == GERBV_MILS) && (screenRenderInfo.scaleFactor < 80))) {
 		xPosition = callbacks_calculate_actual_distance (xPosition);
 		yPosition = callbacks_calculate_actual_distance (yPosition);
 	}
