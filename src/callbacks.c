@@ -2091,17 +2091,17 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 	
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %7.1f mils (%7.1f X, %7.1f Y)",
+		     "Measured distance: %7.1f mils (%7.1f x, %7.1f y)",
 		     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
 	} 
 	else if (screen.unit == GERBV_MMS) {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %7.1f mms (%7.1f X, %7.1f Y)",
+		     "Measured distance: %7.2f mms (%7.2f x, %7.2f y)",
 		     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
 	}
 	else {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %3.4f inches (%3.4f X, %3.4f Y)",
+		     "Measured distance: %3.4f inches (%3.4f x, %3.4f y)",
 		     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
 		     COORD2MILS(dy) / 1000.0);
 	}
