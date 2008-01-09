@@ -509,7 +509,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 
     /* First look through the file for indications of its type */
 
-    /* check that file is not binary (non-printing chars */
+    /* check that file is not binary (non-printing chars) */
     for (i = 0; i < len; i++) {
       ascii = (int) buf[i];
       if ((ascii > 128) || (ascii < 0)) {
@@ -525,16 +525,22 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	}
     }
 
-    if (g_strstr_len(buf, len, "%")) {
-      found_percent = TRUE;
+    /* Check for % on its own line */
+    if ((letter = g_strstr_len(buf, len, "%")) != NULL) {
+      if (!isprint(letter[1])) {
+	found_percent = TRUE;
+      }
     }
 
-    if (g_strstr_len(buf, len, "T")) {
-      if (!found_T && (found_X || found_Y))
+    /* Check for T<number> */
+    if ((letter = g_strstr_len(buf, len, "T")) != NULL) {
+      if (!found_T && (found_X || found_Y)) {
 	found_T = FALSE;  /* Found first T after X or Y */
-      else
-	found_T = TRUE;
-      /* It would be nice to verify numbers follow T */
+      } else {
+	if (isdigit(letter[1])) { /* verify next char is digit */
+	  found_T = TRUE;
+	}
+      }
     }
 
     /* look for X<number> or Y<number> */
@@ -550,7 +556,8 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	found_Y = TRUE;
       }
     }
-  }
+  } /* while (fgets(buf, MAXL, fd->fd) */
+
   rewind(fd->fd);
   free(buf);
   *returnFoundBinary = found_binary;
