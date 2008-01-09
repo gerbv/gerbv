@@ -809,8 +809,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 							cairo_arc_negative (cairoTarget, 0.0, 0.0, 0.5, net->cirseg->angle1 * M_PI/180,
 								net->cirseg->angle2 * M_PI/180);
 						}
-						cairo_stroke (cairoTarget);
 						cairo_restore (cairoTarget);
+						cairo_stroke (cairoTarget);
 						break;
 					default :
 						break;
