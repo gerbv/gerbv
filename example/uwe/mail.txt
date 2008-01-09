@@ -1,0 +1,58 @@
+From bon@elektron.ikp.physik.tu-darmstadt.de Tue Sep  7 22:03:06 2004
+From: Uwe Bonnes <bon@elektron.ikp.physik.tu-darmstadt.de>
+To: geda-dev@seul.org
+Subject: gEDA: [Gerbv-0.16] Problem with Macro
+Reply-To: geda-dev@seul.org
+
+Hallo,
+
+appended code comes from Eagle(4.13) from the RS274 processor for a supply
+layer, where the "pads" layer has be left on during gerber production.
+This  normally results in non-contacted layer, however here it is done to
+explain the gerbv(and gcprevue8) misbehaviour.
+
+The code flashes first (after the frame) both Obrounds, then the thermal
+macro is flashed exactly over the Obround. One would expect to get a fully
+filled Obround, with perhaps some of the thermal overlapping. However layer
+inversion used in the thermal macro is still active and leads to reversed
+areas inside the Obround. This is wrong
+
+Bye
+
+G75*
+G70*
+%OFA0B0*%
+%FSLAX24Y24*%
+%IPPOS*%
+%LPD*%
+%AMOC8*
+5,1,8,0,0,1.08239X$1,22.5*
+%
+%ADD10C,0.0000*%
+%ADD11O,0.1192X0.0596*%
+%AMTHD12X*
+1,1,0.0760,0,0*
+1,0,0.0560,0,0*
+21,0,0.0780,0.0200,0,0,45*
+21,0,0.0780,0.0200,0,0,135*%
+%ADD12THD12X*%
+D10*
+X000181Y000181D02*
+X005681Y000181D01*
+X005681Y005681D01*
+X000181Y005681D01*
+X000181Y000181D01*
+D11*
+X003681Y002681D03*
+X003681Y003681D03*
+D12*
+X003681Y003681D03*
+X003681Y002681D03*
+M02*
+
+-- 
+Uwe Bonnes                bon@elektron.ikp.physik.tu-darmstadt.de
+
+Institut fuer Kernphysik  Schlossgartenstrasse 9  64289 Darmstadt
+--------- Tel. 06151 162516 -------- Fax. 06151 164321 ----------
+
