@@ -478,7 +478,7 @@ void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 	
 	if (renderInfo->renderType == 0) {
 		cairo_set_tolerance (cr, 1.5);
-		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
+		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
 	}
 	else if (renderInfo->renderType == 1) {
 		cairo_set_tolerance (cr, 2);
