@@ -470,10 +470,10 @@ gerbv_open_image(char *filename, int idx, int reload)
     gboolean isPnpFile = FALSE, foundBinary, forceLoadFile = FALSE;
     
     
-    /* if too many, then grow the file list */
-    if (idx >= screen.max_files) {
-	screen.file = (gerbv_fileinfo_t **) realloc (screen.file, (screen.max_files + 1) * sizeof (gerbv_fileinfo_t *));
-
+    /* if we don't have enough spots, then grow the file list by 2 to account for the possible 
+       loading of two images for PNP files */
+    if ((idx+1) >= screen.max_files) {
+	screen.file = (gerbv_fileinfo_t **) realloc (screen.file, (screen.max_files + 2) * sizeof (gerbv_fileinfo_t *));
 
 	if (screen.file == NULL)
 	    {
@@ -481,7 +481,8 @@ gerbv_open_image(char *filename, int idx, int reload)
 		exit (1);
 	    }
 	screen.file[screen.max_files] = NULL;
-	screen.max_files++;
+	screen.file[screen.max_files+1] = NULL;
+	screen.max_files += 2;
     }
     
     dprintf("In open_image, about to try opening filename = %s\n", filename);

@@ -1,3 +1,8 @@
+2008-01-09  Julian Lamb
+	* gerbv.c: Make sure we increase max_files by 2, since we may need to
+	  open up two files for PNP layers (top + bottom). This fixes a segfault
+	  after adding a PNP file to the project and then clicking "New".
+
 2008-01-08  Julian Lamb
 	* callbacks.c: Change color dialog to "blocking", which prevents user
 	  from modifying layer orders while it is running and preventing
