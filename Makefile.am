@@ -21,3 +21,13 @@
 
 SUBDIRS = src man doc example desktop scheme test
 
+MOSTLYCLEANFILES = *~ *.o gerbv
+CLEANFILES = *~ *.o gerbv
+DISTCLEANFILES = *~ *.o gerbv stamp-h* Makefile configure
+MAINTAINERCLEANFILES = *~ *.o gerbv Makefile Makefile.in config.* stamp-h*
+
+EXTRA_DIST = CONTRIBUTORS HACKING AUTHORS ChangeLog COPYING INSTALL \
+	INSTALL.MINGW.WIN32 NEWS README \
+	README-Pick-and-Place-search_parts.txt TODO \
+	autogen.sh 
+
