@@ -88,6 +88,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
 #else
+  #include "draw-gdk.h"
   #include "draw.h"
 #endif
 
@@ -215,9 +216,8 @@ gerbv_open_project_from_filename(gchar *filename)
 		 * Change color from default to from the project list
 		 */
 		screen.file[idx]->color = colorTemplate;
-#ifdef RENDER_USING_GDK	    
 		gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
-#endif
+
 		screen.file[idx]->inverted = project_list->inverted;
 	    }
 	next_layer:
@@ -452,9 +452,7 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
 
     GdkColor colorTemplate = {0, r, g, b};
     screen.file[idx]->color = colorTemplate;
-#ifdef RENDER_USING_GDK
     gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
-#endif
     screen.file[idx]->alpha = 45535;
     screen.file[idx]->isVisible = TRUE;
     return 1;
@@ -861,10 +859,8 @@ main(int argc, char *argv[])
     }
     
     /* even for command line exporting, GDK renderer needs gtk started up */
-#ifdef RENDER_USING_GDK
     gtk_init (&argc, &argv);
-#endif
-    
+
     /*
      * If project is given, load that one and use it for files and colors.
      * Else load files (eventually) given on the command line.
@@ -909,7 +905,7 @@ main(int argc, char *argv[])
 #ifdef RENDER_USING_GDK
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 0, 640, 480};
 #else
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 2, 640, 480};
+	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, 640, 480};
 #endif	
 	gboolean freeFilename = FALSE;
 	
@@ -953,10 +949,6 @@ main(int argc, char *argv[])
 	exit(1);
     }
     
-    /* cairo rendering can wait to start up gtk only if we're using the gui */
-#ifndef RENDER_USING_GDK
-    gtk_init (&argc, &argv);
-#endif
     interface_create_gui (req_width, req_height);
     
     return 0;

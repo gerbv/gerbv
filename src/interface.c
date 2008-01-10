@@ -565,11 +565,11 @@ interface_create_gui (int req_width, int req_height)
 	gtk_box_pack_start (GTK_BOX (hbox4), combobox1, TRUE, TRUE, 0);
 #ifdef RENDER_USING_GDK
 	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Normal"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Or"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Xor"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("XOR"));
 #else
+	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Fast"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Fast, with XOR"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Normal"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("High speed"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("High quality"));
 #endif
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
@@ -848,7 +848,9 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_scrollbar_button_pressed), NULL);                 
 	g_signal_connect ((gpointer) vScrollbar, "button-release-event",
 	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);               
+	
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
+
 	if (screen.unit == GERBV_MILS)
 		gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 0);
 	else if (screen.unit == GERBV_MMS)
@@ -968,7 +970,6 @@ interface_create_gui (int req_width, int req_height)
 	/*
 	* Setup some GTK+ defaults
 	*/
-	screen.tooltips = gtk_tooltips_new();
 	GdkColor color1 = {0, 0, 0, 0}, color2 = {0, 50000, 50000, 50000},
 			color3 = {0, 60000, 30000, 65000};       
 	screen.background = color1;
@@ -1040,7 +1041,8 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_remove_layer_button_clicked), NULL);
 	                  
 	gtk_widget_show_all (screen.win.layerTreePopupMenu);
-	                 	
+	/* make sure tooltips show on gtk <2.12 systems */
+	gtk_tooltips_enable (tooltips); 	
 	/* 
 	* Good defaults according to Ales. Gives aspect ratio of 1.3333...
 	*/

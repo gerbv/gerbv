@@ -52,9 +52,10 @@
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
 #else
-  #include "draw.h"
   #include <cairo-xlib.h>
   #include <cairo.h>
+  #include "draw-gdk.h"
+  #include "draw.h"
 #endif
 
 #include "gerbv_screen.h"
@@ -396,40 +397,45 @@ void render_refresh_rendered_image_on_screen (void) {
 	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
 	gdk_cursor_destroy(cursor);
 	
-#ifdef RENDER_USING_GDK
-	if (screen.pixmap) 
-	    gdk_pixmap_unref(screen.pixmap);
-	screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
-				screenRenderInfo.displayHeight, -1);
-	render_to_pixmap_using_gdk (screen.pixmap, &screenRenderInfo);
-	
-	dprintf("<---- leaving redraw_pixmap.\n");
-#else
-	int i;
-
-	dprintf("    .... Now try rendering the drawing using cairo .... \n");
-	/* 
-	* This now allows drawing several layers on top of each other.
-	* Higher layer numbers have higher priority in the Z-order. 
-	*/
-	for(i = screen.max_files-1; i >= 0; i--) {
-		if (screen.file[i]) {
-			cairo_t *cr;
-
-			if (screen.file[i]->privateRenderData) 
-				cairo_surface_destroy ((cairo_surface_t *) screen.file[i]->privateRenderData);
-
-			screen.file[i]->privateRenderData = 
-				(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-				CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
-				screenRenderInfo.displayHeight);
-			cr= cairo_create(screen.file[i]->privateRenderData );
-			render_layer_to_cairo_target (cr, screen.file[i], &screenRenderInfo);
-			dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
-			cairo_destroy (cr);
-		}
+	if (screenRenderInfo.renderType < 2) {
+		if (screen.pixmap) 
+		    gdk_pixmap_unref(screen.pixmap);
+		screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
+					screenRenderInfo.displayHeight, -1);
+		render_to_pixmap_using_gdk (screen.pixmap, &screenRenderInfo);
+		
+		dprintf("<---- leaving redraw_pixmap.\n");
 	}
-	render_recreate_composite_surface ();
+
+	
+#ifndef RENDER_USING_GDK
+	else {
+		int i;
+
+		dprintf("    .... Now try rendering the drawing using cairo .... \n");
+		/* 
+		* This now allows drawing several layers on top of each other.
+		* Higher layer numbers have higher priority in the Z-order. 
+		*/
+		for(i = screen.max_files-1; i >= 0; i--) {
+			if (screen.file[i]) {
+				cairo_t *cr;
+
+				if (screen.file[i]->privateRenderData) 
+					cairo_surface_destroy ((cairo_surface_t *) screen.file[i]->privateRenderData);
+
+				screen.file[i]->privateRenderData = 
+					(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+					CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
+					screenRenderInfo.displayHeight);
+				cr= cairo_create(screen.file[i]->privateRenderData );
+				render_layer_to_cairo_target (cr, screen.file[i], &screenRenderInfo);
+				dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
+				cairo_destroy (cr);
+			}
+		}
+		render_recreate_composite_surface ();
+	}
 #endif
 	/* remove watch cursor and switch back to normal cursor */
 	callbacks_switch_to_correct_cursor ();
@@ -476,16 +482,16 @@ void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactor);
 	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactor);
 	
-	if (renderInfo->renderType == 0) {
+	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
+	   this far */
+	if (renderInfo->renderType == 2) {
 		cairo_set_tolerance (cr, 1.5);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
 	}
-	else if (renderInfo->renderType == 1) {
-		cairo_set_tolerance (cr, 2);
-		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
-	}
-	else if (renderInfo->renderType == 2) {
+	else if (renderInfo->renderType == 3) {
 		cairo_set_tolerance (cr, 1);
+		/* disable ALL anti-aliasing for now due to the way cairo is rendering
+		   ground planes from PCB output */
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
 	}
 
@@ -549,7 +555,7 @@ void render_project_to_cairo_target (cairo_t *cr) {
 }
 #endif
 
-#ifdef RENDER_USING_GDK
+
 void
 render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 	GdkGC *gc = gdk_gc_new(pixmap);
@@ -601,14 +607,8 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 			if (renderInfo->renderType == 0) {
 				gdk_gc_set_function(gc, GDK_COPY);
 			}
-			else if (renderInfo->renderType == 2) {
-				gdk_gc_set_function(gc, GDK_OR);
-			}
-			else if (renderInfo->renderType == 3) {
+			else if (renderInfo->renderType == 1) {
 				gdk_gc_set_function(gc, GDK_XOR);
-			}
-			else {
-				gdk_gc_set_function(gc, GDK_COPY);
 			}
 			/*
 			* Translation is to get it inside the allocated pixmap,
@@ -636,7 +636,7 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 	gdk_pixmap_unref(clipmask);
 	gdk_gc_unref(gc);
 }
-#endif
+
 
 /* ------------------------------------------------------------------ */
 /* Fill out the gerber statistics table */

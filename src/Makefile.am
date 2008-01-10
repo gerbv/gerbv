@@ -39,7 +39,7 @@ CAIRO_DRAW=	draw.c draw.h
 GDK_DRAW=	draw-gdk.c draw-gdk.h
 
 if USE_CAIRO
-DRAW=		${CAIRO_DRAW}
+DRAW=		${CAIRO_DRAW} ${GDK_DRAW}
 else
 DRAW=		${GDK_DRAW}
 endif

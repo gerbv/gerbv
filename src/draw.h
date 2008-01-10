@@ -107,6 +107,8 @@ typedef enum {
 	LINE22_ROTATION
 } AMACRO_LINE22_INDEX;
 
+#endif /* DRAW_H */
+
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
@@ -114,5 +116,5 @@ int
 draw_image_to_cairo_target(cairo_t *cairoTarget, 
 			    gerb_image_t *image, gboolean invertLayer);
 
-#endif /* DRAW_H */
+
 

@@ -185,10 +185,11 @@ gerbv_draw_aperature_hole(cairo_t *cairoTarget, gdouble dimensionX, gdouble dime
 gboolean
 draw_update_macro_exposure (cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_operator_t darkOperator, gdouble exposureSetting){
+
 	if (exposureSetting == 0.0) {
-		return FALSE;
+		cairo_set_operator (cairoTarget, clearOperator);
 	}
-	else if (exposureSetting == 0.0) {
+	else if (exposureSetting == 1.0) {
 		cairo_set_operator (cairoTarget, darkOperator);
 	}
 	else if (exposureSetting == 2.0) {
@@ -333,7 +334,7 @@ draw_macro_primitive (gint macroType, cairo_t *cairoTarget, cairo_operator_t cle
 	}
 	cairo_set_operator (cairoTarget, oldOperator);
 }
-							
+
 int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	cairo_operator_t darkOperator, instruction_t *program, unsigned int nuf_push,
@@ -345,6 +346,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
     double lp[APERTURE_PARAMETERS_MAX];
     double tmp[2] = {0.0, 0.0};
     
+    cairo_push_group (cairoTarget);
     /* Local copy of parameters so we don't change the content */
     memcpy(lp, parameters, sizeof(double) * APERTURE_PARAMETERS_MAX);
     
@@ -526,6 +528,8 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	
     }
     free_stack(s);
+    cairo_pop_group_to_source (cairoTarget);
+    cairo_paint (cairoTarget);
     return handled;
 } /* gerbv_draw_amacro */
 
@@ -580,6 +584,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 	cairo_translate (cairoTarget, image->info->imageJustifyOffsetActualA,
 		 image->info->imageJustifyOffsetActualB);
 
+    /* set the fill rule so aperture holes are cleared correctly */	 
+    cairo_set_fill_rule (cairoTarget, CAIRO_FILL_RULE_EVEN_ODD);
     /* offset image */
     cairo_translate (cairoTarget, image->info->offsetA, image->info->offsetB);
     /* do image rotation */
@@ -704,12 +710,12 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 				continue;
 			case PAREA_END :
 				cairo_close_path(cairoTarget);
-				/* also create a thin border to make sure there are no
-				 * slivers of space between adjacent polygons
-				 */
-				//cairo_set_line_width (cairoTarget, 0.002);
-				//cairo_stroke_preserve (cairoTarget);
+				/* turn off anti-aliasing for polygons, since it shows seams
+				   with adjacent polygons (usually on PCB ground planes) */
+				cairo_antialias_t oldAlias = cairo_get_antialias (cairoTarget);
+				cairo_set_antialias (cairoTarget, CAIRO_ANTIALIAS_NONE);
 				cairo_fill (cairoTarget);
+				cairo_set_antialias (cairoTarget, oldAlias);
 				in_parea_fill = 0;
 				continue;
 			default :
@@ -728,7 +734,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 			}
 			continue;
 		}
-						
+	
 		/*
 		 * If aperture state is off we allow use of undefined apertures.
 		 * This happens when gerber files starts, but hasn't decided on 
@@ -817,7 +823,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 				}
 				break;
 			case OFF :
-				cairo_move_to (cairoTarget, x1,y1);
 				break;
 			case FLASH :
 				p1 = image->aperture[net->aperture]->parameter[0];

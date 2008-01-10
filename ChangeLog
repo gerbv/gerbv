@@ -1,3 +1,15 @@
+2008-01-10  Julian Lamb
+	* interface.c: Try and fix bug where tooltips weren't showing up for some
+	  users.
+	* many files: Implement on-the-fly switching between GDK and cairo
+	  rendering, and set default setting on cairo builds to "Fast" (GDK).
+	* draw.c: Fix spurious line rendering noticed by Stefan on BGA pads.
+	* draw.c: Turn off anti-aliasing just on all polygon draws, since they were
+	  showing seams on ground planes.
+	* draw.c: Fix clearing of BGA pin holes bug noticed by Stefan.
+	* draw.c: Add "exposure off" logic, allowing macros with the exposure=off
+	  parameter to erase.
+
 ---- Release 2.0.0-beta ----
 
 2008-01-09  Julian Lamb
