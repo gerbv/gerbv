@@ -1,0 +1,212 @@
+#!/bin/sh
+#
+# $Id$
+#
+
+# error out on failed commands whose return code wasn't explicitly
+# checked
+set -e
+
+usage() {
+cat << EOF
+
+$0 [options]
+
+Builds a non-cygwin version of gerbv and create a standalone
+windows installer.
+
+Supported options:
+
+  --debug         - Omits the compiler flag which prevents
+                    a command window from being opened.  This
+                    is useful when trying to use debug printf's
+
+  --help          - Show this message and exit.
+
+  --skip-build    - Skip the "make" step of the process.
+
+  --skip-config   - Skip the "./configure" step of the process.
+
+  --skip-install  - Skip the "make install" step of the process.
+
+For the $0 script to work, you must have the gtk_win32 files
+as well as gdlib installed on your system in very specific
+locations.  Edit $0 to change these.  While you are at it, feel
+free to provide a patch to improve the documentation about 
+those libraries.
+
+EOF
+}
+
+debug=no
+do_config=yes
+do_build=yes
+do_install=yes
+config_args=""
+while test $# -ne 0 ; do
+	case $1 in
+		--debug)
+			debug=yes
+			shift
+			;;
+
+		--help)
+			usage
+			exit 0
+			;;
+
+		--skip-build)
+			do_build=no
+			shift
+			;;
+
+		--skip-config)
+			do_config=no
+			shift
+			;;
+
+		--skip-install)
+			do_install=no
+			shift
+			;;
+
+		-*)
+			echo "ERROR:  Unknown option $1"
+			usage
+			exit 1
+			;;
+
+		*)
+			break
+			;;
+	esac
+done
+
+if test ! -f win32/build_gerbv ; then
+	echo "$0:  ERROR.  This script must be run from the top level of the gerbv source tree."
+	exit 1
+fi
+
+# Run this under cygwin to build gerbv and create a windows installer for
+# it.  Thanks to Bob Paddock for pointing me to NSIS and answering some 
+# beginner windows questions.
+
+# where gtk_win32 is installed
+gtk_win32=c:\\cygwin\\home\\${USER}\\gtk_win32
+
+# where only the runtime components are installed
+gtk_win32_runtime=c:\\\\cygwin\\\\home\\\\${USER}\\\\gtk_win32_runtime
+
+# gerbv version
+
+gerbv_version=`'/AC_INIT/ {gsub(/.*,[ \t]*\[/, ""); gsub(/\]\).*/, ""); print}' /configure.ac
+echo "gerbv_version=${gerbv_version}"
+
+# location of the NSIS makensis executible (see http://nsis.sourceforge.net)
+makensis="/cygdrive/c/Program Files/NSIS/makensis.exe"
+
+
+# ########################################################################
+#
+# The rest should be ok without editing
+#
+# ########################################################################
+
+
+# source directory
+srcdir=`pwd.exe`/win32
+top_srcdir=${srcdir}/..
+
+src_dir=c:\\\\cygwin`echo ${srcdir} | sed 's;/;\\\\\\\\;g'`
+top_src_dir=c:\\\\cygwin`echo ${top_srcdir} | sed 's;/;\\\\\\\\;g'`
+
+
+# where to install gerbv
+gerbv_inst=`pwd`/gerbv_inst
+
+# DOS version
+gerbv_inst_dir=c:\\\\cygwin`echo ${gerbv_inst} | sed 's;/;\\\\\\\\;g'`
+
+PKG_CONFIG_PATH=${gtk_win32}\\lib\\pkgconfig
+export PKG_CONFIG_PATH
+
+PATH=${gtk_win32}\\bin:${gd_win32}:${PATH}
+export PATH
+
+echo "Showing packages known to pkg-config:"
+pkg-config --list-all
+
+# add the gcc options to produce a native windows binary that
+# does not need cygwin to run
+if test "x${debug}" = "xno" ; then
+	EXTRA_FLAGS="-mwindows"
+fi
+
+CYGWIN_CFLAGS="-mms-bitfields -mno-cygwin ${EXTRA_FLAGS}"
+export CYGWIN_CFLAGS
+
+CYGWIN_CPPFLAGS="-mms-bitfields -mno-cygwin ${EXTRA_FLAGS}"
+export CYGWIN_CPPFLAGS
+
+# setting WIN32=yes will make sure that the desktop icon
+# gets compiled in
+if test "$do_config" = "yes" ; then
+echo "Configuring for cygwin"
+( ( ( env WIN32=yes \
+	./configure \
+	--prefix=${gerbv_inst} \
+	--disable-nls \
+	${config_args} \
+	2>&1 ; echo $? >&4 ) | tee c.log 1>&3) 4>&1 | (read a ; exit $a)) 3>&1
+
+if test $? -ne 0 ; then
+	echo "**** ERROR **** Configure failed. See log in c.log"
+	exit 1
+fi
+
+fi
+
+if test "$do_build" = "yes" ; then
+echo "Building for cygwin"
+( ( ( make 2>&1 ; echo $? >&4) | tee m.log 1>&3) 4>&1 | (read a ; exit $a) ) 3>&1
+if test $? -ne 0 ; then
+	echo "**** ERROR **** Build failed. See log in m.log"
+	exit 1
+fi
+fi
+
+if test "$do_install" = "yes" ; then
+echo "Installing for cygwin"
+# first clean out the installation directory to make sure
+# we don't have old junk lying around.
+if test -d ${gerbv_inst} ; then
+	rm -fr ${gerbv_inst}
+fi
+( ( ( make install 2>&1 ; echo $? >&4) | tee -a m.log 1>&3) 4>&1 | (read a ; exit $a) ) 3>&1
+if test $? -ne 0 ; then
+	echo "**** ERROR **** Build failed. See log in m.log"
+	exit 1
+fi
+fi
+
+echo "Creating NSIS script"
+echo "srcdir = ${srcdir}"
+echo "src_dir = ${src_dir}"
+echo "top_srcdir = ${top_srcdir}"
+echo "top_src_dir = ${top_src_dir}"
+
+sed \
+	-e "s;@gerbv_version@;${gerbv_version};g" \
+	-e "s;@gerbv_prefix@;${gerbv_inst_dir};g" \
+	-e "s;@gerbv_srcdir@;${top_src_dir};g" \
+	-e "s;@gtk_win32_runtime@;${gtk_win32_runtime};g" \
+	${srcdir}/gerbv.nsi.in > ${srcdir}/gerbv.nsi
+
+echo "Creating windows installer"
+"${makensis}" ${src_dir}/gerbv.nsi
+
+
+echo "Windows installer left in ${srcdir}:"
+ls -l ${srcdir}/*.exe
+
+

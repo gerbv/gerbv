@@ -1,0 +1,152 @@
+;; $Id$
+;;
+;; Installer script file for gerbv for windows.  See http://nsis.sourceforge.net
+;; for details on NSIS.
+;;
+
+; Started with:
+;
+;NSIS Modern User Interface
+;Start Menu Folder Selection Example Script
+;Written by Joost Verburg
+;
+; and modified for wcalc by Dan McMahill
+;
+; Later copied for use by pcb by Dan McMahill
+; Finally copied for use by gerbv by Dan McMahill
+
+;--------------------------------
+;Include Modern UI
+
+  !include "MUI.nsh"
+
+;--------------------------------
+;General
+
+  ;Name and file
+  Name "gerbv-@gerbv_version@"
+  OutFile "gerbvinst-@gerbv_version@.exe"
+
+  ;Default installation folder
+  InstallDir "$PROGRAMFILES\gerbv-@gerbv_version@"
+  
+  ;Get installation folder from registry if available
+  InstallDirRegKey HKCU "Software\gerbv-@gerbv_version@" ""
+
+;--------------------------------
+;Variables
+
+  Var MUI_TEMP
+  Var STARTMENU_FOLDER
+
+;--------------------------------
+;Interface Settings
+
+  !define MUI_ABORTWARNING
+
+;--------------------------------
+;Pages
+
+  !insertmacro MUI_PAGE_LICENSE "@gerbv_srcdir@\COPYING"
+  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\gd-license.txt"
+  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\libfreetype-license.txt"
+  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\libjpeg-license.txt"
+  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\libpng-license.txt"
+  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\zlib-license.txt"
+;  !insertmacro MUI_PAGE_COMPONENTS
+  !insertmacro MUI_PAGE_DIRECTORY
+  
+  ;Start Menu Folder Page Configuration
+  !define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU" 
+  !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\gerbv-@gerbv_version@" 
+  !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
+  
+  !insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER
+  
+  !insertmacro MUI_PAGE_INSTFILES
+  
+  !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_INSTFILES
+
+;--------------------------------
+;Languages
+ 
+  !insertmacro MUI_LANGUAGE "English"
+
+;--------------------------------
+;Installer Sections
+
+Section "Dummy Section" SecDummy
+
+  SetOutPath "$INSTDIR"
+  
+  ;ADD YOUR OWN FILES HERE...
+  File /a /r "@gtk_win32_runtime@\*.*"
+  File /a /r "@gerbv_prefix@\*.*"
+
+  ;Store installation folder
+  WriteRegStr HKCU "Software\gerbv-@gerbv_version@" "" $INSTDIR
+  
+  ;Create uninstaller
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+  
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+    
+    ;Create shortcuts
+    CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Readme.lnk" "$INSTDIR\share\gerbv-@gerbv_version@\Readme.txt"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\gerbv.lnk" "$INSTDIR\bin\gerbv.exe" "" "$INSTDIR\bin\gerbv" 0 "" "" "gerbv RS274-X file viewer"
+
+;; CreateShortCut  link.lnk target.file [parameters [icon.file [icon_index_number [start_options [keyboard_shortcut [description]]]]]]
+
+  !insertmacro MUI_STARTMENU_WRITE_END
+
+SectionEnd
+
+;--------------------------------
+;Descriptions
+
+  ;Language strings
+;  LangString DESC_SecDummy ${LANG_ENGLISH} "A test section."
+
+  ;Assign language strings to sections
+;  !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+;    !insertmacro MUI_DESCRIPTION_TEXT ${SecDummy} $(DESC_SecDummy)
+;  !insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+;--------------------------------
+;Uninstaller Section
+
+Section "Uninstall"
+
+  ;ADD YOUR OWN FILES HERE...
+
+  Delete "$INSTDIR\Uninstall.exe"
+  Delete "$INSTDIR\*.*"
+
+  RMDir /r "$INSTDIR\*.*"
+  RMDir "$INSTDIR"
+  
+  !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
+    
+  Delete "$SMPROGRAMS\$MUI_TEMP\gerbv.lnk"
+  Delete "$SMPROGRAMS\$MUI_TEMP\Readme.lnk"
+  Delete "$SMPROGRAMS\$MUI_TEMP\Uninstall.lnk"
+  
+  ;Delete empty start menu parent diretories
+  StrCpy $MUI_TEMP "$SMPROGRAMS\$MUI_TEMP"
+ 
+  startMenuDeleteLoop:
+	ClearErrors
+    RMDir $MUI_TEMP
+    GetFullPathName $MUI_TEMP "$MUI_TEMP\.."
+    
+    IfErrors startMenuDeleteLoopDone
+  
+    StrCmp $MUI_TEMP $SMPROGRAMS startMenuDeleteLoopDone startMenuDeleteLoop
+  startMenuDeleteLoopDone:
+
+  DeleteRegKey /ifempty HKCU "Software\gerbv-@gerbv_version@"
+
+SectionEnd
