@@ -44,17 +44,25 @@ AC_CANONICAL_HOST
 # if you want -mno-cygwin, then add it to MINGW_CFLAGS or CYGWIN_CFLAGS
 # in your configure environment.  After all you may or may not
 # want to always force -mno-cygwin on all users.
+AC_MSG_CHECKING([for windows])
+WIN32=no
 case $host_os in
 	*cygwin*  )
+		WIN32=yes
 		CFLAGS="$CFLAGS ${CYGWIN_CFLAGS}"
                 CPPFLAGS="$CPPFLAGS ${CYGWIN_CPPFLAGS}"
 		;;
 
 	*mingw32* )
+		WIN32=yes
 		CFLAGS="$CFLAGS ${MINGW_CFLAGS:--mms-bitfields -mwindows}"
 		CPPFLAGS="$CPPFLAGS ${MINGW_CPPFLAGS:--mms-bitfields -mwindows}"
 		;;
 esac
+
+AC_MSG_RESULT([$WIN32])
+AC_SUBST(WIN32)
+AM_CONDITIONAL(WIN32, test x$WIN32 = xyes)
 
 
 #
@@ -304,7 +312,7 @@ AC_CHECK_HEADERS(unistd.h getopt.h string.h sys/mman.h sys/types.h sys/stat.h st
 AC_CHECK_FUNCS(getopt_long)
 
 
-CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS $WIN32_CFLAGS"
+CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS"
 LIBS="$LIBS $GDK_PIXBUF_LIBS $PNG_LIBS $GTK_LIBS $CAIRO_LIBS"
 
 
