@@ -29,5 +29,5 @@ MAINTAINERCLEANFILES = *~ *.o gerbv Makefile Makefile.in config.* stamp-h*
 EXTRA_DIST = CONTRIBUTORS HACKING AUTHORS ChangeLog COPYING INSTALL \
 	INSTALL.MINGW.WIN32 NEWS README \
 	README-Pick-and-Place-search_parts.txt TODO \
-	autogen.sh 
+	autogen.sh  README-cvs.txt README-release.txt
 
