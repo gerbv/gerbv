@@ -35,6 +35,20 @@ gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h common.h \
 		interface.h render.c render.h gerb_stats.c gerb_stats.h \
 		drill_stats.c drill_stats.h icons.h
 
+# If we are building on win32, then compile in some icons for the
+# desktop and application toolbar
+#if WIN32
+#gerbv_icon.o : gerbv_icon.ico $(srcdir)/gerbv.rc
+#	windres $(srcdir)/gerbv.rc $@
+#
+#gerbv_icon.ico: $(top_srcdir)/data/gerbv_icon.ico
+#	cp $(top_srcdir)/data/gerbv_icon.ico $@
+#
+#gerbv_LDADD+=		gerbv_icon.o
+#gerbv_DEPENDENCIES+=	gerbv_icon.o
+#
+#endif
+
 CAIRO_DRAW=	draw.c draw.h
 GDK_DRAW=	draw-gdk.c draw-gdk.h
 
@@ -44,7 +58,7 @@ else
 DRAW=		${GDK_DRAW}
 endif
 
-EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW}
+EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW} gerbv.rc
 
 scmdatadir = $(pkgdatadir)/scheme/
 dist_scmdata_DATA = init.scm
