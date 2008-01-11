@@ -23,3 +23,8 @@ man_MANS = gerbv.1
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~ gerbv.1
+
+gerbv.1: gerbv.1.in
+	sed -e "s;@scmdir@;${pkgdatadir}/scheme;g" \
+		-e 's;@version@;@VERSION@;g' \
+		$(srcdir)/gerbv.1.in > $@

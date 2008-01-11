@@ -19,7 +19,7 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-scmdatadir = $(datarootdir)/gerbv/scheme/
+scmdatadir = $(pkgdatadir)/scheme/
 dist_scmdata_DATA = gerb-ps.scm gerb-debug.scm
 
 EXTRA_DIST = gbx2ps.scm  parse-gerber.scm  pgt.scm

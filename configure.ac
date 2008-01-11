@@ -349,7 +349,6 @@ AC_OUTPUT(	Makefile \
 		example/trailing/Makefile \
 		example/Makefile \
 		man/Makefile \
-		man/gerbv.1 \
 		scheme/Makefile \
 		src/Makefile \
 		test/Makefile \
@@ -358,6 +357,8 @@ AC_OUTPUT(	Makefile \
         
 AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:
+
+   PREFIX:                   $PREFIX
 
    CPPFLAGS:                 $CPPFLAGS
    CFLAGS:                   $CFLAGS

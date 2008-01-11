@@ -46,7 +46,7 @@ endif
 
 EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW}
 
-scmdatadir = $(datarootdir)/gerbv/scheme/
+scmdatadir = $(pkgdatadir)/scheme/
 dist_scmdata_DATA = init.scm
 
 AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"'
