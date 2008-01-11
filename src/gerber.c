@@ -115,7 +115,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
     gboolean foundEOF = FALSE;
     
     while ((read = gerb_fgetc(fd)) != EOF) {
-        /* figure out the scale, since we need to normailize 
+        /* figure out the scale, since we need to normalize 
 	   all dimensions to inches */
         if (state->state->unit == MM)
             scale = 25.4;
@@ -217,7 +217,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	    dprintf("... Found %% code\n");
 	    parse_rs274x(levelOfRecursion, fd, image, state, curr_net, stats, directoryPath);
 	    while (1){
-		char c=gerb_fgetc(fd);
+		int c=gerb_fgetc(fd);
 		if(c==EOF || c=='%')
 		    break;
 	    }
