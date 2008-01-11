@@ -1,13 +1,15 @@
-.TH gerbv 1 "Feb 8th, 2004" Version @VERSION@
+.TH gerbv 1 "January 11, 2008" Version @version@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
 .B gerbv [OPTIONS]  [gerberfile[s]]
 .SH DESCRIPTION
 .PP
-\fIgerbv\fP is a viewer for Gerber files. Gerber files is generated
-from different PCB CAD programs and are sent to subcontractors to
-actually make the PCB. \fIgerbv\fP also supports Excellon/NC drill files.
+\fIgerbv\fP is a viewer for RS274-X, commonly known as Gerber, files.
+RS274-X files are generated from different PCB CAD programs and are
+used in the printed circuit board manufacturing process.
+\fIgerbv\fP also supports Excellon/NC drill files as well as XY (centroid)
+files produced by the program PCB (http://pcb.sf.net).
 
 .SH OPTIONS
 .l
@@ -83,10 +85,6 @@ color, etc).
 If you hold the mouse button over one the rightmost button a tooltips will
 show you the name of the file loaded on that layer.
 
-Default of concurrently loaded files are 20 layers. You can change this 
-during configure with:
-
- ./configure with\-maxfiles\=\<number\>
 
 .SH ACTIVATION AND DEACTIVATION OF LAYERS
 You can load several files at one time. You can then turn displaying
@@ -153,7 +151,7 @@ The project files are simple Scheme programs that is interpreted by a
 built in Scheme interpreter. The Scheme interpreter is TinyScheme and
 needs a Scheme program called init.scm to initialize itself. The search
 path for init.scm is (in the following order) 
-@datarootdir@/gerbv/scheme/, the directory with the executable
+@scmdir@, the directory with the executable
 gerbv, the directory gerbv was invoked from and finally
 according to the environment variable GERBV_SCHEMEINIT.
 
@@ -211,7 +209,7 @@ Anders Eriksson (aenfaldor at users.sourceforge.net) : X and GTK+ ideas and hack
 
 .SH COPYRIGHT
 .nf
-Copyright \(co  2001-2004 Stefan Petersen
+Copyright \(co  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Stefan Petersen
 
 This document can be freely redistributed according to the terms of the 
 GNU General Public License version 2.0
