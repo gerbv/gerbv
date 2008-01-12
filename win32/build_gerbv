@@ -28,6 +28,8 @@ Supported options:
 
   --skip-build    - Skip the "make" step of the process.
 
+  --skip-clean    - Skip the "make clean" step of the process.
+
   --skip-config   - Skip the "./configure" step of the process.
 
   --skip-install  - Skip the "make install" step of the process.
@@ -45,6 +47,7 @@ debug=no
 do_autogen=no
 do_config=yes
 do_build=yes
+do_clean=yes
 do_install=yes
 config_args=""
 while test $# -ne 0 ; do
@@ -66,6 +69,11 @@ while test $# -ne 0 ; do
 
 		--skip-build)
 			do_build=no
+			shift
+			;;
+
+		--skip-clean)
+			do_clean=no
 			shift
 			;;
 
@@ -178,7 +186,6 @@ echo "Configuring for cygwin"
 ( ( ( env WIN32=yes \
 	./configure \
 	--prefix=${gerbv_inst} \
-	--disable-cairo \
 	--disable-dependency-tracking \
 	--disable-nls \
 	${config_args} \
@@ -194,6 +201,15 @@ fi
 
 dos2unix src/Makefile
 
+fi
+
+if test "$do_clean" = "yes" ; then
+echo "Cleaning"
+( ( ( make clean 2>&1 ; echo $? >&4) | tee clean.log 1>&3) 4>&1 | (read a ; exit $a) ) 3>&1
+if test $? -ne 0 ; then
+	echo "**** ERROR **** Clean failed. See log in clean.log"
+	exit 1
+fi
 fi
 
 if test "$do_build" = "yes" ; then
