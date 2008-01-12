@@ -1722,9 +1722,13 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	visual = gdk_drawable_get_visual (drawable);
 	if (!screen.windowSurface) {
 #ifdef WIN32
-		/* FIXME */
-#error "building with cairo and WIN32 is not quite done yet"
-		screen.windowSurface = (gpointer) cairo_win32_surface_create (0);
+		cairo_t *cairoTarget = gdk_cairo_create (GDK_WINDOW(widget->window));
+		
+		screen.windowSurface = cairo_get_target (cairoTarget);
+		/* increase surface reference by one so it isn't freed when the cairo_t
+		   is destroyed next */
+		screen.windowSurface = cairo_surface_reference (screen.windowSurface);
+		cairo_destroy (cairoTarget);
 #else
 		screen.windowSurface = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
 	                                          GDK_DRAWABLE_XID (drawable),
@@ -1809,7 +1813,6 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 	cairo_t *cr;
 	int width, height;
-	cairo_surface_t *buffert;
 	int x_off=0, y_off=0;
 	GdkDrawable *drawable = widget->window;
 	GdkVisual *visual;
@@ -1825,20 +1828,23 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 #ifdef WIN32
 	/* FIXME */
-	buffert = (gpointer) cairo_win32_surface_create (0);
+	cr = gdk_cairo_create (GDK_WINDOW(widget->window));
 #else      
+	cairo_surface_t *buffert;
+	
 	buffert = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
 	                                          GDK_DRAWABLE_XID (drawable),
 	                                          GDK_VISUAL_XVISUAL (visual),
 	                                          event->area.width, event->area.height);
-#endif
-      
 	cr = cairo_create (buffert);
+#endif
 	cairo_translate (cr, -event->area.x + screen.off_x, -event->area.y + screen.off_y);
 	render_project_to_cairo_target (cr);
 	cairo_destroy (cr);
+#ifndef WIN32
 	cairo_surface_destroy (buffert);
-        
+#endif
+
 #endif
 	return FALSE;
 }
