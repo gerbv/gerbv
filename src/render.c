@@ -52,7 +52,11 @@
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
 #else
-  #include <cairo-xlib.h>
+  #ifdef WIN32
+    #include <cairo-win32.h>
+  #else
+    #include <cairo-xlib.h>
+  #endif
   #include <cairo.h>
   #include "draw-gdk.h"
   #include "draw.h"
