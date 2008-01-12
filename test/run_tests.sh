@@ -22,7 +22,6 @@
 # latex-mk testsuite.  The original code was covered by a BSD license
 # but the copyright holder is releasing the version for gerbv under the GPL.
 
-
 regen=no
 
 usage() {
@@ -107,12 +106,12 @@ GERBV_DEFAULT_FLAGS=${GERBV_DEFAULT_FLAGS:---export=png}
 srcdir=${srcdir:-.}
 
 # various ImageMagick tools
-ANIMATE=${ANIMATE:-animate}
-COMPARE=${COMPARE:-compare}
-COMPOSITE=${COMPOSITE:-composite}
-CONVERT=${CONVERT:-convert}
-DISPLAY=${DISPLAY:-display}
-MONTAGE=${MONTAGE:-montage}
+IM_ANIMATE=${IM_ANIMATE:-animate}
+IM_COMPARE=${IM_COMPARE:-compare}
+IM_COMPOSITE=${IM_COMPOSITE:-composite}
+IM_CONVERT=${IM_CONVERT:-convert}
+IM_DISPLAY=${IM_DISPLAY:-display}
+IM_MONTAGE=${IM_MONTAGE:-montage}
 
 # golden directories
 INDIR=${INDIR:-${srcdir}/inputs}
@@ -175,12 +174,12 @@ TESTLIST              ${TESTLIST}
 
 ImageMagick Tools:
 
-ANIMATE               ${ANIMATE}
-COMPARE               ${COMPARE}
-COMPOSITE             ${COMPOSITE}
-CONVERT               ${CONVERT}
-DISPLAY               ${DISPLAY}
-MONTAGE               ${MONTAGE}
+IM_ANIMATE               ${IM_ANIMATE}
+IM_COMPARE               ${IM_COMPARE}
+IM_COMPOSITE             ${IM_COMPOSITE}
+IM_CONVERT               ${IM_CONVERT}
+IM_DISPLAY               ${IM_DISPLAY}
+IM_MONTAGE               ${IM_MONTAGE}
 
 EOF
 
@@ -253,7 +252,7 @@ for t in $all_tests ; do
 
     if test "X$regen" != "Xyes" ; then
 	if test -f ${REFDIR}/${t}.png ; then
-	    same=`${COMPARE} -metric MAE $refpng $outpng  null: 2>&1 | \
+	    same=`${IM_COMPARE} -metric MAE $refpng $outpng  null: 2>&1 | \
                 ${AWK} '{if($1 == 0){print "yes"} else {print "no"}}'`
 	    if test "$same" = yes ; then
 		echo "PASS"
@@ -261,14 +260,14 @@ for t in $all_tests ; do
 	    else
 		echo "FAILED:  See ${errdir}"
 		mkdir -p ${errdir}
-		${COMPARE} ${refpng} ${outpng} ${errdir}/compare.png
-		${COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png
-		${CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png
+		${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png
+		${IM_COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png
+		${IM_CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png
 cat > ${errdir}/animate.sh << EOF
 #!/bin/sh
-${CONVERT} -label "%f" ${refpng} ${outpng} miff:- | \
-${MONTAGE} - -geometry +0+0 -tile 1x1 miff:- | \
-${ANIMATE} -delay 0.5 -loop 0 -
+${IM_CONVERT} -label "%f" ${refpng} ${outpng} miff:- | \
+${IM_MONTAGE} - -geometry +0+0 -tile 1x1 miff:- | \
+${IM_ANIMATE} -delay 0.5 -loop 0 -
 EOF
 		chmod a+x ${errdir}/animate.sh
 		fail=`expr $fail + 1`

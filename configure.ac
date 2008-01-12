@@ -164,19 +164,19 @@ if test "x$GCC" = "xyes"; then
 fi
 
 # Check for ImageMagick tools used by the testsuite
-AC_PATH_PROG(ANIMATE, animate, notfound)
-AC_PATH_PROG(COMPARE, compare, notfound)
-AC_PATH_PROG(COMPOSITE, composite, notfound)
-AC_PATH_PROG(CONVERT, convert, notfound)
-AC_PATH_PROG(DISPLAY, display, notfound)
-AC_PATH_PROG(MONTAGE, montage, notfound)
+AC_PATH_PROG(IM_ANIMATE, animate, notfound)
+AC_PATH_PROG(IM_COMPARE, compare, notfound)
+AC_PATH_PROG(IM_COMPOSITE, composite, notfound)
+AC_PATH_PROG(IM_CONVERT, convert, notfound)
+AC_PATH_PROG(IM_DISPLAY, display, notfound)
+AC_PATH_PROG(IM_MONTAGE, montage, notfound)
 missing_magick=""
-test "${ANIMATE}" != "notfound" || missing_magick="${missing_magick} animate"
-test "${COMPARE}" != "notfound" || missing_magick="${missing_magick} compare"
-test "${COMPOSITE}" != "notfound" || missing_magick="${missing_magick} composite"
-test "${CONVERT}" != "notfound" || missing_magick="${missing_magick} convert"
-test "${DISPLAY}" != "notfound" || missing_magick="${missing_magick} display"
-test "${MONTAGE}" != "notfound" || missing_magick="${missing_magick} montage"
+test "${IM_ANIMATE}" != "notfound" || missing_magick="${missing_magick} animate"
+test "${IM_COMPARE}" != "notfound" || missing_magick="${missing_magick} compare"
+test "${IM_COMPOSITE}" != "notfound" || missing_magick="${missing_magick} composite"
+test "${IM_CONVERT}" != "notfound" || missing_magick="${missing_magick} convert"
+test "${IM_DISPLAY}" != "notfound" || missing_magick="${missing_magick} display"
+test "${IM_MONTAGE}" != "notfound" || missing_magick="${missing_magick} montage"
 
 AC_MSG_CHECKING([if all ImageMagick tools needed for the testsuite were found])
 if test "X${missing_magick}" != "X" ; then
