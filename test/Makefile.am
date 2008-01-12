@@ -4,6 +4,7 @@
 SUBDIRS=	golden inputs
 
 TESTS_ENVIRONMENT=	\
+	$(SHELL) -x
 	ANIMATE=${ANIMATE} \
 	COMPARE=${COMPARE} \
 	COMPOSITE=${COMPOSITE} \
@@ -24,6 +25,7 @@ endif
 endif
 
 DISTCLEANFILES=	configure.lineno
+MAINTAINERCLEANFILES = *~ *.o Makefile Makefile.in
 
 EXTRA_DIST=	${RUN_TESTS} tests.list README.txt
 

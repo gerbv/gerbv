@@ -358,6 +358,7 @@ AC_OUTPUT(	Makefile \
 		man/Makefile \
 		scheme/Makefile \
 		src/Makefile \
+		win32/Makefile \
 		test/Makefile \
 		test/golden/Makefile \
 		test/inputs/Makefile )

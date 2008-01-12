@@ -66,3 +66,4 @@ dist_scmdata_DATA = init.scm
 AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"'
 
 MOSTLYCLEANFILES = *~
+MAINTAINERCLEANFILES = *~ *.o Makefile Makefile.in

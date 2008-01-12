@@ -6,16 +6,16 @@ find . -name Makefile.in -exec rm {} \;
 
 echo "Running aclocal..."
 aclocal $ACLOCAL_FLAGS || exit 1
-echo "Done with aclocal"
+echo "... done with aclocal."
 
 echo "Running autoheader..."
 autoheader || exit 1
-echo "Done with autoheader"
+echo "... done with autoheader."
 
-echo "Running aclocal..."
+echo "Running automake..."
 automake --copy --add-missing || exit 1
-echo "Done with automake"
+echo "... done with automake."
 
 echo "Running autoconf..."
 autoconf || exit 1
-echo "Done with autoconf"
+echo "... done with autoconf."
