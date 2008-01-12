@@ -138,12 +138,13 @@ gerb_fopen(char *filename)
         g_free(fd);
         return NULL;
     }
-    if (fread((void*)fd->data, 1, statinfo.st_size, fd->fd) == NULL) {
+    if (fread((void*)fd->data, 1, statinfo.st_size, fd->fd) == 0) {
         fclose(fd->fd);
 	g_free(fd->data);
         g_free(fd);
 	return NULL;
     }
+    rewind (fd->fd);
 #endif
 
     dprintf("<--- Leaving gerb_fopen\n");
