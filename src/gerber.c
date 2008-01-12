@@ -619,12 +619,14 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     gboolean found_star = FALSE;
     gboolean found_X = FALSE;
     gboolean found_Y = FALSE;
-    
+   
+    dprintf ("gerber_is_rs274x_p(%p, %p), fd->fd = %p\n", fd, returnFoundBinary, fd->fd); 
     buf = (char *) g_malloc(MAXL);
     if (buf == NULL) 
 	GERB_FATAL_ERROR("malloc buf failed while checking for rs274x.\n");
     
     while (fgets(buf, MAXL, fd->fd) != NULL) {
+        dprintf ("buf = \"%s\"\n", buf);
 	len = strlen(buf);
     
 	/* First look through the file for indications of its type */
@@ -634,47 +636,58 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	    if (!isprint(buf[i]) && (buf[i] != '\r') && 
 		(buf[i] != '\n') && (buf[i] != '\t')) {
 		found_binary = TRUE;
+                dprintf ("found_binary (%d)\n", buf[i]);
 	    }
 	}
 	if (g_strstr_len(buf, len, "%ADD")) {
 	    found_ADD = TRUE;
+            dprintf ("found_ADD\n");
 	}
 	if (g_strstr_len(buf, len, "D00")) {
 	    found_D0 = TRUE;
+            dprintf ("found_D0\n");
 	}
 	if (g_strstr_len(buf, len, "D02")) {
 	    found_D2 = TRUE;
+            dprintf ("found_D2\n");
 	}
 	if (g_strstr_len(buf, len, "M0")) {
 	    found_M0 = TRUE;
+            dprintf ("found_M0\n");
 	}
 	if (g_strstr_len(buf, len, "M00")) {
 	    found_M0 = TRUE;
+            dprintf ("found_M0\n");
 	}
 	if (g_strstr_len(buf, len, "M2")) {
 	    found_M2 = TRUE;
+            dprintf ("found_M2\n");
 	}
 	if (g_strstr_len(buf, len, "M02")) {
 	    found_M2 = TRUE;
+            dprintf ("found_M2\n");
 	}
 	if (g_strstr_len(buf, len, "*")) {
 	    found_star = TRUE;
+            dprintf ("found_star\n");
 	}
 	/* look for X<number> or Y<number> */
 	if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
 	    if (isdigit(letter[1])) { /* grab char after X */
 		found_X = TRUE;
+                dprintf ("found_X\n");
 	    }
 	}
 	if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
 	    if (isdigit(letter[1])) { /* grab char after Y */
 		found_Y = TRUE;
+                dprintf ("found_Y\n");
 	    }
 	}
     }
     rewind(fd->fd);
     free(buf);
-    
+   
     *returnFoundBinary = found_binary;
     /* Now form logical expression determining if the file is RS-274X */
     if ((found_D0 || found_D2 || found_M0 || found_M2) && 
