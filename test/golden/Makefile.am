@@ -73,5 +73,14 @@ EXTRA_DIST= \
 	test-layer-rotation-1.png \
 	test-layer-scale-factor-1.png \
 	test-layer-step-and_repeat-1.png \
-	test-include-file-1.png
+	test-include-file-1.png \
+	test-aperture-circle-1.png \
+	test-aperture-obround-flash-1.png \
+	test-aperture-rectangle-1.png \
+	test-aperture-circle-flash-1.png \
+	test-aperture-polygon-1.png \
+	test-aperture-rectangle-flash-1.png \
+	test-aperture-obround-1.png \
+	test-aperture-polygon-flash-1.png \
+	test-polygon-fill-1.png
 

@@ -152,18 +152,20 @@ gerbv_draw_oblong(cairo_t *cairoTarget, gdouble width, gdouble height)
 
 
 static void
-gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideRadius,
+gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideDiameter,
 		   gdouble numberOfSides, gdouble degreesOfRotation)
 {
     int i, numberOfSidesInteger = (int) numberOfSides;
     
     cairo_rotate(cairoTarget, degreesOfRotation * M_PI/180);
-    cairo_move_to(cairoTarget, outsideRadius, 0);
+    cairo_move_to(cairoTarget, outsideDiameter / 2.0, 0);
     /* skip first point, since we've moved there already */
-    for (i = 1; i < (int)numberOfSidesInteger; i++){
+    /* include last point, since we may be drawing an aperture hole next
+       and cairo may not correctly close the path itself */
+    for (i = 1; i <= (int)numberOfSidesInteger; i++){
 	gdouble angle = (double) i / numberOfSidesInteger * M_PI * 2.0;
-	cairo_line_to (cairoTarget, cos(angle) * outsideRadius,
-		       sin(angle) * outsideRadius);
+	cairo_line_to (cairoTarget, cos(angle) * outsideDiameter / 2.0,
+		       sin(angle) * outsideDiameter / 2.0);
     }
     return;
 } /* gerbv_draw_polygon */
@@ -244,7 +246,7 @@ draw_macro_primitive (gint macroType, cairo_t *cairoTarget, cairo_operator_t cle
 					darkOperator, parameters[POLYGON_EXPOSURE])){
 			cairo_translate (cairoTarget, parameters[POLYGON_CENTER_X],
 				       parameters[POLYGON_CENTER_Y]);
-			gerbv_draw_polygon(cairoTarget, parameters[POLYGON_DIAMETER] / 2.0,
+			gerbv_draw_polygon(cairoTarget, parameters[POLYGON_DIAMETER],
 					  parameters[POLYGON_NUMBER_OF_POINTS], parameters[POLYGON_ROTATION]);
 			cairo_fill (cairoTarget);
 		}
@@ -422,7 +424,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	      			darkOperator, s->stack[POLYGON_EXPOSURE])){
 			cairo_translate (cairoTarget, s->stack[POLYGON_CENTER_X],
 				       s->stack[POLYGON_CENTER_Y]);
-			gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER] / 2.0,
+			gerbv_draw_polygon(cairoTarget, s->stack[POLYGON_DIAMETER],
 					   s->stack[POLYGON_NUMBER_OF_POINTS], s->stack[POLYGON_ROTATION]);
 			cairo_fill (cairoTarget);
 		}
@@ -570,7 +572,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 {
 	struct gerb_net *net;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
-	int in_parea_fill = 0,drawing_parea_fill = 0;
+	int in_parea_fill = 0,haveDrawnFirstFillPoint = 0;
 	gdouble p1, p2, p3, p4, p5, dx, dy, scale;
 	gerb_netstate_t *oldState;
 	gerb_layer_t *oldLayer;
@@ -706,6 +708,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 		switch (net->interpolation) {
 			case PAREA_START :
 				in_parea_fill = 1;
+				haveDrawnFirstFillPoint = FALSE;
 				cairo_new_path(cairoTarget);
 				continue;
 			case PAREA_END :
@@ -722,15 +725,12 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 				break;
 		}
 		if (in_parea_fill) {
-			if (!drawing_parea_fill) {
-				cairo_move_to (cairoTarget, x1,y1);
-				drawing_parea_fill=TRUE;
-			}
-			if (net->aperture_state == ON) {
-				cairo_line_to (cairoTarget, x2,y2);
+			if (!haveDrawnFirstFillPoint) {
+				cairo_move_to (cairoTarget, x2,y2);
+				haveDrawnFirstFillPoint=TRUE;
 			}
 			else {
-				cairo_move_to (cairoTarget, x2,y2);
+				cairo_line_to (cairoTarget, x2,y2);
 			}
 			continue;
 		}
@@ -803,6 +803,12 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 						 */
 						cairo_new_path(cairoTarget);
 						cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
+						if (image->aperture[net->aperture]->type == RECTANGLE) {
+							cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
+						}
+						else {
+							cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+						}
 						cairo_save (cairoTarget);
 						cairo_translate(cairoTarget, cp_x, cp_y);
 						cairo_scale (cairoTarget, net->cirseg->height,

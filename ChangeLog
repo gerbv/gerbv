@@ -1,3 +1,17 @@
+2008-01-12  Julian Lamb
+	* draw.c: Fix a few minor cairo rendering issues: 1) fix rendering of
+	  circular interpolation within a polygon fill. 2) Fix rendering of
+	  flashed polygon apertures with holes in them.
+	* tests: Add 8 new test files to test out aperture drawing, and 1 to test
+	  polygon fills.
+	* tests/golden/*: Update all golden files in preparation for 2.0 release.
+	  20 tests were failing for a variety of reasons.  Most were due to the
+	  recent disabling of anti-aliasing on polygon fills, which caused very
+	  small changes to the rendering of the polygon borders. The remainder
+	  of the failings were due to spurious lines previously being drawn on
+	  flashed apertures with holes (noticed by Stefan), which has now been
+	  fixed.
+
 2008-01-10  Julian Lamb
 	* interface.c: Try and fix bug where tooltips weren't showing up for some
 	  users.

@@ -19,4 +19,14 @@ EXTRA_DIST= \
 	test-layer-scale-factor-1.gbx \
 	test-layer-step-and_repeat-1.gbx \
 	test-include-file-1.gbx \
-	include-file-1.gbx
+	include-file-1.gbx \
+	test-aperture-circle-1.gbx \
+	test-aperture-obround-flash-1.gbx \
+	test-aperture-rectangle-1.gbx \
+	test-aperture-circle-flash-1.gbx \
+	test-aperture-polygon-1.gbx \
+	test-aperture-rectangle-flash-1.gbx \
+	test-aperture-obround-1.gbx \
+	test-aperture-polygon-flash-1.gbx \
+	test-polygon-fill-1.gbx
+

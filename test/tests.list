@@ -160,5 +160,13 @@ test-layer-offset-1  |  test-layer-offset-1.gbx
 test-layer-rotation-1  |  test-layer-rotation-1.gbx
 test-layer-scale-factor-1  |  test-layer-scale-factor-1.gbx
 test-layer-step-and_repeat-1  |  test-layer-step-and_repeat-1.gbx
-test-include-file-1  |  test-include-file-1.gbx
+test-aperture-circle-1  |  test-aperture-circle-1.gbx
+test-aperture-obround-flash-1  |  test-aperture-obround-flash-1.gbx
+test-aperture-rectangle-1  |  test-aperture-rectangle-1.gbx
+test-aperture-circle-flash-1  |  test-aperture-circle-flash-1.gbx
+test-aperture-polygon-1  |  test-aperture-polygon-1.gbx
+test-aperture-rectangle-flash-1  |  test-aperture-rectangle-flash-1.gbx
+test-aperture-obround-1  |  test-aperture-obround-1.gbx
+test-aperture-polygon-flash-1  |  test-aperture-polygon-flash-1.gbx
+test-polygon-fill-1  |  test-polygon-fill-1.gbx
 
