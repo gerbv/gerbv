@@ -178,8 +178,9 @@ echo "Configuring for cygwin"
 ( ( ( env WIN32=yes \
 	./configure \
 	--prefix=${gerbv_inst} \
-	--disable-nls \
 	--disable-cairo \
+	--disable-dependency-tracking \
+	--disable-nls \
 	${config_args} \
 	CFLAGS="${LIBPNG_CFLAGS}" \
 	LDFLAGS="${LIBPNG_LDFLAGS}" \
