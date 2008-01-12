@@ -1723,6 +1723,7 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	if (!screen.windowSurface) {
 #ifdef WIN32
 		/* FIXME */
+#error "building with cairo and WIN32 is not quite done yet"
 		screen.windowSurface = (gpointer) cairo_win32_surface_create (0);
 #else
 		screen.windowSurface = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
