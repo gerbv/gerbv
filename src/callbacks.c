@@ -429,7 +429,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			     * program should terminate first.... */
 		    error_level = g_strdup_printf("FATAL: ");
 		    break;
-		case ERROR:
+		case GRB_ERROR:
 		    error_level = g_strdup_printf("ERROR: ");
 		    break;
 		case WARNING:
@@ -771,7 +771,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 			     * program should terminate first.... */
 		    error_level = g_strdup_printf("FATAL: ");
 		    break;
-		case ERROR:
+		case GRB_ERROR:
 		    error_level = g_strdup_printf("ERROR: ");
 		    break;
 		case WARNING:

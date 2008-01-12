@@ -189,7 +189,7 @@ parse_drillfile(gerb_file_t *fd)
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      "Rout mode data is not supported\n",
-				      ERROR);
+				      GRB_ERROR);
 		break;
 	    case DRILL_G_DRILL :
 		break;
@@ -204,7 +204,7 @@ parse_drillfile(gerb_file_t *fd)
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      "Unexpected EOF found.\n",
-				      ERROR);
+				      GRB_ERROR);
 		drill_parse_coordinate(fd, (char)read, image, state);
 		state->origin_x = state->curr_x;
 		state->origin_y = state->curr_y;
@@ -290,7 +290,7 @@ parse_drillfile(gerb_file_t *fd)
 		    drill_stats_add_error(stats->error_list,
 					  -1,
 					  "End of Excellon header reached but no leading/trailing zero handling specified.\n",
-					  ERROR);
+					  GRB_ERROR);
 		    drill_stats_add_error(stats->error_list,
 					  -1,
 					  "Assuming leading zeros.\n",
@@ -304,7 +304,7 @@ parse_drillfile(gerb_file_t *fd)
 		    drill_stats_add_error(stats->error_list,
 					  -1,
 					  "M71 code found but no METRIC specification in header.\n",
-					  ERROR);
+					  GRB_ERROR);
 		    drill_stats_add_error(stats->error_list,
 					  -1,
 					  "Assuming all tool sizes are MM.\n",
@@ -365,7 +365,7 @@ parse_drillfile(gerb_file_t *fd)
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      "Undefined M code found.\n",
-				      ERROR);
+				      GRB_ERROR);
 	    }
 	    break;
 
@@ -451,7 +451,7 @@ parse_drillfile(gerb_file_t *fd)
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      "Undefined codes found in header.\n",
-				      ERROR);
+				      GRB_ERROR);
 		gerb_ungetc(fd);
 		drill_stats_add_error(stats->error_list,
 				      -1,
@@ -463,14 +463,14 @@ parse_drillfile(gerb_file_t *fd)
 				      -1,
 				      g_strdup_printf("Undefined character '%c' [0x%02x] found inside data, ignoring\n",
 						      read, read),
-				      ERROR);
+				      GRB_ERROR);
 	    }
 	}
     }
     drill_stats_add_error(stats->error_list,
 			  -1,
 			  "No EOF found in drill file.\n",
-			  ERROR);
+			  GRB_ERROR);
 
     g_free(state);
 
@@ -601,7 +601,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	    drill_stats_add_error(stats->error_list,
 				  -1,
 				  "Orcad bug: Junk text found in place of tool definition.\n",
-				  ERROR);
+				  GRB_ERROR);
 	    drill_stats_add_error(stats->error_list,
 				  -1,
 				  g_strdup_printf("Junk text = %s\n", 
@@ -626,7 +626,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	drill_stats_add_error(stats->error_list,
 			      -1,
 			      g_strdup_printf("Drill number out of bounds: %d.\n", tool_num),
-			      ERROR);
+			      GRB_ERROR);
     }
 
     /* Set the current tool to the correct one */
@@ -655,7 +655,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      g_strdup_printf("Read a drill of diameter %g inches.\n", size),
-				      ERROR); 
+				      GRB_ERROR); 
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      g_strdup_printf("Assuming units are mils.\n"),
@@ -667,13 +667,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      g_strdup_printf("Unreasonable drill size found for drill %d: %g\n", tool_num, size),
-				      ERROR);
+				      GRB_ERROR);
 	    } else {
 		if(image->aperture[tool_num] != NULL) {
 		    drill_stats_add_error(stats->error_list,
 					  -1,
 					  g_strdup_printf("Found redefinition of drill %d.\n", tool_num),
-					  ERROR);
+					  GRB_ERROR);
 		} else {
 		    image->aperture[tool_num] =
 			(gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
@@ -720,7 +720,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	    drill_stats_add_error(stats->error_list,
 				  -1,
 				  "Unexpected EOF encountered header of drill file.\n",
-				  ERROR);
+				  GRB_ERROR);
 	}
     }   /* while(!done) */  /* Done looking at tool definitions */
 
@@ -754,7 +754,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      g_strdup_printf("Tool %02d used without being defined\n", tool_num),
-				      ERROR);
+				      GRB_ERROR);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      g_strdup_printf("Setting a default size of %g\"\n", dia),
@@ -801,7 +801,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	drill_stats_add_error(stats->error_list,
 			      -1,
 			      "Unexpected EOF found while parsing M code.\n",
-			      ERROR);
+			      GRB_ERROR);
     op[0] = read[0], op[1] = read[1], op[2] = 0;
  
     if (strncmp(op, "00", 2) == 0) {
@@ -968,7 +968,7 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
 	drill_stats_add_error(stats->error_list,
 			      -1,
 			      "Unexpected EOF found while parsing G code.\n",
-			      ERROR);
+			      GRB_ERROR);
 
     op[0] = read[0], op[1] = read[1], op[2] = 0;
 

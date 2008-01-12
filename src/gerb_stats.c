@@ -214,7 +214,7 @@ gerb_stats_add_error(error_list_t *error_list_in,
         case FATAL:
             GERB_FATAL_ERROR(error_text);
             break;
-        case ERROR:
+        case GRB_ERROR:
             GERB_COMPILE_ERROR(error_text);
             break;
         case WARNING:
@@ -430,7 +430,7 @@ gerb_stats_increment_D_list_count(gerb_aperture_list_t *D_list_in,
     gerb_stats_add_error(error,
 			 -1,
 			 "Undefined aperture number called out in D code.\n",
-			 ERROR);
+			 GRB_ERROR);
     return -1;  /* Return -1 for failure */
 }
 

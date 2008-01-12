@@ -142,7 +142,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     "Unknown M code found.\n",
-				     ERROR);
+				     GRB_ERROR);
 	    } /* switch(parse_M_code) */
 	    break;
 	case 'X':
@@ -523,7 +523,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 				 -1,
 				 g_strdup_printf("Found unknown character (whitespace?) [%d]%c\n", 
 						 read, read),
-				 ERROR);
+				 GRB_ERROR);
 	}  /* switch((char) (read & 0xff)) */
     }
     return foundEOF;
@@ -587,7 +587,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
     	gerb_stats_add_error(stats->error_list,
 			     -1,
 			     "File is missing Gerber EOF code.\n",
-			     ERROR);
+			     GRB_ERROR);
     }
     g_free(state);
     
@@ -862,13 +862,13 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Found aperture out of bounds while parsing G code: %d\n", a),
-				     ERROR);
+				     GRB_ERROR);
 	    }
 	} else {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Found unexpected code after G54\n",
-				 ERROR);
+				 GRB_ERROR);
 	    /* Must insert error count here */
 	}
 	stats->G54++;
@@ -906,7 +906,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	gerb_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Encountered unknown G code : G%d\n", op_int),
-			     ERROR);
+			     GRB_ERROR);
 	gerb_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Ignorning unknown G code\n"),
@@ -959,14 +959,14 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Found undefined D code: D%d\n", a),
-				     ERROR);
+				     GRB_ERROR);
 		stats->D_unknown++;
 	    }
 	} else {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Found aperture number out of bounds while parsing D code: %d\n", a),
-				 ERROR);
+				 GRB_ERROR);
 	    stats->D_error++;
 	}
 	state->changed = 0;
@@ -1000,7 +1000,7 @@ parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 	gerb_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Encountered unknown M code : M%d\n", op_int),
-			     ERROR);
+			     GRB_ERROR);
 	gerb_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Ignorning unknown M code\n"),
@@ -1035,7 +1035,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	gerb_stats_add_error(stats->error_list,
 			     -1,
 			     "Unexpected EOF found.\n",
-			     ERROR);
+			     GRB_ERROR);
 
     switch (A2I(op[0], op[1])){
 	
@@ -1051,7 +1051,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
-				 ERROR);
+				 GRB_ERROR);
 	
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
@@ -1067,7 +1067,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
-				 ERROR);
+				 GRB_ERROR);
 	
 	if (((op[0] == 'A') && (op[1] == 'Y')) ||
 	    ((op[0] == 'B') && (op[1] == 'X'))) {
@@ -1097,7 +1097,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "EagleCad bug detected: Undefined handling of zeros in format code\n", 
-				 ERROR);
+				 GRB_ERROR);
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Defaulting to omitting leading zeros.\n", 
@@ -1117,7 +1117,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Invalid coordinate type defined in format code.\n", 
-				 ERROR);
+				 GRB_ERROR);
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Defaulting to absolute.\n", 
@@ -1149,14 +1149,14 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		    gerb_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
-					 ERROR);
+					 GRB_ERROR);
 		image->format->x_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
 		    gerb_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
-					 ERROR);
+					 GRB_ERROR);
 		image->format->x_dec = op[0] - '0';
 		break;
 	    case 'Y':
@@ -1165,21 +1165,21 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		    gerb_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
-					 ERROR);
+					 GRB_ERROR);
 		image->format->y_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
 		    gerb_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
-					 ERROR);
+					 GRB_ERROR);
 		image->format->y_dec = op[0] - '0';
 		break;
 	    default :
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Invalid format statement [%c]\n", op[0]),
-				     ERROR);
+				     GRB_ERROR);
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     "Ignoring invalid format statement.\n",
@@ -1217,7 +1217,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Wrong character in mirror:%c\n", op[0]),
-				     ERROR);
+				     GRB_ERROR);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1230,7 +1230,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
-				 ERROR);
+				 GRB_ERROR);
 	switch (A2I(op[0],op[1])) {
 	case A2I('I','N'):
 	    state->state = gerb_image_return_new_netstate (state->state);
@@ -1244,7 +1244,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Illegal unit:%c%c\n", op[0], op[1]),
-				 ERROR);
+				 GRB_ERROR);
 	}
 	break;
     case A2I('O','F'): /* Offset */
@@ -1262,7 +1262,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Wrong character in offset:%c\n", op[0]),
-				     ERROR);
+				     GRB_ERROR);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1287,12 +1287,12 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 			gerb_fclose(includefd);
 		    } else {
 			gerb_stats_add_error(stats->error_list, -1,
-					     g_strdup_printf("Included file cannot be found:%s\n",fullPath), ERROR);
+					     g_strdup_printf("Included file cannot be found:%s\n",fullPath), GRB_ERROR);
 		    }
 		    g_free (fullPath);
 		} else {
 		    gerb_stats_add_error(stats->error_list, -1,
-					 g_strdup_printf("Parser encountered more than 10 levels of include file recursion, which is not allowed by the RS-274X spec\n"), ERROR);
+					 g_strdup_printf("Parser encountered more than 10 levels of include file recursion, which is not allowed by the RS-274X spec\n"), GRB_ERROR);
 		}
 		
 	    }
@@ -1313,7 +1313,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Wrong character in offset:%c\n", op[0]),
-				     ERROR);
+				     GRB_ERROR);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1341,7 +1341,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
-				 ERROR);
+				 GRB_ERROR);
 	switch (A2I(op[0],op[1])) {
 	case A2I('A','S'):
 	    image->info->encoding = ASCII;
@@ -1362,7 +1362,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Unknown input code (IC): %c%c\n", op[0], op[1]),
-				 ERROR);
+				 GRB_ERROR);
 	}
 	break;
 	
@@ -1401,7 +1401,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Wrong character in image justify:%c\n", op[0]),
-				     ERROR);
+				     GRB_ERROR);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1417,7 +1417,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     "Unexpected EOF while reading image polarity (IP)\n",
-				     ERROR);
+				     GRB_ERROR);
 	    str[ano] = (char)op[0];
 	}
 	
@@ -1429,7 +1429,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Unknown polarity : %c%c%c\n", str[0], str[1], str[2]),
-				 ERROR);
+				 GRB_ERROR);
 	break;
     case A2I('I','R'): /* Image Rotation */
 	tmp = gerb_fgetint(fd, NULL);
@@ -1443,7 +1443,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Image rotation must be 0, 90, 180 or 270 (is actually %d)\n", tmp),
-				 ERROR);
+				 GRB_ERROR);
 	break;
     case A2I('P','F'): /* Plotter Film */
 	image->info->plotterFilm = gerb_fgetstring(fd, '*');
@@ -1470,7 +1470,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Aperture number out of bounds : %d\n", ano),
-				 ERROR);
+				 GRB_ERROR);
 	}
 	/* Add aperture info to stats->aperture_list here */
 	
@@ -1487,7 +1487,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Failed to parse aperture macro\n",
-				 ERROR);
+				 GRB_ERROR);
 	}
 	break;
 	/* Layer */
@@ -1508,7 +1508,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Unknown Layer Polarity: %c\n", op[0]),
-				 ERROR);
+				 GRB_ERROR);
 	}
 	break;
     case A2I('K','O'): /* Knock Out */
@@ -1528,7 +1528,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Knockout must supply a polarity (C, D, or *)\n",
-				 ERROR);
+				 GRB_ERROR);
 	}
 	state->layer->knockout.lowerLeftX = 0.0;
 	state->layer->knockout.lowerLeftY = 0.0;
@@ -1571,7 +1571,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     "Unknown variable in knockout",
-				     ERROR);
+				     GRB_ERROR);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1605,7 +1605,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		gerb_stats_add_error(stats->error_list,
 				     -1,
 				     "Step-and-repeat parameter error\n",
-				     ERROR);
+				     GRB_ERROR);
 	    }
 	    
 	    /*
@@ -1631,14 +1631,14 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 "Error in layer rotation comman\n",
-				 ERROR);
+				 GRB_ERROR);
 	}
 	break;
     default:
 	gerb_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Unknown RS-274X extension found %%%c%c%%\n", op[0], op[1]),
-			     ERROR);
+			     GRB_ERROR);
     }
     
     return;
@@ -1661,7 +1661,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 	gerb_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Found AD code with no following 'D'.\n"),
-			     ERROR);	
+			     GRB_ERROR);	
 	return -1;
     }
     
@@ -1718,7 +1718,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Maximum number of allowed parameters exceeded in aperture %d\n", ano),
-				 ERROR);
+				 GRB_ERROR);
 	    break;
 	}
 	errno = 0;

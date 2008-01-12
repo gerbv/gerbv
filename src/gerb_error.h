@@ -25,7 +25,7 @@
 #define GERB_ERROR_H
 #include <glib.h>
 
-enum error_type_t {FATAL, ERROR, WARNING, NOTE};
+enum error_type_t {FATAL, GRB_ERROR, WARNING, NOTE};
 
 typedef struct error_list_t {
     int layer;

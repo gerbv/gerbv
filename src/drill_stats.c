@@ -349,7 +349,7 @@ drill_stats_add_error(error_list_t *error_list_in,
 	case FATAL:
 	    GERB_FATAL_ERROR(error_text);
 	    break;
-	case ERROR:
+	case GRB_ERROR:
 	    GERB_COMPILE_ERROR(error_text);
 	    break;
 	case WARNING:
