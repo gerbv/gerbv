@@ -11,6 +11,9 @@
 	  of the failings were due to spurious lines previously being drawn on
 	  flashed apertures with holes (noticed by Stefan), which has now been
 	  fixed.
+	* draw.c: Fix small error in cairo rendering of elliptical circular
+	  interpolation paths.
+	* test/input/test-circlar-interpolation.gbx: added another test file.
 
 2008-01-10  Julian Lamb
 	* interface.c: Try and fix bug where tooltips weren't showing up for some

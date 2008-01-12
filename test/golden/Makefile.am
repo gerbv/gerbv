@@ -82,5 +82,6 @@ EXTRA_DIST= \
 	test-aperture-rectangle-flash-1.png \
 	test-aperture-obround-1.png \
 	test-aperture-polygon-flash-1.png \
-	test-polygon-fill-1.png
+	test-polygon-fill-1.png \
+	test-circular-interpolation-1.png
 

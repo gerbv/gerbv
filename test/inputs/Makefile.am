@@ -28,5 +28,6 @@ EXTRA_DIST= \
 	test-aperture-rectangle-flash-1.gbx \
 	test-aperture-obround-1.gbx \
 	test-aperture-polygon-flash-1.gbx \
-	test-polygon-fill-1.gbx
+	test-polygon-fill-1.gbx \
+	test-circular-interpolation-1.gbx
 

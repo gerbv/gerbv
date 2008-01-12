@@ -811,8 +811,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 						}
 						cairo_save (cairoTarget);
 						cairo_translate(cairoTarget, cp_x, cp_y);
-						cairo_scale (cairoTarget, net->cirseg->height,
-							net->cirseg->width);
+						cairo_scale (cairoTarget, net->cirseg->width, net->cirseg->height);
 						if (net->cirseg->angle2 > net->cirseg->angle1) {
 							cairo_arc (cairoTarget, 0.0, 0.0, 0.5, net->cirseg->angle1 * M_PI/180,
 								net->cirseg->angle2 * M_PI/180);
