@@ -48,7 +48,6 @@ AC_MSG_CHECKING([for windows])
 WIN32=no
 case $host_os in
 	*cygwin*  )
-		WIN32=yes
 		CFLAGS="$CFLAGS ${CYGWIN_CFLAGS}"
                 CPPFLAGS="$CPPFLAGS ${CYGWIN_CPPFLAGS}"
 		;;

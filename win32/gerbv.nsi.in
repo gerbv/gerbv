@@ -48,11 +48,6 @@
 ;Pages
 
   !insertmacro MUI_PAGE_LICENSE "@gerbv_srcdir@\COPYING"
-  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\gd-license.txt"
-  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\libfreetype-license.txt"
-  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\libjpeg-license.txt"
-  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\libpng-license.txt"
-  !insertmacro MUI_PAGE_LICENSE "@gd_win32_runtime@\zlib-license.txt"
 ;  !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   

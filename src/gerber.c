@@ -1527,19 +1527,19 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	while ((op[0] != '*')&&(op[0] != EOF)) { 
 	    switch (op[0]) {
 	    case 'X':
-	        state->layer->knockout.type = FIXED;
+	        state->layer->knockout.type = FIXEDKNOCK;
 		state->layer->knockout.lowerLeftX = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'Y':
-	        state->layer->knockout.type = FIXED;
+	        state->layer->knockout.type = FIXEDKNOCK;
 		state->layer->knockout.lowerLeftY = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'I':
-	        state->layer->knockout.type = FIXED;
+	        state->layer->knockout.type = FIXEDKNOCK;
 		state->layer->knockout.width = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'J':
-	        state->layer->knockout.type = FIXED;
+	        state->layer->knockout.type = FIXEDKNOCK;
 		state->layer->knockout.height = gerb_fgetdouble(fd) / scale;
 		break;
 	    case 'K':

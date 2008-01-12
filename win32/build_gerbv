@@ -23,6 +23,9 @@ Supported options:
 
   --help          - Show this message and exit.
 
+  --force-autogen - Force running ./autogen.sh.  Normally this is
+                    only done if the configure script is not present.
+
   --skip-build    - Skip the "make" step of the process.
 
   --skip-config   - Skip the "./configure" step of the process.
@@ -39,6 +42,7 @@ EOF
 }
 
 debug=no
+do_autogen=no
 do_config=yes
 do_build=yes
 do_install=yes
@@ -53,6 +57,11 @@ while test $# -ne 0 ; do
 		--help)
 			usage
 			exit 0
+			;;
+
+		--force-autogen)
+			do_autogen=yes
+			shift
 			;;
 
 		--skip-build)
@@ -99,7 +108,7 @@ gtk_win32_runtime=c:\\\\cygwin\\\\home\\\\${USER}\\\\gtk_win32_runtime
 
 # gerbv version
 
-gerbv_version=`'/AC_INIT/ {gsub(/.*,[ \t]*\[/, ""); gsub(/\]\).*/, ""); print}' /configure.ac
+gerbv_version=`awk '/AC_INIT/ {gsub(/.*,[ \t]*\[/, ""); gsub(/\]\).*/, ""); print}' configure.ac`
 echo "gerbv_version=${gerbv_version}"
 
 # location of the NSIS makensis executible (see http://nsis.sourceforge.net)
@@ -112,6 +121,11 @@ makensis="/cygdrive/c/Program Files/NSIS/makensis.exe"
 #
 # ########################################################################
 
+
+if test ! -f configure -o $do_autogen = yes ; then
+	echo "Bootstrapping autotools"
+	ACLOCAL_FLAGS="-I ${gtk_win32}\\share\\aclocal" ./autogen.sh
+fi
 
 # source directory
 srcdir=`pwd.exe`/win32
@@ -136,6 +150,14 @@ export PATH
 echo "Showing packages known to pkg-config:"
 pkg-config --list-all
 
+
+# do not try to use libpng-config, it seems broken on win32
+LIBPNG_CONFIG=/usr/bin/true
+export LIBPNG_CONFIG
+LIBPNG_CFLAGS="-I${HOME}/gtk_win32/include"
+LIBPNG_LDFLAGS="-L${HOME}/gtk_win32/lib"
+LIBPNG_LIBS="-lpng"
+
 # add the gcc options to produce a native windows binary that
 # does not need cygwin to run
 if test "x${debug}" = "xno" ; then
@@ -151,18 +173,25 @@ export CYGWIN_CPPFLAGS
 # setting WIN32=yes will make sure that the desktop icon
 # gets compiled in
 if test "$do_config" = "yes" ; then
+rm -fr src/.deps
 echo "Configuring for cygwin"
 ( ( ( env WIN32=yes \
 	./configure \
 	--prefix=${gerbv_inst} \
 	--disable-nls \
+	--disable-cairo \
 	${config_args} \
+	CFLAGS="${LIBPNG_CFLAGS}" \
+	LDFLAGS="${LIBPNG_LDFLAGS}" \
+	LIBS="${LIBPNG_LIBS}" \
 	2>&1 ; echo $? >&4 ) | tee c.log 1>&3) 4>&1 | (read a ; exit $a)) 3>&1
 
 if test $? -ne 0 ; then
 	echo "**** ERROR **** Configure failed. See log in c.log"
 	exit 1
 fi
+
+dos2unix src/Makefile
 
 fi
 

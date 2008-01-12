@@ -27,7 +27,9 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#ifndef WIN32
 #include <gdk/gdkx.h>
+#endif
 #include <gdk/gdkkeysyms.h>
 
 #ifdef HAVE_STDLIB_H
@@ -56,7 +58,11 @@
   #include "draw-gdk.h"
 #else
   #include "draw.h"
-  #include <cairo-xlib.h>
+  #ifdef WIN32
+    #include <cairo-win32.h>
+  #else
+    #include <cairo-xlib.h>
+  #endif
 #endif
 
 #include "color.h"
@@ -1715,11 +1721,17 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	}
 	visual = gdk_drawable_get_visual (drawable);
 	if (!screen.windowSurface) {
+#ifdef WIN32
+		/* FIXME */
+		screen.windowSurface = (gpointer) cairo_win32_surface_create (0);
+#else
 		screen.windowSurface = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
 	                                          GDK_DRAWABLE_XID (drawable),
 	                                          GDK_VISUAL_XVISUAL (visual),
 	                                          screenRenderInfo.displayWidth,
 	                                          screenRenderInfo.displayHeight);
+#endif
+
 	}
 #endif
 	/* if this is the first time, go ahead and call autoscale even if we don't
@@ -1810,11 +1822,16 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	visual = gdk_drawable_get_visual (drawable);
 	gdk_drawable_get_size (drawable, &width, &height);
 
+#ifdef WIN32
+	/* FIXME */
+	buffert = (gpointer) cairo_win32_surface_create (0);
+#else      
 	buffert = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
 	                                          GDK_DRAWABLE_XID (drawable),
 	                                          GDK_VISUAL_XVISUAL (visual),
 	                                          event->area.width, event->area.height);
-		       
+#endif
+      
 	cr = cairo_create (buffert);
 	cairo_translate (cr, -event->area.x + screen.off_x, -event->area.y + screen.off_y);
 	render_project_to_cairo_target (cr);

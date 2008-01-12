@@ -42,7 +42,7 @@ enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001,
 		      CW_CIRCULAR, CCW_CIRCULAR, PAREA_START, PAREA_END};
 enum encoding_t {NONE, ASCII, EBCDIC, BCD, ISO_ASCII, EIA };
 enum layertype_t {GERBER, DRILL, PICK_AND_PLACE};
-enum knockout_t {NOKNOCKOUT, FIXED, BORDER};
+enum knockout_t {NOKNOCKOUT, FIXEDKNOCK, BORDER};
 enum mirror_state_t {NOMIRROR, FLIPA, FLIPB, FLIPAB};
 enum axis_select_t {NOSELECT, SWAPAB};
 enum image_justify_type_t {NOJUSTIFY, LOWERLEFT, CENTERJUSTIFY};
