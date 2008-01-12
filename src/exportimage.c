@@ -35,8 +35,6 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <png.h>
 #include "gerbv_screen.h"
-#include "render.h"
-#include "exportimage.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -44,6 +42,9 @@
   #include "draw.h"
   #include <cairo.h>
 #endif
+
+#include "render.h"
+#include "exportimage.h"
 
 #include "gerbv_screen.h"
 
