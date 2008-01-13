@@ -862,13 +862,10 @@ interface_create_gui (int req_width, int req_height)
               
 	gtk_window_add_accel_group (GTK_WINDOW (mainWindow), accel_group);
 
-	             
 	GtkListStore *list_store;
 
 	list_store = gtk_list_store_new (4,	G_TYPE_BOOLEAN,
 		GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING);
-		
-
 		
 	GtkWidget *tree;
 
@@ -968,15 +965,16 @@ interface_create_gui (int req_width, int req_height)
 #endif     
   
 	/*
-	* Setup some GTK+ defaults
-	*/
-	GdkColor color2 = {0, 50000, 50000, 50000},
-			color3 = {0, 60000, 30000, 65000};       
+	 * Setup some GTK+ defaults.
+	 * These should really be somewhere else.
+	 */
+	GdkColor zoom_outline_color = {0, 50000, 50000, 50000};
+	GdkColor dist_measure_color = {0, 60000, 30000, 65000};       
 
-	screen.zoom_outline_color  = color2;
-	screen.dist_measure_color  = color3;
+	screen.zoom_outline_color = zoom_outline_color;
+	screen.dist_measure_color = dist_measure_color;
 
-	screen.drawing_area=drawingarea;
+	screen.drawing_area = drawingarea;
 	screen.win.hAdjustment = hAdjustment;
 	screen.win.vAdjustment = vAdjustment;
 	screen.win.hRuler = hRuler;
