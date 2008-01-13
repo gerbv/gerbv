@@ -1,12 +1,20 @@
-Branches
-========
+Main development trunk (starting with 2.0 series)
+=================================================
+gerbv-2_0_trunk
+
+Releases  (starting with 2.0 series)
+====================================
+gerb-2_0_0_release
+
+Branches (older 1.0 and 0.X series)
+===================================
 SEARCH_SELECT_branch	Juergen and Tomasz new stuff 20040720 closed 20040822
 FIND_PARTS_branch	Obsolete
 RELEASE_1_x_branch	Obsolete
-STABLE_1_x_branch	Stable branch
+STABLE_1_x_branch	Stable branch (obsolete)
 
-Misc. tags
-==========
+Misc. tags (older 1.0 and 0.X series)
+=====================================
 SEARCH_SELECT_merged	After SEARCH_SELECT_branch has been merged
 SEARCH_SELECT_start	Just before merging SEARCH_SELECT_branch
 SEARCH_SELECT_bp	Branch point for SEARCH_SELECT_branch
