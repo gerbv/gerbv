@@ -1298,7 +1298,7 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
     gint real_y = y - height / 2;
 
     gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, width, height, 
-		 (gint)angle1 * 64.0, (gint)(angle2 - angle1) * 64.0);
+		 (gint)(angle1 * 64.0), (gint)(angle2 - angle1) * 64.0);
     
     return;
 } /* gerbv_gdk_draw_arc */
