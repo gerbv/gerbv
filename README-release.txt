@@ -34,6 +34,7 @@ To make a gerbv release do the following:
 	Check in changes
 
 =)	update the ChangeLog with 'cvs2cl.pl'.  Check in changes.
+        ./utils/cvs2cl.pl -U ./utils/umap
 
 =)	if this is a major release, then tag and branch:
 
