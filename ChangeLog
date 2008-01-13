@@ -1,3 +1,5 @@
+---- Release 2.0.0 on 1.13.2008 ----
+	
 2008-01-12  Julian Lamb
 	* draw.c: Fix a few minor cairo rendering issues: 1) fix rendering of
 	  circular interpolation within a polygon fill. 2) Fix rendering of
