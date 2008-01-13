@@ -21,8 +21,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#ifndef DRAW_H
-#define DRAW_H
+#ifndef DRAW_GDK_H
+#define DRAW_GDK_H
 
 #include <gdk/gdk.h>
 #include "gerber.h"

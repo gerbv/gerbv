@@ -970,7 +970,7 @@ interface_create_gui (int req_width, int req_height)
 	/*
 	* Setup some GTK+ defaults
 	*/
-	GdkColor color1 = {0, 0, 0, 0}, color2 = {0, 50000, 50000, 50000},
+	GdkColor color2 = {0, 50000, 50000, 50000},
 			color3 = {0, 60000, 30000, 65000};       
 
 	screen.zoom_outline_color  = color2;
