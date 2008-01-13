@@ -15,7 +15,7 @@
 	  fixed.
 	* draw.c: Fix small error in cairo rendering of elliptical circular
 	  interpolation paths.
-	* test/input/test-circlar-interpolation.gbx: added another test file.
+	* test/input/test-circular-interpolation.gbx: added another test file.
 
 2008-01-10  Julian Lamb
 	* interface.c: Try and fix bug where tooltips weren't showing up for some

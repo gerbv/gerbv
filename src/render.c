@@ -212,6 +212,8 @@ render_draw_zoom_outline(gboolean centered)
 
 	memset(&values, 0, sizeof(values));
 	values.function = GDK_XOR;
+	if (!screen.zoom_outline_color.pixel)
+	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
 	values.foreground = screen.zoom_outline_color;
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
@@ -281,6 +283,8 @@ render_draw_measure_distance(void)
 #if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
 	memset(&values, 0, sizeof(values));
 	values.function = GDK_XOR;
+	if (!screen.dist_measure_color.pixel)
+	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.dist_measure_color, FALSE, TRUE);
 	values.foreground = screen.dist_measure_color;
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
@@ -529,7 +533,12 @@ void render_recreate_composite_surface () {
 	                                    screenRenderInfo.displayHeight);
 
 	cairo_t *cr= cairo_create(screen.bufferSurface);
-
+	/* fill the background with the appropriate color */
+	cairo_set_source_rgba (cr, (double) screen.background.red/G_MAXUINT16,
+		(double) screen.background.green/G_MAXUINT16,
+		(double) screen.background.blue/G_MAXUINT16, 1);
+	cairo_paint (cr);
+	
 	for(i = screen.max_files-1; i >= 0; i--) {
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			cairo_set_source_surface (cr, (cairo_surface_t *) screen.file[i]->privateRenderData,
@@ -569,6 +578,8 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 	/* 
 	 * Remove old pixmap, allocate a new one, draw the background.
 	 */
+	if (!screen.background.pixel)
+	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.background, FALSE, TRUE);
 	gdk_gc_set_foreground(gc, &screen.background);
 	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, -1, -1);
 
@@ -601,6 +612,8 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 			* Fill up image with all the foreground color. Excess pixels
 			* will be removed by clipmask.
 			*/
+			if (!screen.file[i]->color.pixel)
+	 			gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[i]->color, FALSE, TRUE);
 			gdk_gc_set_foreground(gc, &screen.file[i]->color);
 			
 			/* switch back to regular draw function for the initial

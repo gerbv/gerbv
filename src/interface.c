@@ -972,14 +972,10 @@ interface_create_gui (int req_width, int req_height)
 	*/
 	GdkColor color1 = {0, 0, 0, 0}, color2 = {0, 50000, 50000, 50000},
 			color3 = {0, 60000, 30000, 65000};       
-	screen.background = color1;
+
 	screen.zoom_outline_color  = color2;
 	screen.dist_measure_color  = color3;
-#ifdef RENDER_USING_GDK
-	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.background, FALSE, TRUE);
-#endif
-	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
-	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.dist_measure_color, FALSE, TRUE);
+
 	screen.drawing_area=drawingarea;
 	screen.win.hAdjustment = hAdjustment;
 	screen.win.vAdjustment = vAdjustment;

@@ -164,7 +164,7 @@ const struct option longopts[] = {
     {0, 0, 0, 0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "Vhl:t:p:d";
+const char *opt_options = "Vhl:t:p:d:x:o:f:b:r:s:g";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
@@ -216,8 +216,6 @@ gerbv_open_project_from_filename(gchar *filename)
 		 * Change color from default to from the project list
 		 */
 		screen.file[idx]->color = colorTemplate;
-		gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
-
 		screen.file[idx]->inverted = project_list->inverted;
 	    }
 	next_layer:
@@ -452,7 +450,6 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
 
     GdkColor colorTemplate = {0, r, g, b};
     screen.file[idx]->color = colorTemplate;
-    gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[idx]->color, FALSE, TRUE);
     screen.file[idx]->alpha = 45535;
     screen.file[idx]->isVisible = TRUE;
     return 1;
@@ -820,11 +817,11 @@ main(int argc, char *argv[])
 	    fprintf(stderr, "  --export=<png/pdf/ps/svg>|-x <png/pdf/ps/svg> : Export rendered picture to the specified file format\n");
 #endif
 	    fprintf(stderr, "  --output=<filename>|-o <filename> : Export to the file <filename>\n");
-	    fprintf(stderr, "  --foreground=<hexcolor>|-f <hexcolor> : Use foreground color <hexcolor>\n");
 	    /*
-	      fprintf(stderr, "  --background=<hexcolor>|-b <hexcolor> : Use background color <hexcolor>\n");
-	      fprintf(stderr, "  --resolution=<width,height>|-r <width,height> : Use resolution <width> and <height>\n");
+	    fprintf(stderr, "  --foreground=<hexcolor>|-f <hexcolor> : Use foreground color <hexcolor>\n");
+	    fprintf(stderr, "  --background=<hexcolor>|-b <hexcolor> : Use background color <hexcolor>\n");
 	    */
+	    fprintf(stderr, "  --resolution=<width,height>|-r <width,height> : Use resolution <width> and <height>\n");
 	    fprintf(stderr, "  --scale=<scale>|-s <scale> : Use the specified scale value <scale>\n");
 	    fprintf(stderr, "  --origin=<x,y>|-g <x,y> : Use the specified origin to the lower left corner\n");
 	    exit(1);
@@ -858,9 +855,6 @@ main(int argc, char *argv[])
 	}
     }
     
-    /* even for command line exporting, GDK renderer needs gtk started up */
-    gtk_init (&argc, &argv);
-
     /*
      * If project is given, load that one and use it for files and colors.
      * Else load files (eventually) given on the command line.
@@ -899,7 +893,11 @@ main(int argc, char *argv[])
     }
 
     screen.unit = GERBV_DEFAULT_UNIT;
-    
+#ifdef RENDER_USING_GDK
+    /* GDK renderer needs gtk started up even for png export */
+    gtk_init (&argc, &argv);
+#endif
+
     if (exportFromCommandline) {
 	/* load the info struct with the default values */
 #ifdef RENDER_USING_GDK
@@ -910,8 +908,16 @@ main(int argc, char *argv[])
 	gboolean freeFilename = FALSE;
 	
 	if (!exportFilename) {
-	    exportFilename = g_strdup ("output.png");
-	    freeFilename = TRUE;
+		if (exportType == 1) {
+		    exportFilename = g_strdup ("output.png");
+		} else if (exportType == 2) {
+		    exportFilename = g_strdup ("output.pdf");
+		} else if (exportType == 3) {
+		    exportFilename = g_strdup ("output.svg");
+		} else {
+		    exportFilename = g_strdup ("output.ps");
+		}
+		freeFilename = TRUE;
 	}
 
 	if (userSuppliedWidth)
@@ -948,7 +954,9 @@ main(int argc, char *argv[])
 	/* exit now and don't start up gtk if this is a command line export */
 	exit(1);
     }
-    
+#ifndef RENDER_USING_GDK
+    gtk_init (&argc, &argv);
+#endif
     interface_create_gui (req_width, req_height);
     
     return 0;
