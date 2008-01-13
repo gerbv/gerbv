@@ -49,10 +49,12 @@ typedef struct project_list_t {
     struct project_list_t *next;
 } project_list_t;
 
+
 enum conv_type {
     MINGW_UNIX = 0,
     UNIX_MINGW = 1
 };
+
 
 /*
  * Reads a project from a file and returns a linked list describing the project
@@ -60,14 +62,8 @@ enum conv_type {
 project_list_t *read_project_file(char *filename);
 
 
-
- /* that can be parsed by read_project above
- */
+/* Writes a description of a project to a file
+ * that can be parsed by read_project above */
 int write_project_file(char *filename, project_list_t *project);
-
-char *
-convert_path_separators(char* path, int conv_flag); 
-
-
 
 #endif /* PROJECT_H */

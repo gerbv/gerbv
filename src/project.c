@@ -103,25 +103,29 @@ get_value_string(scheme *sc, pointer value)
 } /* get_value_string */
 
 
-/** Conversion of '\' into '/' and vice versa for compatibility under WIN32 platforms. */
-char *
+/** Conversion of '\' into '/' and vice versa for compatibility under WIN32 
+    platforms. */
+static char *
 convert_path_separators(char* path, int conv_flag)
 {
+#if defined (__MINGW32__)        
     char     *hit_in_path;
-    
+
     switch (conv_flag) {
-    
+	
     case MINGW_UNIX:
-        while   ((hit_in_path = strchr(path, '\\'))) {
+        while ((hit_in_path = strchr(path, '\\'))) {
             *hit_in_path = '/';
         }
         break;
     case UNIX_MINGW:
-         while   ((hit_in_path = strchr(path, '/'))) {
+	while ((hit_in_path = strchr(path, '/'))) {
             *hit_in_path = '\\';
         }
         break;
     }    
+#endif
+
     return path;
 }/* convert_path_separators */
 
@@ -153,44 +157,42 @@ define_layer(scheme *sc, pointer args)
     if (screen.last_loaded <= layerno) {
 	screen.last_loaded = layerno;
     }
-
+    
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);
-
+    
     plist_tmp = (project_list_t *)g_malloc(sizeof(project_list_t));
     memset(plist_tmp, 0, sizeof(project_list_t));
     plist_tmp->next = plist_top;
     plist_top = plist_tmp;
     plist_top->layerno = layerno;
-
+    
     while (sc->vptr->is_pair(car_el)) {
-
+	
 	name = sc->vptr->pair_car(car_el);
 	value =  sc->vptr->pair_cdr(car_el);
-
+	
 	if (!sc->vptr->is_symbol(name)) {
 	    GERB_MESSAGE("define-layer!:non-symbol found, ignoring\n");
 	    goto end_name_value_parse;
 	}
-
+	
 	if (strcmp(sc->vptr->symname(name), "color") == 0) {
 	    get_color(sc, value, plist_top->rgb);
 	} else if (strcmp(sc->vptr->symname(name), "filename") == 0) {
-#if defined (__MINGW32__)    
-            plist_top->filename = convert_path_separators(strdup(get_value_string(sc, value)), UNIX_MINGW);
-#else
+	    
             plist_top->filename = strdup(get_value_string(sc, value));
-#endif
+	    plist_top->filename = convert_path_separators(plist_top->filename, 
+							  UNIX_MINGW);
             plist_top->is_pnp = 0;
-    } else if (strcmp(sc->vptr->symname(name), "pick_and_place") == 0) {
-#if defined (__MINGW32__)    
-            plist_top->filename = convert_path_separators(strdup(get_value_string(sc, value)), UNIX_MINGW);
-#else
-            plist_top->filename = strdup(get_value_string(sc, value));
-#endif    
-            plist_top->is_pnp = 1;
-  	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
-	    if (value ==  sc->F) {
+	} else if (strcmp(sc->vptr->symname(name), "pick_and_place") == 0) {
+
+	    plist_top->filename = strdup(get_value_string(sc, value));
+	    plist_top->filename = convert_path_separators(plist_top->filename, 
+							  UNIX_MINGW);
+	    plist_top->is_pnp = 1;
+	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
+	    if (value == sc->F) {
 		plist_top->inverted = 0;
 	    } else if (value == sc->T) {
 		plist_top->inverted = 1;
@@ -198,7 +200,7 @@ define_layer(scheme *sc, pointer args)
 		GERB_MESSAGE("Argument to inverted must be #t or #f\n");
 	    }
 	}
-
+	
     end_name_value_parse:
 	car_el = sc->vptr->pair_car(cdr_el);
 	cdr_el = sc->vptr->pair_cdr(cdr_el);
