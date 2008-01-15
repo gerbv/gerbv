@@ -359,7 +359,7 @@ pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary)
 	
 	/* check for non-binary file */
 	for (i = 0; i < len; i++) {
-	    if (!isprint(buf[i]) && (buf[i] != '\r') && 
+	    if (!isprint((int) buf[i]) && (buf[i] != '\r') && 
                 (buf[i] != '\n') && (buf[i] != '\t')) {
 		found_binary = TRUE;
 	    }
@@ -390,17 +390,17 @@ pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary)
 	
 	/* Look for refdes -- This is dumb, but what else can we do? */
 	if ((letter = g_strstr_len(buf, len, "R")) != NULL) {
-	    if (isdigit(letter[1])) { /* grab char after R */
+	    if (isdigit((int) letter[1])) { /* grab char after R */
 		found_R = TRUE;
 	    }
 	}
 	if ((letter = g_strstr_len(buf, len, "C")) != NULL) {
-	    if (isdigit(letter[1])) { /* grab char after C */
+	    if (isdigit((int) letter[1])) { /* grab char after C */
 		found_C = TRUE;
 	    }
 	}
 	if ((letter = g_strstr_len(buf, len, "U")) != NULL) {
-	    if (isdigit(letter[1])) { /* grab char after U */
+	    if (isdigit((int) letter[1])) { /* grab char after U */
 		found_U = TRUE;
 	    }
 	}

@@ -94,7 +94,7 @@ static int stricmp(const char *s1, const char *s2)
 static const char *strlwr(char *s) {
   const char *p=s;
   while(*s) {
-    *s=tolower(*s);
+    *s=tolower((int) *s);
     s++;
   }
   return p;
@@ -1008,21 +1008,21 @@ static pointer mk_atom(scheme *sc, char *q) {
          has_dec_point=1; 
 	 c = *p++; 
        } 
-       if (!isdigit(c)) { 
+       if (!isdigit((int) c)) { 
 	 return (mk_symbol(sc, strlwr(q))); 
        } 
      } else if (c == '.') { 
        has_dec_point=1; 
        c = *p++; 
-       if (!isdigit(c)) { 
+       if (!isdigit((int) c)) { 
 	 return (mk_symbol(sc, strlwr(q))); 
        } 
-     } else if (!isdigit(c)) { 
+     } else if (!isdigit((int) c)) { 
        return (mk_symbol(sc, strlwr(q))); 
      }
 
      for ( ; (c = *p) != 0; ++p) {
-          if (!isdigit(c)) {
+          if (!isdigit((int) c)) {
                if(c=='.') {
                     if(!has_dec_point) {
                          has_dec_point=1;
@@ -1034,7 +1034,7 @@ static pointer mk_atom(scheme *sc, char *q) {
                           has_dec_point = 1; /* decimal point illegal
                                                 from now on */
                           p++;
-                          if ((*p == '-') || (*p == '+') || isdigit(*p)) {
+                          if ((*p == '-') || (*p == '+') || isdigit((int) *p)) {
                              continue;
                           }
                        }  

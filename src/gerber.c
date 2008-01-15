@@ -633,7 +633,7 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	
 	/* check that file is not binary (non-printing chars and white spaces)*/
 	for (i = 0; i < len; i++) {
-	    if (!isprint(buf[i]) && (buf[i] != '\r') && 
+	    if (!isprint((int) buf[i]) && (buf[i] != '\r') && 
 		(buf[i] != '\n') && (buf[i] != '\t')) {
 		found_binary = TRUE;
                 dprintf ("found_binary (%d)\n", buf[i]);
@@ -673,13 +673,13 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	}
 	/* look for X<number> or Y<number> */
 	if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
-	    if (isdigit(letter[1])) { /* grab char after X */
+	    if (isdigit((int) letter[1])) { /* grab char after X */
 		found_X = TRUE;
                 dprintf ("found_X\n");
 	    }
 	}
 	if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
-	    if (isdigit(letter[1])) { /* grab char after Y */
+	    if (isdigit((int) letter[1])) { /* grab char after Y */
 		found_Y = TRUE;
                 dprintf ("found_Y\n");
 	    }
@@ -733,7 +733,7 @@ gerber_is_rs274d_p(gerb_file_t *fd)
     
 	/* check that file is not binary (non-printing chars */
 	for (i = 0; i < len; i++) {
-	    if (!isprint(buf[i]) && (buf[i] != '\r') && 
+	    if (!isprint( (int) buf[i]) && (buf[i] != '\r') && 
 		(buf[i] != '\n') && (buf[i] != '\t')) {
 		found_binary = TRUE;
 	    }
@@ -763,13 +763,13 @@ gerber_is_rs274d_p(gerb_file_t *fd)
 	/* look for X<number> or Y<number> */
 	if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
 	    /* grab char after X */
-	    if (isdigit(letter[1])) {
+	    if (isdigit( (int) letter[1])) {
 		found_X = TRUE;
 	    }
 	}
 	if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
 	    /* grab char after Y */
-	    if (isdigit(letter[1])) {
+	    if (isdigit( (int) letter[1])) {
 		found_Y = TRUE;
 	    }
 	}

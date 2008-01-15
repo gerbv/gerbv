@@ -43,7 +43,7 @@ ProcessToolLine(const char *cp)
         return;
     
     /* Skip leading spaces if there are some */
-    while (isspace(*cp)) {
+    while (isspace((int) *cp)) {
         if (*(++cp) == '\0')
             return;
     }
@@ -52,7 +52,7 @@ ProcessToolLine(const char *cp)
         fprintf(stderr, "*** WARNING: Strange tool \"%s\" ignored.\n", cp0);
         return;
     }
-    if ((!isdigit(cp[1])) || (!isdigit(cp[2]))) {
+    if ((!isdigit((int) cp[1])) || (!isdigit((int) cp[2]))) {
         fprintf(stderr, "*** WARNING: No tool number in \"%s\".\n", cp0);
         return;
     }
@@ -71,7 +71,7 @@ ProcessToolLine(const char *cp)
     cp += 3; /* Skip Tnn */
 
     /* Skip following spaces if there are some */
-    while (isspace(*cp)) {
+    while (isspace((int) *cp)) {
         if (*(++cp) == '\0')
             return;
     }

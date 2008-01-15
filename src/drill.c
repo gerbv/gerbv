@@ -541,7 +541,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
       if (!found_T && (found_X || found_Y)) {
 	found_T = FALSE;  /* Found first T after X or Y */
       } else {
-	if (isdigit(letter[1])) { /* verify next char is digit */
+	if (isdigit( (int) letter[1])) { /* verify next char is digit */
 	  found_T = TRUE;
 	}
       }
