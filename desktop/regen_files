@@ -1,0 +1,167 @@
+#!/bin/sh
+#
+# $Id$
+#
+
+CONVERT=${CONVERT:-convert}
+COMPOSITE=${COMPOSITE:-composite}
+INKSCAPE=${INKSCAPE:-inkscape}
+PPMTOWINICON=${PPMTOWINICON:-ppmtowinicon}
+
+do_inkscape=yes
+do_convert=yes
+do_winicon=yes
+
+usage() {
+cat << EOF
+
+$0 -- Regenerate desktop icon files and windows icon files
+
+Options
+
+  --help          Displays this message and exits
+
+  --skip-png      Skips the regeneration of the .png file(s)
+
+  --skip-winicon  Skips the regneration of the Windows icon file(s)
+
+EOF
+
+}
+
+while test $# -ne 0 ; do
+	case $1 in
+		--help)
+			usage
+			exit 0
+			;;
+
+		--skip-png)
+			do_inkscape=no
+			shift
+			;;
+
+		--skip-winicon)
+			do_convert=no
+			do_winicon=no
+			shift
+			;;
+
+		-*)
+			echo "$0:  Unknown option $1"
+			usage
+			exit 1
+			;;
+
+		*)
+			break
+			;;
+	esac
+done
+
+if test $? -ne 0 ; then
+	usage
+	exit 1
+fi
+
+##
+## Export the SVG graphics
+##
+
+# see if we have inkscape
+if test $do_inkscape = yes ; then
+${INKSCAPE} --version 2>&1 >/dev/null
+if test $? -ne 0 ; then
+	echo "\"${INKSCAPE} --version\" failed."
+	echo "Make sure that inkscape is installed and functional on your system."
+	echo "Skipping the SVG -> PNG conversion."
+	do_inkscape=no
+fi
+fi
+
+if test $do_inkscape = yes ; then
+	echo "Export SVG graphics to png..."
+
+	for r in 16 22 24 32 48 ; do
+		case ${r} in 
+			24)
+				x=-1
+				y=23
+				rs=22
+				;;
+			*)
+				x=0
+				y=${r}
+				rs=${r}
+				;;
+		esac
+		for f in *-${rs}.svg ; do
+			fb=`basename ${f} ${rs}.svg`
+			p="${fb}${r}.png"
+			echo "${f} -> ${p}"
+			${INKSCAPE} --export-png=${p} --export-area=${x}:${x}:${y}:${y} ${f}
+		done
+	done
+fi
+
+##
+## Generate the windows icon file
+##
+
+app_icon="gerbv"
+
+if test $do_convert = yes ; then
+# see if we have ImageMagick
+${CONVERT} --version 2>&1 >/dev/null
+if test $? -ne 0 ; then
+	echo "\"${CONVERT} --version\" failed."
+	echo "Make sure that ImageMagick is installed and functional on your system."
+	echo "Skipping the PNG -> PPM conversion."
+	do_convert=no
+fi
+fi
+
+if test $do_convert = yes ; then
+echo "Creating windows pbm mask files..."
+${CONVERT} -channel matte -separate +matte ${app_icon}-48.png - |
+  ${CONVERT} -threshold 65534 -negate - 48_mask.pbm
+${CONVERT} -channel matte -separate +matte ${app_icon}-32.png - |
+  ${CONVERT} -threshold 65534 -negate - 32_mask.pbm
+${CONVERT} -channel matte -separate +matte ${app_icon}-16.png - |
+  ${CONVERT} -threshold 65534 -negate - 16_mask.pbm
+
+echo "Creating windows ppm flattened files..."
+${CONVERT} -flatten -colors 16 ${app_icon}-48.png 48_16.ppm
+${CONVERT} -flatten -colors 256 ${app_icon}-48.png 48_256.ppm
+${CONVERT} -flatten -colors 16 ${app_icon}-32.png 32_16.ppm
+${CONVERT} -flatten -colors 256 ${app_icon}-32.png 32_256.ppm
+${CONVERT} -flatten -colors 16 ${app_icon}-16.png 16_16.ppm
+${CONVERT} -flatten -colors 256 ${app_icon}-16.png 16_256.ppm
+fi
+
+# see if we have netpbm
+if test $do_winicon = yes ; then
+${PPMTOWINICON} --version 2>&1 >/dev/null
+if test $? -ne 0 ; then
+	echo "\"${PPMTOWINICON} --version\" failed."
+	echo "Make sure that netpbm is installed and functional on your system."
+	echo "Skipping the pbm -> windows icon conversion."
+	do_winicon=no
+fi
+fi
+
+if test $do_winicon = yes ; then
+echo "Creating windows icon file..."
+${PPMTOWINICON} -output gerbv_icon.ico -andpgms\
+    48_16.ppm 48_mask.pbm 48_256.ppm 48_mask.pbm\
+    32_16.ppm 32_mask.pbm 32_256.ppm 32_mask.pbm\
+    16_16.ppm 16_mask.pbm 16_256.ppm 16_mask.pbm
+fi
+
+rm -f \
+    48_16.ppm 48_256.ppm 48_mask.pbm\
+    32_16.ppm 32_256.ppm 32_mask.pbm\
+    16_16.ppm 16_256.ppm 16_mask.pbm
+
+echo "All done"
+
