@@ -26,12 +26,15 @@
 #endif
 
 #include <glib.h>
+#include <math.h>
+
 #include <glib/gstdio.h>
 #include "gerber.h"
 #include <export-rs274x.h>
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
+#define round(x) floor(x+0.5)
 
 void
 export_rs274x_write_apertures (FILE *fd, gerb_image_t *image) {
@@ -129,8 +132,8 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 			case LINEARx01 :
 			case LINEARx001 :
 			case LINEARx1 :
-				xVal = (long) (currentNet->stop_x * 1000.0);
-				yVal = (long) (currentNet->stop_y * 1000.0);
+				xVal = (long) round(currentNet->stop_x * 1000.0);
+				yVal = (long) round(currentNet->stop_y * 1000.0);
 				fprintf(fd, "G01X%05ldY%05ld",xVal,yVal);
 				/* and finally, write the esposure value */
 				if (currentNet->aperture_state == OFF)
@@ -147,10 +150,11 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 				//	the gerb_image
 				if (!currentNet->cirseg)
 					break;
-				centerX= (long) ((currentNet->cirseg->cp_x - currentNet->start_x) * 1000.0);
-				centerY= (long) ((currentNet->cirseg->cp_y - currentNet->start_y) * 1000.0);
-				endX = (long) (currentNet->stop_x * 1000.0);
-				endY = (long) (currentNet->stop_y * 1000.0);
+				centerX= (long) round((currentNet->cirseg->cp_x - currentNet->start_x) * 1000.0);
+				centerY= (long) round((currentNet->cirseg->cp_y - currentNet->start_y) * 1000.0);
+				endX = (long) round(currentNet->stop_x * 1000.0);
+				endY = (long) round(currentNet->stop_y * 1000.0);
+				
 				/* always use multi-quadrant, since it's much easier to export */
 				/*  and most all software should support it */
 				fprintf(fd, "G75*\n");
@@ -173,10 +177,10 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 					fprintf(fd, "D03*\n");
 				break;
 			case PAREA_START:
-				fprintf(fd, "G36*");
+				fprintf(fd, "G36*\n");
 				break;
 			case PAREA_END:
-				fprintf(fd, "G37*");
+				fprintf(fd, "G37*\n");
 				break;
 			default:
 				break;
