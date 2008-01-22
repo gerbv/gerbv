@@ -103,6 +103,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include "callbacks.h"
 #include "render.h"
 #include "exportimage.h"
+#include "export-rs274x.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -786,6 +787,10 @@ main(int argc, char *argv[])
 		exportFromCommandline = TRUE;
 	    }
 #endif
+	    else if (strcmp (optarg,"rs274x") == 0) {
+		exportType = 5;
+		exportFromCommandline = TRUE;
+	    }
 	    else {
 		fprintf(stderr, "Unrecognized export type.\n");
 		exit(1);				
@@ -914,8 +919,10 @@ main(int argc, char *argv[])
 		    exportFilename = g_strdup ("output.pdf");
 		} else if (exportType == 3) {
 		    exportFilename = g_strdup ("output.svg");
-		} else {
+		} else if (exportType == 4){
 		    exportFilename = g_strdup ("output.ps");
+		} else {
+		    exportFilename = g_strdup ("output.gbx");
 		}
 		freeFilename = TRUE;
 	}
@@ -947,6 +954,13 @@ main(int argc, char *argv[])
 	    exportimage_export_to_svg_file (&renderInfo, exportFilename);
 	} else if (exportType == 4) {
 	    exportimage_export_to_postscript_file (&renderInfo, exportFilename);
+	} else if (exportType == 5) {
+	    if (screen.file[0]->image)
+	    	export_rs274x_file_from_image (exportFilename, screen.file[0]->image);
+	    else {
+		fprintf(stderr, "A valid file was not loaded.\n");
+		exit(1);
+	    }
 	}
 
 	if (freeFilename)
