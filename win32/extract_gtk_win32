@@ -1,0 +1,176 @@
+#!/bin/sh
+#
+# $Id$
+#
+# This script is probably not useful to most people.  It is used
+# to extract a set of downloaded files for gtk for windows and 
+# also extract a bunch of license files.
+#
+# It is used when initially setting up a cygwin environment for 
+# building gerbv with a non-cygwin version of gerbv for windows
+# as the goal.
+
+# directory where all the files have been downloaded
+gtk_win32_downloads=${HOME}/gtk_win32_downloads
+
+# directory to extract everything (including headers) to.
+# This must match ./build_gerbv.
+gtk_win32=${HOME}/gtk_win32
+
+# directory to extract runtime files (excluding headers) to.
+# This must match ./build_gerbv.
+gtk_win32_runtime=${HOME}/gtk_win32_runtime
+
+# clean out old directories
+test ! -d ${gtk_win32} || rm -fr ${gtk_win32}
+test ! -d ${gtk_win32_runtime} || rm -fr ${gtk_win32_runtime}
+
+# make the new ones
+mkdir -p ${gtk_win32}
+mkdir -p ${gtk_win32_runtime}
+
+# extract the runtime files
+cd ${gtk_win32_runtime}
+for f in ${gtk_win32_downloads}/*.zip ; do
+	fb=`basename "${f}"`
+	case "$fb" in
+		*dev*)
+			echo "Skip developer file `basename ${fb}`"
+			;;
+		*src*)
+			echo "Skip source file `basename ${fb}`"
+			;;
+		*)
+			echo "Extract ${fb}"
+			unzip -n -q "$f"
+			;;
+	esac
+done
+
+# extract the runtime+developer files
+cd ${gtk_win32}
+for f in ${gtk_win32_downloads}/*.zip ; do
+	fb=`basename "${f}"`
+	case "$fb" in
+		*src*)
+			echo "Skip source file `basename ${fb}`"
+			;;
+		*)
+			echo "Extract ${fb}"
+			unzip -n -q "$f"
+			;;
+	esac
+done
+
+chmod 755 ${gtk_win32}/bin/*
+chmod 755 ${gtk_win32_runtime}/bin/*
+
+
+# extract licenses
+
+cd
+tmpd=/tmp/ext.$$
+mkdir ${tmpd}
+
+cd ${tmpd}
+
+
+
+
+# LGPL
+#
+# atk-1.20.0.tar.bz2
+# atk-1.20.0.zip
+# atk-dev-1.20.0.zip
+
+# dual LGPL and MPL (Mozilla public license)
+#
+#cairo-1.4.10.tar.gz
+#cairo-1.4.10.zip
+#cairo-dev-1.4.10.zip
+
+#expat-2.0.0.zip
+
+
+#fontconfig-2.4.2-tml-20071015.diff
+#fontconfig-2.4.2-tml-20071015.zip
+#fontconfig-2.4.2.tar.gz
+#fontconfig-dev-2.4.2-tml-20071015.zip
+tar -zxvf ${gtk_win32_downloads}/fontconfig-*.tar.gz 
+mv fontconfig*/COPYING ${gtk_win32_runtime}/LICENSE-fontconfig
+rm -fr fontconfig-*
+
+#
+# Dual, "you choose" license.  We pick GPL
+#freetype-2.3.4.tar.bz2
+#freetype-2.3.4.zip
+#freetype-dev-2.3.4.zip
+#bzcat  ${gtk_win32_downloads}/freetype-2.3.4.tar.bz2  | tar -xvf - mv freetype-*/*/LICENSE.TXT ${gtk_win32_runtime}/LICENSE-freetype
+#rm -fr freetype-*
+
+
+# GPL
+#
+#gettext-0.17.tar.gz
+#gettext-runtime-0.17.zip
+#gettext-runtime-dev-0.17.zip
+#gettext-tools-0.17.zip
+
+# LGPL
+#glib-2.14.4.tar.bz2
+#glib-2.14.4.zip
+#glib-dev-2.14.4.zip
+
+# LGPL
+#
+#gtk+-2.12.3.tar.bz2
+#gtk+-2.12.3.zip
+#gtk+-dev-2.12.3.zip
+
+
+# jpeg license
+#
+#jpeg-6b-4-bin.zip
+#jpeg-6b-4-dep.zip
+#jpeg-6b-4-lib.zip
+#jpeg-6b-4-src.zip
+
+unzip ${gtk_win32_downloads}/jpeg-*-src.zip
+cp src/jpeg/6b/jpeg-6b-src/README ${gtk_win32_runtime}/LICENSE-jpeg
+rm -fr src
+
+# GPL
+#
+#libiconv-1.9.1.bin.woe32.zip
+#libiconv-1.9.1.tar.gz
+
+#libpng-1.2.8-bin.zip
+#libpng-1.2.8-lib.zip
+
+# LGPL
+#
+#pango-1.18.3.tar.bz2
+#pango-1.18.3.zip
+#pango-dev-1.18.3.zip
+
+
+# GPL
+#
+#pkg-config-0.20.tar.gz
+#pkg-config-0.20.zip
+
+# BSD-like with advertising clause
+#
+#tiff-3.8.2-1-bin.zip
+#tiff-3.8.2-1-dep.zip
+#tiff-3.8.2-1-lib.zip
+#tiff-3.8.2-1-src.zip
+unzip ${gtk_win32_downloads}/tiff-*-src.zip
+cp src/tiff/3.8.2/tiff-3.8.2-src/COPYRIGHT ${gtk_win32_runtime}/LICENSE-tiff
+rm -fr src
+
+#xpm-nox-4.0.3-20020617.zip
+#xpm-nox-dev-4.0.3-20020112.zip
+
+#zlib123-dll.zip
+
