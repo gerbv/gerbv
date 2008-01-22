@@ -192,6 +192,7 @@ echo "Configuring for cygwin"
 	CFLAGS="${LIBPNG_CFLAGS}" \
 	LDFLAGS="${LIBPNG_LDFLAGS}" \
 	LIBS="${LIBPNG_LIBS}" \
+	WIN32=yes \
 	2>&1 ; echo $? >&4 ) | tee c.log 1>&3) 4>&1 | (read a ; exit $a)) 3>&1
 
 if test $? -ne 0 ; then
@@ -199,6 +200,8 @@ if test $? -ne 0 ; then
 	exit 1
 fi
 
+# If the win32 pkg-config is used, then you end up with spurious CR's
+# in the generated Makefile's and we need to get rid of them.
 dos2unix src/Makefile
 
 fi

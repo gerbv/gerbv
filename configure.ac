@@ -45,7 +45,7 @@ AC_CANONICAL_HOST
 # in your configure environment.  After all you may or may not
 # want to always force -mno-cygwin on all users.
 AC_MSG_CHECKING([for windows])
-WIN32=no
+WIN32=${WIN32:-no}
 case $host_os in
 	*cygwin*  )
 		CFLAGS="$CFLAGS ${CYGWIN_CFLAGS}"
