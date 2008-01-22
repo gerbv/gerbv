@@ -90,7 +90,7 @@ static int stricmp(const char *s1, const char *s2)
 }
 #endif /* macintosh */
 
-#if USE_STRLWR
+#ifndef HAVE_STRLWR
 static const char *strlwr(char *s) {
   const char *p=s;
   while(*s) {

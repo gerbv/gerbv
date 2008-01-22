@@ -309,6 +309,7 @@ AC_MSG_RESULT([no])
 AC_CHECK_HEADERS(unistd.h getopt.h string.h sys/mman.h sys/types.h sys/stat.h stdlib.h regex.h libgen.h)
 
 AC_CHECK_FUNCS(getopt_long)
+AC_CHECK_FUNCS(strlwr)
 
 
 CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS"
