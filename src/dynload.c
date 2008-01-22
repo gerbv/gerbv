@@ -40,7 +40,7 @@ typedef void (*FARPROC)();
    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, 
 		 NULL, GetLastError(), 0, 
 		 (LPTSTR)&msg_buf, 0, NULL); 
-   fprintf(stderr, "scheme load-extension: %s: %s", additional_message, msg_buf); 
+   fprintf(stderr, "scheme load-extension: %s: %s", additional_message, (char *) msg_buf); 
    LocalFree(msg_buf); 
  } 
 
