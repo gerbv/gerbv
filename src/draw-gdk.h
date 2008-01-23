@@ -39,7 +39,7 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	     int scale, double trans_x, double trans_y,
 	     enum polarity_t polarity);
 
-#endif /* DRAW_H */
+#endif /* DRAW_GDK_H */
 
 #ifndef DRAW_AMACRO_H
 #define DRAW_AMACRO_H
