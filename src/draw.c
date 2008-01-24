@@ -338,9 +338,64 @@ draw_macro_primitive (gint macroType, cairo_t *cairoTarget, cairo_operator_t cle
 }
 
 int
+gerbv_draw_amacro_test(instruction_t *program, unsigned int nuf_push, gdouble *parameters)
+{
+	macro_stack_t *s = new_stack(nuf_push);
+	instruction_t *ip;
+	double lp[APERTURE_PARAMETERS_MAX];
+	double tmp[2] = {0.0, 0.0};
+	int returnResult = 0;
+
+	memcpy(lp, parameters, sizeof(double) * APERTURE_PARAMETERS_MAX);
+
+	for(ip = program; ip != NULL; ip = ip->next) {
+		switch(ip->opcode) {
+			case NOP:
+			    break;
+			case PUSH :
+			    push(s, ip->data.fval);
+			    break;
+			case PPUSH :
+			    push(s, lp[ip->data.ival - 1]);
+			    break;
+			case PPOP:
+			      lp[ip->data.ival - 1] = pop(s);
+			      break;
+			case ADD :
+			    push(s, pop(s) + pop(s));
+			    break;
+			case SUB :
+			    tmp[0] = pop(s);
+			    tmp[1] = pop(s);
+			    push(s, tmp[1] - tmp[0]);
+			    break;
+			case MUL :
+			    push(s, pop(s) * pop(s));
+			    break;
+			case DIV :
+			    tmp[0] = pop(s);
+			    tmp[1] = pop(s);
+			    push(s, tmp[1] / tmp[0]);
+			    break;
+			case PRIM :
+			    /* look for any CLEAR draws */
+			    if (((ip->data.ival != 6) && (ip->data.ival != 7)) && 
+			     		((int)s->stack[0] != 1))
+			     		returnResult = 1;
+			    s->sp = 0;
+			    break;
+			default :
+			    break;
+		}
+	}
+	free_stack(s);
+	return returnResult;
+}
+	    
+int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	cairo_operator_t darkOperator, instruction_t *program, unsigned int nuf_push,
-	gdouble *parameters)
+	gdouble *parameters, gint pushMode)
 {
     macro_stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
@@ -348,7 +403,8 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
     double lp[APERTURE_PARAMETERS_MAX];
     double tmp[2] = {0.0, 0.0};
     
-    cairo_push_group (cairoTarget);
+    if (pushMode)
+    	cairo_push_group (cairoTarget);
     /* Local copy of parameters so we don't change the content */
     memcpy(lp, parameters, sizeof(double) * APERTURE_PARAMETERS_MAX);
     
@@ -530,8 +586,11 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	
     }
     free_stack(s);
-    cairo_pop_group_to_source (cairoTarget);
-    cairo_paint (cairoTarget);
+    /* if we were were in scratchpad mode for special rendering, pop and exit */
+    if (pushMode) {
+    	cairo_pop_group_to_source (cairoTarget);
+    	cairo_paint (cairoTarget);
+    }
     return handled;
 } /* gerbv_draw_amacro */
 
@@ -581,6 +640,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 	int repeat_i, repeat_j;
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
 	gboolean invertPolarity = FALSE;
+	gint pushMode = 0;
 	
     /* do initial justify */
 	cairo_translate (cairoTarget, image->info->imageJustifyOffsetActualA,
@@ -877,10 +937,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 						break;
 					case MACRO :
 						cairo_scale (cairoTarget, 1/scale, 1/scale);
+						pushMode = gerbv_draw_amacro_test(image->aperture[net->aperture]->amacro->program,
+								  image->aperture[net->aperture]->amacro->nuf_push,
+								  image->aperture[net->aperture]->parameter);
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 								  image->aperture[net->aperture]->amacro->program,
 								  image->aperture[net->aperture]->amacro->nuf_push,
-								  image->aperture[net->aperture]->parameter);
+								  image->aperture[net->aperture]->parameter, pushMode);
 						break;
 					case MACRO_CIRCLE :
 					case MACRO_OUTLINE :
