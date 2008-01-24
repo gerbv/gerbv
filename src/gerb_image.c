@@ -301,28 +301,32 @@ gerb_image_dump(gerb_image_t *image)
     }
 } /* gerb_image_dump */
 
+
 gerb_layer_t *
-gerb_image_return_new_layer (gerb_layer_t *previousLayer){
-	gerb_layer_t *newLayer = g_new0 (gerb_layer_t, 1);
-	
-	*newLayer = *previousLayer;
-	previousLayer->next = newLayer;
-	/* clear this boolean so we only draw the knockout once */
-	newLayer->knockout.firstInstance = FALSE;
-	newLayer->next = NULL;
-	
-	return newLayer;
-}
+gerb_image_return_new_layer (gerb_layer_t *previousLayer)
+{
+    gerb_layer_t *newLayer = g_new0 (gerb_layer_t, 1);
+    
+    *newLayer = *previousLayer;
+    previousLayer->next = newLayer;
+    /* clear this boolean so we only draw the knockout once */
+    newLayer->knockout.firstInstance = FALSE;
+    newLayer->next = NULL;
+    
+    return newLayer;
+} /* gerb_image_return_new_layer */
+
 
 gerb_netstate_t *
-gerb_image_return_new_netstate (gerb_netstate_t *previousState){
-	gerb_netstate_t *newState = g_new0 (gerb_netstate_t, 1);
-	
-	*newState = *previousState;
-	previousState->next = newState;
-	newState->scaleA = 1.0;
-	newState->scaleB = 1.0;
-	newState->next = NULL;
-	
-	return newState;
-}
+gerb_image_return_new_netstate (gerb_netstate_t *previousState)
+{
+    gerb_netstate_t *newState = g_new0 (gerb_netstate_t, 1);
+    
+    *newState = *previousState;
+    previousState->next = newState;
+    newState->scaleA = 1.0;
+    newState->scaleB = 1.0;
+    newState->next = NULL;
+    
+    return newState;
+} /* gerb_image_return_new_netstate */

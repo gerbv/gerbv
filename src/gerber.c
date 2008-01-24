@@ -76,8 +76,10 @@ static void parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 static void parse_D_code(gerb_file_t *fd, gerb_state_t *state, 
 			 gerb_image_t *image);
 static int parse_M_code(gerb_file_t *fd, gerb_image_t *image);
-static void parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
-	gerb_state_t *state, gerb_net_t *curr_net, gerb_stats_t *stats, gchar *directoryPath);
+static void parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, 
+			 gerb_image_t *image, gerb_state_t *state, 
+			 gerb_net_t *curr_net, gerb_stats_t *stats, 
+			 gchar *directoryPath);
 static int parse_aperture_definition(gerb_file_t *fd, 
 				     gerb_aperture_t *aperture,
 				     gerb_image_t *image);
@@ -86,25 +88,30 @@ static void calc_cirseg_sq(struct gerb_net *net, int cw,
 static void calc_cirseg_mq(struct gerb_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 
-static void gerber_update_min_and_max (gdouble *minX, gdouble *minY,
-	gdouble *maxX, gdouble *maxY, gdouble x, gdouble y, gdouble apertureSize);
+static void gerber_update_min_and_max(gdouble *minX, gdouble *minY,
+				      gdouble *maxX, gdouble *maxY, 
+				      gdouble x, gdouble y, 
+				      gdouble apertureSize);
 
 
-static void gerber_update_any_running_knockout_measurements (gerb_image_t *image);
+static void gerber_update_any_running_knockout_measurements(gerb_image_t *image);
 
-static void
-gerber_calculate_final_justify_effects (gerb_image_t *image);
+static void gerber_calculate_final_justify_effects (gerb_image_t *image);
 
 gboolean knockoutMeasure = FALSE;
-gdouble knockoutLimitXmin,knockoutLimitYmin,knockoutLimitXmax,knockoutLimitYmax;
+gdouble knockoutLimitXmin, knockoutLimitYmin, knockoutLimitXmax, 
+    knockoutLimitYmax;
 gerb_layer_t *knockoutLayer = NULL;
+
 #ifndef RENDER_USING_GDK
 cairo_matrix_t currentMatrix;
 #endif  
     
 gboolean
-gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_state_t *state,
-	gerb_net_t *curr_net, gerb_stats_t *stats, gerb_file_t *fd, gchar *directoryPath) {
+gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, 
+			   gerb_state_t *state,	gerb_net_t *curr_net, 
+			   gerb_stats_t *stats, gerb_file_t *fd, 
+			   gchar *directoryPath) {
     int read, coord, len;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
@@ -214,9 +221,9 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	case '%':
 	    dprintf("... Found %% code\n");
 	    parse_rs274x(levelOfRecursion, fd, image, state, curr_net, stats, directoryPath);
-	    while (1){
-		int c=gerb_fgetc(fd);
-		if(c==EOF || c=='%')
+	    while (1) {
+		int c = gerb_fgetc(fd);
+		if(c == EOF || c == '%')
 		    break;
 	    }
 	    break;
@@ -327,14 +334,18 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	    }  /* if (state->in_parea_fill && state->parea_start_node) */
 	    
 	    curr_net->interpolation = state->interpolation;
-	    /* override circular interpolation if no center was given
-	       This should be a safe hack, since a good file should always include
-	         I or J.  And even if the radius is zero, the endpoint should be
-	         the same as the start point, creating no line */
-	    if (((state->interpolation == CW_CIRCULAR) || (state->interpolation == CCW_CIRCULAR))
-	       && ((state->delta_cp_x == 0.0) && (state->delta_cp_y == 0.0)))
-	       curr_net->interpolation = LINEARx1;
-	       
+
+	    /* 
+	     * Override circular interpolation if no center was given.
+	     * This should be a safe hack, since a good file should always 
+	     * include I or J.  And even if the radius is zero, the endpoint 
+	     * should be the same as the start point, creating no line 
+	     */
+	    if (((state->interpolation == CW_CIRCULAR) || 
+		 (state->interpolation == CCW_CIRCULAR)) && 
+		((state->delta_cp_x == 0.0) && (state->delta_cp_y == 0.0)))
+		curr_net->interpolation = LINEARx1;
+	    
 	    /*
 	     * If we detected the end of Polygon Area Fill we go back to
 	     * the interpolation we had before that.
@@ -349,7 +360,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	     * Save layer polarity and unit
 	     */
 	    curr_net->layer = state->layer;  
-
+	    
 	    state->delta_cp_x = 0.0;
 	    state->delta_cp_y = 0.0;
 	    curr_net->aperture = state->curr_aperture;
@@ -399,9 +410,9 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 		 * the stoppoints, but that seems an uncommon case (and the 
 		 * error isn't very big any way).
 		 */
-		repeat_off_X = (state->layer->stepAndRepeat.X - 1)*
+		repeat_off_X = (state->layer->stepAndRepeat.X - 1) *
 		    state->layer->stepAndRepeat.dist_X;
-		repeat_off_Y = (state->layer->stepAndRepeat.Y - 1)*
+		repeat_off_Y = (state->layer->stepAndRepeat.Y - 1) *
 		    state->layer->stepAndRepeat.dist_Y;
 		
 		
@@ -561,7 +572,10 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
     curr_net = image->netlist;
     image->layertype = GERBER;
     image->gerb_stats = gerb_stats_new();
+    if (image->gerb_stats == NULL)
+	GERB_FATAL_ERROR("malloc gerb_stats failed\n");
     stats = (gerb_stats_t *) image->gerb_stats;
+
     /* set active layer and netstate to point to first default one created */
     state->layer = image->layers;
     state->state = image->states;
@@ -575,7 +589,6 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
     foundEOF = gerber_parse_file_segment (1, image, state, curr_net, stats,
 					  fd, directoryPath);
 
-    
     if (!foundEOF) {
     	gerb_stats_add_error(stats->error_list,
 			     -1,
@@ -587,6 +600,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
     dprintf("               ... done parsing Gerber file\n");
     gerber_update_any_running_knockout_measurements (image);
     gerber_calculate_final_justify_effects(image);
+
     return image;
 } /* parse_gerb */
 
@@ -622,9 +636,10 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
         dprintf ("buf = \"%s\"\n", buf);
 	len = strlen(buf);
     
-	/* First look through the file for indications of its type */
-	
-	/* check that file is not binary (non-printing chars and white spaces)*/
+	/* First look through the file for indications of its type by
+	 * checking that file is not binary (non-printing chars and white 
+	 * spaces)
+	 */
 	for (i = 0; i < len; i++) {
 	    if (!isprint((int) buf[i]) && (buf[i] != '\r') && 
 		(buf[i] != '\n') && (buf[i] != '\t')) {
@@ -682,6 +697,7 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     free(buf);
    
     *returnFoundBinary = found_binary;
+
     /* Now form logical expression determining if the file is RS-274X */
     if ((found_D0 || found_D2 || found_M0 || found_M2) && 
 	found_ADD && found_star && (found_X || found_Y)) 
