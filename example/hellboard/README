@@ -1,0 +1,15 @@
+The hellboard is a board created by DJ Delorie to exercise gEDA/PCB's ability
+to render thermals.  It is included here since it may also exercise gerbv. 
+
+The original .pcb file is included here.  To generate the Gerber files, use
+this command:
+
+pcb -x gerber hellboard.pcb
+
+or open the PCB GUI, read the board in, and export Gerber files as usual.  
+
+The original hellboard may be found in this e-mail:
+
+http://www.seul.org/pipermail/geda-dev/2007-December/004262.html
+
+-- 1.23.2008, SDB
