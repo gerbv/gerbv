@@ -142,7 +142,7 @@ rotate_point(GdkPoint point, int angle)
  */
 static void
 gerbv_gdk_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int diameter_idx = 1;
@@ -192,7 +192,7 @@ gerbv_gdk_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
  */
 static void
 gerbv_gdk_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int nuf_points_idx = 1;
@@ -259,7 +259,7 @@ gerbv_gdk_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
  */
 static void
 gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int nuf_vertices_idx = 1;
@@ -315,7 +315,7 @@ gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
  */
 static void
 gerbv_gdk_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int outside_dia_idx = 2;
     const int ci_thickness_idx = 3;
@@ -392,7 +392,7 @@ gerbv_gdk_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
 
 static void
 gerbv_gdk_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int outside_dia_idx = 2;
     const int inside_dia_idx = 3;
@@ -466,7 +466,7 @@ gerbv_gdk_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
  */
 static void
 gerbv_gdk_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s, 
-		  int scale, gint x, gint y)
+		  double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int linewidth_idx = 1;
@@ -521,7 +521,7 @@ gerbv_gdk_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
  */
 static void
 gerbv_gdk_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s, 
-		  int scale, gint x, gint y)
+		  double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int width_idx = 1;
@@ -576,7 +576,7 @@ gerbv_gdk_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
  */
 static void
 gerbv_gdk_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s, 
-		  int scale, gint x, gint y)
+		  double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int width_idx = 1;
@@ -633,7 +633,7 @@ gerbv_gdk_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, macro_stack_t *s,
  */
 static void
 gerbv_gdk_draw_prim1_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int diameter_idx = 1;
@@ -683,7 +683,7 @@ gerbv_gdk_draw_prim1_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters,
  */
 static void
 gerbv_gdk_draw_prim4_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int nuf_points_idx = 1;
@@ -750,7 +750,7 @@ gerbv_gdk_draw_prim4_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters,
  */
 static void
 gerbv_gdk_draw_prim5_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int nuf_vertices_idx = 1;
@@ -803,7 +803,7 @@ gerbv_gdk_draw_prim5_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters,
  */
 static void
 gerbv_gdk_draw_prim6_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int outside_dia_idx = 2;
     const int ci_thickness_idx = 3;
@@ -880,7 +880,7 @@ gerbv_gdk_draw_prim6_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters,
 
 static void
 gerbv_gdk_draw_prim7_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
-		 int scale, gint x, gint y)
+		 double scale, gint x, gint y)
 {
     const int outside_dia_idx = 2;
     const int inside_dia_idx = 3;
@@ -954,7 +954,7 @@ gerbv_gdk_draw_prim7_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters,
  */
 static void
 gerbv_gdk_draw_prim20_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
-		  int scale, gint x, gint y)
+		  double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int linewidth_idx = 1;
@@ -1009,7 +1009,7 @@ gerbv_gdk_draw_prim20_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters,
  */
 static void
 gerbv_gdk_draw_prim21_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
-		  int scale, gint x, gint y)
+		  double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int width_idx = 1;
@@ -1064,7 +1064,7 @@ gerbv_gdk_draw_prim21_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters,
  */
 static void
 gerbv_gdk_draw_prim22_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters, 
-		  int scale, gint x, gint y)
+		  double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int width_idx = 1;
@@ -1119,7 +1119,7 @@ gerbv_gdk_draw_prim22_new(GdkPixmap *pixmap, GdkGC *gc, gdouble *parameters,
 int
 gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		  instruction_t *program, unsigned int nuf_push,
-		  double *parameters, int scale, gint x, gint y)
+		  double *parameters, double scale, gint x, gint y)
 {
     macro_stack_t *s = new_stack(nuf_push);
     instruction_t *ip;
@@ -1309,7 +1309,7 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
  */
 int
 image2pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
-	     int scale, double trans_x, double trans_y,
+	     double scale, double trans_x, double trans_y,
 	     enum polarity_t polarity)
 {
     GdkGC *gc = gdk_gc_new(*pixmap);
@@ -1325,7 +1325,8 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
     int in_parea_fill = 0;
     double unit_scale;
     GdkColor transparent, opaque;
-
+    int steps,i,pointArraySize=0;
+    double angleDiff;
 
     if (image == NULL || image->netlist == NULL) {
 	/*
@@ -1412,12 +1413,9 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	 */
 	switch (net->interpolation) {
 	case PAREA_START :
-	    points = (GdkPoint *)g_malloc(sizeof(GdkPoint) *  net->nuf_pcorners);
-	    if (points == NULL) {
-		GERB_FATAL_ERROR("Malloc failed\n");
-	    }
-	    memset(points, 0, sizeof(GdkPoint) *  net->nuf_pcorners);
+	    points = NULL;
 	    curr_point_idx = 0;
+	    pointArraySize = 0;
 	    in_parea_fill = 1;
 	    continue;
 	case PAREA_END :
@@ -1436,10 +1434,41 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	}
 
 	if (in_parea_fill) {
-	    points[curr_point_idx].x = x2;
-	    points[curr_point_idx].y = y2;
-	    curr_point_idx++;
-	    continue;
+		switch (net->interpolation) {
+			case LINEARx10 :
+			case LINEARx01 :
+			case LINEARx001 :
+			case LINEARx1 :
+				if (pointArraySize < (curr_point_idx + 1)) {
+        				points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + 1));
+        				pointArraySize = (curr_point_idx + 1);
+        			}
+				points[curr_point_idx].x = x2;
+				points[curr_point_idx].y = y2;
+				curr_point_idx++;
+				break;
+			case CW_CIRCULAR :
+			case CCW_CIRCULAR :
+				/* we need to chop up the arc into small lines for rendering
+				   with GDK */
+				angleDiff = net->cirseg->angle2 - net->cirseg->angle1;
+        			steps = (int) abs(angleDiff);
+        			if (pointArraySize < (curr_point_idx + steps)) {
+        				points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + steps));
+        				pointArraySize = (curr_point_idx + steps);
+        			}
+				for (i=0; i<steps; i++){
+					points[curr_point_idx].x = cp_x + cir_width / 2.0 * cos ((net->cirseg->angle1 +
+						(angleDiff * i) / steps)*M_PI/180);
+					points[curr_point_idx].y = cp_y - cir_width / 2.0 * sin ((net->cirseg->angle1 +
+						(angleDiff * i) / steps)*M_PI/180);
+					curr_point_idx++;
+				}
+				break;
+			default:
+				break;
+		}
+		continue;
 	}
 
 	/*
@@ -1611,3 +1640,5 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
     return 1;
 
 } /* image2pixmap */
+
+

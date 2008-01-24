@@ -102,7 +102,6 @@ typedef struct gerb_net {
     int aperture;
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
-    int nuf_pcorners; /* If interpolation=PAREA_START, corners in polygon */
     struct gerb_cirseg *cirseg;
     struct gerb_net *next;
     GString *label;

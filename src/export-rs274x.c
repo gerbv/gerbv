@@ -93,10 +93,29 @@ export_rs274x_write_apertures (FILE *fd, gerb_image_t *image) {
 	}
 }
 
+void
+export_rs274x_write_layer_change (gerb_layer_t *oldLayer, gerb_layer_t *newLayer, FILE *fd) {
+	if (oldLayer->polarity != newLayer->polarity) {
+		/* polarity changed */
+		if ((newLayer->polarity == CLEAR))
+			fprintf(fd, "%%LPC*%%\n");
+		else
+			fprintf(fd, "%%LPD*%%\n");
+	}
+}
+
+void
+export_rs274x_write_state_change (gerb_netstate_t *oldState, gerb_netstate_t *newState, FILE *fd) {
+
+
+}
+
 gboolean
 export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 	FILE *fd;
-
+	gerb_netstate_t *oldState;
+	gerb_layer_t *oldLayer;
+	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
 		return FALSE;
@@ -107,6 +126,39 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 	fprintf(fd, "%%MOIN*%%\n");
 	fprintf(fd, "%%FSLAX23Y23*%%\n");
 	
+	/* check the image info struct for any non-default settings */
+	/* image offset */
+	if ((image->info->offsetA > 0.0) || (image->info->offsetB > 0.0))
+		fprintf(fd, "%%IOA%fB%f*%%\n",image->info->offsetA,image->info->offsetB);
+	/* image polarity */
+	if (image->info->polarity == CLEAR)
+		fprintf(fd, "%%IPNEG*%%\n");
+	else
+		fprintf(fd, "%%IPPOS*%%\n");
+	/* image name */
+	if (image->info->name)
+		fprintf(fd, "%%IN%s*%%\n",image->info->name);
+	/* plotter film */
+	if (image->info->plotterFilm)
+		fprintf(fd, "%%PF%s*%%\n",image->info->plotterFilm);
+	/* image rotation */
+	if (image->info->imageRotation != 0.0)
+		fprintf(fd, "%%IR%d*%%\n",(int) image->info->imageRotation);
+	if ((image->info->imageJustifyTypeA != NOJUSTIFY) ||
+		(image->info->imageJustifyTypeB != NOJUSTIFY)) {
+		fprintf(fd, "%%IJA");
+		if (image->info->imageJustifyTypeA == CENTERJUSTIFY)
+			fprintf(fd, "C");
+		else 
+			fprintf(fd, "%.4f",image->info->imageJustifyOffsetA);
+		fprintf(fd, "B");
+		if (image->info->imageJustifyTypeB == CENTERJUSTIFY)
+			fprintf(fd, "C");
+		else 
+			fprintf(fd, "%.4f",image->info->imageJustifyOffsetB);
+		fprintf(fd, "*%%\n");
+
+	}
 	/* define all apertures */
 	fprintf(fd, "G04 --Define apertures--*\n");
 	export_rs274x_write_apertures (fd, image);
@@ -116,16 +168,26 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 	gint currentAperture = 0;
 	gerb_net_t *currentNet;
 	
+	oldLayer = image->layers;
+	oldState = image->states;
 	for (currentNet = image->netlist; currentNet; currentNet = currentNet->next){
 		/* check for "layer" changes (RS274X commands) */
+		if (currentNet->layer != oldLayer)
+			export_rs274x_write_layer_change (oldLayer, currentNet->layer, fd);
 		
 		/* check for new "netstate" (more RS274X commands) */
+		if (currentNet->state != oldState)
+			export_rs274x_write_state_change (oldState, currentNet->state, fd);
 		
 		/* check for tool changes */
 		if (currentNet->aperture != currentAperture) {
 			fprintf(fd, "G54D%02d*\n",currentNet->aperture);
 			currentAperture = currentNet->aperture;
 		}
+		
+		oldLayer = currentNet->layer;
+		oldState = currentNet->state;
+		
 		long xVal,yVal,endX,endY,centerX,centerY;;
 		switch (currentNet->interpolation) {
 			case LINEARx10 :
@@ -145,11 +207,6 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 				break;
 			case CW_CIRCULAR :
 			case CCW_CIRCULAR :
-				// FIXME: we need to reorganize polygon fills so that
-				//	circular paths aren't chopped up into lines inside
-				//	the gerb_image
-				if (!currentNet->cirseg)
-					break;
 				centerX= (long) round((currentNet->cirseg->cp_x - currentNet->start_x) * 1000.0);
 				centerY= (long) round((currentNet->cirseg->cp_y - currentNet->start_y) * 1000.0);
 				endX = (long) round(currentNet->stop_x * 1000.0);

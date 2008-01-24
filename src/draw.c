@@ -728,9 +728,28 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 			if (!haveDrawnFirstFillPoint) {
 				cairo_move_to (cairoTarget, x2,y2);
 				haveDrawnFirstFillPoint=TRUE;
+				continue;
 			}
-			else {
-				cairo_line_to (cairoTarget, x2,y2);
+			switch (net->interpolation) {
+				case LINEARx10 :
+				case LINEARx01 :
+				case LINEARx001 :
+				case LINEARx1 :
+					cairo_line_to (cairoTarget, x2,y2);
+					break;
+				case CW_CIRCULAR :
+				case CCW_CIRCULAR :
+					if (net->cirseg->angle2 > net->cirseg->angle1) {
+						cairo_arc (cairoTarget, cp_x, cp_y, net->cirseg->width/2.0,
+							net->cirseg->angle1 * M_PI/180,net->cirseg->angle2 * M_PI/180);
+					}
+					else {
+						cairo_arc_negative (cairoTarget, cp_x, cp_y, net->cirseg->width/2.0,
+							net->cirseg->angle1 * M_PI/180,net->cirseg->angle2 * M_PI/180);
+					}
+					break;
+				default:
+					break;
 			}
 			continue;
 		}

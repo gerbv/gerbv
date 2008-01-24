@@ -36,7 +36,7 @@
  */
 int 
 image2pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
-	     int scale, double trans_x, double trans_y,
+	     double scale, double trans_x, double trans_y,
 	     enum polarity_t polarity);
 
 #endif /* DRAW_GDK_H */
@@ -53,7 +53,7 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
  */
 int gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 		      instruction_t *program, unsigned int nuf_push,
-		      double *parameters, int scale, gint x, gint y);
+		      double *parameters, double scale, gint x, gint y);
 
 #endif /* DRAW_AMACRO_H */
 
