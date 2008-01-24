@@ -341,7 +341,14 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, gerb_stat
 	    }  /* if (state->in_parea_fill && state->parea_start_node) */
 	    
 	    curr_net->interpolation = state->interpolation;
-	    
+	    /* override circular interpolation if no center was given
+	       This should be a safe hack, since a good file should always include
+	         I or J.  And even if the radius is zero, the endpoint should be
+	         the same as the start point, creating no line */
+	    if (((state->interpolation == CW_CIRCULAR) || (state->interpolation == CCW_CIRCULAR))
+	       && ((state->delta_cp_x == 0.0) && (state->delta_cp_y == 0.0)))
+	       curr_net->interpolation = LINEARx1;
+	       
 	    /*
 	     * If we detected the end of Polygon Area Fill we go back to
 	     * the interpolation we had before that.
