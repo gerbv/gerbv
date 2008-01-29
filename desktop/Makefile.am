@@ -19,7 +19,50 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-EXTRA_DIST = gerbv.desktop gerbv.png
+theme=hicolor
+xdgdatadir=@XDGDATADIR@
+themedir=$(xdgdatadir)/icons/$(theme)
 
+app_icon = gerbv
+
+app_icon_files = \
+	$(app_icon:%=%-16.png) \
+	$(app_icon:%=%-22.png) \
+	$(app_icon:%=%-24.png) \
+	$(app_icon:%=%-32.png) \
+	$(app_icon:%=%-48.png) \
+	$(app_icon:%=%.svg)
+
+theme_icons = \
+	$(app_icon_files:%=apps,%)
+
+desktopdir=$(xdgdatadir)/applications
+dist_desktop_DATA = gerbv.desktop
+
+install_icon_exec = \
+	$(SETENV) GTK_UPDATE_ICON_CACHE_BIN="@GTK_UPDATE_ICON_CACHE_BIN@" \
+	$(SHELL) $(top_srcdir)/icon-theme-installer \
+	-t $(theme) \
+	-s $(srcdir) \
+	-d "x$(DESTDIR)" \
+	-b $(themedir) \
+	-m "$(mkinstalldirs)" \
+	-x "$(INSTALL_DATA)"
+
+install-data-local:
+	$(install_icon_exec) -i $(theme_icons)
+
+install-data-hook:
+if ENABLE_UPDATE_DESKTOP_DATABASE
+	$(UPDATE_DESKTOP_DATABASE) "$(DESTDIR)$(desktopdir)"
+endif
+
+uninstall-hook:
+if ENABLE_UPDATE_DESKTOP_DATABASE
+	$(UPDATE_DESKTOP_DATABASE) "$(DESTDIR)$(desktopdir)"
+endif
+	$(install_icon_exec) -u $(theme_icons)
+
+EXTRA_DIST = gerbv.png $(app_icon_files)
 MOSTLYCLEANFILES = *~
 MAINTAINERCLEANFILES = *~ *.o Makefile Makefile.in

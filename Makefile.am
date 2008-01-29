@@ -26,3 +26,4 @@ EXTRA_DIST = CONTRIBUTORS HACKING AUTHORS ChangeLog COPYING INSTALL \
 	README-Pick-and-Place-search_parts.txt TODO \
 	autogen.sh  README-cvs.txt README-release.txt
 
+DISTCHECK_CONFIGURE_FLAGS = --disable-update-desktop-database GTK_UPDATE_ICON_THEME_BIN=true

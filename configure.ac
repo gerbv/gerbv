@@ -306,6 +306,44 @@ AC_MSG_RESULT([no])
 #
 ############################################################
 
+######################################################################
+#
+# desktop integration
+#
+
+AC_PATH_PROG(SETENV, env, [])
+AC_PATH_PROG(GTK_UPDATE_ICON_CACHE_BIN, gtk-update-icon-path, [true])
+
+# Change default location for XDG files (MIME and Icons)
+AC_ARG_WITH(xdgdatadir, [  --with-xdgdatadir=path  Change where the theme icons 
+and mime registrations are installed [[DATADIR]]], [opt_xdgdatadir=$withval])
+
+if test x$opt_xdgdatadir = x; then
+	# path was not specified with --with-xdgdatadir
+	XDGDATADIR='${datadir}'
+else
+	# path WAS specified with --with-xdgdatadir
+	XDGDATADIR="$opt_xdgdatadir"
+fi
+AC_SUBST(XDGDATADIR)
+
+AC_ARG_ENABLE(update-desktop-database,
+	AC_HELP_STRING([--disable-update-desktop-database],
+	[do not update desktop database after installation]),,
+	enable_update_desktop_database=yes)
+
+AM_CONDITIONAL(ENABLE_UPDATE_DESKTOP_DATABASE, test x$enable_update_desktop_database = xyes)
+
+if test x$enable_update_desktop_database = xyes ; then
+	AC_PATH_PROG(UPDATE_DESKTOP_DATABASE, [update-desktop-database], no)
+	if test $UPDATE_DESKTOP_DATABASE = no; then
+	AC_MSG_ERROR([Cannot find update-desktop-database, make sure it is installed and in your PATH, or configure with --disable-update-desktop-database])
+	fi
+fi
+
+#
+######################################################################
+
 AC_CHECK_HEADERS(unistd.h getopt.h string.h sys/mman.h sys/types.h sys/stat.h stdlib.h regex.h libgen.h)
 
 AC_CHECK_FUNCS(getopt_long)
@@ -364,10 +402,13 @@ AC_OUTPUT(	Makefile \
 		test/golden/Makefile \
 		test/inputs/Makefile )
         
+expandedXDGDATADIR=`eval "echo $XDGDATADIR"`
+
 AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:
 
    PREFIX:                   $PREFIX
+   xdg data directory:       $expandedXDGDATADIR
 
    CPPFLAGS:                 $CPPFLAGS
    CFLAGS:                   $CFLAGS
