@@ -121,7 +121,7 @@ for icon in $@; do
 	size=`echo $icon | sed -n 's/.*-\([0-9]*\).*/\1/p'`
 	category=`echo $icon | cut -d, -f1`
 	build_name=`echo $icon | cut -d, -f2`
-	install_name=`echo $build_name | sed 's/-[0-9]+//g'`
+	install_name=`echo $build_name | sed 's/-[0-9]\+//g'`
 	install_name=`basename $install_name`
 
 	if test -z $size; then 

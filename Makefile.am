@@ -24,6 +24,7 @@ SUBDIRS = src man doc example desktop scheme test win32
 EXTRA_DIST = CONTRIBUTORS HACKING AUTHORS ChangeLog COPYING INSTALL \
 	INSTALL.MINGW.WIN32 NEWS README \
 	README-Pick-and-Place-search_parts.txt TODO \
-	autogen.sh  README-cvs.txt README-release.txt
+	autogen.sh  README-cvs.txt README-release.txt \
+	icon-theme-installer
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-update-desktop-database GTK_UPDATE_ICON_THEME_BIN=true
