@@ -7,18 +7,18 @@
 # also extract a bunch of license files.
 #
 # It is used when initially setting up a cygwin environment for 
-# building gerbv with a non-cygwin version of gerbv for windows
+# building gerbv or pcb with a non-cygwin version for windows
 # as the goal.
 
 # directory where all the files have been downloaded
 gtk_win32_downloads=${HOME}/gtk_win32_downloads
 
 # directory to extract everything (including headers) to.
-# This must match ./build_gerbv.
+# This must match ./build_pcb.
 gtk_win32=${HOME}/gtk_win32
 
 # directory to extract runtime files (excluding headers) to.
-# This must match ./build_gerbv.
+# This must match ./build_pcb.
 gtk_win32_runtime=${HOME}/gtk_win32_runtime
 
 # clean out old directories
@@ -34,6 +34,9 @@ cd ${gtk_win32_runtime}
 for f in ${gtk_win32_downloads}/*.zip ; do
 	fb=`basename "${f}"`
 	case "$fb" in
+		gdwin32)
+			echo "Skip gd"
+			;;
 		*dev*)
 			echo "Skip developer file `basename ${fb}`"
 			;;
@@ -52,6 +55,9 @@ cd ${gtk_win32}
 for f in ${gtk_win32_downloads}/*.zip ; do
 	fb=`basename "${f}"`
 	case "$fb" in
+		gdwin32)
+			echo "Skip gd"
+			;;
 		*src*)
 			echo "Skip source file `basename ${fb}`"
 			;;
@@ -65,6 +71,14 @@ done
 chmod 755 ${gtk_win32}/bin/*
 chmod 755 ${gtk_win32_runtime}/bin/*
 
+
+cd ${HOME}
+unzip ${gtk_win32_downloads}/gdwin32.zip
+mkdir gdwin32_runtime
+cp gdwin32/*.dll gdwin32_runtime
+cp gdwin32/gd-license.txt gdwin32_runtime
+chmod 755 gdwin32/*
+chmod 755 gdwin32_runtime/*
 
 # extract licenses
 
