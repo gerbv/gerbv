@@ -188,6 +188,8 @@ echo "Configuring for cygwin"
 	--prefix=${gerbv_inst} \
 	--disable-dependency-tracking \
 	--disable-nls \
+	--disable-update-desktop-database \
+	--disable-update-mime-database \
 	${config_args} \
 	CFLAGS="${LIBPNG_CFLAGS}" \
 	LDFLAGS="${LIBPNG_LDFLAGS}" \
