@@ -75,6 +75,33 @@ mkdir ${tmpd}
 cd ${tmpd}
 
 
+cat > ${gtk_win32_runtime}/LICENSE-lgpl << EOF
+The following packages are covered by the 
+GNU Library General Public License (LGPL)
+
+atk
+cairo
+glib
+gtk+
+libiconv
+pango
+
+----------------------------------------
+
+EOF
+
+cat > ${gtk_win32_runtime}/LICENSE-gpl << EOF
+The following packages in addition to gerbv
+are covered by the GNU General Public License (GPL).
+
+freetype
+gettext
+libiconv
+pkg-config
+
+----------------------------------------
+
+EOF
 
 
 # LGPL
@@ -83,13 +110,20 @@ cd ${tmpd}
 # atk-1.20.0.zip
 # atk-dev-1.20.0.zip
 
+bzcat ${gtk_win32_downloads}/atk-*.tar.bz2 | tar -xf -
+cat atk-*/COPYING >> ${gtk_win32_runtime}/LICENSE-lgpl
+rm -fr atk-*
+
 # dual LGPL and MPL (Mozilla public license)
 #
 #cairo-1.4.10.tar.gz
 #cairo-1.4.10.zip
 #cairo-dev-1.4.10.zip
 
+# sort of BSD with advertising like
 #expat-2.0.0.zip
+echo "expat is covered by the following copyright and license" > ${gtk_win32_runtime}/LICENSE-expat
+cat ${gtk_win32_downloads}/COPYING-expat >> ${gtk_win32_runtime}/LICENSE-expat
 
 
 #fontconfig-2.4.2-tml-20071015.diff
@@ -97,7 +131,8 @@ cd ${tmpd}
 #fontconfig-2.4.2.tar.gz
 #fontconfig-dev-2.4.2-tml-20071015.zip
 tar -zxvf ${gtk_win32_downloads}/fontconfig-*.tar.gz 
-mv fontconfig*/COPYING ${gtk_win32_runtime}/LICENSE-fontconfig
+echo "fontconfig is covered by the following license" > ${gtk_win32_runtime}/LICENSE-fontconfig
+cat fontconfig*/COPYING >> ${gtk_win32_runtime}/LICENSE-fontconfig
 rm -fr fontconfig-*
 
 #
@@ -115,6 +150,9 @@ rm -fr fontconfig-*
 #gettext-runtime-0.17.zip
 #gettext-runtime-dev-0.17.zip
 #gettext-tools-0.17.zip
+tar -zxvf ${gtk_win32_downloads}/gettext-*.tar.gz
+cat gettext-*/COPYING >> ${gtk_win32_runtime}/LICENSE-gpl
+rm -fr gettext-*
 
 # LGPL
 #glib-2.14.4.tar.bz2
@@ -136,16 +174,22 @@ rm -fr fontconfig-*
 #jpeg-6b-4-src.zip
 
 unzip ${gtk_win32_downloads}/jpeg-*-src.zip
-cp src/jpeg/6b/jpeg-6b-src/README ${gtk_win32_runtime}/LICENSE-jpeg
+echo "libjpeg is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-jpeg
+cat src/jpeg/6b/jpeg-6b-src/README >> ${gtk_win32_runtime}/LICENSE-jpeg
 rm -fr src
 
-# GPL
+# LGPL
 #
 #libiconv-1.9.1.bin.woe32.zip
 #libiconv-1.9.1.tar.gz
 
+
 #libpng-1.2.8-bin.zip
 #libpng-1.2.8-lib.zip
+unzip ${gtk_win32_downloads}/libpng-*-lib.zip
+echo "libpng is covered by the following copyright and license" > ${gtk_win32_runtime}/LICENSE-png
+awk '/COPYRIGHT/,/^[ \t]*$/ {print}' include/png.h >> ${gtk_win32_runtime}/LICENSE-png
+rm -fr include lib
 
 # LGPL
 #
@@ -166,11 +210,19 @@ rm -fr src
 #tiff-3.8.2-1-lib.zip
 #tiff-3.8.2-1-src.zip
 unzip ${gtk_win32_downloads}/tiff-*-src.zip
-cp src/tiff/3.8.2/tiff-3.8.2-src/COPYRIGHT ${gtk_win32_runtime}/LICENSE-tiff
+echo "libtiff is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-tiff
+cat src/tiff/3.8.2/tiff-3.8.2-src/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-tiff
 rm -fr src
 
 #xpm-nox-4.0.3-20020617.zip
 #xpm-nox-dev-4.0.3-20020112.zip
+tar -zxvf ${gtk_win32_downloads}/xpm-*.tar.gz
+echo "The xpm library is covered by the following license and copyright:" > ${gtk_win32_runtime}/LICENSE-xpm
+cat xpm-*/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-xpm
+rm -fr xpm-*
 
 #zlib123-dll.zip
+echo "zlib is covered by the following license and copyright" > ${gtk_win32_runtime}/LICENSE-zlib
+cat ${gtk_win32_downloads}/zlib_license.txt >> ${gtk_win32_runtime}/LICENSE-zlib
+
 
