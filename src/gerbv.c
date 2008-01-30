@@ -809,49 +809,54 @@ main(int argc, char *argv[])
 	case '?':
 	case 'h':
 #ifdef HAVE_GETOPT_LONG
-	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
-	    fprintf(stderr, "where FLAGS could be any of\n");
-	    fprintf(stderr, "  --version|-V : Prints version of gerbv\n");
-	    fprintf(stderr, "  --help|-h : Prints this help message\n");
-	    fprintf(stderr, "  --log=<logfile>|-l <logfile> : Send error messages to <logfile>\n");
-	    fprintf(stderr, "  --project=<prjfile>|-p <prjfile> : Load project file <prjfile>\n");
-	    fprintf(stderr, "  --tools=<toolfile>|-t <toolfile> : Read Excellon tools from file <toolfile>\n");
+	    fprintf(stderr, "Usage: gerbv [OPTIONS...] [FILE...]\n\n");
+	    fprintf(stderr, "Available options:\n");
+	    fprintf(stderr, "  -V, --version                   Prints version of gerbv\n");
+	    fprintf(stderr, "  -h, --help                      Prints this help message\n");
+	    fprintf(stderr, "  -l, --log=<logfile>             Send error messages to <logfile>\n");
+	    fprintf(stderr, "  -p, --project=<prjfile>         Load project file <prjfile>\n");
+	    fprintf(stderr, "  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>\n");
 #ifdef RENDER_USING_GDK
-	    fprintf(stderr, "  --export=<png>|-x <png> : Export rendered picture to a PNG file\n");
+	    fprintf(stderr, "  -x, --export=<png>              Export rendered picture to a PNG file\n");
 #else
-	    fprintf(stderr, "  --export=<png/pdf/ps/svg>|-x <png/pdf/ps/svg> : Export rendered picture to the specified file format\n");
+	    fprintf(stderr, "  -x, --export=<png/pdf/ps/svg>   Export rendered picture to a file with\n");
+	    fprintf(stderr, "                                  the specified format\n");
 #endif
-	    fprintf(stderr, "  --output=<filename>|-o <filename> : Export to the file <filename>\n");
+	    fprintf(stderr, "  -o, --output=<filename>         Export to the file <filename>\n");
 	    /*
 	    fprintf(stderr, "  --foreground=<hexcolor>|-f <hexcolor> : Use foreground color <hexcolor>\n");
 	    fprintf(stderr, "  --background=<hexcolor>|-b <hexcolor> : Use background color <hexcolor>\n");
 	    */
-	    fprintf(stderr, "  --resolution=<width,height>|-r <width,height> : Use resolution <width> and <height>\n");
-	    fprintf(stderr, "  --scale=<scale>|-s <scale> : Use the specified scale value <scale>\n");
-	    fprintf(stderr, "  --origin=<x,y>|-g <x,y> : Use the specified origin to the lower left corner\n");
+	    fprintf(stderr, "  -r, --resolution=<w,h>          Use resolution <w> and<h> for the\n");
+	    fprintf(stderr, "                                  exported image\n");
+	    fprintf(stderr, "  -s, --scale=<scale>             Use the specified scale value <scale>\n");
+	    fprintf(stderr, "  -g, --origin=<x,y>              Use the specified origin for the lower left\n");
+	    fprintf(stderr, "                                  corner\n");
 	    exit(1);
 	    break;
 #else
-	    fprintf(stderr, "Usage : %s [FLAGS] <gerber file(s)>\n", argv[0]);
-	    fprintf(stderr, "where FLAGS could be any of\n");
-	    fprintf(stderr, "  -V : Prints version of gerbv\n");
-	    fprintf(stderr, "  -h : Prints this help message\n");
-	    fprintf(stderr, "  -l <logfile> : Send error messages to <logfile>\n");
-	    fprintf(stderr, "  -p <prjfile> : Load project file <prjfile>\n");
-	    fprintf(stderr, "  -t <toolfile> : Read Excellon tools from file <toolfile>\n");
+	    fprintf(stderr, "Usage: gerbv [OPTIONS...] [FILE...]\n\n");
+	    fprintf(stderr, "Available options:\n");
+	    fprintf(stderr, "  -V                      Prints version of gerbv\n");
+	    fprintf(stderr, "  -h                      Prints this help message\n");
+	    fprintf(stderr, "  -l <logfile>            Send error messages to <logfile>\n");
+	    fprintf(stderr, "  -p <prjfile>            Load project file <prjfile>\n");
+	    fprintf(stderr, "  -t <toolfile>           Read Excellon tools from file <toolfile>\n");
 #ifdef RENDER_USING_GDK
-	    fprintf(stderr, "  -x <png> : Export rendered picture to a PNG file\n");
+	    fprintf(stderr, "  -x <png>                Export rendered picture to a PNG file\n");
 #else
-	    fprintf(stderr, "  -x <png/pdf/ps/svg> : Export rendered picture to the specified file format\n");
+	    fprintf(stderr, "  -x <png/pdf/ps/svg>     Export rendered picture to a file with\n");
+	    fprintf(stderr, "                          the specified format\n");
 #endif
-	    fprintf(stderr, "  -o <filename> : Export to the file <filename>\n");
+	    fprintf(stderr, "  -o <filename>           Export to the file <filename>\n");
 	    /*
 	      fprintf(stderr, "  -f <hexcolor> : Use foreground color <hexcolor>\n");
 	      fprintf(stderr, "  -b <hexcolor> : Use background color <hexcolor>\n");
 	    */
-	    fprintf(stderr, "  -r <width,height> : Use resolution <width> and <height>\n");
-	    fprintf(stderr, "  -s <scale> : Use the specified scale value <scale>\n");
-	    fprintf(stderr, "  -g <x,y> : Use the specified origin to the lower left corner\n");				
+	    fprintf(stderr, "  -r <width,height>       Use resolution <width> and <height> for the\n");
+	    fprintf(stderr, "                          exported image\n");
+	    fprintf(stderr, "  -s <scale>              Use the specified scale value <scale>\n");
+	    fprintf(stderr, "  -g <x,y>                Use the specified origin for the lower left corner\n");
 	    exit(1);
 	    break;
 #endif /* HAVE_GETOPT_LONG */
