@@ -1,16 +1,28 @@
-gEDA
 
-GNU Electronic Design Automation
-------------------------------------------------------------------------------
+2008-01-13 : 2.0.0 general release.
+2008-01-09 : 2.0.0-beta release.
+2007-12-01 : 1.0.3 release.
+2006-07-28 : 1.0.2 release.
+2005-01-22 : 1.0.1 release.
+2004-12-28 : 1.0.0 release.
+2004-10-19 : Another beta of a windows version is released.
+2004-10-07 : A beta of a windows version.
+2004-05-27 : 0.16 release.
+2003-10-19 : 0.15 release.
+2003-09-16 : 0.14 release.
+2003-07-30 : Michael Ihde updated the ebuild script for Gentoo Linux.
+2003-07-17 : Michael Ihde contributed an ebuild script for Gentoo Linux.
+2003-03-19 : 0.13 release.
+2003-02-10 : 0.12 release.
+2002-11-20 : 0.11 release.
+2002-10-13 : 0.0.10 release.
+2002-07-06 : 0.0.9 release.
+2002-05-06 : 0.0.8 release.
+2002-02-10 : 0.0.7 release.
+2001-12-15 : 0.0.6 release.
+2001-11-14 : Fifth relase (0.0.5).
+2001-10-27 : Fourth release (0.0.4).
+2001-09-09 : Third release (0.0.3).
+2001-08-30 : Second release (0.0.2).
+2001-08-25 : First release (0.0.1) of source.
 
-gerbv NEWS
-
-Stefan Petersen
-E-mail: spe@stacken.kth.se
-Web: http://gerbv.sourceforge.net/
-
-
-------------------------------------------------------------------------------
-
-For new features for each version, see the announcement files at 
-http://gerbv.sourceforge.net/
