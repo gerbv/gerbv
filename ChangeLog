@@ -1,3 +1,72 @@
+2008-01-29 23:30  thepurlieu
+	* src/gerbv.c: cleanup help printout and change the format to
+	  better follow most other   programs.
+
+2008-01-24 11:12  thepurlieu
+	* src/draw.c: speed up cairo rendering of macros by checking each
+	  macro for any clear	draws, then only using push/pop group if we
+	  need to.
+
+2008-01-23 22:23  thepurlieu
+	* src/draw-gdk.c, src/draw-gdk.h, src/draw.c, src/export-rs274x.c,
+	  src/gerb_image.h, src/gerber.c, test/golden/example_jj_l1-2.png,
+	  test/golden/example_jj_l1-3.png,
+	  test/golden/example_jj_l1-orig.png,
+	  test/golden/test-polygon-fill-1.png: change polygon structure
+	  slightly and move "arc chopper" logic into the GDK   draw
+	  functions, and store only the arc info in the gerb_image struct.
+	  This	 allows exporting with 100% accuracy, speeds up the cairo
+	  rendering, and reduces   the size of the gerb_image.  Update 4
+	  golden files as a result of this change, since the cairo renderer
+	  now	renders with the default resolution instead of the mandated
+	  1 degree resolution	with the previous method.  Add more
+	  functionality to the export code, including info headers,
+	  polarity   changes, and finishing the polygon stuff. The only
+	  major code that still needs	to be added is macro exporting.
+	  This may wait until (or if) we re-arrange the   macro storage
+	  method.  Change GDK renderer to use a double for the scale
+	  factor instead of an int. The int   was causing noticable error
+	  during rendering of large boards in comparison to   the cairo
+	  version (which was correct).
+
+2008-01-23 19:49  thepurlieu
+	* src/gerber.c: Fix bug 1878509 by adding a hack to assume linear
+	  interpolation is desired   if no I or J parameter is given. All
+	  other programs seem to assume this, so   it should be safe.
+	  Also, the testsuite still passes after this change, so   it
+	  shouldn't break anything.
+
+2008-01-21 23:29  thepurlieu
+	* src/export-rs274x.c: round values before writing to file in order
+	  to make sure no truncation errors are included.
+
+2008-01-21 22:38  thepurlieu
+	* src/: Makefile.am, export-rs274x.c, export-rs274x.h, gerbv.c:
+	  *export-rs274x.[ch]: start coding the library to export a
+	  gerb_image	to a Gerber file. Currently it supports basic
+	  aperture drawing and	    polygon fills without circular paths
+	  inside them. This should support   most all files exported from
+	  PCB, though. For now, only the command     line option is hooked
+	  into this new library for testing (--export-rs274x).
+
+2008-01-13 17:18  thepurlieu
+	* src/: draw-gdk.h, interface.c:	fix bug #1870444 (and a
+	  similar report about problems on MAC compiling)
+		    by allowing both draw.h and draw-gdk.h to be included.
+
+2008-01-13 16:11  thepurlieu
+	* test/golden/test-circular-interpolation-1.png:  Update
+	  golden circular interpolation file to reflect updated test file.
+
+2008-01-13 16:09  thepurlieu
+	* ChangeLog, src/gerbv.c, src/interface.c, src/render.c,
+	  test/inputs/test-circular-interpolation-1.gbx:
+	  Get short options working for export from commandline options
+	  Get exporting from command line working
+	  without the need for a display (cairo only). This was a regression
+	  after the late on-the-fly GDK code. Get background color to show up
+	  correctly on loaded projects.
+
 ---- Release 2.0.0 on 1.13.2008 ----
 	
 2008-01-12  Julian Lamb
