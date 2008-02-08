@@ -1,0 +1,2355 @@
+2008-01-29 23:30  thepurlieu
+	* src/gerbv.c: cleanup help printout and change the format to
+	  better follow most other   programs.
+
+2008-01-24 11:12  thepurlieu
+	* src/draw.c: speed up cairo rendering of macros by checking each
+	  macro for any clear	draws, then only using push/pop group if we
+	  need to.
+
+2008-01-23 22:23  thepurlieu
+	* src/draw-gdk.c, src/draw-gdk.h, src/draw.c, src/export-rs274x.c,
+	  src/gerb_image.h, src/gerber.c, test/golden/example_jj_l1-2.png,
+	  test/golden/example_jj_l1-3.png,
+	  test/golden/example_jj_l1-orig.png,
+	  test/golden/test-polygon-fill-1.png: change polygon structure
+	  slightly and move "arc chopper" logic into the GDK   draw
+	  functions, and store only the arc info in the gerb_image struct.
+	  This	 allows exporting with 100% accuracy, speeds up the cairo
+	  rendering, and reduces   the size of the gerb_image.  Update 4
+	  golden files as a result of this change, since the cairo renderer
+	  now	renders with the default resolution instead of the mandated
+	  1 degree resolution	with the previous method.  Add more
+	  functionality to the export code, including info headers,
+	  polarity   changes, and finishing the polygon stuff. The only
+	  major code that still needs	to be added is macro exporting.
+	  This may wait until (or if) we re-arrange the   macro storage
+	  method.  Change GDK renderer to use a double for the scale
+	  factor instead of an int. The int   was causing noticable error
+	  during rendering of large boards in comparison to   the cairo
+	  version (which was correct).
+
+2008-01-23 19:49  thepurlieu
+	* src/gerber.c: Fix bug 1878509 by adding a hack to assume linear
+	  interpolation is desired   if no I or J parameter is given. All
+	  other programs seem to assume this, so   it should be safe.
+	  Also, the testsuite still passes after this change, so   it
+	  shouldn't break anything.
+
+2008-01-21 23:29  thepurlieu
+	* src/export-rs274x.c: round values before writing to file in order
+	  to make sure no truncation errors are included.
+
+2008-01-21 22:38  thepurlieu
+	* src/: Makefile.am, export-rs274x.c, export-rs274x.h, gerbv.c:
+	  *export-rs274x.[ch]: start coding the library to export a
+	  gerb_image	to a Gerber file. Currently it supports basic
+	  aperture drawing and	    polygon fills without circular paths
+	  inside them. This should support   most all files exported from
+	  PCB, though. For now, only the command     line option is hooked
+	  into this new library for testing (--export-rs274x).
+
+2008-01-13 17:18  thepurlieu
+	* src/: draw-gdk.h, interface.c:	fix bug #1870444 (and a
+	  similar report about problems on MAC compiling)
+		    by allowing both draw.h and draw-gdk.h to be included.
+
+2008-01-13 16:11  thepurlieu
+	* test/golden/test-circular-interpolation-1.png:  Update
+	  golden circular interpolation file to reflect updated test file.
+
+2008-01-13 16:09  thepurlieu
+	* ChangeLog, src/gerbv.c, src/interface.c, src/render.c,
+	  test/inputs/test-circular-interpolation-1.gbx:
+	  Get short options working for export from commandline options
+	  Get exporting from command line working
+	  without the need for a display (cairo only). This was a regression
+	  after the late on-the-fly GDK code. Get background color to show up
+	  correctly on loaded projects.
+
+---- Release 2.0.0 on 1.13.2008 ----
+	
+2008-01-12  Julian Lamb
+	* draw.c: Fix a few minor cairo rendering issues: 1) fix rendering of
+	  circular interpolation within a polygon fill. 2) Fix rendering of
+	  flashed polygon apertures with holes in them.
+	* tests: Add 8 new test files to test out aperture drawing, and 1 to test
+	  polygon fills.
+	* tests/golden/*: Update all golden files in preparation for 2.0 release.
+	  20 tests were failing for a variety of reasons.  Most were due to the
+	  recent disabling of anti-aliasing on polygon fills, which caused very
+	  small changes to the rendering of the polygon borders. The remainder
+	  of the failings were due to spurious lines previously being drawn on
+	  flashed apertures with holes (noticed by Stefan), which has now been
+	  fixed.
+	* draw.c: Fix small error in cairo rendering of elliptical circular
+	  interpolation paths.
+	* test/input/test-circular-interpolation.gbx: added another test file.
+
+2008-01-10  Julian Lamb
+	* interface.c: Try and fix bug where tooltips weren't showing up for some
+	  users.
+	* many files: Implement on-the-fly switching between GDK and cairo
+	  rendering, and set default setting on cairo builds to "Fast" (GDK).
+	* draw.c: Fix spurious line rendering noticed by Stefan on BGA pads.
+	* draw.c: Turn off anti-aliasing just on all polygon draws, since they were
+	  showing seams on ground planes.
+	* draw.c: Fix clearing of BGA pin holes bug noticed by Stefan.
+	* draw.c: Add "exposure off" logic, allowing macros with the exposure=off
+	  parameter to erase.
+
+---- Release 2.0.0-beta ----
+
+2008-01-09  Julian Lamb
+	* gerbv.c: Make sure we increase max_files by 2, since we may need to
+	  open up two files for PNP layers (top + bottom). This fixes a segfault
+	  after adding a PNP file to the project and then clicking "New".
+
+2008-01-08  Julian Lamb
+	* callbacks.c: Change color dialog to "blocking", which prevents user
+	  from modifying layer orders while it is running and preventing
+	  possible problems with the layer tree code.
+
+2008-01-07  Julian Lamb
+	* interface.c, callbacks.c: Add in warning dialogs if user starts a new
+	  project or opens a project with existing layers to make sure they
+	  don't accidentally close all layers.
+	* callbacks.c: Add in some logic to switch to inches in the rulers if the
+	  scale gets too small in mils.  Change the default unit back to mils.
+	* interface.c: Recognize the default unit and start the unit combo box
+	  to the right one.
+	* render.c: Change the default screen size scale factor to where mils
+	  can reasonably show up on the rulers.
+	* draw.c: Revert back to old oval rendering for the time being, since the
+	  new one seems to be having issues...
+	* gerbv.c, others: Add a dialog to confirm the user wants to open a file
+	  with invalid ASCII characters.
+	* pick-and-place.c: Make sure we check cir_seg height and width are > 0,
+	  otherwise it can cause cairo rendering problems.
+	* draw.c: Reduce label text font size, since the protel-pnp example file
+	  reveals problems fitting the text on the image.
+
+2008-01-06  Julian Lamb
+	* pick-and-place.c, gerbv.c: Render top and bottom layers in separate
+	  layers (if they exist). Rotate parts correctly and fix min/max 
+	  calculations so autoscaling works correctly. Also, add "top" and 
+	  "bottom" labels to layer names.
+	* draw.c, draw-gdk.c, gerb_aperture.h: Add rendering code in preparation
+	  for aperture macro reordering.
+	* render.c, callbacks.c: Add in watch cursor during rendering to provide
+	  feedback to user.
+	* callbacks.c: Tweak the color dialog checks to make sure it works after
+	  destroying the dialog via the window manager. For cairo, speedup
+	  rendering during layer actions by simply recompositing the final image
+	  instead of redrawing everything. On layer deletion, reselect the first
+	  row to always make sure a line is active.
+	* render.c: Reorder rendering so top layer is displayed on top.
+	* callbacks.c, render.c: Get unit changing combobox to work more elegantly
+	  by updating all relevent fields immediately after changing units. Re-
+	  enable mils on the rulers, since inches were just too large to be
+	  usable for most boards.
+	* interface.c: Get gui to gracefully shrink to a small size to support
+	  small screen resolutions. Prevent the sidebar from shrinking smaller
+	  than looks respectable. Change analysis tools to refer to "visible"
+	  layers rather than "active" layers to prevent confusion with the
+	  highlighted row in the layer tree. Add a frame around the statusbar to
+	  make it more visually appealing. Remove the "online manual" menu item
+	  since we don't actually have one yet.
+	* draw.c: Change oval rendering to oblong, since that's probably what is
+	  actually intended (GDK rendering already did this).
+
+2008-01-05  Julian Lamb
+	* interface.c: Remove a billion glade-generated gtk_widget_show function
+	  calls, since they aren't needed with gtk_widget_show_all.
+	* interface.c: Add tooltips for all menus and buttons.
+	* interface.c: Update menus for new pointer tool and remove reference
+	  to control gerber option, since it's out for 2.0.
+	* callbacks.c: Make middle mouse button the default pan tool, and update
+	  the mouse cursor is the user is panning or zooming with middle/right
+	  mouse buttons.
+	* interface.c,callback.c: Add right click menu to the layer tree and add
+	  column to indicate any modifications to the layer (for now, we just
+	  show "I" for an inverted layer). Add back in support for individually
+	  inverted layers. Also, fix XOR and OR rendering modes for GDK.
+	* render.c: Fix bug in alpha usage, which wasn't allowing transparency
+	  on exported images.
+	* tests/golden/*: Update all golden files, since the png export wasn't
+	  using alpha correctly, so all test files now render with a slightly
+	  different color (since the black can bleed through the blue color
+	  a tiny bit).
+	* gerber.c: Add support for include files (%IF) in the parser, which
+	  hopefully completes 100% implementation of the RS-274X spec (yay!).
+
+2008-1-4  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/gerbv_screen.h, src/icons.h, 
+	src/interface.c: Added pointer button to toggletools on task
+	bar.
+	
+2008-01-04  Stefan Petersen  <spe>
+
+	* src/interface.c: Changed menu entries where another window is popped
+	  up so text ends in three dots. "Save as" and "Print" uses built in
+	  GTK operations, so the hack there got not so nice. Is there other 
+	  ways, like predefined with the three dots?
+	* src/draw-gdk.c: Fixed aperture macro drawing in GDK target as well.
+
+2008-01-03  Julian Lamb
+	* draw.c: Fix some amacro rendering problems that Stefan uncovered.
+	* draw.c: Change the thermal rendering logic to do rendering without
+	  push/pop operations, so that vector output will work (previously, the
+	  cairo export defaulted to an image export for thermal rendering).
+	* render.c: Fix autoscaling for new amacro test (although the hack will be
+	  unnecessary after we reorder the amacro rendering process to correctly
+	  calculate the extents of each flashed macro aperture).
+	  
+2008-1-2  Stuart Brorson (sdb@cloud9.net)
+	* src/Makefile.am, src/icons.h, src/interface.c:
+	Added icons for toggletool buttons: move, zoom, and measure.
+
+2007-12-31  Julian Lamb
+	* gerbv.c: Rework project filename saving to save all layers with relative
+	  pathnames, relative to the project file location. This allows projects
+	  to be relocated, and fixes the second half of bug# 1443885.
+	* gerbv.c: More work on command line parsing.
+	* interface.c, render.c, callbacks.c: Reimplement different rendering modes
+	  into the sidepane combobox for GDK. For cairo, allow the user to change the
+	  quality vs speed.
+	* pick-and-place.c, draw.c: Correct pick and place parsing to use inches
+	  for the basic unit. Render names of pick-and-place components to help
+	  check placement.
+	
+2007-12-31  Stuart Brorson (sdb@cloud9.net)
+        * src/drill.[hc], gerber.[hc], gerbv.c, pick-and-place.[hc]:
+        Overhauled checks for file type.  Now all file types (Gerber,
+        drill, pick-place) are FALSE by default, and only are TRUE
+        when positive of file type indications are found.  Also added
+        specific check for RS-284-D, and throw error if -D is found.
+	
+2007-12-30  Julian Lamb
+	* callbacks.[ch], interface.c, others: Implement three "tools", namely
+	  the pointer, zoom, and measure tool and hookup to the existing gui
+	  stubs. Also, display an informative message in the message bar explaining
+	  how to use the active tool (similar to Inkscape). Do some miscellaneous
+	  cleanups in the gui code and rendering.
+	* callbacks.c, render.[ch]: Get basic printing support working.
+
+2007-12-28  Stefan Petersen  <spe@spe-laptop>
+	* src/draw.c, src/amacro.[hc]: gerbv can handle comments
+	  and calculations in aperture macros. Unfortunate this 
+	  uncovered some errors in how aperture macros are drawn.
+	  That will be next issue.
+
+2007-12-28  Julian Lamb
+	* gerber.c, many files: Finish implementing all remaining Gerber functions
+	  (offsets, mirrors, rotations, knockout, axis select, scale factors,
+	  and justify). Rework the min/max calculation routines for much more
+	  accurate autoscaling.  Also, much updating was needed to allow the new
+	  Gerber functions to autoscale correctly (e.g. scaling needs multiply all
+	  the min/max values by the image scale factor, etc).
+	* tests/inputs/test-...: Add test files for all Gerber functions.
+	* tests/golden/*: Update all the golden files, since the autoscaling
+	  rework made all the old golden files fail, since the scale factor is now
+	  slightly off from the previous ones, making them fail.
+
+2007-12-28  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/drill.c, src/gerb_stats.[hc], src/gerber.c
+	src/gerbv_screen.h, src/interface.c, src/pick-and-place.c:
+	Added more checks for file type. This should fix problem
+	of segfaults when reading RS-274D.  Make messages text window
+	(in sidepane) pop up if an error or warning is written to it so
+	user can immediately see problems.  Robustified a few areas
+	of stats gathering code.	
+	
+
+2007-12-25  Stuart Brorson (sdb@cloud9.net)
+	* src/gerber.c, src/callbacks.c, src/gerb_stats.[hc]:
+	Added reporting of all D codes used to Gerber reports window.
+
+2007-12-23  Julian Lamb
+	* gerber.c, many files: Start reorganization of some gerb_image
+	  parameters in preparation for adding final Gerber commands
+	  like rotation, mirroring, and knockout. Also, normalize all
+	  dimensions to inches in the image in order to simplify
+	  rendering.
+	* tests/inputs/test-...: Add first three testsuite files to test
+	  new commands.
+
+2007-12-20  Stuart Brorson (sdb@cloud9.net)
+	* callbacks.c:  Add scrollbars to Gerber aperture report window
+	since the report can grow to be very long.
+	
+2007-12-20  Julian Lamb
+	* render.c,callbacks.c,interface.c: Connect rulers and scrollbars and start
+	  getting them functional.
+	
+2007-12-19  Stuart Brorson (sdb@cloud9.net)
+	* src/gerber.c, src/gerb_stats.[hc], src/gerb_image.h,
+	src/gerb_error.h, src/callbacks.c:  Implemented reporting
+	of apertures found in Gerber files.  Added to Gerber 
+	reports window.
+	
+2007-12-17  Julian Lamb
+	* render,callbacks,interface: Restructure the whole rendering process by
+	  separating out all zoom and pan information from the global variable
+	  "screen". This was necessary to allow rendering without having a gtk
+	  window open, allowing for export from command line and many others.
+	  Also, the translation and zoom code is much more readable due to the
+	  elimination of many variables. Also, the GDK color allocations were
+	  eliminated to allow rendering without existing GDK colormaps in place.
+	* gerbv.c: Create the basic framework for exporting from the command line.	
+
+2007-12-16  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/render.c, src/gerber.c,
+	src/gerb_error.h, src/gerb_stats.[hc]:  Implemented reporting
+	of parse errors (with error level) found dring parsing of the 
+	Gerber files.
+	
+2007-12-16  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/render.c, src/gerb_error.h,
+	src/drill.c, src/drill_stats.[hc]:  Implemented reporting
+	of all parse errors (with error level) found during 
+	parsing of the drill file.
+	
+2007-12-16  Stuart Brorson (sdb@cloud9.net)
+	* src/drill.[hc], src/drill_stats.[hc]:
+	Fixed bug noticed by Joerg involving display of statistics 
+	in drill file with M71 calling out metric units.
+	
+2007-12-14  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/render.c:  Added "General" tab to reports 
+	windows for both Gerbers and Drills.
+	* src/Makefile.am, src/drill.c, src/gerb_image.h,
+	src/gerb_stats.[hc], src/drill_stats.[hc]:  Refactor drill_stats
+	stuff to its own files in accordance with our function naming 
+	scheme.
+
+2007-12-14  Stuart Brorson (sdb@cloud9.net)
+	* Too many files to mention:  Start adding list of drills found 
+	to drill statistics reported.  Now "analyze->active drill layers"
+	reports each drill defined, and the number of times it is used.
+	
+2007-12-14  Julian Lamb
+	* render,callbacks: Fully separate GDK and cairo rendering code to help
+	  speed analization. Change from storing intermediate cairo patterns to
+	  xlib surfaces for speed improvement. Eliminate image compositing on
+	  each expose_event in order to make panning feel much quicker.
+	  Temporarily disable idle function to fix GDK memory leaks and crashes.
+	  
+2007-12-12  Julian Lamb
+	* src/gerbv.c: Fix half of bug #1443885 by eliminating segfault when
+	  project file has layer files that won't load.
+	* src/callbacks.[ch],src/interface.c,src/render.[ch]: Big
+	  cleanup of callbacks.c and start moving zoom code to render.c in
+	  preparation for separating out zoom info from screen struct (allowing
+	  for exporting to file and improving code readability). Add in scrollbars
+	  and start hooking up rulers and scrollbar to panning.
+
+2007-12-11  Julian Lamb
+	* src/callbacks.c,src/interface,src/render.c: Get drag and drop working
+	  for layer sidebar. Fix memory leak for cairo rendering.
+
+2007-12-10  Julian Lamb
+	* src/gerbv.c,src/callbacks.c,others: Get basic layer management gui up
+	  and running. This includes visibility toggling, color picking, and basic
+	  row management using the buttons at the bottom. A popup menu will also
+	  be added when the user right clicks.
+	* src/gerber.c: Fix polygon rendering bug (bug #1190809). This was due
+	  to the gerber parser not storing the correct polarity when closing
+	  a polygon.
+
+2007-12-09  Stuart Brorson (sdb@cloud9.net)
+	* src/callbacks.c, src/drill.c, src/render.[hc],
+	src/gerb_image.[hc], src/gerb_stats.[hc]:  Added 
+	beginnings of statistics report for drill files.
+
+2007-12-09  Julian Lamb
+	* src/gerbv.c,src/callbacks.c: Reattach project open/save stuff in gui
+	  and separate out some of the code back to gerbv.c.
+	* gerbv.c,callbacks.c,interface.c,others: Implement export-to-file for
+	  PNG, PDF, SVG, and PS. Start implementing print functionality. More
+	  cleanup of old gui code. Move log handler over to new message textview
+	  in the sidebar.
+	  
+2007-12-08  Julian Lamb
+	* src/render.c,src/callbacks.c: Fix translation code for cairo renderer
+	  so things are correctly centered on the screen after a zoom-to-fit. Fix
+	  scaling code for MM unit drawings.
+	* src/amacro.c,src/gerber.c: Fix error messages in amacro parsing (bug
+	  #1845782) on FreeBSD systems (thanks to Joerg for the patch). Also, fix
+	  possible hangs during amacro parsing (e.g. the file "%AM" would hang
+	  gerbv, since it didn't correctly check for EOF).
+
+2007-12-07  SDB
+	* render.c, render.h, Many other files:  Started to refactor
+	gerbv.  Also start to incorporate statistics gathering stuff
+	into gerber.[hc].
+
+2007-12-07  Julian Lamb
+	* src/drill.c: Fix warning messages on some drill files (bug #1316247).
+	  The drill parser did not zero out new gerbv_aperture_t structures, which
+	  sometimes allowed junk in the param[x] portions, which confused the
+	  parser and gave warnings and potentially incorrectly rendered drill
+	  holes.
+
+2007-12-07  Julian Lamb
+	* src/draw.c: Fix thermal rendering bug (bug #1024000) in the cairo
+	  rendering code (this bug is not easily fixable in the GDK code, but
+	  it is being obsoleted soon).
+
+2007-12-06  Julian Lamb
+	* src/callbacks.c,src/gerbv.c: Add private implementation of
+	  gdk_cairo_create to allow compilation with gtk < 2.8. Fixed bug in gerbv
+	  which was causing gdk rendering to skip frames sometimes.
+
+2007-12-05  Julian Lamb
+	* src/gerber.c,src/drill.h,src/gerb_image.h: Fix memory corruption issue
+	  with G54 codes not checking if aperture numbers were within bounds (bug
+	  #1843983). Also, bumped up max aperture number from 999 to 9999 based on
+	  reports of some CAD packages using numbers this hig (even though it
+	  clearly says 999 is the highest number in the RS274X spec). This will
+	  increase memory usage somewhat, but hopefully should be acceptable.
+
+2007-12-05  Julian Lamb
+	* src/drill.c: Fix parsing of drill files with commas in
+	  place of decimals (bug #1844100).
+
+2007-12-05  Julian Lamb
+	* src/draw.c,src/draw-gtk.c: Fix rendering of lines drawn with rectangular 
+	  aperatures (bug #1834944 and #1704942). Thanks to ineiev for the gdk
+	  patch, which was reworked to apply to the cairo rendering too.
+	  
+2007-12-04  Julian Lamb
+	* src/callbacks.[ch],src/interface.[ch]: Rename GTK widgets to more
+	  recognizable names for better code legibility. Change sidebar to a
+	  notebook view and add a messages tab. Organize statusbar layout. Add
+	  "analyze" menu and move CAM related functions to it. Clean up toolbars
+	  and combine into a single toolbar.
+	  
+2007-11-30  Julian Lamb
+	* src/callbacks.[ch],src/interface.[ch],src/gerbv.c: Split out all gui
+	  code out of gerbv.c and put it into the standard callbacks/interface
+	  files. Started to overhaul gui during the process. Also, speed up the
+	  feel of the cairo rendering by rendering layers to a cairo_pattern_t,
+	  then compositing using these patterns. This allows the user to pan and
+	  get much quicker response while the CPU renders the new view in the
+	  background.
+
+2007-11-30  Stuart Brorson sdb (at) cloud9 (dot) net
+	*  configure.in, src/exportimage.c, src/gerbv.c,
+	src/pick-and-place.c:
+	Modify build system so you must explicitly --enable-cairo to
+	build using cairo, otherwise build using GDK by default.
+	
+2007-11-29  Stuart Brorson sdb (at) cloud9 (dot) net
+	* src/gerb_file.c, src/gerber.c, src/gerbv.c, src/gerbv_screen.h,
+	src/project.c:  Added "File -> Open Gerber(s)" dialog.  Added 
+	int screen.last_loaded which keeps track of where to insert the next
+	Gerber to be loaded.
+	
+2007-11-26  Julian Lamb
+
+	* src/draw-gdk.[ch],src/gerber.c: Add gdk rendering code back in so it can
+	  be compiled if cairo isn't available.
+	* src/gerber.c: Fix g_strconcat calls by adding NULL to end of arguments.
+	  
+2007-11-20  Julian Lamb
+
+	* src/draw.c: Add rendering code for arcs. Also, fix the rendiring of oval
+	  aperatures.
+
+2007-11-19  Julian Lamb
+
+	* src/draw.[ch], examples/am-test/am-test.gbx: Complete the conversion to
+	  the cairo rendering code. All aperature macros now render correctly, as
+	  well as clear layer polarities. Note that several bugs were found in
+	  the old aperature macro rendering functions (some rotations were not
+	  done correctly, and the moire and thermal outer diameters weren't
+	  correctly rendered) and those were fixed in the cairo conversion. The
+	  am-test.gbx file was modified slightly to test these fixes.
+	* src/pick-and-place.c: Added an additional sanity check to make sure we
+	  don't accidentally open some gerber files as PNP place files.
+	* configure.in: Add explicit cairo check.
+
+2007-02-28  Julian Lamb
+
+	* src/draw.[ch], src/draw_amacro.[ch], src/gerbv.c: Start converting
+	  rendering from gdk to cairo, in order to improve rendering capability,
+	  and allow for future export to PDF/SVG/PNG/PS capability. The
+	  draw_amacro files were combined into the draw files, since most of the
+	  rendering functions were common between the two.
+
+2007-02-21  Julian Lamb
+
+	* src/gerb_image.c, src/gerb_image.h: Added string label capability
+	  to the gerb_image struct for future rendering of labels.
+	* src/pick-and-place.c: Updated parser to accept pick-and-place
+	  files output from the PCB program.  Performed more code cleanup
+	  and implemented min/max screen calcs based on pick-and-place
+	  files.
+	* example/LED.xy: Added a sample pick-and-place file output
+	  from PCB, based on the LED example in the PCB source code.
+
+2007-02-17  Julian Lamb
+
+	* src/pick-and-place.c, src/pick-and-place.h, src/gerbv.c,
+	  src/csv.c:
+	  Get example/protel-pnp/Pick*.csv to load through the normal
+	  file loading code, implementing some simple logic to try
+	  and guess if a given file is pick and place data.
+
+2007-02-16  Julian Lamb
+
+	* src/pick-and-place.c, src/pick-and-place.h, src/gerbv.c:
+	  Continue cleaning up pick-and-place code into simple
+	  parser/renderer.
+
+2007-02-15  Julian Lamb
+
+	* src/search.c, src/search.h, src/search-gui.c,
+	  src/search-gui.h, src/search-cb.c, src/search-cb.h,
+	  src/search-file.c, src/search-file.h, src/search-mark.c,
+	  src/search-mark.h, src/pick-and-place.c,
+	  src/pick-and-place.h, src/Makefile.am: Remove all
+	  search* files, and combine important functions into
+	  pick-and-place.[ch].
+	* src/gerbv.c, src/project.c: Remove gui-related references
+	  to pick and place functions in preparation for moving
+	  pick-and-place functionality to a simple parser/renderer.
+
+2006-07-26  Stefan Petersen  <spe@localhost.localdomain>
+
+	* src/log.c: Rewritten by Dino to use GTK2. The 
+	  previous caused SEGVs, so it was time to get
+	  it exchanged.
+
+2006-07-25  Stefan Petersen  <spe@localhost.localdomain>
+
+        * loads of files: Added check of return value for
+          error checking.
+	
+	* configure.in, man/gerbv.1.in, src/Makefile.am:
+          Remade build system so it should be able to handle
+          autoconf 2.60 and automake 1.9. Thanks FSF for yet
+          again breaking a working API.
+ 
+2006-07-24  Stefan Petersen  <spe@localhost.localdomain>
+
+	* src/gerb_file.c: Fixed bug #1236047, so now gerbv handles
+	  negative coordinates.
+
+	* src/gerb_file.c, src/gerbv.c: Hopefully reduce SEGVs
+	  even more by better error checking of operations in
+	  gerb_fclose.
+
+2006-07-23  Stefan Petersen  <spe@localhost.localdomain>
+
+	* src/gerb_image.h, src/gerber.c, gerbv.c: Added patch from
+	  extensive (Sourceforge alias) that according to him make
+	  gerbv handles autoscaling of gerber files with mm better.
+
+	* src/drill.c, src/gerb_file.c: Fixed some possible memory 
+	  leaks and SIGSEGVs pointed out by Wolfgang Wieser 
+	  (hand patched from #1201900).
+
+2006-05-07  Stefan Petersen  <spe@localhost.localdomain>
+
+	* src/draw_amacro.c: Daniel Mack - zonque submitted
+	  as a patch (1350283) (with no file attached though) that
+	  renaming stack_t to macro_stack_t would make gerbv build
+	  on darwin.
+
+2005-09-28 Dan McMahill
+
+	* src/drill.c: Remove an lval typecast.  Not only does this get
+	  gerbv to compile with gcc4 and other non-gcc compilers, it 
+	  was no longer needed as the types involved were all doubles 
+	  anyway.
+
+2005-02-15  Stefan Petersen  <spe@siouxsie.umunet.org>
+
+        * src/draw_amacro.c: Forgot to copy gc to local_gc
+          so drawing inherits gc from image wide setting.
+          Pointed out by Warren Young.
+
+2005-02-08  Tomasz Motylewski  <t.motylewski@bfad.de>
+	* src/gerbv.c: malloc strlen+2, not +1
+	* src/gerb_file.c: malloc len+1, not len
+
+2005-01-06  Stefan Petersen  <spe@siouxsie.umunet.org>
+
+	* src/Makefile.am: A clean make distcheck by adding some missing
+	  .h-files in Makefile.am
+
+	* src/*.c: Removed portability to GTK+ 1.x by changing configure.in
+	  and remove USE_GTK2 in many small places. Also made some reformat
+	  of the code to fit into the rest of the gerbv codebase.
+
+2004-12-28  Stefan Petersen  <spe@siouxsie.umunet.org>
+
+	* src/draw.c: When drawing circles I ignored if circle
+          had inner diameter, which was pointed out by Harry Eaton. 
+          Not anymore... Closes bug #1050340 in this branch.
+
+	* Updated to TinyScheme 1.35
+
+2004-10-30  Stefan Petersen  <spe@siouxsie.umunet.org>
+
+        * src/draw_amacro.c: Forgot to use local_gc when drawing some
+          of the primitive aperture macros. Closes bug #1051045.
+
+2004-10-13 Juergen Haas <juergenhaas@gmx.net>
+
+	* right click on selected part (current active selection) now works 
+	  also on shapes with PIN1 Off centre axis
+	  FIXME circular shapes are recognised  at a fixed radius of 3mm 
+	  Only works with units of gerbv match units used in pick and place 
+	  file! 
+
+2004-10-11 Juergen Haas <juergenhaas@gmx.net>
+
+	* a first draft of API documentation exists see doc/html/main.html
+	 After adding further comments please use the following style:
+	 /** brief description.
+	 Now we can write details */
+	Afterwards use doc/Doxyfile.nopreprocessing to update documentation
+	with doxygen
+
+2004-09-13  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: If you tried to invert color of an unloaded layer
+          you got a segmentation fault. I think it was discovered by Juergen.
+
+2004-09-11 Juergen Haas <juergenhaas@gmx.net>
+
+	* right click in window with active selection now shows part 
+	  designator in statusline for easier identification in multiple 
+	  selections
+	  FIXME only works if pin1 is not on center axis of part
+
+
+2004-09-09 Juergen Haas <juergenhaas@gmx.net>
+
+	* added footprint column shown in result search window
+
+2004-09-05 Juergen Haas <juergenhaas@gmx.net>
+
+	* fixed right click shows designator in statusbar does not hang program
+	* MINGW issues with path separators
+
+2004-09-04 Juergen Haas <juergenhaas@gmx.net>
+
+	* fixed graphical representation of parts
+	* added gerb_transf_rotate
+	* added gerb_transf_shift  
+	* fixed segfault when searching in comments
+	* designator is also shown checked by default
+
+2004-08-28 Juergen Haas <juergenhaas@gmx.net>
+
+	* fixed GTK1 compilation issues
+
+
+2004-08-27 Juergen Haas <juergenhaas@gmx.net>
+
+ 	* fixed memory issues pnp_state 
+ 	* fixed too many calls to screen_for_delimiter
+ 	* added #include "string.h" to gerb_transf.c
+ 	* introduced update_combo_box_model()
+ 	* removed unnecessary code
+	* "beautified" gerb_transf.[ch]	
+	* introduced rectangular shape for marking rectangular parts
+	* introduced a LOG MEssage, when right click on any selected part
+	  (must be in active selection)
+
+2004-08-26  Juergen Haas <juergenhaas@gmx.net>
+
+	* small bugfixes
+	* added double click draws selected item on screen
+
+2004-08-25  Tomasz Motylewski <t.motylewski@bfad.de>
+
+	* eliminated memory leak MINGW32 gerb_file.c fd->data
+	* forced LC_NUMERIC to "C" in parse_gerb(), fixing bug 
+	  resulting in very thin lines (aperture size = 0) under GTK2
+
+2004-08-23  Tomasz Motylewski <t.motylewski@bfad.de>
+
+	* cleaned up memory allocation in gerb_image.c
+	* improved project loading (still broken, there is no clear
+	  design which function should do what).
+	* fixed memory leak plist_top->filename
+
+2004-08-23  Juergen Haas <juergenhaas@gmx.net>
+	-saving projects:
+	is done in a more flexible way:
+	adds a similar line with "filename" replaced by "pick_and_place" 
+	to project file
+FIX ME: reading in a project file is still broken 
+	-several bugfixes: 
+	 upon pressing mark button in select parts dialog it always updates
+	 screen
+	
+2004-08-23  Tomasz Motylewski <t.motylewski@bfad.de>
+
+	* replaced scale with gerb_transf_t(.scale) - mirroring preparation
+
+2004-08-22  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, src/Makefile.am: Use libpng-config to find out
+	  parameters to use in CFLAGS and LIBS.
+
+tag:SEARCH_SELECT_merged
+
+2004-08-13 11:25 Search9-pre8 Juergen Haas <juergenhaas@gmx.net>
+ todo 	saving projects 
+	Bugs fixed:
+		-if mark is pressed and there is no selection colour of layer
+		 button does not change
+                -use of libmba's csv.[ch]  
+		-automatic screening for delimiters
+		-if  dialog is to be destroyed but it does not exist is caught 
+		-upon loading a second gerberfile the first user dialog is 
+		  destroyed and parsed_PNP_data
+		-compiles under GTK1
+		-pressing mark actually also activates the new layer
+		-loading a gerberfile also activates layer
+		-tooltip to entry field now hints at usage of regexp
+		-arrow down acts like space
+		-colour change back to original colour fixed - new colour is 
+                 only allocated upon first draw on an empty layer
+		-dropdown list for available layers updates, whenever changes 
+                 to layer occur
+		-default layer now is actually also the one which is drawn ontoi
+                  by default 
+ 		 (shown was MAXFILES-1, but it was drawn onto 0!)
+                -if there was an error loading a pnpfile 
+		(e.g. incompatible  csv format) select parts window is destroyed
+                  also   parsed_PNP_data is  freed!
+		-arrow up reverses arrow down/space 
+		-right click now selects and draws the selection on screen
+               	-shift_arrows will add items to selection (moving up and down!)
+		-focus was always going to log window, for MINGW therefore 
+		 logging in log window was disabled as a first measure
+		 
+
+2004-08-12 09:51   Search9-pre7 Juergen Haas <juergenhaas@gmx.net> 
+program now works under MINGW
+code cleanup
+BUG fixes:
+	-crash on lowercase entries(linux)using REG_ICASE
+	-crash on entries non existing in the list (MINGW/LINUX)
+use of parsed_PNP_data as a global storage place for pnp data after parsing, in case of reopen search window initiated.
+
+
+2004-08-07 09:29  Search9-pre6
+search_gui.c:
+        -introduced GtkEntryCompletion listing choices for entry
+                works for designators and comments
+                _fixed bug in select_by_regex where
+                if comment was NULL a segfault occurred
+        -automatic scrolling to first hit works with designators only
+        probably utf8 issue with comments
+                       strncasecmp causes segfault
+        -alignment in assembly mode improved, the first 15 elements
+                are also visible now
+        -upon enter in entry field we scroll to first hit in selection
+
+-----------------------------
+2004-08-04 09:29 search9-pre5: Juergen Haas <juergenhaas@gmx.net>
+TODO introduction of libmba csv functions sublicensed under MIT
+ csv.[ch] have been extracted and made independent from msgno.[ch] and text.[ch] the latter 
+ two wont be included 
+-----------------------------
+2004-08-03 09:30 Search9-pre4: Juergen Haas <juergenhaas@gmx.net>
+search_gui.c:
+	-fixed error with default layer selection:now always last layer is default, based on 
+	MAX_FILES
+cleaned up code
+-----------------------------
+Search9-pre3: Juergen Haas <juergenhaas@gmx.net>
+TODO-towards project saving: added filename if pnp file is loaded
+	dont know how to handle loading of files because pnp file is not compatible to 
+	gerberfile
+	->maybe including check for pnpfile in gerb_fopen?
+-search-gui.c:
+	*implemented intelligent top/bottom selector
+		if sel exists, only non matching (either tpo or bottom parts) will be 
+		unselected
+		if no sel exists, all top or bottom parts are selected
+	*implemented gtkcombobox for accessing layers, it will actually not allow overwriting 
+	existing 
+ 	layers( gerberfile displays), if loaded last after all gerberfiles 
+	dynamic update of list to be more flexible
+		ok - used gtkliststore and GtkCellLayout for labels in Gtk_Combo_Box dropdown 
+		list
+
+TODO-MINGW: fgets seems to report NULL ???!!
+-implemented #ifdef __MINGW32__ , HAVE LIBGEN_H, HAVE MMAN_SYS_H and HAVE_REGEX_H for 
+	portability issues under WIN32/mingw
+-------------------------------------
+tag:SEARCH_SELECT_start
+
+2004-07-12 (summary) Juergen Haas/Tomasz Motylewski <juergenhaas@gmx.net> 
+
+	[pleases direct any questions, comments or bug reports to me or Tomasz]
+	* added new functionality: search, select and mark parts in layers 
+	  16-19 by loading a "Pick and Place" file in CSV Format: 
+	  		 entry1,entry2,..
+	  	NO OTHER FORMAT IS RECOGNISED SO FAR!
+		- src/search.c: 
+		   storing pnp data in memory
+	 	- src/search_cb.c:
+		   callbacks
+	 	- src/search_file.c:
+		   how to read in and parse pnp file
+		- src/search_mark.c:
+		   create_marked_layer(layernumber); will draw the selected 
+		   parts as circles with a line going from centre to Pin1 on
+		   the layer given as argument(at the moment layers 16-19 are 
+		   selectable)
+	 	- src/search_gui.c:
+		   will load pick and place file and display the parts unique 
+		   designators, the Top/Bottom Flag and the corresponding 	
+		   comment in a sortable list. Multiple selections can be made 
+		   by entering a regex search phrase or by simply clicking on 
+		   the desired items (for multiple selections by mouse click use
+		   the well-known SHIFT-CTRL-click combinations)
+
+	* This version also includes first rough support for MINGW/WIN32 
+	  -not yet usable, route for reading in files is broken
+
+2004-08-21  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Made sure that only list of short options is 
+	  printed when only short options are compiled in.
+
+2004-08-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* doc/*, example/*: Makefiles.am removed Makefile.in wheh running
+	  distclean. Not good. Spotted by Hamish Moffatt when packaging
+	  for Debian.
+
+2004-07-28  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c: In gerbers the image can be negative or positive.
+	  Then a part of the image called a layer can be clear or dark.
+	  -"No more weed for you, Mr Gerber".
+	  Richard Lightman found this and submitted both an example and 
+	  a patch. Thanks!
+
+2004-07-11  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: When drawing thermals the cross ends in butt
+	  instead of round which gives nicer look when thermal covers an 
+	  other via.
+
+2004-06-27  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Improved comments on what is going and why. Also
+	  improved a little in determining the size of the image. Now it 
+	  ignores points with no aperture defined, unless it is a polygon 
+	  area.
+
+2004-06-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Removed two potential segfaults when running old
+	  RS-274D format.
+
+	* src/gerber.c, src/batch.c, src/gerb_image.[hc]: Actually removed
+	  all traces of MQ_END and MQ_START. That means that empty nodes 
+	  with only this information isn't saved, since the only time we need
+	  this information is when parsing arcs. When an arc is parsed
+	  the information wheter that arc is multi or single quadrant is
+	  saved there. Also closes bug #942590.
+
+	* src/gerbv.c, src/gerbv_screen.h, src/gerb_image.c, src/gerb_image.h:
+	  Added possibility to dump a parsed image as text to be able to
+	  debug the parser.
+
+2004-06-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: By mistake I assumed that all aperture 
+	  macros had exposure flags, but that was a mistake. Drew Moore
+	  pointed it out to me. Thanks.
+
+2004-06-05  Stefan Petersen  <spe@stacken.kth.se>
+
+	* */.cvsignore, man/gerbv.1.in, src/gerbv.c: Minor updates and 
+	  cleanups from Dimitri. --help added for instance.
+
+-- Release 0.16 --
+
+2004-05-25  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: Now aperture macros handles exposures properly,
+	  so some thermals can be drawn properly. Inspired by discussion with
+	  Dimitri.
+
+
+2004-05-19  Stefan Petersen  <spe@stacken.kth.se>
+
+	* man/gerbv.1.in, src/Makefile.am, src/drill.c, src/gerbv.c, 
+	  src/tooltable.c, src/tooltable.h: Patch from Dimitri 
+	  (lastname unknown) to read tool files from for instance Eagle CAD.
+
+2004-04-27  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, src/drill.c: Patch from Tomasz Motylewski as a start
+	  remove dependencies on mmap et al (sys/mman.h) for targets lacking
+	  these operations (mingw).
+
+2004-04-21  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added keys f for fit, z for zoom in and Z for zoom out
+	  after request from Stefan Thiede.
+
+2004-04-04  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_file.[hc], src/drill.c, src/amacro.c, gerber.c:
+	  Changed gerb_fgetint() so it can return number of parsed characters.
+	  This is useful when parsing coordinates in omit trailing zeros mode.
+	  Omit trailing zeros is also handled properly now. Reported by Joachim
+	  Jansen and filed as bug #918344.
+	
+2004-02-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Apperently under GTK2 both delete_event and destroy
+	  signals is emitted when you press the little cross in the 
+	  decoration bar. When both signals were emitted gerbv tried to free
+	  the same memory twice.
+
+2004-02-14  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/Makefile.am: Making sure init.scm is copied to the right 
+	  place at install.
+
+2004-02-13  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: The good old circles revisited. This time Dan
+	  noticed that circles with the same start and end point did not 
+	  draw properly ie as circles. It became points.
+
+2004-02-08  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: Apperently auto* doesn't define $prefix if you
+	  don't set it in your script. The autotools has become more and
+	  more of a moving target...
+
+	* man/gerbv.1.in: A bunch of updates, mainly reflecting the new
+	  features.
+
+2004-02-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Save screen.path even when we load a project file.
+
+	* src/gerbv.c: Fixed a segmentation fault when I tried to free
+	  an optarg:ed variable.
+
+2004-02-05  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Dan strikes again. Option -p (with appropriate 
+	  error message) added as an alternative to --project.
+
+2004-02-01  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Patch from Dan causes the "save as..." dialog box 
+	  to come up if you try to do a "save" with no current project 
+	  file name.
+	* src/gerbv.c: Yet another patch from Dan to put project filename
+	  in title of window.
+
+2003-12-14  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, src/gerbv.c, src/log.c, src/setup.h: It is now 
+	  possible to compile gerbv with GTK+ 2.*, at least tested with
+	  2.2.4. There are still some problems, particulary in log.c. 
+	  GtkText is deprecated, but I have enabled GTK_ENABLE_BROKEN.
+	  This needs a more permanent solution. This closes Feature 
+	  Request #771480, but probably opens up some new ones.
+
+2003-12-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Projects saves and restores background color.
+
+	* src/gerbv.c, src/gerbv_screen.h: Added Save Project and handles
+	  if a filename was given, either when loading or a previous save.
+
+2003-12-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, */Makefile.am: Added a recursive chain of Makefile.am
+	  to be able to run make dist and make distcheck. Proposed by Dan 
+	  McMahill. Thanks!
+
+2003-12-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/project.[hc]: Project now saves ev. inversion of
+	  layer, all layers accept all parameters and commandline switch
+	  --project=<project file> also works.
+
+	* src/gerbv.c, src/gerbv_screen.h: Added invert layer functionality.
+	  Closes feature request 777547.
+
+2003-12-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_file.[hc]: Added function gerb_find_file.
+	* src/draw_amacro.c: Forgot to make some internal functions static.
+	* src/*: Scheme interpreter added to be used by project files as a 
+	  start. Also project file handling added. A short description of
+	  the format used in project files also added. A massive commit.
+
+2003-11-22  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, acconfig.h: acconfig.h removed and more information
+	  added to configure.in after information in warning messages from
+	  autoheader.
+
+2003-11-13  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/export_image.c: Changes pixbuf_to_file_as_png simplify operation
+	  No major speedup since that is not the time hog.
+
+-- Release 0.15 --
+
+2003-10-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: Drawing of aperture macro primitive 7 was
+	  severly broken. Revealed by Drew Moore who sent an example 
+	  along. Thanks Drew! Closes bug #818307.
+
+2003-09-28  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Patch from Peter Brueckner. Some Gerbers don't
+	  have G04 but just G4. Peters patch fixes that for G- and M-codes.
+
+2003-09-08  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Patch from Simon Munton to fix a problem with polygons
+	  sometimes not being filled properly. Closes bug #800928 (which
+	  he promptly had submitted).
+
+	* src/gerber.c: Another patch from Simon. This time it fixes
+	  circular polygon outlines by with a number of short segments.
+	  Closes bug #603183, which was almost a year old. Thanks Simon!
+
+-- Release 0.14 --
+
+2003-05-31  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, src/amacro.c: Removed the last remaining malloc.h
+	  after tips from Charles Lepple on the geda mailinglist.
+
+2003-04-18  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: Larry Doolittle had a problem when drawing
+	  one of his files, a circle seemed to explode. I couldn't 
+	  reproduce it, but after his tests I added this patch. Thanks Larry!
+
+2003-04-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: RS274D caused segfaults again. Reported by Skurk.
+
+-- Release 0.13 --
+
+2003-03-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c, src/gerb_image.h, src/gerber.c: Angles are now
+	  calculated as doubles instead of ints. For instance, the cslk
+	  example now draws properly at the same time as Dans ridicously
+	  small arcs also works.
+
+	* src/gerber.c: Better sanity checks for angles of arcs, so
+	  cw are drawn cw and ccw are drawn ccw. Closes bug #703265
+	  which was reported by Mark Whitis. Thanks!
+
+2003-03-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Doesn't warn anymore if a gerber file requests an
+	  image rotate on zero degrees. Reported by Balaji V.
+
+2003-03-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: Aperture macro primitive 1 is a filled circle.
+	* Makefile.am, configure.in, src/gerbv.c, src/Makefile.am, 
+	  src/gerbv.1.in: Removed all traces of Guile. batch.c is left, but 
+	  is not compiled in.
+
+2003-03-01  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.[hc], gerber.c: Redesigned step-and-repeat
+	  parser. And when I was at it I also cleaned up new_gerb_image()
+	  a bit.
+
+2003-02-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/Makefile.am,src/gerbv.c,src/gerbv_screen.h,src/log.c,
+	  src/setup.[hc]: Added setup to handle all things that can
+	  be setup by commandline or (future) rc files. We have the
+	  screen variable, but some didn't think it was appropriate
+	  to add setup things to.
+
+2003-02-22  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Changed comparision if two angles are equal
+	  to double since Dan McMahill discovered a case where the difference
+	  between the angles were actually less than 0.5 degrees.  
+	  Closes bug #689663.
+
+	* src/gerbv.c: I you tried to swap layer with an unused layer 
+	  gerbv segfaulted. Also discovered by Dan McMahill. Cudos to him
+	  as usual... Closes bug #689667.
+	
+2003-02-12  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: A patch from Peter Monta for incremental
+	  coordinates. He also discovered that I had made a mistake
+	  when parsing incremental/absolute coordinates.
+
+-- Release 0.12 --
+
+2003-02-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/drill.c; Exchanged the last fprintf(stderr, with
+	  GERB_COMPILE_ERROR.
+
+	* src/gerbv.c: Added swap of tooltips information too.
+
+2003-02-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/drill.c: Added patch from Dan McMahill since + sign
+	  before coordinates seemed to confuse the drill parser.
+	  Closes bug #678407.
+
+	* src/gerbv.c: Now you can move around layers in the right
+	  sidebar so you can select in which order the layers should 
+	  be presented.
+
+	* src/draw.c, src/drill.c, src/gerb_image.[hc], src/gerber.c:
+	  A new system to keep track of mm and inches. Everything is
+	  still drawn based on inches and min/max is also stored as
+	  inches. But now every aperture and every coordinate has a 
+	  unit attached to it that is used when drawing. I hope I 
+	  haven't breaked anything, patricular in drill.c. And I have
+	  very few (one) reference examples in millimeters.
+
+2003-01-26  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/log.[hc], src/gerbv.c: Made sure error messages are 
+	  directed to the right place (shell and popup) at the
+	  right moment and that the error messages look nicer.
+
+	* .cvsignore, man/.cvsignore, scheme/.cvsignore, src/.cvsignore:
+	  Added these files submitted by Holger Waechtler. Thanks!
+
+2003-01-25  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c, src/gerb_image.[hc]: Added a patch from
+	  Holger Waechtler regarding G70/G71 which opened up a whole
+	  can of worms. After thinking and hacking the following works:
+	  * all in inches (as always).
+	  * apertures in inches and vectors in millimeters.
+	  The reason for not fixing apertures in millimeter are because
+	  the calculation must happen in the drawing engine, since we
+	  don't know until the moment of drawing if the paramters defines
+	  a length or an angle. It's probably just a matter of fixing the
+	  scaling when drawing, but I fix that later on.
+
+2003-01-19  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Fixed bug in arc/circle drawing that caused
+	  some odd cases (not noticed so far elsewhere) that made
+	  ccw arcs to be drawn cw. Discovered by Jukka Marin. Thanks.
+
+2003-01-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* man/gerbv.1, src/gerbv.c : Updated documentation to reflect
+	  the new log commandline switch.
+	* files2tag, TODO: Minor documentation updates to reflect
+	   reality.
+
+2003-01-15 Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/Makefile.am, src/color.c, src/draw.c, src/drill.c,
+	  src/gerber.c, src/gerbv.c, src/gerbv_screen.h. Added are
+	  src/log.[hc], src/gerb_error.h: Finally have managed to
+	  change all error reporting routines so it works with
+	  Dinos log system. Now should all errors and warnings pop up
+	  in an explicit window so it behaves like a proper 
+	  X-application. Thanks to Dino I got this fixed. Maybe
+	  all code is not what Dino expected, but anyhow I owe him
+	  a great THANKS. Maybe all compilation errors should have
+	  "return;" after them?
+
+2003-01-14  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: A fix for the previous fix. The previous fix
+	  was not good and had to be redone. now. We check the
+	  parsed image before we put it in use so we don't have to
+	  save alot of thing to be able to back off if error.
+
+2003-01-13  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: When gerbv discovered RS274D and terminated
+	  it tried to free memory to hadn't been allocated due to 
+	  it had discovered error in the gerber file. This caused
+	  windows to never close and segfaults when terminating.
+
+2002-12-25  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv_screen.h, src/gerbv.c: Changed how the
+	  different windows are stored in the screen struct.
+	* src/amacro.h: Forgot to include stdlib.h which was needed
+	  to remove warnings regarding free missing.
+	* src/gerbv.c: Minor beautification cleanups.
+
+2002-12-11  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Fixed 64-bit compilation warning by casting
+	  gpointer to long int. Closes bug #642703.
+
+2002-12-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Fixed some kind of bug causing some filled 
+	  polygons not to get displayed. Reported by Chris Ellec. 
+	  Closes bug #649663.
+
+2002-12-02  Anders Eriksson  <anders@umunet.org>
+
+	* configure.in, src/amacro.c: Applied patch from 
+	  Charles Lepple to fix bug #646268 (building on MacOS X).
+
+2002-11-26  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Fixes bug #643799 (zoom out_line stopped
+	  working).
+
+2002-11-26  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added idea and (hacked up by me) patch for
+	  turning all layers on and off from Martin Sigrand. It should
+	  really need an overhaul regarding non freed memory.
+
+2002-11-24  Stefan Petersen  <spe@stacken.kth.se>
+
+	* doc/eagle/*: Added information for Eagle CAD users from
+	  Daniel Dorau. It also made the webpage. Thanks Daniel!  
+
+	* src/gerber.c: Yet another G-code (55) discovered in an
+	  example in the "standard" by our russian friend Yuri.
+
+2002-11-23  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/amacro.c, src/draw.c, src/draw_amacro.c, src/gerber.c:
+	  More files with the same mistake in as below. I cleaned up 
+	  my own mess this time.
+
+2002-11-23  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Fixed bug 642600, Don't use default labels without
+	  any statement after. Also use comments for label after #endif.
+
+-- Release 0.11 --
+
+2002-11-19  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Anders optimized drawing optimized away setting
+	  of superimpose function. Not any longer. Daniel Dorau pointed
+	  out this and the one below.
+
+	* src/draw.c: Hopefully fixed the one pixel gap between lines
+	  when it should be a filled area.
+
+2002-11-17  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/exportimage.c: Background color was ignored. Noticed by Dino.
+
+2002-11-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Made sure all cancels and destroy_event from 
+	  different popup windows are handled and destroyed properly.
+	  Also made some minor fixes in new "set explicit scale" functions.
+	* src/gerbv.c: Made explicit set scale also center image properly.
+
+2002-11-15  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Robustified if someone tries to parse RS274D.
+	  Happend to fix bug #639127.
+	* doc/PNG-print/*: Added doc on how to print PNGs generated by gerbv.
+	* src/gerbv.c: Added explicit setting of scale. Good when generating
+	  PNGs for printing. Both patch and above doc is thanks to 
+	  Dino Ghilardi.
+
+2002-11-15  Andreas Andersson  <e92_aan@e.kth.se>
+
+	* src/drill.c: Slight change to allow broken drill files from
+	  Orcad386. Not pretty. But then again, neither is Orcad.
+
+2002-11-07  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Minor cleanups, prepare idle_redraw to
+	  be reentrant to allow calling it more than once (i.e.
+	  for png export as well as for screen redraw).
+
+2002-11-06  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Re-read some gtk-docs, we weree mistreating
+	  the gtk_idle-functions. This patch fixes this and closes
+	  pixmap leakage caused by complete redraw when we had a
+	  preempted state.
+	  Oops, you need to start the idle function at least once.
+
+2002-11-05  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Removed clipping/no
+	  clipping kludge since export_png now behaves as Dino
+	  expects. We should make a function of common code in
+	  export_png and redraw_pixmap to make it more maintainable.
+	* src/gerbv.c (redraw_pixmap): Don't try to sneak out doing
+	  events from redraw_pixmap, check for them and preempt if
+	  there are events on queue. This closes the everythinh-is-
+	  not-redrawn-sometimes bug (I hope).
+
+2002-11-04  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/exportimage.c, gerbv.c: export_png now export whole image
+	  despite whats displayed (still depending on zoom/scale thou).
+	  If export_png receives an imagetosave, that will be the image
+	  that will be saved, so it's more general now. Must hack some
+	  more to be able to utilize both ways. Anders can happily remove
+	  all what he calls kludges.
+
+2002-10-31  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Yet another commando that doesn't complain if 
+	  default values are given. AS is the lucky one this time.
+	* src/gerber.c, src/draw.c: By considering an undefined aperture
+	  despite we didn't draw caused strange lines around the first line
+	  drawn.
+
+2002-10-31  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Replace incremental redraw with clipping
+	  option. It is now possible to turn clipping off, this
+	  might be useful for export png (sorry for breaking this,
+	  Dino).
+
+2002-10-30  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.h, src/gerber.c: Implemented %SF% and %SR% in
+	  parser, but ignored the draw engine. If any of these parameters
+	  not are default a warning is issued. Closed a feature request.
+
+2002-10-30  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Added restartable
+	  redraw by keeping redraw state between calls to
+	  redraw_pixmap(). Also added drawing status on statusbar.
+
+2002-10-29  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw_amacro.c: Fixed a bug when drawing primitive 20
+	  discovered by jj. Caused slanted (by coordinates) primitives
+	  to "slant" in the wrong direction.
+
+2002-10-29  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (redraw_pixmap): Free pixmaps also when
+	  preempted, we used to leek pixmaps (bad!).
+
+2002-10-28  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (autoscale): Wrong sign on clip_bbox.x1 from
+	  trans_x. Now even nollezappare is centered correctly.
+
+2002-10-27  Stefan Petersen  <spe@>
+
+	* src/draw_amacro.c: Reset the stack pointer after each primitive
+	  operation. It's not completly right to do it this way, but since
+	  I built the compiler I know how the code generated looks like ;-).
+	  Closes bug #629101.
+
+2002-10-26  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: Removed some nested use of strncmp with simple
+	  switch/case instead in parse_G_code.
+	* src/gerber.c: Added an extra check so RS274D doesn't casue
+	  segfault. Discovered by Jukka Marin. Thanks.
+
+2002-10-24  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Played with clipping. Allocated
+	  pixmap is now same size as window. GTK does all clipping (we
+	  could optimize this somewhat with "object" bounding boxes). This
+	  makes it possible to zoom where no gerbv has zoomed before.
+	  Some interesting effects can be found by zooming in a lot.
+
+-- Release 0.0.10 debian release 2 --
+
+2002-10-18  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/drill.c, src/gerb_file.[hc], src/gerber.c, src/gerbv.c:
+	  Alot of abuse using EOF(-1) when char actually is unsigned
+	  caused a lot of warnings when Debian build system tried to
+	  build it for a couple of platforms.
+
+2002-10-14  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Activate millimeters in unit menu if this
+	  is the default unit.
+	  (update_statusbar()): Check that statusbar has been
+	  created before trying to set text to it. This eliminates
+	  an annoying GTK assertion.
+
+-- Release 0.0.10 --
+
+2002-10-13   Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: Updated version to 0.0.10
+
+2002-10-11  Anders Eriksson  <anders@umunet.org>
+
+	* configure.in, acconfig.h, src/gerbv.c: Added configure-option
+	  to change default unit for status bar to millimeters instead
+	  of the built-in default of mils.
+
+2002-10-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: The undefined aperture fix below is, in princip,
+	  only valid if aperture type != from aperture macro.
+
+2002-10-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerber.c: If aperture was undefined (as in polygon outline)
+	  it caused a segfault in min-max routine. Closes bug #619652.
+
+	* man/gerbv.1.in: Added blurb about the new command line 
+	  switches. Also added some text on backends.
+
+	* src/gerbv.c: Added some GDK/GTK specific command line
+	  parameters. Also added the parameter --geometry.
+	  Currently ignoring placement parameters, though I parse them
+
+2002-10-06  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv_screen.h, src/gerbv.c: Added menu selection for
+	  units. Decreased width of status bar. This closes the too
+	  wide window problem in bug #615475. The default minimum
+	  height is still too high to fit in an 800x600 display.
+	  By limiting the number of files to 17 or so this problem
+	  is also solved.
+
+2002-09-29  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerber.c, src/gerbv.c, src/gerbv_screen.h: Removed last
+	  traces of IMG_EXTRA hack. Now using proper aperture width to
+	  increase width of bounding box. This may give slightly too
+	  big bbox, but it is better than before. I consider this to
+	  close bug #605985.
+
+2002-09-17  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: exportpng is configured in default and removed
+	  if asked (--disable-exportpng).
+	* configure.in, acconfig.h, src/gerbv_screen.h: Setting of MAX_FILES
+	  from ./configure.
+	
+
+2002-09-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added version number in main windows title.
+	
+
+2002-09-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/batch.c, src/draw.c, src/gerb_image.h, src/gerber.c, 
+	  src/gerber.h: Changed how multiquadrant circles are supported.
+	  Now it's more of a state, before it was considered an interpolation.
+	  Therefore not all multiquadrant circles were detected as such and
+	  got defined wrong. Some parts of the EAGLECAD_KLUDGE was removed,
+ 	  though EagleCad had some other surprises in store.
+	* src/amacro.[hc], draw.c, draw_amacro.[hc]: Dynamic allocation
+	  of stack when drawing aperture macros. Closes the evil bug 603147.
+	
+
+2002-09-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/batch.c, src/draw.c, src/gerb_image.h, src/gerber.c:
+	  Polygon drawing got it's own gc (pgc) since we must have 
+	  our own outline pen size. Now we don't have to have an aperture
+	  defined to be able to draw polygon areas. Closes bug 602965.
+	* Removed PAREA_FILL as an interpolation. Has only PAREA_START
+	  and PAREA_END left so the application has to keep track if it's
+	  in polygon area fill or not by itself. PAREA_FILL was not a
+	  proper "interpolation", it is instead any of the other 
+	  interpolations. Closes bug 603146.
+
+
+2002-09-01  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c: Polygon Area Fill could never have worked at
+	  all since number of points reported to gdk_draw_polygon
+	  always was zero.
+
+2002-08-31  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (redraw_pixmap): Removed redundant bounding
+	  box calculation.
+
+2002-08-27  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h, src/gerbv_icon.h: Calculate
+	  proper initial translation when doing autoscale. Center image.
+	  Added #define for extra 0.1 inches in autoscale. New icon image.
+	  Also added outline debugging code (within #ifdef's).
+
+2002-08-27  Andreas Andersson  <e92_aan@e.kth.se>
+
+	* src/drill.c: Minor change to the drill file format guessing
+	  logic to allow for yet another special case.
+
+2002-08-27  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Fixed a couple of minor memoryleaks in color
+	  allocation with valgrind after a tips from Anthony J Bybell.
+
+2002-08-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/Makefile.am, files2tag.txt modified, 
+	  src/scm_gerber.[hc] removed, src/batch.[hc] added: 
+	  All batch functionality broken out to one place, ie batch.[hc].
+
+2002-08-09  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Removed two lines causing zoom to stop work
+	  when a non-loaded layer recently had been selected or deselected.
+	  I didn't find a reason for these two lines to be there. Maybe
+	  there was... Closes bug 593109.
+	* src/gerbv.c, src/gerbv_screen.h, man/gerbv.1.in: Added 
+	  activation/deactivation via the keyboard. Closes feature request
+	  593104. Also updated the man page with this info and fixed other
+	  minor stuff.
+
+2002-08-04  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/gerbv_screen.h: Added superimposing selectable
+	  function to be used when you put "layer upon layer". I call it
+	  superimposing functions. Hope it's correct english.
+	* man/gerbv.1.in: Minor layout changes and added part on superimposing
+	  functions.
+	* src/gerbv.c: Fixed GTK asserts popping up when starting gerbv
+	  without any files loaded.
+
+2002-08-01  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.[hc], src/gerbv.c: Changed how layers are created and
+	  stored to be able to be displayed on top of each other. This
+	  is based on a grand idea from Dino Ghilardi.
+
+2002-07-24  Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c: Changed the parser to catch undefined tools
+	  and insert default values. It warns the user, though.
+	  Fixed a slight bug in min/max coordinate finding.
+
+2002-07-16  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Fixed bug 573016, some gerbers not drawn.
+	  always do fabs on floats not abs.
+	* src/gerb_image.[hc], gerber.c: Parses and stores %IN%
+	  ie the image name.
+
+2002-07-15  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_icon.h: Added application icon.
+
+2002-07-13  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: Added --with-gtk-config to fit FreeBSD 
+	  after patch from Bruno Schwander <bruno@tinkerbox.org>.
+	* example/ekf/README: Fixed bug 578583 basically saying that
+	  this example shouldn't work.
+	
+-- Release 0.0.9 --
+
+2002-07-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: Updated version to 0.0.9.
+	* man/gerbv.1.in: Updated man page with new features.
+
+2002-07-05  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Save a widget by adding a leading space in
+	  statusbar.
+
+2002-07-04  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Statusbar => Label to allow setting a fixed
+	  width font and thus avoid getting the coordinates to move
+	  as the number of digits change. Moved font names to header
+	  file. We should consider using a rc-file for font names and
+	  colours and stuff.
+	  Made status bar not expandable.
+
+2002-07-02  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Macrofied coordinate unit
+	  conversions to have the constants in one place. Converted
+	  sprintf()s to safer snprintf()s.
+
+2002-07-01  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv_screen.h: Bounding box needs to be doubles, not
+	  ints.
+	* src/gerbv.c (motion_notify_event): Finally it seems I got 
+	  the absolute coordinates right. Partly closes feature
+	  request 567965 (still need to add error messages and fix
+	  the layout).
+	  * Fixed some of the layout issues. Now uses only one statusbar
+	  widget instead of three. The message is composed from three
+	  strings. Still no error messages.
+
+2002-06-20  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Mils are 0.001 inch and not 0.01, thanks Dan!
+	  This closes bug #571097.
+
+2002-06-19  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (motion_notify_event): py, not px!
+	* src/gerbv.c, src/gerbv_screen.h, src/draw.c: Added bounding
+	  box translations to get correct gerber coordinates (second
+	  try, did I make it?).
+
+2002-06-18  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added background color selection. Closes feature
+	  request 557365.
+	
+2002-06-17  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv_screen.h: added msgid for stausbar.
+	* src/gerbv.c: Changed coordinate output both in statusbar and
+	  in measure mode. Now using mils and mms as units. Coordinates
+	  are now correct in respect to the gerber coordinate system
+	  (at least that's what I think). Too much information is shown
+	  in the statusbar, we will have to add unit selection (either
+	  mils or mms). Minor layout change for statusbar (I need to
+	  learn gtk layout better!).
+
+2002-06-17  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c: Ignored if lines were using rectangular apertures
+	  to draw. Closes bug 567128.
+
+2002-06-13  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screeen.h: Added statusbar, prints cursor
+	  position as well as distance when measuring.
+
+2002-06-12  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Fixed autoscale() not to translate image out of
+	  window. Happened after fix for negative coordinates. Should
+	  translate image to center of window.
+	* src/draw.c: Moved setting off err_gc outside loop so it's always 
+	  done, even if you don't need it.
+
+2002-06-12  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (draw_zoom_outline): Fix division by zero when
+	  drawing a zoom box with no delta y. Closes bug 567166.
+
+2002-06-11  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_file.c: Changed ENODATA to EIO, which is more portable.
+	  Closes bug 567179.
+	* src/gerbv.c: It is now possible to draw images with negative
+	  coordinates. Closes bug 548094.
+	* src/draw.[hc],src/draw-amacro.[hc], src/Makefile.am: Split out 
+	  aperture macro stuff from draw.c to a separate file, draw_amacro.c.
+	* src/draw_amacro.c: Fixed bug when drawing primitive 4 causing
+	  rotation to be wrong. Thanks to Jonas (you know who you are) for 
+	  the excellent files.
+	* src/draw_amacro.c: Changed interpretation of "closed shape" in
+	  primitive 4. If first point is the same as the last point it's
+	  a closed shape, ie filled according to my interpretation. Don't
+	  know if it's a correct interpretation.
+
+2002-06-10  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Centered outline zoom uses shift instead of control,
+	  use shift before clicking with button three to initiate centered
+	  outline zoom (rm:ed switching between centered and plain outline).
+	  Changed distance output format to add more digits.
+
+2002-06-09  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Fix actual zoomed area for centered outline zooming.
+
+2002-06-09  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Set cross hair cursor as soon as shift key is
+	  pressed (in normal mode, i.e. not zoom outline). Added centered
+	  zoom outline mode (closes Feature Request 553452).
+
+2002-06-09  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Added measure distance color. Added actual zoom
+	  box for zoom outline mode (this shows the area that will
+	  be included when zooming, displayed as dashed lines). Use
+	  cross-hair cursor when measuring distance.
+
+2002-06-08  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (motion_notify_event, expose_event): Don't
+	  redraw entire image when drawing zoom outline and measured
+	  distance. This makes the outline follow much more smoothly.
+	  The side effect in measure mode is that several measures
+	  may be visible simultaneously. I am not sure if this is
+	  a bug or a feature. :)
+
+2002-06-08  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Setting up a watch while running export_image.
+	* configure.in: Adding a check for libpng when export_png enabled. 
+
+2002-06-07  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (expose_event): Center distance strings properly,
+	  get string height to properly space the two lines independant
+	  of the resolution (dpi). Minor cleanups.
+
+2002-06-07  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c, src/gerb_image.h, src/gerber.c: Now handles
+	  negative layer polarity (%LP%)! After fixing bug 557368 
+	  this was simple to add. Tested with files from PCB.
+
+2002-06-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/gerbv_screen.h: Added "reload files", gerbv 
+	  rereads all loaded files and display them. Usefull if you have
+	  an external gerber manipulation tool.
+
+2002-06-06  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c, src/gerbv_screen.h: Added a crude measurement tool,
+	  renamed screen.zstart_[xy] since they are now used for measure-
+	  ment also. To use this tool hold down <SHIFT> while pressing
+	  button 1 (the leftmost). This functionality still needs some work.
+
+2002-06-06  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c, src/gerb_image.h, src/gerber.c: Added counting and
+	  storing of number of corners in polygons, so drawing of polygons
+	  can use dynamically allocated memory. Hard coded array size gave
+	  horrible result with submitted file from David Cussans with a lot
+	  of corners in the polygons.
+
+
+2002-06-05  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c: Added check to autoscale so scale don't screw up
+	  everything.
+	
+
+2002-06-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.h, src/gerber.c: Thanks to Stephen Adam I now know
+	  what %IC??*% means (Input Code) and have added it to the parser.
+	
+
+2002-05-18  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in, acconfig.h, src/Makefile.am, src/gerbv.c,
+	  src/gerbv_screen.h, src/exportimage.[hc], CONTRIBUTORS: 
+	  Added "export image to PNG" contributed by Dino Ghilardi.
+	  Thanks! Currently not default, use --enable-exportpng when
+	  running configure.
+	
+
+2002-05-17  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerbv.c, src/gerbv_screen.h: Split out the global
+	  screen variable and it's struct to simplify future 
+	  split of gerbv.c.
+
+	* acconfig.h, configure.in, src/gerbv.c, scm_gerber.c:
+	  Prepared phase out of Guile by changing default to exclude
+	  Guile inclusion.Change flag disable-batch to enable-batch 
+	  during configure and changing the variable NO_GUILE to 
+	  GUILE_IN_USE.
+
+	
+2002-05-10  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/gerb_image.*, src/gerber.*, src/gerbv.c: Moved verify_gerb
+	  to gerb_image and renamed it to gerb_image_verify so drill file
+	  parsing and gerber file parsing could split them. Done after 
+	  receiveing Excellon file without drillfile sizes (Innoveda/PADS
+	  Power PCB) from Dino Ghilardi.
+	* src/gerb_file.c: Improved error reporting.
+	
+
+2002-05-08  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (zoom_outline): Prevent division by zero by
+	disallowing too small zoom areas in outline mode. Allocate a
+	separate outline zoom color. Center outline zoom area instead
+	of using upper left corner as translation points.
+
+2002-05-08  Stefan Petersen  <spe@stacken.kth.se>
+
+	* INSTALL: Changed gschem->gerbv
+	* src/gerbv.c: Remember where we loaded file from last time and
+	  start file selection from there.
+
+	
+2002-05-07  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c (zoom_outline): Added zoom outline support and
+	scaled zoom step (zoom 10% of current scale instead of a fixed
+	number of 10). Some comments in old code. The outline drawing could
+	probably be optimized quite a bit (it currently piggybacks on the
+	expose event). With this functionality it is easier to note the
+	excessive memory usage when zooming in too far.
+
+-- Release 0.0.8 --
+	
+	
+2002-05-05  Stefan Petersen  <spe@stacken.kth.se>
+
+	* configure.in: Updated VERSION.
+	* src/gerbv.c: If gerbv was started without any files loaded,
+	  the watch mouse pointer was running all the time.
+	
+
+2002-05-03  Anders Eriksson  <anders@umunet.org>
+
+	* AUTHORS: Corrected my e-mail address
+
+2002-05-02  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Made redraw_pixmap() and image2pixmap()
+	interruptible by calling g_main_pending() at regular intervals and
+	registering an idle function to redraw the pixmap at a later time
+	if there are pending events to process. This partly fixes 550319.
+	  Also added the event to the data sent to the zoom function since
+	this allows us to read the mouse position at the event generation
+	and not at processing time which we used to do (giving a very
+	confusing behaviour if we can't keep up with events).
+
+2002-05-02  Stefan Petersen  <spe@stacken.kth.se>
+
+	* src/draw.c: Now ovals are ovals and not ellypses.
+	  Closes bug 548099.
+	* HACKING, AUTHORS, CONTRIBUTORS: Updated with more authors
+	  and contributors. Also extended HACKING to include ChangeLog
+	  and code format.
+	* src/gerbv.c: Autoscale is more correct, though not completely
+	  perfect. Closes bug 550795.
+	
+2002-04-29  Anders Eriksson  <anders@umunet.org>
+
+	* src/gerbv.c: Improved zoom. Now zooming around image center when
+	zooming from menu and around mouse pointer when zooming using the
+	mouse. There seems to be some (small) rounding error in the
+	centering code, but it is very small. Closes 548128.
+
+2002-04-27 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Number constants replaced with an enumeration
+	  type. Also error in zooming comments fixed.
+	* man/gerbv.1.in: Added blurb about zooming.
+	* src/gerber.c: Bug 549602 fixed so format statements are
+	  completely handled.
+
+
+2002-04-27 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Changed name for all *open* functions to 
+	  *load*. Implemented "unload file" in right-click popup,
+	  which closes feature req. 548124.
+	
+
+2002-04-24 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerb_file.c: Fixed bug causing segfault when opening
+	  empty file (bug 548578).
+
+	
+2002-04-24 Stefan Petersen (spe@stacken.kth.se)
+
+	* man/gerbv.1: Removed.
+	* man/gerbv.1.in: Created, so configure can add version of 
+	  gerbv automagically. Also added blurb about right-click thing.
+	* configure.in: man/gerbv.1 is created from man/gerbv.1.in.
+	
+
+2002-04-24 Stefan Petersen (spe@stacken.kth.se)
+
+	* example/orcad/*: Added after submission from and with 
+	  permission from Dino Ghilardi.
+
+
+2002-04-10 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.c: Fixed mq arcs so circles are circles and
+	  and width/height are correctly calculated. Closes bug
+	  #541089. Hopefully.
+
+	
+2002-04-09 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.c: Fixed draw direction of arcs reported in
+	  bug #541089. Not drawn D3 and VR1, and wrong size on some
+	  transistors, still open.
+	
+
+2002-04-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.c, src/gerber.h: Fixed some numerical
+	  constants in verify code.
+	
+
+2002-04-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Added color selection on layers.
+	* TODO: Added zooming and gerber layers.
+
+	
+2002-02-10 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c: Added inclusion of string.h as pointed out by 
+	  Dan McMahill.
+	
+
+-- Release 0.0.7 --	
+
+	
+2002-02-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c: Fixed bugs in drawing primitive 6 and 7 after
+	  verification. The last primitives...
+	* example/am-test/am-test.gbx: The verification suite for 
+	  aperture macros.
+	
+	
+2002-01-06 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/amacro.c: Parser handles negative immediate values.
+	* src/draw.c: Load of minor bugfixes after verification like 
+	  rotate points in the other direction, line wiidths constant,
+	  wrong indeces.
+	* src/gerber.c: Rewrote parse_aperture_defintion to handle 
+	  aperture defintions without parameters.
+	
+
+2002-01-06 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c: All primitive macros are implemented (though not
+	  completely) and passed the MS-test; they compile. Now it's 
+	  verify, verify and verify.
+
+	
+2001-12-31 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c: Started to add functions to be able to draw
+	  aperture macros too. Some aperture macro primitives are 
+	  half way implemented, so the examples in the distribution
+	  should work. Though not 100% properly.
+	
+	
+2001-12-30 Stefan Petersen (spe@stacken.kth.se)
+
+        * src/amacro.[hc]: Added, even though I haven't executed 
+          an aperture macro program yet. But parsing seems stable.
+        * src/gerb_image.[hc], gerber.c, src/Makefile.am: Calls 
+          and keeps track of parsing of aperture macros.
+        * doc/aperturemacro.txt: simple text on the "program code"
+          generated when parsing aperture macros.
+
+
+2001-12-29 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/gerb_file.c:
+	  Fixed gerb_fgetstring() to not write after the end of the
+	  allocated array.
+	* src/gerber.c:
+	  Removed small memory leak in parse_aperture_definition()
+
+
+2001-12-29 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c:
+	  Autodetection routine changed back to original style to allow
+	  special cases needed with output from some CAD systems.
+	* src/gerb_file.c:
+	  Error check for mmap() added to stop gerbv from segdumping
+	  when trying to open a directory instead of a file.
+
+
+2001-12-29 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerb_file.[hc], src/gerber.c: Added function 
+	  gerb_fgetstring and used it.
+
+	
+-- Release 0.0.6 --	
+
+	
+2001-12-14 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c : Removed gdk_gc_set_line_attribute when drawing
+	  a point.
+	* src/gerbv.c: Added autoscaling and autocentering, both as
+	  a menu option (Zoom/Fit) and when loading a file.
+
+	
+2001-12-11 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c : Removed prelighting on buttons and changed
+	  the "random function" creating colors. Also fixed "clear 
+	  all" remaining after the pan speedup rewrite.
+
+	
+2001-12-10 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c : Forgot to check if we had any pixmap to draw.
+
+	
+2001-12-09 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.c: Fixed small bug in min/max calculation
+	  which caused big problems.
+	* src/gerbv.c: Major rewrite of panning code giving major
+	  improvements in screen update speed.
+	
+
+2001-12-07 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.[hc], src/gerbv.c : Pseudo optimized drawing.
+	* src/gerb_file.c, src/gerbv.c: Fixed bug causing segfault
+	  when file didn't exist (oops) and pushed error messages
+	  out of gerb_file.c. And if a file (of many) given at 
+	  commandline doesn't exist, the next file is tried instead 
+	  of halting.
+
+	
+2001-12-06 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/drill.c, src/gerb_image.c, src/gerber.c, src/gerbv.c:
+	  Exchanged bzero with memset for further portability.
+	* scheme/Makefile.am: gerb-debug.scm gets installed too.
+	
+
+2001-12-06 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.[hc]:
+	  Very minor change to allow tool number 0.
+
+
+2001-12-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/Makefile.am, src/color.c, src/gerber.c, src/scm_gerber.c:
+	  Turned on -Wall and cleaned up after it.
+
+	
+2001-12-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/drill.h, src/gerber.h, src/gerbv.c:
+	  Fixed bug caused by last minute namechange of 
+	  gerb_file.[hc].
+	* src/gerb_file.[hc]: Added functions gerb_fgetint and
+	  gerb_fgetdouble.
+	* src/drill.c, src/gerber.c: Utilize the new file read
+	  functions.
+	
+	
+2001-12-02 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerb_file.[hc], src/drill.[hc], src/gerber.[hc], gerbv.c:
+	  Changed method of file IO from fgetc to mmap. Speed increase 
+	  up to 3 times noted (loading all of jj's file at ones).
+
+	
+2001-12-02 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/drill.c: drill_file_p recoded so it seems to work better.
+	* src/gerbv.c: Removed and cleaned up "open file" code.
+	* src/gerbv.c, src/color.c, src/color.h: Fixed the whole mess
+	  with colors. Now colors doesn't set any limits on how many files
+	  you can load. It also checks that you don't give too many files
+	  to the program.
+	
+
+2001-12-02 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/gerbv.c:
+	  Changed radiobuttons to togglebuttons, redraw_pixmap() now shows
+	  all switched on images. Slight changes to the zoom/translate code
+	  (it still doesn't work as intended, though). Added mouse commmands
+	  for zooming without scrollwheel. screen.scale no longer goes down
+	  to 0 when zooming out.
+	* src/draw.h, src/draw.c:
+	  Floating point calculations that are converted to ints for
+	  display are now rounded to the nearest int rather than always
+	  truncated down (or was it up?) Macro round(x) added to make that
+	  prettier. Removed minor stuff that caused warnings with -Wall
+	  flag to gcc.
+
+
+2001-11-27 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/gerbv.c:
+	  Added autodetection of file type.
+	* src/drill.c:
+	  Corrected stupid bug in autodetection.
+
+
+2001-11-27 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.h, src/drill.c:
+	  Added drill_file_p(); which checks whether a file could
+	  be a drill file or not.
+
+
+2001-11-26 Stefan Petersen (spe@stacken.kth.se)
+
+	* configure.in: Now --data works when running ./configure.
+	  A patch from Wojciech Kazubski <wk@ire.pw.edu.pl>
+
+
+2001-11-26 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c:
+	  Coordinate parsing now works on coordinates with decimal points.
+	  More M codes and some G codes recognized. Most importantly
+	  absolute/incremental mode and zero setting could work, though
+	  it hasn't been properly tested yet.
+
+
+2001-11-23 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerb_image.h, src/draw.c, src/gerber.c, src/scm_gerber.c:
+	  Are now able to parse and display polyogon area fill codes.
+
+	
+2001-11-21 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c:
+	  The format guessing code now guesses right for
+	  one more format.
+	  More M codes recognized (and later ignored).
+
+	
+2001-11-20 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/scm_gerber.c: Backend didn't receive the last
+	  entry in the netlist due to bad loop constraint.
+	* src/gerber.c: Made sure angles always are positive when
+	  calculating multi quadrant ones.
+	* src/gerber.c: Improved error detection by checking that
+	  all part of an image is there.
+	* src/gerber.c: Fix for EagleCad caused other Gerber files
+	  to fail. Only D-code 1-3 on a line should also be considered
+	  as a change.
+	
+	
+2001-11-15 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Tooltips over radio buttons with name
+	  of loaded file.
+
+	
+-- Release 0.0.5 --	
+
+	
+2001-11-14 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Changed speed key for zooming in to
+	  Alt-O.
+	* configure.in: Changed version number for release.
+	
+	
+2001-11-09 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerb_image.[hc]: Added.
+	* src/drill.[hc], src/gerber.[hc], src/scm_gerber.[hc]:
+	  Changed to utilize the new "class", gerb_image.
+
+	
+2001-11-07 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c, src/gerber.c: Implemented multi quadrant arcs.
+	  Calculated with a separate function; should be able to be
+	  combined with single quadrant calculations. Not properly 
+	  tested since I need better examples.
+	
+	
+2001-11-06 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.h, src/drill.c:
+	  parse_drillfile() now ignores unstandard text in headers.
+	  Also, it now returns the actual unit used (it used to return
+	  the unit of the input file).
+	  Minor fixes, mostly moved stuff around.
+
+2001-11-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/drill.c, src/scm_gerber.c: Fixed bug causing backend
+	  first not to generate aperture list and then barfing when
+	  trying.
+
+	
+2001-11-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Added command line -d|--drill support 
+	  for drill files both in graphical mode and batch mode.
+	  Though are drill file tool/apertures not properly handled
+	  by ->scheme converter.
+	* man/gerbv.1: Changed man page to reflect the new switches.
+	
+2001-11-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.[hc]: Cleaned up code after latest hack.
+	* src/scm_gerber.c: Changed format of list delivered to
+	  the backend; no delta center points. Now it's all calculated
+	  center points and angles.
+	* scheme/gerb-ps.scm: Accept the new list, but doesn't do anything
+	  with it yet.
+
+	
+2001-11-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.c: Inserted check for undefined apertures that
+	  was earlier removed.
+
+	
+2001-11-02 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.h, src/gerber.c, src/draw.c: Now almost
+	  all calculation for circles is done when parsing and
+	  not when (re)drawing.
+	* src/gerbv.c: Removed two unnecessary defines.
+	
+	
+2001-10-31 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerbv.c: Added zooming with scroll wheel on mouse.
+	* README: Added info on how to configure XFree86 for scroll mouse.
+
+	
+2001-10-28 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.[hc]: Fixed bug causing parser to reports
+	  points with wrong aperture. Pointed out by Dan Christian.
+	
+
+2001-10-30 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/drill.c, src/gerber.h, src/gerber.c
+	  Moved new_image() to the correct place
+
+	
+2001-10-28 Andreas Andersson (e92_aan@e.kth.se)
+
+	* src/Makefile.am
+	  Added drill.c to SOURCES since it seems to work well enough
+	  for some testing.
+	* src/drill.c
+	  Added an input file format guessing function.
+	  Some kludges to get around scaling problems.
+	* src/gerbv.c
+	  Separated File/Open command into File/Open Gerber... and
+	  File/Open Drill... Added functions to open drill files.
+	* src/*.c:
+	  A few speling errors fixed.
+
+	
+2001-10-28 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.c, src/gerber.h, src/gerber.c, src/scm_gerber.c:
+	  aperture array is now full size and array index is very
+	  simple.
+	
+
+2001-10-27 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/*.[ch]: typedef:ed all internal structs to *_t
+	
+
+-- Release 0.0.4 --	
+	
+2001-10-27 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/gerber.[hc]: EagleCad generates broken Gerber.
+	  I kindly detect and then tries to run as nothing 
+	  happened. Disable kludge with commenting out 
+	  EAGLECAD_KLUDGE in src/gerber.h.
+	  This was pointed out to me by Dan Christian and
+	  later confirmed by Fredrik Jonsson sent me some
+	  examples. Thanks guys!
+	* AUTHORS/CONTRIBUTORS: Added latest bunch of contributing
+	  people.
+	* configure.in: Updated version to 0.0.4 before release.
+	
+	
+2001-10-24 Stefan Petersen (spe@stacken.kth.se)
+
+	* src/draw.[hc]: Added. Extracted drawing functions from
+	  gerbv.c.
+	* src/gerbv.c: Removed add drawing functions into draw.c.
+	  Also minor clean ups. Fixed #def's of Guile support.
+	* src/Makefile.am: Added draw.c as src file.
+	
+	
+2001-10-22 Stefan Petersen (spe@stacken.kth.se)
+
+	* example/*: Cleaned out numpres.pcb.* to a separate dir
+	  and added a example received from Joachim Jansen on
+	  separate aperture files.
+
+	
+2001-10-21 Stefan Petersen (spe@stacken.kth.se)
+
+	* gerbv.c: Changed how cw and ccw is handled when drawing
+	  arcs to avoid swapping of start and stop points.
+	* gerbv.c: Red dots at "aperture macros wanna-be's" scale
+	  with ordinary scale, so they don't disappear when scaling
+	  around.
+
+	
+2001-10-09 Stefan Petersen (spe@stacken.kth.se)
+
+	* gerber.h, gerber.c: Added 'D' as possible Format
+	  Statement after patches from Uwe Bonnes
+	  <bon@elektron.ikp.physik.tu-darmstadt.de>. Thanks!
+	* scm_gerber.c: Broke out omit_zeros_t to scm type
+	  conversion and added 'explicit to this type.
+
+	
+2001-09-03 Stefan Petersen (spe@stacken.kth.se)
+
+	* configure.in: fixed bug when testing for opt_backend_dir
+	  causing configure to fail at least on Solaris.
+	* INSTALL: updated with info now that automake's in use.
+
+	
+2001-09-02 Stefan Petersen (spe@stacken.kth.se)
+
+	* build-release, rebuild-conf: missing files when running
+	  automake are now copied instead of linked. Thanks
+	  Dan <mcmahill@mtl.mit.edu> for reporting this.
+
+	
+2001-08-31 Stefan Petersen (spe@stacken.kth.se)
+
+	* Splitted AUTHORS to AUTHORS and CONTRIBUTORS
+	* src/gerb-ps.scm: removed 
+	* build_release uses anonymous cvs from sourceforge
+	  to build the release.
+	* src/scm_gerber.c, src/gerbv.c:
+	  Now the scheme backend receives the name of the parsed file
+	* scheme/gerb-ps.scm: Utilizes the above feature by creating output
+	  filename by prepending input filename with ".ps"
+	
