@@ -811,51 +811,53 @@ main(int argc, char *argv[])
 #ifdef HAVE_GETOPT_LONG
 	    fprintf(stderr, "Usage: gerbv [OPTIONS...] [FILE...]\n\n");
 	    fprintf(stderr, "Available options:\n");
-	    fprintf(stderr, "  -V, --version                   Prints version of gerbv\n");
-	    fprintf(stderr, "  -h, --help                      Prints this help message\n");
-	    fprintf(stderr, "  -l, --log=<logfile>             Send error messages to <logfile>\n");
-	    fprintf(stderr, "  -p, --project=<prjfile>         Load project file <prjfile>\n");
-	    fprintf(stderr, "  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>\n");
+	    fprintf(stderr, "  -V, --version                         Prints version of gerbv\n");
+	    fprintf(stderr, "  -h, --help                            Prints this help message\n");
+	    fprintf(stderr, "  -l, --log=<logfile>                   Send error messages to <logfile>\n");
+	    fprintf(stderr, "  -p, --project=<prjfile>               Load project file <prjfile>\n");
+	    fprintf(stderr, "  -t, --tools=<toolfile>                Read Excellon tools from file\n");
+	    fprintf(stderr, "                                        <toolfile>\n");
 #ifdef RENDER_USING_GDK
-	    fprintf(stderr, "  -x, --export=<png>              Export a rendered picture to a PNG file\n");
+	    fprintf(stderr, "  -x, --export=<png>                    Export a rendered picture to a PNG file\n");
 #else
-	    fprintf(stderr, "  -x, --export=<png/pdf/ps/svg>   Export a rendered picture to a file with\n");
-	    fprintf(stderr, "                                  the specified format\n");
+	    fprintf(stderr, "  -x, --export=<png/pdf/ps/svg/rs274x>  Export a rendered picture to a file\n");
+	    fprintf(stderr, "                                        with the specified format\n");
 #endif
-	    fprintf(stderr, "  -o, --output=<filename>         Specify the filename to export to\n");
+	    fprintf(stderr, "  -o, --output=<filename>               Specify the filename to export to\n");
 	    /*
 	    fprintf(stderr, "  --foreground=<hexcolor>|-f <hexcolor> : Use foreground color <hexcolor>\n");
 	    fprintf(stderr, "  --background=<hexcolor>|-b <hexcolor> : Use background color <hexcolor>\n");
 	    */
-	    fprintf(stderr, "  -r, --resolution=<w,h>          Use resolution <w> and <h> for the\n");
-	    fprintf(stderr, "                                  exported image\n");
-	    fprintf(stderr, "  -s, --scale=<scale>             Use the specified scale value <scale> (in DPI)\n");
-	    fprintf(stderr, "  -g, --origin=<x,y>              Use the specified coordinates for the lower\n");
-	    fprintf(stderr, "                                  left corner\n");
+	    fprintf(stderr, "  -r, --resolution=<w,h>                Use resolution <w> and <h> for the\n");
+	    fprintf(stderr, "                                        exported image\n");
+	    fprintf(stderr, "  -s, --scale=<scale>                   Use the specified scale value <scale>\n");
+	    fprintf(stderr, "                                        (in DPI)\n");
+	    fprintf(stderr, "  -g, --origin=<x,y>                    Use the specified coordinates for the\n");
+	    fprintf(stderr, "                                        lower left corner\n");
 #else
 	    fprintf(stderr, "Usage: gerbv [OPTIONS...] [FILE...]\n\n");
 	    fprintf(stderr, "Available options:\n");
-	    fprintf(stderr, "  -V                      Prints version of gerbv\n");
-	    fprintf(stderr, "  -h                      Prints this help message\n");
-	    fprintf(stderr, "  -l <logfile>            Send error messages to <logfile>\n");
-	    fprintf(stderr, "  -p <prjfile>            Load project file <prjfile>\n");
-	    fprintf(stderr, "  -t <toolfile>           Read Excellon tools from file <toolfile>\n");
+	    fprintf(stderr, "  -V                          Prints version of gerbv\n");
+	    fprintf(stderr, "  -h                          Prints this help message\n");
+	    fprintf(stderr, "  -l <logfile>                Send error messages to <logfile>\n");
+	    fprintf(stderr, "  -p <prjfile>                Load project file <prjfile>\n");
+	    fprintf(stderr, "  -t <toolfile>               Read Excellon tools from file <toolfile>\n");
 #ifdef RENDER_USING_GDK
-	    fprintf(stderr, "  -x <png>                Export a rendered picture to a PNG file\n");
+	    fprintf(stderr, "  -x <png>                    Export a rendered picture to a PNG file\n");
 #else
-	    fprintf(stderr, "  -x <png/pdf/ps/svg>     Export a rendered picture to a file with\n");
-	    fprintf(stderr, "                          the specified format\n");
+	    fprintf(stderr, "  -x <png/pdf/ps/svg/rs274x>  Export a rendered picture to a file with\n");
+	    fprintf(stderr, "                              the specified format\n");
 #endif
-	    fprintf(stderr, "  -o <filename>           Specify the filename to export to\n");
+	    fprintf(stderr, "  -o <filename>               Specify the filename to export to\n");
 	    /*
 	      fprintf(stderr, "  -f <hexcolor> : Use foreground color <hexcolor>\n");
 	      fprintf(stderr, "  -b <hexcolor> : Use background color <hexcolor>\n");
 	    */
-	    fprintf(stderr, "  -r <width,height>       Use resolution <width> and <height> for the\n");
-	    fprintf(stderr, "                          exported image\n");
-	    fprintf(stderr, "  -s <scale>              Use the specified scale value <scale> (in DPI)\n");
-	    fprintf(stderr, "  -g <x,y>                Use the specified coordinates for the lower\n");
-	    fprintf(stderr, "                          left corner\n");
+	    fprintf(stderr, "  -r <width,height>           Use resolution <width> and <height> for the\n");
+	    fprintf(stderr, "                              exported image\n");
+	    fprintf(stderr, "  -s <scale>                  Use the specified scale value <scale> (in DPI)\n");
+	    fprintf(stderr, "  -g <x,y>                    Use the specified coordinates for the lower\n");
+	    fprintf(stderr, "                              left corner\n");
 #endif /* HAVE_GETOPT_LONG */
 	    exit(1);
 	    break;

@@ -31,18 +31,89 @@
 #include <glib/gstdio.h>
 #include "gerber.h"
 #include <export-rs274x.h>
+#include "draw-gdk.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 #define round(x) floor(x+0.5)
 
 void
+export_rs274x_write_macro (FILE *fd, gerb_aperture_t *currentAperture,
+			gint apertureNumber) {
+	gerb_simplified_amacro_t *ls = currentAperture->simplified;
+
+	/* write the macro portion first */
+	fprintf(fd, "%%AMMACRO%d*",apertureNumber);
+	while (ls != NULL) {
+		if (ls->type == MACRO_CIRCLE) {
+			fprintf(fd, "1,%d,%f,%f,%f*\n",(int) ls->parameter[CIRCLE_EXPOSURE],
+				ls->parameter[CIRCLE_DIAMETER],ls->parameter[CIRCLE_CENTER_X],
+				ls->parameter[CIRCLE_CENTER_Y]);
+		}
+		else if (ls->type == MACRO_OUTLINE) {
+			int pointCounter;
+			int numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
+			
+			fprintf(fd, "4,%d,%d,\n",(int) ls->parameter[OUTLINE_EXPOSURE],
+				numberOfPoints);
+			
+			for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
+			    fprintf(fd, "%f,%f,",ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X],
+					   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_Y]);
+			}
+			fprintf(fd, "%f*\n",ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X]);
+		}
+		else if (ls->type == MACRO_POLYGON) {
+			fprintf(fd, "5,%d,%d,%f,%f,%f,%f*\n",(int) ls->parameter[POLYGON_EXPOSURE],
+				(int) ls->parameter[POLYGON_NUMBER_OF_POINTS],
+				ls->parameter[POLYGON_CENTER_X],ls->parameter[POLYGON_CENTER_Y],
+				ls->parameter[POLYGON_DIAMETER],ls->parameter[POLYGON_ROTATION]);
+		}
+		else if (ls->type == MACRO_MOIRE) {
+			fprintf(fd, "6,%f,%f,%f,%f,%f,%d,%f,%f,%f*\n",ls->parameter[MOIRE_CENTER_X],
+				ls->parameter[MOIRE_CENTER_Y],ls->parameter[MOIRE_OUTSIDE_DIAMETER],
+				ls->parameter[MOIRE_CIRCLE_THICKNESS],ls->parameter[MOIRE_GAP_WIDTH],
+				(int) ls->parameter[MOIRE_NUMBER_OF_CIRCLES],ls->parameter[MOIRE_CROSSHAIR_THICKNESS],
+				ls->parameter[MOIRE_CROSSHAIR_LENGTH],ls->parameter[MOIRE_ROTATION]);
+		}
+		else if (ls->type == MACRO_THERMAL) {
+			fprintf(fd, "7,%f,%f,%f,%f,%f,%f*\n",ls->parameter[THERMAL_CENTER_X],
+				ls->parameter[THERMAL_CENTER_Y],ls->parameter[THERMAL_OUTSIDE_DIAMETER],
+				ls->parameter[THERMAL_INSIDE_DIAMETER],ls->parameter[THERMAL_CROSSHAIR_THICKNESS],
+				ls->parameter[THERMAL_ROTATION]);
+		}
+		else if (ls->type == MACRO_LINE20) {
+			fprintf(fd, "20,%d,%f,%f,%f,%f,%f,%f*\n",(int) ls->parameter[LINE20_EXPOSURE],
+				ls->parameter[LINE20_LINE_WIDTH],ls->parameter[LINE20_START_X],
+				ls->parameter[LINE20_START_Y],ls->parameter[LINE20_END_X],
+				ls->parameter[LINE20_END_Y],ls->parameter[LINE20_ROTATION]);
+		}
+		else if (ls->type == MACRO_LINE21) {
+			fprintf(fd, "21,%d,%f,%f,%f,%f,%f*\n",(int) ls->parameter[LINE21_EXPOSURE],
+				ls->parameter[LINE21_WIDTH],ls->parameter[LINE21_HEIGHT],
+				ls->parameter[LINE21_CENTER_X],ls->parameter[LINE21_CENTER_Y],
+				ls->parameter[LINE21_ROTATION]);
+		}
+		else if (ls->type == MACRO_LINE22) {
+			fprintf(fd, "22,%d,%f,%f,%f,%f,%f*\n",(int) ls->parameter[LINE22_EXPOSURE],
+				ls->parameter[LINE22_WIDTH],ls->parameter[LINE22_HEIGHT],
+				ls->parameter[LINE22_LOWER_LEFT_X],ls->parameter[LINE22_LOWER_LEFT_Y],
+				ls->parameter[LINE22_ROTATION]);
+		}
+		ls = ls->next;
+	}
+	fprintf(fd, "%%\n");
+	/* and finally create an aperture definition to use the macro */
+	fprintf(fd, "%%ADD%dMACRO%d*%%\n",apertureNumber,apertureNumber);
+}
+
+void
 export_rs274x_write_apertures (FILE *fd, gerb_image_t *image) {
 	gerb_aperture_t *currentAperture;
-	gint numberOfRequiredParameters,numberOfOptionalParameters,i,j;
+	gint numberOfRequiredParameters=0,numberOfOptionalParameters=0,i,j;
 		
 	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {
-		gboolean validAperture=TRUE;
+		gboolean writeAperture=TRUE;
 		
 		currentAperture = image->aperture[i];
 		
@@ -74,22 +145,26 @@ export_rs274x_write_apertures (FILE *fd, gerb_image_t *image) {
 				numberOfRequiredParameters = 2;
 				numberOfOptionalParameters = 3;
 				break;
+			case MACRO:
+				export_rs274x_write_macro (fd, currentAperture, i);
+				writeAperture=FALSE;
+				break;
 			default:
-				validAperture=FALSE;
+				writeAperture=FALSE;
 				break;
 		}
-		if (!validAperture)
-			continue;
-		/* write the parameter list */
-		for (j=0; j<(numberOfRequiredParameters + numberOfOptionalParameters); j++) {
-			if ((j < numberOfRequiredParameters) || (currentAperture->parameter[j] != 0)) {
-				/* print the "X" character to separate the parameters */
-				if (j>0)
-					fprintf(fd, "X");
-				fprintf(fd, "%.4f",currentAperture->parameter[j]);
+		if (writeAperture) {
+			/* write the parameter list */
+			for (j=0; j<(numberOfRequiredParameters + numberOfOptionalParameters); j++) {
+				if ((j < numberOfRequiredParameters) || (currentAperture->parameter[j] != 0)) {
+					/* print the "X" character to separate the parameters */
+					if (j>0)
+						fprintf(fd, "X");
+					fprintf(fd, "%.4f",currentAperture->parameter[j]);
+				}
 			}
+			fprintf(fd, "*%%\n");
 		}
-		fprintf(fd, "*%%\n");
 	}
 }
 
@@ -121,7 +196,7 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 		return FALSE;
 	}
 	/* write header info */
-	fprintf(fd, "G04 Created by Gerber Viewer*\n");
+	fprintf(fd, "G04 Exported by Gerber Viewer version %s*\n",VERSION);
 	fprintf(fd, "G04 --Header info--*\n");
 	fprintf(fd, "%%MOIN*%%\n");
 	fprintf(fd, "%%FSLAX23Y23*%%\n");
@@ -180,7 +255,10 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 			export_rs274x_write_state_change (oldState, currentNet->state, fd);
 		
 		/* check for tool changes */
-		if (currentNet->aperture != currentAperture) {
+		/* also, make sure the aperture number is a valid one, since sometimes
+		   the loaded file may refer to invalid apertures */
+		if ((currentNet->aperture != currentAperture)&&
+			(image->aperture[currentNet->aperture] != NULL)) {
 			fprintf(fd, "G54D%02d*\n",currentNet->aperture);
 			currentAperture = currentNet->aperture;
 		}
