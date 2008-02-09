@@ -1857,7 +1857,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture)
 	    case 4 :
 		dprintf("  Aperture macro outline [4] (");
 		type = MACRO_OUTLINE;
-		nuf_parameters = (int)s->stack[1] * 2 + 2;
+		nuf_parameters = (int)s->stack[1] * 2 + 3;
 		break;
 	    case 5 :
 		dprintf("  Aperture macro polygon [5] (");
