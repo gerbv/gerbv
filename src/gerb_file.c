@@ -321,6 +321,11 @@ gerb_find_file(char *filename, char **paths)
 	complete_path[strlen(curr_path) + 1] = '\0';
 	strncat(complete_path, filename, strlen(filename));
 
+	if (paths[i][0] == '$') {
+	    g_free(curr_path);
+	    curr_path = NULL;
+	}
+	
 	if (access(complete_path, R_OK) != -1)
 	    break;
 
