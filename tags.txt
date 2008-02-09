@@ -1,6 +1,7 @@
 Main development trunk (starting with 2.0 series)
 =================================================
 gerbv-2_0_trunk
+gerbv-2_1_trunk
 
 Releases  (starting with 2.0 series)
 ====================================
