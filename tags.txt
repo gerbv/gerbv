@@ -5,6 +5,7 @@ gerbv-2_0_trunk
 Releases  (starting with 2.0 series)
 ====================================
 gerb-2_0_0_release
+gerb-2_0_1_release
 
 Branches (older 1.0 and 0.X series)
 ===================================
