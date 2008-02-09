@@ -34,26 +34,9 @@
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
-int 
-image2pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
-	     double scale, double trans_x, double trans_y,
-	     enum polarity_t polarity);
+int image2pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
+		 double scale, double trans_x, double trans_y,
+		 enum polarity_t polarity);
 
 #endif /* DRAW_GDK_H */
-
-#ifndef DRAW_AMACRO_H
-#define DRAW_AMACRO_H
-
-#include <gdk/gdk.h>
-#include "amacro.h"
-
-/*
- * Execute (and thus draw) the aperture macro described by program.
- * Inparameters used when defining aperture is parameters
- */
-int gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
-		      instruction_t *program, unsigned int nuf_push,
-		      double *parameters, double scale, gint x, gint y);
-
-#endif /* DRAW_AMACRO_H */
 

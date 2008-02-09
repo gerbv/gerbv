@@ -31,15 +31,22 @@
 
 #include "amacro.h"
 
-enum aperture_t {CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO, MACRO_CIRCLE,
-	MACRO_OUTLINE, MACRO_POLYGON, MACRO_MOIRE, MACRO_THERMAL, MACRO_LINE20,
-	MACRO_LINE21, MACRO_LINE22};
+enum aperture_t {APERTURE_NONE, CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO, 
+		 MACRO_CIRCLE, MACRO_OUTLINE, MACRO_POLYGON, MACRO_MOIRE, 
+		 MACRO_THERMAL, MACRO_LINE20, MACRO_LINE21, MACRO_LINE22};
 enum aperture_state_t {OFF, ON, FLASH};
 enum unit_t {INCH, MM, UNIT_UNSPECIFIED};
+
+typedef struct gerb_simplified_amacro {
+    enum aperture_t type;
+    double parameter[APERTURE_PARAMETERS_MAX];
+    struct gerb_simplified_amacro *next;
+} gerb_simplified_amacro_t;
 
 typedef struct gerb_aperture {
     enum aperture_t type;
     amacro_t *amacro;
+    gerb_simplified_amacro_t *simplified;
     double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     enum unit_t unit;

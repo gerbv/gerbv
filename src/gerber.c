@@ -1654,6 +1654,241 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 } /* parse_rs274x */
 
 
+/*
+ * Stack declarations and operations to be used by the simple engine that
+ * executes the parsed aperture macros.
+ */
+typedef struct {
+    double *stack;
+    int sp;
+} macro_stack_t;
+
+
+static macro_stack_t *
+new_stack(unsigned int stack_size)
+{
+    macro_stack_t *s;
+
+    s = (macro_stack_t *)malloc(sizeof(macro_stack_t));
+    if (!s) {
+	free(s);
+	return NULL;
+    }
+    memset(s, 0, sizeof(macro_stack_t));
+
+    s->stack = (double *)malloc(sizeof(double) * stack_size);
+    if (!s->stack) {
+	free(s->stack);
+	return NULL;
+    }
+
+    memset(s->stack, 0, sizeof(double) * stack_size);
+    s->sp = 0;
+
+    return s;
+} /* new_stack */
+
+
+static void
+free_stack(macro_stack_t *s)
+{
+    if (s && s->stack)
+	free(s->stack);
+
+    if (s)
+	free(s);
+
+    return;
+} /* free_stack */
+
+
+static void
+push(macro_stack_t *s, double val)
+{
+    s->stack[s->sp++] = val;
+    return;
+} /* push */
+
+
+static int
+pop(macro_stack_t *s, double *value)
+{
+    /* Check if we try to pop an empty stack */
+    if (s->sp == 0) {
+	return -1;
+    }
+    
+    *value = s->stack[--s->sp];
+    return 0;
+} /* pop */
+
+
+/* ------------------------------------------------------------------ */
+static int
+simplify_aperture_macro(gerb_aperture_t *aperture)
+{
+    const int extra_stack_size = 10;
+    macro_stack_t *s;
+    instruction_t *ip;
+    int handled = 1, nuf_parameters = 0, i;
+    double *lp; /* Local copy of parameters */
+    double tmp[2] = {0.0, 0.0};
+    enum aperture_t type = APERTURE_NONE;
+    gerb_simplified_amacro_t *sam;
+
+    if (aperture == NULL)
+	GERB_FATAL_ERROR("aperture NULL in simplify aperture macro\n");
+
+    if (aperture->amacro == NULL)
+	GERB_FATAL_ERROR("aperture->amacro NULL in simplify aperture macro\n");
+
+    /* Allocate stack for VM */
+    s = new_stack(aperture->amacro->nuf_push + extra_stack_size);
+    if (s == NULL) 
+	GERB_FATAL_ERROR("malloc stack failed\n");
+
+    /* Make a copy of the parameter list that we can rewrite if necessary */
+    lp = (double *)malloc(sizeof(double) * APERTURE_PARAMETERS_MAX);
+    if (lp == NULL)
+	GERB_FATAL_ERROR("malloc local parameter storage failed\n");
+
+    memcpy(lp, aperture->parameter, sizeof(double) * APERTURE_PARAMETERS_MAX);
+    
+    for(ip = aperture->amacro->program; ip != NULL; ip = ip->next) {
+	switch(ip->opcode) {
+	case NOP:
+	    break;
+	case PUSH :
+	    push(s, ip->data.fval);
+	    break;
+        case PPUSH :
+	    push(s, lp[ip->data.ival - 1]);
+	    break;
+	case PPOP:
+	    if (pop(s, &tmp[0]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    lp[ip->data.ival - 1] = tmp[0];
+	    break;
+	case ADD :
+	    if (pop(s, &tmp[0]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    if (pop(s, &tmp[1]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    push(s, tmp[1] + tmp[0]);
+	    break;
+	case SUB :
+	    if (pop(s, &tmp[0]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    if (pop(s, &tmp[1]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    push(s, tmp[1] - tmp[0]);
+	    break;
+	case MUL :
+	    if (pop(s, &tmp[0]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    if (pop(s, &tmp[1]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    push(s, tmp[1] * tmp[0]);
+	    break;
+	case DIV :
+	    if (pop(s, &tmp[0]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    if (pop(s, &tmp[1]) < 0)
+		GERB_FATAL_ERROR("Tried to pop an empty stack");
+	    push(s, tmp[1] / tmp[0]);
+	    break;
+	case PRIM :
+	    /* 
+	     * This handles the exposure thing in the aperture macro
+	     * The exposure is always the first element on stack independent
+	     * of aperture macro.
+	     */
+	    switch(ip->data.ival) {
+	    case 1:
+		dprintf("  Aperture macro circle [1] (");
+		type = MACRO_CIRCLE;
+		nuf_parameters = 4;
+		break;
+	    case 3:
+		break;
+	    case 4 :
+		dprintf("  Aperture macro outline [4] (");
+		type = MACRO_OUTLINE;
+		nuf_parameters = 9; /* Must fix!! */
+		break;
+	    case 5 :
+		dprintf("  Aperture macro polygon [5] (");
+		type = MACRO_POLYGON;
+		nuf_parameters = 6;
+		break;
+	    case 6 :
+		dprintf("  Aperture macro moiré [6] (");
+		type = MACRO_MOIRE;
+		nuf_parameters = 9;
+		break;
+	    case 7 :
+		dprintf("  Aperture macro thermal [7] (");
+		type = MACRO_THERMAL;
+		nuf_parameters = 6;
+		break;
+	    case 2  :
+	    case 20 :
+		dprintf("  Aperture macro line 20/2 (");
+		type = MACRO_LINE20;
+		nuf_parameters = 7;
+		break;
+	    case 21 :
+		dprintf("  Aperture macro line 21 (");
+		type = MACRO_LINE21;
+		nuf_parameters = 6;
+		break;
+	    case 22 :
+		dprintf("  Aperture macro line 22 (");
+		type = MACRO_LINE22;
+		nuf_parameters = 6;
+		break;
+	    default :
+		handled = 0;
+	    }
+
+	    if (type != APERTURE_NONE) {
+		sam = (gerb_simplified_amacro_t *)malloc(sizeof(gerb_simplified_amacro_t));
+		if (sam == NULL)
+		    GERB_FATAL_ERROR("Failed to malloc simplified aperture macro\n");
+		sam->type = type;
+		sam->next = aperture->simplified;
+		memset(sam->parameter, 0, 
+		       sizeof(double) * APERTURE_PARAMETERS_MAX);
+		memcpy(sam->parameter, s->stack, 
+		       sizeof(double) *  nuf_parameters);
+		aperture->simplified = sam;
+		
+#ifdef DEBUG
+		for (i = 0; i < nuf_parameters; i++) {
+		    dprintf("%f, ", s->stack[i]);
+		}
+#endif /* DEBUG */
+		dprintf(")\n");
+	    }
+
+	    /* 
+	     * Here we reset the stack pointer. It's not general correct
+	     * correct to do this, but since I know how the compiler works
+	     * I can do this. The correct way to do this should be to 
+	     * subtract number of used elements in each primitive operation.
+	     */
+	    s->sp = 0;
+	    break;
+	default :
+	    break;
+	}
+    }
+    free_stack(s);
+
+    return handled;
+} /* simplify_aperture_macro */
+
+
 /* ------------------------------------------------------------------ */
 static int 
 parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
@@ -1746,6 +1981,13 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     aperture->nuf_parameters = i;
     
     gerb_ungetc(fd);
+
+    if (aperture->type == MACRO) {
+	dprintf("Simplifying aperture %d using aperture macro \"%s\"\n", ano,
+		aperture->amacro->name);
+	simplify_aperture_macro(aperture);
+	dprintf("Done simplifying\n");
+    }
     
     g_free(ad);
     
@@ -1948,8 +2190,6 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 
     return;
 } /* calc_cirseg_mq */
-
-
 
 
 static void
