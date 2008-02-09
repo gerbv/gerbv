@@ -41,7 +41,7 @@
  */
 int 
 draw_image_to_cairo_target(cairo_t *cairoTarget, 
-			    gerb_image_t *image, gboolean invertLayer);
+			    gerb_image_t *image, gboolean invertLayer, gdouble pixelWidth);
 
 
 

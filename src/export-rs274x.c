@@ -43,7 +43,7 @@ export_rs274x_write_macro (FILE *fd, gerb_aperture_t *currentAperture,
 	gerb_simplified_amacro_t *ls = currentAperture->simplified;
 
 	/* write the macro portion first */
-	fprintf(fd, "%%AMMACRO%d*",apertureNumber);
+	fprintf(fd, "%%AMMACRO%d*\n",apertureNumber);
 	while (ls != NULL) {
 		if (ls->type == MACRO_CIRCLE) {
 			fprintf(fd, "1,%d,%f,%f,%f*\n",(int) ls->parameter[CIRCLE_EXPOSURE],

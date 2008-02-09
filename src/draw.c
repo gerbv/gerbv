@@ -328,7 +328,7 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerb_netstate_t *state
 
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
-						gboolean invertLayer)
+					gboolean invertLayer, gdouble pixelWidth)
 {
 	struct gerb_net *net;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
@@ -531,6 +531,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 			scale = 1.0;
 		switch (net->aperture_state) {
 			case ON :
+				/* if the aperture width is truly 0, then render as a 1 pixel width
+				   line.  0 diameter apertures are used by some programs to draw labels,
+				   etc, and they are rendered by other programs as 1 pixel wide */
+				if (image->aperture[net->aperture]->parameter[0] != 0.0)
+					cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
+				else
+					cairo_set_line_width (cairoTarget, pixelWidth);
 				switch (net->interpolation) {
 					case LINEARx10 :
 					case LINEARx01 :
@@ -539,7 +546,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 						switch (image->aperture[net->aperture]->type) {
 							case CIRCLE :
 								cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
-								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
 								cairo_move_to (cairoTarget, x1,y1);
 								cairo_line_to (cairoTarget, x2,y2);
 								cairo_stroke (cairoTarget);
@@ -552,7 +558,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 								if(y1 > y2)
 									dy = -dy;
 								cairo_new_path(cairoTarget);
-								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
 								cairo_move_to (cairoTarget, x1 - dx, y1 - dy);
 								cairo_line_to (cairoTarget, x1 - dx, y1 + dy);
 								cairo_line_to (cairoTarget, x2 - dx, y2 + dy);
@@ -565,7 +570,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 							case OVAL :
 							case POLYGON :
 								cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
-								cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
 								cairo_move_to (cairoTarget, x1,y1);
 								cairo_line_to (cairoTarget, x2,y2);
 								cairo_stroke (cairoTarget);
@@ -581,7 +585,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 						 * draw an arc and stretch it by scaling different x and y values
 						 */
 						cairo_new_path(cairoTarget);
-						cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
 						if (image->aperture[net->aperture]->type == RECTANGLE) {
 							cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
 						}
