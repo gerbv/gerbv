@@ -27,7 +27,12 @@
 #define APERTURE_MIN 10
 #define APERTURE_MAX 9999
 
-#define APERTURE_PARAMETERS_MAX 10
+/*
+ * Maximum number of aperture parameters is set by the outline aperture
+ * macro. There (p. 28) is defined up to 50 points in polygon.
+ * So 50 points with x and y plus two for holding extra data gives...
+ */
+#define APERTURE_PARAMETERS_MAX 102
 
 #include "amacro.h"
 

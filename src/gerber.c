@@ -1857,7 +1857,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture)
 	    case 4 :
 		dprintf("  Aperture macro outline [4] (");
 		type = MACRO_OUTLINE;
-		nuf_parameters = 9; /* Must fix!! */
+		nuf_parameters = (int)s->stack[1] * 2 + 2;
 		break;
 	    case 5 :
 		dprintf("  Aperture macro polygon [5] (");
@@ -1895,6 +1895,9 @@ simplify_aperture_macro(gerb_aperture_t *aperture)
 	    }
 
 	    if (type != APERTURE_NONE) {
+		if (nuf_parameters > APERTURE_PARAMETERS_MAX) {
+		    GERB_COMPILE_ERROR("Number of parameters to aperture macro are more than gerbv is able to store\n");
+		}
 		sam = (gerb_simplified_amacro_t *)malloc(sizeof(gerb_simplified_amacro_t));
 		if (sam == NULL)
 		    GERB_FATAL_ERROR("Failed to malloc simplified aperture macro\n");
