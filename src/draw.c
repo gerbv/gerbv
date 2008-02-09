@@ -36,6 +36,7 @@
 #include <gtk/gtk.h>
 
 #include "draw.h"
+#include "draw-gdk.h"
 #include "gerb_error.h"
 #include <cairo.h>
 	
@@ -167,8 +168,8 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	    	
 	      if (draw_update_macro_exposure (cairoTarget, clearOperator, 
 	      		darkOperator, ls->parameter[CIRCLE_EXPOSURE])){
-		    	cairo_translate (cairoTarget, ls->parameter[CIRCLE_X_CENTER],
-				       ls->parameter[CIRCLE_Y_CENTER]);
+		    	cairo_translate (cairoTarget, ls->parameter[CIRCLE_CENTER_X],
+				       ls->parameter[CIRCLE_CENTER_Y]);
 			
 			gerbv_draw_circle (cairoTarget, ls->parameter[CIRCLE_DIAMETER]);
 			cairo_fill (cairoTarget);
