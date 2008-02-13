@@ -38,7 +38,7 @@
 //#define AMACRO_DEBUG
 
 #ifndef RENDER_USING_GDK
-  #include <cairo.h>
+#include <cairo.h>
 #endif
 
 /* include this for macro enums */
@@ -444,119 +444,109 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		    cairo_matrix_scale (&currentMatrix, 1, -1);
 		}
 #endif
-	    /* if it's a macro, step through all the primitive components and
-	       calculate the true bounding box */
-	    if ((image->aperture[curr_net->aperture] != NULL) &&
-	    		 (image->aperture[curr_net->aperture]->type == MACRO)) {
-	      gerb_simplified_amacro_t *ls = image->aperture[curr_net->aperture]->simplified;
+		/* if it's a macro, step through all the primitive components
+		   and calculate the true bounding box */
+		if ((image->aperture[curr_net->aperture] != NULL) &&
+		    (image->aperture[curr_net->aperture]->type == MACRO)) {
+		    gerb_simplified_amacro_t *ls = image->aperture[curr_net->aperture]->simplified;
 	      
-	      while (ls != NULL) {
-	      	gdouble offsetx=0,offsety=0,widthx=0,widthy=0;
-	      	gboolean calculatedAlready = FALSE;
-	      	
-	      	if (ls->type == MACRO_CIRCLE) {
-	      		offsetx=ls->parameter[CIRCLE_CENTER_X];
-	      		offsety=ls->parameter[CIRCLE_CENTER_Y];
-	      		widthx=widthy=ls->parameter[CIRCLE_DIAMETER];
-	      	}
-	      	else if (ls->type == MACRO_OUTLINE) {
-	      		int pointCounter,numberOfPoints;
-				numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
+		    while (ls != NULL) {
+			gdouble offsetx = 0, offsety = 0, widthx = 0, widthy = 0;
+			gboolean calculatedAlready = FALSE;
+			
+			if (ls->type == MACRO_CIRCLE) {
+			    offsetx=ls->parameter[CIRCLE_CENTER_X];
+			    offsety=ls->parameter[CIRCLE_CENTER_Y];
+			    widthx=widthy=ls->parameter[CIRCLE_DIAMETER];
+			} else if (ls->type == MACRO_OUTLINE) {
+			    int pointCounter,numberOfPoints;
+			    numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
 		
-				for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
-					gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
-					   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X],
-					   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_Y], 
-					   0,0,0,0);
-				}
-				calculatedAlready = TRUE;
-	      	}
-	      	else if (ls->type == MACRO_POLYGON) {
-	      		offsetx=ls->parameter[POLYGON_CENTER_X];
-	      		offsety=ls->parameter[POLYGON_CENTER_Y];
-	      		widthx=widthy=ls->parameter[POLYGON_DIAMETER];
-	      	}
-	      	else if (ls->type == MACRO_MOIRE) {
-	      		offsetx=ls->parameter[MOIRE_CENTER_X];
-	      		offsety=ls->parameter[MOIRE_CENTER_Y];
-	      		widthx=widthy=ls->parameter[MOIRE_OUTSIDE_DIAMETER];
-	      	}
-	      	else if (ls->type == MACRO_THERMAL) {
-	      		offsetx=ls->parameter[THERMAL_CENTER_X];
-	      		offsety=ls->parameter[THERMAL_CENTER_Y];
-	      		widthx=widthy=ls->parameter[THERMAL_OUTSIDE_DIAMETER];
-	      	}
-	      	else if (ls->type == MACRO_LINE20) {
-	      		widthx=widthy=ls->parameter[LINE20_LINE_WIDTH];
-	      		gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
-					   ls->parameter[LINE20_START_X] + offsetx,
-					   ls->parameter[LINE20_START_Y] + offsety, 
-					   widthx/2,widthx/2,widthy/2,widthy/2);
+			    for (pointCounter = 0; pointCounter < numberOfPoints; pointCounter++) {
 				gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
-					   ls->parameter[LINE20_END_X] + offsetx,
-					   ls->parameter[LINE20_END_Y] + offsety, 
-					   widthx/2,widthx/2,widthy/2,widthy/2);
-				calculatedAlready = TRUE;
-	      	}
-	      	else if (ls->type == MACRO_LINE21) {
-	      		gdouble largestDimension = sqrt (ls->parameter[LINE21_WIDTH]/2 *
-	      		ls->parameter[LINE21_WIDTH]/2 + ls->parameter[LINE21_HEIGHT/2] *
-	      		ls->parameter[LINE21_HEIGHT]/2);
+							   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X],
+							   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_Y], 
+							   0,0,0,0);
+			    }
+			    calculatedAlready = TRUE;
+			} else if (ls->type == MACRO_POLYGON) {
+			    offsetx = ls->parameter[POLYGON_CENTER_X];
+			    offsety = ls->parameter[POLYGON_CENTER_Y];
+			    widthx = widthy = ls->parameter[POLYGON_DIAMETER];
+			} else if (ls->type == MACRO_MOIRE) {
+			    offsetx = ls->parameter[MOIRE_CENTER_X];
+			    offsety = ls->parameter[MOIRE_CENTER_Y];
+			    widthx = widthy = ls->parameter[MOIRE_OUTSIDE_DIAMETER];
+			} else if (ls->type == MACRO_THERMAL) {
+			    offsetx = ls->parameter[THERMAL_CENTER_X];
+			    offsety = ls->parameter[THERMAL_CENTER_Y];
+			    widthx = widthy = ls->parameter[THERMAL_OUTSIDE_DIAMETER];
+			} else if (ls->type == MACRO_LINE20) {
+			    widthx = widthy = ls->parameter[LINE20_LINE_WIDTH];
+			    gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
+						       ls->parameter[LINE20_START_X] + offsetx,
+						       ls->parameter[LINE20_START_Y] + offsety, 
+						       widthx/2,widthx/2,widthy/2,widthy/2);
+			    gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
+						       ls->parameter[LINE20_END_X] + offsetx,
+						       ls->parameter[LINE20_END_Y] + offsety, 
+						       widthx/2,widthx/2,widthy/2,widthy/2);
+			    calculatedAlready = TRUE;
+			} else if (ls->type == MACRO_LINE21) {
+			    gdouble largestDimension = sqrt (ls->parameter[LINE21_WIDTH]/2 *
+							     ls->parameter[LINE21_WIDTH]/2 + ls->parameter[LINE21_HEIGHT/2] *
+							     ls->parameter[LINE21_HEIGHT]/2);
 
-	      		offsetx=ls->parameter[LINE21_CENTER_X];
-	      		offsety=ls->parameter[LINE21_CENTER_Y];
-	      		widthx=widthy=largestDimension;
-	      	}
-	      	else if (ls->type == MACRO_LINE22) {
-	      		gdouble largestDimension = sqrt (ls->parameter[LINE22_WIDTH]/2 *
-	      		ls->parameter[LINE22_WIDTH]/2 + ls->parameter[LINE22_HEIGHT/2] *
-	      		ls->parameter[LINE22_HEIGHT]/2);
+			    offsetx = ls->parameter[LINE21_CENTER_X];
+			    offsety = ls->parameter[LINE21_CENTER_Y];
+			    widthx = widthy=largestDimension;
+			} else if (ls->type == MACRO_LINE22) {
+			    gdouble largestDimension = sqrt (ls->parameter[LINE22_WIDTH]/2 *
+							     ls->parameter[LINE22_WIDTH]/2 + ls->parameter[LINE22_HEIGHT/2] *
+							     ls->parameter[LINE22_HEIGHT]/2);
 
-	      		offsetx=ls->parameter[LINE22_LOWER_LEFT_X] +
+			    offsetx = ls->parameter[LINE22_LOWER_LEFT_X] +
 	      			ls->parameter[LINE22_WIDTH]/2;
-	      		offsety=ls->parameter[LINE22_LOWER_LEFT_Y] +
+			    offsety = ls->parameter[LINE22_LOWER_LEFT_Y] +
 	      			ls->parameter[LINE22_HEIGHT]/2;
-	      		widthx=widthy=largestDimension;
-	      	}
-	      	
-	      	if (!calculatedAlready) {
-		      	gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
-						   curr_net->stop_x + offsetx,
-						   curr_net->stop_y + offsety, 
-						   widthx/2,widthx/2,widthy/2,widthy/2);
+			    widthx = widthy=largestDimension;
 			}
-	    		ls=ls->next;
-	      }
-	    }
-	    else {
-	      if (image->aperture[curr_net->aperture] != NULL) {
+	      	
+			if (!calculatedAlready) {
+			    gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
+						       curr_net->stop_x + offsetx,
+						       curr_net->stop_y + offsety, 
+						       widthx/2,widthx/2,widthy/2,widthy/2);
+			}
+	    		ls = ls->next;
+		    }
+		} else {
+		    if (image->aperture[curr_net->aperture] != NULL) {
 			aperture_size = image->aperture[curr_net->aperture]->parameter[0];
 			if (image->aperture[curr_net->aperture]->unit == MM)
-		    		aperture_size /= 25.4;
-		}
-		else
+			    aperture_size /= 25.4;
+		    } else {
 			/* this is usually for polygon fills, where the aperture width
 			   if "zero" */
 			aperture_size = 0;
-		
-	
-		/* check both the start and stop of the aperture points against
-		   a running min/max counter */
-		/* Note: only check start coordinate if this isn't a flash, 
-		   since the start point may be bogus if it is a flash */
-		if (curr_net->aperture_state != FLASH) {
+		    }
+		    
+		    /* check both the start and stop of the aperture points against
+		       a running min/max counter */
+		    /* Note: only check start coordinate if this isn't a flash, 
+		       since the start point may be bogus if it is a flash */
+		    if (curr_net->aperture_state != FLASH) {
+			gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
+						   curr_net->start_x, curr_net->start_y, 
+						   aperture_size/2,aperture_size/2,
+						   aperture_size/2,aperture_size/2);
+		    }
 		    gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
-					       curr_net->start_x, curr_net->start_y, 
-					       aperture_size/2,aperture_size/2,
-					       aperture_size/2,aperture_size/2);
-		}
-		gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
 					       curr_net->stop_x, curr_net->stop_y, 
 					       aperture_size/2,aperture_size/2,
 					       aperture_size/2,aperture_size/2);
+		}
 	    }
-	    }
-	    
 	    break;
 	case 10 :   /* White space */
 	case 13 :
@@ -872,7 +862,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	/* Don't do anything, just read 'til * */
 	c = gerb_fgetc(fd);
 	while ((c != EOF) && (c != '*')) {
-		c = gerb_fgetc(fd);
+	    c = gerb_fgetc(fd);
 	}
 	stats->G4++;
 	break;
@@ -1894,21 +1884,41 @@ simplify_aperture_macro(gerb_aperture_t *aperture)
 		handled = 0;
 	    }
 
-	    if (type != APERTURE_NONE) {
+	    if (type != APERTURE_NONE) { 
 		if (nuf_parameters > APERTURE_PARAMETERS_MAX) {
 		    GERB_COMPILE_ERROR("Number of parameters to aperture macro are more than gerbv is able to store\n");
 		}
+	
+		/*
+		 * Create struct for simplified aperture macro and
+		 * start filling in the blanks.
+		 */
 		sam = (gerb_simplified_amacro_t *)malloc(sizeof(gerb_simplified_amacro_t));
 		if (sam == NULL)
 		    GERB_FATAL_ERROR("Failed to malloc simplified aperture macro\n");
 		sam->type = type;
-		sam->next = aperture->simplified;
+		sam->next = NULL;
 		memset(sam->parameter, 0, 
 		       sizeof(double) * APERTURE_PARAMETERS_MAX);
 		memcpy(sam->parameter, s->stack, 
 		       sizeof(double) *  nuf_parameters);
-		aperture->simplified = sam;
-		
+
+		/* 
+		 * Add this simplified aperture macro to the end of the list
+		 * of simplified aperture macros. If first entry, put it
+		 * in the top.
+		 */
+		if (aperture->simplified == NULL) {
+		    aperture->simplified = sam;
+		} else {
+		    gerb_simplified_amacro_t *tmp_sam;
+		    tmp_sam = aperture->simplified;
+		    while (tmp_sam->next != NULL) {
+			tmp_sam = tmp_sam->next;
+		    }
+		    tmp_sam->next = sam;
+		}
+
 #ifdef DEBUG
 		for (i = 0; i < nuf_parameters; i++) {
 		    dprintf("%f, ", s->stack[i]);
@@ -2169,7 +2179,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
     
     if (net->cirseg->height < 0.0)
 	GERB_COMPILE_WARNING("Negative height [%f] in quadrant %d [%f][%f]\n", 
-	     net->cirseg->height, quadrant, RAD2DEG(alfa), RAD2DEG(beta));
+			     net->cirseg->height, quadrant, RAD2DEG(alfa), RAD2DEG(beta));
 
     return;
 
@@ -2276,7 +2286,7 @@ gerber_calculate_final_justify_effects(gerb_image_t *image)
     image->info->min_y += translateB+ image->info->imageJustifyOffsetB;
     image->info->max_y += translateB+ image->info->imageJustifyOffsetB;
  
-   /* store the absolute offset for the justify so we can quickly offset
+    /* store the absolute offset for the justify so we can quickly offset
        the rendered picture during drawing */
     image->info->imageJustifyOffsetActualA = translateA + 
 	image->info->imageJustifyOffsetA;
@@ -2328,22 +2338,22 @@ gerber_update_min_and_max(gerb_image_info_t *info, gdouble repeatX, gdouble repe
 	info->max_y = ourY2;
 
     if (knockoutMeasure) {
-	    if(knockoutLimitXmin > ourX1)
-		knockoutLimitXmin = ourX1;
-	    if(knockoutLimitXmin > ourX2)
-		knockoutLimitXmin = ourX2;
-	    if(knockoutLimitXmax < ourX1)
-		knockoutLimitXmax = ourX1;
-	    if(knockoutLimitXmax < ourX2)
-		knockoutLimitXmax = ourX2;
-	    if(knockoutLimitYmin > ourY1)
-		knockoutLimitYmin = ourY1;
-	    if(knockoutLimitYmin > ourY2)
-		knockoutLimitYmin = ourY2;
-	    if(knockoutLimitYmax < ourY1)
-		knockoutLimitYmax = ourY1;
-	    if(knockoutLimitYmax < ourY2)
-		knockoutLimitYmax = ourY2; 
+	if(knockoutLimitXmin > ourX1)
+	    knockoutLimitXmin = ourX1;
+	if(knockoutLimitXmin > ourX2)
+	    knockoutLimitXmin = ourX2;
+	if(knockoutLimitXmax < ourX1)
+	    knockoutLimitXmax = ourX1;
+	if(knockoutLimitXmax < ourX2)
+	    knockoutLimitXmax = ourX2;
+	if(knockoutLimitYmin > ourY1)
+	    knockoutLimitYmin = ourY1;
+	if(knockoutLimitYmin > ourY2)
+	    knockoutLimitYmin = ourY2;
+	if(knockoutLimitYmax < ourY1)
+	    knockoutLimitYmax = ourY1;
+	if(knockoutLimitYmax < ourY2)
+	    knockoutLimitYmax = ourY2; 
     }
 } /* gerber_update_min_and_max */
 
