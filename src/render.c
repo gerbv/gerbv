@@ -516,7 +516,7 @@ void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
 	
 	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->inverted,
-		1/renderInfo->scaleFactor);
+		1/renderInfo->scaleFactor, 0, NULL);
 }
 
 void render_recreate_composite_surface () {

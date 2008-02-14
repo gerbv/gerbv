@@ -44,6 +44,7 @@ typedef struct {
 	gint displayHeight;
 } gerbv_render_info_t;
 
+
 gerb_stats_t *generate_gerber_analysis(void);
 drill_stats_t *generate_drill_analysis(void);
 

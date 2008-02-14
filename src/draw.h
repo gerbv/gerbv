@@ -34,14 +34,19 @@
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
 
+typedef struct {
+	gdouble placeHolder;
+} gerb_selection_info_t;
+
 #endif /* DRAW_H */
 
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
-int 
-draw_image_to_cairo_target(cairo_t *cairoTarget, 
-			    gerb_image_t *image, gboolean invertLayer, gdouble pixelWidth);
+int
+draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
+					gboolean invertLayer, gdouble pixelWidth,
+					gchar drawMode, gerb_selection_info_t *selectionInfo);
 
 
 
