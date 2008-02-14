@@ -876,11 +876,6 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	    continue;
 	}
 	
-	if (image->aperture[net->aperture]->unit == MM)
-	    unit_scale /= 25.4;
-	else
-	    unit_scale = scale;
-	
 	switch (net->aperture_state) {
 	case ON :
 	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);

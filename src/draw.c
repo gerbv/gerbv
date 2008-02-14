@@ -350,7 +350,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 	struct gerb_net *net;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
 	int in_parea_fill = 0,haveDrawnFirstFillPoint = 0;
-	gdouble p1, p2, p3, p4, p5, dx, dy, scale;
+	gdouble p1, p2, p3, p4, p5, dx, dy;
 	gerb_netstate_t *oldState;
 	gerb_layer_t *oldLayer;
 	int repeat_X=1, repeat_Y=1;
@@ -541,11 +541,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 				GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
 			continue;
 		}
-			
-		if (image->aperture[net->aperture]->unit == MM)
-			scale = 25.4;
-		else
-			scale = 1.0;
+
 		switch (net->aperture_state) {
 			case ON :
 				/* if the aperture width is truly 0, then render as a 1 pixel width
@@ -553,8 +549,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 				   etc, and they are rendered by other programs as 1 pixel wide */
 				/* NOTE: also, make sure all lines are at least 1 pixel wide, so they
 				   always show up at low zoom levels */
-				if (image->aperture[net->aperture]->parameter[0] > 0.001)
-					cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0] / scale);
+				if (image->aperture[net->aperture]->parameter[0] > pixelWidth)
+					cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
 				else
 					cairo_set_line_width (cairoTarget, pixelWidth);
 				switch (net->interpolation) {
@@ -570,8 +566,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 								draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 								break;
 							case RECTANGLE :				
-								dx = (image->aperture[net->aperture]->parameter[0]/ 2 / scale);
-								dy = (image->aperture[net->aperture]->parameter[1]/ 2 / scale);
+								dx = (image->aperture[net->aperture]->parameter[0]/ 2);
+								dy = (image->aperture[net->aperture]->parameter[1]/ 2);
 								if(x1 > x2)
 									dx = -dx;
 								if(y1 > y2)
@@ -641,23 +637,22 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 
 				switch (image->aperture[net->aperture]->type) {
 					case CIRCLE :
-						gerbv_draw_circle(cairoTarget, p1 / scale);
-						gerbv_draw_aperature_hole (cairoTarget, p2 / scale, p3 / scale);
+						gerbv_draw_circle(cairoTarget, p1);
+						gerbv_draw_aperature_hole (cairoTarget, p2, p3);
 						break;
 					case RECTANGLE :
-						gerbv_draw_rectangle(cairoTarget, p1 / scale, p2 / scale);
-						gerbv_draw_aperature_hole (cairoTarget, p3 / scale, p4 / scale);
+						gerbv_draw_rectangle(cairoTarget, p1, p2);
+						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
 						break;
 					case OVAL :
-						gerbv_draw_oblong(cairoTarget, p1 / scale, p2 / scale);
-						gerbv_draw_aperature_hole (cairoTarget, p3 / scale, p4 / scale);
+						gerbv_draw_oblong(cairoTarget, p1, p2);
+						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
 						break;
 					case POLYGON :
-						gerbv_draw_polygon(cairoTarget, p1 / scale, p2 / scale, p3 / scale);
-						gerbv_draw_aperature_hole (cairoTarget, p4 / scale, p5 / scale);
+						gerbv_draw_polygon(cairoTarget, p1, p2, p3);
+						gerbv_draw_aperature_hole (cairoTarget, p4, p5);
 						break;
 					case MACRO :
-						cairo_scale (cairoTarget, 1/scale, 1/scale);
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 								  image->aperture[net->aperture]->simplified,
 								  drawMode, selectionInfo, image, net);

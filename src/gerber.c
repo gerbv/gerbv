@@ -85,7 +85,7 @@ static void parse_rs274x(gint levelOfRecursion, gerb_file_t *fd,
 			 gchar *directoryPath);
 static int parse_aperture_definition(gerb_file_t *fd, 
 				     gerb_aperture_t *aperture,
-				     gerb_image_t *image);
+				     gerb_image_t *image, gdouble scale);
 static void calc_cirseg_sq(struct gerb_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_mq(struct gerb_net *net, int cw, 
@@ -1497,7 +1497,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	if (a == NULL)
 	    GERB_FATAL_ERROR("malloc aperture failed\n");
 	memset((void *)a, 0, sizeof(gerb_aperture_t));
-	ano = parse_aperture_definition(fd, a, image);
+	ano = parse_aperture_definition(fd, a, image, scale);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->state->unit;
 	    image->aperture[ano] = a;
@@ -1758,12 +1758,12 @@ pop(macro_stack_t *s, double *value)
 
 /* ------------------------------------------------------------------ */
 static int
-simplify_aperture_macro(gerb_aperture_t *aperture)
+simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 {
     const int extra_stack_size = 10;
     macro_stack_t *s;
     instruction_t *ip;
-    int handled = 1, nuf_parameters = 0, i;
+    int handled = 1, nuf_parameters = 0, i, j;
     double *lp; /* Local copy of parameters */
     double tmp[2] = {0.0, 0.0};
     enum aperture_t type = APERTURE_NONE;
@@ -1888,7 +1888,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture)
 		if (nuf_parameters > APERTURE_PARAMETERS_MAX) {
 		    GERB_COMPILE_ERROR("Number of parameters to aperture macro are more than gerbv is able to store\n");
 		}
-	
+
 		/*
 		 * Create struct for simplified aperture macro and
 		 * start filling in the blanks.
@@ -1902,7 +1902,57 @@ simplify_aperture_macro(gerb_aperture_t *aperture)
 		       sizeof(double) * APERTURE_PARAMETERS_MAX);
 		memcpy(sam->parameter, s->stack, 
 		       sizeof(double) *  nuf_parameters);
-
+		
+		/* convert any mm values to inches */
+		switch (type) {
+		    case MACRO_CIRCLE:
+			sam->parameter[1]/=scale;
+			sam->parameter[2]/=scale;
+			sam->parameter[3]/=scale;
+			break;
+		    case MACRO_OUTLINE:
+			for (j=2; j<nuf_parameters-1; j++){
+			    sam->parameter[j]/=scale;
+			}
+			break;
+		    case MACRO_POLYGON:
+			sam->parameter[2]/=scale;
+			sam->parameter[3]/=scale;
+			sam->parameter[4]/=scale;
+			break;
+		    case MACRO_MOIRE:
+			sam->parameter[0]/=scale;
+			sam->parameter[1]/=scale;
+			sam->parameter[2]/=scale;
+			sam->parameter[3]/=scale;
+			sam->parameter[4]/=scale;
+			sam->parameter[6]/=scale;
+			sam->parameter[7]/=scale;
+			break;
+		    case MACRO_THERMAL:
+			sam->parameter[0]/=scale;
+			sam->parameter[1]/=scale;
+			sam->parameter[2]/=scale;
+			sam->parameter[3]/=scale;
+			sam->parameter[4]/=scale;
+			break;
+		    case MACRO_LINE20:
+			sam->parameter[1]/=scale;
+			sam->parameter[2]/=scale;
+			sam->parameter[3]/=scale;
+			sam->parameter[4]/=scale;
+			sam->parameter[5]/=scale;
+			break;
+		    case MACRO_LINE21:
+		    case MACRO_LINE22:
+			sam->parameter[1]/=scale;
+			sam->parameter[2]/=scale;
+			sam->parameter[3]/=scale;
+			sam->parameter[4]/=scale;
+			break;
+		    default: 
+			break;			
+		}
 		/* 
 		 * Add this simplified aperture macro to the end of the list
 		 * of simplified aperture macros. If first entry, put it
@@ -1948,7 +1998,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture)
 /* ------------------------------------------------------------------ */
 static int 
 parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
-			  gerb_image_t *image)
+			  gerb_image_t *image, gdouble scale)
 {
     int ano, i;
     char *ad;
@@ -1956,6 +2006,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     amacro_t *curr_amacro;
     amacro_t *amacro = image->amacro;
     gerb_stats_t *stats = image->gerb_stats;
+    gdouble tempHolder;
     
     if (gerb_fgetc(fd) != 'D') {
 	gerb_stats_add_error(stats->error_list,
@@ -2022,9 +2073,16 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 	    break;
 	}
 	errno = 0;
-	/* we can't normalize these numbers for in/mm, since some may be 
-	   integers used for macros */
-	aperture->parameter[i] = strtod(token, NULL);
+
+	tempHolder = strtod(token, NULL);
+	/* convert any MM values to inches */
+	/* don't scale polygon angles or side numbers, or macro parmaeters */
+	if (!(((aperture->type == POLYGON) && ((i==1) || (i==2)))||
+		(aperture->type == MACRO))) {
+	    tempHolder /= scale;
+	}
+	
+	aperture->parameter[i] = tempHolder;
 	if (errno) {
 	    gerb_stats_add_error(stats->error_list,
 				 -1,
@@ -2041,7 +2099,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     if (aperture->type == MACRO) {
 	dprintf("Simplifying aperture %d using aperture macro \"%s\"\n", ano,
 		aperture->amacro->name);
-	simplify_aperture_macro(aperture);
+	simplify_aperture_macro(aperture, scale);
 	dprintf("Done simplifying\n");
     }
     
