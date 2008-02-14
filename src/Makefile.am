@@ -23,7 +23,7 @@
 
 bin_PROGRAMS = gerbv
 
-gerbv_SOURCES = amacro.c amacro.h batch.c batch.h color.c color.h common.h \
+gerbv_SOURCES = amacro.c amacro.h batch.c batch.h common.h \
 		${DRAW} drill.c drill.h dynload.c \
 		dynload.h exportimage.c exportimage.h gerb_aperture.h gerb_error.h \
 		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \

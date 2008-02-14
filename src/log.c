@@ -43,7 +43,6 @@
 #include <gtk/gtk.h>
 
 #include "log.h"
-#include "color.h"
 #include "gerbv_screen.h"
 #include "setup.h"
 

@@ -65,7 +65,6 @@
   #endif
 #endif
 
-#include "color.h"
 #include "gerbv_screen.h"
 #include "log.h"
 #include "setup.h"

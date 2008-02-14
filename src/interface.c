@@ -44,7 +44,6 @@
   #include "draw.h"
 #endif
 
-#include "color.h"
 #include "gerbv_screen.h"
 #include "gerbv_icon.h"
 #include "log.h"
