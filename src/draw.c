@@ -163,13 +163,15 @@ draw_update_macro_exposure (cairo_t *cairoTarget, cairo_operator_t clearOperator
 int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	cairo_operator_t darkOperator, gerb_simplified_amacro_t *s,
-	gchar drawMode, gerb_selection_info_t *selectionInfo,
-		gerb_image_t *image, struct gerb_net *net)
+	gint usesClearPrimative, gchar drawMode, gerb_selection_info_t *selectionInfo,
+	gerb_image_t *image, struct gerb_net *net)
 {
     int handled = 1;  
     gerb_simplified_amacro_t *ls = s;
 
     dprintf("Drawing simplified aperture macros:\n");
+    if (usesClearPrimative)
+    	cairo_push_group (cairoTarget);
     while (ls != NULL) {
 	    /* 
 	     * This handles the exposure thing in the aperture macro
@@ -307,6 +309,10 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	    cairo_set_operator (cairoTarget, oldOperator);
 	    cairo_restore (cairoTarget);
 	    ls = ls->next;
+    }
+    if (usesClearPrimative) {
+    	cairo_pop_group_to_source (cairoTarget);
+      cairo_paint (cairoTarget);
     }
     return handled;
 } /* gerbv_draw_amacro */
@@ -655,6 +661,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 					case MACRO :
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 								  image->aperture[net->aperture]->simplified,
+								  (int) image->aperture[net->aperture]->parameter[0],
 								  drawMode, selectionInfo, image, net);
 						break;   
 					default :

@@ -523,8 +523,6 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		} else {
 		    if (image->aperture[curr_net->aperture] != NULL) {
 			aperture_size = image->aperture[curr_net->aperture]->parameter[0];
-			if (image->aperture[curr_net->aperture]->unit == MM)
-			    aperture_size /= 25.4;
 		    } else {
 			/* this is usually for polygon fills, where the aperture width
 			   if "zero" */
@@ -1763,7 +1761,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
     const int extra_stack_size = 10;
     macro_stack_t *s;
     instruction_t *ip;
-    int handled = 1, nuf_parameters = 0, i, j;
+    int handled = 1, nuf_parameters = 0, i, j, clearOperatorUsed = FALSE;
     double *lp; /* Local copy of parameters */
     double tmp[2] = {0.0, 0.0};
     enum aperture_t type = APERTURE_NONE;
@@ -1906,16 +1904,22 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 		/* convert any mm values to inches */
 		switch (type) {
 		    case MACRO_CIRCLE:
+			if (fabs(sam->parameter[0]) > 0.001)
+			    clearOperatorUsed = TRUE;
 			sam->parameter[1]/=scale;
 			sam->parameter[2]/=scale;
 			sam->parameter[3]/=scale;
 			break;
 		    case MACRO_OUTLINE:
+			if (fabs(sam->parameter[0]) > 0.001)
+			    clearOperatorUsed = TRUE;
 			for (j=2; j<nuf_parameters-1; j++){
 			    sam->parameter[j]/=scale;
 			}
 			break;
 		    case MACRO_POLYGON:
+			if (fabs(sam->parameter[0]) > 0.001)
+			    clearOperatorUsed = TRUE;
 			sam->parameter[2]/=scale;
 			sam->parameter[3]/=scale;
 			sam->parameter[4]/=scale;
@@ -1937,6 +1941,8 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 			sam->parameter[4]/=scale;
 			break;
 		    case MACRO_LINE20:
+			if (fabs(sam->parameter[0]) > 0.001)
+			    clearOperatorUsed = TRUE;
 			sam->parameter[1]/=scale;
 			sam->parameter[2]/=scale;
 			sam->parameter[3]/=scale;
@@ -1945,6 +1951,8 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 			break;
 		    case MACRO_LINE21:
 		    case MACRO_LINE22:
+			if (fabs(sam->parameter[0]) > 0.001)
+			    clearOperatorUsed = TRUE;
 			sam->parameter[1]/=scale;
 			sam->parameter[2]/=scale;
 			sam->parameter[3]/=scale;
@@ -1991,6 +1999,9 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
     }
     free_stack(s);
 
+    /* store a flag to let the renderer know if it should expect any "clear"
+       primatives */
+    aperture->parameter[0]= (gdouble) clearOperatorUsed;
     return handled;
 } /* simplify_aperture_macro */
 
