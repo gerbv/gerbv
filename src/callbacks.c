@@ -242,7 +242,6 @@ callbacks_save_activate                       (GtkMenuItem     *menuitem,
 		gerbv_save_project_from_filename (screen.project);
 	else
 		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_FILE_AS);
-	render_refresh_rendered_image_on_screen();
 	return;
 }
 
