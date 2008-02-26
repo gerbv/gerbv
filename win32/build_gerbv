@@ -206,7 +206,7 @@ fi
 # in the generated Makefile's and we need to get rid of them.
 
 echo "Removing spurious carriage returns in the Makefiles..."
-for f in `find . -name Makefile -print ; do
+for f in `find . -name Makefile -print` ; do
 	mv $f $f.bak
 	cat $f.bak | tr '\r' ' ' > $f
 	rm $f.bak
