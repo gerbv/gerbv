@@ -63,6 +63,6 @@ if ENABLE_UPDATE_DESKTOP_DATABASE
 endif
 	$(install_icon_exec) -u $(theme_icons)
 
-EXTRA_DIST = gerbv.png $(app_icon_files)
+EXTRA_DIST = gerbv.png $(app_icon_files) gerbv_icon.ico
 MOSTLYCLEANFILES = *~
 MAINTAINERCLEANFILES = *~ *.o Makefile Makefile.in
