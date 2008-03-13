@@ -442,9 +442,6 @@ gerbv_gdk_draw_prim20(GdkPixmap *pixmap, GdkGC *gc, double *p,
 } /* gerbv_gdk_draw_prim20 */
 
 
-/*
- * Doesn't handle explicit x,y yet
- */
 static void
 gerbv_gdk_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, double *p, 
 		  double scale, gint x, gint y)
@@ -452,6 +449,8 @@ gerbv_gdk_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, double *p,
     const int exposure_idx = 0;
     const int width_idx = 1;
     const int height_idx = 2;
+    const int exp_x_idx = 3;
+    const int exp_y_idx = 4;
     const int rotation_idx = 5;
     const int nuf_points = 4;
     GdkPoint points[nuf_points];
@@ -477,8 +476,8 @@ gerbv_gdk_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, double *p,
 
     for (i = 0; i < nuf_points; i++) {
 	points[i] = rotate_point(points[i], p[rotation_idx]);
-	points[i].x += x;
-	points[i].y += y;
+	points[i].x += (x + (int)(p[exp_x_idx] * scale));
+	points[i].y += (y - (int)(p[exp_y_idx] * scale));
     }
 
     gdk_gc_copy(local_gc, gc);
