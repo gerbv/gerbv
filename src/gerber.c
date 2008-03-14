@@ -1904,21 +1904,21 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 		/* convert any mm values to inches */
 		switch (type) {
 		    case MACRO_CIRCLE:
-			if (fabs(sam->parameter[0]) > 0.001)
+			if (fabs(sam->parameter[0]) < 0.001)
 			    clearOperatorUsed = TRUE;
 			sam->parameter[1]/=scale;
 			sam->parameter[2]/=scale;
 			sam->parameter[3]/=scale;
 			break;
 		    case MACRO_OUTLINE:
-			if (fabs(sam->parameter[0]) > 0.001)
+			if (fabs(sam->parameter[0]) < 0.001)
 			    clearOperatorUsed = TRUE;
 			for (j=2; j<nuf_parameters-1; j++){
 			    sam->parameter[j]/=scale;
 			}
 			break;
 		    case MACRO_POLYGON:
-			if (fabs(sam->parameter[0]) > 0.001)
+			if (fabs(sam->parameter[0]) < 0.001)
 			    clearOperatorUsed = TRUE;
 			sam->parameter[2]/=scale;
 			sam->parameter[3]/=scale;
@@ -1941,7 +1941,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 			sam->parameter[4]/=scale;
 			break;
 		    case MACRO_LINE20:
-			if (fabs(sam->parameter[0]) > 0.001)
+			if (fabs(sam->parameter[0]) < 0.001)
 			    clearOperatorUsed = TRUE;
 			sam->parameter[1]/=scale;
 			sam->parameter[2]/=scale;
@@ -1951,7 +1951,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 			break;
 		    case MACRO_LINE21:
 		    case MACRO_LINE22:
-			if (fabs(sam->parameter[0]) > 0.001)
+			if (fabs(sam->parameter[0]) < 0.001)
 			    clearOperatorUsed = TRUE;
 			sam->parameter[1]/=scale;
 			sam->parameter[2]/=scale;

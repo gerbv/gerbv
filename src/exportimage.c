@@ -41,6 +41,9 @@
 #else
   #include "draw.h"
   #include <cairo.h>
+  #include <cairo/cairo-pdf.h>
+  #include <cairo/cairo-ps.h>
+  #include <cairo/cairo-svg.h>
 #endif
 
 #include "render.h"
