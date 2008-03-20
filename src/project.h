@@ -3,6 +3,7 @@
  * This file is a part of gerbv.
  *
  *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (C) 2008 Dan McMahill
  *
  * $Id$
  *
@@ -46,6 +47,7 @@ typedef struct project_list_t {
     int rgb[3];
     char inverted;
     char is_pnp;
+    char visible;
     struct project_list_t *next;
 } project_list_t;
 

@@ -166,6 +166,7 @@ define_layer(scheme *sc, pointer args)
     plist_tmp->next = plist_top;
     plist_top = plist_tmp;
     plist_top->layerno = layerno;
+    plist_top->visible = 1;
     
     while (sc->vptr->is_pair(car_el)) {
 	
@@ -198,6 +199,14 @@ define_layer(scheme *sc, pointer args)
 		plist_top->inverted = 1;
 	    } else {
 		GERB_MESSAGE("Argument to inverted must be #t or #f\n");
+	    }
+	} else if (strcmp(sc->vptr->symname(name), "visible") == 0) {
+	    if (value == sc->F) {
+		plist_top->visible = 0;
+	    } else if (value == sc->T) {
+		plist_top->visible = 1;
+	    } else {
+		GERB_MESSAGE("Argument to visible must be #t or #f\n");
 	    }
 	}
 	
@@ -309,6 +318,11 @@ write_project_file(char *filename, project_list_t *project)
     
 	if (p->inverted)
 	    fprintf(fd, "(cons 'inverted #t)");
+	if (p->visible)
+	    fprintf(fd, "(cons 'visible #t)");
+	else
+	    fprintf(fd, "(cons 'visible #f)");
+
 	fprintf(fd, "(cons 'color #(%d %d %d)))", p->rgb[0], p->rgb[1],	p->rgb[2]);
 	fprintf(fd, "\n");
 	tmp = p;

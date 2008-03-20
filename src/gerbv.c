@@ -217,6 +217,7 @@ gerbv_open_project_from_filename(gchar *filename)
 		 */
 		screen.file[idx]->color = colorTemplate;
 		screen.file[idx]->inverted = project_list->inverted;
+		screen.file[idx]->isVisible = project_list->visible;
 	    }
 	next_layer:
 	    pl_tmp = project_list;
@@ -294,6 +295,7 @@ gerbv_save_project_from_filename(gchar *filename)
 	    tmp->rgb[1] = screen.file[idx]->color.green;
 	    tmp->rgb[2] = screen.file[idx]->color.blue;
 	    tmp->inverted = screen.file[idx]->inverted;
+	    tmp->visible = screen.file[idx]->isVisible;
 	    project_list = tmp;
 	}
     }
