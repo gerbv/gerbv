@@ -177,6 +177,7 @@ const char path_separator = '/';
 #endif
 
 static int gerbv_open_image(char *filename, int idx, int reload);
+static int gerbv_revert_file(int idx);
 
 void 
 gerbv_open_project_from_filename(gchar *filename) 
@@ -324,6 +325,11 @@ gerbv_save_as_project_from_filename(gchar *filename)
     gerbv_save_project_from_filename (filename);
 } /* gerbv_save_as_project_from_filename */
 
+/* ------------------------------------------------------------------ */
+static int
+gerbv_revert_file(int idx){
+	gerbv_open_image(screen.file[idx]->fullPathname, idx, TRUE);
+}
 
 void 
 gerbv_revert_all_files(void) 
@@ -331,9 +337,9 @@ gerbv_revert_all_files(void)
     int idx;
     
     for (idx = 0; idx < screen.max_files; idx++) {
-	if (screen.file[idx] && screen.file[idx]->name) {
-	    if (gerbv_open_image(screen.file[idx]->name, idx, TRUE) == -1)
-		return;
+	if (screen.file[idx] && screen.file[idx]->fullPathname) {
+	    gerbv_revert_file (idx);
+	    return;
 	}
     }
 } /* gerbv_revert_all_files */
