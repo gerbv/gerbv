@@ -781,7 +781,7 @@ main(int argc, char *argv[])
 		fprintf(stderr, "Specified color format is not recognized.\n");
 		exit(1);
 	    }
-    	    r=g=b=0;
+    	    r=g=b=-1;
 	    sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
 	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)) {
 
@@ -805,7 +805,7 @@ main(int argc, char *argv[])
 		fprintf(stderr, "Specified color format is not recognized.\n");
 		exit(1);
 	    }
-	    r=g=b=a=0;
+	    r=g=b=a=-1;
 	    if(strlen(optarg)==7){
 		sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
 		a=177;
