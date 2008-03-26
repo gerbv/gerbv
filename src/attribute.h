@@ -76,6 +76,9 @@ int
 interface_attribute_dialog (HID_Attribute *, int, HID_Attr_Val *, 
 			    const char *,const char *);
 
+void
+attribute_merge (HID_Attribute *, int, HID_Attribute *, int);
+
 #ifdef __cplusplus
 }
 #endif

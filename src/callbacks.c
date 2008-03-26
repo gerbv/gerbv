@@ -796,6 +796,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 					    general_report_string,
 					    error_report_string);
 
+
     /* G code window strings */
     G_report_string = g_strdup_printf("G code statistics   \n");
     G_report_string = g_strdup_printf("%sG00 = %-6d (%s)\n", 
@@ -875,6 +876,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
 				      M_report_string, stats_report->M_unknown);
 
+
     /* misc report strings */
     misc_report_string = g_strdup_printf("Misc code statistics   \n");
     misc_report_string = g_strdup_printf("%scomments = %d\n", 
@@ -882,6 +884,10 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     misc_report_string = g_strdup_printf("%sUnknown codes = %d\n", 
 					 misc_report_string, stats_report->unknown);
 
+    if (stats_report->detect != NULL ) {
+	misc_report_string = g_strdup_printf("%s\n%s\n", 
+					     misc_report_string, stats_report->detect);
+    }	
     /* drill report window strings */
     drill_report_string = g_strdup_printf("%10s %8s %8s %8s\n", 
 					  "Drill no.", "Dia.", "Units", "Count");
@@ -2229,6 +2235,7 @@ void
 callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
 	int activeRow = gtk_combo_box_get_active (widget);
 	
+	dprintf ("%s():  activeRow = %d\n", __FUNCTION__, activeRow);
 	screenRenderInfo.renderType = activeRow;
 	render_refresh_rendered_image_on_screen();
 }

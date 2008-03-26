@@ -55,6 +55,10 @@
 #include "render.h"
 #include "icons.h"
 
+extern gerbv_render_info_t screenRenderInfo;
+
+static 	GtkWidget *render_combobox;
+
 #define WIN_TITLE "Gerber Viewer"
 #define _(String) (String)
 
@@ -168,7 +172,6 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *vbox10;
 	GtkWidget *hbox4;
 	GtkWidget *label1;
-	GtkWidget *combobox1;
 	GtkWidget *scrolledwindow1;
 	GtkWidget *hbox1;
 	GtkWidget *button4;
@@ -560,16 +563,20 @@ interface_create_gui (int req_width, int req_height)
 	label1 = gtk_label_new (_("Rendering: "));
 	gtk_box_pack_start (GTK_BOX (hbox4), label1, FALSE, FALSE, 0);
 
-	combobox1 = gtk_combo_box_new_text ();
-	gtk_box_pack_start (GTK_BOX (hbox4), combobox1, TRUE, TRUE, 0);
+	render_combobox = gtk_combo_box_new_text ();
+	gtk_box_pack_start (GTK_BOX (hbox4), render_combobox, TRUE, TRUE, 0);
 #ifdef RENDER_USING_GDK
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Normal"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("XOR"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Normal"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("XOR"));
+	if (screenRenderInfo.renderType < 2)
+	    gtk_combo_box_set_active (GTK_COMBO_BOX (render_combobox), screenRenderInfo.renderType);
 #else
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Fast"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Fast, with XOR"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("Normal"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (combobox1), _("High quality"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Fast"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Fast, with XOR"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Normal"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("High quality"));
+	if (screenRenderInfo.renderType < 4)
+	    gtk_combo_box_set_active (GTK_COMBO_BOX (render_combobox), screenRenderInfo.renderType);
 #endif
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_box_pack_start (GTK_BOX (vbox10), scrolledwindow1, TRUE, TRUE, 0);
@@ -848,7 +855,6 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) vScrollbar, "button-release-event",
 	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);               
 	
-	gtk_combo_box_set_active (GTK_COMBO_BOX (combobox1), 0);
 
 	if (screen.unit == GERBV_MILS)
 		gtk_combo_box_set_active (GTK_COMBO_BOX (combobox2), 0);
@@ -1089,10 +1095,29 @@ interface_create_gui (int req_width, int req_height)
 
 	/* connect this signal as late as possible to avoid triggering it before
 	   the gui is drawn */
-	g_signal_connect ((gpointer) combobox1, "changed",
+	g_signal_connect ((gpointer) render_combobox, "changed",
 	                  G_CALLBACK (callbacks_sidepane_render_type_combo_box_changed),
 	                  NULL);
 	gtk_main();
+}
+
+void 
+interface_set_render_type (int t)
+{
+#ifdef RENDER_USING_GDK
+    if (t >= 2)
+#else
+    if (t >= 4)
+#endif
+	return;
+    
+    screenRenderInfo.renderType = t;
+
+    /* make sure the interface is already up before calling
+     * gtk_combo_box_set_active()
+     */
+    if (render_combobox)
+	gtk_combo_box_set_active (GTK_COMBO_BOX (render_combobox), t);
 }
 
 gboolean

@@ -190,7 +190,7 @@ static HID_Attribute drill_attribute_list[] = {
 
 /* -------------------------------------------------------------- */
 gerb_image_t *
-parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr)
+parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reload)
 {
     drill_state_t *state = NULL;
     gerb_image_t *image = NULL;
@@ -206,7 +206,7 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr)
     if (image == NULL)
 	GERB_FATAL_ERROR("malloc image failed\n");
 
-    if (attr_list != NULL)
+    if (reload && attr_list != NULL)
 	{
 	    image->info->attr_list = attr_list;
 	    image->info->n_attr = n_attr;
@@ -230,6 +230,10 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr)
 		{
 		    image->info->attr_list[i] = drill_attribute_list[i];
 		}
+
+	    /* now merge any project attributes */
+	    attribute_merge (image->info->attr_list, image->info->n_attr,
+			     attr_list, n_attr);
 	}
 
 	    

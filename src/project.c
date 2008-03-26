@@ -56,8 +56,12 @@
 #include "gerb_error.h"
 #include "gerb_file.h"
 #include "gerbv_screen.h"
+#include "interface.h"
 #include "project.h"
 #include "scheme-private.h"
+
+#include "render.h"
+extern gerbv_render_info_t screenRenderInfo;
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -167,7 +171,9 @@ define_layer(scheme *sc, pointer args)
     plist_top = plist_tmp;
     plist_top->layerno = layerno;
     plist_top->visible = 1;
-    
+    plist_top->n_attr = 0;
+    plist_top->attr_list = NULL;
+
     while (sc->vptr->is_pair(car_el)) {
 	
 	name = sc->vptr->pair_car(car_el);
@@ -208,6 +214,103 @@ define_layer(scheme *sc, pointer args)
 	    } else {
 		GERB_MESSAGE("Argument to visible must be #t or #f\n");
 	    }
+       	} else if (strcmp(sc->vptr->symname(name), "attribs") == 0) {
+	    pointer attr_car_el, attr_cdr_el;
+	    pointer attr_name, attr_type, attr_value;
+	    char *type;
+
+	    dprintf ("Parsing file attributes\n");
+
+	    attr_car_el = sc->vptr->pair_car (value);
+	    attr_cdr_el = sc->vptr->pair_cdr (value);
+	    while (sc->vptr->is_pair(attr_car_el)) {
+		int p = plist_top->n_attr;
+		plist_top->n_attr++;
+		plist_top->attr_list = (HID_Attribute *) 
+		    realloc (plist_top->attr_list, 
+			     plist_top->n_attr * sizeof (HID_Attribute));
+		if (plist_top->attr_list == NULL ) {
+		    fprintf (stderr, "%s():  realloc failed\n", __FUNCTION__);
+		    exit (1);
+		}								  
+
+		/* car */
+		attr_name = sc->vptr->pair_car(attr_car_el);
+
+		/* cadr */
+		attr_type =  sc->vptr->pair_cdr (attr_car_el);
+		attr_type =  sc->vptr->pair_car (attr_type);
+
+		/* caddr */
+		attr_value =  sc->vptr->pair_cdr (attr_car_el);
+		attr_value =  sc->vptr->pair_cdr (attr_value);
+		attr_value =  sc->vptr->pair_car (attr_value);
+
+		dprintf ("  attribute %s, type is %s, value is ", 
+			 sc->vptr->symname(attr_name),
+			 sc->vptr->symname(attr_type));
+
+		plist_top->attr_list[p].name = strdup (sc->vptr->symname (attr_name));
+
+		type = sc->vptr->symname (attr_type);
+
+		if (strcmp (type, "label") == 0) {
+		    dprintf ("%s", sc->vptr->string_value (attr_value));
+		    plist_top->attr_list[p].type = HID_Label;
+		    plist_top->attr_list[p].default_val.str_value = 
+			strdup (sc->vptr->string_value (attr_value));
+
+		} else if (strcmp (type, "integer") == 0) {
+		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
+		    plist_top->attr_list[p].type = HID_Integer;
+		    plist_top->attr_list[p].default_val.int_value = 
+			sc->vptr->ivalue (attr_value);
+
+		} else if (strcmp (type, "real") == 0) {
+		    dprintf ("%g", sc->vptr->rvalue (attr_value));
+		    plist_top->attr_list[p].type = HID_Real;
+		    plist_top->attr_list[p].default_val.real_value = 
+			sc->vptr->rvalue (attr_value);
+
+		} else if (strcmp (type, "string") == 0) {
+		    dprintf ("%s", sc->vptr->string_value (attr_value));
+		    plist_top->attr_list[p].type = HID_String;
+		    plist_top->attr_list[p].default_val.str_value = 
+			strdup (sc->vptr->string_value (attr_value));
+
+		} else if (strcmp (type, "boolean") == 0) {
+		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
+		    plist_top->attr_list[p].type = HID_Boolean;
+		    plist_top->attr_list[p].default_val.int_value = 
+			sc->vptr->ivalue (attr_value);
+
+		} else if (strcmp (type, "enum") == 0) {
+		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
+		    plist_top->attr_list[p].type = HID_Enum;
+		    plist_top->attr_list[p].default_val.int_value = 
+			sc->vptr->ivalue (attr_value);
+
+		} else if (strcmp (type, "mixed") == 0) {
+		    plist_top->attr_list[p].type = HID_Mixed;
+		    plist_top->attr_list[p].default_val.str_value = NULL;
+		    fprintf (stderr, "%s():  WARNING:  HID_Mixed is not yet supported\n",
+			     __FUNCTION__);
+
+		} else if (strcmp (type, "path") == 0) {
+		    dprintf ("%s", sc->vptr->string_value (attr_value));
+		    plist_top->attr_list[p].type = HID_Path;
+		    plist_top->attr_list[p].default_val.str_value = 
+			strdup (sc->vptr->string_value (attr_value));
+		} else {
+		    fprintf (stderr, "%s():  Unknown attribute type: \"%s\"\n",
+			     __FUNCTION__, type);
+		}
+		printf ("\n");
+
+		attr_car_el = sc->vptr->pair_car(attr_cdr_el);
+		attr_cdr_el = sc->vptr->pair_cdr(attr_cdr_el);
+	    }
+
 	}
 	
     end_name_value_parse:
@@ -217,6 +320,29 @@ define_layer(scheme *sc, pointer args)
     
     return sc->NIL;
 } /* define_layer */
+
+static pointer
+set_render_type(scheme *sc, pointer args)
+{
+    pointer car_el, cdr_el;
+    int r;
+
+    dprintf("--> entering project.c:%s()\n", __FUNCTION__);
+
+    if (!sc->vptr->is_pair(args)){
+	GERB_MESSAGE("set-render-type!: Too few arguments\n");
+	return sc->F;
+    }
+
+    car_el = sc->vptr->pair_car(args);
+    cdr_el = sc->vptr->pair_cdr(args);
+
+    r = sc->vptr->ivalue (car_el);
+    dprintf ("%s():  Setting render type to %d\n", __FUNCTION__, r);
+    interface_set_render_type (r);
+
+    return sc->NIL;
+} /* set_render_type */
 
 
 /** Reads the content of a project file.
@@ -275,6 +401,10 @@ read_project_file(char *filename)
 			    sc->vptr->mk_symbol(sc, "define-layer!"),
 			    sc->vptr->mk_foreign_func(sc, define_layer));
 
+    sc->vptr->scheme_define(sc, sc->global_env, 
+			    sc->vptr->mk_symbol(sc, "set-render-type!"),
+			    sc->vptr->mk_foreign_func(sc, set_render_type));
+
     if ((fd = fopen(filename, "r")) == NULL) {
 	scheme_deinit(sc);
 	GERB_MESSAGE("Couldn't open project file %s (%s)\n", filename,
@@ -302,6 +432,9 @@ write_project_file(char *filename, project_list_t *project)
 {
     FILE *fd;
     project_list_t *p = project, *tmp;
+    int n_attr = 0;
+    HID_Attribute *attr_list = NULL;
+    int i;
 
     if ((fd = fopen(filename, "w")) == NULL) {
 	    GERB_MESSAGE("Couldn't save project %s\n", filename);
@@ -323,14 +456,84 @@ write_project_file(char *filename, project_list_t *project)
 	else
 	    fprintf(fd, "(cons 'visible #f)");
 
-	fprintf(fd, "(cons 'color #(%d %d %d)))", p->rgb[0], p->rgb[1],	p->rgb[2]);
-	fprintf(fd, "\n");
+	fprintf(fd, "(cons 'color #(%d %d %d))", p->rgb[0], p->rgb[1],	p->rgb[2]);
+
+	/* now write out the attribute list which specifies the
+	 * file format 
+	 */
+	if (p->layerno < 0) {
+	    attr_list = NULL;
+	    n_attr = 0;
+	} else {
+	    attr_list = screen.file[p->layerno]->image->info->attr_list;
+	    n_attr =  screen.file[p->layerno]->image->info->n_attr;
+	}
+
+	if (n_attr > 0) {
+	    fprintf (fd, "(cons 'attribs (list");
+	}
+	for (i = 0; i < n_attr ; i++) {
+	    switch (attr_list[i].type) {
+	    case HID_Label:
+		  fprintf(fd, " (list '%s 'Label \"%s\")", attr_list[i].name,
+			  attr_list[i].default_val.str_value);
+		  break;
+		  
+	      case HID_Integer:
+		  fprintf(fd, " (list '%s 'Integer %d)", attr_list[i].name,
+			  attr_list[i].default_val.int_value);
+		  break;
+		  
+	      case HID_Real:
+		  fprintf(fd, " (list '%s 'Real %g)", attr_list[i].name,
+			  attr_list[i].default_val.real_value);
+		  break;
+		  
+	      case HID_String:
+		  fprintf(fd, " (list '%s 'String \"%s\")", attr_list[i].name,
+			  attr_list[i].default_val.str_value);
+		  break;
+		  
+	      case HID_Boolean:
+		  fprintf(fd, " (list '%s 'Boolean %d)", attr_list[i].name,
+			  attr_list[i].default_val.int_value);
+		  break;
+		  
+	      case HID_Enum:
+		  fprintf(fd, " (list '%s 'Enum %d)", attr_list[i].name,
+			  attr_list[i].default_val.int_value);
+		  break;
+
+	      case HID_Mixed:
+		  dprintf ("HID_Mixed\n");
+		  fprintf (stderr, "%s():  WARNING:  HID_Mixed is not yet supported.\n",
+			   __FUNCTION__);
+		  break;
+
+	      case HID_Path:
+		  fprintf(fd, " (list '%s 'Path \"%s\")", attr_list[i].name,
+			  attr_list[i].default_val.str_value);
+		  break;
+
+	      default:
+		  fprintf (stderr, "%s: unknown type of HID attribute (%d)\n", 
+			   __FUNCTION__, attr_list[i].type);
+		  break;
+	      }
+	}
+	if (n_attr > 0) {
+	    fprintf (fd, "))");
+	}
+
+	fprintf(fd, ")\n");
 	tmp = p;
 	p = p->next;
 	g_free(tmp);
 	tmp = NULL;
     }
 
+    fprintf (fd, "(set-render-type! %d)\n", screenRenderInfo.renderType);
+	     
     fclose(fd);
 
     return(0);
