@@ -327,7 +327,9 @@ gerbv_save_as_project_from_filename(gchar *filename)
 /* ------------------------------------------------------------------ */
 int
 gerbv_revert_file(int idx){
-	gerbv_open_image(screen.file[idx]->fullPathname, idx, TRUE);
+	int rv;
+	rv = gerbv_open_image(screen.file[idx]->fullPathname, idx, TRUE);
+	return rv;
 }
 
 void 
