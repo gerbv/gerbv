@@ -177,7 +177,6 @@ const char path_separator = '/';
 #endif
 
 static int gerbv_open_image(char *filename, int idx, int reload);
-static int gerbv_revert_file(int idx);
 
 void 
 gerbv_open_project_from_filename(gchar *filename) 
@@ -326,7 +325,7 @@ gerbv_save_as_project_from_filename(gchar *filename)
 } /* gerbv_save_as_project_from_filename */
 
 /* ------------------------------------------------------------------ */
-static int
+int
 gerbv_revert_file(int idx){
 	gerbv_open_image(screen.file[idx]->fullPathname, idx, TRUE);
 }
@@ -471,8 +470,17 @@ gerbv_open_image(char *filename, int idx, int reload)
     gerb_image_t *parsed_image = NULL, *parsed_image2 = NULL;
     gint retv = -1;
     gboolean isPnpFile = FALSE, foundBinary, forceLoadFile = FALSE;
-    
-    
+    HID_Attribute *attr_list = NULL;
+    int n_attr = 0;
+    /* If we're reloading, we'll pass in our file format attribute list
+     * since this is our hook for letting the user override the fileformat.
+     */
+    if (reload)
+	{
+	    attr_list =  screen.file[idx]->image->info->attr_list;
+	    n_attr =  screen.file[idx]->image->info->n_attr;
+	}
+
     /* if we don't have enough spots, then grow the file list by 2 to account for the possible 
        loading of two images for PNP files */
     if ((idx+1) >= screen.max_files) {
@@ -529,7 +537,7 @@ gerbv_open_image(char *filename, int idx, int reload)
 		g_free (primaryText);
 	}
 	if ((!(screen.win.topLevelWindow))||(!foundBinary || forceLoadFile))
-		parsed_image = parse_drillfile(fd);
+	    parsed_image = parse_drillfile(fd, attr_list, n_attr);
 	
     } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
 	dprintf("Found pick-n-place file\n");

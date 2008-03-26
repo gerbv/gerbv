@@ -1001,6 +1001,20 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_change_layer_color_clicked), NULL);
 	                  
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Reload layer");
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.layerTreePopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Reload the layer from disk", 
+			      NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_reload_layer_clicked), NULL);
+
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Edit file format");
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.layerTreePopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "View and edit the numerical format used to parse this layer", 
+			      NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_change_layer_format_clicked), NULL);
+
 	tempMenuItem = gtk_image_menu_item_new_with_label ("Add layer");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.layerTreePopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Open a new layer and insert it here", NULL);
@@ -1138,5 +1152,6 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText)
 		
   return returnVal;
 }
+
 
 

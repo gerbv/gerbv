@@ -1,7 +1,8 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * drill.h
- * Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ * This file is a part of gerbv.
+ *
+ *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
  * $Id$
  *
@@ -19,28 +20,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
-
-#ifndef DRILL_H
-#define DRILL_H
+ 
+#ifndef GERBV_H
+#define GERBV_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdio.h>
-#include <glib.h>
-#include "gerb_image.h"
-#include "gerb_file.h"
-
-#define TOOL_MIN 1  /* T00 code is reserved for unload tool command */
-#define TOOL_MAX 9999
-
-gerb_image_t *parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr);
-gboolean
-drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary);
+int gerbv_revert_file(int idx);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* DRILL_H */
+#endif /* GERBV_H */
+

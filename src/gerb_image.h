@@ -24,6 +24,7 @@
 #ifndef GERB_IMAGE_H
 #define GERB_IMAGE_H
 
+#include "attribute.h"
 #include "gerb_aperture.h"
 #include "gerb_transf.h"
 #include "gerb_stats.h"
@@ -141,6 +142,17 @@ typedef struct gerb_image_info {
     gdouble imageJustifyOffsetActualA;
     gdouble imageJustifyOffsetActualB;
     gchar *plotterFilm;
+
+    /* Descriptive string for the type of file (rs274-x, drill, etc)
+     * that this is
+     */
+    gchar *type;
+
+    /* Attribute list that is used to hold all sorts of information
+     * about how the layer is to be parsed.
+    */ 
+    HID_Attribute *attr_list;
+    int n_attr;
 } gerb_image_info_t;
 
 typedef struct {
@@ -161,7 +173,7 @@ typedef struct {
 /*
  * Function prototypes
  */
-gerb_image_t *new_gerb_image(gerb_image_t *image);
+gerb_image_t *new_gerb_image(gerb_image_t *image, const gchar *type);
 void free_gerb_image(gerb_image_t *image);
 
 /*

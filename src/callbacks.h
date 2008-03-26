@@ -180,6 +180,12 @@ callbacks_invert_layer_clicked (GtkButton *button, gpointer   user_data);
 void
 callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data);
 
+void
+callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data);
+
+void
+callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data);
+
 void callbacks_update_scrollbar_limits (void);
 
 void callbacks_update_scrollbar_positions (void);

@@ -49,7 +49,10 @@
 #endif
 
 #include <math.h>
+
+#include "attribute.h"
 #include "gerber.h"
+#include "gerbv.h"
 #include "drill.h"
 #include "gerb_error.h"
 //#include "gerb_aperture.h"
@@ -1593,6 +1596,71 @@ callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) 
 	callbacks_show_color_picker_dialog (index);
 }
 					
+void
+callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
+	gint index = callbacks_get_selected_row_index();
+	gerbv_revert_file (index);
+}
+
+void
+callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
+{
+    HID_Attribute *attr = NULL;
+    int n = 0;
+    int i;
+    HID_Attr_Val * results = NULL;
+    gint index = callbacks_get_selected_row_index();
+    gchar *type;
+
+    dprintf ("%s(): index = %d\n", __FUNCTION__, index);
+    attr = screen.file[index]->image->info->attr_list;
+    n =  screen.file[index]->image->info->n_attr;
+    type =  screen.file[index]->image->info->type;
+    if (type == NULL) 
+	type = "Unknown";
+
+    if (attr == NULL || n == 0) 
+	{
+	    interface_get_alert_dialog_response ("User editable file formats\n"
+						 "are not yet supported for\n"
+						 "file type:", type);
+	    return;
+	}
+
+    dprintf ("%s(): n = %d, attr = %p\n", __FUNCTION__, n, attr);
+    if (n > 0)
+	{
+	    results = (HID_Attr_Val *) malloc (n * sizeof (HID_Attr_Val));
+	    if (results == NULL)
+		{
+		    fprintf (stderr, "%s() -- malloc failed\n", __FUNCTION__);
+		    exit (1);
+		}
+      
+	    /* non-zero means cancel was picked */
+	    if (interface_attribute_dialog (attr, n, results, 
+					    "Edit file format", 
+					    type))
+		{
+		    return;
+		}
+          
+    }
+
+    dprintf ("%s():  Reloading layer\n", __FUNCTION__);
+    gerbv_revert_file (index);
+
+    for (i = 0; i < n; i++)
+	{
+	    if (results[i].str_value)
+		free (results[i].str_value);
+	}
+    
+    if (results)
+	free (results);
+
+}
+
 gboolean
 callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
                                    gpointer user_data) {

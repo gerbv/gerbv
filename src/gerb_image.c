@@ -36,7 +36,7 @@
    @param image will be freed up if not NULL
    @return gerb_image pointer on success, NULL on ERROR */
 gerb_image_t *
-new_gerb_image(gerb_image_t *image)
+new_gerb_image(gerb_image_t *image, const gchar *type)
 {
     free_gerb_image(image);
     
@@ -89,6 +89,15 @@ new_gerb_image(gerb_image_t *image)
     image->states->scaleA = 1;
     image->states->scaleB = 1;
 
+    if (type == NULL)
+	image->info->type = "unknown";
+    else
+	image->info->type = g_strdup (type);
+
+    /* the individual file parsers will have to set this. */
+    image->info->attr_list = NULL;
+    image->info->n_attr = 0;
+
     return image;
 }
 
@@ -131,6 +140,10 @@ free_gerb_image(gerb_image_t *image)
     if (image->info) {
 	if (image->info->name)
 	    g_free(image->info->name);
+
+	if (image->info->type)
+	    g_free(image->info->type);
+
 	g_free(image->info);
     }
     

@@ -324,7 +324,7 @@ batch(char *backend, char *filename)
     }
 
     if (drill_file_p(fd))
-	image = parse_drillfile(fd);
+	image = parse_drillfile(fd, NULL, 0);
     else
 	image = parse_gerb(fd);
     
