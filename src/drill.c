@@ -848,10 +848,19 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 				      GRB_ERROR);
 	    } else {
 		if(image->aperture[tool_num] != NULL) {
-		    drill_stats_add_error(stats->error_list,
-					  -1,
-					  g_strdup_printf("Found redefinition of drill %d.\n", tool_num),
-					  GRB_ERROR);
+		    /* allow a redefine of a tool only if the new definition is exactly the same.
+		     * This avoid lots of spurious complaints with the output of some cad
+		     * tools while keeping complaints if there is a true problem
+		     */
+		    if (image->aperture[tool_num]->parameter[0] != size ||
+			image->aperture[tool_num]->type != CIRCLE ||
+			image->aperture[tool_num]->nuf_parameters != 1 ||
+			image->aperture[tool_num]->unit != INCH) {
+			drill_stats_add_error(stats->error_list,
+					      -1,
+					      g_strdup_printf("Found redefinition of drill %d.\n", tool_num),
+					      GRB_ERROR);
+		    }
 		} else {
 		    image->aperture[tool_num] =
 			(gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
