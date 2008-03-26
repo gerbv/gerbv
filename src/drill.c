@@ -184,7 +184,7 @@ static HID_Attribute drill_attribute_list[] = {
 
   {"digits", "Number of digits",
    HID_Integer, 0, 20, {5, 0, 0}, 0, 0},
-#define HA_digits 4
+#define HA_digits 3
 };
 
 
