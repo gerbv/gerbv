@@ -111,7 +111,7 @@ gerb_fopen(char *filename)
         return NULL;
     }
     
-    fd->fd = fopen(filename, "r");
+    fd->fd = fopen(filename, "rb");
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
     if (fstat(fd->fileno, &statinfo) < 0) {
@@ -138,7 +138,7 @@ gerb_fopen(char *filename)
         g_free(fd);
         return NULL;
     }
-    if (fread((void*)fd->data, 1, statinfo.st_size, fd->fd) == 0) {
+    if (fread((void*)fd->data, 1, statinfo.st_size, fd->fd) != statinfo.st_size) {
         fclose(fd->fd);
 	g_free(fd->data);
         g_free(fd);
