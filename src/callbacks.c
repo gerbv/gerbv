@@ -328,9 +328,11 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 	
 	/* have to assume x and y resolutions are the same for now, since we
 	   don't support differing scales in the gerb_render_info_t struct yet */
-	gdouble res = gtk_print_context_get_dpi_x (context);
+	gdouble xres = gtk_print_context_get_dpi_x (context);
+	gdouble yres = gtk_print_context_get_dpi_y (context);
 	gdouble scalePercentage = gtk_print_settings_get_scale (pSettings);
-	renderInfo.scaleFactor = scalePercentage / 100 * res;
+	renderInfo.scaleFactorX = scalePercentage / 100 * xres;
+	renderInfo.scaleFactorY = scalePercentage / 100 * yres;
 
 	render_translate_to_fit_display (&renderInfo);
 	cr = gtk_print_context_get_cairo_context (context);
@@ -1128,11 +1130,10 @@ gdouble callbacks_calculate_actual_distance (gdouble inputDimension) {
 
 void callbacks_update_ruler_pointers (void) {
 	double xPosition, yPosition;
+	xPosition = screenRenderInfo.lowerLeftX + (screen.last_x / screenRenderInfo.scaleFactorX);
+	yPosition = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - screen.last_y) / screenRenderInfo.scaleFactorY);
 
-	xPosition = screenRenderInfo.lowerLeftX + (screen.last_x / screenRenderInfo.scaleFactor);
-	yPosition = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - screen.last_y) / screenRenderInfo.scaleFactor);
-
-	if (!((screen.unit == GERBV_MILS) && (screenRenderInfo.scaleFactor < 80))) {
+	if (!((screen.unit == GERBV_MILS) && ((screenRenderInfo.scaleFactorX < 80)||(screenRenderInfo.scaleFactorY < 80)))) {
 		xPosition = callbacks_calculate_actual_distance (xPosition);
 		yPosition = callbacks_calculate_actual_distance (yPosition);
 	}
@@ -1144,14 +1145,13 @@ void callbacks_update_ruler_scales (void) {
 	double xStart, xEnd, yStart, yEnd;
 
 	xStart = screenRenderInfo.lowerLeftX;
-	xEnd = screenRenderInfo.lowerLeftX + (screenRenderInfo.displayWidth / screenRenderInfo.scaleFactor);
 	yStart = screenRenderInfo.lowerLeftY;
-	yEnd = screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor);
-
+	xEnd = screenRenderInfo.lowerLeftX + (screenRenderInfo.displayWidth / screenRenderInfo.scaleFactorX);
+	yEnd = screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactorY);
 	/* mils can get super crowded with large boards, but inches are too
 	   large for most boards.  So, we leave mils in for now and just switch
 	   to inches if the scale factor gets too small */
-	if (!((screen.unit == GERBV_MILS) && (screenRenderInfo.scaleFactor < 80))) {
+	if (!((screen.unit == GERBV_MILS) && ((screenRenderInfo.scaleFactorX < 80)||(screenRenderInfo.scaleFactorY < 80)))) {
 		xStart = callbacks_calculate_actual_distance (xStart);
 		xEnd = callbacks_calculate_actual_distance (xEnd);
 		yStart = callbacks_calculate_actual_distance (yStart);
@@ -1167,24 +1167,27 @@ void callbacks_update_ruler_scales (void) {
 }
 
 void callbacks_update_scrollbar_limits (void){
+#ifdef RENDER_USING_GDK
 	gerbv_render_info_t tempRenderInfo = {1.0, 0, 0, 0, screenRenderInfo.displayWidth,
 			screenRenderInfo.displayHeight};
+#else
+	gerbv_render_info_t tempRenderInfo = {1.0, 0, 0, 3, screenRenderInfo.displayWidth,
+			screenRenderInfo.displayHeight};
+#endif
 	GtkAdjustment *hAdjust = (GtkAdjustment *)screen.win.hAdjustment;
 	GtkAdjustment *vAdjust = (GtkAdjustment *)screen.win.vAdjustment;
 	
 	render_zoom_to_fit_display (&tempRenderInfo);
 	hAdjust->lower = tempRenderInfo.lowerLeftX;
-	hAdjust->upper = tempRenderInfo.lowerLeftX + (tempRenderInfo.displayWidth / tempRenderInfo.scaleFactor);
-	hAdjust->page_size = screenRenderInfo.displayWidth / screenRenderInfo.scaleFactor;
 	hAdjust->page_increment = hAdjust->page_size;
 	hAdjust->step_increment = hAdjust->page_size / 10.0;
-	
 	vAdjust->lower = tempRenderInfo.lowerLeftY;
-	vAdjust->upper = tempRenderInfo.lowerLeftY + (tempRenderInfo.displayHeight / tempRenderInfo.scaleFactor);
-	vAdjust->page_size = screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor;
 	vAdjust->page_increment = vAdjust->page_size;
 	vAdjust->step_increment = vAdjust->page_size / 10.0;
-	
+	hAdjust->upper = tempRenderInfo.lowerLeftX + (tempRenderInfo.displayWidth / tempRenderInfo.scaleFactorX);
+	hAdjust->page_size = screenRenderInfo.displayWidth / screenRenderInfo.scaleFactorX;
+	vAdjust->upper = tempRenderInfo.lowerLeftY + (tempRenderInfo.displayHeight / tempRenderInfo.scaleFactorY);
+	vAdjust->page_size = screenRenderInfo.displayHeight / screenRenderInfo.scaleFactorY;
 	callbacks_update_scrollbar_positions ();
 }
 
@@ -1198,8 +1201,7 @@ void callbacks_update_scrollbar_positions (void){
 		positionX = (((GtkAdjustment *)screen.win.hAdjustment)->upper - ((GtkAdjustment *)screen.win.hAdjustment)->page_size);
 	
 	gtk_adjustment_set_value ((GtkAdjustment *)screen.win.hAdjustment, positionX);
-	
-	positionY = ((GtkAdjustment *)screen.win.vAdjustment)->upper - (screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor));
+	positionY = ((GtkAdjustment *)screen.win.vAdjustment)->upper - (screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactorY));
 	if (positionY < ((GtkAdjustment *)screen.win.vAdjustment)->lower)
 		positionY = ((GtkAdjustment *)screen.win.vAdjustment)->lower;
 	if (positionY > (((GtkAdjustment *)screen.win.vAdjustment)->upper - ((GtkAdjustment *)screen.win.vAdjustment)->page_size))
@@ -1237,7 +1239,7 @@ void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment, gpointer us
 	/* make sure we're actually using the scrollbar to make sure we don't reset
 	   lowerLeftY during a scrollbar redraw during something else */
 	if (screen.state == SCROLLBAR) {
-		screenRenderInfo.lowerLeftY = adjustment->upper - gtk_adjustment_get_value (adjustment) - (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor);		
+		screenRenderInfo.lowerLeftY = adjustment->upper - gtk_adjustment_get_value (adjustment) - (screenRenderInfo.displayHeight / screenRenderInfo.scaleFactorY);		
 	}
 }
 
@@ -1807,7 +1809,7 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 #endif
 	/* if this is the first time, go ahead and call autoscale even if we don't
 	   have a model loaded */
-	if (screenRenderInfo.scaleFactor < 0.001) {
+	if ((screenRenderInfo.scaleFactorX < 0.001)||(screenRenderInfo.scaleFactorY < 0.001)) {
 		render_zoom_to_fit_display (&screenRenderInfo);
 	}
 	render_refresh_rendered_image_on_screen();
@@ -1921,10 +1923,10 @@ callbacks_update_statusbar_coordinates (gint x, gint y) {
 
 	/* make sure we don't divide by zero (which is possible if the gui
 	   isn't displayed yet */
-	if (screenRenderInfo.scaleFactor > 0.001) {
-		X = screenRenderInfo.lowerLeftX + (x / screenRenderInfo.scaleFactor);
+	if ((screenRenderInfo.scaleFactorX > 0.001)||(screenRenderInfo.scaleFactorY > 0.001)) {
+		X = screenRenderInfo.lowerLeftX + (x / screenRenderInfo.scaleFactorX);
 		Y = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - y)
-			/ screenRenderInfo.scaleFactor);
+			/ screenRenderInfo.scaleFactorY);
 	}
 	else {
 		X = Y = 0.0;
@@ -1966,8 +1968,8 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 			screen.off_x += x - screen.last_x;
 			screen.off_y += y - screen.last_y;
 		    }
-		    screenRenderInfo.lowerLeftX -= ((x - screen.last_x) / screenRenderInfo.scaleFactor);
-		    screenRenderInfo.lowerLeftY += ((y - screen.last_y) / screenRenderInfo.scaleFactor);
+    		    screenRenderInfo.lowerLeftX -= ((x - screen.last_x) / screenRenderInfo.scaleFactorX);
+		    screenRenderInfo.lowerLeftY += ((y - screen.last_y) / screenRenderInfo.scaleFactorY);
 		    callbacks_force_expose_event_for_screen ();
 		    callbacks_update_scrollbar_positions ();
 			screen.last_x = x;

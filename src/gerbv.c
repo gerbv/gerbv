@@ -108,25 +108,33 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #define dprintf if(DEBUG) printf
 
 #define NUMBER_OF_DEFAULT_COLORS 18
-static GdkColor defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
-	{0,115,115,222},
-	{0,255,127,115},
-	{0,193,0,224},
-	{0,117,242,103},
-	{0,0,195,195},
-	{0,213,253,51},
-	{0,209,27,104},
-	{0,255,197,51},
-	{0,186,186,186},
-	{0,211,211,255},
-	{0,253,210,206},
-	{0,236,194,242},
-	{0,208,249,204},
-	{0,183,255,255},
-	{0,241,255,183},
-	{0,255,202,225},
-	{0,253,238,197},
-	{0,226,226,226}
+/* Notice that the pixel field is used for alpha in this case */
+typedef struct{
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+    unsigned char alpha;
+}LayerColor;
+
+static LayerColor defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
+	{115,115,222,177},
+	{255,127,115,177},
+	{193,0,224,177},
+	{117,242,103,177},
+	{0,195,195,177},
+	{213,253,51,177},
+	{209,27,104,177},
+	{255,197,51,177},
+	{186,186,186,177},
+	{211,211,255,177},
+	{253,210,206,177},
+	{236,194,242,177},
+	{208,249,204,177},
+	{183,255,255,177},
+	{241,255,183,177},
+	{255,202,225,177},
+	{253,238,197,177},
+	{226,226,226,177}
 };
 
 #ifdef HAVE_GETOPT_LONG
@@ -134,37 +142,39 @@ int longopt_val = 0;
 int longopt_idx = 0;
 const struct option longopts[] = {
     /* name              has_arg            flag  val */
-    {"version",          no_argument,       NULL,    'V'},
-    {"help",             no_argument,       NULL,    'h'},
-    {"batch",            required_argument, NULL,    'b'},
-    {"log",              required_argument, NULL,    'l'},
-    {"tools",            required_argument, NULL,    't'},
-    {"project",          required_argument, NULL,    'p'},
-    {"export",          required_argument, NULL,    'x'},
-    {"output",          required_argument, NULL,    'o'},
-    {"foreground",          required_argument, NULL,    'f'},
-    {"background",          required_argument, NULL,    'b'},
-    {"resolution",          required_argument, NULL,    'r'},
-    {"scale",          required_argument, NULL,    's'},
-    {"origin",          required_argument, NULL,    'g'},
-    {"dump",             no_argument,       NULL,    'd'},
-    {"geometry",         required_argument, &longopt_val, 1},
+    {"border",		required_argument,  NULL,    'B'},
+    {"dpi",		required_argument,  NULL,    'D'},
+    {"version",         no_argument,	    NULL,    'V'},
+    {"origin",          required_argument,  NULL,    'O'},
+    {"window_inch",	required_argument,  NULL,    'W'},
+    {"antialias",	no_argument,	    NULL,    'a'},
+    {"background",      required_argument,  NULL,    'b'},
+    {"dump",            no_argument,	    NULL,    'd'},
+    {"foreground",      required_argument,  NULL,    'f'},
+    {"help",            no_argument,	    NULL,    'h'},
+    {"log",             required_argument,  NULL,    'l'},
+    {"output",          required_argument,  NULL,    'o'},
+    {"project",         required_argument,  NULL,    'p'},
+    {"tools",           required_argument,  NULL,    't'},
+    {"window",		required_argument,  NULL,    'w'},
+    {"export",          required_argument,  NULL,    'x'},
+    {"geometry",        required_argument,  &longopt_val, 1},
     /* GDK/GDK debug flags to be "let through" */
-    {"gtk-module",       required_argument, &longopt_val, 2},
-    {"g-fatal-warnings", no_argument,       &longopt_val, 2},
-    {"gtk-debug",        required_argument, &longopt_val, 2},
-    {"gtk-no-debug",     required_argument, &longopt_val, 2},
-    {"gdk-debug",        required_argument, &longopt_val, 2},
-    {"gdk-no-debug",     required_argument, &longopt_val, 2},
-    {"display",          required_argument, &longopt_val, 2},
-    {"sync",             no_argument,       &longopt_val, 2},
-    {"no-xshm",          no_argument,       &longopt_val, 2},
-    {"name",             required_argument, &longopt_val, 2},
-    {"class",            required_argument, &longopt_val, 2},
+    {"gtk-module",      required_argument,  &longopt_val, 2},
+    {"g-fatal-warnings",no_argument,	    &longopt_val, 2},
+    {"gtk-debug",       required_argument,  &longopt_val, 2},
+    {"gtk-no-debug",    required_argument,  &longopt_val, 2},
+    {"gdk-debug",       required_argument,  &longopt_val, 2},
+    {"gdk-no-debug",    required_argument,  &longopt_val, 2},
+    {"display",         required_argument,  &longopt_val, 2},
+    {"sync",            no_argument,	    &longopt_val, 2},
+    {"no-xshm",         no_argument,	    &longopt_val, 2},
+    {"name",            required_argument,  &longopt_val, 2},
+    {"class",           required_argument,  &longopt_val, 2},
     {0, 0, 0, 0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "Vhl:t:p:d:x:o:f:b:r:s:g";
+const char *opt_options = "Vadh:B:D:O:W:b:f:l:o:p:t:w:x:";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
@@ -452,14 +462,14 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
     screen.file[idx]->name = g_strdup (baseName);
     
     {
-	r = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].red*256;
-	g = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].green*256;
-	b = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].blue*256;
+	r = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].red*257;
+	g = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].green*257;
+	b = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].blue*257;
     }
 
     GdkColor colorTemplate = {0, r, g, b};
     screen.file[idx]->color = colorTemplate;
-    screen.file[idx]->alpha = 45535;
+    screen.file[idx]->alpha = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].alpha*257;
     screen.file[idx]->isVisible = TRUE;
     return 1;
 }
@@ -604,19 +614,21 @@ int
 main(int argc, char *argv[])
 {
     int       read_opt;
-    int       i;
+    int       i,r,g,b,a;
     int       req_width = -1, req_height = -1;
 #ifdef HAVE_GETOPT_LONG
     int       req_x = 0, req_y = 0;
     char      *rest;
 #endif
     char      *project_filename = NULL;
-    gboolean exportFromCommandline = FALSE, userSuppliedOrigin=FALSE;
-    gint exportType = 0;
+    gboolean exportFromCommandline = FALSE,  userSuppliedOrigin=FALSE, userSuppliedWindow=FALSE, 
+	     userSuppliedAntiAlias=FALSE, userSuppliedWindowInPixels=FALSE, userSuppliedDpi=FALSE;
+    gint  layerctr =0, exportType = 0;
     gchar *exportFilename = NULL;
-    gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,
-	userSuppliedScale=0.0;
-    gint userSuppliedWidth=0, userSuppliedHeight=0;
+    gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
+	   userSuppliedWidth=0, userSuppliedHeight=0, userSuppliedBorder=0.05;
+
+
     /*
      * Setup the screen info. Must do this before getopt, since getopt
      * eventually will set some variables in screen.
@@ -704,25 +716,114 @@ main(int argc, char *argv[])
 	    }
 	    break;
 #endif /* HAVE_GETOPT_LONG */
-	case 'V' :
-	    printf("gerbv version %s\n", VERSION);
-	    printf("(C) Stefan Petersen (spe@stacken.kth.se)\n");
-	    exit(0);
-	case 'g' :
+    	case 'B' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give an origin in the format <lower left X,lower left Y>.\n");
+		fprintf(stderr, "You must specify the border in the format <alpha>.\n");
+		exit(1);
+	    }
+	    if (strlen (optarg) > 10) {
+		fprintf(stderr, "Specified border is not recognized.\n");
+		exit(1);
+	    }
+	    sscanf (optarg,"%f",&userSuppliedBorder);
+	    if (userSuppliedBorder <  0) {
+		fprintf(stderr, "Specified border is smaller than zero!\n");
+		exit(1);
+	    }
+	    userSuppliedBorder/=100.0;
+	    break;
+	case 'D' :
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give an resolution in the format <DPI X,DPI Y> or <DPI_X_and_Y>.\n");
+		exit(1);
+	    }
+	    if (strlen (optarg) > 20) {
+		fprintf(stderr, "Specified resolution is not recognized.\n");
+		exit(1);
+	    }
+	    if(strchr(optarg, 'x')!=NULL){
+		sscanf (optarg,"%fx%f",&userSuppliedDpiX,&userSuppliedDpiY);
+	    }else{
+		sscanf (optarg,"%f",&userSuppliedDpiX);
+		userSuppliedDpiY = userSuppliedDpiX;
+	    }
+	    if ((userSuppliedDpiX <= 0) || (userSuppliedDpiY <= 0)) {
+		fprintf(stderr, "Specified resolution should be greater than 0.\n");
+		exit(1);
+	    }
+	    userSuppliedDpi=TRUE;
+	    break;
+    	case 'O' :
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give an origin in the format <lower_left_X x lower_left_Y>.\n");
 		exit(1);
 	    }
 	    if (strlen (optarg) > 20) {
 		fprintf(stderr, "Specified origin is not recognized.\n");
 		exit(1);
 	    }
-	    sscanf (optarg,"%f,%f",&userSuppliedOriginX,&userSuppliedOriginY);
-	    if ((abs(userSuppliedOriginX) > 20) || (abs(userSuppliedOriginY) > 20)) {
-		fprintf(stderr, "Specified origin is out of bounds.\n");
+	    sscanf (optarg,"%fx%f",&userSuppliedOriginX,&userSuppliedOriginY);
+	    userSuppliedOrigin=TRUE;
+	    break;
+    	case 'V' :
+	    printf("gerbv version %s\n", VERSION);
+	    printf("(C) Stefan Petersen (spe@stacken.kth.se)\n");
+	    exit(0);	
+	case 'a' :
+	    userSuppliedAntiAlias = TRUE;
+	    break;
+    	case 'b' :	// Set background to this color
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give an background color in the hex-format <#RRGGBB>.\n");
 		exit(1);
 	    }
-	    userSuppliedOrigin = TRUE;
+	    if ((strlen (optarg) != 7)||(optarg[0]!='#')) {
+		fprintf(stderr, "Specified color format is not recognized.\n");
+		exit(1);
+	    }
+    	    r=g=b=0;
+	    sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
+	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)) {
+
+		fprintf(stderr, "Specified color values should be between 00 and FF.\n");
+		exit(1);
+	    }
+	    screen.background.red = r*257;
+    	    screen.background.green = g*257;
+    	    screen.background.blue = b*257;
+	    break;
+	case 'f' :	// Set layer colors to this color (foreground color)
+	    if (optarg == NULL) {
+#ifdef RENDER_USING_GDK
+		fprintf(stderr, "You must give an foreground color in the hex-format <#RRGGBB>.\n");
+#else
+		fprintf(stderr, "You must give an foreground color in the hex-format <#RRGGBB> or <#RRGGBBAA>.\n");
+#endif
+		exit(1);
+	    }
+	    if (((strlen (optarg) != 7)&&(strlen (optarg) != 9))||(optarg[0]!='#')) {
+		fprintf(stderr, "Specified color format is not recognized.\n");
+		exit(1);
+	    }
+	    r=g=b=a=0;
+	    if(strlen(optarg)==7){
+		sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
+		a=177;
+	    }
+	    else{
+		sscanf (optarg,"#%2x%2x%2x%2x",&r,&g,&b,&a);
+	    }
+
+	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)||(a<0)||(a>255) ) {
+
+		fprintf(stderr, "Specified color values should be between 0x00 (0) and 0xFF (255).\n");
+		exit(1);
+	    }
+	    defaultColors[layerctr].red   = r;
+	    defaultColors[layerctr].green = g;
+	    defaultColors[layerctr].blue  = b;
+	    defaultColors[layerctr].alpha = a;
+	    layerctr++;
 	    break;
 	case 'l' :
 	    if (optarg == NULL) {
@@ -732,43 +833,19 @@ main(int argc, char *argv[])
 	    setup.log.to_file = 1;
 	    setup.log.filename = optarg;
 	    break;
+    	case 'o' :
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give a filename to export to.\n");
+		exit(1);
+	    }
+	    exportFilename = optarg;
+	    break;
 	case 'p' :
 	    if (optarg == NULL) {
 		fprintf(stderr, "You must give a project filename\n");
 		exit(1);
 	    }
 	    project_filename = optarg;
-	    break;
-	case 'r' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a resolution in the format <width,height>.\n");
-		exit(1);
-	    }
-	    if (strlen (optarg) > 20) {
-		fprintf(stderr, "Specified resolution is not recognized.\n");
-		exit(1);
-	    }
-	    sscanf (optarg, "%d,%d", &userSuppliedWidth, &userSuppliedHeight);
-	    if (((userSuppliedWidth < 1) || (userSuppliedHeight < 1)) ||
-		((userSuppliedWidth > 2000) || (userSuppliedHeight > 2000))) {
-		fprintf(stderr, "Specified resolution is out of bounds.\n");
-		exit(1);
-	    }
-	    break;
-	case 's' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a scale in the format <scale>.\n");
-		exit(1);
-	    }
-	    if (strlen (optarg) > 10) {
-		fprintf(stderr, "Specified scale is not recognized.\n");
-		exit(1);
-	    }
-	    sscanf (optarg,"%f",&userSuppliedScale);
-	    if ((userSuppliedScale < 0.001) || (userSuppliedHeight > 2000)) {
-		fprintf(stderr, "Specified scale is out of bounds.\n");
-		exit(1);
-	    }
 	    break;
 	case 't' :
 	    if (optarg == NULL) {
@@ -782,6 +859,25 @@ main(int argc, char *argv[])
 		fprintf(stderr, "*** EXITING to prevent erroneous display.\n");
 		exit(1);
 	    }
+	    break;
+	case 'w':
+	    userSuppliedWindowInPixels = TRUE;
+    	case 'W' :
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give a window size in the format <width x height>.\n");
+		exit(1);
+	    }
+	    if (strlen (optarg) > 20) {
+		fprintf(stderr, "Specified window size is not recognized.\n");
+		exit(1);
+	    }
+	    sscanf (optarg, "%fx%f", &userSuppliedWidth, &userSuppliedHeight);
+	    if (((userSuppliedWidth < 0.001) || (userSuppliedHeight < 0.001)) ||
+		((userSuppliedWidth > 2000) || (userSuppliedHeight > 2000))) {
+		fprintf(stderr, "Specified window size is out of bounds.\n");
+		exit(1);
+	    }
+	    userSuppliedWindow = TRUE;
 	    break;
 	case 'x' :
 	    if (optarg == NULL) {
@@ -813,68 +909,103 @@ main(int argc, char *argv[])
 		exit(1);				
 	    }		
 	    break;
-	case 'o' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a filename to export to.\n");
-		exit(1);
-	    }
-	    exportFilename = optarg;
-	    break;
 	case 'd':
 	    screen.dump_parsed_image = 1;
 	    break;
 	case '?':
 	case 'h':
 #ifdef HAVE_GETOPT_LONG
-	    fprintf(stderr, "Usage: gerbv [OPTIONS...] [FILE...]\n\n");
-	    fprintf(stderr, "Available options:\n");
-	    fprintf(stderr, "  -V, --version                         Prints version of gerbv\n");
-	    fprintf(stderr, "  -h, --help                            Prints this help message\n");
-	    fprintf(stderr, "  -l, --log=<logfile>                   Send error messages to <logfile>\n");
-	    fprintf(stderr, "  -p, --project=<prjfile>               Load project file <prjfile>\n");
-	    fprintf(stderr, "  -t, --tools=<toolfile>                Read Excellon tools from file\n");
-	    fprintf(stderr, "                                        <toolfile>\n");
+	    printf("Usage: gerbv [OPTIONS...] [FILE...]\n\n");
+	    printf("Available options:\n");
+	    printf("  -B, --border=<b>                Border around the image in percents of the\n");
+	    printf("                                  width/height. Defaults to 5%%.\n");
 #ifdef RENDER_USING_GDK
-	    fprintf(stderr, "  -x, --export=<png>                    Export a rendered picture to a PNG file\n");
+	    printf("  -D, --dpi=<R>                   Resolution (Dots per inch) for the output\n");
+	    printf("                                  bitmap.\n");
 #else
-	    fprintf(stderr, "  -x, --export=<png/pdf/ps/svg/rs274x>  Export a rendered picture to a file\n");
-	    fprintf(stderr, "                                        with the specified format\n");
+	    printf("  -D, --dpi=<XxY>or<R>            Resolution (Dots per inch) for the output\n");
+	    printf("                                  bitmap. With the format <XxY>, different\n");
+	    printf("                                  resolutions for X- and Y-direction are used.\n");
+	    printf("                                  With the format <R>, both are the same.\n");
 #endif
-	    fprintf(stderr, "  -o, --output=<filename>               Specify the filename to export to\n");
-	    /*
-	    fprintf(stderr, "  --foreground=<hexcolor>|-f <hexcolor> : Use foreground color <hexcolor>\n");
-	    fprintf(stderr, "  --background=<hexcolor>|-b <hexcolor> : Use background color <hexcolor>\n");
-	    */
-	    fprintf(stderr, "  -r, --resolution=<w,h>                Use resolution <w> and <h> for the\n");
-	    fprintf(stderr, "                                        exported image\n");
-	    fprintf(stderr, "  -s, --scale=<scale>                   Use the specified scale value <scale>\n");
-	    fprintf(stderr, "                                        (in DPI)\n");
-	    fprintf(stderr, "  -g, --origin=<x,y>                    Use the specified coordinates for the\n");
-	    fprintf(stderr, "                                        lower left corner\n");
-#else
-	    fprintf(stderr, "Usage: gerbv [OPTIONS...] [FILE...]\n\n");
-	    fprintf(stderr, "Available options:\n");
-	    fprintf(stderr, "  -V                          Prints version of gerbv\n");
-	    fprintf(stderr, "  -h                          Prints this help message\n");
-	    fprintf(stderr, "  -l <logfile>                Send error messages to <logfile>\n");
-	    fprintf(stderr, "  -p <prjfile>                Load project file <prjfile>\n");
-	    fprintf(stderr, "  -t <toolfile>               Read Excellon tools from file <toolfile>\n");
+	    printf("  -O, --origin=<XxY>              Use the specified coordinates (in inches)\n");
+	    printf("                                  for the lower left corner.\n");
+	    printf("  -V, --version                   Print version of gerbv.\n");
+	    printf("  -a, --antialias                 Use antialiasing for generated bitmap output.\n");
+	    printf("  -b, --background=<hex>          Use background color <hex> (like #RRGGBB).\n");
 #ifdef RENDER_USING_GDK
-	    fprintf(stderr, "  -x <png>                    Export a rendered picture to a PNG file\n");
+	    printf("  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB)\n");
 #else
-	    fprintf(stderr, "  -x <png/pdf/ps/svg/rs274x>  Export a rendered picture to a file with\n");
-	    fprintf(stderr, "                              the specified format\n");
+            printf("  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB or\n");
+            printf("                                  #RRGGBBAA for setting the alpha).\n");
 #endif
-	    fprintf(stderr, "  -o <filename>               Specify the filename to export to\n");
-	    /*
-	      fprintf(stderr, "  -f <hexcolor> : Use foreground color <hexcolor>\n");
-	      fprintf(stderr, "  -b <hexcolor> : Use background color <hexcolor>\n");
-	    */
-	    fprintf(stderr, "  -r <width,height>           Use resolution <width> and <height> for the\n");
-	    fprintf(stderr, "                              exported image\n");
-	    fprintf(stderr, "  -s <scale>                  Use the specified scale value <scale> (in DPI)\n");
-	    fprintf(stderr, "  -g <x,y>                    Use the specified coordinates for the lower\n");
-	    fprintf(stderr, "                              left corner\n");
+            printf("                                  Use multiple -f flags to set the color for\n");
+	    printf("                                  multiple layers.\n");
+	    printf("  -h, --help                      Print this help message.\n");
+	    printf("  -l, --log=<logfile>             Send error messages to <logfile>.\n");
+	    printf("  -o, --output=<filename>         Export to <filename>\n");
+	    printf("  -p, --project=<prjfile>         Load project file <prjfile>\n");
+	    printf("  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n");
+	    printf("                                  exported image.\n");
+   	    printf("  -w, --window=<WxH>              Window size in pixels <WxH> for the\n");
+	    printf("                                  exported image. Autoscales to fit\n");
+	    printf("                                  if no resolution is specified. If a\n");
+	    printf("                                  resolution is specified, it will clip.\n");
+	    printf("  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n");
+#ifdef RENDER_USING_GDK
+	    printf("  -x, --export=<png>              Export a rendered picture to a PNG file.\n");
+#else
+	    printf("  -x, --export=<png/pdf/ps/svg>   Export a rendered picture to a file with\n");
+	    printf("                                  the specified format.\n");
+#endif
+
+
+#else
+	    printf("Usage: gerbv [OPTIONS...] [FILE...]\n\n");
+	    printf("Available options:\n");
+	    printf("  -B<b>                   Border around the image in percents of the\n");
+	    printf("                          width/height. Defaults to 5%%.\n");
+#ifdef RENDER_USING_GDK
+	    printf("  -D<R>                   Resolution (Dots per inch) for the output\n");
+	    printf("                          bitmap\n");
+#else
+	    printf("  -D<XxY>or<R>            Resolution (Dots per inch) for the output\n");
+	    printf("                          bitmap. With the format <XxY>, different\n");
+	    printf("                          resolutions for X- and Y-direction are used.\n");
+	    printf("                          With the format <R>, both are the same.\n");
+#endif
+	    printf("  -O<XxY>                 Use the specified coordinates (in inches)\n");
+	    printf("                          for the lower left corner.\n");
+    	    printf("  -V                      Print version of gerbv.\n");
+    	    printf("  -a                      Use antialiasing for generated bitmap output.\n");
+	    printf("  -b<hexcolor>	      Use background color <hexcolor> (like #RRGGBB)\n");
+#ifdef RENDER_USING_GDK
+	    printf("  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB)\n");
+#else
+	    printf("  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n");
+	    printf("                          #RRGGBBAA for setting the alpha).\n");
+#endif
+            printf("                          Use multiple -f flags to set the color for\n");
+	    printf("                          multiple layers.\n");
+	    printf("  -h                      Print this help message.\n");
+	    printf("  -l<logfile>             Send error messages to <logfile>\n");
+	    printf("  -o<filename>            Export to <filename>\n");
+	    printf("  -p<prjfile>             Load project file <prjfile>\n");
+	    printf("  -W<WxH>                 Window size in inches <WxH> for the\n");
+	    printf("                          exported image\n");
+       	    printf("  -w<WxH>                 Window size in pixels <WxH> for the\n");
+	    printf("                          exported image. Autoscales to fit\n");
+	    printf("                          if no resolution is specified. If a\n");
+	    printf("                          resolution is specified, it will clip.\n");
+	    printf("                          exported image\n");
+	    printf("  -t<toolfile>            Read Excellon tools from file <toolfile>\n");
+#ifdef RENDER_USING_GDK
+	    printf("  -x<png>                 Export a rendered picture to a PNG file\n");
+#else
+	    printf("  -x <png/pdf/ps/svg>     Export a rendered picture to a file with\n");
+	    printf("                          the specified format\n");
+#endif
+
 #endif /* HAVE_GETOPT_LONG */
 	    exit(1);
 	    break;
@@ -928,11 +1059,7 @@ main(int argc, char *argv[])
 
     if (exportFromCommandline) {
 	/* load the info struct with the default values */
-#ifdef RENDER_USING_GDK
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 0, 640, 480};
-#else
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, 640, 480};
-#endif	
+
 	gboolean freeFilename = FALSE;
 	
 	if (!exportFilename) {
@@ -950,23 +1077,72 @@ main(int argc, char *argv[])
 		freeFilename = TRUE;
 	}
 
-	if (userSuppliedWidth)
-	    renderInfo.displayWidth = userSuppliedWidth;
-	if (userSuppliedHeight)
-	    renderInfo.displayHeight = userSuppliedHeight;
-	
-	if (userSuppliedScale > 0.001)
-	    renderInfo.scaleFactor = userSuppliedScale;
-	else
-	    render_zoom_to_fit_display (&renderInfo);
-	
-	if (userSuppliedOrigin) {
-	    if (abs(userSuppliedOriginX) > 0.001 )
-		renderInfo.lowerLeftX = userSuppliedOriginX;
-	    if (abs(userSuppliedOriginY) > 0.001 )
-		renderInfo.lowerLeftY = userSuppliedOriginY;
+	gerbv_render_size_t bb;
+	render_get_boundingbox(&bb);
+	// Set origin to the left-bottom corner if it is not specified
+	if(!userSuppliedOrigin){
+	    userSuppliedOriginX = bb.left;
+	    userSuppliedOriginY = bb.top;
+	}
+
+	float width  = bb.right  - userSuppliedOriginX + 0.001;	// Plus a little extra to prevent from 
+	float height = bb.bottom - userSuppliedOriginY + 0.001; // missing items due to round-off errors
+	// If the user did not specify a height and width, autoscale w&h till full size from origin.
+	if(!userSuppliedWindow){
+	    userSuppliedWidth  = width;
+	    userSuppliedHeight = height;
+	}else{
+	    // If size was specified in pixels, and no resolution was specified, autoscale resolution till fit
+	    if( (!userSuppliedDpi)&& userSuppliedWindowInPixels){
+		userSuppliedDpiX = ((userSuppliedWidth-0.5)  / width);
+		userSuppliedDpiY = ((userSuppliedHeight-0.5) / height);
+		userSuppliedOriginX -= 0.5/userSuppliedDpiX;
+		userSuppliedOriginY -= 0.5/userSuppliedDpiY;
+	    }
+	}
+
+
+	// Add the border size (if there is one)
+	if(userSuppliedBorder!=0){
+	    // If supplied in inches, add a border around the image
+	    if(!userSuppliedWindowInPixels){
+		userSuppliedWidth  += userSuppliedWidth*userSuppliedBorder;
+		userSuppliedHeight  += userSuppliedHeight*userSuppliedBorder;
+		userSuppliedOriginX -= (userSuppliedWidth*userSuppliedBorder)/2.0;
+		userSuppliedOriginY -= (userSuppliedHeight*userSuppliedBorder)/2.0;
+	    }
+	    // If supplied in pixels, shrink image content for border_size
+	    else{
+		userSuppliedDpiX -= (userSuppliedDpiX*userSuppliedBorder);
+		userSuppliedDpiY -= (userSuppliedDpiY*userSuppliedBorder);
+		userSuppliedOriginX -= ((userSuppliedWidth/userSuppliedDpiX)*userSuppliedBorder)/2.0;
+		userSuppliedOriginY -= ((userSuppliedHeight/userSuppliedDpiX)*userSuppliedBorder)/2.0;
+	    }
 	}
 	
+	if(!userSuppliedWindowInPixels){
+	    userSuppliedWidth  *= userSuppliedDpiX;
+	    userSuppliedHeight *= userSuppliedDpiY;
+	}
+	
+	// Make sure there is something valid in it. It could become negative if 
+	// the userSuppliedOrigin is further than the bb.right or bb.top.
+	if(userSuppliedWidth <=0)
+	    userSuppliedWidth  = 1;
+	if(userSuppliedHeight <=0)
+	    userSuppliedHeight = 1;
+
+
+#ifdef RENDER_USING_GDK
+	gerbv_render_info_t renderInfo = {MIN(userSuppliedDpiX, userSuppliedDpiY), MIN(userSuppliedDpiX, userSuppliedDpiY),
+	    userSuppliedOriginX, userSuppliedOriginY,1, 
+	    userSuppliedWidth,userSuppliedHeight };
+#else	
+	gerbv_render_info_t renderInfo = {userSuppliedDpiX, userSuppliedDpiY, 
+	    userSuppliedOriginX, userSuppliedOriginY, userSuppliedAntiAlias?3:2, 
+	    userSuppliedWidth,userSuppliedHeight };
+#endif
+
 	if (exportType == 1) {
 #ifdef EXPORT_PNG
 	    exportimage_export_to_png_file (&renderInfo, exportFilename);

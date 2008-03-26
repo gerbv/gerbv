@@ -36,7 +36,8 @@ struct gerbv_redraw_state_t {
 };
 
 typedef struct {
-	gdouble scaleFactor;
+	gdouble scaleFactorX;
+	gdouble scaleFactorY;
 	gdouble lowerLeftX;
 	gdouble lowerLeftY;
 	gint renderType; /* 0 is default */
@@ -44,6 +45,12 @@ typedef struct {
 	gint displayHeight;
 } gerbv_render_info_t;
 
+typedef struct {
+    double left;
+    double right;
+    double top;
+    double bottom;
+} gerbv_render_size_t;
 
 gerb_stats_t *generate_gerber_analysis(void);
 drill_stats_t *generate_drill_analysis(void);
@@ -68,6 +75,9 @@ void
 render_draw_measure_distance(void);
 
 void
+render_get_boundingbox(gerbv_render_size_t *boundingbox);
+
+void
 render_zoom_to_fit_display (gerbv_render_info_t *renderInfo);
 
 void
@@ -78,9 +88,12 @@ void render_refresh_rendered_image_on_screen (void);
 #ifndef RENDER_USING_GDK
 void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 						gerbv_render_info_t *renderInfo);
+void  render_cairo_set_scale_translation(cairo_t *cr, gerbv_render_info_t *renderInfo);
+void render_layer_to_cairo_target_noscale(cairo_t *cr, gerbv_fileinfo_t *fileInfo,gerbv_render_info_t *renderInfo);
 void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_render_info_t *renderInfo);
 void render_all_layers_to_cairo_target (cairo_t *cr, gerbv_render_info_t *renderInfo);
-#endif
 
+#endif
 void render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo);
+
 

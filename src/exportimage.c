@@ -104,10 +104,8 @@ void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar *fil
 #else
 	cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
                                                          renderInfo->displayWidth, renderInfo->displayHeight);
-
-      cairo_t *cairoTarget = cairo_create (cSurface);
-      
-      render_all_layers_to_cairo_target (cairoTarget, renderInfo);
+	cairo_t *cairoTarget = cairo_create (cSurface);
+      	render_all_layers_to_cairo_target (cairoTarget, renderInfo);
 	cairo_surface_write_to_png (cSurface, filename);
 	cairo_destroy (cairoTarget);
 	cairo_surface_destroy (cSurface);

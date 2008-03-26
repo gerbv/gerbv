@@ -96,49 +96,51 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 	half_w = screenRenderInfo.displayWidth / 2;
 	half_h = screenRenderInfo.displayHeight / 2;
 
-	oldWidth = screenRenderInfo.displayWidth / screenRenderInfo.scaleFactor;
-	oldHeight = screenRenderInfo.displayHeight / screenRenderInfo.scaleFactor;
-	
+	oldWidth = screenRenderInfo.displayWidth / screenRenderInfo.scaleFactorX;
+	oldHeight = screenRenderInfo.displayHeight / screenRenderInfo.scaleFactorY;
 	if (zoomType == ZOOM_IN_CMOUSE || zoomType == ZOOM_OUT_CMOUSE) {
 		/* calculate what user coordinate the mouse is pointing at */
-		mouseCoordinateX = mouseX / screenRenderInfo.scaleFactor + screenRenderInfo.lowerLeftX;
+		mouseCoordinateX = mouseX / screenRenderInfo.scaleFactorX + screenRenderInfo.lowerLeftX;
 		mouseCoordinateY = (screenRenderInfo.displayHeight - mouseY) /
-			screenRenderInfo.scaleFactor + screenRenderInfo.lowerLeftY;
+			screenRenderInfo.scaleFactorY + screenRenderInfo.lowerLeftY;
 	}
 
 	us_midx = screenRenderInfo.lowerLeftX + (screenRenderInfo.displayWidth / 2.0 )/
-			screenRenderInfo.scaleFactor;
+			screenRenderInfo.scaleFactorX;
 	us_midy = screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / 2.0 )/
-			screenRenderInfo.scaleFactor;		
+			screenRenderInfo.scaleFactorY;		
 
 	switch(zoomType) {
 		case ZOOM_IN : /* Zoom In */
 		case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
-			screenRenderInfo.scaleFactor += screenRenderInfo.scaleFactor/3;
+			screenRenderInfo.scaleFactorX += screenRenderInfo.scaleFactorX/3;
+			screenRenderInfo.scaleFactorY += screenRenderInfo.scaleFactorY/3;
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
-				screenRenderInfo.scaleFactor)) / 2.0;
+				screenRenderInfo.scaleFactorX)) / 2.0;
 			screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
-				screenRenderInfo.scaleFactor)) / 2.0;	
+				screenRenderInfo.scaleFactorY)) / 2.0;	
 			break;
 		case ZOOM_OUT :  /* Zoom Out */
 		case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
-			if (screenRenderInfo.scaleFactor > 10) {
-				screenRenderInfo.scaleFactor -= screenRenderInfo.scaleFactor/3;
+			if ((screenRenderInfo.scaleFactorX > 10)&&(screenRenderInfo.scaleFactorY > 10)) {
+				screenRenderInfo.scaleFactorX -= screenRenderInfo.scaleFactorX/3;
+				screenRenderInfo.scaleFactorY -= screenRenderInfo.scaleFactorY/3;
 				screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
-					screenRenderInfo.scaleFactor)) / 2.0;
+					screenRenderInfo.scaleFactorX)) / 2.0;
 				screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
-					screenRenderInfo.scaleFactor)) / 2.0;
+					screenRenderInfo.scaleFactorY)) / 2.0;
 			}
 			break;
 		case ZOOM_FIT : /* Zoom Fit */
 			render_zoom_to_fit_display (&screenRenderInfo);
 			break;
 		case ZOOM_SET : /*explicit scale set by user */
-			screenRenderInfo.scaleFactor = scaleFactor;
+			screenRenderInfo.scaleFactorX = scaleFactor;
+			screenRenderInfo.scaleFactorY = scaleFactor;
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
-				screenRenderInfo.scaleFactor)) / 2.0;
+				screenRenderInfo.scaleFactorX)) / 2.0;
 			screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
-				screenRenderInfo.scaleFactor)) / 2.0;
+				screenRenderInfo.scaleFactorY)) / 2.0;
 		      break;
 		default :
 			GERB_MESSAGE("Illegal zoom direction %d\n", zoomType);
@@ -146,9 +148,9 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 
 	if (zoomType == ZOOM_IN_CMOUSE || zoomType == ZOOM_OUT_CMOUSE) {
 		/* make sure the mouse is still pointing at the point calculated earlier */
-		screenRenderInfo.lowerLeftX = mouseCoordinateX - mouseX / screenRenderInfo.scaleFactor;
+		screenRenderInfo.lowerLeftX = mouseCoordinateX - mouseX / screenRenderInfo.scaleFactorX;
 		screenRenderInfo.lowerLeftY = mouseCoordinateY - (screenRenderInfo.displayHeight - mouseY) /
-			screenRenderInfo.scaleFactor;
+			screenRenderInfo.scaleFactorY;
 	}
 
 	render_refresh_rendered_image_on_screen();
@@ -186,17 +188,17 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 		}
 		half_x = (x1+x2)/2;
 		half_y = (y1+y2)/2;
-		
-		centerPointX = half_x/screenRenderInfo.scaleFactor + screenRenderInfo.lowerLeftX;
-		centerPointY = (screenRenderInfo.displayHeight - half_y)/screenRenderInfo.scaleFactor +
+		centerPointX = half_x/screenRenderInfo.scaleFactorX + screenRenderInfo.lowerLeftX;
+		centerPointY = (screenRenderInfo.displayHeight - half_y)/screenRenderInfo.scaleFactorY +
 				screenRenderInfo.lowerLeftY;
 		
-		screenRenderInfo.scaleFactor *= MIN(((double)screenRenderInfo.displayWidth / dx),
+		screenRenderInfo.scaleFactorX *= MIN(((double)screenRenderInfo.displayWidth / dx),
 							((double)screenRenderInfo.displayHeight / dy));
+		screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
 		screenRenderInfo.lowerLeftX = centerPointX - (screenRenderInfo.displayWidth /
-					2.0 / screenRenderInfo.scaleFactor);
+					2.0 / screenRenderInfo.scaleFactorX);
 		screenRenderInfo.lowerLeftY = centerPointY - (screenRenderInfo.displayHeight /
-					2.0 / screenRenderInfo.scaleFactor);				
+					2.0 / screenRenderInfo.scaleFactorY);				
 	}
 	render_refresh_rendered_image_on_screen();
 }
@@ -295,9 +297,8 @@ render_draw_measure_distance(void)
 	y1 = MIN(screen.start_y, screen.last_y);
 	x2 = MAX(screen.start_x, screen.last_x);
 	y2 = MAX(screen.start_y, screen.last_y);
-
-	dx = (x2 - x1)/ screenRenderInfo.scaleFactor;
-	dy = (y2 - y1)/ screenRenderInfo.scaleFactor;
+	dx = (x2 - x1)/ screenRenderInfo.scaleFactorX;
+	dy = (y2 - y1)/ screenRenderInfo.scaleFactorY;
     
 #if !defined (__MINGW32__)
 	gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
@@ -337,10 +338,9 @@ render_translate_to_fit_display (gerbv_render_info_t *renderInfo) {
 
 /* ------------------------------------------------------------------ */
 void
-render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
-	double max_width = LONG_MIN, max_height = LONG_MIN,x1=HUGE_VAL,y1=HUGE_VAL,
-	x2=-HUGE_VAL,y2=-HUGE_VAL;
-	double x_scale, y_scale;
+render_get_boundingbox(gerbv_render_size_t *boundingbox)
+{
+	double x1=HUGE_VAL,y1=HUGE_VAL, x2=-HUGE_VAL,y2=-HUGE_VAL;
 	int i;
 	gerb_image_info_t *info;
 
@@ -364,36 +364,54 @@ render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
 #endif
 		}
 	}
+	boundingbox->left    = x1;
+	boundingbox->right   = x2;
+	boundingbox->top    = y1;
+	boundingbox->bottom = y2;
+}
 
+/* ------------------------------------------------------------------ */
+void
+render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
+	gerbv_render_size_t bb;
+	double width, height;
+	double x_scale, y_scale;
+
+	/* Grab maximal width and height of all layers */
+        render_get_boundingbox(&bb);
+	width = bb.right - bb.left;
+	height = bb.bottom - bb.top;
 	/* add in a 5% buffer around the drawing */
-	max_width = (x2 - x1)*1.05;
-	max_height = (y2 - y1)*1.05;
+	width *= 1.05;
+	height *=1.05;
 
 	/* if the values aren't sane (probably we have no models loaded), then
 	   put in some defaults */
-	if ((max_width < 0.01) && (max_height < 0.01)) {
+	if ((width < 0.01) && (height < 0.01)) {
 		renderInfo->lowerLeftX = 0.0;
 		renderInfo->lowerLeftY = 0.0;
-		renderInfo->scaleFactor = 200;
+		renderInfo->scaleFactorX = 200;
+		renderInfo->scaleFactorY = 200;
 		return;
 	}
 	/*
 	* Calculate scale for both x axis and y axis
 	*/
-	x_scale = renderInfo->displayWidth / max_width;
-	y_scale = renderInfo->displayHeight / max_height;
-
+	x_scale = renderInfo->displayWidth / width;
+	y_scale = renderInfo->displayHeight / height;
 	/*
 	* Take the scale that fits both directions with some extra checks
 	*/
-	renderInfo->scaleFactor = MIN(x_scale, y_scale);
-	if (renderInfo->scaleFactor < 1)
-		renderInfo->scaleFactor = 1;
-
-	renderInfo->lowerLeftX = ((x1 + x2) / 2.0) -
-		((double) renderInfo->displayWidth / 2.0 / renderInfo->scaleFactor);
-	renderInfo->lowerLeftY = ((y1 + y2) / 2.0) -
-		((double) renderInfo->displayHeight / 2.0 / renderInfo->scaleFactor);
+	renderInfo->scaleFactorX = MIN(x_scale, y_scale);
+	renderInfo->scaleFactorY = renderInfo->scaleFactorX;
+	if (renderInfo->scaleFactorX < 1){
+	    renderInfo->scaleFactorX = 1;
+	    renderInfo->scaleFactorY = 1;
+	}
+	renderInfo->lowerLeftX = ((bb.left + bb.right) / 2.0) -
+		((double) renderInfo->displayWidth / 2.0 / renderInfo->scaleFactorX);
+	renderInfo->lowerLeftY = ((bb.top + bb.bottom) / 2.0) -
+		((double) renderInfo->displayHeight / 2.0 / renderInfo->scaleFactorY);
 	return;
 }
 
@@ -404,45 +422,39 @@ void render_refresh_rendered_image_on_screen (void) {
 	cursor = gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
 	gdk_cursor_destroy(cursor);
-	
-	if (screenRenderInfo.renderType < 2) {
-		if (screen.pixmap) 
-		    gdk_pixmap_unref(screen.pixmap);
-		screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
-					screenRenderInfo.displayHeight, -1);
-		render_to_pixmap_using_gdk (screen.pixmap, &screenRenderInfo);
-		
-		dprintf("<---- leaving redraw_pixmap.\n");
+
+	if (screenRenderInfo.renderType < 2){
+	    if (screen.pixmap) 
+		gdk_pixmap_unref(screen.pixmap);
+	    screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
+	    screenRenderInfo.displayHeight, -1);
+	    render_to_pixmap_using_gdk (screen.pixmap, &screenRenderInfo);	
+	    dprintf("<---- leaving redraw_pixmap.\n");
 	}
-
-	
 #ifndef RENDER_USING_GDK
-	else {
-		int i;
-
-		dprintf("    .... Now try rendering the drawing using cairo .... \n");
-		/* 
-		* This now allows drawing several layers on top of each other.
-		* Higher layer numbers have higher priority in the Z-order. 
-		*/
-		for(i = screen.max_files-1; i >= 0; i--) {
-			if (screen.file[i]) {
-				cairo_t *cr;
-
-				if (screen.file[i]->privateRenderData) 
-					cairo_surface_destroy ((cairo_surface_t *) screen.file[i]->privateRenderData);
-
-				screen.file[i]->privateRenderData = 
-					(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-					CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
-					screenRenderInfo.displayHeight);
-				cr= cairo_create(screen.file[i]->privateRenderData );
-				render_layer_to_cairo_target (cr, screen.file[i], &screenRenderInfo);
-				dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
-				cairo_destroy (cr);
-			}
+	else{
+	    int i;
+	    dprintf("    .... Now try rendering the drawing using cairo .... \n");
+	    /* 
+	     * This now allows drawing several layers on top of each other.
+	     * Higher layer numbers have higher priority in the Z-order.
+	     */
+	    for(i = screen.max_files-1; i >= 0; i--) {
+		if (screen.file[i]) {
+		    cairo_t *cr;
+		    if (screen.file[i]->privateRenderData) 
+			cairo_surface_destroy ((cairo_surface_t *) screen.file[i]->privateRenderData);
+		    screen.file[i]->privateRenderData = 
+			(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+			CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
+			screenRenderInfo.displayHeight);
+		    cr= cairo_create(screen.file[i]->privateRenderData );
+		    render_layer_to_cairo_target (cr, screen.file[i], &screenRenderInfo);
+		    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
+		    cairo_destroy (cr);
 		}
-		render_recreate_composite_surface ();
+	    }
+	    render_recreate_composite_surface ();
 	}
 #endif
 	/* remove watch cursor and switch back to normal cursor */
@@ -453,14 +465,12 @@ void render_refresh_rendered_image_on_screen (void) {
 #ifndef RENDER_USING_GDK
 void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_render_info_t *renderInfo) {
 	int i;
-	
+	render_cairo_set_scale_translation(cr, renderInfo);
 	/* don't paint background for vector output, since it isn't needed */
 	for(i = screen.max_files-1; i >= 0; i--) {
 		if (screen.file[i] && screen.file[i]->isVisible) {
-			/* since compositing layers properly destroys the vector data,
-			   we just draw right on top of the last layer (producing errors
-			   in cases where something was drawn with the "clear" aperture state */
-			render_layer_to_cairo_target (cr, screen.file[i], renderInfo);
+
+		    render_layer_to_cairo_target_without_transforming(cr, screen.file[i], renderInfo);
 		}
 	}
 }
@@ -472,7 +482,6 @@ void render_all_layers_to_cairo_target (cairo_t *cr, gerbv_render_info_t *render
 		(double) screen.background.green/G_MAXUINT16,
 		(double) screen.background.blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
-	
 	for(i = screen.max_files-1; i >= 0; i--) {
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			cairo_push_group (cr);
@@ -485,10 +494,15 @@ void render_all_layers_to_cairo_target (cairo_t *cr, gerbv_render_info_t *render
 
 void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 						gerbv_render_info_t *renderInfo) {
+	render_cairo_set_scale_translation(cr, renderInfo);
+	render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo);
+}
+
+void render_cairo_set_scale_translation(cairo_t *cr, gerbv_render_info_t *renderInfo){
 	gdouble translateX, translateY;
 	
-	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactor);
-	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactor);
+	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactorX);
+	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactorY);
 	
 	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
 	   this far */
@@ -509,14 +523,16 @@ void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 	cairo_translate (cr, -translateX, translateY + renderInfo->displayHeight);
 	/* scale the drawing by the specified scale factor (inverting y since
 		cairo y axis points down) */
-	cairo_scale (cr, renderInfo->scaleFactor, -renderInfo->scaleFactor);
+	cairo_scale (cr, renderInfo->scaleFactorX, -renderInfo->scaleFactorY);
+}
 
+void render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo ) {
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
 		(double) fileInfo->color.green/G_MAXUINT16,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
 	
 	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->inverted,
-		1/renderInfo->scaleFactor, 0, NULL);
+		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), 0, NULL);
 }
 
 void render_recreate_composite_surface () {
@@ -633,9 +649,10 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 			* which is not always centered perfectly for GTK/X.
 			*/
 			dprintf("  .... calling image2pixmap on image %d...\n", i);
+			// Dirty scaling solution when using GDK; simply use scaling factor for x-axis, ignore y-axis
 			image2pixmap(&clipmask, screen.file[i]->image,
-				renderInfo->scaleFactor, -(renderInfo->lowerLeftX * renderInfo->scaleFactor),
-				(renderInfo->lowerLeftY * renderInfo->scaleFactor) + renderInfo->displayHeight,
+				renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
+				(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
 				polarity);
 
 			/* 
