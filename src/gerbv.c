@@ -186,7 +186,8 @@ const char path_separator = '\\';
 const char path_separator = '/';
 #endif
 
-static int gerbv_open_image(char *filename, int idx, int reload);
+static int gerbv_open_image(char *filename, int idx, int reload, 
+			    HID_Attribute *attr_list, int n_attr);
 
 void 
 gerbv_open_project_from_filename(gchar *filename) 
@@ -216,7 +217,9 @@ gerbv_open_project_from_filename(gchar *filename)
 		} else {
 		    fullName = g_strdup (project_list->filename);
 		}
-		if (gerbv_open_image(fullName, idx, FALSE) == -1) {
+		if (gerbv_open_image(fullName, idx, FALSE, 
+				     project_list->attr_list, 
+				     project_list->n_attr) == -1) {
 		    GERB_MESSAGE("could not read %s[%d]", fullName, idx);
 		    goto next_layer;
 		}
@@ -259,7 +262,7 @@ gerbv_open_layer_from_filename(gchar *filename)
     dprintf("Opening filename = %s\n", (gchar *) filename);
     
     
-    if (gerbv_open_image(filename, ++screen.last_loaded, FALSE) == -1) {
+    if (gerbv_open_image(filename, ++screen.last_loaded, FALSE, NULL, 0) == -1) {
 	GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
 		     screen.last_loaded);
 	screen.last_loaded--;
@@ -338,7 +341,7 @@ gerbv_save_as_project_from_filename(gchar *filename)
 int
 gerbv_revert_file(int idx){
 	int rv;
-	rv = gerbv_open_image(screen.file[idx]->fullPathname, idx, TRUE);
+	rv = gerbv_open_image(screen.file[idx]->fullPathname, idx, TRUE, NULL, 0);
 	return rv;
 }
 
@@ -476,7 +479,7 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
 
 /* ------------------------------------------------------------------ */
 static int
-gerbv_open_image(char *filename, int idx, int reload)
+gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int n_fattr)
 {
     gerb_file_t *fd;
     gerb_image_t *parsed_image = NULL, *parsed_image2 = NULL;
@@ -489,10 +492,18 @@ gerbv_open_image(char *filename, int idx, int reload)
      */
     if (reload)
 	{
+	    /* We're reloading so use the attribute list in memory */
 	    attr_list =  screen.file[idx]->image->info->attr_list;
 	    n_attr =  screen.file[idx]->image->info->n_attr;
 	}
-
+    else
+	{
+	    /* We're not reloading so use the attribute list read from the 
+	     * project file if given or NULL otherwise.
+	     */
+	    attr_list = fattr;
+	    n_attr = n_fattr;
+	}
     /* if we don't have enough spots, then grow the file list by 2 to account for the possible 
        loading of two images for PNP files */
     if ((idx+1) >= screen.max_files) {
@@ -549,7 +560,7 @@ gerbv_open_image(char *filename, int idx, int reload)
 		g_free (primaryText);
 	}
 	if ((!(screen.win.topLevelWindow))||(!foundBinary || forceLoadFile))
-	    parsed_image = parse_drillfile(fd, attr_list, n_attr);
+	    parsed_image = parse_drillfile(fd, attr_list, n_attr, reload);
 	
     } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
 	dprintf("Found pick-n-place file\n");

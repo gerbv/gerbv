@@ -68,6 +68,7 @@ drill_stats_new(void) {
         GERB_FATAL_ERROR("malloc error_list failed\n");
     stats->error_list = (error_list_t *) error_list;
 
+    stats->detect = NULL;
     return stats;
 }
 
@@ -80,6 +81,7 @@ drill_stats_add_layer(drill_stats_t *accum_stats,
 
     drill_list_t *drill;
     error_list_t *error;
+    char *tmps, *tmps2;
 
     dprintf("--->  Entering drill_stats_add_layer ..... \n");
 
@@ -147,6 +149,42 @@ drill_stats_add_layer(drill_stats_t *accum_stats,
 				  error->type);
 	}
     }
+
+    /* ==== Now deal with the misc header stuff ==== */
+    tmps = NULL;
+    tmps2 = NULL;
+    if (input_stats->detect) {
+	tmps2 = g_strdup_printf ("Broken tool detect %s (layer %d)", input_stats->detect, this_layer);
+    }    
+    if (accum_stats->detect) {
+	if (tmps2) {
+	    tmps = g_strdup_printf ("%s\n%s", accum_stats->detect, tmps2);
+	    g_free (accum_stats->detect);
+	    accum_stats->detect = NULL;
+	}
+    } else {
+	if (tmps2) {
+	    tmps = g_strdup_printf ("%s", tmps2);
+	}
+    }
+    if (tmps2) {
+	g_free (tmps2);
+    }
+    if (tmps != NULL) {
+	accum_stats->detect = tmps;
+    }
+
+    for (error = input_stats->error_list;
+         error != NULL;
+	 error = error->next) {
+	if (error->error_text != NULL) {
+	    drill_stats_add_error(accum_stats->error_list,
+				  this_layer,
+				  error->error_text,
+				  error->type);
+	}
+    }
+
 
     dprintf("<---  .... Leaving drill_stats_add_layer.\n");
 	    

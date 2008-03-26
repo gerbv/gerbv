@@ -72,6 +72,8 @@ typedef struct {
 
     int unknown;
 
+    char *detect;
+
 } drill_stats_t;
 
 
@@ -96,6 +98,5 @@ error_list_t *drill_stats_new_error_list(void);
 void drill_stats_add_error(error_list_t *error_list_in,
 			   int layer, const char *error_text, 
 			   enum error_type_t type);
-
 
 #endif /* DRILL_STATS_H */

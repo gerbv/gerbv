@@ -198,6 +198,7 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr)
     int read;
     drill_stats_t *stats;
     int i;
+    char *tmps;
 
     /* Create new image for this layer */
     dprintf("In parse_drillfile, about to create image for this layer\n");
@@ -284,10 +285,47 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr)
 	    /* Comment found. Eat rest of line */
 	    eat_line(fd);
 	    break;
-	case 'F' :
-	    /* Z axis feed speed. Silently ignored */
-	    eat_line(fd);
+	case 'D' :
+	    gerb_ungetc (fd);
+	    tmps = get_line (fd);
+	    if (strcmp (tmps, "DETECT,ON") == 0 ||
+		strcmp (tmps, "DETECT,OFF") == 0) {
+		char *tmps2;
+		char *tmps3;
+		if (strcmp (tmps, "DETECT,ON") == 0)
+		    tmps3 = "ON";
+		else
+		    tmps3 = "OFF";
+
+		/* broken tool detect on/off.  Silently ignored. */
+		if (stats->detect) {
+		    tmps2 = g_strdup_printf ("%s\n%s", stats->detect, tmps3);
+		    g_free (stats->detect);
+		} else {
+		    tmps2 = g_strdup_printf ("%s", tmps3);
+		}
+		stats->detect = tmps2;
+	    } else {
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Undefined header line = '%s'\n",tmps),
+				      NOTE);
+	    }
+	    g_free (tmps);
 	    break;
+	case 'F' :
+	    gerb_ungetc (fd);
+	    tmps = get_line (fd);
+	    /* Silently ignore FMAT,2.  Not sure what others are allowed */
+	    if (strcmp (tmps, "FMAT,2") != 0) {
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Undefined header line = '%s'\n",tmps),
+				      NOTE);
+	    }
+	    g_free (tmps);
+	    break;
+
 	case 'G':
 	    /* Most G codes aren't used, for now */
 	    switch(drill_parse_G_code(fd, image)) {
@@ -464,11 +502,13 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr)
 	    case DRILL_M_LONGMESSAGE :
 	    case DRILL_M_MESSAGE :
 	    case DRILL_M_CANNEDTEXT :
+		tmps = get_line(fd);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      g_strdup_printf("Message embedded in drill file: '%s'\n", 
-						      get_line(fd)),
+						      tmps),
 				      NOTE);
+		g_free (tmps);
 		break;
 	    case DRILL_M_NOT_IMPLEMENTED :
 	    case DRILL_M_ENDPATTERN :
@@ -501,6 +541,19 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr)
 	case 'T':
 	    drill_parse_T_code(fd, state, image);
 	    break;
+	case 'V' :
+	    gerb_ungetc (fd);
+	    tmps = get_line (fd);
+	    /* Silently ignore VER,1.  Not sure what others are allowed */
+	    if (strcmp (tmps, "VER,1") != 0) {
+		drill_stats_add_error(stats->error_list,
+				      -1,
+				      g_strdup_printf("Undefined header line = '%s'\n",tmps),
+				      NOTE);
+	    }
+	    g_free (tmps);
+	    break;
+
 	case 'X':
 	case 'Y':
 	    /* Hole coordinate found. Do some parsing */
@@ -575,11 +628,13 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr)
 				      "Undefined codes found in header.\n",
 				      GRB_ERROR);
 		gerb_ungetc(fd);
+		tmps = get_line(fd);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      g_strdup_printf("Undefined header line = '%s'\n",
-						      get_line(fd)),
+						      tmps),
 				      NOTE);
+		g_free (tmps);
 	    } else {
 		drill_stats_add_error(stats->error_list,
 				      -1,
@@ -769,6 +824,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
     int temp;
     double size;
     drill_stats_t *stats = image->drill_stats;
+    char *tmps;
 
     /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
        broken headers from Orcad, which is crap */
@@ -780,11 +836,14 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 				  -1,
 				  "Orcad bug: Junk text found in place of tool definition.\n",
 				  GRB_ERROR);
+	    tmps = get_line(fd);
+
 	    drill_stats_add_error(stats->error_list,
 				  -1,
 				  g_strdup_printf("Junk text = %s\n", 
-						  get_line(fd)),
+						  tmps),
 				  NOTE);
+	    g_free (tmps);
 	    drill_stats_add_error(stats->error_list,
 				  -1,
 				  "Ignorning junk text.\n",
@@ -1210,7 +1269,7 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
     } else if (strncmp(op, "93", 2) == 0) {
 	stats->G93++;
 	result = DRILL_G_ZEROSET;
-    } else {
+    } else {	
 	stats->G_unknown++;
 	result = DRILL_G_UNKNOWN;
     }
@@ -1390,10 +1449,18 @@ get_line(gerb_file_t *fd)
 {
     int read = gerb_fgetc(fd);
     char *retstring = "";
+    char *tmps = NULL;
 
     while(read != 10 && read != 13) {
 	if (read == EOF) return retstring;
 	retstring = g_strdup_printf("%s%c", retstring, read);
+
+	/* since g_strdup_printf allocates memory, we need to free it */
+	if (tmps)  {
+	    g_free (tmps);
+	    tmps = NULL;
+	}
+	tmps = retstring;;
 	read = gerb_fgetc(fd);
     }
     return retstring;
