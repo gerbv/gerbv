@@ -76,11 +76,11 @@ rotate_point(GdkPoint point, int angle)
 
 
 /*
- * Doesn't handle explicit x,y yet
+ * Aperture macro primitive 1 (Circle)
  */
 static void
 gerbv_gdk_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, double *p, 
-		 double scale, gint x, gint y)
+		     double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int diameter_idx = 1;
@@ -123,34 +123,34 @@ gerbv_gdk_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, double *p,
 
 
 /*
- * Doesn't handle explicit x,y yet
- * Questions:
- *  - should start point be included in number of points?
- *  - how thick is the outline?
+ * Aperture macro primitive 4 (outline)
+ * - Start point is not included in number of points.
+ * - Outline is 1 pixel.
  */
 static void
 gerbv_gdk_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, double *p, 
-		 double scale, gint x, gint y)
+		     double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int nuf_points_idx = 1;
     const int first_x_idx = 2;
     const int first_y_idx = 3;
-    const int rotext_idx = 2;
+    const int rotext_idx = 4;
     GdkGC *local_gc = gdk_gc_new(pixmap);
     int nuf_points, point;
     double rotation;
     GdkPoint *points;
     GdkColor color;
 
-    nuf_points = (int)p[nuf_points_idx];
+    /* Include start point */
+    nuf_points = (int)p[nuf_points_idx] + 1;
     points = (GdkPoint *)g_malloc(sizeof(GdkPoint) * nuf_points);
     if (!points) {
 	g_free(points);
 	return;
     }
 
-    rotation = p[nuf_points * 2 + rotext_idx];
+    rotation = p[(nuf_points - 1) * 2 + rotext_idx];
     for (point = 0; point < nuf_points; point++) {
 	points[point].x = (int)round(scale * p[point * 2 + first_x_idx]);
 	points[point].y = -(int)round(scale * p[point * 2 + first_y_idx]);
@@ -184,14 +184,16 @@ gerbv_gdk_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, double *p,
 
 
 /*
- * Doesn't handle explicit x,y yet
+ * Aperture macro primitive 5 (polygon)
  */
 static void
 gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, double *p, 
-		 double scale, gint x, gint y)
+		     double scale, gint x, gint y)
 {
     const int exposure_idx = 0;
     const int nuf_vertices_idx = 1;
+    const int center_x_idx = 2;
+    const int center_y_idx = 3;
     const int diameter_idx = 4;
     const int rotation_idx = 5;
     int nuf_vertices, i;
@@ -220,8 +222,10 @@ gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, double *p,
     radius = p[diameter_idx] / 2.0;
     for (i = 0; i < nuf_vertices; i++) {
 	vertex =  tick * (double)i + rotation;
-	points[i].x = (int)round(scale * radius * cos(vertex)) + x;
-	points[i].y = (int)round(scale * radius * sin(vertex)) + y;
+	points[i].x = (int)round(scale * radius * cos(vertex)) + x +
+	    p[center_x_idx];
+	points[i].y = (int)round(scale * radius * sin(vertex)) + y +
+	    p[center_y_idx];
     }
 
     gdk_draw_polygon(pixmap, local_gc, 1, points, nuf_vertices);
