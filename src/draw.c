@@ -194,11 +194,14 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		}
 	    } else if (ls->type == MACRO_OUTLINE) {
 		int pointCounter,numberOfPoints;
-		numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
+		/* Number of points parameter seems to not include the start point,
+		 * so we add one to include the start point.
+		 */
+		numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS] + 1;
 		
 		if (draw_update_macro_exposure (cairoTarget, clearOperator, 
 					darkOperator, ls->parameter[OUTLINE_EXPOSURE])){
-			cairo_rotate (cairoTarget, ls->parameter[numberOfPoints * 2 + OUTLINE_ROTATION - 2] * M_PI/180);
+			cairo_rotate (cairoTarget, ls->parameter[(numberOfPoints - 1) * 2 + OUTLINE_ROTATION] * M_PI/180.0);
 			cairo_move_to (cairoTarget, ls->parameter[OUTLINE_FIRST_X], ls->parameter[OUTLINE_FIRST_Y]);
 			
 			for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
