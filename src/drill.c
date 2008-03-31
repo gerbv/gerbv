@@ -947,7 +947,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	    stats = image->drill_stats;
 	    drill_stats_add_to_drill_list(stats->drill_list, 
 					  tool_num, 
-					  size, 
+					  state->unit == MM ? size*25.4 : size, 
 					  g_strdup_printf("%s", (state->unit == MM ? "mm" : "inch")));
 
 	    break;
@@ -1023,7 +1023,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 	    stats = image->drill_stats;
 	    drill_stats_add_to_drill_list(stats->drill_list, 
 					  tool_num, 
-					  dia, 
+					  state->unit == MM ? dia*25.4 : dia, 
 					  g_strdup_printf("%s", 
 							  (state->unit == MM ? "mm" : "inch")));
 	}
