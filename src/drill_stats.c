@@ -235,6 +235,9 @@ drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
     drill_list_t *drill;
     drill_list_t *drill_last = NULL;
 
+    dprintf ("%s(%p, %d, %g, \"%s\")\n", __FUNCTION__, drill_list_in, drill_num_in,
+	     drill_size_in, drill_unit_in);
+
     dprintf("   ---> Entering drill_stats_add_to_drill_list, first drill_num in list = %d ...\n", 
 	    drill_list_in->drill_num);
 
