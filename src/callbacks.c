@@ -1939,15 +1939,15 @@ callbacks_update_statusbar_coordinates (gint x, gint y) {
 	}
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		     "(%7.1f, %7.1f)",
+		     "(%8.2f, %8.2f)",
 		     COORD2MILS(X), COORD2MILS(Y));
 	} else if (screen.unit == GERBV_MMS) {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		     "(%7.2f, %7.2f)",
+		     "(%8.3f, %8.3f)",
 		     COORD2MMS(X), COORD2MMS(Y));
 	} else {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		     "(%3.4f, %3.4f)",
+		     "(%4.5f, %4.5f)",
 		     COORD2MILS(X) / 1000.0, COORD2MILS(Y) / 1000.0);
 	}
 	callbacks_update_statusbar();
@@ -2214,17 +2214,17 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 	
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %7.1f mils (%7.1f x, %7.1f y)",
+		     "Measured distance: %8.2f mils (%8.2f x, %8.2f y)",
 		     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
 	} 
 	else if (screen.unit == GERBV_MMS) {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %7.2f mms (%7.2f x, %7.2f y)",
+		     "Measured distance: %8.3f mms (%8.3f x, %8.3f y)",
 		     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
 	}
 	else {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %3.4f inches (%3.4f x, %3.4f y)",
+		     "Measured distance: %4.5f inches (%4.5f x, %4.5f y)",
 		     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
 		     COORD2MILS(dy) / 1000.0);
 	}
