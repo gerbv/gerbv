@@ -963,6 +963,10 @@ main(int argc, char *argv[])
 		exportType = 5;
 		exportFromCommandline = TRUE;
 	    }
+	    else if (strcmp (optarg,"drill") == 0) {
+		exportType = 6;
+		exportFromCommandline = TRUE;
+	    }
 	    else {
 		fprintf(stderr, "Unrecognized export type.\n");
 		exit(1);				
@@ -1017,8 +1021,8 @@ main(int argc, char *argv[])
 #ifdef RENDER_USING_GDK
 	    printf("  -x, --export=<png>              Export a rendered picture to a PNG file.\n");
 #else
-	    printf("  -x, --export=<png/pdf/ps/svg>   Export a rendered picture to a file with\n");
-	    printf("                                  the specified format.\n");
+	    printf("  -x, --export=<png/pdf/ps/svg/   Export a rendered picture to a file with\n");
+	    printf("                rs274x/drill>     the specified format.\n");
 #endif
 
 
@@ -1067,8 +1071,8 @@ main(int argc, char *argv[])
 #ifdef RENDER_USING_GDK
 	    printf("  -x<png>                 Export a rendered picture to a PNG file\n");
 #else
-	    printf("  -x <png/pdf/ps/svg>     Export a rendered picture to a file with\n");
-	    printf("                          the specified format\n");
+	    printf("  -x <png/pdf/ps/svg/     Export a rendered picture to a file with\n");
+	    printf("      rs274x/drill>       the specified format\n");
 #endif
 
 #endif /* HAVE_GETOPT_LONG */
@@ -1136,8 +1140,10 @@ main(int argc, char *argv[])
 		    exportFilename = g_strdup ("output.svg");
 		} else if (exportType == 4){
 		    exportFilename = g_strdup ("output.ps");
-		} else {
+		} else if (exportType == 5){
 		    exportFilename = g_strdup ("output.gbx");
+		} else {
+		    exportFilename = g_strdup ("output.cnc");
 		}
 		freeFilename = TRUE;
 	}
@@ -1235,6 +1241,29 @@ main(int argc, char *argv[])
 		/* otherwise, just export the single image file as it is */
 		else {
 		  export_rs274x_file_from_image (exportFilename, screen.file[0]->image);
+		}
+	    }
+	    else {
+		fprintf(stderr, "A valid file was not loaded.\n");
+		exit(1);
+	    }
+	} else if (exportType == 6) {
+	    if (screen.file[0]->image) {
+		/* if we have more than one file, we need to merge them before exporting */
+		if (screen.file[1]) {
+		  gerb_image_t *exportImage;
+		  exportImage = gerb_image_duplicate_image (screen.file[0]->image, &screen.file[0]->transform);
+		  for(i = screen.max_files-1; i > 0; i--) {
+		    if (screen.file[i]) {
+		      gerb_image_copy_image (screen.file[i]->image, &screen.file[i]->transform, exportImage);
+		    }
+		  }
+		  export_drill_file_from_image (exportFilename, exportImage);
+		  free_gerb_image (exportImage);
+		}
+		/* otherwise, just export the single image file as it is */
+		else {
+		  export_drill_file_from_image (exportFilename, screen.file[0]->image);
 		}
 	    }
 	    else {

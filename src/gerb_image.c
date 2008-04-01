@@ -494,6 +494,30 @@ gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations
     return newImage;
 }
 
+gint
+gerb_image_find_existing_aperture_match (gerb_aperture_t *checkAperture, gerb_image_t *imageToSearch) {
+    int i,j;
+    gboolean isMatch;
+    
+    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+	if (imageToSearch->aperture[i] != NULL) {
+	  if ((imageToSearch->aperture[i]->type == checkAperture->type) &&
+	      (imageToSearch->aperture[i]->simplified == NULL) &&
+	      (imageToSearch->aperture[i]->unit == checkAperture->unit)) {
+	    /* check all parameters match too */
+	    isMatch=TRUE;
+	    for (j=0; j<APERTURE_PARAMETERS_MAX; j++){
+	      if (imageToSearch->aperture[i]->parameter[j] != checkAperture->parameter[j])
+	        isMatch = FALSE;
+	    }
+	    if (isMatch)
+	      return i;
+	  }	      
+	}
+    }
+    return 0;
+}
+
 int
 gerb_image_find_unused_aperture_number (int startIndex, gerb_image_t *image){
     int i;
@@ -515,14 +539,25 @@ gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *t
     /* copy apertures over */
     for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
 	if (sourceImage->aperture[i] != NULL) {
-	  gerb_aperture_t *newAperture = gerb_image_duplicate_aperture (sourceImage->aperture[i]);
+	  gint existingAperture = gerb_image_find_existing_aperture_match (sourceImage->aperture[i], destinationImage);
 	  
-	  lastUsedApertureNumber = gerb_image_find_unused_aperture_number (lastUsedApertureNumber + 1, destinationImage);
-	  /* store the aperture numbers (new and old) in the translation table */
-	  gerb_translation_entry_t translationEntry={i,lastUsedApertureNumber};
-	  g_array_append_val (apertureNumberTable,translationEntry);
+	  /* if we already have an existing aperture in the destination image that matches what
+	     we want, just use it instead */
+	  if (existingAperture > 0) {
+	  	gerb_translation_entry_t translationEntry={i,existingAperture};
+	 	g_array_append_val (apertureNumberTable,translationEntry);
+	  }
+	  /* else, create a new aperture and put it in the destination image */
+	  else {
+	  	gerb_aperture_t *newAperture = gerb_image_duplicate_aperture (sourceImage->aperture[i]);
+	  
+	  	lastUsedApertureNumber = gerb_image_find_unused_aperture_number (lastUsedApertureNumber + 1, destinationImage);
+	  	/* store the aperture numbers (new and old) in the translation table */
+	  	gerb_translation_entry_t translationEntry={i,lastUsedApertureNumber};
+	  	g_array_append_val (apertureNumberTable,translationEntry);
 
-	  destinationImage->aperture[lastUsedApertureNumber] = newAperture;
+	  	destinationImage->aperture[lastUsedApertureNumber] = newAperture;
+	  }
 	}
     }
     /* find the last layer, state, and net in the linked chains */

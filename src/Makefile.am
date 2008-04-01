@@ -36,7 +36,8 @@ gerbv_SOURCES = amacro.c amacro.h attribute.c attribute.h \
 		pick-and-place.c pick-and-place.h gerb_transf.c gerb_transf.h \
 		csv.c csv.h csv_defines.h callbacks.c callbacks.h interface.c \
 		interface.h render.c render.h gerb_stats.c gerb_stats.h \
-		drill_stats.c drill_stats.h icons.h export-rs274x.c export-rs274x.h
+		drill_stats.c drill_stats.h icons.h export-rs274x.c export-rs274x.h \
+		export-drill.h export-drill.c
 
 # If we are building on win32, then compile in some icons for the
 # desktop and application toolbar
