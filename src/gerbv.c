@@ -108,6 +108,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #define dprintf if(DEBUG) printf
 
 #define NUMBER_OF_DEFAULT_COLORS 18
+#define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 /* Notice that the pixel field is used for alpha in this case */
 typedef struct{
     unsigned char red;
@@ -137,6 +138,29 @@ static LayerColor defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{226,226,226,177}
 };
 
+static gerb_user_transformations_t defaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},	
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},		
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},	
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+	{0,0,0,0,FALSE},
+};
+
 #ifdef HAVE_GETOPT_LONG
 int longopt_val = 0;
 int longopt_idx = 0;
@@ -156,6 +180,7 @@ const struct option longopts[] = {
     {"output",          required_argument,  NULL,    'o'},
     {"project",         required_argument,  NULL,    'p'},
     {"tools",           required_argument,  NULL,    't'},
+    {"translate",       required_argument,  NULL,    'T'},
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
     {"geometry",        required_argument,  &longopt_val, 1},
@@ -174,7 +199,7 @@ const struct option longopts[] = {
     {0, 0, 0, 0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "Vadh:B:D:O:W:b:f:l:o:p:t:w:x:";
+const char *opt_options = "Vadh:B:D:O:W:b:f:l:o:p:t:T:w:x:";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
@@ -474,6 +499,7 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
     screen.file[idx]->color = colorTemplate;
     screen.file[idx]->alpha = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].alpha*257;
     screen.file[idx]->isVisible = TRUE;
+    screen.file[idx]->transform = defaultTransformations[idx % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
     return 1;
 }
 
@@ -634,7 +660,7 @@ main(int argc, char *argv[])
     char      *project_filename = NULL;
     gboolean exportFromCommandline = FALSE,  userSuppliedOrigin=FALSE, userSuppliedWindow=FALSE, 
 	     userSuppliedAntiAlias=FALSE, userSuppliedWindowInPixels=FALSE, userSuppliedDpi=FALSE;
-    gint  layerctr =0, exportType = 0;
+    gint  layerctr =0, transformCount = 0, exportType = 0;
     gchar *exportFilename = NULL;
     gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
 	   userSuppliedWidth=0, userSuppliedHeight=0, userSuppliedBorder=0.05;
@@ -835,6 +861,9 @@ main(int argc, char *argv[])
 	    defaultColors[layerctr].blue  = b;
 	    defaultColors[layerctr].alpha = a;
 	    layerctr++;
+	    /* just reset the counter back to 0 if we read too many */
+	    if (layerctr == NUMBER_OF_DEFAULT_COLORS)
+	    	layerctr = 0;
 	    break;
 	case 'l' :
 	    if (optarg == NULL) {
@@ -870,6 +899,25 @@ main(int argc, char *argv[])
 		fprintf(stderr, "*** EXITING to prevent erroneous display.\n");
 		exit(1);
 	    }
+	    break;
+	case 'T' :	// Translate the layer
+	    if (optarg == NULL) {
+		fprintf(stderr, "You must give a translation in the format <X,Y>.\n");
+		exit(1);
+	    }
+	    if (strlen (optarg) > 30) {
+		fprintf(stderr, "The translation format is not recognized.\n");
+		exit(1);
+	    }
+	    float transX=0, transY=0;
+	    
+	    sscanf (optarg,"%f,%f",&transX,&transY);
+	    defaultTransformations[transformCount].translateX = transX;
+	    defaultTransformations[transformCount].translateY = transY;
+	    transformCount++;
+	    /* just reset the counter back to 0 if we read too many */
+	    if (transformCount == NUMBER_OF_DEFAULT_TRANSFORMATIONS)
+	    	transformCount = 0;
 	    break;
 	case 'w':
 	    userSuppliedWindowInPixels = TRUE;
@@ -963,6 +1011,9 @@ main(int argc, char *argv[])
 	    printf("                                  if no resolution is specified. If a\n");
 	    printf("                                  resolution is specified, it will clip.\n");
 	    printf("  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n");
+	    printf("  -T, --translate=<X,Y>           Translate the image by <X,Y> (useful for\n");
+	    printf("                                  arranging panels). Use multiple -T flags\n");
+	    printf("                                  for multiple layers.\n");
 #ifdef RENDER_USING_GDK
 	    printf("  -x, --export=<png>              Export a rendered picture to a PNG file.\n");
 #else
@@ -1010,6 +1061,9 @@ main(int argc, char *argv[])
 	    printf("                          resolution is specified, it will clip.\n");
 	    printf("                          exported image\n");
 	    printf("  -t<toolfile>            Read Excellon tools from file <toolfile>\n");
+	    printf("  -T<X,Y>                 Translate the image by <X,Y> (useful for\n");
+	    printf("                          arranging panels). Use multiple -T flags\n");
+	    printf("                          for multiple layers.\n");
 #ifdef RENDER_USING_GDK
 	    printf("  -x<png>                 Export a rendered picture to a PNG file\n");
 #else

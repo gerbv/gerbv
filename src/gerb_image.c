@@ -539,5 +539,3 @@ gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *t
     g_array_free (apertureNumberTable, TRUE);
 }
 
-
-
