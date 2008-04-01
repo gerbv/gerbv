@@ -443,6 +443,7 @@ gerb_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, ger
           
           if (translationEntry.oldAperture == newNet->aperture) {
             newNet->aperture = translationEntry.newAperture;
+            break;
           }
         }
       }
