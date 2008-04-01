@@ -58,7 +58,7 @@ typedef struct {
     gpointer privateRenderData;
     gchar *fullPathname; /* this should be the full pathname to the file */
     gchar *name;
-    gboolean inverted;
+    gerb_user_transformations_t transform;
 } gerbv_fileinfo_t;
 
 typedef struct {

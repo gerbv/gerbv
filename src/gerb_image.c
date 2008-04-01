@@ -398,7 +398,8 @@ gerb_image_duplicate_aperture (gerb_aperture_t *oldAperture){
 
 void
 gerb_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, gerb_layer_t *lastLayer,
-		gerb_netstate_t *lastState, gerb_net_t *lastNet, GArray *translationTable){
+		gerb_netstate_t *lastState, gerb_net_t *lastNet, gerb_user_transformations_t *transform,
+		GArray *translationTable){
     gerb_netstate_t *oldState,*newSavedState;
     gerb_layer_t *oldLayer,*newSavedLayer;
     gerb_net_t *currentNet,*newNet,*newSavedNet;
@@ -447,6 +448,17 @@ gerb_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, ger
           }
         }
       }
+      /* check if we are transforming the net (translating, scaling, etc) */
+      if (transform) {
+        newNet->start_x += transform->translateX;
+        newNet->start_y += transform->translateY;
+        newNet->stop_x += transform->translateX;
+        newNet->stop_y += transform->translateY;
+        if (newNet->cirseg) {
+          newNet->cirseg->cp_x += transform->translateX;
+          newNet->cirseg->cp_y += transform->translateY;
+        }
+      }
       if (newSavedNet)
       	newSavedNet->next = newNet;
       else
@@ -457,7 +469,7 @@ gerb_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, ger
 }
 
 gerb_image_t *
-gerb_image_duplicate_image (gerb_image_t *sourceImage) {
+gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform) {
     gerb_image_t *newImage = new_gerb_image(NULL, sourceImage->info->type);
     int i;
         
@@ -478,7 +490,7 @@ gerb_image_duplicate_image (gerb_image_t *sourceImage) {
     
     /* step through all nets and create new layers and states on the fly, since
        we really don't have any other way to figure out where states and layers are used */
-    gerb_image_copy_all_nets (sourceImage, newImage, newImage->layers, newImage->states, NULL, NULL);
+    gerb_image_copy_all_nets (sourceImage, newImage, newImage->layers, newImage->states, NULL, transform, NULL);
     return newImage;
 }
 
@@ -495,7 +507,7 @@ gerb_image_find_unused_aperture_number (int startIndex, gerb_image_t *image){
 }
 
 void
-gerb_image_copy_image (gerb_image_t *sourceImage, gerb_image_t *destinationImage) {
+gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform, gerb_image_t *destinationImage) {
     int lastUsedApertureNumber = APERTURE_MIN - 1;
     int i;
     GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
@@ -522,7 +534,8 @@ gerb_image_copy_image (gerb_image_t *sourceImage, gerb_image_t *destinationImage
     for (lastLayer = destinationImage->layers; lastLayer->next; lastLayer=lastLayer->next){}
     for (lastNet = destinationImage->netlist; lastNet->next; lastNet=lastNet->next){}
     
-    gerb_image_copy_all_nets (sourceImage, destinationImage, lastLayer, lastState, lastNet, apertureNumberTable);
+    /* and then copy them all to the destination image, using the aperture translation table we just built */
+    gerb_image_copy_all_nets (sourceImage, destinationImage, lastLayer, lastState, lastNet, transform, apertureNumberTable);
     g_array_free (apertureNumberTable, TRUE);
 }
 

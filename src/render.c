@@ -536,7 +536,7 @@ render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t 
 		(double) fileInfo->color.green/G_MAXUINT16,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
 	
-	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->inverted,
+	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
 		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), 0, NULL);
 }
 
@@ -621,7 +621,7 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 		if (screen.file[i] && screen.file[i]->isVisible) {
 			enum polarity_t polarity;
 
-			if (screen.file[i]->inverted) {
+			if (screen.file[i]->transform.inverted) {
 				if (screen.file[i]->image->info->polarity == POSITIVE)
 					polarity = NEGATIVE;
 				else

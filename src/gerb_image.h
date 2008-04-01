@@ -48,6 +48,14 @@ enum mirror_state_t {NOMIRROR, FLIPA, FLIPB, FLIPAB};
 enum axis_select_t {NOSELECT, SWAPAB};
 enum image_justify_type_t {NOJUSTIFY, LOWERLEFT, CENTERJUSTIFY};
 
+typedef struct {
+    gdouble translateX;
+    gdouble translateY;
+    gdouble scaleX;
+    gdouble scaleY;
+    gboolean inverted;
+} gerb_user_transformations_t;
+
 typedef struct gerb_cirseg {
     double cp_x;
     double cp_y;
@@ -206,10 +214,10 @@ gerb_netstate_t *
 gerb_image_return_new_netstate (gerb_netstate_t *previousState);
 
 void
-gerb_image_copy_image (gerb_image_t *sourceImage, gerb_image_t *destinationImage);
+gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform, gerb_image_t *destinationImage);
 
 gerb_image_t *
-gerb_image_duplicate_image (gerb_image_t *sourceImage);
+gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform);
 
 #ifdef __cplusplus
 }

@@ -1592,7 +1592,7 @@ void
 callbacks_invert_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
-	screen.file[index]->inverted = !screen.file[index]->inverted;
+	screen.file[index]->transform.inverted = !screen.file[index]->transform.inverted;
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree ();
 }
@@ -1743,7 +1743,7 @@ callbacks_update_layer_tree (void) {
 				gtk_list_store_append (list_store, &iter);
 				
 				gchar *modifiedCode;
-				if (screen.file[idx]->inverted) {
+				if (screen.file[idx]->transform.inverted) {
 					modifiedCode = g_strdup ("I");
 				}
 				else

@@ -229,7 +229,7 @@ gerbv_open_project_from_filename(gchar *filename)
 		 * Change color from default to from the project list
 		 */
 		screen.file[idx]->color = colorTemplate;
-		screen.file[idx]->inverted = project_list->inverted;
+		screen.file[idx]->transform.inverted = project_list->inverted;
 		screen.file[idx]->isVisible = project_list->visible;
 	    }
 	next_layer:
@@ -307,7 +307,7 @@ gerbv_save_project_from_filename(gchar *filename)
 	    tmp->rgb[0] = screen.file[idx]->color.red;
 	    tmp->rgb[1] = screen.file[idx]->color.green;
 	    tmp->rgb[2] = screen.file[idx]->color.blue;
-	    tmp->inverted = screen.file[idx]->inverted;
+	    tmp->inverted = screen.file[idx]->transform.inverted;
 	    tmp->visible = screen.file[idx]->isVisible;
 	    project_list = tmp;
 	}
@@ -1169,10 +1169,10 @@ main(int argc, char *argv[])
 		/* if we have more than one file, we need to merge them before exporting */
 		if (screen.file[1]) {
 		  gerb_image_t *exportImage;
-		  exportImage = gerb_image_duplicate_image (screen.file[0]->image);
+		  exportImage = gerb_image_duplicate_image (screen.file[0]->image, &screen.file[0]->transform);
 		  for(i = screen.max_files-1; i > 0; i--) {
 		    if (screen.file[i]) {
-		      gerb_image_copy_image (screen.file[i]->image, exportImage);
+		      gerb_image_copy_image (screen.file[i]->image, &screen.file[i]->transform, exportImage);
 		    }
 		  }
 		  export_rs274x_file_from_image (exportFilename, exportImage);
