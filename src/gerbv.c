@@ -1166,18 +1166,22 @@ main(int argc, char *argv[])
 	    exportimage_export_to_postscript_file (&renderInfo, exportFilename);
 	} else if (exportType == 5) {
 	    if (screen.file[0]->image) {
-		gerb_image_t *exportImage = screen.file[0]->image;
 		/* if we have more than one file, we need to merge them before exporting */
-		//if (screen.file[1]) {
+		if (screen.file[1]) {
+		  gerb_image_t *exportImage;
 		  exportImage = gerb_image_duplicate_image (screen.file[0]->image);
 		  for(i = screen.max_files-1; i > 0; i--) {
 		    if (screen.file[i]) {
 		      gerb_image_copy_image (screen.file[i]->image, exportImage);
-		      i++;
 		    }
 		  }
-		//}
-		export_rs274x_file_from_image (exportFilename, exportImage);
+		  export_rs274x_file_from_image (exportFilename, exportImage);
+		  free_gerb_image (exportImage);
+		}
+		/* otherwise, just export the single image file as it is */
+		else {
+		  export_rs274x_file_from_image (exportFilename, screen.file[0]->image);
+		}
 	    }
 	    else {
 		fprintf(stderr, "A valid file was not loaded.\n");

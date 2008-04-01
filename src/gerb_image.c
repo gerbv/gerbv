@@ -32,6 +32,11 @@
 #include "gerb_error.h"
 #include "gerb_image.h"
 
+typedef struct {
+    int oldAperture;
+    int newAperture;
+} gerb_translation_entry_t;
+
 /** Allocates a new gerb_image structure
    @param image will be freed up if not NULL
    @return gerb_image pointer on success, NULL on ERROR */
@@ -348,6 +353,22 @@ gerb_image_return_new_netstate (gerb_netstate_t *previousState)
     return newState;
 } /* gerb_image_return_new_netstate */
 
+gerb_layer_t *
+gerb_image_duplicate_layer (gerb_layer_t *oldLayer) {
+    gerb_layer_t *newLayer = g_new (gerb_layer_t,1);
+    
+    *newLayer = *oldLayer;
+    newLayer->name = g_strdup (oldLayer->name);
+    return newLayer;
+}
+
+gerb_netstate_t *
+gerb_image_duplicate_state (gerb_netstate_t *oldState) {
+    gerb_netstate_t *newState = g_new (gerb_netstate_t,1);
+    
+    *newState = *oldState;
+    return newState;
+}
 
 gerb_aperture_t *
 gerb_image_duplicate_aperture (gerb_aperture_t *oldAperture){
@@ -375,16 +396,78 @@ gerb_image_duplicate_aperture (gerb_aperture_t *oldAperture){
     return newAperture;
 }
 
+void
+gerb_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, gerb_layer_t *lastLayer,
+		gerb_netstate_t *lastState, gerb_net_t *lastNet, GArray *translationTable){
+    gerb_netstate_t *oldState,*newSavedState;
+    gerb_layer_t *oldLayer,*newSavedLayer;
+    gerb_net_t *currentNet,*newNet,*newSavedNet;
+    int i;
+    
+    oldLayer = sourceImage->layers;
+    oldState = sourceImage->states;
+    
+    newSavedLayer = lastLayer;
+    newSavedState = lastState;
+    newSavedNet = lastNet;
+    
+    for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){
+      /* check for any new layers and duplicate them if needed */
+	if (currentNet->layer != oldLayer) {
+	  newSavedLayer->next = gerb_image_duplicate_layer (currentNet->layer);
+	  newSavedLayer = newSavedLayer->next;
+	}
+	/* check for any new states and duplicate them if needed */
+	if (currentNet->state != oldState) {
+	  newSavedState->next = gerb_image_duplicate_state (currentNet->state);
+	  newSavedState = newSavedState->next;
+      }
+      /* create and copy the actual net over */
+      newNet = g_new (gerb_net_t,1);
+      *newNet = *currentNet;
+      
+      if (currentNet->cirseg) {
+      	newNet->cirseg = g_new (gerb_cirseg_t,1);
+      	*(newNet->cirseg) = *(currentNet->cirseg);
+      }
+      
+      if (currentNet->label)
+      	newNet->label = g_string_new(currentNet->label->str);
+      
+      newNet->state = newSavedState;
+      newNet->layer = newSavedLayer;
+      /* check if we need to translate the aperture number */
+      if (translationTable) {
+        for (i=0; i<translationTable->len; i++){
+          gerb_translation_entry_t translationEntry=g_array_index (translationTable, gerb_translation_entry_t, i);
+          
+          if (translationEntry.oldAperture == newNet->aperture) {
+            newNet->aperture = translationEntry.newAperture;
+          }
+        }
+      }
+      if (newSavedNet)
+      	newSavedNet->next = newNet;
+      else
+      	newImage->netlist = newNet;
+      newSavedNet = newNet;
+    }		
+		
+}
 
 gerb_image_t *
 gerb_image_duplicate_image (gerb_image_t *sourceImage) {
     gerb_image_t *newImage = new_gerb_image(NULL, sourceImage->info->type);
     int i;
-    
+        
     newImage->layertype = sourceImage->layertype;
+    /* copy information layer over */
+    *(newImage->info) = *(sourceImage->info);
+    newImage->info->name = g_strdup (sourceImage->info->name);
+    newImage->info->plotterFilm = g_strdup (sourceImage->info->plotterFilm);
     
     /* copy apertures over */
-    for (i = 0; i < APERTURE_MAX; i++) {
+    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
 	if (sourceImage->aperture[i] != NULL) {
 	  gerb_aperture_t *newAperture = gerb_image_duplicate_aperture (sourceImage->aperture[i]);
 
@@ -392,12 +475,55 @@ gerb_image_duplicate_image (gerb_image_t *sourceImage) {
 	}
     }
     
-    
+    /* step through all nets and create new layers and states on the fly, since
+       we really don't have any other way to figure out where states and layers are used */
+    gerb_image_copy_all_nets (sourceImage, newImage, newImage->layers, newImage->states, NULL, NULL);
     return newImage;
+}
+
+int
+gerb_image_find_unused_aperture_number (int startIndex, gerb_image_t *image){
+    int i;
+    
+    for (i = startIndex; i < APERTURE_MAX; i++) {
+	if (image->aperture[i] == NULL) {
+	  return i;
+	}
+    }
+    return -1;
 }
 
 void
 gerb_image_copy_image (gerb_image_t *sourceImage, gerb_image_t *destinationImage) {
+    int lastUsedApertureNumber = APERTURE_MIN - 1;
+    int i;
+    GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
+    
+    /* copy apertures over */
+    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+	if (sourceImage->aperture[i] != NULL) {
+	  gerb_aperture_t *newAperture = gerb_image_duplicate_aperture (sourceImage->aperture[i]);
+	  
+	  lastUsedApertureNumber = gerb_image_find_unused_aperture_number (lastUsedApertureNumber + 1, destinationImage);
+	  /* store the aperture numbers (new and old) in the translation table */
+	  gerb_translation_entry_t translationEntry={i,lastUsedApertureNumber};
+	  g_array_append_val (apertureNumberTable,translationEntry);
 
-
+	  destinationImage->aperture[lastUsedApertureNumber] = newAperture;
+	}
+    }
+    /* find the last layer, state, and net in the linked chains */
+    gerb_netstate_t *lastState;
+    gerb_layer_t *lastLayer;
+    gerb_net_t *lastNet;
+    
+    for (lastState = destinationImage->states; lastState->next; lastState=lastState->next){}
+    for (lastLayer = destinationImage->layers; lastLayer->next; lastLayer=lastLayer->next){}
+    for (lastNet = destinationImage->netlist; lastNet->next; lastNet=lastNet->next){}
+    
+    gerb_image_copy_all_nets (sourceImage, destinationImage, lastLayer, lastState, lastNet, apertureNumberTable);
+    g_array_free (apertureNumberTable, TRUE);
 }
+
+
+
