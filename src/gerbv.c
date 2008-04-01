@@ -1165,8 +1165,20 @@ main(int argc, char *argv[])
 	} else if (exportType == 4) {
 	    exportimage_export_to_postscript_file (&renderInfo, exportFilename);
 	} else if (exportType == 5) {
-	    if (screen.file[0]->image)
-	    	export_rs274x_file_from_image (exportFilename, screen.file[0]->image);
+	    if (screen.file[0]->image) {
+		gerb_image_t *exportImage = screen.file[0]->image;
+		/* if we have more than one file, we need to merge them before exporting */
+		//if (screen.file[1]) {
+		  exportImage = gerb_image_duplicate_image (screen.file[0]->image);
+		  for(i = screen.max_files-1; i > 0; i--) {
+		    if (screen.file[i]) {
+		      gerb_image_copy_image (screen.file[i]->image, exportImage);
+		      i++;
+		    }
+		  }
+		//}
+		export_rs274x_file_from_image (exportFilename, exportImage);
+	    }
 	    else {
 		fprintf(stderr, "A valid file was not loaded.\n");
 		exit(1);

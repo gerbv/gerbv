@@ -205,6 +205,12 @@ gerb_image_return_new_layer (gerb_layer_t *previousLayer);
 gerb_netstate_t *
 gerb_image_return_new_netstate (gerb_netstate_t *previousState);
 
+void
+gerb_image_copy_image (gerb_image_t *sourceImage, gerb_image_t *destinationImage);
+
+gerb_image_t *
+gerb_image_duplicate_image (gerb_image_t *sourceImage);
+
 #ifdef __cplusplus
 }
 #endif

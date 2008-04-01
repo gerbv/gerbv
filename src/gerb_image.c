@@ -89,6 +89,10 @@ new_gerb_image(gerb_image_t *image, const gchar *type)
     image->states->scaleA = 1;
     image->states->scaleB = 1;
 
+    /* fill in some values for our first net */
+    image->netlist->layer = image->layers;
+    image->netlist->state = image->states;
+    
     if (type == NULL)
 	image->info->type = "unknown";
     else
@@ -343,3 +347,57 @@ gerb_image_return_new_netstate (gerb_netstate_t *previousState)
     
     return newState;
 } /* gerb_image_return_new_netstate */
+
+
+gerb_aperture_t *
+gerb_image_duplicate_aperture (gerb_aperture_t *oldAperture){
+    gerb_aperture_t *newAperture = g_new0 (gerb_aperture_t,1);
+    gerb_simplified_amacro_t *simplifiedMacro, *tempSimplified;
+       
+    *newAperture = *oldAperture;
+	  
+    /* delete the amacro section, since we really don't need it anymore
+    now that we have the simplified section */
+    newAperture->amacro = NULL;
+    newAperture->simplified = NULL;
+
+    /* copy any simplified macros over */
+    tempSimplified = NULL;
+    for (simplifiedMacro = oldAperture->simplified; simplifiedMacro != NULL; simplifiedMacro = simplifiedMacro->next) {
+	gerb_simplified_amacro_t *newSimplified = g_new0 (gerb_simplified_amacro_t,1);
+	*newSimplified = *simplifiedMacro;
+	if (tempSimplified)
+	  tempSimplified->next = newSimplified;
+	else
+	  newAperture->simplified = newSimplified;
+	tempSimplified = newSimplified;
+    }
+    return newAperture;
+}
+
+
+gerb_image_t *
+gerb_image_duplicate_image (gerb_image_t *sourceImage) {
+    gerb_image_t *newImage = new_gerb_image(NULL, sourceImage->info->type);
+    int i;
+    
+    newImage->layertype = sourceImage->layertype;
+    
+    /* copy apertures over */
+    for (i = 0; i < APERTURE_MAX; i++) {
+	if (sourceImage->aperture[i] != NULL) {
+	  gerb_aperture_t *newAperture = gerb_image_duplicate_aperture (sourceImage->aperture[i]);
+
+	  newImage->aperture[i] = newAperture;
+	}
+    }
+    
+    
+    return newImage;
+}
+
+void
+gerb_image_copy_image (gerb_image_t *sourceImage, gerb_image_t *destinationImage) {
+
+
+}
