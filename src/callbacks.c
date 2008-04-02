@@ -1608,6 +1608,7 @@ void
 callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index = callbacks_get_selected_row_index();
 	gerbv_revert_file (index);
+	render_refresh_rendered_image_on_screen ();
 }
 
 void

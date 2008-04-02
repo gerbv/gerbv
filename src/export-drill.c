@@ -66,7 +66,7 @@ export_drill_file_from_image (gchar *filename, gerb_image_t *image) {
 				fprintf(fd, "T%dC%1.3f\n",i,currentAperture->parameter[0]);
 				/* add the "approved" aperture to our valid list */
 	  			g_array_append_val (apertureTable, i);
-				break;
+				break;  
 			default:
 				break;
 		}
