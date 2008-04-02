@@ -103,6 +103,7 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 #include "render.h"
 #include "exportimage.h"
 #include "export-rs274x.h"
+#include "export-drill.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf

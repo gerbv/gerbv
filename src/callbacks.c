@@ -1645,7 +1645,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 		}
       
 	    /* non-zero means cancel was picked */
-	    if (interface_attribute_dialog (attr, n, results, 
+	    if (attribute_interface_dialog (attr, n, results, 
 					    "Edit file format", 
 					    type))
 		{

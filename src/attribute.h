@@ -73,7 +73,7 @@ typedef struct
 
 
 int
-interface_attribute_dialog (HID_Attribute *, int, HID_Attr_Val *, 
+attribute_interface_dialog (HID_Attribute *, int, HID_Attr_Val *, 
 			    const char *,const char *);
 
 void
