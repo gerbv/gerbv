@@ -63,11 +63,11 @@ enum conv_type {
 /*
  * Reads a project from a file and returns a linked list describing the project
  */
-project_list_t *read_project_file(char *filename);
+project_list_t *read_project_file(char const* filename);
 
 
 /* Writes a description of a project to a file
  * that can be parsed by read_project above */
-int write_project_file(char *filename, project_list_t *project);
+int write_project_file(char const* filename, project_list_t *project);
 
 #endif /* PROJECT_H */

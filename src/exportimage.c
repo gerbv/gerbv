@@ -55,12 +55,12 @@ extern gerbv_render_info_t screenRenderInfo;
 
 #ifdef RENDER_USING_GDK
 static gboolean 
-exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, char *filename);
+exportimage_save_pixbuf_to_file (GdkPixbuf* pixbuf, char const* filename);
 #endif
 
 #ifndef RENDER_USING_GDK
 void exportimage_render_to_surface_and_destroy (cairo_surface_t *cSurface, gerbv_render_info_t *renderInfo,
-						gchar *filename) {
+						gchar const* filename) {
       cairo_t *cairoTarget = cairo_create (cSurface);
       
       render_all_layers_to_cairo_target_for_vector_output (cairoTarget, renderInfo);
@@ -72,7 +72,7 @@ void exportimage_render_to_surface_and_destroy (cairo_surface_t *cSurface, gerbv
 #endif
 
 #ifdef EXPORT_PNG
-void exportimage_export_to_png_file_autoscaled (int widthInPixels, int heightInPixels, gchar *filename) {
+void exportimage_export_to_png_file_autoscaled (int widthInPixels, int heightInPixels, gchar const* filename) {
 #ifdef RENDER_USING_GDK
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 0, widthInPixels, heightInPixels};
 #else
@@ -82,7 +82,7 @@ void exportimage_export_to_png_file_autoscaled (int widthInPixels, int heightInP
 	exportimage_export_to_png_file (&renderInfo, filename);
 }
 
-void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar *filename) {
+void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar const* filename) {
 #ifdef RENDER_USING_GDK
 
 	GdkPixmap *renderedPixmap = gdk_pixmap_new (NULL, renderInfo->displayWidth,
@@ -113,14 +113,14 @@ void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar *fil
 }
 #endif
 
-void exportimage_export_to_pdf_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
+void exportimage_export_to_pdf_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename) {
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
 	render_zoom_to_fit_display (&renderInfo);
 	exportimage_export_to_pdf_file (&renderInfo, filename);
 }
 
-void exportimage_export_to_pdf_file (gerbv_render_info_t *renderInfo, gchar *filename) {
+void exportimage_export_to_pdf_file (gerbv_render_info_t *renderInfo, gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_pdf_surface_create (filename, renderInfo->displayWidth,
 								renderInfo->displayHeight);
@@ -129,14 +129,14 @@ void exportimage_export_to_pdf_file (gerbv_render_info_t *renderInfo, gchar *fil
 #endif
 }
 
-void exportimage_export_to_postscript_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
+void exportimage_export_to_postscript_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename) {
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
 	render_zoom_to_fit_display (&renderInfo);
 	exportimage_export_to_postscript_file (&renderInfo, filename);
 }
 
-void exportimage_export_to_postscript_file (gerbv_render_info_t *renderInfo, gchar *filename) {
+void exportimage_export_to_postscript_file (gerbv_render_info_t *renderInfo, gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_ps_surface_create (filename, renderInfo->displayWidth,
 								renderInfo->displayHeight);
@@ -144,14 +144,14 @@ void exportimage_export_to_postscript_file (gerbv_render_info_t *renderInfo, gch
 #endif
 }
 
-void exportimage_export_to_svg_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename) {
+void exportimage_export_to_svg_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename) {
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
 	render_zoom_to_fit_display (&renderInfo);
 	exportimage_export_to_svg_file (&renderInfo, filename);
 }
 
-void exportimage_export_to_svg_file (gerbv_render_info_t *renderInfo, gchar *filename) {
+void exportimage_export_to_svg_file (gerbv_render_info_t *renderInfo, gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_svg_surface_create (filename, renderInfo->displayWidth,
 								renderInfo->displayHeight);
@@ -162,7 +162,7 @@ void exportimage_export_to_svg_file (gerbv_render_info_t *renderInfo, gchar *fil
 #ifdef EXPORT_PNG
 #ifdef RENDER_USING_GDK
 static gboolean 
-exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, char *filename)
+exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, gchar const* filename)
 {
 	FILE *handle;
 	int width, height, depth, rowstride;

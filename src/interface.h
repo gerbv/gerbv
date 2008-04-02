@@ -27,7 +27,7 @@ interface_create_gui (int req_width, int req_height);
 void
 interface_set_render_type (int);
 
-void rename_main_window(char *filename, GtkWidget *main_win);
+void rename_main_window(char const* filename, GtkWidget* main_win);
 
 void
 set_window_icon (GtkWidget * this_window);

@@ -202,10 +202,10 @@ typedef enum {
     GERB_IMAGE_MISSING_INFO = 8,
 } gerb_verify_error_t;
 
-gerb_verify_error_t gerb_image_verify(gerb_image_t *image);
+gerb_verify_error_t gerb_image_verify(gerb_image_t const* image);
 
 /* Dumps a written version of image to stdout */
-void gerb_image_dump(gerb_image_t *image);
+void gerb_image_dump(gerb_image_t const* image);
 
 gerb_layer_t *
 gerb_image_return_new_layer (gerb_layer_t *previousLayer);

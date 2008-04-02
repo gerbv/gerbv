@@ -35,7 +35,7 @@ typedef struct file {
 } gerb_file_t;
 
 
-gerb_file_t *gerb_fopen(char *filename);
+gerb_file_t *gerb_fopen(char const* filename);
 int gerb_fgetc(gerb_file_t *fd);
 int gerb_fgetint(gerb_file_t *fd, int *len); /* If len != NULL, returns number
 						of chars parsed in len */
@@ -53,6 +53,6 @@ const char path_separator;
  * characters to / (or string end if no /) is interpreted as a environment
  * variable.
  */
-char *gerb_find_file(char *filename, char **paths);
+char *gerb_find_file(char const * filename, char **paths);
 
 #endif /* GERB_FILE_H */

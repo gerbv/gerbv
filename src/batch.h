@@ -24,6 +24,6 @@
 #ifndef BATCH_H
 #define BATCH_H
 
-void batch(char *backend, char *filename);
+void batch(char const* backend, char const* filename);
 
 #endif /* BATCH_H */

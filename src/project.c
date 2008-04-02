@@ -355,7 +355,7 @@ set_render_type(scheme *sc, pointer args)
   *    layer filename
   */
 project_list_t *
-read_project_file(char *filename)
+read_project_file(char const* filename)
 {
     struct stat stat_info;
     scheme *sc;
@@ -428,7 +428,7 @@ read_project_file(char *filename)
  * that can be parsed by read_project above
  */
 int 
-write_project_file(char *filename, project_list_t *project)
+write_project_file(char const* filename, project_list_t *project)
 {
     FILE *fd;
     project_list_t *p = project, *tmp;

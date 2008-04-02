@@ -28,16 +28,16 @@
 #endif
 
 #ifdef EXPORT_PNG
-void exportimage_export_to_png_file_autoscaled (int widthInPixels, int heightInPixels, gchar *filename);
-void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar *filename);
+void exportimage_export_to_png_file_autoscaled (int widthInPixels, int heightInPixels, gchar const* filename);
+void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar const* filename);
 #endif
 
-void exportimage_export_to_pdf_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename);
-void exportimage_export_to_pdf_file (gerbv_render_info_t *renderInfo, gchar *filename);
+void exportimage_export_to_pdf_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename);
+void exportimage_export_to_pdf_file (gerbv_render_info_t *renderInfo, gchar const* filename);
 
-void exportimage_export_to_postscript_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename);
-void exportimage_export_to_postscript_file (gerbv_render_info_t *renderInfo, gchar *filename);
+void exportimage_export_to_postscript_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename);
+void exportimage_export_to_postscript_file (gerbv_render_info_t *renderInfo, gchar const* filename);
 
-void exportimage_export_to_svg_file_autoscaled (int widthInPoints, int heightInPoints, gchar *filename);
-void exportimage_export_to_svg_file (gerbv_render_info_t *renderInfo, gchar *filename);
+void exportimage_export_to_svg_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename);
+void exportimage_export_to_svg_file (gerbv_render_info_t *renderInfo, gchar const* filename);
 

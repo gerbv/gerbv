@@ -63,7 +63,7 @@ static 	GtkWidget *render_combobox;
 #define _(String) (String)
 
 void
-rename_main_window(char *filename, GtkWidget *main_win)
+rename_main_window(char const* filename, GtkWidget *main_win)
 {
 	GString *win_title=g_string_new(NULL);
 	static GtkWidget *win=NULL;

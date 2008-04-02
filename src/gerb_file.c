@@ -45,7 +45,7 @@
 #define dprintf if(DEBUG) printf
 
 gerb_file_t *
-gerb_fopen(char *filename)
+gerb_fopen(char const * filename)
 {
     gerb_file_t *fd;
     struct stat statinfo;
@@ -270,7 +270,7 @@ gerb_fclose(gerb_file_t *fd)
 
 
 char *
-gerb_find_file(char *filename, char **paths)
+gerb_find_file(char const * filename, char **paths)
 {
     char *curr_path = NULL;
     char *complete_path = NULL;

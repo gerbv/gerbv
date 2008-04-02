@@ -247,7 +247,7 @@ scm_image2scm(gerb_image_t *image, char *filename)
 
 
 void
-batch(char *backend, char *filename)
+batch(char const* backend, char const* filename)
 {
     char         *path[3];
     char 	 *complete_path;

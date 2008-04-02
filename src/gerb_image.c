@@ -210,7 +210,7 @@ free_gerb_image(gerb_image_t *image)
  * It could be any of above or'ed together
  */
 gerb_verify_error_t
-gerb_image_verify(gerb_image_t *image)
+gerb_image_verify(gerb_image_t const* image)
 {
     gerb_verify_error_t error = GERB_IMAGE_OK;
     int i, n_nets;;
@@ -274,11 +274,11 @@ gerb_image_interpolation(enum interpolation_t interpolation)
 
 /* Dumps a written version of image to stdout */
 void 
-gerb_image_dump(gerb_image_t *image)
+gerb_image_dump(gerb_image_t const* image)
 {
     int i, j;
-    gerb_aperture_t **aperture;
-    gerb_net_t *net;
+    gerb_aperture_t * const* aperture;
+    gerb_net_t const * net;
 
     /* Apertures */
     printf("Apertures:\n");
