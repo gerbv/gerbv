@@ -17,12 +17,22 @@ files produced by the program PCB (http://pcb.sf.net).
 On some platforms, which hasn't long option available, only
 short options are available.
 
-.SS gerbv Options
+.SS gerbv General options:
 .BI -V|--version
-Prints the version number of gerbv and exits.
+Print the version number of gerbv and exit.
 .TP
 .BI -h|--help
-Prints a brief usage guide.
+Print a brief usage guide and exit.
+.TP
+.BI -b<hex>|--background=<hex>
+Use background color <hex>. <hex> is specified as an html-color code, 
+e.g. #FF0000 for Red.
+.TP
+.BI -f<hex>|--foreground=<hex>
+Use foreground color <hex>. <hex> is specified as an html-color code, 
+e.g. #00FF00 for Green. If a user also wants to set the alpha (rendering 
+with Cairo) it can be specified as an #RRGGBBAA code. Use multiple 
+-f flags to set the color for multiple layers.
 .TP
 .BI -l\ <filename>|--log=<filename>
 All error messages etc are stored in a file with filename \fI<filename>\fP.
@@ -30,13 +40,47 @@ All error messages etc are stored in a file with filename \fI<filename>\fP.
 .BI -t\ <filename>|--tools=<filename>
 Read Excellon tools from the file \fI<filename>\fP.
 .TP
-.BI --geometry=<width>x<height>[<+->x-position[<+->y-position]]
-Sets the the size of the window. X-position and y-position are currently
-ignored by gerbv.
-.TP
 .BI -p\ <project\ filename>|--project=<project\ filename>
 Load a stored project. Please note that the project file must be stored in
 the same directory as the gerber files.
+
+.SS gerbv Export-specific options:
+The following commands can be used in combination with the -x flag:
+.BI -B<b>|--Border=<b>
+Set the border around the image <b> percent of the width and height. 
+Default <b> is 5%%.
+.TP
+.BI -D<XxY>or<R>|--dpi=<XxY>or<R>
+Resolution (Dots per inch) for the output bitmap. Use <XxY> for different 
+resolutions for the width and height (only when compiled with Cairo as 
+render engine). Use <R> to have the same resolution in both directions.
+Defaults to 72 DPI in both directions.
+.TP
+.BI -T<X,Y>|--translate=<X,Y>   
+Translate the image by the distance <X,Y>. Use multiple -T flags to translate
+multiple files.
+.TP
+.BI -O<XxY>|--origin=<XxY>
+Set the lower left corner of the exported image to coordinate <XxY>.
+Coordinates are in inches.
+.TP
+.BI -a|--antialias
+Use antialiasing for the generated output-bitmap.
+.TP
+.BI -o\ <filename>|--output=<filename>
+Export to <filename>. 
+.TP
+.BI -W<WxH>|--window_inch=<WxH>
+Window size in inches <WxH> for the exported image.
+.TP
+.BI -w<WxH>|--window=WxH>
+Window size in pixels <WxH> for the  exported image. Autoscales to 
+fit if no resolution is specified (note that the default 72 DPI also 
+changes in that case). If a resolution is specified, it will clip 
+the image to this size.
+.TP
+.BI -x<png/pdf/ps/svg/rs274x/drill>|--export=<png/pdf/ps/svg/rs274x/drill>   
+Export to a file and set the format for the output file.
 
 .SS GTK Options
 .BI --gtk-module= MODULE
@@ -97,12 +141,12 @@ release the Alt key.
 .SH ZOOMING
 Zooming can be handled by either menu choices, keypressing, middle mouse 
 button or scroll wheel. If you press Alt+I you will zoom in and if you
-press Alt+O you will zoom out.If you press middle mouse button you will zoom
+press Alt+O you will zoom out. If you press middle mouse button you will zoom
 out, and if you press Shift and middle mouse button you will zoom in. 
 Scroll wheel works if you enabled that in your X server and mapped it
 to button 4 and 5. You can also zoom in by pressing z and zoom out by pressing
 shift+z (ie Z). You can make the image fit by pressing f (there is also a 
-menu alternativ for this).
+menu alternative for this).
 
 You can also do zooming by outline. Press right mouse button, draw,
 release.  The dashed line shows how the zooming will be dependent on

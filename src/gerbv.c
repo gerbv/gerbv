@@ -981,7 +981,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_GETOPT_LONG
 	    printf("Usage: gerbv [OPTIONS...] [FILE...]\n\n");
 	    printf("Available options:\n");
-	    printf("  -B, --border=<b>                Border around the image in percents of the\n");
+	    printf("  -B, --border=<b>                Border around the image in percent of the\n");
 	    printf("                                  width/height. Defaults to 5%%.\n");
 #ifdef RENDER_USING_GDK
 	    printf("  -D, --dpi=<R>                   Resolution (Dots per inch) for the output\n");
@@ -1030,7 +1030,7 @@ main(int argc, char *argv[])
 #else
 	    printf("Usage: gerbv [OPTIONS...] [FILE...]\n\n");
 	    printf("Available options:\n");
-	    printf("  -B<b>                   Border around the image in percents of the\n");
+	    printf("  -B<b>                   Border around the image in percent of the\n");
 	    printf("                          width/height. Defaults to 5%%.\n");
 #ifdef RENDER_USING_GDK
 	    printf("  -D<R>                   Resolution (Dots per inch) for the output\n");
