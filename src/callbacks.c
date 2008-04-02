@@ -1667,7 +1667,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     
     if (results)
 	free (results);
-
+    render_refresh_rendered_image_on_screen();
 }
 
 gboolean
