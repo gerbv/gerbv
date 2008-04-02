@@ -1630,9 +1630,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 
     if (attr == NULL || n == 0) 
 	{
-	    interface_get_alert_dialog_response ("User editable file formats\n"
-						 "are not yet supported for\n"
-						 "file type:", type);
+	    interface_get_alert_dialog_response ("This file type does not currently have any editable features", "Format editing is currently only supported for Excellon drill file formats.");
 	    return;
 	}
 
