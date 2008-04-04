@@ -574,3 +574,20 @@ gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *t
     g_array_free (apertureNumberTable, TRUE);
 }
 
+void
+gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray) {
+	int i;
+	gerb_net_t *currentNet;
+    
+	for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){	
+		for (i=0; i<selectedNodeArray->len; i++){
+			gerb_selection_item_t sItem = g_array_index (selectedNodeArray,
+				gerb_selection_item_t, i);
+			if (sItem.net == currentNet) {
+				/* we have a match, so just zero out all the important data fields */
+				currentNet->aperture = 0;
+				currentNet->aperture_state = OFF;
+			}
+		}
+	}
+}

@@ -207,6 +207,32 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 	render_refresh_rendered_image_on_screen();
 }
 
+void
+render_draw_selection_box_outline(void) {
+	GdkGC *gc;
+	GdkGCValues values;
+	GdkGCValuesMask values_mask;
+	gint x1, y1, x2, y2, dx, dy;
+
+	memset(&values, 0, sizeof(values));
+	values.function = GDK_XOR;
+	if (!screen.zoom_outline_color.pixel)
+	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
+	values.foreground = screen.zoom_outline_color;
+	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
+	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
+	
+	x1 = MIN(screen.start_x, screen.last_x);
+	y1 = MIN(screen.start_y, screen.last_y);
+	x2 = MAX(screen.start_x, screen.last_x);
+	y2 = MAX(screen.start_y, screen.last_y);
+	dx = x2-x1;
+	dy = y2-y1;
+
+	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
+	gdk_gc_unref(gc);
+}
+
 /* --------------------------------------------------------- */
 void
 render_draw_zoom_outline(gboolean centered)
@@ -419,6 +445,43 @@ render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
 	return;
 }
 
+void render_selection_layer (void){
+#ifndef RENDER_USING_GDK
+	cairo_t *cr;
+	
+	if (screen.selectionRenderData) 
+		cairo_surface_destroy ((cairo_surface_t *) screen.selectionRenderData);
+	screen.selectionRenderData = 
+		(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+		CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
+		screenRenderInfo.displayHeight);
+	if (screen.selectionInfo.type != EMPTY) {
+		cr= cairo_create(screen.selectionRenderData);
+		render_cairo_set_scale_translation(cr, &screenRenderInfo);
+		cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1);
+		/* for now, assume everything in the selection buffer is from one image */
+		gerb_image_t *matchImage;
+		int j;
+		if (screen.selectionInfo.selectedNodeArray->len > 0) {
+			gerb_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
+					gerb_selection_item_t, 0);
+			matchImage = (gerb_image_t *) sItem.image;	
+			dprintf("    .... calling render_image_to_cairo_target on selection layer...\n");
+			for(j = screen.max_files-1; j >= 0; j--) {
+				if ((screen.file[j]) && (screen.file[j]->image == matchImage)) {
+					draw_image_to_cairo_target (cr, screen.file[j]->image,
+						screen.file[j]->transform.inverted,
+						1.0/MAX(screenRenderInfo.scaleFactorX,
+						screenRenderInfo.scaleFactorY),
+						DRAW_SELECTIONS, &screen.selectionInfo);
+				}
+			}
+		}
+		cairo_destroy (cr);
+	}
+#endif
+}
+
 void render_refresh_rendered_image_on_screen (void) {
 	GdkCursor *cursor;
 	
@@ -458,6 +521,9 @@ void render_refresh_rendered_image_on_screen (void) {
 		    cairo_destroy (cr);
 		}
 	    }
+	    /* render the selection layer */
+	    render_selection_layer();
+	    
 	    render_recreate_composite_surface ();
 	}
 #endif
@@ -467,6 +533,64 @@ void render_refresh_rendered_image_on_screen (void) {
 }
 
 #ifndef RENDER_USING_GDK
+void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex) {
+	screen.selectionInfo.lowerLeftX = mouseX;
+	screen.selectionInfo.lowerLeftY = mouseY;
+	/* no need to populate the upperright coordinates for a point_click */
+	screen.selectionInfo.type = POINT_CLICK;
+	
+	/* call draw_image... passing the FILL_SELECTION mode to just search for
+	   nets which match the selection, and fill the selection buffer with them */
+	cairo_t *cr= cairo_create(screen.bufferSurface);
+	
+	/* clear the old selection array */
+	if (screen.selectionInfo.selectedNodeArray->len)
+		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
+			screen.selectionInfo.selectedNodeArray->len);
+	//g_warning ("searching %f %f",screen.selectionInfo.lowerLeftX,screen.selectionInfo.lowerLeftY);
+	render_cairo_set_scale_translation(cr,&screenRenderInfo);
+	draw_image_to_cairo_target (cr, screen.file[activeFileIndex]->image, screen.file[activeFileIndex]->transform.inverted,
+		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
+		FIND_SELECTIONS, &screen.selectionInfo);
+	//g_warning ("selection now has %d elements\n",screen.selectionInfo.selectedNodeArray->len);
+	/* re-render the selection buffer layer */
+	render_selection_layer();
+	render_recreate_composite_surface ();
+	callbacks_force_expose_event_for_screen();
+}
+
+void
+render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
+	gint corner2X, gint corner2Y, gint activeFileIndex) {
+	/* figure out the lower left corner of the box */
+	screen.selectionInfo.lowerLeftX = MIN(corner1X, corner2X);
+	screen.selectionInfo.lowerLeftY = MIN(corner1Y, corner2Y);
+	/* figure out the upper right corner of the box */
+	screen.selectionInfo.upperRightX = MAX(corner1X, corner2X);
+	screen.selectionInfo.upperRightY = MAX(corner1Y, corner2Y);
+	
+	screen.selectionInfo.type = DRAG_BOX;
+	
+	/* call draw_image... passing the FILL_SELECTION mode to just search for
+	   nets which match the selection, and fill the selection buffer with them */
+	cairo_t *cr= cairo_create(screen.bufferSurface);
+	
+	/* clear the old selection array */
+	if (screen.selectionInfo.selectedNodeArray->len)
+		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
+			screen.selectionInfo.selectedNodeArray->len);
+	//g_warning ("searching %f %f",screen.selectionInfo.lowerLeftX,screen.selectionInfo.lowerLeftY);
+	render_cairo_set_scale_translation(cr,&screenRenderInfo);
+	draw_image_to_cairo_target (cr, screen.file[activeFileIndex]->image, screen.file[activeFileIndex]->transform.inverted,
+		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
+		FIND_SELECTIONS, &screen.selectionInfo);
+	//g_warning ("selection now has %d elements\n",screen.selectionInfo.selectedNodeArray->len);
+	/* re-render the selection buffer layer */
+	render_selection_layer();
+	render_recreate_composite_surface ();
+	callbacks_force_expose_event_for_screen();
+}
+
 void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_render_info_t *renderInfo) {
 	int i;
 	render_cairo_set_scale_translation(cr, renderInfo);
@@ -537,7 +661,7 @@ render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t 
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
 	
 	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
-		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), 0, NULL);
+		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL);
 }
 
 void render_recreate_composite_surface () {
@@ -571,8 +695,14 @@ void render_recreate_composite_surface () {
 			}
 			else {
 				cairo_paint (cr);
-			}    
+			}
 		}
+	}
+	/* render the selection layer at the end */
+	if (screen.selectionInfo.type != EMPTY) {
+		cairo_set_source_surface (cr, (cairo_surface_t *) screen.selectionRenderData,
+			                              0, 0);
+		cairo_paint_with_alpha (cr,1.0);
 	}
 	cairo_destroy (cr);
 }

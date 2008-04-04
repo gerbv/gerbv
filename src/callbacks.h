@@ -24,11 +24,15 @@
 
 
 enum {
-	CALLBACKS_SAVE_FILE_AS,
+	CALLBACKS_SAVE_PROJECT_AS,
 	CALLBACKS_SAVE_FILE_PS,
 	CALLBACKS_SAVE_FILE_PDF,
 	CALLBACKS_SAVE_FILE_SVG,
-	CALLBACKS_SAVE_FILE_PNG
+	CALLBACKS_SAVE_FILE_PNG,
+	CALLBACKS_SAVE_FILE_RS274X,
+	CALLBACKS_SAVE_FILE_DRILL,
+	CALLBACKS_SAVE_LAYER_AS,
+	
 } CALLBACKS_SAVE_FILE_TYPE;
 
 void
@@ -48,9 +52,13 @@ callbacks_revert_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
-callbacks_save_activate                       (GtkMenuItem     *menuitem,
+callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
+void
+callbacks_save_project_activate                       (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+                                        
 void
 callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data);

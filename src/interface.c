@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version.s
  *
  * This program is distributed in the hope that it toowill be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -106,6 +106,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *revert;
 	GtkWidget *save;
 	GtkWidget *save_as;
+	GtkWidget *save_layer;
+	GtkWidget *save_as_layer;
 	GtkWidget *separatormenuitem1;
 	GtkWidget *export;
 	GtkWidget *export_menu;
@@ -244,13 +246,6 @@ interface_create_gui (int req_width, int req_height)
 	                        GDK_n, (GdkModifierType) GDK_CONTROL_MASK,
 	                        GTK_ACCEL_VISIBLE);
 
-	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open Project..."));
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_project);
-	gtk_tooltips_set_tip (tooltips, open_project, "Open an existing Gerber Viewer project", NULL);
-
-	image33 = gtk_image_new_from_stock ("gtk-open", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
-
 	open_layer = gtk_menu_item_new_with_mnemonic (_("Open _Layer(s)..."));
 	
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_layer);
@@ -260,20 +255,45 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
 
-	save = gtk_image_menu_item_new_from_stock ("gtk-save", accel_group);
-	gtk_tooltips_set_tip (tooltips, save, "Save the current project", NULL);
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save);
-
+	save_layer = gtk_image_menu_item_new_from_stock ("gtk-save", accel_group);
+	gtk_tooltips_set_tip (tooltips, save_layer, "Save the active layer", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_layer);
+	
 	if (gtk_stock_lookup("gtk-save-as", &item)) {
 	    gchar new[] = "Save _As..."; 
 	    item.label = new;
 	    gtk_stock_add(&item, 1);
 	}
 	
-	save_as = gtk_image_menu_item_new_from_stock ("gtk-save-as", accel_group);
+	save_as_layer = gtk_image_menu_item_new_from_stock ("gtk-save-as", accel_group);
+	gtk_tooltips_set_tip (tooltips, save_as_layer, "Save the active layer to a new file", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as_layer);
+	
+	separator1 = gtk_separator_menu_item_new ();
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
+	gtk_widget_set_sensitive (separator1, FALSE);
+
+	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open Project..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_project);
+	gtk_tooltips_set_tip (tooltips, open_project, "Open an existing Gerber Viewer project", NULL);
+	image33 = gtk_image_new_from_stock ("gtk-open", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
+
+	
+	save = gtk_image_menu_item_new_with_mnemonic ("Save Project");
+	gtk_tooltips_set_tip (tooltips, save, "Save the current project", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save);
+
+	if (gtk_stock_lookup("gtk-save-as", &item)) {
+	    gchar new[] = "Save Project as..."; 
+	    item.label = new;
+	    gtk_stock_add(&item, 1);
+	}
+	
+	save_as = gtk_image_menu_item_new_with_mnemonic ("Save Project As...");
 	gtk_tooltips_set_tip (tooltips, save_as, "Save the current project to a new file", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as);
-
+	
 	separatormenuitem1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separatormenuitem1);
 	gtk_widget_set_sensitive (separatormenuitem1, FALSE);
@@ -289,6 +309,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (export_menu), png);
 	gtk_tooltips_set_tip (tooltips, png, _("Export project to a PNG file..."), NULL);
 
+	GtkWidget *rs274x,*drill;
 #ifndef RENDER_USING_GDK
 	GtkWidget *pdf;
 	GtkWidget *svg;
@@ -306,7 +327,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (export_menu), postscript);
 	gtk_tooltips_set_tip (tooltips, postscript, _("Export project to a PostScript file"), NULL);
 #endif
-
+	rs274x = gtk_menu_item_new_with_mnemonic (_("RS-274X (Gerber)..."));
+	gtk_container_add (GTK_CONTAINER (export_menu), rs274x);
+	gtk_tooltips_set_tip (tooltips, rs274x, _("Export layer to a RS-274X (Gerber) file"), NULL);
+	
+	drill = gtk_menu_item_new_with_mnemonic (_("Excellon drill..."));
+	gtk_container_add (GTK_CONTAINER (export_menu), drill);
+	gtk_tooltips_set_tip (tooltips, drill, _("Export layer to an Excellon drill file"), NULL);
+	
 	separator1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
 	gtk_widget_set_sensitive (separator1, FALSE);
@@ -516,13 +544,17 @@ interface_create_gui (int req_width, int req_height)
 					pointerimage);
 	gtk_tooltips_set_tip (tooltips, toggletoolbutton_pointer, "Select objects on the screen", NULL);	
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pointer);
-
+	/* FIXME: the program may not start up in FAST mode due to a project load, so
+	   we really need to figure out how to check */
+	gtk_widget_set_sensitive (toggletoolbutton_pointer, FALSE);
+	
 	toggletoolbutton_pan = (GtkWidget*) gtk_toggle_tool_button_new();
 	moveimage = gtk_image_new_from_pixbuf(movepixbuf);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_pan),
 					moveimage);
 	gtk_tooltips_set_tip (tooltips, toggletoolbutton_pan, "Pan by left clicking and dragging", NULL);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pan);
+	
 
 	toggletoolbutton_zoom = (GtkWidget*) gtk_toggle_tool_button_new();
 	zoomimage = gtk_image_new_from_pixbuf(zoompixbuf);
@@ -717,12 +749,18 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) revert, "activate",
 	                  G_CALLBACK (callbacks_revert_activate),
 	                  NULL);
+	g_signal_connect ((gpointer) save_layer, "activate",
+	                  G_CALLBACK (callbacks_save_layer_activate),
+	                  NULL);
+	g_signal_connect ((gpointer) save_as_layer, "activate",
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_LAYER_AS);
 	g_signal_connect ((gpointer) save, "activate",
-	                  G_CALLBACK (callbacks_save_activate),
+	                  G_CALLBACK (callbacks_save_project_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) save_as, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
-	                  (gpointer) CALLBACKS_SAVE_FILE_AS);
+	                  (gpointer) CALLBACKS_SAVE_PROJECT_AS);
 #ifdef EXPORT_PNG
 	g_signal_connect ((gpointer) png, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
@@ -739,7 +777,12 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) postscript, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_PS);
-
+	g_signal_connect ((gpointer) rs274x, "activate",
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_RS274X);
+	g_signal_connect ((gpointer) drill, "activate",
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_DRILL);
 
 #if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) print, "activate",
@@ -792,7 +835,7 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_new_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_save, "clicked",
-	                  G_CALLBACK (callbacks_save_activate),
+	                  G_CALLBACK (callbacks_save_layer_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_open, "clicked",
 	                  G_CALLBACK (callbacks_open_layer_activate),
@@ -1085,6 +1128,8 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.layerTree = tree;
 	screen.win.treeIsUpdating = FALSE;
 
+	screen.selectionInfo.selectedNodeArray = g_array_new (FALSE,
+			FALSE, sizeof(gerb_selection_item_t));
 	/* Make pan tool default */
 	callbacks_change_tool (NULL, (gpointer) 1);
 

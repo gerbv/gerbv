@@ -297,6 +297,20 @@ gerbv_open_layer_from_filename(gchar *filename)
     }
 } /* gerbv_open_layer_from_filename */
 
+gboolean 
+gerbv_save_layer_from_index(gint index, gchar *filename) 
+{
+    if (strcmp (screen.file[index]->image->info->type,"RS274-X (Gerber) File")==0) {
+	export_rs274x_file_from_image (filename, screen.file[index]->image);
+    }
+    else if (strcmp (screen.file[index]->image->info->type,"Excellon Drill File")==0) {
+	export_drill_file_from_image (filename, screen.file[index]->image);
+    }
+    else {
+	return FALSE;
+    }
+    return TRUE;
+} /* gerbv_save_project_from_filename */
 
 void 
 gerbv_save_project_from_filename(gchar *filename) 

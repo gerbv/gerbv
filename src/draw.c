@@ -45,15 +45,123 @@
 static void
 draw_fill (cairo_t *cairoTarget, gchar drawMode, gerb_selection_info_t *selectionInfo,
 		gerb_image_t *image, struct gerb_net *net){
-
-	cairo_fill (cairoTarget);
+	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_SELECTIONS)) {
+		//if (drawMode == DRAW_SELECTIONS)
+			//g_warning ("drawing selection");
+		cairo_fill (cairoTarget);
+	}
+	else {
+		if (selectionInfo->type == POINT_CLICK) {
+			/* calculate the coordinate of the user's click in the current
+			   transformation matrix */
+			gdouble mouseX,mouseY;
+			mouseX = selectionInfo->lowerLeftX;
+			mouseY = selectionInfo->lowerLeftY;
+			//g_warning ("old mouse %f %f",mouseX,mouseY);
+			cairo_device_to_user  (cairoTarget, &mouseX, &mouseY);
+			//g_warning ("new mouse %f %f\n",mouseX,mouseY);
+			//gdouble x1,x2,y1,y2;
+		
+			//cairo_fill_extents (cairoTarget, &x1, &y1, &x2, &y2);
+			//g_warning ("ext1 %f %f %f %f\n",x1,y1,x2,y2);
+			
+			if (cairo_in_fill (cairoTarget, mouseX,
+				mouseY)) {
+				//g_warning ("found fill point match\n");
+				/* add the net to the selection array */
+				gerb_selection_item_t sItem = {image, net};
+				
+				g_array_append_val (selectionInfo->selectedNodeArray, sItem); 
+			}
+		}
+		else if (selectionInfo->type == DRAG_BOX) {
+			gdouble x1,x2,y1,y2;
+			
+			gdouble corner1X,corner1Y,corner2X,corner2Y;
+			gdouble minX,minY,maxX,maxY;
+			
+			corner1X = selectionInfo->lowerLeftX;
+			corner1Y = selectionInfo->lowerLeftY;
+			corner2X = selectionInfo->upperRightX;
+			corner2Y = selectionInfo->upperRightY;
+			//g_warning ("old mouse %f %f",mouseX,mouseY);
+			cairo_device_to_user  (cairoTarget, &corner1X, &corner1Y);
+			cairo_device_to_user  (cairoTarget, &corner2X, &corner2Y);
+			minX = MIN(corner1X,corner2X);
+			maxX = MAX(corner1X,corner2X);
+			minY = MIN(corner1Y,corner2Y);
+			maxY = MAX(corner1Y,corner2Y);
+			cairo_fill_extents (cairoTarget, &x1, &y1, &x2, &y2);
+			
+			//g_warning ("extents %f %f %f %f",x1,y1,x2,y2);
+			if   ((minX < x1) && (minY < y1) && (maxX > x2) && (maxY > y2)) {
+				//g_warning ("found stroke drag match %f %f %f %f",x1,y1,x2,y2);
+				/* add the net to the selection array */
+				gerb_selection_item_t sItem = {image, net};
+				
+				g_array_append_val (selectionInfo->selectedNodeArray, sItem); 
+			}
+		}
+		/* clear the path, since we didn't actually draw it and cairo
+			 doesn't reset it after an in_fill call */
+		cairo_new_path (cairoTarget);
+	}
 }
 
 static void
 draw_stroke (cairo_t *cairoTarget, gchar drawMode, gerb_selection_info_t *selectionInfo,
 		gerb_image_t *image, struct gerb_net *net){
-
-	cairo_stroke (cairoTarget);
+	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_SELECTIONS))
+		cairo_stroke (cairoTarget);
+	else {
+		if (selectionInfo->type == POINT_CLICK) {
+			//g_warning ("checking stroke %f %f",selectionInfo->lowerLeftX,selectionInfo->lowerLeftY);
+			gdouble mouseX,mouseY;
+			mouseX = selectionInfo->lowerLeftX;
+			mouseY = selectionInfo->lowerLeftY;
+			//g_warning ("old mouse %f %f",mouseX,mouseY);
+			cairo_device_to_user  (cairoTarget, &mouseX, &mouseY);
+			
+			if (cairo_in_stroke (cairoTarget, mouseX, mouseY)) {
+				//g_warning ("found stroke point match\n");
+				/* add the net to the selection array */
+				gerb_selection_item_t sItem = {image, net};
+				
+				g_array_append_val (selectionInfo->selectedNodeArray, sItem); 
+			}
+		}
+		else if (selectionInfo->type == DRAG_BOX) {
+			gdouble x1,x2,y1,y2;
+			
+			gdouble corner1X,corner1Y,corner2X,corner2Y;
+			gdouble minX,minY,maxX,maxY;
+			
+			corner1X = selectionInfo->lowerLeftX;
+			corner1Y = selectionInfo->lowerLeftY;
+			corner2X = selectionInfo->upperRightX;
+			corner2Y = selectionInfo->upperRightY;
+			//g_warning ("old mouse %f %f",mouseX,mouseY);
+			cairo_device_to_user  (cairoTarget, &corner1X, &corner1Y);
+			cairo_device_to_user  (cairoTarget, &corner2X, &corner2Y);
+			minX = MIN(corner1X,corner2X);
+			maxX = MAX(corner1X,corner2X);
+			minY = MIN(corner1Y,corner2Y);
+			maxY = MAX(corner1Y,corner2Y);
+			cairo_stroke_extents (cairoTarget, &x1, &y1, &x2, &y2);
+			
+			//g_warning ("extents %f %f %f %f",x1,y1,x2,y2);
+			if   ((minX < x1) && (minY < y1) && (maxX > x2) && (maxY > y2)) {
+				//g_warning ("found stroke drag match %f %f %f %f",x1,y1,x2,y2);
+				/* add the net to the selection array */
+				gerb_selection_item_t sItem = {image, net};
+				
+				g_array_append_val (selectionInfo->selectedNodeArray, sItem); 
+			}
+		}
+		/* clear the path, since we didn't actually draw it and cairo
+			 doesn't reset it after an in_fill call */
+		cairo_new_path (cairoTarget);
+	}
 }
 
 /*
@@ -459,7 +567,23 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 		draw_apply_netstate_transformation (cairoTarget, net->state);
 		oldState = net->state;	
 	}
-
+	/* if we are only drawing from the selection buffer, search if this net is
+	   in the buffer */
+	if (drawMode == DRAW_SELECTIONS) {
+		int i;
+		gboolean foundNet = FALSE;
+		
+		for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
+			gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+				gerb_selection_item_t, i);
+			if (sItem.net == net) {
+				//g_warning ("match\n");
+				foundNet = TRUE;
+			}	
+		}
+		if (!foundNet)
+			continue;
+	}
 	for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
 	    for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
 		double sr_x = repeat_i * repeat_dist_X;

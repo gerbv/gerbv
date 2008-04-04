@@ -48,6 +48,22 @@ enum mirror_state_t {NOMIRROR, FLIPA, FLIPB, FLIPAB};
 enum axis_select_t {NOSELECT, SWAPAB};
 enum image_justify_type_t {NOJUSTIFY, LOWERLEFT, CENTERJUSTIFY};
 
+enum selection_t {EMPTY, POINT_CLICK, DRAG_BOX};
+
+typedef struct {
+	gpointer image;
+	gpointer net;
+} gerb_selection_item_t;
+
+typedef struct {
+	enum selection_t type;
+	gdouble lowerLeftX;
+	gdouble lowerLeftY;
+	gdouble upperRightX;
+	gdouble upperRightY;
+	GArray *selectedNodeArray;
+} gerb_selection_info_t;
+
 typedef struct {
     gdouble translateX;
     gdouble translateY;
@@ -218,6 +234,9 @@ gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *t
 
 gerb_image_t *
 gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform);
+
+void
+gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray);
 
 #ifdef __cplusplus
 }

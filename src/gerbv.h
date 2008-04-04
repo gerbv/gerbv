@@ -30,6 +30,9 @@ extern "C" {
 
 int gerbv_revert_file(int idx);
 
+gboolean 
+gerbv_save_layer_from_index(gint index, gchar *filename);
+
 #ifdef __cplusplus
 }
 #endif

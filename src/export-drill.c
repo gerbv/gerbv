@@ -83,7 +83,7 @@ export_drill_file_from_image (gchar *filename, gerb_image_t *image) {
 		
 		/* run through all nets and look for drills using this aperture */
 		for (currentNet = image->netlist; currentNet; currentNet = currentNet->next){
-			if (currentNet->aperture == currentAperture) {
+			if ((currentNet->aperture == currentAperture)&&(currentNet->aperture_state == FLASH)) {
 				long xVal,yVal;
 				xVal = (long) round(currentNet->stop_x * 10000.0);
 				yVal = (long) round(currentNet->stop_y * 10000.0);

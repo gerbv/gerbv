@@ -78,6 +78,8 @@
 
 #include "render.h"
 #include "exportimage.h"
+#include "export-rs274x.h"
+#include "export-drill.h"
 
 #define dprintf if(DEBUG) printf
 
@@ -102,6 +104,7 @@ void gerbv_revert_all_files (void);
 void gerbv_unload_all_layers (void);
 void gerbv_unload_layer (int index);
 void gerbv_change_layer_order (gint oldPosition, gint newPosition);
+gint callbacks_get_selected_row_index  (void);
 
 GtkWidget *
 callbacks_generate_alert_dialog (gchar *primaryText, gchar *secondaryText){
@@ -238,26 +241,41 @@ callbacks_revert_activate                     (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-callbacks_save_activate                       (GtkMenuItem     *menuitem,
+callbacks_save_project_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	if (screen.project)
 		gerbv_save_project_from_filename (screen.project);
 	else
-		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_FILE_AS);
+		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
 	return;
 }
 
 /* --------------------------------------------------------- */
 void
-callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
+callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
+                                        gpointer         user_data)
+{
+	gint index=callbacks_get_selected_row_index();
+
+	if (index >= 0) {
+		if (!gerbv_save_layer_from_index (index, screen.file[index]->fullPathname)) {
+			interface_get_alert_dialog_response ("Gerber Viewer cannot export this file type", NULL);
+		}
+	}
+	return;
+}
+
+/* --------------------------------------------------------- */
+void
+callbacks_generic_save_activate (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gchar *filename=NULL;
 	gint processType = GPOINTER_TO_INT (user_data);
 	gchar *windowTitle=NULL;
 	
-	if (processType == CALLBACKS_SAVE_FILE_AS)
+	if (processType == CALLBACKS_SAVE_PROJECT_AS)
 		windowTitle = g_strdup ("Save project as...");
 	else if (processType == CALLBACKS_SAVE_FILE_PS)
 		windowTitle = g_strdup ("Export PS file as...");
@@ -267,14 +285,20 @@ callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
 		windowTitle = g_strdup ("Export SVG file as...");
 	else if (processType == CALLBACKS_SAVE_FILE_PNG)
 		windowTitle = g_strdup ("Export PNG file as...");
-	
+	else if (processType == CALLBACKS_SAVE_FILE_RS274X)
+		windowTitle = g_strdup ("Export RS-274X file as...");
+	else if (processType == CALLBACKS_SAVE_FILE_DRILL)
+		windowTitle = g_strdup ("Export Excellon drill file as...");
+	else if (processType == CALLBACKS_SAVE_LAYER_AS)
+		windowTitle = g_strdup ("Save layer as...");
+		
 	screen.win.gerber = 
 	gtk_file_chooser_dialog_new (windowTitle, NULL,
 				     GTK_FILE_CHOOSER_ACTION_SAVE,
 				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				     GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
 				     NULL);
-	free (windowTitle);
+	g_free (windowTitle);
 	
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
@@ -283,7 +307,7 @@ callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
 	gtk_widget_destroy (screen.win.gerber);
 
 	if (filename) {
-		if (processType == CALLBACKS_SAVE_FILE_AS) {
+		if (processType == CALLBACKS_SAVE_PROJECT_AS) {
 			gerbv_save_as_project_from_filename (filename);
 			rename_main_window(filename, NULL);
 		}
@@ -297,8 +321,23 @@ callbacks_generic_save_activate                    (GtkMenuItem     *menuitem,
 		else if (processType == CALLBACKS_SAVE_FILE_PNG)
 			exportimage_export_to_png_file (&screenRenderInfo, filename);
 #endif
-		render_refresh_rendered_image_on_screen();
+		else if (processType == CALLBACKS_SAVE_LAYER_AS) {
+			gint index=callbacks_get_selected_row_index();
+			
+			gerbv_save_layer_from_index (index, filename);
+		}
+		else if (processType == CALLBACKS_SAVE_FILE_RS274X) {
+			gint index=callbacks_get_selected_row_index();
+			
+			export_rs274x_file_from_image (filename, screen.file[index]->image);
+		}
+		else if (processType == CALLBACKS_SAVE_FILE_DRILL) {
+			gint index=callbacks_get_selected_row_index();
+			
+			export_drill_file_from_image (filename, screen.file[index]->image);
+		}
 	}
+	g_free (filename);
 	return;
 }
 
@@ -1999,6 +2038,14 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 			render_draw_measure_distance();
 			break;
 		}
+		case IN_SELECTION_DRAG: {
+			if (screen.last_x || screen.last_y)
+				render_draw_selection_box_outline();
+			screen.last_x = x;
+			screen.last_y = y;
+			render_draw_selection_box_outline();
+			break;
+		}
 		default:
 			screen.last_x = x;
 			screen.last_y = y;
@@ -2018,7 +2065,15 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 		case 1 :
 			if (screen.tool == POINTER) {
 				/* select */
-			        break; /* No op for now */
+#ifndef RENDER_USING_GDK
+				/* selection will only work with cairo, so do nothing if it's
+				   not compiled */
+				screen.state = IN_SELECTION_DRAG;
+				screen.start_x = event->x;
+				screen.start_y = event->y;
+#else
+				break;
+#endif
 			}
 			else if (screen.tool == PAN) {
 				/* Plain panning */
@@ -2099,14 +2154,21 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 				render_calculate_zoom_from_outline (widget, event);
 			callbacks_switch_to_normal_tool_cursor (screen.tool);
 		}
-		if (screen.tool == POINTER) {
-		}
-		else if (screen.tool == PAN) {
-			screen.state = NORMAL;
-		}
-		else if (screen.tool == ZOOM) {
-		}
-		else if (screen.tool == MEASURE) {
+		else if (screen.state == IN_SELECTION_DRAG) {
+#ifndef RENDER_USING_GDK
+			/* selection will only work with cairo, so do nothing if it's
+			   not compiled */
+			gint index=callbacks_get_selected_row_index();
+			/* determine if this was just a click or a box drag */
+			if (index >= 0) {
+				if ((fabs((double)(screen.last_x - screen.start_x)) < 2) &&
+					 (fabs((double)(screen.last_y - screen.start_y)) < 2))
+					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index);
+				else
+					render_fill_selection_buffer_from_mouse_drag(event->x,event->y,
+						screen.start_x,screen.start_y,index);
+			}
+#endif
 		}
 		screen.last_x = screen.last_y = 0;
 		screen.state = NORMAL;
@@ -2118,8 +2180,8 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 gboolean
 callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
-	switch (screen.state) {
-		case NORMAL:
+	//switch (screen.state) {
+		//case NORMAL:
 			switch(event->keyval) {
 				case GDK_f:
 				case GDK_F:
@@ -2144,13 +2206,25 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 				case GDK_F4:
 					callbacks_change_tool (NULL, (gpointer) 3);
 					break;
+				case GDK_Delete:
+					if (screen.selectionInfo.type != EMPTY) {
+						if (!interface_get_alert_dialog_response ("The selected objects will be permanently deleted","Do you want to proceed?"))
+							return TRUE;
+						gint index=callbacks_get_selected_row_index();
+						if (index >= 0) {
+							gerb_image_delete_selected_nets (screen.file[index]->image,
+								screen.selectionInfo.selectedNodeArray); 
+							render_refresh_rendered_image_on_screen ();
+						}
+					}
+					break;
 				default:
 					break;
 			}
-			break;
-		default:
-			break;
-	}
+			//break;
+		//default:
+		//	break;
+	//}
 	    
 	/* Escape may be used to abort outline zoom and just plain repaint */
 	if (event->keyval == GDK_Escape) {
@@ -2236,6 +2310,18 @@ callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer 
 	
 	dprintf ("%s():  activeRow = %d\n", __FUNCTION__, activeRow);
 	screenRenderInfo.renderType = activeRow;
+	
+	/* grey out the pointer tool if we just switched to Fast, since we can't
+	   draw the selections in GDK */
+	if (screenRenderInfo.renderType < 2) {
+		gtk_widget_set_sensitive (screen.win.toolButtonPointer, FALSE);
+		/* and, if we were in selection mode, drop the user back to pan mode */
+		if (screen.tool == POINTER)
+			callbacks_change_tool (NULL, (gpointer) 1);	
+	}
+	else
+		gtk_widget_set_sensitive (screen.win.toolButtonPointer, TRUE);
+
 	render_refresh_rendered_image_on_screen();
 }
 

@@ -26,6 +26,7 @@
 
 #include <gdk/gdk.h>
 #include "gerber.h"
+#include "gerbv_screen.h"
 #include <cairo.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>
@@ -33,12 +34,10 @@
 
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
-
-typedef struct {
-	gdouble placeHolder;
-} gerb_selection_info_t;
+enum draw_mode_t {DRAW_IMAGE, DRAW_SELECTIONS, FIND_SELECTIONS};
 
 #endif /* DRAW_H */
+
 
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap

@@ -46,7 +46,8 @@
 #define COORD2MILS(c) ((c)*1000.0)
 #define COORD2MMS(c) ((c)*25.4)
 
-typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED, SCROLLBAR} gerbv_state_t;
+typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED,
+		IN_SELECTION_DRAG, SCROLLBAR} gerbv_state_t;
 typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
 typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
 
@@ -65,7 +66,6 @@ typedef struct {
 	double x1, y1;
 	double x2, y2;
 } gerbv_bbox_t;
-
 
 typedef struct {
     GtkWidget *drawing_area;
@@ -105,6 +105,7 @@ typedef struct {
     } win;
     gpointer windowSurface;
     gpointer bufferSurface;
+    gpointer selectionRenderData;
     int max_files;
     gerbv_fileinfo_t **file;
     int curr_index;
@@ -128,7 +129,8 @@ typedef struct {
     gboolean centered_outline_zoom;
 
     int selected_layer;         /* Selected layer by Alt+keypad */
-
+    gerb_selection_info_t selectionInfo;
+    
     gint last_x;
     gint last_y;
     gint start_x;		/* Zoom box/measure start coordinates */
