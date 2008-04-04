@@ -533,12 +533,8 @@ void render_refresh_rendered_image_on_screen (void) {
 }
 
 #ifndef RENDER_USING_GDK
-void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex) {
-	screen.selectionInfo.lowerLeftX = mouseX;
-	screen.selectionInfo.lowerLeftY = mouseY;
-	/* no need to populate the upperright coordinates for a point_click */
-	screen.selectionInfo.type = POINT_CLICK;
-	
+void
+render_find_selected_objects_and_refresh_display (gint activeFileIndex){
 	/* call draw_image... passing the FILL_SELECTION mode to just search for
 	   nets which match the selection, and fill the selection buffer with them */
 	cairo_t *cr= cairo_create(screen.bufferSurface);
@@ -547,16 +543,25 @@ void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gi
 	if (screen.selectionInfo.selectedNodeArray->len)
 		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
 			screen.selectionInfo.selectedNodeArray->len);
-	//g_warning ("searching %f %f",screen.selectionInfo.lowerLeftX,screen.selectionInfo.lowerLeftY);
+
 	render_cairo_set_scale_translation(cr,&screenRenderInfo);
 	draw_image_to_cairo_target (cr, screen.file[activeFileIndex]->image, screen.file[activeFileIndex]->transform.inverted,
 		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
 		FIND_SELECTIONS, &screen.selectionInfo);
-	//g_warning ("selection now has %d elements\n",screen.selectionInfo.selectedNodeArray->len);
+
 	/* re-render the selection buffer layer */
 	render_selection_layer();
 	render_recreate_composite_surface ();
 	callbacks_force_expose_event_for_screen();
+}
+
+void
+render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex) {
+	screen.selectionInfo.lowerLeftX = mouseX;
+	screen.selectionInfo.lowerLeftY = mouseY;
+	/* no need to populate the upperright coordinates for a point_click */
+	screen.selectionInfo.type = POINT_CLICK;
+	render_find_selected_objects_and_refresh_display (activeFileIndex);
 }
 
 void
@@ -570,25 +575,7 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	screen.selectionInfo.upperRightY = MAX(corner1Y, corner2Y);
 	
 	screen.selectionInfo.type = DRAG_BOX;
-	
-	/* call draw_image... passing the FILL_SELECTION mode to just search for
-	   nets which match the selection, and fill the selection buffer with them */
-	cairo_t *cr= cairo_create(screen.bufferSurface);
-	
-	/* clear the old selection array */
-	if (screen.selectionInfo.selectedNodeArray->len)
-		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
-			screen.selectionInfo.selectedNodeArray->len);
-	//g_warning ("searching %f %f",screen.selectionInfo.lowerLeftX,screen.selectionInfo.lowerLeftY);
-	render_cairo_set_scale_translation(cr,&screenRenderInfo);
-	draw_image_to_cairo_target (cr, screen.file[activeFileIndex]->image, screen.file[activeFileIndex]->transform.inverted,
-		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
-		FIND_SELECTIONS, &screen.selectionInfo);
-	//g_warning ("selection now has %d elements\n",screen.selectionInfo.selectedNodeArray->len);
-	/* re-render the selection buffer layer */
-	render_selection_layer();
-	render_recreate_composite_surface ();
-	callbacks_force_expose_event_for_screen();
+	render_find_selected_objects_and_refresh_display (activeFileIndex);
 }
 
 void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_render_info_t *renderInfo) {
