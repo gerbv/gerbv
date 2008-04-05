@@ -44,36 +44,33 @@
 static void
 draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStroke,
 		gerb_selection_info_t *selectionInfo, gerb_image_t *image, struct gerb_net *net){
+	gdouble corner1X,corner1Y,corner2X,corner2Y;
+
+	corner1X = selectionInfo->lowerLeftX;
+	corner1Y = selectionInfo->lowerLeftY;
+	corner2X = selectionInfo->upperRightX;
+	corner2Y = selectionInfo->upperRightY;
+
+	/* calculate the coordinate of the user's click in the current
+	   transformation matrix */
+	cairo_device_to_user  (cairoTarget, &corner1X, &corner1Y);
+	cairo_device_to_user  (cairoTarget, &corner2X, &corner2Y);
 	if (selectionInfo->type == POINT_CLICK) {
-		gdouble mouseX,mouseY;
-		/* calculate the coordinate of the user's click in the current
-		   transformation matrix */
-		mouseX = selectionInfo->lowerLeftX;
-		mouseY = selectionInfo->lowerLeftY;
-		cairo_device_to_user  (cairoTarget, &mouseX, &mouseY);
 		/* use the cairo in_fill routine to see if the point is within the
 		   drawn area */
-		if ((isStroke && cairo_in_stroke (cairoTarget, mouseX, mouseY)) ||
-			(!isStroke && cairo_in_fill (cairoTarget, mouseX, mouseY))) {
+		if ((isStroke && cairo_in_stroke (cairoTarget, corner1X, corner1Y)) ||
+			(!isStroke && cairo_in_fill (cairoTarget, corner1X, corner1Y))) {
 			/* add the net to the selection array */
 			gerb_selection_item_t sItem = {image, net};
-			g_array_append_val (selectionInfo->selectedNodeArray, sItem); 
+			g_array_append_val (selectionInfo->selectedNodeArray, sItem);
 		}
 	}
 	else if (selectionInfo->type == DRAG_BOX) {
 		gdouble x1,x2,y1,y2;
-		gdouble corner1X,corner1Y,corner2X,corner2Y;
 		gdouble minX,minY,maxX,maxY;
 		
-		corner1X = selectionInfo->lowerLeftX;
-		corner1Y = selectionInfo->lowerLeftY;
-		corner2X = selectionInfo->upperRightX;
-		corner2Y = selectionInfo->upperRightY;
-
-		/* calculate the coordinate of the user's click in the current
-		   transformation matrix */
-		cairo_device_to_user  (cairoTarget, &corner1X, &corner1Y);
-		cairo_device_to_user  (cairoTarget, &corner2X, &corner2Y);
+		/* we can't assume the "lowerleft" corner is actually in the lower left,
+		   since the cairo transformation matrix may be mirrored,etc */
 		minX = MIN(corner1X,corner2X);
 		maxX = MAX(corner1X,corner2X);
 		minY = MIN(corner1Y,corner2Y);
@@ -526,10 +523,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 		for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
 			gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
 				gerb_selection_item_t, i);
-			if (sItem.net == net) {
-				//g_warning ("match\n");
+			if (sItem.net == net)
 				foundNet = TRUE;
-			}	
 		}
 		if (!foundNet)
 			continue;

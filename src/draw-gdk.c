@@ -705,9 +705,9 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int
-image2pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
+draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
 	     double scale, double trans_x, double trans_y,
-	     enum polarity_t polarity)
+	     enum polarity_t polarity, gchar drawMode, gerb_selection_info_t *selectionInfo)
 {
     GdkGC *gc = gdk_gc_new(*pixmap);
     GdkGC *pgc = gdk_gc_new(*pixmap);
@@ -764,6 +764,21 @@ image2pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	repeat_Y = net->layer->stepAndRepeat.Y;
 	repeat_dist_X = net->layer->stepAndRepeat.dist_X;
 	repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
+	
+	if (drawMode == DRAW_SELECTIONS) {
+		int i;
+		gboolean foundNet = FALSE;
+		
+		for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
+			gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+				gerb_selection_item_t, i);
+			if (sItem.net == net)
+				foundNet = TRUE;
+		}
+		if (!foundNet)
+			continue;
+	}
+	
       for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
 	for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
 	  double sr_x = repeat_i * repeat_dist_X;

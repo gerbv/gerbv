@@ -533,26 +533,52 @@ void render_refresh_rendered_image_on_screen (void) {
 }
 
 #ifndef RENDER_USING_GDK
+
+gint
+render_create_cairo_buffer_surface () {
+	if (screen.bufferSurface) {
+		cairo_surface_destroy (screen.bufferSurface);
+		screen.bufferSurface = NULL;
+	}
+	if (!screen.windowSurface)
+		return 0;
+
+	screen.bufferSurface= cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+	                                    CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
+	                                    screenRenderInfo.displayHeight);
+	return 1;
+}
+
 void
 render_find_selected_objects_and_refresh_display (gint activeFileIndex){
-	/* call draw_image... passing the FILL_SELECTION mode to just search for
-	   nets which match the selection, and fill the selection buffer with them */
-	cairo_t *cr= cairo_create(screen.bufferSurface);
-	
 	/* clear the old selection array */
 	if (screen.selectionInfo.selectedNodeArray->len)
 		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
 			screen.selectionInfo.selectedNodeArray->len);
 
+	/* make sure we have a bufferSurface...if we start up in FAST mode, we may not
+	   have one yet, but we need it for selections */
+	if (!render_create_cairo_buffer_surface())
+		return;
+
+	/* call draw_image... passing the FILL_SELECTION mode to just search for
+	   nets which match the selection, and fill the selection buffer with them */
+	cairo_t *cr= cairo_create(screen.bufferSurface);	
 	render_cairo_set_scale_translation(cr,&screenRenderInfo);
 	draw_image_to_cairo_target (cr, screen.file[activeFileIndex]->image, screen.file[activeFileIndex]->transform.inverted,
 		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
 		FIND_SELECTIONS, &screen.selectionInfo);
-
+	cairo_destroy (cr);
+	
 	/* re-render the selection buffer layer */
-	render_selection_layer();
-	render_recreate_composite_surface ();
-	callbacks_force_expose_event_for_screen();
+	if (screenRenderInfo.renderType < 2){
+		render_refresh_rendered_image_on_screen ();
+	}
+	else {
+		render_selection_layer();
+		render_recreate_composite_surface ();
+		callbacks_force_expose_event_for_screen();
+	}
 }
 
 void
@@ -654,16 +680,8 @@ render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t 
 void render_recreate_composite_surface () {
 	gint i;
 	
-	if (screen.bufferSurface) {
-		cairo_surface_destroy (screen.bufferSurface);
-		screen.bufferSurface = NULL;
-	}
-	if (!screen.windowSurface)
+	if (!render_create_cairo_buffer_surface())
 		return;
-
-	screen.bufferSurface= cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-	                                    CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
-	                                    screenRenderInfo.displayHeight);
 
 	cairo_t *cr= cairo_create(screen.bufferSurface);
 	/* fill the background with the appropriate color */
@@ -772,16 +790,47 @@ render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
 			*/
 			dprintf("  .... calling image2pixmap on image %d...\n", i);
 			// Dirty scaling solution when using GDK; simply use scaling factor for x-axis, ignore y-axis
-			image2pixmap(&clipmask, screen.file[i]->image,
+			draw_gdk_image_to_pixmap(&clipmask, screen.file[i]->image,
 				renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
 				(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-				polarity);
+				polarity, DRAW_IMAGE, NULL);
 
 			/* 
 			* Set clipmask and draw the clipped out image onto the
 			* screen pixmap. Afterwards we remove the clipmask, else
 			* it will screw things up when run this loop again.
 			*/
+			gdk_gc_set_clip_mask(gc, clipmask);
+			gdk_gc_set_clip_origin(gc, 0, 0);
+			gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
+			gdk_gc_set_clip_mask(gc, NULL);
+		}
+	}
+	/* render the selection group to the top of the output */
+	if (screen.selectionInfo.type != EMPTY) {
+		if (!screen.selection_color.pixel)
+	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.selection_color, FALSE, TRUE);
+	 		
+		gdk_gc_set_foreground(gc, &screen.selection_color);
+		gdk_gc_set_function(gc, GDK_COPY);
+		gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
+		
+		/* for now, assume everything in the selection buffer is from one image */
+		gerb_image_t *matchImage;
+		int j;
+		if (screen.selectionInfo.selectedNodeArray->len > 0) {
+			gerb_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
+					gerb_selection_item_t, 0);
+			matchImage = (gerb_image_t *) sItem.image;	
+
+			for(j = screen.max_files-1; j >= 0; j--) {
+				if ((screen.file[j]) && (screen.file[j]->image == matchImage)) {
+					draw_gdk_image_to_pixmap(&clipmask, screen.file[j]->image,
+						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
+						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
+						POSITIVE, DRAW_SELECTIONS, &screen.selectionInfo);
+				}
+			}
 			gdk_gc_set_clip_mask(gc, clipmask);
 			gdk_gc_set_clip_origin(gc, 0, 0);
 			gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);

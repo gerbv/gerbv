@@ -2311,17 +2311,6 @@ callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer 
 	dprintf ("%s():  activeRow = %d\n", __FUNCTION__, activeRow);
 	screenRenderInfo.renderType = activeRow;
 	
-	/* grey out the pointer tool if we just switched to Fast, since we can't
-	   draw the selections in GDK */
-	if (screenRenderInfo.renderType < 2) {
-		gtk_widget_set_sensitive (screen.win.toolButtonPointer, FALSE);
-		/* and, if we were in selection mode, drop the user back to pan mode */
-		if (screen.tool == POINTER)
-			callbacks_change_tool (NULL, (gpointer) 1);	
-	}
-	else
-		gtk_widget_set_sensitive (screen.win.toolButtonPointer, TRUE);
-
 	render_refresh_rendered_image_on_screen();
 }
 
@@ -2338,7 +2327,6 @@ callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_d
 	if (screen.tool == MEASURE)
 		callbacks_update_statusbar_measured_distance (screen.win.lastMeasuredX,
 							screen.win.lastMeasuredY);
-		
 }
 
 void

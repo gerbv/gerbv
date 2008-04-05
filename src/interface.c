@@ -544,9 +544,6 @@ interface_create_gui (int req_width, int req_height)
 					pointerimage);
 	gtk_tooltips_set_tip (tooltips, toggletoolbutton_pointer, "Select objects on the screen", NULL);	
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pointer);
-	/* FIXME: the program may not start up in FAST mode due to a project load, so
-	   we really need to figure out how to check */
-	gtk_widget_set_sensitive (toggletoolbutton_pointer, FALSE);
 	
 	toggletoolbutton_pan = (GtkWidget*) gtk_toggle_tool_button_new();
 	moveimage = gtk_image_new_from_pixbuf(movepixbuf);
@@ -1018,9 +1015,11 @@ interface_create_gui (int req_width, int req_height)
 	 */
 	GdkColor zoom_outline_color = {0, 50000, 50000, 50000};
 	GdkColor dist_measure_color = {0, 60000, 30000, 65000};       
-
+	GdkColor selection_color = {0, 65000, 65000, 65000};
+	
 	screen.zoom_outline_color = zoom_outline_color;
 	screen.dist_measure_color = dist_measure_color;
+	screen.selection_color = selection_color;
 
 	screen.drawing_area = drawingarea;
 	screen.win.hAdjustment = hAdjustment;

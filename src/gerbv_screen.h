@@ -73,6 +73,7 @@ typedef struct {
     GdkColor  background;
     GdkColor  zoom_outline_color;
     GdkColor  dist_measure_color;
+    GdkColor  selection_color;
     gerbv_unit_t unit;
 
     struct {
