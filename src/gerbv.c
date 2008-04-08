@@ -1228,7 +1228,7 @@ main(int argc, char *argv[])
 	    userSuppliedOriginX, userSuppliedOriginY, userSuppliedAntiAlias?3:2, 
 	    userSuppliedWidth,userSuppliedHeight };
 #endif
-
+	
 	if (exportType == 1) {
 #ifdef EXPORT_PNG
 	    exportimage_export_to_png_file (&renderInfo, exportFilename);
