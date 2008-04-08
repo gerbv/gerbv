@@ -569,7 +569,10 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex){
 		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
 		FIND_SELECTIONS, &screen.selectionInfo);
 	cairo_destroy (cr);
-	
+	/* if the selection array is empty, switch the "mode" to empty to make it
+	   easier to check if it is holding anything */
+	if (!screen.selectionInfo.selectedNodeArray->len)
+		screen.selectionInfo.type = EMPTY;
 	/* re-render the selection buffer layer */
 	if (screenRenderInfo.renderType < 2){
 		render_refresh_rendered_image_on_screen ();

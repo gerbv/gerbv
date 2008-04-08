@@ -101,6 +101,7 @@ typedef struct {
 	GtkWidget *toolButtonMeasure;
 	gboolean updatingTools;
 	GtkWidget *layerTreePopupMenu;
+	GtkWidget *drawWindowPopupMenu;
 	gdouble lastMeasuredX;
 	gdouble lastMeasuredY;
     } win;

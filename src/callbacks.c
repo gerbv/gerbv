@@ -1813,6 +1813,36 @@ callbacks_update_layer_tree (void) {
 	}
 }
 
+void
+callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data){
+
+}
+
+void
+callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_data){
+
+}
+
+void
+callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
+
+}
+
+void
+callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
+	if (screen.selectionInfo.type != EMPTY) {
+		if (!interface_get_alert_dialog_response ("The selected objects will be permanently deleted","Do you want to proceed?"))
+			return;
+		gint index=callbacks_get_selected_row_index();
+		if (index >= 0) {
+			gerb_image_delete_selected_nets (screen.file[index]->image,
+				screen.selectionInfo.selectedNodeArray); 
+			render_refresh_rendered_image_on_screen ();
+		}
+	}
+}
+
+
 gboolean
 callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event)
 {
@@ -2106,15 +2136,29 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			gdk_cursor_destroy(cursor);
 			break;
 		case 3 :
-			/* Zoom outline mode initiated */
-			screen.state = IN_ZOOM_OUTLINE;
-			screen.start_x = event->x;
-			screen.start_y = event->y;
-			screen.centered_outline_zoom = event->state & GDK_SHIFT_MASK;
-			cursor = gdk_cursor_new(GDK_SIZING);
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-					  cursor);
-			gdk_cursor_destroy(cursor);
+			if (screen.tool == POINTER) {
+				/* if no items are selected, try and find the item the user
+				   is pointing at */
+				if (screen.selectionInfo.type == EMPTY) {
+					gint index=callbacks_get_selected_row_index();
+					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index);
+				}
+				/* only show the popup if we actually have something selected now */
+				if (screen.selectionInfo.type != EMPTY)
+					gtk_menu_popup(GTK_MENU(screen.win.drawWindowPopupMenu), NULL, NULL, NULL, NULL, 
+			  	 		event->button, event->time);
+			}
+			else {
+				/* Zoom outline mode initiated */
+				screen.state = IN_ZOOM_OUTLINE;
+				screen.start_x = event->x;
+				screen.start_y = event->y;
+				screen.centered_outline_zoom = event->state & GDK_SHIFT_MASK;
+				cursor = gdk_cursor_new(GDK_SIZING);
+				gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
+						  cursor);
+				gdk_cursor_destroy(cursor);
+			}
 			break;
 		case 4 : /* Scroll wheel */
 			render_zoom_display (ZOOM_IN_CMOUSE, 0, event->x, event->y);
@@ -2207,16 +2251,7 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 					callbacks_change_tool (NULL, (gpointer) 3);
 					break;
 				case GDK_Delete:
-					if (screen.selectionInfo.type != EMPTY) {
-						if (!interface_get_alert_dialog_response ("The selected objects will be permanently deleted","Do you want to proceed?"))
-							return TRUE;
-						gint index=callbacks_get_selected_row_index();
-						if (index >= 0) {
-							gerb_image_delete_selected_nets (screen.file[index]->image,
-								screen.selectionInfo.selectedNodeArray); 
-							render_refresh_rendered_image_on_screen ();
-						}
-					}
+					callbacks_delete_objects_clicked (NULL, NULL);
 					break;
 				default:
 					break;

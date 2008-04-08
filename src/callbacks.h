@@ -186,6 +186,18 @@ void
 callbacks_invert_layer_clicked (GtkButton *button, gpointer   user_data);
 
 void
+callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data);
+
+void
+callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_data);
+
+void
+callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data);
+
+void
+callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data);
+
+void
 callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data);
 
 void

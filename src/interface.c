@@ -1096,6 +1096,35 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_remove_layer_button_clicked), NULL);
 	                  
 	gtk_widget_show_all (screen.win.layerTreePopupMenu);
+	
+	/* Create right click popup menu for draw window */
+	screen.win.drawWindowPopupMenu = gtk_menu_new ();
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Display object properties");
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Examine the properties of the selected object", NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_display_object_properties_clicked), NULL);
+	                  
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Display object properties");
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Edit the properties of the selected object", NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_edit_object_properties_clicked), NULL);
+
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Move object(s)");
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Move the selected object(s)",NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_move_objects_clicked), NULL);
+                  
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Delete");
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Delete the selected objects",NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_delete_objects_clicked), NULL);
+
+	gtk_widget_show_all (screen.win.drawWindowPopupMenu);
+	
 	/* make sure tooltips show on gtk <2.12 systems */
 	gtk_tooltips_enable (tooltips); 	
 	/* 
