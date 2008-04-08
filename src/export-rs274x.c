@@ -190,6 +190,7 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 	FILE *fd;
 	gerb_netstate_t *oldState;
 	gerb_layer_t *oldLayer;
+	gboolean insidePolygon=FALSE;
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
@@ -272,6 +273,13 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 			case LINEARx01 :
 			case LINEARx001 :
 			case LINEARx1 :
+				/* see if we need to write an "aperture off" line to get
+				   the pen to the right start point */
+				if ((!insidePolygon) && (currentNet->aperture_state == ON)) {
+					xVal = (long) round(currentNet->start_x * 1000.0);
+					yVal = (long) round(currentNet->start_y * 1000.0);
+					fprintf(fd, "G01X%05ldY%05ldD02*\n",xVal,yVal);
+				}
 				xVal = (long) round(currentNet->stop_x * 1000.0);
 				yVal = (long) round(currentNet->stop_y * 1000.0);
 				fprintf(fd, "G01X%05ldY%05ld",xVal,yVal);
@@ -285,6 +293,13 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 				break;
 			case CW_CIRCULAR :
 			case CCW_CIRCULAR :
+				/* see if we need to write an "aperture off" line to get
+				   the pen to the right start point */
+				if ((!insidePolygon) && (currentNet->aperture_state == ON)) {
+					xVal = (long) round(currentNet->start_x * 1000.0);
+					yVal = (long) round(currentNet->start_y * 1000.0);
+					fprintf(fd, "G01X%05ldY%05ldD02*\n",xVal,yVal);
+				}
 				centerX= (long) round((currentNet->cirseg->cp_x - currentNet->start_x) * 1000.0);
 				centerY= (long) round((currentNet->cirseg->cp_y - currentNet->start_y) * 1000.0);
 				endX = (long) round(currentNet->stop_x * 1000.0);
@@ -313,9 +328,11 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 				break;
 			case PAREA_START:
 				fprintf(fd, "G36*\n");
+				insidePolygon = TRUE;
 				break;
 			case PAREA_END:
 				fprintf(fd, "G37*\n");
+				insidePolygon = FALSE;
 				break;
 			default:
 				break;

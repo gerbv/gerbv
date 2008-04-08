@@ -237,6 +237,16 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 	    if (state->changed == 0) break;
 	    state->changed = 0;
 	    
+	    /* don't even bother saving the net if the aperture state is OFF and we
+	       aren't starting a polygon fill (where we need it to get to the start point) */
+	    if ((state->aperture_state == OFF)&&(!state->in_parea_fill)&&
+	    		(state->interpolation != PAREA_START)) {
+		/* save the coordinate so the next net can use it for a start point */
+		state->prev_x = state->curr_x;
+		state->prev_y = state->curr_y;
+		break;
+	    }
+	    
 	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
 	    if (curr_net->next == NULL)
 		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
