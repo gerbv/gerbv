@@ -1180,8 +1180,8 @@ main(int argc, char *argv[])
 	}else{
 	    // If size was specified in pixels, and no resolution was specified, autoscale resolution till fit
 	    if( (!userSuppliedDpi)&& userSuppliedWindowInPixels){
-		userSuppliedDpiX = ((userSuppliedWidth-0.5)  / width);
-		userSuppliedDpiY = ((userSuppliedHeight-0.5) / height);
+		userSuppliedDpiX = MIN(((userSuppliedWidth-0.5)  / width),((userSuppliedHeight-0.5) / height));
+		userSuppliedDpiY = userSuppliedDpiX;
 		userSuppliedOriginX -= 0.5/userSuppliedDpiX;
 		userSuppliedOriginY -= 0.5/userSuppliedDpiY;
 	    }

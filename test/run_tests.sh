@@ -100,7 +100,7 @@ all_tests="$*"
 
 # The gerbv executible 
 GERBV=${GERBV:-../src/gerbv}
-GERBV_DEFAULT_FLAGS=${GERBV_DEFAULT_FLAGS:---export=png}
+GERBV_DEFAULT_FLAGS=${GERBV_DEFAULT_FLAGS:---export=png --window=640x480}
 
 # Source directory
 srcdir=${srcdir:-.}
