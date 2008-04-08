@@ -89,10 +89,11 @@ render_translate_to_fit_display (gerbv_render_info_t *renderInfo);
 void render_refresh_rendered_image_on_screen (void);
 
 #ifndef RENDER_USING_GDK
-void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex);
+void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex,
+		gboolean eraseOldSelection);
 void
 render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
-	gint corner2X, gint corner2Y, gint activeFileIndex);
+	gint corner2X, gint corner2Y, gint activeFileIndex, gboolean eraseOldSelection);
 void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 						gerbv_render_info_t *renderInfo);
 void  render_cairo_set_scale_translation(cairo_t *cr, gerbv_render_info_t *renderInfo);

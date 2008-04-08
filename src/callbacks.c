@@ -2141,7 +2141,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				   is pointing at */
 				if (screen.selectionInfo.type == EMPTY) {
 					gint index=callbacks_get_selected_row_index();
-					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index);
+					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,TRUE);
 				}
 				/* only show the popup if we actually have something selected now */
 				if (screen.selectionInfo.type != EMPTY)
@@ -2205,12 +2205,17 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 			gint index=callbacks_get_selected_row_index();
 			/* determine if this was just a click or a box drag */
 			if (index >= 0) {
+				gboolean eraseOldSelection = TRUE;
+				if ((event->state & GDK_SHIFT_MASK) ||
+				   (event->state & GDK_CONTROL_MASK)) {
+					eraseOldSelection = FALSE;
+				}
 				if ((fabs((double)(screen.last_x - screen.start_x)) < 2) &&
 					 (fabs((double)(screen.last_y - screen.start_y)) < 2))
-					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index);
+					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,eraseOldSelection);
 				else
 					render_fill_selection_buffer_from_mouse_drag(event->x,event->y,
-						screen.start_x,screen.start_y,index);
+						screen.start_x,screen.start_y,index,eraseOldSelection);
 			}
 #endif
 		}

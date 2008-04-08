@@ -550,9 +550,9 @@ render_create_cairo_buffer_surface () {
 }
 
 void
-render_find_selected_objects_and_refresh_display (gint activeFileIndex){
-	/* clear the old selection array */
-	if (screen.selectionInfo.selectedNodeArray->len)
+render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean eraseOldSelection){
+	/* clear the old selection array if desired */
+	if ((eraseOldSelection)&&(screen.selectionInfo.selectedNodeArray->len))
 		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
 			screen.selectionInfo.selectedNodeArray->len);
 
@@ -585,17 +585,18 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex){
 }
 
 void
-render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex) {
+render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex,
+		gboolean eraseOldSelection) {
 	screen.selectionInfo.lowerLeftX = mouseX;
 	screen.selectionInfo.lowerLeftY = mouseY;
 	/* no need to populate the upperright coordinates for a point_click */
 	screen.selectionInfo.type = POINT_CLICK;
-	render_find_selected_objects_and_refresh_display (activeFileIndex);
+	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
 }
 
 void
 render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
-	gint corner2X, gint corner2Y, gint activeFileIndex) {
+	gint corner2X, gint corner2Y, gint activeFileIndex, gboolean eraseOldSelection) {
 	/* figure out the lower left corner of the box */
 	screen.selectionInfo.lowerLeftX = MIN(corner1X, corner2X);
 	screen.selectionInfo.lowerLeftY = MIN(corner1Y, corner2Y);
@@ -604,7 +605,7 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	screen.selectionInfo.upperRightY = MAX(corner1Y, corner2Y);
 	
 	screen.selectionInfo.type = DRAG_BOX;
-	render_find_selected_objects_and_refresh_display (activeFileIndex);
+	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
 }
 
 void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_render_info_t *renderInfo) {
