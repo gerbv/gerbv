@@ -266,7 +266,7 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 		oldLayer = currentNet->layer;
 		oldState = currentNet->state;
 		
-		long xVal,yVal,endX,endY,centerX,centerY;;
+		long xVal,yVal,endX,endY,centerX,centerY;
 		switch (currentNet->interpolation) {
 			case LINEARx10 :
 			case LINEARx01 :

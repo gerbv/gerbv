@@ -308,6 +308,11 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		 * p.49 rs274xrevd_e.pdf
 		 * D02 -> state->aperture_state == OFF
 		 */
+		 
+		 /* UPDATE: temporarily disabling, since I suspect this is a typo
+		    in the manual...D02 shouldn't end the polygon.  This code
+		    was adding many spurious polygon starts and ends to the render
+		    image, making polygon element handling very tough 
 		if (state->aperture_state == OFF &&
 		    state->interpolation != PAREA_START) {
 		    curr_net->interpolation = PAREA_END;
@@ -335,6 +340,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		    curr_net->stop_x = (double)state->curr_x / x_scale;
 		    curr_net->stop_y = (double)state->curr_y / y_scale;
 		}
+		*/
 	    }  /* if (state->in_parea_fill && state->parea_start_node) */
 	    
 	    curr_net->interpolation = state->interpolation;

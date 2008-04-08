@@ -851,6 +851,9 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	    in_parea_fill = 0;
 	    polygonStartNet = NULL;
 	    continue;
+	/* make sure we completely skip over any deleted nodes */
+	case DELETED:
+	    continue;
 	default :
 	    break;
 	}

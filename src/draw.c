@@ -587,6 +587,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 				in_parea_fill = 0;
 				polygonStartNet = NULL;
 				continue;
+			/* make sure we completely skip over any deleted nodes */
+			case DELETED:
+				continue;
 			default :
 				break;
 		}
@@ -630,7 +633,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 				GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
 			continue;
 		}
-
 		switch (net->aperture_state) {
 			case ON :
 				/* if the aperture width is truly 0, then render as a 1 pixel width

@@ -596,17 +596,17 @@ gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNode
 						tempNet->aperture_state = OFF;
 						
 						if (tempNet->interpolation == PAREA_END) {
-							tempNet->interpolation = LINEARx1;
+							tempNet->interpolation = DELETED;
 							break;
 						}
 						/* make sure we don't leave a polygon interpolation in, since
 					  	 it will still draw if it is */
-						tempNet->interpolation = LINEARx1;
+						tempNet->interpolation = DELETED;
 					}
 				}
 				/* make sure we don't leave a polygon interpolation in, since
 				   it will still draw if it is */
-				currentNet->interpolation = LINEARx1;
+				currentNet->interpolation = DELETED;
 			}
 		}
 	}
