@@ -1116,7 +1116,13 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Move the selected object(s)",NULL);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_move_objects_clicked), NULL);
-                  
+      
+      tempMenuItem = gtk_image_menu_item_new_with_label ("Reduce area");
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Reduce the area of the object (e.g. to prevent component floating)",NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_reduce_object_area_clicked), NULL);
+	                            
 	tempMenuItem = gtk_image_menu_item_new_with_label ("Delete");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Delete the selected objects",NULL);

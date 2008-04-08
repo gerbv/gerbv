@@ -550,11 +550,17 @@ render_create_cairo_buffer_surface () {
 }
 
 void
+render_clear_selection_buffer (void){
+	g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
+			screen.selectionInfo.selectedNodeArray->len);
+	screen.selectionInfo.type = EMPTY;
+}
+
+void
 render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean eraseOldSelection){
 	/* clear the old selection array if desired */
 	if ((eraseOldSelection)&&(screen.selectionInfo.selectedNodeArray->len))
-		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
-			screen.selectionInfo.selectedNodeArray->len);
+		render_clear_selection_buffer();
 
 	/* make sure we have a bufferSurface...if we start up in FAST mode, we may not
 	   have one yet, but we need it for selections */

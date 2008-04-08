@@ -88,6 +88,9 @@ render_translate_to_fit_display (gerbv_render_info_t *renderInfo);
 
 void render_refresh_rendered_image_on_screen (void);
 
+void
+render_clear_selection_buffer (void);
+
 #ifndef RENDER_USING_GDK
 void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex,
 		gboolean eraseOldSelection);

@@ -1825,7 +1825,14 @@ callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_dat
 
 void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
+	/* for testing, just hard code in some translations here */
+	gerb_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.010, 0.010);
+}
 
+void
+callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
+	/* for testing, just hard code in some parameters */
+	gerb_image_reduce_area_of_selected_objects (screen.selectionInfo.selectedNodeArray, 0.20, 2, 2);
 }
 
 void
@@ -1840,6 +1847,7 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 			render_refresh_rendered_image_on_screen ();
 		}
 	}
+	render_clear_selection_buffer ();
 }
 
 
@@ -2257,6 +2265,9 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 					break;
 				case GDK_Delete:
 					callbacks_delete_objects_clicked (NULL, NULL);
+					break;
+				case GDK_Escape:
+					render_clear_selection_buffer ();
 					break;
 				default:
 					break;

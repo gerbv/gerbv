@@ -611,3 +611,39 @@ gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNode
 		}
 	}
 }
+
+void
+gerb_image_create_window_pane_objects (gdouble areaReduction, gint paneRows,
+		gint paneColumns){
+	return;
+}
+		
+gboolean
+gerb_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
+		gint paneColumns){
+	int i;
+	
+	for (i=0; i<selectionArray->len; i++) {
+		gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
+		
+		/* determine the object type first */
+		
+		/* if it's a polygon, just determine the overall area of it and delete it */
+		
+		/* create new structures */
+		gerb_image_create_window_pane_objects (areaReduction, paneRows, paneColumns);
+	}
+	return TRUE;
+}
+
+gboolean
+gerb_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
+		gdouble translationY) {
+	int i;
+	
+	for (i=0; i<selectionArray->len; i++) {
+
+	}
+	return TRUE;
+}
+

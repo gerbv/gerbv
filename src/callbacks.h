@@ -195,6 +195,9 @@ void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data);
 
 void
+callbacks_reduce_object_area_clicked (GtkButton *button, gpointer   user_data);
+
+void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data);
 
 void

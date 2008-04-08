@@ -238,6 +238,14 @@ gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations
 void
 gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray);
 
+gboolean
+gerb_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
+		gint paneColumns);
+
+gboolean
+gerb_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
+		gdouble translationY);
+
 #ifdef __cplusplus
 }
 #endif
