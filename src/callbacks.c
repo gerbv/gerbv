@@ -2218,8 +2218,8 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 				   (event->state & GDK_CONTROL_MASK)) {
 					eraseOldSelection = FALSE;
 				}
-				if ((fabs((double)(screen.last_x - screen.start_x)) < 2) &&
-					 (fabs((double)(screen.last_y - screen.start_y)) < 2))
+				if ((fabs((double)(screen.last_x - screen.start_x)) < 5) &&
+					 (fabs((double)(screen.last_y - screen.start_y)) < 5))
 					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,eraseOldSelection);
 				else
 					render_fill_selection_buffer_from_mouse_drag(event->x,event->y,
