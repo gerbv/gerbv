@@ -411,7 +411,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 					gboolean invertLayer, gdouble pixelWidth,
 					gchar drawMode, gerb_selection_info_t *selectionInfo)
 {
-	struct gerb_net *net;
+	struct gerb_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
 	int in_parea_fill = 0,haveDrawnFirstFillPoint = 0;
 	gdouble p1, p2, p3, p4, p5, dx, dy;
@@ -517,17 +517,24 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 	/* if we are only drawing from the selection buffer, search if this net is
 	   in the buffer */
 	if (drawMode == DRAW_SELECTIONS) {
-		int i;
-		gboolean foundNet = FALSE;
-		
-		for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
-			gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-				gerb_selection_item_t, i);
-			if (sItem.net == net)
-				foundNet = TRUE;
+		/* this flag makes sure we don't draw any unintentional polygons...
+		   if we've successfully entered a polygon (the first net matches, and
+		   we don't want to check the nets inside the polygon) then
+		   polygonStartNet will be set */
+		if (!polygonStartNet) {
+			int i;
+			gboolean foundNet = FALSE;
+			
+			for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
+				gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+					gerb_selection_item_t, i);
+				if (sItem.net == net)
+					foundNet = TRUE;
+			}
+			if (!foundNet)
+				continue;
 		}
-		if (!foundNet)
-			continue;
+		
 	}
 	for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
 	    for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
@@ -564,6 +571,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 			case PAREA_START :
 				in_parea_fill = 1;
 				haveDrawnFirstFillPoint = FALSE;
+				/* save the first net in the polygon as the "ID" net pointer
+				   in case we are saving this net to the selection array */
+				polygonStartNet = net;
 				cairo_new_path(cairoTarget);
 				continue;
 			case PAREA_END :
@@ -572,9 +582,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 				   with adjacent polygons (usually on PCB ground planes) */
 				cairo_antialias_t oldAlias = cairo_get_antialias (cairoTarget);
 				cairo_set_antialias (cairoTarget, CAIRO_ANTIALIAS_NONE);
-				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
+				draw_fill (cairoTarget, drawMode, selectionInfo, image, polygonStartNet);
 				cairo_set_antialias (cairoTarget, oldAlias);
 				in_parea_fill = 0;
+				polygonStartNet = NULL;
 				continue;
 			default :
 				break;

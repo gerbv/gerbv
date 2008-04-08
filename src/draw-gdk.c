@@ -712,7 +712,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerb_image_t *image,
     GdkGC *gc = gdk_gc_new(*pixmap);
     GdkGC *pgc = gdk_gc_new(*pixmap);
     GdkGCValues gc_values;
-    struct gerb_net *net;
+    struct gerb_net *net, *polygonStartNet=NULL;
     gint x1, y1, x2, y2;
     int p1, p2, p3;
     int cir_width = 0, cir_height = 0;
@@ -766,17 +766,23 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
 	
 	if (drawMode == DRAW_SELECTIONS) {
-		int i;
-		gboolean foundNet = FALSE;
-		
-		for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
-			gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-				gerb_selection_item_t, i);
-			if (sItem.net == net)
-				foundNet = TRUE;
+		/* this flag makes sure we don't draw any unintentional polygons...
+		   if we've successfully entered a polygon (the first net matches, and
+		   we don't want to check the nets inside the polygon) then
+		   polygonStartNet will be set */
+		if (!polygonStartNet) {
+			int i;
+			gboolean foundNet = FALSE;
+			
+			for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
+				gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+					gerb_selection_item_t, i);
+				if (sItem.net == net)
+					foundNet = TRUE;
+			}
+			if (!foundNet)
+				continue;
 		}
-		if (!foundNet)
-			continue;
 	}
 	
       for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
@@ -826,6 +832,9 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	switch (net->interpolation) {
 	case PAREA_START :
 	    points = NULL;
+	    /* save the first net in the polygon as the "ID" net pointer
+	       in case we are saving this net to the selection array */
+	    polygonStartNet = net;
 	    curr_point_idx = 0;
 	    pointArraySize = 0;
 	    in_parea_fill = 1;
@@ -840,6 +849,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 	    g_free(points);
 	    points = NULL;
 	    in_parea_fill = 0;
+	    polygonStartNet = NULL;
 	    continue;
 	default :
 	    break;

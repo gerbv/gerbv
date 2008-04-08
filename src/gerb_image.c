@@ -577,7 +577,7 @@ gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *t
 void
 gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray) {
 	int i;
-	gerb_net_t *currentNet;
+	gerb_net_t *currentNet,*tempNet;
     
 	for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){	
 		for (i=0; i<selectedNodeArray->len; i++){
@@ -587,6 +587,26 @@ gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNode
 				/* we have a match, so just zero out all the important data fields */
 				currentNet->aperture = 0;
 				currentNet->aperture_state = OFF;
+				
+				/* if this is a polygon start, we need to erase all the rest of the
+		  		 nets in this polygon too */
+				if (currentNet->interpolation == PAREA_START){
+					for (tempNet = currentNet->next; tempNet; tempNet = tempNet->next){	
+						tempNet->aperture = 0;
+						tempNet->aperture_state = OFF;
+						
+						if (tempNet->interpolation == PAREA_END) {
+							tempNet->interpolation = LINEARx1;
+							break;
+						}
+						/* make sure we don't leave a polygon interpolation in, since
+					  	 it will still draw if it is */
+						tempNet->interpolation = LINEARx1;
+					}
+				}
+				/* make sure we don't leave a polygon interpolation in, since
+				   it will still draw if it is */
+				currentNet->interpolation = LINEARx1;
 			}
 		}
 	}
