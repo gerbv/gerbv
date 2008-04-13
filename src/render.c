@@ -85,9 +85,10 @@ extern gerbv_screen_t screen;
 
 gerbv_render_info_t screenRenderInfo;
 
-
+/*
 static void
 render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo );
+*/
 
 void
 render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY) {
@@ -533,7 +534,6 @@ void render_refresh_rendered_image_on_screen (void) {
 }
 
 #ifndef RENDER_USING_GDK
-
 gint
 render_create_cairo_buffer_surface () {
 	if (screen.bufferSurface) {
@@ -734,7 +734,7 @@ void render_project_to_cairo_target (cairo_t *cr) {
                                                    
 	cairo_paint (cr);
 }
-#endif
+#endif  /* RENDER_USING_GDK */
 
 
 void

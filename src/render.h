@@ -58,8 +58,11 @@ drill_stats_t *generate_drill_analysis(void);
 #ifdef RENDER_USING_GDK
 /* Nothing for now */
 #else
-	void render_recreate_composite_surface ();
-  	void render_project_to_cairo_target (cairo_t *cr);
+void render_recreate_composite_surface ();
+void render_project_to_cairo_target (cairo_t *cr);
+void render_layer_to_cairo_target_without_transforming(cairo_t *cr, 
+						       gerbv_fileinfo_t *fileInfo, 
+						       gerbv_render_info_t *renderInfo );
 #endif
 
 void

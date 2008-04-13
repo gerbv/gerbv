@@ -55,7 +55,7 @@
 #include "gerbv.h"
 #include "drill.h"
 #include "gerb_error.h"
-//#include "gerb_aperture.h"
+/* #include "gerb_aperture.h" */
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -405,7 +405,7 @@ callbacks_print_activate (GtkMenuItem *menuitem, gpointer user_data)
 
 	g_object_unref (print);
 }
-#endif
+#endif /* GTK_CHECK_VERSION(2,10,0) */
 
 /* --------------------------------------------------------- */
 void
@@ -1815,28 +1815,31 @@ callbacks_update_layer_tree (void) {
 
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data){
-
 }
 
 void
 callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_data){
-
 }
 
 void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
+#ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some translations here */
 	gerb_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.010, 0.010);
+#endif
 }
 
 void
 callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
+#ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some parameters */
 	gerb_image_reduce_area_of_selected_objects (screen.selectionInfo.selectedNodeArray, 0.20, 2, 2);
+#endif
 }
 
 void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
+#ifndef RENDER_USING_GDK
 	if (screen.selectionInfo.type != EMPTY) {
 		if (!interface_get_alert_dialog_response ("The selected objects will be permanently deleted","Do you want to proceed?"))
 			return;
@@ -1848,6 +1851,7 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 		}
 	}
 	render_clear_selection_buffer ();
+#endif
 }
 
 
@@ -2145,6 +2149,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			break;
 		case 3 :
 			if (screen.tool == POINTER) {
+#ifndef RENDER_USING_GDK
 				/* if no items are selected, try and find the item the user
 				   is pointing at */
 				if (screen.selectionInfo.type == EMPTY) {
@@ -2155,8 +2160,10 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				if (screen.selectionInfo.type != EMPTY)
 					gtk_menu_popup(GTK_MENU(screen.win.drawWindowPopupMenu), NULL, NULL, NULL, NULL, 
 			  	 		event->button, event->time);
-			}
-			else {
+#else
+				/* Do nothing if using GDK */
+#endif
+			} else {
 				/* Zoom outline mode initiated */
 				screen.state = IN_ZOOM_OUTLINE;
 				screen.start_x = event->x;
@@ -2263,12 +2270,14 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 				case GDK_F4:
 					callbacks_change_tool (NULL, (gpointer) 3);
 					break;
+#ifndef RENDER_USING_GDK
 				case GDK_Delete:
 					callbacks_delete_objects_clicked (NULL, NULL);
 					break;
 				case GDK_Escape:
 					render_clear_selection_buffer ();
 					break;
+#endif
 				default:
 					break;
 			}
