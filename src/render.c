@@ -678,7 +678,7 @@ void render_cairo_set_scale_translation(cairo_t *cr, gerbv_render_info_t *render
 	cairo_scale (cr, renderInfo->scaleFactorX, -renderInfo->scaleFactorY);
 }
 
-static void
+void
 render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo ) {
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
 		(double) fileInfo->color.green/G_MAXUINT16,
