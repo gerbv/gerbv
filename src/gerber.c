@@ -116,7 +116,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 			   gerb_state_t *state,	gerb_net_t *curr_net, 
 			   gerb_stats_t *stats, gerb_file_t *fd, 
 			   gchar *directoryPath) {
-    int read, coord, len;
+    int read, coord, len, polygonPoints=0;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
     double aperture_size;
@@ -299,10 +299,12 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		 */
 		state->parea_start_node = curr_net;
 		state->in_parea_fill = 1;
+		polygonPoints = 0;
 		break;
 	    case PAREA_END :
 		state->parea_start_node = NULL;
 		state->in_parea_fill = 0;
+		polygonPoints = 0;
 		break;
 	    default :
 		break;
@@ -319,12 +321,11 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		 * D02 -> state->aperture_state == OFF
 		 */
 		 
-		 /* UPDATE: temporarily disabling, since I suspect this is a typo
-		    in the manual...D02 shouldn't end the polygon.  This code
-		    was adding many spurious polygon starts and ends to the render
-		    image, making polygon element handling very tough 
-		if (state->aperture_state == OFF &&
-		    state->interpolation != PAREA_START) {
+		 /* UPDATE: only end the polygon during a D02 call if we've already
+		    drawn a polygon edge (with D01) */
+		   
+		if ((state->aperture_state == OFF &&
+		    state->interpolation != PAREA_START) && (polygonPoints > 0)) {
 		    curr_net->interpolation = PAREA_END;
 			
 		    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
@@ -350,7 +351,9 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		    curr_net->stop_x = (double)state->curr_x / x_scale;
 		    curr_net->stop_y = (double)state->curr_y / y_scale;
 		}
-		*/
+		if (state->interpolation != PAREA_START)
+		    polygonPoints++;
+		
 	    }  /* if (state->in_parea_fill && state->parea_start_node) */
 	    
 	    curr_net->interpolation = state->interpolation;
