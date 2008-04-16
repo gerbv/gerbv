@@ -468,32 +468,6 @@ gerb_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, ger
 		
 }
 
-gerb_image_t *
-gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform) {
-    gerb_image_t *newImage = new_gerb_image(NULL, sourceImage->info->type);
-    int i;
-        
-    newImage->layertype = sourceImage->layertype;
-    /* copy information layer over */
-    *(newImage->info) = *(sourceImage->info);
-    newImage->info->name = g_strdup (sourceImage->info->name);
-    newImage->info->plotterFilm = g_strdup (sourceImage->info->plotterFilm);
-    
-    /* copy apertures over */
-    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
-	if (sourceImage->aperture[i] != NULL) {
-	  gerb_aperture_t *newAperture = gerb_image_duplicate_aperture (sourceImage->aperture[i]);
-
-	  newImage->aperture[i] = newAperture;
-	}
-    }
-    
-    /* step through all nets and create new layers and states on the fly, since
-       we really don't have any other way to figure out where states and layers are used */
-    gerb_image_copy_all_nets (sourceImage, newImage, newImage->layers, newImage->states, NULL, transform, NULL);
-    return newImage;
-}
-
 gint
 gerb_image_find_existing_aperture_match (gerb_aperture_t *checkAperture, gerb_image_t *imageToSearch) {
     int i,j;
@@ -528,6 +502,41 @@ gerb_image_find_unused_aperture_number (int startIndex, gerb_image_t *image){
 	}
     }
     return -1;
+}
+
+gerb_image_t *
+gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform) {
+    gerb_image_t *newImage = new_gerb_image(NULL, sourceImage->info->type);
+    int i;
+    int lastUsedApertureNumber = APERTURE_MIN - 1;
+    GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
+    
+    newImage->layertype = sourceImage->layertype;
+    /* copy information layer over */
+    *(newImage->info) = *(sourceImage->info);
+    newImage->info->name = g_strdup (sourceImage->info->name);
+    newImage->info->plotterFilm = g_strdup (sourceImage->info->plotterFilm);
+    
+    /* copy apertures over, compressing all the numbers down for a cleaner output */
+    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+	if (sourceImage->aperture[i] != NULL) {
+	  gerb_aperture_t *newAperture = gerb_image_duplicate_aperture (sourceImage->aperture[i]);
+
+	  lastUsedApertureNumber = gerb_image_find_unused_aperture_number (lastUsedApertureNumber + 1, newImage);
+	  /* store the aperture numbers (new and old) in the translation table */
+	  gerb_translation_entry_t translationEntry={i,lastUsedApertureNumber};
+	  g_array_append_val (apertureNumberTable,translationEntry);
+
+	  newImage->aperture[lastUsedApertureNumber] = newAperture;
+	  //newImage->aperture[i] = newAperture;
+	}
+    }
+    
+    /* step through all nets and create new layers and states on the fly, since
+       we really don't have any other way to figure out where states and layers are used */
+    gerb_image_copy_all_nets (sourceImage, newImage, newImage->layers, newImage->states, NULL, transform, apertureNumberTable);
+    g_array_free (apertureNumberTable, TRUE);
+    return newImage;
 }
 
 void
@@ -624,7 +633,7 @@ gerb_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble area
 	int i;
 	
 	for (i=0; i<selectionArray->len; i++) {
-		gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
+		//gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
 		
 		/* determine the object type first */
 		
