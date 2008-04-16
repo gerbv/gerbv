@@ -528,7 +528,6 @@ gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations
 	  g_array_append_val (apertureNumberTable,translationEntry);
 
 	  newImage->aperture[lastUsedApertureNumber] = newAperture;
-	  //newImage->aperture[i] = newAperture;
 	}
     }
     
@@ -619,6 +618,23 @@ gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNode
 			}
 		}
 	}
+}
+
+void
+gerb_image_create_rectangle_object (gerb_image_t *image, gdouble coordinateX,
+		gdouble coordinateY, gdouble width, gdouble height) {
+	gerb_net_t *currentNet;
+	
+	/* run through and find last net pointer */
+	for (currentNet = image->netlist; currentNet->next; currentNet = currentNet->next){}
+	
+	/* create the polygon start node */
+	
+	/* draw the 4 corners */
+	
+	/* create the polygon end node */
+	
+	return;
 }
 
 void

@@ -110,7 +110,17 @@ gerb_layer_t *knockoutLayer = NULL;
 #ifndef RENDER_USING_GDK
 cairo_matrix_t currentMatrix;
 #endif  
-    
+
+gerb_net_t *
+gerber_create_new_net (gerb_net_t *currentNet, gerb_layer_t *layer, gerb_netstate_t *state){
+	gerb_net_t *newNet = g_new0 (gerb_net_t, 1);
+	
+	currentNet->next = newNet;
+	newNet->layer = layer;
+	newNet->state = state;
+	return newNet;
+}
+
 gboolean
 gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, 
 			   gerb_state_t *state,	gerb_net_t *curr_net, 
@@ -246,14 +256,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		state->prev_y = state->curr_y;
 		break;
 	    }
-	    
-	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
-	    if (curr_net->next == NULL)
-		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
-	    curr_net = curr_net->next;
-	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-	    curr_net->layer = state->layer;
-	    curr_net->state = state->state;
+	    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);
 	    /*
 	     * Scale to given coordinate format
 	     * XXX only "omit leading zeros".
@@ -274,20 +277,14 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 	    
 	    switch (state->interpolation) {
 	    case CW_CIRCULAR :
-		curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));
-		if (curr_net->cirseg == NULL)
-		    GERB_FATAL_ERROR("malloc curr_net->cirseg failed\n");
-		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
+		curr_net->cirseg = g_new0 (gerb_cirseg_t,1);
 		if (state->mq_on)
 		    calc_cirseg_mq(curr_net, 1, delta_cp_x, delta_cp_y);
 		else
 		    calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case CCW_CIRCULAR :
-		curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));
-		if (curr_net->cirseg == NULL)
-		    GERB_FATAL_ERROR("malloc curr_net->cirseg failed\n");
-		memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
+		curr_net->cirseg = g_new0 (gerb_cirseg_t,1);
 		if (state->mq_on)
 		    calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
 		else
@@ -325,27 +322,14 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		    drawn a polygon edge (with D01) */
 		   
 		if ((state->aperture_state == OFF &&
-		    state->interpolation != PAREA_START) && (polygonPoints > 0)) {
+		    	state->interpolation != PAREA_START) && (polygonPoints > 0)) {
 		    curr_net->interpolation = PAREA_END;
-			
-		    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
-		    if (curr_net->next == NULL)
-			GERB_FATAL_ERROR("malloc curr_net->next failed\n");
-		    curr_net = curr_net->next;
-		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-		    curr_net->layer = state->layer;
-		    curr_net->state = state->state;
-
+		    
+		    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);
 		    curr_net->interpolation = PAREA_START;
 		    state->parea_start_node = curr_net;
-		    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
-		    if (curr_net->next == NULL)
-			GERB_FATAL_ERROR("malloc curr_net->next failed\n");
-		    curr_net = curr_net->next;
-		    memset((void *)curr_net, 0, sizeof(gerb_net_t));
-		    curr_net->layer = state->layer;
-		    curr_net->state = state->state;
 		    
+		    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);		    
 		    curr_net->start_x = (double)state->prev_x / x_scale;
 		    curr_net->start_y = (double)state->prev_y / y_scale;
 		    curr_net->stop_x = (double)state->curr_x / x_scale;
@@ -604,14 +588,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
      * Create new state.  This is used locally to keep track
      * of the photoplotter's state as the Gerber is read in.
      */
-    state = (gerb_state_t *)g_malloc(sizeof(gerb_state_t));
-    if (state == NULL)
-	GERB_FATAL_ERROR("malloc state failed\n");
-    
-    /*
-     * Set some defaults
-     */
-    memset((void *)state, 0, sizeof(gerb_state_t));
+    state = g_new0 (gerb_state_t, 1);
 
     /* 
      * Create new image.  This will be returned.
@@ -1137,10 +1114,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	break;
 
     case A2I('F','S'): /* Format Statement */
-	image->format = (gerb_format_t *)g_malloc(sizeof(gerb_format_t));
-	if (image->format == NULL) 
-	    GERB_FATAL_ERROR("Failed malloc for format\n");
-	memset((void *)image->format, 0, sizeof(gerb_format_t));
+	image->format = g_new0 (gerb_format_t,1);
 	
 	switch (gerb_fgetc(fd)) {
 	case 'L':
@@ -1510,10 +1484,8 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	
 	/* Aperture parameters */
     case A2I('A','D'): /* Aperture Description */
-	a = (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
-	if (a == NULL)
-	    GERB_FATAL_ERROR("malloc aperture failed\n");
-	memset((void *)a, 0, sizeof(gerb_aperture_t));
+	a = (gerb_aperture_t *) g_new0 (gerb_aperture_t,1);
+
 	ano = parse_aperture_definition(fd, a, image, scale);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->state->unit;
@@ -1551,11 +1523,11 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	break;
 	/* Layer */
     case A2I('L','N'): /* Layer Name */
-        state->layer = gerb_image_return_new_layer (state->layer);
+	state->layer = gerb_image_return_new_layer (state->layer);
 	state->layer->name = gerb_fgetstring(fd, '*');
 	break;
     case A2I('L','P'): /* Layer Polarity */
-        state->layer = gerb_image_return_new_layer (state->layer);
+	state->layer = gerb_image_return_new_layer (state->layer);
 	switch (gerb_fgetc(fd)) {
 	case 'D': /* Dark Polarity (default) */
 	    state->layer->polarity = DARK;
@@ -1719,22 +1691,9 @@ new_stack(unsigned int stack_size)
 {
     macro_stack_t *s;
 
-    s = (macro_stack_t *)malloc(sizeof(macro_stack_t));
-    if (!s) {
-	free(s);
-	return NULL;
-    }
-    memset(s, 0, sizeof(macro_stack_t));
-
-    s->stack = (double *)malloc(sizeof(double) * stack_size);
-    if (!s->stack) {
-	free(s->stack);
-	return NULL;
-    }
-
-    memset(s->stack, 0, sizeof(double) * stack_size);
+    s = (macro_stack_t *) g_new0 (macro_stack_t,1);
+    s->stack = (double *) g_new0 (double, stack_size);
     s->sp = 0;
-
     return s;
 } /* new_stack */
 
