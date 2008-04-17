@@ -1764,7 +1764,7 @@ callbacks_update_layer_tree (void) {
 
 		for (idx = 0; idx < screen.max_files; idx++) {
 			if (screen.file[idx]) {
-				GdkPixbuf    *pixbuf;
+				GdkPixbuf    *pixbuf,*blackPixbuf;
 				guint32 color;
 				
 				unsigned char red, green, blue, alpha;
@@ -1777,7 +1777,16 @@ callbacks_update_layer_tree (void) {
 				color = (red )* (256*256*256) + (green ) * (256*256) + (blue )* (256) + (alpha );
 				pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);
 				gdk_pixbuf_fill (pixbuf, color);
-
+				
+				blackPixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);
+				color = (100 )* (256*256*256) + (100 ) * (256*256) + (100 )* (256) + (150 );
+				gdk_pixbuf_fill (blackPixbuf, color);
+				
+				/* copy the color area into the black pixbuf */
+				gdk_pixbuf_copy_area  (pixbuf, 1, 1, 18, 13, blackPixbuf, 1, 1);
+				/* free the color buffer, since we don't need it anymore */
+                        g_object_unref(pixbuf);
+                        
 				gtk_list_store_append (list_store, &iter);
 				
 				gchar *modifiedCode;
@@ -1788,13 +1797,13 @@ callbacks_update_layer_tree (void) {
 					modifiedCode = g_strdup ("");
 				gtk_list_store_set (list_store, &iter,
 							0, screen.file[idx]->isVisible,
-							1, pixbuf,
+							1, blackPixbuf,
 			                        2, screen.file[idx]->name,
 			                        3, modifiedCode,
 			                        -1);
 			      g_free (modifiedCode);
 			      /* pixbuf has a refcount of 2 now, as the list store has added its own reference */
-			      g_object_unref(pixbuf);
+			      g_object_unref(blackPixbuf);
 			}
 		}
 		

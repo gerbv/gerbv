@@ -698,8 +698,7 @@ gerb_image_reduce_area_of_selected_objects (GArray *selectionArray,
 	for (i=0; i<selectionArray->len; i++) {
 		gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
 		gerb_image_t *image = sItem.image;
-		gerb_net_t *net = sItem.net;
-		gerb_net_t *currentNet=net;
+		gerb_net_t *currentNet = sItem.net;
 		
 		/* determine the object type first */
 		minX = HUGE_VAL;
@@ -707,7 +706,7 @@ gerb_image_reduce_area_of_selected_objects (GArray *selectionArray,
 		minY = HUGE_VAL;
 		maxY = -HUGE_VAL;
 		
-		if (net->interpolation == PAREA_START) {
+		if (currentNet->interpolation == PAREA_START) {
 			/* if it's a polygon, just determine the overall area of it and delete it */
 			currentNet->interpolation = DELETED;
 			
@@ -726,21 +725,21 @@ gerb_image_reduce_area_of_selected_objects (GArray *selectionArray,
 			}
 			currentNet->interpolation = DELETED;
 		}
-		else if ((net->interpolation == LINEARx10) ||
-				(net->interpolation == LINEARx01) ||
-				(net->interpolation == LINEARx001) ||
-				(net->interpolation == LINEARx1)) {
+		else if ((currentNet->interpolation == LINEARx10) ||
+				(currentNet->interpolation == LINEARx01) ||
+				(currentNet->interpolation == LINEARx001) ||
+				(currentNet->interpolation == LINEARx1)) {
 			gdouble dx=0,dy=0;
 			/* figure out the overall size of this element */
 			switch (image->aperture[currentNet->aperture]->type) {
 				case CIRCLE :
 				case OVAL :
 				case POLYGON :
-					dx = dy = image->aperture[net->aperture]->parameter[0];
+					dx = dy = image->aperture[currentNet->aperture]->parameter[0];
 					break;
 				case RECTANGLE :
-					dx = (image->aperture[net->aperture]->parameter[0]/ 2);
-					dy = (image->aperture[net->aperture]->parameter[1]/ 2);
+					dx = (image->aperture[currentNet->aperture]->parameter[0]/ 2);
+					dy = (image->aperture[currentNet->aperture]->parameter[1]/ 2);
 					break;
 				default :
 					break;
@@ -783,7 +782,27 @@ gerb_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
 	int i;
 	
 	for (i=0; i<selectionArray->len; i++) {
+		gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
+		gerb_net_t *currentNet = sItem.net;
 
+		if (currentNet->interpolation == PAREA_START) {
+			/* if it's a polygon, step through every vertex and translate the point */
+			for (currentNet = currentNet->next; currentNet; currentNet = currentNet->next){
+				if (currentNet->interpolation == PAREA_END)
+					break;
+				currentNet->start_x += translationX;
+				currentNet->start_y += translationY;
+				currentNet->stop_x += translationX;
+				currentNet->stop_y += translationY;
+			}
+		}
+		else {
+			/* otherwise, just move the single element */
+			currentNet->start_x += translationX;
+			currentNet->start_y += translationY;
+			currentNet->stop_x += translationX;
+			currentNet->stop_y += translationY;
+		}
 	}
 	return TRUE;
 }
