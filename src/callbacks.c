@@ -1826,6 +1826,8 @@ callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some translations here */
 	gerb_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.010, 0.010);
+	render_clear_selection_buffer ();
+	render_refresh_rendered_image_on_screen ();
 #endif
 }
 
@@ -1833,7 +1835,9 @@ void
 callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 #ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some parameters */
-	gerb_image_reduce_area_of_selected_objects (screen.selectionInfo.selectedNodeArray, 0.20, 2, 2);
+	gerb_image_reduce_area_of_selected_objects (screen.selectionInfo.selectedNodeArray, 0.20, 3, 3, 0.01);
+	render_clear_selection_buffer ();
+	render_refresh_rendered_image_on_screen ();
 #endif
 }
 

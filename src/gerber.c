@@ -116,8 +116,14 @@ gerber_create_new_net (gerb_net_t *currentNet, gerb_layer_t *layer, gerb_netstat
 	gerb_net_t *newNet = g_new0 (gerb_net_t, 1);
 	
 	currentNet->next = newNet;
-	newNet->layer = layer;
-	newNet->state = state;
+	if (layer)
+		newNet->layer = layer;
+	else
+		newNet->layer = currentNet->layer;
+	if (state)
+		newNet->state = state;
+	else
+		newNet->state = currentNet->state;
 	return newNet;
 }
 

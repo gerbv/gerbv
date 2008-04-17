@@ -31,6 +31,7 @@
 #include <math.h>
 #include "gerb_error.h"
 #include "gerb_image.h"
+#include "gerber.h"
 
 typedef struct {
     int oldAperture;
@@ -629,34 +630,145 @@ gerb_image_create_rectangle_object (gerb_image_t *image, gdouble coordinateX,
 	for (currentNet = image->netlist; currentNet->next; currentNet = currentNet->next){}
 	
 	/* create the polygon start node */
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = PAREA_START;
 	
 	/* draw the 4 corners */
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = LINEARx1;
+	currentNet->start_x = coordinateX;
+	currentNet->start_y = coordinateY;
+	currentNet->stop_x = coordinateX + width;
+	currentNet->stop_y = coordinateY;
+	
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = LINEARx1;
+	currentNet->stop_x = coordinateX + width;
+	currentNet->stop_y = coordinateY + height;
+	
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = LINEARx1;
+	currentNet->stop_x = coordinateX;
+	currentNet->stop_y = coordinateY + height;
+	
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = LINEARx1;
+	currentNet->stop_x = coordinateX;
+	currentNet->stop_y = coordinateY;
 	
 	/* create the polygon end node */
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = PAREA_END;
 	
 	return;
 }
 
 void
-gerb_image_create_window_pane_objects (gdouble areaReduction, gint paneRows,
-		gint paneColumns){
+gerb_image_create_window_pane_objects (gerb_image_t *image, gdouble lowerLeftX,
+		gdouble lowerLeftY, gdouble width, gdouble height, gdouble areaReduction,
+		gint paneRows, gint paneColumns, gdouble paneSeparation){
+	int i,j;
+	gdouble startX,startY,boxWidth,boxHeight;
+	
+	startX = lowerLeftX + (areaReduction * width) / 2.0;
+	startY = lowerLeftY + (areaReduction * height) / 2.0;
+	boxWidth = (width * (1.0 - areaReduction) - (paneSeparation * (paneColumns - 1))) / paneColumns;
+	boxHeight = (height * (1.0 - areaReduction) - (paneSeparation * (paneRows - 1))) / paneRows;
+	
+	for (i=0; i<paneColumns; i++){
+		for (j=0; j<paneRows; j++) {
+			gerb_image_create_rectangle_object (image, startX + (i * (boxWidth + paneSeparation)),
+				startY + (j * (boxHeight + paneSeparation)),boxWidth, boxHeight);
+		}
+	}
+
 	return;
 }
 		
 gboolean
-gerb_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
-		gint paneColumns){
+gerb_image_reduce_area_of_selected_objects (GArray *selectionArray,
+		gdouble areaReduction, gint paneRows, gint paneColumns, gdouble paneSeparation){
 	int i;
+	gdouble minX,minY,maxX,maxY;
 	
 	for (i=0; i<selectionArray->len; i++) {
-		//gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
+		gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
+		gerb_image_t *image = sItem.image;
+		gerb_net_t *net = sItem.net;
+		gerb_net_t *currentNet=net;
 		
 		/* determine the object type first */
+		minX = HUGE_VAL;
+		maxX = -HUGE_VAL;
+		minY = HUGE_VAL;
+		maxY = -HUGE_VAL;
 		
-		/* if it's a polygon, just determine the overall area of it and delete it */
+		if (net->interpolation == PAREA_START) {
+			/* if it's a polygon, just determine the overall area of it and delete it */
+			currentNet->interpolation = DELETED;
+			
+			for (currentNet = currentNet->next; currentNet; currentNet = currentNet->next){
+				if (currentNet->interpolation == PAREA_END)
+					break;
+				currentNet->interpolation = DELETED;
+				if (currentNet->stop_x < minX)
+					minX = currentNet->stop_x;
+				if (currentNet->stop_y < minY)
+					minY = currentNet->stop_y;
+				if (currentNet->stop_x > maxX)
+					maxX = currentNet->stop_x;
+				if (currentNet->stop_y > maxY)
+					maxY = currentNet->stop_y;
+			}
+			currentNet->interpolation = DELETED;
+		}
+		else if ((net->interpolation == LINEARx10) ||
+				(net->interpolation == LINEARx01) ||
+				(net->interpolation == LINEARx001) ||
+				(net->interpolation == LINEARx1)) {
+			gdouble dx=0,dy=0;
+			/* figure out the overall size of this element */
+			switch (image->aperture[currentNet->aperture]->type) {
+				case CIRCLE :
+				case OVAL :
+				case POLYGON :
+					dx = dy = image->aperture[net->aperture]->parameter[0];
+					break;
+				case RECTANGLE :
+					dx = (image->aperture[net->aperture]->parameter[0]/ 2);
+					dy = (image->aperture[net->aperture]->parameter[1]/ 2);
+					break;
+				default :
+					break;
+			}
+			if (currentNet->start_x-dx < minX)
+				minX = currentNet->start_x-dx;
+			if (currentNet->start_y-dy < minY)
+				minY = currentNet->start_y-dy;
+			if (currentNet->start_x+dx > maxX)
+				maxX = currentNet->start_x+dx;
+			if (currentNet->start_y+dy > maxY)
+				maxY = currentNet->start_y+dy;
+				
+			if (currentNet->stop_x-dx < minX)
+				minX = currentNet->stop_x-dx;
+			if (currentNet->stop_y-dy < minY)
+				minY = currentNet->stop_y-dy;
+			if (currentNet->stop_x+dx > maxX)
+				maxX = currentNet->stop_x+dx;
+			if (currentNet->stop_y+dy > maxY)
+				maxY = currentNet->stop_y+dy;
+			
+			/* finally, delete node */
+			currentNet->interpolation = DELETED;
+		}
+		/* we don't current support arcs */
+		else
+			return FALSE;
 		
 		/* create new structures */
-		gerb_image_create_window_pane_objects (areaReduction, paneRows, paneColumns);
+		gerb_image_create_window_pane_objects (image, minX, minY, maxX - minX, maxY - minY,
+			areaReduction, paneRows, paneColumns, paneSeparation);
 	}
 	return TRUE;
 }

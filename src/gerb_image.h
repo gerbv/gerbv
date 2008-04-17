@@ -240,7 +240,7 @@ gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNode
 
 gboolean
 gerb_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
-		gint paneColumns);
+		gint paneColumns, gdouble paneSeparation);
 
 gboolean
 gerb_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
