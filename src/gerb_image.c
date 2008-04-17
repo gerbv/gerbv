@@ -636,6 +636,7 @@ gerb_image_create_rectangle_object (gerb_image_t *image, gdouble coordinateX,
 	/* draw the 4 corners */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = LINEARx1;
+	currentNet->aperture_state = ON;
 	currentNet->start_x = coordinateX;
 	currentNet->start_y = coordinateY;
 	currentNet->stop_x = coordinateX + width;
@@ -643,16 +644,19 @@ gerb_image_create_rectangle_object (gerb_image_t *image, gdouble coordinateX,
 	
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = LINEARx1;
+	currentNet->aperture_state = ON;
 	currentNet->stop_x = coordinateX + width;
 	currentNet->stop_y = coordinateY + height;
 	
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = LINEARx1;
+	currentNet->aperture_state = ON;
 	currentNet->stop_x = coordinateX;
 	currentNet->stop_y = coordinateY + height;
 	
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = LINEARx1;
+	currentNet->aperture_state = ON;
 	currentNet->stop_x = coordinateX;
 	currentNet->stop_y = coordinateY;
 	
