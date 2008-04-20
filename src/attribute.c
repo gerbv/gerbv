@@ -42,7 +42,8 @@
 #include <gtk/gtk.h>
 
 #include "attribute.h"
-#include "gerbv_screen.h"
+#include "gerbv.h"
+#include "main.h"
 
 #define dprintf if(DEBUG) printf
 

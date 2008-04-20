@@ -29,9 +29,7 @@
 #include <math.h>
 
 #include <glib/gstdio.h>
-#include "gerber.h"
-#include "gerb_image.h"
-#include "export-drill.h"
+#include "gerbv.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf

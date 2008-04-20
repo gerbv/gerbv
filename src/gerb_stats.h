@@ -24,69 +24,7 @@
 #ifndef GERB_STATS_H
 #define GERB_STATS_H
 
-#include "gerb_error.h"
-#include "gerb_aperture.h"
 
-/* the gerb_aperture_list is used to keep track of 
- * apertures used in stats reporting */
-typedef struct gerb_aperture_list_t {
-    int number;
-    int layer;
-    int count;
-    enum aperture_t type;
-    double parameter[5];
-    struct gerb_aperture_list_t *next;
-} gerb_aperture_list_t;
-
-
-typedef struct {
-    struct error_list_t *error_list;
-    struct gerb_aperture_list_t *aperture_list;
-    struct gerb_aperture_list_t *D_code_list;
-
-    int layer_count;
-    int G0;
-    int G1;
-    int G2;
-    int G3;
-    int G4;
-    int G10;
-    int G11;
-    int G12;
-    int G36;
-    int G37;
-    int G54;
-    int G55;
-    int G70;
-    int G71;
-    int G74;
-    int G75;
-    int G90;
-    int G91;
-    int G_unknown;
-
-    int D1;
-    int D2;
-    int D3;
-/*    GHashTable *D_user_defined; */
-    int D_unknown;
-    int D_error;
-
-    int M0;
-    int M1;
-    int M2;
-    int M_unknown;
-
-    int X;
-    int Y;
-    int I;
-    int J;
-
-    /* Must include % RS-274 codes */
-    int star;
-    int unknown;
-
-} gerb_stats_t;
 
 /* ===================  Prototypes ================ */
 gerb_stats_t * gerb_stats_new(void);

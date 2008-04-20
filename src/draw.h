@@ -25,8 +25,6 @@
 #define DRAW_H
 
 #include <gdk/gdk.h>
-#include "gerber.h"
-#include "gerbv_screen.h"
 #include <cairo.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>

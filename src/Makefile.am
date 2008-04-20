@@ -26,18 +26,16 @@ bin_PROGRAMS = gerbv
 gerbv_SOURCES = amacro.c amacro.h attribute.c attribute.h \
 		batch.c batch.h common.h \
 		${DRAW} drill.c drill.h dynload.c \
-		dynload.h exportimage.c exportimage.h gerb_aperture.h \
-		gerb_error.h \
+		dynload.h exportimage.c \
 		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
-		gerber.h gerbv.c gerbv.h gerbv_icon.h gerbv_screen.h \
-		log.c log.h \
+		gerber.h gerbv.c gerbv.h gerbv_icon.h main.c \
 		opdefines.h project.c project.h scheme-private.h scheme.c \
-		scheme.h setup.c setup.h tooltable.c tooltable.h \
+		scheme.h tooltable.c tooltable.h \
 		pick-and-place.c pick-and-place.h gerb_transf.c gerb_transf.h \
 		csv.c csv.h csv_defines.h callbacks.c callbacks.h interface.c \
 		interface.h render.c render.h gerb_stats.c gerb_stats.h \
-		drill_stats.c drill_stats.h icons.h export-rs274x.c export-rs274x.h \
-		export-drill.h export-drill.c
+		drill_stats.c drill_stats.h icons.h export-rs274x.c \
+		export-drill.c
 
 # If we are building on win32, then compile in some icons for the
 # desktop and application toolbar

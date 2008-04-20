@@ -20,61 +20,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
+ 
+#ifndef MAIN_H
+#define MAIN_H
 
-#ifndef GERBV_SCREEN_H
-#define GERBV_SCREEN_H
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
+#ifdef __cplusplus
+extern "C" {
 #endif
-
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-
-#include "gerb_image.h"
-#include "gerber.h"
-
-#define INITIAL_SCALE 200
-#define MAX_ERRMSGLEN 25
-#define MAX_COORDLEN 28
-#define MAX_DISTLEN 90
-#define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
-
-/* Macros to convert between unscaled gerber coordinates and other units */
-/* XXX NOTE: Currently unscaled units are assumed as inch, this is not
-   XXX necessarily true for all files */
-#define COORD2MILS(c) ((c)*1000.0)
-#define COORD2MMS(c) ((c)*25.4)
-
-typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED,
-		IN_SELECTION_DRAG, SCROLLBAR} gerbv_state_t;
-typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
-typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
-
-typedef struct {
-    gerb_image_t *image;
-    GdkColor color;
-    guint16 alpha;
-    gboolean isVisible;
-    gpointer privateRenderData;
-    gchar *fullPathname; /* this should be the full pathname to the file */
-    gchar *name;
-    gerb_user_transformations_t transform;
-} gerbv_fileinfo_t;
-
-typedef struct {
-	double x1, y1;
-	double x2, y2;
-} gerbv_bbox_t;
 
 typedef struct {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
-    GdkColor  background;
     GdkColor  zoom_outline_color;
     GdkColor  dist_measure_color;
     GdkColor  selection_color;
-    gerbv_unit_t unit;
 
     struct {
 	GtkWidget *log;
@@ -105,17 +64,10 @@ typedef struct {
 	gdouble lastMeasuredX;
 	gdouble lastMeasuredY;
     } win;
+    
     gpointer windowSurface;
     gpointer bufferSurface;
     gpointer selectionRenderData;
-    int max_files;
-    gerbv_fileinfo_t **file;
-    int curr_index;
-    int last_loaded;
-
-    gchar *path;
-    gchar *execpath;    /* Path to executed version of gerbv */
-    gchar *project;     /* Current project to simplify save next time */
 
     GtkTooltips *tooltips;
     GtkWidget *popup_menu;
@@ -126,13 +78,14 @@ typedef struct {
 	char diststr[MAX_DISTLEN];
     } statusbar;
 
-    gerbv_state_t state;
-    gerbv_tool_t tool;
     gboolean centered_outline_zoom;
 
     int selected_layer;         /* Selected layer by Alt+keypad */
     gerb_selection_info_t selectionInfo;
-    
+    gerbv_state_t state;
+    gerbv_tool_t tool;
+    gerbv_unit_t unit;
+           
     gint last_x;
     gint last_y;
     gint start_x;		/* Zoom box/measure start coordinates */
@@ -144,13 +97,7 @@ typedef struct {
     int dump_parsed_image;
 } gerbv_screen_t;
 
-typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
-typedef struct {
-    gerbv_zoom_dir_t z_dir;
-    GdkEventButton *z_event;
-    int scale;
-} gerbv_zoom_data_t;
-
 extern gerbv_screen_t screen;
+extern gerbv_project_t mainProject;
+#endif /* GERBV_H */
 
-#endif /* GERBV_SCREEN_H */

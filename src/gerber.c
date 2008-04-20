@@ -29,10 +29,10 @@
 #include <errno.h>
 #include <ctype.h>
 
-
 #include "config.h"
+#include "gerbv.h"
+#include "gerb_image.h"
 #include "gerber.h"
-#include "gerb_error.h"
 #include "gerb_stats.h"
 
 //#define AMACRO_DEBUG

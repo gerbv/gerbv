@@ -48,9 +48,9 @@
 #include <wchar.h>
 #include <wctype.h>
 
+#include "gerbv.h"
 #include "csv.h"
 #include "csv_defines.h"
-#include "gerb_error.h"
 #define ST_START     1
 #define ST_COLLECT   2
 #define ST_TAILSPACE 3

@@ -34,10 +34,9 @@
 #endif
 
 #include <gtk/gtk.h>
-
+#include "gerbv.h"
 #include "draw.h"
 #include "draw-gdk.h"
-#include "gerb_error.h"
 #include <cairo.h>
 
 #define dprintf if(DEBUG) printf

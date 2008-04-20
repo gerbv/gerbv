@@ -25,56 +25,6 @@
 #define DRILL_STATS_H
 
 #include <gdk/gdk.h>      /* This imports gboolean type */
-#include "gerb_error.h"   /* This gives us the enum error_type_t */
-
-typedef struct drill_list {
-    int drill_num;
-    double drill_size;
-    char *drill_unit;
-    int drill_count;
-    struct drill_list *next;
-} drill_list_t;
-
-typedef struct {
-    int layer_count;
-    
-    error_list_t *error_list;
-    drill_list_t *drill_list;
-    int comment;
-    int F;
-
-    int G00;
-    int G01;
-    int G02;
-    int G03;
-    int G04;
-    int G05;
-    int G90;
-    int G91;
-    int G93;
-    int G_unknown;
-
-    int M00;
-    int M01;
-    int M18;
-    int M25;
-    int M30;
-    int M31;
-    int M45;
-    int M47;
-    int M48;
-    int M71;
-    int M72;
-    int M95;
-    int M97;
-    int M98;
-    int M_unknown;
-
-    int unknown;
-
-    char *detect;
-
-} drill_stats_t;
 
 
 /* ===================  Prototypes ================ */

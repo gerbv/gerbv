@@ -24,34 +24,6 @@
 
 #include "gerber.h"
 
-/* Keep redraw state when preempting to process certain events */
-struct gerbv_redraw_state_t {
-    int valid;			/* Set to nonzero when data is valid */
-    int file_index;
-    GdkPixmap *curr_pixmap;
-    GdkPixmap *clipmask;
-    int max_width;
-    int max_height;
-    int files_loaded;
-};
-
-typedef struct {
-	gdouble scaleFactorX;
-	gdouble scaleFactorY;
-	gdouble lowerLeftX;
-	gdouble lowerLeftY;
-	gint renderType; /* 0 is default */
-	gint displayWidth;
-	gint displayHeight;
-} gerbv_render_info_t;
-
-typedef struct {
-    double left;
-    double right;
-    double top;
-    double bottom;
-} gerbv_render_size_t;
-
 gerb_stats_t *generate_gerber_analysis(void);
 drill_stats_t *generate_drill_analysis(void);
 
@@ -60,9 +32,6 @@ drill_stats_t *generate_drill_analysis(void);
 #else
 void render_recreate_composite_surface ();
 void render_project_to_cairo_target (cairo_t *cr);
-void render_layer_to_cairo_target_without_transforming(cairo_t *cr, 
-						       gerbv_fileinfo_t *fileInfo, 
-						       gerbv_render_info_t *renderInfo );
 #endif
 
 void
@@ -80,14 +49,6 @@ render_draw_zoom_outline(gboolean centered);
 void
 render_draw_measure_distance(void);
 
-void
-render_get_boundingbox(gerbv_render_size_t *boundingbox);
-
-void
-render_zoom_to_fit_display (gerbv_render_info_t *renderInfo);
-
-void
-render_translate_to_fit_display (gerbv_render_info_t *renderInfo);
 
 void render_refresh_rendered_image_on_screen (void);
 
@@ -100,14 +61,8 @@ void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gi
 void
 render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	gint corner2X, gint corner2Y, gint activeFileIndex, gboolean eraseOldSelection);
-void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
-						gerbv_render_info_t *renderInfo);
-void  render_cairo_set_scale_translation(cairo_t *cr, gerbv_render_info_t *renderInfo);
-void render_layer_to_cairo_target_noscale(cairo_t *cr, gerbv_fileinfo_t *fileInfo,gerbv_render_info_t *renderInfo);
-void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_render_info_t *renderInfo);
-void render_all_layers_to_cairo_target (cairo_t *cr, gerbv_render_info_t *renderInfo);
+
 
 #endif
-void render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo);
 
 

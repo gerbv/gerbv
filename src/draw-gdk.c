@@ -34,10 +34,8 @@
 #endif
 
 #include <gtk/gtk.h>
-
+#include "gerbv.h"
 #include "draw-gdk.h"
-#include "gerb_error.h"
-#include "gerb_image.h"
 
 #undef round
 #define round(x) ceil((double)(x))

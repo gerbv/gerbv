@@ -53,9 +53,8 @@
 
 #include <errno.h>
 
-#include "gerb_error.h"
+#include "gerbv.h"
 #include "gerb_file.h"
-#include "gerbv_screen.h"
 #include "interface.h"
 #include "project.h"
 #include "scheme-private.h"
@@ -158,9 +157,9 @@ define_layer(scheme *sc, pointer args)
 
     layerno = sc->vptr->ivalue(car_el);
     dprintf("    layerno = %d\n", layerno);
-    if (screen.last_loaded <= layerno) {
-	screen.last_loaded = layerno;
-    }
+    /*if (gerbvProject->last_loaded <= layerno) {
+	gerbvProject->last_loaded = layerno;
+    }*/
     
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);
@@ -355,12 +354,12 @@ set_render_type(scheme *sc, pointer args)
   *    layer filename
   */
 project_list_t *
-read_project_file(char const* filename)
+read_project_file(gerbv_project_t *gerbvProject, char const* filename)
 {
     struct stat stat_info;
     scheme *sc;
     FILE *fd;
-    char *initdirs[] = {BACKEND_DIR, screen.execpath, ".", 
+    char *initdirs[] = {BACKEND_DIR, gerbvProject->execpath, ".", 
 			"$GERBV_SCHEMEINIT", NULL};
     char *initfile;
 
@@ -428,7 +427,7 @@ read_project_file(char const* filename)
  * that can be parsed by read_project above
  */
 int 
-write_project_file(char const* filename, project_list_t *project)
+write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_list_t *project)
 {
     FILE *fd;
     project_list_t *p = project, *tmp;
@@ -465,8 +464,8 @@ write_project_file(char const* filename, project_list_t *project)
 	    attr_list = NULL;
 	    n_attr = 0;
 	} else {
-	    attr_list = screen.file[p->layerno]->image->info->attr_list;
-	    n_attr =  screen.file[p->layerno]->image->info->n_attr;
+	    attr_list = gerbvProject->file[p->layerno]->image->info->attr_list;
+	    n_attr =  gerbvProject->file[p->layerno]->image->info->n_attr;
 	}
 
 	if (n_attr > 0) {

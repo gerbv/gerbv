@@ -30,7 +30,7 @@
 #include <glib.h>
 #include <math.h>
 
-#include "gerb_error.h"
+#include "gerbv.h"
 #include "gerb_stats.h"
 
 

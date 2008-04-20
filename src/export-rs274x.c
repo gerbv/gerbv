@@ -29,8 +29,7 @@
 #include <math.h>
 
 #include <glib/gstdio.h>
-#include "gerber.h"
-#include <export-rs274x.h>
+#include "gerbv.h"
 #include "draw-gdk.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */

@@ -29,38 +29,7 @@ extern "C" {
 #endif
 
 #include "gerb_file.h"
-
-
-enum opcodes {NOP,      /* No Operation */
-	      PUSH,     /* Ordinary stack operations. Uses float */
-	      PPUSH,    /* Parameter onto stack, 1 is first parameter and 
-			    so on (compare gerber $1, $2 and so on */ 
-	      PPOP,     /* Data on stack popped onto parameter register.
-			   First parameter popped from stack is which register
-			   to store data and second parameter popped is actual
-			   data. */
-	      ADD, SUB, /* Mathematical operations */
-	      MUL, DIV, 
-	      PRIM};    /* Defines what primitive to draw. Inparameters
-			   should be on the stack. */
-
-
-typedef struct instruction {
-    enum opcodes opcode;
-    union {
-	int ival;
-	float fval;
-    } data;
-    struct instruction *next;
-} instruction_t;
-
-typedef struct amacro {
-    char *name;
-    instruction_t *program;
-    unsigned int nuf_push;  /* Nuf pushes in program to estimate stack size */
-    struct amacro *next;
-} amacro_t;
-
+#include "gerbv.h"
 
 /*
  * Parses the definition of an aperture macro

@@ -29,7 +29,8 @@
 #include <string.h>
 #include <glib.h>
 #include <math.h>
-#include "gerb_error.h"
+
+#include "gerbv.h"
 #include "gerb_image.h"
 #include "gerber.h"
 
@@ -67,14 +68,6 @@ new_gerb_image(gerb_image_t *image, const gchar *type)
     }
     memset((void *)image->info, 0, sizeof(gerb_image_info_t));
     
-    /* Malloc space for image->transf */
-    if ((image->transf = gerb_transf_new()) == NULL) {
-        g_free(image->info);
-        g_free(image->netlist);
-	g_free(image);
-	return NULL;
-    }
-
     /* Set aside position for stats struct */
     image->gerb_stats = NULL;
     image->drill_stats = NULL;

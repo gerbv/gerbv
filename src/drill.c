@@ -48,8 +48,8 @@
 #include <unistd.h>
 #endif
 
+#include "gerbv.h"
 #include "drill.h"
-#include "gerb_error.h"
 #include "tooltable.h"
 #include "drill_stats.h"
 

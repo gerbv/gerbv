@@ -43,11 +43,12 @@
 #endif
 
 #include <math.h>
-#include "gerber.h"
-#include "drill.h"
-#include "gerb_error.h"
-#include "gerb_stats.h"
-#include "drill_stats.h"
+
+#include "gerbv.h"
+#include "main.h"
+#include "callbacks.h"
+#include "interface.h"
+#include "render.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -61,20 +62,6 @@
   #include "draw-gdk.h"
   #include "draw.h"
 #endif
-
-#include "gerbv_screen.h"
-#include "log.h"
-#include "setup.h"
-#include "project.h"
-
-#include "callbacks.h"
-#include "interface.h"
-
-#include "render.h"
-
-#ifdef EXPORT_PNG
-#include "exportimage.h"
-#endif /* EXPORT_PNG */
 
 #define dprintf if(DEBUG) printf
 
@@ -137,7 +124,7 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 			}
 			break;
 		case ZOOM_FIT : /* Zoom Fit */
-			render_zoom_to_fit_display (&screenRenderInfo);
+			gerbv_render_zoom_to_fit_display (&mainProject, &screenRenderInfo);
 			break;
 		case ZOOM_SET : /*explicit scale set by user */
 			screenRenderInfo.scaleFactorX = scaleFactor;
@@ -308,7 +295,6 @@ render_draw_measure_distance(void)
 	GdkGC *gc;
 	GdkGCValues values;
 	GdkGCValuesMask values_mask;
-	GdkFont *font;
 #endif   
 	gint x1, y1, x2, y2;
 	double dx, dy;
@@ -322,7 +308,6 @@ render_draw_measure_distance(void)
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
-	font = gdk_font_load(setup.dist_fontname);
 #endif
 	x1 = MIN(screen.start_x, screen.last_x);
 	y1 = MIN(screen.start_y, screen.last_y);
@@ -334,117 +319,15 @@ render_draw_measure_distance(void)
 #if !defined (__MINGW32__)
 	gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
 		  screen.start_y, screen.last_x, screen.last_y);
-	if (font == NULL) {
-		GERB_MESSAGE("Failed to load font '%s'\n", setup.dist_fontname);
-	} 
-	else {
 #endif
-		screen.win.lastMeasuredX = dx;
-		screen.win.lastMeasuredY = dy;
-		callbacks_update_statusbar_measured_distance (dx, dy);
+	screen.win.lastMeasuredX = dx;
+	screen.win.lastMeasuredY = dy;
+	callbacks_update_statusbar_measured_distance (dx, dy);
 #if !defined (__MINGW32__)
-	}
 	gdk_gc_unref(gc);
 #endif     
 } /* draw_measure_distance */
 
-void
-render_translate_to_fit_display (gerbv_render_info_t *renderInfo) {
-	double x1=HUGE_VAL,y1=HUGE_VAL;
-	int i;
-	gerb_image_info_t *info;
-	
-	for(i = 0; i < screen.max_files; i++) {
-		if ((screen.file[i]) && (screen.file[i]->isVisible)){
-			info = screen.file[i]->image->info;
-
-			/* cairo info already has offset calculated into min/max */
-			x1 = MIN(x1, info->min_x);
-			y1 = MIN(y1, info->min_y);
-		}
-	}
-	renderInfo->lowerLeftX = x1;
-	renderInfo->lowerLeftY = y1;
-}
-
-/* ------------------------------------------------------------------ */
-void
-render_get_boundingbox(gerbv_render_size_t *boundingbox)
-{
-	double x1=HUGE_VAL,y1=HUGE_VAL, x2=-HUGE_VAL,y2=-HUGE_VAL;
-	int i;
-	gerb_image_info_t *info;
-
-	for(i = 0; i < screen.max_files; i++) {
-		if ((screen.file[i]) && (screen.file[i]->isVisible)){
-			info = screen.file[i]->image->info;
-			/* 
-			* Find the biggest image and use as a size reference
-			*/
-#ifdef RENDER_USING_GDK
-			x1 = MIN(x1, info->min_x + info->offsetA);
-			y1 = MIN(y1, info->min_y + info->offsetB);
-			x2 = MAX(x2, info->max_x + info->offsetA);
-			y2 = MAX(y2, info->max_y + info->offsetB);
-#else
-			/* cairo info already has offset calculated into min/max */
-			x1 = MIN(x1, info->min_x);
-			y1 = MIN(y1, info->min_y);
-			x2 = MAX(x2, info->max_x);
-			y2 = MAX(y2, info->max_y);
-#endif
-		}
-	}
-	boundingbox->left    = x1;
-	boundingbox->right   = x2;
-	boundingbox->top    = y1;
-	boundingbox->bottom = y2;
-}
-
-/* ------------------------------------------------------------------ */
-void
-render_zoom_to_fit_display (gerbv_render_info_t *renderInfo) {
-	gerbv_render_size_t bb;
-	double width, height;
-	double x_scale, y_scale;
-
-	/* Grab maximal width and height of all layers */
-        render_get_boundingbox(&bb);
-	width = bb.right - bb.left;
-	height = bb.bottom - bb.top;
-	/* add in a 5% buffer around the drawing */
-	width *= 1.05;
-	height *=1.05;
-
-	/* if the values aren't sane (probably we have no models loaded), then
-	   put in some defaults */
-	if ((width < 0.01) && (height < 0.01)) {
-		renderInfo->lowerLeftX = 0.0;
-		renderInfo->lowerLeftY = 0.0;
-		renderInfo->scaleFactorX = 200;
-		renderInfo->scaleFactorY = 200;
-		return;
-	}
-	/*
-	* Calculate scale for both x axis and y axis
-	*/
-	x_scale = renderInfo->displayWidth / width;
-	y_scale = renderInfo->displayHeight / height;
-	/*
-	* Take the scale that fits both directions with some extra checks
-	*/
-	renderInfo->scaleFactorX = MIN(x_scale, y_scale);
-	renderInfo->scaleFactorY = renderInfo->scaleFactorX;
-	if (renderInfo->scaleFactorX < 1){
-	    renderInfo->scaleFactorX = 1;
-	    renderInfo->scaleFactorY = 1;
-	}
-	renderInfo->lowerLeftX = ((bb.left + bb.right) / 2.0) -
-		((double) renderInfo->displayWidth / 2.0 / renderInfo->scaleFactorX);
-	renderInfo->lowerLeftY = ((bb.top + bb.bottom) / 2.0) -
-		((double) renderInfo->displayHeight / 2.0 / renderInfo->scaleFactorY);
-	return;
-}
 
 void render_selection_layer (void){
 #ifndef RENDER_USING_GDK
@@ -458,7 +341,7 @@ void render_selection_layer (void){
 		screenRenderInfo.displayHeight);
 	if (screen.selectionInfo.type != EMPTY) {
 		cr= cairo_create(screen.selectionRenderData);
-		render_cairo_set_scale_translation(cr, &screenRenderInfo);
+		gerbv_render_cairo_set_scale_and_translation(cr, &screenRenderInfo);
 		cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1);
 		/* for now, assume everything in the selection buffer is from one image */
 		gerb_image_t *matchImage;
@@ -468,10 +351,10 @@ void render_selection_layer (void){
 					gerb_selection_item_t, 0);
 			matchImage = (gerb_image_t *) sItem.image;	
 			dprintf("    .... calling render_image_to_cairo_target on selection layer...\n");
-			for(j = screen.max_files-1; j >= 0; j--) {
-				if ((screen.file[j]) && (screen.file[j]->image == matchImage)) {
-					draw_image_to_cairo_target (cr, screen.file[j]->image,
-						screen.file[j]->transform.inverted,
+			for(j = mainProject.max_files-1; j >= 0; j--) {
+				if ((mainProject.file[j]) && (mainProject.file[j]->image == matchImage)) {
+					draw_image_to_cairo_target (cr, mainProject.file[j]->image,
+						mainProject.file[j]->transform.inverted,
 						1.0/MAX(screenRenderInfo.scaleFactorX,
 						screenRenderInfo.scaleFactorY),
 						DRAW_SELECTIONS, &screen.selectionInfo);
@@ -496,7 +379,8 @@ void render_refresh_rendered_image_on_screen (void) {
 		gdk_pixmap_unref(screen.pixmap);
 	    screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
 	    screenRenderInfo.displayHeight, -1);
-	    render_to_pixmap_using_gdk (screen.pixmap, &screenRenderInfo);	
+	    gerbv_render_to_pixmap_using_gdk (&mainProject, screen.pixmap, &screenRenderInfo, &screen.selectionInfo,
+	    		&screen.selection_color);	
 	    dprintf("<---- leaving redraw_pixmap.\n");
 	}
 #ifndef RENDER_USING_GDK
@@ -507,17 +391,17 @@ void render_refresh_rendered_image_on_screen (void) {
 	     * This now allows drawing several layers on top of each other.
 	     * Higher layer numbers have higher priority in the Z-order.
 	     */
-	    for(i = screen.max_files-1; i >= 0; i--) {
-		if (screen.file[i]) {
+	    for(i = mainProject.max_files-1; i >= 0; i--) {
+		if (mainProject.file[i]) {
 		    cairo_t *cr;
-		    if (screen.file[i]->privateRenderData) 
-			cairo_surface_destroy ((cairo_surface_t *) screen.file[i]->privateRenderData);
-		    screen.file[i]->privateRenderData = 
+		    if (mainProject.file[i]->privateRenderData) 
+			cairo_surface_destroy ((cairo_surface_t *) mainProject.file[i]->privateRenderData);
+		    mainProject.file[i]->privateRenderData = 
 			(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
 			CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
 			screenRenderInfo.displayHeight);
-		    cr= cairo_create(screen.file[i]->privateRenderData );
-		    render_layer_to_cairo_target (cr, screen.file[i], &screenRenderInfo);
+		    cr= cairo_create(mainProject.file[i]->privateRenderData );
+		    gerbv_render_layer_to_cairo_target (cr, mainProject.file[i], &screenRenderInfo);
 		    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
 		    cairo_destroy (cr);
 		}
@@ -571,8 +455,8 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean
 	/* call draw_image... passing the FILL_SELECTION mode to just search for
 	   nets which match the selection, and fill the selection buffer with them */
 	cairo_t *cr= cairo_create(screen.bufferSurface);	
-	render_cairo_set_scale_translation(cr,&screenRenderInfo);
-	draw_image_to_cairo_target (cr, screen.file[activeFileIndex]->image, screen.file[activeFileIndex]->transform.inverted,
+	gerbv_render_cairo_set_scale_and_translation(cr,&screenRenderInfo);
+	draw_image_to_cairo_target (cr, mainProject.file[activeFileIndex]->image, mainProject.file[activeFileIndex]->transform.inverted,
 		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
 		FIND_SELECTIONS, &screen.selectionInfo);
 	cairo_destroy (cr);
@@ -615,79 +499,6 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
 }
 
-void render_all_layers_to_cairo_target_for_vector_output (cairo_t *cr, gerbv_render_info_t *renderInfo) {
-	int i;
-	render_cairo_set_scale_translation(cr, renderInfo);
-	/* don't paint background for vector output, since it isn't needed */
-	for(i = screen.max_files-1; i >= 0; i--) {
-		if (screen.file[i] && screen.file[i]->isVisible) {
-
-		    render_layer_to_cairo_target_without_transforming(cr, screen.file[i], renderInfo);
-		}
-	}
-}
-
-void render_all_layers_to_cairo_target (cairo_t *cr, gerbv_render_info_t *renderInfo) {
-	int i;
-	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) screen.background.red/G_MAXUINT16,
-		(double) screen.background.green/G_MAXUINT16,
-		(double) screen.background.blue/G_MAXUINT16, 1);
-	cairo_paint (cr);
-	for(i = screen.max_files-1; i >= 0; i--) {
-		if (screen.file[i] && screen.file[i]->isVisible) {
-			cairo_push_group (cr);
-			render_layer_to_cairo_target (cr, screen.file[i], renderInfo);
-			cairo_pop_group_to_source (cr);
-			cairo_paint_with_alpha (cr, (double) screen.file[i]->alpha/G_MAXUINT16);
-		}
-	}
-}
-
-void render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
-						gerbv_render_info_t *renderInfo) {
-	render_cairo_set_scale_translation(cr, renderInfo);
-	render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo);
-}
-
-void render_cairo_set_scale_translation(cairo_t *cr, gerbv_render_info_t *renderInfo){
-	gdouble translateX, translateY;
-	
-	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactorX);
-	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactorY);
-	
-	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
-	   this far */
-	if (renderInfo->renderType == 2) {
-		cairo_set_tolerance (cr, 1.5);
-		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
-	}
-	else if (renderInfo->renderType == 3) {
-		cairo_set_tolerance (cr, 1);
-		/* disable ALL anti-aliasing for now due to the way cairo is rendering
-		   ground planes from PCB output */
-		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
-	}
-
-	/* translate the draw area before drawing.  We must translate the whole
-	   drawing down an additional displayHeight to account for the negative
-	   y flip done later */
-	cairo_translate (cr, -translateX, translateY + renderInfo->displayHeight);
-	/* scale the drawing by the specified scale factor (inverting y since
-		cairo y axis points down) */
-	cairo_scale (cr, renderInfo->scaleFactorX, -renderInfo->scaleFactorY);
-}
-
-void
-render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo ) {
-	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
-		(double) fileInfo->color.green/G_MAXUINT16,
-		(double) fileInfo->color.blue/G_MAXUINT16, 1);
-	
-	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
-		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL);
-}
-
 void render_recreate_composite_surface () {
 	gint i;
 	
@@ -696,18 +507,18 @@ void render_recreate_composite_surface () {
 
 	cairo_t *cr= cairo_create(screen.bufferSurface);
 	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) screen.background.red/G_MAXUINT16,
-		(double) screen.background.green/G_MAXUINT16,
-		(double) screen.background.blue/G_MAXUINT16, 1);
+	cairo_set_source_rgba (cr, (double) mainProject.background.red/G_MAXUINT16,
+		(double) mainProject.background.green/G_MAXUINT16,
+		(double) mainProject.background.blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
 	
-	for(i = screen.max_files-1; i >= 0; i--) {
-		if (screen.file[i] && screen.file[i]->isVisible) {
-			cairo_set_source_surface (cr, (cairo_surface_t *) screen.file[i]->privateRenderData,
+	for(i = mainProject.max_files-1; i >= 0; i--) {
+		if (mainProject.file[i] && mainProject.file[i]->isVisible) {
+			cairo_set_source_surface (cr, (cairo_surface_t *) mainProject.file[i]->privateRenderData,
 			                              0, 0);
 			/* ignore alpha if we are in high-speed render mode */
-			if (((double) screen.file[i]->alpha < 65535)&&(screenRenderInfo.renderType != 1)) {
-				cairo_paint_with_alpha(cr,(double) screen.file[i]->alpha/G_MAXUINT16);
+			if (((double) mainProject.file[i]->alpha < 65535)&&(screenRenderInfo.renderType != 1)) {
+				cairo_paint_with_alpha(cr,(double) mainProject.file[i]->alpha/G_MAXUINT16);
 			}
 			else {
 				cairo_paint (cr);
@@ -725,9 +536,9 @@ void render_recreate_composite_surface () {
 
 void render_project_to_cairo_target (cairo_t *cr) {
 	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) screen.background.red/G_MAXUINT16,
-		(double) screen.background.green/G_MAXUINT16,
-		(double) screen.background.blue/G_MAXUINT16, 1);
+	cairo_set_source_rgba (cr, (double) mainProject.background.red/G_MAXUINT16,
+		(double) mainProject.background.green/G_MAXUINT16,
+		(double) mainProject.background.blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
 
 	cairo_set_source_surface (cr, (cairo_surface_t *) screen.bufferSurface, 0 , 0);
@@ -735,125 +546,6 @@ void render_project_to_cairo_target (cairo_t *cr) {
 	cairo_paint (cr);
 }
 #endif  /* RENDER_USING_GDK */
-
-
-void
-render_to_pixmap_using_gdk (GdkPixmap *pixmap, gerbv_render_info_t *renderInfo){
-	GdkGC *gc = gdk_gc_new(pixmap);
-	GdkPixmap *colorStamp, *clipmask;
-	int i;
-	
-	/* 
-	 * Remove old pixmap, allocate a new one, draw the background.
-	 */
-	if (!screen.background.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.background, FALSE, TRUE);
-	gdk_gc_set_foreground(gc, &screen.background);
-	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, -1, -1);
-
-	/*
-	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
-	 */
-	colorStamp = gdk_pixmap_new(pixmap, renderInfo->displayWidth,
-						renderInfo->displayHeight, -1);
-	clipmask = gdk_pixmap_new(NULL, renderInfo->displayWidth,
-						renderInfo->displayHeight, 1);
-							
-	/* 
-	* This now allows drawing several layers on top of each other.
-	* Higher layer numbers have higher priority in the Z-order. 
-	*/
-	for(i = screen.max_files-1; i >= 0; i--) {
-		if (screen.file[i] && screen.file[i]->isVisible) {
-			enum polarity_t polarity;
-
-			if (screen.file[i]->transform.inverted) {
-				if (screen.file[i]->image->info->polarity == POSITIVE)
-					polarity = NEGATIVE;
-				else
-					polarity = POSITIVE;
-			} else {
-				polarity = screen.file[i]->image->info->polarity;
-			}
-
-			/*
-			* Fill up image with all the foreground color. Excess pixels
-			* will be removed by clipmask.
-			*/
-			if (!screen.file[i]->color.pixel)
-	 			gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.file[i]->color, FALSE, TRUE);
-			gdk_gc_set_foreground(gc, &screen.file[i]->color);
-			
-			/* switch back to regular draw function for the initial
-			   bitmap clear */
-			gdk_gc_set_function(gc, GDK_COPY);
-			gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
-			
-			if (renderInfo->renderType == 0) {
-				gdk_gc_set_function(gc, GDK_COPY);
-			}
-			else if (renderInfo->renderType == 1) {
-				gdk_gc_set_function(gc, GDK_XOR);
-			}
-			/*
-			* Translation is to get it inside the allocated pixmap,
-			* which is not always centered perfectly for GTK/X.
-			*/
-			dprintf("  .... calling image2pixmap on image %d...\n", i);
-			// Dirty scaling solution when using GDK; simply use scaling factor for x-axis, ignore y-axis
-			draw_gdk_image_to_pixmap(&clipmask, screen.file[i]->image,
-				renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
-				(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-				polarity, DRAW_IMAGE, NULL);
-
-			/* 
-			* Set clipmask and draw the clipped out image onto the
-			* screen pixmap. Afterwards we remove the clipmask, else
-			* it will screw things up when run this loop again.
-			*/
-			gdk_gc_set_clip_mask(gc, clipmask);
-			gdk_gc_set_clip_origin(gc, 0, 0);
-			gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
-			gdk_gc_set_clip_mask(gc, NULL);
-		}
-	}
-	/* render the selection group to the top of the output */
-	if (screen.selectionInfo.type != EMPTY) {
-		if (!screen.selection_color.pixel)
-	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.selection_color, FALSE, TRUE);
-	 		
-		gdk_gc_set_foreground(gc, &screen.selection_color);
-		gdk_gc_set_function(gc, GDK_COPY);
-		gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
-		
-		/* for now, assume everything in the selection buffer is from one image */
-		gerb_image_t *matchImage;
-		int j;
-		if (screen.selectionInfo.selectedNodeArray->len > 0) {
-			gerb_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
-					gerb_selection_item_t, 0);
-			matchImage = (gerb_image_t *) sItem.image;	
-
-			for(j = screen.max_files-1; j >= 0; j--) {
-				if ((screen.file[j]) && (screen.file[j]->image == matchImage)) {
-					draw_gdk_image_to_pixmap(&clipmask, screen.file[j]->image,
-						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
-						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-						POSITIVE, DRAW_SELECTIONS, &screen.selectionInfo);
-				}
-			}
-			gdk_gc_set_clip_mask(gc, clipmask);
-			gdk_gc_set_clip_origin(gc, 0, 0);
-			gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
-			gdk_gc_set_clip_mask(gc, NULL);
-		}
-	}
-
-	gdk_pixmap_unref(colorStamp);
-	gdk_pixmap_unref(clipmask);
-	gdk_gc_unref(gc);
-}
-
 
 /* ------------------------------------------------------------------ */
 /* Fill out the gerber statistics table */
@@ -867,11 +559,11 @@ generate_gerber_analysis(void)
     stats = gerb_stats_new();
 
     /* Loop through open layers and compile statistics */
-    for(i = screen.max_files-1; i >= 0; i--) {
-	if (screen.file[i] && 
-	    screen.file[i]->isVisible &&
-	    (screen.file[i]->image->layertype == GERBER) ) {
-	    instats = screen.file[i]->image->gerb_stats;
+    for(i = mainProject.max_files-1; i >= 0; i--) {
+	if (mainProject.file[i] && 
+	    mainProject.file[i]->isVisible &&
+	    (mainProject.file[i]->image->layertype == GERBER) ) {
+	    instats = mainProject.file[i]->image->gerb_stats;
 	    gerb_stats_add_layer(stats, instats, i+1);
 	}
     }
@@ -892,11 +584,11 @@ generate_drill_analysis(void)
     stats = drill_stats_new();
 
     /* Loop through open layers and compile statistics */
-    for(i = screen.max_files-1; i >= 0; i--) {
-	if (screen.file[i] && 
-	    screen.file[i]->isVisible &&
-	    (screen.file[i]->image->layertype == DRILL) ) {
-	    instats = screen.file[i]->image->drill_stats;
+    for(i = mainProject.max_files-1; i >= 0; i--) {
+	if (mainProject.file[i] && 
+	    mainProject.file[i]->isVisible &&
+	    (mainProject.file[i]->image->layertype == DRILL) ) {
+	    instats = mainProject.file[i]->image->drill_stats;
 	    /* add this batch of stats.  Send the layer 
 	     * index for error reporting */
 	    drill_stats_add_layer(stats, instats, i+1);

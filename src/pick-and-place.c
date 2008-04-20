@@ -54,17 +54,15 @@
 
 #include <assert.h>
 
+#include "gerbv.h"
 #include "gerber.h"
-#include "gerb_error.h"
-
+#include "gerb_transf.h"
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
 #else
   #include "draw.h"
 #endif
 
-#include "log.h"
-#include "setup.h"
 #include "csv.h"
 #include "pick-and-place.h"
 /* CHECKME - here gi18n is disabled */

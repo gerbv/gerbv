@@ -34,7 +34,9 @@
 #include <math.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <png.h>
-#include "gerbv_screen.h"
+
+#include "gerbv.h"
+#include "render.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -46,11 +48,6 @@
   #include <cairo-svg.h>
 #endif
 
-#include "render.h"
-#include "exportimage.h"
-
-#include "gerbv_screen.h"
-
 extern gerbv_render_info_t screenRenderInfo;
 
 #ifdef RENDER_USING_GDK
@@ -59,11 +56,11 @@ exportimage_save_pixbuf_to_file (GdkPixbuf* pixbuf, char const* filename);
 #endif
 
 #ifndef RENDER_USING_GDK
-void exportimage_render_to_surface_and_destroy (cairo_surface_t *cSurface, gerbv_render_info_t *renderInfo,
-						gchar const* filename) {
+void exportimage_render_to_surface_and_destroy (gerbv_project_t *gerbvProject,
+		cairo_surface_t *cSurface, gerbv_render_info_t *renderInfo, gchar const* filename) {
       cairo_t *cairoTarget = cairo_create (cSurface);
       
-      render_all_layers_to_cairo_target_for_vector_output (cairoTarget, renderInfo);
+      gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbvProject, cairoTarget, renderInfo);
 	cairo_destroy (cairoTarget);
 	cairo_surface_destroy (cSurface);
 }
@@ -72,17 +69,18 @@ void exportimage_render_to_surface_and_destroy (cairo_surface_t *cSurface, gerbv
 #endif
 
 #ifdef EXPORT_PNG
-void exportimage_export_to_png_file_autoscaled (int widthInPixels, int heightInPixels, gchar const* filename) {
+void exportimage_export_to_png_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels,
+		int heightInPixels, gchar const* filename) {
 #ifdef RENDER_USING_GDK
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 0, widthInPixels, heightInPixels};
 #else
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPixels, heightInPixels};
 #endif	
-	render_zoom_to_fit_display (&renderInfo);
-	exportimage_export_to_png_file (&renderInfo, filename);
+	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
+	exportimage_export_to_png_file (gerbvProject, &renderInfo, filename);
 }
 
-void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar const* filename) {
+void exportimage_export_to_png_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename) {
 #ifdef RENDER_USING_GDK
 
 	GdkPixmap *renderedPixmap = gdk_pixmap_new (NULL, renderInfo->displayWidth,
@@ -105,7 +103,7 @@ void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar cons
 	cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
                                                          renderInfo->displayWidth, renderInfo->displayHeight);
 	cairo_t *cairoTarget = cairo_create (cSurface);
-      	render_all_layers_to_cairo_target (cairoTarget, renderInfo);
+	gerbv_render_all_layers_to_cairo_target (gerbvProject, cairoTarget, renderInfo);
 	cairo_surface_write_to_png (cSurface, filename);
 	cairo_destroy (cairoTarget);
 	cairo_surface_destroy (cSurface);
@@ -113,49 +111,55 @@ void exportimage_export_to_png_file (gerbv_render_info_t *renderInfo, gchar cons
 }
 #endif
 
-void exportimage_export_to_pdf_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename) {
+void exportimage_export_to_pdf_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
+		int heightInPoints, gchar const* filename) {
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
-	render_zoom_to_fit_display (&renderInfo);
-	exportimage_export_to_pdf_file (&renderInfo, filename);
+	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
+	exportimage_export_to_pdf_file (gerbvProject, &renderInfo, filename);
 }
 
-void exportimage_export_to_pdf_file (gerbv_render_info_t *renderInfo, gchar const* filename) {
+void exportimage_export_to_pdf_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
+		gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_pdf_surface_create (filename, renderInfo->displayWidth,
 								renderInfo->displayHeight);
 
-      exportimage_render_to_surface_and_destroy (cSurface, renderInfo, filename);
+      exportimage_render_to_surface_and_destroy (gerbvProject, cSurface, renderInfo, filename);
 #endif
 }
 
-void exportimage_export_to_postscript_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename) {
+void exportimage_export_to_postscript_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
+		int heightInPoints, gchar const* filename) {
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
-	render_zoom_to_fit_display (&renderInfo);
-	exportimage_export_to_postscript_file (&renderInfo, filename);
+	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
+	exportimage_export_to_postscript_file (gerbvProject, &renderInfo, filename);
 }
 
-void exportimage_export_to_postscript_file (gerbv_render_info_t *renderInfo, gchar const* filename) {
+void exportimage_export_to_postscript_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
+		gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_ps_surface_create (filename, renderInfo->displayWidth,
 								renderInfo->displayHeight);
-      exportimage_render_to_surface_and_destroy (cSurface, renderInfo, filename);
+      exportimage_render_to_surface_and_destroy (gerbvProject, cSurface, renderInfo, filename);
 #endif
 }
 
-void exportimage_export_to_svg_file_autoscaled (int widthInPoints, int heightInPoints, gchar const* filename) {
+void exportimage_export_to_svg_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
+		int heightInPoints, gchar const* filename) {
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
-	render_zoom_to_fit_display (&renderInfo);
-	exportimage_export_to_svg_file (&renderInfo, filename);
+	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
+	exportimage_export_to_svg_file (gerbvProject, &renderInfo, filename);
 }
 
-void exportimage_export_to_svg_file (gerbv_render_info_t *renderInfo, gchar const* filename) {
+void exportimage_export_to_svg_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
+		gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_svg_surface_create (filename, renderInfo->displayWidth,
 								renderInfo->displayHeight);
-      exportimage_render_to_surface_and_destroy (cSurface, renderInfo, filename);
+      exportimage_render_to_surface_and_destroy (gerbvProject, cSurface, renderInfo, filename);
 #endif
 }
 

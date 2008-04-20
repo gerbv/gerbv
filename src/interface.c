@@ -34,9 +34,11 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "gerber.h"
-#include "drill.h"
-#include "gerb_error.h"
+#include "gerbv.h"
+#include "main.h"
+#include "callbacks.h"
+#include "interface.h"
+#include "render.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -44,17 +46,8 @@
   #include "draw.h"
 #endif
 
-#include "gerbv_screen.h"
 #include "gerbv_icon.h"
-#include "log.h"
-#include "setup.h"
-#include "project.h"
-
-#include "callbacks.h"
-#include "interface.h"
-#include "render.h"
 #include "icons.h"
-
 extern gerbv_render_info_t screenRenderInfo;
 
 static 	GtkWidget *render_combobox;

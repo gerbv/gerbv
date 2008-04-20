@@ -31,7 +31,7 @@
 #include <glib.h>
 #include <math.h>
 
-#include "gerb_error.h"
+#include "gerbv.h"
 #include "drill_stats.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */

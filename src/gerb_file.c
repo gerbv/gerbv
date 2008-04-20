@@ -38,11 +38,18 @@
 #include <sys/mman.h>
 #endif
 #include <errno.h>
-#include "gerb_error.h"
+
+#include "gerbv.h"
 #include "gerb_file.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
+
+#if defined (__MINGW32__)
+const char path_separator = '\\';
+#else
+const char path_separator = '/';
+#endif
 
 gerb_file_t *
 gerb_fopen(char const * filename)

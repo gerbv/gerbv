@@ -81,9 +81,9 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
 
 #include <locale.h>
 
+#include "gerbv.h"
 #include "gerber.h"
 #include "drill.h"
-#include "gerb_error.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
@@ -92,31 +92,15 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
   #include "draw.h"
 #endif
 
-#include "gerbv_screen.h"
-#include "log.h"
-#include "setup.h"
 #include "project.h"
 #include "tooltable.h"
 #include "pick-and-place.h"
-#include "interface.h"
-#include "callbacks.h"
-#include "render.h"
-#include "exportimage.h"
-#include "export-rs274x.h"
-#include "export-drill.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
-/* Notice that the pixel field is used for alpha in this case */
-typedef struct{
-    unsigned char red;
-    unsigned char green;
-    unsigned char blue;
-    unsigned char alpha;
-}LayerColor;
 
 static LayerColor defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{115,115,222,177},
@@ -162,66 +146,13 @@ static gerb_user_transformations_t defaultTransformations[NUMBER_OF_DEFAULT_TRAN
 	{0,0,0,0,FALSE},
 };
 
-#ifdef HAVE_GETOPT_LONG
-int longopt_val = 0;
-int longopt_idx = 0;
-const struct option longopts[] = {
-    /* name              has_arg            flag  val */
-    {"border",		required_argument,  NULL,    'B'},
-    {"dpi",		required_argument,  NULL,    'D'},
-    {"version",         no_argument,	    NULL,    'V'},
-    {"origin",          required_argument,  NULL,    'O'},
-    {"window_inch",	required_argument,  NULL,    'W'},
-    {"antialias",	no_argument,	    NULL,    'a'},
-    {"background",      required_argument,  NULL,    'b'},
-    {"dump",            no_argument,	    NULL,    'd'},
-    {"foreground",      required_argument,  NULL,    'f'},
-    {"help",            no_argument,	    NULL,    'h'},
-    {"log",             required_argument,  NULL,    'l'},
-    {"output",          required_argument,  NULL,    'o'},
-    {"project",         required_argument,  NULL,    'p'},
-    {"tools",           required_argument,  NULL,    't'},
-    {"translate",       required_argument,  NULL,    'T'},
-    {"window",		required_argument,  NULL,    'w'},
-    {"export",          required_argument,  NULL,    'x'},
-    {"geometry",        required_argument,  &longopt_val, 1},
-    /* GDK/GDK debug flags to be "let through" */
-    {"gtk-module",      required_argument,  &longopt_val, 2},
-    {"g-fatal-warnings",no_argument,	    &longopt_val, 2},
-    {"gtk-debug",       required_argument,  &longopt_val, 2},
-    {"gtk-no-debug",    required_argument,  &longopt_val, 2},
-    {"gdk-debug",       required_argument,  &longopt_val, 2},
-    {"gdk-no-debug",    required_argument,  &longopt_val, 2},
-    {"display",         required_argument,  &longopt_val, 2},
-    {"sync",            no_argument,	    &longopt_val, 2},
-    {"no-xshm",         no_argument,	    &longopt_val, 2},
-    {"name",            required_argument,  &longopt_val, 2},
-    {"class",           required_argument,  &longopt_val, 2},
-    {0, 0, 0, 0},
-};
-#endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "Vadh:B:D:O:W:b:f:l:o:p:t:T:w:x:";
-
-/**Global state variable to keep track of what's happening on the screen.
-   Declared extern in gerbv_screen.h
- */
-gerbv_screen_t screen;
-#if defined (__MINGW32__)
-const char path_separator = '\\';
-#else
-const char path_separator = '/';
-#endif
-
-static int gerbv_open_image(char *filename, int idx, int reload, 
-			    HID_Attribute *attr_list, int n_attr);
-
 void 
-gerbv_open_project_from_filename(gchar *filename) 
+gerbv_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
     project_list_t *project_list = NULL;
     
     dprintf("Opening project = %s\n", (gchar *) filename);
-    project_list = read_project_file(filename);
+    project_list = read_project_file(gerbvProject, filename);
     
     if (project_list) {
 	project_list_t *pl_tmp;
@@ -230,7 +161,7 @@ gerbv_open_project_from_filename(gchar *filename)
 	    GdkColor colorTemplate = {0,project_list->rgb[0],
 				      project_list->rgb[1],project_list->rgb[2]};
 	    if (project_list->layerno == -1) {
-		screen.background = colorTemplate;
+		gerbvProject->background = colorTemplate;
 	    } else {
 		int  idx =  project_list->layerno;
 		gchar *fullName = NULL;
@@ -243,9 +174,9 @@ gerbv_open_project_from_filename(gchar *filename)
 		} else {
 		    fullName = g_strdup (project_list->filename);
 		}
-		if (gerbv_open_image(fullName, idx, FALSE, 
+		if (gerbv_open_image(gerbvProject, fullName, idx, FALSE, 
 				     project_list->attr_list, 
-				     project_list->n_attr) == -1) {
+				     project_list->n_attr, TRUE) == -1) {
 		    GERB_MESSAGE("could not read %s[%d]", fullName, idx);
 		    goto next_layer;
 		}
@@ -254,9 +185,9 @@ gerbv_open_project_from_filename(gchar *filename)
 		/* 
 		 * Change color from default to from the project list
 		 */
-		screen.file[idx]->color = colorTemplate;
-		screen.file[idx]->transform.inverted = project_list->inverted;
-		screen.file[idx]->isVisible = project_list->visible;
+		gerbvProject->file[idx]->color = colorTemplate;
+		gerbvProject->file[idx]->transform.inverted = project_list->inverted;
+		gerbvProject->file[idx]->isVisible = project_list->visible;
 	    }
 	next_layer:
 	    pl_tmp = project_list;
@@ -268,43 +199,43 @@ gerbv_open_project_from_filename(gchar *filename)
 	/*
 	 * Save project filename for later use
 	 */
-	if (screen.project) {
-	    g_free(screen.project);
-	    screen.project = NULL;
+	if (gerbvProject->project) {
+	    g_free(gerbvProject->project);
+	    gerbvProject->project = NULL;
 	}
-	screen.project = g_strdup (filename);
-	if (screen.project == NULL)
-	    GERB_FATAL_ERROR("malloc screen.project failed\n");
+	gerbvProject->project = g_strdup (filename);
+	if (gerbvProject->project == NULL)
+	    GERB_FATAL_ERROR("malloc gerbvProject->project failed\n");
     } else {
 	GERB_MESSAGE("could not read %s[%d]\n", (gchar *) filename,
-		     screen.last_loaded);
+		     gerbvProject->last_loaded);
     }
 } /* gerbv_open_project_from_filename */
 
 
 void 
-gerbv_open_layer_from_filename(gchar *filename) 
+gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
     dprintf("Opening filename = %s\n", (gchar *) filename);
     
     
-    if (gerbv_open_image(filename, ++screen.last_loaded, FALSE, NULL, 0) == -1) {
+    if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
 	GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
-		     screen.last_loaded);
-	screen.last_loaded--;
+		     gerbvProject->last_loaded);
+	gerbvProject->last_loaded--;
     } else {
 	dprintf("     Successfully opened file!\n");	
     }
 } /* gerbv_open_layer_from_filename */
 
 gboolean 
-gerbv_save_layer_from_index(gint index, gchar *filename) 
+gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename) 
 {
-    if (strcmp (screen.file[index]->image->info->type,"RS274-X (Gerber) File")==0) {
-	export_rs274x_file_from_image (filename, screen.file[index]->image);
+    if (strcmp (gerbvProject->file[index]->image->info->type,"RS274-X (Gerber) File")==0) {
+	export_rs274x_file_from_image (filename, gerbvProject->file[index]->image);
     }
-    else if (strcmp (screen.file[index]->image->info->type,"Excellon Drill File")==0) {
-	export_drill_file_from_image (filename, screen.file[index]->image);
+    else if (strcmp (gerbvProject->file[index]->image->info->type,"Excellon Drill File")==0) {
+	export_drill_file_from_image (filename, gerbvProject->file[index]->image);
     }
     else {
 	return FALSE;
@@ -313,7 +244,7 @@ gerbv_save_layer_from_index(gint index, gchar *filename)
 } /* gerbv_save_project_from_filename */
 
 void 
-gerbv_save_project_from_filename(gchar *filename) 
+gerbv_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
     project_list_t *project_list = NULL, *tmp;
     int idx;
@@ -322,38 +253,38 @@ gerbv_save_project_from_filename(gchar *filename)
     project_list = g_new0 (project_list_t, 1);
     project_list->next = project_list;
     project_list->layerno = -1;
-    project_list->filename = screen.path;
-    project_list->rgb[0] = screen.background.red;
-    project_list->rgb[1] = screen.background.green;
-    project_list->rgb[2] = screen.background.blue;
+    project_list->filename = gerbvProject->path;
+    project_list->rgb[0] = gerbvProject->background.red;
+    project_list->rgb[1] = gerbvProject->background.green;
+    project_list->rgb[2] = gerbvProject->background.blue;
     project_list->next = NULL;
     
-    for (idx = 0; idx < screen.max_files; idx++) {
-	if (screen.file[idx]) {
+    for (idx = 0; idx < gerbvProject->max_files; idx++) {
+	if (gerbvProject->file[idx]) {
 	    tmp = g_new0 (project_list_t, 1);
 	    tmp->next = project_list;
 	    tmp->layerno = idx;
 	    
 	    /* figure out the relative path to the layer from the project
 	       directory */
-	    if (strncmp (dirName, screen.file[idx]->name, strlen(dirName)) == 0) {
+	    if (strncmp (dirName, gerbvProject->file[idx]->name, strlen(dirName)) == 0) {
 		/* skip over the common dirname and the separator */
-		tmp->filename = (screen.file[idx]->name + strlen(dirName) + 1);
+		tmp->filename = (gerbvProject->file[idx]->name + strlen(dirName) + 1);
 	    } else {
 		/* if we can't figure out a relative path, just save the 
 		 * absolute one */
-		tmp->filename = screen.file[idx]->name;
+		tmp->filename = gerbvProject->file[idx]->name;
 	    }
-	    tmp->rgb[0] = screen.file[idx]->color.red;
-	    tmp->rgb[1] = screen.file[idx]->color.green;
-	    tmp->rgb[2] = screen.file[idx]->color.blue;
-	    tmp->inverted = screen.file[idx]->transform.inverted;
-	    tmp->visible = screen.file[idx]->isVisible;
+	    tmp->rgb[0] = gerbvProject->file[idx]->color.red;
+	    tmp->rgb[1] = gerbvProject->file[idx]->color.green;
+	    tmp->rgb[2] = gerbvProject->file[idx]->color.blue;
+	    tmp->inverted = gerbvProject->file[idx]->transform.inverted;
+	    tmp->visible = gerbvProject->file[idx]->isVisible;
 	    project_list = tmp;
 	}
     }
     
-    if (write_project_file(screen.project, project_list)) {
+    if (write_project_file(gerbvProject, gerbvProject->project, project_list)) {
 	GERB_MESSAGE("Failed to write project\n");
     }
     g_free (dirName);
@@ -361,100 +292,100 @@ gerbv_save_project_from_filename(gchar *filename)
 
 
 void 
-gerbv_save_as_project_from_filename(gchar *filename) 
+gerbv_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
 	
     /*
      * Save project filename for later use
      */
-    if (screen.project) {
-	g_free(screen.project);
-	screen.project = NULL;
+    if (gerbvProject->project) {
+	g_free(gerbvProject->project);
+	gerbvProject->project = NULL;
     }
-    screen.project = g_strdup(filename);
-    if (screen.project == NULL)
-	GERB_FATAL_ERROR("malloc screen.project failed\n");
-    gerbv_save_project_from_filename (filename);
+    gerbvProject->project = g_strdup(filename);
+    if (gerbvProject->project == NULL)
+	GERB_FATAL_ERROR("malloc gerbvProject->project failed\n");
+    gerbv_save_project_from_filename (gerbvProject, filename);
 } /* gerbv_save_as_project_from_filename */
 
 /* ------------------------------------------------------------------ */
 int
-gerbv_revert_file(int idx){
+gerbv_revert_file(gerbv_project_t *gerbvProject, int idx){
 	int rv;
-	rv = gerbv_open_image(screen.file[idx]->fullPathname, idx, TRUE, NULL, 0);
+	rv = gerbv_open_image(gerbvProject, gerbvProject->file[idx]->fullPathname, idx, TRUE, NULL, 0, TRUE);
 	return rv;
 }
 
 void 
-gerbv_revert_all_files(void) 
+gerbv_revert_all_files(gerbv_project_t *gerbvProject) 
 {
     int idx;
     
-    for (idx = 0; idx < screen.max_files; idx++) {
-	if (screen.file[idx] && screen.file[idx]->fullPathname) {
-	    gerbv_revert_file (idx);
+    for (idx = 0; idx < gerbvProject->max_files; idx++) {
+	if (gerbvProject->file[idx] && gerbvProject->file[idx]->fullPathname) {
+	    gerbv_revert_file (gerbvProject, idx);
 	    return;
 	}
     }
 } /* gerbv_revert_all_files */
 
 void 
-gerbv_unload_layer(int index) 
+gerbv_unload_layer(gerbv_project_t *gerbvProject, int index) 
 {
     gint i;
     
-    free_gerb_image(screen.file[index]->image);  screen.file[index]->image = NULL;
-    g_free(screen.file[index]->name);
-    screen.file[index]->name = NULL;
-    g_free(screen.file[index]);
-    screen.file[index] = NULL;
+    free_gerb_image(gerbvProject->file[index]->image);  gerbvProject->file[index]->image = NULL;
+    g_free(gerbvProject->file[index]->name);
+    gerbvProject->file[index]->name = NULL;
+    g_free(gerbvProject->file[index]);
+    gerbvProject->file[index] = NULL;
     
     /* slide all later layers down to fill the empty slot */
-    for (i=index; i<(screen.max_files-1); i++) {
-	screen.file[i]=screen.file[i+1];
+    for (i=index; i<(gerbvProject->max_files-1); i++) {
+	gerbvProject->file[i]=gerbvProject->file[i+1];
     }
     /* make sure the final spot is clear */
-    screen.file[screen.max_files-1] = NULL;
-    screen.last_loaded--;
+    gerbvProject->file[gerbvProject->max_files-1] = NULL;
+    gerbvProject->last_loaded--;
 } /* gerbv_unload_layer */
 
 void 
-gerbv_unload_all_layers (void) 
+gerbv_unload_all_layers (gerbv_project_t *gerbvProject) 
 {
     int index;
 
     /* Must count down since gerbv_unload_layer collapses
      * layers down.  Otherwise, layers slide past the index */
-    for (index = screen.max_files-1 ; index >= 0; index--) {
-	if (screen.file[index] && screen.file[index]->name) {
-	    gerbv_unload_layer (index);
+    for (index = gerbvProject->max_files-1 ; index >= 0; index--) {
+	if (gerbvProject->file[index] && gerbvProject->file[index]->name) {
+	    gerbv_unload_layer (gerbvProject, index);
 	}
     }
 } /* gerbv_unload_all_layers */
 
 
 void 
-gerbv_change_layer_order(gint oldPosition, gint newPosition) 
+gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint newPosition) 
 {
     gerbv_fileinfo_t *temp_file;
     int index;
     
-    temp_file = screen.file[oldPosition];
+    temp_file = gerbvProject->file[oldPosition];
 	
     if (oldPosition < newPosition){
 	for (index = oldPosition; index < newPosition; index++) {
-	    screen.file[index] = screen.file[index + 1];
+	    gerbvProject->file[index] = gerbvProject->file[index + 1];
 	}
     } else {
 	for (index = oldPosition; index > newPosition; index--) {
-	    screen.file[index] = screen.file[index - 1];
+	    gerbvProject->file[index] = gerbvProject->file[index - 1];
 	}
     }
-    screen.file[newPosition] = temp_file;
+    gerbvProject->file[newPosition] = temp_file;
 } /* gerbv_change_layer_order */
 
 gint
-gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
+gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerb_image_t *parsed_image,
 			gchar *filename, gchar *baseName, int idx, int reload){
     gerb_verify_error_t error = GERB_IMAGE_OK;
     int r, g, b; 
@@ -478,31 +409,31 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
     }
     
     /* Used to debug parser */
-    if (screen.dump_parsed_image)
-	gerb_image_dump(parsed_image);
+    //if (gerbvProject->dump_parsed_image)
+	//gerb_image_dump(parsed_image);
     
     /*
      * If reload, just exchange the image. Else we have to allocate
      * a new memory before we define anything more.
      */
     if (reload) {
-	free_gerb_image(screen.file[idx]->image);
-	screen.file[idx]->image = parsed_image;
+	free_gerb_image(gerbvProject->file[idx]->image);
+	gerbvProject->file[idx]->image = parsed_image;
 	return 0;
     } else {
 	/* Load new file. */
-	screen.file[idx] = (gerbv_fileinfo_t *)g_malloc(sizeof(gerbv_fileinfo_t));
-	if (screen.file[idx] == NULL)
-	    GERB_FATAL_ERROR("malloc screen.file[idx] failed\n");
-	memset((void *)screen.file[idx], 0, sizeof(gerbv_fileinfo_t));
-	screen.file[idx]->image = parsed_image;
+	gerbvProject->file[idx] = (gerbv_fileinfo_t *)g_malloc(sizeof(gerbv_fileinfo_t));
+	if (gerbvProject->file[idx] == NULL)
+	    GERB_FATAL_ERROR("malloc gerbvProject->file[idx] failed\n");
+	memset((void *)gerbvProject->file[idx], 0, sizeof(gerbv_fileinfo_t));
+	gerbvProject->file[idx]->image = parsed_image;
     }
     
     /*
      * Store filename for eventual reload
      */
-    screen.file[idx]->fullPathname = g_strdup (filename);
-    screen.file[idx]->name = g_strdup (baseName);
+    gerbvProject->file[idx]->fullPathname = g_strdup (filename);
+    gerbvProject->file[idx]->name = g_strdup (baseName);
     
     {
 	r = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].red*257;
@@ -511,21 +442,22 @@ gerbv_add_parsed_image_to_project (gerb_image_t *parsed_image,
     }
 
     GdkColor colorTemplate = {0, r, g, b};
-    screen.file[idx]->color = colorTemplate;
-    screen.file[idx]->alpha = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].alpha*257;
-    screen.file[idx]->isVisible = TRUE;
-    screen.file[idx]->transform = defaultTransformations[idx % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
+    gerbvProject->file[idx]->color = colorTemplate;
+    gerbvProject->file[idx]->alpha = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].alpha*257;
+    gerbvProject->file[idx]->isVisible = TRUE;
+    gerbvProject->file[idx]->transform = defaultTransformations[idx % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
     return 1;
 }
 
 /* ------------------------------------------------------------------ */
-static int
-gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int n_fattr)
+int
+gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int reload,
+		HID_Attribute *fattr, int n_fattr, gboolean forceLoadFile)
 {
     gerb_file_t *fd;
     gerb_image_t *parsed_image = NULL, *parsed_image2 = NULL;
     gint retv = -1;
-    gboolean isPnpFile = FALSE, foundBinary, forceLoadFile = FALSE;
+    gboolean isPnpFile = FALSE, foundBinary;
     HID_Attribute *attr_list = NULL;
     int n_attr = 0;
     /* If we're reloading, we'll pass in our file format attribute list
@@ -534,8 +466,8 @@ gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int 
     if (reload)
 	{
 	    /* We're reloading so use the attribute list in memory */
-	    attr_list =  screen.file[idx]->image->info->attr_list;
-	    n_attr =  screen.file[idx]->image->info->n_attr;
+	    attr_list =  gerbvProject->file[idx]->image->info->attr_list;
+	    n_attr =  gerbvProject->file[idx]->image->info->n_attr;
 	}
     else
 	{
@@ -547,17 +479,17 @@ gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int 
 	}
     /* if we don't have enough spots, then grow the file list by 2 to account for the possible 
        loading of two images for PNP files */
-    if ((idx+1) >= screen.max_files) {
-	screen.file = (gerbv_fileinfo_t **) realloc (screen.file, (screen.max_files + 2) * sizeof (gerbv_fileinfo_t *));
+    if ((idx+1) >= gerbvProject->max_files) {
+	gerbvProject->file = (gerbv_fileinfo_t **) realloc (gerbvProject->file, (gerbvProject->max_files + 2) * sizeof (gerbv_fileinfo_t *));
 
-	if (screen.file == NULL)
+	if (gerbvProject->file == NULL)
 	    {
 		fprintf (stderr, "realloc failed\n");
 		exit (1);
 	    }
-	screen.file[screen.max_files] = NULL;
-	screen.file[screen.max_files+1] = NULL;
-	screen.max_files += 2;
+	gerbvProject->file[gerbvProject->max_files] = NULL;
+	gerbvProject->file[gerbvProject->max_files+1] = NULL;
+	gerbvProject->max_files += 2;
     }
     
     dprintf("In open_image, about to try opening filename = %s\n", filename);
@@ -577,14 +509,7 @@ gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int 
 
     if (gerber_is_rs274x_p(fd, &foundBinary)) {
 	dprintf("Found RS-274X file\n");
-	if ((foundBinary)&&(screen.win.topLevelWindow)) {
-		gchar *primaryText = g_strdup_printf ("File %s appears to be a RS-274X file, but contains characters which are not valid ASCII",g_path_get_basename(filename));
-		if (interface_get_alert_dialog_response (primaryText,
-			"Invalid characters may cause problems with the parser. Do you still want to continue?"))
-			forceLoadFile = TRUE;
-		g_free (primaryText);
-	}
-	if ((!(screen.win.topLevelWindow))||(!foundBinary || forceLoadFile)) {
+	if ((!foundBinary || forceLoadFile)) {
 		/* figure out the directory path in case parse_gerb needs to
 		 * load any include files */
 		gchar *currentLoadDirectory = g_path_get_dirname (filename);
@@ -593,26 +518,12 @@ gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int 
 	}
     } else if(drill_file_p(fd, &foundBinary)) {
 	dprintf("Found drill file\n");
-	if ((foundBinary)&&(screen.win.topLevelWindow)) {
-		gchar *primaryText = g_strdup_printf ("File %s appears to be a drill file, but contains characters which are not valid ASCII",g_path_get_basename(filename));
-		if (interface_get_alert_dialog_response (primaryText,
-			"Invalid characters may cause problems with the parser. Do you still want to continue?"))
-			forceLoadFile = TRUE;
-		g_free (primaryText);
-	}
-	if ((!(screen.win.topLevelWindow))||(!foundBinary || forceLoadFile))
+	if ((!foundBinary || forceLoadFile))
 	    parsed_image = parse_drillfile(fd, attr_list, n_attr, reload);
 	
     } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
 	dprintf("Found pick-n-place file\n");
-	if ((foundBinary)&&(screen.win.topLevelWindow)) {
-		gchar *primaryText = g_strdup_printf ("File %s appears to be a pick and place file, but contains characters which are not valid ASCII",g_path_get_basename(filename));
-		if (interface_get_alert_dialog_response (primaryText,
-			"Invalid characters may cause problems with the parser. Do you still want to continue?"))
-			forceLoadFile = TRUE;
-		g_free (primaryText);
-	}
-	if ((!(screen.win.topLevelWindow))||(!foundBinary || forceLoadFile)) {
+	if ((!foundBinary || forceLoadFile)) {
 		pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
 		isPnpFile = TRUE;
 	}
@@ -641,7 +552,7 @@ gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int 
 		displayedName = g_strconcat (baseName, " (top)",NULL);
 	else
 		displayedName = g_strdup (baseName);
-    	retv = gerbv_add_parsed_image_to_project (parsed_image, filename, displayedName, idx, reload);
+    	retv = gerbv_add_parsed_image_to_project (gerbvProject, parsed_image, filename, displayedName, idx, reload);
     	g_free (baseName);
     	g_free (displayedName);
     }
@@ -652,7 +563,7 @@ gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int 
 	gchar *baseName = g_path_get_basename (filename);
 	gchar *displayedName;
 	displayedName = g_strconcat (baseName, " (bottom)",NULL);
-    	retv = gerbv_add_parsed_image_to_project (parsed_image2, filename, displayedName, idx + 1, reload);
+    	retv = gerbv_add_parsed_image_to_project (gerbvProject, parsed_image2, filename, displayedName, idx + 1, reload);
     	g_free (baseName);
     	g_free (displayedName);
     }
@@ -660,643 +571,301 @@ gerbv_open_image(char *filename, int idx, int reload, HID_Attribute *fattr, int 
     return retv;
 } /* open_image */
 
+/* ------------------------------------------------------------------ */
+void
+gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t *boundingbox)
+{
+	double x1=HUGE_VAL,y1=HUGE_VAL, x2=-HUGE_VAL,y2=-HUGE_VAL;
+	int i;
+	gerb_image_info_t *info;
+
+	for(i = 0; i < gerbvProject->max_files; i++) {
+		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
+			info = gerbvProject->file[i]->image->info;
+			/* 
+			* Find the biggest image and use as a size reference
+			*/
+#ifdef RENDER_USING_GDK
+			x1 = MIN(x1, info->min_x + info->offsetA);
+			y1 = MIN(y1, info->min_y + info->offsetB);
+			x2 = MAX(x2, info->max_x + info->offsetA);
+			y2 = MAX(y2, info->max_y + info->offsetB);
+#else
+			/* cairo info already has offset calculated into min/max */
+			x1 = MIN(x1, info->min_x);
+			y1 = MIN(y1, info->min_y);
+			x2 = MAX(x2, info->max_x);
+			y2 = MAX(y2, info->max_y);
+#endif
+		}
+	}
+	boundingbox->left    = x1;
+	boundingbox->right   = x2;
+	boundingbox->top    = y1;
+	boundingbox->bottom = y2;
+}
 
 /* ------------------------------------------------------------------ */
-int
-main(int argc, char *argv[])
-{
-    int       read_opt;
-    int       i,r,g,b,a;
-    int       req_width = -1, req_height = -1;
-#ifdef HAVE_GETOPT_LONG
-    int       req_x = 0, req_y = 0;
-    char      *rest;
-#endif
-    char      *project_filename = NULL;
-    gboolean exportFromCommandline = FALSE,  userSuppliedOrigin=FALSE, userSuppliedWindow=FALSE, 
-	     userSuppliedAntiAlias=FALSE, userSuppliedWindowInPixels=FALSE, userSuppliedDpi=FALSE;
-    gint  layerctr =0, transformCount = 0, exportType = 0;
-    gchar *exportFilename = NULL;
-    gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
-	   userSuppliedWidth=0, userSuppliedHeight=0, userSuppliedBorder=0.05;
-
-
-    /*
-     * Setup the screen info. Must do this before getopt, since getopt
-     * eventually will set some variables in screen.
-     */
-    memset((void *)&screen, 0, sizeof(gerbv_screen_t));
-    screen.state = NORMAL;
-#ifdef HAVE_LIBGEN_H    
-    screen.execpath = dirname(argv[0]);
-#else 
-    screen.execpath = "";
-#endif
-    /* default to using the current directory path for our starting guesses
-       on future file loads */
-    screen.path = g_get_current_dir ();
-    screen.last_loaded = -1;  /* Will be updated to 0 
-			       * when first Gerber is loaded 
-			       */
-    screen.max_files = 1;
-    screen.file = (gerbv_fileinfo_t **) calloc (screen.max_files, sizeof (gerbv_fileinfo_t *));
-    if (screen.file == NULL)
-	{
-	    fprintf (stderr, "malloc failed\n");
-	    exit (1);
-	}
-
-    setup_init();
-
-    /*
-     * Now process command line flags
-     */
-    while (
-#ifdef HAVE_GETOPT_LONG
-	   (read_opt = getopt_long(argc, argv, opt_options, 
-				   longopts, &longopt_idx))
-#else
-	   (read_opt = getopt(argc, argv, opt_options))
-#endif /* HAVE_GETOPT_LONG */
-	   != -1) {
-
-	switch (read_opt) {
-#ifdef HAVE_GETOPT_LONG
-	case 0:
-	    /* Only long options like GDK/GTK debug */
-	    switch (longopt_val) {
-	    case 0: /* default value if nothing is set */
-		fprintf(stderr, "Not handled option %s\n", longopts[longopt_idx].name);
-		break;
-	    case 1: /* geometry */
-		errno = 0;
-		req_width = (int)strtol(optarg, &rest, 10);
-		if (errno) {
-		    perror("Width");
-		    break;
-		}
-		if (rest[0] != 'x'){
-		    fprintf(stderr, "Split X and Y parameters with an x\n");
-		    break;
-		}
-		rest++;
-		errno = 0;
-		req_height = (int)strtol(rest, &rest, 10);
-		if (errno) {
-		    perror("Height");
-		    break;
-		}
-		if ((rest[0] == 0) || ((rest[0] != '-') && (rest[0] != '+')))
-		    break;
-		errno = 0;
-		req_x = (int)strtol(rest, &rest, 10);
-		if (errno) {
-		    perror("X");
-		    break;
-		}
-		if ((rest[0] == 0) || ((rest[0] != '-') && (rest[0] != '+')))
-		    break;
-		errno = 0;
-		req_y = (int)strtol(rest, &rest, 10);
-		if (errno) {
-		    perror("Y");
-		    break;
-		}
-		break;
-	    default:
-		break;
-	    }
-	    break;
-#endif /* HAVE_GETOPT_LONG */
-    	case 'B' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must specify the border in the format <alpha>.\n");
-		exit(1);
-	    }
-	    if (strlen (optarg) > 10) {
-		fprintf(stderr, "Specified border is not recognized.\n");
-		exit(1);
-	    }
-	    sscanf (optarg,"%f",&userSuppliedBorder);
-	    if (userSuppliedBorder <  0) {
-		fprintf(stderr, "Specified border is smaller than zero!\n");
-		exit(1);
-	    }
-	    userSuppliedBorder/=100.0;
-	    break;
-	case 'D' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give an resolution in the format <DPI X,DPI Y> or <DPI_X_and_Y>.\n");
-		exit(1);
-	    }
-	    if (strlen (optarg) > 20) {
-		fprintf(stderr, "Specified resolution is not recognized.\n");
-		exit(1);
-	    }
-	    if(strchr(optarg, 'x')!=NULL){
-		sscanf (optarg,"%fx%f",&userSuppliedDpiX,&userSuppliedDpiY);
-	    }else{
-		sscanf (optarg,"%f",&userSuppliedDpiX);
-		userSuppliedDpiY = userSuppliedDpiX;
-	    }
-	    if ((userSuppliedDpiX <= 0) || (userSuppliedDpiY <= 0)) {
-		fprintf(stderr, "Specified resolution should be greater than 0.\n");
-		exit(1);
-	    }
-	    userSuppliedDpi=TRUE;
-	    break;
-    	case 'O' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give an origin in the format <lower_left_X x lower_left_Y>.\n");
-		exit(1);
-	    }
-	    if (strlen (optarg) > 20) {
-		fprintf(stderr, "Specified origin is not recognized.\n");
-		exit(1);
-	    }
-	    sscanf (optarg,"%fx%f",&userSuppliedOriginX,&userSuppliedOriginY);
-	    userSuppliedOrigin=TRUE;
-	    break;
-    	case 'V' :
-	    printf("gerbv version %s\n", VERSION);
-	    printf("(C) Stefan Petersen (spe@stacken.kth.se)\n");
-	    exit(0);	
-	case 'a' :
-	    userSuppliedAntiAlias = TRUE;
-	    break;
-    	case 'b' :	// Set background to this color
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give an background color in the hex-format <#RRGGBB>.\n");
-		exit(1);
-	    }
-	    if ((strlen (optarg) != 7)||(optarg[0]!='#')) {
-		fprintf(stderr, "Specified color format is not recognized.\n");
-		exit(1);
-	    }
-    	    r=g=b=-1;
-	    sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
-	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)) {
-
-		fprintf(stderr, "Specified color values should be between 00 and FF.\n");
-		exit(1);
-	    }
-	    screen.background.red = r*257;
-    	    screen.background.green = g*257;
-    	    screen.background.blue = b*257;
-	    break;
-	case 'f' :	// Set layer colors to this color (foreground color)
-	    if (optarg == NULL) {
-#ifdef RENDER_USING_GDK
-		fprintf(stderr, "You must give an foreground color in the hex-format <#RRGGBB>.\n");
-#else
-		fprintf(stderr, "You must give an foreground color in the hex-format <#RRGGBB> or <#RRGGBBAA>.\n");
-#endif
-		exit(1);
-	    }
-	    if (((strlen (optarg) != 7)&&(strlen (optarg) != 9))||(optarg[0]!='#')) {
-		fprintf(stderr, "Specified color format is not recognized.\n");
-		exit(1);
-	    }
-	    r=g=b=a=-1;
-	    if(strlen(optarg)==7){
-		sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
-		a=177;
-	    }
-	    else{
-		sscanf (optarg,"#%2x%2x%2x%2x",&r,&g,&b,&a);
-	    }
-
-	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)||(a<0)||(a>255) ) {
-
-		fprintf(stderr, "Specified color values should be between 0x00 (0) and 0xFF (255).\n");
-		exit(1);
-	    }
-	    defaultColors[layerctr].red   = r;
-	    defaultColors[layerctr].green = g;
-	    defaultColors[layerctr].blue  = b;
-	    defaultColors[layerctr].alpha = a;
-	    layerctr++;
-	    /* just reset the counter back to 0 if we read too many */
-	    if (layerctr == NUMBER_OF_DEFAULT_COLORS)
-	    	layerctr = 0;
-	    break;
-	case 'l' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a filename to send log to\n");
-		exit(1);
-	    }
-	    setup.log.to_file = 1;
-	    setup.log.filename = optarg;
-	    break;
-    	case 'o' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a filename to export to.\n");
-		exit(1);
-	    }
-	    exportFilename = optarg;
-	    break;
-	case 'p' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a project filename\n");
-		exit(1);
-	    }
-	    project_filename = optarg;
-	    break;
-	case 't' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a filename to read the tools from.\n");
-		exit(1);
-	    }
-	    if (!ProcessToolsFile(optarg)) {
-		fprintf(stderr, "*** ERROR processing tools file \"%s\".\n", optarg);
-		fprintf(stderr, "Make sure all lines of the file are formatted like this:\n");
-		fprintf(stderr, "T01 0.024\nT02 0.032\nT03 0.040\n...\n");
-		fprintf(stderr, "*** EXITING to prevent erroneous display.\n");
-		exit(1);
-	    }
-	    break;
-	case 'T' :	// Translate the layer
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a translation in the format <X,Y>.\n");
-		exit(1);
-	    }
-	    if (strlen (optarg) > 30) {
-		fprintf(stderr, "The translation format is not recognized.\n");
-		exit(1);
-	    }
-	    float transX=0, transY=0;
-	    
-	    sscanf (optarg,"%f,%f",&transX,&transY);
-	    defaultTransformations[transformCount].translateX = transX;
-	    defaultTransformations[transformCount].translateY = transY;
-	    transformCount++;
-	    /* just reset the counter back to 0 if we read too many */
-	    if (transformCount == NUMBER_OF_DEFAULT_TRANSFORMATIONS)
-	    	transformCount = 0;
-	    break;
-	case 'w':
-	    userSuppliedWindowInPixels = TRUE;
-    	case 'W' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a window size in the format <width x height>.\n");
-		exit(1);
-	    }
-	    if (strlen (optarg) > 20) {
-		fprintf(stderr, "Specified window size is not recognized.\n");
-		exit(1);
-	    }
-	    sscanf (optarg, "%fx%f", &userSuppliedWidth, &userSuppliedHeight);
-	    if (((userSuppliedWidth < 0.001) || (userSuppliedHeight < 0.001)) ||
-		((userSuppliedWidth > 2000) || (userSuppliedHeight > 2000))) {
-		fprintf(stderr, "Specified window size is out of bounds.\n");
-		exit(1);
-	    }
-	    userSuppliedWindow = TRUE;
-	    break;
-	case 'x' :
-	    if (optarg == NULL) {
-		fprintf(stderr, "You must supply an export type.\n");
-		exit(1);
-	    }
-	    if (strcmp (optarg,"png") == 0) {
-		exportType = 1;
-		exportFromCommandline = TRUE;
-	    }
-#ifndef RENDER_USING_GDK
-	    else if (strcmp (optarg,"pdf") == 0) {
-		exportType = 2;
-		exportFromCommandline = TRUE;
-	    } else if (strcmp (optarg,"svg") == 0) {
-		exportType = 3;
-		exportFromCommandline = TRUE;
-	    } else if (strcmp (optarg,"ps") == 0) {
-		exportType = 4;
-		exportFromCommandline = TRUE;
-	    }
-#endif
-	    else if (strcmp (optarg,"rs274x") == 0) {
-		exportType = 5;
-		exportFromCommandline = TRUE;
-	    }
-	    else if (strcmp (optarg,"drill") == 0) {
-		exportType = 6;
-		exportFromCommandline = TRUE;
-	    }
-	    else {
-		fprintf(stderr, "Unrecognized export type.\n");
-		exit(1);				
-	    }		
-	    break;
-	case 'd':
-	    screen.dump_parsed_image = 1;
-	    break;
-	case '?':
-	case 'h':
-#ifdef HAVE_GETOPT_LONG
-	    printf("Usage: gerbv [OPTIONS...] [FILE...]\n\n");
-	    printf("Available options:\n");
-	    printf("  -B, --border=<b>                Border around the image in percent of the\n");
-	    printf("                                  width/height. Defaults to 5%%.\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -D, --dpi=<R>                   Resolution (Dots per inch) for the output\n");
-	    printf("                                  bitmap.\n");
-#else
-	    printf("  -D, --dpi=<XxY>or<R>            Resolution (Dots per inch) for the output\n");
-	    printf("                                  bitmap. With the format <XxY>, different\n");
-	    printf("                                  resolutions for X- and Y-direction are used.\n");
-	    printf("                                  With the format <R>, both are the same.\n");
-#endif
-	    printf("  -O, --origin=<XxY>              Use the specified coordinates (in inches)\n");
-	    printf("                                  for the lower left corner.\n");
-	    printf("  -V, --version                   Print version of gerbv.\n");
-	    printf("  -a, --antialias                 Use antialiasing for generated bitmap output.\n");
-	    printf("  -b, --background=<hex>          Use background color <hex> (like #RRGGBB).\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB)\n");
-#else
-            printf("  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB or\n");
-            printf("                                  #RRGGBBAA for setting the alpha).\n");
-#endif
-            printf("                                  Use multiple -f flags to set the color for\n");
-	    printf("                                  multiple layers.\n");
-	    printf("  -h, --help                      Print this help message.\n");
-	    printf("  -l, --log=<logfile>             Send error messages to <logfile>.\n");
-	    printf("  -o, --output=<filename>         Export to <filename>\n");
-	    printf("  -p, --project=<prjfile>         Load project file <prjfile>\n");
-	    printf("  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n");
-	    printf("                                  exported image.\n");
-   	    printf("  -w, --window=<WxH>              Window size in pixels <WxH> for the\n");
-	    printf("                                  exported image. Autoscales to fit\n");
-	    printf("                                  if no resolution is specified. If a\n");
-	    printf("                                  resolution is specified, it will clip.\n");
-	    printf("  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n");
-	    printf("  -T, --translate=<X,Y>           Translate the image by <X,Y> (useful for\n");
-	    printf("                                  arranging panels). Use multiple -T flags\n");
-	    printf("                                  for multiple layers.\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -x, --export=<png>              Export a rendered picture to a PNG file.\n");
-#else
-	    printf("  -x, --export=<png/pdf/ps/svg/   Export a rendered picture to a file with\n");
-	    printf("                rs274x/drill>     the specified format.\n");
-#endif
-
-
-#else
-	    printf("Usage: gerbv [OPTIONS...] [FILE...]\n\n");
-	    printf("Available options:\n");
-	    printf("  -B<b>                   Border around the image in percent of the\n");
-	    printf("                          width/height. Defaults to 5%%.\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -D<R>                   Resolution (Dots per inch) for the output\n");
-	    printf("                          bitmap\n");
-#else
-	    printf("  -D<XxY>or<R>            Resolution (Dots per inch) for the output\n");
-	    printf("                          bitmap. With the format <XxY>, different\n");
-	    printf("                          resolutions for X- and Y-direction are used.\n");
-	    printf("                          With the format <R>, both are the same.\n");
-#endif
-	    printf("  -O<XxY>                 Use the specified coordinates (in inches)\n");
-	    printf("                          for the lower left corner.\n");
-    	    printf("  -V                      Print version of gerbv.\n");
-    	    printf("  -a                      Use antialiasing for generated bitmap output.\n");
-	    printf("  -b<hexcolor>	      Use background color <hexcolor> (like #RRGGBB)\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB)\n");
-#else
-	    printf("  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n");
-	    printf("                          #RRGGBBAA for setting the alpha).\n");
-#endif
-            printf("                          Use multiple -f flags to set the color for\n");
-	    printf("                          multiple layers.\n");
-	    printf("  -h                      Print this help message.\n");
-	    printf("  -l<logfile>             Send error messages to <logfile>\n");
-	    printf("  -o<filename>            Export to <filename>\n");
-	    printf("  -p<prjfile>             Load project file <prjfile>\n");
-	    printf("  -W<WxH>                 Window size in inches <WxH> for the\n");
-	    printf("                          exported image\n");
-       	    printf("  -w<WxH>                 Window size in pixels <WxH> for the\n");
-	    printf("                          exported image. Autoscales to fit\n");
-	    printf("                          if no resolution is specified. If a\n");
-	    printf("                          resolution is specified, it will clip.\n");
-	    printf("                          exported image\n");
-	    printf("  -t<toolfile>            Read Excellon tools from file <toolfile>\n");
-	    printf("  -T<X,Y>                 Translate the image by <X,Y> (useful for\n");
-	    printf("                          arranging panels). Use multiple -T flags\n");
-	    printf("                          for multiple layers.\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -x<png>                 Export a rendered picture to a PNG file\n");
-#else
-	    printf("  -x <png/pdf/ps/svg/     Export a rendered picture to a file with\n");
-	    printf("      rs274x/drill>       the specified format\n");
-#endif
-
-#endif /* HAVE_GETOPT_LONG */
-	    exit(1);
-	    break;
-	default :
-	    printf("Not handled option [%d=%c]\n", read_opt, read_opt);
-	}
-    }
-    
-    /*
-     * If project is given, load that one and use it for files and colors.
-     * Else load files (eventually) given on the command line.
-     * This limits you to either give files on the commandline or just load
-     * a project.
-     */
-    if (project_filename) {
-	/* calculate the absolute pathname to the project if the user
-	   used a relative path */
-	g_free (screen.path);
-	if (!g_path_is_absolute(project_filename)) {
-	    gchar *fullName = g_build_filename (g_get_current_dir (),
-						project_filename, NULL);
-	    gerbv_open_project_from_filename (fullName);
-	    screen.path = g_path_get_dirname (fullName);
-	    g_free (fullName);
-	} else {
-	    gerbv_open_project_from_filename (project_filename);
-	    screen.path = g_path_get_dirname (project_filename);
-	}
-	
-    } else {
-	for(i = optind ; i < argc; i++) {
-	    g_free (screen.path);
-	    if (!g_path_is_absolute(argv[i])) {
-		gchar *fullName = g_build_filename (g_get_current_dir (),
-						    argv[i], NULL);
-		gerbv_open_layer_from_filename (fullName);
-		screen.path = g_path_get_dirname (fullName);
-		g_free (fullName);
-	    } else {
-		gerbv_open_layer_from_filename (argv[i]);
-		screen.path = g_path_get_dirname (argv[i]);
-	    }
-	}
-    }
-
-    screen.unit = GERBV_DEFAULT_UNIT;
-#ifdef RENDER_USING_GDK
-    /* GDK renderer needs gtk started up even for png export */
-    gtk_init (&argc, &argv);
-#endif
-
-    if (exportFromCommandline) {
-	/* load the info struct with the default values */
-
-	gboolean freeFilename = FALSE;
-	
-	if (!exportFilename) {
-		if (exportType == 1) {
-		    exportFilename = g_strdup ("output.png");
-		} else if (exportType == 2) {
-		    exportFilename = g_strdup ("output.pdf");
-		} else if (exportType == 3) {
-		    exportFilename = g_strdup ("output.svg");
-		} else if (exportType == 4){
-		    exportFilename = g_strdup ("output.ps");
-		} else if (exportType == 5){
-		    exportFilename = g_strdup ("output.gbx");
-		} else {
-		    exportFilename = g_strdup ("output.cnc");
-		}
-		freeFilename = TRUE;
-	}
-
+void
+gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo) {
 	gerbv_render_size_t bb;
-	render_get_boundingbox(&bb);
-	// Set origin to the left-bottom corner if it is not specified
-	if(!userSuppliedOrigin){
-	    userSuppliedOriginX = bb.left;
-	    userSuppliedOriginY = bb.top;
-	}
+	double width, height;
+	double x_scale, y_scale;
 
-	float width  = bb.right  - userSuppliedOriginX + 0.001;	// Plus a little extra to prevent from 
-	float height = bb.bottom - userSuppliedOriginY + 0.001; // missing items due to round-off errors
-	// If the user did not specify a height and width, autoscale w&h till full size from origin.
-	if(!userSuppliedWindow){
-	    userSuppliedWidth  = width;
-	    userSuppliedHeight = height;
-	}else{
-	    // If size was specified in pixels, and no resolution was specified, autoscale resolution till fit
-	    if( (!userSuppliedDpi)&& userSuppliedWindowInPixels){
-		userSuppliedDpiX = MIN(((userSuppliedWidth-0.5)  / width),((userSuppliedHeight-0.5) / height));
-		userSuppliedDpiY = userSuppliedDpiX;
-		userSuppliedOriginX -= 0.5/userSuppliedDpiX;
-		userSuppliedOriginY -= 0.5/userSuppliedDpiY;
-	    }
-	}
+	/* Grab maximal width and height of all layers */
+	gerbv_render_get_boundingbox(gerbvProject, &bb);
+	width = bb.right - bb.left;
+	height = bb.bottom - bb.top;
+	/* add in a 5% buffer around the drawing */
+	width *= 1.05;
+	height *=1.05;
 
-
-	// Add the border size (if there is one)
-	if(userSuppliedBorder!=0){
-	    // If supplied in inches, add a border around the image
-	    if(!userSuppliedWindowInPixels){
-		userSuppliedWidth  += userSuppliedWidth*userSuppliedBorder;
-		userSuppliedHeight  += userSuppliedHeight*userSuppliedBorder;
-		userSuppliedOriginX -= (userSuppliedWidth*userSuppliedBorder)/2.0;
-		userSuppliedOriginY -= (userSuppliedHeight*userSuppliedBorder)/2.0;
-	    }
-	    // If supplied in pixels, shrink image content for border_size
-	    else{
-		userSuppliedDpiX -= (userSuppliedDpiX*userSuppliedBorder);
-		userSuppliedDpiY -= (userSuppliedDpiY*userSuppliedBorder);
-		userSuppliedOriginX -= ((userSuppliedWidth/userSuppliedDpiX)*userSuppliedBorder)/2.0;
-		userSuppliedOriginY -= ((userSuppliedHeight/userSuppliedDpiX)*userSuppliedBorder)/2.0;
-	    }
+	/* if the values aren't sane (probably we have no models loaded), then
+	   put in some defaults */
+	if ((width < 0.01) && (height < 0.01)) {
+		renderInfo->lowerLeftX = 0.0;
+		renderInfo->lowerLeftY = 0.0;
+		renderInfo->scaleFactorX = 200;
+		renderInfo->scaleFactorY = 200;
+		return;
 	}
+	/*
+	* Calculate scale for both x axis and y axis
+	*/
+	x_scale = renderInfo->displayWidth / width;
+	y_scale = renderInfo->displayHeight / height;
+	/*
+	* Take the scale that fits both directions with some extra checks
+	*/
+	renderInfo->scaleFactorX = MIN(x_scale, y_scale);
+	renderInfo->scaleFactorY = renderInfo->scaleFactorX;
+	if (renderInfo->scaleFactorX < 1){
+	    renderInfo->scaleFactorX = 1;
+	    renderInfo->scaleFactorY = 1;
+	}
+	renderInfo->lowerLeftX = ((bb.left + bb.right) / 2.0) -
+		((double) renderInfo->displayWidth / 2.0 / renderInfo->scaleFactorX);
+	renderInfo->lowerLeftY = ((bb.top + bb.bottom) / 2.0) -
+		((double) renderInfo->displayHeight / 2.0 / renderInfo->scaleFactorY);
+	return;
+}
+
+void
+gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo) {
+	double x1=HUGE_VAL,y1=HUGE_VAL;
+	int i;
+	gerb_image_info_t *info;
 	
-	if(!userSuppliedWindowInPixels){
-	    userSuppliedWidth  *= userSuppliedDpiX;
-	    userSuppliedHeight *= userSuppliedDpiY;
+	for(i = 0; i < gerbvProject->max_files; i++) {
+		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
+			info = gerbvProject->file[i]->image->info;
+
+			/* cairo info already has offset calculated into min/max */
+			x1 = MIN(x1, info->min_x);
+			y1 = MIN(y1, info->min_y);
+		}
 	}
-	
-	// Make sure there is something valid in it. It could become negative if 
-	// the userSuppliedOrigin is further than the bb.right or bb.top.
-	if(userSuppliedWidth <=0)
-	    userSuppliedWidth  = 1;
-	if(userSuppliedHeight <=0)
-	    userSuppliedHeight = 1;
+	renderInfo->lowerLeftX = x1;
+	renderInfo->lowerLeftY = y1;
+}
 
-
-#ifdef RENDER_USING_GDK
-	gerbv_render_info_t renderInfo = {MIN(userSuppliedDpiX, userSuppliedDpiY), MIN(userSuppliedDpiX, userSuppliedDpiY),
-	    userSuppliedOriginX, userSuppliedOriginY,1, 
-	    userSuppliedWidth,userSuppliedHeight };
-#else	
-	gerbv_render_info_t renderInfo = {userSuppliedDpiX, userSuppliedDpiY, 
-	    userSuppliedOriginX, userSuppliedOriginY, userSuppliedAntiAlias?3:2, 
-	    userSuppliedWidth,userSuppliedHeight };
-#endif
+void
+gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixmap,
+		gerbv_render_info_t *renderInfo, gerb_selection_info_t *selectionInfo,
+		GdkColor *selectionColor){
+	GdkGC *gc = gdk_gc_new(pixmap);
+	GdkPixmap *colorStamp, *clipmask;
+	int i;
 	
-	if (exportType == 1) {
-#ifdef EXPORT_PNG
-	    exportimage_export_to_png_file (&renderInfo, exportFilename);
-#endif
-	} else if (exportType == 2) {
-	    exportimage_export_to_pdf_file (&renderInfo, exportFilename);
-	} else if (exportType == 3) {
-	    exportimage_export_to_svg_file (&renderInfo, exportFilename);
-	} else if (exportType == 4) {
-	    exportimage_export_to_postscript_file (&renderInfo, exportFilename);
-	} else if (exportType == 5) {
-	    if (screen.file[0]->image) {
-		/* if we have more than one file, we need to merge them before exporting */
-		if (screen.file[1]) {
-		  gerb_image_t *exportImage;
-		  exportImage = gerb_image_duplicate_image (screen.file[0]->image, &screen.file[0]->transform);
-		  for(i = screen.max_files-1; i > 0; i--) {
-		    if (screen.file[i]) {
-		      gerb_image_copy_image (screen.file[i]->image, &screen.file[i]->transform, exportImage);
-		    }
-		  }
-		  export_rs274x_file_from_image (exportFilename, exportImage);
-		  free_gerb_image (exportImage);
+	/* 
+	 * Remove old pixmap, allocate a new one, draw the background.
+	 */
+	if (!gerbvProject->background.pixel)
+	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &gerbvProject->background, FALSE, TRUE);
+	gdk_gc_set_foreground(gc, &gerbvProject->background);
+	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, -1, -1);
+
+	/*
+	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
+	 */
+	colorStamp = gdk_pixmap_new(pixmap, renderInfo->displayWidth,
+						renderInfo->displayHeight, -1);
+	clipmask = gdk_pixmap_new(NULL, renderInfo->displayWidth,
+						renderInfo->displayHeight, 1);
+							
+	/* 
+	* This now allows drawing several layers on top of each other.
+	* Higher layer numbers have higher priority in the Z-order. 
+	*/
+	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
+			enum polarity_t polarity;
+
+			if (gerbvProject->file[i]->transform.inverted) {
+				if (gerbvProject->file[i]->image->info->polarity == POSITIVE)
+					polarity = NEGATIVE;
+				else
+					polarity = POSITIVE;
+			} else {
+				polarity = gerbvProject->file[i]->image->info->polarity;
+			}
+
+			/*
+			* Fill up image with all the foreground color. Excess pixels
+			* will be removed by clipmask.
+			*/
+			if (!gerbvProject->file[i]->color.pixel)
+	 			gdk_colormap_alloc_color(gdk_colormap_get_system(), &gerbvProject->file[i]->color, FALSE, TRUE);
+			gdk_gc_set_foreground(gc, &gerbvProject->file[i]->color);
+			
+			/* switch back to regular draw function for the initial
+			   bitmap clear */
+			gdk_gc_set_function(gc, GDK_COPY);
+			gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
+			
+			if (renderInfo->renderType == 0) {
+				gdk_gc_set_function(gc, GDK_COPY);
+			}
+			else if (renderInfo->renderType == 1) {
+				gdk_gc_set_function(gc, GDK_XOR);
+			}
+			/*
+			* Translation is to get it inside the allocated pixmap,
+			* which is not always centered perfectly for GTK/X.
+			*/
+			dprintf("  .... calling image2pixmap on image %d...\n", i);
+			// Dirty scaling solution when using GDK; simply use scaling factor for x-axis, ignore y-axis
+			draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[i]->image,
+				renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
+				(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
+				polarity, DRAW_IMAGE, NULL);
+
+			/* 
+			* Set clipmask and draw the clipped out image onto the
+			* screen pixmap. Afterwards we remove the clipmask, else
+			* it will screw things up when run this loop again.
+			*/
+			gdk_gc_set_clip_mask(gc, clipmask);
+			gdk_gc_set_clip_origin(gc, 0, 0);
+			gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
+			gdk_gc_set_clip_mask(gc, NULL);
 		}
-		/* otherwise, just export the single image file as it is */
-		else {
-		  export_rs274x_file_from_image (exportFilename, screen.file[0]->image);
+	}
+	/* render the selection group to the top of the output */
+	if (selectionInfo->type != EMPTY) {
+		if (!selectionColor->pixel)
+	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), selectionColor, FALSE, TRUE);
+	 		
+		gdk_gc_set_foreground(gc, selectionColor);
+		gdk_gc_set_function(gc, GDK_COPY);
+		gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
+		
+		/* for now, assume everything in the selection buffer is from one image */
+		gerb_image_t *matchImage;
+		int j;
+		if (selectionInfo->selectedNodeArray->len > 0) {
+			gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+					gerb_selection_item_t, 0);
+			matchImage = (gerb_image_t *) sItem.image;	
+
+			for(j = gerbvProject->max_files-1; j >= 0; j--) {
+				if ((gerbvProject->file[j]) && (gerbvProject->file[j]->image == matchImage)) {
+					draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[j]->image,
+						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
+						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
+						POSITIVE, DRAW_SELECTIONS, selectionInfo);
+				}
+			}
+			gdk_gc_set_clip_mask(gc, clipmask);
+			gdk_gc_set_clip_origin(gc, 0, 0);
+			gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
+			gdk_gc_set_clip_mask(gc, NULL);
 		}
-	    }
-	    else {
-		fprintf(stderr, "A valid file was not loaded.\n");
-		exit(1);
-	    }
-	} else if (exportType == 6) {
-	    if (screen.file[0]->image) {
-		/* if we have more than one file, we need to merge them before exporting */
-		if (screen.file[1]) {
-		  gerb_image_t *exportImage;
-		  exportImage = gerb_image_duplicate_image (screen.file[0]->image, &screen.file[0]->transform);
-		  for(i = screen.max_files-1; i > 0; i--) {
-		    if (screen.file[i]) {
-		      gerb_image_copy_image (screen.file[i]->image, &screen.file[i]->transform, exportImage);
-		    }
-		  }
-		  export_drill_file_from_image (exportFilename, exportImage);
-		  free_gerb_image (exportImage);
-		}
-		/* otherwise, just export the single image file as it is */
-		else {
-		  export_drill_file_from_image (exportFilename, screen.file[0]->image);
-		}
-	    }
-	    else {
-		fprintf(stderr, "A valid file was not loaded.\n");
-		exit(1);
-	    }
 	}
 
-	if (freeFilename)
-	    free (exportFilename);
-	/* exit now and don't start up gtk if this is a command line export */
-	exit(1);
-    }
-#ifndef RENDER_USING_GDK
-    gtk_init (&argc, &argv);
-#endif
-    interface_create_gui (req_width, req_height);
-    
-    return 0;
-} /* main */
+	gdk_pixmap_unref(colorStamp);
+	gdk_pixmap_unref(clipmask);
+	gdk_gc_unref(gc);
+}
+
+
+void
+gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerbvProject,
+		cairo_t *cr, gerbv_render_info_t *renderInfo) {
+	int i;
+	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
+	/* don't paint background for vector output, since it isn't needed */
+	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
+
+		    gerbv_render_layer_to_cairo_target_without_transforming(cr, gerbvProject->file[i], renderInfo);
+		}
+	}
+}
+
+void
+gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t *cr,
+			gerbv_render_info_t *renderInfo) {
+	int i;
+	/* fill the background with the appropriate color */
+	cairo_set_source_rgba (cr, (double) gerbvProject->background.red/G_MAXUINT16,
+		(double) gerbvProject->background.green/G_MAXUINT16,
+		(double) gerbvProject->background.blue/G_MAXUINT16, 1);
+	cairo_paint (cr);
+	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
+			cairo_push_group (cr);
+			gerbv_render_layer_to_cairo_target (cr, gerbvProject->file[i], renderInfo);
+			cairo_pop_group_to_source (cr);
+			cairo_paint_with_alpha (cr, (double) gerbvProject->file[i]->alpha/G_MAXUINT16);
+		}
+	}
+}
+
+void
+gerbv_render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
+						gerbv_render_info_t *renderInfo) {
+	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
+	gerbv_render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo);
+}
+
+void
+gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *renderInfo){
+	gdouble translateX, translateY;
+	
+	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactorX);
+	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactorY);
+	
+	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
+	   this far */
+	if (renderInfo->renderType == 2) {
+		cairo_set_tolerance (cr, 1.5);
+		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
+	}
+	else if (renderInfo->renderType == 3) {
+		cairo_set_tolerance (cr, 1);
+		/* disable ALL anti-aliasing for now due to the way cairo is rendering
+		   ground planes from PCB output */
+		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
+	}
+
+	/* translate the draw area before drawing.  We must translate the whole
+	   drawing down an additional displayHeight to account for the negative
+	   y flip done later */
+	cairo_translate (cr, -translateX, translateY + renderInfo->displayHeight);
+	/* scale the drawing by the specified scale factor (inverting y since
+		cairo y axis points down) */
+	cairo_scale (cr, renderInfo->scaleFactorX, -renderInfo->scaleFactorY);
+}
+
+void
+gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo ) {
+	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
+		(double) fileInfo->color.green/G_MAXUINT16,
+		(double) fileInfo->color.blue/G_MAXUINT16, 1);
+	
+	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
+		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL);
+}
+
 

@@ -30,7 +30,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <glib.h>
-#include "gerb_image.h"
+
 #include "gerb_file.h"
 
 /*

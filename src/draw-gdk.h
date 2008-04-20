@@ -25,8 +25,6 @@
 #define DRAW_GDK_H
 
 #include <gdk/gdk.h>
-#include "gerber.h"
-#include "gerb_image.h"
 
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
