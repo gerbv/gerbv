@@ -92,8 +92,6 @@ Project Manager is Stefan Petersen < speatstacken.kth.se >
   #include "draw.h"
 #endif
 
-#include "project.h"
-#include "tooltable.h"
 #include "pick-and-place.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
@@ -146,72 +144,6 @@ static gerb_user_transformations_t defaultTransformations[NUMBER_OF_DEFAULT_TRAN
 	{0,0,0,0,FALSE},
 };
 
-void 
-gerbv_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
-{
-    project_list_t *project_list = NULL;
-    
-    dprintf("Opening project = %s\n", (gchar *) filename);
-    project_list = read_project_file(gerbvProject, filename);
-    
-    if (project_list) {
-	project_list_t *pl_tmp;
-	
-	while (project_list) {
-	    GdkColor colorTemplate = {0,project_list->rgb[0],
-				      project_list->rgb[1],project_list->rgb[2]};
-	    if (project_list->layerno == -1) {
-		gerbvProject->background = colorTemplate;
-	    } else {
-		int  idx =  project_list->layerno;
-		gchar *fullName = NULL;
-		gchar *dirName = NULL;
-		    
-		if (!g_path_is_absolute (project_list->filename)) {
-		    /* build the full pathname to the layer */
-		    dirName = g_path_get_dirname (filename);
-		    fullName = g_build_filename (dirName, project_list->filename, NULL);
-		} else {
-		    fullName = g_strdup (project_list->filename);
-		}
-		if (gerbv_open_image(gerbvProject, fullName, idx, FALSE, 
-				     project_list->attr_list, 
-				     project_list->n_attr, TRUE) == -1) {
-		    GERB_MESSAGE("could not read %s[%d]", fullName, idx);
-		    goto next_layer;
-		}
-		g_free (dirName);
-		g_free (fullName);
-		/* 
-		 * Change color from default to from the project list
-		 */
-		gerbvProject->file[idx]->color = colorTemplate;
-		gerbvProject->file[idx]->transform.inverted = project_list->inverted;
-		gerbvProject->file[idx]->isVisible = project_list->visible;
-	    }
-	next_layer:
-	    pl_tmp = project_list;
-	    project_list = project_list->next;
-	    g_free(pl_tmp->filename);
-	    g_free(pl_tmp);
-	}
-	
-	/*
-	 * Save project filename for later use
-	 */
-	if (gerbvProject->project) {
-	    g_free(gerbvProject->project);
-	    gerbvProject->project = NULL;
-	}
-	gerbvProject->project = g_strdup (filename);
-	if (gerbvProject->project == NULL)
-	    GERB_FATAL_ERROR("malloc gerbvProject->project failed\n");
-    } else {
-	GERB_MESSAGE("could not read %s[%d]\n", (gchar *) filename,
-		     gerbvProject->last_loaded);
-    }
-} /* gerbv_open_project_from_filename */
-
 
 void 
 gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
@@ -243,70 +175,6 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
     return TRUE;
 } /* gerbv_save_project_from_filename */
 
-void 
-gerbv_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
-{
-    project_list_t *project_list = NULL, *tmp;
-    int idx;
-    gchar *dirName = g_path_get_dirname (filename);
-    
-    project_list = g_new0 (project_list_t, 1);
-    project_list->next = project_list;
-    project_list->layerno = -1;
-    project_list->filename = gerbvProject->path;
-    project_list->rgb[0] = gerbvProject->background.red;
-    project_list->rgb[1] = gerbvProject->background.green;
-    project_list->rgb[2] = gerbvProject->background.blue;
-    project_list->next = NULL;
-    
-    for (idx = 0; idx < gerbvProject->max_files; idx++) {
-	if (gerbvProject->file[idx]) {
-	    tmp = g_new0 (project_list_t, 1);
-	    tmp->next = project_list;
-	    tmp->layerno = idx;
-	    
-	    /* figure out the relative path to the layer from the project
-	       directory */
-	    if (strncmp (dirName, gerbvProject->file[idx]->name, strlen(dirName)) == 0) {
-		/* skip over the common dirname and the separator */
-		tmp->filename = (gerbvProject->file[idx]->name + strlen(dirName) + 1);
-	    } else {
-		/* if we can't figure out a relative path, just save the 
-		 * absolute one */
-		tmp->filename = gerbvProject->file[idx]->name;
-	    }
-	    tmp->rgb[0] = gerbvProject->file[idx]->color.red;
-	    tmp->rgb[1] = gerbvProject->file[idx]->color.green;
-	    tmp->rgb[2] = gerbvProject->file[idx]->color.blue;
-	    tmp->inverted = gerbvProject->file[idx]->transform.inverted;
-	    tmp->visible = gerbvProject->file[idx]->isVisible;
-	    project_list = tmp;
-	}
-    }
-    
-    if (write_project_file(gerbvProject, gerbvProject->project, project_list)) {
-	GERB_MESSAGE("Failed to write project\n");
-    }
-    g_free (dirName);
-} /* gerbv_save_project_from_filename */
-
-
-void 
-gerbv_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
-{
-	
-    /*
-     * Save project filename for later use
-     */
-    if (gerbvProject->project) {
-	g_free(gerbvProject->project);
-	gerbvProject->project = NULL;
-    }
-    gerbvProject->project = g_strdup(filename);
-    if (gerbvProject->project == NULL)
-	GERB_FATAL_ERROR("malloc gerbvProject->project failed\n");
-    gerbv_save_project_from_filename (gerbvProject, filename);
-} /* gerbv_save_as_project_from_filename */
 
 /* ------------------------------------------------------------------ */
 int

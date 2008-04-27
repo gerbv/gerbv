@@ -50,7 +50,6 @@
 
 #include "gerbv.h"
 #include "drill.h"
-#include "tooltable.h"
 #include "drill_stats.h"
 
 #include "common.h"

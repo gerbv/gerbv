@@ -55,12 +55,11 @@
 
 #include "gerbv.h"
 #include "gerb_file.h"
-#include "interface.h"
 #include "project.h"
 #include "scheme-private.h"
-
+#include "main.h"
+#include "interface.h"
 #include "render.h"
-extern gerbv_render_info_t screenRenderInfo;
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -157,9 +156,9 @@ define_layer(scheme *sc, pointer args)
 
     layerno = sc->vptr->ivalue(car_el);
     dprintf("    layerno = %d\n", layerno);
-    /*if (gerbvProject->last_loaded <= layerno) {
-	gerbvProject->last_loaded = layerno;
-    }*/
+    if (mainProject.last_loaded <= layerno) {
+	mainProject.last_loaded = layerno;
+    }
     
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);
@@ -354,12 +353,12 @@ set_render_type(scheme *sc, pointer args)
   *    layer filename
   */
 project_list_t *
-read_project_file(gerbv_project_t *gerbvProject, char const* filename)
+read_project_file(char const* filename)
 {
     struct stat stat_info;
     scheme *sc;
     FILE *fd;
-    char *initdirs[] = {BACKEND_DIR, gerbvProject->execpath, ".", 
+    char *initdirs[] = {BACKEND_DIR, mainProject.execpath, ".", 
 			"$GERBV_SCHEMEINIT", NULL};
     char *initfile;
 

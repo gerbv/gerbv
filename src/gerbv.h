@@ -382,6 +382,26 @@ typedef struct {
     drill_stats_t *drill_stats;
 } gerb_image_t;
 
+gerb_image_t *new_gerb_image(gerb_image_t *image, const gchar *type);
+
+void free_gerb_image(gerb_image_t *image);
+
+void
+gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform, gerb_image_t *destinationImage);
+
+gerb_image_t *
+gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform);
+
+void
+gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray);
+
+gboolean
+gerb_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
+		gint paneColumns, gdouble paneSeparation);
+
+gboolean
+gerb_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
+		gdouble translationY);
 
 /* from old gerbv_screen.h */
 #define INITIAL_SCALE 200
@@ -423,6 +443,7 @@ typedef struct {
     gerbv_fileinfo_t **file;
     int curr_index;
     int last_loaded;
+    int renderType;
 
     gchar *path;
     gchar *execpath;    /* Path to executed version of gerbv */
@@ -440,19 +461,10 @@ typedef struct {
 }
 #endif
 void 
-gerbv_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
-
-void 
 gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
 
 gboolean 
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename);
-
-void 
-gerbv_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
-
-void 
-gerbv_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
 
 int
 gerbv_revert_file(gerbv_project_t *gerbvProject, int idx);
@@ -534,6 +546,10 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 void
 gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo );
 
+/* from old tooltable.h */
+double GetToolDiameter_Inches(int toolNumber);
+int ProcessToolsFile(const char *toolFileName);
+
 /* export functions */
 #ifdef EXPORT_PNG
 void exportimage_export_to_png_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels, int heightInPixels, gchar const* filename);
@@ -554,6 +570,16 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image);
 
 gboolean
 export_drill_file_from_image (gchar *filename, gerb_image_t *image);
+
+/* from drill and gerb stats headers */
+drill_stats_t * drill_stats_new(void);
+void drill_stats_add_layer(drill_stats_t *accum_stats, 
+			   drill_stats_t *input_stats, int this_layer);
+
+gerb_stats_t * gerb_stats_new(void);
+void gerb_stats_add_layer(gerb_stats_t *accum_stats, 
+			  gerb_stats_t *input_stats,
+			  int this_layer);
 
 #endif /* GERBV_H */
 

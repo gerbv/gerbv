@@ -36,7 +36,6 @@
 #include <png.h>
 
 #include "gerbv.h"
-#include "render.h"
 
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"

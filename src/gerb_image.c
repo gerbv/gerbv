@@ -33,6 +33,7 @@
 #include "gerbv.h"
 #include "gerb_image.h"
 #include "gerber.h"
+#include "amacro.h"
 
 typedef struct {
     int oldAperture;

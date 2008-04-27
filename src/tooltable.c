@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "tooltable.h"
-
 #define MIN_TOOL_NUMBER         1       /* T01 */
 #define MAX_TOOL_NUMBER         99      /* T99 */
 

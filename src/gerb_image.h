@@ -38,8 +38,6 @@ extern "C" {
 /*
  * Function prototypes
  */
-gerb_image_t *new_gerb_image(gerb_image_t *image, const gchar *type);
-void free_gerb_image(gerb_image_t *image);
 
 /*
  * Check that the parsed gerber image is complete.
@@ -70,22 +68,7 @@ gerb_image_return_new_layer (gerb_layer_t *previousLayer);
 gerb_netstate_t *
 gerb_image_return_new_netstate (gerb_netstate_t *previousState);
 
-void
-gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform, gerb_image_t *destinationImage);
 
-gerb_image_t *
-gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform);
-
-void
-gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray);
-
-gboolean
-gerb_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
-		gint paneColumns, gdouble paneSeparation);
-
-gboolean
-gerb_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
-		gdouble translationY);
 
 #ifdef __cplusplus
 }

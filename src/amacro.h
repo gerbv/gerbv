@@ -28,9 +28,6 @@
 extern "C" {
 #endif
 
-#include "gerb_file.h"
-#include "gerbv.h"
-
 /*
  * Parses the definition of an aperture macro
  */

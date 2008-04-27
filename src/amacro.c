@@ -26,6 +26,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "gerbv.h"
+#include "gerb_file.h"
 #include "amacro.h"
 
 /*

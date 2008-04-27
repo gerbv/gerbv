@@ -28,9 +28,7 @@
 
 
 /* ===================  Prototypes ================ */
-drill_stats_t * drill_stats_new(void);
-void drill_stats_add_layer(drill_stats_t *accum_stats, 
-			   drill_stats_t *input_stats, int this_layer);
+
 gboolean drill_stats_in_drill_list(drill_list_t *drill_list, int drill_num);
 drill_list_t *drill_stats_new_drill_list(void);
 void drill_stats_add_to_drill_list(drill_list_t *drill_list_in,

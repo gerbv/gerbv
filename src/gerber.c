@@ -34,6 +34,7 @@
 #include "gerb_image.h"
 #include "gerber.h"
 #include "gerb_stats.h"
+#include "amacro.h"
 
 //#define AMACRO_DEBUG
 

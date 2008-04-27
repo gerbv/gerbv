@@ -151,7 +151,7 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 	}
 
 	if (filename)
-		gerbv_open_project_from_filename (&mainProject, filename);
+		main_open_project_from_filename (&mainProject, filename);
 	gerbv_render_zoom_to_fit_display (&mainProject, &screenRenderInfo);
 	render_refresh_rendered_image_on_screen();
 	callbacks_update_layer_tree();
@@ -217,7 +217,7 @@ callbacks_save_project_activate                       (GtkMenuItem     *menuitem
                                         gpointer         user_data)
 {
 	if (mainProject.project)
-		gerbv_save_project_from_filename (&mainProject, mainProject.project);
+		main_save_project_from_filename (&mainProject, mainProject.project);
 	else
 		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
 	return;
@@ -280,7 +280,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 
 	if (filename) {
 		if (processType == CALLBACKS_SAVE_PROJECT_AS) {
-			gerbv_save_as_project_from_filename (&mainProject, filename);
+			main_save_as_project_from_filename (&mainProject, filename);
 			rename_main_window(filename, NULL);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_PS)

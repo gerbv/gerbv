@@ -99,5 +99,14 @@ typedef struct {
 
 extern gerbv_screen_t screen;
 extern gerbv_project_t mainProject;
+
+void 
+main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
+
+void 
+main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
+
+void 
+main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
 #endif /* GERBV_H */
 

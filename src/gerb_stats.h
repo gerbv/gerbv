@@ -27,11 +27,6 @@
 
 
 /* ===================  Prototypes ================ */
-gerb_stats_t * gerb_stats_new(void);
-void gerb_stats_add_layer(gerb_stats_t *accum_stats, 
-			  gerb_stats_t *input_stats,
-			  int this_layer);
-
 error_list_t *gerb_stats_new_error_list(void);
 void gerb_stats_add_error(error_list_t *error_list_in,
                            int layer, const char *error_text,
