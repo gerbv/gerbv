@@ -70,7 +70,7 @@
  */
 extern gerbv_screen_t screen;
 
-gerbv_render_info_t screenRenderInfo;
+extern gerbv_render_info_t screenRenderInfo;
 
 /*
 static void

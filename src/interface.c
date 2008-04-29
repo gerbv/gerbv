@@ -1200,6 +1200,7 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText)
   GtkWidget *hbox1;
   GtkWidget *image1;
   GtkWidget *label1;
+  GtkWidget *checkbox;
   GtkWidget *dialog_action_area1;
   GtkWidget *cancelbutton1;
   GtkWidget *okbutton1;
@@ -1229,6 +1230,10 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText)
   gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
   gtk_label_set_line_wrap (GTK_LABEL (label1), TRUE);
 
+  checkbox =  gtk_check_button_new_with_label("Do not show this dialog again.");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(checkbox), FALSE);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox1), checkbox, FALSE, FALSE, 0);
+
   dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
   gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
 
@@ -1243,7 +1248,11 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText)
   gtk_widget_show_all (dialog1);
 
   if (gtk_dialog_run ((GtkDialog*)dialog1) == GTK_RESPONSE_OK) {
-	returnVal = TRUE;
+    /* check to see if user clicked on "do not show again" box */
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)) == TRUE) {
+      mainProject.check_before_delete = 0;
+    }
+    returnVal = TRUE;
   }
   gtk_widget_destroy (dialog1);
 		

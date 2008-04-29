@@ -518,6 +518,7 @@ gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_in
 	return;
 }
 
+/* ------------------------------------------------------------------ */
 void
 gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo) {
 	double x1=HUGE_VAL,y1=HUGE_VAL;
@@ -537,6 +538,7 @@ gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_rend
 	renderInfo->lowerLeftY = y1;
 }
 
+/* ------------------------------------------------------------------ */
 void
 gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixmap,
 		gerbv_render_info_t *renderInfo, gerb_selection_info_t *selectionInfo,
@@ -656,7 +658,8 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 	gdk_gc_unref(gc);
 }
 
-
+/* ------------------------------------------------------------------ */
+#ifndef RENDER_USING_GDK
 void
 gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerbvProject,
 		cairo_t *cr, gerbv_render_info_t *renderInfo) {
@@ -670,7 +673,10 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerb
 		}
 	}
 }
+#endif
 
+/* ------------------------------------------------------------------ */
+#ifndef RENDER_USING_GDK
 void
 gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t *cr,
 			gerbv_render_info_t *renderInfo) {
@@ -689,14 +695,20 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t 
 		}
 	}
 }
+#endif
 
+/* ------------------------------------------------------------------ */
+#ifndef RENDER_USING_GDK
 void
 gerbv_render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 						gerbv_render_info_t *renderInfo) {
 	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
 	gerbv_render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo);
 }
+#endif
 
+/* ------------------------------------------------------------------ */
+#ifndef RENDER_USING_GDK
 void
 gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *renderInfo){
 	gdouble translateX, translateY;
@@ -725,7 +737,10 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 		cairo y axis points down) */
 	cairo_scale (cr, renderInfo->scaleFactorX, -renderInfo->scaleFactorY);
 }
+#endif
 
+/* ------------------------------------------------------------------ */
+#ifndef RENDER_USING_GDK
 void
 gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo ) {
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
@@ -735,5 +750,6 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
 		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL);
 }
+#endif
 
 

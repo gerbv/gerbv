@@ -322,6 +322,7 @@ main(int argc, char *argv[])
 			       * when first Gerber is loaded 
 			       */
     mainProject.max_files = 1;
+    mainProject.check_before_delete = TRUE;
     mainProject.file = (gerbv_fileinfo_t **) calloc (mainProject.max_files, sizeof (gerbv_fileinfo_t *));
     if (mainProject.file == NULL)
 	{

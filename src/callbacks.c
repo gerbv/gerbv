@@ -1613,7 +1613,8 @@ callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) 
 
 	callbacks_show_color_picker_dialog (index);
 }
-					
+
+/* --------------------------------------------------------------------------- */					
 void
 callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index = callbacks_get_selected_row_index();
@@ -1621,6 +1622,8 @@ callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	render_refresh_rendered_image_on_screen ();
 }
 
+
+/* --------------------------------------------------------------------------- */
 void
 callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 {
@@ -1678,6 +1681,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     render_refresh_rendered_image_on_screen();
 }
 
+/* --------------------------------------------------------------------------- */
 gboolean
 callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
                                    gpointer user_data) {
@@ -1716,6 +1720,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 	return FALSE;
 }
 
+/* --------------------------------------------------------------------------- */
 void
 callbacks_update_layer_tree (void) {
 	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
@@ -1793,14 +1798,17 @@ callbacks_update_layer_tree (void) {
 	}
 }
 
+/* --------------------------------------------------------------------------- */
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data){
 }
 
+/* --------------------------------------------------------------------------- */
 void
 callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_data){
 }
 
+/* --------------------------------------------------------------------------- */
 void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
@@ -1811,6 +1819,7 @@ callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #endif
 }
 
+/* --------------------------------------------------------------------------- */
 void
 callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 #ifndef RENDER_USING_GDK
@@ -1821,24 +1830,27 @@ callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 #endif
 }
 
+/* --------------------------------------------------------------------------- */
 void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
-	if (screen.selectionInfo.type != EMPTY) {
-		if (!interface_get_alert_dialog_response ("The selected objects will be permanently deleted","Do you want to proceed?"))
-			return;
-		gint index=callbacks_get_selected_row_index();
-		if (index >= 0) {
-			gerb_image_delete_selected_nets (mainProject.file[index]->image,
-				screen.selectionInfo.selectedNodeArray); 
-			render_refresh_rendered_image_on_screen ();
-		}
-	}
-	render_clear_selection_buffer ();
+  if (screen.selectionInfo.type != EMPTY) {
+    if (mainProject.check_before_delete == TRUE) {
+      if (!interface_get_alert_dialog_response("The selected objects will be permanently deleted","Do you want to proceed?"))
+	return;
+    }
+    gint index=callbacks_get_selected_row_index();
+    if (index >= 0) {
+      gerb_image_delete_selected_nets (mainProject.file[index]->image,
+				       screen.selectionInfo.selectedNodeArray); 
+      render_refresh_rendered_image_on_screen ();
+    }
+  }
+  render_clear_selection_buffer ();
 #endif
 }
 
-
+/* --------------------------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event)
 {

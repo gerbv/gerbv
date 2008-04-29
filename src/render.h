@@ -62,7 +62,10 @@ void
 render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	gint corner2X, gint corner2Y, gint activeFileIndex, gboolean eraseOldSelection);
 
-extern gerbv_render_info_t screenRenderInfo;
 #endif
+
+gerbv_render_info_t screenRenderInfo;
+
+
 
 
