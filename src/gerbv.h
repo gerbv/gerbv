@@ -440,18 +440,18 @@ typedef struct {
 } gerbv_bbox_t;
 
 typedef struct {
-    GdkColor  background;
-    int max_files;
-    gerbv_fileinfo_t **file;
-    int curr_index;
-    int last_loaded;
-    int renderType;
-    gboolean project_dirty; 
-    gboolean check_before_delete;
-
-    gchar *path;
-    gchar *execpath;    /* Path to executed version of gerbv */
-    gchar *project;     /* Current project to simplify save next time */
+  GdkColor  background;
+  int max_files;
+  gerbv_fileinfo_t **file;
+  int curr_index;
+  int last_loaded;
+  int renderType;
+  gboolean project_dirty;   /* TRUE if changes have been made since last save */ 
+  gboolean check_before_delete;  /* TRUE to ask before deleting objects */
+  
+  gchar *path;
+  gchar *execpath;    /* Path to executed version of gerbv */
+  gchar *project;     /* Current project to simplify save next time */
 } gerbv_project_t;
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;

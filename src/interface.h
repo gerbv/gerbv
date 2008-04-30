@@ -33,5 +33,9 @@ void
 set_window_icon (GtkWidget * this_window);
 
 gboolean
-interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText);
+interface_get_alert_dialog_response (gchar *primaryText, 
+				     gchar *secondaryText,
+                                     gboolean show_checkbox, 
+				     gboolean *ask_to_show_again );
+
 

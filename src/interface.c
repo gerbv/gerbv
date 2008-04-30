@@ -1193,8 +1193,11 @@ interface_set_render_type (int t)
 }
 
 gboolean
-interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText)
+interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText, 
+				     gboolean show_checkbox, gboolean *ask_to_show_again )
 {
+  /* Set show_checkbox = TRUE to show "do not show this again" checkbox. */
+  /* Point ask_to_show_again to the variable to set to not show the checkbox. */
   GtkWidget *dialog1;
   GtkWidget *dialog_vbox1;
   GtkWidget *hbox1;
@@ -1230,9 +1233,11 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText)
   gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
   gtk_label_set_line_wrap (GTK_LABEL (label1), TRUE);
 
-  checkbox =  gtk_check_button_new_with_label("Do not show this dialog again.");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(checkbox), FALSE);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox1), checkbox, FALSE, FALSE, 0);
+  if (show_checkbox) {
+    checkbox =  gtk_check_button_new_with_label("Do not show this dialog again.");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(checkbox), FALSE);
+    gtk_box_pack_start (GTK_BOX (dialog_vbox1), checkbox, FALSE, FALSE, 0);
+  }
 
   dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
   gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
@@ -1249,8 +1254,11 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText)
 
   if (gtk_dialog_run ((GtkDialog*)dialog1) == GTK_RESPONSE_OK) {
     /* check to see if user clicked on "do not show again" box */
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)) == TRUE) {
-      mainProject.check_before_delete = 0;
+    if ((show_checkbox == TRUE) &&
+	(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)) == TRUE)) {
+      /* The user clicked the "do not show again box".  Set corresponding
+       * flag to FALSE. */
+      *ask_to_show_again = FALSE;
     }
     returnVal = TRUE;
   }

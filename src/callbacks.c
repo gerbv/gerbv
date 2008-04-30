@@ -101,8 +101,11 @@ callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	if (mainProject.last_loaded >= 0) {
-		if (!interface_get_alert_dialog_response ("Starting a new project will cause all currently open layers to be closed",
-			"Do you want to proceed?"))
+		if (!interface_get_alert_dialog_response (
+		       "Starting a new project will cause all currently open layers to be closed",
+		       "Do you want to proceed?",
+		       FALSE,
+		       NULL))
 			return;
 	}
 	/* Unload all layers and then clear layer window */
@@ -145,8 +148,11 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 	gtk_widget_destroy (screen.win.gerber);
 
 	if (mainProject.last_loaded >= 0) {
-		if (!interface_get_alert_dialog_response ("Opening a project will cause all currently open layers to be closed",
-			"Do you want to proceed?"))
+		if (!interface_get_alert_dialog_response (
+                        "Opening a project will cause all currently open layers to be closed",
+			"Do you want to proceed?",
+			FALSE,
+			NULL))
 			return;
 	}
 
@@ -232,7 +238,10 @@ callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
 
 	if (index >= 0) {
 		if (!gerbv_save_layer_from_index (&mainProject, index, mainProject.file[index]->fullPathname)) {
-			interface_get_alert_dialog_response ("Gerber Viewer cannot export this file type", NULL);
+			interface_get_alert_dialog_response ("Gerber Viewer cannot export this file type", 
+							     NULL,
+							     FALSE,
+							     NULL);
 		}
 	}
 	return;
@@ -1031,8 +1040,16 @@ void
 callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	gerbv_unload_all_layers (&mainProject);
-	gtk_main_quit();
+  if ((mainProject.project_dirty == TRUE) &&
+      !interface_get_alert_dialog_response(
+            "Are you sure?",
+            "You have unsaved changes in your project. Click OK to quit, or click CANCEL to go back and save your changes",
+	    FALSE,
+	    NULL)) {
+    return;
+  }
+  gerbv_unload_all_layers (&mainProject);
+  gtk_main_quit();
 }
 
 /* --------------------------------------------------------- */
@@ -1643,7 +1660,11 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 
     if (attr == NULL || n == 0) 
 	{
-	    interface_get_alert_dialog_response ("This file type does not currently have any editable features", "Format editing is currently only supported for Excellon drill file formats.");
+	    interface_get_alert_dialog_response (
+		     "This file type does not currently have any editable features", 
+		     "Format editing is currently only supported for Excellon drill file formats.",
+		     FALSE,
+		     NULL);
 	    return;
 	}
 
@@ -1814,6 +1835,7 @@ callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some translations here */
 	gerb_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
+	mainProject.project_dirty = TRUE;
 	render_clear_selection_buffer ();
 	render_refresh_rendered_image_on_screen ();
 #endif
@@ -1836,7 +1858,11 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
   if (screen.selectionInfo.type != EMPTY) {
     if (mainProject.check_before_delete == TRUE) {
-      if (!interface_get_alert_dialog_response("The selected objects will be permanently deleted","Do you want to proceed?"))
+      if (!interface_get_alert_dialog_response(
+                 "The selected objects will be permanently deleted",
+		 "Do you want to proceed?",
+		 TRUE,
+		 &(mainProject.check_before_delete)))
 	return;
     }
     gint index=callbacks_get_selected_row_index();
@@ -1844,6 +1870,7 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
       gerb_image_delete_selected_nets (mainProject.file[index]->image,
 				       screen.selectionInfo.selectedNodeArray); 
       render_refresh_rendered_image_on_screen ();
+      mainProject.project_dirty = TRUE;
     }
   }
   render_clear_selection_buffer ();
