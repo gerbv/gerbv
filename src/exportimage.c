@@ -87,7 +87,7 @@ void exportimage_export_to_png_file (gerbv_project_t *gerbvProject, gerbv_render
 	GdkColormap *colormap=NULL;
 	GdkPixbuf *tempPixbuf=NULL;
 	
-	render_to_pixmap_using_gdk (renderedPixmap, renderInfo);
+	gerbv_render_to_pixmap_using_gdk (gerbvProject, renderedPixmap, renderInfo, NULL, NULL);
 	colormap = gdk_drawable_get_colormap(renderedPixmap);
 	if ((tempPixbuf = gdk_pixbuf_get_from_drawable(tempPixbuf, renderedPixmap, 
 					      colormap, 0, 0, 0, 0, 
