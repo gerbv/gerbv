@@ -21,9 +21,22 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
+# main program
 bin_PROGRAMS = gerbv
 
-gerbv_SOURCES = amacro.c amacro.h \
+# shared library
+lib_LTLIBRARIES = libgerbv.la
+
+# public header file(s)
+pkgincludedir=	$(includedir)/${PACKAGE}-${VERSION}
+pkginclude_DATA= gerbv.h
+
+# pkg-config data file
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libgerbv.pc
+
+libgerbv_la_SOURCES= \
+		amacro.c amacro.h \
 		common.h tooltable.c \
 		${DRAW} drill.c drill.h \
 		exportimage.c \
@@ -33,7 +46,35 @@ gerbv_SOURCES = amacro.c amacro.h \
 		csv.c csv.h csv_defines.h \
 		gerb_stats.c gerb_stats.h \
 		drill_stats.c drill_stats.h export-rs274x.c \
-		export-drill.c \
+		export-drill.c
+
+# libgerbv shared library version.  A fairly strict rule should
+# be followed for when this version is updated.  Those rules,
+# taken from the libtool manual, are as follows
+#
+# - Format is current:revision:age
+#
+# 1. Start with version information of `0:0:0' for each libtool library.
+#
+# 2. Update the version information only immediately before a public
+#    release of your software. More frequent updates are unnecessary,
+#    and only guarantee that the current interface number gets larger faster.
+#
+# 3. If the library source code has changed at all since the last update,
+#    then increment revision (`c:r:a' becomes `c:r+1:a').
+#
+# 4. If any interfaces have been added, removed, or changed since the last
+#    update, increment current, and set revision to 0.
+#
+# 5. If any interfaces have been added since the last public release, then
+#    increment age.
+#
+# 6. If any interfaces have been removed since the last public release, then
+#    set age to 0.
+#
+libgerbv_la_LDFLAGS = -version-info 1:0:0
+
+gerbv_SOURCES = \
 		batch.c batch.h \
 		opdefines.h \
 		dynload.c dynload.h \
@@ -45,6 +86,9 @@ gerbv_SOURCES = amacro.c amacro.h \
 		interface.h render.c render.h \
 		icons.h
 
+gerbv_LDADD = libgerbv.la
+gerbv_DEPENDENCIES = libgerbv.la
+
 # If we are building on win32, then compile in some icons for the
 # desktop and application toolbar
 if WIN32
@@ -54,8 +98,8 @@ gerbv_icon.o : gerbv_icon.ico $(srcdir)/gerbv.rc
 gerbv_icon.ico: $(top_srcdir)/desktop/gerbv_icon.ico
 	cp $(top_srcdir)/desktop/gerbv_icon.ico $@
 
-gerbv_LDADD=		gerbv_icon.o
-gerbv_DEPENDENCIES=	gerbv_icon.o
+gerbv_LDADD+=		gerbv_icon.o
+gerbv_DEPENDENCIES+=	gerbv_icon.o
 
 endif
 
@@ -68,7 +112,7 @@ else
 DRAW=		${GDK_DRAW}
 endif
 
-EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW} gerbv.rc
+EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW} gerbv.rc libgerbv.pc.in
 
 scmdatadir = $(pkgdatadir)/scheme/
 dist_scmdata_DATA = init.scm

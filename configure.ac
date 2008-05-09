@@ -33,6 +33,7 @@ AM_CONFIG_HEADER([config.h])
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
 
+
 ############################################################
 #
 # Checks for cygwin/mingw32
@@ -155,6 +156,7 @@ dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
+AM_PROG_LIBTOOL
 
 # if we have gcc then add -Wall
 if test "x$GCC" = "xyes"; then
@@ -397,6 +399,7 @@ AC_OUTPUT(	Makefile \
 		man/Makefile \
 		scheme/Makefile \
 		src/Makefile \
+		src/libgerbv.pc \
 		win32/Makefile \
 		test/Makefile \
 		test/golden/Makefile \
