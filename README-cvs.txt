@@ -21,13 +21,16 @@ ssh
 In addition you will need recent versions of:
 
 autoconf  -- ftp://ftp.gnu.org/pub/gnu/autoconf/
-             Please note that version 2.13 is too old.  Current development
-             is done with 2.59.
+             Version 2.59 or newer.
 
 automake  -- ftp://ftp.gnu.org/pub/gnu/automake/
              The developers use the 1.9.* versions of automake.  Older versions
              have not been as well tested (or tested at all).  Versions 1.7 and
              older are too old and will not work.
+
+libtool   -- ftp://ftp.gnu.org/pub/gnu/libtool/
+             Version 1.4 and newer should work although most development is done
+	     with 1.5.x.
 
 You can find the version of autoconf, automake, and makeinfo by running them with the 
 --version flag.
