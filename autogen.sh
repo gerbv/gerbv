@@ -10,6 +10,14 @@ find . -name Makefile.in -exec rm {} \;
 #
 
 echo "Checking libtoolize version..."
+libtoolize --version 2>&1 > /dev/null
+rc=$?
+if test $rc -ne 0 ; then
+    echo "Could not determine the version of libtool on your machine"
+    echo "libtool --version produced:"
+    libtool --version
+    exit 1
+fi
 lt_ver=`libtoolize --version | awk '{print $NF; exit}'`
 lt_maj=`echo $lt_ver | sed 's;\..*;;g'`
 lt_min=`echo $lt_ver | sed -e 's;^[0-9]*\.;;g'  -e 's;\..*$;;g'`
