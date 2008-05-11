@@ -156,7 +156,7 @@ dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
-AM_PROG_LIBTOOL
+AC_PROG_LIBTOOL
 
 # if we have gcc then add -Wall
 if test "x$GCC" = "xyes"; then
