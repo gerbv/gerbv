@@ -49,6 +49,10 @@ libtoolize --force --copy --automake || exit 1
 #
 # aclocal
 
+echo "Checking aclocal version..."
+acl_ver=`aclocal --version | awk '{print $NF; exit}'`
+echo "    $acl_ver"
+
 echo "Running aclocal..."
 aclocal $ACLOCAL_FLAGS || exit 1
 echo "... done with aclocal."
@@ -56,6 +60,10 @@ echo "... done with aclocal."
 ############################################################################
 #
 # autoheader
+
+echo "Checking autoheader version..."
+ah_ver=`autoheader --version | awk '{print $NF; exit}'`
+echo "    $ah_ver"
 
 echo "Running autoheader..."
 autoheader || exit 1
@@ -65,6 +73,10 @@ echo "... done with autoheader."
 #
 # automake
 
+echo "Checking automake version..."
+am_ver=`automake --version | awk '{print $NF; exit}'`
+echo "    $am_ver"
+
 echo "Running automake..."
 automake --force --copy --add-missing || exit 1
 echo "... done with automake."
@@ -72,6 +84,10 @@ echo "... done with automake."
 ############################################################################
 #
 # autoconf
+
+echo "Checking autoconf version..."
+ac_ver=`autoconf --version | awk '{print $NF; exit}'`
+echo "    $ac_ver"
 
 echo "Running autoconf..."
 autoconf || exit 1
