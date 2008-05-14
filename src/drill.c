@@ -33,6 +33,7 @@
 
 #include <stdlib.h>
 #include <glib.h>
+#include <locale.h>
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -199,43 +200,45 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
     int i;
     char *tmps;
 
+    /* 
+     * many locales redefine "." as "," and so on, so sscanf and strtod 
+     * has problems when reading files using %f format.
+     * Fixes bug #1963618 reported by Lorenzo Marcantonio.
+     */
+    setlocale(LC_NUMERIC, "C" );
+
     /* Create new image for this layer */
     dprintf("In parse_drillfile, about to create image for this layer\n");
+
     image = new_gerb_image(image, "Excellon Drill File");
     if (image == NULL)
 	GERB_FATAL_ERROR("malloc image failed\n");
 
-    if (reload && attr_list != NULL)
-	{
-	    image->info->attr_list = attr_list;
-	    image->info->n_attr = n_attr;
+    if (reload && attr_list != NULL) {
+	image->info->attr_list = attr_list;
+	image->info->n_attr = n_attr;
+    } else {
+	/* Copy in the default attribute list for drill files.  We make a
+	 * copy here because we will allow per-layer editing of the
+	 * attributes.
+	 */
+	image->info->n_attr = sizeof (drill_attribute_list) / sizeof (drill_attribute_list[0]);
+	image->info->attr_list = (HID_Attribute *) malloc (sizeof (drill_attribute_list));
+	if (image->info->attr_list == NULL) {
+	    fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+	    exit (1);
 	}
-    else
-	{
-	    /* Copy in the default attribute list for drill files.  We make a
-	     * copy here because we will allow per-layer editing of the
-	     * attributes.
-	     */
-	    image->info->n_attr = sizeof (drill_attribute_list) / sizeof (drill_attribute_list[0]);
-	    image->info->attr_list = (HID_Attribute *) malloc (sizeof (drill_attribute_list));
-	    if (image->info->attr_list == NULL)
-		{
-		    fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
-		    exit (1);
-		}
-	    dprintf ("%s(): New attribute list is %p\n", __FUNCTION__, image->info->attr_list);
+	dprintf ("%s(): New attribute list is %p\n", __FUNCTION__, image->info->attr_list);
 
-	    for (i = 0 ; i < image->info->n_attr ; i++)
-		{
-		    image->info->attr_list[i] = drill_attribute_list[i];
-		}
-
-	    /* now merge any project attributes */
-	    attribute_merge (image->info->attr_list, image->info->n_attr,
-			     attr_list, n_attr);
+	for (i = 0 ; i < image->info->n_attr ; i++) {
+	    image->info->attr_list[i] = drill_attribute_list[i];
 	}
 
-	    
+	/* now merge any project attributes */
+	attribute_merge (image->info->attr_list, image->info->n_attr,
+			 attr_list, n_attr);
+    }
+    
     curr_net = image->netlist;
     curr_net->layer = image->layers;
     curr_net->state = image->states;
@@ -257,28 +260,26 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
     image->format->omit_zeros = ZEROS_UNSPECIFIED;
 
 
-    if (!image->info->attr_list[HA_auto].default_val.int_value) 
-	{
-	    state->autod = 0;
-	    state->number_format = FMT_USER;
-	    state->decimals = image->info->attr_list[HA_digits].default_val.int_value;
-	    if (image->info->attr_list[HA_xy_units].default_val.int_value == UNITS_MM)
-		state->unit = MM;
-	    switch (image->info->attr_list[HA_supression].default_val.int_value)
-		{
-		case SUP_LEAD:
-		    image->format->omit_zeros = LEADING;
-		    break;
+    if (!image->info->attr_list[HA_auto].default_val.int_value) {
+	state->autod = 0;
+	state->number_format = FMT_USER;
+	state->decimals = image->info->attr_list[HA_digits].default_val.int_value;
+	if (image->info->attr_list[HA_xy_units].default_val.int_value == UNITS_MM)
+	    state->unit = MM;
+	switch (image->info->attr_list[HA_supression].default_val.int_value) {
+	case SUP_LEAD:
+	    image->format->omit_zeros = LEADING;
+	    break;
+	    
+	case SUP_TRAIL:
+	    image->format->omit_zeros = TRAILING;
+	    break;
 
-		case SUP_TRAIL:
-		    image->format->omit_zeros = TRAILING;
-		    break;
-
-		default:
-		    image->format->omit_zeros = EXPLICIT;
-		    break;
-		}
+	default:
+	    image->format->omit_zeros = EXPLICIT;
+	    break;
 	}
+    }
 
     dprintf("%s():  Starting parsing of drill file\n", __FUNCTION__);
     while ((read = gerb_fgetc(fd)) != EOF) {
@@ -362,51 +363,52 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
 	    }
 	    break;
        case 'I':
-	   if (state->curr_section != DRILL_HEADER) break;
-	   {int c = gerb_fgetc(fd);
+	   if (state->curr_section != DRILL_HEADER) 
+	       break;
+	   {
+	       int c = gerb_fgetc(fd);
 	       switch (c) {
 	       case 'N':
-		   if ('C' == gerb_fgetc(fd))
-		   if ('H' == gerb_fgetc(fd)) {
-		       state->unit = INCH;
-
-		       /* Look for TZ/LZ */
-		       if (',' == gerb_fgetc(fd)) {
-			   c = gerb_fgetc(fd);
-			   if (c != EOF && 'Z' == gerb_fgetc(fd)) {
-			       switch (c) {
-			       case 'L':
-				   if (state->autod)
-				       {
+		   if ('C' == gerb_fgetc(fd)) {
+		       if ('H' == gerb_fgetc(fd)) {
+			   state->unit = INCH;
+			   
+			   /* Look for TZ/LZ */
+			   if (',' == gerb_fgetc(fd)) {
+			       c = gerb_fgetc(fd);
+			       if (c != EOF && 'Z' == gerb_fgetc(fd)) {
+				   switch (c) {
+				   case 'L':
+				       if (state->autod) {
 					   image->format->omit_zeros = TRAILING;
 					   state->header_number_format =
 					       state->number_format = FMT_00_0000;
 					   state->decimals = 4;
 				       }
-				   break;
+				       break;
 
-			       case 'T':
-				   if (state->autod)
-				       {
+				   case 'T':
+				       if (state->autod) {
 					   image->format->omit_zeros = LEADING;
 					   state->header_number_format =
 					       state->number_format = FMT_00_0000;
 					   state->decimals = 4;
 				       }
-				   break;
-
-			       default:
+				       break;
+				       
+				   default:
+				       drill_stats_add_error(stats->error_list,
+							     -1,
+							     "Found junk after INCH command\n",
+							     WARNING);
+				       break;
+				   }
+			       } else {
 				   drill_stats_add_error(stats->error_list,
 							 -1,
 							 "Found junk after INCH command\n",
 							 WARNING);
-				   break;
 			       }
-			   } else {
-				   drill_stats_add_error(stats->error_list,
-							 -1,
-							 "Found junk after INCH command\n",
-							 WARNING);
 			   }
 		       }
 		   }
@@ -484,22 +486,20 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
 			}
 		    }
 		}
-		if (state->autod)
-		    {
-			state->number_format = state->backup_number_format;
-			state->unit = MM;
-		    }
+		if (state->autod) {
+		    state->number_format = state->backup_number_format;
+		    state->unit = MM;
+		}
 		break;
 	    case DRILL_M_IMPERIAL :
-		if (state->autod)
-		    {
-			if (state->number_format != FMT_00_0000)
-			    /* save metric format definition for later */
-			    state->backup_number_format = state->number_format;
-			state->number_format = FMT_00_0000;
-			state->decimals = 4;
-			state->unit = INCH;
-		    }
+		if (state->autod) {
+		    if (state->number_format != FMT_00_0000)
+			/* save metric format definition for later */
+			state->backup_number_format = state->number_format;
+		    state->number_format = FMT_00_0000;
+		    state->decimals = 4;
+		    state->unit = INCH;
+		}
 
 		break;
 	    case DRILL_M_LONGMESSAGE :
@@ -655,58 +655,53 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
  drill_parse_end:
     dprintf ("%s():  Populating file attributes\n", __FUNCTION__);
 
-    switch (state->unit)
-	{
-	case MM:
-	    image->info->attr_list[HA_xy_units].default_val.int_value = UNITS_MM;
-	    /* image->info->attr_list[HA_tool_units].default_val.int_value = UNITS_MM; */
-	    break;
-
-	default:
-	    image->info->attr_list[HA_xy_units].default_val.int_value = UNITS_INCH;
-	    /* image->info->attr_list[HA_tool_units].default_val.int_value = UNITS_INCH; */
-	    break;
-	}
-
-    switch (state->number_format)
-	{
-	case FMT_000_00:
-	case FMT_0000_00:
-	    image->info->attr_list[HA_digits].default_val.int_value = 2;
-	    break;
-
-	case FMT_000_000:
-	    image->info->attr_list[HA_digits].default_val.int_value = 3;
-	    break;
-
-	case FMT_00_0000:
-	    image->info->attr_list[HA_digits].default_val.int_value = 4;
-	    break;
-
-	case FMT_USER:
-	    dprintf ("%s():  Keeping user specified number of decimal places (%d)\n",
-		     __FUNCTION__,
-		     image->info->attr_list[HA_digits].default_val.int_value);
-	    break;
-
-	default:
-	    break;
-	}
-
-    switch (image->format->omit_zeros)
-	{
-	case LEADING:
-	    image->info->attr_list[HA_supression].default_val.int_value = SUP_LEAD;
-	    break;
+    switch (state->unit) {
+    case MM:
+	image->info->attr_list[HA_xy_units].default_val.int_value = UNITS_MM;
+	break;
 	    
-	case TRAILING:
-	    image->info->attr_list[HA_supression].default_val.int_value = SUP_TRAIL;
-	    break;
+    default:
+	image->info->attr_list[HA_xy_units].default_val.int_value = UNITS_INCH;
+	break;
+    }
 
-	default:
-	    image->info->attr_list[HA_supression].default_val.int_value = SUP_NONE;
-	    break;
-	}
+    switch (state->number_format) {
+    case FMT_000_00:
+    case FMT_0000_00:
+	image->info->attr_list[HA_digits].default_val.int_value = 2;
+	break;
+
+    case FMT_000_000:
+	image->info->attr_list[HA_digits].default_val.int_value = 3;
+	break;
+	
+    case FMT_00_0000:
+	image->info->attr_list[HA_digits].default_val.int_value = 4;
+	break;
+	
+    case FMT_USER:
+	dprintf ("%s():  Keeping user specified number of decimal places (%d)\n",
+		 __FUNCTION__,
+		 image->info->attr_list[HA_digits].default_val.int_value);
+	break;
+	
+    default:
+	break;
+    }
+
+    switch (image->format->omit_zeros) {
+    case LEADING:
+	image->info->attr_list[HA_supression].default_val.int_value = SUP_LEAD;
+	break;
+	    
+    case TRAILING:
+	image->info->attr_list[HA_supression].default_val.int_value = SUP_TRAIL;
+	break;
+
+    default:
+	image->info->attr_list[HA_supression].default_val.int_value = SUP_NONE;
+	break;
+    }
 
     g_free(state);
 
@@ -722,98 +717,98 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
 gboolean
 drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 {
-  char *buf;
-  int len = 0;
-  char *letter;
-  int ascii;
-  int zero = 48; /* ascii 0 */
-  int nine = 57; /* ascii 9 */
-  int i;
-  gboolean found_binary = FALSE;
-  gboolean found_M48 = FALSE;
-  gboolean found_M30 = FALSE;
-  gboolean found_percent = FALSE;
-  gboolean found_T = FALSE;
-  gboolean found_X = FALSE;
-  gboolean found_Y = FALSE;
+    char *buf;
+    int len = 0;
+    char *letter;
+    int ascii;
+    int zero = 48; /* ascii 0 */
+    int nine = 57; /* ascii 9 */
+    int i;
+    gboolean found_binary = FALSE;
+    gboolean found_M48 = FALSE;
+    gboolean found_M30 = FALSE;
+    gboolean found_percent = FALSE;
+    gboolean found_T = FALSE;
+    gboolean found_X = FALSE;
+    gboolean found_Y = FALSE;
  
-  buf = g_malloc(MAXL);
-  if (buf == NULL) 
-    GERB_FATAL_ERROR("malloc buf failed while checking for drill file.\n");
+    buf = g_malloc(MAXL);
+    if (buf == NULL) 
+	GERB_FATAL_ERROR("malloc buf failed while checking for drill file.\n");
 
-  while (fgets(buf, MAXL, fd->fd) != NULL) {
-    len = strlen(buf);
+    while (fgets(buf, MAXL, fd->fd) != NULL) {
+	len = strlen(buf);
 
-    /* First look through the file for indications of its type */
+	/* First look through the file for indications of its type */
 
-    /* check that file is not binary (non-printing chars) */
-    for (i = 0; i < len; i++) {
-      ascii = (int) buf[i];
-      if ((ascii > 128) || (ascii < 0)) {
-        found_binary = TRUE;
-      }
-    }
-
-    /* Check for M48 = start of drill header */
-    if (g_strstr_len(buf, len, "M48")) {
-	  found_M48 = TRUE; 
-    }
-
-    /* Check for M30 = end of drill program */
-    if (g_strstr_len(buf, len, "M30")) {
-	if (found_percent) {
-	  found_M30 = TRUE; /* Found M30 after % = good */
+	/* check that file is not binary (non-printing chars) */
+	for (i = 0; i < len; i++) {
+	    ascii = (int) buf[i];
+	    if ((ascii > 128) || (ascii < 0)) {
+		found_binary = TRUE;
+	    }
 	}
-    }
 
-    /* Check for % on its own line at end of header */
-    if ((letter = g_strstr_len(buf, len, "%")) != NULL) {
-      if ((letter[1] ==  '\r') || (letter[1] ==  '\n'))
-	found_percent = TRUE;
-    }
-
-    /* Check for T<number> */
-    if ((letter = g_strstr_len(buf, len, "T")) != NULL) {
-      if (!found_T && (found_X || found_Y)) {
-	found_T = FALSE;  /* Found first T after X or Y */
-      } else {
-	if (isdigit( (int) letter[1])) { /* verify next char is digit */
-	  found_T = TRUE;
+	/* Check for M48 = start of drill header */
+	if (g_strstr_len(buf, len, "M48")) {
+	    found_M48 = TRUE; 
 	}
-      }
-    }
 
-    /* look for X<number> or Y<number> */
-    if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
-      ascii = (int) letter[1]; /* grab char after X */
-      if ((ascii >= zero) && (ascii <= nine)) {
-	found_X = TRUE;
-      }
-    }
-    if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
-      ascii = (int) letter[1]; /* grab char after Y */
-      if ((ascii >= zero) && (ascii <= nine)) {
-	found_Y = TRUE;
-      }
-    }
-  } /* while (fgets(buf, MAXL, fd->fd) */
+	/* Check for M30 = end of drill program */
+	if (g_strstr_len(buf, len, "M30")) {
+	    if (found_percent) {
+		found_M30 = TRUE; /* Found M30 after % = good */
+	    }
+	}
 
-  rewind(fd->fd);
-  free(buf);
-  *returnFoundBinary = found_binary;
+	/* Check for % on its own line at end of header */
+	if ((letter = g_strstr_len(buf, len, "%")) != NULL) {
+	    if ((letter[1] ==  '\r') || (letter[1] ==  '\n'))
+		found_percent = TRUE;
+	}
 
-  /* Now form logical expression determining if this is a drill file */
-  if ( ((found_X || found_Y) && found_T) && 
-       (found_M48 || (found_percent && found_M30))
-     ) 
-    return TRUE;
-  else if (found_M48 && found_T && found_percent && found_M30)
-      /* Pathological case of drill file with valid header 
-	 and EOF but no drill XY locations. */
-    return TRUE;
-  else 
-    return FALSE;
-}
+	/* Check for T<number> */
+	if ((letter = g_strstr_len(buf, len, "T")) != NULL) {
+	    if (!found_T && (found_X || found_Y)) {
+		found_T = FALSE;  /* Found first T after X or Y */
+	    } else {
+		if (isdigit( (int) letter[1])) { /* verify next char is digit */
+		    found_T = TRUE;
+		}
+	    }
+	}
+
+	/* look for X<number> or Y<number> */
+	if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
+	    ascii = (int) letter[1]; /* grab char after X */
+	    if ((ascii >= zero) && (ascii <= nine)) {
+		found_X = TRUE;
+	    }
+	}
+	if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
+	    ascii = (int) letter[1]; /* grab char after Y */
+	    if ((ascii >= zero) && (ascii <= nine)) {
+		found_Y = TRUE;
+	    }
+	}
+    } /* while (fgets(buf, MAXL, fd->fd) */
+
+    rewind(fd->fd);
+    free(buf);
+    *returnFoundBinary = found_binary;
+    
+    /* Now form logical expression determining if this is a drill file */
+    if ( ((found_X || found_Y) && found_T) && 
+	 (found_M48 || (found_percent && found_M30)) ) 
+	return TRUE;
+    else if (found_M48 && found_T && found_percent && found_M30)
+	/* Pathological case of drill file with valid header 
+	   and EOF but no drill XY locations. */
+	return TRUE;
+    else 
+	return FALSE;
+} /* drill_file_p */
+
 
 /* -------------------------------------------------------------- */
 /* Parse tool definition. This can get a bit tricky since it can
