@@ -45,12 +45,6 @@
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
-#if defined (__MINGW32__)
-const char path_separator = '\\';
-#else
-const char path_separator = '/';
-#endif
-
 gerb_file_t *
 gerb_fopen(char const * filename)
 {
@@ -294,7 +288,7 @@ gerb_find_file(char const * filename, char **paths)
 
 	    /* Extract environment name. Remember we start with a $ */
         
-   	    tmp = strchr(paths[i], path_separator);
+   	    tmp = strchr(paths[i], G_DIR_SEPARATOR);
 	    if (tmp == NULL) 
 		len = strlen(paths[i]) - 1;
 	    else
@@ -324,7 +318,7 @@ gerb_find_file(char const * filename, char **paths)
 	if (complete_path == NULL)
 	    return NULL;
 	strcpy(complete_path, curr_path);
-	complete_path[strlen(curr_path)] = path_separator;
+	complete_path[strlen(curr_path)] = G_DIR_SEPARATOR;
 	complete_path[strlen(curr_path) + 1] = '\0';
 	strncat(complete_path, filename, strlen(filename));
 
