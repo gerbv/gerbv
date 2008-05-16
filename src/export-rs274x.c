@@ -245,7 +245,8 @@ export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 	
 	oldLayer = image->layers;
 	oldState = image->states;
-	for (currentNet = image->netlist; currentNet; currentNet = currentNet->next){
+	/* skip the first net, since it's always zero due to the way we parse things */
+	for (currentNet = image->netlist->next; currentNet; currentNet = currentNet->next){
 		/* check for "layer" changes (RS274X commands) */
 		if (currentNet->layer != oldLayer)
 			export_rs274x_write_layer_change (oldLayer, currentNet->layer, fd);

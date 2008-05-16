@@ -407,7 +407,8 @@ gerb_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, ger
     newSavedState = lastState;
     newSavedNet = lastNet;
     
-    for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){
+    /* when copying, skip the first net, since it's always zero due to the way we parse things */
+    for (currentNet = sourceImage->netlist->next; currentNet; currentNet = currentNet->next){
       /* check for any new layers and duplicate them if needed */
 	if (currentNet->layer != oldLayer) {
 	  newSavedLayer->next = gerb_image_duplicate_layer (currentNet->layer);
