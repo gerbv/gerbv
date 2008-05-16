@@ -1201,10 +1201,10 @@ void callbacks_update_ruler_scales (void) {
 
 void callbacks_update_scrollbar_limits (void){
 #ifdef RENDER_USING_GDK
-	gerbv_render_info_t tempRenderInfo = {1.0, 0, 0, 0, screenRenderInfo.displayWidth,
+	gerbv_render_info_t tempRenderInfo = {0, 0, 0, 0, 0, screenRenderInfo.displayWidth,
 			screenRenderInfo.displayHeight};
 #else
-	gerbv_render_info_t tempRenderInfo = {1.0, 0, 0, 3, screenRenderInfo.displayWidth,
+	gerbv_render_info_t tempRenderInfo = {0, 0, 0, 0, 3, screenRenderInfo.displayWidth,
 			screenRenderInfo.displayHeight};
 #endif
 	GtkAdjustment *hAdjust = (GtkAdjustment *)screen.win.hAdjustment;
