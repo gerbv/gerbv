@@ -21,12 +21,44 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#include "config.h"
-#include "attribute.h"
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
+
+/* Used for HID attributes (exporting and printing, mostly).
+   HA_boolean uses int_value, HA_enum sets int_value to the index and
+   str_value to the enumeration string.  HID_Label just shows the
+   default str_value.  HID_Mixed is a real_value followed by an enum,
+   like 0.5in or 100mm. 
+*/
+typedef struct
+{
+    int int_value;
+    char *str_value;
+    double real_value;
+} HID_Attr_Val;
+
+typedef struct
+{
+    char *name;
+    char *help_text;
+    enum
+	{ HID_Label, HID_Integer, HID_Real, HID_String,
+	  HID_Boolean, HID_Enum, HID_Mixed, HID_Path
+	} type;
+    int min_val, max_val;	/* for integer and real */
+    HID_Attr_Val default_val;	/* Also actual value for global attributes.  */
+    const char **enumerations;
+    /* If set, this is used for global attributes (i.e. those set
+       statically with REGISTER_ATTRIBUTES below) instead of changing
+       the default_val.  Note that a HID_Mixed attribute must specify a
+       pointer to HID_Attr_Val here, and HID_Boolean assumes this is
+       "char *" so the value should be initialized to zero, and may be
+       set to non-zero (not always one).  */
+    void *value;
+    int hash; /* for detecting changes. */
+} HID_Attribute;
 
 /* from old gerb_error */
 enum error_type_t {FATAL, GRB_ERROR, WARNING, NOTE};
@@ -453,6 +485,14 @@ typedef struct {
     int scale;
 } gerbv_zoom_data_t;
 
+//! Create a new project structure and initialize some important variables
+gerbv_project_t *
+gerbv_create_project (void);
+
+//! Free a project and all related variables
+void
+gerbv_destroy_project (gerbv_project_t *gerbvProject);
+
 //! Open a file, parse the contents, and add a new layer to an existing project
 void 
 gerbv_open_layer_from_filename (
@@ -563,10 +603,10 @@ void exportimage_export_to_svg_file_autoscaled (gerbv_project_t *gerbvProject, i
 void exportimage_export_to_svg_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename);
 
 gboolean
-export_rs274x_file_from_image (gchar *filename, gerb_image_t *image);
+gerbv_export_rs274x_file_from_image (gchar *filename, gerb_image_t *image);
 
 gboolean
-export_drill_file_from_image (gchar *filename, gerb_image_t *image);
+gerbv_export_drill_file_from_image (gchar *filename, gerb_image_t *image);
 
 /* from drill and gerb stats headers */
 drill_stats_t * drill_stats_new(void);

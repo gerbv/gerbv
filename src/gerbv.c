@@ -144,6 +144,27 @@ static gerb_user_transformations_t defaultTransformations[NUMBER_OF_DEFAULT_TRAN
 	{0,0,0,0,FALSE},
 };
 
+gerbv_project_t *
+gerbv_create_project (void) {
+	gerbv_project_t *returnProject= (gerbv_project_t *) g_new0(gerbv_project_t,1);
+	
+	/* default to using the current directory path for our starting guesses
+		on future file loads */
+	returnProject->path = g_get_current_dir ();
+	returnProject->last_loaded = -1;  /* Will be updated to 0 
+			       * when first Gerber is loaded 
+			       */
+	returnProject->max_files = 1;
+	returnProject->check_before_delete = TRUE;
+	returnProject->file = (gerbv_fileinfo_t **) calloc (returnProject->max_files, sizeof (gerbv_fileinfo_t *));
+
+	return returnProject;
+}
+
+void
+gerbv_destroy_project (gerbv_project_t *gerbvProject){
+
+}
 
 void 
 gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
@@ -164,10 +185,10 @@ gboolean
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename) 
 {
     if (strcmp (gerbvProject->file[index]->image->info->type,"RS274-X (Gerber) File")==0) {
-	export_rs274x_file_from_image (filename, gerbvProject->file[index]->image);
+	gerbv_export_rs274x_file_from_image (filename, gerbvProject->file[index]->image);
     }
     else if (strcmp (gerbvProject->file[index]->image->info->type,"Excellon Drill File")==0) {
-	export_drill_file_from_image (filename, gerbvProject->file[index]->image);
+	gerbv_export_drill_file_from_image (filename, gerbvProject->file[index]->image);
     }
     else {
 	return FALSE;

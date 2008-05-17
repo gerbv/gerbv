@@ -41,8 +41,8 @@
 
 #include <gtk/gtk.h>
 
-#include "attribute.h"
 #include "gerbv.h"
+#include "attribute.h"
 #include "main.h"
 
 #define dprintf if(DEBUG) printf
@@ -425,29 +425,4 @@ attribute_interface_dialog (HID_Attribute * attrs,
 
   return rc;
 }
-
-void
-attribute_merge (HID_Attribute *dest, int ndest, HID_Attribute *src, int nsrc)
-{
-    int i, j;
-
-    /* Here is a brain dead merge algorithm which shold make anyone cringe.
-     * Still, it is simple and we won't merge many attributes and not
-     * many times either.
-     */
-
-    for (i = 0 ; i < nsrc ; i++) {
-	/* see if our destination wants this attribute */
-	j = 0;
-	while (j < ndest && strcmp (src[i].name, dest[j].name) != 0)
-	    j++;
-
-	/* if we wanted it and it is the same type, copy it over */
-	if (j < ndest && src[i].type == dest[j].type) {
-	    dest[j].default_val = src[i].default_val;
-	}
-    }
-
-}
-
 

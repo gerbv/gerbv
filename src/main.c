@@ -149,7 +149,7 @@ const char *opt_options = "Vadh:B:D:O:W:b:f:l:o:p:t:T:w:x:";
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
  */
-gerbv_project_t mainProject;
+gerbv_project_t *mainProject;
 gerbv_screen_t screen;
 
 gboolean logToFileOption;
@@ -313,22 +313,10 @@ main(int argc, char *argv[])
      */
     memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
-    mainProject.execpath = g_path_get_dirname(argv[0]);
+    
+    mainProject = gerbv_create_project();
+    mainProject->execpath = g_path_get_dirname(argv[0]);
 
-    /* default to using the current directory path for our starting guesses
-       on future file loads */
-    mainProject.path = g_get_current_dir ();
-    mainProject.last_loaded = -1;  /* Will be updated to 0 
-			       * when first Gerber is loaded 
-			       */
-    mainProject.max_files = 1;
-    mainProject.check_before_delete = TRUE;
-    mainProject.file = (gerbv_fileinfo_t **) calloc (mainProject.max_files, sizeof (gerbv_fileinfo_t *));
-    if (mainProject.file == NULL)
-	{
-	    fprintf (stderr, "malloc failed\n");
-	    exit (1);
-	}
     logToFileOption = FALSE;
     logToFileFilename = NULL;
     /*
@@ -463,9 +451,9 @@ main(int argc, char *argv[])
 		fprintf(stderr, "Specified color values should be between 00 and FF.\n");
 		exit(1);
 	    }
-	    mainProject.background.red = r*257;
-    	    mainProject.background.green = g*257;
-    	    mainProject.background.blue = b*257;
+	    mainProject->background.red = r*257;
+    	    mainProject->background.green = g*257;
+    	    mainProject->background.blue = b*257;
 	    break;
 	case 'f' :	// Set layer colors to this color (foreground color)
 	    if (optarg == NULL) {
@@ -730,30 +718,30 @@ main(int argc, char *argv[])
     if (project_filename) {
 	/* calculate the absolute pathname to the project if the user
 	   used a relative path */
-	g_free (mainProject.path);
+	g_free (mainProject->path);
 	if (!g_path_is_absolute(project_filename)) {
 	    gchar *fullName = g_build_filename (g_get_current_dir (),
 						project_filename, NULL);
-	    main_open_project_from_filename (&mainProject, fullName);
-	    mainProject.path = g_path_get_dirname (fullName);
+	    main_open_project_from_filename (mainProject, fullName);
+	    mainProject->path = g_path_get_dirname (fullName);
 	    g_free (fullName);
 	} else {
-	    main_open_project_from_filename (&mainProject, project_filename);
-	    mainProject.path = g_path_get_dirname (project_filename);
+	    main_open_project_from_filename (mainProject, project_filename);
+	    mainProject->path = g_path_get_dirname (project_filename);
 	}
 	
     } else {
 	for(i = optind ; i < argc; i++) {
-	    g_free (mainProject.path);
+	    g_free (mainProject->path);
 	    if (!g_path_is_absolute(argv[i])) {
 		gchar *fullName = g_build_filename (g_get_current_dir (),
 						    argv[i], NULL);
-		gerbv_open_layer_from_filename (&mainProject, fullName);
-		mainProject.path = g_path_get_dirname (fullName);
+		gerbv_open_layer_from_filename (mainProject, fullName);
+		mainProject->path = g_path_get_dirname (fullName);
 		g_free (fullName);
 	    } else {
-		gerbv_open_layer_from_filename (&mainProject, argv[i]);
-		mainProject.path = g_path_get_dirname (argv[i]);
+		gerbv_open_layer_from_filename (mainProject, argv[i]);
+		mainProject->path = g_path_get_dirname (argv[i]);
 	    }
 	}
     }
@@ -787,7 +775,7 @@ main(int argc, char *argv[])
 	}
 
 	gerbv_render_size_t bb;
-	gerbv_render_get_boundingbox(&mainProject, &bb);
+	gerbv_render_get_boundingbox(mainProject, &bb);
 	// Set origin to the left-bottom corner if it is not specified
 	if(!userSuppliedOrigin){
 	    userSuppliedOriginX = bb.left;
@@ -854,31 +842,31 @@ main(int argc, char *argv[])
 	
 	if (exportType == 1) {
 #ifdef EXPORT_PNG
-	    exportimage_export_to_png_file (&mainProject, &renderInfo, exportFilename);
+	    exportimage_export_to_png_file (mainProject, &renderInfo, exportFilename);
 #endif
 	} else if (exportType == 2) {
-	    exportimage_export_to_pdf_file (&mainProject, &renderInfo, exportFilename);
+	    exportimage_export_to_pdf_file (mainProject, &renderInfo, exportFilename);
 	} else if (exportType == 3) {
-	    exportimage_export_to_svg_file (&mainProject, &renderInfo, exportFilename);
+	    exportimage_export_to_svg_file (mainProject, &renderInfo, exportFilename);
 	} else if (exportType == 4) {
-	    exportimage_export_to_postscript_file (&mainProject, &renderInfo, exportFilename);
+	    exportimage_export_to_postscript_file (mainProject, &renderInfo, exportFilename);
 	} else if (exportType == 5) {
-	    if (mainProject.file[0]->image) {
+	    if (mainProject->file[0]->image) {
 		/* if we have more than one file, we need to merge them before exporting */
-		if (mainProject.file[1]) {
+		if (mainProject->file[1]) {
 		  gerb_image_t *exportImage;
-		  exportImage = gerb_image_duplicate_image (mainProject.file[0]->image, &mainProject.file[0]->transform);
-		  for(i = mainProject.max_files-1; i > 0; i--) {
-		    if (mainProject.file[i]) {
-		      gerb_image_copy_image (mainProject.file[i]->image, &mainProject.file[i]->transform, exportImage);
+		  exportImage = gerb_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
+		  for(i = mainProject->max_files-1; i > 0; i--) {
+		    if (mainProject->file[i]) {
+		      gerb_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
 		    }
 		  }
-		  export_rs274x_file_from_image (exportFilename, exportImage);
+		  gerbv_export_rs274x_file_from_image (exportFilename, exportImage);
 		  free_gerb_image (exportImage);
 		}
 		/* otherwise, just export the single image file as it is */
 		else {
-		  export_rs274x_file_from_image (exportFilename, mainProject.file[0]->image);
+		  gerbv_export_rs274x_file_from_image (exportFilename, mainProject->file[0]->image);
 		}
 	    }
 	    else {
@@ -886,22 +874,22 @@ main(int argc, char *argv[])
 		exit(1);
 	    }
 	} else if (exportType == 6) {
-	    if (mainProject.file[0]->image) {
+	    if (mainProject->file[0]->image) {
 		/* if we have more than one file, we need to merge them before exporting */
-		if (mainProject.file[1]) {
+		if (mainProject->file[1]) {
 		  gerb_image_t *exportImage;
-		  exportImage = gerb_image_duplicate_image (mainProject.file[0]->image, &mainProject.file[0]->transform);
-		  for(i = mainProject.max_files-1; i > 0; i--) {
-		    if (mainProject.file[i]) {
-		      gerb_image_copy_image (mainProject.file[i]->image, &mainProject.file[i]->transform, exportImage);
+		  exportImage = gerb_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
+		  for(i = mainProject->max_files-1; i > 0; i--) {
+		    if (mainProject->file[i]) {
+		      gerb_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
 		    }
 		  }
-		  export_drill_file_from_image (exportFilename, exportImage);
+		  gerbv_export_drill_file_from_image (exportFilename, exportImage);
 		  free_gerb_image (exportImage);
 		}
 		/* otherwise, just export the single image file as it is */
 		else {
-		  export_drill_file_from_image (exportFilename, mainProject.file[0]->image);
+		  gerbv_export_drill_file_from_image (exportFilename, mainProject->file[0]->image);
 		}
 	    }
 	    else {

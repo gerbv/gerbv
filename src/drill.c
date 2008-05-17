@@ -188,6 +188,31 @@ static HID_Attribute drill_attribute_list[] = {
 };
 
 
+void
+drill_attribute_merge (HID_Attribute *dest, int ndest, HID_Attribute *src, int nsrc)
+{
+    int i, j;
+
+    /* Here is a brain dead merge algorithm which shold make anyone cringe.
+     * Still, it is simple and we won't merge many attributes and not
+     * many times either.
+     */
+
+    for (i = 0 ; i < nsrc ; i++) {
+	/* see if our destination wants this attribute */
+	j = 0;
+	while (j < ndest && strcmp (src[i].name, dest[j].name) != 0)
+	    j++;
+
+	/* if we wanted it and it is the same type, copy it over */
+	if (j < ndest && src[i].type == dest[j].type) {
+	    dest[j].default_val = src[i].default_val;
+	}
+    }
+
+}
+
+
 /* -------------------------------------------------------------- */
 gerb_image_t *
 parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reload)
@@ -235,7 +260,7 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
 	}
 
 	/* now merge any project attributes */
-	attribute_merge (image->info->attr_list, image->info->n_attr,
+	drill_attribute_merge (image->info->attr_list, image->info->n_attr,
 			 attr_list, n_attr);
     }
     

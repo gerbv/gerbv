@@ -100,7 +100,7 @@ void
 callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	if (mainProject.last_loaded >= 0) {
+	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
 		       "Starting a new project will cause all currently open layers to be closed",
 		       "Do you want to proceed?",
@@ -109,13 +109,13 @@ callbacks_new_activate                        (GtkMenuItem     *menuitem,
 			return;
 	}
 	/* Unload all layers and then clear layer window */
-	gerbv_unload_all_layers (&mainProject);
+	gerbv_unload_all_layers (mainProject);
 	callbacks_update_layer_tree ();
 
 	/* Destroy project info */
-	if (mainProject.project) {
-	    g_free(mainProject.project);
-	    mainProject.project = NULL;
+	if (mainProject->project) {
+	    g_free(mainProject->project);
+	    mainProject->project = NULL;
 	}
 	render_refresh_rendered_image_on_screen();
 }
@@ -136,18 +136,18 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
 				     NULL);
 	gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
-		mainProject.path);
+		mainProject->path);
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
 		filename =
 		    gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
 		/* update the last folder */
-		g_free (mainProject.path);
-		mainProject.path = gtk_file_chooser_get_current_folder ((GtkFileChooser *) screen.win.gerber);
+		g_free (mainProject->path);
+		mainProject->path = gtk_file_chooser_get_current_folder ((GtkFileChooser *) screen.win.gerber);
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
-	if (mainProject.last_loaded >= 0) {
+	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
                         "Opening a project will cause all currently open layers to be closed",
 			"Do you want to proceed?",
@@ -157,8 +157,8 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 	}
 
 	if (filename)
-		main_open_project_from_filename (&mainProject, filename);
-	gerbv_render_zoom_to_fit_display (&mainProject, &screenRenderInfo);
+		main_open_project_from_filename (mainProject, filename);
+	gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 	render_refresh_rendered_image_on_screen();
 	callbacks_update_layer_tree();
 
@@ -184,24 +184,24 @@ callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
 
 	g_object_set (screen.win.gerber, "select-multiple", TRUE, NULL);
 	gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
-		mainProject.path);
+		mainProject->path);
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
 		filenames =
 		    gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER (screen.win.gerber));
 		/* update the last folder */
-		g_free (mainProject.path);
-		mainProject.path = gtk_file_chooser_get_current_folder ((GtkFileChooser *) screen.win.gerber);
+		g_free (mainProject->path);
+		mainProject->path = gtk_file_chooser_get_current_folder ((GtkFileChooser *) screen.win.gerber);
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
 	/* Now try to open all gerbers specified */
 	for (filename=filenames; filename; filename=filename->next) {
-		gerbv_open_layer_from_filename (&mainProject, filename->data);
+		gerbv_open_layer_from_filename (mainProject, filename->data);
 	}
 	g_slist_free(filenames);
 	
-	gerbv_render_zoom_to_fit_display (&mainProject, &screenRenderInfo);
+	gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 	render_refresh_rendered_image_on_screen();
 	callbacks_update_layer_tree();
 
@@ -213,7 +213,7 @@ void
 callbacks_revert_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	gerbv_revert_all_files (&mainProject);
+	gerbv_revert_all_files (mainProject);
 	render_refresh_rendered_image_on_screen();
 }
 
@@ -222,8 +222,8 @@ void
 callbacks_save_project_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	if (mainProject.project)
-		main_save_project_from_filename (&mainProject, mainProject.project);
+	if (mainProject->project)
+		main_save_project_from_filename (mainProject, mainProject->project);
 	else
 		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
 	return;
@@ -237,7 +237,7 @@ callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
 	gint index=callbacks_get_selected_row_index();
 
 	if (index >= 0) {
-		if (!gerbv_save_layer_from_index (&mainProject, index, mainProject.file[index]->fullPathname)) {
+		if (!gerbv_save_layer_from_index (mainProject, index, mainProject->file[index]->fullPathname)) {
 			interface_get_alert_dialog_response ("Gerber Viewer cannot export this file type", 
 							     NULL,
 							     FALSE,
@@ -289,33 +289,33 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 
 	if (filename) {
 		if (processType == CALLBACKS_SAVE_PROJECT_AS) {
-			main_save_as_project_from_filename (&mainProject, filename);
+			main_save_as_project_from_filename (mainProject, filename);
 			rename_main_window(filename, NULL);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_PS)
-			exportimage_export_to_postscript_file (&mainProject, &screenRenderInfo, filename);
+			exportimage_export_to_postscript_file (mainProject, &screenRenderInfo, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_PDF)
-			exportimage_export_to_pdf_file (&mainProject, &screenRenderInfo, filename);
+			exportimage_export_to_pdf_file (mainProject, &screenRenderInfo, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_SVG)
-			exportimage_export_to_svg_file (&mainProject, &screenRenderInfo, filename);
+			exportimage_export_to_svg_file (mainProject, &screenRenderInfo, filename);
 #ifdef EXPORT_PNG
 		else if (processType == CALLBACKS_SAVE_FILE_PNG)
-			exportimage_export_to_png_file (&mainProject, &screenRenderInfo, filename);
+			exportimage_export_to_png_file (mainProject, &screenRenderInfo, filename);
 #endif
 		else if (processType == CALLBACKS_SAVE_LAYER_AS) {
 			gint index=callbacks_get_selected_row_index();
 			
-			gerbv_save_layer_from_index (&mainProject, index, filename);
+			gerbv_save_layer_from_index (mainProject, index, filename);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_RS274X) {
 			gint index=callbacks_get_selected_row_index();
 			
-			export_rs274x_file_from_image (filename, mainProject.file[index]->image);
+			gerbv_export_rs274x_file_from_image (filename, mainProject->file[index]->image);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_DRILL) {
 			gint index=callbacks_get_selected_row_index();
 			
-			export_drill_file_from_image (filename, mainProject.file[index]->image);
+			gerbv_export_drill_file_from_image (filename, mainProject->file[index]->image);
 		}
 	}
 	g_free (filename);
@@ -354,12 +354,12 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 	renderInfo.scaleFactorX = scalePercentage / 100 * xres;
 	renderInfo.scaleFactorY = scalePercentage / 100 * yres;
 
-	gerbv_render_translate_to_fit_display (&mainProject, &renderInfo);
+	gerbv_render_translate_to_fit_display (mainProject, &renderInfo);
 	cr = gtk_print_context_get_cairo_context (context);
-	for(i = 0; i < mainProject.max_files; i++) {
-		if (mainProject.file[i] && mainProject.file[i]->isVisible) {
+	for(i = 0; i < mainProject->max_files; i++) {
+		if (mainProject->file[i] && mainProject->file[i]->isVisible) {
 			//cairo_push_group (cr);
-			gerbv_render_layer_to_cairo_target (cr, mainProject.file[i], &renderInfo);
+			gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &renderInfo);
 			//cairo_pop_group_to_source (cr);
 			//cairo_paint_with_alpha (cr, screen.file[i]->alpha);		
 		}
@@ -409,7 +409,7 @@ void
 callbacks_fit_to_window_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	gerbv_render_zoom_to_fit_display (&mainProject, &screenRenderInfo);
+	gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 	render_refresh_rendered_image_on_screen();
 }
 
@@ -1040,7 +1040,7 @@ void
 callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-  if ((mainProject.project_dirty == TRUE) &&
+  if ((mainProject->project_dirty == TRUE) &&
       !interface_get_alert_dialog_response(
             "Are you sure?",
             "You have unsaved changes in your project. Click OK to quit, or click CANCEL to go back and save your changes",
@@ -1048,7 +1048,7 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
 	    NULL)) {
     return;
   }
-  gerbv_unload_all_layers (&mainProject);
+  gerbv_unload_all_layers (mainProject);
   gtk_main_quit();
 }
 
@@ -1210,7 +1210,7 @@ void callbacks_update_scrollbar_limits (void){
 	GtkAdjustment *hAdjust = (GtkAdjustment *)screen.win.hAdjustment;
 	GtkAdjustment *vAdjust = (GtkAdjustment *)screen.win.vAdjustment;
 	
-	gerbv_render_zoom_to_fit_display (&mainProject, &tempRenderInfo);
+	gerbv_render_zoom_to_fit_display (mainProject, &tempRenderInfo);
 	hAdjust->lower = tempRenderInfo.lowerLeftX;
 	hAdjust->page_increment = hAdjust->page_size;
 	hAdjust->step_increment = hAdjust->page_size / 10.0;
@@ -1295,9 +1295,9 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 	      
 	      indeces = gtk_tree_path_get_indices (treePath);
 	      index = indeces[0];
-		if (mainProject.file[index]->isVisible)
+		if (mainProject->file[index]->isVisible)
 			 newVisibility = FALSE;
-		mainProject.file[index]->isVisible = newVisibility;
+		mainProject->file[index]->isVisible = newVisibility;
 
 	      callbacks_update_layer_tree ();
 		if (screenRenderInfo.renderType < 2) {
@@ -1484,8 +1484,8 @@ void
 callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
-	if ((index >= 0) && (index <= mainProject.last_loaded)) {
-		gerbv_unload_layer (&mainProject, index);
+	if ((index >= 0) && (index <= mainProject->last_loaded)) {
+		gerbv_unload_layer (mainProject, index);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (0);
 
@@ -1506,8 +1506,8 @@ void
 callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
-	if ((index >= 0) && (index < mainProject.last_loaded)) {
-		gerbv_change_layer_order (&mainProject, index, index + 1);
+	if ((index >= 0) && (index < mainProject->last_loaded)) {
+		gerbv_change_layer_order (mainProject, index, index + 1);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (index + 1);
 		if (screenRenderInfo.renderType < 2) {
@@ -1528,7 +1528,7 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
 	if (index > 0) {
-		gerbv_change_layer_order (&mainProject, index, index - 1);
+		gerbv_change_layer_order (mainProject, index, index - 1);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (index - 1);
 		if (screenRenderInfo.renderType < 2) {
@@ -1559,7 +1559,7 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 				newPosition--;
 			else
 				oldPosition--;
-			gerbv_change_layer_order (&mainProject, oldPosition, newPosition);
+			gerbv_change_layer_order (mainProject, oldPosition, newPosition);
 
 			if (screenRenderInfo.renderType < 2) {
 				render_refresh_rendered_image_on_screen();
@@ -1591,11 +1591,11 @@ callbacks_show_color_picker_dialog (gint index){
 	
 	screen.win.colorSelectionDialog = (GtkWidget *) cs;
 	screen.win.colorSelectionIndex = index;
-	gtk_color_selection_set_current_color (colorsel, &mainProject.file[index]->color);
+	gtk_color_selection_set_current_color (colorsel, &mainProject->file[index]->color);
 #ifndef RENDER_USING_GDK
 	if (screenRenderInfo.renderType >= 2) {
 		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
-		gtk_color_selection_set_current_alpha (colorsel, mainProject.file[index]->alpha);
+		gtk_color_selection_set_current_alpha (colorsel, mainProject->file[index]->alpha);
 	}
 #endif
 	gtk_widget_show_all((GtkWidget *)cs);
@@ -1603,11 +1603,11 @@ callbacks_show_color_picker_dialog (gint index){
 		GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
 		gint rowIndex = screen.win.colorSelectionIndex;
 		
-		gtk_color_selection_get_current_color (colorsel, &mainProject.file[rowIndex]->color);
+		gtk_color_selection_get_current_color (colorsel, &mainProject->file[rowIndex]->color);
 		if (screenRenderInfo.renderType >= 2) {
-			mainProject.file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
+			mainProject->file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
 		}
-		gdk_colormap_alloc_color(gdk_colormap_get_system(), &mainProject.file[rowIndex]->color, FALSE, TRUE);
+		gdk_colormap_alloc_color(gdk_colormap_get_system(), &mainProject->file[rowIndex]->color, FALSE, TRUE);
 		callbacks_update_layer_tree ();
 		render_refresh_rendered_image_on_screen();
 	}
@@ -1619,7 +1619,7 @@ void
 callbacks_invert_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
-	mainProject.file[index]->transform.inverted = !mainProject.file[index]->transform.inverted;
+	mainProject->file[index]->transform.inverted = !mainProject->file[index]->transform.inverted;
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree ();
 }
@@ -1635,7 +1635,7 @@ callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) 
 void
 callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index = callbacks_get_selected_row_index();
-	gerbv_revert_file (&mainProject, index);
+	gerbv_revert_file (mainProject, index);
 	render_refresh_rendered_image_on_screen ();
 }
 
@@ -1652,9 +1652,9 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     gchar *type;
 
     dprintf ("%s(): index = %d\n", __FUNCTION__, index);
-    attr = mainProject.file[index]->image->info->attr_list;
-    n =  mainProject.file[index]->image->info->n_attr;
-    type =  mainProject.file[index]->image->info->type;
+    attr = mainProject->file[index]->image->info->attr_list;
+    n =  mainProject->file[index]->image->info->n_attr;
+    type =  mainProject->file[index]->image->info->type;
     if (type == NULL) 
 	type = "Unknown";
 
@@ -1689,7 +1689,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     }
 
     dprintf ("%s():  Reloading layer\n", __FUNCTION__);
-    gerbv_revert_file (&mainProject, index);
+    gerbv_revert_file (mainProject, index);
 
     for (i = 0; i < n; i++)
 	{
@@ -1722,7 +1722,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 		      	indeces = gtk_tree_path_get_indices (path);
 		      	if (indeces) {
 					columnIndex = callbacks_get_col_number_from_tree_view_column (column);
-					if ((columnIndex == 1) && (indeces[0] <= mainProject.last_loaded)){
+					if ((columnIndex == 1) && (indeces[0] <= mainProject->last_loaded)){
 						callbacks_show_color_picker_dialog (indeces[0]);
 						/* don't propagate the signal, since drag and drop can
 					   	sometimes activated during color selection */
@@ -1733,7 +1733,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 		}
 	}
 	/* don't pop up the menu if we don't have any loaded files */
-	else if ((event->button == 3)&&(mainProject.last_loaded >= 0)) {
+	else if ((event->button == 3)&&(mainProject->last_loaded >= 0)) {
 		gtk_menu_popup(GTK_MENU(screen.win.layerTreePopupMenu), NULL, NULL, NULL, NULL, 
 			   event->button, event->time);
 	}
@@ -1759,17 +1759,17 @@ callbacks_update_layer_tree (void) {
 			oldSelectedRow = 0;
 		gtk_list_store_clear (list_store);
 
-		for (idx = 0; idx < mainProject.max_files; idx++) {
-			if (mainProject.file[idx]) {
+		for (idx = 0; idx < mainProject->max_files; idx++) {
+			if (mainProject->file[idx]) {
 				GdkPixbuf    *pixbuf,*blackPixbuf;
 				guint32 color;
 				
 				unsigned char red, green, blue, alpha;
 				
-				red = (unsigned char) (mainProject.file[idx]->color.red * 255 / G_MAXUINT16) ;
-				green = (unsigned char) (mainProject.file[idx]->color.green * 255 / G_MAXUINT16) ;
-				blue = (unsigned char) (mainProject.file[idx]->color.blue *255 / G_MAXUINT16) ;
-				alpha = (unsigned char) (mainProject.file[idx]->alpha * 255 / G_MAXUINT16) ;
+				red = (unsigned char) (mainProject->file[idx]->color.red * 255 / G_MAXUINT16) ;
+				green = (unsigned char) (mainProject->file[idx]->color.green * 255 / G_MAXUINT16) ;
+				blue = (unsigned char) (mainProject->file[idx]->color.blue *255 / G_MAXUINT16) ;
+				alpha = (unsigned char) (mainProject->file[idx]->alpha * 255 / G_MAXUINT16) ;
 				
 				color = (red )* (256*256*256) + (green ) * (256*256) + (blue )* (256) + (alpha );
 				pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);
@@ -1787,15 +1787,15 @@ callbacks_update_layer_tree (void) {
 				gtk_list_store_append (list_store, &iter);
 				
 				gchar *modifiedCode;
-				if (mainProject.file[idx]->transform.inverted) {
+				if (mainProject->file[idx]->transform.inverted) {
 					modifiedCode = g_strdup ("I");
 				}
 				else
 					modifiedCode = g_strdup ("");
 				gtk_list_store_set (list_store, &iter,
-							0, mainProject.file[idx]->isVisible,
+							0, mainProject->file[idx]->isVisible,
 							1, blackPixbuf,
-			                        2, mainProject.file[idx]->name,
+			                        2, mainProject->file[idx]->name,
 			                        3, modifiedCode,
 			                        -1);
 			      g_free (modifiedCode);
@@ -1835,7 +1835,7 @@ callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some translations here */
 	gerb_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
-	mainProject.project_dirty = TRUE;
+	mainProject->project_dirty = TRUE;
 	render_clear_selection_buffer ();
 	render_refresh_rendered_image_on_screen ();
 #endif
@@ -1857,20 +1857,20 @@ void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
   if (screen.selectionInfo.type != EMPTY) {
-    if (mainProject.check_before_delete == TRUE) {
+    if (mainProject->check_before_delete == TRUE) {
       if (!interface_get_alert_dialog_response(
                  "The selected objects will be permanently deleted",
 		 "Do you want to proceed?",
 		 TRUE,
-		 &(mainProject.check_before_delete)))
+		 &(mainProject->check_before_delete)))
 	return;
     }
     gint index=callbacks_get_selected_row_index();
     if (index >= 0) {
-      gerb_image_delete_selected_nets (mainProject.file[index]->image,
+      gerb_image_delete_selected_nets (mainProject->file[index]->image,
 				       screen.selectionInfo.selectedNodeArray); 
       render_refresh_rendered_image_on_screen ();
-      mainProject.project_dirty = TRUE;
+      mainProject->project_dirty = TRUE;
     }
   }
   render_clear_selection_buffer ();
@@ -1919,7 +1919,7 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	/* if this is the first time, go ahead and call autoscale even if we don't
 	   have a model loaded */
 	if ((screenRenderInfo.scaleFactorX < 0.001)||(screenRenderInfo.scaleFactorY < 0.001)) {
-		gerbv_render_zoom_to_fit_display (&mainProject, &screenRenderInfo);
+		gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 	}
 	render_refresh_rendered_image_on_screen();
 	return TRUE;
@@ -1941,7 +1941,7 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 					widget->allocation.height,
 					-1);
 
-		gdk_gc_set_foreground(gc, &mainProject.background);
+		gdk_gc_set_foreground(gc, &mainProject->background);
 
 		gdk_draw_rectangle(new_pixmap, gc, TRUE, 
 			       event->area.x, event->area.y,
@@ -2272,7 +2272,7 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 			switch(event->keyval) {
 				case GDK_f:
 				case GDK_F:
-					gerbv_render_zoom_to_fit_display (&mainProject, &screenRenderInfo);
+					gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 					render_refresh_rendered_image_on_screen();
 					break;
 				case GDK_z:

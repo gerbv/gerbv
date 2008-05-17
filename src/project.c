@@ -156,8 +156,8 @@ define_layer(scheme *sc, pointer args)
 
     layerno = sc->vptr->ivalue(car_el);
     dprintf("    layerno = %d\n", layerno);
-    if (mainProject.last_loaded <= layerno) {
-	mainProject.last_loaded = layerno;
+    if (mainProject->last_loaded <= layerno) {
+	mainProject->last_loaded = layerno;
     }
     
     car_el = sc->vptr->pair_car(cdr_el);
@@ -358,7 +358,7 @@ read_project_file(char const* filename)
     struct stat stat_info;
     scheme *sc;
     FILE *fd;
-    char *initdirs[] = {BACKEND_DIR, mainProject.execpath, ".", 
+    char *initdirs[] = {BACKEND_DIR, mainProject->execpath, ".", 
 			"$GERBV_SCHEMEINIT", NULL};
     char *initfile;
 

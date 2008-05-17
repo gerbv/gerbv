@@ -185,7 +185,7 @@ export_rs274x_write_state_change (gerb_netstate_t *oldState, gerb_netstate_t *ne
 }
 
 gboolean
-export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
+gerbv_export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 	FILE *fd;
 	gerb_netstate_t *oldState;
 	gerb_layer_t *oldLayer;

@@ -379,6 +379,7 @@ AC_OUTPUT(	Makefile \
 		doc/PNG-print/Makefile \
 		doc/eagle/Makefile \
 		doc/html/Makefile \
+		doc/example-code/Makefile \
 		doc/Makefile \
 		example/eaglecad1/Makefile \
 		example/nollezappare/Makefile \

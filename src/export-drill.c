@@ -36,7 +36,7 @@
 #define round(x) floor(x+0.5)
 
 gboolean
-export_drill_file_from_image (gchar *filename, gerb_image_t *image) {
+gerbv_export_drill_file_from_image (gchar *filename, gerb_image_t *image) {
 	FILE *fd;
 	GArray *apertureTable = g_array_new(FALSE,FALSE,sizeof(int));
 	gerb_net_t *currentNet;

@@ -36,42 +36,6 @@ extern "C" {
  * compare to pcb's sources.
  */
     
-    
-/* Used for HID attributes (exporting and printing, mostly).
-   HA_boolean uses int_value, HA_enum sets int_value to the index and
-   str_value to the enumeration string.  HID_Label just shows the
-   default str_value.  HID_Mixed is a real_value followed by an enum,
-   like 0.5in or 100mm. 
-*/
-typedef struct
-{
-    int int_value;
-    char *str_value;
-    double real_value;
-} HID_Attr_Val;
-
-typedef struct
-{
-    char *name;
-    char *help_text;
-    enum
-	{ HID_Label, HID_Integer, HID_Real, HID_String,
-	  HID_Boolean, HID_Enum, HID_Mixed, HID_Path
-	} type;
-    int min_val, max_val;	/* for integer and real */
-    HID_Attr_Val default_val;	/* Also actual value for global attributes.  */
-    const char **enumerations;
-    /* If set, this is used for global attributes (i.e. those set
-       statically with REGISTER_ATTRIBUTES below) instead of changing
-       the default_val.  Note that a HID_Mixed attribute must specify a
-       pointer to HID_Attr_Val here, and HID_Boolean assumes this is
-       "char *" so the value should be initialized to zero, and may be
-       set to non-zero (not always one).  */
-    void *value;
-    int hash; /* for detecting changes. */
-} HID_Attribute;
-
-
 int
 attribute_interface_dialog (HID_Attribute *, int, HID_Attr_Val *, 
 			    const char *,const char *);
