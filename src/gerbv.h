@@ -20,16 +20,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
- 
-#ifndef GERBV_H
-#define GERBV_H
 
 #include "config.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "attribute.h"
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -461,11 +453,12 @@ typedef struct {
     int scale;
 } gerbv_zoom_data_t;
 
-#ifdef __cplusplus
-}
-#endif
+//! Open a file, parse the contents, and add a new layer to an existing project
 void 
-gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
+gerbv_open_layer_from_filename (
+	gerbv_project_t *gerbvProject, /*!< the existing project to add the new layer to */
+	gchar *filename /*!< the full pathname of the file to be parsed */
+);
 
 gboolean 
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename);
@@ -557,10 +550,8 @@ double GetToolDiameter_Inches(int toolNumber);
 int ProcessToolsFile(const char *toolFileName);
 
 /* export functions */
-#ifdef EXPORT_PNG
 void exportimage_export_to_png_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels, int heightInPixels, gchar const* filename);
 void exportimage_export_to_png_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename);
-#endif
 
 void exportimage_export_to_pdf_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints, int heightInPoints, gchar const* filename);
 void exportimage_export_to_pdf_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename);
@@ -586,6 +577,4 @@ gerb_stats_t * gerb_stats_new(void);
 void gerb_stats_add_layer(gerb_stats_t *accum_stats, 
 			  gerb_stats_t *input_stats,
 			  int this_layer);
-
-#endif /* GERBV_H */
 

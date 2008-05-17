@@ -21,7 +21,6 @@
 
 
 /** @file pick-and-place.c
-    @contains the pick and place parser and renderer
  */ 
 
 #ifdef HAVE_CONFIG_H

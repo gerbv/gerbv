@@ -63,13 +63,12 @@ void exportimage_render_to_surface_and_destroy (gerbv_project_t *gerbvProject,
 	cairo_destroy (cairoTarget);
 	cairo_surface_destroy (cSurface);
 }
-
-
 #endif
 
-#ifdef EXPORT_PNG
+
 void exportimage_export_to_png_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels,
 		int heightInPixels, gchar const* filename) {
+#ifdef EXPORT_PNG
 #ifdef RENDER_USING_GDK
 	gerbv_render_info_t renderInfo = {1.0, 0, 0, 0, widthInPixels, heightInPixels};
 #else
@@ -77,9 +76,11 @@ void exportimage_export_to_png_file_autoscaled (gerbv_project_t *gerbvProject, i
 #endif	
 	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
 	exportimage_export_to_png_file (gerbvProject, &renderInfo, filename);
+#endif
 }
 
 void exportimage_export_to_png_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename) {
+#ifdef EXPORT_PNG
 #ifdef RENDER_USING_GDK
 
 	GdkPixmap *renderedPixmap = gdk_pixmap_new (NULL, renderInfo->displayWidth,
@@ -107,8 +108,9 @@ void exportimage_export_to_png_file (gerbv_project_t *gerbvProject, gerbv_render
 	cairo_destroy (cairoTarget);
 	cairo_surface_destroy (cSurface);
 #endif
-}
 #endif
+}
+
 
 void exportimage_export_to_pdf_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
 		int heightInPoints, gchar const* filename) {
