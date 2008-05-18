@@ -30,6 +30,8 @@
 //! \example example3.c
 //! \example example4.c
 
+#include "config.h"
+
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
