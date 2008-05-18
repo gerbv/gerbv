@@ -83,7 +83,7 @@ static LayerColor mainDefaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{226,226,226,177}
 };
 
-static gerb_user_transformation_t mainDefaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
+static gerbv_user_transformation_t mainDefaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
@@ -854,7 +854,7 @@ main(int argc, char *argv[])
 	    if (mainProject->file[0]->image) {
 		/* if we have more than one file, we need to merge them before exporting */
 		if (mainProject->file[1]) {
-		  gerb_image_t *exportImage;
+		  gerbv_image_t *exportImage;
 		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
 		  for(i = mainProject->max_files-1; i > 0; i--) {
 		    if (mainProject->file[i]) {
@@ -877,7 +877,7 @@ main(int argc, char *argv[])
 	    if (mainProject->file[0]->image) {
 		/* if we have more than one file, we need to merge them before exporting */
 		if (mainProject->file[1]) {
-		  gerb_image_t *exportImage;
+		  gerbv_image_t *exportImage;
 		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
 		  for(i = mainProject->max_files-1; i > 0; i--) {
 		    if (mainProject->file[i]) {

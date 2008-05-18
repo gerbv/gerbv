@@ -81,7 +81,7 @@ typedef struct {
     gboolean centered_outline_zoom;
 
     int selected_layer;         /* Selected layer by Alt+keypad */
-    gerb_selection_info_t selectionInfo;
+    gerbv_selection_info_t selectionInfo;
     gerbv_state_t state;
     gerbv_tool_t tool;
     gerbv_unit_t unit;

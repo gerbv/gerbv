@@ -121,7 +121,7 @@ static LayerColor defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{226,226,226,177}
 };
 
-static gerb_user_transformation_t defaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
+static gerbv_user_transformation_t defaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
@@ -289,7 +289,7 @@ gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint n
 } /* gerbv_change_layer_order */
 
 gint
-gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerb_image_t *parsed_image,
+gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t *parsed_image,
 			gchar *filename, gchar *baseName, int idx, int reload){
     gerb_verify_error_t error = GERB_IMAGE_OK;
     int r, g, b; 
@@ -356,7 +356,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 		HID_Attribute *fattr, int n_fattr, gboolean forceLoadFile)
 {
     gerb_file_t *fd;
-    gerb_image_t *parsed_image = NULL, *parsed_image2 = NULL;
+    gerbv_image_t *parsed_image = NULL, *parsed_image2 = NULL;
     gint retv = -1;
     gboolean isPnpFile = FALSE, foundBinary;
     HID_Attribute *attr_list = NULL;
@@ -472,9 +472,9 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     return retv;
 } /* open_image */
 
-gerb_image_t *
+gerbv_image_t *
 gerbv_create_rs274x_image_from_filename (gchar *filename){
-	gerb_image_t *returnImage;
+	gerbv_image_t *returnImage;
 	gerb_file_t *fd;
 	
 	fd = gerb_fopen(filename);
@@ -495,7 +495,7 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 {
 	double x1=HUGE_VAL,y1=HUGE_VAL, x2=-HUGE_VAL,y2=-HUGE_VAL;
 	int i;
-	gerb_image_info_t *info;
+	gerbv_image_info_t *info;
 
 	for(i = 0; i < gerbvProject->max_files; i++) {
 		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
@@ -573,7 +573,7 @@ void
 gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo) {
 	double x1=HUGE_VAL,y1=HUGE_VAL;
 	int i;
-	gerb_image_info_t *info;
+	gerbv_image_info_t *info;
 	
 	for(i = 0; i < gerbvProject->max_files; i++) {
 		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
@@ -591,7 +591,7 @@ gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_rend
 /* ------------------------------------------------------------------ */
 void
 gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixmap,
-		gerbv_render_info_t *renderInfo, gerb_selection_info_t *selectionInfo,
+		gerbv_render_info_t *renderInfo, gerbv_selection_info_t *selectionInfo,
 		GdkColor *selectionColor){
 	GdkGC *gc = gdk_gc_new(pixmap);
 	GdkPixmap *colorStamp, *clipmask;
@@ -681,12 +681,12 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 		gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
 		
 		/* for now, assume everything in the selection buffer is from one image */
-		gerb_image_t *matchImage;
+		gerbv_image_t *matchImage;
 		int j;
 		if (selectionInfo->selectedNodeArray->len > 0) {
-			gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-					gerb_selection_item_t, 0);
-			matchImage = (gerb_image_t *) sItem.image;	
+			gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+					gerbv_selection_item_t, 0);
+			matchImage = (gerbv_image_t *) sItem.image;	
 
 			for(j = gerbvProject->max_files-1; j >= 0; j--) {
 				if ((gerbvProject->file[j]) && (gerbvProject->file[j]->image == matchImage)) {

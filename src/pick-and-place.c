@@ -156,7 +156,7 @@ pick_and_place_parse_file(gerb_file_t *fd)
     char          *row[12];
     char          buf[MAXL+2], buf0[MAXL+2];
     double        tmp_x, tmp_y;
-    gerb_transf_t *tr_rot = gerb_transf_new();
+    gerbv_transf_t *tr_rot = gerb_transf_new();
     GArray 	*pnpParseDataArray = g_array_new (FALSE, FALSE, sizeof(PnpPartData));
     gboolean foundValidDataRow = FALSE;
     
@@ -453,13 +453,13 @@ pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary)
  *	Notes:
  *	------------------------------------------------------------------
  */
-gerb_image_t *
+gerbv_image_t *
 pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint boardSide) 
 {
-    gerb_image_t *image = NULL;
-    gerb_net_t *curr_net = NULL;
+    gerbv_image_t *image = NULL;
+    gerbv_net_t *curr_net = NULL;
     int i;
-    gerb_transf_t *tr_rot = gerb_transf_new();
+    gerbv_transf_t *tr_rot = gerb_transf_new();
     drill_stats_t *stats;  /* Eventually replace with pick_place_stats */
     gboolean foundElement = FALSE;
     
@@ -483,11 +483,11 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	GERB_FATAL_ERROR("malloc image failed\n");
     }
 	
-    image->format = (gerb_format_t *)g_malloc(sizeof(gerb_format_t));
+    image->format = (gerbv_format_t *)g_malloc(sizeof(gerbv_format_t));
     if (image->format == NULL) {
 	GERB_FATAL_ERROR("malloc format failed\n");
     }
-    memset((void *)image->format, 0, sizeof(gerb_format_t));
+    memset((void *)image->format, 0, sizeof(gerbv_format_t));
     
     image->layertype = PICK_AND_PLACE;
     stats = drill_stats_new();
@@ -504,8 +504,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     image->info->max_x = -HUGE_VAL;
     image->info->max_y = -HUGE_VAL;
 
-    image->aperture[0] = (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
-    memset((void *) image->aperture[0], 0, sizeof(gerb_aperture_t));
+    image->aperture[0] = (gerbv_aperture_t *)g_malloc(sizeof(gerbv_aperture_t));
+    memset((void *) image->aperture[0], 0, sizeof(gerbv_aperture_t));
     image->aperture[0]->type = CIRCLE;
     image->aperture[0]->amacro = NULL;
     image->aperture[0]->parameter[0] = 0.02;
@@ -514,10 +514,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     for (i = 0; i < parsedPickAndPlaceData->len; i++) {
 	PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
 	float radius;                         
-	curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	curr_net = curr_net->next;
 	assert(curr_net);
-	memset((void *)curr_net, 0, sizeof(gerb_net_t));
+	memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	curr_net->layer = image->layers;
 	curr_net->state = image->states;	
 	partData.rotation *= M_PI/180; /* convert deg to rad */
@@ -559,10 +559,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    /* rotate 180 to line up with PCB standard notation */
 	    gerb_transf_rotate(tr_rot, M_PI);
 	    
-	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
 	    assert(curr_net);
-	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	    gerb_transf_apply(partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
 	    gerb_transf_apply(-partData.length/2, partData.width/2, tr_rot, 
@@ -575,10 +575,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->state = image->states;
 	    
 	    
-	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
 	    assert(curr_net);
-	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	    
 	    gerb_transf_apply(-partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
@@ -591,10 +591,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
-	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
 	    assert(curr_net);
-	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	    
 	    gerb_transf_apply(-partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
@@ -607,10 +607,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
-	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
 	    assert(curr_net);
-	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	    
 	    gerb_transf_apply(partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
@@ -623,10 +623,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
-	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
 	    assert(curr_net);
-	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	    
 	    if (partData.shape == PART_SHAPE_RECTANGLE) {
 		gerb_transf_apply(partData.length/4, -partData.width/2, tr_rot, 
@@ -645,10 +645,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 		curr_net->layer = image->layers;
 		curr_net->state = image->states;
 		
-		curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+		curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 		curr_net = curr_net->next;
 		assert(curr_net);
-		memset((void *)curr_net, 0, sizeof(gerb_net_t));
+		memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 		gerb_transf_apply(partData.length/2, partData.width/4, tr_rot, 
 				  &curr_net->start_x, &curr_net->start_y);
 		gerb_transf_apply(partData.length/4, partData.width/4, tr_rot, 
@@ -673,10 +673,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
-	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
 	    assert(curr_net);
-	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	    
 	    curr_net->start_x = partData.mid_x;
 	    curr_net->start_y = partData.mid_y;
@@ -689,8 +689,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
-	    curr_net->cirseg = (gerb_cirseg_t *)g_malloc(sizeof(gerb_cirseg_t));
-	    memset((void *)curr_net->cirseg, 0, sizeof(gerb_cirseg_t));
+	    curr_net->cirseg = (gerbv_cirseg_t *)g_malloc(sizeof(gerbv_cirseg_t));
+	    memset((void *)curr_net->cirseg, 0, sizeof(gerbv_cirseg_t));
 	    curr_net->cirseg->angle1 = 0.0;
 	    curr_net->cirseg->angle2 = 360.0;
 	    curr_net->cirseg->cp_x = partData.mid_x;
@@ -728,8 +728,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
  *	------------------------------------------------------------------
  */
 void
-pick_and_place_parse_file_to_images(gerb_file_t *fd, gerb_image_t **topImage,
-			gerb_image_t **bottomImage) 
+pick_and_place_parse_file_to_images(gerb_file_t *fd, gerbv_image_t **topImage,
+			gerbv_image_t **bottomImage) 
 { 
     GArray *parsedPickAndPlaceData = pick_and_place_parse_file (fd);
 

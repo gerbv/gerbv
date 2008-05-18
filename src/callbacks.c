@@ -419,7 +419,7 @@ void
 callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem, 
 				 gpointer user_data)
 {
-    gerb_stats_t *stats_report;
+    gerbv_stats_t *stats_report;
     gchar *G_report_string;
     gchar *D_report_string;
     gchar *M_report_string;
@@ -429,7 +429,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     error_list_t *my_error_list;
     gchar *error_level = NULL;
     gchar *aperture_report_string;
-    gerb_aperture_list_t *my_aperture_list;
+    gerbv_aperture_list_t *my_aperture_list;
 
     /* First get a report of stats & errors accumulated from all layers */
     stats_report = generate_gerber_analysis();

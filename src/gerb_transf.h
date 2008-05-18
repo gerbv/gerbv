@@ -32,24 +32,24 @@
 /** Contains the transformation matrix, the scale and the offset on screen.
    linear transformation applies first shift by offset [0]=x, [1]=y,
    then multiplication by r_mat and scale */
-typedef struct gerb_transf {
+typedef struct gerbv_transf {
     double r_mat[2][2];
     double scale;
     double offset[2];
-} gerb_transf_t;
+} gerbv_transf_t;
 
 
-gerb_transf_t* gerb_transf_new(void);
+gerbv_transf_t* gerb_transf_new(void);
 
-void gerb_transf_free(gerb_transf_t* transf);
+void gerb_transf_free(gerbv_transf_t* transf);
 
-void gerb_transf_reset(gerb_transf_t* transf);
+void gerb_transf_reset(gerbv_transf_t* transf);
 
-void gerb_transf_rotate(gerb_transf_t* transf, double angle);
+void gerb_transf_rotate(gerbv_transf_t* transf, double angle);
 
-void gerb_transf_shift(gerb_transf_t* transf, double shift_x, double shift_y);
+void gerb_transf_shift(gerbv_transf_t* transf, double shift_x, double shift_y);
    
-void gerb_transf_apply(double x, double y, gerb_transf_t* transf, double *out_x, double *out_y);
+void gerb_transf_apply(double x, double y, gerbv_transf_t* transf, double *out_x, double *out_y);
 
 #endif
 

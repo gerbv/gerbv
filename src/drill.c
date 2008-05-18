@@ -124,13 +124,13 @@ typedef struct drill_state {
 } drill_state_t;
 
 /* Local function prototypes */
-static int drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image);
+static int drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image);
 static int drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, 
-			      gerb_image_t *image);
+			      gerbv_image_t *image);
 static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, 
-			      gerb_image_t *image);
+			      gerbv_image_t *image);
 static void drill_parse_coordinate(gerb_file_t *fd, char firstchar, 
-				   gerb_image_t *image, drill_state_t *state);
+				   gerbv_image_t *image, drill_state_t *state);
 static drill_state_t *new_state(drill_state_t *state);
 static double read_double(gerb_file_t *fd, enum number_fmt_t fmt, 
 			  enum omit_zeros_t omit_zeros, int decimals);
@@ -214,12 +214,12 @@ drill_attribute_merge (HID_Attribute *dest, int ndest, HID_Attribute *src, int n
 
 
 /* -------------------------------------------------------------- */
-gerb_image_t *
+gerbv_image_t *
 parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reload)
 {
     drill_state_t *state = NULL;
-    gerb_image_t *image = NULL;
-    gerb_net_t *curr_net = NULL;
+    gerbv_image_t *image = NULL;
+    gerbv_net_t *curr_net = NULL;
     int read;
     drill_stats_t *stats;
     int i;
@@ -278,10 +278,10 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
     if (state == NULL)
 	GERB_FATAL_ERROR("malloc state failed\n");
 
-    image->format = (gerb_format_t *)g_malloc(sizeof(gerb_format_t));
+    image->format = (gerbv_format_t *)g_malloc(sizeof(gerbv_format_t));
     if (image->format == NULL)
 	GERB_FATAL_ERROR("malloc format failed\n");
-    memset((void *)image->format, 0, sizeof(gerb_format_t));
+    memset((void *)image->format, 0, sizeof(gerbv_format_t));
     image->format->omit_zeros = ZEROS_UNSPECIFIED;
 
 
@@ -591,11 +591,11 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
 	    drill_stats_increment_drill_counter(image->drill_stats->drill_list,
 						state->current_tool);
 
-	    curr_net->next = (gerb_net_t *)g_malloc(sizeof(gerb_net_t));
+	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    if (curr_net->next == NULL)
 		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
 	    curr_net = curr_net->next;
-	    memset((void *)curr_net, 0, sizeof(gerb_net_t));
+	    memset((void *)curr_net, 0, sizeof(gerbv_net_t));
    	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    curr_net->start_x = (double)state->curr_x;
@@ -840,7 +840,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
    appear in the header and/or data section.
    Returns tool number on success, -1 on error */
 static int
-drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
+drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 {
     int tool_num;
     gboolean done = FALSE;
@@ -945,12 +945,12 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 		    }
 		} else {
 		    image->aperture[tool_num] =
-			(gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
+			(gerbv_aperture_t *)g_malloc(sizeof(gerbv_aperture_t));
 		    if (image->aperture[tool_num] == NULL) {
 			GERB_FATAL_ERROR("malloc tool failed\n");
 		    }
 		    /* make sure we zero out all aperature parameters */
-		    memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
+		    memset((void *)image->aperture[tool_num], 0, sizeof(gerbv_aperture_t));
 		    /* There's really no way of knowing what unit the tools
 		       are defined in without sneaking a peek in the rest of
 		       the file first. That's done in drill_guess_format() */
@@ -999,12 +999,12 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
         double dia;
 
 	image->aperture[tool_num] =
-	    (gerb_aperture_t *)g_malloc(sizeof(gerb_aperture_t));
+	    (gerbv_aperture_t *)g_malloc(sizeof(gerbv_aperture_t));
 	if (image->aperture[tool_num] == NULL) {
 	    GERB_FATAL_ERROR("malloc tool failed\n");
 	}
 	/* make sure we zero out all aperature parameters */
-	memset((void *)image->aperture[tool_num], 0, sizeof(gerb_aperture_t));
+	memset((void *)image->aperture[tool_num], 0, sizeof(gerbv_aperture_t));
 
         /* See if we have the tool table */
         dia = GetToolDiameter_Inches(tool_num);
@@ -1054,7 +1054,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 /* -------------------------------------------------------------- */
 static int
-drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
+drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
@@ -1248,7 +1248,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerb_image_t *image)
 
 /* -------------------------------------------------------------- */
 static int
-drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
+drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
@@ -1308,7 +1308,7 @@ drill_parse_G_code(gerb_file_t *fd, gerb_image_t *image)
    Returns nothing, but modifies state */
 static void
 drill_parse_coordinate(gerb_file_t *fd, char firstchar,
-		       gerb_image_t *image, drill_state_t *state)
+		       gerbv_image_t *image, drill_state_t *state)
 
 {
     int read;

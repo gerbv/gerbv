@@ -1156,7 +1156,7 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.treeIsUpdating = FALSE;
 
 	screen.selectionInfo.selectedNodeArray = g_array_new (FALSE,
-			FALSE, sizeof(gerb_selection_item_t));
+			FALSE, sizeof(gerbv_selection_item_t));
 	/* Make pan tool default */
 	callbacks_change_tool (NULL, (gpointer) 1);
 

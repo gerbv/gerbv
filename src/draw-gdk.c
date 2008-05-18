@@ -557,10 +557,10 @@ gerbv_gdk_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, double *p,
 
 static void 
 gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc, 
-		      gerb_simplified_amacro_t *s, double scale, 
+		      gerbv_simplified_amacro_t *s, double scale, 
 		      gint x, gint y)
 {
-    gerb_simplified_amacro_t *ls = s;
+    gerbv_simplified_amacro_t *ls = s;
 
     dprintf("Drawing simplified aperture macros:\n");
     while (ls != NULL) {
@@ -703,14 +703,14 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int
-draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerb_image_t *image, 
+draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image, 
 	     double scale, double trans_x, double trans_y,
-	     enum polarity_t polarity, gchar drawMode, gerb_selection_info_t *selectionInfo)
+	     enum polarity_t polarity, gchar drawMode, gerbv_selection_info_t *selectionInfo)
 {
     GdkGC *gc = gdk_gc_new(*pixmap);
     GdkGC *pgc = gdk_gc_new(*pixmap);
     GdkGCValues gc_values;
-    struct gerb_net *net, *polygonStartNet=NULL;
+    struct gerbv_net *net, *polygonStartNet=NULL;
     gint x1, y1, x2, y2;
     int p1, p2, p3;
     int cir_width = 0, cir_height = 0;
@@ -773,8 +773,8 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerb_image_t *image,
 			gboolean foundNet = FALSE;
 			
 			for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
-				gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-					gerb_selection_item_t, i);
+				gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+					gerbv_selection_item_t, i);
 				if (sItem.net == net)
 					foundNet = TRUE;
 			}

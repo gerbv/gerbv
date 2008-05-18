@@ -42,9 +42,9 @@
 #define round(x) floor(x+0.5)
 
 void
-export_rs274x_write_macro (FILE *fd, gerb_aperture_t *currentAperture,
+export_rs274x_write_macro (FILE *fd, gerbv_aperture_t *currentAperture,
 			gint apertureNumber) {
-	gerb_simplified_amacro_t *ls = currentAperture->simplified;
+	gerbv_simplified_amacro_t *ls = currentAperture->simplified;
 
 	/* write the macro portion first */
 	fprintf(fd, "%%AMMACRO%d*\n",apertureNumber);
@@ -112,8 +112,8 @@ export_rs274x_write_macro (FILE *fd, gerb_aperture_t *currentAperture,
 }
 
 void
-export_rs274x_write_apertures (FILE *fd, gerb_image_t *image) {
-	gerb_aperture_t *currentAperture;
+export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image) {
+	gerbv_aperture_t *currentAperture;
 	gint numberOfRequiredParameters=0,numberOfOptionalParameters=0,i,j;
 		
 	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {
@@ -173,7 +173,7 @@ export_rs274x_write_apertures (FILE *fd, gerb_image_t *image) {
 }
 
 void
-export_rs274x_write_layer_change (gerb_layer_t *oldLayer, gerb_layer_t *newLayer, FILE *fd) {
+export_rs274x_write_layer_change (gerbv_layer_t *oldLayer, gerbv_layer_t *newLayer, FILE *fd) {
 	if (oldLayer->polarity != newLayer->polarity) {
 		/* polarity changed */
 		if ((newLayer->polarity == CLEAR))
@@ -184,16 +184,16 @@ export_rs274x_write_layer_change (gerb_layer_t *oldLayer, gerb_layer_t *newLayer
 }
 
 void
-export_rs274x_write_state_change (gerb_netstate_t *oldState, gerb_netstate_t *newState, FILE *fd) {
+export_rs274x_write_state_change (gerbv_netstate_t *oldState, gerbv_netstate_t *newState, FILE *fd) {
 
 
 }
 
 gboolean
-gerbv_export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
+gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
 	FILE *fd;
-	gerb_netstate_t *oldState;
-	gerb_layer_t *oldLayer;
+	gerbv_netstate_t *oldState;
+	gerbv_layer_t *oldLayer;
 	gboolean insidePolygon=FALSE;
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
@@ -246,7 +246,7 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerb_image_t *image) {
 	/* write rest of image */
 	fprintf(fd, "G04 --Start main section--*\n");
 	gint currentAperture = 0;
-	gerb_net_t *currentNet;
+	gerbv_net_t *currentNet;
 	
 	oldLayer = image->layers;
 	oldState = image->states;

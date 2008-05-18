@@ -36,11 +36,11 @@ extern "C" {
 /*
  * parse gerber file pointed to by fd
  */
-gerb_image_t *parse_gerb(gerb_file_t *fd, gchar *directoryPath);
+gerbv_image_t *parse_gerb(gerb_file_t *fd, gchar *directoryPath);
 gboolean gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary);
 gboolean gerber_is_rs274d_p(gerb_file_t *fd);
-gerb_net_t *
-gerber_create_new_net (gerb_net_t *currentNet, gerb_layer_t *layer, gerb_netstate_t *state);
+gerbv_net_t *
+gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_netstate_t *state);
 
 #ifdef __cplusplus
 }

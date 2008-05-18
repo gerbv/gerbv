@@ -24,7 +24,7 @@
 
 #include "gerber.h"
 
-gerb_stats_t *generate_gerber_analysis(void);
+gerbv_stats_t *generate_gerber_analysis(void);
 drill_stats_t *generate_drill_analysis(void);
 
 #ifdef RENDER_USING_GDK

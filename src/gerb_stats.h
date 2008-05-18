@@ -1,6 +1,6 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * gerb_stats.h -- a part of gerbv.
+ * gerbv_stats.h -- a part of gerbv.
  *
  *   Copyright (C) 2007 Stuart Brorson (sdb@cloud9.net)
  *
@@ -21,26 +21,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-#ifndef GERB_STATS_H
-#define GERB_STATS_H
+#ifndef gerb_stats_H
+#define gerb_stats_H
 
 
 
 /* ===================  Prototypes ================ */
-error_list_t *gerb_stats_new_error_list(void);
-void gerb_stats_add_error(error_list_t *error_list_in,
+error_list_t *gerbv_stats_new_error_list(void);
+void gerbv_stats_add_error(error_list_t *error_list_in,
                            int layer, const char *error_text,
                            enum error_type_t type);
 
-gerb_aperture_list_t *gerb_stats_new_aperture_list(void);
-void gerb_stats_add_aperture(gerb_aperture_list_t *aperture_list_in,
+gerbv_aperture_list_t *gerbv_stats_new_aperture_list(void);
+void gerbv_stats_add_aperture(gerbv_aperture_list_t *aperture_list_in,
 			     int layer, int number, enum aperture_t type,
 			     double parameter[5]);
-void gerb_stats_add_to_D_list(gerb_aperture_list_t *D_list_in,
+void gerbv_stats_add_to_D_list(gerbv_aperture_list_t *D_list_in,
 			      int number);
-int gerb_stats_increment_D_list_count(gerb_aperture_list_t *D_list_in,
+int gerbv_stats_increment_D_list_count(gerbv_aperture_list_t *D_list_in,
 				       int number, 
 				       int count,
 				       error_list_t *error); 
 
-#endif /* GERB_STATS_H */
+#endif /* gerb_stats_H */

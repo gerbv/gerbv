@@ -21,8 +21,8 @@
 
 int
 main(int argc, char *argv[]) {
-	gerb_image_t *workingImage;
-	gerb_net_t *currentNet;
+	gerbv_image_t *workingImage;
+	gerbv_net_t *currentNet;
 
 	/* parse and create the image */
 	workingImage = gerbv_create_rs274x_image_from_filename ("example4-input.gbx");

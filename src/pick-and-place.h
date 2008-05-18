@@ -53,11 +53,11 @@ typedef struct {
 
 GArray *pick_and_place_parse_file (gerb_file_t *fd);
 
-gerb_image_t *pick_and_place_parse_file_to_image (gerb_file_t *fd);
+gerbv_image_t *pick_and_place_parse_file_to_image (gerb_file_t *fd);
 
 void
-pick_and_place_parse_file_to_images (gerb_file_t *fd, gerb_image_t **topImage,
-			gerb_image_t **bottomImage);
+pick_and_place_parse_file_to_images (gerb_file_t *fd, gerbv_image_t **topImage,
+			gerbv_image_t **bottomImage);
 
 gboolean
 pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary);

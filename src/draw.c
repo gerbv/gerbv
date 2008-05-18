@@ -42,7 +42,7 @@
 #define dprintf if(DEBUG) printf
 static void
 draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStroke,
-		gerb_selection_info_t *selectionInfo, gerb_image_t *image, struct gerb_net *net){
+		gerbv_selection_info_t *selectionInfo, gerbv_image_t *image, struct gerbv_net *net){
 	gdouble corner1X,corner1Y,corner2X,corner2Y;
 
 	corner1X = selectionInfo->lowerLeftX;
@@ -60,7 +60,7 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 		if ((isStroke && cairo_in_stroke (cairoTarget, corner1X, corner1Y)) ||
 			(!isStroke && cairo_in_fill (cairoTarget, corner1X, corner1Y))) {
 			/* add the net to the selection array */
-			gerb_selection_item_t sItem = {image, net};
+			gerbv_selection_item_t sItem = {image, net};
 			g_array_append_val (selectionInfo->selectedNodeArray, sItem);
 		}
 	}
@@ -81,7 +81,7 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 		
 		if ((minX < x1) && (minY < y1) && (maxX > x2) && (maxY > y2)) {
 			/* add the net to the selection array */
-			gerb_selection_item_t sItem = {image, net};
+			gerbv_selection_item_t sItem = {image, net};
 			g_array_append_val (selectionInfo->selectedNodeArray, sItem); 
 		}
 	}
@@ -91,8 +91,8 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 }
 
 static void
-draw_fill (cairo_t *cairoTarget, gchar drawMode, gerb_selection_info_t *selectionInfo,
-		gerb_image_t *image, struct gerb_net *net){
+draw_fill (cairo_t *cairoTarget, gchar drawMode, gerbv_selection_info_t *selectionInfo,
+		gerbv_image_t *image, struct gerbv_net *net){
 	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_SELECTIONS))
 		cairo_fill (cairoTarget);
 	else
@@ -101,8 +101,8 @@ draw_fill (cairo_t *cairoTarget, gchar drawMode, gerb_selection_info_t *selectio
 }
 
 static void
-draw_stroke (cairo_t *cairoTarget, gchar drawMode, gerb_selection_info_t *selectionInfo,
-		gerb_image_t *image, struct gerb_net *net){
+draw_stroke (cairo_t *cairoTarget, gchar drawMode, gerbv_selection_info_t *selectionInfo,
+		gerbv_image_t *image, struct gerbv_net *net){
 	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_SELECTIONS))
 		cairo_stroke (cairoTarget);
 	else
@@ -216,12 +216,12 @@ draw_update_macro_exposure (cairo_t *cairoTarget, cairo_operator_t clearOperator
 	    
 int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
-	cairo_operator_t darkOperator, gerb_simplified_amacro_t *s,
-	gint usesClearPrimative, gchar drawMode, gerb_selection_info_t *selectionInfo,
-	gerb_image_t *image, struct gerb_net *net)
+	cairo_operator_t darkOperator, gerbv_simplified_amacro_t *s,
+	gint usesClearPrimative, gchar drawMode, gerbv_selection_info_t *selectionInfo,
+	gerbv_image_t *image, struct gerbv_net *net)
 {
     int handled = 1;  
-    gerb_simplified_amacro_t *ls = s;
+    gerbv_simplified_amacro_t *ls = s;
 
     dprintf("Drawing simplified aperture macros:\n");
     if (usesClearPrimative)
@@ -376,7 +376,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 
 
 void
-draw_apply_netstate_transformation (cairo_t *cairoTarget, gerb_netstate_t *state) 
+draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *state) 
 {
 	/* apply scale factor */
 	cairo_scale (cairoTarget, state->scaleA, state->scaleB);
@@ -406,16 +406,16 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerb_netstate_t *state
 }
 
 int
-draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
+draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					gboolean invertLayer, gdouble pixelWidth,
-					gchar drawMode, gerb_selection_info_t *selectionInfo)
+					gchar drawMode, gerbv_selection_info_t *selectionInfo)
 {
-	struct gerb_net *net, *polygonStartNet=NULL;
+	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
 	int in_parea_fill = 0,haveDrawnFirstFillPoint = 0;
 	gdouble p1, p2, p3, p4, p5, dx, dy;
-	gerb_netstate_t *oldState;
-	gerb_layer_t *oldLayer;
+	gerbv_netstate_t *oldState;
+	gerbv_layer_t *oldLayer;
 	int repeat_X=1, repeat_Y=1;
 	double repeat_dist_X = 0, repeat_dist_Y = 0;
 	int repeat_i, repeat_j;
@@ -525,8 +525,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
 			gboolean foundNet = FALSE;
 			
 			for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
-				gerb_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-					gerb_selection_item_t, i);
+				gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+					gerbv_selection_item_t, i);
 				if (sItem.net == net)
 					foundNet = TRUE;
 			}

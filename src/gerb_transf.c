@@ -38,27 +38,27 @@
 #include <string.h>
 #include "gerb_transf.h"
 
-void gerb_transf_free(gerb_transf_t* transf)
+void gerb_transf_free(gerbv_transf_t* transf)
 {
     g_free(transf);
     
-}/*gerb_transf_t*/
+}/*gerbv_transf_t*/
 
 
-gerb_transf_t* gerb_transf_new(void)
+gerbv_transf_t* gerb_transf_new(void)
 {
-    gerb_transf_t *transf;
+    gerbv_transf_t *transf;
     
-    transf = g_malloc(sizeof(gerb_transf_t));
+    transf = g_malloc(sizeof(gerbv_transf_t));
     gerb_transf_reset(transf);
     return transf;
     
 
 } /*gerb_transf_new*/
 
-void gerb_transf_reset(gerb_transf_t* transf)
+void gerb_transf_reset(gerbv_transf_t* transf)
 {
-    memset(transf,0,sizeof(gerb_transf_t));
+    memset(transf,0,sizeof(gerbv_transf_t));
     
     transf->r_mat[0][0] = transf->r_mat[1][1] = 1.0; /*off-diagonals 0 diagonals 1 */
     transf->r_mat[1][0] = transf->r_mat[0][1] = 0.0;
@@ -72,7 +72,7 @@ void gerb_transf_reset(gerb_transf_t* transf)
 @param transf transformation to be modified
 @param angle in rad (counterclockwise rotation) */
 
-void gerb_transf_rotate(gerb_transf_t* transf, double angle)
+void gerb_transf_rotate(gerbv_transf_t* transf, double angle)
 {
     double m[2][2]; 
     double s = sin(angle), c = cos(angle);
@@ -92,7 +92,7 @@ void gerb_transf_rotate(gerb_transf_t* transf, double angle)
 @param shift_x translation in x direction
 @param shift_y translation in y direction */
 
-void gerb_transf_shift(gerb_transf_t* transf, double shift_x, double shift_y)
+void gerb_transf_shift(gerbv_transf_t* transf, double shift_x, double shift_y)
 {
       
     transf->offset[0] += shift_x;
@@ -100,7 +100,7 @@ void gerb_transf_shift(gerb_transf_t* transf, double shift_x, double shift_y)
             
 } /*gerb_transf_shift*/
 
-void gerb_transf_apply(double x, double y, gerb_transf_t* transf, double *out_x, double *out_y)
+void gerb_transf_apply(double x, double y, gerbv_transf_t* transf, double *out_x, double *out_y)
 {
 
 //    x += transf->offset[0];

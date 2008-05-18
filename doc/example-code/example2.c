@@ -4,7 +4,7 @@
 	Description: Loads example2-input.gbx, duplicates it and offsets it to the
 		right by the width of the layer, merges the two images, and exports
 		the merged image back to another RS274X file. Note: this example
-		code uses the gerb_image_t interface as opposed to the
+		code uses the gerbv_image_t interface as opposed to the
 		gerb_project_t interface.
 
 	Instructions: Make sure you are in the example-code directory, and compile
@@ -23,7 +23,7 @@
 
 int
 main(int argc, char *argv[]) {
-	gerb_image_t *originalImage, *duplicatedImage;
+	gerbv_image_t *originalImage, *duplicatedImage;
 	
 	/* parse and create the first image (by default, the image will not be
 	   offset and will be in its true position */
@@ -33,12 +33,12 @@ main(int argc, char *argv[]) {
 	if (originalImage == NULL)
 		g_error ("There was an error parsing the file.");
 	
-	/* duplicate the image and place it into a new gerb_image_t */
+	/* duplicate the image and place it into a new gerbv_image_t */
 	duplicatedImage = gerbv_image_duplicate_image (originalImage, NULL);
 	
 	/* create a transormation for the second image, and offset it the width
 	   of the first image in the x direction */
-	gerb_user_transformation_t newTransformation = {originalImage->info->max_x -
+	gerbv_user_transformation_t newTransformation = {originalImage->info->max_x -
 				originalImage->info->min_x,
 				0, 0, 0, FALSE};
 

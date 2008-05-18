@@ -131,9 +131,9 @@ scm_omit_zeros2scm(enum omit_zeros_t omit_zeros)
 
 
 static SCM
-scm_image2scm(gerb_image_t *image, char *filename)
+scm_image2scm(gerbv_image_t *image, char *filename)
 {
-    gerb_net_t *net;
+    gerbv_net_t *net;
     int i,j;
     SCM cirseg   = SCM_EOL;
     SCM netlist  = SCM_EOL;
@@ -254,7 +254,7 @@ batch(char const* backend, char const* filename)
     char         *home;
     int		  i;
     gerb_file_t  *fd;
-    gerb_image_t *image;
+    gerbv_image_t *image;
     gerb_verify_error_t error = GERB_IMAGE_OK;
     SCM	          scm_image;
 

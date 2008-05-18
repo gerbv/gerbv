@@ -344,12 +344,12 @@ void render_selection_layer (void){
 		gerbv_render_cairo_set_scale_and_translation(cr, &screenRenderInfo);
 		cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1);
 		/* for now, assume everything in the selection buffer is from one image */
-		gerb_image_t *matchImage;
+		gerbv_image_t *matchImage;
 		int j;
 		if (screen.selectionInfo.selectedNodeArray->len > 0) {
-			gerb_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
-					gerb_selection_item_t, 0);
-			matchImage = (gerb_image_t *) sItem.image;	
+			gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
+					gerbv_selection_item_t, 0);
+			matchImage = (gerbv_image_t *) sItem.image;	
 			dprintf("    .... calling render_image_to_cairo_target on selection layer...\n");
 			for(j = mainProject->max_files-1; j >= 0; j--) {
 				if ((mainProject->file[j]) && (mainProject->file[j]->image == matchImage)) {
@@ -549,22 +549,22 @@ void render_project_to_cairo_target (cairo_t *cr) {
 
 /* ------------------------------------------------------------------ */
 /* Fill out the gerber statistics table */
-gerb_stats_t *
+gerbv_stats_t *
 generate_gerber_analysis(void)
 {
     int i;
-    gerb_stats_t *stats;
-    gerb_stats_t *instats;
+    gerbv_stats_t *stats;
+    gerbv_stats_t *instats;
 
-    stats = gerb_stats_new();
+    stats = gerbv_stats_new();
 
     /* Loop through open layers and compile statistics */
     for(i = mainProject->max_files-1; i >= 0; i--) {
 	if (mainProject->file[i] && 
 	    mainProject->file[i]->isVisible &&
 	    (mainProject->file[i]->image->layertype == GERBER) ) {
-	    instats = mainProject->file[i]->image->gerb_stats;
-	    gerb_stats_add_layer(stats, instats, i+1);
+	    instats = mainProject->file[i]->image->gerbv_stats;
+	    gerbv_stats_add_layer(stats, instats, i+1);
 	}
     }
     

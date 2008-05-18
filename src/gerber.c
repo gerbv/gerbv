@@ -66,9 +66,9 @@ typedef struct gerb_state {
     enum aperture_state_t aperture_state;
     enum interpolation_t interpolation;
     enum interpolation_t prev_interpolation;
-    gerb_net_t *parea_start_node;
-    gerb_layer_t *layer;
-    gerb_netstate_t *state;
+    gerbv_net_t *parea_start_node;
+    gerbv_layer_t *layer;
+    gerbv_netstate_t *state;
     int in_parea_fill;
     int mq_on;
 } gerb_state_t;
@@ -76,45 +76,45 @@ typedef struct gerb_state {
 
 /* Local function prototypes */
 static void parse_G_code(gerb_file_t *fd, gerb_state_t *state, 
-			 gerb_image_t *image);
+			 gerbv_image_t *image);
 static void parse_D_code(gerb_file_t *fd, gerb_state_t *state, 
-			 gerb_image_t *image);
-static int parse_M_code(gerb_file_t *fd, gerb_image_t *image);
+			 gerbv_image_t *image);
+static int parse_M_code(gerb_file_t *fd, gerbv_image_t *image);
 static void parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, 
-			 gerb_image_t *image, gerb_state_t *state, 
-			 gerb_net_t *curr_net, gerb_stats_t *stats, 
+			 gerbv_image_t *image, gerb_state_t *state, 
+			 gerbv_net_t *curr_net, gerbv_stats_t *stats, 
 			 gchar *directoryPath);
 static int parse_aperture_definition(gerb_file_t *fd, 
-				     gerb_aperture_t *aperture,
-				     gerb_image_t *image, gdouble scale);
-static void calc_cirseg_sq(struct gerb_net *net, int cw, 
+				     gerbv_aperture_t *aperture,
+				     gerbv_image_t *image, gdouble scale);
+static void calc_cirseg_sq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
-static void calc_cirseg_mq(struct gerb_net *net, int cw, 
+static void calc_cirseg_mq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 
 static void
-gerber_update_min_and_max(gerb_image_info_t *info, gdouble repeatX, gdouble repeatY,
+gerber_update_min_and_max(gerbv_image_info_t *info, gdouble repeatX, gdouble repeatY,
 			  gdouble x, gdouble y, gdouble apertureSizeX1,
 			  gdouble apertureSizeX2,gdouble apertureSizeY1,
 			  gdouble apertureSizeY2);
 
 
-static void gerber_update_any_running_knockout_measurements(gerb_image_t *image);
+static void gerber_update_any_running_knockout_measurements(gerbv_image_t *image);
 
-static void gerber_calculate_final_justify_effects (gerb_image_t *image);
+static void gerber_calculate_final_justify_effects (gerbv_image_t *image);
 
 gboolean knockoutMeasure = FALSE;
 gdouble knockoutLimitXmin, knockoutLimitYmin, knockoutLimitXmax, 
     knockoutLimitYmax;
-gerb_layer_t *knockoutLayer = NULL;
+gerbv_layer_t *knockoutLayer = NULL;
 
 #ifndef RENDER_USING_GDK
 cairo_matrix_t currentMatrix;
 #endif  
 
-gerb_net_t *
-gerber_create_new_net (gerb_net_t *currentNet, gerb_layer_t *layer, gerb_netstate_t *state){
-	gerb_net_t *newNet = g_new0 (gerb_net_t, 1);
+gerbv_net_t *
+gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_netstate_t *state){
+	gerbv_net_t *newNet = g_new0 (gerbv_net_t, 1);
 	
 	currentNet->next = newNet;
 	if (layer)
@@ -129,9 +129,9 @@ gerber_create_new_net (gerb_net_t *currentNet, gerb_layer_t *layer, gerb_netstat
 }
 
 gboolean
-gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image, 
-			   gerb_state_t *state,	gerb_net_t *curr_net, 
-			   gerb_stats_t *stats, gerb_file_t *fd, 
+gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image, 
+			   gerb_state_t *state,	gerbv_net_t *curr_net, 
+			   gerbv_stats_t *stats, gerb_file_t *fd, 
 			   gchar *directoryPath) {
     int read, coord, len, polygonPoints=0;
     double x_scale = 0.0, y_scale = 0.0;
@@ -165,7 +165,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		foundEOF = TRUE;
 		break;
 	    default:
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     "Unknown M code found.\n",
 				     GRB_ERROR);
@@ -284,14 +284,14 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 	    
 	    switch (state->interpolation) {
 	    case CW_CIRCULAR :
-		curr_net->cirseg = g_new0 (gerb_cirseg_t,1);
+		curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
 		if (state->mq_on)
 		    calc_cirseg_mq(curr_net, 1, delta_cp_x, delta_cp_y);
 		else
 		    calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
 	    case CCW_CIRCULAR :
-		curr_net->cirseg = g_new0 (gerb_cirseg_t,1);
+		curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
 		if (state->mq_on)
 		    calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
 		else
@@ -458,7 +458,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 		   and calculate the true bounding box */
 		if ((image->aperture[curr_net->aperture] != NULL) &&
 		    (image->aperture[curr_net->aperture]->type == MACRO)) {
-		    gerb_simplified_amacro_t *ls = image->aperture[curr_net->aperture]->simplified;
+		    gerbv_simplified_amacro_t *ls = image->aperture[curr_net->aperture]->simplified;
 	      
 		    while (ls != NULL) {
 			gdouble offsetx = 0, offsety = 0, widthx = 0, widthy = 0;
@@ -564,7 +564,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 	    break;
 	default:
 	    stats->unknown++;
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Found unknown character (whitespace?) [%d]%c\n", 
 						 read, read),
@@ -576,13 +576,13 @@ gerber_parse_file_segment (gint levelOfRecursion, gerb_image_t *image,
 
 
 /* ------------------------------------------------------------------ */
-gerb_image_t *
+gerbv_image_t *
 parse_gerb(gerb_file_t *fd, gchar *directoryPath)
 {
     gerb_state_t *state = NULL;
-    gerb_image_t *image = NULL;
-    gerb_net_t *curr_net = NULL;
-    gerb_stats_t *stats;
+    gerbv_image_t *image = NULL;
+    gerbv_net_t *curr_net = NULL;
+    gerbv_stats_t *stats;
     gboolean foundEOF = FALSE;
     
     /* added by t.motylewski@bfad.de
@@ -605,10 +605,10 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
 	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;
     image->layertype = GERBER;
-    image->gerb_stats = gerb_stats_new();
-    if (image->gerb_stats == NULL)
-	GERB_FATAL_ERROR("malloc gerb_stats failed\n");
-    stats = (gerb_stats_t *) image->gerb_stats;
+    image->gerbv_stats = gerbv_stats_new();
+    if (image->gerbv_stats == NULL)
+	GERB_FATAL_ERROR("malloc gerbv_stats failed\n");
+    stats = (gerbv_stats_t *) image->gerbv_stats;
 
     /* set active layer and netstate to point to first default one created */
     state->layer = image->layers;
@@ -624,7 +624,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
 					  fd, directoryPath);
 
     if (!foundEOF) {
-    	gerb_stats_add_error(stats->error_list,
+    	gerbv_stats_add_error(stats->error_list,
 			     -1,
 			     "File is missing Gerber EOF code.\n",
 			     GRB_ERROR);
@@ -833,11 +833,11 @@ gerber_is_rs274d_p(gerb_file_t *fd)
 
 /* ------------------------------------------------------------------- */
 static void 
-parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
+parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerbv_image_t *image)
 {
     int  op_int;
-    gerb_format_t *format = image->format;
-    gerb_stats_t *stats = image->gerb_stats;
+    gerbv_format_t *format = image->format;
+    gerbv_stats_t *stats = image->gerbv_stats;
     int c;
 
     op_int=gerb_fgetint(fd, NULL);
@@ -897,18 +897,18 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	    if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
 		state->curr_aperture = a;
 		dprintf("     In parse_G_code, case 54, found D and adding 1 to no %d in D_list ...\n", a);
-		gerb_stats_increment_D_list_count(stats->D_code_list, 
+		gerbv_stats_increment_D_list_count(stats->D_code_list, 
 						  a, 
 						  1,
 						  stats->error_list); 
 	    } else { 
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Found aperture out of bounds while parsing G code: %d\n", a),
 				     GRB_ERROR);
 	    }
 	} else {
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Found unexpected code after G54\n",
 				 GRB_ERROR);
@@ -946,11 +946,11 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	stats->G91++;
 	break;
     default:
-	gerb_stats_add_error(stats->error_list,
+	gerbv_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Encountered unknown G code : G%d\n", op_int),
 			     GRB_ERROR);
-	gerb_stats_add_error(stats->error_list,
+	gerbv_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Ignorning unknown G code\n"),
 			     WARNING);
@@ -966,10 +966,10 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 
 /* ------------------------------------------------------------------ */
 static void 
-parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
+parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerbv_image_t *image)
 {
     int a;
-    gerb_stats_t *stats = image->gerb_stats;
+    gerbv_stats_t *stats = image->gerbv_stats;
     
     a = gerb_fgetint(fd, NULL);
     dprintf("     In parse_D_code, found D number = %d ... \n", a);
@@ -994,19 +994,19 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	    state->curr_aperture = a;
 	    
 	    dprintf("     In parse_D_code, adding 1 to D_list ...\n");
-	    int retcode = gerb_stats_increment_D_list_count(stats->D_code_list, 
+	    int retcode = gerbv_stats_increment_D_list_count(stats->D_code_list, 
 							    a, 
 							    1,
 							    stats->error_list);
 	    if (retcode == -1) {
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Found undefined D code: D%d\n", a),
 				     GRB_ERROR);
 		stats->D_unknown++;
 	    }
 	} else {
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Found aperture number out of bounds while parsing D code: %d\n", a),
 				 GRB_ERROR);
@@ -1022,10 +1022,10 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 
 /* ------------------------------------------------------------------ */
 static int
-parse_M_code(gerb_file_t *fd, gerb_image_t *image)
+parse_M_code(gerb_file_t *fd, gerbv_image_t *image)
 {
     int op_int;
-    gerb_stats_t *stats = image->gerb_stats;
+    gerbv_stats_t *stats = image->gerbv_stats;
     
     op_int=gerb_fgetint(fd, NULL);
     
@@ -1040,11 +1040,11 @@ parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 	stats->M2++;
 	return 3;
     default:
-	gerb_stats_add_error(stats->error_list,
+	gerbv_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Encountered unknown M code : M%d\n", op_int),
 			     GRB_ERROR);
-	gerb_stats_add_error(stats->error_list,
+	gerbv_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Ignorning unknown M code\n"),
 			     WARNING);
@@ -1056,14 +1056,14 @@ parse_M_code(gerb_file_t *fd, gerb_image_t *image)
 
 /* ------------------------------------------------------------------ */
 static void 
-parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image, 
-	     gerb_state_t *state, gerb_net_t *curr_net, gerb_stats_t *stats, 
+parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image, 
+	     gerb_state_t *state, gerbv_net_t *curr_net, gerbv_stats_t *stats, 
 	     gchar *directoryPath)
 {
     int op[2];
     char str[3];
     int tmp;
-    gerb_aperture_t *a = NULL;
+    gerbv_aperture_t *a = NULL;
     amacro_t *tmp_amacro;
     int ano;
     gdouble scale = 1.0;
@@ -1075,7 +1075,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
     op[1] = gerb_fgetc(fd);
     
     if ((op[0] == EOF) || (op[1] == EOF))
-	gerb_stats_add_error(stats->error_list,
+	gerbv_stats_add_error(stats->error_list,
 			     -1,
 			     "Unexpected EOF found.\n",
 			     GRB_ERROR);
@@ -1091,7 +1091,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	state->state = gerbv_image_return_new_netstate (state->state);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
 				 GRB_ERROR);
@@ -1107,7 +1107,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
 				 GRB_ERROR);
@@ -1121,7 +1121,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	break;
 
     case A2I('F','S'): /* Format Statement */
-	image->format = g_new0 (gerb_format_t,1);
+	image->format = g_new0 (gerbv_format_t,1);
 	
 	switch (gerb_fgetc(fd)) {
 	case 'L':
@@ -1134,11 +1134,11 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    image->format->omit_zeros = EXPLICIT;
 	    break;
 	default:
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "EagleCad bug detected: Undefined handling of zeros in format code\n", 
 				 GRB_ERROR);
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Defaulting to omitting leading zeros.\n", 
 				 WARNING);
@@ -1154,11 +1154,11 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    image->format->coordinate = INCREMENTAL;
 	    break;
 	default:
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Invalid coordinate type defined in format code.\n", 
 				 GRB_ERROR);
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Defaulting to absolute.\n", 
 				 WARNING);
@@ -1186,14 +1186,14 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    case 'X' :
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    gerb_stats_add_error(stats->error_list,
+		    gerbv_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
 					 GRB_ERROR);
 		image->format->x_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    gerb_stats_add_error(stats->error_list,
+		    gerbv_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
 					 GRB_ERROR);
@@ -1202,25 +1202,25 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    case 'Y':
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    gerb_stats_add_error(stats->error_list,
+		    gerbv_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
 					 GRB_ERROR);
 		image->format->y_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6'))
-		    gerb_stats_add_error(stats->error_list,
+		    gerbv_stats_add_error(stats->error_list,
 					 -1,
 					 g_strdup_printf("Illegal format size : %c\n", (char)op[0]),
 					 GRB_ERROR);
 		image->format->y_dec = op[0] - '0';
 		break;
 	    default :
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Invalid format statement [%c]\n", op[0]),
 				     GRB_ERROR);
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     "Ignoring invalid format statement.\n",
 				     WARNING);
@@ -1254,7 +1254,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		}
 		break;
 	    default :
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Wrong character in mirror:%c\n", op[0]),
 				     GRB_ERROR);
@@ -1267,7 +1267,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
 				 GRB_ERROR);
@@ -1281,7 +1281,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    state->state->unit = MM;
 	    break;
 	default:
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Illegal unit:%c%c\n", op[0], op[1]),
 				 GRB_ERROR);
@@ -1299,7 +1299,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		state->state->offsetB = gerb_fgetdouble(fd) / scale;
 		break;
 	    default :
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Wrong character in offset:%c\n", op[0]),
 				     GRB_ERROR);
@@ -1326,12 +1326,12 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 			gerber_parse_file_segment (levelOfRecursion + 1, image, state, curr_net, stats, includefd, directoryPath);
 			gerb_fclose(includefd);
 		    } else {
-			gerb_stats_add_error(stats->error_list, -1,
+			gerbv_stats_add_error(stats->error_list, -1,
 					     g_strdup_printf("Included file cannot be found:%s\n",fullPath), GRB_ERROR);
 		    }
 		    g_free (fullPath);
 		} else {
-		    gerb_stats_add_error(stats->error_list, -1,
+		    gerbv_stats_add_error(stats->error_list, -1,
 					 g_strdup_printf("Parser encountered more than 10 levels of include file recursion, which is not allowed by the RS-274X spec\n"), GRB_ERROR);
 		}
 		
@@ -1350,7 +1350,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		image->info->offsetB = gerb_fgetdouble(fd) / scale;
 		break;
 	    default :
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Wrong character in offset:%c\n", op[0]),
 				     GRB_ERROR);
@@ -1378,7 +1378,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	op[1] = gerb_fgetc(fd);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Unexpected EOF found.\n",
 				 GRB_ERROR);
@@ -1399,7 +1399,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    image->info->encoding = EIA;
 	    break;
 	default:
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Unknown input code (IC): %c%c\n", op[0], op[1]),
 				 GRB_ERROR);
@@ -1438,7 +1438,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    	}
 		break;
 	    default :
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     g_strdup_printf("Wrong character in image justify:%c\n", op[0]),
 				     GRB_ERROR);
@@ -1454,7 +1454,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	for (ano = 0; ano < 3; ano++) {
 	    op[0] = gerb_fgetc(fd);
 	    if (op[0] == EOF)
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     "Unexpected EOF while reading image polarity (IP)\n",
 				     GRB_ERROR);
@@ -1466,7 +1466,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	else if (strncmp(str, "NEG", 3) == 0)
 	    image->info->polarity = NEGATIVE;
 	else 
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Unknown polarity : %c%c%c\n", str[0], str[1], str[2]),
 				 GRB_ERROR);
@@ -1480,7 +1480,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	else if (tmp == 270)
 	    image->info->imageRotation = 3.0 * M_PI / 2.0;
 	else 
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Image rotation must be 0, 90, 180 or 270 (is actually %d)\n", tmp),
 				 GRB_ERROR);
@@ -1491,21 +1491,21 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	
 	/* Aperture parameters */
     case A2I('A','D'): /* Aperture Description */
-	a = (gerb_aperture_t *) g_new0 (gerb_aperture_t,1);
+	a = (gerbv_aperture_t *) g_new0 (gerbv_aperture_t,1);
 
 	ano = parse_aperture_definition(fd, a, image, scale);
 	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->state->unit;
 	    image->aperture[ano] = a;
 	    dprintf("     In parse_rs274x, adding new aperture to aperture list ...\n");
-	    gerb_stats_add_aperture(stats->aperture_list,
+	    gerbv_stats_add_aperture(stats->aperture_list,
 				    -1, ano, 
 				    a->type,
 				    a->parameter);
-	    gerb_stats_add_to_D_list(stats->D_code_list,
+	    gerbv_stats_add_to_D_list(stats->D_code_list,
 				     ano);
 	} else {
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Aperture number out of bounds : %d\n", ano),
 				 GRB_ERROR);
@@ -1522,7 +1522,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    print_program(image->amacro);
 #endif
 	} else {
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Failed to parse aperture macro\n",
 				 GRB_ERROR);
@@ -1543,7 +1543,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	    state->layer->polarity = CLEAR;
 	    break;
 	default:
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Unknown Layer Polarity: %c\n", op[0]),
 				 GRB_ERROR);
@@ -1563,7 +1563,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	} else if (op[0] == 'D') {
 	    state->layer->knockout.polarity = DARK;
 	} else {
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Knockout must supply a polarity (C, D, or *)\n",
 				 GRB_ERROR);
@@ -1606,7 +1606,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	        knockoutLayer = state->layer;
 	        break;
 	    default:
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     "Unknown variable in knockout",
 				     GRB_ERROR);
@@ -1640,7 +1640,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 		state->layer->stepAndRepeat.dist_Y = gerb_fgetdouble(fd) / scale;
 		break;
 	    default:
-		gerb_stats_add_error(stats->error_list,
+		gerbv_stats_add_error(stats->error_list,
 				     -1,
 				     "Step-and-repeat parameter error\n",
 				     GRB_ERROR);
@@ -1666,14 +1666,14 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	state->layer->rotation = gerb_fgetdouble(fd) * M_PI / 180;
 	op[0] = gerb_fgetc(fd);
 	if (op[0] != '*') {
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 "Error in layer rotation comman\n",
 				 GRB_ERROR);
 	}
 	break;
     default:
-	gerb_stats_add_error(stats->error_list,
+	gerbv_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Unknown RS-274X extension found %%%c%c%%\n", op[0], op[1]),
 			     GRB_ERROR);
@@ -1741,7 +1741,7 @@ pop(macro_stack_t *s, double *value)
 
 /* ------------------------------------------------------------------ */
 static int
-simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
+simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 {
     const int extra_stack_size = 10;
     macro_stack_t *s;
@@ -1750,7 +1750,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
     double *lp; /* Local copy of parameters */
     double tmp[2] = {0.0, 0.0};
     enum aperture_t type = APERTURE_NONE;
-    gerb_simplified_amacro_t *sam;
+    gerbv_simplified_amacro_t *sam;
 
     if (aperture == NULL)
 	GERB_FATAL_ERROR("aperture NULL in simplify aperture macro\n");
@@ -1882,7 +1882,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 		 * Create struct for simplified aperture macro and
 		 * start filling in the blanks.
 		 */
-		sam = (gerb_simplified_amacro_t *)malloc(sizeof(gerb_simplified_amacro_t));
+		sam = (gerbv_simplified_amacro_t *)malloc(sizeof(gerbv_simplified_amacro_t));
 		if (sam == NULL)
 		    GERB_FATAL_ERROR("Failed to malloc simplified aperture macro\n");
 		sam->type = type;
@@ -1960,7 +1960,7 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 		if (aperture->simplified == NULL) {
 		    aperture->simplified = sam;
 		} else {
-		    gerb_simplified_amacro_t *tmp_sam;
+		    gerbv_simplified_amacro_t *tmp_sam;
 		    tmp_sam = aperture->simplified;
 		    while (tmp_sam->next != NULL) {
 			tmp_sam = tmp_sam->next;
@@ -1999,19 +1999,19 @@ simplify_aperture_macro(gerb_aperture_t *aperture, gdouble scale)
 
 /* ------------------------------------------------------------------ */
 static int 
-parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
-			  gerb_image_t *image, gdouble scale)
+parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
+			  gerbv_image_t *image, gdouble scale)
 {
     int ano, i;
     char *ad;
     char *token;
     amacro_t *curr_amacro;
     amacro_t *amacro = image->amacro;
-    gerb_stats_t *stats = image->gerb_stats;
+    gerbv_stats_t *stats = image->gerbv_stats;
     gdouble tempHolder;
     
     if (gerb_fgetc(fd) != 'D') {
-	gerb_stats_add_error(stats->error_list,
+	gerbv_stats_add_error(stats->error_list,
 			     -1,
 			     g_strdup_printf("Found AD code with no following 'D'.\n"),
 			     GRB_ERROR);	
@@ -2068,7 +2068,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
     for (token = strtok(NULL, "X"), i = 0; token != NULL; 
 	 token = strtok(NULL, "X"), i++) {
 	if (i == APERTURE_PARAMETERS_MAX) {
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Maximum number of allowed parameters exceeded in aperture %d\n", ano),
 				 GRB_ERROR);
@@ -2086,7 +2086,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 	
 	aperture->parameter[i] = tempHolder;
 	if (errno) {
-	    gerb_stats_add_error(stats->error_list,
+	    gerbv_stats_add_error(stats->error_list,
 				 -1,
 				 g_strdup_printf("Failed to read all parameters exceeded in aperture %d\n", ano),
 				 WARNING);
@@ -2113,7 +2113,7 @@ parse_aperture_definition(gerb_file_t *fd, gerb_aperture_t *aperture,
 
 /* ------------------------------------------------------------------ */
 static void 
-calc_cirseg_sq(struct gerb_net *net, int cw, 
+calc_cirseg_sq(struct gerbv_net *net, int cw, 
 	       double delta_cp_x, double delta_cp_y)
 {
     double d1x, d1y, d2x, d2y;
@@ -2248,7 +2248,7 @@ calc_cirseg_sq(struct gerb_net *net, int cw,
 
 /* ------------------------------------------------------------------ */
 static void 
-calc_cirseg_mq(struct gerb_net *net, int cw, 
+calc_cirseg_mq(struct gerbv_net *net, int cw, 
 	       double delta_cp_x, double delta_cp_y)
 {
     double d1x, d1y, d2x, d2y;
@@ -2309,7 +2309,7 @@ calc_cirseg_mq(struct gerb_net *net, int cw,
 
 
 static void
-gerber_update_any_running_knockout_measurements (gerb_image_t *image)
+gerber_update_any_running_knockout_measurements (gerbv_image_t *image)
 {
     if (knockoutMeasure) {
 	knockoutLayer->knockout.lowerLeftX = knockoutLimitXmin;
@@ -2322,7 +2322,7 @@ gerber_update_any_running_knockout_measurements (gerb_image_t *image)
 
 
 static void
-gerber_calculate_final_justify_effects(gerb_image_t *image)
+gerber_calculate_final_justify_effects(gerbv_image_t *image)
 {
     gdouble translateA = 0.0, translateB = 0.0;
     
@@ -2356,7 +2356,7 @@ gerber_calculate_final_justify_effects(gerb_image_t *image)
 
 
 static void
-gerber_update_min_and_max(gerb_image_info_t *info, gdouble repeatX, gdouble repeatY,
+gerber_update_min_and_max(gerbv_image_info_t *info, gdouble repeatX, gdouble repeatY,
 			  gdouble x, gdouble y, gdouble apertureSizeX1,
 			  gdouble apertureSizeX2,gdouble apertureSizeY1,
 			  gdouble apertureSizeY2)

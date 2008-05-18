@@ -40,9 +40,9 @@
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int
-draw_image_to_cairo_target (cairo_t *cairoTarget, gerb_image_t *image,
+draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					gboolean invertLayer, gdouble pixelWidth,
-					gchar drawMode, gerb_selection_info_t *selectionInfo);
+					gchar drawMode, gerbv_selection_info_t *selectionInfo);
 
 
 

@@ -36,10 +36,10 @@
 #define round(x) floor(x+0.5)
 
 gboolean
-gerbv_export_drill_file_from_image (gchar *filename, gerb_image_t *image) {
+gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *image) {
 	FILE *fd;
 	GArray *apertureTable = g_array_new(FALSE,FALSE,sizeof(int));
-	gerb_net_t *currentNet;
+	gerbv_net_t *currentNet;
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
@@ -50,7 +50,7 @@ gerbv_export_drill_file_from_image (gchar *filename, gerb_image_t *image) {
 	fprintf(fd, "INCH,TZ\n");
 
 	/* define all apertures */
-	gerb_aperture_t *currentAperture;
+	gerbv_aperture_t *currentAperture;
 	gint i;
 		
 	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {

@@ -133,38 +133,38 @@ enum aperture_t {APERTURE_NONE, CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO,
 enum aperture_state_t {OFF, ON, FLASH};
 enum unit_t {INCH, MM, UNIT_UNSPECIFIED};
 
-typedef struct gerb_simplified_amacro {
+typedef struct gerbv_simplified_amacro {
     enum aperture_t type;
     double parameter[APERTURE_PARAMETERS_MAX];
-    struct gerb_simplified_amacro *next;
-} gerb_simplified_amacro_t;
+    struct gerbv_simplified_amacro *next;
+} gerbv_simplified_amacro_t;
 
-typedef struct gerb_aperture {
+typedef struct gerbv_aperture {
     enum aperture_t type;
     amacro_t *amacro;
-    gerb_simplified_amacro_t *simplified;
+    gerbv_simplified_amacro_t *simplified;
     double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     enum unit_t unit;
-} gerb_aperture_t;
+} gerbv_aperture_t;
 
-/* from old gerb_stats.h */
+/* from old gerbv_stats.h */
 /* the gerb_aperture_list is used to keep track of 
  * apertures used in stats reporting */
-typedef struct gerb_aperture_list_t {
+typedef struct gerbv_aperture_list_t {
     int number;
     int layer;
     int count;
     enum aperture_t type;
     double parameter[5];
-    struct gerb_aperture_list_t *next;
-} gerb_aperture_list_t;
+    struct gerbv_aperture_list_t *next;
+} gerbv_aperture_list_t;
 
 
 typedef struct {
     struct error_list_t *error_list;
-    struct gerb_aperture_list_t *aperture_list;
-    struct gerb_aperture_list_t *D_code_list;
+    struct gerbv_aperture_list_t *aperture_list;
+    struct gerbv_aperture_list_t *D_code_list;
 
     int layer_count;
     int G0;
@@ -208,7 +208,7 @@ typedef struct {
     int star;
     int unknown;
 
-} gerb_stats_t;
+} gerbv_stats_t;
 
 /* from old drill_stats.h */
 typedef struct drill_list {
@@ -278,7 +278,7 @@ enum selection_t {EMPTY, POINT_CLICK, DRAG_BOX};
 typedef struct {
 	gpointer image;
 	gpointer net;
-} gerb_selection_item_t;
+} gerbv_selection_item_t;
 
 typedef struct {
 	enum selection_t type;
@@ -287,7 +287,7 @@ typedef struct {
 	gdouble upperRightX;
 	gdouble upperRightY;
 	GArray *selectedNodeArray;
-} gerb_selection_info_t;
+} gerbv_selection_info_t;
 
 /*!  Stores image transformation information, used to modify the rendered
 position/scale/etc of an image. */
@@ -297,23 +297,23 @@ typedef struct {
     gdouble scaleX; /*!< the X scale factor (1.0 is default) */
     gdouble scaleY; /*!< the Y scale factor (1.0 is default) */
     gboolean inverted; /*!< TRUE if the image should be rendered "inverted" (light is dark and vice versa) */
-} gerb_user_transformation_t;
+} gerbv_user_transformation_t;
 
-typedef struct gerb_cirseg {
+typedef struct gerbv_cirseg {
     double cp_x;
     double cp_y;
     double width;  /* of oval */
     double height; /* of oval */
     double angle1;
     double angle2;
-} gerb_cirseg_t;
+} gerbv_cirseg_t;
 
-typedef struct gerb_step_and_repeat { /* SR parameters */
+typedef struct gerbv_step_and_repeat { /* SR parameters */
     int X;
     int Y;
     double dist_X;
     double dist_Y;
-} gerb_step_and_repeat_t;
+} gerbv_step_and_repeat_t;
  
 typedef struct {
     gboolean firstInstance;
@@ -324,16 +324,16 @@ typedef struct {
     gdouble width;
     gdouble height;
     gdouble border;
-} gerb_knockout_t;
+} gerbv_knockout_t;
  
 typedef struct {
-    gerb_step_and_repeat_t stepAndRepeat;
-    gerb_knockout_t knockout;
+    gerbv_step_and_repeat_t stepAndRepeat;
+    gerbv_knockout_t knockout;
     gdouble rotation;
     enum polarity_t polarity; 
     gchar *name;
     gpointer next;
-} gerb_layer_t;
+} gerbv_layer_t;
 
 typedef struct {
     enum axis_select_t axisSelect;
@@ -344,10 +344,10 @@ typedef struct {
     gdouble scaleA;
     gdouble scaleB;
     gpointer next;
-} gerb_netstate_t;
+} gerbv_netstate_t;
 
 /*!  The structure used to hold a geometric entity (line/polygon/etc)*/
-typedef struct gerb_net {
+typedef struct gerbv_net {
     double start_x; /*!< the X coordinate of the start point */
     double start_y; /*!< the Y coordinate of the start point */
     double stop_x; /*!< the X coordinate of the end point */
@@ -355,14 +355,14 @@ typedef struct gerb_net {
     int aperture; /*!< the index of the aperture used for this entity */
     enum aperture_state_t aperture_state; /*!< the state of the aperture tool (on/off/etc) */
     enum interpolation_t interpolation; /*!< the path interpolation method (linear/etc) */
-    struct gerb_cirseg *cirseg; /*!< a special struct used to hold circular path data */
-    struct gerb_net *next; /*!< the next net in the array */
+    struct gerbv_cirseg *cirseg; /*!< a special struct used to hold circular path data */
+    struct gerbv_net *next; /*!< the next net in the array */
     GString *label; /*!< a label string for this net */
-    gerb_layer_t *layer; /*!< the RS274X layer this net belongs to */
-    gerb_netstate_t *state; /*!< the RS274X state this net belongs to */
-} gerb_net_t;
+    gerbv_layer_t *layer; /*!< the RS274X layer this net belongs to */
+    gerbv_netstate_t *state; /*!< the RS274X state this net belongs to */
+} gerbv_net_t;
 
-typedef struct gerb_format {
+typedef struct gerbv_format {
     enum omit_zeros_t omit_zeros;
     enum coordinate_t coordinate;
     int x_int;
@@ -373,10 +373,10 @@ typedef struct gerb_format {
     int lim_gf;    /* Length limit for codes of general function */
     int lim_pf;    /* Length limit for codes of plot function */
     int lim_mf;    /* Length limit for codes of miscellaneous function */
-} gerb_format_t;
+} gerbv_format_t;
 	
 	
-typedef struct gerb_image_info {
+typedef struct gerbv_image_info {
     char *name;
     enum polarity_t polarity;
     double min_x; /* Always in inches */
@@ -405,53 +405,53 @@ typedef struct gerb_image_info {
     */ 
     HID_Attribute *attr_list;
     int n_attr;
-} gerb_image_info_t;
+} gerbv_image_info_t;
 
 /*!  The structure used to hold a layer (RS274X, drill, or pick-and-place data) */
 typedef struct {
     enum layertype_t layertype; /*!< the type of layer (RS274X, drill, or pick-and-place) */
-    gerb_aperture_t *aperture[APERTURE_MAX]; /*!< an array with all apertures used */
-    gerb_layer_t *layers; /*!< an array of all RS274X layers used (only used in RS274X types) */
-    gerb_netstate_t *states; /*!< an array of all RS274X states used (only used in RS274X types) */
+    gerbv_aperture_t *aperture[APERTURE_MAX]; /*!< an array with all apertures used */
+    gerbv_layer_t *layers; /*!< an array of all RS274X layers used (only used in RS274X types) */
+    gerbv_netstate_t *states; /*!< an array of all RS274X states used (only used in RS274X types) */
     amacro_t *amacro; /*!< an array of all macros used (only used in RS274X types) */
-    gerb_format_t *format; /*!< formatting info */
-    gerb_image_info_t *info; /*!< miscellaneous info regarding the layer such as overall size, etc */
-    gerb_net_t *netlist; /*!< an array of all geometric entities in the layer */
-    gerb_stats_t *gerb_stats; /*!< RS274X statistics for the layer */
+    gerbv_format_t *format; /*!< formatting info */
+    gerbv_image_info_t *info; /*!< miscellaneous info regarding the layer such as overall size, etc */
+    gerbv_net_t *netlist; /*!< an array of all geometric entities in the layer */
+    gerbv_stats_t *gerbv_stats; /*!< RS274X statistics for the layer */
     drill_stats_t *drill_stats;  /*!< Excellon drill statistics for the layer */
-} gerb_image_t;
+} gerbv_image_t;
 
-//! Allocate a new gerb_image structure
+//! Allocate a new gerbv_image structure
 //! \return the newly created image
-gerb_image_t *gerbv_create_image(gerb_image_t *image, /*!< the old image to free or NULL */
+gerbv_image_t *gerbv_create_image(gerbv_image_t *image, /*!< the old image to free or NULL */
 		const gchar *type /*!< the type of image to create */
 );
 
 //! Free an image structure
-void gerbv_destroy_image(gerb_image_t *image /*!< the image to free */
+void gerbv_destroy_image(gerbv_image_t *image /*!< the image to free */
 );
 
 //! Copy an image into an existing image, effectively merging the two together
 void
-gerbv_image_copy_image (gerb_image_t *sourceImage, /*!< the source image */
-	gerb_user_transformation_t *transform, /*!< the transformation to apply to the new image, or NULL for none */
-	gerb_image_t *destinationImage /*!< the destination image to copy to */
+gerbv_image_copy_image (gerbv_image_t *sourceImage, /*!< the source image */
+	gerbv_user_transformation_t *transform, /*!< the transformation to apply to the new image, or NULL for none */
+	gerbv_image_t *destinationImage /*!< the destination image to copy to */
 );
 
 //! Duplicate an existing image and return the new copy
 //! \return the newly created image
-gerb_image_t *
-gerbv_image_duplicate_image (gerb_image_t *sourceImage, /*!< the source image */
-	gerb_user_transformation_t *transform /*!< the transformation to apply to the new image, or NULL for none */
+gerbv_image_t *
+gerbv_image_duplicate_image (gerbv_image_t *sourceImage, /*!< the source image */
+	gerbv_user_transformation_t *transform /*!< the transformation to apply to the new image, or NULL for none */
 );
 
 //! Delete a net in an existing image
 void
-gerbv_image_delete_net (gerb_net_t *currentNet /*!< the net to delete */
+gerbv_image_delete_net (gerbv_net_t *currentNet /*!< the net to delete */
 );
 
 void
-gerbv_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray);
+gerbv_image_delete_selected_nets (gerbv_image_t *sourceImage, GArray *selectedNodeArray);
 
 gboolean
 gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
@@ -480,14 +480,14 @@ typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
 typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
 
 typedef struct {
-    gerb_image_t *image;
+    gerbv_image_t *image;
     GdkColor color;
     guint16 alpha;
     gboolean isVisible;
     gpointer privateRenderData;
     gchar *fullPathname; /* this should be the full pathname to the file */
     gchar *name;
-    gerb_user_transformation_t transform;
+    gerbv_user_transformation_t transform;
 } gerbv_fileinfo_t;
 
 typedef struct {
@@ -558,7 +558,7 @@ void
 gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint newPosition);
 
 gint
-gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerb_image_t *parsed_image,
+gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t *parsed_image,
 			gchar *filename, gchar *baseName, int idx, int reload);
 int
 gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int reload,
@@ -601,7 +601,7 @@ gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_rend
 
 void
 gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixmap,
-		gerbv_render_info_t *renderInfo, gerb_selection_info_t *selectionInfo,
+		gerbv_render_info_t *renderInfo, gerbv_selection_info_t *selectionInfo,
 		GdkColor *selectionColor);
 
 #ifndef RENDER_USING_GDK
@@ -689,8 +689,8 @@ void gerbv_export_svg_file_from_project (
 );
 
 //! Parse a RS274X file and return the parsed image
-//! \return the new gerb_image_t, or NULL if not successful
-gerb_image_t *
+//! \return the new gerbv_image_t, or NULL if not successful
+gerbv_image_t *
 gerbv_create_rs274x_image_from_filename (gchar *filename /*!< the filename of the file to be parsed*/
 );
 
@@ -698,14 +698,14 @@ gerbv_create_rs274x_image_from_filename (gchar *filename /*!< the filename of th
 //! \return TRUE if successful, or FALSE if not
 gboolean
 gerbv_export_rs274x_file_from_image (gchar *filename, /*!< the filename for the new file */
-		gerb_image_t *image /*!< the image to export */
+		gerbv_image_t *image /*!< the image to export */
 );
 
 //! Export an image to a new file in Excellon drill format
 //! \return TRUE if successful, or FALSE if not
 gboolean
 gerbv_export_drill_file_from_image (gchar *filename, /*!< the filename for the new file */
-		gerb_image_t *image /*!< the image to export */
+		gerbv_image_t *image /*!< the image to export */
 );
 
 /* from drill and gerb stats headers */
@@ -713,8 +713,8 @@ drill_stats_t * drill_stats_new(void);
 void drill_stats_add_layer(drill_stats_t *accum_stats, 
 			   drill_stats_t *input_stats, int this_layer);
 
-gerb_stats_t * gerb_stats_new(void);
-void gerb_stats_add_layer(gerb_stats_t *accum_stats, 
-			  gerb_stats_t *input_stats,
+gerbv_stats_t * gerbv_stats_new(void);
+void gerbv_stats_add_layer(gerbv_stats_t *accum_stats, 
+			  gerbv_stats_t *input_stats,
 			  int this_layer);
 

@@ -35,7 +35,7 @@ extern "C" {
 #define TOOL_MIN 1  /* T00 code is reserved for unload tool command */
 #define TOOL_MAX 9999
 
-gerb_image_t *parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, 
+gerbv_image_t *parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, 
 			      int n_attr, int reload);
 gboolean
 drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary);

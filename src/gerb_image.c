@@ -22,7 +22,7 @@
  */
 
 /** \file gerb_image.c
-    \brief This file contains general files for handling the gerb_image_t structure
+    \brief This file contains general files for handling the gerbv_image_t structure
 */
 
 #ifdef HAVE_CONFIG_H
@@ -44,34 +44,34 @@ typedef struct {
     int newAperture;
 } gerb_translation_entry_t;
 
-gerb_image_t *
-gerbv_create_image(gerb_image_t *image, const gchar *type)
+gerbv_image_t *
+gerbv_create_image(gerbv_image_t *image, const gchar *type)
 {
     gerbv_destroy_image(image);
     
     /* Malloc space for image */
-    if ((image = (gerb_image_t *)g_malloc(sizeof(gerb_image_t))) == NULL) {
+    if ((image = (gerbv_image_t *)g_malloc(sizeof(gerbv_image_t))) == NULL) {
 	return NULL;
     }
-    memset((void *)image, 0, sizeof(gerb_image_t));
+    memset((void *)image, 0, sizeof(gerbv_image_t));
     
     /* Malloc space for image->netlist */
-    if ((image->netlist = (gerb_net_t *)g_malloc(sizeof(gerb_net_t))) == NULL) {
+    if ((image->netlist = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t))) == NULL) {
 	g_free(image);
 	return NULL;
     }
-    memset((void *)image->netlist, 0, sizeof(gerb_net_t));
+    memset((void *)image->netlist, 0, sizeof(gerbv_net_t));
     
     /* Malloc space for image->info */
-    if ((image->info = (gerb_image_info_t *)g_malloc(sizeof(gerb_image_info_t))) == NULL) {
+    if ((image->info = (gerbv_image_info_t *)g_malloc(sizeof(gerbv_image_info_t))) == NULL) {
 	g_free(image->netlist);
 	g_free(image);
 	return NULL;
     }
-    memset((void *)image->info, 0, sizeof(gerb_image_info_t));
+    memset((void *)image->info, 0, sizeof(gerbv_image_info_t));
     
     /* Set aside position for stats struct */
-    image->gerb_stats = NULL;
+    image->gerbv_stats = NULL;
     image->drill_stats = NULL;
 
     image->info->min_x = HUGE_VAL;
@@ -80,13 +80,13 @@ gerbv_create_image(gerb_image_t *image, const gchar *type)
     image->info->max_y = -HUGE_VAL;
 
     /* create our first layer and fill with non-zero default values */
-    image->layers = g_new0 (gerb_layer_t, 1);
+    image->layers = g_new0 (gerbv_layer_t, 1);
     image->layers->stepAndRepeat.X = 1;
     image->layers->stepAndRepeat.Y = 1;
     image->layers->polarity = DARK;
     
     /* create our first netstate and fill with non-zero default values */
-    image->states = g_new0 (gerb_netstate_t, 1);
+    image->states = g_new0 (gerbv_netstate_t, 1);
     image->states->scaleA = 1;
     image->states->scaleB = 1;
 
@@ -108,12 +108,12 @@ gerbv_create_image(gerb_image_t *image, const gchar *type)
 
 
 void
-gerbv_destroy_image(gerb_image_t *image)
+gerbv_destroy_image(gerbv_image_t *image)
 {
     int i;
-    gerb_net_t *net, *tmp;
-    gerb_layer_t *layer;
-    gerb_netstate_t *state;
+    gerbv_net_t *net, *tmp;
+    gerbv_layer_t *layer;
+    gerbv_netstate_t *state;
     
     if(image==NULL)
         return;
@@ -169,13 +169,13 @@ gerbv_destroy_image(gerb_image_t *image)
 	tmp = NULL;
     }
     for (layer = image->layers; layer != NULL; ) {
-    	gerb_layer_t *tempLayer = layer;
+    	gerbv_layer_t *tempLayer = layer;
     	
     	layer = layer->next;
     	g_free (tempLayer);
     }
     for (state = image->states; state != NULL; ) {
-    	gerb_netstate_t *tempState = state;
+    	gerbv_netstate_t *tempState = state;
     	
     	state = state->next;
     	g_free (tempState);
@@ -206,11 +206,11 @@ gerbv_destroy_image(gerb_image_t *image)
  * It could be any of above or'ed together
  */
 gerb_verify_error_t
-gerbv_image_verify(gerb_image_t const* image)
+gerbv_image_verify(gerbv_image_t const* image)
 {
     gerb_verify_error_t error = GERB_IMAGE_OK;
     int i, n_nets;;
-    gerb_net_t *net;
+    gerbv_net_t *net;
 
     if (image->netlist == NULL) error |= GERB_IMAGE_MISSING_NETLIST;
     if (image->format == NULL)  error |= GERB_IMAGE_MISSING_FORMAT;
@@ -270,11 +270,11 @@ gerbv_image_interpolation(enum interpolation_t interpolation)
 
 /* Dumps a written version of image to stdout */
 void 
-gerbv_image_dump(gerb_image_t const* image)
+gerbv_image_dump(gerbv_image_t const* image)
 {
     int i, j;
-    gerb_aperture_t * const* aperture;
-    gerb_net_t const * net;
+    gerbv_aperture_t * const* aperture;
+    gerbv_net_t const * net;
 
     /* Apertures */
     printf("Apertures:\n");
@@ -320,10 +320,10 @@ gerbv_image_dump(gerb_image_t const* image)
 } /* gerbv_image_dump */
 
 
-gerb_layer_t *
-gerbv_image_return_new_layer (gerb_layer_t *previousLayer)
+gerbv_layer_t *
+gerbv_image_return_new_layer (gerbv_layer_t *previousLayer)
 {
-    gerb_layer_t *newLayer = g_new0 (gerb_layer_t, 1);
+    gerbv_layer_t *newLayer = g_new0 (gerbv_layer_t, 1);
     
     *newLayer = *previousLayer;
     previousLayer->next = newLayer;
@@ -335,10 +335,10 @@ gerbv_image_return_new_layer (gerb_layer_t *previousLayer)
 } /* gerbv_image_return_new_layer */
 
 
-gerb_netstate_t *
-gerbv_image_return_new_netstate (gerb_netstate_t *previousState)
+gerbv_netstate_t *
+gerbv_image_return_new_netstate (gerbv_netstate_t *previousState)
 {
-    gerb_netstate_t *newState = g_new0 (gerb_netstate_t, 1);
+    gerbv_netstate_t *newState = g_new0 (gerbv_netstate_t, 1);
     
     *newState = *previousState;
     previousState->next = newState;
@@ -349,27 +349,27 @@ gerbv_image_return_new_netstate (gerb_netstate_t *previousState)
     return newState;
 } /* gerbv_image_return_new_netstate */
 
-gerb_layer_t *
-gerbv_image_duplicate_layer (gerb_layer_t *oldLayer) {
-    gerb_layer_t *newLayer = g_new (gerb_layer_t,1);
+gerbv_layer_t *
+gerbv_image_duplicate_layer (gerbv_layer_t *oldLayer) {
+    gerbv_layer_t *newLayer = g_new (gerbv_layer_t,1);
     
     *newLayer = *oldLayer;
     newLayer->name = g_strdup (oldLayer->name);
     return newLayer;
 }
 
-gerb_netstate_t *
-gerbv_image_duplicate_state (gerb_netstate_t *oldState) {
-    gerb_netstate_t *newState = g_new (gerb_netstate_t,1);
+gerbv_netstate_t *
+gerbv_image_duplicate_state (gerbv_netstate_t *oldState) {
+    gerbv_netstate_t *newState = g_new (gerbv_netstate_t,1);
     
     *newState = *oldState;
     return newState;
 }
 
-gerb_aperture_t *
-gerbv_image_duplicate_aperture (gerb_aperture_t *oldAperture){
-    gerb_aperture_t *newAperture = g_new0 (gerb_aperture_t,1);
-    gerb_simplified_amacro_t *simplifiedMacro, *tempSimplified;
+gerbv_aperture_t *
+gerbv_image_duplicate_aperture (gerbv_aperture_t *oldAperture){
+    gerbv_aperture_t *newAperture = g_new0 (gerbv_aperture_t,1);
+    gerbv_simplified_amacro_t *simplifiedMacro, *tempSimplified;
        
     *newAperture = *oldAperture;
 	  
@@ -381,7 +381,7 @@ gerbv_image_duplicate_aperture (gerb_aperture_t *oldAperture){
     /* copy any simplified macros over */
     tempSimplified = NULL;
     for (simplifiedMacro = oldAperture->simplified; simplifiedMacro != NULL; simplifiedMacro = simplifiedMacro->next) {
-	gerb_simplified_amacro_t *newSimplified = g_new0 (gerb_simplified_amacro_t,1);
+	gerbv_simplified_amacro_t *newSimplified = g_new0 (gerbv_simplified_amacro_t,1);
 	*newSimplified = *simplifiedMacro;
 	if (tempSimplified)
 	  tempSimplified->next = newSimplified;
@@ -393,12 +393,12 @@ gerbv_image_duplicate_aperture (gerb_aperture_t *oldAperture){
 }
 
 void
-gerbv_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, gerb_layer_t *lastLayer,
-		gerb_netstate_t *lastState, gerb_net_t *lastNet, gerb_user_transformation_t *transform,
+gerbv_image_copy_all_nets (gerbv_image_t *sourceImage, gerbv_image_t *newImage, gerbv_layer_t *lastLayer,
+		gerbv_netstate_t *lastState, gerbv_net_t *lastNet, gerbv_user_transformation_t *transform,
 		GArray *translationTable){
-    gerb_netstate_t *oldState,*newSavedState;
-    gerb_layer_t *oldLayer,*newSavedLayer;
-    gerb_net_t *currentNet,*newNet,*newSavedNet;
+    gerbv_netstate_t *oldState,*newSavedState;
+    gerbv_layer_t *oldLayer,*newSavedLayer;
+    gerbv_net_t *currentNet,*newNet,*newSavedNet;
     int i;
     
     oldLayer = sourceImage->layers;
@@ -421,11 +421,11 @@ gerbv_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, ge
 	  newSavedState = newSavedState->next;
       }
       /* create and copy the actual net over */
-      newNet = g_new (gerb_net_t,1);
+      newNet = g_new (gerbv_net_t,1);
       *newNet = *currentNet;
       
       if (currentNet->cirseg) {
-      	newNet->cirseg = g_new (gerb_cirseg_t,1);
+      	newNet->cirseg = g_new (gerbv_cirseg_t,1);
       	*(newNet->cirseg) = *(currentNet->cirseg);
       }
       
@@ -466,7 +466,7 @@ gerbv_image_copy_all_nets (gerb_image_t *sourceImage, gerb_image_t *newImage, ge
 }
 
 gint
-gerbv_image_find_existing_aperture_match (gerb_aperture_t *checkAperture, gerb_image_t *imageToSearch) {
+gerbv_image_find_existing_aperture_match (gerbv_aperture_t *checkAperture, gerbv_image_t *imageToSearch) {
     int i,j;
     gboolean isMatch;
     
@@ -490,7 +490,7 @@ gerbv_image_find_existing_aperture_match (gerb_aperture_t *checkAperture, gerb_i
 }
 
 int
-gerbv_image_find_unused_aperture_number (int startIndex, gerb_image_t *image){
+gerbv_image_find_unused_aperture_number (int startIndex, gerbv_image_t *image){
     int i;
     
     for (i = startIndex; i < APERTURE_MAX; i++) {
@@ -501,9 +501,9 @@ gerbv_image_find_unused_aperture_number (int startIndex, gerb_image_t *image){
     return -1;
 }
 
-gerb_image_t *
-gerbv_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformation_t *transform) {
-    gerb_image_t *newImage = gerbv_create_image(NULL, sourceImage->info->type);
+gerbv_image_t *
+gerbv_image_duplicate_image (gerbv_image_t *sourceImage, gerbv_user_transformation_t *transform) {
+    gerbv_image_t *newImage = gerbv_create_image(NULL, sourceImage->info->type);
     int i;
     int lastUsedApertureNumber = APERTURE_MIN - 1;
     GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
@@ -518,7 +518,7 @@ gerbv_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformation
     /* copy apertures over, compressing all the numbers down for a cleaner output */
     for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
 	if (sourceImage->aperture[i] != NULL) {
-	  gerb_aperture_t *newAperture = gerbv_image_duplicate_aperture (sourceImage->aperture[i]);
+	  gerbv_aperture_t *newAperture = gerbv_image_duplicate_aperture (sourceImage->aperture[i]);
 
 	  lastUsedApertureNumber = gerbv_image_find_unused_aperture_number (lastUsedApertureNumber + 1, newImage);
 	  /* store the aperture numbers (new and old) in the translation table */
@@ -537,7 +537,7 @@ gerbv_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformation
 }
 
 void
-gerbv_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformation_t *transform, gerb_image_t *destinationImage) {
+gerbv_image_copy_image (gerbv_image_t *sourceImage, gerbv_user_transformation_t *transform, gerbv_image_t *destinationImage) {
     int lastUsedApertureNumber = APERTURE_MIN - 1;
     int i;
     GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
@@ -555,7 +555,7 @@ gerbv_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformation_t *t
 	  }
 	  /* else, create a new aperture and put it in the destination image */
 	  else {
-	  	gerb_aperture_t *newAperture = gerbv_image_duplicate_aperture (sourceImage->aperture[i]);
+	  	gerbv_aperture_t *newAperture = gerbv_image_duplicate_aperture (sourceImage->aperture[i]);
 	  
 	  	lastUsedApertureNumber = gerbv_image_find_unused_aperture_number (lastUsedApertureNumber + 1, destinationImage);
 	  	/* store the aperture numbers (new and old) in the translation table */
@@ -567,9 +567,9 @@ gerbv_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformation_t *t
 	}
     }
     /* find the last layer, state, and net in the linked chains */
-    gerb_netstate_t *lastState;
-    gerb_layer_t *lastLayer;
-    gerb_net_t *lastNet;
+    gerbv_netstate_t *lastState;
+    gerbv_layer_t *lastLayer;
+    gerbv_net_t *lastNet;
     
     for (lastState = destinationImage->states; lastState->next; lastState=lastState->next){}
     for (lastLayer = destinationImage->layers; lastLayer->next; lastLayer=lastLayer->next){}
@@ -581,8 +581,8 @@ gerbv_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformation_t *t
 }
 
 void
-gerbv_image_delete_net (gerb_net_t *currentNet) {
-	gerb_net_t *tempNet;
+gerbv_image_delete_net (gerbv_net_t *currentNet) {
+	gerbv_net_t *tempNet;
 	
 	g_assert (currentNet);
 	/* we have a match, so just zero out all the important data fields */
@@ -611,14 +611,14 @@ gerbv_image_delete_net (gerb_net_t *currentNet) {
 }
 
 void
-gerbv_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray) {
+gerbv_image_delete_selected_nets (gerbv_image_t *sourceImage, GArray *selectedNodeArray) {
 	int i;
-	gerb_net_t *currentNet;
+	gerbv_net_t *currentNet;
     
 	for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){	
 		for (i=0; i<selectedNodeArray->len; i++){
-			gerb_selection_item_t sItem = g_array_index (selectedNodeArray,
-				gerb_selection_item_t, i);
+			gerbv_selection_item_t sItem = g_array_index (selectedNodeArray,
+				gerbv_selection_item_t, i);
 			if (sItem.net == currentNet) {
 				gerbv_image_delete_net (currentNet);
 				
@@ -628,9 +628,9 @@ gerbv_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNod
 }
 
 void
-gerbv_image_create_rectangle_object (gerb_image_t *image, gdouble coordinateX,
+gerbv_image_create_rectangle_object (gerbv_image_t *image, gdouble coordinateX,
 		gdouble coordinateY, gdouble width, gdouble height) {
-	gerb_net_t *currentNet;
+	gerbv_net_t *currentNet;
 	
 	/* run through and find last net pointer */
 	for (currentNet = image->netlist; currentNet->next; currentNet = currentNet->next){}
@@ -674,7 +674,7 @@ gerbv_image_create_rectangle_object (gerb_image_t *image, gdouble coordinateX,
 }
 
 void
-gerbv_image_create_window_pane_objects (gerb_image_t *image, gdouble lowerLeftX,
+gerbv_image_create_window_pane_objects (gerbv_image_t *image, gdouble lowerLeftX,
 		gdouble lowerLeftY, gdouble width, gdouble height, gdouble areaReduction,
 		gint paneRows, gint paneColumns, gdouble paneSeparation){
 	int i,j;
@@ -702,9 +702,9 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 	gdouble minX,minY,maxX,maxY;
 	
 	for (i=0; i<selectionArray->len; i++) {
-		gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
-		gerb_image_t *image = sItem.image;
-		gerb_net_t *currentNet = sItem.net;
+		gerbv_selection_item_t sItem = g_array_index (selectionArray,gerbv_selection_item_t, i);
+		gerbv_image_t *image = sItem.image;
+		gerbv_net_t *currentNet = sItem.net;
 		
 		/* determine the object type first */
 		minX = HUGE_VAL;
@@ -788,8 +788,8 @@ gerbv_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
 	int i;
 	
 	for (i=0; i<selectionArray->len; i++) {
-		gerb_selection_item_t sItem = g_array_index (selectionArray,gerb_selection_item_t, i);
-		gerb_net_t *currentNet = sItem.net;
+		gerbv_selection_item_t sItem = g_array_index (selectionArray,gerbv_selection_item_t, i);
+		gerbv_net_t *currentNet = sItem.net;
 
 		if (currentNet->interpolation == PAREA_START) {
 			/* if it's a polygon, step through every vertex and translate the point */
