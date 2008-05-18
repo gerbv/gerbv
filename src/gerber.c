@@ -920,12 +920,12 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerb_image_t *image)
 	stats->G55++;
 	break;
     case 70: /* Specify inches */
-	state->state = gerb_image_return_new_netstate (state->state);
+	state->state = gerbv_image_return_new_netstate (state->state);
 	state->state->unit = INCH;
 	stats->G70++;
 	break;
     case 71: /* Specify millimeters */
-	state->state = gerb_image_return_new_netstate (state->state);
+	state->state = gerbv_image_return_new_netstate (state->state);
 	state->state->unit = MM;
 	stats->G71++;
 	break;
@@ -1088,7 +1088,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
     case A2I('A','S'): /* Axis Select */
 	op[0] = gerb_fgetc(fd);
 	op[1] = gerb_fgetc(fd);
-	state->state = gerb_image_return_new_netstate (state->state);
+	state->state = gerbv_image_return_new_netstate (state->state);
 	
 	if ((op[0] == EOF) || (op[1] == EOF))
 	    gerb_stats_add_error(stats->error_list,
@@ -1230,7 +1230,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	break;
     case A2I('M','I'): /* Mirror Image */
 	op[0] = gerb_fgetc(fd);
-	state->state = gerb_image_return_new_netstate (state->state);
+	state->state = gerbv_image_return_new_netstate (state->state);
 	
 	while ((op[0] != '*')&&(op[0] != EOF)) {
             gint readValue=0;
@@ -1273,11 +1273,11 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 				 GRB_ERROR);
 	switch (A2I(op[0],op[1])) {
 	case A2I('I','N'):
-	    state->state = gerb_image_return_new_netstate (state->state);
+	    state->state = gerbv_image_return_new_netstate (state->state);
 	    state->state->unit = INCH;
 	    break;
 	case A2I('M','M'):
-	    state->state = gerb_image_return_new_netstate (state->state);
+	    state->state = gerbv_image_return_new_netstate (state->state);
 	    state->state->unit = MM;
 	    break;
 	default:
@@ -1530,11 +1530,11 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	break;
 	/* Layer */
     case A2I('L','N'): /* Layer Name */
-	state->layer = gerb_image_return_new_layer (state->layer);
+	state->layer = gerbv_image_return_new_layer (state->layer);
 	state->layer->name = gerb_fgetstring(fd, '*');
 	break;
     case A2I('L','P'): /* Layer Polarity */
-	state->layer = gerb_image_return_new_layer (state->layer);
+	state->layer = gerbv_image_return_new_layer (state->layer);
 	switch (gerb_fgetc(fd)) {
 	case 'D': /* Dark Polarity (default) */
 	    state->layer->polarity = DARK;
@@ -1550,7 +1550,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	}
 	break;
     case A2I('K','O'): /* Knock Out */
-        state->layer = gerb_image_return_new_layer (state->layer);
+        state->layer = gerbv_image_return_new_layer (state->layer);
         gerber_update_any_running_knockout_measurements (image);
         /* reset any previous knockout measurements */
         knockoutMeasure = FALSE;
@@ -1616,7 +1616,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	break;
     case A2I('S','R'): /* Step and Repeat */
         /* start by generating a new layer (duplicating previous layer settings */
-        state->layer = gerb_image_return_new_layer (state->layer);
+        state->layer = gerbv_image_return_new_layer (state->layer);
 	op[0] = gerb_fgetc(fd);
 	if (op[0] == '*') { /* Disable previous SR parameters */
 	    state->layer->stepAndRepeat.X = 1;
@@ -1661,7 +1661,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerb_image_t *image,
 	break;
 	/* is this an actual RS274X command??  It isn't explainined in the spec... */
     case A2I('R','O'):
-	state->layer = gerb_image_return_new_layer (state->layer);
+	state->layer = gerbv_image_return_new_layer (state->layer);
 	
 	state->layer->rotation = gerb_fgetdouble(fd) * M_PI / 180;
 	op[0] = gerb_fgetc(fd);

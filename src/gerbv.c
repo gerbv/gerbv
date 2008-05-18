@@ -22,27 +22,27 @@
  */
  
  
-/** @file gerbv.c
-    @brief gerbv GUI control/main.
-    This is the core of gerbv it connects all modules in a single GUI
+/** \file gerbv.c
+    \brief This file contains high-level functions for the libgerbv library
 */
 
 /**
-\mainpage gerbv Index Page
+\mainpage Gerber Viewer/libgerbv Index Page
 
 \section intro_sec Introduction
 
-gerbv is part of gEDA tools.\n
+Gerber Viewer is a program which can display, edit, export, and do other manipulation of
+file formats used in PCB design (RS274X, Excellon drill, and pick-and-place). The core
+library (libgerbv) is available as a separate library, allowing other software to easily
+incorporate advanced Gerber functionality.
 
-It displays gerberfiles in an overlayable multilayer fashion and it also allows to measure distances.\n
-Searching (powerful wildcard search in a browsable list) for electronic parts is available once a so-called
-pick and place file has been read in (by definition there is only one for each project).\n
-Apart from saving projects files, it also can export PNG graphics.
+This code documentation is mainly intended to help explain the libgerbv API for developers
+wishing to use libgerbv in their own projects. The easiest way to learn to use libgerbv is
+by reading through and compiling the example source files (click on "Examples" in the navigation
+tree in the left pane), or in the doc/example-code/ directory in CVS.
 
-
-The doxygen config file is called Doxyfile.nopreprocessing and is located in the /doc directory of gerbv.
-
-Project Manager is Stefan Petersen < speatstacken.kth.se >
+For help with using the standalone Gerber Viewer software, please refer to the man page (using
+the command "man gerbv") or go to the Gerber Viewer homepage for documentation.
 */
 
 
@@ -121,7 +121,7 @@ static LayerColor defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{226,226,226,177}
 };
 
-static gerb_user_transformations_t defaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
+static gerb_user_transformation_t defaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
@@ -169,6 +169,8 @@ gerbv_destroy_project (gerbv_project_t *gerbvProject){
 		if (gerbvProject->file[i])
 			gerbv_destroy_fileinfo (gerbvProject->file[i]);
 	}
+	/* destroy the fileinfo array */
+	g_free (gerbvProject->file);
 	g_free (gerbvProject);
 }
 
@@ -293,7 +295,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerb_image_t *
     int r, g, b; 
     
     dprintf("In open_image, now error check file....\n");
-    error = gerb_image_verify(parsed_image);
+    error = gerbv_image_verify(parsed_image);
     if (error) {
 	GERB_COMPILE_ERROR("%s: Parse error:\n", filename);
 	if (error & GERB_IMAGE_MISSING_NETLIST)
@@ -469,6 +471,23 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 
     return retv;
 } /* open_image */
+
+gerb_image_t *
+gerbv_create_rs274x_image_from_filename (gchar *filename){
+	gerb_image_t *returnImage;
+	gerb_file_t *fd;
+	
+	fd = gerb_fopen(filename);
+	if (fd == NULL) {
+		GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
+		return NULL;
+	}
+	gchar *currentLoadDirectory = g_path_get_dirname (filename);
+	returnImage = parse_gerb(fd, currentLoadDirectory);
+	g_free (currentLoadDirectory);
+	gerb_fclose(fd);
+	return returnImage;
+}
 
 /* ------------------------------------------------------------------ */
 void
@@ -778,8 +797,12 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 		(double) fileInfo->color.green/G_MAXUINT16,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
 	
+	/* translate the image based on the layer-specific transformation struct */
+	cairo_save (cr);
+	cairo_translate (cr, fileInfo->transform.translateX, fileInfo->transform.translateY);
 	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
 		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL);
+	cairo_restore (cr);
 }
 #endif
 

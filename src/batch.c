@@ -333,7 +333,7 @@ batch(char const* backend, char const* filename)
     /*
      * Do error check before continuing
      */
-    error = gerb_image_verify(image);
+    error = gerbv_image_verify(image);
     if (error) {
 	fprintf(stderr, "%s: Parse error: ", filename);
 	if (error & GERB_IMAGE_MISSING_NETLIST)

@@ -83,7 +83,7 @@ static LayerColor mainDefaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{226,226,226,177}
 };
 
-static gerb_user_transformations_t mainDefaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
+static gerb_user_transformation_t mainDefaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
@@ -842,23 +842,23 @@ main(int argc, char *argv[])
 	
 	if (exportType == 1) {
 #ifdef EXPORT_PNG
-	    exportimage_export_to_png_file (mainProject, &renderInfo, exportFilename);
+	    gerbv_export_png_file_from_project (mainProject, &renderInfo, exportFilename);
 #endif
 	} else if (exportType == 2) {
-	    exportimage_export_to_pdf_file (mainProject, &renderInfo, exportFilename);
+	    gerbv_export_pdf_file_from_project (mainProject, &renderInfo, exportFilename);
 	} else if (exportType == 3) {
-	    exportimage_export_to_svg_file (mainProject, &renderInfo, exportFilename);
+	    gerbv_export_svg_file_from_project (mainProject, &renderInfo, exportFilename);
 	} else if (exportType == 4) {
-	    exportimage_export_to_postscript_file (mainProject, &renderInfo, exportFilename);
+	    gerbv_export_postscript_file_from_project (mainProject, &renderInfo, exportFilename);
 	} else if (exportType == 5) {
 	    if (mainProject->file[0]->image) {
 		/* if we have more than one file, we need to merge them before exporting */
 		if (mainProject->file[1]) {
 		  gerb_image_t *exportImage;
-		  exportImage = gerb_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
+		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
 		  for(i = mainProject->max_files-1; i > 0; i--) {
 		    if (mainProject->file[i]) {
-		      gerb_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
+		      gerbv_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
 		    }
 		  }
 		  gerbv_export_rs274x_file_from_image (exportFilename, exportImage);
@@ -878,10 +878,10 @@ main(int argc, char *argv[])
 		/* if we have more than one file, we need to merge them before exporting */
 		if (mainProject->file[1]) {
 		  gerb_image_t *exportImage;
-		  exportImage = gerb_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
+		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
 		  for(i = mainProject->max_files-1; i > 0; i--) {
 		    if (mainProject->file[i]) {
-		      gerb_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
+		      gerbv_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
 		    }
 		  }
 		  gerbv_export_drill_file_from_image (exportFilename, exportImage);

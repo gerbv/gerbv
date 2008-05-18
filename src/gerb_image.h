@@ -24,8 +24,6 @@
 #ifndef GERB_IMAGE_H
 #define GERB_IMAGE_H
 
-#include "attribute.h"
-#include "gerb_transf.h"
 #include "gerb_stats.h"
 #include "drill_stats.h"
 
@@ -33,8 +31,6 @@
 extern "C" {
 #endif
 
-#include <glib.h> /* To pick up gpointer */
- 
 /*
  * Function prototypes
  */
@@ -57,17 +53,16 @@ typedef enum {
     GERB_IMAGE_MISSING_INFO = 8,
 } gerb_verify_error_t;
 
-gerb_verify_error_t gerb_image_verify(gerb_image_t const* image);
+gerb_verify_error_t gerbv_image_verify(gerb_image_t const* image);
 
 /* Dumps a written version of image to stdout */
-void gerb_image_dump(gerb_image_t const* image);
+void gerbv_image_dump(gerb_image_t const* image);
 
 gerb_layer_t *
-gerb_image_return_new_layer (gerb_layer_t *previousLayer);
+gerbv_image_return_new_layer (gerb_layer_t *previousLayer);
 
 gerb_netstate_t *
-gerb_image_return_new_netstate (gerb_netstate_t *previousState);
-
+gerbv_image_return_new_netstate (gerb_netstate_t *previousState);
 
 
 #ifdef __cplusplus

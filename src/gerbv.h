@@ -25,6 +25,11 @@
     \brief This is the main header file for the libgerbv library
 */
 
+//! \example example1.c
+//! \example example2.c
+//! \example example3.c
+//! \example example4.c
+
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -284,13 +289,15 @@ typedef struct {
 	GArray *selectedNodeArray;
 } gerb_selection_info_t;
 
+/*!  Stores image transformation information, used to modify the rendered
+position/scale/etc of an image. */
 typedef struct {
-    gdouble translateX;
-    gdouble translateY;
-    gdouble scaleX;
-    gdouble scaleY;
-    gboolean inverted;
-} gerb_user_transformations_t;
+    gdouble translateX; /*!< the X translation (in inches) */
+    gdouble translateY; /*!< the Y translation (in inches) */
+    gdouble scaleX; /*!< the X scale factor (1.0 is default) */
+    gdouble scaleY; /*!< the Y scale factor (1.0 is default) */
+    gboolean inverted; /*!< TRUE if the image should be rendered "inverted" (light is dark and vice versa) */
+} gerb_user_transformation_t;
 
 typedef struct gerb_cirseg {
     double cp_x;
@@ -339,19 +346,20 @@ typedef struct {
     gpointer next;
 } gerb_netstate_t;
 
+/*!  The structure used to hold a geometric entity (line/polygon/etc)*/
 typedef struct gerb_net {
-    double start_x;
-    double start_y;
-    double stop_x;
-    double stop_y;
-    int aperture;
-    enum aperture_state_t aperture_state;
-    enum interpolation_t interpolation;
-    struct gerb_cirseg *cirseg;
-    struct gerb_net *next;
-    GString *label;
-    gerb_layer_t *layer;
-    gerb_netstate_t *state;
+    double start_x; /*!< the X coordinate of the start point */
+    double start_y; /*!< the Y coordinate of the start point */
+    double stop_x; /*!< the X coordinate of the end point */
+    double stop_y; /*!< the Y coordinate of the end point */
+    int aperture; /*!< the index of the aperture used for this entity */
+    enum aperture_state_t aperture_state; /*!< the state of the aperture tool (on/off/etc) */
+    enum interpolation_t interpolation; /*!< the path interpolation method (linear/etc) */
+    struct gerb_cirseg *cirseg; /*!< a special struct used to hold circular path data */
+    struct gerb_net *next; /*!< the next net in the array */
+    GString *label; /*!< a label string for this net */
+    gerb_layer_t *layer; /*!< the RS274X layer this net belongs to */
+    gerb_netstate_t *state; /*!< the RS274X state this net belongs to */
 } gerb_net_t;
 
 typedef struct gerb_format {
@@ -399,17 +407,18 @@ typedef struct gerb_image_info {
     int n_attr;
 } gerb_image_info_t;
 
+/*!  The structure used to hold a layer (RS274X, drill, or pick-and-place data) */
 typedef struct {
-    enum layertype_t layertype;
-    gerb_aperture_t *aperture[APERTURE_MAX];
-    gerb_layer_t *layers;
-    gerb_netstate_t *states;
-    amacro_t *amacro;
-    gerb_format_t *format;
-    gerb_image_info_t *info;
-    gerb_net_t *netlist;
-    gerb_stats_t *gerb_stats;
-    drill_stats_t *drill_stats;
+    enum layertype_t layertype; /*!< the type of layer (RS274X, drill, or pick-and-place) */
+    gerb_aperture_t *aperture[APERTURE_MAX]; /*!< an array with all apertures used */
+    gerb_layer_t *layers; /*!< an array of all RS274X layers used (only used in RS274X types) */
+    gerb_netstate_t *states; /*!< an array of all RS274X states used (only used in RS274X types) */
+    amacro_t *amacro; /*!< an array of all macros used (only used in RS274X types) */
+    gerb_format_t *format; /*!< formatting info */
+    gerb_image_info_t *info; /*!< miscellaneous info regarding the layer such as overall size, etc */
+    gerb_net_t *netlist; /*!< an array of all geometric entities in the layer */
+    gerb_stats_t *gerb_stats; /*!< RS274X statistics for the layer */
+    drill_stats_t *drill_stats;  /*!< Excellon drill statistics for the layer */
 } gerb_image_t;
 
 //! Allocate a new gerb_image structure
@@ -418,26 +427,38 @@ gerb_image_t *gerbv_create_image(gerb_image_t *image, /*!< the old image to free
 		const gchar *type /*!< the type of image to create */
 );
 
-
 //! Free an image structure
 void gerbv_destroy_image(gerb_image_t *image /*!< the image to free */
 );
 
+//! Copy an image into an existing image, effectively merging the two together
 void
-gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform, gerb_image_t *destinationImage);
+gerbv_image_copy_image (gerb_image_t *sourceImage, /*!< the source image */
+	gerb_user_transformation_t *transform, /*!< the transformation to apply to the new image, or NULL for none */
+	gerb_image_t *destinationImage /*!< the destination image to copy to */
+);
 
+//! Duplicate an existing image and return the new copy
+//! \return the newly created image
 gerb_image_t *
-gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform);
+gerbv_image_duplicate_image (gerb_image_t *sourceImage, /*!< the source image */
+	gerb_user_transformation_t *transform /*!< the transformation to apply to the new image, or NULL for none */
+);
+
+//! Delete a net in an existing image
+void
+gerbv_image_delete_net (gerb_net_t *currentNet /*!< the net to delete */
+);
 
 void
-gerb_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray);
+gerbv_image_delete_selected_nets (gerb_image_t *sourceImage, GArray *selectedNodeArray);
 
 gboolean
-gerb_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
+gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,
 		gint paneColumns, gdouble paneSeparation);
 
 gboolean
-gerb_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
+gerbv_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
 		gdouble translationY);
 
 /* from old gerbv_screen.h */
@@ -466,7 +487,7 @@ typedef struct {
     gpointer privateRenderData;
     gchar *fullPathname; /* this should be the full pathname to the file */
     gchar *name;
-    gerb_user_transformations_t transform;
+    gerb_user_transformation_t transform;
 } gerbv_fileinfo_t;
 
 typedef struct {
@@ -496,8 +517,6 @@ typedef struct {
     GdkEventButton *z_event;
     int scale;
 } gerbv_zoom_data_t;
-
-//! \example example1.c
 
 //! Create a new project structure and initialize some important variables
 gerbv_project_t *
@@ -609,18 +628,71 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 double GetToolDiameter_Inches(int toolNumber);
 int ProcessToolsFile(const char *toolFileName);
 
-/* export functions */
-void exportimage_export_to_png_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels, int heightInPixels, gchar const* filename);
-void exportimage_export_to_png_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename);
+//! Render a project to a PNG file, autoscaling the layers to fit inside the specified image dimensions
+void gerbv_export_png_file_from_project_autoscaled (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
+		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
+		gchar const* filename  /*!< the filename for the exported PNG file */
+);
 
-void exportimage_export_to_pdf_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints, int heightInPoints, gchar const* filename);
-void exportimage_export_to_pdf_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename);
+//! Render a project to a PNG file using user-specified render info
+void gerbv_export_png_file_from_project (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
+		gchar const* filename /*!< the filename for the exported PNG file */
+);
 
-void exportimage_export_to_postscript_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints, int heightInPoints, gchar const* filename);
-void exportimage_export_to_postscript_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename);
+//! Render a project to a PDF file, autoscaling the layers to fit inside the specified image dimensions
+void gerbv_export_pdf_file_from_project_autoscaled (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
+		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
+		gchar const* filename  /*!< the filename for the exported PDF file */
+);
 
-void exportimage_export_to_svg_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints, int heightInPoints, gchar const* filename);
-void exportimage_export_to_svg_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename);
+//! Render a project to a PDF file using user-specified render info
+void gerbv_export_pdf_file_from_project (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
+		gchar const* filename /*!< the filename for the exported PDF file */
+);
+
+//! Render a project to a Postscript file, autoscaling the layers to fit inside the specified image dimensions
+void gerbv_export_postscript_file_from_project_autoscaled (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
+		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
+		gchar const* filename  /*!< the filename for the exported Postscript file */
+);
+
+//! Render a project to a Postscript file using user-specified render info
+void gerbv_export_postscript_file_from_project (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
+		gchar const* filename /*!< the filename for the exported Postscript file */
+);
+
+//! Render a project to a SVG file, autoscaling the layers to fit inside the specified image dimensions
+void gerbv_export_svg_file_from_project_autoscaled (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
+		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
+		gchar const* filename  /*!< the filename for the exported   file */
+);
+
+//! Render a project to a   file using user-specified render info
+void gerbv_export_svg_file_from_project (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
+		gchar const* filename /*!< the filename for the exported   file */
+);
+
+//! Parse a RS274X file and return the parsed image
+//! \return the new gerb_image_t, or NULL if not successful
+gerb_image_t *
+gerbv_create_rs274x_image_from_filename (gchar *filename /*!< the filename of the file to be parsed*/
+);
 
 //! Export an image to a new file in RS274X format
 //! \return TRUE if successful, or FALSE if not

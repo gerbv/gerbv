@@ -293,14 +293,14 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			rename_main_window(filename, NULL);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_PS)
-			exportimage_export_to_postscript_file (mainProject, &screenRenderInfo, filename);
+			gerbv_export_postscript_file_from_project (mainProject, &screenRenderInfo, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_PDF)
-			exportimage_export_to_pdf_file (mainProject, &screenRenderInfo, filename);
+			gerbv_export_pdf_file_from_project (mainProject, &screenRenderInfo, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_SVG)
-			exportimage_export_to_svg_file (mainProject, &screenRenderInfo, filename);
+			gerbv_export_svg_file_from_project (mainProject, &screenRenderInfo, filename);
 #ifdef EXPORT_PNG
 		else if (processType == CALLBACKS_SAVE_FILE_PNG)
-			exportimage_export_to_png_file (mainProject, &screenRenderInfo, filename);
+			gerbv_export_png_file_from_project (mainProject, &screenRenderInfo, filename);
 #endif
 		else if (processType == CALLBACKS_SAVE_LAYER_AS) {
 			gint index=callbacks_get_selected_row_index();
@@ -1834,7 +1834,7 @@ void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some translations here */
-	gerb_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
+	gerbv_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
 	mainProject->project_dirty = TRUE;
 	render_clear_selection_buffer ();
 	render_refresh_rendered_image_on_screen ();
@@ -1846,7 +1846,7 @@ void
 callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 #ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some parameters */
-	gerb_image_reduce_area_of_selected_objects (screen.selectionInfo.selectedNodeArray, 0.20, 3, 3, 0.01);
+	gerbv_image_reduce_area_of_selected_objects (screen.selectionInfo.selectedNodeArray, 0.20, 3, 3, 0.01);
 	render_clear_selection_buffer ();
 	render_refresh_rendered_image_on_screen ();
 #endif
@@ -1867,7 +1867,7 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
     }
     gint index=callbacks_get_selected_row_index();
     if (index >= 0) {
-      gerb_image_delete_selected_nets (mainProject->file[index]->image,
+      gerbv_image_delete_selected_nets (mainProject->file[index]->image,
 				       screen.selectionInfo.selectedNodeArray); 
       render_refresh_rendered_image_on_screen ();
       mainProject->project_dirty = TRUE;

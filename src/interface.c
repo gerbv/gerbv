@@ -1203,7 +1203,7 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText,
   GtkWidget *hbox1;
   GtkWidget *image1;
   GtkWidget *label1;
-  GtkWidget *checkbox;
+  GtkWidget *checkbox=NULL;
   GtkWidget *dialog_action_area1;
   GtkWidget *cancelbutton1;
   GtkWidget *okbutton1;

@@ -23,6 +23,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file exportimage.c
+    \brief This file contains image exporting functions for exporting to PNG, PDF, SVG, and Postscript formats
+*/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -66,20 +70,20 @@ void exportimage_render_to_surface_and_destroy (gerbv_project_t *gerbvProject,
 #endif
 
 
-void exportimage_export_to_png_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels,
+void gerbv_export_png_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels,
 		int heightInPixels, gchar const* filename) {
 #ifdef EXPORT_PNG
 #ifdef RENDER_USING_GDK
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 0, widthInPixels, heightInPixels};
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 0, widthInPixels, heightInPixels};
 #else
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPixels, heightInPixels};
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3, widthInPixels, heightInPixels};
 #endif	
 	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
-	exportimage_export_to_png_file (gerbvProject, &renderInfo, filename);
+	gerbv_export_png_file_from_project (gerbvProject, &renderInfo, filename);
 #endif
 }
 
-void exportimage_export_to_png_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename) {
+void gerbv_export_png_file_from_project (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename) {
 #ifdef EXPORT_PNG
 #ifdef RENDER_USING_GDK
 
@@ -112,15 +116,15 @@ void exportimage_export_to_png_file (gerbv_project_t *gerbvProject, gerbv_render
 }
 
 
-void exportimage_export_to_pdf_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
+void gerbv_export_pdf_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
 		int heightInPoints, gchar const* filename) {
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
 	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
-	exportimage_export_to_pdf_file (gerbvProject, &renderInfo, filename);
+	gerbv_export_pdf_file_from_project (gerbvProject, &renderInfo, filename);
 }
 
-void exportimage_export_to_pdf_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
+void gerbv_export_pdf_file_from_project (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
 		gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_pdf_surface_create (filename, renderInfo->displayWidth,
@@ -130,15 +134,15 @@ void exportimage_export_to_pdf_file (gerbv_project_t *gerbvProject, gerbv_render
 #endif
 }
 
-void exportimage_export_to_postscript_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
+void gerbv_export_postscript_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
 		int heightInPoints, gchar const* filename) {
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
 	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
-	exportimage_export_to_postscript_file (gerbvProject, &renderInfo, filename);
+	gerbv_export_postscript_file_from_project (gerbvProject, &renderInfo, filename);
 }
 
-void exportimage_export_to_postscript_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
+void gerbv_export_postscript_file_from_project (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
 		gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_ps_surface_create (filename, renderInfo->displayWidth,
@@ -147,15 +151,15 @@ void exportimage_export_to_postscript_file (gerbv_project_t *gerbvProject, gerbv
 #endif
 }
 
-void exportimage_export_to_svg_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
+void gerbv_export_svg_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
 		int heightInPoints, gchar const* filename) {
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 3, widthInPoints, heightInPoints};
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3, widthInPoints, heightInPoints};
 	
 	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
-	exportimage_export_to_svg_file (gerbvProject, &renderInfo, filename);
+	gerbv_export_svg_file_from_project (gerbvProject, &renderInfo, filename);
 }
 
-void exportimage_export_to_svg_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
+void gerbv_export_svg_file_from_project (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
 		gchar const* filename) {
 #ifndef RENDER_USING_GDK
 	cairo_surface_t *cSurface = cairo_svg_surface_create (filename, renderInfo->displayWidth,

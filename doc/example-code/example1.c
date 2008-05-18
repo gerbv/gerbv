@@ -26,6 +26,10 @@ main(int argc, char *argv[]) {
 	/* parse a Gerber file and store it in the gerbv_project_t struct */
 	gerbv_open_layer_from_filename (mainProject, "example1-input.gbx");
 	
+	/* make sure we parsed the file */
+	if (mainProject->file[0] == NULL)
+		g_error ("There was an error parsing the file.");
+		
 	/* export the first (and only) image in the project, which will be the
 	   one we just loaded */
 	gerbv_export_rs274x_file_from_image ("example1-output.gbx",
