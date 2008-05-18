@@ -600,7 +600,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
     /* 
      * Create new image.  This will be returned.
      */
-    image = new_gerb_image(image, "RS274-X (Gerber) File");
+    image = gerbv_create_image(image, "RS274-X (Gerber) File");
     if (image == NULL)
 	GERB_FATAL_ERROR("malloc image failed\n");
     curr_net = image->netlist;

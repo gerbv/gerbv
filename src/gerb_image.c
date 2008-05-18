@@ -40,13 +40,10 @@ typedef struct {
     int newAperture;
 } gerb_translation_entry_t;
 
-/** Allocates a new gerb_image structure
-   @param image will be freed up if not NULL
-   @return gerb_image pointer on success, NULL on ERROR */
 gerb_image_t *
-new_gerb_image(gerb_image_t *image, const gchar *type)
+gerbv_create_image(gerb_image_t *image, const gchar *type)
 {
-    free_gerb_image(image);
+    gerbv_destroy_image(image);
     
     /* Malloc space for image */
     if ((image = (gerb_image_t *)g_malloc(sizeof(gerb_image_t))) == NULL) {
@@ -107,7 +104,7 @@ new_gerb_image(gerb_image_t *image, const gchar *type)
 
 
 void
-free_gerb_image(gerb_image_t *image)
+gerbv_destroy_image(gerb_image_t *image)
 {
     int i;
     gerb_net_t *net, *tmp;
@@ -191,7 +188,7 @@ free_gerb_image(gerb_image_t *image)
     image = NULL;
     
     return;
-} /* free_gerb_image */
+}
 
 
 /*
@@ -502,7 +499,7 @@ gerb_image_find_unused_aperture_number (int startIndex, gerb_image_t *image){
 
 gerb_image_t *
 gerb_image_duplicate_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform) {
-    gerb_image_t *newImage = new_gerb_image(NULL, sourceImage->info->type);
+    gerb_image_t *newImage = gerbv_create_image(NULL, sourceImage->info->type);
     int i;
     int lastUsedApertureNumber = APERTURE_MIN - 1;
     GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));

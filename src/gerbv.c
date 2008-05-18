@@ -151,9 +151,8 @@ gerbv_create_project (void) {
 	/* default to using the current directory path for our starting guesses
 		on future file loads */
 	returnProject->path = g_get_current_dir ();
-	returnProject->last_loaded = -1;  /* Will be updated to 0 
-			       * when first Gerber is loaded 
-			       */
+	/* Will be updated to 0 when first Gerber is loaded */
+	returnProject->last_loaded = -1;
 	returnProject->max_files = 1;
 	returnProject->check_before_delete = TRUE;
 	returnProject->file = (gerbv_fileinfo_t **) calloc (returnProject->max_files, sizeof (gerbv_fileinfo_t *));
@@ -163,7 +162,21 @@ gerbv_create_project (void) {
 
 void
 gerbv_destroy_project (gerbv_project_t *gerbvProject){
+	int i;
+	
+	/* destroy all the files attached to the project */
+	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+		if (gerbvProject->file[i])
+			gerbv_destroy_fileinfo (gerbvProject->file[i]);
+	}
+	g_free (gerbvProject);
+}
 
+void
+gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo){
+	gerbv_destroy_image (fileInfo->image);
+	g_free (fileInfo->fullPathname);
+	g_free (fileInfo->name);
 }
 
 void 
@@ -223,7 +236,7 @@ gerbv_unload_layer(gerbv_project_t *gerbvProject, int index)
 {
     gint i;
     
-    free_gerb_image(gerbvProject->file[index]->image);  gerbvProject->file[index]->image = NULL;
+    gerbv_destroy_image(gerbvProject->file[index]->image);  gerbvProject->file[index]->image = NULL;
     g_free(gerbvProject->file[index]->name);
     gerbvProject->file[index]->name = NULL;
     g_free(gerbvProject->file[index]);
@@ -293,7 +306,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerb_image_t *
 	    GERB_COMPILE_ERROR("* Missing info\n");
 	GERB_COMPILE_ERROR("\n");
 	GERB_COMPILE_ERROR("You probably tried to read an RS-274D file, which gerbv doesn't support\n");
-	free_gerb_image(parsed_image);
+	gerbv_destroy_image(parsed_image);
 	return -1;
     }
     
@@ -306,15 +319,12 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerb_image_t *
      * a new memory before we define anything more.
      */
     if (reload) {
-	free_gerb_image(gerbvProject->file[idx]->image);
+	gerbv_destroy_image(gerbvProject->file[idx]->image);
 	gerbvProject->file[idx]->image = parsed_image;
 	return 0;
     } else {
 	/* Load new file. */
-	gerbvProject->file[idx] = (gerbv_fileinfo_t *)g_malloc(sizeof(gerbv_fileinfo_t));
-	if (gerbvProject->file[idx] == NULL)
-	    GERB_FATAL_ERROR("malloc gerbvProject->file[idx] failed\n");
-	memset((void *)gerbvProject->file[idx], 0, sizeof(gerbv_fileinfo_t));
+	gerbvProject->file[idx] = (gerbv_fileinfo_t *) g_new0 (gerbv_fileinfo_t, 1);
 	gerbvProject->file[idx]->image = parsed_image;
     }
     

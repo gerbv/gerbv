@@ -478,7 +478,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     if (!foundElement)
     	return NULL;
 
-    image = new_gerb_image(image, "Pick and Place (X-Y) File");
+    image = gerbv_create_image(image, "Pick and Place (X-Y) File");
     if (image == NULL) {
 	GERB_FATAL_ERROR("malloc image failed\n");
     }

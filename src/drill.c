@@ -235,7 +235,7 @@ parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, int n_attr, int reloa
     /* Create new image for this layer */
     dprintf("In parse_drillfile, about to create image for this layer\n");
 
-    image = new_gerb_image(image, "Excellon Drill File");
+    image = gerbv_create_image(image, "Excellon Drill File");
     if (image == NULL)
 	GERB_FATAL_ERROR("malloc image failed\n");
 

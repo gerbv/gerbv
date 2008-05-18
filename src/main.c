@@ -862,7 +862,7 @@ main(int argc, char *argv[])
 		    }
 		  }
 		  gerbv_export_rs274x_file_from_image (exportFilename, exportImage);
-		  free_gerb_image (exportImage);
+		  gerbv_destroy_image (exportImage);
 		}
 		/* otherwise, just export the single image file as it is */
 		else {
@@ -885,7 +885,7 @@ main(int argc, char *argv[])
 		    }
 		  }
 		  gerbv_export_drill_file_from_image (exportFilename, exportImage);
-		  free_gerb_image (exportImage);
+		  gerbv_destroy_image (exportImage);
 		}
 		/* otherwise, just export the single image file as it is */
 		else {

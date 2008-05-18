@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file gerbv.h
+    \brief This is the main header file for the libgerbv library
+*/
+
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -408,9 +412,16 @@ typedef struct {
     drill_stats_t *drill_stats;
 } gerb_image_t;
 
-gerb_image_t *new_gerb_image(gerb_image_t *image, const gchar *type);
+//! Allocate a new gerb_image structure
+//! \return the newly created image
+gerb_image_t *gerbv_create_image(gerb_image_t *image, /*!< the old image to free or NULL */
+		const gchar *type /*!< the type of image to create */
+);
 
-void free_gerb_image(gerb_image_t *image);
+
+//! Free an image structure
+void gerbv_destroy_image(gerb_image_t *image /*!< the image to free */
+);
 
 void
 gerb_image_copy_image (gerb_image_t *sourceImage, gerb_user_transformations_t *transform, gerb_image_t *destinationImage);
@@ -463,19 +474,20 @@ typedef struct {
 	double x2, y2;
 } gerbv_bbox_t;
 
+/*!  The top-level structure used in libgerbv.  A gerbv_project_t groups together
+any number of layers, while keeping track of other basic paramters needed for rendering */
 typedef struct {
-  GdkColor  background;
-  int max_files;
-  gerbv_fileinfo_t **file;
-  int curr_index;
-  int last_loaded;
-  int renderType;
-  gboolean project_dirty;   /* TRUE if changes have been made since last save */ 
-  gboolean check_before_delete;  /* TRUE to ask before deleting objects */
-  
-  gchar *path;
-  gchar *execpath;    /* Path to executed version of gerbv */
-  gchar *project;     /* Current project to simplify save next time */
+  GdkColor  background; /*!< the background color used for rendering */
+  int max_files; /*!< the current number of fileinfos in the file array */
+  gerbv_fileinfo_t **file; /*!< the array for holding the child fileinfos */
+  int curr_index; /*!< the index of the currently active fileinfo */
+  int last_loaded; /*!< the number of fileinfos currently in the project */
+  int renderType; /*!< the type of renderer to use */
+  gboolean project_dirty;   /*!< TRUE if changes have been made since last save */ 
+  gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
+  gchar *path; /*!< the default path to load new files from */
+  gchar *execpath;    /*!< the path to executed version of gerbv */
+  gchar *project;     /*!< the default name for the private project file */
 } gerbv_project_t;
 
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
@@ -485,19 +497,27 @@ typedef struct {
     int scale;
 } gerbv_zoom_data_t;
 
+//! \example example1.c
+
 //! Create a new project structure and initialize some important variables
 gerbv_project_t *
 gerbv_create_project (void);
 
 //! Free a project and all related variables
 void
-gerbv_destroy_project (gerbv_project_t *gerbvProject);
+gerbv_destroy_project (gerbv_project_t *gerbvProject /*!< the project to destroy */
+);
 
 //! Open a file, parse the contents, and add a new layer to an existing project
 void 
 gerbv_open_layer_from_filename (
 	gerbv_project_t *gerbvProject, /*!< the existing project to add the new layer to */
 	gchar *filename /*!< the full pathname of the file to be parsed */
+);
+
+//! Free a fileinfo structure
+void
+gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo /*!< the fileinfo to free */
 );
 
 gboolean 
@@ -602,11 +622,19 @@ void exportimage_export_to_postscript_file (gerbv_project_t *gerbvProject, gerbv
 void exportimage_export_to_svg_file_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints, int heightInPoints, gchar const* filename);
 void exportimage_export_to_svg_file (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, gchar const* filename);
 
+//! Export an image to a new file in RS274X format
+//! \return TRUE if successful, or FALSE if not
 gboolean
-gerbv_export_rs274x_file_from_image (gchar *filename, gerb_image_t *image);
+gerbv_export_rs274x_file_from_image (gchar *filename, /*!< the filename for the new file */
+		gerb_image_t *image /*!< the image to export */
+);
 
+//! Export an image to a new file in Excellon drill format
+//! \return TRUE if successful, or FALSE if not
 gboolean
-gerbv_export_drill_file_from_image (gchar *filename, gerb_image_t *image);
+gerbv_export_drill_file_from_image (gchar *filename, /*!< the filename for the new file */
+		gerb_image_t *image /*!< the image to export */
+);
 
 /* from drill and gerb stats headers */
 drill_stats_t * drill_stats_new(void);

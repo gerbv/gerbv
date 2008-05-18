@@ -21,6 +21,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** @file export-rs274x.c
+    @brief Functions to export an image to a RS274X file
+*/
+
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
