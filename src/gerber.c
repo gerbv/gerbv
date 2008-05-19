@@ -129,6 +129,26 @@ gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_nets
 }
 
 gboolean
+gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
+		enum aperture_t apertureType, gdouble parameter1, gdouble parameter2){
+	int i;
+	
+	/* search for an available aperture spot */
+	for (i = APERTURE_MIN; i <= APERTURE_MAX; i++) {
+		if (image->aperture[i] == NULL) {
+			image->aperture[i] = g_new0 (gerbv_aperture_t, 1);
+			image->aperture[i]->type = apertureType;
+			image->aperture[i]->amacro = NULL;
+			image->aperture[i]->parameter[0] = parameter1;
+			image->aperture[i]->parameter[1] = parameter2;
+			*indexNumber = i;
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+		
+gboolean
 gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image, 
 			   gerb_state_t *state,	gerbv_net_t *curr_net, 
 			   gerbv_stats_t *stats, gerb_file_t *fd, 

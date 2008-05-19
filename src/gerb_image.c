@@ -673,6 +673,95 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, gdouble coordinateX,
 	return;
 }
 
+gerbv_net_t *
+gerb_image_return_aperture_index (gerbv_image_t *image, gdouble lineWidth, int *apertureIndex){
+	gerbv_net_t *currentNet;
+	gerbv_aperture_t *aperture=NULL;
+	int i;
+		
+	/* run through and find last net pointer */
+	for (currentNet = image->netlist; currentNet->next; currentNet = currentNet->next){}
+	
+	/* try to find an existing aperture that matches the requested width and type */
+	for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+		if (image->aperture[i] != NULL) {
+			if ((image->aperture[i]->type == CIRCLE) && 
+				(fabs (image->aperture[i]->parameter[0] - lineWidth) < 0.001)){
+				aperture = image->aperture[i];
+				*apertureIndex = i;
+				break;
+			}
+		}
+	}
+
+	if (!aperture) {
+		/* we didn't find a useable old aperture, so create a new one */
+		if (!gerber_create_new_aperture (image, apertureIndex,
+				CIRCLE, lineWidth, 0)) {
+			/* if we didn't succeed, then return */
+			return FALSE;
+		}
+	}
+	return currentNet;
+}
+
+void
+gerbv_image_create_arc_object (gerbv_image_t *image, gdouble centerX, gdouble centerY,
+		gdouble radius, gdouble startAngle, gdouble endAngle, gdouble lineWidth,
+		enum aperture_t apertureType) {
+	int apertureIndex;
+	gerbv_net_t *currentNet;
+	gerbv_cirseg_t cirSeg = {centerX, centerY, radius, radius, startAngle, endAngle};
+	
+	currentNet = gerb_image_return_aperture_index(image, lineWidth, &apertureIndex);
+	
+	if (!currentNet)
+		return;
+	
+	/* draw the arc */
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = CCW_CIRCULAR;
+	currentNet->aperture_state = ON;
+	currentNet->aperture = apertureIndex;
+	currentNet->start_x = centerX + (cos(startAngle*M_PI/180) * radius);
+	currentNet->start_y = centerY + (sin(startAngle*M_PI/180) * radius);
+	currentNet->stop_x = centerX + (cos(endAngle*M_PI/180) * radius);
+	currentNet->stop_y = centerY + (sin(endAngle*M_PI/180) * radius);;
+	currentNet->cirseg = g_new0 (gerbv_cirseg_t,1);
+	*(currentNet->cirseg) = cirSeg;
+	
+	return;
+}
+
+void
+gerbv_image_create_line_object (gerbv_image_t *image, gdouble startX, gdouble startY,
+		gdouble endX, gdouble endY, gdouble lineWidth, enum aperture_t apertureType) {
+	int apertureIndex;
+	gerbv_net_t *currentNet;
+	
+	currentNet = gerb_image_return_aperture_index(image, lineWidth, &apertureIndex);
+	
+	if (!currentNet)
+		return;
+	
+	/* draw the line */
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = LINEARx1;
+	
+	/* if the start and end coordinates are the same, use a "flash" aperture state */
+	if ((fabs(startX - endX) < 0.001) && (fabs(startY - endY) < 0.001))
+		currentNet->aperture_state = FLASH;
+	else
+		currentNet->aperture_state = ON;
+	currentNet->aperture = apertureIndex;
+	currentNet->start_x = startX;
+	currentNet->start_y = startY;
+	currentNet->stop_x = endX;
+	currentNet->stop_y = endY;
+
+	return;
+}
+
 void
 gerbv_image_create_window_pane_objects (gerbv_image_t *image, gdouble lowerLeftX,
 		gdouble lowerLeftY, gdouble width, gdouble height, gdouble areaReduction,

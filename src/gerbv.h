@@ -29,6 +29,7 @@
 //! \example example2.c
 //! \example example3.c
 //! \example example4.c
+//! \example example5.c
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -633,7 +634,8 @@ double GetToolDiameter_Inches(int toolNumber);
 int ProcessToolsFile(const char *toolFileName);
 
 //! Render a project to a PNG file, autoscaling the layers to fit inside the specified image dimensions
-void gerbv_export_png_file_from_project_autoscaled (
+void
+gerbv_export_png_file_from_project_autoscaled (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
 		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
@@ -641,14 +643,16 @@ void gerbv_export_png_file_from_project_autoscaled (
 );
 
 //! Render a project to a PNG file using user-specified render info
-void gerbv_export_png_file_from_project (
+void
+gerbv_export_png_file_from_project (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
 		gchar const* filename /*!< the filename for the exported PNG file */
 );
 
 //! Render a project to a PDF file, autoscaling the layers to fit inside the specified image dimensions
-void gerbv_export_pdf_file_from_project_autoscaled (
+void
+gerbv_export_pdf_file_from_project_autoscaled (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
 		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
@@ -656,14 +660,16 @@ void gerbv_export_pdf_file_from_project_autoscaled (
 );
 
 //! Render a project to a PDF file using user-specified render info
-void gerbv_export_pdf_file_from_project (
+void
+gerbv_export_pdf_file_from_project (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
 		gchar const* filename /*!< the filename for the exported PDF file */
 );
 
 //! Render a project to a Postscript file, autoscaling the layers to fit inside the specified image dimensions
-void gerbv_export_postscript_file_from_project_autoscaled (
+void
+gerbv_export_postscript_file_from_project_autoscaled (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
 		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
@@ -671,14 +677,16 @@ void gerbv_export_postscript_file_from_project_autoscaled (
 );
 
 //! Render a project to a Postscript file using user-specified render info
-void gerbv_export_postscript_file_from_project (
+void
+gerbv_export_postscript_file_from_project (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
 		gchar const* filename /*!< the filename for the exported Postscript file */
 );
 
 //! Render a project to a SVG file, autoscaling the layers to fit inside the specified image dimensions
-void gerbv_export_svg_file_from_project_autoscaled (
+void
+gerbv_export_svg_file_from_project_autoscaled (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
 		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
@@ -686,7 +694,8 @@ void gerbv_export_svg_file_from_project_autoscaled (
 );
 
 //! Render a project to a   file using user-specified render info
-void gerbv_export_svg_file_from_project (
+void
+gerbv_export_svg_file_from_project (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
 		gchar const* filename /*!< the filename for the exported   file */
@@ -712,6 +721,38 @@ gerbv_export_drill_file_from_image (gchar *filename, /*!< the filename for the n
 		gerbv_image_t *image /*!< the image to export */
 );
 
+//! Draw a line on the specified image
+void
+gerbv_image_create_line_object (gerbv_image_t *image, /*!< the image to draw to */
+		gdouble startX, /*!< the starting X coordinate */
+		gdouble startY, /*!< the starting Y coordinate */
+		gdouble endX, /*!< the ending X coordinate */
+		gdouble endY, /*!< the ending Y coordinate */
+		gdouble lineWidth, /*!< the width of the line to draw */
+		enum aperture_t apertureType  /*!< the type of aperture to use (e.g. CIRCLE) */
+);
+
+//! Draw an arc on the specified image
+void
+gerbv_image_create_arc_object (gerbv_image_t *image, /*!< the image to draw to */
+		gdouble centerX, /*!< the center X coordinate */
+		gdouble centerY, /*!< the center Y coordinate */
+		gdouble radius, /*!< the arc radius */
+		gdouble startAngle, /*!< the start angle (in CCW degrees) */
+		gdouble endAngle, /*!< the start angle (in CCW degrees) */
+		gdouble lineWidth, /*!< the width of the line to draw */
+		enum aperture_t apertureType  /*!< the type of aperture to use (e.g. CIRCLE) */
+);
+		
+//! Draw a filled rectangle on the specified image	
+void
+gerbv_image_create_rectangle_object (gerbv_image_t *image, /*!< the image to draw to */
+		gdouble coordinateX, /*!< the X coordinate of the lower left corner */
+		gdouble coordinateY, /*!< the Y coordinate of the lower left corner */
+		gdouble width, /*!< the width of the drawn rectangle */
+		gdouble height /*!< the height of the drawn rectangle */
+);
+			
 /* from drill and gerb stats headers */
 drill_stats_t * drill_stats_new(void);
 void drill_stats_add_layer(drill_stats_t *accum_stats, 

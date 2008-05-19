@@ -42,6 +42,9 @@ gboolean gerber_is_rs274d_p(gerb_file_t *fd);
 gerbv_net_t *
 gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_netstate_t *state);
 
+gboolean
+gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
+		enum aperture_t apertureType, gdouble parameter1, gdouble parameter2);
 #ifdef __cplusplus
 }
 #endif
