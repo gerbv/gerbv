@@ -78,6 +78,7 @@ extern gerbv_render_info_t screenRenderInfo;
 
 gint callbacks_get_selected_row_index  (void);
 
+/* --------------------------------------------------------- */
 GtkWidget *
 callbacks_generate_alert_dialog (gchar *primaryText, gchar *secondaryText){
 	GtkWidget *dialog, *label;
@@ -96,6 +97,7 @@ callbacks_generate_alert_dialog (gchar *primaryText, gchar *secondaryText){
 	return dialog;
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -215,6 +217,7 @@ callbacks_revert_activate                     (GtkMenuItem     *menuitem,
 {
 	gerbv_revert_all_files (mainProject);
 	render_refresh_rendered_image_on_screen();
+	mainProject.project_dirty = FALSE;
 }
 
 /* --------------------------------------------------------- */
@@ -226,6 +229,7 @@ callbacks_save_project_activate                       (GtkMenuItem     *menuitem
 		main_save_project_from_filename (mainProject, mainProject->project);
 	else
 		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
+	mainProject.project_dirty = FALSE;
 	return;
 }
 
@@ -242,6 +246,7 @@ callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
 							     NULL,
 							     FALSE,
 							     NULL);
+			return;
 		}
 	}
 	return;
@@ -332,6 +337,7 @@ callbacks_begin_print (GtkPrintOperation *operation, GtkPrintContext   *context,
 }
 
 
+/* --------------------------------------------------------- */
 static void
 callbacks_print_render_page (GtkPrintOperation *operation,
            GtkPrintContext   *context,
