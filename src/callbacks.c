@@ -217,7 +217,7 @@ callbacks_revert_activate                     (GtkMenuItem     *menuitem,
 {
 	gerbv_revert_all_files (mainProject);
 	render_refresh_rendered_image_on_screen();
-	mainProject.project_dirty = FALSE;
+	mainProject->project_dirty = FALSE;
 }
 
 /* --------------------------------------------------------- */
@@ -229,7 +229,7 @@ callbacks_save_project_activate                       (GtkMenuItem     *menuitem
 		main_save_project_from_filename (mainProject, mainProject->project);
 	else
 		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
-	mainProject.project_dirty = FALSE;
+	mainProject->project_dirty = FALSE;
 	return;
 }
 

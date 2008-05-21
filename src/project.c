@@ -303,7 +303,7 @@ define_layer(scheme *sc, pointer args)
 		    fprintf (stderr, "%s():  Unknown attribute type: \"%s\"\n",
 			     __FUNCTION__, type);
 		}
-		printf ("\n");
+		dprintf ("\n");
 
 		attr_car_el = sc->vptr->pair_car(attr_cdr_el);
 		attr_cdr_el = sc->vptr->pair_cdr(attr_cdr_el);
