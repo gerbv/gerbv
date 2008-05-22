@@ -30,6 +30,7 @@
 //! \example example3.c
 //! \example example4.c
 //! \example example5.c
+//! \example example6.c
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,21 +41,93 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
+/* from old gerb_aperture.h header file */
+#define APERTURE_MIN 10
+#define APERTURE_MAX 9999
+
+/*
+ * Maximum number of aperture parameters is set by the outline aperture
+ * macro. There (p. 28) is defined up to 50 points in polygon.
+ * So 50 points with x and y plus two for holding extra data gives...
+ */
+#define APERTURE_PARAMETERS_MAX 102
+
+/* from old gerbv_screen.h */
+#define INITIAL_SCALE 200
+#define MAX_ERRMSGLEN 25
+#define MAX_COORDLEN 28
+#define MAX_DISTLEN 90
+#define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
+
+/* Macros to convert between unscaled gerber coordinates and other units */
+/* XXX NOTE: Currently unscaled units are assumed as inch, this is not
+   XXX necessarily true for all files */
+#define COORD2MILS(c) ((c)*1000.0)
+#define COORD2MMS(c) ((c)*25.4)
+
+#define GERB_FATAL_ERROR(t...) g_log(NULL, G_LOG_LEVEL_ERROR, ##t);
+#define GERB_COMPILE_ERROR(t...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, ##t);
+#define GERB_COMPILE_WARNING(t...)  g_log(NULL, G_LOG_LEVEL_WARNING, ##t);
+#define GERB_MESSAGE(t...)  g_log(NULL, G_LOG_LEVEL_MESSAGE, ##t);
+
+
+/* from old amacro.h */
+enum opcodes {NOP,      /* No Operation */
+	      PUSH,     /* Ordinary stack operations. Uses float */
+	      PPUSH,    /* Parameter onto stack, 1 is first parameter and 
+			    so on (compare gerber $1, $2 and so on */ 
+	      PPOP,     /* Data on stack popped onto parameter register.
+			   First parameter popped from stack is which register
+			   to store data and second parameter popped is actual
+			   data. */
+	      ADD, SUB, /* Mathematical operations */
+	      MUL, DIV, 
+	      PRIM};    /* Defines what primitive to draw. Inparameters
+			   should be on the stack. */
+			   
+/* from old gerb_error */
+enum error_type_t {FATAL, GRB_ERROR, WARNING, NOTE};
+
+enum aperture_t {APERTURE_NONE, CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO, 
+		 MACRO_CIRCLE, MACRO_OUTLINE, MACRO_POLYGON, MACRO_MOIRE, 
+		 MACRO_THERMAL, MACRO_LINE20, MACRO_LINE21, MACRO_LINE22};
+enum aperture_state_t {OFF, ON, FLASH};
+enum unit_t {INCH, MM, UNIT_UNSPECIFIED};
+
+enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
+enum omit_zeros_t {LEADING, TRAILING, EXPLICIT, ZEROS_UNSPECIFIED};
+enum coordinate_t {ABSOLUTE, INCREMENTAL};
+enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
+		      CW_CIRCULAR, CCW_CIRCULAR, PAREA_START, PAREA_END, DELETED};
+enum encoding_t {NONE, ASCII, EBCDIC, BCD, ISO_ASCII, EIA };
+enum layertype_t {GERBER, DRILL, PICK_AND_PLACE};
+enum knockout_t {NOKNOCKOUT, FIXEDKNOCK, BORDER};
+enum mirror_state_t {NOMIRROR, FLIPA, FLIPB, FLIPAB};
+enum axis_select_t {NOSELECT, SWAPAB};
+enum image_justify_type_t {NOJUSTIFY, LOWERLEFT, CENTERJUSTIFY};
+
+enum selection_t {EMPTY, POINT_CLICK, DRAG_BOX};
+
+typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED,
+		IN_SELECTION_DRAG, SCROLLBAR} gerbv_state_t;
+typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
+typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
+typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
+enum gerbv_render_types {GERBV_RENDER_TYPE_GDK, GERBV_RENDER_TYPE_GDK_XOR, GERBV_RENDER_TYPE_CAIRO };
+   
 /* Used for HID attributes (exporting and printing, mostly).
    HA_boolean uses int_value, HA_enum sets int_value to the index and
    str_value to the enumeration string.  HID_Label just shows the
    default str_value.  HID_Mixed is a real_value followed by an enum,
    like 0.5in or 100mm. 
 */
-typedef struct
-{
+typedef struct {
     int int_value;
     char *str_value;
     double real_value;
 } HID_Attr_Val;
 
-typedef struct
-{
+typedef struct {
     char *name;
     char *help_text;
     enum
@@ -74,35 +147,12 @@ typedef struct
     int hash; /* for detecting changes. */
 } HID_Attribute;
 
-/* from old gerb_error */
-enum error_type_t {FATAL, GRB_ERROR, WARNING, NOTE};
-
 typedef struct error_list_t {
     int layer;
     char *error_text;
     enum error_type_t type;
     struct error_list_t *next;
 } error_list_t;
-
-#define GERB_FATAL_ERROR(t...) g_log(NULL, G_LOG_LEVEL_ERROR, ##t);
-#define GERB_COMPILE_ERROR(t...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, ##t);
-#define GERB_COMPILE_WARNING(t...)  g_log(NULL, G_LOG_LEVEL_WARNING, ##t);
-#define GERB_MESSAGE(t...)  g_log(NULL, G_LOG_LEVEL_MESSAGE, ##t);
-
-/* from old amacro.h */
-enum opcodes {NOP,      /* No Operation */
-	      PUSH,     /* Ordinary stack operations. Uses float */
-	      PPUSH,    /* Parameter onto stack, 1 is first parameter and 
-			    so on (compare gerber $1, $2 and so on */ 
-	      PPOP,     /* Data on stack popped onto parameter register.
-			   First parameter popped from stack is which register
-			   to store data and second parameter popped is actual
-			   data. */
-	      ADD, SUB, /* Mathematical operations */
-	      MUL, DIV, 
-	      PRIM};    /* Defines what primitive to draw. Inparameters
-			   should be on the stack. */
-
 
 typedef struct instruction {
     enum opcodes opcode;
@@ -120,24 +170,6 @@ typedef struct amacro {
     struct amacro *next;
 } amacro_t;
 
-
-/* from old gerb_aperture.h header file */
-#define APERTURE_MIN 10
-#define APERTURE_MAX 9999
-
-/*
- * Maximum number of aperture parameters is set by the outline aperture
- * macro. There (p. 28) is defined up to 50 points in polygon.
- * So 50 points with x and y plus two for holding extra data gives...
- */
-#define APERTURE_PARAMETERS_MAX 102
-
-enum aperture_t {APERTURE_NONE, CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO, 
-		 MACRO_CIRCLE, MACRO_OUTLINE, MACRO_POLYGON, MACRO_MOIRE, 
-		 MACRO_THERMAL, MACRO_LINE20, MACRO_LINE21, MACRO_LINE22};
-enum aperture_state_t {OFF, ON, FLASH};
-enum unit_t {INCH, MM, UNIT_UNSPECIFIED};
-
 typedef struct gerbv_simplified_amacro {
     enum aperture_t type;
     double parameter[APERTURE_PARAMETERS_MAX];
@@ -153,7 +185,6 @@ typedef struct gerbv_aperture {
     enum unit_t unit;
 } gerbv_aperture_t;
 
-/* from old gerbv_stats.h */
 /* the gerb_aperture_list is used to keep track of 
  * apertures used in stats reporting */
 typedef struct gerbv_aperture_list_t {
@@ -164,7 +195,6 @@ typedef struct gerbv_aperture_list_t {
     double parameter[5];
     struct gerbv_aperture_list_t *next;
 } gerbv_aperture_list_t;
-
 
 typedef struct {
     struct error_list_t *error_list;
@@ -215,7 +245,6 @@ typedef struct {
 
 } gerbv_stats_t;
 
-/* from old drill_stats.h */
 typedef struct drill_list {
     int drill_num;
     double drill_size;
@@ -264,21 +293,6 @@ typedef struct {
     char *detect;
 
 } drill_stats_t;
-
-/* from gerb_image.h */
-enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
-enum omit_zeros_t {LEADING, TRAILING, EXPLICIT, ZEROS_UNSPECIFIED};
-enum coordinate_t {ABSOLUTE, INCREMENTAL};
-enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
-		      CW_CIRCULAR, CCW_CIRCULAR, PAREA_START, PAREA_END, DELETED};
-enum encoding_t {NONE, ASCII, EBCDIC, BCD, ISO_ASCII, EIA };
-enum layertype_t {GERBER, DRILL, PICK_AND_PLACE};
-enum knockout_t {NOKNOCKOUT, FIXEDKNOCK, BORDER};
-enum mirror_state_t {NOMIRROR, FLIPA, FLIPB, FLIPAB};
-enum axis_select_t {NOSELECT, SWAPAB};
-enum image_justify_type_t {NOJUSTIFY, LOWERLEFT, CENTERJUSTIFY};
-
-enum selection_t {EMPTY, POINT_CLICK, DRAG_BOX};
 
 typedef struct {
 	gpointer image;
@@ -380,7 +394,7 @@ typedef struct gerbv_format {
     int lim_mf;    /* Length limit for codes of miscellaneous function */
 } gerbv_format_t;
 	
-	
+
 typedef struct gerbv_image_info {
     char *name;
     enum polarity_t polarity;
@@ -426,6 +440,64 @@ typedef struct {
     drill_stats_t *drill_stats;  /*!< Excellon drill statistics for the layer */
 } gerbv_image_t;
 
+/*!  Holds information related to an individual layer that is part of a project */
+typedef struct {
+    gerbv_image_t *image; /*!< the image holding all the geometry of the layer */
+    GdkColor color; /*!< the color to render this layer with */
+    guint16 alpha; /*!< the transparency to render this layer with */
+    gboolean isVisible; /*!< TRUE if this layer should be rendered with the project */
+    gpointer privateRenderData; /*!< private data holder for the rendering backend */
+    gchar *fullPathname; /*!< this full pathname to the file */
+    gchar *name; /*!< the name used when referring to this layer (e.g. in a layer selection menu) */
+    gerbv_user_transformation_t transform; /*!< user-specified transformation for this layer (mirroring, translating, etc) */
+} gerbv_fileinfo_t;
+
+typedef struct {
+	double x1, y1;
+	double x2, y2;
+} gerbv_bbox_t;
+
+/*!  The top-level structure used in libgerbv.  A gerbv_project_t groups together
+any number of layers, while keeping track of other basic paramters needed for rendering */
+typedef struct {
+  GdkColor  background; /*!< the background color used for rendering */
+  int max_files; /*!< the current number of fileinfos in the file array */
+  gerbv_fileinfo_t **file; /*!< the array for holding the child fileinfos */
+  int curr_index; /*!< the index of the currently active fileinfo */
+  int last_loaded; /*!< the number of fileinfos currently in the project */
+  int renderType; /*!< the type of renderer to use */
+  gboolean project_dirty;   /*!< TRUE if changes have been made since last save */ 
+  gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
+  gchar *path; /*!< the default path to load new files from */
+  gchar *execpath;    /*!< the path to executed version of gerbv */
+  gchar *project;     /*!< the default name for the private project file */
+} gerbv_project_t;
+
+typedef struct{
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+    unsigned char alpha;
+}LayerColor;
+
+/*!  This contains the rendering info for a scene */
+typedef struct {
+	gdouble scaleFactorX; /*!< the X direction scale factor */
+	gdouble scaleFactorY; /*!< the Y direction scale factor */
+	gdouble lowerLeftX; /*!< the X coordinate of the lower left corner (in real world coordinates, in inches) */
+	gdouble lowerLeftY; /*!< the Y coordinate of the lower left corner (in real world coordinates, in inches) */
+	enum gerbv_render_types renderType; /* the type of rendering to use */
+	gint displayWidth; /* the width of the scene (in pixels, or points depending on the surface type) */
+	gint displayHeight; /* the height of the scene (in pixels, or points depending on the surface type) */
+} gerbv_render_info_t;
+
+typedef struct {
+    double left;
+    double right;
+    double top;
+    double bottom;
+} gerbv_render_size_t;
+
 //! Allocate a new gerbv_image structure
 //! \return the newly created image
 gerbv_image_t *gerbv_create_image(gerbv_image_t *image, /*!< the old image to free or NULL */
@@ -465,63 +537,6 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble are
 gboolean
 gerbv_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
 		gdouble translationY);
-
-/* from old gerbv_screen.h */
-#define INITIAL_SCALE 200
-#define MAX_ERRMSGLEN 25
-#define MAX_COORDLEN 28
-#define MAX_DISTLEN 90
-#define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
-
-/* Macros to convert between unscaled gerber coordinates and other units */
-/* XXX NOTE: Currently unscaled units are assumed as inch, this is not
-   XXX necessarily true for all files */
-#define COORD2MILS(c) ((c)*1000.0)
-#define COORD2MMS(c) ((c)*25.4)
-
-typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED,
-		IN_SELECTION_DRAG, SCROLLBAR} gerbv_state_t;
-typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
-typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
-
-typedef struct {
-    gerbv_image_t *image;
-    GdkColor color;
-    guint16 alpha;
-    gboolean isVisible;
-    gpointer privateRenderData;
-    gchar *fullPathname; /* this should be the full pathname to the file */
-    gchar *name;
-    gerbv_user_transformation_t transform;
-} gerbv_fileinfo_t;
-
-typedef struct {
-	double x1, y1;
-	double x2, y2;
-} gerbv_bbox_t;
-
-/*!  The top-level structure used in libgerbv.  A gerbv_project_t groups together
-any number of layers, while keeping track of other basic paramters needed for rendering */
-typedef struct {
-  GdkColor  background; /*!< the background color used for rendering */
-  int max_files; /*!< the current number of fileinfos in the file array */
-  gerbv_fileinfo_t **file; /*!< the array for holding the child fileinfos */
-  int curr_index; /*!< the index of the currently active fileinfo */
-  int last_loaded; /*!< the number of fileinfos currently in the project */
-  int renderType; /*!< the type of renderer to use */
-  gboolean project_dirty;   /*!< TRUE if changes have been made since last save */ 
-  gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
-  gchar *path; /*!< the default path to load new files from */
-  gchar *execpath;    /*!< the path to executed version of gerbv */
-  gchar *project;     /*!< the default name for the private project file */
-} gerbv_project_t;
-
-typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
-typedef struct {
-    gerbv_zoom_dir_t z_dir;
-    GdkEventButton *z_event;
-    int scale;
-} gerbv_zoom_data_t;
 
 //! Create a new project structure and initialize some important variables
 gerbv_project_t *
@@ -569,37 +584,14 @@ int
 gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int reload,
 		HID_Attribute *fattr, int n_fattr, gboolean forceLoadFile);
 		
-/* Notice that the pixel field is used for alpha in this case */
-typedef struct{
-    unsigned char red;
-    unsigned char green;
-    unsigned char blue;
-    unsigned char alpha;
-}LayerColor;
-
-/* old render.h stuff */
-typedef struct {
-	gdouble scaleFactorX;
-	gdouble scaleFactorY;
-	gdouble lowerLeftX;
-	gdouble lowerLeftY;
-	gint renderType; /* 0 is default */
-	gint displayWidth;
-	gint displayHeight;
-} gerbv_render_info_t;
-
-typedef struct {
-    double left;
-    double right;
-    double top;
-    double bottom;
-} gerbv_render_size_t;
-
 void
 gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t *boundingbox);
 
+//! Calculate the zoom and translations to fit the rendered scene inside the given scene size
 void
-gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo);
+gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, /*!< the project to use for calculating */
+		gerbv_render_info_t *renderInfo /*!< the scene render pointer (updates the values in this parameter) */
+);
 
 void
 gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo);
@@ -618,9 +610,12 @@ void
 gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t *cr,
 			gerbv_render_info_t *renderInfo);
 
+//! Render a layer to a cairo context
 void
-gerbv_render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
-						gerbv_render_info_t *renderInfo);
+gerbv_render_layer_to_cairo_target (cairo_t *cr, /*!< the cairo context */
+		gerbv_fileinfo_t *fileInfo, /*!< the layer fileinfo pointer */
+		gerbv_render_info_t *renderInfo /*!< the scene render info */
+);
 						
 void
 gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *renderInfo);
@@ -629,9 +624,13 @@ void
 gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo );
 #endif
 
-/* from old tooltable.h */
-double GetToolDiameter_Inches(int toolNumber);
-int ProcessToolsFile(const char *toolFileName);
+double
+GetToolDiameter_Inches(int toolNumber
+);
+
+int
+ProcessToolsFile(const char *toolFileName
+);
 
 //! Render a project to a PNG file, autoscaling the layers to fit inside the specified image dimensions
 void
