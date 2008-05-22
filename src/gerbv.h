@@ -113,7 +113,8 @@ typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED,
 typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
 typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
-enum gerbv_render_types {GERBV_RENDER_TYPE_GDK, GERBV_RENDER_TYPE_GDK_XOR, GERBV_RENDER_TYPE_CAIRO };
+enum gerbv_render_types {GERBV_RENDER_TYPE_GDK, GERBV_RENDER_TYPE_GDK_XOR, GERBV_RENDER_TYPE_CAIRO_FAST,
+	GERBV_RENDER_TYPE_CAIRO_NORMAL, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY};
    
 /* Used for HID attributes (exporting and printing, mostly).
    HA_boolean uses int_value, HA_enum sets int_value to the index and

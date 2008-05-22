@@ -146,8 +146,6 @@ example_create_GUI (void){
 		       GTK_SIGNAL_FUNC(example_callbacks_drawingarea_configure_event), NULL);
 	gtk_signal_connect(GTK_OBJECT(mainWindow), "key_press_event",
 		       GTK_SIGNAL_FUNC(example_callbacks_drawingarea_key_press_event), NULL);
-	gtk_widget_set_events(drawingarea, GDK_EXPOSURE_MASK
-			  | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK);
 
 	gtk_widget_show_all (mainWindow);
 }
@@ -158,20 +156,15 @@ main(int argc, char *argv[]) {
 	mainProject = gerbv_create_project();
 	
 	/* make sure we change the render type to "cairo" instead of the GDK alternative */
-	screenRenderInfo.renderType = 3;
+	screenRenderInfo.renderType = GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY;
 	
-	/* parse a Gerber file and store it in the gerbv_project_t struct, and
-	   then immediately parse a second copy */
+	/* parse 2 Gerber files */
 	gerbv_open_layer_from_filename (mainProject, "example1-input.gbx");
 	gerbv_open_layer_from_filename (mainProject, "example2-input.gbx");
 	
 	/* make sure we parsed the files */
 	if ((mainProject->file[0] == NULL) || (mainProject->file[1] == NULL))
 		g_error ("There was an error parsing the files.");
-	
-	/* translate the second image (file[1]) up and right by 0.02 inches */
-	mainProject->file[1]->transform.translateY = 0.02;
-	mainProject->file[1]->transform.translateX = 0.02;
 	
 	/* start up the gtk engine and create our GUI */
 	gtk_init (&argc, &argv);
