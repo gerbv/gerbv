@@ -1,5 +1,9 @@
 /* SCHEME.H */
 
+/** \file scheme.h
+    \brief Header infor for the TinyScheme compiler
+*/
+
 #ifndef _SCHEME_H
 #define _SCHEME_H
 

@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file gerber.h
+    \brief Header info for the RS274X parsing functions
+*/
+
 #ifndef GERBER_H
 #define GERBER_H
 

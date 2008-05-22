@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file gerb_file.h
+    \brief Header info for the file parsing support functions
+*/
+
 #ifndef GERB_FILE_H
 #define GERB_FILE_H
 

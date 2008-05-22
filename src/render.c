@@ -21,7 +21,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
- 
+
+/** \file render.c
+    \brief Rendering support functions for libgerbv
+*/
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif

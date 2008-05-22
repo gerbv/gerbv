@@ -1,5 +1,9 @@
 /* XPM */
 
+/** \file gerbv_icon.h
+    \brief Contains the xpm data for the gerbv application icon
+*/
+
 #define USE_NEW_ICON
 
 #ifdef USE_NEW_ICON

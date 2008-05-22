@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file gerb_file.c
+    \brief File parsing support functions
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

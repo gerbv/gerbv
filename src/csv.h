@@ -29,7 +29,11 @@
  * This file is derived from libmba : A library of generic C modules
  * http://www.ioplex.com/~miallen/libmba/dl/libmba-0.8.9.tar.gz
  */
- 
+
+/** \file csv.h
+    \brief Header info for the parsing support functions for the pick and place parser
+*/
+
 #ifndef CSV_H
 #define CSV_H
 

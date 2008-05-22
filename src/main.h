@@ -20,7 +20,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
- 
+
+/** \file main.h
+    \brief Header info for common structs and functions used for the GUI application
+*/
+
 #ifndef MAIN_H
 #define MAIN_H
 

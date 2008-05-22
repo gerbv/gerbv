@@ -23,6 +23,10 @@
  *
  */
 
+/** \file attribute.h
+    \brief Dynamic GUI window creation header info
+*/
+
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 

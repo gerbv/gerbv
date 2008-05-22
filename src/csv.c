@@ -30,9 +30,8 @@
  * http://www.ioplex.com/~miallen/libmba/dl/libmba-0.8.9.tar.gz
  */
 
-/**
-@file csv.c
-@brief handles import of csv style files (allowed delimiters are ';' ',' '|' ':')
+/** \file csv.c
+    \brief Parsing support functions for the pick and place parser
 */
 
 #ifdef HAVE_CONFIG_H

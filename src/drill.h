@@ -20,6 +20,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file drill.h
+    \brief Header infor for the Excellon drill parsing functions
+*/
+
 #ifndef DRILL_H
 #define DRILL_H
 

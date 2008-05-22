@@ -21,6 +21,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file draw.h
+    \brief Header info for the cairo rendering functions and the related 
+selection calculating functions
+*/
+
 #ifndef DRAW_H
 #define DRAW_H
 

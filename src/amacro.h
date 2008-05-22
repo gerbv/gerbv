@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file amacro.h
+    \brief Aperture macro parsing header info
+*/
+
 #ifndef AMACRO_H
 #define AMACRO_H
 

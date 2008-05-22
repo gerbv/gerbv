@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file gerber.c
+    \brief RS274X parsing functions
+*/
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>  /* pow() */

@@ -20,6 +20,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file common.h
+    \brief Contains basic defines for debug messages
+*/
+
 #ifndef __COMMON_H__
 #define __COMMON_H__
 

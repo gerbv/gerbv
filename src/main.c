@@ -20,7 +20,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
- 
+
+/** \file main.c
+    \brief The main code for the Gerber Viewer GUI application and command line processing
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

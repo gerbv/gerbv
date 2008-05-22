@@ -3,6 +3,10 @@
 /* Modifications for NT and dl_* interface, scm_load_ext: D. Souflis */
 /* Refurbished by Stephen Gildea */
 
+/** \file dynload.c
+    \brief Dynamic loader functions for TinyScheme
+*/
+
 #define _SCHEME_SOURCE
 #include "dynload.h"
 #include "gerb_file.h"

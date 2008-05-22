@@ -19,6 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file tooltable.c
+    \brief Tool file parsing functions
+*/
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

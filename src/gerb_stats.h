@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file gerb_stats.h
+    \brief Header info for the statistics generating functions for RS274X files
+*/
+
 #ifndef gerb_stats_H
 #define gerb_stats_H
 

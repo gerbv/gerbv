@@ -21,6 +21,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file amacro.c
+    \brief Aperture macro parsing functions
+*/
 
 #include <stdlib.h>
 #include <string.h>

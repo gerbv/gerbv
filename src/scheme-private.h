@@ -1,12 +1,13 @@
 /* scheme-private.h */
 
+/** \file scheme-private.h
+    \brief Private data for the TinyScheme compiler
+*/
+
 #ifndef _SCHEME_PRIVATE_H
 #define _SCHEME_PRIVATE_H
 
 #include "scheme.h"
-/*------------------ Ugly internals -----------------------------------*/
-/*------------------ Of interest only to FFI users --------------------*/
-
 
 enum scheme_port_kind { 
   port_free=0, 

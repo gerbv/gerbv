@@ -1,3 +1,7 @@
+/** \file icons.h
+    \brief XPM info for the toolbar button icons
+*/
+
 /* -------------------  Zoom tool icon  -------------------------- */
 /* GdkPixbuf RGBA C-Source image dump */
 #ifdef __SUNPRO_C

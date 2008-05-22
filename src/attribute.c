@@ -23,6 +23,10 @@
  *
  */
 
+/** \file attribute.c
+    \brief Dynamic GUI window creation functions
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

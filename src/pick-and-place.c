@@ -19,9 +19,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-
-/** @file pick-and-place.c
- */ 
+/** \file pick-and-place.c
+    \brief PNP (pick-and-place) parsing functions
+*/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -55,7 +55,6 @@
 
 #include "gerbv.h"
 #include "gerber.h"
-#include "gerb_transf.h"
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
 #else
@@ -64,6 +63,7 @@
 
 #include "csv.h"
 #include "pick-and-place.h"
+
 /* CHECKME - here gi18n is disabled */
 #define _(String) (String)
 
@@ -74,6 +74,83 @@
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
+
+void gerb_transf_free(gerbv_transf_t *transf)
+{
+    g_free(transf);
+    
+}/*gerbv_transf_t*/
+
+
+void gerb_transf_reset(gerbv_transf_t* transf)
+{
+    memset(transf,0,sizeof(gerbv_transf_t));
+    
+    transf->r_mat[0][0] = transf->r_mat[1][1] = 1.0; /*off-diagonals 0 diagonals 1 */
+    transf->r_mat[1][0] = transf->r_mat[0][1] = 0.0;
+    transf->scale = 1.0;
+    transf->offset[0] = transf->offset[1] = 0.0;
+    
+} /*gerb_transf_reset*/
+
+
+gerbv_transf_t* gerb_transf_new(void)
+{
+    gerbv_transf_t *transf;
+    
+    transf = g_malloc(sizeof(gerbv_transf_t));
+    gerb_transf_reset(transf);
+    return transf;
+    
+
+} /*gerb_transf_new*/
+
+
+//!Rotation
+/*! append rotation to transformation.
+@param transf transformation to be modified
+@param angle in rad (counterclockwise rotation) */
+
+void gerb_transf_rotate(gerbv_transf_t* transf, double angle)
+{
+    double m[2][2]; 
+    double s = sin(angle), c = cos(angle);
+      
+    memcpy(m, transf->r_mat, sizeof(m));    
+    transf->r_mat[0][0] = c * m[0][0] - s * m[1][0];
+    transf->r_mat[0][1] = c * m[0][1] - s * m[1][1];
+    transf->r_mat[1][0] = s * m[0][0] + c * m[1][0];
+    transf->r_mat[1][1] = s * m[0][1] + c * m[1][1];
+//    transf->offset[0] = transf->offset[1] = 0.0; CHECK ME
+    
+} /*gerb_transf_rotate*/
+
+//!Translation
+/*! append translation to transformation.
+@param transf transformation to be modified
+@param shift_x translation in x direction
+@param shift_y translation in y direction */
+
+void gerb_transf_shift(gerbv_transf_t* transf, double shift_x, double shift_y)
+{
+      
+    transf->offset[0] += shift_x;
+    transf->offset[1] += shift_y;
+            
+} /*gerb_transf_shift*/
+
+void gerb_transf_apply(double x, double y, gerbv_transf_t* transf, double *out_x, double *out_y)
+{
+
+//    x += transf->offset[0];
+//    y += transf->offset[1];
+    *out_x = (x * transf->r_mat[0][0] + y * transf->r_mat[0][1]) * transf->scale;
+    *out_y = (x * transf->r_mat[1][0] + y * transf->r_mat[1][1]) * transf->scale;
+    *out_x += transf->offset[0];
+    *out_y += transf->offset[1];
+    
+    
+}/*gerb_transf_apply*/
 
 //! Parses a string representing float number with a unit, default is mil
 /** @param char a string to be screened for unit

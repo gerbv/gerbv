@@ -22,6 +22,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file render.h
+    \brief Header infor for the rendering support functions for libgerbv
+*/
+
 #include "gerber.h"
 
 gerbv_stats_t *generate_gerber_analysis(void);

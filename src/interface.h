@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file interface.h
+    \brief Header info for the GUI building functions for Gerber Viewer
+*/
+
 void
 interface_create_gui (int req_width, int req_height);
 

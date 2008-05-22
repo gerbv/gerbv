@@ -20,6 +20,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+/** \file drill.c
+    \brief Excellon drill parsing functions
+*/
+
 /*
  * 21 Feb 2007 patch for metric drill files:
  * 1) METRIC/INCH commands (partly) parsed to define units of the header

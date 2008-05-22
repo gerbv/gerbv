@@ -42,7 +42,7 @@ libgerbv_la_SOURCES= \
 		exportimage.c \
 		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
 		gerber.h gerbv.c gerbv.h gerbv_icon.h \
-		pick-and-place.c pick-and-place.h gerb_transf.c gerb_transf.h \
+		pick-and-place.c pick-and-place.h \
 		csv.c csv.h csv_defines.h \
 		gerb_stats.c gerb_stats.h \
 		drill_stats.c drill_stats.h export-rs274x.c \
@@ -75,7 +75,6 @@ libgerbv_la_SOURCES= \
 libgerbv_la_LDFLAGS = -version-info 1:0:0
 
 gerbv_SOURCES = \
-		batch.c batch.h \
 		opdefines.h \
 		dynload.c dynload.h \
 		attribute.c attribute.h \

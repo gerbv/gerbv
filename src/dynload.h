@@ -2,6 +2,10 @@
 /* Original Copyright (c) 1999 Alexander Shendi     */
 /* Modifications for NT and dl_* interface: D. Souflis */
 
+/** \file dynload.h
+    \brief Header info for the dynamic loader functions for TinyScheme
+*/
+
 #ifndef DYNLOAD_H
 #define DYNLOAD_H
 

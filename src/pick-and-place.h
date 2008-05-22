@@ -19,6 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file pick-and-place.h
+    \brief Header info for the PNP (pick-and-place) parsing functions
+*/
+
 #ifndef PICK_AND_PLACE_H
 #define PICK_AND_PLACE_H
 
@@ -26,6 +30,12 @@
  
 /** maximum size of strings. */
 #define MAXL 200
+
+typedef struct gerb_transf {
+    double r_mat[2][2];
+    double scale;
+    double offset[2];
+} gerbv_transf_t;
 
 enum e_footprint {
     PART_SHAPE_UNKNOWN = 0, /* drawn as circle with line*/

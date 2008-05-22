@@ -22,7 +22,7 @@
  */
 
 /** \file gerbv.h
-    \brief This is the main header file for the libgerbv library
+    \brief The main header file for the libgerbv library
 */
 
 //! \example example1.c

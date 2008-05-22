@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file gerb_image.h
+    \brief Header info for the image editing and support functions
+*/
+
 #ifndef GERB_IMAGE_H
 #define GERB_IMAGE_H
 

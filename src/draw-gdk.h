@@ -21,6 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file draw-gdk.h
+    \brief Header info for the GDK rendering functions
+*/
+
 #ifndef DRAW_GDK_H
 #define DRAW_GDK_H
 
