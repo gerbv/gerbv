@@ -23,6 +23,7 @@
 
 /** \file gerb_file.c
     \brief File parsing support functions
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H

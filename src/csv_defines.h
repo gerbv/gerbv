@@ -1,8 +1,8 @@
 #ifndef DEFINES_H
 #define DEFINES_H
-/**
-@file csv_defines.h
-@brief sets up internal definitions for handling csv-style files
+/** 	\file csv_defines.h
+	\brief Sets up internal definitions for handling csv-style files
+	\ingroup libgerbv
 */
 
 #if defined(__sparc__)

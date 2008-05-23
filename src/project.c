@@ -21,8 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-/*! @file project.c
-    @brief routines for loading and saving project files */ 
+/*! \file project.c
+    \brief routines for loading and saving project files
+    \ingroup gerbv
+ */ 
 
 
 #ifdef HAVE_CONFIG_H

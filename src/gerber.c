@@ -23,6 +23,7 @@
 
 /** \file gerber.c
     \brief RS274X parsing functions
+    \ingroup libgerbv
 */
 
 #include <stdlib.h>
@@ -57,26 +58,6 @@
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 
 #define MAXL 200
-
-typedef struct gerb_state {
-    int curr_x;
-    int curr_y;
-    int prev_x;
-    int prev_y;
-    int delta_cp_x;
-    int delta_cp_y;
-    int curr_aperture;
-    int changed;
-    enum aperture_state_t aperture_state;
-    enum interpolation_t interpolation;
-    enum interpolation_t prev_interpolation;
-    gerbv_net_t *parea_start_node;
-    gerbv_layer_t *layer;
-    gerbv_netstate_t *state;
-    int in_parea_fill;
-    int mq_on;
-} gerb_state_t;
-
 
 /* Local function prototypes */
 static void parse_G_code(gerb_file_t *fd, gerb_state_t *state, 
@@ -134,7 +115,7 @@ gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_nets
 
 gboolean
 gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
-		enum aperture_t apertureType, gdouble parameter1, gdouble parameter2){
+		gerbv_aperture_type_t apertureType, gdouble parameter1, gdouble parameter2){
 	int i;
 	
 	/* search for an available aperture spot */
@@ -1773,7 +1754,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
     int handled = 1, nuf_parameters = 0, i, j, clearOperatorUsed = FALSE;
     double *lp; /* Local copy of parameters */
     double tmp[2] = {0.0, 0.0};
-    enum aperture_t type = APERTURE_NONE;
+    gerbv_aperture_type_t type = APERTURE_NONE;
     gerbv_simplified_amacro_t *sam;
 
     if (aperture == NULL)

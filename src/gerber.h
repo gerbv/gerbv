@@ -23,6 +23,7 @@
 
 /** \file gerber.h
     \brief Header info for the RS274X parsing functions
+    \ingroup libgerbv
 */
 
 #ifndef GERBER_H
@@ -37,6 +38,25 @@ extern "C" {
 
 #include "gerb_file.h"
 
+typedef struct gerb_state {
+    int curr_x;
+    int curr_y;
+    int prev_x;
+    int prev_y;
+    int delta_cp_x;
+    int delta_cp_y;
+    int curr_aperture;
+    int changed;
+    gerbv_aperture_state_t aperture_state;
+    enum interpolation_t interpolation;
+    enum interpolation_t prev_interpolation;
+    gerbv_net_t *parea_start_node;
+    gerbv_layer_t *layer;
+    gerbv_netstate_t *state;
+    int in_parea_fill;
+    int mq_on;
+} gerb_state_t;
+
 /*
  * parse gerber file pointed to by fd
  */
@@ -48,7 +68,7 @@ gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_nets
 
 gboolean
 gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
-		enum aperture_t apertureType, gdouble parameter1, gdouble parameter2);
+		gerbv_aperture_type_t apertureType, gdouble parameter1, gdouble parameter2);
 #ifdef __cplusplus
 }
 #endif

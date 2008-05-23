@@ -25,6 +25,7 @@
 
 /** \file exportimage.c
     \brief This file contains image exporting functions for exporting to PNG, PDF, SVG, and Postscript formats
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H

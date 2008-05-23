@@ -23,6 +23,7 @@
 
 /** \file amacro.h
     \brief Aperture macro parsing header info
+    \ingroup libgerbv
 */
 
 #ifndef AMACRO_H

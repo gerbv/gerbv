@@ -23,6 +23,7 @@
 
 /** \file interface.c
     \brief GUI building functions for Gerber Viewer
+    \ingroup gerbv
 */
 
 #ifdef HAVE_CONFIG_H

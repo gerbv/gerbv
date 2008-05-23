@@ -146,13 +146,15 @@ example_create_GUI (void){
 		       GTK_SIGNAL_FUNC(example_callbacks_drawingarea_configure_event), NULL);
 	gtk_signal_connect(GTK_OBJECT(mainWindow), "key_press_event",
 		       GTK_SIGNAL_FUNC(example_callbacks_drawingarea_key_press_event), NULL);
+	gtk_signal_connect_after(GTK_OBJECT(mainWindow), "delete_event",
+		       GTK_SIGNAL_FUNC(gtk_main_quit), NULL);
 
 	gtk_widget_show_all (mainWindow);
 }
 
 int
 main(int argc, char *argv[]) {
-	/* create a top level libgerbv structure */
+	/* create the top level libgerbv structure */
 	mainProject = gerbv_create_project();
 	
 	/* make sure we change the render type to "cairo" instead of the GDK alternative */

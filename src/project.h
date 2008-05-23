@@ -22,9 +22,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
  
-/** @file project.h
-    @brief routines for loading and saving project files
-
+/** \file project.h
+    \brief routines for loading and saving project files
+    \ingroup gerbv
  */ 
 
 #ifndef PROJECT_H

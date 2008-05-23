@@ -2,6 +2,7 @@
 
 /** \file gerbv_icon.h
     \brief Contains the xpm data for the gerbv application icon
+    \ingroup gerbv
 */
 
 #define USE_NEW_ICON

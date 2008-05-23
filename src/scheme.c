@@ -14,6 +14,7 @@
 
 /** \file scheme.c
     \brief The TinyScheme compiler
+    \ingroup gerbv
 */
 
 #ifdef HAVE_CONFIG_H

@@ -22,6 +22,7 @@
 
 /** \file common.h
     \brief Contains basic defines for debug messages
+    \ingroup libgerbv
 */
 
 #ifndef __COMMON_H__

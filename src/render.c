@@ -24,6 +24,7 @@
 
 /** \file render.c
     \brief Rendering support functions for libgerbv
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H

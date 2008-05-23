@@ -23,6 +23,7 @@
 
 /** \file gerb_stats.h
     \brief Header info for the statistics generating functions for RS274X files
+    \ingroup libgerbv
 */
 
 #ifndef gerb_stats_H
@@ -38,7 +39,7 @@ void gerbv_stats_add_error(error_list_t *error_list_in,
 
 gerbv_aperture_list_t *gerbv_stats_new_aperture_list(void);
 void gerbv_stats_add_aperture(gerbv_aperture_list_t *aperture_list_in,
-			     int layer, int number, enum aperture_t type,
+			     int layer, int number, gerbv_aperture_type_t type,
 			     double parameter[5]);
 void gerbv_stats_add_to_D_list(gerbv_aperture_list_t *D_list_in,
 			      int number);

@@ -23,6 +23,7 @@
 
 /** \file draw.c
     \brief Cairo rendering functions and the related selection calculating functions
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H

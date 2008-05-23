@@ -21,6 +21,7 @@
 
 /** \file tooltable.c
     \brief Tool file parsing functions
+    \ingroup libgerbv
 */
 
 #include <ctype.h>

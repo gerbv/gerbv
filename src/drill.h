@@ -22,6 +22,7 @@
 
 /** \file drill.h
     \brief Header infor for the Excellon drill parsing functions
+    \ingroup libgerbv
 */
 
 #ifndef DRILL_H

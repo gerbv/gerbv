@@ -23,6 +23,7 @@
 
 /** \file main.h
     \brief Header info for common structs and functions used for the GUI application
+    \ingroup gerbv
 */
 
 #ifndef MAIN_H
@@ -31,6 +32,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
+typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
+typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED,
+		IN_SELECTION_DRAG, SCROLLBAR} gerbv_state_t;
+typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
 
 typedef struct {
     GtkWidget *drawing_area;

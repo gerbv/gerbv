@@ -23,6 +23,7 @@
 
 /** \file gerb_file.h
     \brief Header info for the file parsing support functions
+    \ingroup libgerbv
 */
 
 #ifndef GERB_FILE_H

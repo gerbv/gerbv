@@ -32,6 +32,7 @@
 
 /** \file csv.c
     \brief Parsing support functions for the pick and place parser
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H

@@ -22,7 +22,8 @@
  */
 
 /** \file callbacks.h
-    \brief Header infor for the GUI callback functions
+    \brief Header info for the GUI callback functions
+    \ingroup gerbv
 */
 
 enum {

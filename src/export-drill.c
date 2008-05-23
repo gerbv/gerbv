@@ -23,6 +23,7 @@
 
 /** \file export-drill.c
     \brief Functions for exporting gerbv images to Excellon drill files
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H

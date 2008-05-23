@@ -1,7 +1,8 @@
 /* SCHEME.H */
 
 /** \file scheme.h
-    \brief Header infor for the TinyScheme compiler
+    \brief Header info for the TinyScheme compiler
+    \ingroup gerbv
 */
 
 #ifndef _SCHEME_H

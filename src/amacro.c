@@ -23,6 +23,7 @@
 
 /** \file amacro.c
     \brief Aperture macro parsing functions
+    \ingroup libgerbv
 */
 
 #include <stdlib.h>

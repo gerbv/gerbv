@@ -23,6 +23,7 @@
 
 /** \file gerb_stats.c
     \brief Statistics generating functions for RS274X files
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H
@@ -291,7 +292,7 @@ gerbv_stats_new_aperture_list() {
 /* ------------------------------------------------------- */
 void
 gerbv_stats_add_aperture(gerbv_aperture_list_t *aperture_list_in,
-			int layer, int number, enum aperture_t type,
+			int layer, int number, gerbv_aperture_type_t type,
 			double parameter[5]) {
 
     gerbv_aperture_list_t *aperture_list_new;

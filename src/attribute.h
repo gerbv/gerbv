@@ -25,6 +25,7 @@
 
 /** \file attribute.h
     \brief Dynamic GUI window creation header info
+    \ingroup gerbv
 */
 
 #ifndef ATTRIBUTE_H

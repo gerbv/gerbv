@@ -21,16 +21,39 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-/** \file gerbv.h
-    \brief The main header file for the libgerbv library
-*/
-
 //! \example example1.c
 //! \example example2.c
 //! \example example3.c
 //! \example example4.c
 //! \example example5.c
 //! \example example6.c
+
+//! \defgroup libgerbv libgerbv
+//! \defgroup gerbv Gerber Viewer
+
+/** \file gerbv.h
+    \brief The main header file for the libgerbv library
+    \ingroup libgerbv
+*/
+
+/**
+\mainpage Gerber Viewer/libgerbv Index Page
+
+\section intro_sec Introduction
+
+Gerber Viewer is a program which can display, edit, export, and do other manipulation of
+file formats used in PCB design (RS274X, Excellon drill, and pick-and-place). The core
+library (libgerbv) is available as a separate library, allowing other software to easily
+incorporate advanced Gerber functionality.
+
+This code documentation is mainly intended to help explain the libgerbv API to developers
+wishing to use libgerbv in his/her own projects. The easiest way to learn to use libgerbv is
+by reading through and compiling the example source files (click on "Examples" in the navigation
+tree in the left pane, or look in the doc/example-code/ directory in CVS).
+
+For help with using the standalone Gerber Viewer software, please refer to the man page (using
+the command "man gerbv") or go to the Gerber Viewer homepage for documentation (http://gerbv.sourceforge.net).
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -41,7 +64,6 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
-/* from old gerb_aperture.h header file */
 #define APERTURE_MIN 10
 #define APERTURE_MAX 9999
 
@@ -51,8 +73,6 @@
  * So 50 points with x and y plus two for holding extra data gives...
  */
 #define APERTURE_PARAMETERS_MAX 102
-
-/* from old gerbv_screen.h */
 #define INITIAL_SCALE 200
 #define MAX_ERRMSGLEN 25
 #define MAX_COORDLEN 28
@@ -71,7 +91,6 @@
 #define GERB_MESSAGE(t...)  g_log(NULL, G_LOG_LEVEL_MESSAGE, ##t);
 
 
-/* from old amacro.h */
 enum opcodes {NOP,      /* No Operation */
 	      PUSH,     /* Ordinary stack operations. Uses float */
 	      PPUSH,    /* Parameter onto stack, 1 is first parameter and 
@@ -85,37 +104,106 @@ enum opcodes {NOP,      /* No Operation */
 	      PRIM};    /* Defines what primitive to draw. Inparameters
 			   should be on the stack. */
 			   
-/* from old gerb_error */
 enum error_type_t {FATAL, GRB_ERROR, WARNING, NOTE};
 
-enum aperture_t {APERTURE_NONE, CIRCLE, RECTANGLE, OVAL, POLYGON, MACRO, 
-		 MACRO_CIRCLE, MACRO_OUTLINE, MACRO_POLYGON, MACRO_MOIRE, 
-		 MACRO_THERMAL, MACRO_LINE20, MACRO_LINE21, MACRO_LINE22};
-enum aperture_state_t {OFF, ON, FLASH};
-enum unit_t {INCH, MM, UNIT_UNSPECIFIED};
+typedef enum {APERTURE_NONE,
+		CIRCLE,
+		RECTANGLE,
+		OVAL,
+		POLYGON,
+		MACRO,
+		MACRO_CIRCLE,
+		MACRO_OUTLINE,
+		MACRO_POLYGON,
+		MACRO_MOIRE,
+		MACRO_THERMAL,
+		MACRO_LINE20,
+		MACRO_LINE21,
+		MACRO_LINE22
+} gerbv_aperture_type_t;
 
-enum polarity_t {POSITIVE, NEGATIVE, DARK, CLEAR};
-enum omit_zeros_t {LEADING, TRAILING, EXPLICIT, ZEROS_UNSPECIFIED};
-enum coordinate_t {ABSOLUTE, INCREMENTAL};
-enum interpolation_t {LINEARx1, LINEARx10, LINEARx01, LINEARx001, 
-		      CW_CIRCULAR, CCW_CIRCULAR, PAREA_START, PAREA_END, DELETED};
-enum encoding_t {NONE, ASCII, EBCDIC, BCD, ISO_ASCII, EIA };
-enum layertype_t {GERBER, DRILL, PICK_AND_PLACE};
-enum knockout_t {NOKNOCKOUT, FIXEDKNOCK, BORDER};
-enum mirror_state_t {NOMIRROR, FLIPA, FLIPB, FLIPAB};
-enum axis_select_t {NOSELECT, SWAPAB};
-enum image_justify_type_t {NOJUSTIFY, LOWERLEFT, CENTERJUSTIFY};
+typedef enum {OFF,
+		ON,
+		FLASH
+} gerbv_aperture_state_t;
 
-enum selection_t {EMPTY, POINT_CLICK, DRAG_BOX};
+enum unit_t {INCH,
+		MM,
+		UNIT_UNSPECIFIED
+};
 
-typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED,
-		IN_SELECTION_DRAG, SCROLLBAR} gerbv_state_t;
-typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
-typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
-typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
-enum gerbv_render_types {GERBV_RENDER_TYPE_GDK, GERBV_RENDER_TYPE_GDK_XOR, GERBV_RENDER_TYPE_CAIRO_FAST,
-	GERBV_RENDER_TYPE_CAIRO_NORMAL, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY};
-   
+enum polarity_t {POSITIVE,
+		NEGATIVE,
+		DARK,
+		CLEAR
+};
+
+enum omit_zeros_t {LEADING,
+		TRAILING,
+		EXPLICIT,
+		ZEROS_UNSPECIFIED
+};
+
+enum coordinate_t {ABSOLUTE,
+		INCREMENTAL
+};
+
+enum interpolation_t {LINEARx1,
+		LINEARx10,
+		LINEARx01,
+		LINEARx001,
+		CW_CIRCULAR,
+		CCW_CIRCULAR,
+		PAREA_START,
+		PAREA_END,
+		DELETED
+};
+
+enum encoding_t {NONE,
+		ASCII,
+		EBCDIC,
+		BCD,
+		ISO_ASCII,
+		EIA
+};
+
+enum layertype_t {GERBER,
+		DRILL,
+		PICK_AND_PLACE
+};
+
+enum knockout_t {NOKNOCKOUT,
+		FIXEDKNOCK,
+		BORDER
+};
+
+enum mirror_state_t {NOMIRROR,
+		FLIPA,
+		FLIPB,
+		FLIPAB
+};
+
+enum axis_select_t {NOSELECT,
+		SWAPAB
+};
+
+enum image_justify_type_t {NOJUSTIFY,
+		LOWERLEFT,
+		CENTERJUSTIFY
+};
+
+enum selection_t {EMPTY,
+		POINT_CLICK,
+		DRAG_BOX
+};
+
+/*! The different rendering modes available to libgerbv */
+typedef enum {GERBV_RENDER_TYPE_GDK, /*!< render using normal GDK drawing functions */
+		GERBV_RENDER_TYPE_GDK_XOR, /*!< use the GDK_XOR mask to draw a pseudo-transparent scene */
+		GERBV_RENDER_TYPE_CAIRO_NORMAL, /*!< use the cairo library */
+		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY /*!< use the cairo library with the smoothest edges */
+} gerbv_render_types_t;
+
 /* Used for HID attributes (exporting and printing, mostly).
    HA_boolean uses int_value, HA_enum sets int_value to the index and
    str_value to the enumeration string.  HID_Label just shows the
@@ -172,13 +260,13 @@ typedef struct amacro {
 } amacro_t;
 
 typedef struct gerbv_simplified_amacro {
-    enum aperture_t type;
+    gerbv_aperture_type_t type;
     double parameter[APERTURE_PARAMETERS_MAX];
     struct gerbv_simplified_amacro *next;
 } gerbv_simplified_amacro_t;
 
 typedef struct gerbv_aperture {
-    enum aperture_t type;
+    gerbv_aperture_type_t type;
     amacro_t *amacro;
     gerbv_simplified_amacro_t *simplified;
     double parameter[APERTURE_PARAMETERS_MAX];
@@ -192,11 +280,12 @@ typedef struct gerbv_aperture_list_t {
     int number;
     int layer;
     int count;
-    enum aperture_t type;
+    gerbv_aperture_type_t type;
     double parameter[5];
     struct gerbv_aperture_list_t *next;
 } gerbv_aperture_list_t;
 
+/*! Contains statistics on the various codes used in a RS274X file */
 typedef struct {
     struct error_list_t *error_list;
     struct gerbv_aperture_list_t *aperture_list;
@@ -346,24 +435,26 @@ typedef struct {
     gdouble border;
 } gerbv_knockout_t;
  
+/*!  The structure used to keep track of RS274X layer groups */
 typedef struct {
-    gerbv_step_and_repeat_t stepAndRepeat;
-    gerbv_knockout_t knockout;
-    gdouble rotation;
-    enum polarity_t polarity; 
-    gchar *name;
-    gpointer next;
+    gerbv_step_and_repeat_t stepAndRepeat; /*!< the current step and repeat group (refer to RS274X spec) */
+    gerbv_knockout_t knockout; /*!< the current knockout group (refer to RS274X spec) */
+    gdouble rotation; /*!< the current rotation around the origin */
+    enum polarity_t polarity; /*!< the polarity of this layer */
+    gchar *name; /*!< the layer name (NULL for none) */
+    gpointer next; /*!< the next layer group in the array */
 } gerbv_layer_t;
 
+/*!  The structure used to keep track of RS274X state groups */
 typedef struct {
-    enum axis_select_t axisSelect;
-    enum mirror_state_t mirrorState;
-    enum unit_t unit;
-    gdouble offsetA;
-    gdouble offsetB;
-    gdouble scaleA;
-    gdouble scaleB;
-    gpointer next;
+    enum axis_select_t axisSelect; /*!< the AB to XY coordinate mapping (refer to RS274X spec) */
+    enum mirror_state_t mirrorState; /*!< any mirroring around the X or Y axis */
+    enum unit_t unit; /*!< the current length unit */
+    gdouble offsetA; /*!< the offset along the A axis (usually this is the X axis) */
+    gdouble offsetB; /*!< the offset along the B axis (usually this is the Y axis) */
+    gdouble scaleA; /*!< the scale factor in the A axis (usually this is the X axis) */
+    gdouble scaleB; /*!< the scale factor in the B axis (usually this is the Y axis) */
+    gpointer next; /*!< the next state group in the array */
 } gerbv_netstate_t;
 
 /*!  The structure used to hold a geometric entity (line/polygon/etc)*/
@@ -373,7 +464,7 @@ typedef struct gerbv_net {
     double stop_x; /*!< the X coordinate of the end point */
     double stop_y; /*!< the Y coordinate of the end point */
     int aperture; /*!< the index of the aperture used for this entity */
-    enum aperture_state_t aperture_state; /*!< the state of the aperture tool (on/off/etc) */
+    gerbv_aperture_state_t aperture_state; /*!< the state of the aperture tool (on/off/etc) */
     enum interpolation_t interpolation; /*!< the path interpolation method (linear/etc) */
     struct gerbv_cirseg *cirseg; /*!< a special struct used to hold circular path data */
     struct gerbv_net *next; /*!< the next net in the array */
@@ -395,7 +486,6 @@ typedef struct gerbv_format {
     int lim_mf;    /* Length limit for codes of miscellaneous function */
 } gerbv_format_t;
 	
-
 typedef struct gerbv_image_info {
     char *name;
     enum polarity_t polarity;
@@ -487,9 +577,9 @@ typedef struct {
 	gdouble scaleFactorY; /*!< the Y direction scale factor */
 	gdouble lowerLeftX; /*!< the X coordinate of the lower left corner (in real world coordinates, in inches) */
 	gdouble lowerLeftY; /*!< the Y coordinate of the lower left corner (in real world coordinates, in inches) */
-	enum gerbv_render_types renderType; /* the type of rendering to use */
-	gint displayWidth; /* the width of the scene (in pixels, or points depending on the surface type) */
-	gint displayHeight; /* the height of the scene (in pixels, or points depending on the surface type) */
+	gerbv_render_types_t renderType; /*!< the type of rendering to use */
+	gint displayWidth; /*!< the width of the scene (in pixels, or points depending on the surface type) */
+	gint displayHeight; /*!< the height of the scene (in pixels, or points depending on the surface type) */
 } gerbv_render_info_t;
 
 typedef struct {
@@ -729,7 +819,7 @@ gerbv_image_create_line_object (gerbv_image_t *image, /*!< the image to draw to 
 		gdouble endX, /*!< the ending X coordinate */
 		gdouble endY, /*!< the ending Y coordinate */
 		gdouble lineWidth, /*!< the width of the line to draw */
-		enum aperture_t apertureType  /*!< the type of aperture to use (e.g. CIRCLE) */
+		gerbv_aperture_type_t apertureType  /*!< the type of aperture to use (e.g. CIRCLE) */
 );
 
 //! Draw an arc on the specified image
@@ -741,7 +831,7 @@ gerbv_image_create_arc_object (gerbv_image_t *image, /*!< the image to draw to *
 		gdouble startAngle, /*!< the start angle (in CCW degrees) */
 		gdouble endAngle, /*!< the start angle (in CCW degrees) */
 		gdouble lineWidth, /*!< the width of the line to draw */
-		enum aperture_t apertureType  /*!< the type of aperture to use (e.g. CIRCLE) */
+		gerbv_aperture_type_t apertureType  /*!< the type of aperture to use (e.g. CIRCLE) */
 );
 		
 //! Draw a filled rectangle on the specified image	
@@ -754,12 +844,21 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, /*!< the image to dra
 );
 			
 /* from drill and gerb stats headers */
-drill_stats_t * drill_stats_new(void);
-void drill_stats_add_layer(drill_stats_t *accum_stats, 
-			   drill_stats_t *input_stats, int this_layer);
+drill_stats_t *
+drill_stats_new(void);
 
-gerbv_stats_t * gerbv_stats_new(void);
-void gerbv_stats_add_layer(gerbv_stats_t *accum_stats, 
-			  gerbv_stats_t *input_stats,
-			  int this_layer);
+void
+drill_stats_add_layer(drill_stats_t *accum_stats,
+		drill_stats_t *input_stats,
+		int this_layer
+);
+
+gerbv_stats_t *
+gerbv_stats_new(void);
+
+void
+gerbv_stats_add_layer(gerbv_stats_t *accum_stats, 
+		gerbv_stats_t *input_stats,
+		int this_layer
+);
 

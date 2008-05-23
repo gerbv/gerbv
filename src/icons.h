@@ -1,5 +1,6 @@
 /** \file icons.h
     \brief XPM info for the toolbar button icons
+    \ingroup gerbv
 */
 
 /* -------------------  Zoom tool icon  -------------------------- */

@@ -22,6 +22,7 @@
 
 /** \file drill.c
     \brief Excellon drill parsing functions
+    \ingroup libgerbv
 */
 
 /*

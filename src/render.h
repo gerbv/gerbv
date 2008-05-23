@@ -23,7 +23,8 @@
  */
 
 /** \file render.h
-    \brief Header infor for the rendering support functions for libgerbv
+    \brief Header info for the rendering support functions for libgerbv
+    \ingroup libgerbv
 */
 
 #include "gerber.h"

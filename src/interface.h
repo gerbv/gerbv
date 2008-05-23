@@ -23,7 +23,9 @@
 
 /** \file interface.h
     \brief Header info for the GUI building functions for Gerber Viewer
+    \ingroup gerbv
 */
+
 
 void
 interface_create_gui (int req_width, int req_height);

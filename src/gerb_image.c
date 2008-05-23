@@ -23,6 +23,7 @@
 
 /** \file gerb_image.c
     \brief This file contains general files for handling the gerbv_image_t structure
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H
@@ -708,7 +709,7 @@ gerb_image_return_aperture_index (gerbv_image_t *image, gdouble lineWidth, int *
 void
 gerbv_image_create_arc_object (gerbv_image_t *image, gdouble centerX, gdouble centerY,
 		gdouble radius, gdouble startAngle, gdouble endAngle, gdouble lineWidth,
-		enum aperture_t apertureType) {
+		gerbv_aperture_type_t apertureType) {
 	int apertureIndex;
 	gerbv_net_t *currentNet;
 	gerbv_cirseg_t cirSeg = {centerX, centerY, radius, radius, startAngle, endAngle};
@@ -735,7 +736,7 @@ gerbv_image_create_arc_object (gerbv_image_t *image, gdouble centerX, gdouble ce
 
 void
 gerbv_image_create_line_object (gerbv_image_t *image, gdouble startX, gdouble startY,
-		gdouble endX, gdouble endY, gdouble lineWidth, enum aperture_t apertureType) {
+		gdouble endX, gdouble endY, gdouble lineWidth, gerbv_aperture_type_t apertureType) {
 	int apertureIndex;
 	gerbv_net_t *currentNet;
 	

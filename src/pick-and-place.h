@@ -21,6 +21,7 @@
 
 /** \file pick-and-place.h
     \brief Header info for the PNP (pick-and-place) parsing functions
+    \ingroup libgerbv
 */
 
 #ifndef PICK_AND_PLACE_H
@@ -28,7 +29,6 @@
 
 #include <glib.h>
  
-/** maximum size of strings. */
 #define MAXL 200
 
 typedef struct gerb_transf {

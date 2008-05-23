@@ -4,6 +4,7 @@
 
 /** \file dynload.h
     \brief Header info for the dynamic loader functions for TinyScheme
+    \ingroup gerbv
 */
 
 #ifndef DYNLOAD_H

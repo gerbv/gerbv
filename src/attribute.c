@@ -25,6 +25,7 @@
 
 /** \file attribute.c
     \brief Dynamic GUI window creation functions
+    \ingroup gerbv
 */
 
 #ifdef HAVE_CONFIG_H

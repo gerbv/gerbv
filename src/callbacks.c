@@ -23,6 +23,7 @@
 
 /** \file callbacks.c
     \brief Callback functions for the GUI widgets
+    \ingroup gerbv
 */
 
 #ifdef HAVE_CONFIG_H

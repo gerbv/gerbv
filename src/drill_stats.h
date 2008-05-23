@@ -22,7 +22,8 @@
  */
 
 /** \file drill_stats.h
-    \brief Header infor to the statistics generating functions for Excellon drill files
+    \brief Header info to the statistics generating functions for Excellon drill files
+    \ingroup libgerbv
 */
 
 #ifndef DRILL_STATS_H

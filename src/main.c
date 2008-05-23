@@ -23,6 +23,7 @@
 
 /** \file main.c
     \brief The main code for the Gerber Viewer GUI application and command line processing
+    \ingroup gerbv
 */
 
 #ifdef HAVE_CONFIG_H

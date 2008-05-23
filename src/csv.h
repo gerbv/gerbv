@@ -32,6 +32,7 @@
 
 /** \file csv.h
     \brief Header info for the parsing support functions for the pick and place parser
+    \ingroup libgerbv
 */
 
 #ifndef CSV_H

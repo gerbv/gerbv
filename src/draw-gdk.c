@@ -23,6 +23,7 @@
 
 /** \file draw-gdk.c
     \brief GDK rendering functions
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H

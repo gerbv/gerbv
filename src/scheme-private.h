@@ -2,6 +2,7 @@
 
 /** \file scheme-private.h
     \brief Private data for the TinyScheme compiler
+    \ingroup gerbv
 */
 
 #ifndef _SCHEME_PRIVATE_H

@@ -21,6 +21,7 @@
 
 /** \file pick-and-place.c
     \brief PNP (pick-and-place) parsing functions
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H
@@ -153,8 +154,6 @@ void gerb_transf_apply(double x, double y, gerbv_transf_t* transf, double *out_x
 }/*gerb_transf_apply*/
 
 //! Parses a string representing float number with a unit, default is mil
-/** @param char a string to be screened for unit
-    @return a correctly converted double */
 static double 
 pick_and_place_get_float_unit(char *str)
 {

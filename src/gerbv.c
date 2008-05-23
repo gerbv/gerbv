@@ -24,28 +24,8 @@
  
 /** \file gerbv.c
     \brief This file contains high-level functions for the libgerbv library
+    \ingroup libgerbv
 */
-
-/**
-\mainpage Gerber Viewer/libgerbv Index Page
-
-\section intro_sec Introduction
-
-Gerber Viewer is a program which can display, edit, export, and do other manipulation of
-file formats used in PCB design (RS274X, Excellon drill, and pick-and-place). The core
-library (libgerbv) is available as a separate library, allowing other software to easily
-incorporate advanced Gerber functionality.
-
-This code documentation is mainly intended to help explain the libgerbv API for developers
-wishing to use libgerbv in their own projects. The easiest way to learn to use libgerbv is
-by reading through and compiling the example source files (click on "Examples" in the navigation
-tree in the left pane), or in the doc/example-code/ directory in CVS.
-
-For help with using the standalone Gerber Viewer software, please refer to the man page (using
-the command "man gerbv") or go to the Gerber Viewer homepage for documentation.
-*/
-
-
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

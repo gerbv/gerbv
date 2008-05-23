@@ -23,6 +23,7 @@
 
 /** \file gerb_image.h
     \brief Header info for the image editing and support functions
+    \ingroup libgerbv
 */
 
 #ifndef GERB_IMAGE_H

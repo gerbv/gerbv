@@ -23,6 +23,7 @@
 
 /** \file drill_stats.c
     \brief Statistics generating functions for Excellon drill files
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H
