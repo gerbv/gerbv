@@ -26,19 +26,19 @@ main(int argc, char *argv[]) {
 	workingImage = gerbv_create_image(NULL, NULL);
 	
 	/* draw the nose */
-	gerbv_image_create_line_object (workingImage, 1.5, 1.5, 1.6, 1.3, 0.020, CIRCLE);
-	gerbv_image_create_line_object (workingImage, 1.5, 1.5, 1.4, 1.3, 0.020, CIRCLE);
-	gerbv_image_create_line_object (workingImage, 1.4, 1.3, 1.6, 1.3, 0.020, CIRCLE);
+	gerbv_image_create_line_object (workingImage, 1.5, 1.5, 1.6, 1.3, 0.020, GERBV_APTYPE_CIRCLE);
+	gerbv_image_create_line_object (workingImage, 1.5, 1.5, 1.4, 1.3, 0.020, GERBV_APTYPE_CIRCLE);
+	gerbv_image_create_line_object (workingImage, 1.4, 1.3, 1.6, 1.3, 0.020, GERBV_APTYPE_CIRCLE);
 	
 	/* draw the eyes */
-	gerbv_image_create_arc_object (workingImage, 1, 2, 0.1, 0, 360, 0.020, CIRCLE);
-	gerbv_image_create_arc_object (workingImage, 2, 2, 0.1, 0, 360, 0.020, CIRCLE);
+	gerbv_image_create_arc_object (workingImage, 1, 2, 0.1, 0, 360, 0.020, GERBV_APTYPE_CIRCLE);
+	gerbv_image_create_arc_object (workingImage, 2, 2, 0.1, 0, 360, 0.020, GERBV_APTYPE_CIRCLE);
 	
 	/* draw the mouth */
-	gerbv_image_create_arc_object (workingImage, 1.5, 1.5, 0.75, -30, -150, 0.20, CIRCLE);
+	gerbv_image_create_arc_object (workingImage, 1.5, 1.5, 0.75, -30, -150, 0.20, GERBV_APTYPE_CIRCLE);
 	
 	/* draw the head */
-	gerbv_image_create_arc_object (workingImage, 1.5, 1.5, 1.5, 0, 360, 0.02, CIRCLE);
+	gerbv_image_create_arc_object (workingImage, 1.5, 1.5, 1.5, 0, 360, 0.02, GERBV_APTYPE_CIRCLE);
 	
 	/* draw the ears */
 	gerbv_image_create_rectangle_object (workingImage, -0.2, 1.3, 0.2, 0.4);

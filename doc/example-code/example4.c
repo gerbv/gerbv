@@ -34,9 +34,9 @@ main(int argc, char *argv[]) {
 	/* run through all the nets in the layer */
 	for (currentNet = workingImage->netlist; currentNet; currentNet = currentNet->next){	
 		/* check if the net aperture is a circle and has diameter < 0.060 inches */
-		if ((currentNet->aperture_state != OFF) &&
+		if ((currentNet->aperture_state != GERBV_APERTURE_STATE_OFF) &&
 				(workingImage->aperture[currentNet->aperture] != NULL) &&
-				(workingImage->aperture[currentNet->aperture]->type == CIRCLE) &&
+				(workingImage->aperture[currentNet->aperture]->type == GERBV_APTYPE_CIRCLE) &&
 				(workingImage->aperture[currentNet->aperture]->parameter[0] < 0.060)){
 			/* we found a path which meets the criteria, so delete the net for
 			   demostration purposes */
