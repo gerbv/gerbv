@@ -226,9 +226,9 @@ define_layer(scheme *sc, pointer args)
 	    while (sc->vptr->is_pair(attr_car_el)) {
 		int p = plist_top->n_attr;
 		plist_top->n_attr++;
-		plist_top->attr_list = (HID_Attribute *) 
+		plist_top->attr_list = (gerbv_HID_Attribute *) 
 		    realloc (plist_top->attr_list, 
-			     plist_top->n_attr * sizeof (HID_Attribute));
+			     plist_top->n_attr * sizeof (gerbv_HID_Attribute));
 		if (plist_top->attr_list == NULL ) {
 		    fprintf (stderr, "%s():  realloc failed\n", __FUNCTION__);
 		    exit (1);
@@ -433,7 +433,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
     FILE *fd;
     project_list_t *p = project, *tmp;
     int n_attr = 0;
-    HID_Attribute *attr_list = NULL;
+    gerbv_HID_Attribute *attr_list = NULL;
     int i;
 
     if ((fd = fopen(filename, "w")) == NULL) {

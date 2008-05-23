@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_unit_t;
+typedef enum {GERBV_MILS, GERBV_MMS, GERBV_INS} gerbv_gui_unit_t;
 typedef enum {ZOOM_IN, ZOOM_OUT, ZOOM_FIT, ZOOM_IN_CMOUSE, ZOOM_OUT_CMOUSE, ZOOM_SET } gerbv_zoom_dir_t;
 typedef enum {NORMAL, IN_MOVE, IN_ZOOM_OUTLINE, IN_MEASURE, ALT_PRESSED,
 		IN_SELECTION_DRAG, SCROLLBAR} gerbv_state_t;
@@ -95,7 +95,7 @@ typedef struct {
     gerbv_selection_info_t selectionInfo;
     gerbv_state_t state;
     gerbv_tool_t tool;
-    gerbv_unit_t unit;
+    gerbv_gui_unit_t unit;
            
     gint last_x;
     gint last_y;

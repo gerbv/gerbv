@@ -50,12 +50,12 @@ export_rs274x_write_macro (FILE *fd, gerbv_aperture_t *currentAperture,
 	/* write the macro portion first */
 	fprintf(fd, "%%AMMACRO%d*\n",apertureNumber);
 	while (ls != NULL) {
-		if (ls->type == MACRO_CIRCLE) {
+		if (ls->type == GERBV_APTYPE_MACRO_CIRCLE) {
 			fprintf(fd, "1,%d,%f,%f,%f*\n",(int) ls->parameter[CIRCLE_EXPOSURE],
 				ls->parameter[CIRCLE_DIAMETER],ls->parameter[CIRCLE_CENTER_X],
 				ls->parameter[CIRCLE_CENTER_Y]);
 		}
-		else if (ls->type == MACRO_OUTLINE) {
+		else if (ls->type == GERBV_APTYPE_MACRO_OUTLINE) {
 			int pointCounter;
 			int numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
 			
@@ -68,38 +68,38 @@ export_rs274x_write_macro (FILE *fd, gerbv_aperture_t *currentAperture,
 			}
 			fprintf(fd, "%f*\n",ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X]);
 		}
-		else if (ls->type == MACRO_POLYGON) {
+		else if (ls->type == GERBV_APTYPE_MACRO_POLYGON) {
 			fprintf(fd, "5,%d,%d,%f,%f,%f,%f*\n",(int) ls->parameter[POLYGON_EXPOSURE],
 				(int) ls->parameter[POLYGON_NUMBER_OF_POINTS],
 				ls->parameter[POLYGON_CENTER_X],ls->parameter[POLYGON_CENTER_Y],
 				ls->parameter[POLYGON_DIAMETER],ls->parameter[POLYGON_ROTATION]);
 		}
-		else if (ls->type == MACRO_MOIRE) {
+		else if (ls->type == GERBV_APTYPE_MACRO_MOIRE) {
 			fprintf(fd, "6,%f,%f,%f,%f,%f,%d,%f,%f,%f*\n",ls->parameter[MOIRE_CENTER_X],
 				ls->parameter[MOIRE_CENTER_Y],ls->parameter[MOIRE_OUTSIDE_DIAMETER],
 				ls->parameter[MOIRE_CIRCLE_THICKNESS],ls->parameter[MOIRE_GAP_WIDTH],
 				(int) ls->parameter[MOIRE_NUMBER_OF_CIRCLES],ls->parameter[MOIRE_CROSSHAIR_THICKNESS],
 				ls->parameter[MOIRE_CROSSHAIR_LENGTH],ls->parameter[MOIRE_ROTATION]);
 		}
-		else if (ls->type == MACRO_THERMAL) {
+		else if (ls->type == GERBV_APTYPE_MACRO_THERMAL) {
 			fprintf(fd, "7,%f,%f,%f,%f,%f,%f*\n",ls->parameter[THERMAL_CENTER_X],
 				ls->parameter[THERMAL_CENTER_Y],ls->parameter[THERMAL_OUTSIDE_DIAMETER],
 				ls->parameter[THERMAL_INSIDE_DIAMETER],ls->parameter[THERMAL_CROSSHAIR_THICKNESS],
 				ls->parameter[THERMAL_ROTATION]);
 		}
-		else if (ls->type == MACRO_LINE20) {
+		else if (ls->type == GERBV_APTYPE_MACRO_LINE20) {
 			fprintf(fd, "20,%d,%f,%f,%f,%f,%f,%f*\n",(int) ls->parameter[LINE20_EXPOSURE],
 				ls->parameter[LINE20_LINE_WIDTH],ls->parameter[LINE20_START_X],
 				ls->parameter[LINE20_START_Y],ls->parameter[LINE20_END_X],
 				ls->parameter[LINE20_END_Y],ls->parameter[LINE20_ROTATION]);
 		}
-		else if (ls->type == MACRO_LINE21) {
+		else if (ls->type == GERBV_APTYPE_MACRO_LINE21) {
 			fprintf(fd, "21,%d,%f,%f,%f,%f,%f*\n",(int) ls->parameter[LINE21_EXPOSURE],
 				ls->parameter[LINE21_WIDTH],ls->parameter[LINE21_HEIGHT],
 				ls->parameter[LINE21_CENTER_X],ls->parameter[LINE21_CENTER_Y],
 				ls->parameter[LINE21_ROTATION]);
 		}
-		else if (ls->type == MACRO_LINE22) {
+		else if (ls->type == GERBV_APTYPE_MACRO_LINE22) {
 			fprintf(fd, "22,%d,%f,%f,%f,%f,%f*\n",(int) ls->parameter[LINE22_EXPOSURE],
 				ls->parameter[LINE22_WIDTH],ls->parameter[LINE22_HEIGHT],
 				ls->parameter[LINE22_LOWER_LEFT_X],ls->parameter[LINE22_LOWER_LEFT_Y],
@@ -126,31 +126,31 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image) {
 			continue;
 		
 		switch (currentAperture->type) {
-			case CIRCLE:
+			case GERBV_APTYPE_CIRCLE:
 				fprintf(fd, "%%ADD%d",i);
 				fprintf(fd, "C,");
 				numberOfRequiredParameters = 1;
 				numberOfOptionalParameters = 2;
 				break;
-			case RECTANGLE:
+			case GERBV_APTYPE_RECTANGLE:
 				fprintf(fd, "%%ADD%d",i);
 				fprintf(fd, "R,");
 				numberOfRequiredParameters = 2;
 				numberOfOptionalParameters = 2;
 				break;
-			case OVAL:
+			case GERBV_APTYPE_OVAL:
 				fprintf(fd, "%%ADD%d",i);
 				fprintf(fd, "O,");
 				numberOfRequiredParameters = 2;
 				numberOfOptionalParameters = 2;
 				break;
-			case POLYGON:
+			case GERBV_APTYPE_POLYGON:
 				fprintf(fd, "%%ADD%d",i);
 				fprintf(fd, "P,");
 				numberOfRequiredParameters = 2;
 				numberOfOptionalParameters = 3;
 				break;
-			case MACRO:
+			case GERBV_APTYPE_MACRO:
 				export_rs274x_write_macro (fd, currentAperture, i);
 				writeAperture=FALSE;
 				break;
@@ -177,7 +177,7 @@ void
 export_rs274x_write_layer_change (gerbv_layer_t *oldLayer, gerbv_layer_t *newLayer, FILE *fd) {
 	if (oldLayer->polarity != newLayer->polarity) {
 		/* polarity changed */
-		if ((newLayer->polarity == CLEAR))
+		if ((newLayer->polarity == GERBV_POLARITY_CLEAR))
 			fprintf(fd, "%%LPC*%%\n");
 		else
 			fprintf(fd, "%%LPD*%%\n");
@@ -215,7 +215,7 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
 	if ((image->info->offsetA > 0.0) || (image->info->offsetB > 0.0))
 		fprintf(fd, "%%IOA%fB%f*%%\n",image->info->offsetA,image->info->offsetB);
 	/* image polarity */
-	if (image->info->polarity == CLEAR)
+	if (image->info->polarity == GERBV_POLARITY_CLEAR)
 		fprintf(fd, "%%IPNEG*%%\n");
 	else
 		fprintf(fd, "%%IPPOS*%%\n");
@@ -228,15 +228,15 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
 	/* image rotation */
 	if (image->info->imageRotation != 0.0)
 		fprintf(fd, "%%IR%d*%%\n",(int) image->info->imageRotation);
-	if ((image->info->imageJustifyTypeA != NOJUSTIFY) ||
-		(image->info->imageJustifyTypeB != NOJUSTIFY)) {
+	if ((image->info->imageJustifyTypeA != GERBV_JUSTIFY_NOJUSTIFY) ||
+		(image->info->imageJustifyTypeB != GERBV_JUSTIFY_NOJUSTIFY)) {
 		fprintf(fd, "%%IJA");
-		if (image->info->imageJustifyTypeA == CENTERJUSTIFY)
+		if (image->info->imageJustifyTypeA == GERBV_JUSTIFY_CENTERJUSTIFY)
 			fprintf(fd, "C");
 		else 
 			fprintf(fd, "%.4f",image->info->imageJustifyOffsetA);
 		fprintf(fd, "B");
-		if (image->info->imageJustifyTypeB == CENTERJUSTIFY)
+		if (image->info->imageJustifyTypeB == GERBV_JUSTIFY_CENTERJUSTIFY)
 			fprintf(fd, "C");
 		else 
 			fprintf(fd, "%.4f",image->info->imageJustifyOffsetB);
@@ -278,13 +278,13 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
 		
 		long xVal,yVal,endX,endY,centerX,centerY;
 		switch (currentNet->interpolation) {
-			case LINEARx10 :
-			case LINEARx01 :
-			case LINEARx001 :
-			case LINEARx1 :
+			case GERBV_INTERPOLATION_x10 :
+			case GERBV_INTERPOLATION_LINEARx01 :
+			case GERBV_INTERPOLATION_LINEARx001 :
+			case GERBV_INTERPOLATION_LINEARx1 :
 				/* see if we need to write an "aperture off" line to get
 				   the pen to the right start point */
-				if ((!insidePolygon) && (currentNet->aperture_state == ON)) {
+				if ((!insidePolygon) && (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)) {
 					xVal = (long) round(currentNet->start_x * 1000.0);
 					yVal = (long) round(currentNet->start_y * 1000.0);
 					fprintf(fd, "G01X%05ldY%05ldD02*\n",xVal,yVal);
@@ -293,18 +293,18 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
 				yVal = (long) round(currentNet->stop_y * 1000.0);
 				fprintf(fd, "G01X%05ldY%05ld",xVal,yVal);
 				/* and finally, write the esposure value */
-				if (currentNet->aperture_state == OFF)
+				if (currentNet->aperture_state == GERBV_APERTURE_STATE_OFF)
 					fprintf(fd, "D02*\n");
-				else if (currentNet->aperture_state == ON)
+				else if (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)
 					fprintf(fd, "D01*\n");
 				else
 					fprintf(fd, "D03*\n");
 				break;
-			case CW_CIRCULAR :
-			case CCW_CIRCULAR :
+			case GERBV_INTERPOLATION_CW_CIRCULAR :
+			case GERBV_INTERPOLATION_CCW :
 				/* see if we need to write an "aperture off" line to get
 				   the pen to the right start point */
-				if ((!insidePolygon) && (currentNet->aperture_state == ON)) {
+				if ((!insidePolygon) && (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)) {
 					xVal = (long) round(currentNet->start_x * 1000.0);
 					yVal = (long) round(currentNet->start_y * 1000.0);
 					fprintf(fd, "G01X%05ldY%05ldD02*\n",xVal,yVal);
@@ -323,23 +323,23 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
 				else
 					fprintf(fd, "G02");
 				/* don't write the I and J values if the exposure is off */
-				if (currentNet->aperture_state == ON)
+				if (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)
 					fprintf(fd, "X%05ldY%05ldI%05ldJ%05ld",endX,endY,centerX,centerY);
 				else
 					fprintf(fd, "X%05ldY%05ld",endX,endY);
 				/* and finally, write the esposure value */
-				if (currentNet->aperture_state == OFF)
+				if (currentNet->aperture_state == GERBV_APERTURE_STATE_OFF)
 					fprintf(fd, "D02*\n");
-				else if (currentNet->aperture_state == ON)
+				else if (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)
 					fprintf(fd, "D01*\n");
 				else
 					fprintf(fd, "D03*\n");
 				break;
-			case PAREA_START:
+			case GERBV_INTERPOLATION_PAREA_START:
 				fprintf(fd, "G36*\n");
 				insidePolygon = TRUE;
 				break;
-			case PAREA_END:
+			case GERBV_INTERPOLATION_PAREA_END:
 				fprintf(fd, "G37*\n");
 				insidePolygon = FALSE;
 				break;

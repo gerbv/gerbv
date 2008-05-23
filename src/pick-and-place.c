@@ -536,7 +536,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     gerbv_net_t *curr_net = NULL;
     int i;
     gerbv_transf_t *tr_rot = gerb_transf_new();
-    drill_stats_t *stats;  /* Eventually replace with pick_place_stats */
+    gerbv_drill_stats_t *stats;  /* Eventually replace with pick_place_stats */
     gboolean foundElement = FALSE;
     
     /* step through and make sure we have an element on the layer before
@@ -565,8 +565,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     }
     memset((void *)image->format, 0, sizeof(gerbv_format_t));
     
-    image->layertype = PICK_AND_PLACE;
-    stats = drill_stats_new();
+    image->layertype = GERBV_LAYERTYPE_PICKANDPLACE;
+    stats = gerbv_drill_stats_new();
     if (stats == NULL)
         GERB_FATAL_ERROR("malloc pick_place_stats failed\n");
     image->drill_stats = stats;
@@ -582,7 +582,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 
     image->aperture[0] = (gerbv_aperture_t *)g_malloc(sizeof(gerbv_aperture_t));
     memset((void *) image->aperture[0], 0, sizeof(gerbv_aperture_t));
-    image->aperture[0]->type = CIRCLE;
+    image->aperture[0]->type = GERBV_APTYPE_CIRCLE;
     image->aperture[0]->amacro = NULL;
     image->aperture[0]->parameter[0] = 0.02;
     image->aperture[0]->nuf_parameters = 1;
@@ -620,8 +620,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    gerb_transf_rotate(tr_rot, partData.rotation);
 	    
 	    curr_net->aperture = 0;
-	    curr_net->aperture_state = OFF;
-	    curr_net->interpolation = LINEARx1;
+	    curr_net->aperture_state = GERBV_APERTURE_STATE_OFF;
+	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
@@ -645,8 +645,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
 	    curr_net->aperture = 0;
-	    curr_net->aperture_state = ON;
-	    curr_net->interpolation = LINEARx1;
+	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
@@ -662,8 +662,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
 	    curr_net->aperture = 0;
-	    curr_net->aperture_state = ON;
-	    curr_net->interpolation = LINEARx1;
+	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
@@ -678,8 +678,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
 	    curr_net->aperture = 0;
-	    curr_net->aperture_state = ON;
-	    curr_net->interpolation = LINEARx1;
+	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
@@ -694,8 +694,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
 	    curr_net->aperture = 0;
-	    curr_net->aperture_state = ON;
-	    curr_net->interpolation = LINEARx1;
+	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
@@ -716,8 +716,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 				  &curr_net->stop_x, &curr_net->stop_y);
 		
 		curr_net->aperture = 0;
-		curr_net->aperture_state = ON;
-		curr_net->interpolation = LINEARx1;
+		curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+		curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 		curr_net->layer = image->layers;
 		curr_net->state = image->states;
 		
@@ -731,8 +731,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 				  &curr_net->stop_x, &curr_net->stop_y);     
 	    }
 	    curr_net->aperture = 0;
-	    curr_net->aperture_state = ON;
-	    curr_net->interpolation = LINEARx1;
+	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    /* calculate a rough radius for the min/max screen calcs later */
@@ -744,8 +744,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->stop_y = partData.pad_y;
 	    
 	    curr_net->aperture = 0;
-	    curr_net->aperture_state = ON;
-	    curr_net->interpolation = LINEARx1;
+	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
@@ -760,8 +760,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->stop_y = partData.pad_y;
 	    
 	    curr_net->aperture = 0;
-	    curr_net->aperture_state = ON;
-	    curr_net->interpolation = CW_CIRCULAR;
+	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+	    curr_net->interpolation = GERBV_INTERPOLATION_CW_CIRCULAR;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    

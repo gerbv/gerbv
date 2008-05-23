@@ -26,8 +26,8 @@
     \ingroup libgerbv
 */
 
-#ifndef GERBER_H
-#define GERBER_H
+#ifndef GERBV_LAYERTYPE_RS274X_H
+#define GERBV_LAYERTYPE_RS274X_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,8 +48,8 @@ typedef struct gerb_state {
     int curr_aperture;
     int changed;
     gerbv_aperture_state_t aperture_state;
-    enum interpolation_t interpolation;
-    enum interpolation_t prev_interpolation;
+    gerbv_interpolation_t interpolation;
+    gerbv_interpolation_t prev_interpolation;
     gerbv_net_t *parea_start_node;
     gerbv_layer_t *layer;
     gerbv_netstate_t *state;
@@ -73,4 +73,4 @@ gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
 }
 #endif
 
-#endif /* GERBER_H */
+#endif /* GERBV_LAYERTYPE_RS274X_H */

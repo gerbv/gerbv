@@ -26,30 +26,30 @@
     \ingroup libgerbv
 */
 
-#ifndef DRILL_STATS_H
-#define DRILL_STATS_H
+#ifndef GERBV_LAYERTYPE_DRILL_STATS_H
+#define GERBV_LAYERTYPE_DRILL_STATS_H
 
 #include <gdk/gdk.h>      /* This imports gboolean type */
 
 
 /* ===================  Prototypes ================ */
 
-gboolean drill_stats_in_drill_list(drill_list_t *drill_list, int drill_num);
-drill_list_t *drill_stats_new_drill_list(void);
-void drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
+gboolean drill_stats_in_drill_list(gerbv_drill_list_t *drill_list, int drill_num);
+gerbv_drill_list_t *gerbv_drill_stats_new_drill_list(void);
+void drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
 				   int drill_num_in, double drill_size_in,
 				   char *drill_unit_in);
-void drill_stats_modify_drill_list(drill_list_t *drill_list_in,
+void drill_stats_modify_drill_list(gerbv_drill_list_t *drill_list_in,
 				   int drill_num_in, double drill_size_in,
 				   char *drill_unit_in);
-void drill_stats_increment_drill_counter(drill_list_t *drill_list_in,
+void drill_stats_increment_drill_counter(gerbv_drill_list_t *drill_list_in,
 					 int drill_num_in);
-void drill_stats_add_to_drill_counter(drill_list_t *drill_list_in,
+void drill_stats_add_to_drill_counter(gerbv_drill_list_t *drill_list_in,
 				      int drill_num_in,
 				      int increment);
-error_list_t *drill_stats_new_error_list(void);
-void drill_stats_add_error(error_list_t *error_list_in,
+gerbv_error_list_t *gerbv_drill_stats_new_error_list(void);
+void drill_stats_add_error(gerbv_error_list_t *error_list_in,
 			   int layer, const char *error_text, 
-			   enum error_type_t type);
+			   gerbv_message_type_t type);
 
-#endif /* DRILL_STATS_H */
+#endif /* GERBV_LAYERTYPE_DRILL_STATS_H */

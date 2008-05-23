@@ -24,8 +24,8 @@
     \ingroup libgerbv
 */
 
-#ifndef PICK_AND_PLACE_H
-#define PICK_AND_PLACE_H
+#ifndef GERBV_LAYERTYPE_PICKANDPLACE_H
+#define GERBV_LAYERTYPE_PICKANDPLACE_H
 
 #include <glib.h>
  
@@ -72,4 +72,4 @@ pick_and_place_parse_file_to_images (gerb_file_t *fd, gerbv_image_t **topImage,
 gboolean
 pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary);
 
-#endif /* PICK_AND_PLACE_H */
+#endif /* GERBV_LAYERTYPE_PICKANDPLACE_H */

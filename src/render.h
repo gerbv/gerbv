@@ -30,7 +30,7 @@
 #include "gerber.h"
 
 gerbv_stats_t *generate_gerber_analysis(void);
-drill_stats_t *generate_drill_analysis(void);
+gerbv_drill_stats_t *generate_drill_analysis(void);
 
 #ifdef RENDER_USING_GDK
 /* Nothing for now */

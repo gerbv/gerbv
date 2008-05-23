@@ -37,7 +37,7 @@ typedef struct project_list_t {
     char inverted;
     char is_pnp;
     char visible;
-    HID_Attribute *attr_list;
+    gerbv_HID_Attribute *attr_list;
     int n_attr;
     struct project_list_t *next;
 } project_list_t;

@@ -103,7 +103,7 @@ ProcessToolLine(const char *cp)
 
 
 int 
-ProcessToolsFile(const char *tf)
+gerbv_process_tools_file(const char *tf)
 {
     FILE *f;
     char buf[80];
@@ -128,15 +128,15 @@ ProcessToolsFile(const char *tf)
     fclose(f);
     have_tools_file = 1;
     return 1;
-} /* ProcessToolsFile */
+} /* gerbv_process_tools_file */
 
 
 double 
-GetToolDiameter_Inches(int toolNumber)
+gerbv_get_tool_diameter(int toolNumber)
 {
     if (!have_tools_file)
         return 0;
     if ((toolNumber < MIN_TOOL_NUMBER) || (toolNumber > MAX_TOOL_NUMBER))
         return 0;
     return tools[toolNumber];
-} /* GetToolDiameter_Inches */
+} /* gerbv_get_tool_diameter */

@@ -344,7 +344,7 @@ void render_selection_layer (void){
 		(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
 		CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
 		screenRenderInfo.displayHeight);
-	if (screen.selectionInfo.type != EMPTY) {
+	if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
 		cr= cairo_create(screen.selectionRenderData);
 		gerbv_render_cairo_set_scale_and_translation(cr, &screenRenderInfo);
 		cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1);
@@ -442,7 +442,7 @@ void
 render_clear_selection_buffer (void){
 	g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
 			screen.selectionInfo.selectedNodeArray->len);
-	screen.selectionInfo.type = EMPTY;
+	screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
 }
 
 void
@@ -468,7 +468,7 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean
 	/* if the selection array is empty, switch the "mode" to empty to make it
 	   easier to check if it is holding anything */
 	if (!screen.selectionInfo.selectedNodeArray->len)
-		screen.selectionInfo.type = EMPTY;
+		screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
 	/* re-render the selection buffer layer */
 	if (screenRenderInfo.renderType < 2){
 		render_refresh_rendered_image_on_screen ();
@@ -486,7 +486,7 @@ render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint ac
 	screen.selectionInfo.lowerLeftX = mouseX;
 	screen.selectionInfo.lowerLeftY = mouseY;
 	/* no need to populate the upperright coordinates for a point_click */
-	screen.selectionInfo.type = POINT_CLICK;
+	screen.selectionInfo.type = GERBV_SELECTION_POINT_CLICK;
 	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
 }
 
@@ -500,7 +500,7 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	screen.selectionInfo.upperRightX = MAX(corner1X, corner2X);
 	screen.selectionInfo.upperRightY = MAX(corner1Y, corner2Y);
 	
-	screen.selectionInfo.type = DRAG_BOX;
+	screen.selectionInfo.type = GERBV_SELECTION_DRAG_BOX;
 	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
 }
 
@@ -531,7 +531,7 @@ void render_recreate_composite_surface () {
 		}
 	}
 	/* render the selection layer at the end */
-	if (screen.selectionInfo.type != EMPTY) {
+	if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
 		cairo_set_source_surface (cr, (cairo_surface_t *) screen.selectionRenderData,
 			                              0, 0);
 		cairo_paint_with_alpha (cr,1.0);
@@ -567,7 +567,7 @@ generate_gerber_analysis(void)
     for(i = mainProject->max_files-1; i >= 0; i--) {
 	if (mainProject->file[i] && 
 	    mainProject->file[i]->isVisible &&
-	    (mainProject->file[i]->image->layertype == GERBER) ) {
+	    (mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
 	    instats = mainProject->file[i]->image->gerbv_stats;
 	    gerbv_stats_add_layer(stats, instats, i+1);
 	}
@@ -579,24 +579,24 @@ generate_gerber_analysis(void)
 
 /* ------------------------------------------------------------------ */
 /* Fill out the drill file statistics table */
-drill_stats_t *
+gerbv_drill_stats_t *
 generate_drill_analysis(void)
 {
     int i;
-    drill_stats_t *stats;
-    drill_stats_t *instats;
+    gerbv_drill_stats_t *stats;
+    gerbv_drill_stats_t *instats;
 
-    stats = drill_stats_new();
+    stats = gerbv_drill_stats_new();
 
     /* Loop through open layers and compile statistics */
     for(i = mainProject->max_files-1; i >= 0; i--) {
 	if (mainProject->file[i] && 
 	    mainProject->file[i]->isVisible &&
-	    (mainProject->file[i]->image->layertype == DRILL) ) {
+	    (mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {
 	    instats = mainProject->file[i]->image->drill_stats;
 	    /* add this batch of stats.  Send the layer 
 	     * index for error reporting */
-	    drill_stats_add_layer(stats, instats, i+1);
+	    gerbv_drill_stats_add_layer(stats, instats, i+1);
 	}
     }
     

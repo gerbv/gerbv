@@ -25,8 +25,8 @@
     \ingroup libgerbv
 */
 
-#ifndef DRILL_H
-#define DRILL_H
+#ifndef GERBV_LAYERTYPE_DRILL_H
+#define GERBV_LAYERTYPE_DRILL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +40,7 @@ extern "C" {
 #define TOOL_MIN 1  /* T00 code is reserved for unload tool command */
 #define TOOL_MAX 9999
 
-gerbv_image_t *parse_drillfile(gerb_file_t *fd, HID_Attribute *attr_list, 
+gerbv_image_t *parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, 
 			      int n_attr, int reload);
 gboolean
 drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary);
@@ -49,4 +49,4 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary);
 }
 #endif
 
-#endif /* DRILL_H */
+#endif /* GERBV_LAYERTYPE_DRILL_H */

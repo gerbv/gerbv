@@ -278,7 +278,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		windowTitle = g_strdup ("Export PNG file as...");
 	else if (processType == CALLBACKS_SAVE_FILE_RS274X)
 		windowTitle = g_strdup ("Export RS-274X file as...");
-	else if (processType == CALLBACKS_SAVE_FILE_DRILL)
+	else if (processType == CALLBACKS_SAVE_FILE_GERBV_LAYERTYPE_DRILL)
 		windowTitle = g_strdup ("Export Excellon drill file as...");
 	else if (processType == CALLBACKS_SAVE_LAYER_AS)
 		windowTitle = g_strdup ("Save layer as...");
@@ -322,7 +322,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			
 			gerbv_export_rs274x_file_from_image (filename, mainProject->file[index]->image);
 		}
-		else if (processType == CALLBACKS_SAVE_FILE_DRILL) {
+		else if (processType == CALLBACKS_SAVE_FILE_GERBV_LAYERTYPE_DRILL) {
 			gint index=callbacks_get_selected_row_index();
 			
 			gerbv_export_drill_file_from_image (filename, mainProject->file[index]->image);
@@ -437,7 +437,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gchar *misc_report_string;
     gchar *general_report_string;
     gchar *error_report_string;
-    error_list_t *my_error_list;
+    gerbv_error_list_t *my_error_list;
     gchar *error_level = NULL;
     gchar *aperture_report_string;
     gerbv_aperture_list_t *my_aperture_list;
@@ -459,17 +459,17 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	    my_error_list != NULL; 
 	    my_error_list = my_error_list->next) {
 	    switch(my_error_list->type) {
-		case FATAL: /* We should never get this one since the 
+		case GERBV_MESSAGE_FATAL: /* We should never get this one since the 
 			     * program should terminate first.... */
 		    error_level = g_strdup_printf("FATAL: ");
 		    break;
-		case GRB_ERROR:
+		case GERBV_MESSAGE_ERROR:
 		    error_level = g_strdup_printf("ERROR: ");
 		    break;
-		case WARNING:
+		case GERBV_MESSAGE_WARNING:
 		    error_level = g_strdup_printf("WARNING: ");
 		    break;
-		case NOTE:
+		case GERBV_MESSAGE_NOTE:
 		    error_level = g_strdup_printf("NOTE: ");
 		    break;
 	    }
@@ -775,18 +775,18 @@ void
 callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-    drill_stats_t *stats_report;
+    gerbv_drill_stats_t *stats_report;
     gchar *G_report_string;
     gchar *M_report_string;
     gchar *misc_report_string;
-    drill_list_t *my_drill_list;
+    gerbv_drill_list_t *my_drill_list;
     gchar *drill_report_string;
     gchar *general_report_string;
     gchar *error_report_string;
-    error_list_t *my_error_list;
+    gerbv_error_list_t *my_error_list;
     gchar *error_level = NULL;
 
-    stats_report = (drill_stats_t *) generate_drill_analysis();
+    stats_report = (gerbv_drill_stats_t *) generate_drill_analysis();
     
     /* General and error window strings */
     general_report_string = g_strdup_printf("General information\n");
@@ -801,17 +801,17 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 	    my_error_list != NULL; 
 	    my_error_list = my_error_list->next) {
 	    switch(my_error_list->type) {
-		case FATAL: /* We should never get this one since the 
+		case GERBV_MESSAGE_FATAL: /* We should never get this one since the 
 			     * program should terminate first.... */
 		    error_level = g_strdup_printf("FATAL: ");
 		    break;
-		case GRB_ERROR:
+		case GERBV_MESSAGE_ERROR:
 		    error_level = g_strdup_printf("ERROR: ");
 		    break;
-		case WARNING:
+		case GERBV_MESSAGE_WARNING:
 		    error_level = g_strdup_printf("WARNING: ");
 		    break;
-		case NOTE:
+		case GERBV_MESSAGE_NOTE:
 		    error_level = g_strdup_printf("NOTE: ");
 		    break;
 	    }
@@ -1655,10 +1655,10 @@ callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 void
 callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 {
-    HID_Attribute *attr = NULL;
+    gerbv_HID_Attribute *attr = NULL;
     int n = 0;
     int i;
-    HID_Attr_Val * results = NULL;
+    gerbv_HID_Attr_Val * results = NULL;
     gint index = callbacks_get_selected_row_index();
     gchar *type;
 
@@ -1682,7 +1682,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     dprintf ("%s(): n = %d, attr = %p\n", __FUNCTION__, n, attr);
     if (n > 0)
 	{
-	    results = (HID_Attr_Val *) malloc (n * sizeof (HID_Attr_Val));
+	    results = (gerbv_HID_Attr_Val *) malloc (n * sizeof (gerbv_HID_Attr_Val));
 	    if (results == NULL)
 		{
 		    fprintf (stderr, "%s() -- malloc failed\n", __FUNCTION__);
@@ -1867,7 +1867,7 @@ callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
-  if (screen.selectionInfo.type != EMPTY) {
+  if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
     if (mainProject->check_before_delete == TRUE) {
       if (!interface_get_alert_dialog_response(
                  "The selected objects will be permanently deleted",
@@ -2186,12 +2186,12 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 #ifndef RENDER_USING_GDK
 				/* if no items are selected, try and find the item the user
 				   is pointing at */
-				if (screen.selectionInfo.type == EMPTY) {
+				if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
 					gint index=callbacks_get_selected_row_index();
 					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,TRUE);
 				}
 				/* only show the popup if we actually have something selected now */
-				if (screen.selectionInfo.type != EMPTY)
+				if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY)
 					gtk_menu_popup(GTK_MENU(screen.win.drawWindowPopupMenu), NULL, NULL, NULL, NULL, 
 			  	 		event->button, event->time);
 #else

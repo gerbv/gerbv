@@ -67,7 +67,7 @@
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 
-static LayerColor mainDefaultColors[NUMBER_OF_DEFAULT_COLORS] = {
+static gerbv_layer_color mainDefaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{115,115,222,177},
 	{255,127,115,177},
 	{193,0,224,177},
@@ -523,7 +523,7 @@ main(int argc, char *argv[])
 		fprintf(stderr, "You must give a filename to read the tools from.\n");
 		exit(1);
 	    }
-	    if (!ProcessToolsFile(optarg)) {
+	    if (!gerbv_process_tools_file(optarg)) {
 		fprintf(stderr, "*** ERROR processing tools file \"%s\".\n", optarg);
 		fprintf(stderr, "Make sure all lines of the file are formatted like this:\n");
 		fprintf(stderr, "T01 0.024\nT02 0.032\nT03 0.040\n...\n");

@@ -233,8 +233,8 @@ ghid_check_button_connected (GtkWidget * box,
  * Written by Dan McMahill
  */
 int
-attribute_interface_dialog (HID_Attribute * attrs,
-		       int n_attrs, HID_Attr_Val * results,
+attribute_interface_dialog (gerbv_HID_Attribute * attrs,
+		       int n_attrs, gerbv_HID_Attr_Val * results,
 		       const char * title,
 		       const char * descr)
 {

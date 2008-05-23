@@ -571,35 +571,35 @@ gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
     while (ls != NULL) {
 
 	switch (ls->type) {
-	case MACRO_CIRCLE:
+	case GERBV_APTYPE_MACRO_CIRCLE:
 	    gerbv_gdk_draw_prim1(pixmap, gc, ls->parameter, scale, x, y);
 	    dprintf("  Circle\n");
 	    break;
-	case MACRO_OUTLINE:
+	case GERBV_APTYPE_MACRO_OUTLINE:
 	    gerbv_gdk_draw_prim4(pixmap, gc, ls->parameter, scale, x, y);
 	    dprintf("  Outline\n");
 	    break;
-	case MACRO_POLYGON:
+	case GERBV_APTYPE_MACRO_POLYGON:
 	    gerbv_gdk_draw_prim5(pixmap, gc, ls->parameter, scale, x, y);
 	    dprintf("  Polygon\n");
 	    break;
-	case MACRO_MOIRE:
+	case GERBV_APTYPE_MACRO_MOIRE:
 	    gerbv_gdk_draw_prim6(pixmap, gc, ls->parameter, scale, x, y);
 	    dprintf("  Moiré\n");
 	    break;
-	case MACRO_THERMAL:
+	case GERBV_APTYPE_MACRO_THERMAL:
 	    gerbv_gdk_draw_prim7(pixmap, gc, ls->parameter, scale, x, y);
 	    dprintf("  Thermal\n");
 	    break;
-	case MACRO_LINE20:
+	case GERBV_APTYPE_MACRO_LINE20:
 	    gerbv_gdk_draw_prim20(pixmap, gc, ls->parameter, scale, x, y);
 	    dprintf("  Line 20\n");
 	    break;
-	case MACRO_LINE21:
+	case GERBV_APTYPE_MACRO_LINE21:
 	    gerbv_gdk_draw_prim21(pixmap, gc, ls->parameter, scale, x, y);
 	    dprintf("  Line 21\n");
 	    break;
-	case MACRO_LINE22:
+	case GERBV_APTYPE_MACRO_LINE22:
 	    gerbv_gdk_draw_prim22(pixmap, gc, ls->parameter, scale, x, y);
 	    dprintf("  Line 22\n");
 	    break;
@@ -710,7 +710,7 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
 int
 draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image, 
 	     double scale, double trans_x, double trans_y,
-	     enum polarity_t polarity, gchar drawMode, gerbv_selection_info_t *selectionInfo)
+	     gerbv_polarity_t polarity, gchar drawMode, gerbv_selection_info_t *selectionInfo)
 {
     GdkGC *gc = gdk_gc_new(*pixmap);
     GdkGC *pgc = gdk_gc_new(*pixmap);
@@ -745,7 +745,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
     /*
      * Clear clipmask and set draw color depending image on image polarity
      */
-    if (polarity == NEGATIVE) {
+    if (polarity == GERBV_POLARITY_NEGATIVE) {
 	gdk_gc_set_foreground(gc, &transparent);
 	gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
 	gdk_gc_set_foreground(gc, &opaque);
@@ -824,7 +824,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	 * and allow for the photoplot being negative.
 	 */
 	gdk_gc_set_function(gc, GDK_COPY);
-	if ((net->layer->polarity == CLEAR) != (polarity == NEGATIVE))
+	if ((net->layer->polarity == GERBV_POLARITY_CLEAR) != (polarity == GERBV_POLARITY_NEGATIVE))
 	    gdk_gc_set_foreground(gc, &opaque);
 	else
 	    gdk_gc_set_foreground(gc, &transparent);
@@ -833,7 +833,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	 * Polygon Area Fill routines
 	 */
 	switch (net->interpolation) {
-	case PAREA_START :
+	case GERBV_INTERPOLATION_PAREA_START :
 	    points = NULL;
 	    /* save the first net in the polygon as the "ID" net pointer
 	       in case we are saving this net to the selection array */
@@ -842,7 +842,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	    pointArraySize = 0;
 	    in_parea_fill = 1;
 	    continue;
-	case PAREA_END :
+	case GERBV_INTERPOLATION_PAREA_END :
 	    gdk_gc_copy(pgc, gc); 
 	    gdk_gc_set_line_attributes(pgc, 1, 
 				       GDK_LINE_SOLID, 
@@ -855,7 +855,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	    polygonStartNet = NULL;
 	    continue;
 	/* make sure we completely skip over any deleted nodes */
-	case DELETED:
+	case GERBV_INTERPOLATION_DELETED:
 	    continue;
 	default :
 	    break;
@@ -863,10 +863,10 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 
 	if (in_parea_fill) {
 	    switch (net->interpolation) {
-	    case LINEARx10 :
-	    case LINEARx01 :
-	    case LINEARx001 :
-	    case LINEARx1 :
+	    case GERBV_INTERPOLATION_x10 :
+	    case GERBV_INTERPOLATION_LINEARx01 :
+	    case GERBV_INTERPOLATION_LINEARx001 :
+	    case GERBV_INTERPOLATION_LINEARx1 :
 		if (pointArraySize < (curr_point_idx + 1)) {
 		    points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + 1));
 		    pointArraySize = (curr_point_idx + 1);
@@ -875,8 +875,8 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		points[curr_point_idx].y = y2;
 		curr_point_idx++;
 		break;
-	    case CW_CIRCULAR :
-	    case CCW_CIRCULAR :
+	    case GERBV_INTERPOLATION_CW_CIRCULAR :
+	    case GERBV_INTERPOLATION_CCW :
 		/* we need to chop up the arc into small lines for rendering
 		   with GDK */
 		angleDiff = net->cirseg->angle2 - net->cirseg->angle1;
@@ -905,15 +905,15 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	 * which aperture to use.
 	 */
 	if (image->aperture[net->aperture] == NULL) {
-	    if (net->aperture_state != OFF)
+	    if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
 		GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
 	    continue;
 	}
 	
 	switch (net->aperture_state) {
-	case ON :
+	case GERBV_APERTURE_STATE_ON :
 	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
-	    if (image->aperture[net->aperture]->type == RECTANGLE)
+	    if (image->aperture[net->aperture]->type == GERBV_APTYPE_RECTANGLE)
 		gdk_gc_set_line_attributes(gc, p1, 
 					   GDK_LINE_SOLID, 
 					   GDK_CAP_PROJECTING, 
@@ -925,9 +925,9 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					   GDK_JOIN_MITER);
 	    
 	    switch (net->interpolation) {
-	    case LINEARx10 :
-	    case LINEARx01 :
-	    case LINEARx001 :
+	    case GERBV_INTERPOLATION_x10 :
+	    case GERBV_INTERPOLATION_LINEARx01 :
+	    case GERBV_INTERPOLATION_LINEARx001 :
 		GERB_MESSAGE("Linear != x1\n");
 		gdk_gc_set_line_attributes(gc, p1, 
 					   GDK_LINE_ON_OFF_DASH, 
@@ -939,8 +939,8 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					   GDK_CAP_ROUND, 
 					   GDK_JOIN_MITER);
 		break;
-	    case LINEARx1 :
-		if (image->aperture[net->aperture]->type != RECTANGLE)
+	    case GERBV_INTERPOLATION_LINEARx1 :
+		if (image->aperture[net->aperture]->type != GERBV_APTYPE_RECTANGLE)
 		    gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
 		else {
 		    gint dx, dy;
@@ -961,8 +961,8 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    gdk_draw_polygon(*pixmap, gc, 1, poly, 6);
 		}
  		break;
-	    case CW_CIRCULAR :
-	    case CCW_CIRCULAR :
+	    case GERBV_INTERPOLATION_CW_CIRCULAR :
+	    case GERBV_INTERPOLATION_CCW :
 		gerbv_gdk_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
 				   net->cirseg->angle1, net->cirseg->angle2);
 		break;
@@ -970,15 +970,15 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		break;
 	    }
 	    break;
-	case OFF :
+	case GERBV_APERTURE_STATE_OFF :
 	    break;
-	case FLASH :
+	case GERBV_APERTURE_STATE_FLASH :
 	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
 	    p2 = (int)round(image->aperture[net->aperture]->parameter[1] * unit_scale);
 	    p3 = (int)round(image->aperture[net->aperture]->parameter[2] * unit_scale);
 	    
 	    switch (image->aperture[net->aperture]->type) {
-	    case CIRCLE :
+	    case GERBV_APTYPE_CIRCLE :
 		gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
 		/*
 		 * If circle has an inner diameter we must remove
@@ -1001,17 +1001,17 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		}
 
 		break;
-	    case RECTANGLE:
+	    case GERBV_APTYPE_RECTANGLE:
 		gerbv_gdk_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p1, p2);
 		break;
-	    case OVAL :
+	    case GERBV_APTYPE_OVAL :
 		gerbv_gdk_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
 		break;
-	    case POLYGON :
+	    case GERBV_APTYPE_POLYGON :
 		GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
 		gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
 		break;
-	    case MACRO :
+	    case GERBV_APTYPE_MACRO :
 		gerbv_gdk_draw_amacro(*pixmap, gc, 
 				      image->aperture[net->aperture]->simplified,
 				      unit_scale, x2, y2);

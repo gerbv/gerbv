@@ -59,7 +59,7 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 	   transformation matrix */
 	cairo_device_to_user  (cairoTarget, &corner1X, &corner1Y);
 	cairo_device_to_user  (cairoTarget, &corner2X, &corner2Y);
-	if (selectionInfo->type == POINT_CLICK) {
+	if (selectionInfo->type == GERBV_SELECTION_POINT_CLICK) {
 		/* use the cairo in_fill routine to see if the point is within the
 		   drawn area */
 		if ((isStroke && cairo_in_stroke (cairoTarget, corner1X, corner1Y)) ||
@@ -69,7 +69,7 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 			g_array_append_val (selectionInfo->selectedNodeArray, sItem);
 		}
 	}
-	else if (selectionInfo->type == DRAG_BOX) {
+	else if (selectionInfo->type == GERBV_SELECTION_DRAG_BOX) {
 		gdouble x1,x2,y1,y2;
 		gdouble minX,minY,maxX,maxY;
 		
@@ -241,7 +241,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	    cairo_new_path(cairoTarget);
 	    cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
 
-	    if (ls->type == MACRO_CIRCLE) {
+	    if (ls->type == GERBV_APTYPE_MACRO_CIRCLE) {
 	    	
 	      if (draw_update_macro_exposure (cairoTarget, clearOperator, 
 	      		darkOperator, ls->parameter[CIRCLE_EXPOSURE])){
@@ -251,7 +251,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			gerbv_draw_circle (cairoTarget, ls->parameter[CIRCLE_DIAMETER]);
 			draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 		}
-	    } else if (ls->type == MACRO_OUTLINE) {
+	    } else if (ls->type == GERBV_APTYPE_MACRO_OUTLINE) {
 		int pointCounter,numberOfPoints;
 		/* Number of points parameter seems to not include the start point,
 		 * so we add one to include the start point.
@@ -274,7 +274,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			*/
 			draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 		}
-	    } else if (ls->type == MACRO_POLYGON) {
+	    } else if (ls->type == GERBV_APTYPE_MACRO_POLYGON) {
 	      if (draw_update_macro_exposure (cairoTarget, clearOperator, 
 	      			darkOperator, ls->parameter[POLYGON_EXPOSURE])){
 			cairo_translate (cairoTarget, ls->parameter[POLYGON_CENTER_X],
@@ -283,7 +283,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 					   ls->parameter[POLYGON_NUMBER_OF_POINTS], ls->parameter[POLYGON_ROTATION]);
 			draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 		}
-	    } else if (ls->type == MACRO_MOIRE) {
+	    } else if (ls->type == GERBV_APTYPE_MACRO_MOIRE) {
 		gdouble diameter, gap;
 		int circleIndex;
 		
@@ -308,7 +308,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_move_to (cairoTarget, 0, -crosshairRadius);
 		cairo_line_to (cairoTarget, 0, crosshairRadius);
 		draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
-	    } else if (ls->type == MACRO_THERMAL) {
+	    } else if (ls->type == GERBV_APTYPE_MACRO_THERMAL) {
 		gint i;
 		gdouble startAngle1, startAngle2, endAngle1, endAngle2;
 		
@@ -328,7 +328,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 			cairo_rotate (cairoTarget, 90 * M_PI/180);
 		}
-	    } else if (ls->type == MACRO_LINE20) {
+	    } else if (ls->type == GERBV_APTYPE_MACRO_LINE20) {
 	      if (draw_update_macro_exposure (cairoTarget, clearOperator, 
 	      			darkOperator, ls->parameter[LINE20_EXPOSURE])){
 			cairo_set_line_width (cairoTarget, ls->parameter[LINE20_LINE_WIDTH]);
@@ -338,7 +338,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			cairo_line_to (cairoTarget, ls->parameter[LINE20_END_X], ls->parameter[LINE20_END_Y]);
 			draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 		}
-	    } else if (ls->type == MACRO_LINE21) {
+	    } else if (ls->type == GERBV_APTYPE_MACRO_LINE21) {
 		gdouble halfWidth, halfHeight;
 		
 		if (draw_update_macro_exposure (cairoTarget, clearOperator,
@@ -351,7 +351,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 					 ls->parameter[LINE21_WIDTH], ls->parameter[LINE21_HEIGHT]);
 			draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 		}	
-	    } else if (ls->type == MACRO_LINE22) {
+	    } else if (ls->type == GERBV_APTYPE_MACRO_LINE22) {
 	    	gdouble halfWidth, halfHeight;
 		
 		if (draw_update_macro_exposure (cairoTarget, clearOperator,
@@ -389,20 +389,20 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *stat
 	cairo_translate (cairoTarget, state->offsetA, state->offsetB);
 	/* apply mirror */
 	switch (state->mirrorState) {
-		case FLIPA:
+		case GERBV_MIRROR_STATE_FLIPA:
 			cairo_scale (cairoTarget, -1, 1);
 			break;
-		case FLIPB:
+		case GERBV_MIRROR_STATE_FLIPB:
 			cairo_scale (cairoTarget, 1, -1);
 			break;
-		case FLIPAB:
+		case GERBV_MIRROR_STATE_FLIPAB:
 			cairo_scale (cairoTarget, -1, -1);
 			break;
 		default:
 			break;
 	}
 	/* finally, apply axis select */
-	if (state->axisSelect == SWAPAB) {
+	if (state->axisSelect == GERBV_AXIS_SELECT_SWAPAB) {
 		/* we do this by rotating 270 (counterclockwise, then mirroring
 		   the Y axis */
 		cairo_rotate (cairoTarget, 3 * M_PI / 2);
@@ -439,7 +439,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
     cairo_rotate (cairoTarget, image->info->imageRotation);
     /* load in polarity operators depending on the image polarity */
     invertPolarity = invertLayer;
-    if (image->info->polarity == NEGATIVE)
+    if (image->info->polarity == GERBV_POLARITY_NEGATIVE)
     	invertPolarity = !invertPolarity;
     if (invertPolarity) {
     	drawOperatorClear = CAIRO_OPERATOR_OVER;
@@ -474,7 +474,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		/* do any rotations */
 		cairo_rotate (cairoTarget, net->layer->rotation);
 		/* handle the layer polarity */
-		if ((net->layer->polarity == CLEAR)) {
+		if ((net->layer->polarity == GERBV_POLARITY_CLEAR)) {
 			cairo_set_operator (cairoTarget, drawOperatorClear);
 		}
 		else {
@@ -488,7 +488,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		/* draw any knockout areas */
 		if (net->layer->knockout.firstInstance == TRUE) {
 			cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
-			if (net->layer->knockout.polarity == CLEAR) {
+			if (net->layer->knockout.polarity == GERBV_POLARITY_CLEAR) {
 				cairo_set_operator (cairoTarget, drawOperatorClear);
 			}
 			else {
@@ -572,7 +572,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		* Polygon Area Fill routines
 		*/
 		switch (net->interpolation) {
-			case PAREA_START :
+			case GERBV_INTERPOLATION_PAREA_START :
 				in_parea_fill = 1;
 				haveDrawnFirstFillPoint = FALSE;
 				/* save the first net in the polygon as the "ID" net pointer
@@ -580,7 +580,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				polygonStartNet = net;
 				cairo_new_path(cairoTarget);
 				continue;
-			case PAREA_END :
+			case GERBV_INTERPOLATION_PAREA_END :
 				cairo_close_path(cairoTarget);
 				/* turn off anti-aliasing for polygons, since it shows seams
 				   with adjacent polygons (usually on PCB ground planes) */
@@ -592,7 +592,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				polygonStartNet = NULL;
 				continue;
 			/* make sure we completely skip over any deleted nodes */
-			case DELETED:
+			case GERBV_INTERPOLATION_DELETED:
 				continue;
 			default :
 				break;
@@ -604,14 +604,14 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				continue;
 			}
 			switch (net->interpolation) {
-				case LINEARx10 :
-				case LINEARx01 :
-				case LINEARx001 :
-				case LINEARx1 :
+				case GERBV_INTERPOLATION_x10 :
+				case GERBV_INTERPOLATION_LINEARx01 :
+				case GERBV_INTERPOLATION_LINEARx001 :
+				case GERBV_INTERPOLATION_LINEARx1 :
 					cairo_line_to (cairoTarget, x2,y2);
 					break;
-				case CW_CIRCULAR :
-				case CCW_CIRCULAR :
+				case GERBV_INTERPOLATION_CW_CIRCULAR :
+				case GERBV_INTERPOLATION_CCW :
 					if (net->cirseg->angle2 > net->cirseg->angle1) {
 						cairo_arc (cairoTarget, cp_x, cp_y, net->cirseg->width/2.0,
 							net->cirseg->angle1 * M_PI/180,net->cirseg->angle2 * M_PI/180);
@@ -633,12 +633,12 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		 * which aperture to use.
 		 */
 		if (image->aperture[net->aperture] == NULL) {
-			if (net->aperture_state != OFF)
+			if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
 				GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
 			continue;
 		}
 		switch (net->aperture_state) {
-			case ON :
+			case GERBV_APERTURE_STATE_ON :
 				/* if the aperture width is truly 0, then render as a 1 pixel width
 				   line.  0 diameter apertures are used by some programs to draw labels,
 				   etc, and they are rendered by other programs as 1 pixel wide */
@@ -649,18 +649,18 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				else
 					cairo_set_line_width (cairoTarget, pixelWidth);
 				switch (net->interpolation) {
-					case LINEARx10 :
-					case LINEARx01 :
-					case LINEARx001 :
-					case LINEARx1 :
+					case GERBV_INTERPOLATION_x10 :
+					case GERBV_INTERPOLATION_LINEARx01 :
+					case GERBV_INTERPOLATION_LINEARx001 :
+					case GERBV_INTERPOLATION_LINEARx1 :
 						cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
 						switch (image->aperture[net->aperture]->type) {
-							case CIRCLE :
+							case GERBV_APTYPE_CIRCLE :
 								cairo_move_to (cairoTarget, x1,y1);
 								cairo_line_to (cairoTarget, x2,y2);
 								draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 								break;
-							case RECTANGLE :				
+							case GERBV_APTYPE_RECTANGLE :				
 								dx = (image->aperture[net->aperture]->parameter[0]/ 2);
 								dy = (image->aperture[net->aperture]->parameter[1]/ 2);
 								if(x1 > x2)
@@ -677,8 +677,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 								draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 								break;
 							/* for now, just render ovals or polygons like a circle */
-							case OVAL :
-							case POLYGON :
+							case GERBV_APTYPE_OVAL :
+							case GERBV_APTYPE_POLYGON :
 								cairo_move_to (cairoTarget, x1,y1);
 								cairo_line_to (cairoTarget, x2,y2);
 								draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
@@ -688,13 +688,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 								break;
 						}
 						break;
-					case CW_CIRCULAR :
-					case CCW_CIRCULAR :
+					case GERBV_INTERPOLATION_CW_CIRCULAR :
+					case GERBV_INTERPOLATION_CCW :
 						/* cairo doesn't have a function to draw oval arcs, so we must
 						 * draw an arc and stretch it by scaling different x and y values
 						 */
 						cairo_new_path(cairoTarget);
-						if (image->aperture[net->aperture]->type == RECTANGLE) {
+						if (image->aperture[net->aperture]->type == GERBV_APTYPE_RECTANGLE) {
 							cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
 						}
 						else {
@@ -718,9 +718,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						break;
 				}
 				break;
-			case OFF :
+			case GERBV_APERTURE_STATE_OFF :
 				break;
-			case FLASH :
+			case GERBV_APERTURE_STATE_FLASH :
 				p1 = image->aperture[net->aperture]->parameter[0];
 				p2 = image->aperture[net->aperture]->parameter[1];
 				p3 = image->aperture[net->aperture]->parameter[2];
@@ -731,23 +731,23 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				cairo_translate (cairoTarget, x2, y2);
 
 				switch (image->aperture[net->aperture]->type) {
-					case CIRCLE :
+					case GERBV_APTYPE_CIRCLE :
 						gerbv_draw_circle(cairoTarget, p1);
 						gerbv_draw_aperature_hole (cairoTarget, p2, p3);
 						break;
-					case RECTANGLE :
+					case GERBV_APTYPE_RECTANGLE :
 						gerbv_draw_rectangle(cairoTarget, p1, p2);
 						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
 						break;
-					case OVAL :
+					case GERBV_APTYPE_OVAL :
 						gerbv_draw_oblong(cairoTarget, p1, p2);
 						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
 						break;
-					case POLYGON :
+					case GERBV_APTYPE_POLYGON :
 						gerbv_draw_polygon(cairoTarget, p1, p2, p3);
 						gerbv_draw_aperature_hole (cairoTarget, p4, p5);
 						break;
-					case MACRO :
+					case GERBV_APTYPE_MACRO :
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 								  image->aperture[net->aperture]->simplified,
 								  (int) image->aperture[net->aperture]->parameter[0],

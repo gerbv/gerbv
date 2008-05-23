@@ -80,7 +80,7 @@
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 
-static LayerColor defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
+static gerbv_layer_color defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{115,115,222,177},
 	{255,127,115,177},
 	{193,0,224,177},
@@ -333,13 +333,13 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
 /* ------------------------------------------------------------------ */
 int
 gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int reload,
-		HID_Attribute *fattr, int n_fattr, gboolean forceLoadFile)
+		gerbv_HID_Attribute *fattr, int n_fattr, gboolean forceLoadFile)
 {
     gerb_file_t *fd;
     gerbv_image_t *parsed_image = NULL, *parsed_image2 = NULL;
     gint retv = -1;
     gboolean isPnpFile = FALSE, foundBinary;
-    HID_Attribute *attr_list = NULL;
+    gerbv_HID_Attribute *attr_list = NULL;
     int n_attr = 0;
     /* If we're reloading, we'll pass in our file format attribute list
      * since this is our hook for letting the user override the fileformat.
@@ -599,13 +599,13 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 	*/
 	for(i = gerbvProject->max_files-1; i >= 0; i--) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
-			enum polarity_t polarity;
+			gerbv_polarity_t polarity;
 
 			if (gerbvProject->file[i]->transform.inverted) {
-				if (gerbvProject->file[i]->image->info->polarity == POSITIVE)
-					polarity = NEGATIVE;
+				if (gerbvProject->file[i]->image->info->polarity == GERBV_POLARITY_POSITIVE)
+					polarity = GERBV_POLARITY_NEGATIVE;
 				else
-					polarity = POSITIVE;
+					polarity = GERBV_POLARITY_POSITIVE;
 			} else {
 				polarity = gerbvProject->file[i]->image->info->polarity;
 			}
@@ -652,7 +652,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 		}
 	}
 	/* render the selection group to the top of the output */
-	if (selectionInfo->type != EMPTY) {
+	if (selectionInfo->type != GERBV_SELECTION_EMPTY) {
 		if (!selectionColor->pixel)
 	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), selectionColor, FALSE, TRUE);
 	 		
@@ -673,7 +673,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 					draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[j]->image,
 						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
 						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-						POSITIVE, DRAW_SELECTIONS, selectionInfo);
+						GERBV_POLARITY_POSITIVE, DRAW_SELECTIONS, selectionInfo);
 				}
 			}
 			gdk_gc_set_clip_mask(gc, clipmask);

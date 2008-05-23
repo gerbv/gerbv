@@ -38,14 +38,14 @@ enum draw_mode_t {DRAW_IMAGE, DRAW_SELECTIONS, FIND_SELECTIONS};
  */
 int draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image, 
 		 double scale, double trans_x, double trans_y,
-		 enum polarity_t polarity, gchar drawMode, gerbv_selection_info_t *selectionInfo);
+		 gerbv_polarity_t polarity, gchar drawMode, gerbv_selection_info_t *selectionInfo);
 
 typedef enum {
 	CIRCLE_EXPOSURE,
 	CIRCLE_DIAMETER,
 	CIRCLE_CENTER_X,
 	CIRCLE_CENTER_Y,
-} AMACRO_CIRCLE_INDEX;
+} AGERBV_APTYPE_MACRO_CIRCLE_INDEX;
 
 typedef enum {
 	OUTLINE_EXPOSURE,
@@ -53,7 +53,7 @@ typedef enum {
 	OUTLINE_FIRST_X,
 	OUTLINE_FIRST_Y,
 	OUTLINE_ROTATION
-} AMACRO_OUTLINE_INDEX;
+} AGERBV_APTYPE_MACRO_OUTLINE_INDEX;
 
 typedef enum {
 	POLYGON_EXPOSURE,
@@ -62,7 +62,7 @@ typedef enum {
 	POLYGON_CENTER_Y,
 	POLYGON_DIAMETER,
 	POLYGON_ROTATION
-} AMACRO_POLYGON_INDEX;
+} AGERBV_APTYPE_MACRO_POLYGON_INDEX;
 
 typedef enum {
 	MOIRE_CENTER_X,
@@ -74,7 +74,7 @@ typedef enum {
 	MOIRE_CROSSHAIR_THICKNESS,
 	MOIRE_CROSSHAIR_LENGTH,
 	MOIRE_ROTATION
-} AMACRO_MOIRE_INDEX;
+} AGERBV_APTYPE_MACRO_MOIRE_INDEX;
 
 typedef enum {
 	THERMAL_CENTER_X,
@@ -83,7 +83,7 @@ typedef enum {
 	THERMAL_INSIDE_DIAMETER,
 	THERMAL_CROSSHAIR_THICKNESS,
 	THERMAL_ROTATION
-} AMACRO_THERMAL_INDEX;
+} AGERBV_APTYPE_MACRO_THERMAL_INDEX;
     
 typedef enum {
 	LINE20_EXPOSURE,
@@ -93,7 +93,7 @@ typedef enum {
 	LINE20_END_X,
 	LINE20_END_Y,
 	LINE20_ROTATION
-} AMACRO_LINE20_INDEX;
+} AGERBV_APTYPE_MACRO_LINE20_INDEX;
 
 typedef enum {
 	LINE21_EXPOSURE,
@@ -102,7 +102,7 @@ typedef enum {
 	LINE21_CENTER_X,
 	LINE21_CENTER_Y,
 	LINE21_ROTATION
-} AMACRO_LINE21_INDEX;
+} AGERBV_APTYPE_MACRO_LINE21_INDEX;
 
 typedef enum {
 	LINE22_EXPOSURE,
@@ -111,7 +111,7 @@ typedef enum {
 	LINE22_LOWER_LEFT_X,
 	LINE22_LOWER_LEFT_Y,
 	LINE22_ROTATION
-} AMACRO_LINE22_INDEX;
+} AGERBV_APTYPE_MACRO_LINE22_INDEX;
 
 #endif /* DRAW_GDK_H */
 

@@ -46,32 +46,32 @@
 /* ------------------------------------------------------- */
 /** Allocates a new drill_stats structure
    @return drill_stats pointer on success, NULL on ERROR */
-drill_stats_t *
-drill_stats_new(void) {
+gerbv_drill_stats_t *
+gerbv_drill_stats_new(void) {
 
-    drill_stats_t *stats;
-    drill_list_t *drill_list;
-    error_list_t *error_list;
+    gerbv_drill_stats_t *stats;
+    gerbv_drill_list_t *drill_list;
+    gerbv_error_list_t *error_list;
 
     /* Malloc space for new stats struct.  Return NULL if error. */
-    if ((stats = (drill_stats_t *)g_malloc(sizeof(drill_stats_t))) == NULL) {
+    if ((stats = (gerbv_drill_stats_t *)g_malloc(sizeof(gerbv_drill_stats_t))) == NULL) {
         return NULL;
     }
 
     /* Set new stats struct to zero */
-    memset((void *)stats, 0, sizeof(drill_stats_t));
+    memset((void *)stats, 0, sizeof(gerbv_drill_stats_t));
 
     /* Initialize drill list */
-    drill_list = drill_stats_new_drill_list();
+    drill_list = gerbv_drill_stats_new_drill_list();
     if (drill_list == NULL)
         GERB_FATAL_ERROR("malloc drill_list failed\n");
-    stats->drill_list = (drill_list_t *) drill_list;
+    stats->drill_list = (gerbv_drill_list_t *) drill_list;
 
     /* Initialize error list */
-    error_list = drill_stats_new_error_list();
+    error_list = gerbv_drill_stats_new_error_list();
     if (error_list == NULL)
         GERB_FATAL_ERROR("malloc error_list failed\n");
-    stats->error_list = (error_list_t *) error_list;
+    stats->error_list = (gerbv_error_list_t *) error_list;
 
     stats->detect = NULL;
     return stats;
@@ -80,15 +80,15 @@ drill_stats_new(void) {
 
 /* ------------------------------------------------------- */
 void
-drill_stats_add_layer(drill_stats_t *accum_stats, 
-		      drill_stats_t *input_stats,
+gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats, 
+		      gerbv_drill_stats_t *input_stats,
 		      int this_layer) {
 
-    drill_list_t *drill;
-    error_list_t *error;
+    gerbv_drill_list_t *drill;
+    gerbv_error_list_t *error;
     char *tmps, *tmps2;
 
-    dprintf("--->  Entering drill_stats_add_layer ..... \n");
+    dprintf("--->  Entering gerbv_drill_stats_add_layer ..... \n");
 
     accum_stats->layer_count++;
 
@@ -126,7 +126,7 @@ drill_stats_add_layer(drill_stats_t *accum_stats,
     for (drill = input_stats->drill_list;
          drill != NULL;
 	 drill = drill->next) {
-	dprintf("   In drill_stats_add_layer, adding drill_num = %d to list\n",
+	dprintf("   In gerbv_drill_stats_add_layer, adding drill_num = %d to list\n",
 		drill->drill_num);
 	/* First add this input drill to the accumulated list.
 	 * Drills already in accum list will not be added. */
@@ -191,7 +191,7 @@ drill_stats_add_layer(drill_stats_t *accum_stats,
     }
 
 
-    dprintf("<---  .... Leaving drill_stats_add_layer.\n");
+    dprintf("<---  .... Leaving gerbv_drill_stats_add_layer.\n");
 	    
     return;
 }
@@ -199,9 +199,9 @@ drill_stats_add_layer(drill_stats_t *accum_stats,
 
 /* ------------------------------------------------------- */
 gboolean
-drill_stats_in_drill_list(drill_list_t *drill_list_in,
+drill_stats_in_drill_list(gerbv_drill_list_t *drill_list_in,
 			  int drill_num_in) {
-    drill_list_t *drill;
+    gerbv_drill_list_t *drill;
     for(drill = drill_list_in; drill != NULL; drill = drill->next) {
 	if (drill_num_in == drill->drill_num) {
 	    return TRUE;
@@ -212,12 +212,12 @@ drill_stats_in_drill_list(drill_list_t *drill_list_in,
 }
 
 /* ------------------------------------------------------- */
-drill_list_t *
-drill_stats_new_drill_list() {
-    drill_list_t *drill_list;
+gerbv_drill_list_t *
+gerbv_drill_stats_new_drill_list() {
+    gerbv_drill_list_t *drill_list;
 
     /* Malloc space for new drill_list struct.  Return NULL if error. */
-    if ((drill_list = (drill_list_t *)g_malloc(sizeof(drill_list_t))) == NULL) {
+    if ((drill_list = (gerbv_drill_list_t *)g_malloc(sizeof(gerbv_drill_list_t))) == NULL) {
         return NULL;
     }
 
@@ -232,13 +232,13 @@ drill_stats_new_drill_list() {
 
 /* ------------------------------------------------------- */
 void
-drill_stats_add_to_drill_list(drill_list_t *drill_list_in, 
+drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in, 
 			      int drill_num_in, double drill_size_in,
 			      char *drill_unit_in) {
 
-    drill_list_t *drill_list_new;
-    drill_list_t *drill;
-    drill_list_t *drill_last = NULL;
+    gerbv_drill_list_t *drill_list_new;
+    gerbv_drill_list_t *drill;
+    gerbv_drill_list_t *drill_last = NULL;
 
     dprintf ("%s(%p, %d, %g, \"%s\")\n", __FUNCTION__, drill_list_in, drill_num_in,
 	     drill_size_in, drill_unit_in);
@@ -260,7 +260,7 @@ drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
     /* Else check to see if this drill is already in the list */
     for(drill = drill_list_in; 
 	drill != NULL; 
-	drill = (drill_list_t *) drill->next) {
+	drill = (gerbv_drill_list_t *) drill->next) {
 	dprintf("checking this drill_num %d against that in list %d.\n", 
 		drill_num_in, drill->drill_num);
 	if (drill_num_in == drill->drill_num) {
@@ -272,7 +272,7 @@ drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
     }
 
     /* Now malloc space for new drill list element */
-    drill_list_new = (drill_list_t *) g_malloc(sizeof(drill_list_t));
+    drill_list_new = (gerbv_drill_list_t *) g_malloc(sizeof(gerbv_drill_list_t));
     if (drill_list_new == NULL) {
 	GERB_FATAL_ERROR("malloc format failed\n");
     }
@@ -293,11 +293,11 @@ drill_stats_add_to_drill_list(drill_list_t *drill_list_in,
 
 /* ------------------------------------------------------- */
 void
-drill_stats_modify_drill_list(drill_list_t *drill_list_in, 
+drill_stats_modify_drill_list(gerbv_drill_list_t *drill_list_in, 
 			      int drill_num_in, double drill_size_in,
 			      char *drill_unit_in) {
 
-    drill_list_t *drill;
+    gerbv_drill_list_t *drill;
 
     dprintf("   ---> Entering drill_stats_modify_drill_list, first drill_num in list = %d ...\n", 
 	    drill_list_in->drill_num);
@@ -305,7 +305,7 @@ drill_stats_modify_drill_list(drill_list_t *drill_list_in,
     /* Look for this drill num in list */
     for(drill = drill_list_in; 
 	drill != NULL; 
-	drill = (drill_list_t *) drill->next) {
+	drill = (gerbv_drill_list_t *) drill->next) {
 	dprintf("checking this drill_num %d against that in list %d.\n", 
 		drill_num_in, drill->drill_num);
 	if (drill_num_in == drill->drill_num) {
@@ -324,12 +324,12 @@ drill_stats_modify_drill_list(drill_list_t *drill_list_in,
 
 /* ------------------------------------------------------- */
 void
-drill_stats_increment_drill_counter(drill_list_t *drill_list_in, 
+drill_stats_increment_drill_counter(gerbv_drill_list_t *drill_list_in, 
 				    int drill_num_in) {
 
     dprintf("   ----> Entering drill_stats_increment_drill_counter......\n");
     /* First check to see if this drill is already in the list */
-    drill_list_t *drill;
+    gerbv_drill_list_t *drill;
     for(drill = drill_list_in; drill != NULL; drill = drill->next) {
 	if (drill_num_in == drill->drill_num) {
 	    drill->drill_count++;
@@ -345,11 +345,11 @@ drill_stats_increment_drill_counter(drill_list_t *drill_list_in,
 
 /* ------------------------------------------------------- */
 void
-drill_stats_add_to_drill_counter(drill_list_t *drill_list_in, 
+drill_stats_add_to_drill_counter(gerbv_drill_list_t *drill_list_in, 
 				 int drill_num_in, 
 				 int increment) {
 
-    drill_list_t *drill;
+    gerbv_drill_list_t *drill;
     for(drill = drill_list_in; drill != NULL; drill = drill->next) {
 	if (drill_num_in == drill->drill_num) {
 	    dprintf("    In drill_stats_add_to_drill_counter, adding increment = %d drills to drill list\n", increment);
@@ -361,12 +361,12 @@ drill_stats_add_to_drill_counter(drill_list_t *drill_list_in,
 
 
 /* ------------------------------------------------------- */
-error_list_t *
-drill_stats_new_error_list() {
-    error_list_t *error_list;
+gerbv_error_list_t *
+gerbv_drill_stats_new_error_list() {
+    gerbv_error_list_t *error_list;
 
     /* Malloc space for new error_list struct.  Return NULL if error. */
-    if ((error_list = (error_list_t *)g_malloc(sizeof(error_list_t))) == NULL) {
+    if ((error_list = (gerbv_error_list_t *)g_malloc(sizeof(gerbv_error_list_t))) == NULL) {
         return NULL;
     }
 
@@ -380,28 +380,28 @@ drill_stats_new_error_list() {
 
 /* ------------------------------------------------------- */
 void
-drill_stats_add_error(error_list_t *error_list_in, 
+drill_stats_add_error(gerbv_error_list_t *error_list_in, 
 		      int layer, const char *error_text,
-		      enum error_type_t type) {
+		      gerbv_message_type_t type) {
 
-    error_list_t *error_list_new;
-    error_list_t *error_last = NULL;
-    error_list_t *error;
+    gerbv_error_list_t *error_list_new;
+    gerbv_error_list_t *error_last = NULL;
+    gerbv_error_list_t *error;
 
     dprintf("   ----> Entering drill_stats_add_error......\n");
 
     /* Replace embedded error messages */
     switch (type) {
-	case FATAL:
+	case GERBV_MESSAGE_FATAL:
 	    GERB_FATAL_ERROR(error_text);
 	    break;
-	case GRB_ERROR:
+	case GERBV_MESSAGE_ERROR:
 	    GERB_COMPILE_ERROR(error_text);
 	    break;
-	case WARNING:
+	case GERBV_MESSAGE_WARNING:
 	    GERB_COMPILE_WARNING(error_text);
 	    break;
-	case NOTE:
+	case GERBV_MESSAGE_NOTE:
 	    break;
     }
 
@@ -427,7 +427,7 @@ drill_stats_add_error(error_list_t *error_list_in,
     /* This error text is unique.  Therefore, add it to the list */
 
     /* Now malloc space for new error list element */
-    error_list_new = (error_list_t *) g_malloc(sizeof(error_list_t));
+    error_list_new = (gerbv_error_list_t *) g_malloc(sizeof(gerbv_error_list_t));
     if (error_list_new == NULL) {
 	GERB_FATAL_ERROR("malloc error_list failed\n");
     }

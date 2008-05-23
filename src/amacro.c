@@ -37,18 +37,18 @@
 /*
  * Allocates a new instruction structure
  */
-static instruction_t *
+static gerbv_instruction_t *
 new_instruction(void)
 {
-    instruction_t *instruction;
+    gerbv_instruction_t *instruction;
 
-    instruction = (instruction_t *)malloc(sizeof(instruction_t));
+    instruction = (gerbv_instruction_t *)malloc(sizeof(gerbv_instruction_t));
     if (instruction == NULL) {
 	free(instruction);
 	return NULL;
     }
 
-    memset(instruction, 0, sizeof(instruction_t));
+    memset(instruction, 0, sizeof(gerbv_instruction_t));
     
     return instruction;
 } /* new_instruction */
@@ -57,18 +57,18 @@ new_instruction(void)
 /*
  * Allocates a new amacro structure
  */
-static amacro_t *
+static gerbv_amacro_t *
 new_amacro(void)
 {
-    amacro_t *amacro;
+    gerbv_amacro_t *amacro;
 
-    amacro = (amacro_t *)malloc(sizeof(amacro_t));
+    amacro = (gerbv_amacro_t *)malloc(sizeof(gerbv_amacro_t));
     if (amacro == NULL) {
 	free(amacro);
 	return NULL;
     }
 
-    memset(amacro, 0, sizeof(amacro_t));
+    memset(amacro, 0, sizeof(gerbv_amacro_t));
     
     return amacro;
 } /* new_amacro */
@@ -77,13 +77,13 @@ new_amacro(void)
 /*
  * Parses the definition of an aperture macro
  */
-amacro_t *
+gerbv_amacro_t *
 parse_aperture_macro(gerb_file_t *fd)
 {
-    amacro_t *amacro;
-    instruction_t *ip = NULL;
+    gerbv_amacro_t *amacro;
+    gerbv_instruction_t *ip = NULL;
     int primitive = 0, c, found_primitive = 0;
-    enum opcodes math_op = NOP;
+    gerbv_opcodes_t math_op = GERBV_OPCODE_NOP;
     int comma = 0; /* Just read an operator (one of '*+X/) */
     int neg = 0; /* negative numbers succeding , */
     unsigned char continueLoop = 1;
@@ -115,7 +115,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    if (found_primitive) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = PPUSH;
+		ip->opcode = GERBV_OPCODE_PPUSH;
 		amacro->nuf_push++;
 		ip->data.ival = gerb_fgetint(fd, NULL);
 		comma = 0;
@@ -124,11 +124,11 @@ parse_aperture_macro(gerb_file_t *fd)
 	    }
 	    break;
 	case '*':
-	    if (math_op != NOP) {
+	    if (math_op != GERBV_OPCODE_NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
 		ip->opcode = math_op;
-		math_op = NOP;
+		math_op = GERBV_OPCODE_NOP;
 	    }
 	    /*
 	     * Check is due to some gerber files has spurious empty lines.
@@ -138,10 +138,10 @@ parse_aperture_macro(gerb_file_t *fd)
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
 		if (equate) {
-		    ip->opcode = PPOP;
+		    ip->opcode = GERBV_OPCODE_PPOP;
 		    ip->data.ival = equate;
 		} else {
-		    ip->opcode = PRIM;
+		    ip->opcode = GERBV_OPCODE_PRIM;
 		    ip->data.ival = primitive;
 		}
 		equate = 0;
@@ -159,21 +159,21 @@ parse_aperture_macro(gerb_file_t *fd)
 		found_primitive = 1;
 		break;
 	    }
-	    if (math_op != NOP) {
+	    if (math_op != GERBV_OPCODE_NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
 		ip->opcode = math_op;
-		math_op = NOP;
+		math_op = GERBV_OPCODE_NOP;
 	    }
 	    comma = 1;
 	    break;
 	case '+':
-	    if (math_op != NOP) {
+	    if (math_op != GERBV_OPCODE_NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
 		ip->opcode = math_op;
 	    }
-	    math_op = ADD;
+	    math_op = GERBV_OPCODE_ADD;
 	    comma = 1;
 	    break;
 	case '-':
@@ -182,30 +182,30 @@ parse_aperture_macro(gerb_file_t *fd)
 		comma = 0;
 		break;
 	    }
-	    if (math_op != NOP) {
+	    if (math_op != GERBV_OPCODE_NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
 		ip->opcode = math_op;
 	    }
-	    math_op = SUB;
+	    math_op = GERBV_OPCODE_SUB;
 	    break;
 	case '/':
-	    if (math_op != NOP) {
+	    if (math_op != GERBV_OPCODE_NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
 		ip->opcode = math_op;
 	    }
-	    math_op = DIV;
+	    math_op = GERBV_OPCODE_DIV;
 	    comma = 1;
 	    break;
 	case 'X':
 	case 'x':
-	    if (math_op != NOP) {
+	    if (math_op != GERBV_OPCODE_NOP) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
 		ip->opcode = math_op;
 	    }
-	    math_op = MUL;
+	    math_op = GERBV_OPCODE_MUL;
 	    comma = 1;
 	    break;
 	case '0':
@@ -239,7 +239,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    (void)gerb_ungetc(fd);
 	    ip->next = new_instruction(); /* XXX Check return value */
 	    ip = ip->next;
-	    ip->opcode = PUSH;
+	    ip->opcode = GERBV_OPCODE_PUSH;
 	    amacro->nuf_push++;
 	    ip->data.fval = gerb_fgetdouble(fd);
 	    if (neg) 
@@ -265,10 +265,10 @@ parse_aperture_macro(gerb_file_t *fd)
 
 
 void 
-free_amacro(amacro_t *amacro)
+free_amacro(gerbv_amacro_t *amacro)
 {
-    amacro_t *am1, *am2;
-    instruction_t *instr1, *instr2;
+    gerbv_amacro_t *am1, *am2;
+    gerbv_instruction_t *instr1, *instr2;
     
     am1 = amacro;
     while (am1 != NULL) {
@@ -294,38 +294,38 @@ free_amacro(amacro_t *amacro)
 
 
 void 
-print_program(amacro_t *amacro)
+print_program(gerbv_amacro_t *amacro)
 {
-    instruction_t *ip;
+    gerbv_instruction_t *ip;
 
     printf("Macroname [%s] :\n", amacro->name);
     for (ip = amacro->program ; ip != NULL; ip = ip->next) {
 	switch(ip->opcode) {
-	case NOP:
+	case GERBV_OPCODE_NOP:
 	    printf(" NOP\n");
 	    break;
-	case PUSH: 
+	case GERBV_OPCODE_PUSH: 
 	    printf(" PUSH %f\n", ip->data.fval);
 	    break;
-	case PPOP:
+	case GERBV_OPCODE_PPOP:
 	    printf(" PPOP %d\n", ip->data.ival);
 	    break;
-	case PPUSH:
+	case GERBV_OPCODE_PPUSH:
 	    printf(" PPUSH %d\n", ip->data.ival);
 	    break;
-	case ADD:
+	case GERBV_OPCODE_ADD:
 	    printf(" ADD\n");
 	    break;
-	case SUB:
+	case GERBV_OPCODE_SUB:
 	    printf(" SUB\n");
 	    break;
-	case MUL:
+	case GERBV_OPCODE_MUL:
 	    printf(" MUL\n");
 	    break;
-	case DIV:
+	case GERBV_OPCODE_DIV:
 	    printf(" DIV\n");
 	    break;
-	case PRIM:
+	case GERBV_OPCODE_PRIM:
 	    printf(" PRIM %d\n", ip->data.ival);
 	    break;
 	default :

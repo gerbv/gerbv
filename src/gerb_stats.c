@@ -49,7 +49,7 @@ gerbv_stats_t *
 gerbv_stats_new(void) {
 
     gerbv_stats_t *stats;
-    error_list_t *error_list;
+    gerbv_error_list_t *error_list;
     gerbv_aperture_list_t *aperture_list;
     gerbv_aperture_list_t *D_code_list;
 
@@ -65,7 +65,7 @@ gerbv_stats_new(void) {
     error_list = gerbv_stats_new_error_list();
     if (error_list == NULL)
         GERB_FATAL_ERROR("malloc error_list failed\n");
-    stats->error_list = (error_list_t *) error_list;
+    stats->error_list = (gerbv_error_list_t *) error_list;
 
     /* Initialize aperture list */
     aperture_list = gerbv_stats_new_aperture_list();
@@ -96,7 +96,7 @@ gerbv_stats_add_layer(gerbv_stats_t *accum_stats,
     
     dprintf("---> Entering gerbv_stats_add_layer ... \n");
 
-    error_list_t *error;
+    gerbv_error_list_t *error;
     gerbv_aperture_list_t *aperture;
     gerbv_aperture_list_t *D_code;
 
@@ -188,12 +188,12 @@ gerbv_stats_add_layer(gerbv_stats_t *accum_stats,
 }
 
 /* ------------------------------------------------------- */
-error_list_t *
+gerbv_error_list_t *
 gerbv_stats_new_error_list() {
-    error_list_t *error_list;
+    gerbv_error_list_t *error_list;
 
     /* Malloc space for new error_list struct.  Return NULL if error. */
-    if ((error_list = (error_list_t *)g_malloc(sizeof(error_list_t))) == NULL) {
+    if ((error_list = (gerbv_error_list_t *)g_malloc(sizeof(gerbv_error_list_t))) == NULL) {
         return NULL;
     }
 
@@ -206,26 +206,26 @@ gerbv_stats_new_error_list() {
 
 /* ------------------------------------------------------- */
 void
-gerbv_stats_add_error(error_list_t *error_list_in,
+gerbv_stats_add_error(gerbv_error_list_t *error_list_in,
                       int layer, const char *error_text,
-                      enum error_type_t type) {
+                      gerbv_message_type_t type) {
 
-    error_list_t *error_list_new;
-    error_list_t *error_last = NULL;
-    error_list_t *error;
+    gerbv_error_list_t *error_list_new;
+    gerbv_error_list_t *error_last = NULL;
+    gerbv_error_list_t *error;
 
     /* Replace embedded error messages */
     switch (type) {
-        case FATAL:
+        case GERBV_MESSAGE_FATAL:
             GERB_FATAL_ERROR(error_text);
             break;
-        case GRB_ERROR:
+        case GERBV_MESSAGE_ERROR:
             GERB_COMPILE_ERROR(error_text);
             break;
-        case WARNING:
+        case GERBV_MESSAGE_WARNING:
             GERB_COMPILE_WARNING(error_text);
             break;
-        case NOTE:
+        case GERBV_MESSAGE_NOTE:
             break;
     }
 
@@ -249,7 +249,7 @@ gerbv_stats_add_error(error_list_t *error_list_in,
     /* This error text is unique.  Therefore, add it to the list */
 
     /* Now malloc space for new error list element */
-    error_list_new = (error_list_t *) g_malloc(sizeof(error_list_t));
+    error_list_new = (gerbv_error_list_t *) g_malloc(sizeof(gerbv_error_list_t));
     if (error_list_new == NULL) {
         GERB_FATAL_ERROR("malloc error_list failed\n");
     }
@@ -413,7 +413,7 @@ int
 gerbv_stats_increment_D_list_count(gerbv_aperture_list_t *D_list_in,
 				    int number, 
 				    int count,
-				    error_list_t *error) {
+				    gerbv_error_list_t *error) {
   
     gerbv_aperture_list_t *D_list;
 
@@ -435,7 +435,7 @@ gerbv_stats_increment_D_list_count(gerbv_aperture_list_t *D_list_in,
     gerbv_stats_add_error(error,
 			 -1,
 			 "Undefined aperture number called out in D code.\n",
-			 GRB_ERROR);
+			 GERBV_MESSAGE_ERROR);
     return -1;  /* Return -1 for failure */
 }
 

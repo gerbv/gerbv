@@ -65,7 +65,7 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *image) {
 			continue;
 		
 		switch (currentAperture->type) {
-			case CIRCLE:
+			case GERBV_APTYPE_CIRCLE:
 				fprintf(fd, "T%dC%1.3f\n",i,currentAperture->parameter[0]);
 				/* add the "approved" aperture to our valid list */
 	  			g_array_append_val (apertureTable, i);
@@ -86,7 +86,7 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *image) {
 		
 		/* run through all nets and look for drills using this aperture */
 		for (currentNet = image->netlist; currentNet; currentNet = currentNet->next){
-			if ((currentNet->aperture == currentAperture)&&(currentNet->aperture_state == FLASH)) {
+			if ((currentNet->aperture == currentAperture)&&(currentNet->aperture_state == GERBV_APERTURE_STATE_FLASH)) {
 				long xVal,yVal;
 				xVal = (long) round(currentNet->stop_x * 10000.0);
 				yVal = (long) round(currentNet->stop_y * 10000.0);

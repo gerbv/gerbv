@@ -84,7 +84,7 @@ gerbv_create_image(gerbv_image_t *image, const gchar *type)
     image->layers = g_new0 (gerbv_layer_t, 1);
     image->layers->stepAndRepeat.X = 1;
     image->layers->stepAndRepeat.Y = 1;
-    image->layers->polarity = DARK;
+    image->layers->polarity = GERBV_POLARITY_DARK;
     
     /* create our first netstate and fill with non-zero default values */
     image->states = g_new0 (gerbv_netstate_t, 1);
@@ -236,31 +236,31 @@ gerbv_image_verify(gerbv_image_t const* image)
 
 
 static void
-gerbv_image_interpolation(enum interpolation_t interpolation)
+gerbv_image_interpolation(gerbv_interpolation_t interpolation)
 {
     switch (interpolation) {
-    case LINEARx1:
+    case GERBV_INTERPOLATION_LINEARx1:
 	printf("linearX1");
 	break;
-    case LINEARx10:
+    case GERBV_INTERPOLATION_x10:
 	printf("linearX10");
 	break;
-    case LINEARx01:
+    case GERBV_INTERPOLATION_LINEARx01:
 	printf("linearX01");
 	break;
-    case LINEARx001:
+    case GERBV_INTERPOLATION_LINEARx001:
 	printf("linearX001");
 	break;
-    case CW_CIRCULAR:
+    case GERBV_INTERPOLATION_CW_CIRCULAR:
 	printf("CW circular");
 	break;
-    case CCW_CIRCULAR:
+    case GERBV_INTERPOLATION_CCW:
 	printf("CCW circular");
 	break;
-    case  PAREA_START:
+    case  GERBV_INTERPOLATION_PAREA_START:
 	printf("polygon area start");
 	break;
-    case  PAREA_END:
+    case  GERBV_INTERPOLATION_PAREA_END:
 	printf("polygon area end");
 	break;
     default:
@@ -284,19 +284,19 @@ gerbv_image_dump(gerbv_image_t const* image)
 	if (aperture[i]) {
 	    printf(" Aperture no:%d is an ", i);
 	    switch(aperture[i]->type) {
-	    case CIRCLE:
+	    case GERBV_APTYPE_CIRCLE:
 		printf("circle");
 		break;
-	    case RECTANGLE:
+	    case GERBV_APTYPE_RECTANGLE:
 		printf("rectangle");
 		break;
-	    case OVAL:
+	    case GERBV_APTYPE_OVAL:
 		printf("oval");
 		break;
-	    case POLYGON:
+	    case GERBV_APTYPE_POLYGON:
 		printf("polygon");
 		break;
-	    case MACRO:
+	    case GERBV_APTYPE_MACRO:
 		printf("macro");
 		break;
 	    default:
@@ -588,27 +588,27 @@ gerbv_image_delete_net (gerbv_net_t *currentNet) {
 	g_assert (currentNet);
 	/* we have a match, so just zero out all the important data fields */
 	currentNet->aperture = 0;
-	currentNet->aperture_state = OFF;
+	currentNet->aperture_state = GERBV_APERTURE_STATE_OFF;
 	
 	/* if this is a polygon start, we need to erase all the rest of the
 		 nets in this polygon too */
-	if (currentNet->interpolation == PAREA_START){
+	if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_START){
 		for (tempNet = currentNet->next; tempNet; tempNet = tempNet->next){	
 			tempNet->aperture = 0;
-			tempNet->aperture_state = OFF;
+			tempNet->aperture_state = GERBV_APERTURE_STATE_OFF;
 			
-			if (tempNet->interpolation == PAREA_END) {
-				tempNet->interpolation = DELETED;
+			if (tempNet->interpolation == GERBV_INTERPOLATION_PAREA_END) {
+				tempNet->interpolation = GERBV_INTERPOLATION_DELETED;
 				break;
 			}
 			/* make sure we don't leave a polygon interpolation in, since
 		  	 it will still draw if it is */
-			tempNet->interpolation = DELETED;
+			tempNet->interpolation = GERBV_INTERPOLATION_DELETED;
 		}
 	}
 	/* make sure we don't leave a polygon interpolation in, since
 	   it will still draw if it is */
-	currentNet->interpolation = DELETED;
+	currentNet->interpolation = GERBV_INTERPOLATION_DELETED;
 }
 
 void
@@ -638,38 +638,38 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, gdouble coordinateX,
 	
 	/* create the polygon start node */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = PAREA_START;
+	currentNet->interpolation = GERBV_INTERPOLATION_PAREA_START;
 	
 	/* draw the 4 corners */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = LINEARx1;
-	currentNet->aperture_state = ON;
+	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
+	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->start_x = coordinateX;
 	currentNet->start_y = coordinateY;
 	currentNet->stop_x = coordinateX + width;
 	currentNet->stop_y = coordinateY;
 	
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = LINEARx1;
-	currentNet->aperture_state = ON;
+	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
+	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->stop_x = coordinateX + width;
 	currentNet->stop_y = coordinateY + height;
 	
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = LINEARx1;
-	currentNet->aperture_state = ON;
+	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
+	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->stop_x = coordinateX;
 	currentNet->stop_y = coordinateY + height;
 	
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = LINEARx1;
-	currentNet->aperture_state = ON;
+	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
+	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->stop_x = coordinateX;
 	currentNet->stop_y = coordinateY;
 	
 	/* create the polygon end node */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = PAREA_END;
+	currentNet->interpolation = GERBV_INTERPOLATION_PAREA_END;
 	
 	return;
 }
@@ -686,7 +686,7 @@ gerb_image_return_aperture_index (gerbv_image_t *image, gdouble lineWidth, int *
 	/* try to find an existing aperture that matches the requested width and type */
 	for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
 		if (image->aperture[i] != NULL) {
-			if ((image->aperture[i]->type == CIRCLE) && 
+			if ((image->aperture[i]->type == GERBV_APTYPE_CIRCLE) && 
 				(fabs (image->aperture[i]->parameter[0] - lineWidth) < 0.001)){
 				aperture = image->aperture[i];
 				*apertureIndex = i;
@@ -698,7 +698,7 @@ gerb_image_return_aperture_index (gerbv_image_t *image, gdouble lineWidth, int *
 	if (!aperture) {
 		/* we didn't find a useable old aperture, so create a new one */
 		if (!gerber_create_new_aperture (image, apertureIndex,
-				CIRCLE, lineWidth, 0)) {
+				GERBV_APTYPE_CIRCLE, lineWidth, 0)) {
 			/* if we didn't succeed, then return */
 			return FALSE;
 		}
@@ -721,8 +721,8 @@ gerbv_image_create_arc_object (gerbv_image_t *image, gdouble centerX, gdouble ce
 	
 	/* draw the arc */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = CCW_CIRCULAR;
-	currentNet->aperture_state = ON;
+	currentNet->interpolation = GERBV_INTERPOLATION_CCW;
+	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->aperture = apertureIndex;
 	currentNet->start_x = centerX + (cos(startAngle*M_PI/180) * radius);
 	currentNet->start_y = centerY + (sin(startAngle*M_PI/180) * radius);
@@ -747,13 +747,13 @@ gerbv_image_create_line_object (gerbv_image_t *image, gdouble startX, gdouble st
 	
 	/* draw the line */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = LINEARx1;
+	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	
 	/* if the start and end coordinates are the same, use a "flash" aperture state */
 	if ((fabs(startX - endX) < 0.001) && (fabs(startY - endY) < 0.001))
-		currentNet->aperture_state = FLASH;
+		currentNet->aperture_state = GERBV_APERTURE_STATE_FLASH;
 	else
-		currentNet->aperture_state = ON;
+		currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->aperture = apertureIndex;
 	currentNet->start_x = startX;
 	currentNet->start_y = startY;
@@ -802,14 +802,14 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 		minY = HUGE_VAL;
 		maxY = -HUGE_VAL;
 		
-		if (currentNet->interpolation == PAREA_START) {
+		if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_START) {
 			/* if it's a polygon, just determine the overall area of it and delete it */
-			currentNet->interpolation = DELETED;
+			currentNet->interpolation = GERBV_INTERPOLATION_DELETED;
 			
 			for (currentNet = currentNet->next; currentNet; currentNet = currentNet->next){
-				if (currentNet->interpolation == PAREA_END)
+				if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_END)
 					break;
-				currentNet->interpolation = DELETED;
+				currentNet->interpolation = GERBV_INTERPOLATION_DELETED;
 				if (currentNet->stop_x < minX)
 					minX = currentNet->stop_x;
 				if (currentNet->stop_y < minY)
@@ -819,21 +819,21 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 				if (currentNet->stop_y > maxY)
 					maxY = currentNet->stop_y;
 			}
-			currentNet->interpolation = DELETED;
+			currentNet->interpolation = GERBV_INTERPOLATION_DELETED;
 		}
-		else if ((currentNet->interpolation == LINEARx10) ||
-				(currentNet->interpolation == LINEARx01) ||
-				(currentNet->interpolation == LINEARx001) ||
-				(currentNet->interpolation == LINEARx1)) {
+		else if ((currentNet->interpolation == GERBV_INTERPOLATION_x10) ||
+				(currentNet->interpolation == GERBV_INTERPOLATION_LINEARx01) ||
+				(currentNet->interpolation == GERBV_INTERPOLATION_LINEARx001) ||
+				(currentNet->interpolation == GERBV_INTERPOLATION_LINEARx1)) {
 			gdouble dx=0,dy=0;
 			/* figure out the overall size of this element */
 			switch (image->aperture[currentNet->aperture]->type) {
-				case CIRCLE :
-				case OVAL :
-				case POLYGON :
+				case GERBV_APTYPE_CIRCLE :
+				case GERBV_APTYPE_OVAL :
+				case GERBV_APTYPE_POLYGON :
 					dx = dy = image->aperture[currentNet->aperture]->parameter[0];
 					break;
-				case RECTANGLE :
+				case GERBV_APTYPE_RECTANGLE :
 					dx = (image->aperture[currentNet->aperture]->parameter[0]/ 2);
 					dy = (image->aperture[currentNet->aperture]->parameter[1]/ 2);
 					break;
@@ -859,7 +859,7 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 				maxY = currentNet->stop_y+dy;
 			
 			/* finally, delete node */
-			currentNet->interpolation = DELETED;
+			currentNet->interpolation = GERBV_INTERPOLATION_DELETED;
 		}
 		/* we don't current support arcs */
 		else
@@ -881,10 +881,10 @@ gerbv_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
 		gerbv_selection_item_t sItem = g_array_index (selectionArray,gerbv_selection_item_t, i);
 		gerbv_net_t *currentNet = sItem.net;
 
-		if (currentNet->interpolation == PAREA_START) {
+		if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_START) {
 			/* if it's a polygon, step through every vertex and translate the point */
 			for (currentNet = currentNet->next; currentNet; currentNet = currentNet->next){
-				if (currentNet->interpolation == PAREA_END)
+				if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_END)
 					break;
 				currentNet->start_x += translationX;
 				currentNet->start_y += translationY;
