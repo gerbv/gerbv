@@ -25,8 +25,8 @@
     \ingroup libgerbv
 */
 
-#ifndef GERBV_LAYERTYPE_DRILL_H
-#define GERBV_LAYERTYPE_DRILL_H
+#ifndef DRILL_H
+#define DRILL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,4 +49,4 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary);
 }
 #endif
 
-#endif /* GERBV_LAYERTYPE_DRILL_H */
+#endif /* DRILL_H */

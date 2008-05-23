@@ -75,7 +75,7 @@
 #undef min
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
-enum drill_file_section_t {GERBV_LAYERTYPE_DRILL_NONE, DRILL_HEADER, DRILL_DATA};
+enum drill_file_section_t {DRILL_NONE, DRILL_HEADER, DRILL_DATA};
 enum drill_coordinate_mode_t {DRILL_MODE_ABSOLUTE, DRILL_MODE_INCREMENTAL};
 
 enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED,
@@ -1350,7 +1350,7 @@ new_state(drill_state_t *state)
     if (state != NULL) {
 	/* Init structure */
 	memset((void *)state, 0, sizeof(drill_state_t));
-	state->curr_section = GERBV_LAYERTYPE_DRILL_NONE;
+	state->curr_section = DRILL_NONE;
 	state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 	state->origin_x = 0.0;
 	state->origin_y = 0.0;

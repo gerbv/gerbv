@@ -777,7 +777,7 @@ interface_create_gui (int req_width, int req_height)
 	                  (gpointer) CALLBACKS_SAVE_FILE_RS274X);
 	g_signal_connect ((gpointer) drill, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
-	                  (gpointer) CALLBACKS_SAVE_FILE_GERBV_LAYERTYPE_DRILL);
+	                  (gpointer) CALLBACKS_SAVE_FILE_DRILL);
 
 #if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) print, "activate",

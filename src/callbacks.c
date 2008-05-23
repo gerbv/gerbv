@@ -278,7 +278,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		windowTitle = g_strdup ("Export PNG file as...");
 	else if (processType == CALLBACKS_SAVE_FILE_RS274X)
 		windowTitle = g_strdup ("Export RS-274X file as...");
-	else if (processType == CALLBACKS_SAVE_FILE_GERBV_LAYERTYPE_DRILL)
+	else if (processType == CALLBACKS_SAVE_FILE_DRILL)
 		windowTitle = g_strdup ("Export Excellon drill file as...");
 	else if (processType == CALLBACKS_SAVE_LAYER_AS)
 		windowTitle = g_strdup ("Save layer as...");
@@ -322,7 +322,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			
 			gerbv_export_rs274x_file_from_image (filename, mainProject->file[index]->image);
 		}
-		else if (processType == CALLBACKS_SAVE_FILE_GERBV_LAYERTYPE_DRILL) {
+		else if (processType == CALLBACKS_SAVE_FILE_DRILL) {
 			gint index=callbacks_get_selected_row_index();
 			
 			gerbv_export_drill_file_from_image (filename, mainProject->file[index]->image);
