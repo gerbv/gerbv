@@ -858,6 +858,23 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
        broken headers from Orcad, which is crap */
     temp = gerb_fgetc(fd);
     dprintf("Found a char %d after the T\n", temp);
+    
+    /* might be a tool tool change stop switch on/off*/
+    if((temp == 'C') && ((fd->ptr + 2) < fd->datalen)){
+    	if(gerb_fgetc(fd) == 'S'){
+    	    if (gerb_fgetc(fd) == 'T' ){
+    	  	fd->ptr -= 4;
+    	  	tmps = get_line(fd++);
+    	  	drill_stats_add_error(stats->error_list, -1,
+    	   		g_strdup_printf("Tool change stop switch found: %s\n", tmps), GERBV_MESSAGE_NOTE);
+	  	g_free (tmps);
+	  	return -1;
+	    }
+	    gerb_ungetc(fd);
+	}
+	gerb_ungetc(fd);
+    }
+
     if( !(isdigit(temp) != 0 || temp == '+' || temp =='-') ) {
 	if(temp != EOF) {
 	    drill_stats_add_error(stats->error_list,
