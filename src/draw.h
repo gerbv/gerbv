@@ -36,9 +36,6 @@ selection calculating functions
 #include <cairo-svg.h>
 #include <cairo-pdf.h>
 
-/* Default mouse cursor. Perhaps redefine this to a variable later? */
-#define GERBV_DEF_CURSOR	NULL
-
 #endif /* DRAW_H */
 
 

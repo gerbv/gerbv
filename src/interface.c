@@ -127,7 +127,12 @@ interface_create_gui (int req_width, int req_height)
 	*/
 	GtkWidget *menubar_tools;
 	GtkWidget *menubar_tools_menu;
+#ifndef RENDER_USING_GDK
+	GtkWidget *toggletoolbutton_pointer;
 	GtkWidget *pointer_tool;
+	GdkPixbuf *pointerpixbuf;
+	GtkWidget *pointerimage;
+#endif
 	GtkWidget *pan_tool;
 	GtkWidget *zoom_tool;
 	GtkWidget *measure_tool;
@@ -162,7 +167,6 @@ interface_create_gui (int req_width, int req_height)
 /*	GtkWidget *toolbutton_validate;*/
 /*	GtkWidget *toolbutton_control; */
 	GtkWidget *separatortoolitem4;
-	GtkWidget *toggletoolbutton_pointer;
 	GtkWidget *toggletoolbutton_pan;
 	GtkWidget *toggletoolbutton_zoom;
 	GtkWidget *toggletoolbutton_measure;
@@ -202,8 +206,6 @@ interface_create_gui (int req_width, int req_height)
 	GtkTooltips *tooltips;
 
 	/* Inline icons */
-	GdkPixbuf *pointerpixbuf;
-	GtkWidget *pointerimage;
 	GdkPixbuf *zoompixbuf;
 	GtkWidget *zoomimage;
 	GdkPixbuf *measurepixbuf;
@@ -212,8 +214,9 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *moveimage;
 
 	GtkStockItem item;
-
+#ifndef RENDER_USING_GDK
 	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
+#endif
 	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
 	zoompixbuf = gdk_pixbuf_new_from_inline(-1, lzoom, FALSE, NULL);
 	measurepixbuf = gdk_pixbuf_new_from_inline(-1, ruler, FALSE, NULL);
@@ -405,7 +408,7 @@ interface_create_gui (int req_width, int req_height)
 
 	menubar_tools_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menubar_tools), menubar_tools_menu);
-
+#ifndef RENDER_USING_GDK
 	pointer_tool = gtk_image_menu_item_new_with_mnemonic (_("_Pointer Tool"));
 	/*
 	GtkWidget *tempImage = gtk_image_new_from_pixbuf (pointerpixbuf);
@@ -416,7 +419,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_add_accelerator (pointer_tool, "activate", accel_group,
 	                        GDK_F1, (GdkModifierType) 0,
 	                        GTK_ACCEL_VISIBLE);
-
+#endif
 	pan_tool = gtk_image_menu_item_new_with_mnemonic ("Pa_n Tool");
 	/*
 	tempImage = gtk_image_new_from_pixbuf (movepixbuf);
@@ -535,14 +538,14 @@ interface_create_gui (int req_width, int req_height)
 
 	separatortoolitem4 = (GtkWidget*) gtk_separator_tool_item_new ();
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem4);
-
+#ifndef RENDER_USING_GDK
 	toggletoolbutton_pointer = (GtkWidget*) gtk_toggle_tool_button_new();
 	pointerimage = gtk_image_new_from_pixbuf(pointerpixbuf);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_pointer),
 					pointerimage);
 	gtk_tooltips_set_tip (tooltips, toggletoolbutton_pointer, "Select objects on the screen", NULL);	
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pointer);
-	
+#endif	
 	toggletoolbutton_pan = (GtkWidget*) gtk_toggle_tool_button_new();
 	moveimage = gtk_image_new_from_pixbuf(movepixbuf);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_pan),
@@ -808,8 +811,10 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_control_gerber_options_activate),
 	                  NULL);
 	*/
+#ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) pointer_tool, "activate",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 0);
+#endif
 	g_signal_connect ((gpointer) pan_tool, "activate",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 1);
 	g_signal_connect ((gpointer) zoom_tool, "activate",
@@ -857,9 +862,10 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) toolbutton_zoom_fit, "clicked",
 	                  G_CALLBACK (callbacks_fit_to_window_activate),
 	                  NULL);
-
+#ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) toggletoolbutton_pointer, "clicked",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 0);
+#endif
 	g_signal_connect ((gpointer) toggletoolbutton_pan, "clicked",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 1);
 	g_signal_connect ((gpointer) toggletoolbutton_zoom, "clicked",
@@ -963,7 +969,8 @@ interface_create_gui (int req_width, int req_height)
 
 	g_signal_connect (G_OBJECT(list_store), "row-inserted",
 			  G_CALLBACK (callbacks_layer_tree_row_inserted), NULL);
-			  		
+	/* steal the focus to the tree to make sure none of the buttons are focused */
+	gtk_widget_grab_focus (tree);	  		
 	/*
 	* Connect all events on drawing area 
 	*/    
@@ -1025,8 +1032,9 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.hRuler = hRuler;
 	screen.win.vRuler = vRuler;	
 	screen.win.sidepane_notebook = sidepane_notebook;
-
+#ifndef RENDER_USING_GDK
 	screen.win.toolButtonPointer = toggletoolbutton_pointer;
+#endif
 	screen.win.toolButtonPan = toggletoolbutton_pan;
 	screen.win.toolButtonZoom = toggletoolbutton_zoom;
 	screen.win.toolButtonMeasure = toggletoolbutton_measure;
@@ -1150,7 +1158,7 @@ interface_create_gui (int req_width, int req_height)
 	}
 
 	gtk_window_set_default_size((GtkWindow *)mainWindow, width, height);
-
+	
 	gtk_widget_show_all (mainWindow);
 	screen.win.topLevelWindow = mainWindow;
 	screen.win.messageTextView = message_textview;

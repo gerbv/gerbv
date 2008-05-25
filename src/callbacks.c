@@ -57,9 +57,8 @@
 #include "attribute.h"
 #include "render.h"
 
-#ifdef RENDER_USING_GDK
-  #include "draw-gdk.h"
-#else
+#include "draw-gdk.h"
+#ifndef RENDER_USING_GDK
   #include "draw.h"
   #ifdef WIN32
     #include <cairo-win32.h>
@@ -1412,7 +1411,9 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 	if (screen.win.updatingTools)
 		return;
 	screen.win.updatingTools = TRUE;
+#ifndef RENDER_USING_GDK
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPointer), FALSE);
+#endif
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), FALSE);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonZoom), FALSE);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), FALSE);

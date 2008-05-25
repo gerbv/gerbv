@@ -56,7 +56,7 @@ extern gerbv_render_info_t screenRenderInfo;
 
 #ifdef RENDER_USING_GDK
 static gboolean 
-exportimage_save_pixbuf_to_file (GdkPixbuf* pixbuf, char const* filename);
+exportimage_save_pixbuf_to_file (GdkPixbuf* pixbuf, gchar const* filename);
 #endif
 
 #ifndef RENDER_USING_GDK
@@ -221,13 +221,13 @@ exportimage_save_pixbuf_to_file (GdkPixbuf *pixbuf, gchar const* filename)
 	
 	/* Some text to go with the png image */
 	text[0].key = "Title";
-	text[0].text = filename;
+	text[0].text = g_strdup(filename);
 	text[0].compression = PNG_TEXT_COMPRESSION_NONE;
 	text[1].key = "Generator";
 	text[1].text = "gerbv";
 	text[1].compression = PNG_TEXT_COMPRESSION_NONE;
 	png_set_text (png_ptr, info_ptr, text, 2);
-	
+	g_free (text[0].text);
 	/* Write header data */
 	png_write_info (png_ptr, info_ptr);
 	

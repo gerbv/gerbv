@@ -31,6 +31,9 @@
 
 #include <gdk/gdk.h>
 
+/* Default mouse cursor. Perhaps redefine this to a variable later? */
+#define GERBV_DEF_CURSOR	NULL
+
 enum draw_mode_t {DRAW_IMAGE, DRAW_SELECTIONS, FIND_SELECTIONS};
 
 /*

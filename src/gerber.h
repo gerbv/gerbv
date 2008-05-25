@@ -26,8 +26,8 @@
     \ingroup libgerbv
 */
 
-#ifndef GERBV_LAYERTYPE_RS274X_H
-#define GERBV_LAYERTYPE_RS274X_H
+#ifndef GERBER_H
+#define GERBER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,4 +73,4 @@ gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
 }
 #endif
 
-#endif /* GERBV_LAYERTYPE_RS274X_H */
+#endif /* GERBER_H */
