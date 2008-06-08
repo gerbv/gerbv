@@ -987,7 +987,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		 * but due to laziness I don't.
 		 */
 		if (p2) {
-		    if (p3) GERB_COMPILE_WARNING("Should be a square hole in this aperture.\n");
+		    //if (p3) GERB_COMPILE_WARNING("Should be a square hole in this aperture.\n");
 		    gdk_gc_get_values(gc, &gc_values);
 		    if (gc_values.foreground.pixel == opaque.pixel) {
 			gdk_gc_set_foreground(gc, &transparent);
@@ -1008,7 +1008,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		gerbv_gdk_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
 		break;
 	    case GERBV_APTYPE_POLYGON :
-		GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
+		//GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
 		gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
 		break;
 	    case GERBV_APTYPE_MACRO :
