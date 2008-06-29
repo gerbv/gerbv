@@ -71,6 +71,7 @@
   #include "draw-gdk.h"
   #include "draw.h"
 #endif
+#include "callbacks.h"
 
 #include "pick-and-place.h"
 
@@ -80,6 +81,7 @@
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 
+/* ------------------------------------------------------------------ */
 static gerbv_layer_color defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{115,115,222,177},
 	{255,127,115,177},
@@ -101,6 +103,7 @@ static gerbv_layer_color defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{226,226,226,177}
 };
 
+/* ------------------------------------------------------------------ */
 static gerbv_user_transformation_t defaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
 	{0,0,0,0,FALSE},
 	{0,0,0,0,FALSE},
@@ -124,6 +127,7 @@ static gerbv_user_transformation_t defaultTransformations[NUMBER_OF_DEFAULT_TRAN
 	{0,0,0,0,FALSE},
 };
 
+/* ------------------------------------------------------------------ */
 gerbv_project_t *
 gerbv_create_project (void) {
 	gerbv_project_t *returnProject= (gerbv_project_t *) g_new0(gerbv_project_t,1);
@@ -140,6 +144,7 @@ gerbv_create_project (void) {
 	return returnProject;
 }
 
+/* ------------------------------------------------------------------ */
 void
 gerbv_destroy_project (gerbv_project_t *gerbvProject){
 	int i;
@@ -154,6 +159,7 @@ gerbv_destroy_project (gerbv_project_t *gerbvProject){
 	g_free (gerbvProject);
 }
 
+/* ------------------------------------------------------------------ */
 void
 gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo){
 	gerbv_destroy_image (fileInfo->image);
@@ -161,21 +167,25 @@ gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo){
 	g_free (fileInfo->name);
 }
 
+/* ------------------------------------------------------------------ */
 void 
 gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
-    dprintf("Opening filename = %s\n", (gchar *) filename);
-    
-    
-    if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-	GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
-		     gerbvProject->last_loaded);
-	gerbvProject->last_loaded--;
-    } else {
-	dprintf("     Successfully opened file!\n");	
-    }
+  gint idx_loaded;
+  dprintf("Opening filename = %s\n", (gchar *) filename);
+  
+  if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
+    GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
+		 gerbvProject->last_loaded);
+    gerbvProject->last_loaded--;
+  } else {
+    idx_loaded = gerbvProject->last_loaded;
+    gerbvProject->file[idx_loaded]->layer_dirty = FALSE;
+    dprintf("     Successfully opened file!\n");	
+  }
 } /* gerbv_open_layer_from_filename */
 
+/* ------------------------------------------------------------------ */
 gboolean 
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename) 
 {
@@ -188,6 +198,8 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
     else {
 	return FALSE;
     }
+    gerbvProject->file[index]->layer_dirty = FALSE;
+    callbacks_update_layer_tree();
     return TRUE;
 } /* gerbv_save_project_from_filename */
 
@@ -195,24 +207,30 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
 /* ------------------------------------------------------------------ */
 int
 gerbv_revert_file(gerbv_project_t *gerbvProject, int idx){
-	int rv;
-	rv = gerbv_open_image(gerbvProject, gerbvProject->file[idx]->fullPathname, idx, TRUE, NULL, 0, TRUE);
-	return rv;
+  int rv;
+  rv = gerbv_open_image(gerbvProject, gerbvProject->file[idx]->fullPathname, idx, TRUE, NULL, 0, TRUE);
+  gerbvProject->file[idx]->layer_dirty = FALSE;
+  callbacks_update_layer_tree();
+  return rv;
 }
 
+/* ------------------------------------------------------------------ */
 void 
 gerbv_revert_all_files(gerbv_project_t *gerbvProject) 
 {
-    int idx;
-    
-    for (idx = 0; idx < gerbvProject->max_files; idx++) {
-	if (gerbvProject->file[idx] && gerbvProject->file[idx]->fullPathname) {
-	    gerbv_revert_file (gerbvProject, idx);
-	    return;
-	}
+  int idx;
+  
+  for (idx = 0; idx < gerbvProject->max_files; idx++) {
+    if (gerbvProject->file[idx] && gerbvProject->file[idx]->fullPathname) {
+      gerbv_revert_file (gerbvProject, idx);
+      gerbvProject->file[idx]->layer_dirty = FALSE;
+      callbacks_update_layer_tree();
+      return;
     }
+  }
 } /* gerbv_revert_all_files */
 
+/* ------------------------------------------------------------------ */
 void 
 gerbv_unload_layer(gerbv_project_t *gerbvProject, int index) 
 {
@@ -233,6 +251,7 @@ gerbv_unload_layer(gerbv_project_t *gerbvProject, int index)
     gerbvProject->last_loaded--;
 } /* gerbv_unload_layer */
 
+/* ------------------------------------------------------------------ */
 void 
 gerbv_unload_all_layers (gerbv_project_t *gerbvProject) 
 {
@@ -248,6 +267,7 @@ gerbv_unload_all_layers (gerbv_project_t *gerbvProject)
 } /* gerbv_unload_all_layers */
 
 
+/* ------------------------------------------------------------------ */
 void 
 gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint newPosition) 
 {
@@ -268,6 +288,8 @@ gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint n
     gerbvProject->file[newPosition] = temp_file;
 } /* gerbv_change_layer_order */
 
+
+/* ------------------------------------------------------------------ */
 gint
 gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t *parsed_image,
 			gchar *filename, gchar *baseName, int idx, int reload){
@@ -315,6 +337,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
      */
     gerbvProject->file[idx]->fullPathname = g_strdup (filename);
     gerbvProject->file[idx]->name = g_strdup (baseName);
+    
     
     {
 	r = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].red*257;
@@ -437,6 +460,10 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     	g_free (baseName);
     	g_free (displayedName);
     }
+
+    /* Set layer_dirty flag to FALSE */
+    gerbvProject->file[idx]->layer_dirty = FALSE;
+
     /* for PNP place files, we may need to add a second image for the other
        board side */
     if (parsed_image2) {

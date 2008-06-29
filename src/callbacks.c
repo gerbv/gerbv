@@ -229,12 +229,12 @@ void
 callbacks_save_project_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	if (mainProject->project)
-		main_save_project_from_filename (mainProject, mainProject->project);
-	else
-		callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
-	mainProject->project_dirty = FALSE;
-	return;
+  if (mainProject->project)
+    main_save_project_from_filename (mainProject, mainProject->project);
+  else
+    callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
+  mainProject->project_dirty = FALSE;
+  return;
 }
 
 /* --------------------------------------------------------- */
@@ -242,18 +242,22 @@ void
 callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-	gint index=callbacks_get_selected_row_index();
-
-	if (index >= 0) {
-		if (!gerbv_save_layer_from_index (mainProject, index, mainProject->file[index]->fullPathname)) {
-			interface_get_alert_dialog_response ("Gerber Viewer cannot export this file type", 
-							     NULL,
-							     FALSE,
-							     NULL);
-			return;
-		}
-	}
-	return;
+  /* first figure out which layer in the layer side menu is selected */
+  gint index=callbacks_get_selected_row_index();
+  
+  /* Now save that layer */
+  if (index >= 0) {
+    if (!gerbv_save_layer_from_index (mainProject, index, mainProject->file[index]->fullPathname)) {
+      interface_get_alert_dialog_response ("Gerber Viewer cannot export this file type", 
+					   NULL,
+					   FALSE,
+					   NULL);
+      mainProject->file[index]->layer_dirty = FALSE;
+      callbacks_update_layer_tree();
+      return;
+    }
+  }
+  return;
 }
 
 /* --------------------------------------------------------- */
@@ -1050,7 +1054,16 @@ void
 callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-  if ((mainProject->project_dirty == TRUE) &&
+  gboolean layers_dirty = FALSE;
+  gint idx;
+  gint last_idx = mainProject->last_loaded;
+
+  for (idx = 0; idx<=last_idx; idx++) {
+    if (mainProject->file[idx] == NULL) break;
+    layers_dirty = layers_dirty || mainProject->file[idx]->layer_dirty;
+  }
+
+  if (((mainProject->project_dirty == TRUE) || layers_dirty) &&
       !interface_get_alert_dialog_response(
             "Are you sure?",
             "You have unsaved changes in your project. Click OK to quit, or click CANCEL to go back and save your changes",
@@ -1794,7 +1807,7 @@ callbacks_update_layer_tree (void) {
 				/* copy the color area into the black pixbuf */
 				gdk_pixbuf_copy_area  (pixbuf, 1, 1, 18, 13, blackPixbuf, 1, 1);
 				/* free the color buffer, since we don't need it anymore */
-                        g_object_unref(pixbuf);
+				g_object_unref(pixbuf);
                         
 				gtk_list_store_append (list_store, &iter);
 				
@@ -1808,11 +1821,13 @@ callbacks_update_layer_tree (void) {
 				/* display any unsaved layers differently to show the user they are
 				   unsaved */
 				gchar *layerName;
-				if (TRUE) {
-					layerName = g_strconcat ("*","<i>",mainProject->file[idx]->name,"</i>",NULL);
+				if (mainProject->file[idx]->layer_dirty == TRUE) {
+				  /* The layer has unsaved changes in it. Show layer name in italics. */
+				  layerName = g_strconcat ("*","<i>",mainProject->file[idx]->name,"</i>",NULL);
 				}
 				else
-					layerName = g_strdup (mainProject->file[idx]->name);
+				  /* layer is clean.  Show layer name using normal font. */
+				  layerName = g_strdup (mainProject->file[idx]->name);
 				
 				gtk_list_store_set (list_store, &iter,
 							0, mainProject->file[idx]->isVisible,
@@ -1856,11 +1871,12 @@ callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_dat
 void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
-	/* for testing, just hard code in some translations here */
-	gerbv_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
-	mainProject->project_dirty = TRUE;
-	render_clear_selection_buffer ();
-	render_refresh_rendered_image_on_screen ();
+  /* for testing, just hard code in some translations here */
+  gerbv_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
+  mainProject->project_dirty = TRUE;
+  callbacks_update_layer_tree();
+  render_clear_selection_buffer ();
+  render_refresh_rendered_image_on_screen ();
 #endif
 }
 
@@ -1882,18 +1898,22 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
   if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
     if (mainProject->check_before_delete == TRUE) {
       if (!interface_get_alert_dialog_response(
-                 "The selected objects will be permanently deleted",
-		 "Do you want to proceed?",
-		 TRUE,
-		 &(mainProject->check_before_delete)))
+					       "The selected objects will be permanently deleted",
+					       "Do you want to proceed?",
+					       TRUE,
+					       &(mainProject->check_before_delete)))
 	return;
     }
     gint index=callbacks_get_selected_row_index();
     if (index >= 0) {
       gerbv_image_delete_selected_nets (mainProject->file[index]->image,
-				       screen.selectionInfo.selectedNodeArray); 
+					screen.selectionInfo.selectedNodeArray); 
       render_refresh_rendered_image_on_screen ();
+      /* Set project_dirty flag to TRUE */
       mainProject->project_dirty = TRUE;
+      /* Set layer_dirty flag to TRUE */
+      mainProject->file[index]->layer_dirty = TRUE;
+      callbacks_update_layer_tree();
     }
   }
   render_clear_selection_buffer ();

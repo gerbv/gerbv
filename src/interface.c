@@ -256,16 +256,20 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
 
+	if (gtk_stock_lookup("gtk-save", &item)) {
+	    gchar new_save[] = "_Save active layer"; 
+	    item.label = new_save;
+	    gtk_stock_add(&item, 1);
+	}
 	save_layer = gtk_image_menu_item_new_from_stock ("gtk-save", accel_group);
 	gtk_tooltips_set_tip (tooltips, save_layer, "Save the active layer", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_layer);
 	
 	if (gtk_stock_lookup("gtk-save-as", &item)) {
-	    gchar new[] = "Save _As..."; 
-	    item.label = new;
+	    gchar new_saveas[] = "Save active layer _As..."; 
+	    item.label = new_saveas;
 	    gtk_stock_add(&item, 1);
 	}
-	
 	save_as_layer = gtk_image_menu_item_new_from_stock ("gtk-save-as", accel_group);
 	gtk_tooltips_set_tip (tooltips, save_as_layer, "Save the active layer to a new file", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as_layer);

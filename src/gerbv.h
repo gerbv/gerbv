@@ -531,28 +531,29 @@ typedef struct gerbv_image_info {
 
 /*!  The structure used to hold a layer (RS274X, drill, or pick-and-place data) */
 typedef struct {
-    gerbv_layertype_t layertype; /*!< the type of layer (RS274X, drill, or pick-and-place) */
-    gerbv_aperture_t *aperture[APERTURE_MAX]; /*!< an array with all apertures used */
-    gerbv_layer_t *layers; /*!< an array of all RS274X layers used (only used in RS274X types) */
-    gerbv_netstate_t *states; /*!< an array of all RS274X states used (only used in RS274X types) */
-    gerbv_amacro_t *amacro; /*!< an array of all macros used (only used in RS274X types) */
-    gerbv_format_t *format; /*!< formatting info */
-    gerbv_image_info_t *info; /*!< miscellaneous info regarding the layer such as overall size, etc */
-    gerbv_net_t *netlist; /*!< an array of all geometric entities in the layer */
-    gerbv_stats_t *gerbv_stats; /*!< RS274X statistics for the layer */
-    gerbv_drill_stats_t *drill_stats;  /*!< Excellon drill statistics for the layer */
+  gerbv_layertype_t layertype; /*!< the type of layer (RS274X, drill, or pick-and-place) */
+  gerbv_aperture_t *aperture[APERTURE_MAX]; /*!< an array with all apertures used */
+  gerbv_layer_t *layers; /*!< an array of all RS274X layers used (only used in RS274X types) */
+  gerbv_netstate_t *states; /*!< an array of all RS274X states used (only used in RS274X types) */
+  gerbv_amacro_t *amacro; /*!< an array of all macros used (only used in RS274X types) */
+  gerbv_format_t *format; /*!< formatting info */
+  gerbv_image_info_t *info; /*!< miscellaneous info regarding the layer such as overall size, etc */
+  gerbv_net_t *netlist; /*!< an array of all geometric entities in the layer */
+  gerbv_stats_t *gerbv_stats; /*!< RS274X statistics for the layer */
+  gerbv_drill_stats_t *drill_stats;  /*!< Excellon drill statistics for the layer */
 } gerbv_image_t;
 
 /*!  Holds information related to an individual layer that is part of a project */
 typedef struct {
-    gerbv_image_t *image; /*!< the image holding all the geometry of the layer */
-    GdkColor color; /*!< the color to render this layer with */
-    guint16 alpha; /*!< the transparency to render this layer with */
-    gboolean isVisible; /*!< TRUE if this layer should be rendered with the project */
-    gpointer privateRenderData; /*!< private data holder for the rendering backend */
-    gchar *fullPathname; /*!< this full pathname to the file */
-    gchar *name; /*!< the name used when referring to this layer (e.g. in a layer selection menu) */
-    gerbv_user_transformation_t transform; /*!< user-specified transformation for this layer (mirroring, translating, etc) */
+  gerbv_image_t *image; /*!< the image holding all the geometry of the layer */
+  GdkColor color; /*!< the color to render this layer with */
+  guint16 alpha; /*!< the transparency to render this layer with */
+  gboolean isVisible; /*!< TRUE if this layer should be rendered with the project */
+  gpointer privateRenderData; /*!< private data holder for the rendering backend */
+  gchar *fullPathname; /*!< this full pathname to the file */
+  gchar *name; /*!< the name used when referring to this layer (e.g. in a layer selection menu) */
+  gerbv_user_transformation_t transform; /*!< user-specified transformation for this layer (mirroring, translating, etc) */
+  gboolean layer_dirty;  /*!< True if layer has been modified since last save */
 } gerbv_fileinfo_t;
 
 typedef struct {
