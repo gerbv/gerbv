@@ -1056,7 +1056,7 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
   gint idx;
   gint last_idx = mainProject->last_loaded;
 
-  for (idx = 0; idx<=last_idx; idx++) {
+  for (idx = 0; idx<=max_files; idx++) {
     if (mainProject->file[idx] == NULL) break;
     layers_dirty = layers_dirty || mainProject->file[idx]->layer_dirty;
   }
@@ -1064,7 +1064,7 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
   if (layers_dirty &&
       !interface_get_alert_dialog_response(
             "Are you sure?",
-            "You have unsaved changes in your project. Click OK to quit, or click CANCEL to go back and save your changes",
+            "You have unsaved changes in your layers or project. Click OK to quit, or click CANCEL to go back and save your changes",
 	    FALSE,
 	    NULL)) {
     return;
