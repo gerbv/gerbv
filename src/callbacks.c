@@ -1804,12 +1804,23 @@ callbacks_update_layer_tree (void) {
 				}
 				else
 					modifiedCode = g_strdup ("");
+				
+				/* display any unsaved layers differently to show the user they are
+				   unsaved */
+				gchar *layerName;
+				if (TRUE) {
+					layerName = g_strconcat ("*","<i>",mainProject->file[idx]->name,"</i>",NULL);
+				}
+				else
+					layerName = g_strdup (mainProject->file[idx]->name);
+				
 				gtk_list_store_set (list_store, &iter,
 							0, mainProject->file[idx]->isVisible,
 							1, blackPixbuf,
-			                        2, mainProject->file[idx]->name,
+			                        2, layerName,
 			                        3, modifiedCode,
 			                        -1);
+			      g_free (layerName);
 			      g_free (modifiedCode);
 			      /* pixbuf has a refcount of 2 now, as the list store has added its own reference */
 			      g_object_unref(blackPixbuf);

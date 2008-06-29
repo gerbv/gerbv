@@ -952,7 +952,7 @@ interface_create_gui (int req_width, int req_height)
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Name",
 	                                                renderer,
-	                                                "text", 2,
+	                                                "markup", 2,
 	                                                NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
 
