@@ -570,7 +570,6 @@ typedef struct {
   int curr_index; /*!< the index of the currently active fileinfo */
   int last_loaded; /*!< the number of fileinfos currently in the project */
   int renderType; /*!< the type of renderer to use */
-  gboolean project_dirty;   /*!< TRUE if changes have been made since last save */ 
   gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
   gchar *path; /*!< the default path to load new files from */
   gchar *execpath;    /*!< the path to executed version of gerbv */

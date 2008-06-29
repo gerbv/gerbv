@@ -160,6 +160,7 @@ gerbv_screen_t screen;
 gboolean logToFileOption;
 gchar *logToFileFilename;
 
+/* ------------------------------------------------------------------ */
 void 
 main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
@@ -226,7 +227,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
     }
 } /* gerbv_open_project_from_filename */
 
-
+/* ------------------------------------------------------------------ */
 void 
 main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
@@ -243,6 +244,7 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
     project_list->rgb[2] = gerbvProject->background.blue;
     project_list->next = NULL;
     
+    /* loop over all layer files */
     for (idx = 0; idx < gerbvProject->max_files; idx++) {
 	if (gerbvProject->file[idx]) {
 	    tmp = g_new0 (project_list_t, 1);
@@ -264,6 +266,9 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	    tmp->rgb[2] = gerbvProject->file[idx]->color.blue;
 	    tmp->inverted = gerbvProject->file[idx]->transform.inverted;
 	    tmp->visible = gerbvProject->file[idx]->isVisible;
+	    /* save individual layers as part of saving project */
+	    gerbv_save_layer_from_index(gerbvProject, idx, tmp->filename);
+
 	    project_list = tmp;
 	}
     }
@@ -274,6 +279,7 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
     g_free (dirName);
 } /* gerbv_save_project_from_filename */
 
+/* ------------------------------------------------------------------ */
 void 
 main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {

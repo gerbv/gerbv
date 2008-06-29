@@ -1212,6 +1212,8 @@ interface_set_render_type (int t)
 gboolean
 interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText, 
 				     gboolean show_checkbox, gboolean *ask_to_show_again )
+     /* This fcn returns TRUE if the user presses the OK button,
+	otherwise it returns FALSE. */
 {
   /* Set show_checkbox = TRUE to show "do not show this again" checkbox. */
   /* Point ask_to_show_again to the variable to set to not show the checkbox. */

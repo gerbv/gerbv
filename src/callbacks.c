@@ -221,7 +221,6 @@ callbacks_revert_activate                     (GtkMenuItem     *menuitem,
 {
 	gerbv_revert_all_files (mainProject);
 	render_refresh_rendered_image_on_screen();
-	mainProject->project_dirty = FALSE;
 }
 
 /* --------------------------------------------------------- */
@@ -233,7 +232,6 @@ callbacks_save_project_activate                       (GtkMenuItem     *menuitem
     main_save_project_from_filename (mainProject, mainProject->project);
   else
     callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
-  mainProject->project_dirty = FALSE;
   return;
 }
 
@@ -1063,7 +1061,7 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
     layers_dirty = layers_dirty || mainProject->file[idx]->layer_dirty;
   }
 
-  if (((mainProject->project_dirty == TRUE) || layers_dirty) &&
+  if (layers_dirty &&
       !interface_get_alert_dialog_response(
             "Are you sure?",
             "You have unsaved changes in your project. Click OK to quit, or click CANCEL to go back and save your changes",
@@ -1873,7 +1871,6 @@ callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
   /* for testing, just hard code in some translations here */
   gerbv_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
-  mainProject->project_dirty = TRUE;
   callbacks_update_layer_tree();
   render_clear_selection_buffer ();
   render_refresh_rendered_image_on_screen ();
@@ -1909,8 +1906,6 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
       gerbv_image_delete_selected_nets (mainProject->file[index]->image,
 					screen.selectionInfo.selectedNodeArray); 
       render_refresh_rendered_image_on_screen ();
-      /* Set project_dirty flag to TRUE */
-      mainProject->project_dirty = TRUE;
       /* Set layer_dirty flag to TRUE */
       mainProject->file[index]->layer_dirty = TRUE;
       callbacks_update_layer_tree();
