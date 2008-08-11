@@ -67,6 +67,8 @@
   #endif
 #endif
 
+#include "textbox.h"
+
 #define dprintf if(DEBUG) printf
 
 #define SAVE_PROJECT 0
@@ -1056,7 +1058,7 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
   gint idx;
   gint last_idx = mainProject->last_loaded;
 
-  for (idx = 0; idx<=max_files; idx++) {
+  for (idx = 0; idx<=mainProject->max_files; idx++) {
     if (mainProject->file[idx] == NULL) break;
     layers_dirty = layers_dirty || mainProject->file[idx]->layer_dirty;
   }
@@ -1858,6 +1860,43 @@ callbacks_update_layer_tree (void) {
 /* --------------------------------------------------------------------------- */
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data){
+  GtkWidget *tb;
+  int i;
+  gerbv_net_t *currentNet;
+
+  tb = get_textbox ("Object Properties");
+
+#ifndef RENDER_USING_GDK
+  if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY)
+    return;
+
+  gint index=callbacks_get_selected_row_index();
+  if (index < 0)
+    return;
+
+  for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
+    gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
+						  gerbv_selection_item_t, i);
+    gerbv_net_t *net = sItem.net;
+    switch (net->aperture_state){
+    case GERBV_APERTURE_STATE_OFF:
+      break;
+    case GERBV_APERTURE_STATE_ON:
+      tb_printf (tb, "Aperture D%d from %g,%g to %g,%g on layer %s\n",
+		 net->aperture,
+		 net->start_x, net->start_y,
+		 net->stop_x, net->stop_y,
+		 net->layer->name);
+      break;
+    case GERBV_APERTURE_STATE_FLASH:
+      tb_printf (tb, "Aperture D%d at %g,%g on layer %s\n",
+		 net->aperture,
+		 net->stop_x, net->stop_y,
+		 net->layer->name);
+      break;
+    }
+  }
+#endif
 }
 
 /* --------------------------------------------------------------------------- */
