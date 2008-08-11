@@ -2254,7 +2254,9 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				   is pointing at */
 				if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
 					gint index=callbacks_get_selected_row_index();
-					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,TRUE);
+					if ((index >= 0) && (index <= mainProject->last_loaded)) {
+					  render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,TRUE);
+					}
 				}
 				/* only show the popup if we actually have something selected now */
 				if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY)
