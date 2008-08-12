@@ -95,6 +95,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *mainWindow;
 	GtkWidget *vbox1;
 	GtkWidget *menubar1;
+
 	GtkWidget *menuitem_file;
 	GtkWidget *menuitem_file_menu;
 	GtkWidget *new;
@@ -112,6 +113,11 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *png;
 	GtkWidget *separator1;
 	GtkWidget *quit;
+
+	GtkWidget *menuitem_edit;
+	GtkWidget *menuitem_edit_menu;
+	GtkWidget *delete_selected;
+
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
 	GtkWidget *zoom_in;
@@ -122,6 +128,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_analyze_menu;
 	GtkWidget *analyze_active_gerbers;
 	GtkWidget *analyze_active_drill;
+	GtkWidget *analyze_display_selected_obj_props;
 	/*
 	GtkWidget *control_gerber_options;
 	*/
@@ -364,6 +371,20 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, quit, "Quit Gerber Viewer", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), quit);
 
+	/* --- Next menu item --- */
+	menuitem_edit = gtk_menu_item_new_with_mnemonic (_("_Edit"));
+	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_edit);
+
+	menuitem_edit_menu = gtk_menu_new ();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_edit), menuitem_edit_menu);
+
+	delete_selected = gtk_menu_item_new_with_mnemonic (_("_Delete selected object(s)"));
+	gtk_tooltips_set_tip (tooltips, delete_selected, 
+			      "Delete selected objects", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_edit_menu), delete_selected);
+
+
+	/* --- Next menu item --- */
 	menuitem_view = gtk_menu_item_new_with_mnemonic (_("_View"));
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_view);
 
@@ -392,15 +413,20 @@ interface_create_gui (int req_width, int req_height)
 	menuitem_analyze_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_analyze), menuitem_analyze_menu);
 
-	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze visible Gerber layers..."));
+	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze visible Gerber layers"));
 	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, 
 			      "Examine a detailed anaylsis of the contents of all visible Gerber layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_gerbers);
 
-	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze visible drill layers..."));
-	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, 
+	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze visible drill layers"));
+	gtk_tooltips_set_tip (tooltips, analyze_active_drill, 
 			      "Examine a detailed anaylsis of the contents of all visible drill layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_drill);
+
+	analyze_display_selected_obj_props = gtk_menu_item_new_with_mnemonic (_("_Display selected object(s) properties"));
+	gtk_tooltips_set_tip (tooltips, analyze_display_selected_obj_props, 
+			      "Show the properties of the selected object(s).", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_display_selected_obj_props);
 
 	/* Wait and add in for 2.1??
 	control_gerber_options = gtk_menu_item_new_with_mnemonic (_("Control Gerber options..."));
@@ -739,6 +765,8 @@ interface_create_gui (int req_width, int req_height)
 /*
  *  Connect signals to widgets
  */
+
+	/* --- File menu --- */
 	g_signal_connect ((gpointer) new, "activate",
 	                  G_CALLBACK (callbacks_new_activate),
 	                  NULL);
@@ -795,6 +823,13 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) quit, "activate",
 	                  G_CALLBACK (callbacks_quit_activate),
 	                  NULL);
+
+	/* --- Edit menu --- */
+	g_signal_connect ((gpointer) delete_selected, "activate",
+	                  G_CALLBACK (callbacks_delete_objects_clicked),
+	                  NULL);
+
+	/* --- View menu --- */
 	g_signal_connect ((gpointer) zoom_in, "activate",
 	                  G_CALLBACK (callbacks_zoom_in_activate),
 	                  NULL);
@@ -804,17 +839,26 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) fit_to_window, "activate",
 	                  G_CALLBACK (callbacks_fit_to_window_activate),
 	                  NULL);
+
+	/* --- Analyze menu --- */
 	g_signal_connect ((gpointer) analyze_active_gerbers, "activate",
 	                  G_CALLBACK (callbacks_analyze_active_gerbers_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) analyze_active_drill, "activate",
 	                  G_CALLBACK (callbacks_analyze_active_drill_activate),
 	                  NULL);
+	g_signal_connect ((gpointer) analyze_display_selected_obj_props, "activate",
+	                  G_CALLBACK (callbacks_display_object_properties_clicked),
+	                  NULL);
+
+
 	/* Wait for 2.1
 	g_signal_connect ((gpointer) control_gerber_options, "activate",
 	                  G_CALLBACK (callbacks_control_gerber_options_activate),
 	                  NULL);
 	*/
+
+	/* --- Tools menu --- */
 #ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) pointer_tool, "activate",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 0);
@@ -825,6 +869,8 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 2);
 	g_signal_connect ((gpointer) measure_tool, "activate",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 3);
+
+	/* --- Help menu --- */
 	/*
 	g_signal_connect ((gpointer) online_manual, "activate",
 	                  G_CALLBACK (callbacks_online_manual_activate),
@@ -1115,6 +1161,7 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_display_object_properties_clicked), NULL);
 	                  
+	/*   Include these after they are coded.
 	tempMenuItem = gtk_image_menu_item_new_with_label ("Edit object properties");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Edit the properties of the selected object", NULL);
@@ -1127,15 +1174,16 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_move_objects_clicked), NULL);
       
-      tempMenuItem = gtk_image_menu_item_new_with_label ("Reduce area");
+        tempMenuItem = gtk_image_menu_item_new_with_label ("Reduce area");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Reduce the area of the object (e.g. to prevent component floating)",NULL);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_reduce_object_area_clicked), NULL);
-	                            
-	tempMenuItem = gtk_image_menu_item_new_with_label ("Delete");
+	*/
+                        
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Delete selected object(s)");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
-	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Delete the selected objects",NULL);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Delete the selected object(s)",NULL);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_delete_objects_clicked), NULL);
 
