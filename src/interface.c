@@ -1115,7 +1115,7 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_display_object_properties_clicked), NULL);
 	                  
-	tempMenuItem = gtk_image_menu_item_new_with_label ("Display object properties");
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Edit object properties");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Edit the properties of the selected object", NULL);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",

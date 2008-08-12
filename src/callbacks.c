@@ -490,6 +490,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
     /* Now compile stats related to reading G codes */
     G_report_string = g_strdup_printf("G code statistics   \n");
+    G_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", G_report_string);
     G_report_string = g_strdup_printf("%sG0 = %-6d (%s)\n", 
 				      G_report_string, stats_report->G0,
 				      "Move");
@@ -549,6 +550,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 
     D_report_string = g_strdup_printf("D code statistics   \n");
+    D_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", D_report_string);
     D_report_string = g_strdup_printf("%sD1 = %-6d (%s)\n", 
 				      D_report_string, stats_report->D1,
 				      "Exposure on");
@@ -582,6 +584,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 
     M_report_string = g_strdup_printf("M code statistics   \n");
+    M_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", M_report_string);
     M_report_string = g_strdup_printf("%sM0 = %-6d (%s)\n", 
 				      M_report_string, stats_report->M0,
 				      "Program start");
@@ -596,6 +599,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 
     misc_report_string = g_strdup_printf("Misc code statistics   \n");
+    misc_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", misc_report_string);
     misc_report_string = g_strdup_printf("%sX = %d\n", misc_report_string, stats_report->X);
     misc_report_string = g_strdup_printf("%sY = %d\n", misc_report_string, stats_report->Y);
     misc_report_string = g_strdup_printf("%sI = %d\n", misc_report_string, stats_report->I);
@@ -833,6 +837,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
     /* G code window strings */
     G_report_string = g_strdup_printf("G code statistics   \n");
+    G_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", G_report_string);
     G_report_string = g_strdup_printf("%sG00 = %-6d (%s)\n", 
 				      G_report_string, stats_report->G00,
 				      "Rout mode");
@@ -865,6 +870,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
     /* M code window strings */
     M_report_string = g_strdup_printf("M code statistics   \n");
+    M_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", M_report_string);
     M_report_string = g_strdup_printf("%sM00 = %-6d (%s)\n", 
 				      M_report_string, stats_report->M00,
 				      "End of program");
@@ -913,6 +919,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
     /* misc report strings */
     misc_report_string = g_strdup_printf("Misc code statistics   \n");
+    misc_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", misc_report_string);
     misc_report_string = g_strdup_printf("%scomments = %d\n", 
 					 misc_report_string, stats_report->comment);
     misc_report_string = g_strdup_printf("%sUnknown codes = %d\n", 
@@ -1863,6 +1870,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
   GtkWidget *tb;
   int i;
   gerbv_net_t *currentNet;
+  char *layer_name;
 
   tb = get_textbox ("Object Properties");
 
@@ -1878,6 +1886,12 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
     gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
 						  gerbv_selection_item_t, i);
     gerbv_net_t *net = sItem.net;
+    if (net->layer->name == NULL) {
+      layer_name = g_strdup("<unnamed>");
+    } else {
+      layer_name = g_strdup(net->layer->name);
+    }
+
     switch (net->aperture_state){
     case GERBV_APERTURE_STATE_OFF:
       break;
@@ -1886,13 +1900,13 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 		 net->aperture,
 		 net->start_x, net->start_y,
 		 net->stop_x, net->stop_y,
-		 net->layer->name);
+		 layer_name);
       break;
     case GERBV_APERTURE_STATE_FLASH:
       tb_printf (tb, "Aperture D%d at %g,%g on layer %s\n",
 		 net->aperture,
 		 net->stop_x, net->stop_y,
-		 net->layer->name);
+		 layer_name);
       break;
     }
   }
