@@ -52,11 +52,35 @@
 
 #define dprintf if(DEBUG) printf
 
+static int auto_uncheck_needed = 0;
+static GtkWidget * auto_uncheck_widget = NULL;
+static int * auto_uncheck_attr = NULL;
+static void clear_auto()
+{
+  if( auto_uncheck_needed && auto_uncheck_widget != NULL && auto_uncheck_attr != NULL) {
+    /* disable this bit of code so we don't enter an endless loop */
+    auto_uncheck_needed = 0;
+
+    /* uncheck the "auto" toggle button */
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (auto_uncheck_widget), 0);
+
+    /* store that we have unchecked the "auto" toggle button */
+    *auto_uncheck_attr = 0;
+
+    /* re-enable this bit of code */
+    auto_uncheck_needed = 1;
+  }
+}
+
 /* Callback for toggling a boolean attribute */
 static void
 set_flag_cb (GtkToggleButton * button, gboolean * flag)
 {
   *flag = gtk_toggle_button_get_active (button);
+  
+  /* don't call auto_uncheck if this *is* the "auto" button */
+  if (auto_uncheck_widget != button)
+    clear_auto ();
 }
 
 /* Callback for setting an integer value */
@@ -66,6 +90,7 @@ intspinner_changed_cb (GtkWidget * spin_button, gpointer data)
   int *ival = data;
 
   *ival = gtk_spin_button_get_value (GTK_SPIN_BUTTON (spin_button));
+  clear_auto ();
 }
 
 /* Callback for setting a floating point value */
@@ -75,6 +100,7 @@ dblspinner_changed_cb (GtkWidget * spin_button, gpointer data)
   double *dval = data;
 
   *dval = gtk_spin_button_get_value (GTK_SPIN_BUTTON (spin_button));
+  clear_auto ();
 }
 
 /* Callback for setting an string value */
@@ -88,6 +114,8 @@ entry_changed_cb (GtkEntry * entry, char **str)
   if (*str)
     free (*str);
   *str = strdup (s);
+
+  clear_auto ();
 }
 
 /* Callback for setting an enum value */
@@ -98,6 +126,8 @@ enum_changed_cb (GtkWidget * combo_box, int *val)
 
   active = gtk_combo_box_get_active (GTK_COMBO_BOX (combo_box));
   *val = active;
+
+  clear_auto ();
 }
 
 /* Utility function for building a vbox with a text label */
@@ -244,8 +274,13 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
   int i, j;
   GtkTooltips *tips;
   int rc = 0;
+  int set_auto_uncheck = 0;
 
   dprintf ("%s(%p, %d, %p, \"%s\", \"%s\")\n", __FUNCTION__, attrs, n_attrs, results, title, descr);
+
+  auto_uncheck_needed = 0;
+  auto_uncheck_widget = NULL;
+  auto_uncheck_attr = NULL;
 
   tips = gtk_tooltips_new ();
 
@@ -348,6 +383,27 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 					       &(attrs[j].default_val.int_value),
 					       attrs[j].name);
 		  gtk_tooltips_set_tip (tips, widget, attrs[j].help_text, NULL);
+
+		  /* 
+		   * This is an ugly ugly ugly hack....  If this is
+		   * the first in our list of attributes *and* it has a
+		   * magic name of "auto" then we'll remember it and
+		   * all of the other callbacks will cause this button to
+		   * come unchecked. Among the other nastiness
+		   * involved here, this dialog is now *required* to
+		   * be modal since we are using a static variable.
+		   * To avoid that, we need a new data type that can hold
+		   * more state information.  Ideally we need a better
+		   * way to capture dependencies between attributes to
+		   * allow arbitrary relationships instead of just this
+		   * one single "magic" one.
+		   */
+		  if (j == 0 && strcmp(attrs[j].name, "auto") == 0) {
+		    set_auto_uncheck = 1;
+		    auto_uncheck_widget = widget;
+		    auto_uncheck_attr = &(attrs[j].default_val.int_value);
+		  }
+
 		  break;
 		  
 	      case HID_Enum:
@@ -411,6 +467,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 
 
   gtk_widget_show_all (dialog);
+  auto_uncheck_needed = set_auto_uncheck;
 
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
       {
