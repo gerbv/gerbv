@@ -35,12 +35,6 @@
 extern "C" {
 #endif
 
-/* 
- * The following typedef's are taken directly from src/hid.h in the
- * pcb project.  The names are kept the same to make it easier to
- * compare to pcb's sources.
- */
-    
 int
 attribute_interface_dialog (gerbv_HID_Attribute *, int, gerbv_HID_Attr_Val *, 
 			    const char *,const char *);

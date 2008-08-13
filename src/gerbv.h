@@ -216,6 +216,12 @@ typedef enum {GERBV_RENDER_TYPE_GDK, /*!< render using normal GDK drawing functi
 		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY /*!< use the cairo library with the smoothest edges */
 } gerbv_render_types_t;
 
+/* 
+ * The following typedef's are taken directly from src/hid.h in the
+ * pcb project.  The names are kept the same to make it easier to
+ * compare to pcb's sources.
+ */
+    
 /* Used for HID attributes (exporting and printing, mostly).
    HA_boolean uses int_value, HA_enum sets int_value to the index and
    str_value to the enumeration string.  HID_Label just shows the
@@ -247,6 +253,7 @@ typedef struct {
     void *value;
     int hash; /* for detecting changes. */
 } gerbv_HID_Attribute;
+/* end of HID attributes from PCB */
 
 /*! A linked list of errors found in the files */   
 typedef struct error_list {
