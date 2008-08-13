@@ -104,6 +104,11 @@ callbacks_generate_alert_dialog (gchar *primaryText, gchar *secondaryText){
 }
 
 /* --------------------------------------------------------- */
+/**
+  * The file -> new menu item was selected.  Create new
+  * project.
+  *
+  */
 void
 callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -130,6 +135,11 @@ callbacks_new_activate                        (GtkMenuItem     *menuitem,
 
 
 /* --------------------------------------------------------- */
+/**
+  * The file -> open menu item was selected.  Open a
+  * project file.
+  *
+  */
 void
 callbacks_open_project_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -175,6 +185,11 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 
 
 /* --------------------------------------------------------- */
+/**
+  * The file -> open layer menu item was selected.  Open a
+  * layer (or layers) from a file.
+  *
+  */
 void
 callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -248,10 +263,10 @@ callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
   /* Now save that layer */
   if (index >= 0) {
     if (!gerbv_save_layer_from_index (mainProject, index, mainProject->file[index]->fullPathname)) {
-      interface_get_alert_dialog_response ("Gerber Viewer cannot export this file type", 
-					   NULL,
-					   FALSE,
-					   NULL);
+      interface_show_alert_dialog("Gerbv cannot export this file type", 
+				  NULL,
+				  FALSE,
+				  NULL);
       mainProject->file[index]->layer_dirty = FALSE;
       callbacks_update_layer_tree();
       return;
@@ -429,6 +444,12 @@ callbacks_fit_to_window_activate              (GtkMenuItem     *menuitem,
 
 
 /* --------------------------------------------------------- */
+/**
+  * The analyze -> analyze Gerbers  menu item was selected.  
+  * Complie statistics on all open Gerber layers and then display
+  * them.
+  *
+  */
 void
 callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem, 
 				 gpointer user_data)
@@ -778,6 +799,12 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 }
 
 /* --------------------------------------------------------- */
+/**
+  * The analyze -> analyze drill file  menu item was selected.  
+  * Complie statistics on all open drill layers and then display
+  * them.
+  *
+  */
 void
 callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -1057,13 +1084,17 @@ callbacks_online_manual_activate              (GtkMenuItem     *menuitem,
 }
 
 /* --------------------------------------------------------- */
+/**
+  * The file -> quit menu item was selected.  
+  * Check that all changes have been saved, and then quit.
+  *
+  */
 void
 callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
   gboolean layers_dirty = FALSE;
   gint idx;
-  gint last_idx = mainProject->last_loaded;
 
   for (idx = 0; idx<=mainProject->max_files; idx++) {
     if (mainProject->file[idx] == NULL) break;
@@ -1083,6 +1114,11 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
 }
 
 /* --------------------------------------------------------- */
+/**
+  * The help -> about menu item was selected.  
+  * Show the about dialog.
+  *
+  */
 void
 callbacks_about_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
@@ -1178,6 +1214,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 
 }
 
+/* --------------------------------------------------------- */
 gdouble callbacks_calculate_actual_distance (gdouble inputDimension) {
 	gdouble returnValue = 0.0;
 	
@@ -1191,6 +1228,7 @@ gdouble callbacks_calculate_actual_distance (gdouble inputDimension) {
 	return returnValue;
 }
 
+/* --------------------------------------------------------- */
 void callbacks_update_ruler_pointers (void) {
 	double xPosition, yPosition;
 	xPosition = screenRenderInfo.lowerLeftX + (screen.last_x / screenRenderInfo.scaleFactorX);
@@ -1204,6 +1242,7 @@ void callbacks_update_ruler_pointers (void) {
 	g_object_set (G_OBJECT (screen.win.vRuler), "position", yPosition, NULL);
 }
 
+/* --------------------------------------------------------- */
 void callbacks_update_ruler_scales (void) {
 	double xStart, xEnd, yStart, yEnd;
 
@@ -1229,6 +1268,7 @@ void callbacks_update_ruler_scales (void) {
 		gtk_ruler_set_range (GTK_RULER (screen.win.vRuler), yEnd, yStart, 0, yEnd - yStart);
 }
 
+/* --------------------------------------------------------- */
 void callbacks_update_scrollbar_limits (void){
 #ifdef RENDER_USING_GDK
 	gerbv_render_info_t tempRenderInfo = {0, 0, 0, 0, 0, screenRenderInfo.displayWidth,
@@ -1254,6 +1294,7 @@ void callbacks_update_scrollbar_limits (void){
 	callbacks_update_scrollbar_positions ();
 }
 
+/* --------------------------------------------------------- */
 void callbacks_update_scrollbar_positions (void){
 	gdouble positionX,positionY;
 	
@@ -1273,6 +1314,7 @@ void callbacks_update_scrollbar_positions (void){
 
 }
 
+/* --------------------------------------------------------- */
 gboolean
 callbacks_scrollbar_button_released (GtkWidget *widget, GdkEventButton *event){
 	screen.off_x = 0;
@@ -1282,6 +1324,7 @@ callbacks_scrollbar_button_released (GtkWidget *widget, GdkEventButton *event){
 	return FALSE;
 }
 
+/* --------------------------------------------------------- */
 gboolean
 callbacks_scrollbar_button_pressed (GtkWidget *widget, GdkEventButton *event){
 	//screen.last_x = ((GtkAdjustment *)screen.win.hAdjustment)->value;
@@ -1289,7 +1332,7 @@ callbacks_scrollbar_button_pressed (GtkWidget *widget, GdkEventButton *event){
 	return FALSE;
 }
 
-
+/* --------------------------------------------------------- */
 void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment, gpointer user_data){
 	/* make sure we're actually using the scrollbar to make sure we don't reset
 	   lowerLeftX during a scrollbar redraw during something else */
@@ -1298,6 +1341,7 @@ void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment, gpointer us
 	}
 }
 
+/* --------------------------------------------------------- */
 void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment, gpointer user_data){
 	/* make sure we're actually using the scrollbar to make sure we don't reset
 	   lowerLeftY during a scrollbar redraw during something else */
@@ -1401,6 +1445,7 @@ callbacks_switch_to_normal_tool_cursor (gint toolNumber) {
 	}
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_switch_to_correct_cursor (void) {
 	GdkCursor *cursor;
@@ -1489,6 +1534,11 @@ callbacks_select_row (gint rowIndex) {
 }
 
 /* --------------------------------------------------------- */
+/**
+  * This fcn returns the index of selected layer (selected in
+  * the layer window on left).
+  *
+  */
 gint
 callbacks_get_selected_row_index  (void) {
 	GtkTreeSelection *selection;
@@ -1615,6 +1665,7 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 	}
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_show_color_picker_dialog (gint index){
 	screen.win.colorSelectionDialog = NULL;
@@ -1647,6 +1698,7 @@ callbacks_show_color_picker_dialog (gint index){
 	screen.win.colorSelectionDialog = NULL;
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_invert_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
@@ -1656,6 +1708,7 @@ callbacks_invert_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	callbacks_update_layer_tree ();
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
@@ -1692,12 +1745,11 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 
     if (attr == NULL || n == 0) 
 	{
-	    interface_get_alert_dialog_response (
-		     "This file type does not currently have any editable features", 
-		     "Format editing is currently only supported for Excellon drill file formats.",
-		     FALSE,
-		     NULL);
-	    return;
+	  interface_show_alert_dialog("This file type does not currently have any editable features", 
+				      "Format editing is currently only supported for Excellon drill file formats.",
+				      FALSE,
+				      NULL);
+	  return;
 	}
 
     dprintf ("%s(): n = %d, attr = %p\n", __FUNCTION__, n, attr);
@@ -1869,18 +1921,22 @@ void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data){
   GtkWidget *tb;
   int i;
-  gerbv_net_t *currentNet;
   char *layer_name;
 
-  tb = get_textbox ("Object Properties");
-
 #ifndef RENDER_USING_GDK
-  if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY)
+  if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
+    interface_show_alert_dialog("Nothing selected",
+				NULL,
+				FALSE,
+				NULL);
     return;
+  }
 
   gint index=callbacks_get_selected_row_index();
   if (index < 0)
     return;
+
+  tb = get_textbox ("Object Properties");
 
   for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
     gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
@@ -1945,25 +2001,34 @@ callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
-  if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
-    if (mainProject->check_before_delete == TRUE) {
-      if (!interface_get_alert_dialog_response(
-					       "The selected objects will be permanently deleted",
-					       "Do you want to proceed?",
-					       TRUE,
-					       &(mainProject->check_before_delete)))
-	return;
-    }
-    gint index=callbacks_get_selected_row_index();
-    if (index >= 0) {
-      gerbv_image_delete_selected_nets (mainProject->file[index]->image,
-					screen.selectionInfo.selectedNodeArray); 
-      render_refresh_rendered_image_on_screen ();
-      /* Set layer_dirty flag to TRUE */
-      mainProject->file[index]->layer_dirty = TRUE;
-      callbacks_update_layer_tree();
-    }
+  if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
+    interface_show_alert_dialog("Nothing selected",
+                                NULL,
+                                FALSE,
+                                NULL);
+    return;
   }
+
+  gint index=callbacks_get_selected_row_index();
+  if (index < 0)
+    return;
+
+  if (mainProject->check_before_delete == TRUE) {
+    if (!interface_get_alert_dialog_response(
+					     "The selected objects will be permanently deleted",
+					     "Do you want to proceed?",
+					     TRUE,
+					     &(mainProject->check_before_delete)))
+      return;
+  }
+
+  gerbv_image_delete_selected_nets (mainProject->file[index]->image,
+				    screen.selectionInfo.selectedNodeArray); 
+  render_refresh_rendered_image_on_screen ();
+  /* Set layer_dirty flag to TRUE */
+  mainProject->file[index]->layer_dirty = TRUE;
+  callbacks_update_layer_tree();
+
   render_clear_selection_buffer ();
 #endif
 }
@@ -2016,7 +2081,7 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	return TRUE;
 }
 
-
+/* --------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -2117,6 +2182,7 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	return FALSE;
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_update_statusbar_coordinates (gint x, gint y) {
 	double X, Y;
@@ -2147,6 +2213,7 @@ callbacks_update_statusbar_coordinates (gint x, gint y) {
 	callbacks_update_statusbar();
 }
 
+/* --------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 {
@@ -2212,6 +2279,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 	return TRUE;
 } /* motion_notify_event */
 
+/* --------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
@@ -2304,7 +2372,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 	return TRUE;
 }
 
-
+/* --------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *event)
 { 
@@ -2356,7 +2424,7 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 	return TRUE;
 } /* button_release_event */
 
-
+/* --------------------------------------------------------- */
 gboolean
 callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
@@ -2411,12 +2479,14 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 	return TRUE;
 } /* key_press_event */
 
+/* --------------------------------------------------------- */
 gboolean
 callbacks_window_key_release_event (GtkWidget *widget, GdkEventKey *event)
 {
 	return TRUE;
 } /* key_release_event */
 
+/* --------------------------------------------------------- */
 /* Scroll wheel */
 gboolean
 callbacks_window_scroll_event(GtkWidget *widget, GdkEventScroll *event)
@@ -2457,6 +2527,7 @@ callbacks_update_statusbar(void)
 	}
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 	gdouble delta = sqrt(dx*dx + dy*dy);
@@ -2480,6 +2551,7 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 	callbacks_update_statusbar();
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
 	int activeRow = gtk_combo_box_get_active (widget);
@@ -2490,6 +2562,7 @@ callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer 
 	render_refresh_rendered_image_on_screen();
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
 	int activeRow = gtk_combo_box_get_active (widget);
@@ -2505,6 +2578,7 @@ callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_d
 							screen.win.lastMeasuredY);
 }
 
+/* --------------------------------------------------------- */
 void
 callbacks_clear_messages_button_clicked  (GtkButton *button, gpointer   user_data) {
 	GtkTextBuffer *textbuffer;
@@ -2516,6 +2590,7 @@ callbacks_clear_messages_button_clicked  (GtkButton *button, gpointer   user_dat
 	gtk_text_buffer_delete (textbuffer, &start, &end);
 }
                                                         
+/* --------------------------------------------------------- */
 void
 callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 		      const gchar *message, gpointer user_data) {
@@ -2622,7 +2697,7 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 	gtk_text_buffer_apply_tag(textbuffer, tag, &StartIter, &StopIter);
 }
 
-
+/* --------------------------------------------------------- */
 void callbacks_force_expose_event_for_screen (void){
 
 	GdkRectangle update_rect;

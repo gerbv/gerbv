@@ -82,6 +82,7 @@ static void
 render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo );
 */
 
+/* ------------------------------------------------------ */
 void
 render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY) {
 	double us_midx, us_midy;	/* unscaled translation for screen center */
@@ -200,6 +201,7 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 	render_refresh_rendered_image_on_screen();
 }
 
+/* ------------------------------------------------------ */
 void
 render_draw_selection_box_outline(void) {
 	GdkGC *gc;
@@ -289,6 +291,7 @@ render_draw_zoom_outline(gboolean centered)
 }
 
 
+/* ------------------------------------------------------ */
 /** Displays a measured distance graphically on screen and in statusbar.
     activated when using SHIFT and mouse dragged to measure distances\n
     under win32 graphical annotations are currently disabled (GTK 2.47)*/
@@ -333,7 +336,7 @@ render_draw_measure_distance(void)
 #endif     
 } /* draw_measure_distance */
 
-
+/* ------------------------------------------------------ */
 void render_selection_layer (void){
 #ifndef RENDER_USING_GDK
 	cairo_t *cr;
@@ -371,6 +374,7 @@ void render_selection_layer (void){
 #endif
 }
 
+/* ------------------------------------------------------ */
 void render_refresh_rendered_image_on_screen (void) {
 	GdkCursor *cursor;
 	
@@ -422,6 +426,7 @@ void render_refresh_rendered_image_on_screen (void) {
 	callbacks_force_expose_event_for_screen();
 }
 
+/* ------------------------------------------------------ */
 #ifndef RENDER_USING_GDK
 gint
 render_create_cairo_buffer_surface () {
@@ -438,13 +443,18 @@ render_create_cairo_buffer_surface () {
 	return 1;
 }
 
+/* ------------------------------------------------------ */
 void
 render_clear_selection_buffer (void){
-	g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
+  if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY)
+    return;
+
+  g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
 			screen.selectionInfo.selectedNodeArray->len);
-	screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
+  screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
 }
 
+/* ------------------------------------------------------ */
 void
 render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean eraseOldSelection){
 	/* clear the old selection array if desired */
@@ -480,6 +490,7 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean
 	}
 }
 
+/* ------------------------------------------------------ */
 void
 render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex,
 		gboolean eraseOldSelection) {
@@ -490,6 +501,7 @@ render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint ac
 	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
 }
 
+/* ------------------------------------------------------ */
 void
 render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	gint corner2X, gint corner2Y, gint activeFileIndex, gboolean eraseOldSelection) {
@@ -504,6 +516,7 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
 }
 
+/* ------------------------------------------------------ */
 void render_recreate_composite_surface () {
 	gint i;
 	
@@ -539,6 +552,7 @@ void render_recreate_composite_surface () {
 	cairo_destroy (cr);
 }
 
+/* ------------------------------------------------------ */
 void render_project_to_cairo_target (cairo_t *cr) {
 	/* fill the background with the appropriate color */
 	cairo_set_source_rgba (cr, (double) mainProject->background.red/G_MAXUINT16,

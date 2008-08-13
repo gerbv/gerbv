@@ -60,6 +60,7 @@ static 	GtkWidget *render_combobox;
 #define WIN_TITLE "Gerber Viewer"
 #define _(String) (String)
 
+/* ---------------------------------------------- */
 void
 rename_main_window(char const* filename, GtkWidget *main_win)
 {
@@ -76,6 +77,7 @@ rename_main_window(char const* filename, GtkWidget *main_win)
 	g_string_free(win_title,TRUE);			 
 }
 
+/* ---------------------------------------------- */
 void
 set_window_icon (GtkWidget * this_window)
 {
@@ -89,6 +91,7 @@ set_window_icon (GtkWidget * this_window)
 	return;
 }
 
+/* ---------------------------------------------- */
 void
 interface_create_gui (int req_width, int req_height)
 {
@@ -761,10 +764,10 @@ interface_create_gui (int req_width, int req_height)
 	gtk_misc_set_alignment (GTK_MISC (statusbar_label_right), 0, 0.5);
 
 
-/* ----------------------------------------------------------------------- */
-/*
- *  Connect signals to widgets
- */
+
+    /*
+     *  Connect signals to widgets
+     */
 
 	/* --- File menu --- */
 	g_signal_connect ((gpointer) new, "activate",
@@ -1238,6 +1241,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_main();
 }
 
+/* ----------------------------------------------------  */
 void 
 interface_set_render_type (int t)
 {
@@ -1256,6 +1260,15 @@ interface_set_render_type (int t)
     if (render_combobox)
 	gtk_combo_box_set_active (GTK_COMBO_BOX (render_combobox), t);
 }
+
+/* ----------------------------------------------------  */
+/**
+  * This dialog box shows a message and two buttons:
+  * "OK" and "Cancel".  It returns gboolean 1 if the
+  * user clicked "OK", and gboolean 0 if the user
+  * clicked "Cancel".
+  *
+  */
 
 gboolean
 interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText, 
@@ -1332,6 +1345,83 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText,
   gtk_widget_destroy (dialog1);
 		
   return returnVal;
+}
+
+
+
+/* ----------------------------------------------------  */
+/**
+  * This dialog box shows a textmessage and one buttons:
+  * "OK".  It does not return anything.
+  *
+  */
+void
+interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText, 
+			     gboolean show_checkbox, gboolean *ask_to_show_again )
+     /* This fcn tells the user something, and only displays "OK" */
+{
+  /* Set show_checkbox = TRUE to show "do not show this again" checkbox. */
+  /* Point ask_to_show_again to the variable to set to not show the checkbox. */
+  GtkWidget *dialog1;
+  GtkWidget *dialog_vbox1;
+  GtkWidget *hbox1;
+  GtkWidget *image1;
+  GtkWidget *label1;
+  GtkWidget *checkbox=NULL;
+  GtkWidget *dialog_action_area1;
+  GtkWidget *okbutton1;
+
+  dialog1 = gtk_dialog_new ();
+  gtk_container_set_border_width (GTK_CONTAINER (dialog1), 6);
+  gtk_window_set_resizable (GTK_WINDOW (dialog1), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (dialog1), GDK_WINDOW_TYPE_HINT_DIALOG);
+  gtk_dialog_set_has_separator (GTK_DIALOG (dialog1), FALSE);
+
+  dialog_vbox1 = GTK_DIALOG (dialog1)->vbox;
+
+  hbox1 = gtk_hbox_new (FALSE, 12);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox1), hbox1, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox1), 6);
+
+  image1 = gtk_image_new_from_icon_name ("gtk-dialog-warning", GTK_ICON_SIZE_DIALOG);
+  gtk_box_pack_start (GTK_BOX (hbox1), image1, TRUE, TRUE, 0);
+  gtk_misc_set_alignment (GTK_MISC (image1), 0.5, 0);
+
+  gchar *labelMessage = g_strconcat ("<span weight=\"bold\" size=\"larger\">",primaryText,
+  		"</span>\n<span/>\n",secondaryText,NULL);
+  label1 = gtk_label_new (labelMessage);
+  g_free (labelMessage);
+  gtk_box_pack_start (GTK_BOX (hbox1), label1, FALSE, FALSE, 0);
+  gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
+  gtk_label_set_line_wrap (GTK_LABEL (label1), TRUE);
+
+  if (show_checkbox) {
+    checkbox =  gtk_check_button_new_with_label("Do not show this dialog again.");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(checkbox), FALSE);
+    gtk_box_pack_start (GTK_BOX (dialog_vbox1), checkbox, FALSE, FALSE, 0);
+  }
+
+  dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
+
+  okbutton1 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1), okbutton1, GTK_RESPONSE_OK);
+  GTK_WIDGET_SET_FLAGS (okbutton1, GTK_CAN_DEFAULT);
+
+  gtk_widget_show_all (dialog1);
+
+  /* check to see if user clicked on "do not show again" box */
+  if ((show_checkbox == TRUE) &&
+      (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)) == TRUE)) {
+    /* The user clicked the "do not show again box".  Set corresponding
+     * flag to FALSE. */
+    *ask_to_show_again = FALSE;
+  }
+
+  gtk_dialog_run (GTK_DIALOG(dialog1));
+  gtk_widget_destroy (dialog1);
+		
+  return;
 }
 
 

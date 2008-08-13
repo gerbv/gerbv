@@ -44,4 +44,8 @@ interface_get_alert_dialog_response (gchar *primaryText,
                                      gboolean show_checkbox, 
 				     gboolean *ask_to_show_again );
 
-
+void
+interface_show_alert_dialog (gchar *primaryText, 
+			     gchar *secondaryText, 
+			     gboolean show_checkbox, 
+			     gboolean *ask_to_show_again );
