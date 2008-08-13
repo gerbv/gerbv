@@ -1922,6 +1922,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
   GtkWidget *tb;
   int i;
   char *layer_name;
+  char *file_name;
 
 #ifndef RENDER_USING_GDK
   if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
@@ -1941,6 +1942,11 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
   for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
     gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
 						  gerbv_selection_item_t, i);
+    /* Get filename of this layer to report to user */
+    file_name = g_strdup(mainProject->file[index]->name);
+
+    /* Also get layer name specified in file by %LN directive
+     * (if it exists).  */
     gerbv_net_t *net = sItem.net;
     if (net->layer->name == NULL) {
       layer_name = g_strdup("<unnamed>");
@@ -1952,20 +1958,24 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
     case GERBV_APERTURE_STATE_OFF:
       break;
     case GERBV_APERTURE_STATE_ON:
-      tb_printf (tb, "Aperture D%d from %g,%g to %g,%g on layer %s\n",
-		 net->aperture,
-		 net->start_x, net->start_y,
-		 net->stop_x, net->stop_y,
-		 layer_name);
+      if (i!=0) tb_printf (tb, "\n");  /* Spacing for a pretty display */
+      tb_printf (tb, "File: %s\n", file_name);
+      tb_printf (tb, "    Aperture: D%d\n", net->aperture);
+      tb_printf (tb, "    Start location: (%g, %g)\n", net->start_x, net->start_y);
+      tb_printf (tb, "    Stop location: (%g, %g)\n", net->stop_x, net->stop_y);
+      tb_printf (tb, "    Layer name: %s\n", layer_name);
       break;
     case GERBV_APERTURE_STATE_FLASH:
-      tb_printf (tb, "Aperture D%d at %g,%g on layer %s\n",
-		 net->aperture,
-		 net->stop_x, net->stop_y,
-		 layer_name);
+      if (i!=0) tb_printf (tb, "\n");  /* Spacing for a pretty display */
+      tb_printf (tb, "File: %s\n", file_name);
+      tb_printf (tb, "    Aperture: D%d\n", net->aperture);
+      tb_printf (tb, "    Location: (%g, %g)\n", net->stop_x, net->stop_y);
+      tb_printf (tb, "    Layer name: %s\n", layer_name);
       break;
     }
   }
+  /* Use separator for different report requests */
+  tb_printf (tb, "---------------------------------------\n");
 #endif
 }
 

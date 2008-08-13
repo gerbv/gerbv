@@ -248,6 +248,7 @@ typedef struct {
     int hash; /* for detecting changes. */
 } gerbv_HID_Attribute;
 
+/*! A linked list of errors found in the files */   
 typedef struct error_list {
     int layer;
     char *error_text;
@@ -347,6 +348,7 @@ typedef struct {
 
 } gerbv_stats_t;
 
+/*! Linked list of drills found in active layers.  Used in reporting statistics */
 typedef struct drill_list {
     int drill_num;
     double drill_size;
@@ -355,6 +357,7 @@ typedef struct drill_list {
     struct drill_list *next;
 } gerbv_drill_list_t;
 
+/*! Struct holding statistics of drill commands used.  Used in reporting statistics */
 typedef struct {
     int layer_count;
     
@@ -401,6 +404,7 @@ typedef struct {
 	gpointer net;
 } gerbv_selection_item_t;
 
+/*! Struct holding info about the last selection */
 typedef struct {
 	gerbv_selection_t type;
 	gdouble lowerLeftX;
@@ -485,6 +489,8 @@ typedef struct gerbv_net {
     gerbv_netstate_t *state; /*!< the RS274X state this net belongs to */
 } gerbv_net_t;
 
+/*! Struct holding info about interpreting the Gerber files read
+ *  e.g. leading zeros, etc.  */
 typedef struct gerbv_format {
     gerbv_omit_zeros_t omit_zeros;
     gerbv_coordinate_t coordinate;
@@ -498,6 +504,8 @@ typedef struct gerbv_format {
     int lim_mf;    /* Length limit for codes of miscellaneous function */
 } gerbv_format_t;
 	
+
+/*! Struct holding info about a particular image */
 typedef struct gerbv_image_info {
     char *name;
     gerbv_polarity_t polarity;
@@ -576,6 +584,7 @@ typedef struct {
   gchar *project;     /*!< the default name for the private project file */
 } gerbv_project_t;
 
+/*! Color of layer */
 typedef struct{
     unsigned char red;
     unsigned char green;
@@ -855,22 +864,26 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, /*!< the image to dra
 		gdouble height /*!< the height of the drawn rectangle */
 );
 			
-/* from drill and gerb stats headers */
+/*! Create new struct for holding drill stats */
 gerbv_drill_stats_t *
 gerbv_drill_stats_new(void);
 
+/*! Add stats gathered from specified layer to accumulatedd drill stats
+ *  compiled from all layers */
 void
 gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
 		gerbv_drill_stats_t *input_stats,
 		int this_layer
 );
 
+/*! Create new struct for holding Gerber stats */
 gerbv_stats_t *
 gerbv_stats_new(void);
 
+/*! Add stats gathered from specified layer to accumulated Gerber stats
+ *  compiled from all layers */
 void
 gerbv_stats_add_layer(gerbv_stats_t *accum_stats, 
 		gerbv_stats_t *input_stats,
 		int this_layer
 );
-
