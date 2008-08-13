@@ -1,0 +1,44 @@
+gerbv_project  *mainProject  (global variable)
+  gchar *path (current working directory from which to load files)
+  gchar *project (Name of current project.)
+  int current_index (currently active layer)
+  gerbv_fileinfo_t **file (array of files)
+    gerbv_user_tranformation transform (user-specified transformation for this layer (mirroring, translating, etc))
+    gchar *fullPathname
+    gchar *name (Name shown in layer window on left.  i.e. filename)
+    gboolean layer_dirty (layer has changed since last save)
+    gerbv_image_t *image 
+      gerbv_image_info_t *info
+      gerbv_aperture_t *aperture
+      gerbv_layertype (Enum holding "RS274", "Drill", or "PnP")
+      gerbv_netstate
+      gerbv_net *netlist (linked list of graphical objects)
+        gerbv_aperture_state_t  aperture_state
+        gerbv_interpolation_t  interpolation
+        gerbv_cirseg_t *cirseg
+        GString *label  (A label attached to a net.  Usually empty.)
+        gerbv_layer_t  *layer  (This points to the layer struct, defined one level up.)
+        gerbv_netstate_t *state
+      gerbv_stats_t *gerbv_stats (Gerber stats)
+      gerbv_drill_stats_t *drill_stats
+      gerbv_layer *layers (linked list of layers)
+        gerbv_polarity
+        gchar *name (This is name from %LN in Gerber file)
+
+
+gerbv_screen_t screen (Hold info about what's displayed on the screen)
+  int selected_layer
+  gerbv_selection_info_t selectionInfo
+    gerbv_selection_t type
+    GArray *selectedNodeArray   (Holds text list of selected items.  Access using GLib methods.)
+      gchar *data;
+      guint len;
+  gerbv_state_t state
+  gerbv_tool_t tool
+  gerbv_gui_unit_t unit
+
+
+
+gerbv_selection_item_t  (Defines sItem, the result of indexing into the selectedNodeArray)
+  gpointer image
+  gpointer net
