@@ -22,7 +22,7 @@
  */
 
 /** \file interface.c
-    \brief GUI building functions for Gerber Viewer
+    \brief GUI building functions for Gerbv
     \ingroup gerbv
 */
 
@@ -57,7 +57,7 @@ extern gerbv_render_info_t screenRenderInfo;
 
 static 	GtkWidget *render_combobox;
 
-#define WIN_TITLE "Gerber Viewer"
+#define WIN_TITLE "Gerbv -- gEDA's Gerber Viewer"
 #define _(String) (String)
 
 /* ---------------------------------------------- */
@@ -236,7 +236,7 @@ interface_create_gui (int req_width, int req_height)
 	accel_group = gtk_accel_group_new ();
 
 	mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title (GTK_WINDOW (mainWindow), _("Gerber Viewer"));
+	gtk_window_set_title (GTK_WINDOW (mainWindow), _("Gerbv -- gEDA's Gerber Viewer"));
 
 	vbox1 = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (mainWindow), vbox1);
@@ -290,7 +290,7 @@ interface_create_gui (int req_width, int req_height)
 
 	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open Project..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_project);
-	gtk_tooltips_set_tip (tooltips, open_project, "Open an existing Gerber Viewer project", NULL);
+	gtk_tooltips_set_tip (tooltips, open_project, "Open an existing Gerbv project", NULL);
 	image33 = gtk_image_new_from_stock ("gtk-open", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
 
@@ -371,7 +371,7 @@ interface_create_gui (int req_width, int req_height)
 #endif
 #endif
 	quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
-	gtk_tooltips_set_tip (tooltips, quit, "Quit Gerber Viewer", NULL);
+	gtk_tooltips_set_tip (tooltips, quit, "Quit Gerbv", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), quit);
 
 	/* --- Next menu item --- */
