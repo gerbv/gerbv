@@ -23,6 +23,8 @@
 #include <unistd.h>
 #endif
 
+#include "textbox.h"
+
 typedef struct {
   GtkWidget *topbox;
   GtkWidget *textbox;
@@ -164,7 +166,7 @@ tb_printf (GtkWidget *view, const char *fmt, ...)
   GtkTextIter iter;
   GtkTextBuffer *buffer;
   GtkTextMark *mark;
-  va_list args, args2;
+  va_list args;
   int needed;
 
   va_start (args, fmt);
