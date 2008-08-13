@@ -55,6 +55,9 @@
 static int auto_uncheck_needed = 0;
 static GtkWidget * auto_uncheck_widget = NULL;
 static int * auto_uncheck_attr = NULL;
+static GtkWidget ** all_widgets = NULL;
+static int n_widgets;
+
 static void clear_auto()
 {
   if( auto_uncheck_needed && auto_uncheck_widget != NULL && auto_uncheck_attr != NULL) {
@@ -76,11 +79,23 @@ static void clear_auto()
 static void
 set_flag_cb (GtkToggleButton * button, gboolean * flag)
 {
+  int i, f;
+
   *flag = gtk_toggle_button_get_active (button);
   
-  /* don't call auto_uncheck if this *is* the "auto" button */
-  if (auto_uncheck_widget != button)
+  /* 
+   * if this is the "auto" button then set/clear the sensitivity of
+   * everything else.  Otherwise call the clear_auto() function 
+   */
+  if (auto_uncheck_widget == GTK_WIDGET (button)) {
+    f = *flag ? 0 : 1;
+    printf ("flag = %d, f = %d\n", *flag, f);
+    for (i = 1 ; i < n_widgets ; i++) {
+      gtk_widget_set_sensitive (all_widgets[i], f);
+    }
+  } else {
     clear_auto ();
+  }
 }
 
 /* Callback for setting an integer value */
@@ -275,6 +290,21 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
   GtkTooltips *tips;
   int rc = 0;
   int set_auto_uncheck = 0;
+  int sen = TRUE;
+
+  /* 
+   * Store how many widgets we'll have in our dialog and keep track of
+   * them.  Be sure to free up our list if one existed already.
+   */
+  n_widgets = n_attrs;
+  if (all_widgets != NULL)
+    free (all_widgets);
+
+  all_widgets = (GtkWidget **) malloc (n_widgets * sizeof(GtkWidget *));
+  if (all_widgets == NULL) {
+    fprintf (stderr, "%s():  malloc failed for an array of size %d\n", __FUNCTION__, n_widgets);
+    exit (1);
+  }
 
   dprintf ("%s(%p, %d, %p, \"%s\", \"%s\")\n", __FUNCTION__, attrs, n_attrs, results, title, descr);
 
@@ -332,6 +362,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 				    &(attrs[j].default_val.int_value), FALSE, NULL);
 		  
 		  gtk_tooltips_set_tip (tips, widget, attrs[j].help_text, NULL);
+		  all_widgets[j] = widget;
 		  
 		  widget = gtk_label_new (attrs[j].name);
 		  gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
@@ -353,7 +384,8 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 				    &(attrs[j].default_val.real_value), FALSE, NULL);
 		  
 		  gtk_tooltips_set_tip (tips, widget, attrs[j].help_text, NULL);
-		  
+		  all_widgets[j] = widget;
+
 		  widget = gtk_label_new (attrs[j].name);
 		  gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 		  break;
@@ -370,7 +402,8 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		  g_signal_connect (G_OBJECT (entry), "changed",
 				    G_CALLBACK (entry_changed_cb),
 				    &(attrs[j].default_val.str_value));
-		  
+		  all_widgets[j] = entry;
+
 		  widget = gtk_label_new (attrs[j].name);
 		  gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 		  break;
@@ -402,7 +435,15 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		    set_auto_uncheck = 1;
 		    auto_uncheck_widget = widget;
 		    auto_uncheck_attr = &(attrs[j].default_val.int_value);
+
+		    /* if the "auto" button in checked then don't let
+		     * anything else be sensitive.
+		    */
+		       
+		    if (attrs[j].default_val.int_value)
+		      sen = FALSE;
 		  }
+		  all_widgets[j] = widget;
 
 		  break;
 		  
@@ -438,6 +479,8 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		      }
 		  gtk_combo_box_set_active (GTK_COMBO_BOX (combo),
 					    attrs[j].default_val.int_value);
+		  all_widgets[j] = combo;
+	  
 		  widget = gtk_label_new (attrs[j].name);
 		  gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 		  break;
@@ -457,6 +500,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 				    &(attrs[j].default_val.str_value));
 
 		  gtk_tooltips_set_tip (tips, entry, attrs[j].help_text, NULL);
+		  all_widgets[j] = entry;
 		  break;
 
 	      default:
@@ -469,6 +513,14 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
   gtk_widget_show_all (dialog);
   auto_uncheck_needed = set_auto_uncheck;
 
+  /* 
+   * part of the "auto" hack.  Make everything sensitive or
+   * insensitive based on the state of the "auto" toggle button (if it
+   * exists)
+   */
+  for (j = 1; j < n_widgets ; j++) {
+    gtk_widget_set_sensitive (all_widgets[j], sen);
+  }
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
       {
 	  /* copy over the results */
