@@ -633,9 +633,11 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		 * which aperture to use.
 		 */
 		if (image->aperture[net->aperture] == NULL) {
-			if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
-				GERB_MESSAGE("Aperture D%d is not defined\n", net->aperture);
-			continue;
+		  /* Commenting this out since it gets emitted every time you click on the screen 
+		  if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
+		    GERB_MESSAGE("Aperture D%d is not defined\n", net->aperture);
+		  */
+		  continue;
 		}
 		switch (net->aperture_state) {
 			case GERBV_APERTURE_STATE_ON :

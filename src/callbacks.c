@@ -466,14 +466,26 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gchar *aperture_def_report_string = "";
     gchar *aperture_use_report_string = "";
     gerbv_aperture_list_t *my_aperture_list;
+    int idx;
 
     /* First get a report of stats & errors accumulated from all layers */
     stats_report = generate_gerber_analysis();
 
     /* General info report */
     general_report_string = g_strdup_printf("General information\n");
-    general_report_string = g_strdup_printf("%sActive layer count = %d\n", 
+    general_report_string = g_strdup_printf("%s  Active layer count = %d\n", 
 					    general_report_string, stats_report->layer_count);
+
+    general_report_string = g_strdup_printf("%s\n\nFiles processed:\n",
+					    general_report_string);
+    for (idx = mainProject->max_files-1; idx >= 0; idx--) {
+      if (mainProject->file[idx] &&
+	  mainProject->file[idx]->isVisible &&
+	  (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
+	general_report_string = 
+	  g_strdup_printf("%s  %s\n", general_report_string, mainProject->file[idx]->name);
+      }
+    }
 
     /* Error report */
     if (stats_report->layer_count == 0) {
@@ -500,7 +512,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		    error_level = g_strdup_printf("NOTE: ");
 		    break;
 	    }
-	    error_report_string = g_strdup_printf("%sLayer %d: %s %s", 
+	    error_report_string = g_strdup_printf("%s  Layer %d: %s %s", 
 						  error_report_string,
 						  my_error_list->layer,
 						  error_level,
@@ -529,7 +541,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				      "CCW interpolation");
     G_report_string = g_strdup_printf("%sG4 = %-6d (%s)\n", 
 				      G_report_string, stats_report->G4,
-				      "Ignore block");
+				      "Comment/ignore block");
     G_report_string = g_strdup_printf("%sG10 = %-6d (%s)\n", 
 				      G_report_string, stats_report->G10,
 				      "10X linear interpolation");
@@ -865,13 +877,26 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     gchar *error_report_string;
     gerbv_error_list_t *my_error_list;
     gchar *error_level = NULL;
+    int idx;
 
     stats_report = (gerbv_drill_stats_t *) generate_drill_analysis();
     
     /* General and error window strings */
     general_report_string = g_strdup_printf("General information\n");
-    general_report_string = g_strdup_printf("%sActive layer count = %d\n", 
+    general_report_string = g_strdup_printf("%s  Active layer count = %d\n", 
 					    general_report_string, stats_report->layer_count);
+
+    general_report_string = g_strdup_printf("%s\n\nFiles processed:\n", 
+					    general_report_string);
+    for (idx = mainProject->max_files-1; idx >= 0; idx--) {
+      if (mainProject->file[idx] &&
+	  mainProject->file[idx]->isVisible &&
+	  (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {
+	general_report_string = 
+	  g_strdup_printf("%s  %s\n", general_report_string, mainProject->file[idx]->name);
+      }
+    }
+
 
     if (stats_report->layer_count == 0) {
         error_report_string = g_strdup_printf("\n\nNo drill files loaded!\n"); 
@@ -897,7 +922,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 		    error_level = g_strdup_printf("NOTE: ");
 		    break;
 	    }
-	    error_report_string = g_strdup_printf("%sLayer %d: %s %s", 
+	    error_report_string = g_strdup_printf("%s  Layer %d: %s %s", 
 						  error_report_string,
 						  my_error_list->layer,
 						  error_level,
