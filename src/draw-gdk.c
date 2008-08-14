@@ -906,7 +906,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	 */
 	if (image->aperture[net->aperture] == NULL) {
 	    if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
-		GERB_MESSAGE("Aperture [%d] is not defined\n", net->aperture);
+		GERB_MESSAGE("Aperture D%d is not defined\n", net->aperture);
 	    continue;
 	}
 	

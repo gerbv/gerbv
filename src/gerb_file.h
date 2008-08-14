@@ -37,6 +37,7 @@ typedef struct file {
     char *data;   /* Pointer to data mmaped in. May not be changed, use ptr */
     int   datalen;/* Length of mmaped data ie file length */
     int   ptr;    /* Index in data where we are reading */
+    char *filename;  /* File name */
 } gerb_file_t;
 
 

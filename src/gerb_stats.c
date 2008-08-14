@@ -417,14 +417,16 @@ gerbv_stats_increment_D_list_count(gerbv_aperture_list_t *D_list_in,
   
     gerbv_aperture_list_t *D_list;
 
-    dprintf("   Entering inc_D_list_count, numbr = %d, count = %d\n", number, count);
+    dprintf("   Entering inc_D_list_count, code = D%d, input count to add = %d\n", number, count);
 
     /* Find D code in list and increment it */
     for(D_list = D_list_in; 
 	D_list != NULL; 
 	D_list = D_list->next) {
         if (D_list->number == number) {
+	    dprintf("    old count = %d\n", D_list->count);
 	    D_list->count += count;  /* Add to this aperture count, then return */
+	    dprintf("    updated count = %d\n", D_list->count);
             return 0;  /* Return 0 for success */  
         }
     }

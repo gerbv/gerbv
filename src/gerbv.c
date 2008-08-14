@@ -403,6 +403,9 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
 	return -1;
     }
+
+    /* Store filename info fd for further use */
+    fd->filename = g_strdup(filename);
     
     dprintf("In open_image, successfully opened file.  Now check its type....\n");
     /* Here's where we decide what file type we have */
