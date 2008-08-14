@@ -1970,6 +1970,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
   GtkWidget *tb;
   int i;
   char *layer_name;
+  char *net_label;
   char *file_name;
 
 #ifndef RENDER_USING_GDK
@@ -1993,13 +1994,42 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
     /* Get filename of this layer to report to user */
     file_name = g_strdup(mainProject->file[index]->name);
 
+    gerbv_net_t *net = sItem.net;
+    gerbv_image_t *image = sItem.image;
+
+    /* get the aperture definition for the selected item */
+    int ap_type = image->aperture[net->aperture]->type;
+      
+    char *ap_names[] = {"NONE",
+			"CIRCLE",
+			"RECTANGLE",
+			"OVAL",           /* an ovular (obround) aperture */
+			"POLYGON",        /* a polygon aperture */
+			"MACRO",          /* a RS274X macro */
+			"MACRO_CIRCLE",   /* a RS274X circle macro */
+			"MACRO_OUTLINE",  /* a RS274X outline macro */
+			"MACRO_POLYGON",  /* a RS274X polygon macro */
+			"MACRO_MOIRE",    /* a RS274X moire macro */
+			"MACRO_THERMAL",  /* a RS274X thermal macro */
+			"MACRO_LINE20",   /* a RS274X line (code 20) macro */
+			"MACRO_LINE21",   /* a RS274X line (code 21) macro */
+			"MACRO_LINE22"    /* a RS274X line (code 22) macro */
+    };
+
+    char *ap_type_string = g_strdup(ap_names[ap_type]);
+
     /* Also get layer name specified in file by %LN directive
      * (if it exists).  */
-    gerbv_net_t *net = sItem.net;
     if (net->layer->name == NULL) {
-      layer_name = g_strdup("<unnamed>");
+      layer_name = g_strdup("<unnamed layer>");
     } else {
       layer_name = g_strdup(net->layer->name);
+    }
+
+    if (net->label == NULL) {
+      net_label = g_strdup("<unlabeled net>");
+    } else {
+      net_label = g_strdup(net->label);
     }
 
     switch (net->aperture_state){
@@ -2007,20 +2037,24 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
       break;
     case GERBV_APERTURE_STATE_ON:
       if (i!=0) tb_printf (tb, "\n");  /* Spacing for a pretty display */
-      tb_printf (tb, "File: %s\n", file_name);
+      tb_printf (tb, "Exposure: Line draw\n");
       tb_printf (tb, "    Aperture used: D%d\n", net->aperture);
-      tb_printf (tb, "    Exposure: Line draw\n");
+      tb_printf (tb, "    Aperture type: %s\n", ap_type_string);
       tb_printf (tb, "    Start location: (%g, %g)\n", net->start_x, net->start_y);
       tb_printf (tb, "    Stop location: (%g, %g)\n", net->stop_x, net->stop_y);
       tb_printf (tb, "    Layer name: %s\n", layer_name);
+      tb_printf (tb, "    Net label: %s\n", net_label);
+      tb_printf (tb, "    In file: %s\n", file_name);
       break;
     case GERBV_APERTURE_STATE_FLASH:
       if (i!=0) tb_printf (tb, "\n");  /* Spacing for a pretty display */
-      tb_printf (tb, "File: %s\n", file_name);
+      tb_printf (tb, "Exposure: Flash\n");
       tb_printf (tb, "    Aperture used: D%d\n", net->aperture);
-      tb_printf (tb, "    Exposure: Flash\n");
+      tb_printf (tb, "    Aperture type: %s\n", ap_type_string);
       tb_printf (tb, "    Location: (%g, %g)\n", net->stop_x, net->stop_y);
       tb_printf (tb, "    Layer name: %s\n", layer_name);
+      tb_printf (tb, "    Net label: %s\n", net_label);
+      tb_printf (tb, "    In file: %s\n", file_name);
       break;
     }
   }

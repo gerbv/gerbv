@@ -84,10 +84,11 @@ gerbv_stats_new(void) {
 
 
 /* ------------------------------------------------------- */
-/* This fcn is called with a two gerbv_stats_t structs:
- * accum_stats, which holds a list of stats accumulated for
+/*! This fcn is called with a two gerbv_stats_t structs:
+ * accum_stats and input_stats.  Accum_stats holds 
+ * a list of stats accumulated for
  * all layers.  This will be reported in the report window.
- * input_stats, which holds a list of the stats in this layer
+ * Input_stats holds a list of the stats for one particular layer
  * to be added to the accumulated list.  */
 void
 gerbv_stats_add_layer(gerbv_stats_t *accum_stats, 

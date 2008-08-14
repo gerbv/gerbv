@@ -567,7 +567,9 @@ void render_project_to_cairo_target (cairo_t *cr) {
 #endif  /* RENDER_USING_GDK */
 
 /* ------------------------------------------------------------------ */
-/* Fill out the gerber statistics table */
+/*! This fills out the project's Gerber statistics table.
+ *  It is called from within callbacks.c when the user
+ *  asks for a Gerber report.  */
 gerbv_stats_t *
 generate_gerber_analysis(void)
 {
@@ -575,9 +577,11 @@ generate_gerber_analysis(void)
     gerbv_stats_t *stats;
     gerbv_stats_t *instats;
 
+    /* Create new stats structure to hold report for whole project 
+     * (i.e. all layers together) */
     stats = gerbv_stats_new();
 
-    /* Loop through open layers and compile statistics */
+    /* Loop through open layers and compile statistics by accumulating reports from each layer */
     for(i = mainProject->max_files-1; i >= 0; i--) {
 	if (mainProject->file[i] && 
 	    mainProject->file[i]->isVisible &&
@@ -592,7 +596,9 @@ generate_gerber_analysis(void)
 
 
 /* ------------------------------------------------------------------ */
-/* Fill out the drill file statistics table */
+/*! This fills out the project's Drill statistics table.
+ *  It is called from within callbacks.c when the user
+ *  asks for a Drill report.  */
 gerbv_drill_stats_t *
 generate_drill_analysis(void)
 {
@@ -602,7 +608,7 @@ generate_drill_analysis(void)
 
     stats = gerbv_drill_stats_new();
 
-    /* Loop through open layers and compile statistics */
+    /* Loop through open layers and compile statistics by accumulating reports from each layer */
     for(i = mainProject->max_files-1; i >= 0; i--) {
 	if (mainProject->file[i] && 
 	    mainProject->file[i]->isVisible &&
