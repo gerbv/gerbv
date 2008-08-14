@@ -113,12 +113,21 @@ else
 DRAW=		${GDK_DRAW}
 endif
 
-EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW} gerbv.rc libgerbv.pc.in
+EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW} gerbv.rc libgerbv.pc.in run_gerbv.in
 
 scmdatadir = $(pkgdatadir)/scheme/
 dist_scmdata_DATA = init.scm
 
 AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"'
+
+all-local: run_gerbv
+# create wrapper script that lets you test gerbv prior to installation
+run_gerbv:     $(srcdir)/run_gerbv.in Makefile
+	sed -e 's;@SRCDIR@;${srcdir};g' \
+		$(srcdir)/run_gerbv.in > $@
+	chmod 755 $@
+
+DISTCLEANFILES = run_gerbv
 
 MOSTLYCLEANFILES = *~
 MAINTAINERCLEANFILES = *~ *.o Makefile Makefile.in
