@@ -476,14 +476,16 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     general_report_string = g_strdup_printf("%s  Active layer count = %d\n", 
 					    general_report_string, stats_report->layer_count);
 
-    general_report_string = g_strdup_printf("%s\n\nFiles processed:\n",
-					    general_report_string);
-    for (idx = mainProject->max_files-1; idx >= 0; idx--) {
+    general_report_string = g_strdup_printf("%s\n\n%-45s   %-10s\n",
+					    general_report_string,
+					    "Files processed",
+					    "Layer number");
+    for (idx = 0; idx <= mainProject->max_files-1; idx++) {
       if (mainProject->file[idx] &&
 	  mainProject->file[idx]->isVisible &&
 	  (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
 	general_report_string = 
-	  g_strdup_printf("%s  %s\n", general_report_string, mainProject->file[idx]->name);
+	  g_strdup_printf("%s  %-45s   %-10d\n", general_report_string, mainProject->file[idx]->name, idx+1);
       }
     }
 
@@ -648,10 +650,10 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
     if (stats_report->aperture_list->number == -1) {
 	aperture_def_report_string = 
-	    g_strdup_printf("\n\nNo aperture definitions found in Gerber file(s)!\n"); 
+	    g_strdup_printf("No aperture definitions found in Gerber file(s)!\n"); 
     } else {
 	aperture_def_report_string = 
-	    g_strdup_printf("\n\nApertures defined in Gerber file(s):\n"); 
+	    g_strdup_printf("Apertures defined in Gerber file(s):\n"); 
 	aperture_def_report_string = 
 	    g_strdup_printf("%s %-6s %-8s %12s  %8s %8s %8s\n",
 			    aperture_def_report_string,
@@ -683,11 +685,11 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     /* Report apertures usage count in input files. */
     if (stats_report->D_code_list->number == -1) {
 	aperture_use_report_string = 
-	    g_strdup_printf("\n\nNo apertures used in Gerber file(s)!\n"); 
+	    g_strdup_printf("No apertures used in Gerber file(s)!\n"); 
     } else {
       /* Now add list of user-defined D codes (apertures) */
       aperture_use_report_string = 
-	g_strdup_printf("\n\nApertures used in Gerber file(s):\n"); 
+	g_strdup_printf("Apertures used in Gerber file(s):\n"); 
       aperture_use_report_string = 
 	g_strdup_printf("%s<aperture code> = <number of uses>\n",
 			aperture_use_report_string);
@@ -734,6 +736,14 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gtk_widget_modify_font (GTK_WIDGET(general_report_label),
 			    font);
     g_free(general_report_string);
+    /* Put general report text into scrolled window */
+    GtkWidget *general_code_report_window = gtk_scrolled_window_new (NULL, NULL);
+    /* This throws a warning.  Must find different approach.... */
+    gtk_widget_set_size_request(GTK_WIDGET(general_code_report_window),
+				200,
+				300);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(general_code_report_window),
+					  GTK_WIDGET(general_report_label));
 
     /* Create GtkLabel to hold G code text */
     GtkWidget *G_report_label = gtk_label_new (G_report_string);
@@ -752,15 +762,6 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gtk_widget_modify_font (GTK_WIDGET(D_report_label),
 			    font);
     g_free(D_report_string);
-
-    /* Put D code report text into scrolled window */
-    GtkWidget *D_code_report_window = gtk_scrolled_window_new (NULL, NULL);
-    /* This throws a warning.  Must find different approach.... */
-    gtk_widget_set_size_request(GTK_WIDGET(D_code_report_window),
-				200,
-				300);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(D_code_report_window),
-					  GTK_WIDGET(D_report_label));
 
     /* Create GtkLabel to hold M code text */
     GtkWidget *M_report_label = gtk_label_new (M_report_string);
@@ -818,7 +819,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     GtkWidget *notebook = gtk_notebook_new();
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(general_report_label),
+			     GTK_WIDGET(general_code_report_window),
 			     gtk_label_new("General"));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
@@ -826,7 +827,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			     gtk_label_new("G codes"));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(D_code_report_window),
+			     GTK_WIDGET(D_report_label),
 			     gtk_label_new("D codes"));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),

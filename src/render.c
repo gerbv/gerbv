@@ -582,7 +582,7 @@ generate_gerber_analysis(void)
     stats = gerbv_stats_new();
 
     /* Loop through open layers and compile statistics by accumulating reports from each layer */
-    for(i = mainProject->max_files-1; i >= 0; i--) {
+    for (i = 0; i <= mainProject->max_files-1; i++) {
 	if (mainProject->file[i] && 
 	    mainProject->file[i]->isVisible &&
 	    (mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
