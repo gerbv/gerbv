@@ -82,6 +82,26 @@
 extern gerbv_screen_t screen;
 extern gerbv_render_info_t screenRenderInfo;
 
+/* These are the names of the valid apertures.  These
+ * values are used in several places in this file.
+ * Please keep this in sync with the gerbv_aperture_type_t 
+ * enum defined in gerbv.h */
+char *ap_names[] = {"NONE",
+		    "CIRCLE",
+		    "RECTANGLE",
+		    "OVAL",           /* an ovular (obround) aperture */
+		    "POLYGON",        /* a polygon aperture */
+		    "MACRO",          /* a RS274X macro */
+		    "MACRO_CIRCLE",   /* a RS274X circle macro */
+		    "MACRO_OUTLINE",  /* a RS274X outline macro */
+		    "MACRO_POLYGON",  /* a RS274X polygon macro */
+		    "MACRO_MOIRE",    /* a RS274X moire macro */
+		    "MACRO_THERMAL",  /* a RS274X thermal macro */
+		    "MACRO_LINE20",   /* a RS274X line (code 20) macro */
+		    "MACRO_LINE21",   /* a RS274X line (code 21) macro */
+		    "MACRO_LINE22"    /* a RS274X line (code 22) macro */
+};
+
 gint callbacks_get_selected_row_index  (void);
 
 /* --------------------------------------------------------- */
@@ -475,7 +495,6 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     general_report_string = g_strdup_printf("General information\n");
     general_report_string = g_strdup_printf("%s  Active layer count = %d\n", 
 					    general_report_string, stats_report->layer_count);
-
     general_report_string = g_strdup_printf("%s\n\n%-45s   %-10s\n",
 					    general_report_string,
 					    "Files processed",
@@ -489,7 +508,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
       }
     }
 
-    /* Error report */
+    /* Error report (goes into general report tab) */
     if (stats_report->layer_count == 0) {
         error_report_string = g_strdup_printf("\n\nNo Gerber files loaded!\n");
     } else if (stats_report->error_list->error_text == NULL) {
@@ -527,7 +546,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 					    error_report_string);
 
     /* Now compile stats related to reading G codes */
-    G_report_string = g_strdup_printf("G code statistics   \n");
+    G_report_string = g_strdup_printf("G code statistics (all active layers)\n");
     G_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", G_report_string);
     G_report_string = g_strdup_printf("%sG0 = %-6d (%s)\n", 
 				      G_report_string, stats_report->G0,
@@ -587,7 +606,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				      G_report_string, stats_report->G_unknown);
 
 
-    D_report_string = g_strdup_printf("D code statistics   \n");
+    D_report_string = g_strdup_printf("D code statistics (all active layers)\n");
     D_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", D_report_string);
     D_report_string = g_strdup_printf("%sD1 = %-6d (%s)\n", 
 				      D_report_string, stats_report->D1,
@@ -604,7 +623,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				      D_report_string, stats_report->D_error);
 
 
-    M_report_string = g_strdup_printf("M code statistics   \n");
+    M_report_string = g_strdup_printf("M code statistics (all active layers)\n");
     M_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", M_report_string);
     M_report_string = g_strdup_printf("%sM0 = %-6d (%s)\n", 
 				      M_report_string, stats_report->M0,
@@ -619,7 +638,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				      M_report_string, stats_report->M_unknown);
 
 
-    misc_report_string = g_strdup_printf("Misc code statistics   \n");
+    misc_report_string = g_strdup_printf("Misc code statistics (all active layers)\n");
     misc_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", misc_report_string);
     misc_report_string = g_strdup_printf("%sX = %d\n", misc_report_string, stats_report->X);
     misc_report_string = g_strdup_printf("%sY = %d\n", misc_report_string, stats_report->Y);
@@ -630,30 +649,13 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				      misc_report_string, stats_report->unknown);
 
     /* Report apertures defined in input files. */
-    /* These are the names of the valid apertures.  
-     * Please keep this in sync with the gerbv_aperture_type_t enum defined in gerbv.h */
-    char *ap_names[] = {"NONE",
-			"CIRCLE",
-			"RECTANGLE",
-			"OVAL",           /* an ovular (obround) aperture */
-			"POLYGON",        /* a polygon aperture */
-			"MACRO",          /* a RS274X macro */
-			"MACRO_CIRCLE",   /* a RS274X circle macro */
-			"MACRO_OUTLINE",  /* a RS274X outline macro */
-			"MACRO_POLYGON",  /* a RS274X polygon macro */
-			"MACRO_MOIRE",    /* a RS274X moire macro */
-			"MACRO_THERMAL",  /* a RS274X thermal macro */
-			"MACRO_LINE20",   /* a RS274X line (code 20) macro */
-			"MACRO_LINE21",   /* a RS274X line (code 21) macro */
-			"MACRO_LINE22"    /* a RS274X line (code 22) macro */
-    };
 
     if (stats_report->aperture_list->number == -1) {
 	aperture_def_report_string = 
 	    g_strdup_printf("No aperture definitions found in Gerber file(s)!\n"); 
     } else {
 	aperture_def_report_string = 
-	    g_strdup_printf("Apertures defined in Gerber file(s):\n"); 
+	    g_strdup_printf("Apertures defined in Gerber file(s) (by layer)\n"); 
 	aperture_def_report_string = 
 	    g_strdup_printf("%s %-6s %-8s %12s  %8s %8s %8s\n",
 			    aperture_def_report_string,
@@ -689,7 +691,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     } else {
       /* Now add list of user-defined D codes (apertures) */
       aperture_use_report_string = 
-	g_strdup_printf("Apertures used in Gerber file(s):\n"); 
+	g_strdup_printf("Apertures used in Gerber file(s) (all active layers)\n"); 
       aperture_use_report_string = 
 	g_strdup_printf("%s<aperture code> = <number of uses>\n",
 			aperture_use_report_string);
@@ -937,7 +939,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
 
     /* G code window strings */
-    G_report_string = g_strdup_printf("G code statistics   \n");
+    G_report_string = g_strdup_printf("G code statistics (all active layers)\n");
     G_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", G_report_string);
     G_report_string = g_strdup_printf("%sG00 = %-6d (%s)\n", 
 				      G_report_string, stats_report->G00,
@@ -970,7 +972,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 				      G_report_string, stats_report->G_unknown);
 
     /* M code window strings */
-    M_report_string = g_strdup_printf("M code statistics   \n");
+    M_report_string = g_strdup_printf("M code statistics (all active layers)\n");
     M_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", M_report_string);
     M_report_string = g_strdup_printf("%sM00 = %-6d (%s)\n", 
 				      M_report_string, stats_report->M00,
@@ -1019,7 +1021,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
 
     /* misc report strings */
-    misc_report_string = g_strdup_printf("Misc code statistics   \n");
+    misc_report_string = g_strdup_printf("Misc code statistics (all active layers)\n");
     misc_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", misc_report_string);
     misc_report_string = g_strdup_printf("%scomments = %d\n", 
 					 misc_report_string, stats_report->comment);
@@ -1031,8 +1033,9 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 					     misc_report_string, stats_report->detect);
     }	
     /* drill report window strings */
-    drill_report_string = g_strdup_printf("%10s %8s %8s %8s\n", 
-					  "Drill no.", "Dia.", "Units", "Count");
+    drill_report_string = g_strdup_printf("Drills used (all active layers)\n");
+    drill_report_string = g_strdup_printf("%s%10s %8s %8s %8s\n", 
+					  drill_report_string, "Drill no.", "Dia.", "Units", "Count");
     for(my_drill_list = stats_report->drill_list; 
 	my_drill_list != NULL; 
 	my_drill_list = my_drill_list->next) {
@@ -2026,22 +2029,6 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
     /* get the aperture definition for the selected item */
     int ap_type = image->aperture[net->aperture]->type;
       
-    char *ap_names[] = {"NONE",
-			"CIRCLE",
-			"RECTANGLE",
-			"OVAL",           /* an ovular (obround) aperture */
-			"POLYGON",        /* a polygon aperture */
-			"MACRO",          /* a RS274X macro */
-			"MACRO_CIRCLE",   /* a RS274X circle macro */
-			"MACRO_OUTLINE",  /* a RS274X outline macro */
-			"MACRO_POLYGON",  /* a RS274X polygon macro */
-			"MACRO_MOIRE",    /* a RS274X moire macro */
-			"MACRO_THERMAL",  /* a RS274X thermal macro */
-			"MACRO_LINE20",   /* a RS274X line (code 20) macro */
-			"MACRO_LINE21",   /* a RS274X line (code 21) macro */
-			"MACRO_LINE22"    /* a RS274X line (code 22) macro */
-    };
-
     char *ap_type_string = g_strdup(ap_names[ap_type]);
 
     /* Also get layer name specified in file by %LN directive
