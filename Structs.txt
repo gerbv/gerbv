@@ -3,16 +3,31 @@ gerbv_project  *mainProject    /* global variable */
   gchar *project   /* Name of current project. */
   int current_index    /* currently active layer */
   gerbv_fileinfo_t **file   /* array of files */
-    gerbv_user_tranformation transform /*user-specified transformation for this layer (mirroring, translating, etc)*/
+    gerbv_user_tranformation_t transform /*user-specified transformation for this layer (mirroring, translating, etc)*/
     gchar *fullPathname
     gchar *name          /* Name shown in layer window on left.  i.e. filename*/
     gboolean layer_dirty /* layer has changed since last save*/
+    gboolean isVisible
     gerbv_image_t *image  /* This holds all info related to parsing and rendering one layer */
       gerbv_image_info_t *info
       gerbv_aperture_t *aperture
-      gerbv_layertype /*Enum holding "RS274", "Drill", or "PnP"*/
-      gerbv_netstate
-      gerbv_net *netlist /* linked list of graphical objects */
+        gerbv_aperture_type_t type;
+        gerbv_amacro_t *amacro;
+        gerbv_simplified_amacro_t *simplified;
+        double parameter[APERTURE_PARAMETERS_MAX];
+        int nuf_parameters;
+        gerbv_unit_t unit;
+      gerbv_layertype_t         /* Enum holding "RS274", "Drill", or "PnP"*/
+      gerbv_netstate_t *states  /* List used to keep track of RS274X state groups */
+        gerbv_axis_select_t axisSelect; /* the AB to XY coordinate mapping (refer to RS274X spec) */
+        gerbv_mirror_state_t mirrorState; /* any mirroring around the X or Y axis */
+        gerbv_unit_t unit; /* the current length unit */
+        gdouble offsetA; /* the offset along the A axis (usually this is the X axis) */
+        gdouble offsetB; /* the offset along the B axis (usually this is the Y axis) */
+        gdouble scaleA; /* the scale factor in the A axis (usually this is the X axis) */
+        gdouble scaleB; /* the scale factor in the B axis (usually this is the Y axis) */
+      gerbv_net_t *netlist /* linked list of graphical objects */
+        int aperture
         gerbv_aperture_state_t  aperture_state
         gerbv_interpolation_t  interpolation
         gerbv_cirseg_t *cirseg
@@ -21,12 +36,16 @@ gerbv_project  *mainProject    /* global variable */
         gerbv_netstate_t *state
       gerbv_stats_t *gerbv_stats /* Gerber stats.  Struct defined below. */
       gerbv_drill_stats_t *drill_stats   /* Drill stats.  Struct defined below. */
-      gerbv_layer *layers /* linked list of layers.  Is this because you can have multiple layers in one Gerber file? */
+      gerbv_layer_t *layers /* linked list of layers.  Is this because you can have multiple layers in one Gerber file? */
         gerbv_polarity
         gchar *name /*This is name from %LN in Gerber file*/
 
 
-gerbv_screen_t screen /* Hold info about what's displayed on the screen */
+gerbv_screen_t screen /* Global variable: hold info about what's displayed on the screen */
+  GtkWidget *drawing_area;
+  GdkPixmap *pixmap;
+  win  /* struct holding the GUI */
+  statusbar
   int selected_layer
   gerbv_selection_info_t selectionInfo
     gerbv_selection_t type
@@ -78,6 +97,8 @@ gerbv_aperture_list_t    /* list holding info related to list of aperture defini
   gerbv_aperture_type_t type;
   double parameter[5];
 
+
+gerbv_aperture_type_t  /* enum of valid aperture types */
 
 
 gerbv_stats_t    /* large struct holding info about codes and errors found while parsing Gerber file */
