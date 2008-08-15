@@ -1278,7 +1278,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					       string
 					       );
 
-	gtk_window_set_title ( GTK_WINDOW (aboutdialog1), _("About Gerber Viewer"));
+	gtk_window_set_title ( GTK_WINDOW (aboutdialog1), _("About Gerbv"));
 
 	/* Destroy the dialog when the user responds to it (e.g. clicks a button) */
 	g_signal_connect_swapped (aboutdialog1, "response",
