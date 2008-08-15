@@ -206,8 +206,10 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
 int
 gerbv_revert_file(gerbv_project_t *gerbvProject, int idx){
   int rv;
+  
   rv = gerbv_open_image(gerbvProject, gerbvProject->file[idx]->fullPathname, idx, TRUE, NULL, 0, TRUE);
   gerbvProject->file[idx]->layer_dirty = FALSE;
+  return rv;
 }
 
 /* ------------------------------------------------------------------ */
@@ -218,8 +220,7 @@ gerbv_revert_all_files(gerbv_project_t *gerbvProject)
   
   for (idx = 0; idx < gerbvProject->max_files; idx++) {
     if (gerbvProject->file[idx] && gerbvProject->file[idx]->fullPathname) {
-      gerbv_revert_file (gerbvProject, idx);
-      return;
+      (void) gerbv_revert_file (gerbvProject, idx);
     }
   }
 } /* gerbv_revert_all_files */
