@@ -71,7 +71,6 @@
   #include "draw-gdk.h"
   #include "draw.h"
 #endif
-#include "callbacks.h"
 
 #include "pick-and-place.h"
 
@@ -199,7 +198,6 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
 	return FALSE;
     }
     gerbvProject->file[index]->layer_dirty = FALSE;
-    callbacks_update_layer_tree();
     return TRUE;
 } /* gerbv_save_project_from_filename */
 
@@ -210,8 +208,6 @@ gerbv_revert_file(gerbv_project_t *gerbvProject, int idx){
   int rv;
   rv = gerbv_open_image(gerbvProject, gerbvProject->file[idx]->fullPathname, idx, TRUE, NULL, 0, TRUE);
   gerbvProject->file[idx]->layer_dirty = FALSE;
-  callbacks_update_layer_tree();
-  return rv;
 }
 
 /* ------------------------------------------------------------------ */
@@ -223,8 +219,6 @@ gerbv_revert_all_files(gerbv_project_t *gerbvProject)
   for (idx = 0; idx < gerbvProject->max_files; idx++) {
     if (gerbvProject->file[idx] && gerbvProject->file[idx]->fullPathname) {
       gerbv_revert_file (gerbvProject, idx);
-      gerbvProject->file[idx]->layer_dirty = FALSE;
-      callbacks_update_layer_tree();
       return;
     }
   }
