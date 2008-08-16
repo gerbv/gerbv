@@ -1,8 +1,5 @@
 #!/bin/sh
-rm -f confdefs.h config.* configure aclocal.m4 stamp-h* install-sh missing mkinstalldirs ltmain.sh
-rm -rf autom4te.cache
-find . -name Makefile -exec rm {} \;
-find . -name Makefile.in -exec rm {} \;
+#
 
 ############################################################################
 #
