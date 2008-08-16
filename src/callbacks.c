@@ -67,8 +67,6 @@
   #endif
 #endif
 
-#include "textbox.h"
-
 #define dprintf if(DEBUG) printf
 
 #define SAVE_PROJECT 0
@@ -1997,40 +1995,25 @@ callbacks_update_layer_tree (void) {
 /* --------------------------------------------------------------------------- */
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data){
-  GtkWidget *tb;
   int i;
-  char *layer_name;
-  char *net_label;
-  char *file_name;
+  gchar *layer_name;
+  gchar *net_label;
 
 #ifndef RENDER_USING_GDK
-  if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
-    interface_show_alert_dialog("Nothing selected",
-				NULL,
-				FALSE,
-				NULL);
-    return;
-  }
 
   gint index=callbacks_get_selected_row_index();
   if (index < 0)
     return;
 
-  tb = get_textbox ("Object Properties");
-
   for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
     gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
 						  gerbv_selection_item_t, i);
-    /* Get filename of this layer to report to user */
-    file_name = g_strdup(mainProject->file[index]->name);
 
     gerbv_net_t *net = sItem.net;
     gerbv_image_t *image = sItem.image;
 
     /* get the aperture definition for the selected item */
     int ap_type = image->aperture[net->aperture]->type;
-      
-    char *ap_type_string = g_strdup(ap_names[ap_type]);
 
     /* Also get layer name specified in file by %LN directive
      * (if it exists).  */
@@ -2043,37 +2026,39 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
     if (net->label == NULL) {
       net_label = g_strdup("<unlabeled net>");
     } else {
-      net_label = g_strdup(net->label);
+      net_label = g_strdup((gchar *)net->label);
     }
 
     switch (net->aperture_state){
     case GERBV_APERTURE_STATE_OFF:
       break;
     case GERBV_APERTURE_STATE_ON:
-      if (i!=0) tb_printf (tb, "\n");  /* Spacing for a pretty display */
-      tb_printf (tb, "Exposure: Line draw\n");
-      tb_printf (tb, "    Aperture used: D%d\n", net->aperture);
-      tb_printf (tb, "    Aperture type: %s\n", ap_type_string);
-      tb_printf (tb, "    Start location: (%g, %g)\n", net->start_x, net->start_y);
-      tb_printf (tb, "    Stop location: (%g, %g)\n", net->stop_x, net->stop_y);
-      tb_printf (tb, "    Layer name: %s\n", layer_name);
-      tb_printf (tb, "    Net label: %s\n", net_label);
-      tb_printf (tb, "    In file: %s\n", file_name);
+      if (i!=0) callbacks_printf_message_to_log_window ("\n");  /* Spacing for a pretty display */
+      callbacks_printf_message_to_log_window ("Exposure: Line draw\n");
+      callbacks_printf_message_to_log_window ("    Aperture used: D%d\n", net->aperture);
+      callbacks_printf_message_to_log_window ("    Aperture type: %s\n", ap_names[ap_type]);
+      callbacks_printf_message_to_log_window ("    Start location: (%g, %g)\n", net->start_x, net->start_y);
+      callbacks_printf_message_to_log_window ("    Stop location: (%g, %g)\n", net->stop_x, net->stop_y);
+      callbacks_printf_message_to_log_window ("    Layer name: %s\n", layer_name);
+      callbacks_printf_message_to_log_window ("    Net label: %s\n", net_label);
+      callbacks_printf_message_to_log_window ("    In file: %s\n", mainProject->file[index]->name);
       break;
     case GERBV_APERTURE_STATE_FLASH:
-      if (i!=0) tb_printf (tb, "\n");  /* Spacing for a pretty display */
-      tb_printf (tb, "Exposure: Flash\n");
-      tb_printf (tb, "    Aperture used: D%d\n", net->aperture);
-      tb_printf (tb, "    Aperture type: %s\n", ap_type_string);
-      tb_printf (tb, "    Location: (%g, %g)\n", net->stop_x, net->stop_y);
-      tb_printf (tb, "    Layer name: %s\n", layer_name);
-      tb_printf (tb, "    Net label: %s\n", net_label);
-      tb_printf (tb, "    In file: %s\n", file_name);
+      if (i!=0) callbacks_printf_message_to_log_window ("\n");  /* Spacing for a pretty display */
+      callbacks_printf_message_to_log_window ("Exposure: Flash\n");
+      callbacks_printf_message_to_log_window ("    Aperture used: D%d\n", net->aperture);
+      callbacks_printf_message_to_log_window ("    Aperture type: %s\n", ap_names[ap_type]);
+      callbacks_printf_message_to_log_window ("    Location: (%g, %g)\n", net->stop_x, net->stop_y);
+      callbacks_printf_message_to_log_window ("    Layer name: %s\n", layer_name);
+      callbacks_printf_message_to_log_window ("    Net label: %s\n", net_label);
+      callbacks_printf_message_to_log_window ("    In file: %s\n", mainProject->file[index]->name);
       break;
     }
+    g_free (net_label);
+    g_free (layer_name);
   }
   /* Use separator for different report requests */
-  tb_printf (tb, "---------------------------------------\n");
+  callbacks_printf_message_to_log_window ("---------------------------------------\n");
 #endif
 }
 
@@ -2697,7 +2682,18 @@ callbacks_clear_messages_button_clicked  (GtkButton *button, gpointer   user_dat
 	gtk_text_buffer_get_end_iter(textbuffer, &end);
 	gtk_text_buffer_delete (textbuffer, &start, &end);
 }
-                                                        
+
+void
+callbacks_printf_message_to_log_window (const char *fmt, ...){
+  va_list args;
+  gchar *newString;
+
+  va_start (args, fmt);
+  newString = g_strdup_vprintf (fmt, args);
+  callbacks_handle_log_messages (NULL, G_LOG_LEVEL_MESSAGE, newString, NULL);
+  g_free (newString);  
+}
+             
 /* --------------------------------------------------------- */
 void
 callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
@@ -2774,7 +2770,7 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 		break;
 	case G_LOG_LEVEL_INFO:
 	      tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),
-	                                    "drakgreen_foreground");
+	                                    "darkgreen_foreground");
 		break;
 	case G_LOG_LEVEL_DEBUG:
 		tag = gtk_text_tag_table_lookup(gtk_text_buffer_get_tag_table(textbuffer),

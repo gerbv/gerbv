@@ -230,6 +230,9 @@ callbacks_change_tool  (GtkButton *button, gpointer   user_data);
 void
 callbacks_switch_to_correct_cursor (void);
 
+void
+callbacks_printf_message_to_log_window (const char *fmt, ...);
+
 #ifndef RENDER_USING_GDK
 cairo_surface_t *
 callbacks_create_window_surface (GtkWidget *widget);

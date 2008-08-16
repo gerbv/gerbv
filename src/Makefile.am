@@ -46,8 +46,7 @@ libgerbv_la_SOURCES= \
 		csv.c csv.h csv_defines.h \
 		gerb_stats.c gerb_stats.h \
 		drill_stats.c drill_stats.h export-rs274x.c \
-		export-drill.c \
-		textbox.c
+		export-drill.c
 
 # libgerbv shared library version.  A fairly strict rule should
 # be followed for when this version is updated.  Those rules,
@@ -84,8 +83,7 @@ gerbv_SOURCES = \
 		scheme.h \
 		callbacks.c callbacks.h interface.c \
 		interface.h render.c render.h \
-		icons.h \
-		textbox.h
+		icons.h
 
 gerbv_LDADD = libgerbv.la
 gerbv_DEPENDENCIES = libgerbv.la
