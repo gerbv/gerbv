@@ -228,7 +228,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     int read;
     gerbv_drill_stats_t *stats;
     int i;
-    char *tmps;
+    gchar *tmps;
+    gchar *string;
 
     /* 
      * many locales redefine "." as "," and so on, so sscanf and strtod 
@@ -324,8 +325,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    tmps = get_line (fd);
 	    if (strcmp (tmps, "DETECT,ON") == 0 ||
 		strcmp (tmps, "DETECT,GERBV_APERTURE_STATE_OFF") == 0) {
-		char *tmps2;
-		char *tmps3;
+		gchar *tmps2;
+		gchar *tmps3;
 		if (strcmp (tmps, "DETECT,ON") == 0)
 		    tmps3 = "ON";
 		else
@@ -340,10 +341,12 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		}
 		stats->detect = tmps2;
 	    } else {
+		string = g_strdup_printf("Undefined header line = '%s'\n",tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Undefined header line = '%s'\n",tmps),
+				      string,
 				      GERBV_MESSAGE_NOTE);
+		g_free(string);
 	    }
 	    g_free (tmps);
 	    break;
@@ -352,10 +355,12 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    tmps = get_line (fd);
 	    /* Silently ignore FMAT,2.  Not sure what others are allowed */
 	    if (strcmp (tmps, "FMAT,2") != 0) {
+		string = g_strdup_printf("Undefined header line = '%s'\n",tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Undefined header line = '%s'\n",tmps),
+				      string,
 				      GERBV_MESSAGE_NOTE);
+		g_free(string);
 	    }
 	    g_free (tmps);
 	    break;
@@ -536,12 +541,14 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    case DRILL_M_MESSAGE :
 	    case DRILL_M_CANNEDTEXT :
 		tmps = get_line(fd);
+		string = g_strdup_printf("Message embedded in drill file: '%s'\n", 
+					 tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Message embedded in drill file: '%s'\n", 
-						      tmps),
+				      string,
 				      GERBV_MESSAGE_NOTE);
-		g_free (tmps);
+		g_free(string);
+		g_free(tmps);
 		break;
 	    case DRILL_M_NOT_IMPLEMENTED :
 	    case DRILL_M_ENDPATTERN :
@@ -579,10 +586,12 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    tmps = get_line (fd);
 	    /* Silently ignore VER,1.  Not sure what others are allowed */
 	    if (strcmp (tmps, "VER,1") != 0) {
+		string = g_strdup_printf("Undefined header line = '%s'\n",tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      g_strdup_printf("Undefined header line = '%s'\n",tmps),
 				      GERBV_MESSAGE_NOTE);
+		g_free(string);
 	    }
 	    g_free (tmps);
 	    break;
@@ -662,18 +671,22 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 				      GERBV_MESSAGE_ERROR);
 		gerb_ungetc(fd);
 		tmps = get_line(fd);
+		string = g_strdup_printf("Undefined header line = '%s'\n",
+					 tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Undefined header line = '%s'\n",
-						      tmps),
+				      string,
 				      GERBV_MESSAGE_NOTE);
+		g_free(string);
 		g_free (tmps);
 	    } else {
+		string = g_strdup_printf("Undefined character '%c' [0x%02x] found inside data, ignoring\n",
+					 read, read);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Undefined character '%c' [0x%02x] found inside data, ignoring\n",
-						      read, read),
+				      string,
 				      GERBV_MESSAGE_ERROR);
+		g_free(string);
 	    }
 	}
     }
@@ -852,7 +865,8 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
     int temp;
     double size;
     gerbv_drill_stats_t *stats = image->drill_stats;
-    char *tmps;
+    gchar *tmps;
+    gchar *string;
 
     /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
        broken headers from Orcad, which is crap */
@@ -865,8 +879,12 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
     	    if (gerb_fgetc(fd) == 'T' ){
     	  	fd->ptr -= 4;
     	  	tmps = get_line(fd++);
-    	  	drill_stats_add_error(stats->error_list, -1,
-    	   		g_strdup_printf("Tool change stop switch found: %s\n", tmps), GERBV_MESSAGE_NOTE);
+		string = g_strdup_printf("Tool change stop switch found: %s\n", tmps);
+    	  	drill_stats_add_error(stats->error_list, 
+				      -1,
+				      string,
+				      GERBV_MESSAGE_NOTE);
+		g_free(string);
 	  	g_free (tmps);
 	  	return -1;
 	    }
@@ -882,12 +900,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 				  "Orcad bug: Junk text found in place of tool definition.\n",
 				  GERBV_MESSAGE_ERROR);
 	    tmps = get_line(fd);
-
+	    string = g_strdup_printf("Junk text = %s\n", 
+				     tmps);
 	    drill_stats_add_error(stats->error_list,
 				  -1,
-				  g_strdup_printf("Junk text = %s\n", 
-						  tmps),
+				  string,
 				  GERBV_MESSAGE_NOTE);
+	    g_free(string);
 	    g_free (tmps);
 	    drill_stats_add_error(stats->error_list,
 				  -1,
@@ -905,10 +924,12 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 	return tool_num; /* T00 is a command to unload the drill */
 
     if ( (tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX) ) {
+	string = g_strdup_printf("Drill number out of bounds: %d.\n", tool_num);
 	drill_stats_add_error(stats->error_list,
 			      -1,
-			      g_strdup_printf("Drill number out of bounds: %d.\n", tool_num),
+			      string,
 			      GERBV_MESSAGE_ERROR);
+	g_free(string);
     }
 
     /* Set the current tool to the correct one */
@@ -934,22 +955,28 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 		   The limit being 4 inches is because the smallest drill
 		   I've ever seen used is 0,3mm(about 12mil). Half of that
 		   seemed a bit too small a margin, so a third it is */
+		string = g_strdup_printf("Read a drill of diameter %g inches.\n", size);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Read a drill of diameter %g inches.\n", size),
+				      string,
 				      GERBV_MESSAGE_ERROR); 
+		g_free(string);
+		string = g_strdup_printf("Assuming units are mils.\n");
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Assuming units are mils.\n"),
+				      string,
 				      GERBV_MESSAGE_WARNING); 
+		g_free(string);
 		size /= 1000.0;
 	    }
 
 	    if(size <= 0. || size >= 10000.) {
+		string = g_strdup_printf("Unreasonable drill size found for drill %d: %g\n", tool_num, size);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Unreasonable drill size found for drill %d: %g\n", tool_num, size),
+				      string,
 				      GERBV_MESSAGE_ERROR);
+		g_free(string);
 	    } else {
 		if(image->aperture[tool_num] != NULL) {
 		    /* allow a redefine of a tool only if the new definition is exactly the same.
@@ -960,10 +987,12 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 			image->aperture[tool_num]->type != GERBV_APTYPE_CIRCLE ||
 			image->aperture[tool_num]->nuf_parameters != 1 ||
 			image->aperture[tool_num]->unit != GERBV_UNIT_INCH) {
+			string = g_strdup_printf("Found redefinition of drill %d.\n", tool_num);
 			drill_stats_add_error(stats->error_list,
 					      -1,
-					      g_strdup_printf("Found redefinition of drill %d.\n", tool_num),
+					      string,
 					      GERBV_MESSAGE_ERROR);
+			g_free(string);
 		    }
 		} else {
 		    image->aperture[tool_num] =
@@ -986,11 +1015,12 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 	    /* Add the tool whose definition we just found into the list
 	     * of tools for this layer used to generate statistics. */
 	    stats = image->drill_stats;
+	    string = g_strdup_printf("%s", (state->unit == GERBV_UNIT_MM ? "mm" : "inch"));
 	    drill_stats_add_to_drill_list(stats->drill_list, 
 					  tool_num, 
 					  state->unit == GERBV_UNIT_MM ? size*25.4 : size, 
-					  g_strdup_printf("%s", (state->unit == GERBV_UNIT_MM ? "mm" : "inch")));
-
+					  string);
+	    g_free(string);
 	    break;
 
 	case 'F':
@@ -1042,14 +1072,18 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
              * tool definitions inside the file never seem to use T00 at all.
              */
             if(tool_num != 0) {
+		string = g_strdup_printf("Tool %02d used without being defined\n", tool_num);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Tool %02d used without being defined\n", tool_num),
+				      string,
 				      GERBV_MESSAGE_ERROR);
+		g_free(string);
+		string = g_strdup_printf("Setting a default size of %g\"\n", dia);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf("Setting a default size of %g\"\n", dia),
+				      string,
 				      GERBV_MESSAGE_WARNING);
+		g_free(string);
             }
 	}
 
@@ -1062,11 +1096,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 	if (tool_num != 0) {  /* Only add non-zero tool nums.  
 			       * Zero = unload command. */
 	    stats = image->drill_stats;
+	    string = g_strdup_printf("%s", 
+				     (state->unit == GERBV_UNIT_MM ? "mm" : "inch"));
 	    drill_stats_add_to_drill_list(stats->drill_list, 
 					  tool_num, 
-					  state->unit == GERBV_UNIT_MM ? dia*25.4 : dia, 
-					  g_strdup_printf("%s", 
-							  (state->unit == GERBV_UNIT_MM ? "mm" : "inch")));
+					  state->unit == GERBV_UNIT_MM ? dia*25.4 : dia,
+					  string);
+	    g_free(string);
 	}
     } /* if(image->aperture[tool_num] == NULL) */	
     
@@ -1282,11 +1318,12 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image)
     read[0] = gerb_fgetc(fd);
     read[1] = gerb_fgetc(fd);
 
-    if ((read[0] == EOF) || (read[1] == EOF))
+    if ((read[0] == EOF) || (read[1] == EOF)) {
 	drill_stats_add_error(stats->error_list,
 			      -1,
 			      "Unexpected EOF found while parsing G code.\n",
 			      GERBV_MESSAGE_ERROR);
+    }
 
     op[0] = read[0], op[1] = read[1], op[2] = 0;
 
@@ -1493,8 +1530,8 @@ static char *
 get_line(gerb_file_t *fd)
 {
     int read = gerb_fgetc(fd);
-    char *retstring = "";
-    char *tmps = NULL;
+    gchar *retstring = "";
+    gchar *tmps = NULL;
 
     while(read != 10 && read != 13) {
 	if (read == EOF) return retstring;

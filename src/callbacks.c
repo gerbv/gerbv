@@ -543,7 +543,8 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     general_report_string = g_strdup_printf("%s%s", 
 					    general_report_string,
 					    error_report_string);
-
+    g_free(error_report_string);
+    
     /* Now compile stats related to reading G codes */
     G_report_string = g_strdup_printf("G code statistics (all active layers)\n");
     G_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", G_report_string);
@@ -935,6 +936,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     general_report_string = g_strdup_printf("%s%s", 
 					    general_report_string,
 					    error_report_string);
+    g_free(error_report_string);
 
 
     /* G code window strings */
