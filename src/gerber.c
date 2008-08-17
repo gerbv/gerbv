@@ -415,23 +415,24 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    if ((curr_net->aperture_state != GERBV_APERTURE_STATE_OFF)){
 		double repeat_off_X = 0.0, repeat_off_Y = 0.0;
 
-		/* Update stats with current aperture number */
-		dprintf("     In parse_D_code, adding 1 to D_list ...\n");
-		int retcode = gerbv_stats_increment_D_list_count(stats->D_code_list, 
-								 curr_net->aperture, 
-								 1,
-								 stats->error_list);
-		if (retcode == -1) {
-		  gerbv_stats_add_error(stats->error_list,
-					-1,
-					g_strdup_printf("Found undefined D code D%d in file \n%s\n", 
+		/* Update stats with current aperture number if not in polygon */
+		if (!state->in_parea_fill) {
+			dprintf("     In parse_D_code, adding 1 to D_list ...\n");
+			int retcode = gerbv_stats_increment_D_list_count(stats->D_code_list, 
+									 curr_net->aperture, 
+									 1,
+									 stats->error_list);
+			if (retcode == -1) {
+			  gerbv_stats_add_error(stats->error_list,
+						-1,
+						g_strdup_printf("Found undefined D code D%d in file \n%s\n", 
 							curr_net->aperture, 
 							fd->filename),
-					GERBV_MESSAGE_ERROR);
-		  stats->D_unknown++;
+							GERBV_MESSAGE_ERROR);
+			  stats->D_unknown++;
+			}
 		}
 
-		
 		/*
 		 * If step_and_repeat (%SR%) is used, check min_x,max_y etc for
 		 * the ends of the step_and_repeat lattice. This goes wrong in 
