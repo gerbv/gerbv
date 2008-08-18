@@ -2431,8 +2431,13 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				   is pointing at */
 				if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
 					gint index=callbacks_get_selected_row_index();
-					if ((index >= 0) && (index <= mainProject->last_loaded)) {
+					if ((index >= 0) && 
+					    (index <= mainProject->last_loaded) &&
+					    (mainProject->file[index]->isVisible)) {
 					  render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,TRUE);
+					} else {
+					    render_clear_selection_buffer ();
+					    render_refresh_rendered_image_on_screen ();
 					}
 				}
 				/* only show the popup if we actually have something selected now */
@@ -2498,7 +2503,8 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 			   not compiled */
 			gint index=callbacks_get_selected_row_index();
 			/* determine if this was just a click or a box drag */
-			if (index >= 0) {
+			if ((index >= 0) && 
+			    (mainProject->file[index]->isVisible)) {
 				gboolean eraseOldSelection = TRUE;
 				if ((event->state & GDK_SHIFT_MASK) ||
 				   (event->state & GDK_CONTROL_MASK)) {
@@ -2510,6 +2516,9 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 				else
 					render_fill_selection_buffer_from_mouse_drag(event->x,event->y,
 						screen.start_x,screen.start_y,index,eraseOldSelection);
+			} else {
+			    render_clear_selection_buffer ();
+			    render_refresh_rendered_image_on_screen ();
 			}
 #endif
 		}
