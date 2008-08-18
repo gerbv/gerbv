@@ -1,7 +1,7 @@
 gerbv_project  *mainProject    /* global variable */
   gchar *path    /* current working directory from which to load files */
   gchar *project   /* Name of current project. */
-  int current_index    /* currently active layer */
+  int curr_index    /* currently active layer */
   gerbv_fileinfo_t **file   /* array of files */
     gerbv_user_tranformation_t transform /*user-specified transformation for this layer (mirroring, translating, etc)*/
     gchar *fullPathname
