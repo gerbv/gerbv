@@ -165,7 +165,7 @@ typedef enum {GERBV_INTERPOLATION_LINEARx1, /*!< draw a line */
 		GERBV_INTERPOLATION_LINEARx01, /*!< draw a line */
 		GERBV_INTERPOLATION_LINEARx001, /*!< draw a line */
 		GERBV_INTERPOLATION_CW_CIRCULAR, /*!< draw an arc in the clockwise direction */
-		GERBV_INTERPOLATION_CCW, /*!< draw an arc in the counter-clockwise direction */
+		GERBV_INTERPOLATION_CCW_CIRCULAR, /*!< draw an arc in the counter-clockwise direction */
 		GERBV_INTERPOLATION_PAREA_START, /*!< start a polygon draw */
 		GERBV_INTERPOLATION_PAREA_END, /*!< end a polygon draw */
 		GERBV_INTERPOLATION_DELETED /*!< the net has been deleted by the user, and will not be drawn */
@@ -491,7 +491,7 @@ typedef struct gerbv_net {
     int aperture; /*!< the index of the aperture used for this entity */
     gerbv_aperture_state_t aperture_state; /*!< the state of the aperture tool (on/off/etc) */
     gerbv_interpolation_t interpolation; /*!< the path interpolation method (linear/etc) */
-    gerbv_cirseg_t *cirseg; /*!< a special struct used to hold circular path data */
+    gerbv_cirseg_t *cirseg; /*!< information for arc nets */
     struct gerbv_net *next; /*!< the next net in the array */
     GString *label; /*!< a label string for this net */
     gerbv_layer_t *layer; /*!< the RS274X layer this net belongs to */
@@ -658,6 +658,10 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble are
 gboolean
 gerbv_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
 		gdouble translationY);
+
+//! Return the next net entry which corresponds to a unique visible object
+gerbv_net_t *
+gerbv_image_return_next_renderable_object (gerbv_net_t *oldNet);
 
 //! Create a new project structure and initialize some important variables
 gerbv_project_t *

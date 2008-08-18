@@ -1997,70 +1997,87 @@ callbacks_update_layer_tree (void) {
 /* --------------------------------------------------------------------------- */
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data){
-  int i;
-  gchar *layer_name;
-  gchar *net_label;
+	int i;
+	gchar *layer_name;
+	gchar *net_label;
+	gboolean validAperture;
 
 #ifndef RENDER_USING_GDK
 
-  gint index=callbacks_get_selected_row_index();
-  if (index < 0)
-    return;
+	gint index=callbacks_get_selected_row_index();
+	if (index < 0)
+		return;
 
-  for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
-    gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
+	for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
+		gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
 						  gerbv_selection_item_t, i);
 
-    gerbv_net_t *net = sItem.net;
-    gerbv_image_t *image = sItem.image;
+		gerbv_net_t *net = sItem.net;
+		gerbv_image_t *image = sItem.image;
+		int ap_type=0;
 
-    /* get the aperture definition for the selected item */
-    int ap_type = image->aperture[net->aperture]->type;
+		/* get the aperture definition for the selected item */
+		if (net->aperture > 0) {
+			ap_type = image->aperture[net->aperture]->type;
+			validAperture = TRUE;
+		}
+		else {
+			validAperture = FALSE;
+		}
 
-    /* Also get layer name specified in file by %LN directive
-     * (if it exists).  */
-    if (net->layer->name == NULL) {
-      layer_name = g_strdup("<unnamed layer>");
-    } else {
-      layer_name = g_strdup(net->layer->name);
-    }
+		/* Also get layer name specified in file by %LN directive
+		* (if it exists).  */
+		if (net->layer->name == NULL) {
+			layer_name = g_strdup("<unnamed layer>");
+		} else {
+			layer_name = g_strdup(net->layer->name);
+		}
 
-    if (net->label == NULL) {
-      net_label = g_strdup("<unlabeled net>");
-    } else {
-      net_label = g_strdup((gchar *)net->label);
-    }
-
-    switch (net->aperture_state){
-    case GERBV_APERTURE_STATE_OFF:
-      break;
-    case GERBV_APERTURE_STATE_ON:
-      if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
-      g_message ("Exposure: Line draw\n");
-      g_message ("    Aperture used: D%d\n", net->aperture);
-      g_message ("    Aperture type: %s\n", ap_names[ap_type]);
-      g_message ("    Start location: (%g, %g)\n", net->start_x, net->start_y);
-      g_message ("    Stop location: (%g, %g)\n", net->stop_x, net->stop_y);
-      g_message ("    Layer name: %s\n", layer_name);
-      g_message ("    Net label: %s\n", net_label);
-      g_message ("    In file: %s\n", mainProject->file[index]->name);
-      break;
-    case GERBV_APERTURE_STATE_FLASH:
-      if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
-      g_message ("Exposure: Flash\n");
-      g_message ("    Aperture used: D%d\n", net->aperture);
-      g_message ("    Aperture type: %s\n", ap_names[ap_type]);
-      g_message ("    Location: (%g, %g)\n", net->stop_x, net->stop_y);
-      g_message ("    Layer name: %s\n", layer_name);
-      g_message ("    Net label: %s\n", net_label);
-      g_message ("    In file: %s\n", mainProject->file[index]->name);
-      break;
-    }
-    g_free (net_label);
-    g_free (layer_name);
-  }
-  /* Use separator for different report requests */
-  g_message ("---------------------------------------\n");
+		if (net->label == NULL) {
+			net_label = g_strdup("<unlabeled net>");
+		} else {
+			net_label = g_strdup((gchar *)net->label);
+		}
+		if (net->interpolation == GERBV_INTERPOLATION_PAREA_START) {
+			g_message ("Object type: Polygon\n");
+		}
+		else {
+			switch (net->aperture_state){
+				case GERBV_APERTURE_STATE_OFF:
+					break;
+				case GERBV_APERTURE_STATE_ON:
+					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
+					g_message ("Exposure: On\n");
+					g_message ("    Aperture used: D%d\n", net->aperture);
+					if (validAperture) {
+						g_message ("    Aperture used: D%d\n", net->aperture);
+						g_message ("    Aperture type: %s\n", ap_names[ap_type]);
+					}
+					g_message ("    Start location: (%g, %g)\n", net->start_x, net->start_y);
+					g_message ("    Stop location: (%g, %g)\n", net->stop_x, net->stop_y);
+					g_message ("    Layer name: %s\n", layer_name);
+					g_message ("    Net label: %s\n", net_label);
+					g_message ("    In file: %s\n", mainProject->file[index]->name);
+					break;
+				case GERBV_APERTURE_STATE_FLASH:
+					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
+					g_message ("Exposure: Flash\n");
+					if (validAperture) {
+						g_message ("    Aperture used: D%d\n", net->aperture);
+						g_message ("    Aperture type: %s\n", ap_names[ap_type]);
+					}
+					g_message ("    Location: (%g, %g)\n", net->stop_x, net->stop_y);
+					g_message ("    Layer name: %s\n", layer_name);
+					g_message ("    Net label: %s\n", net_label);
+					g_message ("    In file: %s\n", mainProject->file[index]->name);
+					break;
+			}
+		}
+		g_free (net_label);
+		g_free (layer_name);
+	}
+	/* Use separator for different report requests */
+	g_message ("---------------------------------------\n");
 #endif
 }
 
@@ -2073,11 +2090,11 @@ callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_dat
 void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
-  /* for testing, just hard code in some translations here */
-  gerbv_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
-  callbacks_update_layer_tree();
-  render_clear_selection_buffer ();
-  render_refresh_rendered_image_on_screen ();
+	/* for testing, just hard code in some translations here */
+	gerbv_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
+	callbacks_update_layer_tree();
+	render_clear_selection_buffer ();
+	render_refresh_rendered_image_on_screen ();
 #endif
 }
 
@@ -2096,35 +2113,35 @@ callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
-  if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
-    interface_show_alert_dialog("Nothing selected",
-                                NULL,
-                                FALSE,
-                                NULL);
-    return;
-  }
+	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
+		interface_show_alert_dialog("Nothing selected",
+		                        NULL,
+		                        FALSE,
+		                        NULL);
+		return;
+	}
 
-  gint index=callbacks_get_selected_row_index();
-  if (index < 0)
-    return;
+	gint index=callbacks_get_selected_row_index();
+	if (index < 0)
+		return;
 
-  if (mainProject->check_before_delete == TRUE) {
-    if (!interface_get_alert_dialog_response(
-					     "The selected objects will be permanently deleted",
-					     "Do you want to proceed?",
-					     TRUE,
-					     &(mainProject->check_before_delete)))
-      return;
-  }
+	if (mainProject->check_before_delete == TRUE) {
+		if (!interface_get_alert_dialog_response(
+						     "The selected objects will be permanently deleted",
+						     "Do you want to proceed?",
+						     TRUE,
+						     &(mainProject->check_before_delete)))
+		return;
+	}
 
-  gerbv_image_delete_selected_nets (mainProject->file[index]->image,
+	gerbv_image_delete_selected_nets (mainProject->file[index]->image,
 				    screen.selectionInfo.selectedNodeArray); 
-  render_refresh_rendered_image_on_screen ();
-  /* Set layer_dirty flag to TRUE */
-  mainProject->file[index]->layer_dirty = TRUE;
-  callbacks_update_layer_tree();
+	render_refresh_rendered_image_on_screen ();
+	/* Set layer_dirty flag to TRUE */
+	mainProject->file[index]->layer_dirty = TRUE;
+	callbacks_update_layer_tree();
 
-  render_clear_selection_buffer ();
+	render_clear_selection_buffer ();
 #endif
 }
 

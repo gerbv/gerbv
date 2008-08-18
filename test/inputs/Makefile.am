@@ -18,6 +18,7 @@ EXTRA_DIST= \
 	test-layer-rotation-1.gbx \
 	test-layer-scale-factor-1.gbx \
 	test-layer-step-and_repeat-1.gbx \
+	test-layer-step-and_repeat-2.gbx \
 	test-include-file-1.gbx \
 	include-file-1.gbx \
 	test-aperture-circle-1.gbx \

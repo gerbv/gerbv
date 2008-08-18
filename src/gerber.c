@@ -308,7 +308,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		else
 		    calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
 		break;
-	    case GERBV_INTERPOLATION_CCW :
+	    case GERBV_INTERPOLATION_CCW_CIRCULAR :
 		curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
 		if (state->mq_on)
 		    calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
@@ -374,7 +374,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	     * should be the same as the start point, creating no line 
 	     */
 	    if (((state->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR) || 
-		 (state->interpolation == GERBV_INTERPOLATION_CCW)) && 
+		 (state->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR)) && 
 		((state->delta_cp_x == 0.0) && (state->delta_cp_y == 0.0)))
 		curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    
@@ -907,7 +907,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerbv_image_t *image)
 	stats->G2++;
 	break;
     case 3:  /* Counter Clockwise Linear Interpolation */
-	state->interpolation = GERBV_INTERPOLATION_CCW;
+	state->interpolation = GERBV_INTERPOLATION_CCW_CIRCULAR;
 	stats->G3++;
 	break;
     case 4:  /* Ignore Data Block */

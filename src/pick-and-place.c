@@ -765,8 +765,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
-	    curr_net->cirseg = (gerbv_cirseg_t *)g_malloc(sizeof(gerbv_cirseg_t));
-	    memset((void *)curr_net->cirseg, 0, sizeof(gerbv_cirseg_t));
+	    curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
 	    curr_net->cirseg->angle1 = 0.0;
 	    curr_net->cirseg->angle2 = 360.0;
 	    curr_net->cirseg->cp_x = partData.mid_x;

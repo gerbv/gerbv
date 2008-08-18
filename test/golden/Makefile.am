@@ -73,6 +73,7 @@ EXTRA_DIST= \
 	test-layer-rotation-1.png \
 	test-layer-scale-factor-1.png \
 	test-layer-step-and_repeat-1.png \
+	test-layer-step-and_repeat-2.png \
 	test-include-file-1.png \
 	test-aperture-circle-1.png \
 	test-aperture-obround-flash-1.png \

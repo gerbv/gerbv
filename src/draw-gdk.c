@@ -703,6 +703,88 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
     return;
 } /* gerbv_gdk_draw_arc */
 
+void
+draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, double sr_x, double sr_y,
+			double unit_scale,  double trans_x, double trans_y, GdkGC *gc, GdkGC *pgc,
+			GdkPixmap **pixmap) {
+	gerbv_net_t *currentNet;
+	gint x1,x2,y1,y2,cp_x=0,cp_y=0,cir_width=0,cir_height=0;
+	GdkPoint *points = NULL;
+	int pointArraySize=0;
+	int curr_point_idx = 0;
+	int steps,i;
+	double angleDiff;
+
+	/* save the first net in the polygon as the "ID" net pointer
+	in case we are saving this net to the selection array */
+	curr_point_idx = 0;
+	pointArraySize = 0;
+
+	for (currentNet = oldNet->next; currentNet!=NULL; currentNet = currentNet->next){
+		x1 = (int)round((image->info->offsetA + currentNet->start_x + sr_x) * unit_scale + trans_x);
+		y1 = (int)round((-image->info->offsetB - currentNet->start_y - sr_y) * unit_scale + trans_y);
+		x2 = (int)round((image->info->offsetA + currentNet->stop_x + sr_x) * unit_scale + trans_x);
+		y2 = (int)round((-image->info->offsetB - currentNet->stop_y - sr_y) * unit_scale + trans_y);
+
+		/* 
+		* If circle segment, scale and translate that one too
+		*/
+		if (currentNet->cirseg) {
+			cir_width = (int)round(currentNet->cirseg->width * unit_scale);
+			cir_height = (int)round(currentNet->cirseg->height * unit_scale);
+			cp_x = (int)round((image->info->offsetA + currentNet->cirseg->cp_x) *
+			unit_scale + trans_x);
+			cp_y = (int)round((image->info->offsetB - currentNet->cirseg->cp_y) *
+			unit_scale + trans_y);
+		}
+
+		switch (currentNet->interpolation) {
+			case GERBV_INTERPOLATION_x10 :
+			case GERBV_INTERPOLATION_LINEARx01 :
+			case GERBV_INTERPOLATION_LINEARx001 :
+			case GERBV_INTERPOLATION_LINEARx1 :
+				if (pointArraySize < (curr_point_idx + 1)) {
+					points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + 1));
+					pointArraySize = (curr_point_idx + 1);
+				}
+				points[curr_point_idx].x = x2;
+				points[curr_point_idx].y = y2;
+				curr_point_idx++;
+				break;
+			case GERBV_INTERPOLATION_CW_CIRCULAR :
+			case GERBV_INTERPOLATION_CCW_CIRCULAR :
+				/* we need to chop up the arc into small lines for rendering
+				with GDK */
+				angleDiff = currentNet->cirseg->angle2 - currentNet->cirseg->angle1;
+				steps = (int) abs(angleDiff);
+				if (pointArraySize < (curr_point_idx + steps)) {
+					points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + steps));
+					pointArraySize = (curr_point_idx + steps);
+				}
+				for (i=0; i<steps; i++){
+					points[curr_point_idx].x = cp_x + cir_width / 2.0 * cos ((currentNet->cirseg->angle1 +
+									      (angleDiff * i) / steps)*M_PI/180);
+					points[curr_point_idx].y = cp_y - cir_width / 2.0 * sin ((currentNet->cirseg->angle1 +
+									      (angleDiff * i) / steps)*M_PI/180);
+					curr_point_idx++;
+				}
+				break;
+			case GERBV_INTERPOLATION_PAREA_END :
+				gdk_gc_copy(pgc, gc); 
+				gdk_gc_set_line_attributes(pgc, 1, 
+				       GDK_LINE_SOLID, 
+				       GDK_CAP_PROJECTING, 
+				       GDK_JOIN_MITER);
+				gdk_draw_polygon(*pixmap, pgc, 1, points, curr_point_idx);
+				g_free(points);
+				points = NULL;
+				return;
+			default:
+				break;
+		}
+	}
+	return;
+}
 
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
@@ -715,18 +797,14 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
     GdkGC *gc = gdk_gc_new(*pixmap);
     GdkGC *pgc = gdk_gc_new(*pixmap);
     GdkGCValues gc_values;
-    struct gerbv_net *net, *polygonStartNet=NULL;
+    struct gerbv_net *net;
     gint x1, y1, x2, y2;
     int p1, p2, p3;
     int cir_width = 0, cir_height = 0;
     int cp_x = 0, cp_y = 0;
-    GdkPoint *points = NULL;
-    int curr_point_idx = 0;
-    int in_parea_fill = 0;
     double unit_scale;
     GdkColor transparent, opaque;
-    int steps,i,pointArraySize=0;
-    double angleDiff;
+
 
     if (image == NULL || image->netlist == NULL) {
 	/*
@@ -755,7 +833,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	gdk_gc_set_foreground(gc, &transparent);
     }
 
-    for (net = image->netlist->next ; net != NULL; net = net->next) {
+    for (net = image->netlist->next ; net != NULL; net = gerbv_image_return_next_renderable_object(net)) {
       int repeat_X=1, repeat_Y=1;
       double repeat_dist_X=0.0, repeat_dist_Y=0.0;
       int repeat_i, repeat_j;
@@ -769,23 +847,17 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
 	
 	if (drawMode == DRAW_SELECTIONS) {
-		/* this flag makes sure we don't draw any unintentional polygons...
-		   if we've successfully entered a polygon (the first net matches, and
-		   we don't want to check the nets inside the polygon) then
-		   polygonStartNet will be set */
-		if (!polygonStartNet) {
-			int i;
-			gboolean foundNet = FALSE;
-			
-			for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
-				gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-					gerbv_selection_item_t, i);
-				if (sItem.net == net)
-					foundNet = TRUE;
-			}
-			if (!foundNet)
-				continue;
+		int i;
+		gboolean foundNet = FALSE;
+		
+		for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
+			gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+				gerbv_selection_item_t, i);
+			if (sItem.net == net)
+				foundNet = TRUE;
 		}
+		if (!foundNet)
+			continue;
 	}
 	
       for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
@@ -834,69 +906,13 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	 */
 	switch (net->interpolation) {
 	case GERBV_INTERPOLATION_PAREA_START :
-	    points = NULL;
-	    /* save the first net in the polygon as the "ID" net pointer
-	       in case we are saving this net to the selection array */
-	    polygonStartNet = net;
-	    curr_point_idx = 0;
-	    pointArraySize = 0;
-	    in_parea_fill = 1;
-	    continue;
-	case GERBV_INTERPOLATION_PAREA_END :
-	    gdk_gc_copy(pgc, gc); 
-	    gdk_gc_set_line_attributes(pgc, 1, 
-				       GDK_LINE_SOLID, 
-				       GDK_CAP_PROJECTING, 
-				       GDK_JOIN_MITER);
-	    gdk_draw_polygon(*pixmap, pgc, 1, points, curr_point_idx);
-	    g_free(points);
-	    points = NULL;
-	    in_parea_fill = 0;
-	    polygonStartNet = NULL;
+	    draw_gdk_render_polygon_object (net,image,sr_x,sr_y,unit_scale,trans_x,trans_y,gc,pgc,pixmap);
 	    continue;
 	/* make sure we completely skip over any deleted nodes */
 	case GERBV_INTERPOLATION_DELETED:
 	    continue;
 	default :
 	    break;
-	}
-
-	if (in_parea_fill) {
-	    switch (net->interpolation) {
-	    case GERBV_INTERPOLATION_x10 :
-	    case GERBV_INTERPOLATION_LINEARx01 :
-	    case GERBV_INTERPOLATION_LINEARx001 :
-	    case GERBV_INTERPOLATION_LINEARx1 :
-		if (pointArraySize < (curr_point_idx + 1)) {
-		    points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + 1));
-		    pointArraySize = (curr_point_idx + 1);
-		}
-		points[curr_point_idx].x = x2;
-		points[curr_point_idx].y = y2;
-		curr_point_idx++;
-		break;
-	    case GERBV_INTERPOLATION_CW_CIRCULAR :
-	    case GERBV_INTERPOLATION_CCW :
-		/* we need to chop up the arc into small lines for rendering
-		   with GDK */
-		angleDiff = net->cirseg->angle2 - net->cirseg->angle1;
-		steps = (int) abs(angleDiff);
-		if (pointArraySize < (curr_point_idx + steps)) {
-		    points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + steps));
-		    pointArraySize = (curr_point_idx + steps);
-		}
-		for (i=0; i<steps; i++){
-		    points[curr_point_idx].x = cp_x + cir_width / 2.0 * cos ((net->cirseg->angle1 +
-									      (angleDiff * i) / steps)*M_PI/180);
-		    points[curr_point_idx].y = cp_y - cir_width / 2.0 * sin ((net->cirseg->angle1 +
-									      (angleDiff * i) / steps)*M_PI/180);
-		    curr_point_idx++;
-		}
-		break;
-	    default:
-		break;
-	    }
-	    continue;
 	}
 
 	/*
@@ -964,7 +980,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		}
  		break;
 	    case GERBV_INTERPOLATION_CW_CIRCULAR :
-	    case GERBV_INTERPOLATION_CCW :
+	    case GERBV_INTERPOLATION_CCW_CIRCULAR :
 		gerbv_gdk_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
 				   net->cirseg->angle1, net->cirseg->angle2);
 		break;

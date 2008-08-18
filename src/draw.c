@@ -410,6 +410,68 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *stat
 	}
 }
 
+void
+draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble sr_x, gdouble sr_y,
+		gerbv_image_t *image, gchar drawMode, gerbv_selection_info_t *selectionInfo ){
+	gerbv_net_t *currentNet, *polygonStartNet;
+	int haveDrawnFirstFillPoint = 0;
+	gdouble x1,y1,x2,y2,cp_x=0,cp_y=0;
+	
+	haveDrawnFirstFillPoint = FALSE;
+	/* save the first net in the polygon as the "ID" net pointer
+	   in case we are saving this net to the selection array */
+	polygonStartNet = oldNet;
+	cairo_new_path(cairoTarget);
+		
+	for (currentNet = oldNet->next; currentNet!=NULL; currentNet = currentNet->next){
+		x1 = currentNet->start_x + sr_x;
+		y1 = currentNet->start_y + sr_y;
+		x2 = currentNet->stop_x + sr_x;
+		y2 = currentNet->stop_y + sr_y;
+           
+		/* translate circular x,y data as well */
+		if (currentNet->cirseg) {
+			cp_x = currentNet->cirseg->cp_x + sr_x;
+			cp_y = currentNet->cirseg->cp_y + sr_y;
+		}
+		if (!haveDrawnFirstFillPoint) {
+			cairo_move_to (cairoTarget, x2,y2);
+			haveDrawnFirstFillPoint=TRUE;
+			continue;
+		}
+		switch (currentNet->interpolation) {
+			case GERBV_INTERPOLATION_x10 :
+			case GERBV_INTERPOLATION_LINEARx01 :
+			case GERBV_INTERPOLATION_LINEARx001 :
+			case GERBV_INTERPOLATION_LINEARx1 :
+				cairo_line_to (cairoTarget, x2,y2);
+				break;
+			case GERBV_INTERPOLATION_CW_CIRCULAR :
+			case GERBV_INTERPOLATION_CCW_CIRCULAR :
+				if (currentNet->cirseg->angle2 > currentNet->cirseg->angle1) {
+					cairo_arc (cairoTarget, cp_x, cp_y, currentNet->cirseg->width/2.0,
+						currentNet->cirseg->angle1 * M_PI/180,currentNet->cirseg->angle2 * M_PI/180);
+				}
+				else {
+					cairo_arc_negative (cairoTarget, cp_x, cp_y, currentNet->cirseg->width/2.0,
+						currentNet->cirseg->angle1 * M_PI/180,currentNet->cirseg->angle2 * M_PI/180);
+				}
+				break;
+			case GERBV_INTERPOLATION_PAREA_END :
+				cairo_close_path(cairoTarget);
+				/* turn off anti-aliasing for polygons, since it shows seams
+				   with adjacent polygons (usually on PCB ground planes) */
+				cairo_antialias_t oldAlias = cairo_get_antialias (cairoTarget);
+				cairo_set_antialias (cairoTarget, CAIRO_ANTIALIAS_NONE);
+				draw_fill (cairoTarget, drawMode, selectionInfo, image, polygonStartNet);
+				cairo_set_antialias (cairoTarget, oldAlias);
+				return;
+			default :
+				break;
+		}
+	}
+}
+
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					gboolean invertLayer, gdouble pixelWidth,
@@ -417,7 +479,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 {
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
-	int in_parea_fill = 0,haveDrawnFirstFillPoint = 0;
 	gdouble p1, p2, p3, p4, p5, dx, dy;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
@@ -462,7 +523,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
     oldLayer = image->layers;
     oldState = image->states;
 
-    for (net = image->netlist->next ; net != NULL; net = net->next) {
+    for (net = image->netlist->next ; net != NULL; net = gerbv_image_return_next_renderable_object(net)) {
 
 	/* check if this is a new layer */
 	if (net->layer != oldLayer){
@@ -573,58 +634,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		*/
 		switch (net->interpolation) {
 			case GERBV_INTERPOLATION_PAREA_START :
-				in_parea_fill = 1;
-				haveDrawnFirstFillPoint = FALSE;
-				/* save the first net in the polygon as the "ID" net pointer
-				   in case we are saving this net to the selection array */
-				polygonStartNet = net;
-				cairo_new_path(cairoTarget);
+				draw_render_polygon_object (net, cairoTarget, sr_x, sr_y, image,
+					drawMode, selectionInfo);
 				continue;
-			case GERBV_INTERPOLATION_PAREA_END :
-				cairo_close_path(cairoTarget);
-				/* turn off anti-aliasing for polygons, since it shows seams
-				   with adjacent polygons (usually on PCB ground planes) */
-				cairo_antialias_t oldAlias = cairo_get_antialias (cairoTarget);
-				cairo_set_antialias (cairoTarget, CAIRO_ANTIALIAS_NONE);
-				draw_fill (cairoTarget, drawMode, selectionInfo, image, polygonStartNet);
-				cairo_set_antialias (cairoTarget, oldAlias);
-				in_parea_fill = 0;
-				polygonStartNet = NULL;
-				continue;
-			/* make sure we completely skip over any deleted nodes */
 			case GERBV_INTERPOLATION_DELETED:
 				continue;
 			default :
 				break;
-		}
-		if (in_parea_fill) {
-			if (!haveDrawnFirstFillPoint) {
-				cairo_move_to (cairoTarget, x2,y2);
-				haveDrawnFirstFillPoint=TRUE;
-				continue;
-			}
-			switch (net->interpolation) {
-				case GERBV_INTERPOLATION_x10 :
-				case GERBV_INTERPOLATION_LINEARx01 :
-				case GERBV_INTERPOLATION_LINEARx001 :
-				case GERBV_INTERPOLATION_LINEARx1 :
-					cairo_line_to (cairoTarget, x2,y2);
-					break;
-				case GERBV_INTERPOLATION_CW_CIRCULAR :
-				case GERBV_INTERPOLATION_CCW :
-					if (net->cirseg->angle2 > net->cirseg->angle1) {
-						cairo_arc (cairoTarget, cp_x, cp_y, net->cirseg->width/2.0,
-							net->cirseg->angle1 * M_PI/180,net->cirseg->angle2 * M_PI/180);
-					}
-					else {
-						cairo_arc_negative (cairoTarget, cp_x, cp_y, net->cirseg->width/2.0,
-							net->cirseg->angle1 * M_PI/180,net->cirseg->angle2 * M_PI/180);
-					}
-					break;
-				default:
-					break;
-			}
-			continue;
 		}
 	
 		/*
@@ -691,7 +707,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						}
 						break;
 					case GERBV_INTERPOLATION_CW_CIRCULAR :
-					case GERBV_INTERPOLATION_CCW :
+					case GERBV_INTERPOLATION_CCW_CIRCULAR :
 						/* cairo doesn't have a function to draw oval arcs, so we must
 						 * draw an arc and stretch it by scaling different x and y values
 						 */

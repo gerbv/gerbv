@@ -254,7 +254,7 @@ gerbv_image_interpolation(gerbv_interpolation_t interpolation)
     case GERBV_INTERPOLATION_CW_CIRCULAR:
 	printf("CW circular");
 	break;
-    case GERBV_INTERPOLATION_CCW:
+    case GERBV_INTERPOLATION_CCW_CIRCULAR:
 	printf("CCW circular");
 	break;
     case  GERBV_INTERPOLATION_PAREA_START:
@@ -721,7 +721,7 @@ gerbv_image_create_arc_object (gerbv_image_t *image, gdouble centerX, gdouble ce
 	
 	/* draw the arc */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
-	currentNet->interpolation = GERBV_INTERPOLATION_CCW;
+	currentNet->interpolation = GERBV_INTERPOLATION_CCW_CIRCULAR;
 	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->aperture = apertureIndex;
 	currentNet->start_x = centerX + (cos(startAngle*M_PI/180) * radius);
@@ -903,3 +903,20 @@ gerbv_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
 	return TRUE;
 }
 
+gerbv_net_t *
+gerbv_image_return_next_renderable_object (gerbv_net_t *oldNet) {
+	gerbv_net_t *currentNet=oldNet;
+	
+	if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_START) {
+		/* if it's a polygon, step to the next non-polygon net */
+		for (currentNet = currentNet->next; currentNet; currentNet = currentNet->next){
+			if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_END) {
+				return currentNet->next;
+			}
+		}
+		return NULL;
+	}
+	else {
+		return currentNet->next;
+	}
+}

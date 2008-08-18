@@ -301,7 +301,7 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
 					fprintf(fd, "D03*\n");
 				break;
 			case GERBV_INTERPOLATION_CW_CIRCULAR :
-			case GERBV_INTERPOLATION_CCW :
+			case GERBV_INTERPOLATION_CCW_CIRCULAR :
 				/* see if we need to write an "aperture off" line to get
 				   the pen to the right start point */
 				if ((!insidePolygon) && (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)) {
