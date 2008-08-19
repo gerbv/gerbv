@@ -1174,7 +1174,7 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
   gboolean layers_dirty = FALSE;
   gint idx;
 
-  for (idx = 0; idx<=mainProject->max_files; idx++) {
+  for (idx = 0; idx<=mainProject->last_loaded; idx++) {
     if (mainProject->file[idx] == NULL) break;
     layers_dirty = layers_dirty || mainProject->file[idx]->layer_dirty;
   }

@@ -82,6 +82,16 @@ static void
 render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo );
 */
 
+gboolean
+render_check_scale_factor_limits (void) {
+	if ((screenRenderInfo.scaleFactorX > 5000)||(screenRenderInfo.scaleFactorY > 5000)) {
+		screenRenderInfo.scaleFactorX = 5000;
+		screenRenderInfo.scaleFactorY = 5000;
+		return FALSE;
+	}
+	return TRUE;
+}
+
 /* ------------------------------------------------------ */
 void
 render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY) {
@@ -113,6 +123,7 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 		case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
 			screenRenderInfo.scaleFactorX += screenRenderInfo.scaleFactorX/3;
 			screenRenderInfo.scaleFactorY += screenRenderInfo.scaleFactorY/3;
+			(void) render_check_scale_factor_limits ();
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
 				screenRenderInfo.scaleFactorX)) / 2.0;
 			screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
@@ -135,6 +146,7 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 		case ZOOM_SET : /*explicit scale set by user */
 			screenRenderInfo.scaleFactorX = scaleFactor;
 			screenRenderInfo.scaleFactorY = scaleFactor;
+			(void) render_check_scale_factor_limits ();
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
 				screenRenderInfo.scaleFactorX)) / 2.0;
 			screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
@@ -150,7 +162,6 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 		screenRenderInfo.lowerLeftY = mouseCoordinateY - (screenRenderInfo.displayHeight - mouseY) /
 			screenRenderInfo.scaleFactorY;
 	}
-
 	render_refresh_rendered_image_on_screen();
 	return;
 }
@@ -193,6 +204,7 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 		screenRenderInfo.scaleFactorX *= MIN(((double)screenRenderInfo.displayWidth / dx),
 							((double)screenRenderInfo.displayHeight / dy));
 		screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
+		(void) render_check_scale_factor_limits ();
 		screenRenderInfo.lowerLeftX = centerPointX - (screenRenderInfo.displayWidth /
 					2.0 / screenRenderInfo.scaleFactorX);
 		screenRenderInfo.lowerLeftY = centerPointY - (screenRenderInfo.displayHeight /

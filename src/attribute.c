@@ -89,7 +89,6 @@ set_flag_cb (GtkToggleButton * button, gboolean * flag)
    */
   if (auto_uncheck_widget == GTK_WIDGET (button)) {
     f = *flag ? 0 : 1;
-    printf ("flag = %d, f = %d\n", *flag, f);
     for (i = 1 ; i < n_widgets ; i++) {
       gtk_widget_set_sensitive (all_widgets[i], f);
     }
