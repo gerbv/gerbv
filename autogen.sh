@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 
+# a leftover cache from a different version will cause no end of headaches
+rm -fr autom4te.cache
+
 ############################################################################
 #
 # libtoolize (libtool)
