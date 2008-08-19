@@ -110,18 +110,27 @@ glib
 gtk+
 libiconv
 pango
+proxy-libintl
 
 ----------------------------------------
 
 EOF
 
-cat > ${gtk_win32_runtime}/LICENSE-gpl << EOF
-The following packages are covered by the GNU General Public License (GPL).
+cat > ${gtk_win32_runtime}/LICENSE-gpl2 << EOF
+The following packages are covered by the GNU General Public License (GPL) v2.
 
 freetype
-gettext
 libiconv
 pkg-config
+
+----------------------------------------
+
+EOF
+
+cat > ${gtk_win32_runtime}/LICENSE-gpl3 << EOF
+The following packages are covered by the GNU General Public License (GPL) v3.
+
+gettext
 
 ----------------------------------------
 
@@ -130,9 +139,9 @@ EOF
 
 # LGPL
 #
-# atk-1.20.0.tar.bz2
-# atk-1.20.0.zip
-# atk-dev-1.20.0.zip
+# atk-1.22.0.tar.bz2
+# atk-1.22.0.zip
+# atk-dev-1.22.0.zip
 
 bzcat ${gtk_win32_downloads}/atk-*.tar.bz2 | tar -xf -
 cat atk-*/COPYING >> ${gtk_win32_runtime}/LICENSE-lgpl
@@ -140,9 +149,13 @@ rm -fr atk-*
 
 # dual LGPL and MPL (Mozilla public license)
 #
-#cairo-1.4.10.tar.gz
-#cairo-1.4.10.zip
-#cairo-dev-1.4.10.zip
+#cairo-1.6.4.tar.gz
+#cairo-1.6.4.zip
+#cairo-dev-1.6.4.zip
+
+# no copyright assigned and placed in public domain
+#
+# dirent.zip
 
 # sort of BSD with advertising like
 #expat-2.0.0.zip
@@ -160,7 +173,7 @@ cat fontconfig*/COPYING >> ${gtk_win32_runtime}/LICENSE-fontconfig
 rm -fr fontconfig-*
 
 #
-# Dual, "you choose" license.  We pick GPL
+# Dual, "you choose" license.  We pick GPL v2.
 #freetype-2.3.4.tar.bz2
 #freetype-2.3.4.zip
 #freetype-dev-2.3.4.zip
@@ -168,26 +181,27 @@ rm -fr fontconfig-*
 #rm -fr freetype-*
 
 
-# GPL
+# GPL v3
 #
 #gettext-0.17.tar.gz
 #gettext-runtime-0.17.zip
 #gettext-runtime-dev-0.17.zip
 #gettext-tools-0.17.zip
 tar -zxvf ${gtk_win32_downloads}/gettext-*.tar.gz
-cat gettext-*/COPYING >> ${gtk_win32_runtime}/LICENSE-gpl
+cat gettext-*/COPYING >> ${gtk_win32_runtime}/LICENSE-gpl3
 rm -fr gettext-*
 
+
 # LGPL
-#glib-2.14.4.tar.bz2
-#glib-2.14.4.zip
-#glib-dev-2.14.4.zip
+#glib-2.16.5.tar.bz2
+#glib-2.16.5.zip
+#glib-dev-2.16.5.zip
 
 # LGPL
 #
-#gtk+-2.12.3.tar.bz2
-#gtk+-2.12.3.zip
-#gtk+-dev-2.12.3.zip
+#gtk+-2.12.11.tar.bz2
+#gtk+-2.12.11.zip
+#gtk+-dev-2.12.11.zip
 
 
 # jpeg license
@@ -207,8 +221,11 @@ rm -fr jpeg-6b
 #
 #libiconv-1.9.1.bin.woe32.zip
 #libiconv-1.9.1.tar.gz
+tar -zxvf ${gtk_win32_downloads}/libiconv-*.tar.gz
+cat libiconv-*/COPYING >> ${gtk_win32_runtime}/LICENSE-gpl2
+rm -fr libiconv-*
 
-
+#libpng-1.2.9.tar.gz
 #libpng-dev-1.2.9.zip
 #libpng-1.2.9.zip
 mkdir tmppng
@@ -224,27 +241,31 @@ rm -fr tmppng
 
 # LGPL
 #
-#pango-1.18.3.tar.bz2
-#pango-1.18.3.zip
-#pango-dev-1.18.3.zip
+#pango-1.20.5.tar.bz2
+#pango-1.20.5.zip
+#pango-dev-1.20.5.zip
 
 
 # GPL
 #
-#pkg-config-0.20.tar.gz
-#pkg-config-0.20.zip
+#pkg-config-0.23.tar.gz
+#pkg-config-0.23-2.zip
+
+# LGPL
+#
+# proxy-libintl-20080728.zip
 
 # BSD-like with advertising clause
 #
-#tiff-3.8.2-1-bin.zip
-#tiff-3.8.2-1-dep.zip
-#tiff-3.8.2-1-lib.zip
-#tiff-3.8.2-1-src.zip
+#tiff-3.8.2.tar.gz
+#libtiff-3.8.2.zip
+#libtiff-dev-3.8.2.zip
 tar -zxvf ${gtk_win32_downloads}/tiff-*.tar.gz
 echo "libtiff is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-tiff
 cat tiff-*/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-tiff
 rm -fr tiff-*
 
+# Not needed anymore
 #xpm-nox-4.0.3-20020617.zip
 #xpm-nox-dev-4.0.3-20020112.zip
 #tar -zxvf ${gtk_win32_downloads}/xpm-*.tar.gz
@@ -253,6 +274,7 @@ rm -fr tiff-*
 #rm -fr xpm-*
 
 #zlib123-dll.zip
+# the license had to be found on the zlib web site
 echo "zlib is covered by the following license and copyright" > ${gtk_win32_runtime}/LICENSE-zlib
 cat ${gtk_win32_downloads}/zlib_license.txt >> ${gtk_win32_runtime}/LICENSE-zlib
 
