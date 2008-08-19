@@ -1566,7 +1566,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.tool = POINTER;
 			screen.state = NORMAL;
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 "Click to select. Middle click and drag to pan.");
+				 "Click to select objects in the current layer. Middle click and drag to pan.");
 			break;
 		case PAN:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), TRUE);
@@ -2536,6 +2536,8 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 			if ((index >= 0) && 
 			    (mainProject->file[index]->isVisible)) {
 				gboolean eraseOldSelection = TRUE;
+				gint selectionLength;
+				
 				if ((event->state & GDK_SHIFT_MASK) ||
 				   (event->state & GDK_CONTROL_MASK)) {
 					eraseOldSelection = FALSE;
@@ -2546,6 +2548,23 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 				else
 					render_fill_selection_buffer_from_mouse_drag(event->x,event->y,
 						screen.start_x,screen.start_y,index,eraseOldSelection);
+				/* check if anything was selected */
+				selectionLength = screen.selectionInfo.selectedNodeArray->len;
+				if (selectionLength == 0) {
+					/* update status bar message to make sure the user knows
+					   about needing to select the layer */
+					snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+				 		"<b>No object selected. Objects can only be selected in the active layer.</b>");
+				}
+				else if (selectionLength == 1) {
+					snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+				 		"1 object is currently selected");
+				}
+				else {
+					snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+				 		"%d objects are currently selected",selectionLength);
+				}
+				callbacks_update_statusbar();
 			} else {
 			    render_clear_selection_buffer ();
 			    render_refresh_rendered_image_on_screen ();
@@ -2593,7 +2612,12 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 					callbacks_delete_objects_clicked (NULL, NULL);
 					break;
 				case GDK_Escape:
-					render_clear_selection_buffer ();
+					if (screen.tool == POINTER) {
+						snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+				 			"No objects are currently selected");
+				 		callbacks_update_statusbar();
+				 		render_clear_selection_buffer ();
+				 	}
 					break;
 #endif
 				default:
@@ -2657,7 +2681,7 @@ callbacks_update_statusbar(void)
 		gtk_label_set_text(GTK_LABEL(screen.win.statusMessageLeft), screen.statusbar.coordstr);
 	}
 	if ((screen.statusbar.diststr != NULL)&&(GTK_IS_LABEL(screen.win.statusMessageRight))) {
-		gtk_label_set_text(GTK_LABEL(screen.win.statusMessageRight), screen.statusbar.diststr);
+		gtk_label_set_markup(GTK_LABEL(screen.win.statusMessageRight), screen.statusbar.diststr);
 	}
 }
 

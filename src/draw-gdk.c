@@ -799,6 +799,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
     GdkGCValues gc_values;
     struct gerbv_net *net;
     gint x1, y1, x2, y2;
+    glong xlong1, ylong1, xlong2, ylong2;
     int p1, p2, p3;
     int cir_width = 0, cir_height = 0;
     int cp_x = 0, cp_y = 0;
@@ -867,17 +868,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	
       unit_scale = scale;
 
-	/*
-	 * Scale points with window scaling and translate them
-	 */
-	x1 = (int)round((image->info->offsetA + net->start_x + sr_x) * unit_scale +
-			trans_x);
-	y1 = (int)round((-image->info->offsetB - net->start_y - sr_y) * unit_scale +
-			trans_y);
-	x2 = (int)round((image->info->offsetA + net->stop_x + sr_x) * unit_scale +
-			trans_x);
-	y2 = (int)round((-image->info->offsetB - net->stop_y - sr_y) * unit_scale +
-			trans_y);
 
 	/* 
 	 * If circle segment, scale and translate that one too
@@ -915,6 +905,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	    break;
 	}
 
+
 	/*
 	 * If aperture state is off we allow use of undefined apertures.
 	 * This happens when gerber files starts, but hasn't decided on 
@@ -927,7 +918,47 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	  */
 	    continue;
 	}
+
+	/*
+	 * Scale points with window scaling and translate them
+	 */
+	 
+	xlong1 = (gulong)round((image->info->offsetA + net->start_x + sr_x) * unit_scale +
+			trans_x);
+	ylong1 = (gulong)round((-image->info->offsetB - net->start_y - sr_y) * unit_scale +
+			trans_y);
+	xlong2 = (gulong)round((image->info->offsetA + net->stop_x + sr_x) * unit_scale +
+			trans_x);
+	ylong2 = (gulong)round((-image->info->offsetB - net->stop_y - sr_y) * unit_scale +
+			trans_y);
 	
+	/* if the object is way outside our view window, just skip over it in order
+	   to eliminate some GDK clipping problems at high zoom levels */
+	if ((xlong1 < -10000) && (xlong2 < -10000))
+		continue;
+	if ((ylong1 < -10000) && (ylong2 < -10000))
+		continue;
+	if ((xlong1 > 10000) && (xlong2 > 10000))
+		continue;
+	if ((ylong1 > 10000) && (ylong2 > 10000))
+		continue;
+	
+	if (xlong1 > G_MAXINT) x1 = G_MAXINT;
+	else if (xlong1 < G_MININT) x1 = G_MININT;
+	else x1 = (int)xlong1;
+	
+	if (xlong2 > G_MAXINT) x2 = G_MAXINT;
+	else if (xlong2 < G_MININT) x2 = G_MININT;
+	else x2 = (int)xlong2;
+	
+	if (ylong1 > G_MAXINT) y1 = G_MAXINT;
+	else if (ylong1 < G_MININT) y1 = G_MININT;
+	else y1 = (int)ylong1;
+	
+	if (ylong2 > G_MAXINT) y2 = G_MAXINT;
+	else if (ylong2 < G_MININT) y2 = G_MININT;
+	else y2 = (int)ylong2;
+		
 	switch (net->aperture_state) {
 	case GERBV_APERTURE_STATE_ON :
 	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
