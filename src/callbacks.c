@@ -133,8 +133,8 @@ callbacks_new_activate                        (GtkMenuItem     *menuitem,
 {
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
-		       "Starting a new project will cause all currently open layers to be closed",
-		       "Do you want to proceed?",
+		       "Do you want to close any open layers and start a new project?",
+		       "Starting a new project will cause all currently open layers to be closed. Any unsaved changes will be lost.",
 		       FALSE,
 		       NULL))
 			return;
@@ -185,8 +185,8 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
-                        "Opening a project will cause all currently open layers to be closed",
-			"Do you want to proceed?",
+                       "Do you want to close any open layers and load an existing project?",
+		       "Loading a project will cause all currently open layers to be closed. Any unsaved changes will be lost.",
 			FALSE,
 			NULL))
 			return;
@@ -1181,8 +1181,8 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
 
   if (layers_dirty &&
       !interface_get_alert_dialog_response(
-            "Are you sure?",
-            "You have unsaved changes in your layers or project. Click OK to quit, or click CANCEL to go back and save your changes",
+            "Do you want to close all open layers and quit the program?",
+            "Quitting the program will cause any unsaved changes to be lost.",
 	    FALSE,
 	    NULL)) {
     return;
@@ -2047,8 +2047,22 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 					break;
 				case GERBV_APERTURE_STATE_ON:
 					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
-					g_message ("Exposure: On\n");
-					g_message ("    Aperture used: D%d\n", net->aperture);
+					switch (net->interpolation) {
+						case GERBV_INTERPOLATION_x10 :
+						case GERBV_INTERPOLATION_LINEARx01 :
+						case GERBV_INTERPOLATION_LINEARx001 :
+						case GERBV_INTERPOLATION_LINEARx1 :
+							g_message ("Object type: Line\n");
+							break;
+						case GERBV_INTERPOLATION_CW_CIRCULAR :
+						case GERBV_INTERPOLATION_CCW_CIRCULAR :
+							g_message ("Object type: Arc\n");
+							break;
+						default :
+							g_message ("Object type: Unknown\n");
+							break;
+					}
+					g_message ("    Exposure: On\n");
 					if (validAperture) {
 						g_message ("    Aperture used: D%d\n", net->aperture);
 						g_message ("    Aperture type: %s\n", ap_names[ap_type]);
@@ -2061,7 +2075,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 					break;
 				case GERBV_APERTURE_STATE_FLASH:
 					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
-					g_message ("Exposure: Flash\n");
+					g_message ("Object type: Flashed aperture\n");
 					if (validAperture) {
 						g_message ("    Aperture used: D%d\n", net->aperture);
 						g_message ("    Aperture type: %s\n", ap_names[ap_type]);
@@ -2114,7 +2128,7 @@ void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 #ifndef RENDER_USING_GDK
 	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
-		interface_show_alert_dialog("Nothing selected",
+		interface_show_alert_dialog("No object is currently selected",
 		                        NULL,
 		                        FALSE,
 		                        NULL);
@@ -2127,8 +2141,8 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 
 	if (mainProject->check_before_delete == TRUE) {
 		if (!interface_get_alert_dialog_response(
-						     "The selected objects will be permanently deleted",
-						     "Do you want to proceed?",
+						     "Do you want to permanently delete the selected objects?",
+						     "Gerbv currently has no undo function, so this action cannot be undone. This action will not change the saved file unless you save the file afterwards.",
 						     TRUE,
 						     &(mainProject->check_before_delete)))
 		return;
