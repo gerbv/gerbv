@@ -223,6 +223,9 @@ interface_create_gui (int req_width, int req_height)
 	GdkPixbuf *movepixbuf;
 	GtkWidget *moveimage;
 
+	GtkWidget *tempImage;
+	GtkWidget *tempMenuItem;
+	
 	GtkStockItem item;
 #ifndef RENDER_USING_GDK
 	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
@@ -381,9 +384,11 @@ interface_create_gui (int req_width, int req_height)
 	menuitem_edit_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_edit), menuitem_edit_menu);
 
-	delete_selected = gtk_menu_item_new_with_mnemonic (_("_Delete selected object(s)"));
+	delete_selected = gtk_image_menu_item_new_with_mnemonic (_("_Delete selected object(s)"));
 	gtk_tooltips_set_tip (tooltips, delete_selected, 
 			      "Delete selected objects", NULL);
+	tempImage = gtk_image_new_from_stock ("gtk-remove", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (delete_selected), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_edit_menu), delete_selected);
 
 
@@ -507,9 +512,11 @@ interface_create_gui (int req_width, int req_height)
 	gtk_box_pack_start (GTK_BOX (vbox1), toolbar_hbox, FALSE, FALSE, 0);
 
 	handlebox = gtk_handle_box_new ();
+	
 	gtk_box_pack_start (GTK_BOX (toolbar_hbox), handlebox, TRUE, TRUE, 0);
 
 	button_toolbar = gtk_toolbar_new ();
+	gtk_widget_set_size_request (button_toolbar, 500, -1);
 	gtk_container_add (GTK_CONTAINER (handlebox), button_toolbar);
 	gtk_toolbar_set_style (GTK_TOOLBAR (button_toolbar), GTK_TOOLBAR_ICONS);
 	tmp_toolbar_icon_size = gtk_toolbar_get_icon_size (GTK_TOOLBAR (button_toolbar));
@@ -1094,8 +1101,6 @@ interface_create_gui (int req_width, int req_height)
 	
 	/* Create right click popup menu for layer tree */
 	screen.win.layerTreePopupMenu = gtk_menu_new ();
-	GtkWidget *tempImage;
-	GtkWidget *tempMenuItem;
 	tempMenuItem = gtk_image_menu_item_new_with_label ("Invert layer color");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.layerTreePopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Invert the display polarity of the layer", NULL);
@@ -1161,6 +1166,8 @@ interface_create_gui (int req_width, int req_height)
 	tempMenuItem = gtk_image_menu_item_new_with_label ("Display object properties");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Examine the properties of the selected object", NULL);
+	tempImage = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (tempMenuItem), tempImage);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_display_object_properties_clicked), NULL);
 	                  
@@ -1184,9 +1191,11 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_reduce_object_area_clicked), NULL);
 	*/
                         
-	tempMenuItem = gtk_image_menu_item_new_with_label ("Delete selected object(s)");
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Delete selected objects");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Delete the selected object(s)",NULL);
+	tempImage = gtk_image_new_from_stock ("gtk-remove", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (tempMenuItem), tempImage);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_delete_objects_clicked), NULL);
 
