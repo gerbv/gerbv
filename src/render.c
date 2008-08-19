@@ -310,9 +310,9 @@ render_draw_measure_distance(void)
 #if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
 	memset(&values, 0, sizeof(values));
 	values.function = GDK_XOR;
-	if (!screen.dist_measure_color.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.dist_measure_color, FALSE, TRUE);
-	values.foreground = screen.dist_measure_color;
+	if (!screen.zoom_outline_color.pixel)
+	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
+	values.foreground = screen.zoom_outline_color;
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
@@ -350,7 +350,7 @@ void render_selection_layer (void){
 	if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
 		cr= cairo_create(screen.selectionRenderData);
 		gerbv_render_cairo_set_scale_and_translation(cr, &screenRenderInfo);
-		cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1);
+		cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.85);
 		/* for now, assume everything in the selection buffer is from one image */
 		gerbv_image_t *matchImage;
 		int j;
@@ -573,25 +573,23 @@ void render_project_to_cairo_target (cairo_t *cr) {
 gerbv_stats_t *
 generate_gerber_analysis(void)
 {
-    int i;
-    gerbv_stats_t *stats;
-    gerbv_stats_t *instats;
+	int i;
+	gerbv_stats_t *stats;
+	gerbv_stats_t *instats;
 
-    /* Create new stats structure to hold report for whole project 
-     * (i.e. all layers together) */
-    stats = gerbv_stats_new();
+	/* Create new stats structure to hold report for whole project 
+	* (i.e. all layers together) */
+	stats = gerbv_stats_new();
 
-    /* Loop through open layers and compile statistics by accumulating reports from each layer */
-    for (i = 0; i <= mainProject->max_files-1; i++) {
-	if (mainProject->file[i] && 
-	    mainProject->file[i]->isVisible &&
-	    (mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
-	    instats = mainProject->file[i]->image->gerbv_stats;
-	    gerbv_stats_add_layer(stats, instats, i+1);
+	/* Loop through open layers and compile statistics by accumulating reports from each layer */
+	for (i = 0; i <= mainProject->max_files-1; i++) {
+		if (mainProject->file[i] && mainProject->file[i]->isVisible &&
+				(mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
+			instats = mainProject->file[i]->image->gerbv_stats;
+			gerbv_stats_add_layer(stats, instats, i+1);
+		}
 	}
-    }
-    
-    return stats;
+	return stats;
 }
 
 
@@ -602,24 +600,23 @@ generate_gerber_analysis(void)
 gerbv_drill_stats_t *
 generate_drill_analysis(void)
 {
-    int i;
-    gerbv_drill_stats_t *stats;
-    gerbv_drill_stats_t *instats;
+	int i;
+	gerbv_drill_stats_t *stats;
+	gerbv_drill_stats_t *instats;
 
-    stats = gerbv_drill_stats_new();
+	stats = gerbv_drill_stats_new();
 
-    /* Loop through open layers and compile statistics by accumulating reports from each layer */
-    for(i = mainProject->max_files-1; i >= 0; i--) {
-	if (mainProject->file[i] && 
-	    mainProject->file[i]->isVisible &&
-	    (mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {
-	    instats = mainProject->file[i]->image->drill_stats;
-	    /* add this batch of stats.  Send the layer 
-	     * index for error reporting */
-	    gerbv_drill_stats_add_layer(stats, instats, i+1);
+	/* Loop through open layers and compile statistics by accumulating reports from each layer */
+	for(i = mainProject->max_files-1; i >= 0; i--) {
+		if (mainProject->file[i] && 
+				mainProject->file[i]->isVisible &&
+				(mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {
+			instats = mainProject->file[i]->image->drill_stats;
+			/* add this batch of stats.  Send the layer 
+			* index for error reporting */
+			gerbv_drill_stats_add_layer(stats, instats, i+1);
+		}
 	}
-    }
-    
-    return stats;
+	return stats;
 }
 

@@ -1566,7 +1566,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.tool = POINTER;
 			screen.state = NORMAL;
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 "Click to select. Right click and drag to zoom.");
+				 "Click to select. Middle click and drag to pan.");
 			break;
 		case PAN:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), TRUE);
@@ -1689,8 +1689,8 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 	
 	if (index > 0) {
 		gerbv_change_layer_order (mainProject, index, index - 1);
-	      callbacks_update_layer_tree ();
-	      callbacks_select_row (index - 1);
+		callbacks_update_layer_tree ();
+		callbacks_select_row (index - 1);
 		if (screenRenderInfo.renderType < 2) {
 			render_refresh_rendered_image_on_screen();
 		}
@@ -1706,7 +1706,7 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 /* --------------------------------------------------------- */
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
                               GtkTreeIter  *oIter, gpointer user_data) {
-      gint *indeces=NULL,oldPosition,newPosition;
+	gint *indeces=NULL,oldPosition,newPosition;
       
 	if ((!screen.win.treeIsUpdating)&&(path != NULL)) {
 		indeces = gtk_tree_path_get_indices (path);
@@ -1801,7 +1801,6 @@ callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gerbv_revert_file (mainProject, index);
 	render_refresh_rendered_image_on_screen ();
 }
-
 
 /* --------------------------------------------------------------------------- */
 void
