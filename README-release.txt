@@ -32,7 +32,9 @@ To make a gerbv release do the following:
 
 =)      Read the section in src/Makefile.am about the shared library versioning
         and make sure we have done the right thing.  Check in src/Makefile.am
-	if needed.
+	if needed.  This is critical.  The version *will* change with every release
+	if *any* changes have been made to the sources for libgerbv.  src/Makefile.am
+	has specific rules for how the versioning works.  
 
 =)	update the NEWS file with some sort of release notes.
 	Check in changes
