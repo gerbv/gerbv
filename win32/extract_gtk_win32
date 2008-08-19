@@ -16,25 +16,33 @@ gtk_win32_downloads=${HOME}/gtk_win32_downloads
 # directory to extract everything (including headers) to.
 # This must match ./build_pcb.
 gtk_win32=${HOME}/gtk_win32
+gd_win32=${HOME}/gd_win32
 
 # directory to extract runtime files (excluding headers) to.
 # This must match ./build_pcb.
 gtk_win32_runtime=${HOME}/gtk_win32_runtime
+gd_win32_runtime=${HOME}/gd_win32_runtime
 
 # clean out old directories
 test ! -d ${gtk_win32} || rm -fr ${gtk_win32}
 test ! -d ${gtk_win32_runtime} || rm -fr ${gtk_win32_runtime}
 
+test ! -d ${gd_win32} || rm -fr ${gd_win32}
+test ! -d ${gd_win32_runtime} || rm -fr ${gd_win32_runtime}
+
 # make the new ones
 mkdir -p ${gtk_win32}
 mkdir -p ${gtk_win32_runtime}
+
+mkdir -p ${gd_win32}
+mkdir -p ${gd_win32_runtime}
 
 # extract the runtime files
 cd ${gtk_win32_runtime}
 for f in ${gtk_win32_downloads}/*.zip ; do
 	fb=`basename "${f}"`
 	case "$fb" in
-		gdwin32)
+		gd-*)
 			echo "Skip gd"
 			;;
 		*dev*)
@@ -55,7 +63,7 @@ cd ${gtk_win32}
 for f in ${gtk_win32_downloads}/*.zip ; do
 	fb=`basename "${f}"`
 	case "$fb" in
-		gdwin32)
+		gd-*)
 			echo "Skip gd"
 			;;
 		*src*)
@@ -71,14 +79,17 @@ done
 chmod 755 ${gtk_win32}/bin/*
 chmod 755 ${gtk_win32_runtime}/bin/*
 
+cd ${HOME}
+
+
+cd ${gd_win32}
+unzip ${gtk_win32_downloads}/gd-*-win32.zip
+cp */*.dll ${gd_win32_runtime}
+cp ${gd_win32}/COPYING.TXT ${gdwin32_runtime}/gd-license.txt
+chmod 755 ${gd_win32}/*/*
+chmod 755 ${gd_win32_runtime}/*
 
 cd ${HOME}
-unzip ${gtk_win32_downloads}/gdwin32.zip
-mkdir gdwin32_runtime
-cp gdwin32/*.dll gdwin32_runtime
-cp gdwin32/gd-license.txt gdwin32_runtime
-chmod 755 gdwin32/*
-chmod 755 gdwin32_runtime/*
 
 # extract licenses
 
@@ -184,12 +195,13 @@ rm -fr gettext-*
 #jpeg-6b-4-bin.zip
 #jpeg-6b-4-dep.zip
 #jpeg-6b-4-lib.zip
-#jpeg-6b-4-src.zip
+#jpegsrc.v6b.tar.gz
 
-unzip ${gtk_win32_downloads}/jpeg-*-src.zip
+#unzip ${gtk_win32_downloads}/jpeg-*-src.zip
+tar -zxvf ${gtk_win32_downloads}/jpegsrc.v6b.tar.gz
 echo "libjpeg is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-jpeg
-cat src/jpeg/6b/jpeg-6b-src/README >> ${gtk_win32_runtime}/LICENSE-jpeg
-rm -fr src
+cat jpeg-6b/README >> ${gtk_win32_runtime}/LICENSE-jpeg
+rm -fr jpeg-6b
 
 # LGPL
 #
@@ -197,12 +209,18 @@ rm -fr src
 #libiconv-1.9.1.tar.gz
 
 
-#libpng-1.2.8-bin.zip
-#libpng-1.2.8-lib.zip
-unzip ${gtk_win32_downloads}/libpng-*-lib.zip
+#libpng-dev-1.2.9.zip
+#libpng-1.2.9.zip
+mkdir tmppng
+cd tmppng
+unzip ${gtk_win32_downloads}/libpng-dev-*.zip
+ls 
+ls include
+
 echo "libpng is covered by the following copyright and license" > ${gtk_win32_runtime}/LICENSE-png
 awk '/COPYRIGHT/,/^[ \t]*$/ {print}' include/png.h >> ${gtk_win32_runtime}/LICENSE-png
-rm -fr include lib
+cd ..
+rm -fr tmppng
 
 # LGPL
 #
@@ -222,17 +240,17 @@ rm -fr include lib
 #tiff-3.8.2-1-dep.zip
 #tiff-3.8.2-1-lib.zip
 #tiff-3.8.2-1-src.zip
-unzip ${gtk_win32_downloads}/tiff-*-src.zip
+tar -zxvf ${gtk_win32_downloads}/tiff-*.tar.gz
 echo "libtiff is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-tiff
-cat src/tiff/3.8.2/tiff-3.8.2-src/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-tiff
-rm -fr src
+cat tiff-*/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-tiff
+rm -fr tiff-*
 
 #xpm-nox-4.0.3-20020617.zip
 #xpm-nox-dev-4.0.3-20020112.zip
-tar -zxvf ${gtk_win32_downloads}/xpm-*.tar.gz
-echo "The xpm library is covered by the following license and copyright:" > ${gtk_win32_runtime}/LICENSE-xpm
-cat xpm-*/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-xpm
-rm -fr xpm-*
+#tar -zxvf ${gtk_win32_downloads}/xpm-*.tar.gz
+#echo "The xpm library is covered by the following license and copyright:" > ${gtk_win32_runtime}/LICENSE-xpm
+#cat xpm-*/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-xpm
+#rm -fr xpm-*
 
 #zlib123-dll.zip
 echo "zlib is covered by the following license and copyright" > ${gtk_win32_runtime}/LICENSE-zlib

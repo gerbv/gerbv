@@ -55,7 +55,7 @@
   !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-jpeg"
   !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-png"
   !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-tiff"
-  !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-xpm"
+;  !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-xpm"
   !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-zlib"
 ;  !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
