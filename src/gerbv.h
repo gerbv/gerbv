@@ -679,6 +679,11 @@ gerbv_open_layer_from_filename (
 	gchar *filename /*!< the full pathname of the file to be parsed */
 );
 
+//! Open a file, parse the contents, and add a new layer to an existing project while setting the color of the layer
+void 
+gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *filename,
+		guint16 red, guint16 green, guint16 blue, guint16 alpha);
+
 //! Free a fileinfo structure
 void
 gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo /*!< the fileinfo to free */

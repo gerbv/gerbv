@@ -742,18 +742,28 @@ main(int argc, char *argv[])
 	}
 	
     } else {
+    	gint loadedIndex = 0;
 	for(i = optind ; i < argc; i++) {
 	    g_free (mainProject->path);
 	    if (!g_path_is_absolute(argv[i])) {
 		gchar *fullName = g_build_filename (g_get_current_dir (),
 						    argv[i], NULL);
-		gerbv_open_layer_from_filename (mainProject, fullName);
+		gerbv_open_layer_from_filename_with_color (mainProject, fullName,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].green*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].blue*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
 		mainProject->path = g_path_get_dirname (fullName);
 		g_free (fullName);
 	    } else {
-		gerbv_open_layer_from_filename (mainProject, argv[i]);
+		gerbv_open_layer_from_filename_with_color (mainProject, argv[i],
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].green*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].blue*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
 		mainProject->path = g_path_get_dirname (argv[i]);
 	    }
+	    loadedIndex++;
 	}
     }
 

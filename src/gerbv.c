@@ -185,6 +185,28 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 } /* gerbv_open_layer_from_filename */
 
 /* ------------------------------------------------------------------ */
+void 
+gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *filename,
+		guint16 red, guint16 green, guint16 blue, guint16 alpha)
+{
+  gint idx_loaded;
+  dprintf("Opening filename = %s\n", (gchar *) filename);
+  
+  if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
+    GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
+		 gerbvProject->last_loaded);
+    gerbvProject->last_loaded--;
+  } else {
+    idx_loaded = gerbvProject->last_loaded;
+    gerbvProject->file[idx_loaded]->layer_dirty = FALSE;
+    GdkColor colorTemplate = {0, red, green, blue};
+    gerbvProject->file[idx_loaded]->color = colorTemplate;
+    gerbvProject->file[idx_loaded]->alpha = alpha;
+    dprintf("     Successfully opened file!\n");	
+  }
+} /* gerbv_open_layer_from_filename_with_color */  
+    
+/* ------------------------------------------------------------------ */
 gboolean 
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename) 
 {
