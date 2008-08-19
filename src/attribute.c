@@ -431,7 +431,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		   * allow arbitrary relationships instead of just this
 		   * one single "magic" one.
 		   */
-		  if (j == 0 && strcmp(attrs[j].name, "auto") == 0) {
+		  if (j == 0 && strcmp(attrs[j].name, "Autodetect file format") == 0) {
 		    set_auto_uncheck = 1;
 		    auto_uncheck_widget = widget;
 		    auto_uncheck_attr = &(attrs[j].default_val.int_value);

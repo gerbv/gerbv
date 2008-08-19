@@ -1324,16 +1324,19 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText,
   gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
   gtk_label_set_line_wrap (GTK_LABEL (label1), TRUE);
 
+  // even with no checkbox, this extra hbox gives the recommended 24 px space between the
+  //   label and the buttons
+  GtkWidget *hbox2 = gtk_hbox_new (FALSE, 12);
   if (show_checkbox) {
-    GtkWidget *hbox2 = gtk_hbox_new (FALSE, 12);
     GtkWidget *label3 = gtk_label_new ("    ");
+
     checkbox =  gtk_check_button_new_with_label("Do not show this dialog again.");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(checkbox), FALSE);
     gtk_box_pack_start (GTK_BOX (hbox2), label3, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox2), checkbox, FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (vbox9), hbox2, FALSE, FALSE, 12);
   }
-
+  gtk_box_pack_start (GTK_BOX (vbox9), hbox2, FALSE, FALSE, 12);
+  
   dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
   gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
 
@@ -1408,16 +1411,24 @@ interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText,
   		"</span>\n<span/>\n",secondaryText,NULL);
   label1 = gtk_label_new (labelMessage);
   g_free (labelMessage);
-  gtk_box_pack_start (GTK_BOX (hbox1), label1, FALSE, FALSE, 0);
+  
+  GtkWidget *vbox9 = gtk_vbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox9), label1, FALSE, FALSE, 0);
   gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
   gtk_label_set_line_wrap (GTK_LABEL (label1), TRUE);
-
+  gtk_box_pack_start (GTK_BOX (hbox1), vbox9, FALSE, FALSE, 0);
+  
+  GtkWidget *hbox2 = gtk_hbox_new (FALSE, 12);
   if (show_checkbox) {
+    GtkWidget *label3 = gtk_label_new ("    ");
+
     checkbox =  gtk_check_button_new_with_label("Do not show this dialog again.");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(checkbox), FALSE);
-    gtk_box_pack_start (GTK_BOX (dialog_vbox1), checkbox, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (hbox2), label3, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (hbox2), checkbox, FALSE, FALSE, 0);
   }
-
+  gtk_box_pack_start (GTK_BOX (vbox9), hbox2, FALSE, FALSE, 12);
+  
   dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
   gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
 
