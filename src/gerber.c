@@ -1932,9 +1932,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 	GERB_FATAL_ERROR("malloc stack failed\n");
 
     /* Make a copy of the parameter list that we can rewrite if necessary */
-    lp = (double *)malloc(sizeof(double) * APERTURE_PARAMETERS_MAX);
-    if (lp == NULL)
-	GERB_FATAL_ERROR("malloc local parameter storage failed\n");
+    lp = g_new (double,APERTURE_PARAMETERS_MAX);
 
     memcpy(lp, aperture->parameter, sizeof(double) * APERTURE_PARAMETERS_MAX);
     
@@ -2050,9 +2048,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 		 * Create struct for simplified aperture macro and
 		 * start filling in the blanks.
 		 */
-		sam = (gerbv_simplified_amacro_t *)malloc(sizeof(gerbv_simplified_amacro_t));
-		if (sam == NULL)
-		    GERB_FATAL_ERROR("Failed to malloc simplified aperture macro\n");
+		sam = g_new (gerbv_simplified_amacro_t, 1);
 		sam->type = type;
 		sam->next = NULL;
 		memset(sam->parameter, 0, 
@@ -2135,6 +2131,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 		    }
 		    tmp_sam->next = sam;
 		}
+		g_free (sam);
 
 #ifdef DEBUG
 		for (i = 0; i < nuf_parameters; i++) {
@@ -2157,6 +2154,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 	}
     }
     free_stack(s);
+    g_free (lp);
 
     /* store a flag to let the renderer know if it should expect any "clear"
        primatives */

@@ -138,7 +138,7 @@ gerbv_create_project (void) {
 	returnProject->last_loaded = -1;
 	returnProject->max_files = 1;
 	returnProject->check_before_delete = TRUE;
-	returnProject->file = (gerbv_fileinfo_t **) calloc (returnProject->max_files, sizeof (gerbv_fileinfo_t *));
+	returnProject->file = g_new0 (gerbv_fileinfo_t *, returnProject->max_files);
 
 	return returnProject;
 }
@@ -401,13 +401,9 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     /* if we don't have enough spots, then grow the file list by 2 to account for the possible 
        loading of two images for PNP files */
     if ((idx+1) >= gerbvProject->max_files) {
-	gerbvProject->file = (gerbv_fileinfo_t **) realloc (gerbvProject->file, (gerbvProject->max_files + 2) * sizeof (gerbv_fileinfo_t *));
+	gerbvProject->file = g_renew (gerbv_fileinfo_t *,
+			gerbvProject->file, gerbvProject->max_files + 2);
 
-	if (gerbvProject->file == NULL)
-	    {
-		fprintf (stderr, "realloc failed\n");
-		exit (1);
-	    }
 	gerbvProject->file[gerbvProject->max_files] = NULL;
 	gerbvProject->file[gerbvProject->max_files+1] = NULL;
 	gerbvProject->max_files += 2;

@@ -82,6 +82,40 @@ gerbv_stats_new(void) {
     return stats;
 }
 
+void
+gerbv_destroy_error_list (gerbv_error_list_t *errorList) {
+	gerbv_error_list_t *nextError=errorList,*tempError;
+	
+	while (nextError) {
+		tempError = nextError->next;
+		g_free (nextError->error_text);
+		g_free (nextError);
+		nextError = tempError;
+	}
+}
+
+void
+gerbv_destroy_aperture_list (gerbv_aperture_list_t *apertureList) {
+	gerbv_aperture_list_t *nextAperture=apertureList,*tempAperture;
+	
+	while (nextAperture) {
+		tempAperture = nextAperture->next;
+		g_free (nextAperture);
+		nextAperture = tempAperture;
+	}
+}
+
+/* ------------------------------------------------------- */
+void
+gerbv_stats_destroy(gerbv_stats_t *stats) {
+	if (stats == NULL)
+		return;
+	gerbv_destroy_error_list (stats->error_list);
+	gerbv_destroy_aperture_list (stats->aperture_list);
+	gerbv_destroy_aperture_list (stats->D_code_list);
+	g_free (stats);
+}	
+
 
 /* ------------------------------------------------------- */
 /*! This fcn is called with a two gerbv_stats_t structs:

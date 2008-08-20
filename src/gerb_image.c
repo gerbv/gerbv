@@ -23,7 +23,7 @@
 
 /** \file gerb_image.c
     \brief This file contains general files for handling the gerbv_image_t structure
-    \ingroup libgerbv
+    \ingroup libgerbvf
 */
 
 #ifdef HAVE_CONFIG_H
@@ -181,10 +181,8 @@ gerbv_destroy_image(gerbv_image_t *image)
     	state = state->next;
     	g_free (tempState);
     }
-    /* FIXME -- must write these functions. */
-    /*   gerb_transf_free(image->transf); */
-    /*   gerb_stats_free(image->gerb_stats); */
-    /*   gerb_stats_free(image->drill_stats); */
+    gerbv_stats_destroy(image->gerbv_stats);
+    gerbv_drill_stats_destroy(image->drill_stats);
 
     /*
      * Free and reset the final image

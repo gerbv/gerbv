@@ -578,6 +578,39 @@ void render_project_to_cairo_target (cairo_t *cr) {
 }
 #endif  /* RENDER_USING_GDK */
 
+void
+render_free_screen_resources (void) {
+#ifndef RENDER_USING_GDK
+	if (screen.selectionRenderData) 
+		cairo_surface_destroy ((cairo_surface_t *)
+			screen.selectionRenderData);
+	if (screen.bufferSurface)
+		cairo_surface_destroy ((cairo_surface_t *)
+			screen.bufferSurface);
+	if (screen.windowSurface)
+		cairo_surface_destroy ((cairo_surface_t *)
+			screen.windowSurface);
+#endif
+	if (screen.pixmap) 
+		gdk_pixmap_unref(screen.pixmap);
+}
+
+void
+render_free_private_render_info (gerbv_project_t *gerbvProject){
+	int i;
+#ifndef RENDER_USING_GDK
+	/* destroy all the cairo surfaces */
+	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+		if (gerbvProject->file[i]) {
+			if (gerbvProject->file[i]->privateRenderData) {
+				cairo_surface_destroy ((cairo_surface_t *)
+					gerbvProject->file[i]->privateRenderData);
+			}			
+		}
+	}
+#endif
+}
+
 /* ------------------------------------------------------------------ */
 /*! This fills out the project's Gerber statistics table.
  *  It is called from within callbacks.c when the user

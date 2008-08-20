@@ -77,7 +77,39 @@ gerbv_drill_stats_new(void) {
     return stats;
 }
 
+void
+gerbv_drill_destroy_error_list (gerbv_error_list_t *errorList) {
+	gerbv_error_list_t *nextError=errorList,*tempError;
+	
+	while (nextError) {
+		tempError = nextError->next;
+		g_free (nextError->error_text);
+		g_free (nextError);
+		nextError = tempError;
+	}
+}
 
+void
+gerbv_drill_destroy_drill_list (gerbv_drill_list_t *apertureList) {
+	gerbv_drill_list_t *nextAperture=apertureList,*tempAperture;
+	
+	while (nextAperture) {
+		tempAperture = nextAperture->next;
+		g_free(nextAperture->drill_unit);
+		g_free (nextAperture);
+		nextAperture = tempAperture;
+	}
+}
+
+void
+gerbv_drill_stats_destroy(gerbv_drill_stats_t *stats) {
+	if (stats == NULL)
+		return;
+	gerbv_drill_destroy_error_list (stats->error_list);
+	gerbv_drill_destroy_drill_list (stats->drill_list);
+	g_free (stats);
+}	
+	
 /* ------------------------------------------------------- */
 void
 gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats, 

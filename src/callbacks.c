@@ -465,7 +465,7 @@ callbacks_fit_to_window_activate              (GtkMenuItem     *menuitem,
 /* --------------------------------------------------------- */
 /**
   * The analyze -> analyze Gerbers  menu item was selected.  
-  * Complie statistics on all open Gerber layers and then display
+  * Compile statistics on all open Gerber layers and then display
   * them.
   *
   */
@@ -482,8 +482,8 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     gchar *error_report_string;
     gerbv_error_list_t *my_error_list;
     gchar *error_level = NULL;
-    gchar *aperture_def_report_string = "";
-    gchar *aperture_use_report_string = "";
+    gchar *aperture_def_report_string = NULL;
+    GString *apertureReportString = g_string_new (NULL);
     gerbv_aperture_list_t *my_aperture_list;
     int idx;
 
@@ -683,25 +683,20 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	}
     }
 
-
     /* Report apertures usage count in input files. */
     if (stats_report->D_code_list->number == -1) {
-	aperture_use_report_string = 
-	    g_strdup_printf("No apertures used in Gerber file(s)!\n"); 
+      g_string_printf(apertureReportString,"No apertures used in Gerber file(s)!\n"); 
     } else {
+    	
       /* Now add list of user-defined D codes (apertures) */
-      aperture_use_report_string = 
-	g_strdup_printf("Apertures used in Gerber file(s) (all active layers)\n"); 
-      aperture_use_report_string = 
-	g_strdup_printf("%s<aperture code> = <number of uses>\n",
-			aperture_use_report_string);
+      
+      g_string_printf(apertureReportString,"Apertures used in Gerber file(s) (all active layers)\n"); 
+      g_string_append_printf(apertureReportString,"<aperture code> = <number of uses>\n");
       for (my_aperture_list = stats_report->D_code_list; 
 	   my_aperture_list != NULL; 
 	   my_aperture_list = my_aperture_list->next) {
 	
-	aperture_use_report_string = 
-	  g_strdup_printf("%s D%d = %-6d\n",
-			  aperture_use_report_string,
+	   g_string_append_printf(apertureReportString," D%d = %-6d\n",
 			  my_aperture_list->number,
 			  my_aperture_list->count
 			  );
@@ -801,13 +796,13 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 					  GTK_WIDGET(aperture_def_report_label));
 
     /* Create GtkLabel to hold aperture use text */
-    GtkWidget *aperture_use_report_label = gtk_label_new (aperture_use_report_string);
+    GtkWidget *aperture_use_report_label = gtk_label_new (apertureReportString->str);
     gtk_misc_set_alignment(GTK_MISC(aperture_use_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(aperture_use_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(aperture_use_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(aperture_use_report_label),
 			    font);
-    g_free(aperture_use_report_string);
+    g_string_free (apertureReportString,TRUE);
     /* Put aperture definintion text into scrolled window */
     GtkWidget *aperture_use_report_window = gtk_scrolled_window_new (NULL, NULL);
     /* This throws a warning.  Must find different approach.... */
@@ -854,7 +849,9 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		      GTK_WIDGET(notebook));
     
     gtk_widget_show_all(analyze_active_gerbers);
-	
+    
+    /* free the stats report */
+    gerbv_stats_destroy (stats_report);	
     return;
 
 }
@@ -1141,7 +1138,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_drill)->vbox),
 		      GTK_WIDGET(notebook));
     gtk_widget_show_all(analyze_active_drill);
-	
+    gerbv_drill_stats_destroy (stats_report);	
     return;
 }
 

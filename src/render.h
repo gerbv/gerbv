@@ -60,6 +60,12 @@ void render_refresh_rendered_image_on_screen (void);
 void
 render_clear_selection_buffer (void);
 
+void
+render_free_screen_resources (void);
+
+void
+render_free_private_render_info (gerbv_project_t *gerbvProject);
+
 #ifndef RENDER_USING_GDK
 void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex,
 		gboolean eraseOldSelection);

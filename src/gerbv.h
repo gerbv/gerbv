@@ -260,7 +260,7 @@ typedef struct {
 /*! A linked list of errors found in the files */   
 typedef struct error_list {
     int layer;
-    char *error_text;
+    gchar *error_text;
     gerbv_message_type_t type;
     struct error_list *next;
 } gerbv_error_list_t;
@@ -361,7 +361,7 @@ typedef struct {
 typedef struct drill_list {
     int drill_num;
     double drill_size;
-    char *drill_unit;
+    gchar *drill_unit;
     int drill_count;
     struct drill_list *next;
 } gerbv_drill_list_t;
@@ -891,6 +891,10 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, /*!< the image to dra
 gerbv_drill_stats_t *
 gerbv_drill_stats_new(void);
 
+/*! Free the memory for a drill stats struct */
+void
+gerbv_drill_stats_destroy(gerbv_drill_stats_t *);
+
 /*! Add stats gathered from specified layer to accumulatedd drill stats
  *  compiled from all layers */
 void
@@ -902,6 +906,10 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
 /*! Create new struct for holding Gerber stats */
 gerbv_stats_t *
 gerbv_stats_new(void);
+
+/*! Free the memory for a stats struct */
+void
+gerbv_stats_destroy(gerbv_stats_t *);
 
 /*! Add stats gathered from specified layer to accumulated Gerber stats
  *  compiled from all layers */
