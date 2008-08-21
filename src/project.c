@@ -423,6 +423,19 @@ read_project_file(char const* filename)
 } /* read_project */
 
 
+void
+project_destroy_project_list (project_list_t *projectList){
+	project_list_t *tempP,*tempP2;
+	
+	for (tempP = projectList; tempP != NULL; ){
+		tempP2 = tempP->next;
+		
+		g_free (tempP->filename);
+		attribute_destroy_HID_attribute (tempP->attr_list);
+		tempP = tempP2;
+	}
+}
+
 /*
  * Writes a description of a project to a file 
  * that can be parsed by read_project above

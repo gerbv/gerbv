@@ -58,6 +58,12 @@ static int * auto_uncheck_attr = NULL;
 static GtkWidget ** all_widgets = NULL;
 static int n_widgets;
 
+void
+attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList){
+	/* insert destroy code here */
+	g_free (attributeList);
+}
+
 static void clear_auto()
 {
   if( auto_uncheck_needed && auto_uncheck_widget != NULL && auto_uncheck_attr != NULL) {
