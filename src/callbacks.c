@@ -474,16 +474,16 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				 gpointer user_data)
 {
     gerbv_stats_t *stats_report;
-    gchar *G_report_string;
-    gchar *D_report_string;
-    gchar *M_report_string;
-    gchar *misc_report_string;
-    gchar *general_report_string;
-    gchar *error_report_string;
+    GString *G_report_string = g_string_new(NULL);
+    GString *D_report_string = g_string_new(NULL);
+    GString *M_report_string = g_string_new(NULL);
+    GString *misc_report_string = g_string_new(NULL);
+    GString *general_report_string = g_string_new(NULL);
+    GString *error_report_string = g_string_new(NULL);
     gerbv_error_list_t *my_error_list;
     gchar *error_level = NULL;
-    gchar *aperture_def_report_string = NULL;
-    GString *apertureReportString = g_string_new (NULL);
+    GString *aperture_def_report_string = g_string_new(NULL);
+    GString *aperture_use_report_string = g_string_new(NULL);
     gerbv_aperture_list_t *my_aperture_list;
     int idx;
 
@@ -491,35 +491,40 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     stats_report = generate_gerber_analysis();
 
     /* General info report */
-    general_report_string = g_strdup_printf("General information\n");
-    general_report_string = g_strdup_printf("%s  Active layer count = %d\n", 
-					    general_report_string, stats_report->layer_count);
-    general_report_string = g_strdup_printf("%s\n\n%-45s   %-10s\n",
-					    general_report_string,
-					    "Files processed",
-					    "Layer number");
+    g_string_printf(general_report_string, 
+		    "General information\n");
+    g_string_append_printf(general_report_string, 
+			   "  Active layer count = %d\n", 
+			   stats_report->layer_count);
+    g_string_append_printf(general_report_string,
+			   "\n\n%-45s   %-10s\n",
+			   "Files processed",
+			   "Layer number");
     for (idx = 0; idx <= mainProject->max_files-1; idx++) {
-      if (mainProject->file[idx] &&
-	  mainProject->file[idx]->isVisible &&
-	  (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
-	general_report_string = 
-	  g_strdup_printf("%s  %-45s   %-10d\n", general_report_string, mainProject->file[idx]->name, idx+1);
-      }
+	if (mainProject->file[idx] &&
+	    mainProject->file[idx]->isVisible &&
+	    (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
+	    g_string_append_printf(general_report_string, 
+				   "  %-45s   %-10d\n", mainProject->file[idx]->name, idx+1);
+	}
     }
 
     /* Error report (goes into general report tab) */
     if (stats_report->layer_count == 0) {
-        error_report_string = g_strdup_printf("\n\nNo Gerber files loaded!\n");
+	g_string_printf(error_report_string, 
+			"\n\nNo Gerber files loaded!\n");
     } else if (stats_report->error_list->error_text == NULL) {
-	error_report_string = g_strdup_printf("\n\nNo errors found in Gerber file(s)!\n"); 
+	g_string_printf(error_report_string, 
+			"\n\nNo errors found in Gerber file(s)!\n"); 
     } else {
-	error_report_string = g_strdup_printf("\n\nErrors found in Gerber file(s):\n"); 
+	g_string_printf(error_report_string, 
+			"\n\nErrors found in Gerber file(s):\n"); 
 	for(my_error_list = stats_report->error_list; 
 	    my_error_list != NULL; 
 	    my_error_list = my_error_list->next) {
 	    switch(my_error_list->type) {
 		case GERBV_MESSAGE_FATAL: /* We should never get this one since the 
-			     * program should terminate first.... */
+                			   * program should terminate first.... */
 		    error_level = g_strdup_printf("FATAL: ");
 		    break;
 		case GERBV_MESSAGE_ERROR:
@@ -532,174 +537,217 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		    error_level = g_strdup_printf("NOTE: ");
 		    break;
 	    }
-	    error_report_string = g_strdup_printf("%s  Layer %d: %s %s", 
-						  error_report_string,
-						  my_error_list->layer,
-						  error_level,
-						  my_error_list->error_text);
+	    g_string_append_printf(error_report_string,
+				   "  Layer %d: %s %s", 
+				   my_error_list->layer,
+				   error_level,
+				   my_error_list->error_text );
+	    g_free(error_level);
 	}
     }
 
-    general_report_string = g_strdup_printf("%s%s", 
-					    general_report_string,
-					    error_report_string);
-    g_free(error_report_string);
+
+    g_string_append_printf(general_report_string, 
+			   "%s", 
+			   error_report_string->str);
+    g_string_free(error_report_string, TRUE);
     
     /* Now compile stats related to reading G codes */
-    G_report_string = g_strdup_printf("G code statistics (all active layers)\n");
-    G_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", G_report_string);
-    G_report_string = g_strdup_printf("%sG0 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G0,
-				      "Move");
-    G_report_string = g_strdup_printf("%sG1 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G1,
-				      "1X linear interpolation");
-    G_report_string = g_strdup_printf("%sG2 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G2,
-				      "CW interpolation");
-    G_report_string = g_strdup_printf("%sG3 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G3,
-				      "CCW interpolation");
-    G_report_string = g_strdup_printf("%sG4 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G4,
-				      "Comment/ignore block");
-    G_report_string = g_strdup_printf("%sG10 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G10,
-				      "10X linear interpolation");
-    G_report_string = g_strdup_printf("%sG11 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G11,
-				      "0.1X linear interpolation");
-    G_report_string = g_strdup_printf("%sG12 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G12,
-				      "0.01X linear interpolation");
-    G_report_string = g_strdup_printf("%sG36 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G36,
-				      "Poly fill on");
-    G_report_string = g_strdup_printf("%sG37 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G37,
-				      "Poly fill off");
-    G_report_string = g_strdup_printf("%sG54 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G54,
-				      "Tool prepare");
-    G_report_string = g_strdup_printf("%sG55 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G55,
-				      "Flash prepare");
-    G_report_string = g_strdup_printf("%sG70 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G70,
-				      "Units = inches");
-    G_report_string = g_strdup_printf("%sG71 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G71,
-				      "Units = mm");
-    G_report_string = g_strdup_printf("%sG74 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G74,
-				      "Disable 360 circ. interpolation");
-    G_report_string = g_strdup_printf("%sG75 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G75,
-				      "Enable 360 circ. interpolation");
-    G_report_string = g_strdup_printf("%sG90 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G90,
-				      "Absolute units");
-    G_report_string = g_strdup_printf("%sG91 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G91,
-				      "Incremental units");
-    G_report_string = g_strdup_printf("%sUnknown G codes = %d\n", 
-				      G_report_string, stats_report->G_unknown);
+    g_string_printf(G_report_string, 
+		    "G code statistics (all active layers)\n");
+    g_string_append_printf(G_report_string, 
+			   "<code> = <number of incidences>\n");
+    g_string_append_printf(G_report_string,
+			   "G0 = %-6d (%s)\n", 
+			   stats_report->G0,
+			   "Move");
+    g_string_append_printf(G_report_string,
+			   "G1 = %-6d (%s)\n", 
+			   stats_report->G1,
+			   "1X linear interpolation");
+    g_string_append_printf(G_report_string,
+			   "G2 = %-6d (%s)\n", 
+			   stats_report->G2,
+			   "CW interpolation");
+    g_string_append_printf(G_report_string,
+			   "G3 = %-6d (%s)\n", 
+			   stats_report->G3,
+			   "CCW interpolation");
+    g_string_append_printf(G_report_string,
+			   "G4 = %-6d (%s)\n", 
+			   stats_report->G4,
+			   "Comment/ignore block");
+    g_string_append_printf(G_report_string,
+			   "G10 = %-6d (%s)\n", 
+			   stats_report->G10,
+			   "10X linear interpolation");
+    g_string_append_printf(G_report_string,
+			   "G11 = %-6d (%s)\n", 
+			   stats_report->G11,
+			   "0.1X linear interpolation");
+    g_string_append_printf(G_report_string,
+			   "G12 = %-6d (%s)\n", 
+			   stats_report->G12,
+			   "0.01X linear interpolation");
+    g_string_append_printf(G_report_string,
+			   "G36 = %-6d (%s)\n", 
+			   stats_report->G36,
+			   "Poly fill on");
+    g_string_append_printf(G_report_string,
+			   "G37 = %-6d (%s)\n", 
+			   stats_report->G37,
+			   "Poly fill off");
+    g_string_append_printf(G_report_string,
+			   "G54 = %-6d (%s)\n", 
+			   stats_report->G54,
+			   "Tool prepare");
+    g_string_append_printf(G_report_string,
+			   "G55 = %-6d (%s)\n", 
+			   stats_report->G55,
+			   "Flash prepare");
+    g_string_append_printf(G_report_string,
+			   "G70 = %-6d (%s)\n", 
+			   stats_report->G70,
+			   "Units = inches");
+    g_string_append_printf(G_report_string,
+			   "G71 = %-6d (%s)\n", 
+			   stats_report->G71,
+			   "Units = mm");
+    g_string_append_printf(G_report_string,
+			   "G74 = %-6d (%s)\n", 
+			   stats_report->G74,
+			   "Disable 360 circ. interpolation");
+    g_string_append_printf(G_report_string,
+			   "G75 = %-6d (%s)\n", 
+			   stats_report->G75,
+			   "Enable 360 circ. interpolation");
+    g_string_append_printf(G_report_string,
+			   "G90 = %-6d (%s)\n", 
+			   stats_report->G90,
+			   "Absolute units");
+    g_string_append_printf(G_report_string,
+			   "G91 = %-6d (%s)\n", 
+			   stats_report->G91,
+			   "Incremental units");
+    g_string_append_printf(G_report_string,
+			   "Unknown G codes = %d\n", 
+			   stats_report->G_unknown);
+    
 
+    g_string_printf(D_report_string, "D code statistics (all active layers)\n");
+    g_string_append_printf(D_report_string,
+			   "<code> = <number of incidences>\n");
+    g_string_append_printf(D_report_string,
+			   "D1 = %-6d (%s)\n", 
+			   stats_report->D1,
+			   "Exposure on");
+    g_string_append_printf(D_report_string,
+			   "D2 = %-6d (%s)\n", 
+			   stats_report->D2,
+			   "Exposure off");
+    g_string_append_printf(D_report_string, 
+			   "D3 = %-6d (%s)\n", 
+			   stats_report->D3,
+			   "Flash aperture");
+    g_string_append_printf(D_report_string, 
+			   "Undefined D codes = %d\n", 
+			   stats_report->D_unknown);
+    g_string_append_printf(D_report_string,
+			   "D code Errors = %d\n", 
+			   stats_report->D_error);
+    
 
-    D_report_string = g_strdup_printf("D code statistics (all active layers)\n");
-    D_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", D_report_string);
-    D_report_string = g_strdup_printf("%sD1 = %-6d (%s)\n", 
-				      D_report_string, stats_report->D1,
-				      "Exposure on");
-    D_report_string = g_strdup_printf("%sD2 = %-6d (%s)\n", 
-				      D_report_string, stats_report->D2,
-				      "Exposure off");
-    D_report_string = g_strdup_printf("%sD3 = %-6d (%s)\n", 
-				      D_report_string, stats_report->D3,
-				      "Flash aperture");
-    D_report_string = g_strdup_printf("%sUndefined D codes = %d\n", 
-				      D_report_string, stats_report->D_unknown);
-    D_report_string = g_strdup_printf("%sD code Errors = %d\n", 
-				      D_report_string, stats_report->D_error);
+    g_string_printf(M_report_string, "M code statistics (all active layers)\n");
+    g_string_append_printf(M_report_string, 
+			   "<code> = <number of incidences>\n");
+    g_string_append_printf(M_report_string, 
+			   "M0 = %-6d (%s)\n", 
+			   stats_report->M0,
+			   "Program start");
+    g_string_append_printf(M_report_string, 
+			   "M1 = %-6d (%s)\n", 
+			   stats_report->M1,
+			   "Program stop");
+    g_string_append_printf(M_report_string, 
+			   "M2 = %-6d (%s)\n", 
+			   stats_report->M2,
+			   "Program end");
+    g_string_append_printf(M_report_string, 
+			   "Unknown M codes = %d\n", 
+			   stats_report->M_unknown);
+    
 
-
-    M_report_string = g_strdup_printf("M code statistics (all active layers)\n");
-    M_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", M_report_string);
-    M_report_string = g_strdup_printf("%sM0 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M0,
-				      "Program start");
-    M_report_string = g_strdup_printf("%sM1 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M1,
-				      "Program stop");
-    M_report_string = g_strdup_printf("%sM2 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M2,
-				      "Program end");
-    M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
-				      M_report_string, stats_report->M_unknown);
-
-
-    misc_report_string = g_strdup_printf("Misc code statistics (all active layers)\n");
-    misc_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", misc_report_string);
-    misc_report_string = g_strdup_printf("%sX = %d\n", misc_report_string, stats_report->X);
-    misc_report_string = g_strdup_printf("%sY = %d\n", misc_report_string, stats_report->Y);
-    misc_report_string = g_strdup_printf("%sI = %d\n", misc_report_string, stats_report->I);
-    misc_report_string = g_strdup_printf("%sJ = %d\n", misc_report_string, stats_report->J);
-    misc_report_string = g_strdup_printf("%s* = %d\n", misc_report_string, stats_report->star);
-    misc_report_string = g_strdup_printf("%sUnknown codes = %d\n", 
-				      misc_report_string, stats_report->unknown);
-
+    g_string_printf(misc_report_string, "Misc code statistics (all active layers)\n");
+    g_string_append_printf(misc_report_string, 
+			   "<code> = <number of incidences>\n");
+    g_string_append_printf(misc_report_string, 
+			   "X = %d\n", stats_report->X);
+    g_string_append_printf(misc_report_string, 
+			   "Y = %d\n", stats_report->Y);
+    g_string_append_printf(misc_report_string, 
+			   "I = %d\n", stats_report->I);
+    g_string_append_printf(misc_report_string, 
+			   "J = %d\n", stats_report->J);
+    g_string_append_printf(misc_report_string, 
+			   "* = %d\n", stats_report->star);
+    g_string_append_printf(misc_report_string, 
+			   "Unknown codes = %d\n", 
+			   stats_report->unknown);
+    
     /* Report apertures defined in input files. */
 
     if (stats_report->aperture_list->number == -1) {
-	aperture_def_report_string = 
-	    g_strdup_printf("No aperture definitions found in Gerber file(s)!\n"); 
+	g_string_printf(aperture_def_report_string,
+			"No aperture definitions found in Gerber file(s)!\n"); 
     } else {
-	aperture_def_report_string = 
-	    g_strdup_printf("Apertures defined in Gerber file(s) (by layer)\n"); 
-	aperture_def_report_string = 
-	    g_strdup_printf("%s %-6s %-8s %12s  %8s %8s %8s\n",
-			    aperture_def_report_string,
-			    "Layer",
-			    "D code",
-			    "Aperture",
-			    "Param[0]",
-			    "Param[1]",
-			    "Param[2]"
-		);
+	g_string_printf(aperture_def_report_string,
+			"Apertures defined in Gerber file(s) (by layer)\n"); 
+	g_string_append_printf(aperture_def_report_string, 
+			" %-6s %-8s %12s  %8s %8s %8s\n",
+			"Layer",
+			"D code",
+			"Aperture",
+			"Param[0]",
+			"Param[1]",
+			"Param[2]"
+	    );
 	for(my_aperture_list = stats_report->aperture_list; 
 	    my_aperture_list != NULL; 
 	    my_aperture_list = my_aperture_list->next) {
 
-	    aperture_def_report_string = 
-		g_strdup_printf("%s %-6d    D%-4d%13s  %8.3f %8.3f %8.3f\n", 
-				aperture_def_report_string,
-				my_aperture_list->layer,
-				my_aperture_list->number,
-				ap_names[my_aperture_list->type],
-				my_aperture_list->parameter[0],
-				my_aperture_list->parameter[1],
-				my_aperture_list->parameter[2]
-		    );
+	    g_string_append_printf(aperture_def_report_string,
+				   " %-6d    D%-4d%13s  %8.3f %8.3f %8.3f\n", 
+				   my_aperture_list->layer,
+				   my_aperture_list->number,
+				   ap_names[my_aperture_list->type],
+				   my_aperture_list->parameter[0],
+				   my_aperture_list->parameter[1],
+				   my_aperture_list->parameter[2]
+		);
 	}
     }
 
     /* Report apertures usage count in input files. */
     if (stats_report->D_code_list->number == -1) {
-      g_string_printf(apertureReportString,"No apertures used in Gerber file(s)!\n"); 
+      g_string_printf(aperture_use_report_string,
+		      "No apertures used in Gerber file(s)!\n"); 
     } else {
     	
       /* Now add list of user-defined D codes (apertures) */
       
-      g_string_printf(apertureReportString,"Apertures used in Gerber file(s) (all active layers)\n"); 
-      g_string_append_printf(apertureReportString,"<aperture code> = <number of uses>\n");
+      g_string_printf(aperture_use_report_string,
+		      "Apertures used in Gerber file(s) (all active layers)\n"); 
+      g_string_append_printf(aperture_use_report_string,
+			     "<aperture code> = <number of uses>\n");
       for (my_aperture_list = stats_report->D_code_list; 
 	   my_aperture_list != NULL; 
 	   my_aperture_list = my_aperture_list->next) {
 	
-	   g_string_append_printf(apertureReportString," D%d = %-6d\n",
-			  my_aperture_list->number,
-			  my_aperture_list->count
-			  );
+	   g_string_append_printf(aperture_use_report_string,
+				  " D%d = %-6d\n",
+				  my_aperture_list->number,
+				  my_aperture_list->count
+	       );
       }
     }
 
@@ -726,13 +774,13 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	pango_font_description_from_string ("monospace");
 
     /* Create GtkLabel to hold general report text */
-    GtkWidget *general_report_label = gtk_label_new (general_report_string);
+    GtkWidget *general_report_label = gtk_label_new (general_report_string->str);
+    g_string_free (general_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(general_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(general_report_label),
 			    font);
-    g_free(general_report_string);
     /* Put general report text into scrolled window */
     GtkWidget *general_code_report_window = gtk_scrolled_window_new (NULL, NULL);
     /* This throws a warning.  Must find different approach.... */
@@ -743,49 +791,49 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 					  GTK_WIDGET(general_report_label));
 
     /* Create GtkLabel to hold G code text */
-    GtkWidget *G_report_label = gtk_label_new (G_report_string);
+    GtkWidget *G_report_label = gtk_label_new (G_report_string->str);
+    g_string_free (G_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(G_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(G_report_label),
 			    font);
-    g_free(G_report_string);
 
     /* Create GtkLabel to hold D code text */
-    GtkWidget *D_report_label = gtk_label_new (D_report_string);
+    GtkWidget *D_report_label = gtk_label_new (D_report_string->str);
+    g_string_free (D_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(D_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(D_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(D_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(D_report_label),
 			    font);
-    g_free(D_report_string);
 
     /* Create GtkLabel to hold M code text */
-    GtkWidget *M_report_label = gtk_label_new (M_report_string);
+    GtkWidget *M_report_label = gtk_label_new (M_report_string->str);
+    g_string_free (M_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(M_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(M_report_label),
 			    font);
-    g_free(M_report_string);
 
     /* Create GtkLabel to hold misc code text */
-    GtkWidget *misc_report_label = gtk_label_new (misc_report_string);
+    GtkWidget *misc_report_label = gtk_label_new (misc_report_string->str);
+    g_string_free (misc_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(misc_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(misc_report_label),
 			    font);
-    g_free(misc_report_string);
 
     /* Create GtkLabel to hold aperture defintion text */
-    GtkWidget *aperture_def_report_label = gtk_label_new (aperture_def_report_string);
+    GtkWidget *aperture_def_report_label = gtk_label_new (aperture_def_report_string->str);
+    g_string_free (aperture_def_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(aperture_def_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(aperture_def_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(aperture_def_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(aperture_def_report_label),
 			    font);
-    g_free(aperture_def_report_string);
     /* Put aperture definintion text into scrolled window */
     GtkWidget *aperture_def_report_window = gtk_scrolled_window_new (NULL, NULL);
     /* This throws a warning.  Must find different approach.... */
@@ -796,13 +844,13 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 					  GTK_WIDGET(aperture_def_report_label));
 
     /* Create GtkLabel to hold aperture use text */
-    GtkWidget *aperture_use_report_label = gtk_label_new (apertureReportString->str);
+    GtkWidget *aperture_use_report_label = gtk_label_new (aperture_use_report_string->str);
+    g_string_free (aperture_use_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(aperture_use_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(aperture_use_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(aperture_use_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(aperture_use_report_label),
 			    font);
-    g_string_free (apertureReportString,TRUE);
     /* Put aperture definintion text into scrolled window */
     GtkWidget *aperture_use_report_window = gtk_scrolled_window_new (NULL, NULL);
     /* This throws a warning.  Must find different approach.... */
@@ -868,13 +916,13 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
     gerbv_drill_stats_t *stats_report;
-    gchar *G_report_string;
-    gchar *M_report_string;
-    gchar *misc_report_string;
+    GString *G_report_string = g_string_new(NULL);
+    GString *M_report_string = g_string_new(NULL);
+    GString *misc_report_string = g_string_new(NULL);
     gerbv_drill_list_t *my_drill_list;
-    gchar *drill_report_string;
-    gchar *general_report_string;
-    gchar *error_report_string;
+    GString *drill_report_string = g_string_new(NULL);
+    GString *general_report_string = g_string_new(NULL);
+    GString *error_report_string = g_string_new(NULL);
     gerbv_error_list_t *my_error_list;
     gchar *error_level = NULL;
     int idx;
@@ -882,28 +930,32 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     stats_report = (gerbv_drill_stats_t *) generate_drill_analysis();
     
     /* General and error window strings */
-    general_report_string = g_strdup_printf("General information\n");
-    general_report_string = g_strdup_printf("%s  Active layer count = %d\n", 
-					    general_report_string, stats_report->layer_count);
-
-    general_report_string = g_strdup_printf("%s\n\nFiles processed:\n", 
-					    general_report_string);
+    g_string_printf(general_report_string, "General information\n");
+    g_string_append_printf(general_report_string, 
+			   "  Active layer count = %d\n", 
+			   stats_report->layer_count);
+    
+    g_string_append_printf(general_report_string, 
+			   "\n\nFiles processed:\n");
     for (idx = mainProject->max_files-1; idx >= 0; idx--) {
-      if (mainProject->file[idx] &&
-	  mainProject->file[idx]->isVisible &&
-	  (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {
-	general_report_string = 
-	  g_strdup_printf("%s  %s\n", general_report_string, mainProject->file[idx]->name);
-      }
+	if (mainProject->file[idx] &&
+	    mainProject->file[idx]->isVisible &&
+	    (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {
+	    g_string_append_printf(general_report_string, 
+				   "  %s\n", 
+				   mainProject->file[idx]->name);
+	}
     }
 
 
     if (stats_report->layer_count == 0) {
-        error_report_string = g_strdup_printf("\n\nNo drill files loaded!\n"); 
+        g_string_printf(error_report_string, "\n\nNo drill files loaded!\n"); 
     } else if (stats_report->error_list->error_text == NULL) {
-	error_report_string = g_strdup_printf("\n\nNo errors found in drill file(s)!\n"); 
+	g_string_printf(error_report_string, 
+			"\n\nNo errors found in drill file(s)!\n"); 
     } else {
-	error_report_string = g_strdup_printf("\n\nErrors found in drill file(s):\n"); 
+	g_string_printf(error_report_string, 
+			"\n\nErrors found in drill file(s):\n"); 
 	for(my_error_list = stats_report->error_list; 
 	    my_error_list != NULL; 
 	    my_error_list = my_error_list->next) {
@@ -922,128 +974,158 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 		    error_level = g_strdup_printf("NOTE: ");
 		    break;
 	    }
-	    error_report_string = g_strdup_printf("%s  Layer %d: %s %s", 
-						  error_report_string,
-						  my_error_list->layer,
-						  error_level,
-						  my_error_list->error_text);
+	    g_string_append_printf(error_report_string, 
+				   "  Layer %d: %s %s", 
+				   my_error_list->layer,
+				   error_level,
+				   my_error_list->error_text);
 	}
     }
 
-    general_report_string = g_strdup_printf("%s%s", 
-					    general_report_string,
-					    error_report_string);
-    g_free(error_report_string);
+    g_string_append_printf(general_report_string,
+			   "%s", error_report_string->str);
+    g_string_free(error_report_string, TRUE);
 
 
     /* G code window strings */
-    G_report_string = g_strdup_printf("G code statistics (all active layers)\n");
-    G_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", G_report_string);
-    G_report_string = g_strdup_printf("%sG00 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G00,
-				      "Rout mode");
-    G_report_string = g_strdup_printf("%sG01 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G01,
-				      "1X linear interpolation");
-    G_report_string = g_strdup_printf("%sG02 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G02,
-				      "CW interpolation");
-    G_report_string = g_strdup_printf("%sG03 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G03,
-				      "CCW interpolation");
-    G_report_string = g_strdup_printf("%sG04 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G04,
-				      "Variable dwell");
-    G_report_string = g_strdup_printf("%sG05 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G05,
-				      "Drill mode");
-    G_report_string = g_strdup_printf("%sG90 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G90,
-				      "Absolute units");
-    G_report_string = g_strdup_printf("%sG91 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G91,
-				      "Incremental units");
-    G_report_string = g_strdup_printf("%sG93 = %-6d (%s)\n", 
-				      G_report_string, stats_report->G93,
-				      "Zero set");
-    G_report_string = g_strdup_printf("%sUnknown G codes = %d\n", 
-				      G_report_string, stats_report->G_unknown);
-
+    g_string_printf(G_report_string, "G code statistics (all active layers)\n");
+    g_string_append_printf(G_report_string, 
+			   "<code> = <number of incidences>\n");
+    g_string_append_printf(G_report_string, 
+			   "G00 = %-6d (%s)\n", 
+			   stats_report->G00,
+			   "Rout mode");
+    g_string_append_printf(G_report_string, 
+			   "G01 = %-6d (%s)\n", 
+			   stats_report->G01,
+			   "1X linear interpolation");
+    g_string_append_printf(G_report_string, 
+			   "G02 = %-6d (%s)\n", 
+			   stats_report->G02,
+			   "CW interpolation");
+    g_string_append_printf(G_report_string, 
+			   "G03 = %-6d (%s)\n", 
+			   stats_report->G03,
+			   "CCW interpolation");
+    g_string_append_printf(G_report_string, 
+			   "G04 = %-6d (%s)\n", 
+			   stats_report->G04,
+			   "Variable dwell");
+    g_string_append_printf(G_report_string, 
+			   "G05 = %-6d (%s)\n", 
+			   stats_report->G05,
+			   "Drill mode");
+    g_string_append_printf(G_report_string, 
+			   "G90 = %-6d (%s)\n", 
+			   stats_report->G90,
+			   "Absolute units");
+    g_string_append_printf(G_report_string, 
+			   "G91 = %-6d (%s)\n", 
+			   stats_report->G91,
+			   "Incremental units");
+    g_string_append_printf(G_report_string, 
+			   "G93 = %-6d (%s)\n", 
+			   stats_report->G93,
+			   "Zero set");
+    g_string_append_printf(G_report_string, 
+			   "Unknown G codes = %d\n", 
+			   stats_report->G_unknown);
+    
     /* M code window strings */
-    M_report_string = g_strdup_printf("M code statistics (all active layers)\n");
-    M_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", M_report_string);
-    M_report_string = g_strdup_printf("%sM00 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M00,
-				      "End of program");
-    M_report_string = g_strdup_printf("%sM01 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M01,
-				      "End of pattern");
-    M_report_string = g_strdup_printf("%sM18 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M18,
-				      "Tool tip check");
-    M_report_string = g_strdup_printf("%sM25 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M25,
-				      "Begin pattern");
-    M_report_string = g_strdup_printf("%sM30 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M30,
-				      "End program rewind");
-    M_report_string = g_strdup_printf("%sM31 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M31,
-				      "Begin pattern");
-    M_report_string = g_strdup_printf("%sM45 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M45,
-				      "Long message");
-    M_report_string = g_strdup_printf("%sM47 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M47,
-				      "Operator message");
-    M_report_string = g_strdup_printf("%sM48 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M48,
-				      "Begin program header");
-    M_report_string = g_strdup_printf("%sM71 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M71,
-				      "Metric units");
-    M_report_string = g_strdup_printf("%sM72 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M72,
-				      "English units");
-    M_report_string = g_strdup_printf("%sM95 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M95,
-				      "End program header");
-    M_report_string = g_strdup_printf("%sM97 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M97,
-				      "Canned text");
-    M_report_string = g_strdup_printf("%sM98 = %-6d (%s)\n", 
-				      M_report_string, stats_report->M98,
-				      "Canned text");
-    M_report_string = g_strdup_printf("%sUnknown M codes = %d\n", 
-				      M_report_string, stats_report->M_unknown);
-
-
+    g_string_printf(M_report_string, "M code statistics (all active layers)\n");
+    g_string_append_printf(M_report_string, 
+			   "<code> = <number of incidences>\n");
+    g_string_append_printf(M_report_string, 
+			   "M00 = %-6d (%s)\n", 
+			   stats_report->M00,
+			   "End of program");
+    g_string_append_printf(M_report_string, 
+			   "M01 = %-6d (%s)\n", 
+			   stats_report->M01,
+			   "End of pattern");
+    g_string_append_printf(M_report_string, 
+			   "M18 = %-6d (%s)\n", 
+			   stats_report->M18,
+			   "Tool tip check");
+    g_string_append_printf(M_report_string, 
+			   "M25 = %-6d (%s)\n", 
+			   stats_report->M25,
+			   "Begin pattern");
+    g_string_append_printf(M_report_string, 
+			   "M30 = %-6d (%s)\n", 
+			   stats_report->M30,
+			   "End program rewind");
+    g_string_append_printf(M_report_string, 
+			   "M31 = %-6d (%s)\n", 
+			   stats_report->M31,
+			   "Begin pattern");
+    g_string_append_printf(M_report_string, 
+			   "M45 = %-6d (%s)\n", 
+			   stats_report->M45,
+			   "Long message");
+    g_string_append_printf(M_report_string, 
+			   "M47 = %-6d (%s)\n", 
+			   stats_report->M47,
+			   "Operator message");
+    g_string_append_printf(M_report_string, 
+			   "M48 = %-6d (%s)\n", 
+			   stats_report->M48,
+			   "Begin program header");
+    g_string_append_printf(M_report_string, 
+			   "M71 = %-6d (%s)\n", 
+			   stats_report->M71,
+			   "Metric units");
+    g_string_append_printf(M_report_string, 
+			   "M72 = %-6d (%s)\n", 
+			   stats_report->M72,
+			   "English units");
+    g_string_append_printf(M_report_string, 
+			   "M95 = %-6d (%s)\n", 
+			   stats_report->M95,
+			   "End program header");
+    g_string_append_printf(M_report_string, 
+			   "M97 = %-6d (%s)\n", 
+			   stats_report->M97,
+			   "Canned text");
+    g_string_append_printf(M_report_string, 
+			   "M98 = %-6d (%s)\n", 
+			   stats_report->M98,
+			   "Canned text");
+    g_string_append_printf(M_report_string, 
+			   "Unknown M codes = %d\n", 
+			   stats_report->M_unknown);
+    
+    
     /* misc report strings */
-    misc_report_string = g_strdup_printf("Misc code statistics (all active layers)\n");
-    misc_report_string = g_strdup_printf("%s<code> = <number of incidences>\n", misc_report_string);
-    misc_report_string = g_strdup_printf("%scomments = %d\n", 
-					 misc_report_string, stats_report->comment);
-    misc_report_string = g_strdup_printf("%sUnknown codes = %d\n", 
-					 misc_report_string, stats_report->unknown);
-
+    g_string_printf(misc_report_string, "Misc code statistics (all active layers)\n");
+    g_string_append_printf(misc_report_string, 
+			   "<code> = <number of incidences>\n");
+    g_string_append_printf(misc_report_string, 
+			   "comments = %d\n", 
+			   stats_report->comment);
+    g_string_append_printf(misc_report_string, 
+			   "Unknown codes = %d\n", 
+			   stats_report->unknown);
+    
     if (stats_report->detect != NULL ) {
-	misc_report_string = g_strdup_printf("%s\n%s\n", 
-					     misc_report_string, stats_report->detect);
+	g_string_append_printf(misc_report_string, 
+			       "\n%s\n", 
+			       stats_report->detect);
     }	
     /* drill report window strings */
-    drill_report_string = g_strdup_printf("Drills used (all active layers)\n");
-    drill_report_string = g_strdup_printf("%s%10s %8s %8s %8s\n", 
-					  drill_report_string, "Drill no.", "Dia.", "Units", "Count");
+    g_string_printf(drill_report_string, "Drills used (all active layers)\n");
+    g_string_append_printf(drill_report_string, "%10s %8s %8s %8s\n", 
+			   "Drill no.", "Dia.", "Units", "Count");
     for(my_drill_list = stats_report->drill_list; 
 	my_drill_list != NULL; 
 	my_drill_list = my_drill_list->next) {
 	if (my_drill_list->drill_num == -1) break;  /* No dill list */
-	drill_report_string = g_strdup_printf("%s%10d %8.3f %8s %8d\n", 
-					      drill_report_string,
-					      my_drill_list->drill_num,
-					      my_drill_list->drill_size,
-					      my_drill_list->drill_unit,
-					      my_drill_list->drill_count);
+	g_string_append_printf(drill_report_string, 
+			       "%10d %8.3f %8s %8d\n", 
+			       my_drill_list->drill_num,
+			       my_drill_list->drill_size,
+			       my_drill_list->drill_unit,
+			       my_drill_list->drill_count);
     }
 
     /* Use fixed width font for all reports */
@@ -1067,49 +1149,49 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 		      GTK_WIDGET(analyze_active_drill));
 
     /* Create GtkLabel to hold general report text */
-    GtkWidget *general_report_label = gtk_label_new (general_report_string);
+    GtkWidget *general_report_label = gtk_label_new (general_report_string->str);
+    g_string_free(general_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(general_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(general_report_label),
 			    font);
-    g_free(general_report_string);
 
     /* Create GtkLabel to hold G code text */
-    GtkWidget *G_report_label = gtk_label_new (G_report_string);
+    GtkWidget *G_report_label = gtk_label_new (G_report_string->str);
+    g_string_free(G_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(G_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(G_report_label),
 			    font);
-    g_free(G_report_string);
 
     /* Create GtkLabel to hold M code text */
-    GtkWidget *M_report_label = gtk_label_new (M_report_string);
+    GtkWidget *M_report_label = gtk_label_new (M_report_string->str);
+    g_string_free(M_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(M_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(M_report_label),
 			    font);
-    g_free(M_report_string);
 
     /* Create GtkLabel to hold misc code text */
-    GtkWidget *misc_report_label = gtk_label_new (misc_report_string);
+    GtkWidget *misc_report_label = gtk_label_new (misc_report_string->str);
+    g_string_free(misc_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(misc_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(misc_report_label),
 			    font);
-    g_free(misc_report_string);
 
     /* Create GtkLabel to hold drills used text */
-    GtkWidget *drill_report_label = gtk_label_new (drill_report_string);
+    GtkWidget *drill_report_label = gtk_label_new (drill_report_string->str);
+    g_string_free(drill_report_string, TRUE);
     gtk_misc_set_alignment(GTK_MISC(drill_report_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(drill_report_label), 13, 13);
     gtk_label_set_selectable(GTK_LABEL(drill_report_label), TRUE);
     gtk_widget_modify_font (GTK_WIDGET(drill_report_label),
 			    font);
-    g_free(drill_report_string);
 
     /* Create tabbed notebook widget and add report label widgets. */
     GtkWidget *notebook = gtk_notebook_new();
