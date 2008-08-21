@@ -2041,19 +2041,19 @@ callbacks_update_layer_tree (void) {
 				  layerName = g_strconcat ("*","<i>",mainProject->file[idx]->name,"</i>",NULL);
 				}
 				else
-				  /* layer is clean.  Show layer name using normal font. */
-				  layerName = g_strdup (mainProject->file[idx]->name);
+				    /* layer is clean.  Show layer name using normal font. */
+				    layerName = g_strdup (mainProject->file[idx]->name);
 				
 				gtk_list_store_set (list_store, &iter,
-							0, mainProject->file[idx]->isVisible,
-							1, blackPixbuf,
-			                        2, layerName,
-			                        3, modifiedCode,
-			                        -1);
-			      g_free (layerName);
-			      g_free (modifiedCode);
-			      /* pixbuf has a refcount of 2 now, as the list store has added its own reference */
-			      g_object_unref(blackPixbuf);
+						    0, mainProject->file[idx]->isVisible,
+						    1, blackPixbuf,
+						    2, layerName,
+						    3, modifiedCode,
+						    -1);
+				g_free (layerName);
+				g_free (modifiedCode);
+				/* pixbuf has a refcount of 2 now, as the list store has added its own reference */
+				g_object_unref(blackPixbuf);
 			}
 		}
 		
@@ -2086,6 +2086,14 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 	if (index < 0)
 		return;
 
+        if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
+	    interface_show_alert_dialog("No object is currently selected",
+                                        NULL,
+                                        FALSE,
+                                        NULL);
+	    return;
+        }
+	
 	for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
 		gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
 						  gerbv_selection_item_t, i);
