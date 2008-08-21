@@ -366,8 +366,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    gerb_transf_apply( pnpPartData.pad_x -  pnpPartData.mid_x, 
 			       pnpPartData.pad_y - pnpPartData.mid_y, tr_rot, &tmp_x, &tmp_y);
 	    if ((fabs(tmp_y) > fabs(tmp_x/100)) && (fabs(tmp_x) > fabs(tmp_y/100))){
-		pnpPartData.length = 2 * tmp_x;/* get dimensions*/
-		pnpPartData.width = 2 * tmp_y;
+		pnpPartData.length = 2 * fabs(tmp_x);/* get dimensions*/
+		pnpPartData.width = 2 * fabs(tmp_y);
 		pnpPartData.shape = PART_SHAPE_STD;
 	    } else {
 		pnpPartData.length = 0.015;
@@ -616,32 +616,35 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	if ((boardSide == 0) && !((partData.layer[0]=='b') || (partData.layer[0]=='B')))
 		continue;
 	if ((boardSide == 1) && !((partData.layer[0]=='t') || (partData.layer[0]=='T')))
-		continue;	
+		continue;
+
+	/* this first net is just a label holder, so calculate the lower
+	      left location to line up above the element */
+
+	curr_net->start_x = curr_net->stop_x = partData.mid_x;
+	curr_net->start_y = curr_net->stop_y = partData.mid_y + labelOffset + 0.01;   
+	curr_net->aperture = 0;
+	curr_net->aperture_state = GERBV_APERTURE_STATE_OFF;
+	curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
+	curr_net->layer = image->layers;
+	curr_net->state = image->states;
+
+	/* assign a label to this first draw primitive, in case we want
+	* to render some text next to the mark
+	*/
+	if (strlen (partData.designator) > 0) {
+	curr_net->label = g_string_new (partData.designator);
+	}
+
+	gerb_transf_reset(tr_rot);
+	gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
+	gerb_transf_rotate(tr_rot, -partData.rotation);
+	    
 	if ((partData.shape == PART_SHAPE_RECTANGLE) ||
 	    (partData.shape == PART_SHAPE_STD)) {
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
 
-	    /* this first net is just a label holder, so calculate the lower
-	       left location to line up above the element */
-	    
-	    curr_net->start_x = curr_net->stop_x = partData.mid_x;
-	    curr_net->start_y = curr_net->stop_y = partData.mid_y + labelOffset + 0.01;   
-	    curr_net->aperture = 0;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_OFF;
-	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    
-	    /* assign a label to this first draw primitive, in case we want
-	     * to render some text next to the mark
-	     */
-	    if (strlen (partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
 
-	    gerb_transf_reset(tr_rot);
-	    gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
-	    gerb_transf_rotate(tr_rot, partData.rotation);
 	    
 	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
@@ -746,10 +749,15 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    /* calculate a rough radius for the min/max screen calcs later */
 	    radius = max (partData.length/2, partData.width/2);
 	} else {
+	    gdouble tmp_x,tmp_y;
+	    
 	    curr_net->start_x = partData.mid_x;
 	    curr_net->start_y = partData.mid_y;
-	    curr_net->stop_x = partData.pad_x;
-	    curr_net->stop_y = partData.pad_y;
+	    gerb_transf_apply( partData.pad_x -  partData.mid_x, 
+			       partData.pad_y - partData.mid_y, tr_rot, &tmp_x, &tmp_y);
+			       
+	    curr_net->stop_x = tmp_x;
+	    curr_net->stop_y = tmp_y;
 	    
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
