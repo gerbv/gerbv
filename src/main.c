@@ -233,14 +233,14 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
     project_list = g_new0 (project_list_t, 1);
     project_list->next = project_list;
     project_list->layerno = -1;
-    project_list->filename = gerbvProject->path;
+    project_list->filename = g_strdup(gerbvProject->path);
     project_list->rgb[0] = gerbvProject->background.red;
     project_list->rgb[1] = gerbvProject->background.green;
     project_list->rgb[2] = gerbvProject->background.blue;
     project_list->next = NULL;
     
     /* loop over all layer files */
-    for (idx = 0; idx < gerbvProject->max_files; idx++) {
+    for (idx = 0; idx <= gerbvProject->last_loaded; idx++) {
 	if (gerbvProject->file[idx]) {
 	    tmp = g_new0 (project_list_t, 1);
 	    tmp->next = project_list;
@@ -250,11 +250,11 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	       directory */
 	    if (strncmp (dirName, gerbvProject->file[idx]->name, strlen(dirName)) == 0) {
 		/* skip over the common dirname and the separator */
-		tmp->filename = (gerbvProject->file[idx]->name + strlen(dirName) + 1);
+		tmp->filename = g_strdup(gerbvProject->file[idx]->name + strlen(dirName) + 1);
 	    } else {
 		/* if we can't figure out a relative path, just save the 
 		 * absolute one */
-		tmp->filename = gerbvProject->file[idx]->name;
+		tmp->filename = g_strdup(gerbvProject->file[idx]->name);
 	    }
 	    tmp->rgb[0] = gerbvProject->file[idx]->color.red;
 	    tmp->rgb[1] = gerbvProject->file[idx]->color.green;
