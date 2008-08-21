@@ -275,7 +275,7 @@ typedef struct instruction {
 } gerbv_instruction_t;
 
 typedef struct amacro {
-    char *name;
+    gchar *name;
     gerbv_instruction_t *program;
     unsigned int nuf_push;  /* Nuf pushes in program to estimate stack size */
     struct amacro *next;

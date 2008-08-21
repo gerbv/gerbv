@@ -115,7 +115,8 @@ gerbv_destroy_image(gerbv_image_t *image)
     gerbv_net_t *net, *tmp;
     gerbv_layer_t *layer;
     gerbv_netstate_t *state;
-    
+    gerbv_simplified_amacro_t *sam,*sam2;
+
     if(image==NULL)
         return;
         
@@ -124,6 +125,12 @@ gerbv_destroy_image(gerbv_image_t *image)
      */
     for (i = 0; i < APERTURE_MAX; i++) 
 	if (image->aperture[i] != NULL) {
+	    for (sam = image->aperture[i]->simplified; sam!=NULL; ){
+	      sam2 = sam->next;
+	    	g_free (sam);
+	    	sam = sam2;
+	    }
+
 	    g_free(image->aperture[i]);
 	    image->aperture[i] = NULL;
 	}
@@ -131,8 +138,10 @@ gerbv_destroy_image(gerbv_image_t *image)
     /*
      * Free aperture macro
      */
-    if (image->amacro)
+     
+    if (image->amacro) {
 	free_amacro(image->amacro);
+    }
 
     /*
      * Free format
