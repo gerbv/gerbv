@@ -164,14 +164,12 @@ gchar *logToFileFilename;
 void 
 main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
-    project_list_t *project_list = NULL;
+    project_list_t *project_list, *originalList;
     
     dprintf("Opening project = %s\n", (gchar *) filename);
-    project_list = read_project_file(filename);
+    originalList = project_list = read_project_file(filename);
     
     if (project_list) {
-	project_list_t *pl_tmp;
-	
 	while (project_list) {
 	    GdkColor colorTemplate = {0,project_list->rgb[0],
 				      project_list->rgb[1],project_list->rgb[2]};
@@ -205,12 +203,9 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 		gerbvProject->file[idx]->isVisible = project_list->visible;
 	    }
 	next_layer:
-	    pl_tmp = project_list;
 	    project_list = project_list->next;
-	    g_free(pl_tmp->filename);
-	    g_free(pl_tmp);
 	}
-	
+	project_destroy_project_list (originalList);
 	/*
 	 * Save project filename for later use
 	 */
@@ -276,6 +271,7 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
     if (write_project_file(gerbvProject, gerbvProject->project, project_list)) {
 	GERB_MESSAGE("Failed to write project\n");
     }
+    project_destroy_project_list (project_list);
     g_free (dirName);
 } /* gerbv_save_project_from_filename */
 

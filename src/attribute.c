@@ -61,7 +61,7 @@ static int n_widgets;
 void
 attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList){
 	/* insert destroy code here */
-	g_free (attributeList);
+	//g_free (attributeList);
 }
 
 static void clear_auto()

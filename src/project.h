@@ -59,4 +59,6 @@ project_list_t *read_project_file(char const* filename);
  * that can be parsed by read_project above */
 int write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_list_t *project);
 
+void
+project_destroy_project_list (project_list_t *projectList);
 #endif /* PROJECT_H */

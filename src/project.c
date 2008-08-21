@@ -188,13 +188,13 @@ define_layer(scheme *sc, pointer args)
 	    get_color(sc, value, plist_top->rgb);
 	} else if (strcmp(sc->vptr->symname(name), "filename") == 0) {
 	    
-            plist_top->filename = strdup(get_value_string(sc, value));
+            plist_top->filename = g_strdup(get_value_string(sc, value));
 	    plist_top->filename = convert_path_separators(plist_top->filename, 
 							  UNIX_MINGW);
             plist_top->is_pnp = 0;
 	} else if (strcmp(sc->vptr->symname(name), "pick_and_place") == 0) {
 
-	    plist_top->filename = strdup(get_value_string(sc, value));
+	    plist_top->filename = g_strdup(get_value_string(sc, value));
 	    plist_top->filename = convert_path_separators(plist_top->filename, 
 							  UNIX_MINGW);
 	    plist_top->is_pnp = 1;
