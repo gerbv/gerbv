@@ -2131,7 +2131,6 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 		    }
 		    tmp_sam->next = sam;
 		}
-		g_free (sam);
 
 #ifdef DEBUG
 		for (i = 0; i < nuf_parameters; i++) {

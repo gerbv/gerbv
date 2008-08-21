@@ -23,7 +23,7 @@
 
 /** \file gerb_image.c
     \brief This file contains general files for handling the gerbv_image_t structure
-    \ingroup libgerbvf
+    \ingroup libgerbv
 */
 
 #ifdef HAVE_CONFIG_H
