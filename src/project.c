@@ -444,7 +444,7 @@ int
 write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_list_t *project)
 {
     FILE *fd;
-    project_list_t *p = project, *tmp;
+    project_list_t *p = project;
     int n_attr = 0;
     gerbv_HID_Attribute *attr_list = NULL;
     int i;
@@ -539,10 +539,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 	}
 
 	fprintf(fd, ")\n");
-	tmp = p;
 	p = p->next;
-	g_free(tmp);
-	tmp = NULL;
     }
 
     fprintf (fd, "(set-render-type! %d)\n", screenRenderInfo.renderType);
