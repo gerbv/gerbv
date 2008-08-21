@@ -928,8 +928,9 @@ main(int argc, char *argv[])
     gtk_init (&argc, &argv);
 #endif
     interface_create_gui (req_width, req_height);
+    
+    /* we've exited the GTK loop, so free all resources */
     render_free_screen_resources();
-    render_free_private_render_info (mainProject);
     gerbv_destroy_project (mainProject);
     return 0;
 } /* main */

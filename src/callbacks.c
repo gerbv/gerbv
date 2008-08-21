@@ -404,7 +404,7 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 
 	gerbv_render_translate_to_fit_display (mainProject, &renderInfo);
 	cr = gtk_print_context_get_cairo_context (context);
-	for(i = 0; i < mainProject->max_files; i++) {
+	for(i = 0; i <= mainProject->last_loaded; i++) {
 		if (mainProject->file[i] && mainProject->file[i]->isVisible) {
 			//cairo_push_group (cr);
 			gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &renderInfo);
@@ -500,7 +500,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			   "\n\n%-45s   %-10s\n",
 			   "Files processed",
 			   "Layer number");
-    for (idx = 0; idx <= mainProject->max_files-1; idx++) {
+    for (idx = 0; idx <= mainProject->last_loaded; idx++) {
 	if (mainProject->file[idx] &&
 	    mainProject->file[idx]->isVisible &&
 	    (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
@@ -937,7 +937,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     
     g_string_append_printf(general_report_string, 
 			   "\n\nFiles processed:\n");
-    for (idx = mainProject->max_files-1; idx >= 0; idx--) {
+    for (idx = mainProject->last_loaded; idx >= 0; idx--) {
 	if (mainProject->file[idx] &&
 	    mainProject->file[idx]->isVisible &&
 	    (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {
@@ -1999,7 +1999,7 @@ callbacks_update_layer_tree (void) {
 			oldSelectedRow = 0;
 		gtk_list_store_clear (list_store);
 
-		for (idx = 0; idx < mainProject->max_files; idx++) {
+		for (idx = 0; idx <= mainProject->last_loaded; idx++) {
 			if (mainProject->file[idx]) {
 				GdkPixbuf    *pixbuf,*blackPixbuf;
 				guint32 color;

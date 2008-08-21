@@ -371,7 +371,7 @@ void render_selection_layer (void){
 					gerbv_selection_item_t, 0);
 			matchImage = (gerbv_image_t *) sItem.image;	
 			dprintf("    .... calling render_image_to_cairo_target on selection layer...\n");
-			for(j = mainProject->max_files-1; j >= 0; j--) {
+			for(j = mainProject->last_loaded; j >= 0; j--) {
 				if ((mainProject->file[j]) && (mainProject->file[j]->image == matchImage)) {
 					draw_image_to_cairo_target (cr, mainProject->file[j]->image,
 						mainProject->file[j]->transform.inverted,
@@ -412,7 +412,7 @@ void render_refresh_rendered_image_on_screen (void) {
 	     * This now allows drawing several layers on top of each other.
 	     * Higher layer numbers have higher priority in the Z-order.
 	     */
-	    for(i = mainProject->max_files-1; i >= 0; i--) {
+	    for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i]) {
 		    cairo_t *cr;
 		    if (mainProject->file[i]->privateRenderData) 
@@ -542,7 +542,7 @@ void render_recreate_composite_surface () {
 		(double) mainProject->background.blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
 	
-	for(i = mainProject->max_files-1; i >= 0; i--) {
+	for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i] && mainProject->file[i]->isVisible) {
 			cairo_set_source_surface (cr, (cairo_surface_t *) mainProject->file[i]->privateRenderData,
 			                              0, 0);
@@ -595,21 +595,6 @@ render_free_screen_resources (void) {
 		gdk_pixmap_unref(screen.pixmap);
 }
 
-void
-render_free_private_render_info (gerbv_project_t *gerbvProject){
-	int i;
-#ifndef RENDER_USING_GDK
-	/* destroy all the cairo surfaces */
-	for(i = gerbvProject->max_files-1; i >= 0; i--) {
-		if (gerbvProject->file[i]) {
-			if (gerbvProject->file[i]->privateRenderData) {
-				cairo_surface_destroy ((cairo_surface_t *)
-					gerbvProject->file[i]->privateRenderData);
-			}			
-		}
-	}
-#endif
-}
 
 /* ------------------------------------------------------------------ */
 /*! This fills out the project's Gerber statistics table.
@@ -627,7 +612,7 @@ generate_gerber_analysis(void)
 	stats = gerbv_stats_new();
 
 	/* Loop through open layers and compile statistics by accumulating reports from each layer */
-	for (i = 0; i <= mainProject->max_files-1; i++) {
+	for (i = 0; i <= mainProject->last_loaded; i++) {
 		if (mainProject->file[i] && mainProject->file[i]->isVisible &&
 				(mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
 			instats = mainProject->file[i]->image->gerbv_stats;
@@ -652,7 +637,7 @@ generate_drill_analysis(void)
 	stats = gerbv_drill_stats_new();
 
 	/* Loop through open layers and compile statistics by accumulating reports from each layer */
-	for(i = mainProject->max_files-1; i >= 0; i--) {
+	for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i] && 
 				mainProject->file[i]->isVisible &&
 				(mainProject->file[i]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {

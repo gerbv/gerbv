@@ -149,10 +149,14 @@ gerbv_destroy_project (gerbv_project_t *gerbvProject){
 	int i;
 	
 	/* destroy all the files attached to the project */
-	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+	for(i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i])
 			gerbv_destroy_fileinfo (gerbvProject->file[i]);
 	}
+	/* destroy strings */
+	g_free (gerbvProject->path);
+	g_free (gerbvProject->execpath);
+	g_free (gerbvProject->project);
 	/* destroy the fileinfo array */
 	g_free (gerbvProject->file);
 	g_free (gerbvProject);
@@ -164,6 +168,12 @@ gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo){
 	gerbv_destroy_image (fileInfo->image);
 	g_free (fileInfo->fullPathname);
 	g_free (fileInfo->name);
+#ifndef RENDER_USING_GDK
+	if (fileInfo->privateRenderData) {
+		cairo_surface_destroy ((cairo_surface_t *)
+			fileInfo->privateRenderData);
+	}			
+#endif
 }
 
 /* ------------------------------------------------------------------ */
@@ -252,19 +262,15 @@ void
 gerbv_unload_layer(gerbv_project_t *gerbvProject, int index) 
 {
     gint i;
-    
-    gerbv_destroy_image(gerbvProject->file[index]->image);  gerbvProject->file[index]->image = NULL;
-    g_free(gerbvProject->file[index]->name);
-    gerbvProject->file[index]->name = NULL;
-    g_free(gerbvProject->file[index]);
-    gerbvProject->file[index] = NULL;
+
+    gerbv_destroy_fileinfo (gerbvProject->file[index]);
     
     /* slide all later layers down to fill the empty slot */
-    for (i=index; i<(gerbvProject->max_files-1); i++) {
+    for (i=index; i<(gerbvProject->last_loaded); i++) {
 	gerbvProject->file[i]=gerbvProject->file[i+1];
     }
     /* make sure the final spot is clear */
-    gerbvProject->file[gerbvProject->max_files-1] = NULL;
+    gerbvProject->file[gerbvProject->last_loaded] = NULL;
     gerbvProject->last_loaded--;
 } /* gerbv_unload_layer */
 
@@ -276,7 +282,7 @@ gerbv_unload_all_layers (gerbv_project_t *gerbvProject)
 
     /* Must count down since gerbv_unload_layer collapses
      * layers down.  Otherwise, layers slide past the index */
-    for (index = gerbvProject->max_files-1 ; index >= 0; index--) {
+    for (index = gerbvProject->last_loaded ; index >= 0; index--) {
 	if (gerbvProject->file[index] && gerbvProject->file[index]->name) {
 	    gerbv_unload_layer (gerbvProject, index);
 	}
@@ -520,7 +526,7 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 	int i;
 	gerbv_image_info_t *info;
 
-	for(i = 0; i < gerbvProject->max_files; i++) {
+	for(i = 0; i <= gerbvProject->last_loaded; i++) {
 		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
 			info = gerbvProject->file[i]->image->info;
 			/* 
@@ -598,7 +604,7 @@ gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_rend
 	int i;
 	gerbv_image_info_t *info;
 	
-	for(i = 0; i < gerbvProject->max_files; i++) {
+	for(i = 0; i <= gerbvProject->last_loaded; i++) {
 		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
 			info = gerbvProject->file[i]->image->info;
 
@@ -640,7 +646,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 	* This now allows drawing several layers on top of each other.
 	* Higher layer numbers have higher priority in the Z-order. 
 	*/
-	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+	for(i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
 			gerbv_polarity_t polarity;
 
@@ -711,7 +717,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 					gerbv_selection_item_t, 0);
 			matchImage = (gerbv_image_t *) sItem.image;	
 
-			for(j = gerbvProject->max_files-1; j >= 0; j--) {
+			for(j = gerbvProject->last_loaded; j >= 0; j--) {
 				if ((gerbvProject->file[j]) && (gerbvProject->file[j]->image == matchImage)) {
 					draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[j]->image,
 						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
@@ -739,7 +745,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerb
 	int i;
 	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
 	/* don't paint background for vector output, since it isn't needed */
-	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+	for(i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
 
 		    gerbv_render_layer_to_cairo_target_without_transforming(cr, gerbvProject->file[i], renderInfo);
@@ -759,7 +765,7 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t 
 		(double) gerbvProject->background.green/G_MAXUINT16,
 		(double) gerbvProject->background.blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
-	for(i = gerbvProject->max_files-1; i >= 0; i--) {
+	for(i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
 			cairo_push_group (cr);
 			gerbv_render_layer_to_cairo_target (cr, gerbvProject->file[i], renderInfo);
@@ -828,5 +834,4 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 	cairo_restore (cr);
 }
 #endif
-
 

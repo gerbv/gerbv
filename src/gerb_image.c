@@ -125,7 +125,7 @@ gerbv_destroy_image(gerbv_image_t *image)
      */
     for (i = 0; i < APERTURE_MAX; i++) 
 	if (image->aperture[i] != NULL) {
-	    for (sam = image->aperture[i]->simplified; sam!=NULL; ){
+	    for (sam = image->aperture[i]->simplified; sam != NULL; ){
 	      sam2 = sam->next;
 	    	g_free (sam);
 	    	sam = sam2;
@@ -153,12 +153,9 @@ gerbv_destroy_image(gerbv_image_t *image)
      * Free info
      */
     if (image->info) {
-	if (image->info->name)
-	    g_free(image->info->name);
-
-	if (image->info->type)
-	    g_free(image->info->type);
-
+	g_free(image->info->name);
+	g_free(image->info->type);
+	g_free(image->info->attr_list);
 	g_free(image->info);
     }
     

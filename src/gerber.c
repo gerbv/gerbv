@@ -125,7 +125,6 @@ gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
 		if (image->aperture[i] == NULL) {
 			image->aperture[i] = g_new0 (gerbv_aperture_t, 1);
 			image->aperture[i]->type = apertureType;
-			image->aperture[i]->amacro = NULL;
 			image->aperture[i]->parameter[0] = parameter1;
 			image->aperture[i]->parameter[1] = parameter2;
 			*indexNumber = i;
