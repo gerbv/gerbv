@@ -250,6 +250,9 @@ rm -fr tmppng
 #
 #pkg-config-0.23.tar.gz
 #pkg-config-0.23-2.zip
+tar -zxvf ${gtk_win32_downloads}/pkg-config-*.tar.gz
+cat pkg-config-*/COPYING >> ${gtk_win32_runtime}/LICENSE-gpl2
+rm -fr pkg-config-*
 
 # LGPL
 #
