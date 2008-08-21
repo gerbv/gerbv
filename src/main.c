@@ -313,7 +313,6 @@ main(int argc, char *argv[])
     gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
 	   userSuppliedWidth=0, userSuppliedHeight=0, userSuppliedBorder=0.05;
 
-
     /*
      * Setup the screen info. Must do this before getopt, since getopt
      * eventually will set some variables in screen.
@@ -323,6 +322,14 @@ main(int argc, char *argv[])
     
     mainProject = gerbv_create_project();
     mainProject->execpath = g_path_get_dirname(argv[0]);
+    
+    /* set default rendering mode */
+#ifdef WIN32
+    /* Cairo seems to render faster on Windows, so use it for default */
+    screenRenderInfo.renderType = 2;
+#else
+    screenRenderInfo.renderType = 0;
+#endif
 
     logToFileOption = FALSE;
     logToFileFilename = NULL;
