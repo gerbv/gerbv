@@ -88,9 +88,9 @@ void gerb_transf_reset(gerbv_transf_t* transf)
     memset(transf,0,sizeof(gerbv_transf_t));
     
     transf->r_mat[0][0] = transf->r_mat[1][1] = 1.0; /*off-diagonals 0 diagonals 1 */
-    transf->r_mat[1][0] = transf->r_mat[0][1] = 0.0;
+    //transf->r_mat[1][0] = transf->r_mat[0][1] = 0.0;
     transf->scale = 1.0;
-    transf->offset[0] = transf->offset[1] = 0.0;
+    //transf->offset[0] = transf->offset[1] = 0.0;
     
 } /*gerb_transf_reset*/
 
@@ -584,18 +584,33 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     memset((void *) image->aperture[0], 0, sizeof(gerbv_aperture_t));
     image->aperture[0]->type = GERBV_APTYPE_CIRCLE;
     image->aperture[0]->amacro = NULL;
-    image->aperture[0]->parameter[0] = 0.02;
+    image->aperture[0]->parameter[0] = 0.01;
     image->aperture[0]->nuf_parameters = 1;
 
     for (i = 0; i < parsedPickAndPlaceData->len; i++) {
 	PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
-	float radius;                         
+	float radius,labelOffset;  
+	                       
 	curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	curr_net = curr_net->next;
 	assert(curr_net);
 	memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	curr_net->layer = image->layers;
-	curr_net->state = image->states;	
+	curr_net->state = image->states;
+	if ((partData.rotation > 89) && (partData.rotation < 91))
+		labelOffset = fabs(partData.length/2);
+	else if ((partData.rotation > 179) && (partData.rotation < 181))
+		labelOffset = fabs(partData.width/2);
+	else if ((partData.rotation > 269) && (partData.rotation < 271))
+		labelOffset = fabs(partData.length/2);
+	else if ((partData.rotation > -91) && (partData.rotation < -89))
+		labelOffset = fabs(partData.length/2);
+	else if ((partData.rotation > -181) && (partData.rotation < -179))
+		labelOffset = fabs(partData.width/2);
+	else if ((partData.rotation > -271) && (partData.rotation < -269))
+		labelOffset = fabs(partData.length/2);
+	else labelOffset = fabs(partData.width/2);
+	
 	partData.rotation *= M_PI/180; /* convert deg to rad */
 	/* check if the entry is on the specified layer */
 	if ((boardSide == 0) && !((partData.layer[0]=='b') || (partData.layer[0]=='B')))
@@ -605,20 +620,12 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	if ((partData.shape == PART_SHAPE_RECTANGLE) ||
 	    (partData.shape == PART_SHAPE_STD)) {
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
-	    gerb_transf_reset(tr_rot);
-	    
-	    gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
-	    /* unrotate the part to make sure the label is in the same location */
-	    gerb_transf_rotate(tr_rot, -partData.rotation);
+
 	    /* this first net is just a label holder, so calculate the lower
 	       left location to line up above the element */
-	    gerb_transf_apply(-partData.length/2,partData.width/2, tr_rot, 
-			      &curr_net->start_x, &curr_net->start_y);
-	    gerb_transf_apply(-partData.length/2,partData.width/2, tr_rot, 
-			      &curr_net->stop_x, &curr_net->stop_y);
-	    /* re-rotate back to the correct orientation */
-	    gerb_transf_rotate(tr_rot, partData.rotation);
 	    
+	    curr_net->start_x = curr_net->stop_x = partData.mid_x;
+	    curr_net->start_y = curr_net->stop_y = partData.mid_y + labelOffset + 0.01;   
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_OFF;
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
@@ -631,9 +638,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    if (strlen (partData.designator) > 0) {
 		curr_net->label = g_string_new (partData.designator);
 	    }
-	    
-	    /* rotate 180 to line up with PCB standard notation */
-	    gerb_transf_rotate(tr_rot, M_PI);
+
+	    gerb_transf_reset(tr_rot);
+	    gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
+	    gerb_transf_rotate(tr_rot, partData.rotation);
 	    
 	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
