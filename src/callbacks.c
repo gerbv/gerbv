@@ -2088,7 +2088,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 
         if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
 	    interface_show_alert_dialog("No object is currently selected",
-                                        NULL,
+                                        "Objects must be selected using the pointer tool before you can view the object properties.",
                                         FALSE,
                                         NULL);
 	    return;
