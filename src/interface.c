@@ -235,7 +235,6 @@ interface_create_gui (int req_width, int req_height)
 	measurepixbuf = gdk_pixbuf_new_from_inline(-1, ruler, FALSE, NULL);
 	
 	tooltips = gtk_tooltips_new();
-
 	accel_group = gtk_accel_group_new ();
 
 	mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -269,22 +268,20 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
 
-	if (gtk_stock_lookup("gtk-save", &item)) {
-	    gchar new_save[] = "_Save active layer"; 
-	    item.label = new_save;
-	    gtk_stock_add(&item, 1);
-	}
-	save_layer = gtk_image_menu_item_new_from_stock ("gtk-save", accel_group);
+	save_layer = gtk_image_menu_item_new_with_mnemonic (_("_Save active layer"));
 	gtk_tooltips_set_tip (tooltips, save_layer, "Save the active layer", NULL);
+	tempImage = gtk_image_new_from_stock ("gtk-save", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save_layer), tempImage);
+	gtk_widget_add_accelerator (save_layer, "activate", accel_group, 'S', GDK_CONTROL_MASK,
+				GTK_ACCEL_VISIBLE);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_layer);
 	
-	if (gtk_stock_lookup("gtk-save-as", &item)) {
-	    gchar new_saveas[] = "Save active layer _As..."; 
-	    item.label = new_saveas;
-	    gtk_stock_add(&item, 1);
-	}
-	save_as_layer = gtk_image_menu_item_new_from_stock ("gtk-save-as", accel_group);
+	save_as_layer = gtk_image_menu_item_new_with_mnemonic (_("Save active layer _As..."));
 	gtk_tooltips_set_tip (tooltips, save_as_layer, "Save the active layer to a new file", NULL);
+	tempImage = gtk_image_new_from_stock ("gtk-save-as", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save_as_layer), tempImage);
+	gtk_widget_add_accelerator (save_as_layer, "activate", accel_group, 'S',
+			GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as_layer);
 	
 	separator1 = gtk_separator_menu_item_new ();
@@ -297,17 +294,10 @@ interface_create_gui (int req_width, int req_height)
 	image33 = gtk_image_new_from_stock ("gtk-open", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
 
-	
 	save = gtk_image_menu_item_new_with_mnemonic ("Save Project");
 	gtk_tooltips_set_tip (tooltips, save, "Save the current project", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save);
 
-	if (gtk_stock_lookup("gtk-save-as", &item)) {
-	    gchar new[] = "Save Project as..."; 
-	    item.label = new;
-	    gtk_stock_add(&item, 1);
-	}
-	
 	save_as = gtk_image_menu_item_new_with_mnemonic ("Save Project As...");
 	gtk_tooltips_set_tip (tooltips, save_as, "Save the current project to a new file", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as);
