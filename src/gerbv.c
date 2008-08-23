@@ -594,27 +594,17 @@ gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_in
 		((double) renderInfo->displayWidth / 2.0 / renderInfo->scaleFactorX);
 	renderInfo->lowerLeftY = ((bb.top + bb.bottom) / 2.0) -
 		((double) renderInfo->displayHeight / 2.0 / renderInfo->scaleFactorY);
-	return;
 }
 
 /* ------------------------------------------------------------------ */
 void
 gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo) {
-	double x1=HUGE_VAL,y1=HUGE_VAL;
-	int i;
-	gerbv_image_info_t *info;
-	
-	for(i = 0; i <= gerbvProject->last_loaded; i++) {
-		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
-			info = gerbvProject->file[i]->image->info;
+	gerbv_render_size_t bb;
 
-			/* cairo info already has offset calculated into min/max */
-			x1 = MIN(x1, info->min_x);
-			y1 = MIN(y1, info->min_y);
-		}
-	}
-	renderInfo->lowerLeftX = x1;
-	renderInfo->lowerLeftY = y1;
+	/* Grab maximal width and height of all layers */
+	gerbv_render_get_boundingbox(gerbvProject, &bb);
+	renderInfo->lowerLeftX = bb.left;
+	renderInfo->lowerLeftY = bb.bottom;
 }
 
 /* ------------------------------------------------------------------ */
