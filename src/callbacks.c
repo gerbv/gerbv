@@ -268,6 +268,7 @@ callbacks_save_project_activate                       (GtkMenuItem     *menuitem
     main_save_project_from_filename (mainProject, mainProject->project);
   else
     callbacks_generic_save_activate (menuitem, (gpointer) CALLBACKS_SAVE_PROJECT_AS);
+  callbacks_update_layer_tree();
   return;
 }
 
@@ -291,6 +292,7 @@ callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
       return;
     }
   }
+  callbacks_update_layer_tree();
   return;
 }
 
@@ -366,6 +368,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		}
 	}
 	g_free (filename);
+	callbacks_update_layer_tree();
 	return;
 }
 
