@@ -144,16 +144,28 @@ static void
 gerbv_draw_oblong(cairo_t *cairoTarget, gdouble width, gdouble height)
 {
     /* --- This stuff produces a line + rounded ends --- */
+    gdouble circleDiameter, strokeDistance;
+    
     cairo_new_path (cairoTarget);
-    cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
-    cairo_set_line_width (cairoTarget, height);
-    cairo_move_to (cairoTarget, -width/2.0 + height/2.0, 0);
-    cairo_line_to (cairoTarget, width/2.0 - height/2.0, 0);
-    cairo_stroke (cairoTarget);
+    if (width < height) {
+    	circleDiameter = width;
+    	strokeDistance = (height - width)/2.0;
+    	cairo_arc (cairoTarget, 0.0, strokeDistance, circleDiameter/2.0, 0, -M_PI);
+    	cairo_line_to (cairoTarget, -circleDiameter/2.0, -strokeDistance);
+    	cairo_arc (cairoTarget, 0.0, -strokeDistance, circleDiameter/2.0, -M_PI, 0);
+    	cairo_line_to (cairoTarget, circleDiameter/2.0, strokeDistance);
+    }
+    else {
+    	circleDiameter = height;
+    	strokeDistance = (width - height)/2.0;
+    	cairo_arc (cairoTarget, -strokeDistance, 0.0, circleDiameter/2.0, M_PI/2.0, -M_PI/2.0);
+    	cairo_line_to (cairoTarget, strokeDistance, -circleDiameter/2.0);
+    	cairo_arc (cairoTarget, strokeDistance, 0.0, circleDiameter/2.0, -M_PI/2.0, M_PI/2.0);
+    	cairo_line_to (cairoTarget, -strokeDistance, circleDiameter/2.0);
+    }
+    /*  --- This stuff produces an oval pad --- */
     /* cairo doesn't have a function to draw ovals, so we must
      * draw an arc and stretch it by scaling different x and y values
-     */
-    /*  --- This stuff produces an oval pad --- 
     cairo_save (cairoTarget);
     cairo_scale (cairoTarget, width, height);
     gerbv_draw_circle (cairoTarget, 1);
