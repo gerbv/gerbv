@@ -355,11 +355,16 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			gint index=callbacks_get_selected_row_index();
 			
 			gerbv_save_layer_from_index (mainProject, index, filename);
+			/* rename the file path in the index, so future saves will reference the new file path */
+			g_free (mainProject->file[index]->fullPathname);
+			mainProject->file[index]->fullPathname = g_strdup (filename);
+			g_free (mainProject->file[index]->name);
+			mainProject->file[index]->name = g_path_get_basename (filename);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_RS274X) {
 			gint index=callbacks_get_selected_row_index();
 			
-			gerbv_export_rs274x_file_from_image (filename, mainProject->file[index]->image);
+			gerbv_export_rs274x_file_from_image (filename, mainProject->file[index]->image);	
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_DRILL) {
 			gint index=callbacks_get_selected_row_index();
