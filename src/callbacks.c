@@ -388,7 +388,7 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 {
 #ifndef RENDER_USING_GDK
 	GtkPrintSettings *pSettings = gtk_print_operation_get_print_settings (operation);
-	gerbv_render_info_t renderInfo = {1.0, 0, 0, 2,
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3,
 		(gint) gtk_print_context_get_width (context),
 		(gint) gtk_print_context_get_height (context)};
 	cairo_t *cr;

@@ -603,8 +603,10 @@ gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_rend
 
 	/* Grab maximal width and height of all layers */
 	gerbv_render_get_boundingbox(gerbvProject, &bb);
-	renderInfo->lowerLeftX = bb.left;
-	renderInfo->lowerLeftY = bb.bottom;
+	renderInfo->lowerLeftX = ((bb.left + bb.right) / 2.0) -
+		((double) renderInfo->displayWidth / 2.0 / renderInfo->scaleFactorX);
+	renderInfo->lowerLeftY = ((bb.top + bb.bottom) / 2.0) -
+		((double) renderInfo->displayHeight / 2.0 / renderInfo->scaleFactorY);
 }
 
 /* ------------------------------------------------------------------ */
