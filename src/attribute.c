@@ -59,9 +59,12 @@ static GtkWidget ** all_widgets = NULL;
 static int n_widgets;
 
 void
-attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList){
-	/* insert destroy code here */
-	//g_free (attributeList);
+attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList)
+{
+
+  if (attributeList != NULL) {
+    free (attributeList);
+  }
 }
 
 static void clear_auto()
