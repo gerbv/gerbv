@@ -431,7 +431,8 @@ project_destroy_project_list (project_list_t *projectList){
 		tempP2 = tempP->next;
 		
 		g_free (tempP->filename);
-		attribute_destroy_HID_attribute (tempP->attr_list, tempP->attr_list);
+		attribute_destroy_HID_attribute (tempP->attr_list, tempP->n_attr);
+		tempP->attr_list = NULL;
 		tempP = tempP2;
 	}
 }
