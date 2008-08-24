@@ -920,5 +920,5 @@ gerbv_stats_add_layer(gerbv_stats_t *accum_stats,
 );
 
 void
-attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList);
+attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList, int n_attr);
 

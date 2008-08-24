@@ -59,9 +59,19 @@ static GtkWidget ** all_widgets = NULL;
 static int n_widgets;
 
 void
-attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList)
+attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList, int n_attr)
 {
+  int i;
 
+  /* free the string attributes */
+  for (i = 0 ; i < n_attr ; i++) {
+    if (attributeList[i].type == HID_String &&
+	attributeList[i].default_val.str_value != NULL) {
+      free (attributeList[i].default_val.str_value);
+    }
+  }
+
+  /* and free the attribute list */
   if (attributeList != NULL) {
     free (attributeList);
   }
