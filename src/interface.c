@@ -264,10 +264,6 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_layer);
 	gtk_tooltips_set_tip (tooltips, open_layer, "Open Gerber, drill, or pick and place file(s)", NULL);
 
-	revert = gtk_image_menu_item_new_from_stock ("gtk-revert-to-saved", accel_group);
-	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
-
 	save_layer = gtk_image_menu_item_new_with_mnemonic (_("_Save active layer"));
 	gtk_tooltips_set_tip (tooltips, save_layer, "Save the active layer", NULL);
 	tempImage = gtk_image_new_from_stock ("gtk-save", GTK_ICON_SIZE_MENU);
@@ -302,6 +298,10 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, save_as, "Save the current project to a new file", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as);
 	
+	revert = gtk_image_menu_item_new_from_stock ("gtk-revert-to-saved", accel_group);
+	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
+
 	separatormenuitem1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separatormenuitem1);
 	gtk_widget_set_sensitive (separatormenuitem1, FALSE);
