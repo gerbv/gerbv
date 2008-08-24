@@ -31,6 +31,7 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
+#include "gerbv.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,6 +43,8 @@ attribute_interface_dialog (gerbv_HID_Attribute *, int, gerbv_HID_Attr_Val *,
 void
 attribute_merge (gerbv_HID_Attribute *, int, gerbv_HID_Attribute *, int);
 
+gerbv_HID_Attribute *
+attribute_dup (gerbv_HID_Attribute *, int);
 #ifdef __cplusplus
 }
 #endif

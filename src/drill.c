@@ -54,6 +54,7 @@
 #include <unistd.h>
 #endif
 
+#include "attribute.h"
 #include "gerbv.h"
 #include "drill.h"
 #include "drill_stats.h"
@@ -246,24 +247,19 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	GERB_FATAL_ERROR("malloc image failed\n");
 
     if (reload && attr_list != NULL) {
-	image->info->attr_list = attr_list;
+      /* FIXME there should probably just be a function to copy an
+	 attribute list including using strdup as needed */
+
 	image->info->n_attr = n_attr;
+	image->info->attr_list = attribute_dup(attr_list, n_attr);
+
     } else {
 	/* Copy in the default attribute list for drill files.  We make a
 	 * copy here because we will allow per-layer editing of the
 	 * attributes.
 	 */
 	image->info->n_attr = sizeof (drill_attribute_list) / sizeof (drill_attribute_list[0]);
-	image->info->attr_list = (gerbv_HID_Attribute *) malloc (sizeof (drill_attribute_list));
-	if (image->info->attr_list == NULL) {
-	    fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
-	    exit (1);
-	}
-	dprintf ("%s(): New attribute list is %p\n", __FUNCTION__, image->info->attr_list);
-
-	for (i = 0 ; i < image->info->n_attr ; i++) {
-	    image->info->attr_list[i] = drill_attribute_list[i];
-	}
+	image->info->attr_list = attribute_dup (drill_attribute_list, image->info->n_attr);
 
 	/* now merge any project attributes */
 	drill_attribute_merge (image->info->attr_list, image->info->n_attr,
