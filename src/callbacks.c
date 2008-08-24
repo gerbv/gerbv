@@ -256,7 +256,7 @@ callbacks_revert_activate                     (GtkMenuItem     *menuitem,
 {
 	gerbv_revert_all_files (mainProject);
 	render_refresh_rendered_image_on_screen();
-	/* callbacks_update_layer_tree(); */
+	callbacks_update_layer_tree();
 }
 
 /* --------------------------------------------------------- */
@@ -1887,6 +1887,7 @@ callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index = callbacks_get_selected_row_index();
 	gerbv_revert_file (mainProject, index);
 	render_refresh_rendered_image_on_screen ();
+	callbacks_update_layer_tree();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1948,6 +1949,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     if (results)
 	free (results);
     render_refresh_rendered_image_on_screen();
+    callbacks_update_layer_tree();
 }
 
 /* --------------------------------------------------------------------------- */

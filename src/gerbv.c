@@ -241,7 +241,6 @@ gerbv_revert_file(gerbv_project_t *gerbvProject, int idx){
   
   rv = gerbv_open_image(gerbvProject, gerbvProject->file[idx]->fullPathname, idx, TRUE, NULL, 0, TRUE);
   gerbvProject->file[idx]->layer_dirty = FALSE;
-  callbacks_update_layer_tree();
   return rv;
 }
 
@@ -255,7 +254,6 @@ gerbv_revert_all_files(gerbv_project_t *gerbvProject)
     if (gerbvProject->file[idx] && gerbvProject->file[idx]->fullPathname) {
       (void) gerbv_revert_file (gerbvProject, idx);
       gerbvProject->file[idx]->layer_dirty = FALSE;
-      callbacks_update_layer_tree();
     }
   }
 } /* gerbv_revert_all_files */

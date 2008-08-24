@@ -233,7 +233,7 @@ interface_create_gui (int req_width, int req_height)
 	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
 	zoompixbuf = gdk_pixbuf_new_from_inline(-1, lzoom, FALSE, NULL);
 	measurepixbuf = gdk_pixbuf_new_from_inline(-1, ruler, FALSE, NULL);
-	
+
 	tooltips = gtk_tooltips_new();
 	accel_group = gtk_accel_group_new ();
 
@@ -246,9 +246,11 @@ interface_create_gui (int req_width, int req_height)
 	menubar1 = gtk_menu_bar_new ();
 	gtk_box_pack_start (GTK_BOX (vbox1), menubar1, FALSE, FALSE, 0);
 
+	/* --- File menu --- */
 	menuitem_file = gtk_menu_item_new_with_mnemonic (_("_File"));
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_file);
 
+	/* File menu items dealing with a gerbv project. */
 	menuitem_file_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_file), menuitem_file_menu);
 
@@ -258,6 +260,30 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_add_accelerator (new, "activate", accel_group,
 	                        GDK_n, (GdkModifierType) GDK_CONTROL_MASK,
 	                        GTK_ACCEL_VISIBLE);
+
+
+	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open Project..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_project);
+	gtk_tooltips_set_tip (tooltips, open_project, "Open an existing Gerbv project", NULL);
+	image33 = gtk_image_new_from_stock ("gtk-open", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
+
+	save = gtk_image_menu_item_new_with_mnemonic ("Save Project");
+	gtk_tooltips_set_tip (tooltips, save, "Save the current project", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save);
+
+	save_as = gtk_image_menu_item_new_with_mnemonic ("Save Project As...");
+	gtk_tooltips_set_tip (tooltips, save_as, "Save the current project to a new file", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as);
+	
+	revert = gtk_image_menu_item_new_from_stock ("gtk-revert-to-saved", accel_group);
+	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
+
+	/* File menu items dealing individual layers. */
+	separator1 = gtk_separator_menu_item_new ();
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
+	gtk_widget_set_sensitive (separator1, FALSE);
 
 	open_layer = gtk_menu_item_new_with_mnemonic (_("Open _Layer(s)..."));
 	
@@ -279,29 +305,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_add_accelerator (save_as_layer, "activate", accel_group, 'S',
 			GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as_layer);
-	
-	separator1 = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
-	gtk_widget_set_sensitive (separator1, FALSE);
 
-	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open Project..."));
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_project);
-	gtk_tooltips_set_tip (tooltips, open_project, "Open an existing Gerbv project", NULL);
-	image33 = gtk_image_new_from_stock ("gtk-open", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
-
-	save = gtk_image_menu_item_new_with_mnemonic ("Save Project");
-	gtk_tooltips_set_tip (tooltips, save, "Save the current project", NULL);
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save);
-
-	save_as = gtk_image_menu_item_new_with_mnemonic ("Save Project As...");
-	gtk_tooltips_set_tip (tooltips, save_as, "Save the current project to a new file", NULL);
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as);
-	
-	revert = gtk_image_menu_item_new_from_stock ("gtk-revert-to-saved", accel_group);
-	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
-
+	/* File menu items dealing with exporting different types of files. */
 	separatormenuitem1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separatormenuitem1);
 	gtk_widget_set_sensitive (separatormenuitem1, FALSE);
@@ -343,6 +348,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (export_menu), drill);
 	gtk_tooltips_set_tip (tooltips, drill, _("Export layer to an Excellon drill file"), NULL);
 	
+	/* File menu items dealing with printing and quitting. */
 	separator1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
 	gtk_widget_set_sensitive (separator1, FALSE);
@@ -367,7 +373,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, quit, "Quit Gerbv", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), quit);
 
-	/* --- Next menu item --- */
+	/* --- Next menu item (Edit) --- */
 	menuitem_edit = gtk_menu_item_new_with_mnemonic (_("_Edit"));
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_edit);
 
