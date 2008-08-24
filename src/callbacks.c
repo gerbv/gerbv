@@ -1900,6 +1900,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     gerbv_HID_Attr_Val * results = NULL;
     gint index = callbacks_get_selected_row_index();
     gchar *type;
+    gint rc;
 
     dprintf ("%s(): index = %d\n", __FUNCTION__, index);
     attr = mainProject->file[index]->image->info->attr_list;
@@ -1920,6 +1921,14 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     dprintf ("%s(): n = %d, attr = %p\n", __FUNCTION__, n, attr);
     if (n > 0)
 	{
+	    if (mainProject->file[index]->layer_dirty) {
+		rc = interface_get_alert_dialog_response ("This layer has changed!", 
+							  "Editing the file type will reload the layer, destroying your changes.  Click OK to edit the file type and destroy your changes, or Cancel to leave.",
+							  TRUE,
+							  TRUE);
+		if (rc == 0) return;  /* Return if user hit Cancel */
+	    }
+
 	    results = (gerbv_HID_Attr_Val *) malloc (n * sizeof (gerbv_HID_Attr_Val));
 	    if (results == NULL)
 		{
