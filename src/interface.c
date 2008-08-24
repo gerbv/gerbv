@@ -411,17 +411,17 @@ interface_create_gui (int req_width, int req_height)
 	menuitem_analyze_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_analyze), menuitem_analyze_menu);
 
-	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("_Analyze visible Gerber layers"));
+	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("Analyze visible _Gerber layers"));
 	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, 
 			      "Examine a detailed anaylsis of the contents of all visible Gerber layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_gerbers);
 
-	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("_Analyze visible drill layers"));
+	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("Analyze visible _drill layers"));
 	gtk_tooltips_set_tip (tooltips, analyze_active_drill, 
 			      "Examine a detailed anaylsis of the contents of all visible drill layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_drill);
 
-	analyze_display_selected_obj_props = gtk_menu_item_new_with_mnemonic (_("_Display selected object(s) properties"));
+	analyze_display_selected_obj_props = gtk_menu_item_new_with_mnemonic (_("Display selected object(s) _properties"));
 	gtk_tooltips_set_tip (tooltips, analyze_display_selected_obj_props, 
 			      "Show the properties of the selected object(s).", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_display_selected_obj_props);
