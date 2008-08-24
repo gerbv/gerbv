@@ -155,7 +155,7 @@ gerbv_destroy_image(gerbv_image_t *image)
     if (image->info) {
 	g_free(image->info->name);
 	g_free(image->info->type);
-	attribute_destroy_HID_attribute (image->info->attr_list, image->info->n_attr);
+	gerbv_attribute_destroy_HID_attribute (image->info->attr_list, image->info->n_attr);
 	g_free(image->info);
     }
     

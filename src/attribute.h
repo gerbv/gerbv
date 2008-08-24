@@ -43,8 +43,6 @@ attribute_interface_dialog (gerbv_HID_Attribute *, int, gerbv_HID_Attr_Val *,
 void
 attribute_merge (gerbv_HID_Attribute *, int, gerbv_HID_Attribute *, int);
 
-gerbv_HID_Attribute *
-attribute_dup (gerbv_HID_Attribute *, int);
 #ifdef __cplusplus
 }
 #endif

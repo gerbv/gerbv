@@ -250,7 +250,7 @@ gerbv_revert_all_files(gerbv_project_t *gerbvProject)
 {
   int idx;
   
-  for (idx = 0; idx < gerbvProject->max_files; idx++) {
+  for (idx = 0; idx <= gerbvProject->last_loaded; idx++) {
     if (gerbvProject->file[idx] && gerbvProject->file[idx]->fullPathname) {
       (void) gerbv_revert_file (gerbvProject, idx);
       gerbvProject->file[idx]->layer_dirty = FALSE;
@@ -827,4 +827,59 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 	cairo_restore (cr);
 }
 #endif
+
+void
+gerbv_attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList, int n_attr)
+{
+  int i;
+
+  /* free the string attributes */
+  for (i = 0 ; i < n_attr ; i++) {
+    if ( (attributeList[i].type == HID_String ||
+	  attributeList[i].type == HID_Label) &&
+	attributeList[i].default_val.str_value != NULL) {
+      free (attributeList[i].default_val.str_value);
+    }
+  }
+
+  /* and free the attribute list */
+  if (attributeList != NULL) {
+    free (attributeList);
+  }
+}
+
+
+/* allocate memory and make a copy of an attribute list */
+gerbv_HID_Attribute *
+gerbv_attribute_dup (gerbv_HID_Attribute *attributeList, int n_attr)
+{
+  gerbv_HID_Attribute *nl;
+  int i;
+
+  nl = (gerbv_HID_Attribute *) malloc (n_attr * sizeof (gerbv_HID_Attribute));
+  if (nl == NULL) {
+    fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+    exit (1);
+  }
+
+  /* copy the attribute list being sure to strdup the strings */
+  for (i = 0 ; i < n_attr ; i++) {
+
+    if (attributeList[i].type == HID_String ||
+	attributeList[i].type == HID_Label) {
+
+      if (attributeList[i].default_val.str_value != NULL) {
+	nl[i].default_val.str_value = strdup (attributeList[i].default_val.str_value);
+      } else {
+	nl[i].default_val.str_value = NULL;
+      }
+
+    } else {
+      nl[i] = attributeList[i];
+    }
+  }
+
+  return nl;
+}
+
 

@@ -228,7 +228,6 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     gerbv_net_t *curr_net = NULL;
     int read;
     gerbv_drill_stats_t *stats;
-    int i;
     gchar *tmps;
     gchar *string;
 
@@ -251,7 +250,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	 attribute list including using strdup as needed */
 
 	image->info->n_attr = n_attr;
-	image->info->attr_list = attribute_dup(attr_list, n_attr);
+	image->info->attr_list = gerbv_attribute_dup(attr_list, n_attr);
 
     } else {
 	/* Copy in the default attribute list for drill files.  We make a
@@ -259,7 +258,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	 * attributes.
 	 */
 	image->info->n_attr = sizeof (drill_attribute_list) / sizeof (drill_attribute_list[0]);
-	image->info->attr_list = attribute_dup (drill_attribute_list, image->info->n_attr);
+	image->info->attr_list = gerbv_attribute_dup (drill_attribute_list, image->info->n_attr);
 
 	/* now merge any project attributes */
 	drill_attribute_merge (image->info->attr_list, image->info->n_attr,
