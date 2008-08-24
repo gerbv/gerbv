@@ -55,6 +55,9 @@ For help with using the standalone Gerbv software, please refer to the man page 
 the command "man gerbv") or go to the Gerbv homepage for documentation (http://gerbv.sourceforge.net).
 */
 
+#ifndef __GERBV_H__
+#define __GERBV_H__
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -922,3 +925,4 @@ gerbv_stats_add_layer(gerbv_stats_t *accum_stats,
 void
 attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList, int n_attr);
 
+#endif /* __GERBV_H__ */
