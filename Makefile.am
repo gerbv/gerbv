@@ -23,7 +23,7 @@ SUBDIRS = src man doc example desktop scheme test win32
 
 EXTRA_DIST = CONTRIBUTORS HACKING AUTHORS ChangeLog COPYING INSTALL \
 	INSTALL.MINGW.WIN32 NEWS README \
-	README-Pick-and-Place-search_parts.txt TODO \
+	TODO \
 	autogen.sh  README-cvs.txt README-release.txt \
 	README-win32.txt icon-theme-installer BUGS
 
