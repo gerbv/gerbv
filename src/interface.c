@@ -1351,7 +1351,8 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText,
   if (gtk_dialog_run ((GtkDialog*)dialog1) == GTK_RESPONSE_OK) {
     /* check to see if user clicked on "do not show again" box */
     if ((show_checkbox == TRUE) &&
-	(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)) == TRUE)) {
+	(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)) == TRUE) &&
+	(ask_to_show_again != NULL) ) {
       /* The user clicked the "do not show again box".  Set corresponding
        * flag to FALSE. */
       *ask_to_show_again = FALSE;
@@ -1436,7 +1437,8 @@ interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText,
 
   /* check to see if user clicked on "do not show again" box */
   if ((show_checkbox == TRUE) &&
-      (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)) == TRUE)) {
+      (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)) == TRUE) &&
+      (ask_to_show_again != NULL) ) {
     /* The user clicked the "do not show again box".  Set corresponding
      * flag to FALSE. */
     *ask_to_show_again = FALSE;
