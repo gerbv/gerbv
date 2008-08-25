@@ -111,6 +111,22 @@ else
 DRAW=		${GDK_DRAW}
 endif
 
+callbacks.$(OBJEXT) : authors.c bugs.c
+TXT2CL=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;",;g'
+TXT2CS=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;";g'
+
+authors.c: $(top_srcdir)/AUTHORS Makefile
+	num=`wc -l $(top_srcdir)/AUTHORS | awk '{print $$1 + 1}'` && echo "const gchar * authors[$$num] = {" > $@
+	${TXT2CL} $(top_srcdir)/AUTHORS >> $@
+	echo 'NULL};' >> $@
+
+bugs.c: $(top_srcdir)/BUGS Makefile
+	echo 'gchar * bugs_string = g_strdup_printf(' > $@
+	${TXT2CS} $(top_srcdir)/BUGS >> $@
+	echo ');' >> $@
+
+CLEANFILES=	authors.c bugs.c
+
 EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW} gerbv.rc libgerbv.pc.in run_gerbv.in
 
 scmdatadir = $(pkgdatadir)/scheme/
