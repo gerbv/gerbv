@@ -1351,7 +1351,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), string);
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG (aboutdialog1), license);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG (aboutdialog1), authors);
-	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG (aboutdialog1), NULL);
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG (aboutdialog1), "http://gerbv.sf.net/");
 
 	g_signal_connect (G_OBJECT(aboutdialog1),"response",
 		      G_CALLBACK (gtk_widget_destroy), GTK_WIDGET(aboutdialog1));
