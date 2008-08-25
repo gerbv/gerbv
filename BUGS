@@ -16,6 +16,9 @@ traces and circular pads.  Until cairo, a 3rd party library, is fixed
 the workaround if you need to print is to export to PDF and use the free
 adobe reader software to open and print the PDF file.
 
+Cairo version 1.6.4 is known to have this bug.  It is possible that later
+versions have fixed it.
+
 -------------------------------
 
 Win32:
