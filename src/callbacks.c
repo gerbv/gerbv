@@ -1925,7 +1925,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 		rc = interface_get_alert_dialog_response ("This layer has changed!", 
 							  "Editing the file type will reload the layer, destroying your changes.  Click OK to edit the file type and destroy your changes, or Cancel to leave.",
 							  TRUE,
-							  TRUE);
+							  NULL);
 		if (rc == 0) return;  /* Return if user hit Cancel */
 	    }
 
