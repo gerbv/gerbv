@@ -45,6 +45,19 @@
 #include <cairo.h>
 
 #define dprintf if(DEBUG) printf
+gboolean
+draw_net_in_selection_buffer (gerbv_net_t *net, gerbv_selection_info_t *selectionInfo) {
+	int i;
+	
+	for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
+		gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+			gerbv_selection_item_t, i);
+		if (sItem.net == net)
+			return TRUE;
+	}
+	return FALSE;
+}
+			
 static void
 draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStroke,
 		gerbv_selection_info_t *selectionInfo, gerbv_image_t *image, struct gerbv_net *net){
@@ -65,8 +78,10 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 		if ((isStroke && cairo_in_stroke (cairoTarget, corner1X, corner1Y)) ||
 			(!isStroke && cairo_in_fill (cairoTarget, corner1X, corner1Y))) {
 			/* add the net to the selection array */
-			gerbv_selection_item_t sItem = {image, net};
-			g_array_append_val (selectionInfo->selectedNodeArray, sItem);
+			if (!draw_net_in_selection_buffer(net, selectionInfo)) {
+				gerbv_selection_item_t sItem = {image, net};
+				g_array_append_val (selectionInfo->selectedNodeArray, sItem);
+			}
 		}
 	}
 	else if (selectionInfo->type == GERBV_SELECTION_DRAG_BOX) {
@@ -86,8 +101,10 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 		
 		if ((minX < x1) && (minY < y1) && (maxX > x2) && (maxY > y2)) {
 			/* add the net to the selection array */
-			gerbv_selection_item_t sItem = {image, net};
-			g_array_append_val (selectionInfo->selectedNodeArray, sItem); 
+			if (!draw_net_in_selection_buffer(net, selectionInfo)) {
+				gerbv_selection_item_t sItem = {image, net};
+				g_array_append_val (selectionInfo->selectedNodeArray, sItem);
+			}
 		}
 	}
 	/* clear the path, since we didn't actually draw it and cairo
@@ -600,19 +617,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		   we don't want to check the nets inside the polygon) then
 		   polygonStartNet will be set */
 		if (!polygonStartNet) {
-			int i;
-			gboolean foundNet = FALSE;
-			
-			for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
-				gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-					gerbv_selection_item_t, i);
-				if (sItem.net == net)
-					foundNet = TRUE;
-			}
-			if (!foundNet)
-				continue;
+			if (!draw_net_in_selection_buffer(net, selectionInfo))
+				continue;		
 		}
-		
 	}
 	for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
 	    for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
