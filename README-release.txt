@@ -19,6 +19,7 @@ upload the 'gerbv-$VERSION.tar.gz' file to the sourceforge file release system
 
 To make a gerbv release do the following:
 
+=) 	Review the BUGS file and make sure it is up to date.
 
 =)	# make sure it builds and makes distfiles ok:
 	./autogen.sh
