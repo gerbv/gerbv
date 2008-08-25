@@ -142,7 +142,8 @@ callbacks_new_activate                        (GtkMenuItem     *menuitem,
 	/* Unload all layers and then clear layer window */
 	gerbv_unload_all_layers (mainProject);
 	callbacks_update_layer_tree ();
-
+	render_clear_selection_buffer ();
+	
 	/* Destroy project info */
 	if (mainProject->project) {
 	    g_free(mainProject->project);
@@ -255,6 +256,8 @@ callbacks_revert_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gerbv_revert_all_files (mainProject);
+	render_clear_selection_buffer();
+	callbacks_update_selected_object_message(FALSE);
 	render_refresh_rendered_image_on_screen();
 	callbacks_update_layer_tree();
 }
@@ -1732,6 +1735,7 @@ callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data)
 	gint index=callbacks_get_selected_row_index();
 	
 	if ((index >= 0) && (index <= mainProject->last_loaded)) {
+		render_remove_selected_objects_belonging_to_layer (index);
 		gerbv_unload_layer (mainProject, index);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (0);
@@ -1885,6 +1889,8 @@ callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) 
 void
 callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index = callbacks_get_selected_row_index();
+
+	render_remove_selected_objects_belonging_to_layer (index);	
 	gerbv_revert_file (mainProject, index);
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree();
@@ -2261,6 +2267,7 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 	callbacks_update_layer_tree();
 
 	render_clear_selection_buffer ();
+	callbacks_update_selected_object_message(FALSE);
 #endif
 }
 
@@ -2444,6 +2451,33 @@ callbacks_update_statusbar_coordinates (gint x, gint y) {
 	callbacks_update_statusbar();
 }
 
+void
+callbacks_update_selected_object_message (gboolean userTriedToSelect) {
+	if (screen.tool != POINTER)
+		return;
+
+	gint selectionLength = screen.selectionInfo.selectedNodeArray->len;
+	if ((selectionLength == 0)&&(userTriedToSelect)) {
+		/* update status bar message to make sure the user knows
+		   about needing to select the layer */
+		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+	 		"<b>No object selected. Objects can only be selected in the active layer.</b>");
+	}
+	else if (selectionLength == 0) {
+		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+	 		"Click to select objects in the current layer. Middle click and drag to pan.");
+	}
+	else if (selectionLength == 1) {
+		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+	 		"1 object is currently selected");
+	}
+	else {
+		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+	 		"%d objects are currently selected",selectionLength);
+	}
+	callbacks_update_statusbar();
+}
+			
 /* --------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
@@ -2642,7 +2676,6 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 			if ((index >= 0) && 
 			    (mainProject->file[index]->isVisible)) {
 				gboolean eraseOldSelection = TRUE;
-				gint selectionLength;
 				
 				if ((event->state & GDK_SHIFT_MASK) ||
 				   (event->state & GDK_CONTROL_MASK)) {
@@ -2655,22 +2688,7 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 					render_fill_selection_buffer_from_mouse_drag(event->x,event->y,
 						screen.start_x,screen.start_y,index,eraseOldSelection);
 				/* check if anything was selected */
-				selectionLength = screen.selectionInfo.selectedNodeArray->len;
-				if (selectionLength == 0) {
-					/* update status bar message to make sure the user knows
-					   about needing to select the layer */
-					snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 		"<b>No object selected. Objects can only be selected in the active layer.</b>");
-				}
-				else if (selectionLength == 1) {
-					snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 		"1 object is currently selected");
-				}
-				else {
-					snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 		"%d objects are currently selected",selectionLength);
-				}
-				callbacks_update_statusbar();
+				callbacks_update_selected_object_message (TRUE);
 			} else {
 			    render_clear_selection_buffer ();
 			    render_refresh_rendered_image_on_screen ();

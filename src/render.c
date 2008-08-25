@@ -458,12 +458,29 @@ render_create_cairo_buffer_surface () {
 /* ------------------------------------------------------ */
 void
 render_clear_selection_buffer (void){
-  if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY)
-    return;
+	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY)
+		return;
 
-  g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
-			screen.selectionInfo.selectedNodeArray->len);
-  screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
+	g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
+		screen.selectionInfo.selectedNodeArray->len);
+	screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
+	callbacks_update_selected_object_message (FALSE);
+}
+
+void
+render_remove_selected_objects_belonging_to_layer (gint index) {
+	int i;
+	
+	for (i=screen.selectionInfo.selectedNodeArray->len-1; i>=0; i--) {
+		gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
+				gerbv_selection_item_t, i);
+
+		gerbv_image_t *matchImage = (gerbv_image_t *) sItem.image;	
+		if (mainProject->file[index]->image == matchImage) {
+			g_array_remove_index (screen.selectionInfo.selectedNodeArray, index);
+		}
+	}
+	callbacks_update_selected_object_message (FALSE);
 }
 
 /* ------------------------------------------------------ */

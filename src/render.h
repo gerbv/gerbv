@@ -61,6 +61,9 @@ void
 render_clear_selection_buffer (void);
 
 void
+render_remove_selected_objects_belonging_to_layer (gint index);
+
+void
 render_free_screen_resources (void);
 
 #ifndef RENDER_USING_GDK

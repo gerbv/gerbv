@@ -230,6 +230,9 @@ callbacks_change_tool  (GtkButton *button, gpointer   user_data);
 void
 callbacks_switch_to_correct_cursor (void);
 
+void
+callbacks_update_selected_object_message (gboolean userTriedToSelect);
+
 #ifndef RENDER_USING_GDK
 cairo_surface_t *
 callbacks_create_window_surface (GtkWidget *widget);
