@@ -100,6 +100,8 @@ Section "Dummy Section" SecDummy
     ;Create shortcuts
     CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\BUGS.lnk" "$INSTDIR\share\gerbv\BUGS.txt"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\COPYING.lnk" "$INSTDIR\share\gerbv\COPYING.txt"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Readme.lnk" "$INSTDIR\share\gerbv\Readme.txt"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\gerbv.lnk" "$INSTDIR\bin\gerbv.exe" "" "$INSTDIR\bin\gerbv.exe" 0 "" "" "gerbv RS274-X file viewer"
 
