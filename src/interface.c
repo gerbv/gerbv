@@ -271,10 +271,14 @@ interface_create_gui (int req_width, int req_height)
 
 	save = gtk_image_menu_item_new_with_mnemonic ("Save Project");
 	gtk_tooltips_set_tip (tooltips, save, "Save the current project", NULL);
+	tempImage = gtk_image_new_from_stock ("gtk-save", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save);
 
 	save_as = gtk_image_menu_item_new_with_mnemonic ("Save Project As...");
 	gtk_tooltips_set_tip (tooltips, save_as, "Save the current project to a new file", NULL);
+	tempImage = gtk_image_new_from_stock ("gtk-save-as", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save_as), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as);
 	
 	revert = gtk_image_menu_item_new_from_stock ("gtk-revert-to-saved", accel_group);
@@ -292,18 +296,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_layer);
 	gtk_tooltips_set_tip (tooltips, open_layer, "Open Gerber, drill, or pick and place file(s)", NULL);
 
-	save_layer = gtk_image_menu_item_new_with_mnemonic (_("_Save active layer"));
+	save_layer = gtk_menu_item_new_with_mnemonic (_("_Save active layer"));
 	gtk_tooltips_set_tip (tooltips, save_layer, "Save the active layer", NULL);
-	tempImage = gtk_image_new_from_stock ("gtk-save", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save_layer), tempImage);
 	gtk_widget_add_accelerator (save_layer, "activate", accel_group, 'S', GDK_CONTROL_MASK,
 				GTK_ACCEL_VISIBLE);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_layer);
 	
-	save_as_layer = gtk_image_menu_item_new_with_mnemonic (_("Save active layer _As..."));
+	save_as_layer = gtk_menu_item_new_with_mnemonic (_("Save active layer _As..."));
 	gtk_tooltips_set_tip (tooltips, save_as_layer, "Save the active layer to a new file", NULL);
-	tempImage = gtk_image_new_from_stock ("gtk-save-as", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save_as_layer), tempImage);
 	gtk_widget_add_accelerator (save_as_layer, "activate", accel_group, 'S',
 			GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as_layer);
