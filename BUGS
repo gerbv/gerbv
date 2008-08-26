@@ -2,8 +2,8 @@ Currently KNOWN BUGS
 
 All OS:
 
-Reporting about macro parameters (obtained via "analyze" -> "analyze visible
-Gerber layers", and found in the "Aperture definitions" tab) incorrectly
+Reporting about macro parameters (obtained via analyze -> analyze visible
+Gerber layers, and found in the Aperture definitions tab) incorrectly
 reports the macro parameters found.
 
 -------------------------------

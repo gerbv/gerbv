@@ -1,51 +1,100 @@
+Gerbv -- a Gerber file viewer
 
-Gerber Viewer
-
-gEDA - GPL Electronic Design Automation
+Gerbv is part of the gEDA Project
 ------------------------------------------------------------------------------
 
+-- About gerbv
 
-README for gerbv
-(This software is ALPHA)
+  *  Gerbv is a viewer for Gerber RS-274X files, Excellon drill files, and CSV
+     pick-and-place files.  (Note:  RS-274D files are not supported.)
+  *  Gerbv is a native Linux application, and it runs on many common unix
+     platforms.
+  *  Gerbv is free/ open-source software.
+  *  The core functionality of gerbv is located in a separate library
+     (libgerbv), allowing developers to include Gerber
+     parsing/editing/exporting/rendering into other programs.
+  *  Gerbv is one of the utilities affiliated with the gEDA project, an
+     umbrella organization dedicated to producing free software tools for
+     electronic design. 
 
-  Gerber Viewer (gerbv) is a viewer for Gerber files. Gerber files
-  are generated from PCB CAD system and sent to PCB manufacturers
-  as basis for the manufacturing process. 
+-- Building gerbv by downloading a release tarball
 
-  The different layers of the PCB are separated into different files. 
-  gerbv can load all files at the same time, though it can not show 
-  them at the same time. You have to browse through the different layers
-  with the radio buttons on the right side.
+   1. Download source tarballs from http://gerbv.sourceforge.net.
+   2. Expand source by running gzip -dc <filename> | tar xf -
+   3. Change to newly expanded directory
+   4. Type ./configure <switches>.
+      The following (gerbv) switches are available to configure:
+          * --help: Lists all configure options.
+          * --enable-debug: Program will output lots of debug 
+              spew while running. (default = no -> no debug output 
+              by default.)
+          * --disable-exportpng: Disable compilation of export 
+              of PNGs. (default = no -> exportpng on by default.)
+          * --enable-unit-mm: Set default unit for coordinates in 
+              status bar to mm (default = no -> units = inches 
+              by default.)
+          * --disable-cairo: Use GDK only for graphics rendering. 
+              (default = no -> both GDK and cairo used by default.)
+          * --enable-efence: Link with ElectricFence for malloc 
+              debugging (default = no -> efence off by default.)
+          * --disable-update-desktop-database: Update desktop icon 
+              database after installation (default = no -> desktop 
+              icon installed by default.)
+   5. Type make
+   6. Type make install. Please note that if you want to install 
+      it in a system directory you have to su first.
+   7. Test by typing gerbv 
 
+-- Building gerbv by downloading from anonymous CVS
 
-- System Requirements
+   1. Login to anonymous CVS (only needed the first time):
+      cvs -d:pserver:anonymous@gerbv.cvs.sourceforge.net:/cvsroot/gerbv login .
+      Press Enter when CVS asks for a password.
+   2. Check out the source tree:
+      cvs -z3 -d:pserver:anonymous@gerbv.cvs.sourceforge.net:/cvsroot/gerbv co gerbv
+   3. Recreate all build system files:
+      sh autogen.sh
+   4. Type ./configure <switches>.
+      The following (gerbv) switches are available to configure:
+          * --help: Lists all configure options.
+          * --enable-debug: Program will output lots of debug 
+              spew while running. (default = no -> no debug output 
+              by default.)
+          * --disable-exportpng: Disable compilation of export 
+              of PNGs. (default = no -> exportpng on by default.)
+          * --enable-unit-mm: Set default unit for coordinates in 
+              status bar to mm (default = no -> units = inches 
+              by default.)
+          * --disable-cairo: Use GDK only for graphics rendering. 
+              (default = no -> both GDK and cairo used by default.)
+          * --enable-efence: Link with ElectricFence for malloc 
+              debugging (default = no -> efence off by default.)
+          * --disable-update-desktop-database: Update desktop icon 
+              database after installation (default = no -> desktop 
+              icon installed by default.)
+   5. Type make
+   6. Type make install. Please note that if you want to install 
+      it in a system directory you have to su first.
+   7. Test by typing gerbv 
+   8. Run cvs update in the checked out gerbv directory to get 
+      the latest changes. 
 
-  gerbv is dependent on a couple of different external libraries:
-  * GTK+, the graphical toolkit available from http://www.gtk.org/
-  * GdkPixbuf (default but not necessary), extracts data from GDK pixbufs.
-  * libpng (default but not necessary), saves extracted pixbufs to PNG.
-  * getopt_long from the GNU project. gerbv can do without getopt_long
-    long options to the program will hence not be available.
+--  Supported platforms
+Gerbv has been built and tested on
 
-  gerbv is basically known to compile on all system which the above 
-  mentioned libraries compile on, basically all flavors of *ix. It
-  has been tested on Linux (2.2.*, 2.4.*), NetBSD (1.4.*, 1.5.*), Solaris 
-  (5.7 and 5.8).
+    * Linux (2.2/2.4/2.6)
+    * NetBSD/i386 (1.4.1)
+    * NetBSD/Alpha (1.5.1)
+    * Solaris (5.7 and 5.8) 
 
+-- Information for developers
 
-- Scroll Wheel
+Gerbv is split into a core functional library and a GUI portion. Developers
+wishing to incorporate Gerber parsing/editing/exporting/rendering into other
+programs are welcome to use libgerbv. Complete API documentation for libgerbv
+is here, as well as many example programs using libgerbv. 
 
-  gerbv supports zooming with scroll wheel. To be able to use scroll 
-  wheel in XFree86 3.x you have to edit XF86Config and add the line:
-	ZAxisMapping 4 5
-  in the Section "Pointer".
-
-  To use scrool wheel in XFree86 4.x you have to add the line:
-	Option   "ZAxisMapping"   "4 5"
-  under the input device describing your mouse.
-
-
-- License  
+-- License  
 
   gerbv and all associated files is placed under the GNU Public 
   License (GPL) version 2.0.  See the toplevel COPYING file for 
@@ -55,37 +104,20 @@ README for gerbv
   Copyright 2001, 2002 by Stefan Petersen and the respective
   original authors (which are listed on the respective files)
 
+-- Contact information  
 
-- gEDA and gerbv Internet resources
+Bugs:  Please submit bug reports to the 
+SourceForge bug tracker:
+http://sourceforge.net/tracker/?group_id=33921&atid=409538
 
-  gerbv Homepage: http://gerbv.sourceforge.net/
-  gEDA Homepage: http://www.geda.seul.org/
+Feature requests:  Please submit feature requests to the 
+SourceForge feature request tracker:
+http://sourceforge.net/tracker/?group_id=33921&atid=409541
 
-  Mailing list:
-	To subscribe send an email to: majordomo@geda.seul.org  
-	with   subscribe geda-dev   in the body.
-		
-	To unsubscribe send an email to: majordomo@geda.seul.org
-	with   unsubscribe geda-dev   in the body.
+Patches:  Please submit patches to the 
+SourceForge patch submission tracker:
+http://sourceforge.net/tracker/?group_id=33921&atid=409540
 
-	To send email to the list use the address:
-
-		geda-dev@geda.seul.org
-
-	Remember, geda-dev@geda.seul.org is for the actual traffic.  
-	For administrative commands, use majordomo@geda.seul.org.
-
-	The mailing list archive is at:
-
-		http://www.geda.seul.org/mailinglist 
-
-	Many thanks to the SEUL project for hosting gEDA!
-
-
-
-- Contact information  
-
-  Stefan Petersen
-  E-mail: spe at stacken.kth.se
-  Web: http://www.sourceforge.net/projects/gerbv
-
+To communicate with a gerbv developer:  Please post your 
+query on the geda-dev mailing list:
+http://www.seul.org/cgi-bin/mailman/listinfo/geda-dev

@@ -106,6 +106,10 @@ void
 callbacks_about_activate                      (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
+void
+callbacks_bugs_activate (GtkMenuItem     *menuitem,
+			 gpointer         user_data);
+
 gboolean
 callbacks_window_scroll_event(GtkWidget *widget, GdkEventScroll *event);
 

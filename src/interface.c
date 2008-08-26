@@ -150,6 +150,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem10_menu;
 	/*GtkWidget *online_manual;*/
 	GtkWidget *about;
+	GtkWidget *bugs_menuitem;
 	GtkWidget *image34;
 	GtkWidget *toolbar_hbox;
 	GtkWidget *handlebox;
@@ -497,13 +498,19 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem10_menu), online_manual);
 	gtk_tooltips_set_tip (tooltips, online_manual, "View the online help documentation", NULL);
 	*/
+
+       
 	about = gtk_image_menu_item_new_with_mnemonic (_("_About Gerbv..."));
 	gtk_container_add (GTK_CONTAINER (menuitem10_menu), about);
-	gtk_tooltips_set_tip (tooltips, about, "View information about this software", NULL);
-
+	gtk_tooltips_set_tip (tooltips, about, "View information about gerbv", NULL);
 	image34 = gtk_image_new_from_stock ("gtk-dialog-info", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (about), image34);
 
+	bugs_menuitem = gtk_menu_item_new_with_mnemonic (_("Known _bugs in this version..."));
+	gtk_container_add (GTK_CONTAINER (menuitem10_menu), bugs_menuitem);
+	gtk_tooltips_set_tip (tooltips, bugs_menuitem, "View list of known gerbv bugs", NULL);	
+
+	/* Create toolbar (button bar) beneath main menu */
 	toolbar_hbox = gtk_hbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox1), toolbar_hbox, FALSE, FALSE, 0);
 
@@ -884,6 +891,10 @@ interface_create_gui (int req_width, int req_height)
 	*/
 	g_signal_connect ((gpointer) about, "activate",
 	                  G_CALLBACK (callbacks_about_activate),
+	                  NULL);
+
+	g_signal_connect ((gpointer) bugs_menuitem, "activate",
+	                  G_CALLBACK (callbacks_bugs_activate),
 	                  NULL);
 
 	/* End of Glade generated code */

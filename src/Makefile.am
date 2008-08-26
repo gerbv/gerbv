@@ -83,6 +83,7 @@ gerbv_SOURCES = \
 		scheme.h \
 		callbacks.c callbacks.h interface.c \
 		interface.h render.c render.h \
+		bugs.c authors.c \
 		icons.h
 
 gerbv_LDADD = libgerbv.la
@@ -124,9 +125,10 @@ authors.c: $(top_srcdir)/AUTHORS Makefile
 	echo 'NULL};' >> $@
 
 bugs.c: $(top_srcdir)/BUGS Makefile
-	echo 'gchar * bugs_string = g_strdup_printf(' > $@
-	${TXT2CS} $(top_srcdir)/BUGS >> $@
-	echo ');' >> $@
+	num=`wc -l $(top_srcdir)/BUGS | awk '{print $$1 + 1}'` && \
+	echo "const gchar * bugs_string_array[$$num] = {" >> $@
+	${TXT2CL} $(top_srcdir)/BUGS >> $@
+	echo 'NULL};' >> $@
 
 CLEANFILES=	authors.c bugs.c
 

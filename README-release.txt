@@ -10,7 +10,7 @@ for a branch rather than a tag is to make it easier to deal with setting
 the release version number in the documentation, distfile, and the
 about dialog box.  
 
-Note that the gyrations with maintainerclean and another build are to
+Note that the gyrations with maintainer-clean and another build are to
 be sure that all the correct versions numbers end up in the files.
 
 After following the steps below,
@@ -24,7 +24,7 @@ To make a gerbv release do the following:
 =)	# make sure it builds and makes distfiles ok:
 	./autogen.sh
 	./configure --enable-maintainer-mode 
-	gmake maintainerclean
+	gmake maintainer-clean
 	./autogen.sh
 	./configure
 	gmake distcheck
@@ -69,7 +69,7 @@ To make a gerbv release do the following:
 		cvs update -PdA -r gerbv-2-0-RC1
 		./autogen.sh 
 		./configure --enable-maintainer-mode
-		gmake maintainerclean
+		gmake maintainer-clean
 		./autogen.sh 
 		./configure
 		gmake distcheck
@@ -83,7 +83,7 @@ To make a gerbv release do the following:
 		cvs update -PdA -r gerbv-2-0-RELEASE
 		./autogen.sh 
 		./configure --enable-maintainer-mode
-		gmake maintainerclean
+		gmake maintainer-clean
 		./autogen.sh 
 		./configure
 		gmake distcheck
@@ -115,7 +115,7 @@ To make a gerbv release do the following:
 		cvs tag -R -r gerbv-2-0 gerbv-2-0-PATCH001
 		./autogen.sh 
 		./configure --enable-maintainer-mode
-		gmake maintainerclean
+		gmake maintainer-clean
 		./autogen.sh 
 		./configure
 		gmake distcheck
