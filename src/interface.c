@@ -287,7 +287,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_set_sensitive (separator1, FALSE);
 
 	open_layer = gtk_menu_item_new_with_mnemonic (_("Open _Layer(s)..."));
-	
+	gtk_widget_add_accelerator (open_layer, "activate", accel_group, 'O', GDK_CONTROL_MASK,
+				GTK_ACCEL_VISIBLE);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_layer);
 	gtk_tooltips_set_tip (tooltips, open_layer, "Open Gerber, drill, or pick and place file(s)", NULL);
 

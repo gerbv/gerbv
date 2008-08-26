@@ -81,13 +81,14 @@ gerbv_SOURCES = \
 		main.h main.c \
 		project.c project.h scheme-private.h scheme.c \
 		scheme.h \
-		bugs.c authors.c \
 		callbacks.c callbacks.h interface.c \
 		interface.h render.c render.h \
 		icons.h
 
-gerbv_LDADD = libgerbv.la 
-gerbv_DEPENDENCIES = libgerbv.la
+EXTRA_gerbv_SOURCES = bugs.c authors.c
+
+gerbv_LDADD = libgerbv.la bugs.o authors.o
+gerbv_DEPENDENCIES = libgerbv.la bugs.o authors.o
 
 # If we are building on win32, then compile in some icons for the
 # desktop and application toolbar
