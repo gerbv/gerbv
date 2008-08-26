@@ -22,6 +22,25 @@
 # latex-mk testsuite.  The original code was covered by a BSD license
 # but the copyright holder is releasing the version for gerbv under the GPL.
 
+magic_test_skip=${GERBV_MAGIC_TEST_SKIP:-no}
+
+if test "x${magic_test_skip}" = "xyes" ; then
+	cat << EOF
+
+The environment variable GERBV_MAGIC_TEST_SKIP is set to yes.
+This causes the testsuite to skip all tests and report no errors.
+This is used for certain debugging *only*.  The primary use is to 
+allow testing of the 'distcheck' target without including the effects
+of the testsuite. The reason this is useful is that due to minor differences
+in cairo versions and perhaps roundoff in different CPU's, the testsuite
+may falsely report failures on some systems.  These reported failures
+prevent using 'distcheck' for verifying the rest of the build system.
+
+EOF
+
+	exit 0
+fi
+
 regen=no
 
 usage() {
