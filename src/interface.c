@@ -530,11 +530,11 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_new);
 
 	toolbutton_open = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-open");
-	gtk_tooltips_set_tip (tooltips, toolbutton_open, "Open Gerber, drill, or pick and place file(s)", NULL);
+	gtk_tooltips_set_tip (tooltips, toolbutton_open, "Open a previously saved gerbv project", NULL);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_open);
 
 	toolbutton_revert = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-revert-to-saved");
-	gtk_tooltips_set_tip (tooltips, toolbutton_revert, "Reload all layers", NULL);
+	gtk_tooltips_set_tip (tooltips, toolbutton_revert, "Reload all layers in project", NULL);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_revert);
 
 	toolbutton_save = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-save");
@@ -903,10 +903,10 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_new_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_save, "clicked",
-	                  G_CALLBACK (callbacks_save_layer_activate),
+	                  G_CALLBACK (callbacks_save_project_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_open, "clicked",
-	                  G_CALLBACK (callbacks_open_layer_activate),
+	                  G_CALLBACK (callbacks_open_project_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_revert, "clicked",
 	                  G_CALLBACK (callbacks_revert_activate),

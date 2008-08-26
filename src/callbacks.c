@@ -228,7 +228,7 @@ callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
 				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
 				     NULL);
 
-	g_object_set (screen.win.gerber, "select-multiple", TRUE, NULL);
+	gtk_file_chooser_set_select_multiple((GtkFileChooser *) screen.win.gerber, TRUE);
 	gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
 		mainProject->path);
 	gtk_widget_show (screen.win.gerber);
@@ -527,13 +527,13 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     /* Error report (goes into general report tab) */
     if (stats_report->layer_count == 0) {
 	g_string_printf(error_report_string, 
-			"\n\nNo Gerber files loaded!\n");
+			"\n\nNo Gerber files active (visible)!\n");
     } else if (stats_report->error_list->error_text == NULL) {
 	g_string_printf(error_report_string, 
-			"\n\nNo errors found in Gerber file(s)!\n"); 
+			"\n\nNo errors found in active Gerber file(s)!\n"); 
     } else {
 	g_string_printf(error_report_string, 
-			"\n\nErrors found in Gerber file(s):\n"); 
+			"\n\nErrors found in active Gerber file(s):\n"); 
 	for(my_error_list = stats_report->error_list; 
 	    my_error_list != NULL; 
 	    my_error_list = my_error_list->next) {
@@ -964,13 +964,13 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
 
     if (stats_report->layer_count == 0) {
-        g_string_printf(error_report_string, "\n\nNo drill files loaded!\n"); 
+        g_string_printf(error_report_string, "\n\nNo drill files active (visible)!\n"); 
     } else if (stats_report->error_list->error_text == NULL) {
 	g_string_printf(error_report_string, 
-			"\n\nNo errors found in drill file(s)!\n"); 
+			"\n\nNo errors found in active drill file(s)!\n"); 
     } else {
 	g_string_printf(error_report_string, 
-			"\n\nErrors found in drill file(s):\n"); 
+			"\n\nErrors found in active drill file(s):\n"); 
 	for(my_error_list = stats_report->error_list; 
 	    my_error_list != NULL; 
 	    my_error_list = my_error_list->next) {
