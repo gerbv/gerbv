@@ -67,6 +67,10 @@ the command "man gerbv") or go to the Gerbv homepage for documentation (http://g
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
+#ifndef RENDER_USING_GDK
+#include <cairo.h>
+#endif
+
 #define APERTURE_MIN 10
 #define APERTURE_MAX 9999
 
