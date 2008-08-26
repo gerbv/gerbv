@@ -57,13 +57,15 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *image) {
 	/* define all apertures */
 	gerbv_aperture_t *currentAperture;
 	gint i;
-		
-	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {
+
+	/* start at 0, since some imported files may be using aperture numbers <
+	   APERTURE_MIN (usually 10) */
+	for (i=0; i<APERTURE_MAX; i++) {
 		currentAperture = image->aperture[i];
 		
 		if (!currentAperture)
 			continue;
-		
+
 		switch (currentAperture->type) {
 			case GERBV_APTYPE_CIRCLE:
 				fprintf(fd, "T%dC%1.3f\n",i,currentAperture->parameter[0]);
