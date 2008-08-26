@@ -116,8 +116,11 @@ TXT2CL=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;
 TXT2CS=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;";g'
 
 authors.c: $(top_srcdir)/AUTHORS Makefile
-	num=`wc -l $(top_srcdir)/AUTHORS | awk '{print $$1 + 1}'` && echo "const gchar * authors[$$num] = {" > $@
-	${TXT2CL} $(top_srcdir)/AUTHORS >> $@
+	if test -f $@.tmp ; then rm -f $@.tmp ; fi
+	awk -F '[:]' '/^[ \t]*#/ {next}; /^[ \t]*$$/ {next}; {print $$1}' $(top_srcdir)/AUTHORS | ${TXT2CL} > $@.tmp
+	num=`wc -l $@.tmp | awk '{print $$1 + 1}'` && echo "const gchar * authors[$$num] = {" > $@
+	cat $@.tmp >> $@
+	rm -f $@.tmp
 	echo 'NULL};' >> $@
 
 bugs.c: $(top_srcdir)/BUGS Makefile

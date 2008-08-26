@@ -1329,21 +1329,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					 "along with this program.  If not, see <http://www.gnu.org/licenses/>.");
 
 	/* Note:  set_authors works strangely.... */
-	const gchar *authors[15] = {"Project founder:  Stefan Petersen\n",
-				    "Contributors:",
-				    "Julian Lamb",
-				    "Stuart Brorson",
-				    "Dan McMahill",
-				    "Joerg Wunsch",
-				    "Andreas Andersson aka Pitch",
-				    "Anders Eriksson",
-				    "Juergen Haas",
-				    "Tomasz Motylewski",
-				    "Joost Witteveen",
-				    "Trevor Blackwell",
-				    "David Carr",
-				    "... and many others.",
-				    NULL};
+	#include "authors.c"
 
 	aboutdialog1 = gtk_about_dialog_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);

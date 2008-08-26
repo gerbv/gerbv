@@ -1,18 +1,33 @@
-gEDA
-
-GNU Electronic Design Automation
-------------------------------------------------------------------------------
-
-gerbv AUTHORS
-
-Stefan Petersen: Project founder and main hacker.
-E-mail: spe at stacken dot kth dot se
-
+# Note:  This file is used to generate the entries i the 'credits' menu.
+#        As such, the format must be adhered to.  Format is:
+#
+# Name : Comment
+#
+# Lines starting with a '#' are considered comment lines.
+# Blank lines are allowed.
 
 Andreas Andersson aka Pitch: Drill file support hacker and constructive ideas.
-E-mail: e92_aan at e dot kth dot se
+
+Trevor Blackwell
+
+Stuart Brorson : Layer statistics, release engineer
+
+David Carr
 
 Anders Eriksson: GTK+/X hacker and constructive ideas.
-E-mail: anders at umunet dot org
 
-Web: http://gerbv.sourceforge.net/
+Juergen Haas
+
+Julian Lamb : Cairo conversion.  Many user interface and rs274-x improvements
+
+Dan McMahill : Build system, portability and bug fixes, misc. features
+
+Tomasz Motylewski
+
+Stefan Petersen: Project founder and main hacker.
+
+Joost Witteveen
+
+Joerg Wunsch
+
+... and many others.
