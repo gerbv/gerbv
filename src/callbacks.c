@@ -194,9 +194,11 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 			NULL))
 			return;
 	}
-
-	if (filename)
+	
+	if (filename) {
+		gerbv_unload_all_layers (mainProject);
 		main_open_project_from_filename (mainProject, filename);
+	}
 	gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 	render_refresh_rendered_image_on_screen();
 	callbacks_update_layer_tree();
