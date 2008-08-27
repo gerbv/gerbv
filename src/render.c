@@ -439,23 +439,6 @@ void render_refresh_rendered_image_on_screen (void) {
 }
 
 /* ------------------------------------------------------ */
-#ifndef RENDER_USING_GDK
-gint
-render_create_cairo_buffer_surface () {
-	if (screen.bufferSurface) {
-		cairo_surface_destroy (screen.bufferSurface);
-		screen.bufferSurface = NULL;
-	}
-	if (!screen.windowSurface)
-		return 0;
-
-	screen.bufferSurface= cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-	                                    CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
-	                                    screenRenderInfo.displayHeight);
-	return 1;
-}
-
-/* ------------------------------------------------------ */
 void
 render_clear_selection_buffer (void){
 	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY)
@@ -481,6 +464,23 @@ render_remove_selected_objects_belonging_to_layer (gint index) {
 		}
 	}
 	callbacks_update_selected_object_message (FALSE);
+}
+
+/* ------------------------------------------------------ */
+#ifndef RENDER_USING_GDK
+gint
+render_create_cairo_buffer_surface () {
+	if (screen.bufferSurface) {
+		cairo_surface_destroy (screen.bufferSurface);
+		screen.bufferSurface = NULL;
+	}
+	if (!screen.windowSurface)
+		return 0;
+
+	screen.bufferSurface= cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+	                                    CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
+	                                    screenRenderInfo.displayHeight);
+	return 1;
 }
 
 /* ------------------------------------------------------ */
