@@ -419,7 +419,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		  /* 
 		   * This is an ugly ugly ugly hack....  If this is
 		   * the first in our list of attributes *and* it has a
-		   * magic name of "auto" then we'll remember it and
+		   * magic name of "autodetect" then we'll remember it and
 		   * all of the other callbacks will cause this button to
 		   * come unchecked. Among the other nastiness
 		   * involved here, this dialog is now *required* to
@@ -430,7 +430,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		   * allow arbitrary relationships instead of just this
 		   * one single "magic" one.
 		   */
-		  if (j == 0 && strcmp(attrs[j].name, "Autodetect file format") == 0) {
+		  if (j == 0 && strcmp(attrs[j].name, "autodetect") == 0) {
 		    set_auto_uncheck = 1;
 		    auto_uncheck_widget = widget;
 		    auto_uncheck_attr = &(attrs[j].default_val.int_value);

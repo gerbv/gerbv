@@ -170,7 +170,7 @@ static const char *units_list[] = {
 
 static gerbv_HID_Attribute drill_attribute_list[] = {
     /* This should be first */
-  {"Autodetect file format", "Try to autodetect the file format",
+  {"autodetect", "Try to autodetect the file format",
    HID_Boolean, 0, 0, {1, 0, 0}, 0, 0},
 #define HA_auto 0
 
