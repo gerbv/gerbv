@@ -158,9 +158,6 @@ define_layer(scheme *sc, pointer args)
 
     layerno = sc->vptr->ivalue(car_el);
     dprintf("    layerno = %d\n", layerno);
-    if (mainProject->last_loaded <= layerno) {
-	mainProject->last_loaded = layerno;
-    }
     
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);

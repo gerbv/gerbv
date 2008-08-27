@@ -201,6 +201,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 		gerbvProject->file[idx]->color = colorTemplate;
 		gerbvProject->file[idx]->transform.inverted = project_list->inverted;
 		gerbvProject->file[idx]->isVisible = project_list->visible;
+		gerbvProject->last_loaded++;
 	    }
 	next_layer:
 	    project_list = project_list->next;
@@ -880,7 +881,7 @@ main(int argc, char *argv[])
 		if (mainProject->file[1]) {
 		  gerbv_image_t *exportImage;
 		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
-		  for(i = mainProject->max_files-1; i > 0; i--) {
+		  for(i = mainProject->last_loaded; i > 0; i--) {
 		    if (mainProject->file[i]) {
 		      gerbv_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
 		    }
@@ -903,7 +904,7 @@ main(int argc, char *argv[])
 		if (mainProject->file[1]) {
 		  gerbv_image_t *exportImage;
 		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
-		  for(i = mainProject->max_files-1; i > 0; i--) {
+		  for(i = mainProject->last_loaded; i > 0; i--) {
 		    if (mainProject->file[i]) {
 		      gerbv_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
 		    }
