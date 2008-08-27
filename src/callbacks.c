@@ -30,6 +30,7 @@
 #include <config.h>
 #endif
 
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #ifndef WIN32
@@ -79,9 +80,6 @@
  */
 extern gerbv_screen_t screen;
 extern gerbv_render_info_t screenRenderInfo;
-
-extern const char *authors_string_array[];
-extern const char *bugs_string_array[];
 
 
 /* These are the names of the valid apertures.  These
@@ -1331,7 +1329,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					 "GNU General Public License for more details.\n\n"
 					 "You should have received a copy of the GNU General Public License\n"
 					 "along with this program.  If not, see <http://www.gnu.org/licenses/>.");
-
+	#include "authors.c"
 
 	aboutdialog1 = gtk_about_dialog_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);
@@ -1383,7 +1381,8 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
                              gpointer         user_data)
 {
     int i;
-    
+    #include "bugs.c"
+
     /* Create the top level dialog widget with an OK button */
     GtkWidget *bugs_dialog = gtk_dialog_new_with_buttons("Known bugs in gerbv",
 							 NULL,

@@ -85,10 +85,8 @@ gerbv_SOURCES = \
 		interface.h render.c render.h \
 		icons.h
 
-EXTRA_gerbv_SOURCES = bugs.c authors.c
-
-gerbv_LDADD = libgerbv.la bugs.o authors.o
-gerbv_DEPENDENCIES = libgerbv.la bugs.o authors.o
+gerbv_LDADD = libgerbv.la
+gerbv_DEPENDENCIES = libgerbv.la
 
 # If we are building on win32, then compile in some icons for the
 # desktop and application toolbar
@@ -113,23 +111,21 @@ else
 DRAW=		${GDK_DRAW}
 endif
 
-callbacks.$(OBJEXT) : authors.$(OBJEXT) bugs.$(OBJEXT)
+callbacks.$(OBJEXT) : authors.c bugs.c
 
 TXT2CL=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;",;g'
-TXT2CS=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;";g'
+
 authors.c: $(top_srcdir)/AUTHORS Makefile
-	echo "#include <glib.h>" > $@
 	if test -f $@.tmp ; then rm -f $@.tmp ; fi
 	awk -F: '/^[ \t]*#/ {next}; /^[ \t]*$$/ {next}; {print $$1}' $(top_srcdir)/AUTHORS | ${TXT2CL} > $@.tmp
-	num=`wc -l $@.tmp | awk '{print $$1 + 1}'` && echo "const gchar * authors_string_array[$$num] = {" >> $@
+	num=`wc -l $@.tmp | awk '{print $$1 + 1}'` && echo "const gchar * authors_string_array[$$num] = {" > $@
 	cat $@.tmp >> $@
 	rm -f $@.tmp
 	echo 'NULL};' >> $@
 
 bugs.c: $(top_srcdir)/BUGS Makefile
-	echo "#include <glib.h>" > $@
 	num=`wc -l $(top_srcdir)/BUGS | awk '{print $$1 + 1}'` && \
-	echo "const gchar * bugs_string_array[$$num] = {" >> $@
+		echo "const gchar * bugs_string_array[$$num] = {" > $@
 	${TXT2CL} $(top_srcdir)/BUGS >> $@
 	echo 'NULL};' >> $@
 
