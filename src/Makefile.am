@@ -120,7 +120,7 @@ TXT2CS=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;
 authors.c: $(top_srcdir)/AUTHORS Makefile
 	echo "#include <glib.h>" > $@
 	if test -f $@.tmp ; then rm -f $@.tmp ; fi
-	awk -F '[:]' '/^[ \t]*#/ {next}; /^[ \t]*$$/ {next}; {print $$1}' $(top_srcdir)/AUTHORS | ${TXT2CL} > $@.tmp
+	awk -F: '/^[ \t]*#/ {next}; /^[ \t]*$$/ {next}; {print $$1}' $(top_srcdir)/AUTHORS | ${TXT2CL} > $@.tmp
 	num=`wc -l $@.tmp | awk '{print $$1 + 1}'` && echo "const gchar * authors_string_array[$$num] = {" >> $@
 	cat $@.tmp >> $@
 	rm -f $@.tmp
