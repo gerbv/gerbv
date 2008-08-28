@@ -167,6 +167,15 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 {
 	gchar *filename=NULL;
 
+	if (mainProject->last_loaded >= 0) {
+		if (!interface_get_alert_dialog_response (
+                       "Do you want to close any open layers and load an existing project?",
+		       "Loading a project will cause all currently open layers to be closed. Any unsaved changes will be lost.",
+			FALSE,
+			NULL))
+			return;
+	}
+	
 	screen.win.gerber = 
 	gtk_file_chooser_dialog_new ("Open project file...",
 				     NULL,
@@ -186,15 +195,6 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
-	if (mainProject->last_loaded >= 0) {
-		if (!interface_get_alert_dialog_response (
-                       "Do you want to close any open layers and load an existing project?",
-		       "Loading a project will cause all currently open layers to be closed. Any unsaved changes will be lost.",
-			FALSE,
-			NULL))
-			return;
-	}
-	
 	if (filename) {
 		gerbv_unload_all_layers (mainProject);
 		main_open_project_from_filename (mainProject, filename);
