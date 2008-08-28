@@ -267,21 +267,19 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	    
 	    /* figure out the relative path to the layer from the project
 	       directory */
-	    if (strncmp (dirName, gerbvProject->file[idx]->name, strlen(dirName)) == 0) {
+	    if (strncmp (dirName, gerbvProject->file[idx]->fullPathname, strlen(dirName)) == 0) {
 		/* skip over the common dirname and the separator */
-		tmp->filename = g_strdup(gerbvProject->file[idx]->name + strlen(dirName) + 1);
+		tmp->filename = g_strdup(gerbvProject->file[idx]->fullPathname + strlen(dirName) + 1);
 	    } else {
 		/* if we can't figure out a relative path, just save the 
 		 * absolute one */
-		tmp->filename = g_strdup(gerbvProject->file[idx]->name);
+		tmp->filename = g_strdup(gerbvProject->file[idx]->fullPathname);
 	    }
 	    tmp->rgb[0] = gerbvProject->file[idx]->color.red;
 	    tmp->rgb[1] = gerbvProject->file[idx]->color.green;
 	    tmp->rgb[2] = gerbvProject->file[idx]->color.blue;
 	    tmp->inverted = gerbvProject->file[idx]->transform.inverted;
 	    tmp->visible = gerbvProject->file[idx]->isVisible;
-	    /* save individual layers as part of saving project */
-	    gerbv_save_layer_from_index(gerbvProject, idx, tmp->filename);
 
 	    project_list = tmp;
 	}
