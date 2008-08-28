@@ -1242,9 +1242,13 @@ interface_create_gui (int req_width, int req_height)
 
 	screen.selectionInfo.selectedNodeArray = g_array_new (FALSE,
 			FALSE, sizeof(gerbv_selection_item_t));
-	/* Make pointer tool default */
+#ifndef RENDER_USING_GDK
+	/* make pointer tool default on cairo builds */
 	callbacks_change_tool (NULL, (gpointer) 0);
-
+#else
+	/* make pan tool default for GDK only */
+	callbacks_change_tool (NULL, (gpointer) 1);
+#endif
 	rename_main_window("",mainWindow);
 
 	set_window_icon (mainWindow);
