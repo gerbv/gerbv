@@ -201,7 +201,9 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 		gerbvProject->file[idx]->color = colorTemplate;
 		gerbvProject->file[idx]->transform.inverted = project_list->inverted;
 		gerbvProject->file[idx]->isVisible = project_list->visible;
-		gerbvProject->last_loaded++;
+		if (mainProject->last_loaded <= idx) {
+			gerbvProject->last_loaded = idx;
+		}
 	    }
 	next_layer:
 	    project_list = project_list->next;
