@@ -374,6 +374,10 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
     gerbvProject->file[idx]->alpha = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].alpha*257;
     gerbvProject->file[idx]->isVisible = TRUE;
     gerbvProject->file[idx]->transform = defaultTransformations[idx % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
+    /* update the number of files if we need to */
+    if (gerbvProject->last_loaded <= idx) {
+	gerbvProject->last_loaded = idx;
+    }
     return 1;
 }
 

@@ -164,65 +164,81 @@ gchar *logToFileFilename;
 void 
 main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
-    project_list_t *project_list, *originalList;
-    
-    dprintf("Opening project = %s\n", (gchar *) filename);
-    originalList = project_list = read_project_file(filename);
-    
-    if (project_list) {
-	while (project_list) {
-	    GdkColor colorTemplate = {0,project_list->rgb[0],
-				      project_list->rgb[1],project_list->rgb[2]};
-	    if (project_list->layerno == -1) {
-		gerbvProject->background = colorTemplate;
-	    } else {
-		int  idx =  project_list->layerno;
-		gchar *fullName = NULL;
-		gchar *dirName = NULL;
-		    
-		if (!g_path_is_absolute (project_list->filename)) {
-		    /* build the full pathname to the layer */
-		    dirName = g_path_get_dirname (filename);
-		    fullName = g_build_filename (dirName, project_list->filename, NULL);
-		} else {
-		    fullName = g_strdup (project_list->filename);
+	project_list_t *project_list, *originalList;
+	gint i,maxLayerNumber = -1;
+
+	dprintf("Opening project = %s\n", (gchar *) filename);
+	originalList = project_list = read_project_file(filename);
+
+	if (project_list) {
+		/* first, get the max layer number in the project list */
+		while (project_list) {
+			if (project_list->layerno > maxLayerNumber)
+				maxLayerNumber = project_list->layerno;
+			project_list = project_list->next;
 		}
-		if (gerbv_open_image(gerbvProject, fullName, idx, FALSE, 
-				     project_list->attr_list, 
-				     project_list->n_attr, TRUE) == -1) {
-		    GERB_MESSAGE("could not read %s[%d]", fullName, idx);
-		    goto next_layer;
+		project_list = originalList;
+		/* increase the layer count each time and find (if any) the corresponding entry */
+		for (i = -1; i<=maxLayerNumber; i++){
+			project_list = originalList;
+			while (project_list) {
+				if (project_list->layerno == i) {
+					GdkColor colorTemplate = {0,project_list->rgb[0],
+					project_list->rgb[1],project_list->rgb[2]};
+					if (i == -1) {
+						gerbvProject->background = colorTemplate;
+					}
+					else {
+						gchar *fullName = NULL;
+						gchar *dirName = NULL;
+						gint fileIndex = gerbvProject->last_loaded + 1;
+
+						if (!g_path_is_absolute (project_list->filename)) {
+							/* build the full pathname to the layer */
+							dirName = g_path_get_dirname (filename);
+							fullName = g_build_filename (dirName,
+								project_list->filename, NULL);
+						}
+						else {
+							fullName = g_strdup (project_list->filename);
+						}
+						if (gerbv_open_image(gerbvProject, fullName,
+								fileIndex, FALSE, 
+								project_list->attr_list, 
+								project_list->n_attr, TRUE) == -1) {
+							GERB_MESSAGE("could not read file: %s", fullName);
+						}
+						else {
+							g_free (dirName);
+							g_free (fullName);
+							/* 
+							* Change color from default to from the project list
+							*/
+							gerbvProject->file[fileIndex]->color = colorTemplate;
+							gerbvProject->file[fileIndex]->transform.inverted = project_list->inverted;
+							gerbvProject->file[fileIndex]->isVisible = project_list->visible;
+						}
+					}
+				}
+				project_list = project_list->next;
+			}
 		}
-		g_free (dirName);
-		g_free (fullName);
-		/* 
-		 * Change color from default to from the project list
-		 */
-		gerbvProject->file[idx]->color = colorTemplate;
-		gerbvProject->file[idx]->transform.inverted = project_list->inverted;
-		gerbvProject->file[idx]->isVisible = project_list->visible;
-		if (mainProject->last_loaded <= idx) {
-			gerbvProject->last_loaded = idx;
+		project_destroy_project_list (originalList);
+		/*
+		* Save project filename for later use
+		*/
+		if (gerbvProject->project) {
+		g_free(gerbvProject->project);
+		gerbvProject->project = NULL;
 		}
-	    }
-	next_layer:
-	    project_list = project_list->next;
+		gerbvProject->project = g_strdup (filename);
+		if (gerbvProject->project == NULL)
+		GERB_FATAL_ERROR("malloc gerbvProject->project failed\n");
 	}
-	project_destroy_project_list (originalList);
-	/*
-	 * Save project filename for later use
-	 */
-	if (gerbvProject->project) {
-	    g_free(gerbvProject->project);
-	    gerbvProject->project = NULL;
+	else {
+		GERB_MESSAGE("could not read %s[%d]\n", (gchar *) filename,
+		gerbvProject->last_loaded);
 	}
-	gerbvProject->project = g_strdup (filename);
-	if (gerbvProject->project == NULL)
-	    GERB_FATAL_ERROR("malloc gerbvProject->project failed\n");
-    } else {
-	GERB_MESSAGE("could not read %s[%d]\n", (gchar *) filename,
-		     gerbvProject->last_loaded);
-    }
 } /* gerbv_open_project_from_filename */
 
 /* ------------------------------------------------------------------ */
