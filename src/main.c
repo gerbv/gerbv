@@ -760,6 +760,7 @@ main(int argc, char *argv[])
 	    main_open_project_from_filename (mainProject, project_filename);
 	    mainProject->path = g_path_get_dirname (project_filename);
 	}
+	printf ("Loading project...\n");
 	
     } else {
     	gint loadedIndex = 0;

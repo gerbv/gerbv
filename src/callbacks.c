@@ -337,6 +337,17 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 				     NULL);
 	g_free (windowTitle);
 	
+	/* if we're saving or exporting a layer, start off in the location of the
+	   loaded file */
+	if (processType != CALLBACKS_SAVE_PROJECT_AS) {
+		gint index=callbacks_get_selected_row_index();
+		if (index >= 0) {
+			gchar *dirName = g_path_get_dirname (mainProject->file[index]->fullPathname);
+			gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
+				dirName);
+			g_free (dirName);
+		}
+	}
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
