@@ -305,7 +305,7 @@ render_draw_zoom_outline(gboolean centered)
 /* ------------------------------------------------------ */
 /* Transforms board coordinates to screen ones */
 static void
-board2screen(gdouble *X, gdouble *Y, gdouble x, gdouble y) {
+render_board2screen(gdouble *X, gdouble *Y, gdouble x, gdouble y) {
 	*X = (x - screenRenderInfo.lowerLeftX) * screenRenderInfo.scaleFactorX;
 	*Y = screenRenderInfo.displayHeight - (y - screenRenderInfo.lowerLeftY)
 		* screenRenderInfo.scaleFactorY;
@@ -313,7 +313,7 @@ board2screen(gdouble *X, gdouble *Y, gdouble x, gdouble y) {
 
 /* Trims the coordinates to avoid overflows in gdk_draw_line */
 static void
-trim_point(gdouble *start_x, gdouble *start_y, gdouble last_x, gdouble last_y)
+render_trim_point(gdouble *start_x, gdouble *start_y, gdouble last_x, gdouble last_y)
 {
 	const gdouble max_coord = (1<<15) - 2;/* a value that causes no overflow
 											 and lies out of screen */
@@ -363,12 +363,12 @@ render_toggle_measure_line(void)
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
-	board2screen(&start_x, &start_y,
+	render_board2screen(&start_x, &start_y,
 				screen.measure_start_x, screen.measure_start_y); 
-	board2screen(&last_x, &last_y,
+	render_board2screen(&last_x, &last_y,
 				screen.measure_last_x, screen.measure_last_y); 
-    trim_point(&start_x, &start_y, last_x, last_y);
-    trim_point(&last_x, &last_y, start_x, start_y);
+	render_trim_point(&start_x, &start_y, last_x, last_y);
+	render_trim_point(&last_x, &last_y, start_x, start_y);
 	gdk_draw_line(screen.drawing_area->window, gc, start_x,
 		  start_y, last_x, last_y);
 	gdk_gc_unref(gc);

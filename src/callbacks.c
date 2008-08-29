@@ -2469,7 +2469,7 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 /* Transforms screen coordinates to board ones */
 static void
-screen2board(gdouble *X, gdouble *Y, gint x, gint y) {
+callbacks_screen2board(gdouble *X, gdouble *Y, gint x, gint y) {
 
 	/* make sure we don't divide by zero (which is possible if the gui
 	   isn't displayed yet */
@@ -2488,7 +2488,7 @@ void
 callbacks_update_statusbar_coordinates (gint x, gint y) {
 	gdouble X, Y;
 
-	screen2board(&X, &Y, x, y);
+	callbacks_screen2board(&X, &Y, x, y);
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     "(%8.2f, %8.2f)",
@@ -2573,7 +2573,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		case IN_MEASURE: {
 			/* clear the previous drawn line by drawing over it */
 			render_toggle_measure_line();
-			screen2board(&(screen.measure_last_x), &(screen.measure_last_y),
+			callbacks_screen2board(&(screen.measure_last_x), &(screen.measure_last_y),
 							x, y);
 			/* screen.last_[xy] are updated to move the ruler pointers */
 			screen.last_x = x;
@@ -2635,7 +2635,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			}
 			else if (screen.tool == MEASURE) {
 				screen.state = IN_MEASURE;
-				screen2board(&(screen.measure_start_x), &(screen.measure_start_y),
+				callbacks_screen2board(&(screen.measure_start_x), &(screen.measure_start_y),
 								event->x, event->y);
 				screen.measure_last_x = screen.measure_start_x;
 				screen.measure_last_y = screen.measure_start_y;
