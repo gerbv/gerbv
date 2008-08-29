@@ -747,6 +747,7 @@ main(int argc, char *argv[])
      * a project.
      */
     if (project_filename) {
+	printf("Loading project %s...\n", project_filename);
 	/* calculate the absolute pathname to the project if the user
 	   used a relative path */
 	g_free (mainProject->path);
@@ -760,8 +761,6 @@ main(int argc, char *argv[])
 	    main_open_project_from_filename (mainProject, project_filename);
 	    mainProject->path = g_path_get_dirname (project_filename);
 	}
-	printf ("Loading project...\n");
-	
     } else {
     	gint loadedIndex = 0;
 	for(i = optind ; i < argc; i++) {
