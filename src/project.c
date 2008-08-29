@@ -3,6 +3,7 @@
  * This file is a part of gerbv.
  *
  *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ *   Copyright (c) 2008 Dan McMahill
  *
  * $Id$
  *
@@ -35,6 +36,7 @@
 #include <stdlib.h>
 #endif
 
+#include <ctype.h>
 #include <stdio.h>
 
 #ifdef HAVE_STRING_H
@@ -63,10 +65,184 @@
 #include "interface.h"
 #include "render.h"
 
+
+/*
+ * update this if the project file format changes.
+ *
+ * The format *must* be major.minor[A-Z]
+ *
+ * Do *not* update this simply because we have a new gerbv
+ * version.
+ *
+ * If you bump this version, then you must also bump the 
+ * version of gerbv.  For example, supplse the file version
+ * is 2.0A and gerbv has 2.4B in configure.ac.  If you change
+ * the file format version, you should change both the version
+ * here *and* configure.ac to 2.4C.
+ */
+
+#define GERBV_PROJECT_FILE_VERSION "2.0A"
+
+/* default version for project files that do not specify a version.
+ * This is assumed for all older project files.
+ */
+#define GERBV_DEFAULT_PROJECT_FILE_VERSION "1.9A"
+
+/* 
+ * List of versions that we can load with this version of 
+ * gerbv 
+ */
+static const char * known_versions[] = {
+  "1.9A",
+  "2.0A",
+  NULL
+};
+
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
 static project_list_t *plist_top = NULL;
+
+  
+/* When a project file is loaded, this variable is set to the
+ * version of the project file.  That can be used by various 
+ * functions which may need to do something different.
+ */
+static int current_file_version = 0;
+
+
+/* 
+ * Converts a string like "2.1A" "2.12C" or "3.2ZA" to the int
+ * we use internally
+ */
+static int
+version_str_to_int( const char * str)
+{
+  int r = 0;
+  gchar *dup, *tmps, *ptr;
+
+  if(str == NULL) {
+    return -1;
+  } else {
+    dprintf("%s(\"%s\")\n", __FUNCTION__, str);
+
+
+    /* 
+     * Extract out the major number (versions are strings like 2.1A)
+     * and we want the "2" here.
+     */
+    tmps = g_strdup(str);
+    ptr = tmps;
+    while(*ptr != '\0' && *ptr != '.') { ptr++; }
+    if( *ptr == '\0' ) {
+      /* this should not have happened */
+      return -1;
+    }
+
+    *ptr = '\0';
+    r = 10000 * atoi(tmps);
+    dprintf("%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
+
+    g_free(tmps);
+
+    /* 
+     * Extract out the minor number (versions are strings like 2.1A)
+     * and we want the "1" here.
+     */
+    dup = g_strdup(str);
+    tmps = dup;
+    ptr = tmps;
+
+    while(*ptr != '\0' && *ptr != '.') { ptr++; }
+    if( *ptr == '\0' ) {
+      /* this should not have happened */
+      return -1;
+    }
+    ptr++;
+    tmps = ptr;
+
+    while(*ptr != '\0' && isdigit( (int) *ptr)) { ptr++; }
+    if( *ptr == '\0' ) {
+      /* this should not have happened */
+      return -1;
+    }
+
+    *ptr = '\0';
+    r += 100 * atoi(tmps);
+    dprintf("%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
+
+    g_free(dup);
+
+    /* 
+     * Extract out the revision letter(s) (versions are strings like 2.1A)
+     * and we want the "A" here.
+     */
+
+    dup = g_strdup(str);
+    tmps = dup;
+    ptr = tmps;
+
+    while(*ptr != '\0' && (isdigit( (int) *ptr) || *ptr == '.') ) { ptr++; }
+    if( *ptr == '\0' ) {
+      /* this should not have happened */
+      return -1;
+    }
+    tmps = ptr;
+
+    dprintf("%s():  Processing \"%s\"\n", __FUNCTION__, tmps);
+
+    if( strlen(tmps) == 1) {
+      r += *tmps - 'A' + 1;
+      dprintf( "%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
+    } else if( strlen(tmps) == 2 ) {
+      if( *tmps == 'Z' ) {
+	r += 26;
+	tmps++;
+	r += *tmps - 'A' + 1;
+      } else {
+	/* this should not have happened */
+	return -1;
+      }
+    } else {
+      /* this should not have happened */
+      return -1;
+    }
+      
+    g_free(dup);
+
+  }
+  return r;
+
+}
+
+/* 
+ * convert the internal int we use for version numbers
+ * to the string that users can deal with
+ */
+static char *
+version_int_to_str( int ver )
+{
+  int major, minor, teeny;
+  char l[3];
+  char *str;
+
+  l[0] = '\0';
+  l[1] = '\0';
+  l[2] = '\0';
+
+  major = ver / 10000;
+  minor = (ver - 10000*major) / 100;
+  teeny = (ver - 10000*major - 100*minor);
+  if(teeny >= 1 && teeny <= 26) {
+    l[0] = 'A' + teeny - 1;
+  }  else if(teeny > 26 && teeny <= 52) {
+    l[0] = 'Z';
+    l[1] = 'A' + teeny - 26 - 1;
+  }
+
+  str = g_strdup_printf("%d.%d%s", major, minor, l);
+  return str;
+}
 
 static void
 get_color(scheme *sc, pointer value, int *color)
@@ -341,6 +517,85 @@ set_render_type(scheme *sc, pointer args)
     return sc->NIL;
 } /* set_render_type */
 
+static pointer
+gerbv_file_version(scheme *sc, pointer args)
+{
+    pointer car_el, cdr_el;
+    int r;
+    char *vstr;
+    char *tmps;
+
+    dprintf("--> entering project.c:%s()\n", __FUNCTION__);
+
+    if (!sc->vptr->is_pair(args)){
+	GERB_MESSAGE("gerbv-file-version!: Too few arguments\n");
+	return sc->F;
+    }
+
+    car_el = sc->vptr->pair_car(args);
+    cdr_el = sc->vptr->pair_cdr(args);
+    vstr = get_value_string(sc, car_el);
+    
+    /* find our internal integer code */
+    r = version_str_to_int( vstr );
+
+    if( r == -1) {
+      r = version_str_to_int( GERBV_DEFAULT_PROJECT_FILE_VERSION );
+      GERB_MESSAGE("The project file you are attempting to load has specified that it\n"
+		   "uses project file version \"%s\" but this string is not\n"
+		   "a valid version.  Gerbv will attempt to load the file using\n"
+		   "version \"%s\".  You may experience unexpected results.\n",
+		   vstr, version_int_to_str( r ));
+      vstr = GERBV_DEFAULT_PROJECT_FILE_VERSION;
+    }
+    if( DEBUG ) {
+      tmps = version_int_to_str( r );
+      printf ("%s():  Read a project file version of %s (%d)\n", __FUNCTION__, vstr, r);
+      printf ("      Translated back to \"%s\"\n", tmps);
+      g_free (tmps);
+    }
+
+    dprintf ("%s():  Read a project file version of %s (%d)\n", __FUNCTION__, vstr, r);
+
+    if ( r > version_str_to_int( GERBV_PROJECT_FILE_VERSION )) {
+        /* The project file we're trying to load is too new for this version of gerbv */
+	GERB_MESSAGE("The project file you are attempting to load is version \"%s\"\n"
+	    "but this copy of gerbv is only capable of loading project files\n"
+	    "using version \"%s\" or older.  You may experience unexpected results.", 
+		     vstr, GERBV_PROJECT_FILE_VERSION);
+    } else {
+      int i = 0;
+      int vok = 0;
+
+      while( known_versions[i] != NULL ) {
+	if( strcmp( known_versions[i], vstr) == 0 ) {
+	  vok = 1;
+	}
+	i++;
+      }
+
+      if( ! vok ) {
+	/* The project file we're trying to load is not too new
+	 * but it is unknown to us
+	 */
+	GERB_MESSAGE("The project file you are attempting to load is version \"%s\"\n"
+		     "which is an unknown version.\n"
+		     "You may experience unexpected results.", 
+		     vstr);
+	
+      }
+    }
+
+    /*
+     * store the version of the file we're currently loading.  This variable is used
+     * by the different functions called by the project file to do anything which is
+     * version specific.
+     */
+    current_file_version = r;
+
+    return sc->NIL;
+} /* set_render_type */
+
 
 /** Reads the content of a project file.
   *  Global:\n
@@ -360,6 +615,14 @@ read_project_file(char const* filename)
     char *initdirs[] = {BACKEND_DIR, mainProject->execpath, ".", 
 			"$GERBV_SCHEMEINIT", NULL};
     char *initfile;
+
+
+    /*
+     * set the current version of the project file to 1 day before we started adding
+     * versioning to the files.  While the file is being loaded, this will
+     * be set to the correct version on newer files and ignored on older files
+     */
+    current_file_version = version_str_to_int( GERBV_DEFAULT_PROJECT_FILE_VERSION );
 
     if (stat(filename, &stat_info)) {
 	GERB_MESSAGE("Failed to read %s\n", filename);
@@ -401,6 +664,10 @@ read_project_file(char const* filename)
     sc->vptr->scheme_define(sc, sc->global_env, 
 			    sc->vptr->mk_symbol(sc, "set-render-type!"),
 			    sc->vptr->mk_foreign_func(sc, set_render_type));
+
+    sc->vptr->scheme_define(sc, sc->global_env, 
+			    sc->vptr->mk_symbol(sc, "gerbv-file-version!"),
+			    sc->vptr->mk_foreign_func(sc, gerbv_file_version));
 
     if ((fd = fopen(filename, "r")) == NULL) {
 	scheme_deinit(sc);
@@ -451,6 +718,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 	    GERB_MESSAGE("Couldn't save project %s\n", filename);
 	    return(-1);
     }
+    fprintf(fd, "(gerbv-file-version! \"%s\")\n", GERBV_PROJECT_FILE_VERSION);
     while (p) {
 	fprintf(fd, "(define-layer! %d ", p->layerno);
 	
