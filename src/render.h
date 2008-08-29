@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /** \file render.h
@@ -50,6 +50,9 @@ render_draw_selection_box_outline(void);
 
 void
 render_draw_zoom_outline(gboolean centered);
+
+void
+render_toggle_measure_line(void);
 
 void
 render_draw_measure_distance(void);

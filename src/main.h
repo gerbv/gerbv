@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /** \file main.h
@@ -99,11 +99,16 @@ typedef struct {
            
     gint last_x;
     gint last_y;
-    gint start_x;		/* Zoom box/measure start coordinates */
+    gint start_x;		/* Zoom box start screen coordinates */
     gint start_y;
 
     gint off_x;			/* Offset current pixmap when panning */
     gint off_y;
+
+    gdouble measure_start_x;/* Measure start board coordinates */
+    gdouble measure_start_y;
+    gdouble measure_last_x;	/* Measure end board coordinates */
+    gdouble measure_last_y;
 
     int dump_parsed_image;
 } gerbv_screen_t;

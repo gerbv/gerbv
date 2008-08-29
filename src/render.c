@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /** \file render.c
@@ -302,24 +302,59 @@ render_draw_zoom_outline(gboolean centered)
 	gdk_gc_unref(gc);
 }
 
+/* ------------------------------------------------------ */
+/* Transforms board coordinates to screen ones */
+static void
+board2screen(gdouble *X, gdouble *Y, gdouble x, gdouble y) {
+	*X = (x - screenRenderInfo.lowerLeftX) * screenRenderInfo.scaleFactorX;
+	*Y = screenRenderInfo.displayHeight - (y - screenRenderInfo.lowerLeftY)
+		* screenRenderInfo.scaleFactorY;
+}
+
+/* Trims the coordinates to avoid overflows in gdk_draw_line */
+static void
+trim_point(gdouble *start_x, gdouble *start_y, gdouble last_x, gdouble last_y)
+{
+	const gdouble max_coord = (1<<15) - 2;/* a value that causes no overflow
+											 and lies out of screen */
+	gdouble dx, dy;
+
+    if (fabs (*start_x) < max_coord && fabs (*start_y) < max_coord)
+		return;	
+    dx = last_x - *start_x;
+    dy = last_y - *start_y;
+	if (*start_x < -max_coord && last_x > -max_coord && fabs (dx) > 0.1) {
+		*start_x = -max_coord;
+		*start_y = last_y - (last_x + max_coord)/dx * dy;
+	}
+	if (*start_x > max_coord && last_x < max_coord && fabs (dx) > 0.1) {
+		*start_x = max_coord;
+		*start_y = last_y - (last_x - max_coord) / dx * dy;
+	}
+
+	if (*start_y < -max_coord && last_y > -max_coord && fabs (dy) > 0.1) {
+		*start_y = -max_coord;
+		*start_x = last_x - (last_y + max_coord) / dy * dx;
+	}
+	if (*start_y > max_coord && last_y < max_coord && fabs (dy) > 0.1) {
+		*start_y = max_coord;
+		*start_x = last_x - (last_y - max_coord) / dy * dx;
+	}
+}
 
 /* ------------------------------------------------------ */
-/** Displays a measured distance graphically on screen and in statusbar.
-    activated when using SHIFT and mouse dragged to measure distances\n
-    under win32 graphical annotations are currently disabled (GTK 2.47)*/
+/** Draws/erases measure line
+ *  No implementation for windows yet (GTK 2.47)
+ */
 void
-render_draw_measure_distance(void)
+render_toggle_measure_line(void)
 {
 #if !defined (__MINGW32__) 
 
 	GdkGC *gc;
 	GdkGCValues values;
 	GdkGCValuesMask values_mask;
-#endif   
-	gint x1, y1, x2, y2;
-	double dx, dy;
-
-#if !defined (__MINGW32__) /*taken out because of different drawing behaviour under win32 resulting in a smear */
+	gdouble start_x, start_y, last_x, last_y;
 	memset(&values, 0, sizeof(values));
 	values.function = GDK_XOR;
 	if (!screen.zoom_outline_color.pixel)
@@ -328,24 +363,37 @@ render_draw_measure_distance(void)
 	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
-#endif
-	x1 = MIN(screen.start_x, screen.last_x);
-	y1 = MIN(screen.start_y, screen.last_y);
-	x2 = MAX(screen.start_x, screen.last_x);
-	y2 = MAX(screen.start_y, screen.last_y);
-	dx = (x2 - x1)/ screenRenderInfo.scaleFactorX;
-	dy = (y2 - y1)/ screenRenderInfo.scaleFactorY;
+	board2screen(&start_x, &start_y,
+				screen.measure_start_x, screen.measure_start_y); 
+	board2screen(&last_x, &last_y,
+				screen.measure_last_x, screen.measure_last_y); 
+    trim_point(&start_x, &start_y, last_x, last_y);
+    trim_point(&last_x, &last_y, start_x, start_y);
+	gdk_draw_line(screen.drawing_area->window, gc, start_x,
+		  start_y, last_x, last_y);
+	gdk_gc_unref(gc);
+#endif     
+} /* toggle_measure_line */
+
+/* ------------------------------------------------------ */
+/** Displays a measured distance graphically on screen and in statusbar. */
+void
+render_draw_measure_distance(void)
+{
+	gdouble x1, y1, x2, y2;
+	gdouble dx, dy;
+
+	x1 = MIN(screen.measure_start_x, screen.measure_last_x);
+	y1 = MIN(screen.measure_start_y, screen.measure_last_y);
+	x2 = MAX(screen.measure_start_x, screen.measure_last_x);
+	y2 = MAX(screen.measure_start_y, screen.measure_last_y);
+	dx = (x2 - x1);
+	dy = (y2 - y1);
     
-#if !defined (__MINGW32__)
-	gdk_draw_line(screen.drawing_area->window, gc, screen.start_x,
-		  screen.start_y, screen.last_x, screen.last_y);
-#endif
 	screen.win.lastMeasuredX = dx;
 	screen.win.lastMeasuredY = dy;
 	callbacks_update_statusbar_measured_distance (dx, dy);
-#if !defined (__MINGW32__)
-	gdk_gc_unref(gc);
-#endif     
+	render_toggle_measure_line();
 } /* draw_measure_distance */
 
 /* ------------------------------------------------------ */

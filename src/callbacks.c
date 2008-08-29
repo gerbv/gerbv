@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /** \file callbacks.c
@@ -2419,7 +2419,10 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 		else if (screen.state == IN_MEASURE) {
 			render_draw_measure_distance();
 		}
-
+		if (screen.tool == MEASURE && screen.state != IN_MEASURE) {
+			render_toggle_measure_line();
+		}
+ 
 		return FALSE;
 	}
 #ifndef RENDER_USING_GDK
@@ -2459,24 +2462,33 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 #endif
 
 #endif
+	if (screen.tool == MEASURE)
+		render_toggle_measure_line();
 	return FALSE;
+}
+
+/* Transforms screen coordinates to board ones */
+static void
+screen2board(gdouble *X, gdouble *Y, gint x, gint y) {
+
+	/* make sure we don't divide by zero (which is possible if the gui
+	   isn't displayed yet */
+	if ((screenRenderInfo.scaleFactorX > 0.001)||(screenRenderInfo.scaleFactorY > 0.001)) {
+		*X = screenRenderInfo.lowerLeftX + (x / screenRenderInfo.scaleFactorX);
+		*Y = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - y)
+			/ screenRenderInfo.scaleFactorY);
+	}
+	else {
+		*X = *Y = 0.0;
+	}
 }
 
 /* --------------------------------------------------------- */
 void
 callbacks_update_statusbar_coordinates (gint x, gint y) {
-	double X, Y;
+	gdouble X, Y;
 
-	/* make sure we don't divide by zero (which is possible if the gui
-	   isn't displayed yet */
-	if ((screenRenderInfo.scaleFactorX > 0.001)||(screenRenderInfo.scaleFactorY > 0.001)) {
-		X = screenRenderInfo.lowerLeftX + (x / screenRenderInfo.scaleFactorX);
-		Y = screenRenderInfo.lowerLeftY + ((screenRenderInfo.displayHeight - y)
-			/ screenRenderInfo.scaleFactorY);
-	}
-	else {
-		X = Y = 0.0;
-	}
+	screen2board(&X, &Y, x, y);
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     "(%8.2f, %8.2f)",
@@ -2560,11 +2572,13 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		}
 		case IN_MEASURE: {
 			/* clear the previous drawn line by drawing over it */
-			if (screen.last_x || screen.last_y)
-				render_draw_measure_distance();
+			render_toggle_measure_line();
+			screen2board(&(screen.measure_last_x), &(screen.measure_last_y),
+							x, y);
+			/* screen.last_[xy] are updated to move the ruler pointers */
 			screen.last_x = x;
 			screen.last_y = y;
-			/* draw the new line */
+			/* draw the new line and write the new distance */
 			render_draw_measure_distance();
 			break;
 		}
@@ -2621,8 +2635,10 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			}
 			else if (screen.tool == MEASURE) {
 				screen.state = IN_MEASURE;
-				screen.start_x = event->x;
-				screen.start_y = event->y;
+				screen2board(&(screen.measure_start_x), &(screen.measure_start_y),
+								event->x, event->y);
+				screen.measure_last_x = screen.measure_start_x;
+				screen.measure_last_y = screen.measure_start_y;
 				/* force an expose event to clear any previous measure lines */
 				callbacks_force_expose_event_for_screen ();
 			}
