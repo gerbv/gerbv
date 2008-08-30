@@ -344,12 +344,10 @@ render_trim_point(gdouble *start_x, gdouble *start_y, gdouble last_x, gdouble la
 
 /* ------------------------------------------------------ */
 /** Draws/erases measure line
- *  No implementation for windows yet (GTK 2.47)
  */
 void
 render_toggle_measure_line(void)
 {
-#if !defined (__MINGW32__) 
 
 	GdkGC *gc;
 	GdkGCValues values;
@@ -372,7 +370,6 @@ render_toggle_measure_line(void)
 	gdk_draw_line(screen.drawing_area->window, gc, start_x,
 		  start_y, last_x, last_y);
 	gdk_gc_unref(gc);
-#endif     
 } /* toggle_measure_line */
 
 /* ------------------------------------------------------ */
