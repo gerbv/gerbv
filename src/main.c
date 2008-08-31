@@ -892,22 +892,16 @@ main(int argc, char *argv[])
 	    gerbv_export_postscript_file_from_project (mainProject, &renderInfo, exportFilename);
 	} else if (exportType == 5) {
 	    if (mainProject->file[0]->image) {
+		gerbv_image_t *exportImage;
+		exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainDefaultTransformations[0]);
 		/* if we have more than one file, we need to merge them before exporting */
-		if (mainProject->file[1]) {
-		  gerbv_image_t *exportImage;
-		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainDefaultTransformations[0]);
-		  for(i = mainProject->last_loaded; i > 0; i--) {
-		    if (mainProject->file[i]) {
-		      gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
-		    }
+		for(i = mainProject->last_loaded; i > 0; i--) {
+		  if (mainProject->file[i]) {
+		    gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
 		  }
-		  gerbv_export_rs274x_file_from_image (exportFilename, exportImage);
-		  gerbv_destroy_image (exportImage);
 		}
-		/* otherwise, just export the single image file as it is */
-		else {
-		  gerbv_export_rs274x_file_from_image (exportFilename, mainProject->file[0]->image);
-		}
+		gerbv_export_rs274x_file_from_image (exportFilename, exportImage);
+		gerbv_destroy_image (exportImage);
 	    }
 	    else {
 		fprintf(stderr, "A valid file was not loaded.\n");
@@ -915,22 +909,16 @@ main(int argc, char *argv[])
 	    }
 	} else if (exportType == 6) {
 	    if (mainProject->file[0]->image) {
+	      gerbv_image_t *exportImage;
+		exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainDefaultTransformations[0]);
 		/* if we have more than one file, we need to merge them before exporting */
-		if (mainProject->file[1]) {
-		  gerbv_image_t *exportImage;
-		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainDefaultTransformations[0]);
-		  for(i = mainProject->last_loaded; i > 0; i--) {
-		    if (mainProject->file[i]) {
-		      gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
-		    }
+		for(i = mainProject->last_loaded; i > 0; i--) {
+		  if (mainProject->file[i]) {
+		    gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
 		  }
-		  gerbv_export_drill_file_from_image (exportFilename, exportImage);
-		  gerbv_destroy_image (exportImage);
 		}
-		/* otherwise, just export the single image file as it is */
-		else {
-		  gerbv_export_drill_file_from_image (exportFilename, mainProject->file[0]->image);
-		}
+		gerbv_export_drill_file_from_image (exportFilename, exportImage);
+		gerbv_destroy_image (exportImage);
 	    }
 	    else {
 		fprintf(stderr, "A valid file was not loaded.\n");
