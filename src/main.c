@@ -839,22 +839,21 @@ main(int argc, char *argv[])
 	    }
 	}
 
-
 	// Add the border size (if there is one)
 	if(userSuppliedBorder!=0){
 	    // If supplied in inches, add a border around the image
 	    if(!userSuppliedWindowInPixels){
+	      userSuppliedOriginX -= (userSuppliedWidth*userSuppliedBorder)/2.0;
+		userSuppliedOriginY -= (userSuppliedHeight*userSuppliedBorder)/2.0;
 		userSuppliedWidth  += userSuppliedWidth*userSuppliedBorder;
 		userSuppliedHeight  += userSuppliedHeight*userSuppliedBorder;
-		userSuppliedOriginX -= (userSuppliedWidth*userSuppliedBorder)/2.0;
-		userSuppliedOriginY -= (userSuppliedHeight*userSuppliedBorder)/2.0;
 	    }
 	    // If supplied in pixels, shrink image content for border_size
 	    else{
+	      userSuppliedOriginX -= ((userSuppliedWidth/userSuppliedDpiX)*userSuppliedBorder)/2.0;
+		userSuppliedOriginY -= ((userSuppliedHeight/userSuppliedDpiX)*userSuppliedBorder)/2.0;
 		userSuppliedDpiX -= (userSuppliedDpiX*userSuppliedBorder);
 		userSuppliedDpiY -= (userSuppliedDpiY*userSuppliedBorder);
-		userSuppliedOriginX -= ((userSuppliedWidth/userSuppliedDpiX)*userSuppliedBorder)/2.0;
-		userSuppliedOriginY -= ((userSuppliedHeight/userSuppliedDpiX)*userSuppliedBorder)/2.0;
 	    }
 	}
 	
