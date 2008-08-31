@@ -896,10 +896,10 @@ main(int argc, char *argv[])
 		/* if we have more than one file, we need to merge them before exporting */
 		if (mainProject->file[1]) {
 		  gerbv_image_t *exportImage;
-		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
+		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainDefaultTransformations[0]);
 		  for(i = mainProject->last_loaded; i > 0; i--) {
 		    if (mainProject->file[i]) {
-		      gerbv_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
+		      gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
 		    }
 		  }
 		  gerbv_export_rs274x_file_from_image (exportFilename, exportImage);
@@ -919,10 +919,10 @@ main(int argc, char *argv[])
 		/* if we have more than one file, we need to merge them before exporting */
 		if (mainProject->file[1]) {
 		  gerbv_image_t *exportImage;
-		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainProject->file[0]->transform);
+		  exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainDefaultTransformations[0]);
 		  for(i = mainProject->last_loaded; i > 0; i--) {
 		    if (mainProject->file[i]) {
-		      gerbv_image_copy_image (mainProject->file[i]->image, &mainProject->file[i]->transform, exportImage);
+		      gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
 		    }
 		  }
 		  gerbv_export_drill_file_from_image (exportFilename, exportImage);
