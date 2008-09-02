@@ -461,7 +461,8 @@ main(int argc, char *argv[])
 	    break;
     	case 'V' :
 	    printf("gerbv version %s\n", VERSION);
-	    printf("(C) Stefan Petersen (spe@stacken.kth.se)\n");
+	    printf("Copyright (C) 2001 -- 2008 by Stefan Petersen\n");
+	    printf("and the respective original authors listed in the source files.\n");
 	    exit(0);	
 	case 'a' :
 	    userSuppliedAntiAlias = TRUE;

@@ -321,24 +321,33 @@ render_trim_point(gdouble *start_x, gdouble *start_y, gdouble last_x, gdouble la
 
     if (fabs (*start_x) < max_coord && fabs (*start_y) < max_coord)
 		return;	
-    dx = last_x - *start_x;
-    dy = last_y - *start_y;
-	if (*start_x < -max_coord && last_x > -max_coord && fabs (dx) > 0.1) {
+
+	dx = last_x - *start_x;
+	dy = last_y - *start_y;
+
+	if (*start_x < -max_coord) {
 		*start_x = -max_coord;
-		*start_y = last_y - (last_x + max_coord)/dx * dy;
+		if (last_x > -max_coord && fabs (dx) > 0.1)
+			*start_y = last_y - (last_x + max_coord) / dx * dy;
 	}
-	if (*start_x > max_coord && last_x < max_coord && fabs (dx) > 0.1) {
+	if (*start_x > max_coord) {
 		*start_x = max_coord;
-		*start_y = last_y - (last_x - max_coord) / dx * dy;
+		if (last_x < max_coord && fabs (dx) > 0.1)
+			*start_y = last_y - (last_x - max_coord) / dx * dy;
 	}
 
-	if (*start_y < -max_coord && last_y > -max_coord && fabs (dy) > 0.1) {
+	dx = last_x - *start_x;
+	dy = last_y - *start_y;
+
+	if (*start_y < -max_coord) {
 		*start_y = -max_coord;
-		*start_x = last_x - (last_y + max_coord) / dy * dx;
+		if (last_y > -max_coord && fabs (dy) > 0.1)
+			*start_x = last_x - (last_y + max_coord) / dy * dx;
 	}
-	if (*start_y > max_coord && last_y < max_coord && fabs (dy) > 0.1) {
+	if (*start_y > max_coord) {
 		*start_y = max_coord;
-		*start_x = last_x - (last_y - max_coord) / dy * dx;
+		if (last_y < max_coord && fabs (dy) > 0.1)
+			*start_x = last_x - (last_y - max_coord) / dy * dx;
 	}
 }
 
