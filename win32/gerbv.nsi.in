@@ -137,6 +137,8 @@ Section "Uninstall"
   
   !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
     
+  Delete "$SMPROGRAMS\$MUI_TEMP\BUGS.lnk"
+  Delete "$SMPROGRAMS\$MUI_TEMP\COPYING.lnk"
   Delete "$SMPROGRAMS\$MUI_TEMP\gerbv.lnk"
   Delete "$SMPROGRAMS\$MUI_TEMP\Readme.lnk"
   Delete "$SMPROGRAMS\$MUI_TEMP\Uninstall.lnk"
