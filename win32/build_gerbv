@@ -19,7 +19,10 @@ Supported options:
 
   --debug         - Omits the compiler flag which prevents
                     a command window from being opened.  This
-                    is useful when trying to use debug printf's
+                    is useful when trying to use debug printf's.
+                    If listed twice then --enable-debug is passed
+                    down to the configure script which enables 
+                    a good bit of debug output.
 
   --help          - Show this message and exit.
 
@@ -53,6 +56,9 @@ config_args=""
 while test $# -ne 0 ; do
 	case $1 in
 		--debug)
+			if test "X${debug}" = "Xyes" ; then
+				config_args="${config_args} --enable-debug"
+			fi
 			debug=yes
 			shift
 			;;
