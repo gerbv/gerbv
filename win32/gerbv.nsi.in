@@ -105,7 +105,7 @@ Section "Dummy Section" SecDummy
   ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".cnc" "Excellon Drill File"
   ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".ncd" "Excellon Drill File"
   ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".xy" "PCB Centroid File"
-  ${registerExtension} "$INSTDIR\bin\gerbv.exe" "-p" ".prj" "Gerbv Project File"
+  ${registerExtension} "$INSTDIR\bin\gerbv.exe" "-p" ".gvp" "Gerbv Project File"
  
   ;Store installation folder
   WriteRegStr HKCU "Software\gerbv-@gerbv_version@" "" $INSTDIR
@@ -157,7 +157,7 @@ Section "Uninstall"
   ${unregisterExtension} ".cnc" "Excellon Drill File"
   ${unregisterExtension} ".ncd" "Excellon Drill File"
   ${unregisterExtension} ".xy"  "PCB Centroid File"
-  ${unregisterExtension} ".prj" "Gerbv Project File"
+  ${unregisterExtension} ".gvp" "Gerbv Project File"
 
   Delete "$INSTDIR\Uninstall.exe"
   Delete "$INSTDIR\*.*"
