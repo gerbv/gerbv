@@ -27,6 +27,10 @@
   Name "gerbv-@gerbv_version@"
   OutFile "gerbvinst-@gerbv_version@.exe"
 
+  ;See http://nsis.sourceforge.net/Shortcuts_removal_fails_on_Windows_Vista
+  ;for more details.
+  RequestExecutionLevel admin
+
   ;Default installation folder
   InstallDir "$PROGRAMFILES\gerbv-@gerbv_version@"
   
@@ -82,12 +86,25 @@
 ;Installer Sections
 
 Section "Dummy Section" SecDummy
+  SetShellVarContext all
 
   SetOutPath "$INSTDIR"
   
   ;ADD YOUR OWN FILES HERE...
   File /a /r "@gtk_win32_runtime@\*.*"
   File /a /r "@gerbv_prefix@\*.*"
+
+  ;Associate file types and icons (I need to verify this before I uncomment it)
+  ;!define EXT ".grb"
+  ;!define CODE "gerbv"
+ 
+  ;WriteRegStr HKCUR ".${EXT}" "" "${CODE}.Script"
+  ;WriteRegStr HKCUR "${CODE}.Script" "" "${CODE} Script"
+  ;WriteRegStr HKCUR "${CODE}.Script\DefaultIcon" "" "$INSTDIR\icon1_doc.ico,0"
+  ;WriteRegStr HKCUR "${CODE}.Script\shell" "" "\open"
+  ;WriteRegStr HKCUR "${CODE}.Script\shell\open\command" "" '$INSTDIR\bin\${CODE}.exe "%1"'
+  
+  ;System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED},i ${SHCNF_IDLIST}, i 0, i 0)'
 
   ;Store installation folder
   WriteRegStr HKCU "Software\gerbv-@gerbv_version@" "" $INSTDIR
@@ -126,6 +143,7 @@ SectionEnd
 ;Uninstaller Section
 
 Section "Uninstall"
+  SetShellVarContext all
 
   ;ADD YOUR OWN FILES HERE...
 
