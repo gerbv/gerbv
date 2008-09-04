@@ -5,7 +5,8 @@
 
 MAINTAINERCLEANFILES = *~ *.o Makefile Makefile.in
 
-EXTRA_DIST= build_gerbv extract_gtk_win32 gerbv.nsi.in Readme.txt
+EXTRA_DIST= build_gerbv extract_gtk_win32 gerbv.nsi.in Readme.txt \
+	registerExtension.nsh
 
 if WIN32
 pkgdata_DATA=	Readme.txt BUGS.txt COPYING.txt

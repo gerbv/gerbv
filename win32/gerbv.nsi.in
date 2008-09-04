@@ -21,6 +21,11 @@
   !include "MUI.nsh"
 
 ;--------------------------------
+;Include macros for associating file 
+;extensions
+!include "registerExtension.nsh"
+
+;--------------------------------
 ;General
 
   ;Name and file
@@ -94,18 +99,14 @@ Section "Dummy Section" SecDummy
   File /a /r "@gtk_win32_runtime@\*.*"
   File /a /r "@gerbv_prefix@\*.*"
 
-  ;Associate file types and icons (I need to verify this before I uncomment it)
-  ;!define EXT ".grb"
-  ;!define CODE "gerbv"
+  ;Associate file types and icons
+  ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".gbr" "RS274-X File"
+  ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".gbx" "RS274-X File"
+  ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".cnc" "Excellon Drill File"
+  ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".ncd" "Excellon Drill File"
+  ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".xy" "PCB Centroid File"
+  ${registerExtension} "$INSTDIR\bin\gerbv.exe" "-p" ".prj" "Gerbv Project File"
  
-  ;WriteRegStr HKCUR ".${EXT}" "" "${CODE}.Script"
-  ;WriteRegStr HKCUR "${CODE}.Script" "" "${CODE} Script"
-  ;WriteRegStr HKCUR "${CODE}.Script\DefaultIcon" "" "$INSTDIR\icon1_doc.ico,0"
-  ;WriteRegStr HKCUR "${CODE}.Script\shell" "" "\open"
-  ;WriteRegStr HKCUR "${CODE}.Script\shell\open\command" "" '$INSTDIR\bin\${CODE}.exe "%1"'
-  
-  ;System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED},i ${SHCNF_IDLIST}, i 0, i 0)'
-
   ;Store installation folder
   WriteRegStr HKCU "Software\gerbv-@gerbv_version@" "" $INSTDIR
   
@@ -120,7 +121,9 @@ Section "Dummy Section" SecDummy
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\BUGS.lnk" "$INSTDIR\share\gerbv\BUGS.txt"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\COPYING.lnk" "$INSTDIR\share\gerbv\COPYING.txt"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Readme.lnk" "$INSTDIR\share\gerbv\Readme.txt"
+    SetOutPath "%USERPROFILE%"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\gerbv.lnk" "$INSTDIR\bin\gerbv.exe" "" "$INSTDIR\bin\gerbv.exe" 0 "" "" "gerbv RS274-X file viewer"
+    SetOutPath "$INSTDIR"
 
 ;; CreateShortCut  link.lnk target.file [parameters [icon.file [icon_index_number [start_options [keyboard_shortcut [description]]]]]]
 
@@ -146,6 +149,13 @@ Section "Uninstall"
   SetShellVarContext all
 
   ;ADD YOUR OWN FILES HERE...
+
+  ${unregisterExtension} ".gbr" "RS274-X File"
+  ${unregisterExtension} ".gbx" "RS274-X File"
+  ${unregisterExtension} ".cnc" "Excellon Drill File"
+  ${unregisterExtension} ".ncd" "Excellon Drill File"
+  ${unregisterExtension} ".xy"  "PCB Centroid File"
+  ${unregisterExtension} ".prj" "Gerbv Project File"
 
   Delete "$INSTDIR\Uninstall.exe"
   Delete "$INSTDIR\*.*"
