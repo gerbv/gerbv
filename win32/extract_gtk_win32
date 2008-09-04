@@ -77,6 +77,7 @@ for f in ${gtk_win32_downloads}/*.zip ; do
 done
 
 chmod 755 ${gtk_win32}/bin/*
+mv ${gtk_win32_runtime}/zlib*.dll ${gtk_win32_runtime}/bin
 chmod 755 ${gtk_win32_runtime}/bin/*
 
 cd ${HOME}
