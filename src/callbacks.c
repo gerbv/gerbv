@@ -70,6 +70,14 @@
 
 #define dprintf if(DEBUG) printf
 
+/* This default extension should really not be changed, but if it absolutely
+ * must change, the ../win32/gerbv.nsi.in *must* be changed to reflect that.
+ * Just grep for the extension (gvp) and change it in two places in that file.
+ */
+#define GERBV_PROJECT_FILE_NAME "Gerbv Project"
+#define GERBV_PROJECT_FILE_EXT ".gvp"
+#define GERBV_PROJECT_FILE_PAT "*.gvp"
+
 #define SAVE_PROJECT 0
 #define SAVE_AS_PROJECT 1
 #define OPEN_PROJECT 2
@@ -166,6 +174,7 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
 	gchar *filename=NULL;
+	GtkFileFilter * filter;
 
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
@@ -185,6 +194,19 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 				     NULL);
 	gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
 		mainProject->path);
+
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, GERBV_PROJECT_FILE_NAME);
+	gtk_file_filter_add_pattern(filter, GERBV_PROJECT_FILE_PAT);
+	gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
+	        filter);
+
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "All");
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
+	        filter);
+
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
 		filename =
@@ -311,6 +333,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	gchar *filename=NULL;
 	gint processType = GPOINTER_TO_INT (user_data);
 	gchar *windowTitle=NULL;
+	GtkFileFilter * filter;
 	
 	if (processType == CALLBACKS_SAVE_PROJECT_AS)
 		windowTitle = g_strdup ("Save project as...");
@@ -348,6 +371,24 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			g_free (dirName);
 		}
 	}
+
+	if (processType == CALLBACKS_SAVE_PROJECT_AS) {
+	  filter = gtk_file_filter_new();
+	  gtk_file_filter_set_name(filter, GERBV_PROJECT_FILE_NAME);
+	  gtk_file_filter_add_pattern(filter, GERBV_PROJECT_FILE_PAT);
+	  gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
+				       filter);
+
+	  filter = gtk_file_filter_new();
+	  gtk_file_filter_set_name(filter, "All");
+	  gtk_file_filter_add_pattern(filter, "*");
+	  gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
+				       filter);
+	  
+	  gtk_file_chooser_set_current_name ((GtkFileChooser *) screen.win.gerber, 
+					     "untitled" GERBV_PROJECT_FILE_EXT );
+	}
+
 	gtk_widget_show (screen.win.gerber);
 	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
