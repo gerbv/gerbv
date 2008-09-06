@@ -699,7 +699,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 		}
 	}
 	/* render the selection group to the top of the output */
-	if (selectionInfo->type != GERBV_SELECTION_EMPTY) {
+	if ((selectionInfo) && (selectionInfo->type != GERBV_SELECTION_EMPTY)) {
 		if (!selectionColor->pixel)
 	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), selectionColor, FALSE, TRUE);
 	 		
