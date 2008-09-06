@@ -132,6 +132,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *analyze_active_gerbers;
 	GtkWidget *analyze_active_drill;
 	GtkWidget *analyze_display_selected_obj_props;
+	GtkWidget *analyze_benchmark;
 	/*
 	GtkWidget *control_gerber_options;
 	*/
@@ -429,10 +430,17 @@ interface_create_gui (int req_width, int req_height)
 			      "Examine a detailed anaylsis of the contents of all visible drill layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_drill);
 
+
 	analyze_display_selected_obj_props = gtk_menu_item_new_with_mnemonic (_("Display selected object(s) _properties"));
 	gtk_tooltips_set_tip (tooltips, analyze_display_selected_obj_props, 
 			      "Show the properties of the selected object(s).", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_display_selected_obj_props);
+
+	analyze_benchmark = gtk_menu_item_new_with_mnemonic (_("_Benchmark"));
+	gtk_tooltips_set_tip (tooltips, analyze_benchmark, 
+			      "Show the properties of the selected object(s).", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_benchmark);
+
 
 	/* Wait and add in for 2.1??
 	control_gerber_options = gtk_menu_item_new_with_mnemonic (_("Control Gerber options..."));
@@ -863,6 +871,9 @@ interface_create_gui (int req_width, int req_height)
 	                  NULL);
 	g_signal_connect ((gpointer) analyze_display_selected_obj_props, "activate",
 	                  G_CALLBACK (callbacks_display_object_properties_clicked),
+	                  NULL);
+	g_signal_connect ((gpointer) analyze_benchmark, "activate",
+	                  G_CALLBACK (callbacks_benchmark_clicked),
 	                  NULL);
 
 

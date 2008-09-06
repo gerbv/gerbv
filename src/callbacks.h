@@ -196,6 +196,9 @@ void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data);
 
 void
+callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data);
+
+void
 callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_data);
 
 void

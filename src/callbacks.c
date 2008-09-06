@@ -2302,6 +2302,29 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 
 /* --------------------------------------------------------------------------- */
 void
+callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
+{
+	int i;
+	time_t start, now;
+
+	i = 0;
+	start = time(NULL);
+	now = start;
+	while( now - 60 < start) {
+	  i++;
+	  dprintf("Benchmark():  Startimg redraw #%d\n", i);
+	  render_refresh_rendered_image_on_screen();
+	  now = time(NULL);
+	  dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
+	}
+	GERB_MESSAGE("Benchmarked %d redraws in %ld seconds (%g redraws/second)\n",
+		      i, (long int) (now - start),
+		     (double) i / (double)(now - start));
+}
+
+
+/* --------------------------------------------------------------------------- */
+void
 callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_data){
 }
 
