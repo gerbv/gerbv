@@ -64,6 +64,19 @@ AC_MSG_RESULT([$WIN32])
 AC_SUBST(WIN32)
 AM_CONDITIONAL(WIN32, test x$WIN32 = xyes)
 
+GERBV_PATH_DELIMETER=":"
+GERBV_DIR_SEPARATOR_S="/"
+GERBV_DIR_SEPARATOR_C='/'
+if test "x$WIN32" = "xyes" ; then
+   GERBV_PATH_DELIMETER=";"
+   GERBV_DIR_SEPARATOR_S="\\\\"
+   GERBV_DIR_SEPARATOR_C='\\'
+fi
+
+AC_DEFINE_UNQUOTED(GERBV_DIR_SEPARATOR_C,'$GERBV_DIR_SEPARATOR_C',[Directory separator char])
+AC_DEFINE_UNQUOTED(GERBV_DIR_SEPARATOR_S,"$GERBV_DIR_SEPARATOR_S",[Directory separator string])
+AC_DEFINE_UNQUOTED(GERBV_PATH_DELIMETER,"$_PATH_DELIMETER",[Search path separator string])
+
 
 #
 #
@@ -351,6 +364,10 @@ AC_CHECK_HEADERS(unistd.h getopt.h string.h sys/mman.h sys/types.h sys/stat.h st
 AC_CHECK_FUNCS(getopt_long)
 AC_CHECK_FUNCS(strlwr)
 
+# for lrealpath.c
+AC_CHECK_FUNCS(realpath canonicalize_file_name)
+libiberty_NEED_DECLARATION(canonicalize_file_name)
+
 
 CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS"
 LIBS="$LIBS $GDK_PIXBUF_LIBS $PNG_LIBS $GTK_LIBS $CAIRO_LIBS"
@@ -369,6 +386,42 @@ AC_DEFINE([USE_ASCII_NAMES],[1],[ASCII names in Scheme interpreter])
 AC_DEFINE([USE_COLON_HOOKS],[1],[Colon Hooks in Scheme interpreter])
 AC_DEFINE([USE_STRING_HOOKS],[1],[String Hooks in Scheme interpreter])
 AC_DEFINE([USE_INTERFACE],[1],[Use extension interface of Scheme interpreter])
+
+#
+#
+############################################################
+
+############################################################
+#
+# Figure out relative paths
+#
+
+# standard autoconf variables
+CPPFLAGS="$CPPFLAGS -DPREFIXDIR=\\\"\${prefix}\\\""
+CPPFLAGS="$CPPFLAGS -DBINDIR=\\\"\${bindir}\\\""
+
+# these relative paths will be used to help locate init.scm
+# in the event that the installation directory is relocated.
+
+AC_MSG_CHECKING([for the bindir to datadir relative path])
+adl_COMPUTE_RELATIVE_PATHS([bindir:datadir:bindir_to_datadir])
+adl_NORMALIZE_PATH([bindir_to_datadir], [$GERBV_DIR_SEPARATOR_S])
+AC_MSG_RESULT([$bindir_to_datadir])
+AC_DEFINE_UNQUOTED(BINDIR_TO_DATADIR, "$bindir_to_datadir", [Relative path from bindir to datadir])
+
+PKGDATADIR=${datadir}/${PACKAGE}
+AC_MSG_CHECKING([for the bindir to pkgdatadir relative path])
+adl_COMPUTE_RELATIVE_PATHS([bindir:PKGDATADIR:bindir_to_pkgdatadir])
+adl_NORMALIZE_PATH([bindir_to_pkgdatadir], [$GERBV_DIR_SEPARATOR_S])
+AC_MSG_RESULT([$bindir_to_pkgdatadir])
+AC_DEFINE_UNQUOTED(BINDIR_TO_PKGDATADIR, "$bindir_to_pkgdatadir", [Relative path from bindir to pkgdatadir])
+
+AC_MSG_CHECKING([for the bindir to exec_prefix relative path])
+adl_COMPUTE_RELATIVE_PATHS([bindir:exec_prefix:bindir_to_execprefix])
+adl_NORMALIZE_PATH([bindir_to_execprefix], [$GERBV_DIR_SEPARATOR_S])
+AC_MSG_RESULT([$bindir_to_execprefix])
+AC_DEFINE_UNQUOTED(BINDIR_TO_EXECPREFIX, "$bindir_to_execprefix", [Relative path from bindir to exec_prefix])
+
 
 #
 #

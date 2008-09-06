@@ -155,6 +155,7 @@ gerbv_destroy_project (gerbv_project_t *gerbvProject){
 	}
 	/* destroy strings */
 	g_free (gerbvProject->path);
+	g_free (gerbvProject->execname);
 	g_free (gerbvProject->execpath);
 	g_free (gerbvProject->project);
 	/* destroy the fileinfo array */

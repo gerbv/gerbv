@@ -282,7 +282,16 @@ gerb_find_file(char const * filename, char **paths)
     char *complete_path = NULL;
     int	 i;
 
+#ifdef DEBUG
+    if( DEBUG > 0 ) {
+        for (i = 0; paths[i] != NULL; i++) {
+            printf("%s():  paths[%d] = \"%s\"\n", __FUNCTION__, i, paths[i]);
+        }
+    }
+#endif
+
     for (i = 0; paths[i] != NULL; i++) {
+        dprintf("%s():  Try paths[%d] = \"%s\"\n", __FUNCTION__, i, paths[i]);
 
 	/*
 	 * Environment variables start with a $ sign 
@@ -305,42 +314,57 @@ gerb_find_file(char const * filename, char **paths)
 	    env_name[len] = '\0';
 
 	    env_value = getenv(env_name);
-	    if (env_value == NULL) break;
-	    curr_path = (char *)g_malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
-	    if (curr_path == NULL)
+            dprintf("%s():  Trying \"%s\" = \"%s\" from the environment\n",
+                __FUNCTION__, env_name,
+                env_value == NULL ? "(null)" : env_value);
+
+	    if (env_value == NULL) {
+	      curr_path = NULL;
+	    } else {
+	      curr_path = (char *)g_malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
+	      if (curr_path == NULL)
 		return NULL;
-	    strcpy(curr_path, env_value);
-	    strcat(curr_path, &paths[i][len + 1]);
-	    g_free(env_name);
+	      strcpy(curr_path, env_value);
+	      strcat(curr_path, &paths[i][len + 1]);
+	      g_free(env_name);
+	    }
 	} else {
 	    curr_path = paths[i];
 	}
 
-	/*
-	 * Build complete path (inc. filename) and check if file exists.
-	 */
-	complete_path = (char *)g_malloc(strlen(curr_path) + strlen(filename) + 2);
-	if (complete_path == NULL)
+	if (curr_path != NULL) {
+	  /*
+	   * Build complete path (inc. filename) and check if file exists.
+	   */
+	  complete_path = (char *)g_malloc(strlen(curr_path) + strlen(filename) + 2);
+	  if (complete_path == NULL)
 	    return NULL;
-	strcpy(complete_path, curr_path);
-	complete_path[strlen(curr_path)] = G_DIR_SEPARATOR;
-	complete_path[strlen(curr_path) + 1] = '\0';
-	strncat(complete_path, filename, strlen(filename));
-
-	if (paths[i][0] == '$') {
+	  strcpy(complete_path, curr_path);
+	  complete_path[strlen(curr_path)] = G_DIR_SEPARATOR;
+	  complete_path[strlen(curr_path) + 1] = '\0';
+	  strncat(complete_path, filename, strlen(filename));
+	  
+	  if (paths[i][0] == '$') {
 	    g_free(curr_path);
 	    curr_path = NULL;
-	}
-	
-	if (access(complete_path, R_OK) != -1)
+	  }
+	  
+	  dprintf("%s():  Tring to access \"%s\"\n", __FUNCTION__,
+		  complete_path);
+	  
+	  if (access(complete_path, R_OK) != -1)
 	    break;
-
-	g_free(complete_path);
-	complete_path = NULL;
+	  
+	  g_free(complete_path);
+	  complete_path = NULL;
+	}
     }
-
+	
     if (complete_path == NULL)
-	errno = ENOENT;
-
+      errno = ENOENT;
+    
+    dprintf("%s():  returning complete_path = \"%s\"\n", __FUNCTION__,
+	    complete_path == NULL ? "(null)" : complete_path);
+    
     return complete_path;
 } /* gerb_find_file */

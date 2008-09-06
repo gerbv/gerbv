@@ -597,6 +597,7 @@ typedef struct {
   gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
   gchar *path; /*!< the default path to load new files from */
   gchar *execpath;    /*!< the path to executed version of gerbv */
+  gchar *execname;    /*!< the path plus executible name for gerbv */
   gchar *project;     /*!< the default name for the private project file */
 } gerbv_project_t;
 

@@ -338,6 +338,7 @@ main(int argc, char *argv[])
     screen.state = NORMAL;
     
     mainProject = gerbv_create_project();
+    mainProject->execname = g_strdup(argv[0]);
     mainProject->execpath = g_path_get_dirname(argv[0]);
     
     /* set default rendering mode */

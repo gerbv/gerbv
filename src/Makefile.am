@@ -1,3 +1,4 @@
+## -*- makefile -*-
 ## Process this file with automake to produce Makefile.in
 ##
 ##  gEDA - GNU Electronic Design Automation
@@ -78,6 +79,7 @@ gerbv_SOURCES = \
 		opdefines.h \
 		dynload.c dynload.h \
 		attribute.c attribute.h \
+                lrealpath.c lrealpath.h \
 		main.h main.c \
 		project.c project.h scheme-private.h scheme.c \
 		scheme.h \
@@ -133,10 +135,11 @@ CLEANFILES=	authors.c bugs.c
 
 EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW} gerbv.rc libgerbv.pc.in run_gerbv.in
 
-scmdatadir = $(pkgdatadir)/scheme/
+SCMSUBDIR = scheme
+scmdatadir = $(pkgdatadir)/${SCMSUBDIR}/
 dist_scmdata_DATA = init.scm
 
-AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"'
+AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"' -DSCMSUBDIR='"$(SCMSUBDIR)"'
 
 all-local: run_gerbv
 # create wrapper script that lets you test gerbv prior to installation

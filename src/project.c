@@ -59,6 +59,7 @@
 
 #include "gerbv.h"
 #include "gerb_file.h"
+#include "lrealpath.h"
 #include "project.h"
 #include "scheme-private.h"
 #include "main.h"
@@ -271,6 +272,176 @@ get_color(scheme *sc, pointer value, int *color)
     
     return;
 } /* get_color */
+
+/* ----------------------------------------------------------------------
+ * Figure out the canonical name of the executed program
+ * and fix up the defaults for various paths.  This is largely
+ * taken from InitPaths() in main.c from pcb.
+ */
+static char *bindir = NULL;
+static char *exec_prefix = NULL;
+static char *pkgdatadir = NULL;
+static gchar *scmdatadir = NULL;
+
+/* this really should not be needed but it could
+ * be hooked in to appease malloc debuggers as
+ * we don't otherwise free these variables.  However,
+ * they only get malloc-ed once ever so this
+ * is a fixed leak of a small size.
+ */
+#if 0
+void
+destroy_paths ()
+{
+  if (bindir != NULL) {
+    free (bindir);
+    bindir = NULL;
+  }
+
+  if (exec_prefix != NULL) {
+    free (exec_prefix);
+    exec_prefix = NULL;
+  }
+
+  if (pkgdatadir != NULL) {
+    free (pkgdatadir);
+    pkgdatadir = NULL;
+  }
+
+  if (scmdatadir != NULL) {
+    g_free (scmdatadir);
+    scmdatadir = NULL;
+  }
+
+
+}
+#endif
+
+static void
+init_paths (char *argv0)
+{
+  size_t l;
+  int i;
+  int haspath;
+  char *t1, *t2;
+  int found_bindir = 0;
+
+  /* Only do this stuff once */
+  if (bindir != NULL )
+    return;
+
+  /* see if argv0 has enough of a path to let lrealpath give the
+   * real path.  This should be the case if you invoke gerbv with
+   * something like /usr/local/bin/gerbv or ./gerbv or ./foo/gerbv
+   * but if you just use gerbv and it exists in your path, you'll
+   * just get back gerbv again.
+   */
+  
+  haspath = 0;
+  for (i = 0; i < strlen (argv0) ; i++)
+    {
+      if (argv0[i] == GERBV_DIR_SEPARATOR_C) 
+        haspath = 1;
+    }
+  
+  dprintf("%s (%s): haspath = %d\n", __FUNCTION__, argv0, haspath);
+  if (haspath)
+    {
+      bindir = strdup (lrealpath (argv0));
+      found_bindir = 1;
+    }
+  else
+    {
+      char *path, *p, *tmps;
+      struct stat sb;
+      int r;
+      
+      tmps = getenv ("PATH");
+      
+      if (tmps != NULL)
+        {
+          path = strdup (tmps);
+	  
+          /* search through the font path for a font file */
+          for (p = strtok (path, GERBV_PATH_DELIMETER); p && *p;
+               p = strtok (NULL, GERBV_PATH_DELIMETER))
+            {
+	      dprintf ("Looking for %s in %s\n", argv0, p);
+              if ( (tmps = malloc ( (strlen (argv0) + strlen (p) + 2) * sizeof (char))) == NULL )
+                {
+                  fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+                  exit (1);
+                }
+              sprintf (tmps, "%s%s%s", p, GERBV_DIR_SEPARATOR_S, argv0);
+              r = stat (tmps, &sb);
+              if (r == 0)
+                {
+		  dprintf ("Found it:  \"%s\"\n", tmps);
+                  bindir = lrealpath (tmps);
+                  found_bindir = 1;
+                  free (tmps);
+                  break;
+                }
+              free (tmps);
+            }
+          free (path);
+        }
+    }
+  dprintf ("%s():  bindir = \"%s\"\n", __FUNCTION__, bindir);
+  
+
+  if (found_bindir)
+    {
+      /* strip off the executible name leaving only the path */
+      t2 = NULL;
+      t1 = strchr (bindir, GERBV_DIR_SEPARATOR_C);
+      while (t1 != NULL && *t1 != '\0')
+        {
+          t2 = t1;
+          t1 = strchr (t2 + 1, GERBV_DIR_SEPARATOR_C);
+        }
+      if (t2 != NULL)
+        *t2 = '\0';
+      dprintf ("After stripping off the executible name, we found\n");
+      dprintf ("bindir = \"%s\"\n", bindir);
+      
+    }
+  else
+    {
+      /* we have failed to find out anything from argv[0] so fall back to the original
+       * install prefix
+       */
+       bindir = strdup (BINDIR);
+    }
+    
+  /* now find the path to exec_prefix */
+  l = strlen (bindir) + 1 + strlen (BINDIR_TO_EXECPREFIX) + 1;
+  if ( (exec_prefix = (char *) malloc (l * sizeof (char) )) == NULL )
+    {
+      fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+      exit (1);
+    }
+  sprintf (exec_prefix, "%s%s%s", bindir, GERBV_DIR_SEPARATOR_S,
+           BINDIR_TO_EXECPREFIX);
+  
+  /* now find the path to PKGDATADIR */
+  l = strlen (bindir) + 1 + strlen (BINDIR_TO_PKGDATADIR) + 1;
+  if ( (pkgdatadir = (char *) malloc (l * sizeof (char) )) == NULL )
+    {
+      fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+      exit (1);
+    }
+  sprintf (pkgdatadir, "%s%s%s", bindir, GERBV_DIR_SEPARATOR_S,
+           BINDIR_TO_PKGDATADIR);
+  
+  scmdatadir = g_strdup_printf ("%s%s%s", pkgdatadir, GERBV_DIR_SEPARATOR_S, SCMSUBDIR);
+
+  dprintf ("%s():  bindir      = %s\n", __FUNCTION__, bindir);
+  dprintf ("%s():  exec_prefix = %s\n", __FUNCTION__, exec_prefix);
+  dprintf ("%s():  pkgdatadir  = %s\n", __FUNCTION__, pkgdatadir);
+  dprintf ("%s():  scmdatadir  = %s\n", __FUNCTION__, scmdatadir);
+  
+}
 
 
 static char *
@@ -612,10 +783,36 @@ read_project_file(char const* filename)
     struct stat stat_info;
     scheme *sc;
     FILE *fd;
-    char *initdirs[] = {BACKEND_DIR, mainProject->execpath, ".", 
-			"$GERBV_SCHEMEINIT", NULL};
+    /* always let the environment variable win so one can force
+     * a particular init.scm.  Then we use the default installed
+     * directory based on where the binary has been installed to
+     * (including the possibility of relocation).  Then use the
+     * default compiled in directory.  After that try the directory
+     * where the binary lives and finally the current directory.
+     */
+    char *initdirs[] = {"$GERBV_SCHEMEINIT","", BACKEND_DIR, 
+                        mainProject->execpath, ".", 
+			NULL};
     char *initfile;
 
+
+    /*
+     * Figure out some directories so we can find init.scm
+     */
+    init_paths(mainProject->execname);
+    initdirs[1] = scmdatadir;
+
+#if defined(DEBUG) 
+    if (DEBUG > 0)
+      {
+	int i=0;
+	
+	while(initdirs[i] != NULL) {
+	  printf("%s():  initdirs[%d] = \"%s\"\n", __FUNCTION__, i, initdirs[i]);
+	  i++;
+	}
+      }
+#endif 
 
     /*
      * set the current version of the project file to 1 day before we started adding
@@ -649,6 +846,8 @@ read_project_file(char const* filename)
 	GERB_MESSAGE("Problem loading init.scm (%s)\n", strerror(errno));
 	return NULL;
     }
+    dprintf("%s():  initfile = \"%s\"\n", __FUNCTION__, initfile);
+
     if ((fd = fopen(initfile, "r")) == NULL) {
 	scheme_deinit(sc);
 	GERB_MESSAGE("Couldn't open %s (%s)\n", initfile, strerror(errno));
