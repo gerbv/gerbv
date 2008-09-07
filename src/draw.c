@@ -794,16 +794,21 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				break;
 			case GERBV_APERTURE_STATE_FLASH :
 				p1 = image->aperture[net->aperture]->parameter[0];
-				criticalRadius = p1/2.0;
-#ifdef USE_DRAW_OPTIMIZATIONS
-				if ((p1 < (pixelWidth*2.0)) &&
-						(random() > (RAND_MAX / 10)))
-					break;
-				if ( (((x2 + criticalRadius) < minX) && ((y2 + criticalRadius) < minY)) ||
-					(((x2 - criticalRadius) > maxX) && ((y2 - criticalRadius) > maxY)) )
-					break;
-#endif
 				p2 = image->aperture[net->aperture]->parameter[1];
+#ifdef USE_DRAW_OPTIMIZATIONS
+				if (image->aperture[net->aperture]->type != GERBV_APTYPE_MACRO) {
+					if (p1 > p2)
+						criticalRadius = p1/2.0;
+					else
+						criticalRadius = p2/2.0;
+					if ((criticalRadius < (pixelWidth)) &&
+							(random() > (RAND_MAX / 10)))
+						break;
+					if ( (((x2 + criticalRadius) < minX) || ((y2 + criticalRadius) < minY)) ||
+						(((x2 - criticalRadius) > maxX) || ((y2 - criticalRadius) > maxY)) )
+						break;
+				}
+#endif
 				p3 = image->aperture[net->aperture]->parameter[2];
 				p4 = image->aperture[net->aperture]->parameter[3];
 				p5 = image->aperture[net->aperture]->parameter[4];
