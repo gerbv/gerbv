@@ -828,7 +828,8 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 	cairo_save (cr);
 	cairo_translate (cr, fileInfo->transform.translateX, fileInfo->transform.translateY);
 	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
-		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL);
+		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL,
+		renderInfo);
 	cairo_restore (cr);
 }
 #endif

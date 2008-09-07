@@ -431,7 +431,7 @@ void render_selection_layer (void){
 						mainProject->file[j]->transform.inverted,
 						1.0/MAX(screenRenderInfo.scaleFactorX,
 						screenRenderInfo.scaleFactorY),
-						DRAW_SELECTIONS, &screen.selectionInfo);
+						DRAW_SELECTIONS, &screen.selectionInfo, &screenRenderInfo);
 				}
 			}
 		}
@@ -556,7 +556,7 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean
 	gerbv_render_cairo_set_scale_and_translation(cr,&screenRenderInfo);
 	draw_image_to_cairo_target (cr, mainProject->file[activeFileIndex]->image, mainProject->file[activeFileIndex]->transform.inverted,
 		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
-		FIND_SELECTIONS, &screen.selectionInfo);
+		FIND_SELECTIONS, &screen.selectionInfo, &screenRenderInfo);
 	cairo_destroy (cr);
 	/* if the selection array is empty, switch the "mode" to empty to make it
 	   easier to check if it is holding anything */

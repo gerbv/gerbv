@@ -45,6 +45,7 @@
 #include <cairo.h>
 
 #define dprintf if(DEBUG) printf
+#define USE_DRAW_OPTIMIZATIONS 1
 gboolean
 draw_net_in_selection_buffer (gerbv_net_t *net, gerbv_selection_info_t *selectionInfo) {
 	int i;
@@ -505,7 +506,8 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble s
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					gboolean invertLayer, gdouble pixelWidth,
-					gchar drawMode, gerbv_selection_info_t *selectionInfo)
+					gchar drawMode, gerbv_selection_info_t *selectionInfo,
+					gerbv_render_info_t *renderInfo)
 {
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
@@ -517,6 +519,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	int repeat_i, repeat_j;
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
 	gboolean invertPolarity = FALSE;
+#ifdef USE_DRAW_OPTIMIZATIONS
+	gdouble minX = renderInfo->lowerLeftX;
+	gdouble minY = renderInfo->lowerLeftY;
+	gdouble maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
+				renderInfo->scaleFactorX);
+	gdouble maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
+				renderInfo->scaleFactorY);
+#endif
+	gdouble criticalRadius;
 	
     /* do initial justify */
 	cairo_translate (cairoTarget, image->info->imageJustifyOffsetActualA,
@@ -682,16 +693,39 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				   etc, and they are rendered by other programs as 1 pixel wide */
 				/* NOTE: also, make sure all lines are at least 1 pixel wide, so they
 				   always show up at low zoom levels */
+				
 				if (image->aperture[net->aperture]->parameter[0] > pixelWidth)
-					cairo_set_line_width (cairoTarget, image->aperture[net->aperture]->parameter[0]);
+					criticalRadius = image->aperture[net->aperture]->parameter[0]/2.0;
+#ifdef USE_DRAW_OPTIMIZATIONS
+				else if (image->aperture[net->aperture]->parameter[0] == 0)
+					criticalRadius = pixelWidth/2.0;
+				else if (random() < (RAND_MAX / 10))
+					criticalRadius = pixelWidth/2.0;
 				else
-					cairo_set_line_width (cairoTarget, pixelWidth);
+					break;
+#else
+				else
+					criticalRadius = pixelWidth/2.0;
+#endif
+				cairo_set_line_width (cairoTarget, criticalRadius*2.0);
 				switch (net->interpolation) {
 					case GERBV_INTERPOLATION_x10 :
 					case GERBV_INTERPOLATION_LINEARx01 :
 					case GERBV_INTERPOLATION_LINEARx001 :
 					case GERBV_INTERPOLATION_LINEARx1 :
 						cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+						// weed out any lines that are obviously not going to render on the
+						//   visible screen
+#ifdef USE_DRAW_OPTIMIZATIONS					
+						if (((x1 + criticalRadius) < minX) && ((x2 + criticalRadius) < minX))
+							break;
+						if (((x1 - criticalRadius) > maxX) && ((x2 - criticalRadius) > maxX))
+							break;
+						if (((y1 + criticalRadius) < minY) && ((y2 + criticalRadius) < minY))
+							break;
+						if (((y1 - criticalRadius) > maxY) && ((y2 - criticalRadius) > maxY))
+							break;
+#endif
 						switch (image->aperture[net->aperture]->type) {
 							case GERBV_APTYPE_CIRCLE :
 								cairo_move_to (cairoTarget, x1,y1);
@@ -760,6 +794,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				break;
 			case GERBV_APERTURE_STATE_FLASH :
 				p1 = image->aperture[net->aperture]->parameter[0];
+				criticalRadius = p1/2.0;
+#ifdef USE_DRAW_OPTIMIZATIONS
+				if ((p1 < (pixelWidth*2.0)) &&
+						(random() > (RAND_MAX / 10)))
+					break;
+				if ( (((x2 + criticalRadius) < minX) && ((y2 + criticalRadius) < minY)) ||
+					(((x2 - criticalRadius) > maxX) && ((y2 - criticalRadius) > maxY)) )
+					break;
+#endif
 				p2 = image->aperture[net->aperture]->parameter[1];
 				p3 = image->aperture[net->aperture]->parameter[2];
 				p4 = image->aperture[net->aperture]->parameter[3];

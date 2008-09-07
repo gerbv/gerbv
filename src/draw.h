@@ -45,7 +45,8 @@ selection calculating functions
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					gboolean invertLayer, gdouble pixelWidth,
-					gchar drawMode, gerbv_selection_info_t *selectionInfo);
+					gchar drawMode, gerbv_selection_info_t *selectionInfo,
+					gerbv_render_info_t *renderInfo);
 
 
 

@@ -2304,30 +2304,21 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 #endif
 }
 
-/* --------------------------------------------------------------------------- */
 void
-callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
-{
+callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	int i;
 	time_t start, now;
-
-	// prepare render	size and options (canvas size width and height are last 2 variables)		
-	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 0, 640, 480};
-	// autoscale the image for now...maybe we don't want to do this in order to
-	//   allow benchmarking of different zoom levels?
-	gerbv_render_zoom_to_fit_display (mainProject, &renderInfo);
-
+	GdkPixmap *renderedPixmap = gdk_pixmap_new (NULL, renderInfo->displayWidth,
+								renderInfo->displayHeight, 24);
+								
 	// start by running the GDK (fast) rendering test
 	i = 0;
 	start = time(NULL);
 	now = start;
-	GdkPixmap *renderedPixmap = gdk_pixmap_new (NULL, renderInfo.displayWidth,
-								renderInfo.displayHeight, 24);
-	
 	while( now - 30 < start) {
 		i++;
 		dprintf("Benchmark():  Starting redraw #%d\n", i);
-		gerbv_render_to_pixmap_using_gdk (mainProject, renderedPixmap, &renderInfo, NULL, NULL);
+		gerbv_render_to_pixmap_using_gdk (mainProject, renderedPixmap, renderInfo, NULL, NULL);
 		now = time(NULL);
 		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
@@ -2339,14 +2330,14 @@ callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
 	i = 0;
 	start = time(NULL);
 	now = start;
-	renderInfo.renderType = 2;
+	renderInfo->renderType = 2;
 	while( now - 30 < start) {
 		i++;
 		dprintf("Benchmark():  Starting redraw #%d\n", i);
 		cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
-	                              renderInfo.displayWidth, renderInfo.displayHeight);
+	                              renderInfo->displayWidth, renderInfo->displayHeight);
 		cairo_t *cairoTarget = cairo_create (cSurface);
-		gerbv_render_all_layers_to_cairo_target (mainProject, cairoTarget, &renderInfo);
+		gerbv_render_all_layers_to_cairo_target (mainProject, cairoTarget, renderInfo);
 		cairo_destroy (cairoTarget);
 		cairo_surface_destroy (cSurface);
 		now = time(NULL);
@@ -2354,9 +2345,31 @@ callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
 	}
 	g_message("NORMAL mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n",
 		      i, (long int) (now - start), (double) i / (double)(now - start));
-	
 }
 
+/* --------------------------------------------------------------------------- */
+void
+callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
+{
+	// prepare render	size and options (canvas size width and height are last 2 variables)		
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 0, 640, 480};
+	// autoscale the image for now...maybe we don't want to do this in order to
+	//   allow benchmarking of different zoom levels?
+	gerbv_render_zoom_to_fit_display (mainProject, &renderInfo);
+
+	g_message("Full zoom benchmarks\n");
+	callbacks_support_benchmark (&renderInfo);
+
+		   
+	g_message("x5 zoom benchmarks\n");
+	renderInfo.lowerLeftX += (screenRenderInfo.displayWidth /
+				screenRenderInfo.scaleFactorX) / 3.0;
+	renderInfo.lowerLeftY += (screenRenderInfo.displayHeight /
+				screenRenderInfo.scaleFactorY) / 3.0;			
+	renderInfo.scaleFactorX *= 5;
+	renderInfo.scaleFactorY *= 5;
+	callbacks_support_benchmark (&renderInfo);
+}
 
 /* --------------------------------------------------------------------------- */
 void
