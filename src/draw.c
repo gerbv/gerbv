@@ -696,17 +696,16 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				
 				if (image->aperture[net->aperture]->parameter[0] > pixelWidth)
 					criticalRadius = image->aperture[net->aperture]->parameter[0]/2.0;
-#ifdef USE_DRAW_OPTIMIZATIONS
+				/* 
 				else if (image->aperture[net->aperture]->parameter[0] == 0)
 					criticalRadius = pixelWidth/2.0;
 				else if (random() < (RAND_MAX / 10))
 					criticalRadius = pixelWidth/2.0;
 				else
 					break;
-#else
+				*/
 				else
 					criticalRadius = pixelWidth/2.0;
-#endif
 				cairo_set_line_width (cairoTarget, criticalRadius*2.0);
 				switch (net->interpolation) {
 					case GERBV_INTERPOLATION_x10 :
@@ -801,9 +800,11 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						criticalRadius = p1/2.0;
 					else
 						criticalRadius = p2/2.0;
+					/*
 					if ((criticalRadius < (pixelWidth)) &&
-							(random() > (RAND_MAX / 10)))
+							(random() > (RAND_MAX)))
 						break;
+					*/
 					if ( (((x2 + criticalRadius) < minX) || ((y2 + criticalRadius) < minY)) ||
 						(((x2 - criticalRadius) > maxX) || ((y2 - criticalRadius) > maxY)) )
 						break;
