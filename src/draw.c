@@ -520,12 +520,16 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
 	gboolean invertPolarity = FALSE;
 #ifdef USE_DRAW_OPTIMIZATIONS
-	gdouble minX = renderInfo->lowerLeftX;
-	gdouble minY = renderInfo->lowerLeftY;
+	gdouble minX = renderInfo->lowerLeftX - image->info->offsetA -
+				image->info->imageJustifyOffsetActualA;
+	gdouble minY = renderInfo->lowerLeftY - image->info->offsetB - 
+				image->info->imageJustifyOffsetActualB;
 	gdouble maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
-				renderInfo->scaleFactorX);
+				renderInfo->scaleFactorX) - image->info->offsetA - 
+				image->info->imageJustifyOffsetActualA;
 	gdouble maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
-				renderInfo->scaleFactorY);
+				renderInfo->scaleFactorY) - image->info->offsetB -
+				image->info->imageJustifyOffsetActualB;
 #endif
 	gdouble criticalRadius;
 	
