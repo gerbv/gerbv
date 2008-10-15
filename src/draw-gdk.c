@@ -46,7 +46,7 @@
 #define round(x) ceil((double)(x))
 
 #define dprintf if(DEBUG) printf
-
+#define USE_DRAW_OPTIMIZATIONS 1
 /*
  * If you want to rotate a
  * column vector v by t degrees using matrix M, use
@@ -792,7 +792,8 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 int
 draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image, 
 	     double scale, double trans_x, double trans_y,
-	     gerbv_polarity_t polarity, gchar drawMode, gerbv_selection_info_t *selectionInfo)
+	     gerbv_polarity_t polarity, gchar drawMode,
+	     gerbv_selection_info_t *selectionInfo, gerbv_render_info_t *renderInfo)
 {
     GdkGC *gc = gdk_gc_new(*pixmap);
     GdkGC *pgc = gdk_gc_new(*pixmap);
@@ -805,7 +806,18 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
     int cp_x = 0, cp_y = 0;
     double unit_scale;
     GdkColor transparent, opaque;
-
+#ifdef USE_DRAW_OPTIMIZATIONS
+	gdouble minX = renderInfo->lowerLeftX - image->info->offsetA -
+				image->info->imageJustifyOffsetActualA;
+	gdouble minY = renderInfo->lowerLeftY - image->info->offsetB - 
+				image->info->imageJustifyOffsetActualB;
+	gdouble maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
+				renderInfo->scaleFactorX) - image->info->offsetA - 
+				image->info->imageJustifyOffsetActualA;
+	gdouble maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
+				renderInfo->scaleFactorY) - image->info->offsetB -
+				image->info->imageJustifyOffsetActualB;
+#endif
 
     if (image == NULL || image->netlist == NULL) {
 	/*
@@ -880,7 +892,18 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	    cp_y = (int)round((image->info->offsetB - net->cirseg->cp_y) *
 			      unit_scale + trans_y);
 	}
-
+#ifdef USE_DRAW_OPTIMIZATIONS				
+		//g_warning ("box is %f %f %f %f",net->boundingBox.left,net->boundingBox.right,
+		//	net->boundingBox.top,net->boundingBox.bottom);
+		//gerbv_image_dump(image);
+		if ((net->boundingBox.right+sr_x < minX)
+				|| (net->boundingBox.left+sr_y > maxX)
+				|| (net->boundingBox.top+sr_y < minY)
+				|| (net->boundingBox.bottom+sr_y > maxY)) {
+			//g_warning ("skipping %f %f",net->boundingBox.left,net->boundingBox.right);
+			break;
+		}
+#endif
 	/*
 	 * Set GdkFunction depending on if this (gerber) layer is inverted
 	 * and allow for the photoplot being negative.

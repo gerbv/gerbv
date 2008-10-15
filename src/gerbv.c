@@ -685,7 +685,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 			draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[i]->image,
 				renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
 				(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-				polarity, DRAW_IMAGE, NULL);
+				polarity, DRAW_IMAGE, NULL, renderInfo);
 
 			/* 
 			* Set clipmask and draw the clipped out image onto the
@@ -720,7 +720,8 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 					draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[j]->image,
 						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
 						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-						GERBV_POLARITY_POSITIVE, DRAW_SELECTIONS, selectionInfo);
+						GERBV_POLARITY_POSITIVE, DRAW_SELECTIONS, selectionInfo,
+						renderInfo);
 				}
 			}
 			gdk_gc_set_clip_mask(gc, clipmask);

@@ -272,6 +272,23 @@ gerbv_image_interpolation(gerbv_interpolation_t interpolation)
     }
 } /* gerb_image_interpolation */
 
+static void
+gerbv_image_aperture_state(gerbv_aperture_state_t state)
+{
+    switch (state) {
+    case GERBV_APERTURE_STATE_OFF:
+	printf("..state off");
+	break;
+    case GERBV_APERTURE_STATE_ON:
+	printf("..state on");
+	break;
+    case GERBV_APERTURE_STATE_FLASH:
+	printf("..state flash");
+	break;
+    default:
+	printf("..state unknown");
+    }
+}
 
 /* Dumps a written version of image to stdout */
 void 
@@ -319,6 +336,7 @@ gerbv_image_dump(gerbv_image_t const* image)
 	printf("(%f,%f)->(%f,%f) with %d (", net->start_x, net->start_y, 
 	       net->stop_x, net->stop_y, net->aperture);
 	gerbv_image_interpolation(net->interpolation);
+	gerbv_image_aperture_state(net->aperture_state);
 	printf(")\n");
 	net = net->next;
     }

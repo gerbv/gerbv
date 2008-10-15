@@ -78,7 +78,7 @@ static void calc_cirseg_mq(struct gerbv_net *net, int cw,
 			   double delta_cp_x, double delta_cp_y);
 
 static void
-gerber_update_min_and_max(gerbv_image_info_t *info, gdouble repeatX, gdouble repeatY,
+gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
 			  gdouble x, gdouble y, gdouble apertureSizeX1,
 			  gdouble apertureSizeX2,gdouble apertureSizeY1,
 			  gdouble apertureSizeY2);
@@ -156,6 +156,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
     double scale;
     gboolean foundEOF = FALSE;
     gchar *string;
+    gerbv_render_size_t boundingBox={0,0,0,0};
     
     while ((read = gerb_fgetc(fd)) != EOF) {
         /* figure out the scale, since we need to normalize 
@@ -321,8 +322,16 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		state->parea_start_node = curr_net;
 		state->in_parea_fill = 1;
 		polygonPoints = 0;
+		/* reset the bounding box */
+		boundingBox.left = HUGE_VAL;
+		boundingBox.right = -HUGE_VAL;
+		boundingBox.top = -HUGE_VAL;
+		boundingBox.bottom = HUGE_VAL;
 		break;
 	    case GERBV_INTERPOLATION_PAREA_END :
+	      /* save the calculated bounding box to the master node */
+	      state->parea_start_node->boundingBox = boundingBox;
+	      /* close out the polygon */
 		state->parea_start_node = NULL;
 		state->in_parea_fill = 0;
 		polygonPoints = 0;
@@ -412,7 +421,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		break;
 	    
 	    /* only update the min/max values and aperture stats if we are drawing */
-	    if ((curr_net->aperture_state != GERBV_APERTURE_STATE_OFF)){
+	    if ((curr_net->aperture_state != GERBV_APERTURE_STATE_OFF)&&
+	    		(curr_net->interpolation != GERBV_INTERPOLATION_PAREA_START)){
 		double repeat_off_X = 0.0, repeat_off_Y = 0.0;
 
 		/* Update stats with current aperture number if not in polygon */
@@ -510,7 +520,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			    numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
 		
 			    for (pointCounter = 0; pointCounter < numberOfPoints; pointCounter++) {
-				gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
+				gerber_update_min_and_max (&boundingBox,
 							   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X],
 							   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_Y], 
 							   0,0,0,0);
@@ -530,11 +540,11 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			    widthx = widthy = ls->parameter[THERMAL_OUTSIDE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE20) {
 			    widthx = widthy = ls->parameter[LINE20_LINE_WIDTH];
-			    gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
+			    gerber_update_min_and_max (&boundingBox,
 						       ls->parameter[LINE20_START_X] + offsetx,
 						       ls->parameter[LINE20_START_Y] + offsety, 
 						       widthx/2,widthx/2,widthy/2,widthy/2);
-			    gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
+			    gerber_update_min_and_max (&boundingBox,
 						       ls->parameter[LINE20_END_X] + offsetx,
 						       ls->parameter[LINE20_END_Y] + offsety, 
 						       widthx/2,widthx/2,widthy/2,widthy/2);
@@ -560,7 +570,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			}
 	      	
 			if (!calculatedAlready) {
-			    gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
+			    gerber_update_min_and_max (&boundingBox,
 						       curr_net->stop_x + offsetx,
 						       curr_net->stop_y + offsety, 
 						       widthx/2,widthx/2,widthy/2,widthy/2);
@@ -572,24 +582,66 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			aperture_size = image->aperture[curr_net->aperture]->parameter[0];
 		    } else {
 			/* this is usually for polygon fills, where the aperture width
-			   if "zero" */
+			   is "zero" */
 			aperture_size = 0;
 		    }
-		    
-		    /* check both the start and stop of the aperture points against
-		       a running min/max counter */
-		    /* Note: only check start coordinate if this isn't a flash, 
-		       since the start point may be bogus if it is a flash */
-		    if (curr_net->aperture_state != GERBV_APERTURE_STATE_FLASH) {
-			gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
-						   curr_net->start_x, curr_net->start_y, 
-						   aperture_size/2,aperture_size/2,
-						   aperture_size/2,aperture_size/2);
+		    /* if it's an arc path, use special calcs */
+		   /* if (state->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR) || 
+				 (state->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR)) {
+			gerber_update_min_and_max (&boundingBox,
+					       curr_net->cirseg->cp_x, curr_net->cirseg->cp_y, 
+					       (aperture_size+curr_net->cirseg->width)/2,
+					       (aperture_size+curr_net->cirseg->width)/2,
+					       (aperture_size+curr_net->cirseg->height)/2,
+					       (aperture_size+curr_net->cirseg->height)/2);
 		    }
-		    gerber_update_min_and_max (image->info, repeat_off_X, repeat_off_Y,
-					       curr_net->stop_x, curr_net->stop_y, 
-					       aperture_size/2,aperture_size/2,
-					       aperture_size/2,aperture_size/2);
+		    else { */
+			    /* check both the start and stop of the aperture points against
+			       a running min/max counter */
+			    /* Note: only check start coordinate if this isn't a flash, 
+			       since the start point may be bogus if it is a flash */
+			    if (curr_net->aperture_state != GERBV_APERTURE_STATE_FLASH) {
+				gerber_update_min_and_max (&boundingBox,
+							   curr_net->start_x, curr_net->start_y, 
+							   aperture_size/2,aperture_size/2,
+							   aperture_size/2,aperture_size/2);
+			    }
+			    gerber_update_min_and_max (&boundingBox,
+						       curr_net->stop_x, curr_net->stop_y, 
+						       aperture_size/2,aperture_size/2,
+						       aperture_size/2,aperture_size/2);
+		  /*  } */
+					     
+		}
+		/* if we're not in a polygon fill, then update the object bounding box */
+		if (!state->in_parea_fill) {
+			curr_net->boundingBox = boundingBox;
+			/* and reset the bounding box */
+			boundingBox.left = HUGE_VAL;
+			boundingBox.right = -HUGE_VAL;
+			boundingBox.bottom = HUGE_VAL;
+			boundingBox.top = -HUGE_VAL;
+		}
+
+		/* update the info bounding box with this latest bounding box */
+		if (boundingBox.left < image->info->min_x)
+			image->info->min_x = boundingBox.left;
+		if (boundingBox.right+repeat_off_X > image->info->max_x)
+			image->info->max_x = boundingBox.right+repeat_off_X;
+		if (boundingBox.bottom < image->info->min_y)
+			image->info->min_y = boundingBox.bottom;
+		if (boundingBox.top+repeat_off_Y > image->info->max_y)
+			image->info->max_y = boundingBox.top+repeat_off_Y;
+		/* optionally update the knockout measurement box */
+		if (knockoutMeasure) {
+			if (boundingBox.left < knockoutLimitXmin)
+				knockoutLimitXmin = boundingBox.left;
+			if (boundingBox.right+repeat_off_X > knockoutLimitXmax)
+				knockoutLimitXmax = boundingBox.right+repeat_off_X;
+			if (boundingBox.bottom < knockoutLimitYmin)
+				knockoutLimitYmin = boundingBox.bottom;
+			if (boundingBox.top+repeat_off_Y > knockoutLimitYmax)
+				knockoutLimitYmax = boundingBox.top+repeat_off_Y;
 		}
 	    }
 	    break;
@@ -2529,18 +2581,13 @@ gerber_calculate_final_justify_effects(gerbv_image_t *image)
 
 
 static void
-gerber_update_min_and_max(gerbv_image_info_t *info, gdouble repeatX, gdouble repeatY,
+gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
 			  gdouble x, gdouble y, gdouble apertureSizeX1,
 			  gdouble apertureSizeX2,gdouble apertureSizeY1,
 			  gdouble apertureSizeY2)
 {
     gdouble ourX1 = x - apertureSizeX1, ourY1 = y - apertureSizeY1;
     gdouble ourX2 = x + apertureSizeX2, ourY2 = y + apertureSizeY2;
-    
-    if (repeatX > 0)
-    	ourX2 += repeatX;
-    if (repeatY > 0)
-    	ourY2 += repeatY;
     
 #ifndef RENDER_USING_GDK
     /* transform the point to the final rendered position, accounting
@@ -2553,40 +2600,21 @@ gerber_update_min_and_max(gerbv_image_info_t *info, gdouble repeatX, gdouble rep
 
     /* check both points against the min/max, since depending on the rotation,
        mirroring, etc, either point could possibly be a min or max */
-    if(info->min_x > ourX1)
-	info->min_x = ourX1;
-    if(info->min_x > ourX2)
-	info->min_x = ourX2;
-    if(info->max_x < ourX1)
-	info->max_x = ourX1;
-    if(info->max_x < ourX2)
-	info->max_x = ourX2;
-    if(info->min_y > ourY1)
-	info->min_y = ourY1;
-    if(info->min_y > ourY2)
-	info->min_y = ourY2;
-    if(info->max_y < ourY1)
-	info->max_y = ourY1;
-    if(info->max_y < ourY2)
-	info->max_y = ourY2;
-
-    if (knockoutMeasure) {
-	if(knockoutLimitXmin > ourX1)
-	    knockoutLimitXmin = ourX1;
-	if(knockoutLimitXmin > ourX2)
-	    knockoutLimitXmin = ourX2;
-	if(knockoutLimitXmax < ourX1)
-	    knockoutLimitXmax = ourX1;
-	if(knockoutLimitXmax < ourX2)
-	    knockoutLimitXmax = ourX2;
-	if(knockoutLimitYmin > ourY1)
-	    knockoutLimitYmin = ourY1;
-	if(knockoutLimitYmin > ourY2)
-	    knockoutLimitYmin = ourY2;
-	if(knockoutLimitYmax < ourY1)
-	    knockoutLimitYmax = ourY1;
-	if(knockoutLimitYmax < ourY2)
-	    knockoutLimitYmax = ourY2; 
-    }
+    if(boundingBox->left > ourX1)
+	boundingBox->left = ourX1;
+    if(boundingBox->left > ourX2)
+	boundingBox->left = ourX2;
+    if(boundingBox->right < ourX1)
+	boundingBox->right = ourX1;
+    if(boundingBox->right < ourX2)
+	boundingBox->right = ourX2;
+    if(boundingBox->bottom > ourY1)
+	boundingBox->bottom = ourY1;
+    if(boundingBox->bottom > ourY2)
+	boundingBox->bottom = ourY2;
+    if(boundingBox->top < ourY1)
+	boundingBox->top = ourY1;
+    if(boundingBox->top < ourY2)
+	boundingBox->top = ourY2;
 } /* gerber_update_min_and_max */
 

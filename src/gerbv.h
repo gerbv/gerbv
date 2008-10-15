@@ -440,6 +440,14 @@ typedef struct {
     gboolean inverted; /*!< TRUE if the image should be rendered "inverted" (light is dark and vice versa) */
 } gerbv_user_transformation_t;
 
+/*!  This defines a box location and size (used to rendering logic) */
+typedef struct {
+    double left; /*!< the X coordinate of the left side */
+    double right; /*!< the X coordinate of the right side */
+    double bottom; /*!< the Y coordinate of the bottom side */
+    double top; /*!< the Y coordinate of the top side */
+} gerbv_render_size_t;
+
 typedef struct gerbv_cirseg {
     double cp_x;
     double cp_y;
@@ -495,6 +503,7 @@ typedef struct gerbv_net {
     double start_y; /*!< the Y coordinate of the start point */
     double stop_x; /*!< the X coordinate of the end point */
     double stop_y; /*!< the Y coordinate of the end point */
+    gerbv_render_size_t boundingBox; /*!< the bounding box containing this net (used for rendering optimizations) */
     int aperture; /*!< the index of the aperture used for this entity */
     gerbv_aperture_state_t aperture_state; /*!< the state of the aperture tool (on/off/etc) */
     gerbv_interpolation_t interpolation; /*!< the path interpolation method (linear/etc) */
@@ -619,13 +628,6 @@ typedef struct {
 	gint displayWidth; /*!< the width of the scene (in pixels, or points depending on the surface type) */
 	gint displayHeight; /*!< the height of the scene (in pixels, or points depending on the surface type) */
 } gerbv_render_info_t;
-
-typedef struct {
-    double left;
-    double right;
-    double top;
-    double bottom;
-} gerbv_render_size_t;
 
 //! Allocate a new gerbv_image structure
 //! \return the newly created image

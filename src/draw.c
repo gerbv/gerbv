@@ -651,6 +651,19 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			cp_x = net->cirseg->cp_x + sr_x;
 			cp_y = net->cirseg->cp_y + sr_y;
 		}
+
+#ifdef USE_DRAW_OPTIMIZATIONS				
+		//g_warning ("box is %f %f %f %f",net->boundingBox.left,net->boundingBox.right,
+		//	net->boundingBox.top,net->boundingBox.bottom);
+		//gerbv_image_dump(image);
+		if ((net->boundingBox.right+sr_x < minX)
+				|| (net->boundingBox.left+sr_y > maxX)
+				|| (net->boundingBox.top+sr_y < minY)
+				|| (net->boundingBox.bottom+sr_y > maxY)) {
+			//g_warning ("skipping %f %f",net->boundingBox.left,net->boundingBox.right);
+			break;
+		}
+#endif
 		
 		/* render any labels attached to this net */
 		/* NOTE: this is currently only used on PNP files, so we may
@@ -719,16 +732,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
 						// weed out any lines that are obviously not going to render on the
 						//   visible screen
-#ifdef USE_DRAW_OPTIMIZATIONS					
-						if (((x1 + criticalRadius) < minX) && ((x2 + criticalRadius) < minX))
-							break;
-						if (((x1 - criticalRadius) > maxX) && ((x2 - criticalRadius) > maxX))
-							break;
-						if (((y1 + criticalRadius) < minY) && ((y2 + criticalRadius) < minY))
-							break;
-						if (((y1 - criticalRadius) > maxY) && ((y2 - criticalRadius) > maxY))
-							break;
-#endif
+
 						switch (image->aperture[net->aperture]->type) {
 							case GERBV_APTYPE_CIRCLE :
 								cairo_move_to (cairoTarget, x1,y1);
@@ -798,22 +802,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			case GERBV_APERTURE_STATE_FLASH :
 				p1 = image->aperture[net->aperture]->parameter[0];
 				p2 = image->aperture[net->aperture]->parameter[1];
-#ifdef USE_DRAW_OPTIMIZATIONS
-				if (image->aperture[net->aperture]->type != GERBV_APTYPE_MACRO) {
-					if (p1 > p2)
-						criticalRadius = p1/2.0;
-					else
-						criticalRadius = p2/2.0;
-					/*
-					if ((criticalRadius < (pixelWidth)) &&
-							(random() > (RAND_MAX)))
-						break;
-					*/
-					if ( (((x2 + criticalRadius) < minX) || ((y2 + criticalRadius) < minY)) ||
-						(((x2 - criticalRadius) > maxX) || ((y2 - criticalRadius) > maxY)) )
-						break;
-				}
-#endif
 				p3 = image->aperture[net->aperture]->parameter[2];
 				p4 = image->aperture[net->aperture]->parameter[3];
 				p5 = image->aperture[net->aperture]->parameter[4];

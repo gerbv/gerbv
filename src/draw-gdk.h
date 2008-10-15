@@ -41,7 +41,8 @@ enum draw_mode_t {DRAW_IMAGE, DRAW_SELECTIONS, FIND_SELECTIONS};
  */
 int draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image, 
 		 double scale, double trans_x, double trans_y,
-		 gerbv_polarity_t polarity, gchar drawMode, gerbv_selection_info_t *selectionInfo);
+		 gerbv_polarity_t polarity, gchar drawMode,
+		 gerbv_selection_info_t *selectionInfo, gerbv_render_info_t *renderInfo);
 
 typedef enum {
 	CIRCLE_EXPOSURE,
