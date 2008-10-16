@@ -588,10 +588,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    /* if it's an arc path, use a special calc */
 		    if ((curr_net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR) || 
 				 (curr_net->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR)) {
-			/* to calculate the arc bounding box, we chop it into 20 steps, calculate
+			/* to calculate the arc bounding box, we chop it into 1 degree steps, calculate
 			   the point at each step, and use it to figure out the bounding box */
 			gdouble angleDiff = curr_net->cirseg->angle2 - curr_net->cirseg->angle1;
-			gint i, steps = 4;
+			gint i, steps = abs(angleDiff);
 			for (i=0; i<=steps; i++){
 				gdouble tempX = curr_net->cirseg->cp_x + curr_net->cirseg->width / 2.0 *
 						 cos ((curr_net->cirseg->angle1 +

@@ -631,6 +631,15 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	       causing SEGV... */
 	    if(image->aperture[state->current_tool] == NULL)
 		break;
+		
+	    curr_net->boundingBox.left=curr_net->start_x -
+		     image->aperture[state->current_tool]->parameter[0] / 2;
+	    curr_net->boundingBox.right=curr_net->start_x +
+		     image->aperture[state->current_tool]->parameter[0] / 2;
+	    curr_net->boundingBox.bottom=curr_net->start_y -
+		     image->aperture[state->current_tool]->parameter[0] / 2;
+	    curr_net->boundingBox.top=curr_net->start_y +
+		     image->aperture[state->current_tool]->parameter[0] / 2;
 
 	    image->info->min_x =
 		min(image->info->min_x,
