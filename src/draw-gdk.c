@@ -877,10 +877,17 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
 	  double sr_x = repeat_i * repeat_dist_X;
 	  double sr_y = repeat_j * repeat_dist_Y;
-	
+
+#ifdef USE_DRAW_OPTIMIZATIONS				
+		if ((net->boundingBox.right+sr_x < minX)
+				|| (net->boundingBox.left+sr_y > maxX)
+				|| (net->boundingBox.top+sr_y < minY)
+				|| (net->boundingBox.bottom+sr_y > maxY)) {
+			break;
+		}
+#endif
+
       unit_scale = scale;
-
-
 	/* 
 	 * If circle segment, scale and translate that one too
 	 */
@@ -892,18 +899,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	    cp_y = (int)round((image->info->offsetB - net->cirseg->cp_y) *
 			      unit_scale + trans_y);
 	}
-#ifdef USE_DRAW_OPTIMIZATIONS				
-		//g_warning ("box is %f %f %f %f",net->boundingBox.left,net->boundingBox.right,
-		//	net->boundingBox.top,net->boundingBox.bottom);
-		//gerbv_image_dump(image);
-		if ((net->boundingBox.right+sr_x < minX)
-				|| (net->boundingBox.left+sr_y > maxX)
-				|| (net->boundingBox.top+sr_y < minY)
-				|| (net->boundingBox.bottom+sr_y > maxY)) {
-			//g_warning ("skipping %f %f",net->boundingBox.left,net->boundingBox.right);
-			break;
-		}
-#endif
+
 	/*
 	 * Set GdkFunction depending on if this (gerber) layer is inverted
 	 * and allow for the photoplot being negative.

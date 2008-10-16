@@ -640,6 +640,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	    for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
 		double sr_x = repeat_i * repeat_dist_X;
 		double sr_y = repeat_j * repeat_dist_Y;
+
+#ifdef USE_DRAW_OPTIMIZATIONS				
+		if ((net->boundingBox.right+sr_x < minX)
+				|| (net->boundingBox.left+sr_y > maxX)
+				|| (net->boundingBox.top+sr_y < minY)
+				|| (net->boundingBox.bottom+sr_y > maxY)) {
+			break;
+		}
+#endif
 		
 		x1 = net->start_x + sr_x;
 		y1 = net->start_y + sr_y;
@@ -651,19 +660,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			cp_x = net->cirseg->cp_x + sr_x;
 			cp_y = net->cirseg->cp_y + sr_y;
 		}
-
-#ifdef USE_DRAW_OPTIMIZATIONS				
-		//g_warning ("box is %f %f %f %f",net->boundingBox.left,net->boundingBox.right,
-		//	net->boundingBox.top,net->boundingBox.bottom);
-		//gerbv_image_dump(image);
-		if ((net->boundingBox.right+sr_x < minX)
-				|| (net->boundingBox.left+sr_y > maxX)
-				|| (net->boundingBox.top+sr_y < minY)
-				|| (net->boundingBox.bottom+sr_y > maxY)) {
-			//g_warning ("skipping %f %f",net->boundingBox.left,net->boundingBox.right);
-			break;
-		}
-#endif
 		
 		/* render any labels attached to this net */
 		/* NOTE: this is currently only used on PNP files, so we may

@@ -156,7 +156,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
     double scale;
     gboolean foundEOF = FALSE;
     gchar *string;
-    gerbv_render_size_t boundingBox={0,0,0,0};
+    gerbv_render_size_t boundingBox={HUGE_VAL,-HUGE_VAL,HUGE_VAL,-HUGE_VAL};
     
     while ((read = gerb_fgetc(fd)) != EOF) {
         /* figure out the scale, since we need to normalize 
@@ -585,17 +585,28 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			   is "zero" */
 			aperture_size = 0;
 		    }
-		    /* if it's an arc path, use special calcs */
-		   /* if (state->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR) || 
-				 (state->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR)) {
-			gerber_update_min_and_max (&boundingBox,
-					       curr_net->cirseg->cp_x, curr_net->cirseg->cp_y, 
-					       (aperture_size+curr_net->cirseg->width)/2,
-					       (aperture_size+curr_net->cirseg->width)/2,
-					       (aperture_size+curr_net->cirseg->height)/2,
-					       (aperture_size+curr_net->cirseg->height)/2);
+		    /* if it's an arc path, use a special calc */
+		    if ((curr_net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR) || 
+				 (curr_net->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR)) {
+			/* to calculate the arc bounding box, we chop it into 20 steps, calculate
+			   the point at each step, and use it to figure out the bounding box */
+			gdouble angleDiff = curr_net->cirseg->angle2 - curr_net->cirseg->angle1;
+			gint i, steps = 4;
+			for (i=0; i<=steps; i++){
+				gdouble tempX = curr_net->cirseg->cp_x + curr_net->cirseg->width / 2.0 *
+						 cos ((curr_net->cirseg->angle1 +
+						 (angleDiff * i) / steps)*M_PI/180);
+				gdouble tempY = curr_net->cirseg->cp_y + curr_net->cirseg->width / 2.0 *
+						 sin ((curr_net->cirseg->angle1 +
+						 (angleDiff * i) / steps)*M_PI/180);
+				gerber_update_min_and_max (&boundingBox,
+					       tempX, tempY, 
+					       aperture_size/2,aperture_size/2,
+					       aperture_size/2,aperture_size/2);
+			}
+			
 		    }
-		    else { */
+		    else {
 			    /* check both the start and stop of the aperture points against
 			       a running min/max counter */
 			    /* Note: only check start coordinate if this isn't a flash, 
@@ -610,19 +621,9 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 						       curr_net->stop_x, curr_net->stop_y, 
 						       aperture_size/2,aperture_size/2,
 						       aperture_size/2,aperture_size/2);
-		  /*  } */
+		    }
 					     
 		}
-		/* if we're not in a polygon fill, then update the object bounding box */
-		if (!state->in_parea_fill) {
-			curr_net->boundingBox = boundingBox;
-			/* and reset the bounding box */
-			boundingBox.left = HUGE_VAL;
-			boundingBox.right = -HUGE_VAL;
-			boundingBox.bottom = HUGE_VAL;
-			boundingBox.top = -HUGE_VAL;
-		}
-
 		/* update the info bounding box with this latest bounding box */
 		if (boundingBox.left < image->info->min_x)
 			image->info->min_x = boundingBox.left;
@@ -642,6 +643,15 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 				knockoutLimitYmin = boundingBox.bottom;
 			if (boundingBox.top+repeat_off_Y > knockoutLimitYmax)
 				knockoutLimitYmax = boundingBox.top+repeat_off_Y;
+		}
+		/* if we're not in a polygon fill, then update the object bounding box */
+		if (!state->in_parea_fill) {
+			curr_net->boundingBox = boundingBox;
+			/* and reset the bounding box */
+			boundingBox.left = HUGE_VAL;
+			boundingBox.right = -HUGE_VAL;
+			boundingBox.bottom = HUGE_VAL;
+			boundingBox.top = -HUGE_VAL;
 		}
 	    }
 	    break;
