@@ -153,6 +153,14 @@ void gerb_transf_apply(double x, double y, gerbv_transf_t* transf, double *out_x
     
 }/*gerb_transf_apply*/
 
+void
+pick_and_place_reset_bounding_box (gerbv_net_t *net) {
+	net->boundingBox.left = -HUGE_VAL;
+	net->boundingBox.right = HUGE_VAL;
+	net->boundingBox.bottom = -HUGE_VAL;
+	net->boundingBox.top = HUGE_VAL;
+}
+
 //! Parses a string representing float number with a unit, default is mil
 static double 
 pick_and_place_get_float_unit(char *str)
@@ -574,7 +582,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 
     curr_net = image->netlist;
     curr_net->layer = image->layers;
-    curr_net->state = image->states;	
+    curr_net->state = image->states;
+    pick_and_place_reset_bounding_box (curr_net);	
     image->info->min_x = HUGE_VAL;
     image->info->min_y = HUGE_VAL;
     image->info->max_x = -HUGE_VAL;
@@ -593,6 +602,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	                       
 	curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	curr_net = curr_net->next;
+	
 	assert(curr_net);
 	memset((void *)curr_net, 0, sizeof(gerbv_net_t));
 	curr_net->layer = image->layers;
@@ -628,6 +638,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	curr_net->layer = image->layers;
 	curr_net->state = image->states;
+	pick_and_place_reset_bounding_box (curr_net);
 
 	/* assign a label to this first draw primitive, in case we want
 	* to render some text next to the mark
@@ -660,7 +671,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
-	    
+	    pick_and_place_reset_bounding_box (curr_net);
 	    
 	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
@@ -677,6 +688,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
+	    pick_and_place_reset_bounding_box (curr_net);
 	    
 	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
@@ -693,6 +705,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
+	    pick_and_place_reset_bounding_box (curr_net);
 	    
 	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
@@ -709,6 +722,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
+	    pick_and_place_reset_bounding_box (curr_net);
 	    
 	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 	    curr_net = curr_net->next;
@@ -731,6 +745,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 		curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 		curr_net->layer = image->layers;
 		curr_net->state = image->states;
+		pick_and_place_reset_bounding_box (curr_net);
 		
 		curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
 		curr_net = curr_net->next;
@@ -746,6 +761,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
+	    pick_and_place_reset_bounding_box (curr_net);
+	    
 	    /* calculate a rough radius for the min/max screen calcs later */
 	    radius = max (partData.length/2, partData.width/2);
 	} else {
@@ -780,6 +797,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->interpolation = GERBV_INTERPOLATION_CW_CIRCULAR;
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
+	    pick_and_place_reset_bounding_box (curr_net);
 	    
 	    curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
 	    curr_net->cirseg->angle1 = 0.0;
