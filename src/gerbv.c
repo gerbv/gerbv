@@ -61,6 +61,7 @@
 
 #include <locale.h>
 
+#include "common.h"
 #include "gerbv.h"
 #include "gerber.h"
 #include "drill.h"

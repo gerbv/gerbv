@@ -36,6 +36,7 @@
 #include <glib.h>
 #include <math.h>
 
+#include "common.h"
 #include "gerbv.h"
 #include "drill_stats.h"
 

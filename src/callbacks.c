@@ -55,6 +55,7 @@
 #endif
 
 #include <math.h>
+#include "common.h"
 #include "gerbv.h"
 #include "main.h"
 #include "callbacks.h"

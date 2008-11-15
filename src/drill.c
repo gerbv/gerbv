@@ -55,6 +55,7 @@
 #endif
 
 #include "attribute.h"
+#include "common.h"
 #include "gerbv.h"
 #include "drill.h"
 #include "drill_stats.h"

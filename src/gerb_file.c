@@ -44,6 +44,7 @@
 #endif
 #include <errno.h>
 
+#include "common.h"
 #include "gerbv.h"
 #include "gerb_file.h"
 

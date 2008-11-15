@@ -46,6 +46,7 @@
 
 #include <gtk/gtk.h>
 
+#include "common.h"
 #include "gerbv.h"
 #include "attribute.h"
 #include "main.h"
