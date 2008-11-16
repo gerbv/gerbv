@@ -252,13 +252,13 @@ gerbv_stats_add_error(gerbv_error_list_t *error_list_in,
     /* Replace embedded error messages */
     switch (type) {
         case GERBV_MESSAGE_FATAL:
-            GERB_FATAL_ERROR(error_text);
+            GERB_FATAL_ERROR("%s",error_text);
             break;
         case GERBV_MESSAGE_ERROR:
-            GERB_COMPILE_ERROR(error_text);
+            GERB_COMPILE_ERROR("%s",error_text);
             break;
         case GERBV_MESSAGE_WARNING:
-            GERB_COMPILE_WARNING(error_text);
+            GERB_COMPILE_WARNING("%s",error_text);
             break;
         case GERBV_MESSAGE_NOTE:
             break;
