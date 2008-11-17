@@ -16,7 +16,16 @@
 	Run with the following command:
 	
 	./example2
-
+	
+	Common compiling problems:
+		1. If you are compiling gerbv from source, make sure you run
+			"make install" before trying to compile this example. This
+			ensures libgerbv is correctly installed and can be found.
+		2. If you installed gerbv to "/usr/local" (the default), many
+			distributions don't correctly point pkgconfig to this target.
+			To fix this, add the following to your ~/.bashrc file:
+			
+			export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/:/usr/lib/pkgconfig/ 
 ------------------------------------------------------------------------------*/
 
 #include "gerbv.h"
