@@ -29,6 +29,9 @@ Supported options:
   --force-autogen - Force running ./autogen.sh.  Normally this is
                     only done if the configure script is not present.
 
+  --nsis-only     - Only run NSIS to create the installer.  This is
+                    shorthand for all of the following --skip-* options.
+
   --skip-build    - Skip the "make" step of the process.
 
   --skip-clean    - Skip the "make clean" step of the process.
@@ -70,6 +73,14 @@ while test $# -ne 0 ; do
 
 		--force-autogen)
 			do_autogen=yes
+			shift
+			;;
+
+		--nsis-only)
+			do_build=no
+			do_clean=no
+			do_config=no
+			do_install=no
 			shift
 			;;
 
