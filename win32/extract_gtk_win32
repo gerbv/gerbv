@@ -35,7 +35,7 @@ mkdir -p ${gtk_win32}
 mkdir -p ${gtk_win32_runtime}
 
 mkdir -p ${gd_win32}
-mkdir -p ${gd_win32_runtime}
+mkdir -p ${gd_win32_runtime}/bin
 
 # extract the runtime files
 cd ${gtk_win32_runtime}
@@ -85,8 +85,13 @@ cd ${HOME}
 
 cd ${gd_win32}
 unzip ${gtk_win32_downloads}/gd-*-win32.zip
-cp */*.dll ${gd_win32_runtime}
-cp ${gd_win32}/COPYING.TXT ${gdwin32_runtime}/gd-license.txt
+cp */*.dll ${gd_win32_runtime}/bin
+cat > ${gd_win32_runtime}/gd-license.txt << EOF
+The GD library which provides png/gif/jpeg exporting
+is covered by the following license:
+
+EOF
+cat ${gd_win32}/COPYING.TXT >> ${gd_win32_runtime}/gd-license.txt
 chmod 755 ${gd_win32}/*/*
 chmod 755 ${gd_win32_runtime}/*
 
@@ -121,7 +126,6 @@ cat > ${gtk_win32_runtime}/LICENSE-gpl2 << EOF
 The following packages are covered by the GNU General Public License (GPL) v2.
 
 freetype
-libiconv
 pkg-config
 
 ----------------------------------------
@@ -222,9 +226,6 @@ rm -fr jpeg-6b
 #
 #libiconv-1.9.1.bin.woe32.zip
 #libiconv-1.9.1.tar.gz
-tar -zxvf ${gtk_win32_downloads}/libiconv-*.tar.gz
-cat libiconv-*/COPYING >> ${gtk_win32_runtime}/LICENSE-gpl2
-rm -fr libiconv-*
 
 #libpng-1.2.9.tar.gz
 #libpng-dev-1.2.9.zip
