@@ -94,7 +94,7 @@ gerbv_DEPENDENCIES = libgerbv.la
 # desktop and application toolbar
 if WIN32
 gerbv_icon.o : gerbv_icon.ico $(srcdir)/gerbv.rc
-	windres $(srcdir)/gerbv.rc $@
+	$(WINDRES) $(srcdir)/gerbv.rc $@
 
 gerbv_icon.ico: $(top_srcdir)/desktop/gerbv_icon.ico
 	cp $(top_srcdir)/desktop/gerbv_icon.ico $@

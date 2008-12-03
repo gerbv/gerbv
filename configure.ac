@@ -171,6 +171,13 @@ AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
+if test "x$WIN32" = "xyes" ; then
+	AC_CHECK_TOOL(WINDRES, windres, no)
+	if test "$WINDRES" = "no"; then
+		AC_MSG_ERROR([*** Could not find an implementation of windres in your PATH.])
+	fi
+fi
+
 # if we have gcc then add -Wall
 if test "x$GCC" = "xyes"; then
 	if test -z "`echo "$CFLAGS" | grep "\-Wall" 2> /dev/null`" ; then
