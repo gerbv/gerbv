@@ -73,7 +73,7 @@ libgerbv_la_SOURCES= \
 # 6. If any interfaces have been removed since the last public release, then
 #    set age to 0.
 #
-libgerbv_la_LDFLAGS = -version-info 1:1:0 -no-undefined
+libgerbv_la_LDFLAGS = -version-info 1:2:0 -no-undefined
 
 gerbv_SOURCES = \
 		opdefines.h \
@@ -144,7 +144,9 @@ AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"' -DSCMSUBDIR='"$(SCMSUBDIR)"'
 all-local: run_gerbv
 # create wrapper script that lets you test gerbv prior to installation
 run_gerbv:     $(srcdir)/run_gerbv.in Makefile
-	sed -e 's;@SRCDIR@;${srcdir};g' \
+	sed \
+		-e 's;@SRCDIR@;${srcdir};g' \
+		-e 's;@BUILDDIR@;${abs_builddir};g' \
 		$(srcdir)/run_gerbv.in > $@
 	chmod 755 $@
 

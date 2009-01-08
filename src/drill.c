@@ -123,7 +123,9 @@ typedef struct drill_state {
     /* 0 means we don't try to autodetect any of the other values */
     int autod;
     
-    /* in FMT_USER this specifies the number of digits after the decimal 
+    /* in FMT_USER this specifies the number of digits before the
+     * decimal point when doing trailing zero supression.  Otherwise
+     * it is the number of digits *after* the decimal 
      * place in the file
      */
     int decimals;
@@ -162,10 +164,13 @@ static const char *supression_list[] = {
 static const char *units_list[] = {
     "inch",
 #define UNITS_INCH 0
+    /* we don't do anything with mil yet so don't offer it as an
+       option 
     "mil (1/1000 inch)",
 #define UNITS_MIL 1
+    */
     "mm",
-#define UNITS_MM 2
+#define UNITS_MM 1
     0
 };
 
@@ -189,7 +194,9 @@ static gerbv_HID_Attribute drill_attribute_list[] = {
 #define HA_tool_units 3
 #endif
 
-  {"digits", "Number of digits",
+  {"digits", "Number of digits.  For trailing zero supression,"
+   " this is the number of digits before the decimal point.  "
+   "Otherwise this is the number of digits after the decimal point.",
    HID_Integer, 0, 20, {5, 0, 0}, 0, 0},
 #define HA_digits 3
 };
@@ -1436,17 +1443,26 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
     double result;
     gboolean decimal_point = FALSE;
 
+    dprintf("%s(%p, %d, %d, %d)\n", __FUNCTION__, fd, fmt, omit_zeros, decimals);
+
     memset(temp, 0, sizeof(temp));
 
     read = gerb_fgetc(fd);
     while(read != EOF && i < sizeof(temp) &&
 	  (isdigit(read) || read == '.' || read == ',' || read == '+' || read == '-')) {
-	if(read == ',' || read == '.') decimal_point = TRUE;
-	if(read == ',')
+      if(read == ',' || read == '.') decimal_point = TRUE;
+      
+      /*
+       * FIXME -- if we are going to do this, don't we need a
+       * locale-independent strtod()?  I think pcb has one.
+       */
+      if(read == ',')
 	    read = '.'; /* adjust for strtod() */
-	if(isdigit(read)) ndigits++;
-	temp[i++] = (char)read;
-	read = gerb_fgetc(fd);
+      
+      if(isdigit(read)) ndigits++;
+
+      temp[i++] = (char)read;
+      read = gerb_fgetc(fd);
     }
     temp[i] = 0;
 
@@ -1456,56 +1472,101 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
     } else {
 	int wantdigits;
 	double scale;
+	char tmp2[0x20];
 
+	memset(tmp2, 0, sizeof(tmp2));
+
+	dprintf("%s():  omit_zeros = %d, fmt = %d\n", __FUNCTION__, omit_zeros, fmt);
 	/* Nothing to take care for when leading zeros are
 	   omitted. */
 	if (omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
 	    switch (fmt) {
 	    case FMT_00_0000:
+	      wantdigits = 2;
+	      break;
+
 	    case FMT_000_000:
+	      wantdigits = 3;
+	      break;
+
 	    case FMT_0000_00:
-		wantdigits = 6;
+		wantdigits = 4;
 		break;
 
 	    case FMT_000_00:
-		wantdigits = 5;
+		wantdigits = 3;
+		break;
+
+	    case FMT_USER:
+		wantdigits = decimals;
 		break;
 
 	    default:
-		/* cannot happen, just plugs a compiler warning */
-		return 0;
+	      /* cannot happen, just plugs a compiler warning */
+	      fprintf(stderr, "%s():  omit_zeros == GERBV_OMIT_ZEROS_TRAILING but fmt = %d.\n"
+		      "This should never have happened\n", __FUNCTION__, fmt);
+	      return 0;
 	    }
 
-	    /* fill missing trailing digits */
-	    while (ndigits < wantdigits) {
-		temp[i++] = '0';
-		ndigits++;
+	    /* 
+	     * we need at least wantdigits + one for the decimal place
+	     * + one for the terminating null character
+	     */
+	    if (wantdigits > sizeof(tmp2) - 2) {
+	      fprintf(stderr, "%s():  wantdigits = %d which exceeds the maximum allowed size\n", 
+		      __FUNCTION__, wantdigits);
+	      return 0;
 	    }
-	    temp[i] = 0;
-	}
 
-	switch (fmt) {
-	case FMT_00_0000:
+	    /*
+	     * After we have read the correct number of digits
+	     * preceeding the decimal point, insert a decimal point
+	     * and append the rest of the digits.
+	     */
+	    dprintf("%s():  wantdigits = %d, strlen(\"%s\") = %d\n", __FUNCTION__, wantdigits, temp, strlen(temp));
+	    for (i = 0 ; i < wantdigits ; i++) {
+	      tmp2[i] = temp[i];
+	    }
+	    tmp2[wantdigits] = '.';
+	    for (i = wantdigits ; i <= strlen(temp) ; i++) {
+	      tmp2[i+1] = temp[i];
+	    }
+	    dprintf("%s():  After dealing with trailing zero supression, convert \"%s\"\n", __FUNCTION__, tmp2);
+	    scale = 1.0;
+	    
+	    for (i = 0 ; i <= strlen(tmp2) && i < sizeof (temp) ; i++) {
+	      temp[i] = tmp2[i];
+	    }
+
+	} else {
+
+	  /*
+	   * figure out the scale factor when we are not suppressing
+	   * trailing zeros.
+	   */
+	  switch (fmt) {
+	  case FMT_00_0000:
 	    scale = 1E-4;
 	    break;
-
-	case FMT_000_000:
+	    
+	  case FMT_000_000:
 	    scale = 1E-3;
 	    break;
-
-	case FMT_000_00:
-	case FMT_0000_00:
+	    
+	  case FMT_000_00:
+	  case FMT_0000_00:
 	    scale = 1E-2;
 	    break;
-
-	case FMT_USER:
+	    
+	  case FMT_USER:
 	    scale = pow (10.0, -1.0*decimals);
 	    break;
-
-	default:
+	    
+	  default:
 	    /* cannot happen, just plugs a compiler warning */
 	    fprintf (stderr, "%s(): Unhandled fmt ` %d\n", __FUNCTION__, fmt);
 	    exit (1);
+	  }
 	}
 
 	result = strtod(temp, NULL) * scale;
