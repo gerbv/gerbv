@@ -67,6 +67,50 @@ while test $# -gt 0 ; do
 	esac
 done
 
+# We do this hack because if there is a libgerbv already installed in the
+# same location as some of the libs like gtk, then we will pick up the 
+# installed libgerbv at runtime instead of the one we just built.  This can
+# lead to extreme frustration when trying to understand why changes to the code
+# do not change the way the program works!  This makes sure we pick up our
+# newly built libgerbv first.
+#
+# This hack came from wcalc.
+
+LIBGERBV_DIR=@BUILDDIR@/.libs
+if test "X${LD_LIBRARY_PATH}" = "X" ; then
+	LD_LIBRARY_PATH=${LIBGERBV_DIR}
+else
+	LD_LIBRARY_PATH=${LIBGERBV_DIR}:${LD_LIBRARY_PATH}
+fi 
+export LD_LIBRARY_PATH
+echo "Set LD_LIBRARY_PATH to ${LD_LIBRARY_PATH}"
+
+if test "X${LD_RUN_PATH}" = "X" ; then
+	LD_RUN_PATH=${LIBGERBV_DIR}
+else
+	LD_RUN_PATH=${LIBGERBV_DIR}:${LD_RUN_PATH}
+fi 
+export LD_RUN_PATH
+echo "Set LD_RUN_PATH to ${LD_RUN_PATH}"
+
+if test "X${LD_PRELOAD}" = "X" ; then
+	LD_PRELOAD=${LIBGERBV_DIR}/libgerbv.so
+else
+	LD_PRELOAD=${LIBGERBV_DIR}/libgerbv.so:${LD_PRELOAD}
+fi 
+export LD_PRELOAD
+echo "Set LD_PRELOAD to ${LD_PRELOAD}"
+
+mv -f gerbv gerbv.orig 
+sed \
+	-e 's;LD_LIBRARY_PATH="/;LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/;g' \
+	-e 's;LD_RUN_PATH="/;LD_RUN_PATH="${LD_RUN_PATH}:/;g' \
+	gerbv.orig > gerbv
+
+chmod 755 gerbv
+
+# End of shared lib hack
+
 
 if test $do_gdb = yes ; then
 	# Create a temp directory in a safe manner that is only accessible by us.
