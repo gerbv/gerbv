@@ -56,7 +56,7 @@ reports until this message is gone
 $0 -- Run gerbv regression tests
 
 $0 -h|--help
-$0 [-r|--regen] [testname1 [testname2[ ...]]]
+$0 [-g | --golden dir] [-r|--regen] [testname1 [testname2[ ...]]]
 
 OVERVIEW
 
@@ -70,6 +70,11 @@ Current versions of gerbv use cairo for rendering.  Besides the
 ability to render to the screen, cairo can render to PNG files.  Since
 the same rendering engine is used for screen and PNG rendering and the
 parser is common, verification via PNG files is fairly accurate.
+
+OPTIONS
+
+-g | --golden <dir>    :  Specifies that <dir> should be used for the
+                          reference files. 
 
 LIMITATIONS
 
@@ -94,6 +99,12 @@ while test -n "$1"
       -h|--help)
 	  usage
 	  exit 0
+	  ;;
+      
+      -g|--golden)
+	# set the 'golden' directory.
+	  REFDIR="$2"
+	  shift 2
 	  ;;
       
       -r|--regen)
