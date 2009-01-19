@@ -152,7 +152,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
     int read, coord, len, polygonPoints=0;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
-    double aperture_size;
+    double aperture_sizeX, aperture_sizeY;
     double scale;
     gboolean foundEOF = FALSE;
     gchar *string;
@@ -579,11 +579,16 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    }
 		} else {
 		    if (image->aperture[curr_net->aperture] != NULL) {
-			aperture_size = image->aperture[curr_net->aperture]->parameter[0];
+			aperture_sizeX = image->aperture[curr_net->aperture]->parameter[0];
+			if ((image->aperture[curr_net->aperture]->type == GERBV_APTYPE_RECTANGLE) || (image->aperture[curr_net->aperture]->type == GERBV_APTYPE_OVAL)) {
+				aperture_sizeY = image->aperture[curr_net->aperture]->parameter[1];
+			}
+			else
+				aperture_sizeY = aperture_sizeX;
 		    } else {
 			/* this is usually for polygon fills, where the aperture width
 			   is "zero" */
-			aperture_size = 0;
+			aperture_sizeX = aperture_sizeY = 0;
 		    }
 		    /* if it's an arc path, use a special calc */
 		    if ((curr_net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR) || 
@@ -601,8 +606,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 						 (angleDiff * i) / steps)*M_PI/180);
 				gerber_update_min_and_max (&boundingBox,
 					       tempX, tempY, 
-					       aperture_size/2,aperture_size/2,
-					       aperture_size/2,aperture_size/2);
+					       aperture_sizeX/2,aperture_sizeX/2,
+					       aperture_sizeY/2,aperture_sizeY/2);
 			}
 			
 		    }
@@ -614,13 +619,13 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			    if (curr_net->aperture_state != GERBV_APERTURE_STATE_FLASH) {
 				gerber_update_min_and_max (&boundingBox,
 							   curr_net->start_x, curr_net->start_y, 
-							   aperture_size/2,aperture_size/2,
-							   aperture_size/2,aperture_size/2);
+							   aperture_sizeX/2,aperture_sizeX/2,
+							   aperture_sizeY/2,aperture_sizeY/2);
 			    }
 			    gerber_update_min_and_max (&boundingBox,
 						       curr_net->stop_x, curr_net->stop_y, 
-						       aperture_size/2,aperture_size/2,
-						       aperture_size/2,aperture_size/2);
+						       aperture_sizeX/2,aperture_sizeX/2,
+						       aperture_sizeY/2,aperture_sizeY/2);
 		    }
 					     
 		}
