@@ -1523,7 +1523,8 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
 	     * preceeding the decimal point, insert a decimal point
 	     * and append the rest of the digits.
 	     */
-	    dprintf("%s():  wantdigits = %d, strlen(\"%s\") = %d\n", __FUNCTION__, wantdigits, temp, strlen(temp));
+	    dprintf("%s():  wantdigits = %d, strlen(\"%s\") = %ld\n",
+		    __FUNCTION__, wantdigits, temp, (long) strlen(temp));
 	    for (i = 0 ; i < wantdigits ; i++) {
 	      tmp2[i] = temp[i];
 	    }

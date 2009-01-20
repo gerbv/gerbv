@@ -124,6 +124,10 @@ lrealpath (const char *filename)
 	free (buf);
 	return ret;
       }
+    else
+      {
+	return NULL;
+      }
   }
   /* HAVE_REALPATH && HAVE_UNISTD_H */
 
