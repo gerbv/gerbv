@@ -204,6 +204,7 @@ echo "Configuring for cygwin"
 	./configure \
 	--prefix=${gerbv_inst} \
 	--disable-dependency-tracking \
+	--disable-maintainer-mode \
 	--disable-nls \
 	--disable-update-desktop-database \
 	--disable-update-mime-database \
@@ -222,14 +223,21 @@ fi
 # If the win32 pkg-config is used, then you end up with spurious CR's
 # in the generated Makefile's and we need to get rid of them.
 
-echo "Removing spurious carriage returns in the Makefiles..."
-for f in `find . -name Makefile -print` ; do
+remove_rc() {
+	f="$1"
 	mv $f $f.bak
 	cat $f.bak | tr '\r' ' ' > $f
 	rm $f.bak
+}
+echo "Removing spurious carriage returns in the Makefiles..."
+for f in `find . -name Makefile -print` ; do
+	remove_rc "$f"
 done
 
-fi
+echo "Removing spurious carriage returns in libtool..."
+remove_rc libtool
+
+fi # do_config
 
 if test "$do_clean" = "yes" ; then
 echo "Cleaning"
