@@ -284,3 +284,25 @@ echo "Windows installer left in ${srcdir}:"
 ls -l ${srcdir}/*.exe
 
 
+bat=run_install.bat
+
+cat << EOF
+
+Creating DOS batch file wrapper for the installer.
+If you have just built this under cygwin on Vista, 
+you will need to either run the installer from
+the Vista start menu, Windows explorer or directly from
+the cygwin shell with
+
+./${bat}
+
+EOF
+
+cat > ${bat} << EOF
+
+.\win32\gerbvinst-${gerbv_version}.exe
+
+EOF
+chmod 755 ${bat}
+
+
