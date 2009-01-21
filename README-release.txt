@@ -17,16 +17,28 @@ After following the steps below,
 upload the 'gerbv-$VERSION.tar.gz' file to the sourceforge file release system
 
 
+NOTE:  Due to the way that the regression tests work they will usually fail
+when run on a different machine (different CPU type for example) than what
+the test suite golden files were generated on.  To let the rest of 'distcheck'
+complete, use this:
+
+setenv GERBV_MAGIC_TEST_SKIP yes
+
+or under ksh/sh
+
+GERBV_MAGIC_TEST_SKIP=yes
+export GERBV_MAGIC_TEST_SKIP
+
 To make a gerbv release do the following:
 
 =) 	Review the BUGS file and make sure it is up to date.
 
 =)	# make sure it builds and makes distfiles ok:
 	./autogen.sh
-	./configure --enable-maintainer-mode 
+	./configure --enable-maintainer-mode  --disable-update-desktop-database
 	gmake maintainer-clean
 	./autogen.sh
-	./configure
+	./configure --disable-update-desktop-database
 	gmake distcheck
 
 =)	cvs ci
@@ -49,16 +61,16 @@ To make a gerbv release do the following:
 =)	if this is a major release, then tag and branch:
 
 	1. Tag the base of the release branch
-		cvs tag gerbv-2-0-base 
+		cvs tag gerbv-2-2-base 
 
 	2. Create the release branch
-		cvs tag -R -b -r gerbv-2-0-base gerbv-2-0
+		cvs tag -R -b -r gerbv-2-2-base gerbv-2-2
 
 	3. On the trunk, update configure.ac to update the version.
            The rules for versioning is that we append uppercase
            letters to the branch version.
  
-		for example 2.0A after creating the gerbv-2-0 branch
+		for example 2.2A after creating the gerbv-2-2 branch
 		cvs update -PdA
 		vi configure.ac
 		cvs ci configure.ac
@@ -66,8 +78,8 @@ To make a gerbv release do the following:
 	4. On the release branch, update configure.ac to update the
            version.  On a new branch, add a 0RC1 to the teeny number.
 
-		for example 2.0.0RC1.
-		cvs update -PdA -r gerbv-2-0
+		for example 2.2.0RC1.
+		cvs update -PdA -r gerbv-2-2
 		vi configure.ac
 		cvs ci configure.ac
 
@@ -75,42 +87,42 @@ To make a gerbv release do the following:
 
 	5. When the release branch is ready to go,  update configure.ac to
 	   set the final release version.  The first version from a
-	   branch has 0 for the teeny version.  For example, 2.0.0.
+	   branch has 0 for the teeny version.  For example, 2.2.0.
 	   Next tag the release.
-		cvs update -PdA -r gerbv-2-0
+		cvs update -PdA -r gerbv-2-2
 		vi configure.ac
 		cvs ci configure.ac
-		cvs tag -R -r gerbv-2-0 gerbv-2-0-RELEASE
+		cvs tag -R -r gerbv-2-2 gerbv-2-2-RELEASE
 
-	   Update the version on the branch to 2.0.1RC1
-		cvs update -PdA -r gerbv-2-0
+	   Update the version on the branch to 2.2.1RC1
+		cvs update -PdA -r gerbv-2-2
 		vi configure.ac
 		cvs ci configure.ac
 		
 	   Update to the tagged released sources and build tarballs
-		cvs update -PdA -r gerbv-2-0-RELEASE
+		cvs update -PdA -r gerbv-2-2-RELEASE
 		./autogen.sh 
-		./configure --enable-maintainer-mode
+		./configure --enable-maintainer-mode --disable-update-desktop-database
 		gmake maintainer-clean
 		./autogen.sh 
-		./configure
+		./configure --disable-update-desktop-database
 		gmake distcheck
 
            If teeny version bumps are made for a bug fix, then the tag name
-	   should be gerbv-2-0-PATCH001 for gerbv-2.0.1,
-	   gerbv-2-0-PATCH002 for gerbv-2.0.2, etc.
+	   should be gerbv-2-2-PATCH001 for gerbv-2.2.1,
+	   gerbv-2-2-PATCH002 for gerbv-2.2.2, etc.
 
 	7. Create checksums
 
-		openssl md5 gerbv-2.0.0.tar.gz > gerbv-2.0.0.cksum
-		openssl rmd160 gerbv-2.0.0.tar.gz >> gerbv-2.0.0.cksum
-		openssl sha1 gerbv-2.0.0.tar.gz >> gerbv-2.0.0.cksum
+		openssl md5 gerbv-2.2.0.tar.gz > gerbv-2.2.0.cksum
+		openssl rmd160 gerbv-2.2.0.tar.gz >> gerbv-2.2.0.cksum
+		openssl sha1 gerbv-2.2.0.tar.gz >> gerbv-2.2.0.cksum
 
 	8. Upload the .tar.gz, and .cksum files to
 	   ftp://upload.sourceforge.net/incoming/
 
 	9. Create a new file release for gerbv with a release name of
-	   "gerbv-2.0.0" (for gerbv-2.0.0).
+	   "gerbv-2.2.0" (for gerbv-2.2.0).
 
 		For file types:
 			.tar.gz  -  any / source .gz
@@ -119,10 +131,10 @@ To make a gerbv release do the following:
 	10. Return to your regularly scheduled trunk development
 		cvs update -PdA
 
-=) 	if this is a patch release (2.0.1 for example), then simply
+=) 	if this is a patch release (2.2.1 for example), then simply
 	make desired changes to the branch:
 
-		cvs update -PdA -r gerbv-2-0
+		cvs update -PdA -r gerbv-2-2
 		# make changes
 		cvs ci
 
@@ -131,20 +143,20 @@ To make a gerbv release do the following:
 		cvs ci configure.ac
 
         tag the release
-		cvs tag -R -r gerbv-2-0 gerbv-2-0-PATCH001
+		cvs tag -R -r gerbv-2-2 gerbv-2-2-PATCH001
 
-        update the version on the branch to 2.0.2RC1
+        update the version on the branch to 2.2.2RC1
 		vi configure.ac
 		cvs ci configure.ac
 		
 
         update to the tagged release sources and build tarballs
-		cvs update -PdA -r gerbv-2-0-PATCH001
+		cvs update -PdA -r gerbv-2-2-PATCH001
 		./autogen.sh 
-		./configure --enable-maintainer-mode
+		./configure --enable-maintainer-mode --disable-update-desktop-database
 		gmake maintainer-clean
 		./autogen.sh 
-		./configure
+		./configure --disable-update-desktop-database
 		gmake distcheck
 
 
