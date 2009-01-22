@@ -1,3 +1,31 @@
+========================================================================
+Release Notes for gerbv-2.2.0
+========================================================================
+The following is a summary off the changes which went into gerbv-2.2.0.
+For a complete list of changes, refer to ChangeLog.
+
+- libgerbv:  fixed a bug in the min/max calculation.
+- libgerbv:  improved the ability to parse drill files with
+             user specified formats.
+- libgerbv:  Compile with -no-undefined to make it easier to build
+             windows DLL's.
+- configure: Improve detection of tools when cross-compiling.
+- libgerbv:  Improved example programs.
+- gerbv:     Changed desktop categories to be more consistent with
+             the rest of gEDA.
+- common:    Fixed compilation with SunPRO compilers
+- libgerbv:  Fixed calculation of pick and place bounding box
+- gerbv:     Added a rendering benchmark
+- gerbv:     Various rendering speed improvements
+- common:    Made an install be relocatable.  This is always needed
+             for proper win32 operation and helps in some cases
+             on other operating systems.  As part of this, improve
+             how init.scm is located at startup.
+- gerbv:     Improved the project file load/save dialog.
+
+========================================================================
+Old Releases
+========================================================================
 2008-09-07 : 2.1.0 release.  Added features for object selection & deletion.
 2008-02-07 : 2.0.1 release.  This is largely a bugfix release.
 2008-01-13 : 2.0.0 general release.  Introduced new look for gerbv.
