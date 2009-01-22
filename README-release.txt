@@ -49,14 +49,15 @@ To make a gerbv release do the following:
 	if *any* changes have been made to the sources for libgerbv.  src/Makefile.am
 	has specific rules for how the versioning works.  
 
-=)	update the NEWS file with some sort of release notes.
-	Check in changes
-
 =)      if there were any new developers added then update the
         ./utils/umap file.
 
-=)	update the ChangeLog with 'cvs2cl.pl'.  Check in changes.
+=)	update the ChangeLog with 'cvs2cl.pl'.
         ./utils/cvs2cl.pl -U ./utils/umap
+
+=)	update the NEWS file with some sort of release notes.
+        I typically try to condense what I see in ChangeLog
+	Check in changes to  NEWS and ChangeLog
 
 =)	if this is a major release, then tag and branch:
 
