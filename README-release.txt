@@ -152,8 +152,12 @@ To make a gerbv release do the following:
 
            In the "Step 4:  Email Release Notice" section, check the "I'm sure" 
 	   radio button and click the "Send Notice" button.
-         
-	9. Return to your regularly scheduled trunk development
+        
+	 9. Have a project admin go to the Admin->File Releases page and then
+	    follow the "Create/Edit Download page" to change the default download
+	    file to the new release.
+
+	10. Return to your regularly scheduled trunk development
 
 		cvs update -PdA
 
