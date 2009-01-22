@@ -119,17 +119,42 @@ To make a gerbv release do the following:
 		openssl rmd160 gerbv-2.2.0.tar.gz >> gerbv-2.2.0.cksum
 		openssl sha1 gerbv-2.2.0.tar.gz >> gerbv-2.2.0.cksum
 
-	8. Upload the .tar.gz, and .cksum files to
-	   ftp://upload.sourceforge.net/incoming/
+	8. Create a new file release for the package "gerbv" with a release name of
+	   "gerbv-2.2.0" (for gerbv-2.2.0).  Do this by logging into www.sourceforge.net
+	   and then navigating to
 
-	9. Create a new file release for gerbv with a release name of
-	   "gerbv-2.2.0" (for gerbv-2.2.0).
+	   https://sourceforge.net/projects/gerbv  (you must be logged in to sourceforge)
 
+	   Pick Admin->File Releases
+
+	   Next to the "gerbv" package, click "Add Release"
+
+           In the "Step 1:  Edit Existing Release" section, paste in the section of the NEWS
+	   for this version.  Check the "Preserve my pre-formatted text" radio button and click
+	   "Submit/Refresh".
+
+           In the "Step 2: Add Files To This Release" section follow the "upload new files" link
+	   and then in the next page the "Web Upload" link.  You will have to log in to
+	   sourceforge again.
+
+           Upload the .tar.gz, .cksum, and if you built one, the windows installer.
+
+           Once you have completed the file uploads return to the edit releases page, check
+	   the radio buttons next to the uploaded files and click the "Add Files..." button.
+
+           In the "Step 3:  Edit Files in this Release" section, set the following:
 		For file types:
 			.tar.gz  -  any / source .gz
 			.cksum   -  Platform Independent / Other Source File
+			.exe     -  i386 / .exe (32-bit Windows)
 
-	10. Return to your regularly scheduled trunk development
+           You will have to click "update" for each file as you go.
+
+           In the "Step 4:  Email Release Notice" section, check the "I'm sure" 
+	   radio button and click the "Send Notice" button.
+         
+	9. Return to your regularly scheduled trunk development
+
 		cvs update -PdA
 
 =) 	if this is a patch release (2.2.1 for example), then simply
