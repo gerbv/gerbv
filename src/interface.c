@@ -389,6 +389,8 @@ interface_create_gui (int req_width, int req_height)
 	tempImage = gtk_image_new_from_stock ("gtk-remove", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (delete_selected), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_edit_menu), delete_selected);
+	gtk_widget_add_accelerator (delete_selected, "activate", accel_group,
+	                        GDK_Delete, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
 
 
 	/* --- Next menu item --- */

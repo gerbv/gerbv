@@ -2890,33 +2890,7 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 	//switch (screen.state) {
 		//case NORMAL:
 			switch(event->keyval) {
-				case GDK_f:
-				case GDK_F:
-					gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
-					render_refresh_rendered_image_on_screen();
-					break;
-				case GDK_z:
-					render_zoom_display (ZOOM_IN, 0, 0, 0);
-					break;
-				case GDK_Z:
-					render_zoom_display (ZOOM_OUT, 0, 0, 0);
-					break;
-				case GDK_F1:
-					callbacks_change_tool (NULL, (gpointer) 0);
-					break;
-				case GDK_F2:
-					callbacks_change_tool (NULL, (gpointer) 1);
-					break;
-				case GDK_F3:
-					callbacks_change_tool (NULL, (gpointer) 2);
-					break;
-				case GDK_F4:
-					callbacks_change_tool (NULL, (gpointer) 3);
-					break;
 #ifndef RENDER_USING_GDK
-				case GDK_Delete:
-					callbacks_delete_objects_clicked (NULL, NULL);
-					break;
 				case GDK_Escape:
 					if (screen.tool == POINTER) {
 						snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
