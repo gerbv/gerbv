@@ -520,19 +520,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
 	gboolean invertPolarity = FALSE;
 #ifdef USE_DRAW_OPTIMIZATIONS
-	gdouble minX = renderInfo->lowerLeftX - image->info->offsetA -
-				image->info->imageJustifyOffsetActualA;
-	gdouble minY = renderInfo->lowerLeftY - image->info->offsetB - 
-				image->info->imageJustifyOffsetActualB;
+	gdouble minX = renderInfo->lowerLeftX;
+	gdouble minY = renderInfo->lowerLeftY;
 	gdouble maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
-				renderInfo->scaleFactorX) - image->info->offsetA - 
-				image->info->imageJustifyOffsetActualA;
+				renderInfo->scaleFactorX);
 	gdouble maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
-				renderInfo->scaleFactorY) - image->info->offsetB -
-				image->info->imageJustifyOffsetActualB;
+				renderInfo->scaleFactorY);
 #endif
 	gdouble criticalRadius;
-	
+
     /* do initial justify */
 	cairo_translate (cairoTarget, image->info->imageJustifyOffsetActualA,
 		 image->info->imageJustifyOffsetActualB);
@@ -641,7 +637,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		double sr_x = repeat_i * repeat_dist_X;
 		double sr_y = repeat_j * repeat_dist_Y;
 
-#ifdef USE_DRAW_OPTIMIZATIONS				
+#ifdef USE_DRAW_OPTIMIZATIONS	
 		if ((net->boundingBox.right+sr_x < minX)
 				|| (net->boundingBox.left+sr_y > maxX)
 				|| (net->boundingBox.top+sr_y < minY)

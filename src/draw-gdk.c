@@ -807,16 +807,12 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
     double unit_scale;
     GdkColor transparent, opaque;
 #ifdef USE_DRAW_OPTIMIZATIONS
-	gdouble minX = renderInfo->lowerLeftX - image->info->offsetA -
-				image->info->imageJustifyOffsetActualA;
-	gdouble minY = renderInfo->lowerLeftY - image->info->offsetB - 
-				image->info->imageJustifyOffsetActualB;
+	gdouble minX = renderInfo->lowerLeftX;
+	gdouble minY = renderInfo->lowerLeftY;
 	gdouble maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
-				renderInfo->scaleFactorX) - image->info->offsetA - 
-				image->info->imageJustifyOffsetActualA;
+				renderInfo->scaleFactorX);
 	gdouble maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
-				renderInfo->scaleFactorY) - image->info->offsetB -
-				image->info->imageJustifyOffsetActualB;
+				renderInfo->scaleFactorY);
 #endif
 
     if (image == NULL || image->netlist == NULL) {

@@ -401,11 +401,16 @@ interface_create_gui (int req_width, int req_height)
 	zoom_in = gtk_image_menu_item_new_from_stock ("gtk-zoom-in", accel_group);
 	gtk_tooltips_set_tip (tooltips, zoom_in, "Zoom in", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), zoom_in);
-
+	gtk_widget_add_accelerator (zoom_in, "activate", accel_group,
+	                        GDK_z, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
+	                        
 	zoom_out = gtk_image_menu_item_new_from_stock ("gtk-zoom-out", accel_group);
 	gtk_tooltips_set_tip (tooltips, zoom_out, "Zoom out", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), zoom_out);
-
+	gtk_widget_add_accelerator (zoom_out, "activate", accel_group,
+	                        GDK_z, (GdkModifierType) GDK_SHIFT_MASK,
+	                        GTK_ACCEL_VISIBLE);
+	                        
 	separator5 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator5);
 	gtk_widget_set_sensitive (separator5, FALSE);
@@ -413,7 +418,10 @@ interface_create_gui (int req_width, int req_height)
 	fit_to_window = gtk_image_menu_item_new_from_stock ("gtk-zoom-fit", accel_group);
 	gtk_tooltips_set_tip (tooltips, fit_to_window, "Zoom to fit all visible layers in the window", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), fit_to_window);
-
+	gtk_widget_add_accelerator (fit_to_window, "activate", accel_group,
+	                        GDK_f, (GdkModifierType) 0,
+	                        GTK_ACCEL_VISIBLE);
+	                        
 	menuitem_analyze = gtk_menu_item_new_with_mnemonic (_("_Analyze"));
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_analyze);
 
@@ -435,6 +443,9 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, analyze_display_selected_obj_props, 
 			      "Show the properties of the selected object(s).", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_display_selected_obj_props);
+	gtk_widget_add_accelerator (analyze_display_selected_obj_props,
+					"activate", accel_group, GDK_q, (GdkModifierType) 0,
+	                        GTK_ACCEL_VISIBLE);
 
 	analyze_benchmark = gtk_menu_item_new_with_mnemonic (_("_Benchmark"));
 	gtk_tooltips_set_tip (tooltips, analyze_benchmark, 
