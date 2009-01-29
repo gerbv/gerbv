@@ -931,7 +931,7 @@ main(int argc, char *argv[])
 	if (freeFilename)
 	    free (exportFilename);
 	/* exit now and don't start up gtk if this is a command line export */
-	exit(1);
+	exit(0);
     }
 #ifndef RENDER_USING_GDK
     gtk_init (&argc, &argv);
