@@ -1422,7 +1422,9 @@ INTERFACE void putstr(scheme *sc, const char *s) {
 static void putchars(scheme *sc, const char *s, int len) {
   port *pt=sc->outport->_object._port;
   if(pt->kind&port_file) {
-    fwrite(s,1,len,pt->rep.stdio.file);
+    /* use the return value here to eliminate a compiler warning */
+    if (fwrite(s,1,len,pt->rep.stdio.file) == 0)
+    	return;
   } else {
     for(;len;len--) {
       if(pt->rep.string.curr!=pt->rep.string.past_the_end) {

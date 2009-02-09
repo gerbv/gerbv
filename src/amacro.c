@@ -228,6 +228,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	case '7':
 	case '8':
 	case '9':
+	case '.':
 	    /* 
 	     * First number in an aperture macro describes the primitive
 	     * as a numerical value

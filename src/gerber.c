@@ -519,9 +519,11 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			    int pointCounter,numberOfPoints;
 			    numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
 		
-			    for (pointCounter = 0; pointCounter < numberOfPoints; pointCounter++) {
+			    for (pointCounter = 0; pointCounter <= numberOfPoints; pointCounter++) {
 				gerber_update_min_and_max (&boundingBox,
+							   curr_net->stop_x +
 							   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X],
+							   curr_net->stop_y +
 							   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_Y], 
 							   0,0,0,0);
 			    }
@@ -541,12 +543,16 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE20) {
 			    widthx = widthy = ls->parameter[LINE20_LINE_WIDTH];
 			    gerber_update_min_and_max (&boundingBox,
-						       ls->parameter[LINE20_START_X] + offsetx,
-						       ls->parameter[LINE20_START_Y] + offsety, 
+						       curr_net->stop_x +
+						       ls->parameter[LINE20_START_X],
+						       curr_net->stop_y +
+						       ls->parameter[LINE20_START_Y], 
 						       widthx/2,widthx/2,widthy/2,widthy/2);
 			    gerber_update_min_and_max (&boundingBox,
-						       ls->parameter[LINE20_END_X] + offsetx,
-						       ls->parameter[LINE20_END_Y] + offsety, 
+						       curr_net->stop_x +
+						       ls->parameter[LINE20_END_X],
+						       curr_net->stop_y +
+						       ls->parameter[LINE20_END_Y], 
 						       widthx/2,widthx/2,widthy/2,widthy/2);
 			    calculatedAlready = TRUE;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE21) {
