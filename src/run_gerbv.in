@@ -101,13 +101,15 @@ fi
 export LD_PRELOAD
 echo "Set LD_PRELOAD to ${LD_PRELOAD}"
 
-mv -f gerbv gerbv.orig 
+GERBV=@BUILDDIR@/gerbv
+
+mv -f ${GERBV} ${GERBV}.orig 
 sed \
 	-e 's;LD_LIBRARY_PATH="/;LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/;g' \
 	-e 's;LD_RUN_PATH="/;LD_RUN_PATH="${LD_RUN_PATH}:/;g' \
-	gerbv.orig > gerbv
+	${GERBV}.orig > ${GERBV}
 
-chmod 755 gerbv
+chmod 755 ${GERBV}
 
 # End of shared lib hack
 
@@ -127,12 +129,12 @@ if test $do_gdb = yes ; then
 	tmpf=${tmpd}/run_gerbv.gdb
 	echo set args "$@"  > $tmpf
 	echo set env GERBV_SCHEMEINIT @SRCDIR@ >> $tmpf
-	exec ../libtool --mode=execute gdb -x $tmpf ./gerbv
+	exec ../libtool --mode=execute gdb -x $tmpf ${GERBV}
 	rm -f $tmpf
 	rm -fr $tmpd
 else
 	GERBV_SCHEMEINIT="@SRCDIR@"
 	export GERBV_SCHEMEINIT
-	exec ./gerbv "$@"
+	exec ${GERBV} "$@"
 fi
 
