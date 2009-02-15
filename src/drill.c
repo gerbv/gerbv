@@ -1442,6 +1442,7 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
     int i = 0, ndigits = 0;
     double result;
     gboolean decimal_point = FALSE;
+    gboolean sign_prepend = FALSE;
 
     dprintf("%s(%p, %d, %d, %d)\n", __FUNCTION__, fd, fmt, omit_zeros, decimals);
 
@@ -1460,6 +1461,9 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
 	    read = '.'; /* adjust for strtod() */
       
       if(isdigit(read)) ndigits++;
+      
+	if(read == '-' || read == '+')
+	    sign_prepend = TRUE;
 
       temp[i++] = (char)read;
       read = gerb_fgetc(fd);
@@ -1507,6 +1511,11 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
 		      "This should never have happened\n", __FUNCTION__, fmt);
 	      return 0;
 	    }
+	    
+	    /* need to add an extra char for '+' or '-' */
+	    if (sign_prepend)
+	      wantdigits++;
+
 
 	    /* 
 	     * we need at least wantdigits + one for the decimal place
