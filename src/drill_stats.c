@@ -75,6 +75,7 @@ gerbv_drill_stats_new(void) {
     stats->error_list = (gerbv_error_list_t *) error_list;
 
     stats->detect = NULL;
+
     return stats;
 }
 
@@ -155,6 +156,8 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     accum_stats->M98 += input_stats->M98;
     accum_stats->M_unknown += input_stats->M_unknown;
 
+    accum_stats->R += input_stats->R;
+
     /* ==== Now deal with the drill list ==== */
     for (drill = input_stats->drill_list;
          drill != NULL;
@@ -174,6 +177,7 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
 	drill_stats_add_to_drill_counter(accum_stats->drill_list,
 					 drill->drill_num,
 					 drill->drill_count);
+	accum_stats->total_count += drill->drill_count;
     }
 
     /* ==== Now deal with the error list ==== */

@@ -574,6 +574,32 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    }
 	    break;
 
+	case 'R':
+	    if(state->curr_section == DRILL_HEADER) {
+	      drill_stats_add_error(stats->error_list,
+				    -1,
+				    "R codes are not allowed in the header.\n",
+				    GERBV_MESSAGE_ERROR);
+	    } else {
+	      /*
+	       * This is the "Repeat hole" command.  Format is:
+	       * R##[X##][Y##]
+	       * This repeats the previous hole stepping in the X and
+	       * Y increments give.  Example:
+	       * R04X0.1 -- repeats the drill hole 4 times, stepping
+	       * 0.1" in the X direction.  Note that the X and Y step
+	       * sizes default to zero if not given and that they use
+	       * the same format and units as the normal X,Y
+	       * coordinates.
+	       */
+	      stats->R++;
+	      drill_stats_add_error(stats->error_list,
+				    -1,
+				    "R codes (repeat command) are not supported yet.\n",
+				    GERBV_MESSAGE_NOTE);
+	      
+	    }
+
 	case 'S':
 	    drill_stats_add_error(stats->error_list,
 				  -1,

@@ -1179,6 +1179,11 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 			   "Unknown codes = %d\n", 
 			   stats_report->unknown);
     
+    g_string_append_printf(misc_report_string, 
+			   "R = %-6d (%s)\n", 
+			   stats_report->R,
+			   "Repeat hole");
+
     if (stats_report->detect != NULL ) {
 	g_string_append_printf(misc_report_string, 
 			       "\n%s\n", 
@@ -1191,7 +1196,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     for(my_drill_list = stats_report->drill_list; 
 	my_drill_list != NULL; 
 	my_drill_list = my_drill_list->next) {
-	if (my_drill_list->drill_num == -1) break;  /* No dill list */
+	if (my_drill_list->drill_num == -1) break;  /* No drill list */
 	g_string_append_printf(drill_report_string, 
 			       "%10d %8.3f %8s %8d\n", 
 			       my_drill_list->drill_num,
@@ -1199,6 +1204,9 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 			       my_drill_list->drill_unit,
 			       my_drill_list->drill_count);
     }
+
+    g_string_append_printf(drill_report_string, "Total drill count %d\n", 
+			   stats_report->total_count);
 
     /* Use fixed width font for all reports */
     PangoFontDescription *font = 

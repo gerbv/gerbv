@@ -409,7 +409,12 @@ typedef struct {
     int M98;
     int M_unknown;
 
+    int R;
+
     int unknown;
+
+    /* used to total up the drill count across all layers/sizes */
+    int total_count;
 
     char *detect;
 
