@@ -357,18 +357,23 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		if ((state->aperture_state == GERBV_APERTURE_STATE_OFF &&
 		    	state->interpolation != GERBV_INTERPOLATION_PAREA_START) && (polygonPoints > 0)) {
 		    curr_net->interpolation = GERBV_INTERPOLATION_PAREA_END;
-		    
 		    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);
 		    curr_net->interpolation = GERBV_INTERPOLATION_PAREA_START;
+		    state->parea_start_node->boundingBox = boundingBox;
 		    state->parea_start_node = curr_net;
-		    
+		    polygonPoints = 0;
 		    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);		    
 		    curr_net->start_x = (double)state->prev_x / x_scale;
 		    curr_net->start_y = (double)state->prev_y / y_scale;
 		    curr_net->stop_x = (double)state->curr_x / x_scale;
 		    curr_net->stop_y = (double)state->curr_y / y_scale;
+		    /* reset the bounding box */
+		    boundingBox.left = HUGE_VAL;
+		    boundingBox.right = -HUGE_VAL;
+		    boundingBox.top = -HUGE_VAL;
+		    boundingBox.bottom = HUGE_VAL;
 		}
-		if (state->interpolation != GERBV_INTERPOLATION_PAREA_START)
+		else if (state->interpolation != GERBV_INTERPOLATION_PAREA_START)
 		    polygonPoints++;
 		
 	    }  /* if (state->in_parea_fill && state->parea_start_node) */
