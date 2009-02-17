@@ -226,6 +226,76 @@ drill_attribute_merge (gerbv_HID_Attribute *dest, int ndest, gerbv_HID_Attribute
 
 }
 
+/*
+ * Adds the actual drill hole to the drawing 
+ */
+static gerbv_net_t *
+drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state, gerbv_drill_stats_t *stats, gerbv_net_t *curr_net)
+{
+  /* Add one to drill stats  for the current tool */
+  drill_stats_increment_drill_counter(image->drill_stats->drill_list,
+				      state->current_tool);
+
+  curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
+  if (curr_net->next == NULL)
+    GERB_FATAL_ERROR("malloc curr_net->next failed\n");
+  curr_net = curr_net->next;
+  memset((void *)curr_net, 0, sizeof(gerbv_net_t));
+  curr_net->layer = image->layers;
+  curr_net->state = image->states;
+  curr_net->start_x = (double)state->curr_x;
+  curr_net->start_y = (double)state->curr_y;
+  /* KLUDGE. This function isn't allowed to return anything
+     but inches */
+  if(state->unit == GERBV_UNIT_MM) {
+    curr_net->start_x /= 25.4;
+    curr_net->start_y /= 25.4;
+    /* KLUDGE. All images, regardless of input format,
+       are returned in INCH format */
+    curr_net->state->unit = GERBV_UNIT_INCH;
+  }
+
+  curr_net->stop_x = curr_net->start_x - state->origin_x;
+  curr_net->stop_y = curr_net->start_y - state->origin_y;
+  curr_net->aperture = state->current_tool;
+  curr_net->aperture_state = GERBV_APERTURE_STATE_FLASH;
+  
+  /* Find min and max of image.
+     Mustn't forget (again) to add the hole radius */
+  
+  /* Check if aperture is set. Ignore the below instead of
+     causing SEGV... */
+  if(image->aperture[state->current_tool] == NULL)
+    return curr_net;
+  
+  curr_net->boundingBox.left=curr_net->start_x -
+    image->aperture[state->current_tool]->parameter[0] / 2;
+  curr_net->boundingBox.right=curr_net->start_x +
+    image->aperture[state->current_tool]->parameter[0] / 2;
+  curr_net->boundingBox.bottom=curr_net->start_y -
+    image->aperture[state->current_tool]->parameter[0] / 2;
+  curr_net->boundingBox.top=curr_net->start_y +
+    image->aperture[state->current_tool]->parameter[0] / 2;
+  
+  image->info->min_x =
+    min(image->info->min_x,
+	(curr_net->start_x -
+	 image->aperture[state->current_tool]->parameter[0] / 2));
+  image->info->min_y =
+    min(image->info->min_y,
+	(curr_net->start_y -
+	 image->aperture[state->current_tool]->parameter[0] / 2));
+  image->info->max_x =
+    max(image->info->max_x,
+	(curr_net->start_x +
+	 image->aperture[state->current_tool]->parameter[0] / 2));
+  image->info->max_y =
+    max(image->info->max_y,
+	(curr_net->start_y +
+	 image->aperture[state->current_tool]->parameter[0] / 2));
+
+  return curr_net;
+}
 
 /* -------------------------------------------------------------- */
 gerbv_image_t *
@@ -581,6 +651,10 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 				    "R codes are not allowed in the header.\n",
 				    GERBV_MESSAGE_ERROR);
 	    } else {
+	      double start_x, start_y;
+	      double step_x, step_y;
+	      int c;
+	      int rcnt;
 	      /*
 	       * This is the "Repeat hole" command.  Format is:
 	       * R##[X##][Y##]
@@ -593,10 +667,43 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	       * coordinates.
 	       */
 	      stats->R++;
-	      drill_stats_add_error(stats->error_list,
-				    -1,
-				    "R codes (repeat command) are not supported yet.\n",
-				    GERBV_MESSAGE_NOTE);
+	      
+	      start_x = state->curr_x;
+	      start_y = state->curr_y;
+
+
+
+	      /* figure out how many repeats there are */
+	      c = gerb_fgetc (fd);
+	      rcnt = 0;
+	      while ( '0' <= c && c <= '9') {
+		rcnt = 10*rcnt + (c - '0');
+		c = gerb_fgetc (fd);
+	      }
+	      dprintf ("working on R code (repeat) with a number of reps equal to %d\n", rcnt);
+
+	      step_x = 0.0;
+	      if (c == 'X') {
+		step_x = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+		c = gerb_fgetc (fd);
+	      }
+
+	      step_y = 0.0;
+	      if( c == 'Y') {
+		  step_y = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+	      } else {
+		gerb_ungetc (fd);
+	      }
+	      
+	      dprintf ("Getting ready to repeat the drill %d times with delta_x = %g, delta_y = %g\n", rcnt, step_x, step_y);
+
+	      /* spit out the drills */
+	      for (c = 1 ; c <= rcnt ; c++) {
+		state->curr_x = start_x + c*step_x;
+		state->curr_y = start_y + c*step_y;
+		dprintf ("    Repeat #%d -- new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
+		curr_net = drill_add_drill_hole (image, state, stats, curr_net);
+	      }
 	      
 	    }
 
@@ -629,69 +736,11 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	case 'Y':
 	    /* Hole coordinate found. Do some parsing */
 	    drill_parse_coordinate(fd, read, image, state);
-
-	    /* Add one to drill stats  for the current tool */
-	    drill_stats_increment_drill_counter(image->drill_stats->drill_list,
-						state->current_tool);
-
-	    curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
-	    if (curr_net->next == NULL)
-		GERB_FATAL_ERROR("malloc curr_net->next failed\n");
-	    curr_net = curr_net->next;
-	    memset((void *)curr_net, 0, sizeof(gerbv_net_t));
-   	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    curr_net->start_x = (double)state->curr_x;
-	    curr_net->start_y = (double)state->curr_y;
-	    /* KLUDGE. This function isn't allowed to return anything
-	       but inches */
-	    if(state->unit == GERBV_UNIT_MM) {
-		curr_net->start_x /= 25.4;
-		curr_net->start_y /= 25.4;
-		/* KLUDGE. All images, regardless of input format,
-		   are returned in INCH format */
-		curr_net->state->unit = GERBV_UNIT_INCH;
-	    }
-
-	    curr_net->stop_x = curr_net->start_x - state->origin_x;
-	    curr_net->stop_y = curr_net->start_y - state->origin_y;
-	    curr_net->aperture = state->current_tool;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_FLASH;
-
-	    /* Find min and max of image.
-	       Mustn't forget (again) to add the hole radius */
-
-	    /* Check if aperture is set. Ignore the below instead of
-	       causing SEGV... */
-	    if(image->aperture[state->current_tool] == NULL)
-		break;
-		
-	    curr_net->boundingBox.left=curr_net->start_x -
-		     image->aperture[state->current_tool]->parameter[0] / 2;
-	    curr_net->boundingBox.right=curr_net->start_x +
-		     image->aperture[state->current_tool]->parameter[0] / 2;
-	    curr_net->boundingBox.bottom=curr_net->start_y -
-		     image->aperture[state->current_tool]->parameter[0] / 2;
-	    curr_net->boundingBox.top=curr_net->start_y +
-		     image->aperture[state->current_tool]->parameter[0] / 2;
-
-	    image->info->min_x =
-		min(image->info->min_x,
-		    (curr_net->start_x -
-		     image->aperture[state->current_tool]->parameter[0] / 2));
-	    image->info->min_y =
-		min(image->info->min_y,
-		    (curr_net->start_y -
-		     image->aperture[state->current_tool]->parameter[0] / 2));
-	    image->info->max_x =
-		max(image->info->max_x,
-		    (curr_net->start_x +
-		     image->aperture[state->current_tool]->parameter[0] / 2));
-	    image->info->max_y =
-		max(image->info->max_y,
-		    (curr_net->start_y +
-		     image->aperture[state->current_tool]->parameter[0] / 2));
+	    
+	    /* add the new drill hole */
+	    curr_net = drill_add_drill_hole (image, state, stats, curr_net);
 	    break;
+
 	case '%':
 	    state->curr_section = DRILL_DATA;
 	    break;

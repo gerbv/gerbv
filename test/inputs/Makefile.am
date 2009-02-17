@@ -29,6 +29,8 @@ EXTRA_DIST= \
 	test-aperture-rectangle-flash-1.gbx \
 	test-aperture-obround-1.gbx \
 	test-aperture-polygon-flash-1.gbx \
+	test-drill-leading-zero-1.exc \
+	test-drill-repeat-1.exc \
+	test-drill-trailing-zero-1.exc \
 	test-polygon-fill-1.gbx \
 	test-circular-interpolation-1.gbx
-

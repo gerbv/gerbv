@@ -178,3 +178,7 @@ test-circular-interpolation-1  |  test-circular-interpolation-1.gbx
 test-drill-trailing-zero-1 | test-drill-trailing-zero-1.exc
 test-drill-leading-zero-1 | test-drill-leading-zero-1.exc
 
+# Test the "R" command which repeats a drill hole a given
+# number of times with the given x and y step size
+test-drill-repeat-1 | test-drill-repeat-1.exc
+
