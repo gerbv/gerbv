@@ -431,8 +431,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage, gerbv_image_t *newImage, 
     newSavedState = lastState;
     newSavedNet = lastNet;
     
-    /* when copying, skip the first net, since it's always zero due to the way we parse things */
-    for (currentNet = sourceImage->netlist->next; currentNet; currentNet = currentNet->next){
+    for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){
       /* check for any new layers and duplicate them if needed */
 	if (currentNet->layer != oldLayer) {
 	  newSavedLayer->next = gerbv_image_duplicate_layer (currentNet->layer);
