@@ -70,7 +70,7 @@
                            } while(0)
 
 #define MAXL 200
-
+#define DRILL_READ_DOUBLE_SIZE 32
 
 #undef max
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -1513,7 +1513,7 @@ static double
 read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, int decimals)
 {
     int read;
-    char temp[0x20];
+    char temp[DRILL_READ_DOUBLE_SIZE];
     int i = 0, ndigits = 0;
     double result;
     gboolean decimal_point = FALSE;
@@ -1524,7 +1524,7 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
     memset(temp, 0, sizeof(temp));
 
     read = gerb_fgetc(fd);
-    while(read != EOF && i < sizeof(temp) &&
+    while(read != EOF && i < (DRILL_READ_DOUBLE_SIZE -1) &&
 	  (isdigit(read) || read == '.' || read == ',' || read == '+' || read == '-')) {
       if(read == ',' || read == '.') decimal_point = TRUE;
       
@@ -1551,7 +1551,7 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
     } else {
 	int wantdigits;
 	double scale;
-	char tmp2[0x20];
+	char tmp2[DRILL_READ_DOUBLE_SIZE];
 
 	memset(tmp2, 0, sizeof(tmp2));
 

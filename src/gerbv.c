@@ -81,6 +81,8 @@
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 
+static int defaultColorIndex = 0;
+
 /* ------------------------------------------------------------------ */
 static gerbv_layer_color defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{115,115,222,177},
@@ -365,21 +367,20 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
     gerbvProject->file[idx]->name = g_strdup (baseName);
     
     
-    {
-	r = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].red*257;
-	g = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].green*257;
-	b = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].blue*257;
-    }
+    r = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].red*257;
+    g = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].green*257;
+    b = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].blue*257;
 
     GdkColor colorTemplate = {0, r, g, b};
     gerbvProject->file[idx]->color = colorTemplate;
-    gerbvProject->file[idx]->alpha = defaultColors[idx % NUMBER_OF_DEFAULT_COLORS].alpha*257;
+    gerbvProject->file[idx]->alpha = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257;
     gerbvProject->file[idx]->isVisible = TRUE;
-    gerbvProject->file[idx]->transform = defaultTransformations[idx % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
+    gerbvProject->file[idx]->transform = defaultTransformations[defaultColorIndex % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
     /* update the number of files if we need to */
     if (gerbvProject->last_loaded <= idx) {
 	gerbvProject->last_loaded = idx;
     }
+    defaultColorIndex++;
     return 1;
 }
 
