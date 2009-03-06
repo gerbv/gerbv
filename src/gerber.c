@@ -121,7 +121,7 @@ gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
 	int i;
 	
 	/* search for an available aperture spot */
-	for (i = APERTURE_MIN; i <= APERTURE_MAX; i++) {
+	for (i = 0; i <= APERTURE_MAX; i++) {
 		if (image->aperture[i] == NULL) {
 			image->aperture[i] = g_new0 (gerbv_aperture_t, 1);
 			image->aperture[i]->type = apertureType;
@@ -1024,7 +1024,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state, gerbv_image_t *image)
 	/* XXX Maybe uneccesary??? */
 	if (gerb_fgetc(fd) == 'D') {
 	    int a = gerb_fgetint(fd, NULL);
-	    if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
+	    if ((a >= 0) && (a <= APERTURE_MAX)) {
 		state->curr_aperture = a;
 	    } else { 
 		string = g_strdup_printf("Found aperture D%d out of bounds while parsing G code in file \n%s\n", 
@@ -1136,7 +1136,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state, gerbv_image_t *image)
 	stats->D3++;
 	break;
     default: /* Aperture in use */
-	if ((a >= APERTURE_MIN) && (a <= APERTURE_MAX)) {
+	if ((a >= 0) && (a <= APERTURE_MAX)) {
 	    state->curr_aperture = a;
 	    
 	} else {
@@ -1717,7 +1717,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	a = (gerbv_aperture_t *) g_new0 (gerbv_aperture_t,1);
 
 	ano = parse_aperture_definition(fd, a, image, scale);
-	if ((ano >= APERTURE_MIN) && (ano <= APERTURE_MAX)) {
+	if ((ano >= 0) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->state->unit;
 	    image->aperture[ano] = a;
 	    dprintf("     In parse_rs274x, adding new aperture to aperture list ...\n");
@@ -1727,6 +1727,11 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 				    a->parameter);
 	    gerbv_stats_add_to_D_list(stats->D_code_list,
 				     ano);
+	    if (ano < APERTURE_MIN) {
+		    string = g_strdup_printf("In file %s,\naperture number out of bounds : %d\n", 
+					     fd->filename, ano);
+		    gerbv_stats_add_error(stats->error_list,-1, string, GERBV_MESSAGE_ERROR);
+	    }
 	} else {
 	    string = g_strdup_printf("In file %s,\naperture number out of bounds : %d\n", 
 				     fd->filename, ano);

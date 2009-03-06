@@ -116,7 +116,9 @@ void
 export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image) {
 	gerbv_aperture_t *currentAperture;
 	gint numberOfRequiredParameters=0,numberOfOptionalParameters=0,i,j;
-		
+	
+	/* the image should already have been cleaned by a duplicate_image call, so we can safely
+	   assume the aperture range is correct */
 	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {
 		gboolean writeAperture=TRUE;
 		
@@ -191,16 +193,21 @@ export_rs274x_write_state_change (gerbv_netstate_t *oldState, gerbv_netstate_t *
 }
 
 gboolean
-gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
+gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage) {
 	FILE *fd;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
 	gboolean insidePolygon=FALSE;
-	
+	gerbv_user_transformation_t identityTransformation = {0,0,0,0,FALSE};
+
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
 		return FALSE;
 	}
+	
+	/* duplicate the image, cleaning it in the process */
+	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, &identityTransformation);
+	
 	/* write header info */
 	fprintf(fd, "G04 This is an RS-274x file exported by *\n");
 	fprintf(fd, "G04 gerbv version %s *\n",VERSION);
@@ -351,7 +358,8 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *image) {
 	/* write footer */
 	fprintf(fd, "G04 --Footer info--*\n");
 	fprintf(fd, "M02*\n");
-
+	
+	gerbv_destroy_image (image);
 	fclose(fd);
 	return TRUE;
 }

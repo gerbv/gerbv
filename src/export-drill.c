@@ -41,15 +41,20 @@
 #define round(x) floor(x+0.5)
 
 gboolean
-gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *image) {
+gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage) {
 	FILE *fd;
 	GArray *apertureTable = g_array_new(FALSE,FALSE,sizeof(int));
 	gerbv_net_t *currentNet;
+	gerbv_user_transformation_t identityTransformation = {0,0,0,0,FALSE};
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
 		return FALSE;
 	}
+	
+	/* duplicate the image, cleaning it in the process */
+	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, &identityTransformation);
+	
 	/* write header info */
 	fprintf(fd, "M48\n");
 	fprintf(fd, "INCH,TZ\n");
@@ -58,9 +63,9 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *image) {
 	gerbv_aperture_t *currentAperture;
 	gint i;
 
-	/* start at 0, since some imported files may be using aperture numbers <
-	   APERTURE_MIN (usually 10) */
-	for (i=0; i<APERTURE_MAX; i++) {
+	/* the image should already have been cleaned by a duplicate_image call, so we can safely
+	   assume the aperture range is correct */
+	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {
 		currentAperture = image->aperture[i];
 		
 		if (!currentAperture)
@@ -99,7 +104,7 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *image) {
 	g_array_free (apertureTable, TRUE);
 	/* write footer */
 	fprintf(fd, "M30\n\n");
-
+	gerbv_destroy_image (image);
 	fclose(fd);
 	return TRUE;
 }

@@ -799,13 +799,11 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
 	   this far */
 	if (renderInfo->renderType == 2) {
-		cairo_set_tolerance (cr, 1.5);
+		cairo_set_tolerance (cr, 1.0);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
 	}
 	else if (renderInfo->renderType == 3) {
-		cairo_set_tolerance (cr, 1);
-		/* disable ALL anti-aliasing for now due to the way cairo is rendering
-		   ground planes from PCB output */
+		cairo_set_tolerance (cr, 0.1);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
 	}
 

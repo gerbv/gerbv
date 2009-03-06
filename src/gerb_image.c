@@ -536,9 +536,12 @@ gerbv_image_duplicate_image (gerbv_image_t *sourceImage, gerbv_user_transformati
     newImage->info->name = g_strdup (sourceImage->info->name);
     newImage->info->type = g_strdup (sourceImage->info->type);
     newImage->info->plotterFilm = g_strdup (sourceImage->info->plotterFilm);
+    newImage->info->attr_list = gerbv_attribute_dup (sourceImage->info->attr_list,
+    		 sourceImage->info->n_attr);
     
-    /* copy apertures over, compressing all the numbers down for a cleaner output */
-    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+    /* copy apertures over, compressing all the numbers down for a cleaner output, and
+       moving and apertures less than 10 up to the correct range */
+    for (i = 0; i < APERTURE_MAX; i++) {
 	if (sourceImage->aperture[i] != NULL) {
 	  gerbv_aperture_t *newAperture = gerbv_image_duplicate_aperture (sourceImage->aperture[i]);
 
