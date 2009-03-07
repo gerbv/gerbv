@@ -2003,6 +2003,17 @@ callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	callbacks_update_layer_tree();
 }
 
+void
+callbacks_change_layer_orientation_clicked  (GtkButton *button, gpointer userData){
+	gint index = callbacks_get_selected_row_index();
+	gerbv_user_transformation_t tempTransform = mainProject->file[index]->transform;
+	interface_show_modify_orientation_dialog(&tempTransform);
+	mainProject->file[index]->transform = tempTransform;
+	
+	render_refresh_rendered_image_on_screen ();
+	callbacks_update_layer_tree ();	
+}
+
 /* --------------------------------------------------------------------------- */
 void
 callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
@@ -2158,12 +2169,40 @@ callbacks_update_layer_tree (void) {
                         
 				gtk_list_store_append (list_store, &iter);
 				
-				gchar *modifiedCode;
+				gchar startChar[2],*modifiedCode;
+				/* terminate the letter string */
+				startChar[1] = 0;
+				
+				gint numberOfModifications = 0;
 				if (mainProject->file[idx]->transform.inverted) {
-					modifiedCode = g_strdup ("I");
+					startChar[0] = 'I';
+					numberOfModifications++;
 				}
-				else
+				if (mainProject->file[idx]->transform.mirrorAroundX ||
+						mainProject->file[idx]->transform.mirrorAroundY) {
+					startChar[0] = 'M';
+					numberOfModifications++;
+				}
+				if ((abs(mainProject->file[idx]->transform.translateX) > 0.000001) ||
+						(fabs(mainProject->file[idx]->transform.translateY) > 0.000001)) {
+					startChar[0] = 'T';
+					numberOfModifications++;
+				}
+				if ((abs(mainProject->file[idx]->transform.scaleX - 1) > 0.000001) ||
+						(fabs(mainProject->file[idx]->transform.scaleY - 1) > 0.000001)) {
+					startChar[0] = 'S';
+					numberOfModifications++;
+				}
+				if ((fabs(mainProject->file[idx]->transform.rotation) > 0.000001)) {
+					startChar[0] = 'R';
+					numberOfModifications++;
+				}
+				if (numberOfModifications > 1)
+					startChar[0] = '*';
+				if (numberOfModifications == 0)
 					modifiedCode = g_strdup ("");
+				else
+					modifiedCode = g_strdup (startChar);
 				
 				/* display any unsaved layers differently to show the user they are
 				   unsaved */

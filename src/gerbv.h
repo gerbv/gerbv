@@ -442,6 +442,9 @@ typedef struct {
     gdouble translateY; /*!< the Y translation (in inches) */
     gdouble scaleX; /*!< the X scale factor (1.0 is default) */
     gdouble scaleY; /*!< the Y scale factor (1.0 is default) */
+    gdouble rotation; /*!< the rotation of the layer around the origin (in radians) */
+    gboolean mirrorAroundX;  /*!< TRUE if the layer is mirrored around the X axis (vertical flip) */
+    gboolean mirrorAroundY;  /*!< TRUE if the layer is mirrored around the Y axis (vertical flip) */
     gboolean inverted; /*!< TRUE if the image should be rendered "inverted" (light is dark and vice versa) */
 } gerbv_user_transformation_t;
 

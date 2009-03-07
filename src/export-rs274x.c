@@ -213,7 +213,7 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage)
 	fprintf(fd, "G04 gerbv version %s *\n",VERSION);
 	fprintf(fd, "G04 More information is available about gerbv at *\n");
 	fprintf(fd, "G04 http://gerbv.sourceforge.net/ *\n");
-	fprintf(fd, "G04 --Header info--*\n");
+	fprintf(fd, "G04 --End of header info--*\n");
 	fprintf(fd, "%%MOIN*%%\n");
 	fprintf(fd, "%%FSLAX23Y23*%%\n");
 	
@@ -355,8 +355,6 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage)
 		}
 	}
 	
-	/* write footer */
-	fprintf(fd, "G04 --Footer info--*\n");
 	fprintf(fd, "M02*\n");
 	
 	gerbv_destroy_image (image);

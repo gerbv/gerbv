@@ -107,26 +107,26 @@ static gerbv_layer_color defaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 
 /* ------------------------------------------------------------------ */
 static gerbv_user_transformation_t defaultTransformations[NUMBER_OF_DEFAULT_TRANSFORMATIONS] = {
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},	
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},		
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},	
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
-	{0,0,0,0,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},	
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},		
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},	
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
 };
 
 /* ------------------------------------------------------------------ */
@@ -825,9 +825,17 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 		(double) fileInfo->color.green/G_MAXUINT16,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
 	
-	/* translate the image based on the layer-specific transformation struct */
+	/* translate, rotate, and modify the image based on the layer-specific transformation struct */
 	cairo_save (cr);
+	gdouble scaleX = fileInfo->transform.scaleX;
+	gdouble scaleY = fileInfo->transform.scaleY;
+	if (fileInfo->transform.mirrorAroundX)
+		scaleX *= -1;
+	if (fileInfo->transform.mirrorAroundY)
+		scaleY *= -1;
 	cairo_translate (cr, fileInfo->transform.translateX, fileInfo->transform.translateY);
+	cairo_scale (cr, scaleX, scaleY);
+	cairo_rotate (cr, fileInfo->transform.rotation);
 	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
 		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL,
 		renderInfo);

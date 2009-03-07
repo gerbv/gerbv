@@ -211,6 +211,9 @@ void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data);
 
 void
+callbacks_change_layer_orientation_clicked (GtkButton *button, gpointer   user_data);
+
+void
 callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data);
 
 void

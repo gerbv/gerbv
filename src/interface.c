@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -119,7 +120,7 @@ interface_create_gui (int req_width, int req_height)
 
 	GtkWidget *menuitem_edit;
 	GtkWidget *menuitem_edit_menu;
-	GtkWidget *delete_selected;
+	GtkWidget *delete_selected, *modify_selected;
 
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
@@ -384,7 +385,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_edit), menuitem_edit_menu);
 
 	delete_selected = gtk_image_menu_item_new_with_mnemonic (_("_Delete selected object(s)"));
-	gtk_tooltips_set_tip (tooltips, delete_selected, 
+	gtk_tooltips_set_tip (tooltips, delete_selected,
 			      "Delete selected objects", NULL);
 	tempImage = gtk_image_new_from_stock ("gtk-remove", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (delete_selected), tempImage);
@@ -392,6 +393,10 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_add_accelerator (delete_selected, "activate", accel_group,
 	                        GDK_Delete, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
 
+	modify_selected = gtk_menu_item_new_with_mnemonic (_("_Modify layer orientation"));
+	gtk_tooltips_set_tip (tooltips, delete_selected, 
+			      "Translate, zoom, rotate, or mirror the active layer", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_edit_menu), modify_selected);
 
 	/* --- Next menu item --- */
 	menuitem_view = gtk_menu_item_new_with_mnemonic (_("_View"));
@@ -863,6 +868,9 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) delete_selected, "activate",
 	                  G_CALLBACK (callbacks_delete_objects_clicked),
 	                  NULL);
+	g_signal_connect ((gpointer) modify_selected, "activate",
+	                  G_CALLBACK (callbacks_change_layer_orientation_clicked),
+	                  NULL);
 
 	/* --- View menu --- */
 	g_signal_connect ((gpointer) zoom_in, "activate",
@@ -1149,6 +1157,13 @@ interface_create_gui (int req_width, int req_height)
 			      NULL);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_reload_layer_clicked), NULL);
+
+	tempMenuItem = gtk_image_menu_item_new_with_label ("Modify layer orientation");
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.layerTreePopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Translate, scale, rotate, or mirror the layer", 
+			      NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_change_layer_orientation_clicked), NULL);
 
 	tempMenuItem = gtk_image_menu_item_new_with_label ("Edit file format");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.layerTreePopupMenu, tempMenuItem);
@@ -1488,5 +1503,68 @@ interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText,
   return;
 }
 
+void
+interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform) {
+  /* Set show_checkbox = TRUE to show "do not show this again" checkbox. */
+  /* Point ask_to_show_again to the variable to set to not show the checkbox. */
+  GtkWidget *dialog;
+  GtkWidget *dialog_vbox;
+  GtkWidget *check1,*check2;
+  GtkWidget *spin1,*spin2,*spin3,*spin4,*spin5;
+  GtkAdjustment *adj;
+  
+  dialog = gtk_dialog_new_with_buttons ("Modify layer orientation",
+					GTK_WINDOW (screen.win.topLevelWindow),
+					GTK_DIALOG_MODAL
+					| GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_STOCK_CANCEL, GTK_RESPONSE_NONE,
+					GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+
+  gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
+  gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
+  gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
+
+  dialog_vbox = GTK_DIALOG (dialog)->vbox;
+  
+  adj = (GtkAdjustment *) gtk_adjustment_new (transform->translateX, -1000000, 1000000, 1, 10, 0.0);
+  spin1 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin1, FALSE, FALSE, 0);
+  adj = (GtkAdjustment *) gtk_adjustment_new (transform->translateY, -1000000, 1000000, 1, 10, 0.0);
+  spin2 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin2, FALSE, FALSE, 0);
+  adj = (GtkAdjustment *) gtk_adjustment_new (transform->scaleX, -1000000, 1000000, 1, 10, 0.0);
+  spin3 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin3, FALSE, FALSE, 0);
+  adj = (GtkAdjustment *) gtk_adjustment_new (transform->scaleY, -1000000, 1000000, 1, 10, 0.0);
+  spin4 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin4, FALSE, FALSE, 0);
+  adj = (GtkAdjustment *) gtk_adjustment_new (transform->rotation/M_PI*180, -1000000, 1000000, 1, 10, 0.0);
+  spin5 = (GtkWidget *) gtk_spin_button_new (adj, 0, 3);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin5, FALSE, FALSE, 0);
+  check1 = (GtkWidget *) gtk_check_button_new_with_label ("Mirror around X");
+  gtk_toggle_button_set_active ((GtkToggleButton *) check1, transform->mirrorAroundX);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox), check1, FALSE, FALSE, 0);
+  check2 = (GtkWidget *) gtk_check_button_new_with_label ("Mirror around Y");
+  gtk_toggle_button_set_active ((GtkToggleButton *) check2, transform->mirrorAroundY);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox), check2, FALSE, FALSE, 0);
+
+  gtk_widget_show_all (dialog);
+  gint result = gtk_dialog_run (GTK_DIALOG(dialog));
+  
+  if (result == GTK_RESPONSE_OK) {
+	  /* extract all the parameters */
+	  transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1);
+	  transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *)spin2);
+	  transform->scaleX = gtk_spin_button_get_value ((GtkSpinButton *)spin3);
+	  transform->scaleY = gtk_spin_button_get_value ((GtkSpinButton *)spin4);
+	  transform->rotation = gtk_spin_button_get_value ((GtkSpinButton *)spin5)/180*M_PI;
+	  transform->mirrorAroundX = gtk_toggle_button_get_active ((GtkToggleButton *) check1);
+	  transform->mirrorAroundY = gtk_toggle_button_get_active ((GtkToggleButton *) check2);
+  }
+  gtk_widget_destroy (dialog);
+
+  return;
+}
 
 
