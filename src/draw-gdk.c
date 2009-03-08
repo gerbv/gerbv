@@ -997,7 +997,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    tempX = net->cirseg->width;
 		    tempY = net->cirseg->height;
 		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
-		    g_warning ("1old %f %f, new %f %f\n",net->cirseg->width,net->cirseg->height,tempX,tempY);
 		    cir_width = (int)round(tempX);
 		    cir_height = (int)round(tempY);
 		    
@@ -1006,7 +1005,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    cairo_matrix_transform_point (&fullMatrix, &tempX, &tempY);
 		    cp_x = (int)round(tempX);
 		    cp_y = (int)round(tempY);
-		    g_warning ("2old %f %f, new %f %f\n",net->cirseg->cp_x,net->cirseg->cp_y,tempX,tempY);
 		}
 
 		/*
@@ -1168,10 +1166,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
 		    p3 = (int)round(tempX);
 		    
-		   // p1 = (int)round(image->aperture[net->aperture]->parameter[0] * scale);
-		   // p2 = (int)round(image->aperture[net->aperture]->parameter[1] * scale);
-		    //p3 = (int)round(image->aperture[net->aperture]->parameter[2] * scale);
-		    
 		    switch (image->aperture[net->aperture]->type) {
 		    case GERBV_APTYPE_CIRCLE :
 			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
@@ -1182,7 +1176,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 			 * but due to laziness I don't.
 			 */
 			if (p2) {
-			    //if (p3) GERB_COMPILE_WARNING("Should be a square hole in this aperture.\n");
 			    gdk_gc_get_values(gc, &gc_values);
 			    if (gc_values.foreground.pixel == opaque.pixel) {
 				gdk_gc_set_foreground(gc, &transparent);
@@ -1203,7 +1196,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 			gerbv_gdk_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
 			break;
 		    case GERBV_APTYPE_POLYGON :
-			//GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
 			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
 			break;
 		    case GERBV_APTYPE_MACRO :
