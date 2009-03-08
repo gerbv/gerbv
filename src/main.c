@@ -902,7 +902,8 @@ main(int argc, char *argv[])
 		    gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
 		  }
 		}
-		gerbv_export_rs274x_file_from_image (exportFilename, exportImage);
+		gerbv_export_rs274x_file_from_image (exportFilename, exportImage,
+			&mainProject->file[0]->transform);
 		gerbv_destroy_image (exportImage);
 	    }
 	    else {
@@ -919,7 +920,8 @@ main(int argc, char *argv[])
 		    gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
 		  }
 		}
-		gerbv_export_drill_file_from_image (exportFilename, exportImage);
+		gerbv_export_drill_file_from_image (exportFilename, exportImage,
+			&mainProject->file[0]->transform);
 		gerbv_destroy_image (exportImage);
 	    }
 	    else {

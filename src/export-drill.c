@@ -41,11 +41,11 @@
 #define round(x) floor(x+0.5)
 
 gboolean
-gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage) {
+gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage,
+		gerbv_user_transformation_t *transform) {
 	FILE *fd;
 	GArray *apertureTable = g_array_new(FALSE,FALSE,sizeof(int));
 	gerbv_net_t *currentNet;
-	gerbv_user_transformation_t identityTransformation = {0,0,0,0,FALSE};
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
@@ -53,7 +53,7 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage) 
 	}
 	
 	/* duplicate the image, cleaning it in the process */
-	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, &identityTransformation);
+	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, transform);
 	
 	/* write header info */
 	fprintf(fd, "M48\n");

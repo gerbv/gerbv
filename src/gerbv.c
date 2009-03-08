@@ -225,10 +225,12 @@ gboolean
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename) 
 {
     if (strcmp (gerbvProject->file[index]->image->info->type,"RS274-X (Gerber) File")==0) {
-	gerbv_export_rs274x_file_from_image (filename, gerbvProject->file[index]->image);
+	gerbv_export_rs274x_file_from_image (filename, gerbvProject->file[index]->image,
+		&gerbvProject->file[index]->transform);
     }
     else if (strcmp (gerbvProject->file[index]->image->info->type,"Excellon Drill File")==0) {
-	gerbv_export_drill_file_from_image (filename, gerbvProject->file[index]->image);
+	gerbv_export_drill_file_from_image (filename, gerbvProject->file[index]->image,
+		&gerbvProject->file[index]->transform);
     }
     else {
 	return FALSE;
@@ -533,25 +535,57 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 	double x1=HUGE_VAL,y1=HUGE_VAL, x2=-HUGE_VAL,y2=-HUGE_VAL;
 	int i;
 	gerbv_image_info_t *info;
-
+	gdouble minX, minY, maxX, maxY;
+	
 	for(i = 0; i <= gerbvProject->last_loaded; i++) {
 		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
+			
+			
 			info = gerbvProject->file[i]->image->info;
 			/* 
 			* Find the biggest image and use as a size reference
 			*/
 #ifdef RENDER_USING_GDK
-			x1 = MIN(x1, info->min_x + info->offsetA);
-			y1 = MIN(y1, info->min_y + info->offsetB);
-			x2 = MAX(x2, info->max_x + info->offsetA);
-			y2 = MAX(y2, info->max_y + info->offsetB);
+			minX = info->min_x + info->offsetA;
+			minY = info->min_y + info->offsetB;
+			maxX = info->max_x + info->offsetA;
+			maxY = info->max_y + info->offsetB;
 #else
 			/* cairo info already has offset calculated into min/max */
-			x1 = MIN(x1, info->min_x);
-			y1 = MIN(y1, info->min_y);
-			x2 = MAX(x2, info->max_x);
-			y2 = MAX(y2, info->max_y);
+			minX = info->min_x;
+			minY = info->min_y;
+			maxX = info->max_x;
+			maxY = info->max_y;
 #endif
+			/* transform the bounding box based on the user transform */
+	
+			cairo_matrix_t fullMatrix;
+			cairo_matrix_init (&fullMatrix, 1, 0, 0, 1, 0, 0);
+
+			cairo_matrix_translate (&fullMatrix, gerbvProject->file[i]->transform.translateX,
+				gerbvProject->file[i]->transform.translateY);
+			// don't use mirroring for the scale matrix
+			gdouble scaleX = gerbvProject->file[i]->transform.scaleX;
+			gdouble scaleY = gerbvProject->file[i]->transform.scaleY;
+			if (gerbvProject->file[i]->transform.mirrorAroundX)
+				scaleY *= -1;
+			if (gerbvProject->file[i]->transform.mirrorAroundY)
+				scaleX *= -1;
+			cairo_matrix_scale (&fullMatrix, scaleX, scaleY);
+			cairo_matrix_rotate (&fullMatrix, gerbvProject->file[i]->transform.rotation);	
+			
+			cairo_matrix_transform_point (&fullMatrix, &minX, &minY);
+			cairo_matrix_transform_point (&fullMatrix, &maxX, &maxY);
+			/* compare to both min and max, since a mirror transform may have made the "max"
+			    number smaller than the "min" */
+			x1 = MIN(x1, minX);
+			x1 = MIN(x1, maxX);
+			y1 = MIN(y1, minY);
+			y1 = MIN(y1, maxY);
+			x2 = MAX(x2, minX);
+			x2 = MAX(x2, maxX);
+			y2 = MAX(y2, minY);
+			y2 = MAX(y2, maxY);
 		}
 	}
 	boundingbox->left    = x1;
@@ -648,17 +682,6 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 	*/
 	for(i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
-			gerbv_polarity_t polarity;
-
-			if (gerbvProject->file[i]->transform.inverted) {
-				if (gerbvProject->file[i]->image->info->polarity == GERBV_POLARITY_POSITIVE)
-					polarity = GERBV_POLARITY_NEGATIVE;
-				else
-					polarity = GERBV_POLARITY_POSITIVE;
-			} else {
-				polarity = gerbvProject->file[i]->image->info->polarity;
-			}
-
 			/*
 			* Fill up image with all the foreground color. Excess pixels
 			* will be removed by clipmask.
@@ -687,7 +710,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 			draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[i]->image,
 				renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
 				(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-				polarity, DRAW_IMAGE, NULL, renderInfo);
+				DRAW_IMAGE, NULL, renderInfo, gerbvProject->file[i]->transform);
 
 			/* 
 			* Set clipmask and draw the clipped out image onto the
@@ -704,7 +727,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 	if ((selectionInfo) && (selectionInfo->type != GERBV_SELECTION_EMPTY)) {
 		if (!selectionColor->pixel)
 	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), selectionColor, FALSE, TRUE);
-	 		
+
 		gdk_gc_set_foreground(gc, selectionColor);
 		gdk_gc_set_function(gc, GDK_COPY);
 		gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
@@ -722,8 +745,8 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 					draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[j]->image,
 						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
 						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-						GERBV_POLARITY_POSITIVE, DRAW_SELECTIONS, selectionInfo,
-						renderInfo);
+						DRAW_SELECTIONS, selectionInfo,
+						renderInfo, gerbvProject->file[j]->transform);
 				}
 			}
 			gdk_gc_set_clip_mask(gc, clipmask);
@@ -827,18 +850,10 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 	
 	/* translate, rotate, and modify the image based on the layer-specific transformation struct */
 	cairo_save (cr);
-	gdouble scaleX = fileInfo->transform.scaleX;
-	gdouble scaleY = fileInfo->transform.scaleY;
-	if (fileInfo->transform.mirrorAroundX)
-		scaleX *= -1;
-	if (fileInfo->transform.mirrorAroundY)
-		scaleY *= -1;
-	cairo_translate (cr, fileInfo->transform.translateX, fileInfo->transform.translateY);
-	cairo_scale (cr, scaleX, scaleY);
-	cairo_rotate (cr, fileInfo->transform.rotation);
-	draw_image_to_cairo_target (cr, fileInfo->image, fileInfo->transform.inverted,
+	
+	draw_image_to_cairo_target (cr, fileInfo->image,
 		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL,
-		renderInfo);
+		renderInfo, TRUE, fileInfo->transform);
 	cairo_restore (cr);
 }
 #endif

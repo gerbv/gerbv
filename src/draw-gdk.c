@@ -46,7 +46,7 @@
 #define round(x) ceil((double)(x))
 
 #define dprintf if(DEBUG) printf
-#define USE_DRAW_OPTIMIZATIONS 1
+
 /*
  * If you want to rotate a
  * column vector v by t degrees using matrix M, use
@@ -705,7 +705,7 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
 
 void
 draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, double sr_x, double sr_y,
-			double unit_scale,  double trans_x, double trans_y, GdkGC *gc, GdkGC *pgc,
+			cairo_matrix_t *fullMatrix, cairo_matrix_t *scaleMatrix, GdkGC *gc, GdkGC *pgc,
 			GdkPixmap **pixmap) {
 	gerbv_net_t *currentNet;
 	gint x1,x2,y1,y2,cp_x=0,cp_y=0,cir_width=0,cir_height=0;
@@ -713,7 +713,7 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 	int pointArraySize=0;
 	int curr_point_idx = 0;
 	int steps,i;
-	double angleDiff;
+	gdouble angleDiff, tempX, tempY;
 
 	/* save the first net in the polygon as the "ID" net pointer
 	in case we are saving this net to the selection array */
@@ -721,21 +721,33 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 	pointArraySize = 0;
 
 	for (currentNet = oldNet->next; currentNet!=NULL; currentNet = currentNet->next){
-		x1 = (int)round((image->info->offsetA + currentNet->start_x + sr_x) * unit_scale + trans_x);
-		y1 = (int)round((-image->info->offsetB - currentNet->start_y - sr_y) * unit_scale + trans_y);
-		x2 = (int)round((image->info->offsetA + currentNet->stop_x + sr_x) * unit_scale + trans_x);
-		y2 = (int)round((-image->info->offsetB - currentNet->stop_y - sr_y) * unit_scale + trans_y);
-
+		tempX = currentNet->start_x + sr_x;
+		tempY = currentNet->start_y + sr_y;
+		cairo_matrix_transform_point (fullMatrix, &tempX, &tempY);
+		x1 = (int)round(tempX);
+		y1 = (int)round(tempY);
+		
+		tempX = currentNet->stop_x + sr_x;
+		tempY = currentNet->stop_y + sr_y;
+		cairo_matrix_transform_point (fullMatrix, &tempX, &tempY);
+		x2 = (int)round(tempX);
+		y2 = (int)round(tempY);
+		
 		/* 
 		* If circle segment, scale and translate that one too
 		*/
 		if (currentNet->cirseg) {
-			cir_width = (int)round(currentNet->cirseg->width * unit_scale);
-			cir_height = (int)round(currentNet->cirseg->height * unit_scale);
-			cp_x = (int)round((image->info->offsetA + currentNet->cirseg->cp_x) *
-			unit_scale + trans_x);
-			cp_y = (int)round((image->info->offsetB - currentNet->cirseg->cp_y) *
-			unit_scale + trans_y);
+			tempX = currentNet->cirseg->width;
+			tempY = currentNet->cirseg->height;
+			cairo_matrix_transform_point (scaleMatrix, &tempX, &tempY);
+			cir_width = (int)round(tempX);
+			cir_height = (int)round(tempY);
+
+			tempX = currentNet->cirseg->cp_x + sr_x;
+			tempY = currentNet->cirseg->cp_y + sr_y;
+			cairo_matrix_transform_point (fullMatrix, &tempX, &tempY);
+			cp_x = (int)round(tempX);
+			cp_y = (int)round(tempY);
 		}
 
 		switch (currentNet->interpolation) {
@@ -786,319 +798,438 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 	return;
 }
 
+void
+draw_gdk_apply_netstate_transformation  (cairo_matrix_t *fullMatrix, cairo_matrix_t *scaleMatrix,
+	gerbv_netstate_t *state) {
+	/* apply scale factor */
+	cairo_matrix_scale (fullMatrix, state->scaleA, state->scaleB);
+	cairo_matrix_scale (scaleMatrix, state->scaleA, state->scaleB);
+	/* apply offset */
+	cairo_matrix_translate (fullMatrix, state->offsetA, state->offsetB);
+	/* apply mirror */
+	switch (state->mirrorState) {
+		case GERBV_MIRROR_STATE_FLIPA:
+			cairo_matrix_scale (fullMatrix, -1, 1);
+			cairo_matrix_scale (scaleMatrix, -1, 1);
+			break;
+		case GERBV_MIRROR_STATE_FLIPB:
+			cairo_matrix_scale (fullMatrix, 1, -1);
+			cairo_matrix_scale (scaleMatrix, -1, 1);
+			break;
+		case GERBV_MIRROR_STATE_FLIPAB:
+			cairo_matrix_scale (fullMatrix, -1, -1);
+			cairo_matrix_scale (scaleMatrix, -1, 1);
+			break;
+		default:
+			break;
+	}
+	/* finally, apply axis select */
+	if (state->axisSelect == GERBV_AXIS_SELECT_SWAPAB) {
+		/* we do this by rotating 270 (counterclockwise, then mirroring
+		   the Y axis */
+		cairo_matrix_rotate (fullMatrix, 3 * M_PI / 2);
+		cairo_matrix_scale (fullMatrix, 1, -1);
+	}
+}
+
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
 int
 draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image, 
 	     double scale, double trans_x, double trans_y,
-	     gerbv_polarity_t polarity, gchar drawMode,
-	     gerbv_selection_info_t *selectionInfo, gerbv_render_info_t *renderInfo)
+	     gchar drawMode,
+	     gerbv_selection_info_t *selectionInfo, gerbv_render_info_t *renderInfo,
+	     gerbv_user_transformation_t transform)
 {
-    GdkGC *gc = gdk_gc_new(*pixmap);
-    GdkGC *pgc = gdk_gc_new(*pixmap);
-    GdkGCValues gc_values;
-    struct gerbv_net *net;
-    gint x1, y1, x2, y2;
-    glong xlong1, ylong1, xlong2, ylong2;
-    int p1, p2, p3;
-    int cir_width = 0, cir_height = 0;
-    int cp_x = 0, cp_y = 0;
-    double unit_scale;
-    GdkColor transparent, opaque;
-#ifdef USE_DRAW_OPTIMIZATIONS
-	gdouble minX = renderInfo->lowerLeftX;
-	gdouble minY = renderInfo->lowerLeftY;
-	gdouble maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
-				renderInfo->scaleFactorX);
-	gdouble maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
-				renderInfo->scaleFactorY);
-#endif
+	GdkGC *gc = gdk_gc_new(*pixmap);
+	GdkGC *pgc = gdk_gc_new(*pixmap);
+	GdkGCValues gc_values;
+	struct gerbv_net *net;
+	gerbv_netstate_t *oldState;
+	gint x1, y1, x2, y2;
+	glong xlong1, ylong1, xlong2, ylong2;
+	int p1, p2, p3;
+	int cir_width = 0, cir_height = 0;
+	int cp_x = 0, cp_y = 0;
+	GdkColor transparent, opaque;
+	gerbv_polarity_t polarity;
+	gdouble tempX,tempY;
+	gdouble minX=0,minY=0,maxX=0,maxY=0;
 
-    if (image == NULL || image->netlist == NULL) {
+	if (transform.inverted) {
+		if (image->info->polarity == GERBV_POLARITY_POSITIVE)
+			polarity = GERBV_POLARITY_NEGATIVE;
+		else
+			polarity = GERBV_POLARITY_POSITIVE;
+	} else {
+		polarity = image->info->polarity;
+	}
+	if (drawMode == DRAW_SELECTIONS)
+		polarity = GERBV_POLARITY_POSITIVE;
+
+	gboolean useOptimizations = TRUE;
+	// if the user is using any transformations for this layer, then don't bother using rendering
+	//   optimizations
+	if ((fabs(transform.translateX) > 0.00001) ||
+			(fabs(transform.translateY) > 0.00001) ||
+			(fabs(transform.scaleX - 1) > 0.00001) ||
+			(fabs(transform.scaleY - 1) > 0.00001) ||
+			(fabs(transform.rotation) > 0.00001) ||
+			transform.mirrorAroundX || transform.mirrorAroundY)
+		useOptimizations = FALSE;
+
+	// calculate the transformation matrix for the user_transformation options
+	cairo_matrix_t fullMatrix, scaleMatrix;
+	cairo_matrix_init (&fullMatrix, 1, 0, 0, 1, 0, 0);
+	cairo_matrix_init (&scaleMatrix, 1, 0, 0, 1, 0, 0);
+
+	cairo_matrix_translate (&fullMatrix, trans_x, trans_y);
+	cairo_matrix_scale (&fullMatrix, scale, scale);
+	cairo_matrix_scale (&scaleMatrix, scale, scale);
+	/* offset image */
+
+	cairo_matrix_translate (&fullMatrix, transform.translateX, transform.translateY);
+	// don't use mirroring for the scale matrix
+	gdouble scaleX = transform.scaleX;
+	gdouble scaleY = -1*transform.scaleY;
+	cairo_matrix_scale (&scaleMatrix, scaleX, -1*scaleY);
+	if (transform.mirrorAroundX)
+		scaleY *= -1;
+	if (transform.mirrorAroundY)
+		scaleX *= -1;
+
+	cairo_matrix_scale (&fullMatrix, scaleX, scaleY);
+	/* do image rotation */
+	cairo_matrix_rotate (&fullMatrix, transform.rotation);
+	//cairo_matrix_rotate (&scaleMatrix, transform.rotation);
+
+	/* do image rotation */
+	cairo_matrix_rotate (&fullMatrix, image->info->imageRotation);
+
+	if (useOptimizations) {
+		minX = renderInfo->lowerLeftX;
+		minY = renderInfo->lowerLeftY;
+		maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
+					renderInfo->scaleFactorX);
+		maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
+					renderInfo->scaleFactorY);
+	}
+
+	if (image == NULL || image->netlist == NULL) {
+		/*
+		 * Destroy GCs before exiting
+		 */
+		gdk_gc_unref(gc);
+		gdk_gc_unref(pgc);
+
+		return 0;
+	}
+
+	/* Set up the two "colors" we have */
+	opaque.pixel = 0; /* opaque will not let color through */
+	transparent.pixel = 1; /* transparent will let color through */ 
+
 	/*
-	 * Destroy GCs before exiting
-	 */
+	* Clear clipmask and set draw color depending image on image polarity
+	*/
+	if (polarity == GERBV_POLARITY_NEGATIVE) {
+		gdk_gc_set_foreground(gc, &transparent);
+		gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
+		gdk_gc_set_foreground(gc, &opaque);
+	} else {
+		gdk_gc_set_foreground(gc, &opaque);
+		gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
+		gdk_gc_set_foreground(gc, &transparent);
+	}
+	oldState = image->states;
+	for (net = image->netlist->next ; net != NULL; net = gerbv_image_return_next_renderable_object(net)) {
+		int repeat_X=1, repeat_Y=1;
+		double repeat_dist_X=0.0, repeat_dist_Y=0.0;
+		int repeat_i, repeat_j;
+
+		/*
+		 * If step_and_repeat (%SR%) used, repeat the drawing;
+		 */
+		repeat_X = net->layer->stepAndRepeat.X;
+		repeat_Y = net->layer->stepAndRepeat.Y;
+		repeat_dist_X = net->layer->stepAndRepeat.dist_X;
+		repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
+
+		/* check if this is a new netstate */
+		if (net->state != oldState){
+			/* it's a new state, so recalculate the new transformation matrix
+			   for it */
+			draw_gdk_apply_netstate_transformation (&fullMatrix, &scaleMatrix, net->state);
+			oldState = net->state;	
+		}
+
+		if (drawMode == DRAW_SELECTIONS) {
+			int i;
+			gboolean foundNet = FALSE;
+			
+			for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
+				gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
+					gerbv_selection_item_t, i);
+				if (sItem.net == net)
+					foundNet = TRUE;
+			}
+			if (!foundNet)
+				continue;
+		}
+
+		for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
+		for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
+		  double sr_x = repeat_i * repeat_dist_X;
+		  double sr_y = repeat_j * repeat_dist_Y;
+			
+			if ((useOptimizations)&&((net->boundingBox.right+sr_x < minX)
+					|| (net->boundingBox.left+sr_y > maxX)
+					|| (net->boundingBox.top+sr_y < minY)
+					|| (net->boundingBox.bottom+sr_y > maxY))) {
+				break;
+			}
+
+		/* 
+		 * If circle segment, scale and translate that one too
+		 */
+		if (net->cirseg) {
+		    tempX = net->cirseg->width;
+		    tempY = net->cirseg->height;
+		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
+		    g_warning ("1old %f %f, new %f %f\n",net->cirseg->width,net->cirseg->height,tempX,tempY);
+		    cir_width = (int)round(tempX);
+		    cir_height = (int)round(tempY);
+		    
+		    tempX = net->cirseg->cp_x;
+		    tempY = net->cirseg->cp_y;
+		    cairo_matrix_transform_point (&fullMatrix, &tempX, &tempY);
+		    cp_x = (int)round(tempX);
+		    cp_y = (int)round(tempY);
+		    g_warning ("2old %f %f, new %f %f\n",net->cirseg->cp_x,net->cirseg->cp_y,tempX,tempY);
+		}
+
+		/*
+		 * Set GdkFunction depending on if this (gerber) layer is inverted
+		 * and allow for the photoplot being negative.
+		 */
+		gdk_gc_set_function(gc, GDK_COPY);
+		if ((net->layer->polarity == GERBV_POLARITY_CLEAR) != (polarity == GERBV_POLARITY_NEGATIVE))
+		    gdk_gc_set_foreground(gc, &opaque);
+		else
+		    gdk_gc_set_foreground(gc, &transparent);
+
+		/*
+		 * Polygon Area Fill routines
+		 */
+		switch (net->interpolation) {
+		case GERBV_INTERPOLATION_PAREA_START :
+		    draw_gdk_render_polygon_object (net,image,sr_x,sr_y,&fullMatrix,
+		    	&scaleMatrix,gc,pgc,pixmap);
+		    continue;
+		/* make sure we completely skip over any deleted nodes */
+		case GERBV_INTERPOLATION_DELETED:
+		    continue;
+		default :
+		    break;
+		}
+
+
+		/*
+		 * If aperture state is off we allow use of undefined apertures.
+		 * This happens when gerber files starts, but hasn't decided on 
+		 * which aperture to use.
+		 */
+		if (image->aperture[net->aperture] == NULL) {
+		  /* Commenting this out since it gets emitted every time you click on the screen 
+		     if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
+		     GERB_MESSAGE("Aperture D%d is not defined\n", net->aperture);
+		  */
+		    continue;
+		}
+
+		/*
+		 * Scale points with window scaling and translate them
+		 */
+		tempX = net->start_x + sr_x;
+		tempY = net->start_y + sr_y;
+		cairo_matrix_transform_point (&fullMatrix, &tempX, &tempY);
+		xlong1 = (int)round(tempX);
+		ylong1 = (int)round(tempY);
+
+		tempX = net->stop_x + sr_x;
+		tempY = net->stop_y + sr_y;
+		cairo_matrix_transform_point (&fullMatrix, &tempX, &tempY);
+		xlong2 = (int)round(tempX);
+		ylong2 = (int)round(tempY);
+
+		/* if the object is way outside our view window, just skip over it in order
+		   to eliminate some GDK clipping problems at high zoom levels */
+		if ((xlong1 < -10000) && (xlong2 < -10000))
+			continue;
+		if ((ylong1 < -10000) && (ylong2 < -10000))
+			continue;
+		if ((xlong1 > 10000) && (xlong2 > 10000))
+			continue;
+		if ((ylong1 > 10000) && (ylong2 > 10000))
+			continue;
+
+		if (xlong1 > G_MAXINT) x1 = G_MAXINT;
+		else if (xlong1 < G_MININT) x1 = G_MININT;
+		else x1 = (int)xlong1;
+
+		if (xlong2 > G_MAXINT) x2 = G_MAXINT;
+		else if (xlong2 < G_MININT) x2 = G_MININT;
+		else x2 = (int)xlong2;
+
+		if (ylong1 > G_MAXINT) y1 = G_MAXINT;
+		else if (ylong1 < G_MININT) y1 = G_MININT;
+		else y1 = (int)ylong1;
+
+		if (ylong2 > G_MAXINT) y2 = G_MAXINT;
+		else if (ylong2 < G_MININT) y2 = G_MININT;
+		else y2 = (int)ylong2;
+			
+		switch (net->aperture_state) {
+		case GERBV_APERTURE_STATE_ON :
+		    tempX = image->aperture[net->aperture]->parameter[0];
+		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
+		    p1 = (int)round(tempX);
+
+		   // p1 = (int)round(image->aperture[net->aperture]->parameter[0] * scale);
+		    if (image->aperture[net->aperture]->type == GERBV_APTYPE_RECTANGLE)
+			gdk_gc_set_line_attributes(gc, p1, 
+						   GDK_LINE_SOLID, 
+						   GDK_CAP_PROJECTING, 
+						   GDK_JOIN_MITER);
+		    else
+			gdk_gc_set_line_attributes(gc, p1, 
+						   GDK_LINE_SOLID, 
+						   GDK_CAP_ROUND, 
+						   GDK_JOIN_MITER);
+		    
+		    switch (net->interpolation) {
+		    case GERBV_INTERPOLATION_x10 :
+		    case GERBV_INTERPOLATION_LINEARx01 :
+		    case GERBV_INTERPOLATION_LINEARx001 :
+			GERB_MESSAGE("Linear != x1\n");
+			gdk_gc_set_line_attributes(gc, p1, 
+						   GDK_LINE_ON_OFF_DASH, 
+						   GDK_CAP_ROUND, 
+						   GDK_JOIN_MITER);
+			gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
+			gdk_gc_set_line_attributes(gc, p1, 
+						   GDK_LINE_SOLID,
+						   GDK_CAP_ROUND, 
+						   GDK_JOIN_MITER);
+			break;
+		    case GERBV_INTERPOLATION_LINEARx1 :
+			if (image->aperture[net->aperture]->type != GERBV_APTYPE_RECTANGLE)
+			    gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
+			else {
+			    gint dx, dy;
+			    GdkPoint poly[6];
+			    
+			    tempX = image->aperture[net->aperture]->parameter[0]/2;
+			    tempY = image->aperture[net->aperture]->parameter[1]/2;
+			    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
+			    dx = (int)round(tempX);
+			    dy = (int)round(tempY);
+
+			    if(x1 > x2) dx = -dx;
+			    if(y1 > y2) dy = -dy;
+			    poly[0].x = x1 - dx; poly[0].y = y1 - dy;
+			    poly[1].x = x1 - dx; poly[1].y = y1 + dy;
+			    poly[2].x = x2 - dx; poly[2].y = y2 + dy;
+			    poly[3].x = x2 + dx; poly[3].y = y2 + dy;
+			    poly[4].x = x2 + dx; poly[4].y = y2 - dy;
+			    poly[5].x = x1 + dx; poly[5].y = y1 - dy;
+			    gdk_draw_polygon(*pixmap, gc, 1, poly, 6);
+			}
+				break;
+		    case GERBV_INTERPOLATION_CW_CIRCULAR :
+		    case GERBV_INTERPOLATION_CCW_CIRCULAR :
+			gerbv_gdk_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
+					   net->cirseg->angle1, net->cirseg->angle2);
+			break;
+		    default :
+			break;
+		    }
+		    break;
+		case GERBV_APERTURE_STATE_OFF :
+		    break;
+		case GERBV_APERTURE_STATE_FLASH :
+		    tempX = image->aperture[net->aperture]->parameter[0];
+		    tempY = image->aperture[net->aperture]->parameter[1];
+		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
+		    p1 = (int)round(tempX);
+		    p2 = (int)round(tempY);
+		    tempX = image->aperture[net->aperture]->parameter[2];
+		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
+		    p3 = (int)round(tempX);
+		    
+		   // p1 = (int)round(image->aperture[net->aperture]->parameter[0] * scale);
+		   // p2 = (int)round(image->aperture[net->aperture]->parameter[1] * scale);
+		    //p3 = (int)round(image->aperture[net->aperture]->parameter[2] * scale);
+		    
+		    switch (image->aperture[net->aperture]->type) {
+		    case GERBV_APTYPE_CIRCLE :
+			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
+			/*
+			 * If circle has an inner diameter we must remove
+			 * that part of the circle to make a hole in it.
+			 * We should actually support square holes too,
+			 * but due to laziness I don't.
+			 */
+			if (p2) {
+			    //if (p3) GERB_COMPILE_WARNING("Should be a square hole in this aperture.\n");
+			    gdk_gc_get_values(gc, &gc_values);
+			    if (gc_values.foreground.pixel == opaque.pixel) {
+				gdk_gc_set_foreground(gc, &transparent);
+				gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p2);
+				gdk_gc_set_foreground(gc, &opaque);
+			    } else {
+				gdk_gc_set_foreground(gc, &opaque);
+				gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p2);
+				gdk_gc_set_foreground(gc, &transparent);
+			    }
+			}
+
+			break;
+		    case GERBV_APTYPE_RECTANGLE:
+			gerbv_gdk_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p1, p2);
+			break;
+		    case GERBV_APTYPE_OVAL :
+			gerbv_gdk_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
+			break;
+		    case GERBV_APTYPE_POLYGON :
+			//GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
+			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
+			break;
+		    case GERBV_APTYPE_MACRO :
+			gerbv_gdk_draw_amacro(*pixmap, gc, 
+					      image->aperture[net->aperture]->simplified,
+					      scale, x2, y2);
+			break;
+		    default :
+			GERB_MESSAGE("Unknown aperture type\n");
+			return 0;
+		    }
+		    break;
+		default :
+		    GERB_MESSAGE("Unknown aperture state\n");
+		    return 0;
+		}
+		}
+		}
+	}
+	/*
+	* Destroy GCs before exiting
+	*/
 	gdk_gc_unref(gc);
 	gdk_gc_unref(pgc);
-	
-	return 0;
-    }
-    
-    /* Set up the two "colors" we have */
-    opaque.pixel = 0; /* opaque will not let color through */
-    transparent.pixel = 1; /* transparent will let color through */ 
 
-    /*
-     * Clear clipmask and set draw color depending image on image polarity
-     */
-    if (polarity == GERBV_POLARITY_NEGATIVE) {
-	gdk_gc_set_foreground(gc, &transparent);
-	gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
-	gdk_gc_set_foreground(gc, &opaque);
-    } else {
-	gdk_gc_set_foreground(gc, &opaque);
-	gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
-	gdk_gc_set_foreground(gc, &transparent);
-    }
-
-    for (net = image->netlist->next ; net != NULL; net = gerbv_image_return_next_renderable_object(net)) {
-      int repeat_X=1, repeat_Y=1;
-      double repeat_dist_X=0.0, repeat_dist_Y=0.0;
-      int repeat_i, repeat_j;
-
-	/*
-	 * If step_and_repeat (%SR%) used, repeat the drawing;
-	 */
-	repeat_X = net->layer->stepAndRepeat.X;
-	repeat_Y = net->layer->stepAndRepeat.Y;
-	repeat_dist_X = net->layer->stepAndRepeat.dist_X;
-	repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
-	
-	if (drawMode == DRAW_SELECTIONS) {
-		int i;
-		gboolean foundNet = FALSE;
-		
-		for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
-			gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-				gerbv_selection_item_t, i);
-			if (sItem.net == net)
-				foundNet = TRUE;
-		}
-		if (!foundNet)
-			continue;
-	}
-	
-      for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
-	for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
-	  double sr_x = repeat_i * repeat_dist_X;
-	  double sr_y = repeat_j * repeat_dist_Y;
-
-#ifdef USE_DRAW_OPTIMIZATIONS				
-		if ((net->boundingBox.right+sr_x < minX)
-				|| (net->boundingBox.left+sr_y > maxX)
-				|| (net->boundingBox.top+sr_y < minY)
-				|| (net->boundingBox.bottom+sr_y > maxY)) {
-			break;
-		}
-#endif
-
-      unit_scale = scale;
-	/* 
-	 * If circle segment, scale and translate that one too
-	 */
-	if (net->cirseg) {
-	    cir_width = (int)round(net->cirseg->width * unit_scale);
-	    cir_height = (int)round(net->cirseg->height * unit_scale);
-	    cp_x = (int)round((image->info->offsetA + net->cirseg->cp_x) *
-			      unit_scale + trans_x);
-	    cp_y = (int)round((image->info->offsetB - net->cirseg->cp_y) *
-			      unit_scale + trans_y);
-	}
-
-	/*
-	 * Set GdkFunction depending on if this (gerber) layer is inverted
-	 * and allow for the photoplot being negative.
-	 */
-	gdk_gc_set_function(gc, GDK_COPY);
-	if ((net->layer->polarity == GERBV_POLARITY_CLEAR) != (polarity == GERBV_POLARITY_NEGATIVE))
-	    gdk_gc_set_foreground(gc, &opaque);
-	else
-	    gdk_gc_set_foreground(gc, &transparent);
-
-	/*
-	 * Polygon Area Fill routines
-	 */
-	switch (net->interpolation) {
-	case GERBV_INTERPOLATION_PAREA_START :
-	    draw_gdk_render_polygon_object (net,image,sr_x,sr_y,unit_scale,trans_x,trans_y,gc,pgc,pixmap);
-	    continue;
-	/* make sure we completely skip over any deleted nodes */
-	case GERBV_INTERPOLATION_DELETED:
-	    continue;
-	default :
-	    break;
-	}
-
-
-	/*
-	 * If aperture state is off we allow use of undefined apertures.
-	 * This happens when gerber files starts, but hasn't decided on 
-	 * which aperture to use.
-	 */
-	if (image->aperture[net->aperture] == NULL) {
-	  /* Commenting this out since it gets emitted every time you click on the screen 
-	     if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
-	     GERB_MESSAGE("Aperture D%d is not defined\n", net->aperture);
-	  */
-	    continue;
-	}
-
-	/*
-	 * Scale points with window scaling and translate them
-	 */
-	 
-	xlong1 = (gulong)round((image->info->offsetA + net->start_x + sr_x) * unit_scale +
-			trans_x);
-	ylong1 = (gulong)round((-image->info->offsetB - net->start_y - sr_y) * unit_scale +
-			trans_y);
-	xlong2 = (gulong)round((image->info->offsetA + net->stop_x + sr_x) * unit_scale +
-			trans_x);
-	ylong2 = (gulong)round((-image->info->offsetB - net->stop_y - sr_y) * unit_scale +
-			trans_y);
-	
-	/* if the object is way outside our view window, just skip over it in order
-	   to eliminate some GDK clipping problems at high zoom levels */
-	if ((xlong1 < -10000) && (xlong2 < -10000))
-		continue;
-	if ((ylong1 < -10000) && (ylong2 < -10000))
-		continue;
-	if ((xlong1 > 10000) && (xlong2 > 10000))
-		continue;
-	if ((ylong1 > 10000) && (ylong2 > 10000))
-		continue;
-	
-	if (xlong1 > G_MAXINT) x1 = G_MAXINT;
-	else if (xlong1 < G_MININT) x1 = G_MININT;
-	else x1 = (int)xlong1;
-	
-	if (xlong2 > G_MAXINT) x2 = G_MAXINT;
-	else if (xlong2 < G_MININT) x2 = G_MININT;
-	else x2 = (int)xlong2;
-	
-	if (ylong1 > G_MAXINT) y1 = G_MAXINT;
-	else if (ylong1 < G_MININT) y1 = G_MININT;
-	else y1 = (int)ylong1;
-	
-	if (ylong2 > G_MAXINT) y2 = G_MAXINT;
-	else if (ylong2 < G_MININT) y2 = G_MININT;
-	else y2 = (int)ylong2;
-		
-	switch (net->aperture_state) {
-	case GERBV_APERTURE_STATE_ON :
-	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
-	    if (image->aperture[net->aperture]->type == GERBV_APTYPE_RECTANGLE)
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID, 
-					   GDK_CAP_PROJECTING, 
-					   GDK_JOIN_MITER);
-	    else
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID, 
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
-	    
-	    switch (net->interpolation) {
-	    case GERBV_INTERPOLATION_x10 :
-	    case GERBV_INTERPOLATION_LINEARx01 :
-	    case GERBV_INTERPOLATION_LINEARx001 :
-		GERB_MESSAGE("Linear != x1\n");
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_ON_OFF_DASH, 
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
-		gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
-		gdk_gc_set_line_attributes(gc, p1, 
-					   GDK_LINE_SOLID,
-					   GDK_CAP_ROUND, 
-					   GDK_JOIN_MITER);
-		break;
-	    case GERBV_INTERPOLATION_LINEARx1 :
-		if (image->aperture[net->aperture]->type != GERBV_APTYPE_RECTANGLE)
-		    gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
-		else {
-		    gint dx, dy;
-		    GdkPoint poly[6];
-		    
-		    dx = (int)round(image->aperture[net->aperture]->parameter[0]
-				    * unit_scale / 2);
-		    dy = (int)round(image->aperture[net->aperture]->parameter[1]
-				    * unit_scale / 2);
-		    if(x1 > x2) dx = -dx;
-		    if(y1 > y2) dy = -dy;
-		    poly[0].x = x1 - dx; poly[0].y = y1 - dy;
-		    poly[1].x = x1 - dx; poly[1].y = y1 + dy;
-		    poly[2].x = x2 - dx; poly[2].y = y2 + dy;
-		    poly[3].x = x2 + dx; poly[3].y = y2 + dy;
-		    poly[4].x = x2 + dx; poly[4].y = y2 - dy;
-		    poly[5].x = x1 + dx; poly[5].y = y1 - dy;
-		    gdk_draw_polygon(*pixmap, gc, 1, poly, 6);
-		}
- 		break;
-	    case GERBV_INTERPOLATION_CW_CIRCULAR :
-	    case GERBV_INTERPOLATION_CCW_CIRCULAR :
-		gerbv_gdk_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
-				   net->cirseg->angle1, net->cirseg->angle2);
-		break;
-	    default :
-		break;
-	    }
-	    break;
-	case GERBV_APERTURE_STATE_OFF :
-	    break;
-	case GERBV_APERTURE_STATE_FLASH :
-	    p1 = (int)round(image->aperture[net->aperture]->parameter[0] * unit_scale);
-	    p2 = (int)round(image->aperture[net->aperture]->parameter[1] * unit_scale);
-	    p3 = (int)round(image->aperture[net->aperture]->parameter[2] * unit_scale);
-	    
-	    switch (image->aperture[net->aperture]->type) {
-	    case GERBV_APTYPE_CIRCLE :
-		gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
-		/*
-		 * If circle has an inner diameter we must remove
-		 * that part of the circle to make a hole in it.
-		 * We should actually support square holes too,
-		 * but due to laziness I don't.
-		 */
-		if (p2) {
-		    //if (p3) GERB_COMPILE_WARNING("Should be a square hole in this aperture.\n");
-		    gdk_gc_get_values(gc, &gc_values);
-		    if (gc_values.foreground.pixel == opaque.pixel) {
-			gdk_gc_set_foreground(gc, &transparent);
-			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p2);
-			gdk_gc_set_foreground(gc, &opaque);
-		    } else {
-			gdk_gc_set_foreground(gc, &opaque);
-			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p2);
-			gdk_gc_set_foreground(gc, &transparent);
-		    }
-		}
-
-		break;
-	    case GERBV_APTYPE_RECTANGLE:
-		gerbv_gdk_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p1, p2);
-		break;
-	    case GERBV_APTYPE_OVAL :
-		gerbv_gdk_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
-		break;
-	    case GERBV_APTYPE_POLYGON :
-		//GERB_COMPILE_WARNING("Very bad at drawing polygons.\n");
-		gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
-		break;
-	    case GERBV_APTYPE_MACRO :
-		gerbv_gdk_draw_amacro(*pixmap, gc, 
-				      image->aperture[net->aperture]->simplified,
-				      unit_scale, x2, y2);
-		break;
-	    default :
-		GERB_MESSAGE("Unknown aperture type\n");
-		return 0;
-	    }
-	    break;
-	default :
-	    GERB_MESSAGE("Unknown aperture state\n");
-	    return 0;
-	}
-    }
-      }
-    }
-    /*
-     * Destroy GCs before exiting
-     */
-    gdk_gc_unref(gc);
-    gdk_gc_unref(pgc);
-    
-    return 1;
+	return 1;
 
 } /* image2pixmap */
 

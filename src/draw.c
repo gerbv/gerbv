@@ -45,7 +45,7 @@
 #include <cairo.h>
 
 #define dprintf if(DEBUG) printf
-#define USE_DRAW_OPTIMIZATIONS 1
+
 gboolean
 draw_net_in_selection_buffer (gerbv_net_t *net, gerbv_selection_info_t *selectionInfo) {
 	int i;
@@ -518,10 +518,10 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble s
 
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
-					gboolean invertLayer, gdouble pixelWidth,
+					gdouble pixelWidth,
 					gchar drawMode, gerbv_selection_info_t *selectionInfo,
-					gerbv_render_info_t *renderInfo)
-{
+					gerbv_render_info_t *renderInfo, gboolean allowOptimization,
+ 					gerbv_user_transformation_t transform){
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
 	gdouble p1, p2, p3, p4, p5, dx, dy;
@@ -532,14 +532,38 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	int repeat_i, repeat_j;
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
 	gboolean invertPolarity = FALSE;
-#ifdef USE_DRAW_OPTIMIZATIONS
-	gdouble minX = renderInfo->lowerLeftX;
-	gdouble minY = renderInfo->lowerLeftY;
-	gdouble maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
-				renderInfo->scaleFactorX);
-	gdouble maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
-				renderInfo->scaleFactorY);
-#endif
+	gdouble minX=0, minY=0, maxX=0, maxY=0;
+
+	gdouble scaleX = transform.scaleX;
+	gdouble scaleY = transform.scaleY;
+	if (transform.mirrorAroundX)
+		scaleY *= -1;
+	if (transform.mirrorAroundY)
+		scaleX *= -1;
+	cairo_translate (cairoTarget, transform.translateX, transform.translateY);
+	cairo_scale (cairoTarget, scaleX, scaleY);
+	cairo_rotate (cairoTarget, transform.rotation);
+	
+	gboolean useOptimizations = allowOptimization;
+	// if the user is using any transformations for this layer, then don't bother using rendering
+	//   optimizations
+	if ((fabs(transform.translateX) > 0.00001) ||
+			(fabs(transform.translateY) > 0.00001) ||
+			(fabs(transform.scaleX - 1) > 0.00001) ||
+			(fabs(transform.scaleY - 1) > 0.00001) ||
+			(fabs(transform.rotation) > 0.00001) ||
+			transform.mirrorAroundX || transform.mirrorAroundY)
+		useOptimizations = FALSE;
+				
+	if (useOptimizations) {
+		minX = renderInfo->lowerLeftX;
+		minY = renderInfo->lowerLeftY;
+		maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
+					renderInfo->scaleFactorX);
+		maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
+					renderInfo->scaleFactorY);
+	}
+
 	gdouble criticalRadius;
 
     /* do initial justify */
@@ -553,9 +577,12 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
     /* do image rotation */
     cairo_rotate (cairoTarget, image->info->imageRotation);
     /* load in polarity operators depending on the image polarity */
-    invertPolarity = invertLayer;
+    invertPolarity = transform.inverted;
     if (image->info->polarity == GERBV_POLARITY_NEGATIVE)
     	invertPolarity = !invertPolarity;
+    if (drawMode == DRAW_SELECTIONS)
+		invertPolarity = FALSE;
+		
     if (invertPolarity) {
     	drawOperatorClear = CAIRO_OPERATOR_OVER;
     	drawOperatorDark = CAIRO_OPERATOR_CLEAR;
@@ -649,15 +676,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	    for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
 		double sr_x = repeat_i * repeat_dist_X;
 		double sr_y = repeat_j * repeat_dist_Y;
-
-#ifdef USE_DRAW_OPTIMIZATIONS	
-		if ((net->boundingBox.right+sr_x < minX)
+		
+		
+		if ((useOptimizations) &&
+				((net->boundingBox.right+sr_x < minX)
 				|| (net->boundingBox.left+sr_y > maxX)
 				|| (net->boundingBox.top+sr_y < minY)
-				|| (net->boundingBox.bottom+sr_y > maxY)) {
+				|| (net->boundingBox.bottom+sr_y > maxY))) {
 			break;
 		}
-#endif
 		
 		x1 = net->start_x + sr_x;
 		y1 = net->start_y + sr_y;

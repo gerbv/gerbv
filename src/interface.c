@@ -1504,67 +1504,163 @@ interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText,
 }
 
 void
-interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform) {
-  /* Set show_checkbox = TRUE to show "do not show this again" checkbox. */
-  /* Point ask_to_show_again to the variable to set to not show the checkbox. */
-  GtkWidget *dialog;
-  GtkWidget *dialog_vbox;
-  GtkWidget *check1,*check2;
-  GtkWidget *spin1,*spin2,*spin3,*spin4,*spin5;
-  GtkAdjustment *adj;
-  
-  dialog = gtk_dialog_new_with_buttons ("Modify layer orientation",
-					GTK_WINDOW (screen.win.topLevelWindow),
-					GTK_DIALOG_MODAL
-					| GTK_DIALOG_DESTROY_WITH_PARENT,
-					GTK_STOCK_CANCEL, GTK_RESPONSE_NONE,
-					GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform,
+		gerbv_unit_t screenUnit) {
+	GtkWidget *dialog;
+	GtkWidget *check1,*check2,*tempWidget,*tempWidget2,*tableWidget;
+	GtkWidget *spin1,*spin2,*spin3,*spin4,*spin5;
+	GtkAdjustment *adj;
+	gerbv_user_transformation_t startTransform = *transform;
 
-  gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
-  gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
-  gtk_window_set_type_hint (GTK_WINDOW (dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
-  gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
+	dialog = gtk_dialog_new_with_buttons ("Modify layer orientation",
+					GTK_WINDOW (screen.win.topLevelWindow), GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_STOCK_CANCEL, GTK_RESPONSE_NONE, GTK_STOCK_OK, GTK_RESPONSE_OK,
+					GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
+					NULL);
 
-  dialog_vbox = GTK_DIALOG (dialog)->vbox;
-  
-  adj = (GtkAdjustment *) gtk_adjustment_new (transform->translateX, -1000000, 1000000, 1, 10, 0.0);
-  spin1 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin1, FALSE, FALSE, 0);
-  adj = (GtkAdjustment *) gtk_adjustment_new (transform->translateY, -1000000, 1000000, 1, 10, 0.0);
-  spin2 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin2, FALSE, FALSE, 0);
-  adj = (GtkAdjustment *) gtk_adjustment_new (transform->scaleX, -1000000, 1000000, 1, 10, 0.0);
-  spin3 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin3, FALSE, FALSE, 0);
-  adj = (GtkAdjustment *) gtk_adjustment_new (transform->scaleY, -1000000, 1000000, 1, 10, 0.0);
-  spin4 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin4, FALSE, FALSE, 0);
-  adj = (GtkAdjustment *) gtk_adjustment_new (transform->rotation/M_PI*180, -1000000, 1000000, 1, 10, 0.0);
-  spin5 = (GtkWidget *) gtk_spin_button_new (adj, 0, 3);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox), spin5, FALSE, FALSE, 0);
-  check1 = (GtkWidget *) gtk_check_button_new_with_label ("Mirror around X");
-  gtk_toggle_button_set_active ((GtkToggleButton *) check1, transform->mirrorAroundX);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox), check1, FALSE, FALSE, 0);
-  check2 = (GtkWidget *) gtk_check_button_new_with_label ("Mirror around Y");
-  gtk_toggle_button_set_active ((GtkToggleButton *) check2, transform->mirrorAroundY);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox), check2, FALSE, FALSE, 0);
+	gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
+	gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
+	gtk_window_set_type_hint (GTK_WINDOW (dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
+	gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
 
-  gtk_widget_show_all (dialog);
-  gint result = gtk_dialog_run (GTK_DIALOG(dialog));
-  
-  if (result == GTK_RESPONSE_OK) {
-	  /* extract all the parameters */
-	  transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1);
-	  transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *)spin2);
-	  transform->scaleX = gtk_spin_button_get_value ((GtkSpinButton *)spin3);
-	  transform->scaleY = gtk_spin_button_get_value ((GtkSpinButton *)spin4);
-	  transform->rotation = gtk_spin_button_get_value ((GtkSpinButton *)spin5)/180*M_PI;
-	  transform->mirrorAroundX = gtk_toggle_button_get_active ((GtkToggleButton *) check1);
-	  transform->mirrorAroundY = gtk_toggle_button_get_active ((GtkToggleButton *) check2);
-  }
-  gtk_widget_destroy (dialog);
+	tableWidget = gtk_table_new (16,3,FALSE);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), tableWidget, FALSE, FALSE, 0);
 
-  return;
+	tempWidget = gtk_label_new (NULL);
+	gtk_label_set_markup (GTK_LABEL (tempWidget), "<span weight=\"bold\">Translation</span>");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,0,1,GTK_EXPAND|GTK_FILL,0,0,5);
+
+	tempWidget = gtk_label_new ("    ");
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,1,1,2,0,0,0,0);
+	gdouble translateX, translateY;
+	
+	if (screenUnit == GERBV_MILS) {
+		tempWidget = gtk_label_new ("X (mils):");
+		tempWidget2 = gtk_label_new ("Y (mils):");
+		translateX = transform->translateX * 1000;
+		translateY = transform->translateY * 1000;
+	}
+	else if (screen.unit == GERBV_MMS) {
+		tempWidget = gtk_label_new ("X (mms):");
+		tempWidget2 = gtk_label_new ("Y (mms):");
+		translateX = transform->translateX * 25.4;
+		translateY = transform->translateY * 25.4;
+	}
+	else {
+		tempWidget = gtk_label_new ("X (inches):");
+		tempWidget2 = gtk_label_new ("Y (inches):");
+		translateX = transform->translateX;
+		translateY = transform->translateY;
+	}
+
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,1,2,GTK_EXPAND|GTK_FILL,0,0,0);
+	gtk_misc_set_alignment (GTK_MISC (tempWidget2), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget2,1,2,2,3,GTK_EXPAND|GTK_FILL,0,0,0);
+	adj = (GtkAdjustment *) gtk_adjustment_new (translateX, -1000000, 1000000, 1, 10, 0.0);
+	spin1 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
+	gtk_table_attach ((GtkTable *) tableWidget, spin1,2,3,1,2,GTK_FILL,0,0,0);
+	adj = (GtkAdjustment *) gtk_adjustment_new (translateY, -1000000, 1000000, 1, 10, 0.0);
+	spin2 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
+	gtk_table_attach ((GtkTable *) tableWidget, spin2,2,3,2,3,GTK_FILL,0,0,0);
+
+	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 3, 8);
+	tempWidget = gtk_label_new (NULL);
+	gtk_label_set_markup (GTK_LABEL (tempWidget), "<span weight=\"bold\">Scale</span>");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,4,5,GTK_EXPAND|GTK_FILL,0,0,5);
+
+	tempWidget = gtk_label_new ("X direction:");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,5,6,GTK_EXPAND|GTK_FILL,0,0,0);
+	tempWidget = gtk_label_new ("Y direction:");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,6,7,GTK_EXPAND|GTK_FILL,0,0,0);
+	adj = (GtkAdjustment *) gtk_adjustment_new (transform->scaleX, -1000000, 1000000, 1, 10, 0.0);
+	spin3 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
+	gtk_table_attach ((GtkTable *) tableWidget, spin3,2,3,5,6,GTK_FILL,0,0,0);
+	adj = (GtkAdjustment *) gtk_adjustment_new (transform->scaleY, -1000000, 1000000, 1, 10, 0.0);
+	spin4 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
+	gtk_table_attach ((GtkTable *) tableWidget, spin4,2,3,6,7,GTK_FILL,0,0,0);
+
+	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 7, 8);
+
+	tempWidget = gtk_label_new (NULL);
+	gtk_label_set_markup (GTK_LABEL (tempWidget), "<span weight=\"bold\">Rotation</span>");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,8,9,GTK_EXPAND|GTK_FILL,0,0,5);
+
+	tempWidget = gtk_label_new ("Rotation (degrees):   ");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,9,10,GTK_EXPAND|GTK_FILL,0,0,0);
+	adj = (GtkAdjustment *) gtk_adjustment_new (transform->rotation/M_PI*180, -1000000, 1000000,
+		1, 10, 0.0);
+	spin5 = (GtkWidget *) gtk_spin_button_new (adj, 0, 3);
+	gtk_table_attach ((GtkTable *) tableWidget, spin5,2,3,9,10,GTK_FILL,0,0,0);
+
+	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 10, 8);
+	tempWidget = gtk_label_new (NULL);
+	gtk_label_set_markup (GTK_LABEL (tempWidget), "<span weight=\"bold\">Mirroring</span>");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,11,12,GTK_EXPAND|GTK_FILL,0,0,5);
+
+	tempWidget = gtk_label_new ("About X axis:");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,12,13,GTK_EXPAND|GTK_FILL,0,0,0);
+	check1 = (GtkWidget *) gtk_check_button_new ();
+	gtk_toggle_button_set_active ((GtkToggleButton *) check1, transform->mirrorAroundX);
+	gtk_table_attach ((GtkTable *) tableWidget, check1,2,3,12,13,0,0,0,2);
+
+	tempWidget = gtk_label_new ("About Y axis:");
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,13,14,GTK_EXPAND|GTK_FILL,0,0,0);
+	check2 = (GtkWidget *) gtk_check_button_new ();
+	gtk_toggle_button_set_active ((GtkToggleButton *) check2, transform->mirrorAroundY);
+	gtk_table_attach ((GtkTable *) tableWidget, check2,2,3,13,14,0,0,0,2);
+
+	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 14, 8);
+	gtk_widget_show_all (dialog);
+	gint result = GTK_RESPONSE_APPLY;
+
+	// each time the user selects "apply", update the screen and re-enter the dialog loop
+	while (result == GTK_RESPONSE_APPLY) {
+		result = gtk_dialog_run (GTK_DIALOG(dialog));
+		if (result != GTK_RESPONSE_NONE) {
+			/* extract all the parameters */
+			if (screenUnit == GERBV_MILS) {
+				transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1)/
+					1000;
+				transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2)/
+					1000;
+			}
+			else if (screen.unit == GERBV_MMS) {
+				transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1)/
+					25.4;
+				transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2)/
+					25.4;
+			}
+			else {
+				transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1);
+				transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2);
+			}
+			transform->scaleX = gtk_spin_button_get_value ((GtkSpinButton *)spin3);
+			transform->scaleY = gtk_spin_button_get_value ((GtkSpinButton *)spin4);
+			transform->rotation = gtk_spin_button_get_value ((GtkSpinButton *)spin5)/180*M_PI;
+			transform->mirrorAroundX = gtk_toggle_button_get_active ((GtkToggleButton *) check1);
+			transform->mirrorAroundY = gtk_toggle_button_get_active ((GtkToggleButton *) check2);
+			
+			render_refresh_rendered_image_on_screen ();
+			callbacks_update_layer_tree ();
+		}
+	}
+	if (result == GTK_RESPONSE_NONE) {
+		// revert back to the start values if the user cancelled
+		*transform = startTransform;
+	}
+	gtk_widget_destroy (dialog);
+
+	return;
 }
 
 

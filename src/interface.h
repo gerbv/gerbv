@@ -51,4 +51,4 @@ interface_show_alert_dialog (gchar *primaryText,
 			     gboolean *ask_to_show_again );
 
 void
-interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform);
+interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform, gerbv_unit_t screenUnit);

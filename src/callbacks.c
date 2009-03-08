@@ -427,13 +427,15 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_RS274X) {
 			gint index=callbacks_get_selected_row_index();
-			
-			gerbv_export_rs274x_file_from_image (filename, mainProject->file[index]->image);	
+
+			gerbv_export_rs274x_file_from_image (filename, mainProject->file[index]->image,
+				&mainProject->file[index]->transform);	
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_DRILL) {
 			gint index=callbacks_get_selected_row_index();
 			
-			gerbv_export_drill_file_from_image (filename, mainProject->file[index]->image);
+			gerbv_export_drill_file_from_image (filename, mainProject->file[index]->image,
+				&mainProject->file[index]->transform);
 		}
 	}
 	g_free (filename);
@@ -2006,10 +2008,8 @@ callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 void
 callbacks_change_layer_orientation_clicked  (GtkButton *button, gpointer userData){
 	gint index = callbacks_get_selected_row_index();
-	gerbv_user_transformation_t tempTransform = mainProject->file[index]->transform;
-	interface_show_modify_orientation_dialog(&tempTransform);
-	mainProject->file[index]->transform = tempTransform;
-	
+
+	interface_show_modify_orientation_dialog(&mainProject->file[index]->transform,screen.unit);
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree ();	
 }

@@ -193,12 +193,12 @@ export_rs274x_write_state_change (gerbv_netstate_t *oldState, gerbv_netstate_t *
 }
 
 gboolean
-gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage) {
+gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
+		gerbv_user_transformation_t *transform) {
 	FILE *fd;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
 	gboolean insidePolygon=FALSE;
-	gerbv_user_transformation_t identityTransformation = {0,0,0,0,FALSE};
 
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
@@ -206,7 +206,7 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage)
 	}
 	
 	/* duplicate the image, cleaning it in the process */
-	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, &identityTransformation);
+	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, transform);
 	
 	/* write header info */
 	fprintf(fd, "G04 This is an RS-274x file exported by *\n");
@@ -233,8 +233,8 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage)
 	if (image->info->plotterFilm)
 		fprintf(fd, "%%PF%s*%%\n",image->info->plotterFilm);
 	/* image rotation */
-	if (image->info->imageRotation != 0.0)
-		fprintf(fd, "%%IR%d*%%\n",(int) image->info->imageRotation);
+	if ((image->info->imageRotation != 0.0)||(transform->rotation != 0.0))
+		fprintf(fd, "%%IR%d*%%\n",(int) (image->info->imageRotation + transform->rotation*180/M_PI));
 	if ((image->info->imageJustifyTypeA != GERBV_JUSTIFY_NOJUSTIFY) ||
 		(image->info->imageJustifyTypeB != GERBV_JUSTIFY_NOJUSTIFY)) {
 		fprintf(fd, "%%IJA");
@@ -250,6 +250,16 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage)
 		fprintf(fd, "*%%\n");
 
 	}
+	/* handle scale user orientation transforms */
+	if ((fabs(transform->scaleX - 1) > 0.00001) ||
+	(fabs(transform->scaleY - 1) > 0.00001)) {
+		fprintf(fd, "%%SFA%.4fB%.4f*%%\n",transform->scaleX,transform->scaleY);
+	}
+	/* handle mirror image user orientation transform */
+	if ((transform->mirrorAroundX)||(transform->mirrorAroundY)) {
+		fprintf(fd, "%%MIA%dB%d*%%\n",transform->mirrorAroundY,transform->mirrorAroundX);
+	}
+	
 	/* define all apertures */
 	fprintf(fd, "G04 --Define apertures--*\n");
 	export_rs274x_write_apertures (fd, image);

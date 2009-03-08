@@ -863,14 +863,16 @@ gerbv_create_rs274x_image_from_filename (gchar *filename /*!< the filename of th
 //! \return TRUE if successful, or FALSE if not
 gboolean
 gerbv_export_rs274x_file_from_image (gchar *filename, /*!< the filename for the new file */
-		gerbv_image_t *image /*!< the image to export */
+		gerbv_image_t *image, /*!< the image to export */
+		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
 );
 
 //! Export an image to a new file in Excellon drill format
 //! \return TRUE if successful, or FALSE if not
 gboolean
 gerbv_export_drill_file_from_image (gchar *filename, /*!< the filename for the new file */
-		gerbv_image_t *image /*!< the image to export */
+		gerbv_image_t *image, /*!< the image to export */
+		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
 );
 
 //! Draw a line on the specified image
