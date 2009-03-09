@@ -1952,9 +1952,12 @@ callbacks_show_color_picker_dialog (gint index){
 	
 	screen.win.colorSelectionDialog = (GtkWidget *) cs;
 	screen.win.colorSelectionIndex = index;
-	gtk_color_selection_set_current_color (colorsel, &mainProject->file[index]->color);
+	if (index >= 0)
+		gtk_color_selection_set_current_color (colorsel, &mainProject->file[index]->color);
+	else
+		gtk_color_selection_set_current_color (colorsel, &mainProject->background);
 #ifndef RENDER_USING_GDK
-	if (screenRenderInfo.renderType >= 2) {
+	if ((screenRenderInfo.renderType >= 2)&&(index >= 0)) {
 		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
 		gtk_color_selection_set_current_alpha (colorsel, mainProject->file[index]->alpha);
 	}
@@ -1964,11 +1967,18 @@ callbacks_show_color_picker_dialog (gint index){
 		GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
 		gint rowIndex = screen.win.colorSelectionIndex;
 		
-		gtk_color_selection_get_current_color (colorsel, &mainProject->file[rowIndex]->color);
-		if (screenRenderInfo.renderType >= 2) {
+		if (index >= 0) {
+			gtk_color_selection_get_current_color (colorsel, &mainProject->file[rowIndex]->color);
+			gdk_colormap_alloc_color(gdk_colormap_get_system(), &mainProject->file[rowIndex]->color, FALSE, TRUE);
+		}
+		else {
+			gtk_color_selection_get_current_color (colorsel, &mainProject->background);
+			gdk_colormap_alloc_color(gdk_colormap_get_system(), &mainProject->background, FALSE, TRUE);
+		}
+		if ((screenRenderInfo.renderType >= 2)&&(index >= 0)) {
 			mainProject->file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
 		}
-		gdk_colormap_alloc_color(gdk_colormap_get_system(), &mainProject->file[rowIndex]->color, FALSE, TRUE);
+		
 		callbacks_update_layer_tree ();
 		render_refresh_rendered_image_on_screen();
 	}
@@ -1992,6 +2002,11 @@ callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) 
 	gint index=callbacks_get_selected_row_index();
 
 	callbacks_show_color_picker_dialog (index);
+}
+
+void
+callbacks_change_background_color_clicked  (GtkButton *button, gpointer   user_data) {
+	callbacks_show_color_picker_dialog (-1);
 }
 
 /* --------------------------------------------------------------------------- */					

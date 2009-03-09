@@ -117,6 +117,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *png;
 	GtkWidget *separator1;
 	GtkWidget *quit;
+	GtkWidget *backgroundColor;
 
 	GtkWidget *menuitem_edit;
 	GtkWidget *menuitem_edit_menu;
@@ -418,10 +419,6 @@ interface_create_gui (int req_width, int req_height)
 	                        GDK_z, (GdkModifierType) GDK_SHIFT_MASK,
 	                        GTK_ACCEL_VISIBLE);
 	                        
-	separator5 = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator5);
-	gtk_widget_set_sensitive (separator5, FALSE);
-
 	fit_to_window = gtk_image_menu_item_new_from_stock ("gtk-zoom-fit", accel_group);
 	gtk_tooltips_set_tip (tooltips, fit_to_window, "Zoom to fit all visible layers in the window", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), fit_to_window);
@@ -429,6 +426,14 @@ interface_create_gui (int req_width, int req_height)
 	                        GDK_f, (GdkModifierType) 0,
 	                        GTK_ACCEL_VISIBLE);
 	                        
+	separator5 = gtk_separator_menu_item_new ();
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator5);
+	gtk_widget_set_sensitive (separator5, FALSE);
+	
+	backgroundColor = gtk_menu_item_new_with_mnemonic ("Change background color");
+	gtk_tooltips_set_tip (tooltips, backgroundColor, "Change the background color", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), backgroundColor);
+	
 	menuitem_analyze = gtk_menu_item_new_with_mnemonic (_("_Analyze"));
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_analyze);
 
@@ -777,14 +782,11 @@ interface_create_gui (int req_width, int req_height)
 	gtk_table_attach (GTK_TABLE (main_view_table), vScrollbar, 2, 3, 1, 2,
 	                  (GtkAttachOptions) (GTK_FILL),
 	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
-	                  
-	GtkWidget *frame1 = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox2), frame1, FALSE, FALSE, 0);
 	
 	hbox5 = gtk_hbox_new (FALSE, 10);
-	gtk_container_add (GTK_CONTAINER(frame1), hbox5);
+	gtk_box_pack_start (GTK_BOX (vbox2), hbox5, FALSE, FALSE, 0);
 
-	statusbar_label_left = gtk_label_new (_("(   0.0,  0.0 )"));
+	statusbar_label_left = gtk_label_new ("( 0.0,  0.0 )");
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_left, FALSE, FALSE, 0);
 	gtk_widget_set_size_request (statusbar_label_left, 130, -1);
 	gtk_label_set_justify ((GtkLabel *) statusbar_label_left, GTK_JUSTIFY_RIGHT);
@@ -881,6 +883,9 @@ interface_create_gui (int req_width, int req_height)
 	                  NULL);
 	g_signal_connect ((gpointer) fit_to_window, "activate",
 	                  G_CALLBACK (callbacks_fit_to_window_activate),
+	                  NULL);
+	g_signal_connect ((gpointer) backgroundColor, "activate",
+	                  G_CALLBACK (callbacks_change_background_color_clicked),
 	                  NULL);
 
 	/* --- Analyze menu --- */
