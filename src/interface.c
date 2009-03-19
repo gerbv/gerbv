@@ -1599,10 +1599,27 @@ interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform
 	tempWidget = gtk_label_new ("Rotation (degrees):   ");
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,9,10,GTK_EXPAND|GTK_FILL,0,0,0);
+	spin5 = gtk_combo_box_new_text();
+	gtk_combo_box_append_text ((GtkComboBox *)spin5, "None");
+	gtk_combo_box_append_text ((GtkComboBox *)spin5, "90 deg CCW");
+	gtk_combo_box_append_text ((GtkComboBox *)spin5, "180 deg CCW");
+	gtk_combo_box_append_text ((GtkComboBox *)spin5, "270 deg CCW");
+	gdouble degreeRotation = transform->rotation/M_PI*180;
+	if ((degreeRotation < 135)&&(degreeRotation >= 45))
+		gtk_combo_box_set_active ((GtkComboBox *)spin5, 1);
+	else if ((degreeRotation < 225)&&(degreeRotation >= 135))
+		gtk_combo_box_set_active ((GtkComboBox *)spin5, 2);
+	else if ((degreeRotation < 315)&&(degreeRotation >= 225))
+		gtk_combo_box_set_active ((GtkComboBox *)spin5, 3);
+	else
+		gtk_combo_box_set_active ((GtkComboBox *)spin5, 0);
+	/*
 	adj = (GtkAdjustment *) gtk_adjustment_new (transform->rotation/M_PI*180, -1000000, 1000000,
 		1, 10, 0.0);
 	spin5 = (GtkWidget *) gtk_spin_button_new (adj, 0, 3);
+	*/
 	gtk_table_attach ((GtkTable *) tableWidget, spin5,2,3,9,10,GTK_FILL,0,0,0);
+	
 
 	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 10, 8);
 	tempWidget = gtk_label_new (NULL);
@@ -1651,7 +1668,15 @@ interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform
 			}
 			transform->scaleX = gtk_spin_button_get_value ((GtkSpinButton *)spin3);
 			transform->scaleY = gtk_spin_button_get_value ((GtkSpinButton *)spin4);
-			transform->rotation = gtk_spin_button_get_value ((GtkSpinButton *)spin5)/180*M_PI;
+			gint rotationIndex = gtk_combo_box_get_active ((GtkComboBox *)spin5);
+			if (rotationIndex == 0)
+				transform->rotation = 0;
+			else if (rotationIndex == 1)
+				transform->rotation = 90.0/180*M_PI;
+			else if (rotationIndex == 2)
+				transform->rotation = 180.0/180*M_PI;
+			else if (rotationIndex == 3)
+				transform->rotation = 270.0/180*M_PI;	
 			transform->mirrorAroundX = gtk_toggle_button_get_active ((GtkToggleButton *) check1);
 			transform->mirrorAroundY = gtk_toggle_button_get_active ((GtkToggleButton *) check2);
 			

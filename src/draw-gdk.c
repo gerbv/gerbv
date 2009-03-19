@@ -847,6 +847,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	GdkGCValues gc_values;
 	struct gerbv_net *net;
 	gerbv_netstate_t *oldState;
+	gerbv_layer_t *oldLayer;
 	gint x1, y1, x2, y2;
 	glong xlong1, ylong1, xlong2, ylong2;
 	int p1, p2, p3;
@@ -942,6 +943,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		gdk_draw_rectangle(*pixmap, gc, TRUE, 0, 0, -1, -1);
 		gdk_gc_set_foreground(gc, &transparent);
 	}
+	oldLayer = image->layers;
 	oldState = image->states;
 	for (net = image->netlist->next ; net != NULL; net = gerbv_image_return_next_renderable_object(net)) {
 		int repeat_X=1, repeat_Y=1;
@@ -962,6 +964,12 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 			   for it */
 			draw_gdk_apply_netstate_transformation (&fullMatrix, &scaleMatrix, net->state);
 			oldState = net->state;	
+		}
+		/* check if this is a new layer */
+		/* for now, only do layer rotations in GDK rendering */
+		if (net->layer != oldLayer){
+			cairo_matrix_rotate (&fullMatrix, net->layer->rotation);
+			oldLayer = net->layer;
 		}
 
 		if (drawMode == DRAW_SELECTIONS) {
