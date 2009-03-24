@@ -1690,7 +1690,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	}
 	break;
     case A2I('I','R'): /* Image Rotation */
-	tmp = gerb_fgetint(fd, NULL);
+	tmp = gerb_fgetint(fd, NULL) % 360;
 	if (tmp == 0)
 	    image->info->imageRotation = 0.0;
 	else if (tmp == 90)
