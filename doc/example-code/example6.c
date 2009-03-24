@@ -8,8 +8,7 @@
 		this program with the following command (assumes you are using a
 		newer version of gtk which uses cairo):
 
-	gcc -Wall -g `pkg-config --cflags gtk+-2.0 glib-2.0 libgerbv` `pkg-config \
---libs gtk+-2.0 glib-2.0 libgerbv` example6.c -o example6
+	gcc -Wall -g `pkg-config --cflags libgerbv` `pkg-config --libs libgerbv` example6.c -o example6
 
 	Run with the following command:
 	

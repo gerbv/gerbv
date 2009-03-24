@@ -8,8 +8,7 @@
 	Instructions: Make sure you are in the example-code directory, and compile
 		this program with the following command:
 
-	gcc -Wall -g `pkg-config --cflags gtk+-2.0 glib-2.0 libgerbv` `pkg-config \
---libs gtk+-2.0 glib-2.0 libgerbv` example3.c -o example3
+	gcc -Wall -g `pkg-config --cflags libgerbv` `pkg-config --libs libgerbv` example3.c -o example3
 
 	Run with the following command:
 	
