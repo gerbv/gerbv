@@ -492,7 +492,7 @@ gerbv_image_find_existing_aperture_match (gerbv_aperture_t *checkAperture, gerbv
     int i,j;
     gboolean isMatch;
     
-    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+    for (i = 0; i < APERTURE_MAX; i++) {
 	if (imageToSearch->aperture[i] != NULL) {
 	  if ((imageToSearch->aperture[i]->type == checkAperture->type) &&
 	      (imageToSearch->aperture[i]->simplified == NULL) &&
@@ -568,7 +568,7 @@ gerbv_image_copy_image (gerbv_image_t *sourceImage, gerbv_user_transformation_t 
     GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
     
     /* copy apertures over */
-    for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+    for (i = 0; i < APERTURE_MAX; i++) {
 	if (sourceImage->aperture[i] != NULL) {
 	  gint existingAperture = gerbv_image_find_existing_aperture_match (sourceImage->aperture[i], destinationImage);
 	  
@@ -708,7 +708,7 @@ gerb_image_return_aperture_index (gerbv_image_t *image, gdouble lineWidth, int *
 	for (currentNet = image->netlist; currentNet->next; currentNet = currentNet->next){}
 	
 	/* try to find an existing aperture that matches the requested width and type */
-	for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+	for (i = 0; i < APERTURE_MAX; i++) {
 		if (image->aperture[i] != NULL) {
 			if ((image->aperture[i]->type == GERBV_APTYPE_CIRCLE) && 
 				(fabs (image->aperture[i]->parameter[0] - lineWidth) < 0.001)){
