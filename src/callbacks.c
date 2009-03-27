@@ -64,14 +64,14 @@
 #include "render.h"
 
 #include "draw-gdk.h"
-#ifndef RENDER_USING_GDK
-  #include "draw.h"
-  #ifdef WIN32
-    #include <cairo-win32.h>
-  #else
-    #include <cairo-xlib.h>
-  #endif
+
+#include "draw.h"
+#ifdef WIN32
+#include <cairo-win32.h>
+#else
+#include <cairo-xlib.h>
 #endif
+
 
 #define dprintf if(DEBUG) printf
 
@@ -411,10 +411,8 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			gerbv_export_pdf_file_from_project (mainProject, &screenRenderInfo, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_SVG)
 			gerbv_export_svg_file_from_project (mainProject, &screenRenderInfo, filename);
-#ifdef EXPORT_PNG
 		else if (processType == CALLBACKS_SAVE_FILE_PNG)
 			gerbv_export_png_file_from_project (mainProject, &screenRenderInfo, filename);
-#endif
 		else if (processType == CALLBACKS_SAVE_LAYER_AS) {
 			gint index=callbacks_get_selected_row_index();
 			
@@ -460,7 +458,6 @@ callbacks_print_render_page (GtkPrintOperation *operation,
            gint               page_nr,
            gpointer           user_data)
 {
-#ifndef RENDER_USING_GDK
 	GtkPrintSettings *pSettings = gtk_print_operation_get_print_settings (operation);
 	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3,
 		(gint) gtk_print_context_get_width (context),
@@ -486,7 +483,6 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 			//cairo_paint_with_alpha (cr, screen.file[i]->alpha);		
 		}
 	}
-#endif
 }
 
 /* --------------------------------------------------------- */
@@ -1366,15 +1362,9 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
 	/* gchar *translators = _("translator-credits"); */
 
-#ifdef RENDER_USING_GDK
-#define RENDERER "gdk"
-#else
-#define RENDERER "cairo"
-#endif
 	gchar *string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 					  "This is gerbv version %s\n"
 					  "Compiled on %s at %s\n"
-					  "Renderer (compile time setting):  %s\n"
 					  "\n"
 					  "gerbv is part of the gEDA Project.\n"
 					  "\n"
@@ -1382,9 +1372,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					  "  gerbv homepage: http://gerbv.sf.net\n"
 					  "  gEDA homepage: http://www.geda.seul.org\n"
 					  "  gEDA Wiki: http://geda.seul.org/dokuwiki/doku.php?id=geda\n\n",
-					  VERSION, __DATE__, __TIME__, RENDERER);
-
-#undef RENDERER
+					  VERSION, __DATE__, __TIME__);
 #if GTK_CHECK_VERSION(2,6,0)
 	gchar *license = g_strdup_printf("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 					 "Copyright (C) 2000-2007 Stefan Petersen\n\n"
@@ -1547,16 +1535,11 @@ void callbacks_update_ruler_scales (void) {
 
 /* --------------------------------------------------------- */
 void callbacks_update_scrollbar_limits (void){
-#ifdef RENDER_USING_GDK
-	gerbv_render_info_t tempRenderInfo = {0, 0, 0, 0, 0, screenRenderInfo.displayWidth,
-			screenRenderInfo.displayHeight};
-#else
 	gerbv_render_info_t tempRenderInfo = {0, 0, 0, 0, 3, screenRenderInfo.displayWidth,
 			screenRenderInfo.displayHeight};
-#endif
+
 	GtkAdjustment *hAdjust = (GtkAdjustment *)screen.win.hAdjustment;
 	GtkAdjustment *vAdjust = (GtkAdjustment *)screen.win.vAdjustment;
-	
 	gerbv_render_zoom_to_fit_display (mainProject, &tempRenderInfo);
 	hAdjust->lower = tempRenderInfo.lowerLeftX;
 	hAdjust->page_increment = hAdjust->page_size;
@@ -1574,7 +1557,7 @@ void callbacks_update_scrollbar_limits (void){
 /* --------------------------------------------------------- */
 void callbacks_update_scrollbar_positions (void){
 	gdouble positionX,positionY;
-	
+
 	positionX = screenRenderInfo.lowerLeftX;
 	if (positionX < ((GtkAdjustment *)screen.win.hAdjustment)->lower)
 		positionX = ((GtkAdjustment *)screen.win.hAdjustment)->lower;
@@ -1588,7 +1571,6 @@ void callbacks_update_scrollbar_positions (void){
 	if (positionY > (((GtkAdjustment *)screen.win.vAdjustment)->upper - ((GtkAdjustment *)screen.win.vAdjustment)->page_size))
 		positionY = (((GtkAdjustment *)screen.win.vAdjustment)->upper - ((GtkAdjustment *)screen.win.vAdjustment)->page_size);
 	gtk_adjustment_set_value ((GtkAdjustment *)screen.win.vAdjustment, positionY);
-
 }
 
 /* --------------------------------------------------------- */
@@ -1654,12 +1636,10 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 		if (screenRenderInfo.renderType < 2) {
 			render_refresh_rendered_image_on_screen();
 		}
-#ifndef RENDER_USING_GDK
 		else {
 			render_recreate_composite_surface (screen.drawing_area);
 			callbacks_force_expose_event_for_screen ();
 		}
-#endif 
 	}
 }
 
@@ -1753,9 +1733,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 	if (screen.win.updatingTools)
 		return;
 	screen.win.updatingTools = TRUE;
-#ifndef RENDER_USING_GDK
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPointer), FALSE);
-#endif
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), FALSE);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonZoom), FALSE);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), FALSE);
@@ -1852,12 +1830,10 @@ callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data)
 		if (screenRenderInfo.renderType < 2) {
 			render_refresh_rendered_image_on_screen();
 		}
-#ifndef RENDER_USING_GDK
 		else {
 			render_recreate_composite_surface (screen.drawing_area);
 			callbacks_force_expose_event_for_screen ();
 		}
-#endif 
 	}
 }
 
@@ -1873,12 +1849,10 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 		if (screenRenderInfo.renderType < 2) {
 			render_refresh_rendered_image_on_screen();
 		}
-#ifndef RENDER_USING_GDK
 		else {
 			render_recreate_composite_surface (screen.drawing_area);
 			callbacks_force_expose_event_for_screen ();
 		}
-#endif 
 	}
 }
 
@@ -1894,12 +1868,10 @@ callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
 		if (screenRenderInfo.renderType < 2) {
 			render_refresh_rendered_image_on_screen();
 		}
-#ifndef RENDER_USING_GDK
 		else {
 			render_recreate_composite_surface (screen.drawing_area);
 			callbacks_force_expose_event_for_screen ();
 		}
-#endif 
 	}
 }
 
@@ -1924,12 +1896,10 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 			if (screenRenderInfo.renderType < 2) {
 				render_refresh_rendered_image_on_screen();
 			}
-#ifndef RENDER_USING_GDK
 			else {
 				render_recreate_composite_surface (screen.drawing_area);
 				callbacks_force_expose_event_for_screen ();
 			}
-#endif 	
 			/* select the new line */
 			GtkTreeSelection *selection;
 			GtkTreeIter iter;
@@ -1956,12 +1926,10 @@ callbacks_show_color_picker_dialog (gint index){
 		gtk_color_selection_set_current_color (colorsel, &mainProject->file[index]->color);
 	else
 		gtk_color_selection_set_current_color (colorsel, &mainProject->background);
-#ifndef RENDER_USING_GDK
 	if ((screenRenderInfo.renderType >= 2)&&(index >= 0)) {
 		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
 		gtk_color_selection_set_current_alpha (colorsel, mainProject->file[index]->alpha);
 	}
-#endif
 	gtk_widget_show_all((GtkWidget *)cs);
 	if (gtk_dialog_run ((GtkDialog*)cs) == GTK_RESPONSE_OK) {
 		GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
@@ -2266,8 +2234,6 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 	gchar *net_label;
 	gboolean validAperture;
 
-#ifndef RENDER_USING_GDK
-
 	gint index=callbacks_get_selected_row_index();
 	if (index < 0)
 		return;
@@ -2364,7 +2330,6 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_
 	}
 	/* Use separator for different report requests */
 	g_message ("---------------------------------------\n");
-#endif
 }
 
 void
@@ -2442,30 +2407,25 @@ callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_dat
 /* --------------------------------------------------------------------------- */
 void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
-#ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some translations here */
 	gerbv_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
 	callbacks_update_layer_tree();
 	render_clear_selection_buffer ();
 	render_refresh_rendered_image_on_screen ();
-#endif
 }
 
 /* --------------------------------------------------------------------------- */
 void
 callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
-#ifndef RENDER_USING_GDK
 	/* for testing, just hard code in some parameters */
 	gerbv_image_reduce_area_of_selected_objects (screen.selectionInfo.selectedNodeArray, 0.20, 3, 3, 0.01);
 	render_clear_selection_buffer ();
 	render_refresh_rendered_image_on_screen ();
-#endif
 }
 
 /* --------------------------------------------------------------------------- */
 void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
-#ifndef RENDER_USING_GDK
 	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
 		interface_show_alert_dialog("No object is currently selected",
 		                        NULL,
@@ -2496,7 +2456,6 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 
 	render_clear_selection_buffer ();
 	callbacks_update_selected_object_message(FALSE);
-#endif
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2507,7 +2466,6 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	
 	gdk_drawable_get_size (drawable, &screenRenderInfo.displayWidth, &screenRenderInfo.displayHeight);
 
-#ifndef RENDER_USING_GDK
 	/* set this up if cairo is compiled, since we may need to switch over to
 	   using the surface at any time */
 	int x_off=0, y_off=0;
@@ -2536,7 +2494,6 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
                                           GDK_VISUAL_XVISUAL (visual),
                                           screenRenderInfo.displayWidth,
                                           screenRenderInfo.displayHeight);
-#endif
 #endif
 	/* if this is the first time, go ahead and call autoscale even if we don't
 	   have a model loaded */
@@ -2611,7 +2568,6 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
  
 		return FALSE;
 	}
-#ifndef RENDER_USING_GDK
 
 	cairo_t *cr;
 	int width, height;
@@ -2647,7 +2603,6 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	cairo_surface_destroy (buffert);
 #endif
 
-#endif
 	if (screen.tool == MEASURE)
 		render_toggle_measure_line();
 	return FALSE;
@@ -2796,15 +2751,11 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 		case 1 :
 			if (screen.tool == POINTER) {
 				/* select */
-#ifndef RENDER_USING_GDK
 				/* selection will only work with cairo, so do nothing if it's
 				   not compiled */
 				screen.state = IN_SELECTION_DRAG;
 				screen.start_x = event->x;
 				screen.start_y = event->y;
-#else
-				break;
-#endif
 			}
 			else if (screen.tool == PAN) {
 				/* Plain panning */
@@ -2840,7 +2791,6 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			break;
 		case 3 :
 			if (screen.tool == POINTER) {
-#ifndef RENDER_USING_GDK
 				/* if no items are selected, try and find the item the user
 				   is pointing at */
 				if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
@@ -2858,9 +2808,6 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY)
 					gtk_menu_popup(GTK_MENU(screen.win.drawWindowPopupMenu), NULL, NULL, NULL, NULL, 
 			  	 		event->button, event->time);
-#else
-				/* Do nothing if using GDK */
-#endif
 			} else {
 				/* Zoom outline mode initiated */
 				screen.state = IN_ZOOM_OUTLINE;
@@ -2912,7 +2859,6 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 			callbacks_switch_to_normal_tool_cursor (screen.tool);
 		}
 		else if (screen.state == IN_SELECTION_DRAG) {
-#ifndef RENDER_USING_GDK
 			/* selection will only work with cairo, so do nothing if it's
 			   not compiled */
 			gint index=callbacks_get_selected_row_index();
@@ -2937,7 +2883,6 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 			    render_clear_selection_buffer ();
 			    render_refresh_rendered_image_on_screen ();
 			}
-#endif
 		}
 		screen.last_x = screen.last_y = 0;
 		screen.state = NORMAL;
@@ -2949,27 +2894,19 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 gboolean
 callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
-	//switch (screen.state) {
-		//case NORMAL:
-			switch(event->keyval) {
-#ifndef RENDER_USING_GDK
-				case GDK_Escape:
-					if (screen.tool == POINTER) {
-						snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 			"No objects are currently selected");
-				 		callbacks_update_statusbar();
-				 		render_clear_selection_buffer ();
-				 	}
-					break;
-#endif
-				default:
-					break;
-			}
-			//break;
-		//default:
-		//	break;
-	//}
-	    
+	switch(event->keyval) {
+		case GDK_Escape:
+			if (screen.tool == POINTER) {
+				snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+		 			"No objects are currently selected");
+		 		callbacks_update_statusbar();
+		 		render_clear_selection_buffer ();
+		 	}
+			break;
+		default:
+			break;
+	}
+
 	/* Escape may be used to abort outline zoom and just plain repaint */
 	if (event->keyval == GDK_Escape) {
 		screen.state = NORMAL;

@@ -494,11 +494,7 @@ main(int argc, char *argv[])
 	    break;
 	case 'f' :	// Set layer colors to this color (foreground color)
 	    if (optarg == NULL) {
-#ifdef RENDER_USING_GDK
-		fprintf(stderr, "You must give an foreground color in the hex-format <#RRGGBB>.\n");
-#else
 		fprintf(stderr, "You must give an foreground color in the hex-format <#RRGGBB> or <#RRGGBBAA>.\n");
-#endif
 		exit(1);
 	    }
 	    if (((strlen (optarg) != 7)&&(strlen (optarg) != 9))||(optarg[0]!='#')) {
@@ -610,7 +606,6 @@ main(int argc, char *argv[])
 		exportType = 1;
 		exportFromCommandline = TRUE;
 	    }
-#ifndef RENDER_USING_GDK
 	    else if (strcmp (optarg,"pdf") == 0) {
 		exportType = 2;
 		exportFromCommandline = TRUE;
@@ -621,7 +616,6 @@ main(int argc, char *argv[])
 		exportType = 4;
 		exportFromCommandline = TRUE;
 	    }
-#endif
 	    else if (strcmp (optarg,"rs274x") == 0) {
 		exportType = 5;
 		exportFromCommandline = TRUE;
@@ -645,27 +639,18 @@ main(int argc, char *argv[])
 	    printf("Available options:\n");
 	    printf("  -B, --border=<b>                Border around the image in percent of the\n");
 	    printf("                                  width/height. Defaults to 5%%.\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -D, --dpi=<R>                   Resolution (Dots per inch) for the output\n");
-	    printf("                                  bitmap.\n");
-#else
 	    printf("  -D, --dpi=<XxY>or<R>            Resolution (Dots per inch) for the output\n");
 	    printf("                                  bitmap. With the format <XxY>, different\n");
 	    printf("                                  resolutions for X- and Y-direction are used.\n");
 	    printf("                                  With the format <R>, both are the same.\n");
-#endif
 	    printf("  -O, --origin=<XxY>              Use the specified coordinates (in inches)\n");
 	    printf("                                  for the lower left corner.\n");
 	    printf("  -V, --version                   Print version of gerbv.\n");
 	    printf("  -a, --antialias                 Use antialiasing for generated bitmap output.\n");
 	    printf("  -b, --background=<hex>          Use background color <hex> (like #RRGGBB).\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB)\n");
-#else
-            printf("  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB or\n");
-            printf("                                  #RRGGBBAA for setting the alpha).\n");
-#endif
-            printf("                                  Use multiple -f flags to set the color for\n");
+          printf("  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB or\n");
+          printf("                                  #RRGGBBAA for setting the alpha).\n");
+          printf("                                  Use multiple -f flags to set the color for\n");
 	    printf("                                  multiple layers.\n");
 	    printf("  -h, --help                      Print this help message.\n");
 	    printf("  -l, --log=<logfile>             Send error messages to <logfile>.\n");
@@ -681,12 +666,8 @@ main(int argc, char *argv[])
 	    printf("  -T, --translate=<X,Y>           Translate the image by <X,Y> (useful for\n");
 	    printf("                                  arranging panels). Use multiple -T flags\n");
 	    printf("                                  for multiple layers.\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -x, --export=<png>              Export a rendered picture to a PNG file.\n");
-#else
 	    printf("  -x, --export=<png/pdf/ps/svg/   Export a rendered picture to a file with\n");
 	    printf("                rs274x/drill>     the specified format.\n");
-#endif
 
 
 #else
@@ -694,27 +675,18 @@ main(int argc, char *argv[])
 	    printf("Available options:\n");
 	    printf("  -B<b>                   Border around the image in percent of the\n");
 	    printf("                          width/height. Defaults to 5%%.\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -D<R>                   Resolution (Dots per inch) for the output\n");
-	    printf("                          bitmap\n");
-#else
 	    printf("  -D<XxY>or<R>            Resolution (Dots per inch) for the output\n");
 	    printf("                          bitmap. With the format <XxY>, different\n");
 	    printf("                          resolutions for X- and Y-direction are used.\n");
 	    printf("                          With the format <R>, both are the same.\n");
-#endif
 	    printf("  -O<XxY>                 Use the specified coordinates (in inches)\n");
 	    printf("                          for the lower left corner.\n");
     	    printf("  -V                      Print version of gerbv.\n");
     	    printf("  -a                      Use antialiasing for generated bitmap output.\n");
 	    printf("  -b<hexcolor>	      Use background color <hexcolor> (like #RRGGBB)\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB)\n");
-#else
 	    printf("  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n");
 	    printf("                          #RRGGBBAA for setting the alpha).\n");
-#endif
-            printf("                          Use multiple -f flags to set the color for\n");
+          printf("                          Use multiple -f flags to set the color for\n");
 	    printf("                          multiple layers.\n");
 	    printf("  -h                      Print this help message.\n");
 	    printf("  -l<logfile>             Send error messages to <logfile>\n");
@@ -722,7 +694,7 @@ main(int argc, char *argv[])
 	    printf("  -p<prjfile>             Load project file <prjfile>\n");
 	    printf("  -W<WxH>                 Window size in inches <WxH> for the\n");
 	    printf("                          exported image\n");
-       	    printf("  -w<WxH>                 Window size in pixels <WxH> for the\n");
+          printf("  -w<WxH>                 Window size in pixels <WxH> for the\n");
 	    printf("                          exported image. Autoscales to fit\n");
 	    printf("                          if no resolution is specified. If a\n");
 	    printf("                          resolution is specified, it will clip.\n");
@@ -731,12 +703,8 @@ main(int argc, char *argv[])
 	    printf("  -T<X,Y>                 Translate the image by <X,Y> (useful for\n");
 	    printf("                          arranging panels). Use multiple -T flags\n");
 	    printf("                          for multiple layers.\n");
-#ifdef RENDER_USING_GDK
-	    printf("  -x<png>                 Export a rendered picture to a PNG file\n");
-#else
 	    printf("  -x <png/pdf/ps/svg/     Export a rendered picture to a file with\n");
 	    printf("      rs274x/drill>       the specified format\n");
-#endif
 
 #endif /* HAVE_GETOPT_LONG */
 	    exit(1);
@@ -794,11 +762,6 @@ main(int argc, char *argv[])
     }
 
     screen.unit = GERBV_DEFAULT_UNIT;
-#ifdef RENDER_USING_GDK
-    /* GDK renderer needs gtk started up even for png export */
-    gtk_init (&argc, &argv);
-#endif
-
     if (exportFromCommandline) {
 	/* load the info struct with the default values */
 
@@ -876,20 +839,12 @@ main(int argc, char *argv[])
 	    userSuppliedHeight = 1;
 
 
-#ifdef RENDER_USING_GDK
-	gerbv_render_info_t renderInfo = {MIN(userSuppliedDpiX, userSuppliedDpiY), MIN(userSuppliedDpiX, userSuppliedDpiY),
-	    userSuppliedOriginX, userSuppliedOriginY,1, 
-	    userSuppliedWidth,userSuppliedHeight };
-#else	
 	gerbv_render_info_t renderInfo = {userSuppliedDpiX, userSuppliedDpiY, 
 	    userSuppliedOriginX, userSuppliedOriginY, userSuppliedAntiAlias?3:2, 
 	    userSuppliedWidth,userSuppliedHeight };
-#endif
 	
 	if (exportType == 1) {
-#ifdef EXPORT_PNG
 	    gerbv_export_png_file_from_project (mainProject, &renderInfo, exportFilename);
-#endif
 	} else if (exportType == 2) {
 	    gerbv_export_pdf_file_from_project (mainProject, &renderInfo, exportFilename);
 	} else if (exportType == 3) {
@@ -939,9 +894,7 @@ main(int argc, char *argv[])
 	/* exit now and don't start up gtk if this is a command line export */
 	exit(0);
     }
-#ifndef RENDER_USING_GDK
     gtk_init (&argc, &argv);
-#endif
     interface_create_gui (req_width, req_height);
     
     /* we've exited the GTK loop, so free all resources */

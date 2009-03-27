@@ -32,12 +32,8 @@
 gerbv_stats_t *generate_gerber_analysis(void);
 gerbv_drill_stats_t *generate_drill_analysis(void);
 
-#ifdef RENDER_USING_GDK
-/* Nothing for now */
-#else
 void render_recreate_composite_surface ();
 void render_project_to_cairo_target (cairo_t *cr);
-#endif
 
 void
 render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY);
@@ -69,14 +65,11 @@ render_remove_selected_objects_belonging_to_layer (gint index);
 void
 render_free_screen_resources (void);
 
-#ifndef RENDER_USING_GDK
 void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex,
 		gboolean eraseOldSelection);
 void
 render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	gint corner2X, gint corner2Y, gint activeFileIndex, gboolean eraseOldSelection);
-
-#endif
 
 gerbv_render_info_t screenRenderInfo;
 

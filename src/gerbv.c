@@ -66,12 +66,8 @@
 #include "gerber.h"
 #include "drill.h"
 
-#ifdef RENDER_USING_GDK
-  #include "draw-gdk.h"
-#else
-  #include "draw-gdk.h"
-  #include "draw.h"
-#endif
+#include "draw-gdk.h"
+#include "draw.h"
 
 #include "pick-and-place.h"
 
@@ -172,12 +168,10 @@ gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo){
 	gerbv_destroy_image (fileInfo->image);
 	g_free (fileInfo->fullPathname);
 	g_free (fileInfo->name);
-#ifndef RENDER_USING_GDK
 	if (fileInfo->privateRenderData) {
 		cairo_surface_destroy ((cairo_surface_t *)
 			fileInfo->privateRenderData);
 	}			
-#endif
 }
 
 /* ------------------------------------------------------------------ */
@@ -545,18 +539,11 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 			/* 
 			* Find the biggest image and use as a size reference
 			*/
-#ifdef RENDER_USING_GDK
-			minX = info->min_x + info->offsetA;
-			minY = info->min_y + info->offsetB;
-			maxX = info->max_x + info->offsetA;
-			maxY = info->max_y + info->offsetB;
-#else
 			/* cairo info already has offset calculated into min/max */
 			minX = info->min_x;
 			minY = info->min_y;
 			maxX = info->max_x;
 			maxY = info->max_y;
-#endif
 			/* transform the bounding box based on the user transform */
 	
 			cairo_matrix_t fullMatrix;
@@ -762,7 +749,6 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 }
 
 /* ------------------------------------------------------------------ */
-#ifndef RENDER_USING_GDK
 void
 gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerbvProject,
 		cairo_t *cr, gerbv_render_info_t *renderInfo) {
@@ -776,10 +762,8 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerb
 		}
 	}
 }
-#endif
 
 /* ------------------------------------------------------------------ */
-#ifndef RENDER_USING_GDK
 void
 gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t *cr,
 			gerbv_render_info_t *renderInfo) {
@@ -798,20 +782,16 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t 
 		}
 	}
 }
-#endif
 
 /* ------------------------------------------------------------------ */
-#ifndef RENDER_USING_GDK
 void
 gerbv_render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 						gerbv_render_info_t *renderInfo) {
 	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
 	gerbv_render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo);
 }
-#endif
 
 /* ------------------------------------------------------------------ */
-#ifndef RENDER_USING_GDK
 void
 gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *renderInfo){
 	gdouble translateX, translateY;
@@ -838,10 +818,8 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 		cairo y axis points down) */
 	cairo_scale (cr, renderInfo->scaleFactorX, -renderInfo->scaleFactorY);
 }
-#endif
 
 /* ------------------------------------------------------------------ */
-#ifndef RENDER_USING_GDK
 void
 gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo ) {
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
@@ -856,7 +834,6 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 		renderInfo, TRUE, fileInfo->transform);
 	cairo_restore (cr);
 }
-#endif
 
 void
 gerbv_attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList, int n_attr)

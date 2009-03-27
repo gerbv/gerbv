@@ -46,11 +46,8 @@
 #include "interface.h"
 #include "render.h"
 
-#ifdef RENDER_USING_GDK
-  #include "draw-gdk.h"
-#else
-  #include "draw.h"
-#endif
+#include "draw-gdk.h"
+#include "draw.h"
 
 #include "gerbv_icon.h"
 #include "icons.h"
@@ -140,12 +137,10 @@ interface_create_gui (int req_width, int req_height)
 	*/
 	GtkWidget *menubar_tools;
 	GtkWidget *menubar_tools_menu;
-#ifndef RENDER_USING_GDK
 	GtkWidget *toggletoolbutton_pointer;
 	GtkWidget *pointer_tool;
 	GdkPixbuf *pointerpixbuf;
 	GtkWidget *pointerimage;
-#endif
 	GtkWidget *pan_tool;
 	GtkWidget *zoom_tool;
 	GtkWidget *measure_tool;
@@ -164,13 +159,11 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *toolbutton_revert;
 	GtkWidget *toolbutton_save;
 	GtkWidget *separatortoolitem1;
-#ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
 	GtkWidget *print;
 	GtkWidget *toolbutton_print;
 	GtkWidget *separator2;
 	GtkWidget *separatortoolitem2;
-#endif
 #endif
 	GtkWidget *toolbutton_zoom_in;
 	GtkWidget *toolbutton_zoom_out;
@@ -231,9 +224,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *tempMenuItem;
 	
 	GtkStockItem item;
-#ifndef RENDER_USING_GDK
 	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
-#endif
 	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
 	zoompixbuf = gdk_pixbuf_new_from_inline(-1, lzoom, FALSE, NULL);
 	measurepixbuf = gdk_pixbuf_new_from_inline(-1, ruler, FALSE, NULL);
@@ -328,7 +319,6 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, png, _("Export project to a PNG file..."), NULL);
 
 	GtkWidget *rs274x,*drill;
-#ifndef RENDER_USING_GDK
 	GtkWidget *pdf;
 	GtkWidget *svg;
 	GtkWidget *postscript;
@@ -344,7 +334,6 @@ interface_create_gui (int req_width, int req_height)
 	postscript = gtk_menu_item_new_with_mnemonic (_("PostScript..."));
 	gtk_container_add (GTK_CONTAINER (export_menu), postscript);
 	gtk_tooltips_set_tip (tooltips, postscript, _("Export project to a PostScript file"), NULL);
-#endif
 	rs274x = gtk_menu_item_new_with_mnemonic (_("RS-274X (Gerber)..."));
 	gtk_container_add (GTK_CONTAINER (export_menu), rs274x);
 	gtk_tooltips_set_tip (tooltips, rs274x, _("Export layer to a RS-274X (Gerber) file"), NULL);
@@ -357,7 +346,6 @@ interface_create_gui (int req_width, int req_height)
 	separator1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator1);
 	gtk_widget_set_sensitive (separator1, FALSE);
-#ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
 	if (gtk_stock_lookup("gtk-print", &item)) {
 	    gchar new[] = "_Print..."; 
@@ -372,7 +360,6 @@ interface_create_gui (int req_width, int req_height)
 	separator2 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator2);
 	gtk_widget_set_sensitive (separator2, FALSE);
-#endif
 #endif
 	quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
 	gtk_tooltips_set_tip (tooltips, quit, "Quit Gerbv", NULL);
@@ -475,7 +462,6 @@ interface_create_gui (int req_width, int req_height)
 
 	menubar_tools_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menubar_tools), menubar_tools_menu);
-#ifndef RENDER_USING_GDK
 	pointer_tool = gtk_image_menu_item_new_with_mnemonic (_("_Pointer Tool"));
 	/*
 	GtkWidget *tempImage = gtk_image_new_from_pixbuf (pointerpixbuf);
@@ -486,7 +472,6 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_add_accelerator (pointer_tool, "activate", accel_group,
 	                        GDK_F1, (GdkModifierType) 0,
 	                        GTK_ACCEL_VISIBLE);
-#endif
 	pan_tool = gtk_image_menu_item_new_with_mnemonic ("Pa_n Tool");
 	/*
 	tempImage = gtk_image_new_from_pixbuf (movepixbuf);
@@ -574,7 +559,6 @@ interface_create_gui (int req_width, int req_height)
 
 	separatortoolitem1 = (GtkWidget*) gtk_separator_tool_item_new ();
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem1);
-#ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
 	toolbutton_print = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-print");
 	gtk_tooltips_set_tip (tooltips, toolbutton_print, "Print the visible layers", NULL);
@@ -582,7 +566,6 @@ interface_create_gui (int req_width, int req_height)
 
 	separatortoolitem2 = (GtkWidget*) gtk_separator_tool_item_new ();
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem2);
-#endif
 #endif
 	toolbutton_zoom_in = (GtkWidget*) gtk_tool_button_new_from_stock ("gtk-zoom-in");
 	gtk_tooltips_set_tip (tooltips, toolbutton_zoom_in, "Zoom in", NULL);
@@ -613,14 +596,12 @@ interface_create_gui (int req_width, int req_height)
 
 	separatortoolitem4 = (GtkWidget*) gtk_separator_tool_item_new ();
 	gtk_container_add (GTK_CONTAINER (button_toolbar), separatortoolitem4);
-#ifndef RENDER_USING_GDK
 	toggletoolbutton_pointer = (GtkWidget*) gtk_toggle_tool_button_new();
 	pointerimage = gtk_image_new_from_pixbuf(pointerpixbuf);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_pointer),
 					pointerimage);
 	gtk_tooltips_set_tip (tooltips, toggletoolbutton_pointer, "Select objects on the screen", NULL);	
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toggletoolbutton_pointer);
-#endif	
 	toggletoolbutton_pan = (GtkWidget*) gtk_toggle_tool_button_new();
 	moveimage = gtk_image_new_from_pixbuf(movepixbuf);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(toggletoolbutton_pan),
@@ -670,19 +651,14 @@ interface_create_gui (int req_width, int req_height)
 
 	render_combobox = gtk_combo_box_new_text ();
 	gtk_box_pack_start (GTK_BOX (hbox4), render_combobox, TRUE, TRUE, 0);
-#ifdef RENDER_USING_GDK
-	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Normal"));
-	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("XOR"));
-	if (screenRenderInfo.renderType < 2)
-	    gtk_combo_box_set_active (GTK_COMBO_BOX (render_combobox), screenRenderInfo.renderType);
-#else
+
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Fast"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Fast, with XOR"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Normal"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("High quality"));
 	if (screenRenderInfo.renderType < 4)
 	    gtk_combo_box_set_active (GTK_COMBO_BOX (render_combobox), screenRenderInfo.renderType);
-#endif
+
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_box_pack_start (GTK_BOX (vbox10), scrolledwindow1, TRUE, TRUE, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (scrolledwindow1), 2);
@@ -833,13 +809,10 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) save_as, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_PROJECT_AS);
-#ifdef EXPORT_PNG
 	g_signal_connect ((gpointer) png, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                 (gpointer)  CALLBACKS_SAVE_FILE_PNG);
-#endif
 
-#ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) pdf, "activate",
 	                 G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_PDF);
@@ -860,7 +833,6 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) print, "activate",
 	                  G_CALLBACK (callbacks_print_activate),
 	                  NULL);
-#endif
 #endif
 	g_signal_connect ((gpointer) quit, "activate",
 	                  G_CALLBACK (callbacks_quit_activate),
@@ -910,10 +882,8 @@ interface_create_gui (int req_width, int req_height)
 	*/
 
 	/* --- Tools menu --- */
-#ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) pointer_tool, "activate",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 0);
-#endif
 	g_signal_connect ((gpointer) pan_tool, "activate",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 1);
 	g_signal_connect ((gpointer) zoom_tool, "activate",
@@ -951,12 +921,10 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) clear_messages_button, "clicked",
 	                  G_CALLBACK (callbacks_clear_messages_button_clicked),
 	                  NULL);
-#ifndef RENDER_USING_GDK
 #if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) toolbutton_print, "clicked",
 	                  G_CALLBACK (callbacks_print_activate),
 	                  NULL);
-#endif
 #endif
 	g_signal_connect ((gpointer) toolbutton_zoom_in, "clicked",
 	                  G_CALLBACK (callbacks_zoom_in_activate),
@@ -967,10 +935,8 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) toolbutton_zoom_fit, "clicked",
 	                  G_CALLBACK (callbacks_fit_to_window_activate),
 	                  NULL);
-#ifndef RENDER_USING_GDK
 	g_signal_connect ((gpointer) toggletoolbutton_pointer, "clicked",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 0);
-#endif
 	g_signal_connect ((gpointer) toggletoolbutton_pan, "clicked",
 	                  G_CALLBACK (callbacks_change_tool), (gpointer) 1);
 	g_signal_connect ((gpointer) toggletoolbutton_zoom, "clicked",
@@ -1135,9 +1101,7 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.hRuler = hRuler;
 	screen.win.vRuler = vRuler;	
 	screen.win.sidepane_notebook = sidepane_notebook;
-#ifndef RENDER_USING_GDK
 	screen.win.toolButtonPointer = toggletoolbutton_pointer;
-#endif
 	screen.win.toolButtonPan = toggletoolbutton_pan;
 	screen.win.toolButtonZoom = toggletoolbutton_zoom;
 	screen.win.toolButtonMeasure = toggletoolbutton_measure;
@@ -1284,13 +1248,7 @@ interface_create_gui (int req_width, int req_height)
 
 	screen.selectionInfo.selectedNodeArray = g_array_new (FALSE,
 			FALSE, sizeof(gerbv_selection_item_t));
-#ifndef RENDER_USING_GDK
-	/* make pointer tool default on cairo builds */
 	callbacks_change_tool (NULL, (gpointer) 0);
-#else
-	/* make pan tool default for GDK only */
-	callbacks_change_tool (NULL, (gpointer) 1);
-#endif
 	rename_main_window("",mainWindow);
 
 	set_window_icon (mainWindow);
@@ -1308,11 +1266,7 @@ interface_create_gui (int req_width, int req_height)
 void 
 interface_set_render_type (int t)
 {
-#ifdef RENDER_USING_GDK
-    if (t >= 2)
-#else
     if (t >= 4)
-#endif
 	return;
     
     screenRenderInfo.renderType = t;

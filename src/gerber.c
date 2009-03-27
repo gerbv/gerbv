@@ -43,9 +43,7 @@
 
 //#define AMACRO_DEBUG
 
-#ifndef RENDER_USING_GDK
 #include <cairo.h>
-#endif
 
 /* include this for macro enums */
 #include "draw-gdk.h"
@@ -92,10 +90,8 @@ gboolean knockoutMeasure = FALSE;
 gdouble knockoutLimitXmin, knockoutLimitYmin, knockoutLimitXmax, 
     knockoutLimitYmax;
 gerbv_layer_t *knockoutLayer = NULL;
-
-#ifndef RENDER_USING_GDK
 cairo_matrix_t currentMatrix;
-#endif  
+
 
 /* --------------------------------------------------------- */
 gerbv_net_t *
@@ -463,8 +459,6 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		repeat_off_Y = (state->layer->stepAndRepeat.Y - 1) *
 		    state->layer->stepAndRepeat.dist_Y;
 		
-		
-#ifndef RENDER_USING_GDK
 		cairo_matrix_init (&currentMatrix, 1, 0, 0, 1, 0, 0);
 		/* offset image */
 		cairo_matrix_translate (&currentMatrix, image->info->offsetA, 
@@ -505,7 +499,6 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    cairo_matrix_rotate (&currentMatrix, 3 * M_PI / 2);
 		    cairo_matrix_scale (&currentMatrix, 1, -1);
 		}
-#endif
 		/* if it's a macro, step through all the primitive components
 		   and calculate the true bounding box */
 		if ((image->aperture[curr_net->aperture] != NULL) &&
@@ -2622,14 +2615,12 @@ gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
     gdouble ourX1 = x - apertureSizeX1, ourY1 = y - apertureSizeY1;
     gdouble ourX2 = x + apertureSizeX2, ourY2 = y + apertureSizeY2;
     
-#ifndef RENDER_USING_GDK
     /* transform the point to the final rendered position, accounting
        for any scaling, offsets, mirroring, etc */
     /* NOTE: we need to already add/subtract in the aperture size since
        the final rendering may be scaled */
     cairo_matrix_transform_point (&currentMatrix, &ourX1, &ourY1);
     cairo_matrix_transform_point (&currentMatrix, &ourX2, &ourY2);
-#endif
 
     /* check both points against the min/max, since depending on the rotation,
        mirroring, etc, either point could possibly be a min or max */

@@ -56,18 +56,14 @@
 #include "interface.h"
 #include "render.h"
 
-#ifdef RENDER_USING_GDK
-  #include "draw-gdk.h"
+#ifdef WIN32
+#include <cairo-win32.h>
 #else
-  #ifdef WIN32
-    #include <cairo-win32.h>
-  #else
-    #include <cairo-xlib.h>
-  #endif
-  #include <cairo.h>
-  #include "draw-gdk.h"
-  #include "draw.h"
+#include <cairo-xlib.h>
 #endif
+#include <cairo.h>
+#include "draw-gdk.h"
+#include "draw.h"
 
 #define dprintf if(DEBUG) printf
 
@@ -405,7 +401,6 @@ render_draw_measure_distance(void)
 
 /* ------------------------------------------------------ */
 void render_selection_layer (void){
-#ifndef RENDER_USING_GDK
 	cairo_t *cr;
 	
 	if (screen.selectionRenderData) 
@@ -438,7 +433,6 @@ void render_selection_layer (void){
 		}
 		cairo_destroy (cr);
 	}
-#endif
 }
 
 /* ------------------------------------------------------ */
@@ -459,7 +453,6 @@ void render_refresh_rendered_image_on_screen (void) {
 	    		&screen.selection_color);	
 	    dprintf("<---- leaving redraw_pixmap.\n");
 	}
-#ifndef RENDER_USING_GDK
 	else{
 	    int i;
 	    dprintf("    .... Now try rendering the drawing using cairo .... \n");
@@ -487,7 +480,6 @@ void render_refresh_rendered_image_on_screen (void) {
 	    
 	    render_recreate_composite_surface ();
 	}
-#endif
 	/* remove watch cursor and switch back to normal cursor */
 	callbacks_switch_to_correct_cursor ();
 	callbacks_force_expose_event_for_screen();
@@ -522,7 +514,6 @@ render_remove_selected_objects_belonging_to_layer (gint index) {
 }
 
 /* ------------------------------------------------------ */
-#ifndef RENDER_USING_GDK
 gint
 render_create_cairo_buffer_surface () {
 	if (screen.bufferSurface) {
@@ -649,11 +640,9 @@ void render_project_to_cairo_target (cairo_t *cr) {
                                                    
 	cairo_paint (cr);
 }
-#endif  /* RENDER_USING_GDK */
 
 void
 render_free_screen_resources (void) {
-#ifndef RENDER_USING_GDK
 	if (screen.selectionRenderData) 
 		cairo_surface_destroy ((cairo_surface_t *)
 			screen.selectionRenderData);
@@ -663,7 +652,6 @@ render_free_screen_resources (void) {
 	if (screen.windowSurface)
 		cairo_surface_destroy ((cairo_surface_t *)
 			screen.windowSurface);
-#endif
 	if (screen.pixmap) 
 		gdk_pixmap_unref(screen.pixmap);
 }
