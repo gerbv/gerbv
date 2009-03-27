@@ -17,6 +17,10 @@ windows installer.
 
 Supported options:
 
+  --build-only    - Only run the 'make' part of the process.  This is 
+                    shorthand for all of the --skip-* options except
+                    for --skip-build.
+
   --debug         - Omits the compiler flag which prevents
                     a command window from being opened.  This
                     is useful when trying to use debug printf's.
@@ -40,6 +44,8 @@ Supported options:
 
   --skip-install  - Skip the "make install" step of the process.
 
+  --skip-nsis     - Skip the NSIS step of the process.
+
 For the $0 script to work, you must have the gtk_win32 files
 as well as gdlib installed on your system in very specific
 locations.  Edit $0 to change these.  While you are at it, feel
@@ -55,9 +61,18 @@ do_config=yes
 do_build=yes
 do_clean=yes
 do_install=yes
+do_nsis=yes
 config_args=""
 while test $# -ne 0 ; do
 	case $1 in
+		--build-only)
+			do_clean=no
+			do_config=no
+			do_install=no
+			do_nsis=no
+			shift
+			;;
+
 		--debug)
 			if test "X${debug}" = "Xyes" ; then
 				config_args="${config_args} --enable-debug"
@@ -101,6 +116,11 @@ while test $# -ne 0 ; do
 
 		--skip-install)
 			do_install=no
+			shift
+			;;
+
+		--skip-nsis)
+			do_nsis=no
 			shift
 			;;
 
@@ -271,6 +291,7 @@ if test $? -ne 0 ; then
 fi
 fi
 
+if test "$do_nsis" = "yes" ; then
 echo "Creating NSIS script"
 echo "srcdir = ${srcdir}"
 echo "src_dir = ${src_dir}"
@@ -312,5 +333,8 @@ cat > ${bat} << EOF
 
 EOF
 chmod 755 ${bat}
+else
+	echo "Skipping NSIS step per user request"
+fi
 
 
