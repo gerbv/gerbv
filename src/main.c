@@ -62,7 +62,11 @@
 #include "project.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
-#define dprintf if(DEBUG) printf
+#ifdef DEBUG
+#define dprintf printf("%s():  ", __FUNCTION__); printf
+#else
+#define dprintf if(0) printf
+#endif
 
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
