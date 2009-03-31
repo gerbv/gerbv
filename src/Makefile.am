@@ -77,6 +77,10 @@ libgerbv_la_LDFLAGS = -version-info 1:3:0 -no-undefined
 
 gerbv_SOURCES = \
 		opdefines.h \
+		draw.c \
+		draw.h \
+		draw-gdk.c \
+		draw-gdk.h \
 		dynload.c dynload.h \
 		attribute.c attribute.h \
                 lrealpath.c lrealpath.h \
@@ -104,15 +108,6 @@ gerbv_DEPENDENCIES+=	gerbv_icon.o
 
 endif
 
-CAIRO_DRAW=	draw.c draw.h
-GDK_DRAW=	draw-gdk.c draw-gdk.h
-
-if USE_CAIRO
-DRAW=		${CAIRO_DRAW} ${GDK_DRAW}
-else
-DRAW=		${GDK_DRAW}
-endif
-
 callbacks.$(OBJEXT) : authors.c bugs.c
 
 TXT2CL=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;",;g'
@@ -133,7 +128,7 @@ bugs.c: $(top_srcdir)/BUGS Makefile
 
 CLEANFILES=	authors.c bugs.c
 
-EXTRA_DIST=	${CAIRO_DRAW} ${GDK_DRAW} gerbv.rc libgerbv.pc.in run_gerbv.in
+EXTRA_DIST=	gerbv.rc libgerbv.pc.in run_gerbv.in
 
 SCMSUBDIR = scheme
 scmdatadir = $(pkgdatadir)/${SCMSUBDIR}/

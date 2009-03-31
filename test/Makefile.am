@@ -16,11 +16,9 @@ RUN_TESTS=	run_tests.sh
 check_SCRIPTS=		${RUN_TESTS}
 
 # png export is different if we are not using cairo so don't bother
-if USE_CAIRO
 if HAVE_MAGICK
 # uncomment when the testsuite is actually ready.
 TESTS=	${RUN_TESTS}
-endif
 endif
 
 DISTCLEANFILES=	configure.lineno

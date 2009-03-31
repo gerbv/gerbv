@@ -28,13 +28,9 @@ Gerbv is part of the gEDA Project
           * --enable-debug: Program will output lots of debug 
               spew while running. (default = no -> no debug output 
               by default.)
-          * --disable-exportpng: Disable compilation of export 
-              of PNGs. (default = no -> exportpng on by default.)
           * --enable-unit-mm: Set default unit for coordinates in 
               status bar to mm (default = no -> units = inches 
               by default.)
-          * --disable-cairo: Use GDK only for graphics rendering. 
-              (default = no -> both GDK and cairo used by default.)
           * --enable-efence: Link with ElectricFence for malloc 
               debugging (default = no -> efence off by default.)
           * --disable-update-desktop-database: Update desktop icon 
@@ -60,13 +56,9 @@ Gerbv is part of the gEDA Project
           * --enable-debug: Program will output lots of debug 
               spew while running. (default = no -> no debug output 
               by default.)
-          * --disable-exportpng: Disable compilation of export 
-              of PNGs. (default = no -> exportpng on by default.)
           * --enable-unit-mm: Set default unit for coordinates in 
               status bar to mm (default = no -> units = inches 
               by default.)
-          * --disable-cairo: Use GDK only for graphics rendering. 
-              (default = no -> both GDK and cairo used by default.)
           * --enable-efence: Link with ElectricFence for malloc 
               debugging (default = no -> efence off by default.)
           * --disable-update-desktop-database: Update desktop icon 

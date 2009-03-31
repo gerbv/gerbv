@@ -101,20 +101,6 @@ AC_ARG_ENABLE(debug,
     ])
 AC_DEFINE_UNQUOTED(DEBUG, $debug, [Define to 1 to enable debugging code])
 
-dnl --enable-exportpng
-AC_ARG_ENABLE(exportpng,
-    [  --disable-exportpng     Disable PNG export.],
-    [
-        if test $enableval = "yes"; then
-		exportpng=yes
-	  	AC_DEFINE(EXPORT_PNG,,[Support for export of PNG's])
-	fi
-    ],
-    [
-	exportpng=yes
-  	AC_DEFINE(EXPORT_PNG,,[Support for export of PNG's])
-    ])
-
 dnl --enable-unit-mm : Set default unit for coordinates in status bar to mm
 AC_ARG_ENABLE(unit-mm,
     [  --enable-unit-mm        Set default unit for coordinates in status bar to mm],
@@ -127,29 +113,6 @@ if test "$default_unit" = "mm"; then
 	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MMS, [Default unit to display in statusbar])
 else
 	AC_DEFINE(GERBV_DEFAULT_UNIT, GERBV_MILS, [Default unit to display in statusbar])
-fi
-
-dnl --disable-cairo
-use_cairo=yes
-AC_ARG_ENABLE(cairo,
-    [  --disable-cairo         Disable the use of cairo for rendering],
-    [
-        if test "$enableval" = "yes"; then
-		use_cairo=yes
-	else
-		use_cairo=no
-	fi
-    ],
-    [
-	use_cairo=yes
-    ])
-
-AM_CONDITIONAL(USE_CAIRO, test x$use_cairo = xyes)
-if test "$use_cairo" = "yes"; then
-	RENDERER=cairo
-else
-	RENDERER=gdk
-	AC_DEFINE(RENDER_USING_GDK, 1, [Define to use gdk instead of cairo for rendering])
 fi
 
 #
@@ -242,21 +205,14 @@ AC_CHECK_LIB(m, sin)
 # GTK and cairo checks
 #
 
- 
-if test "$use_cairo" = "yes"; then
 
-	PKG_CHECK_MODULES(CAIRO, cairo >= 1.2.0, , [AC_MSG_ERROR([
-*** Cairo > 1.2.0 required but not found.  Please install first or if
-you wish to use the old GDK rendering (with possible loss of some 
-functionality) then use the --disable-cairo argument to configure  ***
+PKG_CHECK_MODULES(CAIRO, cairo >= 1.2.0, , [AC_MSG_ERROR([
+*** Cairo > 1.2.0 required but not found. ***
 Please review the following errors:
 $CAIRO_PKG_ERRORS])]
 )
 
-	CAIRO_VER=`$PKG_CONFIG cairo --modversion`
-else
-	CAIRO_VER="N/A"
-fi
+CAIRO_VER=`$PKG_CONFIG cairo --modversion`
 
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.4.0, , [AC_MSG_ERROR([
 *** GTK >= 2.4.0 is required but was not found.  Please review
@@ -270,38 +226,6 @@ GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 #
 ############################################################
 
-
-############################################################
-#
-# libpng checks
-#
-
-if test "$exportpng" = "yes" ; then
-	AC_PATH_PROG([LIBPNG_CONFIG], [libpng-config], [notfound])
-	if test "$LIBPNG_CONFIG" = "notfound" ; then
-		AC_ERROR([You have requested png export but libpng-config could not be found.  You may
-		build $PACKAGE without png support by using --disable-exportpng])
-	fi
-
-	AC_MSG_CHECKING([for libpng cflags])
-	PNG_CFLAGS="`$LIBPNG_CONFIG --cflags`"
-	AC_MSG_RESULT([$PNG_CFLAGS])
-
-	AC_MSG_CHECKING([for libpng libs])
-	PNG_LIBS="`$LIBPNG_CONFIG --ldflags`"
-	AC_MSG_RESULT([$PNG_LIBS])
-dnl	AC_CHECK_LIB($PNG_LIBS, png_write_info,, 
-dnl	AC_MSG_ERROR(*** Must have libpng to get export-png to work))
-else
-	GDK_PIXBUF_CFLAGS=
-	GDK_PIXBUF_LIBS=
-	PNG_CFLAGS=
-	PNG_LIBS=
-fi
-
-#
-#
-############################################################
 
 ############################################################
 #
@@ -376,8 +300,8 @@ AC_CHECK_FUNCS(realpath canonicalize_file_name)
 libiberty_NEED_DECLARATION(canonicalize_file_name)
 
 
-CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $PNG_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS"
-LIBS="$LIBS $GDK_PIXBUF_LIBS $PNG_LIBS $GTK_LIBS $CAIRO_LIBS"
+CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS"
+LIBS="$LIBS $GDK_PIXBUF_LIBS $GTK_LIBS $CAIRO_LIBS"
 
 
 ############################################################
@@ -481,8 +405,6 @@ AC_MSG_RESULT([
 
    GTK Version:              $GTK_VER
    Cairo Version:            $CAIRO_VER
-
-   Rendering engine:         $RENDERER
 
    Electric Fence Debugging: $with_efence
 
