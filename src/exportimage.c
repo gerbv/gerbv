@@ -59,9 +59,27 @@ void exportimage_render_to_surface_and_destroy (gerbv_project_t *gerbvProject,
 	cairo_surface_destroy (cSurface);
 }
 
+gerbv_render_info_t gerbv_export_autoscale_project (gerbv_project_t *gerbvProject) {
+	gerbv_render_size_t bb;
+	gerbv_render_get_boundingbox(gerbvProject, &bb);
+	// add a border around the bounding box
+	gfloat tempWidth = bb.right  - bb.left;
+	gfloat tempHeight = bb.bottom - bb.top;
+	bb.right += (tempWidth*0.05);
+	bb.left -= (tempWidth*0.05);
+	bb.bottom += (tempHeight*0.05);
+	bb.top -= (tempHeight*0.05);
+	float width  = bb.right  - bb.left + 0.001;	// Plus a little extra to prevent from 
+	float height = bb.bottom - bb.top + 0.001; // missing items due to round-off errors
+
+	gerbv_render_info_t renderInfo = {72, 72, bb.left, bb.top, 3, width*72, height*72};
+	return renderInfo;
+}
+
 void gerbv_export_png_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels,
 		int heightInPixels, gchar const* filename) {
-	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3, widthInPixels, heightInPixels};
+	gerbv_render_info_t renderInfo = {1, 1, 0, 0, 3, widthInPixels, heightInPixels};
+
 	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
 	gerbv_export_png_file_from_project (gerbvProject, &renderInfo, filename);
 }
@@ -76,12 +94,8 @@ void gerbv_export_png_file_from_project (gerbv_project_t *gerbvProject, gerbv_re
 	cairo_surface_destroy (cSurface);
 }
 
-
-void gerbv_export_pdf_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
-		int heightInPoints, gchar const* filename) {
-	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3, widthInPoints, heightInPoints};
-	
-	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
+void gerbv_export_pdf_file_from_project_autoscaled (gerbv_project_t *gerbvProject, gchar const* filename) {
+	gerbv_render_info_t renderInfo = gerbv_export_autoscale_project(gerbvProject);
 	gerbv_export_pdf_file_from_project (gerbvProject, &renderInfo, filename);
 }
 
@@ -93,11 +107,8 @@ void gerbv_export_pdf_file_from_project (gerbv_project_t *gerbvProject, gerbv_re
       exportimage_render_to_surface_and_destroy (gerbvProject, cSurface, renderInfo, filename);
 }
 
-void gerbv_export_postscript_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
-		int heightInPoints, gchar const* filename) {
-	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3, widthInPoints, heightInPoints};
-	
-	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
+void gerbv_export_postscript_file_from_project_autoscaled (gerbv_project_t *gerbvProject, gchar const* filename) {
+	gerbv_render_info_t renderInfo = gerbv_export_autoscale_project(gerbvProject);
 	gerbv_export_postscript_file_from_project (gerbvProject, &renderInfo, filename);
 }
 
@@ -108,11 +119,8 @@ void gerbv_export_postscript_file_from_project (gerbv_project_t *gerbvProject, g
       exportimage_render_to_surface_and_destroy (gerbvProject, cSurface, renderInfo, filename);
 }
 
-void gerbv_export_svg_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPoints,
-		int heightInPoints, gchar const* filename) {
-	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3, widthInPoints, heightInPoints};
-	
-	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
+void gerbv_export_svg_file_from_project_autoscaled (gerbv_project_t *gerbvProject, gchar const* filename) {
+	gerbv_render_info_t renderInfo = gerbv_export_autoscale_project(gerbvProject);
 	gerbv_export_svg_file_from_project (gerbvProject, &renderInfo, filename);
 }
 

@@ -406,13 +406,15 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			rename_main_window(filename, NULL);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_PS)
-			gerbv_export_postscript_file_from_project (mainProject, &screenRenderInfo, filename);
+			gerbv_export_postscript_file_from_project_autoscaled (mainProject, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_PDF)
-			gerbv_export_pdf_file_from_project (mainProject, &screenRenderInfo, filename);
+			gerbv_export_pdf_file_from_project_autoscaled (mainProject, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_SVG)
-			gerbv_export_svg_file_from_project (mainProject, &screenRenderInfo, filename);
+			gerbv_export_svg_file_from_project_autoscaled (mainProject, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_PNG)
-			gerbv_export_png_file_from_project (mainProject, &screenRenderInfo, filename);
+			gerbv_export_png_file_from_project_autoscaled (mainProject,
+				screenRenderInfo.displayWidth, screenRenderInfo.displayHeight,
+				filename);
 		else if (processType == CALLBACKS_SAVE_LAYER_AS) {
 			gint index=callbacks_get_selected_row_index();
 			

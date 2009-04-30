@@ -806,8 +806,6 @@ gerbv_export_png_file_from_project (
 void
 gerbv_export_pdf_file_from_project_autoscaled (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
-		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
-		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
 		gchar const* filename  /*!< the filename for the exported PDF file */
 );
 
@@ -823,8 +821,6 @@ gerbv_export_pdf_file_from_project (
 void
 gerbv_export_postscript_file_from_project_autoscaled (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
-		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
-		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
 		gchar const* filename  /*!< the filename for the exported Postscript file */
 );
 
@@ -840,8 +836,6 @@ gerbv_export_postscript_file_from_project (
 void
 gerbv_export_svg_file_from_project_autoscaled (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
-		int widthInPixels, /*!< the width of the rendered picture (in pixels) */
-		int heightInPixels, /*!< the height of the rendered picture (in pixels) */
 		gchar const* filename  /*!< the filename for the exported   file */
 );
 
