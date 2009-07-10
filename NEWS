@@ -1,7 +1,36 @@
 ========================================================================
+Release Notes for gerbv-2.3.0
+========================================================================
+The following is a summary of the changes which went into gerbv-2.3.0.
+For a complete list of changes, refer to ChangeLog.
+
+- gerbv:     fixed a minor arc rendering bug in fast mode
+- gerbv:     Make the svg/pdf/ps export use a 1:1 scale instead of
+             scaling to fit the page.
+- configure: Always require cairo now since we make use of some of
+             the transformation functions even when using gdk rendering.
+- gerbv:     Fix a bug in the vertical scrollbar calculations.
+- libgerbv:  Fix a bug where apertures < 10 were potentially ignored in
+             some drill files
+- gerbv:     Fix clipping bug when viewing files with image offsets
+- gerbv:     Fix a bug whereclicking on the message tab caused the keyboard
+             accelerators stop working
+- gerbv:     Use a reasonable return code when doing command line processing.
+- libgerbv:  Improve the macro parser.
+- libgerbv:  Allow 0 degree rotation
+- libgerbv:  Fix some drill parser bugs
+- libgerbv:  Support the Excellon "R" (repeat) command
+- testsuite: Add some tests for drill files
+- libgerbv:  Fix a bug in the Excellon export which sometimes dropped the first
+             element.
+- libgerbv:  Fix some additional Excellon export bugs.
+- gerbv:     Add the ability to rotate/translate layers
+- libgerbv:  Fix the pkgconfig file to include some needed dependencies.
+
+========================================================================
 Release Notes for gerbv-2.2.0
 ========================================================================
-The following is a summary off the changes which went into gerbv-2.2.0.
+The following is a summary of the changes which went into gerbv-2.2.0.
 For a complete list of changes, refer to ChangeLog.
 
 - libgerbv:  fixed a bug in the min/max calculation.

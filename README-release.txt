@@ -62,16 +62,16 @@ To make a gerbv release do the following:
 =)	if this is a major release, then tag and branch:
 
 	1. Tag the base of the release branch
-		cvs tag gerbv-2-2-base 
+		cvs tag gerbv-2-3-base 
 
 	2. Create the release branch
-		cvs tag -R -b -r gerbv-2-2-base gerbv-2-2
+		cvs tag -R -b -r gerbv-2-3-base gerbv-2-3
 
 	3. On the trunk, update configure.ac to update the version.
            The rules for versioning is that we append uppercase
            letters to the branch version.
  
-		for example 2.2A after creating the gerbv-2-2 branch
+		for example 2.3A after creating the gerbv-2-3 branch
 		cvs update -PdA
 		vi configure.ac
 		cvs ci configure.ac
@@ -79,8 +79,8 @@ To make a gerbv release do the following:
 	4. On the release branch, update configure.ac to update the
            version.  On a new branch, add a 0RC1 to the teeny number.
 
-		for example 2.2.0RC1.
-		cvs update -PdA -r gerbv-2-2
+		for example 2.3.0RC1.
+		cvs update -PdA -r gerbv-2-3
 		vi configure.ac
 		cvs ci configure.ac
 
@@ -88,20 +88,20 @@ To make a gerbv release do the following:
 
 	5. When the release branch is ready to go,  update configure.ac to
 	   set the final release version.  The first version from a
-	   branch has 0 for the teeny version.  For example, 2.2.0.
+	   branch has 0 for the teeny version.  For example, 2.3.0.
 	   Next tag the release.
-		cvs update -PdA -r gerbv-2-2
+		cvs update -PdA -r gerbv-2-3
 		vi configure.ac
 		cvs ci configure.ac
-		cvs tag -R -r gerbv-2-2 gerbv-2-2-RELEASE
+		cvs tag -R -r gerbv-2-3 gerbv-2-3-RELEASE
 
-	   Update the version on the branch to 2.2.1RC1
-		cvs update -PdA -r gerbv-2-2
+	   Update the version on the branch to 2.3.1RC1
+		cvs update -PdA -r gerbv-2-3
 		vi configure.ac
 		cvs ci configure.ac
 		
 	   Update to the tagged released sources and build tarballs
-		cvs update -PdA -r gerbv-2-2-RELEASE
+		cvs update -PdA -r gerbv-2-3-RELEASE
 		./autogen.sh 
 		./configure --enable-maintainer-mode --disable-update-desktop-database
 		gmake maintainer-clean
@@ -110,17 +110,17 @@ To make a gerbv release do the following:
 		gmake distcheck
 
            If teeny version bumps are made for a bug fix, then the tag name
-	   should be gerbv-2-2-PATCH001 for gerbv-2.2.1,
-	   gerbv-2-2-PATCH002 for gerbv-2.2.2, etc.
+	   should be gerbv-2-3-PATCH001 for gerbv-2.3.1,
+	   gerbv-2-3-PATCH002 for gerbv-2.3.2, etc.
 
 	7. Create checksums
 
-		openssl md5 gerbv-2.2.0.tar.gz > gerbv-2.2.0.cksum
-		openssl rmd160 gerbv-2.2.0.tar.gz >> gerbv-2.2.0.cksum
-		openssl sha1 gerbv-2.2.0.tar.gz >> gerbv-2.2.0.cksum
+		openssl md5 gerbv-2.3.0.tar.gz > gerbv-2.3.0.cksum
+		openssl rmd160 gerbv-2.3.0.tar.gz >> gerbv-2.3.0.cksum
+		openssl sha1 gerbv-2.3.0.tar.gz >> gerbv-2.3.0.cksum
 
 	8. Create a new file release for the package "gerbv" with a release name of
-	   "gerbv-2.2.0" (for gerbv-2.2.0).  Do this by logging into www.sourceforge.net
+	   "gerbv-2.3.0" (for gerbv-2.3.0).  Do this by logging into www.sourceforge.net
 	   and then navigating to
 
 	   https://sourceforge.net/projects/gerbv  (you must be logged in to sourceforge)
@@ -161,10 +161,10 @@ To make a gerbv release do the following:
 
 		cvs update -PdA
 
-=) 	if this is a patch release (2.2.1 for example), then simply
+=) 	if this is a patch release (2.3.1 for example), then simply
 	make desired changes to the branch:
 
-		cvs update -PdA -r gerbv-2-2
+		cvs update -PdA -r gerbv-2-3
 		# make changes
 		cvs ci
 
@@ -173,15 +173,15 @@ To make a gerbv release do the following:
 		cvs ci configure.ac
 
         tag the release
-		cvs tag -R -r gerbv-2-2 gerbv-2-2-PATCH001
+		cvs tag -R -r gerbv-2-3 gerbv-2-3-PATCH001
 
-        update the version on the branch to 2.2.2RC1
+        update the version on the branch to 2.3.2RC1
 		vi configure.ac
 		cvs ci configure.ac
 		
 
         update to the tagged release sources and build tarballs
-		cvs update -PdA -r gerbv-2-2-PATCH001
+		cvs update -PdA -r gerbv-2-3-PATCH001
 		./autogen.sh 
 		./configure --enable-maintainer-mode --disable-update-desktop-database
 		gmake maintainer-clean

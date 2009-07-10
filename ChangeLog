@@ -1,3 +1,251 @@
+2009-07-10 18:11  Dan McMahill <dan at mcmahill dot net>
+
+	* src/Makefile.am: draw.c and draw-gdk.c functions are used in
+	  gerbv.c which is part of libgerbv.  Since we have -no-undefined,
+	  we require libgerbv to be fully self contained so move draw.c and
+	  draw-gdk.c over to libgerbv.	While here bump the age in prep for
+	  a release.
+
+2009-07-01 20:07  Julian Lamb <>
+
+	* src/draw-gdk.c: * apply patch from ineiev to fix small error in
+	  FAST mode arc rendering
+
+2009-04-30 10:50  Julian Lamb <>
+
+	* src/: callbacks.c, exportimage.c, gerbv.h: * rework export
+	  svg/pdf/ps functionality to export images with 1:1 scale.
+	  Previously we autoscaled vector outputs to a 8.5x11 paper size,
+	  but it makes more sense to export true 1:1 scale instead since
+	  vector output formats are usually scaled when viewing. Fixes bug
+	  #2784295.
+
+2009-03-31 08:34  Dan McMahill <dan at mcmahill dot net>
+
+	* README, configure.ac, src/Makefile.am, test/Makefile.am: remove
+	  the logic for disabling cairo.  Even when we render with gdk we
+	  use some of the cairo functions for transformation math.  Also
+	  remove the libpng stuff since we now require cairo.
+
+2009-03-28 00:33  Julian Lamb <>
+
+	* src/callbacks.c: * cleanup a spurious comment accidentally left
+	  in from previous commit
+
+2009-03-28 00:31  Julian Lamb <>
+
+	* src/callbacks.c: * fix error in vertical scrollbar calculations
+	  when zoomed in. The coordinate systems gets a bit confusing, but
+	  I think it's correct now. Hopefully this fixes the bug spotted by
+	  Dan.
+
+2009-03-27 14:02  Julian Lamb <>
+
+	* src/: callbacks.c, callbacks.h, exportimage.c, gerber.c, gerbv.c,
+	  interface.c, main.c, render.c, render.h: * remove all
+	  RENDER_USING_GDK and EXPORT_PNG ifdefs, since we're removing
+	  those compile options from gerbv (see recent gerbv-devel mailing
+	  list discussion).
+
+2009-03-27 09:49  Dan McMahill <dan at mcmahill dot net>
+
+	* src/main.c: add the function name to all dprintf output
+
+2009-03-27 09:48  Dan McMahill <dan at mcmahill dot net>
+
+	* win32/build_gerbv: add a --nsis-only and --skip-nsis option
+
+2009-03-26 14:10  Julian Lamb <>
+
+	* src/gerb_image.c: * fix a few more issues in libgerbv where we
+	  only checked apertures >= 10, which potentially ignored some
+	  apretures in Excellon files (patch by Robert Spanton)
+
+2009-03-24 12:39  Julian Lamb <>
+
+	* doc/example-code/: example1.c, example2.c, example3.c,
+	  example4.c, example5.c, example6.c: * update libgerbv example
+	  source files with the updates command line text for compilation,
+	  since the change to the pkgconfig file now eliminates the need to
+	  specify gtk and glib
+
+2009-03-24 12:27  Julian Lamb <>
+
+	* src/libgerbv.pc.in: * add pkgconfig dependiencies to libgerbv to
+	  reduce some typing during compiling (patch by Robert Spanton)
+
+2009-03-24 09:40  Julian Lamb <>
+
+	* src/: export-rs274x.c, gerber.c: * make sure image rotations stay
+	  within 0-270 range when saving and loading (patch from Todd
+	  Blackmon)
+
+2009-03-19 10:06  Julian Lamb <>
+
+	* src/: draw-gdk.c, interface.c: * restrict the user rotations to
+	  0/90/180/270, since the RS274X spec only allows those values for
+	  image rotations. This fixes a bug where non-orthogonal rotations
+	  don't save correctly, and also some problems with zoom to fit
+	  (noticed by Todd Blackmon).  * implement the layer rotation
+	  RS274X command in the GDK renderer. This fixes the rendering
+	  problem with test-layer-rotation-1.gbx (noticed by Todd
+	  Blackmon).
+
+2009-03-08 23:51  Julian Lamb <>
+
+	* src/: callbacks.c, callbacks.h, export-rs274x.c, interface.c: *
+	  fix bug in saving rotations (radian/degree conflict) * add a menu
+	  option for changing the background * remove the bezeled frame
+	  from the statusbar box, since I think it looks better without.
+	  Feedback welcome, of course.
+
+2009-03-08 18:16  Julian Lamb <>
+
+	* src/draw-gdk.c: * clean out some debug messages
+
+2009-03-08 18:03  Julian Lamb <>
+
+	* src/: callbacks.c, draw-gdk.c, draw-gdk.h, draw.c, draw.h,
+	  export-drill.c, export-rs274x.c, gerbv.c, gerbv.h, interface.c,
+	  interface.h, main.c, render.c: * finish designing the "modify
+	  orientation" dialog window to meet GNOME HIG guidelines * add
+	  logic to dialog to match translation units to the currently
+	  selected units in the main window * MAJOR work to the GDK render
+	  code to be able to rotate/scale/mirror files *reasonably*
+	  well...there are fundamental limits to how good we can make the
+	  GDK render these advanced transformations * rework the autoscale
+	  code to account for user transformations * change the export to
+	  drill and export to rs274x code to save the user transformations
+	  to the file. Translations are actually calculated for every path,
+	  but rotations/scale/mirroring are all done by just using the
+	  RS274X commands. Maybe in the future we can implement it without
+	  the RS274X commands.
+
+2009-03-07 10:41  Julian Lamb <>
+
+	* src/: callbacks.c, callbacks.h, export-rs274x.c, gerbv.c,
+	  gerbv.h, interface.c, interface.h, main.c: * start adding the
+	  code for a layer translate/rotate/scale/mirror dialog box and
+	  functionality. There's still plenty of work to do, so excuse the
+	  mess in the meantime.
+
+2009-03-05 22:58  Julian Lamb <>
+
+	* src/: export-drill.c, export-rs274x.c, gerb_image.c, gerber.c,
+	  gerbv.c: * fix bug when exporting drill files with tool numbers <
+	  10 (noticed by Peter Clifton). Added additional cleanup logic to
+	  correct this issue when exporting files.  * fix bug where HID
+	  attributes were not duplicated during the image duplication,
+	  causing double-free issues when exporting drill files sometimes *
+	  increase the cairo render quality slightly for circles.  If
+	  anyone notices slowdowns, please report them.
+
+2009-03-02 11:01  Julian Lamb <>
+
+	* src/: drill.c, gerbv.c: * fix possible write outside array bounds
+	  (patch by Todd Blackmon) * keep a running default color counter,
+	  to prevent closed and opened files from duplicating the default
+	  color of an opened layer (patch by Todd Blackmon)
+
+2009-02-23 15:56  Julian Lamb <>
+
+	* src/gerb_image.c: * fix excellon drill export bug, which
+	  sometimes deleted the first element in the file during export
+	  (noticed by Peter Clifton, bug #2631416)
+
+2009-02-16 23:05  Julian Lamb <>
+
+	* src/gerber.c: * fix polygon render optimization bug with polygons
+	  from Altrium package (fixes bug 2607102, reported by Todd
+	  Blackmon)
+
+2009-02-16 19:42  Dan McMahill <dan at mcmahill dot net>
+
+	* src/drill.c, test/run_tests.sh, test/tests.list,
+	  test/golden/Makefile.am, test/golden/test-drill-repeat-1.png,
+	  test/inputs/Makefile.am, test/inputs/test-drill-repeat-1.exc: add
+	  support for the excellon R (repeat) command.	Include a testsuite
+	  entry for this.
+
+2009-02-15 23:04  Dan McMahill <dan at mcmahill dot net>
+
+	* src/: callbacks.c, drill.c, drill_stats.c, gerbv.h: Add a total
+	  drill count for the whole board to the drill stats.  Keep stats
+	  on 'R' codes (repeat) in the drill files.  For now (until I
+	  complete implementing R support), give a warning that the R
+	  command is ignored.
+
+2009-02-15 10:52  Julian Lamb <>
+
+	* src/drill.c, test/tests.list,
+	  test/golden/test-drill-leading-zero-1.png,
+	  test/golden/test-drill-trailing-zero-1.png,
+	  test/inputs/test-drill-leading-zero-1.exc,
+	  test/inputs/test-drill-trailing-zero-1.exc: * Add patch by user
+	  to fix drill parsing error with negative numbers using leading
+	  zeros (bug 2601828). Also, added two test cases to start building
+	  a test suite for the drill parser.
+
+2009-02-10 07:10  Dan McMahill <dan at mcmahill dot net>
+
+	* src/run_gerbv.in: allow this script to work when called from
+	  outside the build directory
+
+2009-02-10 07:09  Dan McMahill <dan at mcmahill dot net>
+
+	* src/gerber.c: allow 0 degree rotation
+
+2009-02-09 14:32  Julian Lamb <>
+
+	* src/: amacro.c, draw.c, gerber.c, scheme.c: * allow macro parser
+	  to handle numbers without a zero in front of the decimal (fixes
+	  rendering bug spotted by Dan) * fix speedup code for rendering of
+	  certain macros * draw 0 width macro lines in cairo as 1 pixel
+	  wide * fix compiler warning in scheme.c
+
+2009-01-28 20:08  Dan McMahill <dan at mcmahill dot net>
+
+	* src/main.c: do not return 1 when just doing a command line
+	  processing.  make does not like that
+
+2009-01-28 12:00  Julian Lamb <>
+
+	* src/: callbacks.c, interface.c: * fix a bug where clicking on the
+	  message tab made keyboard accelerators stop working
+
+2009-01-28 11:15  Julian Lamb <>
+
+	* src/: draw-gdk.c, draw.c, interface.c: * fix clipping bug when
+	  viewing files with image offsets (noticed by Dan) * add key
+	  accelerator hints in the menus for zoom and fit functions, and
+	  added accelerator "Q" for the object query (Dan feature request)
+
+2009-01-21 23:54  Dan McMahill <dan at mcmahill dot net>
+
+	* README-release.txt: note how to change the default SF download
+	  file
+
+2009-01-21 20:48  Dan McMahill <dan at mcmahill dot net>
+
+	* README-release.txt: update with the latest in how sourceforge
+	  does things
+
+2009-01-21 19:13  Dan McMahill <dan at mcmahill dot net>
+
+	* configure.ac: set rev after 2.2.0 release
+
+2009-01-21 19:12  Dan McMahill <dan at mcmahill dot net>
+
+	* configure.ac: set version for 2.2.0 release
+
+2009-01-21 19:11  Dan McMahill <dan at mcmahill dot net>
+
+	* configure.ac: bump rev after 2.2 branch
+
+2009-01-21 19:09  Dan McMahill <dan at mcmahill dot net>
+
+	* ChangeLog, NEWS: update for 2.2.0 release
+
 2009-01-21 19:06  Dan McMahill <dan at mcmahill dot net>
 
 	* README-release.txt: add some notes about the NEWS file
