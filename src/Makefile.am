@@ -39,7 +39,11 @@ pkgconfig_DATA = libgerbv.pc
 libgerbv_la_SOURCES= \
 		amacro.c amacro.h \
 		common.h tooltable.c \
-		${DRAW} drill.c drill.h \
+		draw.c \
+		draw.h \
+		draw-gdk.c \
+		draw-gdk.h \
+		drill.c drill.h \
 		exportimage.c \
 		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
 		gerber.h gerbv.c gerbv.h gerbv_icon.h \
@@ -73,14 +77,10 @@ libgerbv_la_SOURCES= \
 # 6. If any interfaces have been removed since the last public release, then
 #    set age to 0.
 #
-libgerbv_la_LDFLAGS = -version-info 1:3:0 -no-undefined
+libgerbv_la_LDFLAGS = -version-info 1:4:0 -no-undefined
 
 gerbv_SOURCES = \
 		opdefines.h \
-		draw.c \
-		draw.h \
-		draw-gdk.c \
-		draw-gdk.h \
 		dynload.c dynload.h \
 		attribute.c attribute.h \
                 lrealpath.c lrealpath.h \
