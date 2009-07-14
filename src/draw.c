@@ -533,9 +533,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
 	gboolean invertPolarity = FALSE;
 	gdouble minX=0, minY=0, maxX=0, maxY=0;
-
+	gdouble criticalRadius;
 	gdouble scaleX = transform.scaleX;
 	gdouble scaleY = transform.scaleY;
+
 	if (transform.mirrorAroundX)
 		scaleY *= -1;
 	if (transform.mirrorAroundY)
@@ -563,8 +564,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
 					renderInfo->scaleFactorY);
 	}
-
-	gdouble criticalRadius;
 
     /* do initial justify */
 	cairo_translate (cairoTarget, image->info->imageJustifyOffsetActualA,
