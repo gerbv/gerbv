@@ -12,7 +12,7 @@ used in the printed circuit board manufacturing process.
 files produced by the program PCB (http://pcb.sf.net).
 
 .SH OPTIONS
-.l
+
 .B Warning! 
 On some platforms, which hasn't long option available, only
 short options are available.
