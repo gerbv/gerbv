@@ -616,7 +616,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		cairo_rotate (cairoTarget, net->layer->rotation);
 		/* handle the layer polarity */
 		if ((net->layer->polarity == GERBV_POLARITY_CLEAR)) {
-			cairo_set_operator (cairoTarget, drawOperatorClear);
+			//cairo_set_operator (cairoTarget, drawOperatorClear);
 		}
 		else {
 			cairo_set_operator (cairoTarget, drawOperatorDark);
@@ -682,7 +682,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				|| (net->boundingBox.left+sr_y > maxX)
 				|| (net->boundingBox.top+sr_y < minY)
 				|| (net->boundingBox.bottom+sr_y > maxY))) {
-			break;
+			continue;
 		}
 		
 		x1 = net->start_x + sr_x;

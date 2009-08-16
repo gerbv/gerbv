@@ -995,7 +995,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					|| (net->boundingBox.left+sr_y > maxX)
 					|| (net->boundingBox.top+sr_y < minY)
 					|| (net->boundingBox.bottom+sr_y > maxY))) {
-				break;
+				continue;
 			}
 
 		/* 
