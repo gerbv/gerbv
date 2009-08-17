@@ -679,7 +679,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		
 		if ((useOptimizations) &&
 				((net->boundingBox.right+sr_x < minX)
-				|| (net->boundingBox.left+sr_y > maxX)
+				|| (net->boundingBox.left+sr_x > maxX)
 				|| (net->boundingBox.top+sr_y < minY)
 				|| (net->boundingBox.bottom+sr_y > maxY))) {
 			continue;
