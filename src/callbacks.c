@@ -1997,6 +1997,14 @@ void
 callbacks_change_layer_orientation_clicked  (GtkButton *button, gpointer userData){
 	gint index = callbacks_get_selected_row_index();
 
+	if (index < 0) {
+		interface_show_alert_dialog("No layers are currently loaded",
+	                        "A layer must be loaded before the orientation can be modified.",
+	                        FALSE,
+	                        NULL);
+		return;
+	}
+        
 	interface_show_modify_orientation_dialog(&mainProject->file[index]->transform,screen.unit);
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree ();	
@@ -2433,7 +2441,7 @@ void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
 		interface_show_alert_dialog("No object is currently selected",
-		                        NULL,
+		                        "Objects must be selected using the pointer tool before they can be deleted.",
 		                        FALSE,
 		                        NULL);
 		return;
