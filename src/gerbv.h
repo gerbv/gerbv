@@ -944,7 +944,7 @@ gerbv_HID_Attribute *
 gerbv_attribute_dup (gerbv_HID_Attribute *, int);
 
 #if defined(__cplusplus)
-z}
+}
 #endif
 
 #endif /* __GERBV_H__ */
