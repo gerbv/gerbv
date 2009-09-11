@@ -58,6 +58,10 @@ the command "man gerbv") or go to the Gerbv homepage for documentation (http://g
 #ifndef __GERBV_H__
 #define __GERBV_H__
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -938,5 +942,9 @@ gerbv_attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList, int n
 
 gerbv_HID_Attribute *
 gerbv_attribute_dup (gerbv_HID_Attribute *, int);
+
+#if defined(__cplusplus)
+z}
+#endif
 
 #endif /* __GERBV_H__ */
