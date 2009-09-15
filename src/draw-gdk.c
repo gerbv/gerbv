@@ -890,11 +890,11 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	cairo_matrix_scale (&scaleMatrix, scale, scale);
 	/* offset image */
 
-	cairo_matrix_translate (&fullMatrix, transform.translateX, transform.translateY);
+	cairo_matrix_translate (&fullMatrix, transform.translateX, -1*transform.translateY);
 	// don't use mirroring for the scale matrix
 	gdouble scaleX = transform.scaleX;
 	gdouble scaleY = -1*transform.scaleY;
-	cairo_matrix_scale (&scaleMatrix, scaleX, -1*scaleY);
+	cairo_matrix_scale (&scaleMatrix, scaleX, scaleY);
 	if (transform.mirrorAroundX)
 		scaleY *= -1;
 	if (transform.mirrorAroundY)
