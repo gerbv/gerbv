@@ -322,25 +322,27 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
     
     dprintf("In open_image, now error check file....\n");
     error = gerbv_image_verify(parsed_image);
+
     if (error) {
-	GERB_COMPILE_ERROR("%s: Parse error:\n", filename);
-	if (error & GERB_IMAGE_MISSING_NETLIST)
-	    GERB_COMPILE_ERROR("* Missing netlist\n");
+	if (error & GERB_IMAGE_MISSING_NETLIST) {
+	    GERB_COMPILE_ERROR("Missing netlist - aborting file read\n");
+	    GERB_COMPILE_ERROR("\n");
+	    gerbv_destroy_image(parsed_image);
+	    return -1;
+	}
+	/* if the error was one of the following, try to open up the file anyways in case
+	   the file is a poorly formatted RS-274X file */
 	if (error & GERB_IMAGE_MISSING_FORMAT)
-	    GERB_COMPILE_ERROR("* Missing format\n");
-	if (error & GERB_IMAGE_MISSING_APERTURES) 
-	    GERB_COMPILE_ERROR("* Missing apertures/drill sizes\n");
+	    g_warning("Missing format in file...trying to load anyways\n");
+	if (error & GERB_IMAGE_MISSING_APERTURES) {
+	    g_warning("Missing apertures/drill sizes...trying to load anyways\n");
+	    /* step through the file and check for aperture references. For each one found, create
+	       a dummy aperture holder to visually draw something on the screen */
+	    gerbv_image_create_dummy_apertures (parsed_image);
+	}
 	if (error & GERB_IMAGE_MISSING_INFO)
-	    GERB_COMPILE_ERROR("* Missing info\n");
-	GERB_COMPILE_ERROR("\n");
-	GERB_COMPILE_ERROR("You probably tried to read an RS-274D file, which gerbv doesn't support\n");
-	gerbv_destroy_image(parsed_image);
-	return -1;
+	    g_warning("Missing info...trying to load anyways\n");
     }
-    
-    /* Used to debug parser */
-    //if (gerbvProject->dump_parsed_image)
-	//gerb_image_dump(parsed_image);
     
     /*
      * If reload, just exchange the image. Else we have to allocate
@@ -458,10 +460,15 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 		isPnpFile = TRUE;
 	}
     } else if (gerber_is_rs274d_p(fd)) {
-	dprintf("Found RS-274D file");
-	GERB_COMPILE_ERROR("%s: Found RS-274D file -- not supported by gerbv.\n", filename);
-	parsed_image = NULL;
-
+	dprintf("Most likely found a RS-274D file...trying to open anyways");
+	g_warning("Most likely found a RS-274D file...trying to open anyways");
+	if ((!foundBinary || forceLoadFile)) {
+		/* figure out the directory path in case parse_gerb needs to
+		 * load any include files */
+		gchar *currentLoadDirectory = g_path_get_dirname (filename);
+		parsed_image = parse_gerb(fd, currentLoadDirectory);
+		g_free (currentLoadDirectory);
+	}
     } else {
 	/* This is not a known file */
 	dprintf("Unknown filetype");

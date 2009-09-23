@@ -944,3 +944,18 @@ gerbv_image_return_next_renderable_object (gerbv_net_t *oldNet) {
 		return currentNet->next;
 	}
 }
+
+void
+gerbv_image_create_dummy_apertures (gerbv_image_t *parsed_image) {
+	gerbv_net_t *currentNet;
+		
+	/* run through and find last net pointer */
+	for (currentNet = parsed_image->netlist; currentNet->next; currentNet = currentNet->next){
+		if (parsed_image->aperture[currentNet->aperture] == NULL) {
+			parsed_image->aperture[currentNet->aperture] = g_new0 (gerbv_aperture_t, 1);
+			parsed_image->aperture[currentNet->aperture]->type = GERBV_APTYPE_CIRCLE;
+			parsed_image->aperture[currentNet->aperture]->parameter[0] = 0;
+			parsed_image->aperture[currentNet->aperture]->parameter[1] = 0;
+		}
+	}
+}

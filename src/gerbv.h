@@ -904,7 +904,12 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, /*!< the image to dra
 		gdouble width, /*!< the width of the drawn rectangle */
 		gdouble height /*!< the height of the drawn rectangle */
 );
-			
+
+//! Create any missing apertures in the specified image
+void
+gerbv_image_create_dummy_apertures (gerbv_image_t *parsed_image /*!< the image to repair */
+);
+		
 /*! Create new struct for holding drill stats */
 gerbv_drill_stats_t *
 gerbv_drill_stats_new(void);
