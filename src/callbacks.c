@@ -558,6 +558,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     GString *aperture_use_report_string = g_string_new(NULL);
     gerbv_aperture_list_t *my_aperture_list;
     int idx;
+    int aperture_count = 0;
 
     /* First get a report of stats & errors accumulated from all layers */
     stats_report = generate_gerber_analysis();
@@ -820,8 +821,11 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				  my_aperture_list->number,
 				  my_aperture_list->count
 	       );
+	   aperture_count += my_aperture_list->count;
       }
     }
+    g_string_append_printf(aperture_use_report_string,
+         "\nTotal number of aperture uses: %d\n", aperture_count);
 
 
     /* Create top level dialog window for report */
