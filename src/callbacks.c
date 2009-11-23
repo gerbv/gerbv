@@ -2183,12 +2183,12 @@ callbacks_update_layer_tree (void) {
 					startChar[0] = 'M';
 					numberOfModifications++;
 				}
-				if ((abs(mainProject->file[idx]->transform.translateX) > 0.000001) ||
+				if ((fabs(mainProject->file[idx]->transform.translateX) > 0.000001) ||
 						(fabs(mainProject->file[idx]->transform.translateY) > 0.000001)) {
 					startChar[0] = 'T';
 					numberOfModifications++;
 				}
-				if ((abs(mainProject->file[idx]->transform.scaleX - 1) > 0.000001) ||
+				if ((fabs(mainProject->file[idx]->transform.scaleX - 1) > 0.000001) ||
 						(fabs(mainProject->file[idx]->transform.scaleY - 1) > 0.000001)) {
 					startChar[0] = 'S';
 					numberOfModifications++;
