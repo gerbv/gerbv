@@ -255,11 +255,13 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    break;
 	case '%':
 	    dprintf("... Found %% code\n");
-	    parse_rs274x(levelOfRecursion, fd, image, state, curr_net, stats, directoryPath);
 	    while (1) {
+	    	parse_rs274x(levelOfRecursion, fd, image, state, curr_net, stats, directoryPath);
 		int c = gerb_fgetc(fd);
 		if(c == EOF || c == '%')
 		    break;
+		// loop again to catch multiple blocks on the same line (separated by * char)
+		fd->ptr--;
 	    }
 	    break;
 	case '*':  
@@ -1754,7 +1756,8 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 				 GERBV_MESSAGE_ERROR);
 	    g_free(string);
 	}
-	break;
+	// return, since we want to skip the later back-up loop
+	return;
 	/* Layer */
     case A2I('L','N'): /* Layer Name */
 	state->layer = gerbv_image_return_new_layer (state->layer);
@@ -1923,7 +1926,12 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 			     GERBV_MESSAGE_ERROR);
 	g_free(string);
     }
-    
+    // make sure we read until the trailing * character
+    // first, backspace once in case we already read the trailing *
+    fd->ptr--;
+    int c = gerb_fgetc(fd);
+    while ((c != EOF) && (c != '*'))
+    	c = gerb_fgetc(fd);
     return;
 } /* parse_rs274x */
 
