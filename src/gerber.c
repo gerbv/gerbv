@@ -805,27 +805,19 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	    found_ADD = TRUE;
             dprintf ("found_ADD\n");
 	}
-	if (g_strstr_len(buf, len, "D00")) {
+	if (g_strstr_len(buf, len, "D00") || g_strstr_len(buf, len, "D0")) {
 	    found_D0 = TRUE;
             dprintf ("found_D0\n");
 	}
-	if (g_strstr_len(buf, len, "D02")) {
+	if (g_strstr_len(buf, len, "D02") || g_strstr_len(buf, len, "D2")) {
 	    found_D2 = TRUE;
             dprintf ("found_D2\n");
 	}
-	if (g_strstr_len(buf, len, "M0")) {
+	if (g_strstr_len(buf, len, "M00") || g_strstr_len(buf, len, "M0")) {
 	    found_M0 = TRUE;
             dprintf ("found_M0\n");
 	}
-	if (g_strstr_len(buf, len, "M00")) {
-	    found_M0 = TRUE;
-            dprintf ("found_M0\n");
-	}
-	if (g_strstr_len(buf, len, "M2")) {
-	    found_M2 = TRUE;
-            dprintf ("found_M2\n");
-	}
-	if (g_strstr_len(buf, len, "M02")) {
+	if (g_strstr_len(buf, len, "M02") || g_strstr_len(buf, len, "M2")) {
 	    found_M2 = TRUE;
             dprintf ("found_M2\n");
 	}
@@ -904,19 +896,16 @@ gerber_is_rs274d_p(gerb_file_t *fd)
 	if (g_strstr_len(buf, len, "%ADD")) {
 	    found_ADD = TRUE;
 	}
-	if (g_strstr_len(buf, len, "D00")) {
+	if (g_strstr_len(buf, len, "D00") || g_strstr_len(buf, len, "D0")) {
 	    found_D0 = TRUE;
 	}
-	if (g_strstr_len(buf, len, "D02")) {
+	if (g_strstr_len(buf, len, "D02") || g_strstr_len(buf, len, "D2")) {
 	    found_D2 = TRUE;
 	}
-	if (g_strstr_len(buf, len, "M0")) {
+	if (g_strstr_len(buf, len, "M00") || g_strstr_len(buf, len, "M0")) {
 	    found_M0 = TRUE;
 	}
-	if (g_strstr_len(buf, len, "M00")) {
-	    found_M0 = TRUE;
-	}
-	if (g_strstr_len(buf, len, "M02")) {
+	if (g_strstr_len(buf, len, "M02") || g_strstr_len(buf, len, "M2")) {
 	    found_M2 = TRUE;
 	}
 	if (g_strstr_len(buf, len, "*")) {
@@ -1712,7 +1701,10 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	a = (gerbv_aperture_t *) g_new0 (gerbv_aperture_t,1);
 
 	ano = parse_aperture_definition(fd, a, image, scale);
-	if ((ano >= 0) && (ano <= APERTURE_MAX)) {
+	if (ano == -1) {
+		/* error with line parse, so just quietly ignore */
+	}
+	else if ((ano >= 0) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->state->unit;
 	    image->aperture[ano] = a;
 	    dprintf("     In parse_rs274x, adding new aperture to aperture list ...\n");
