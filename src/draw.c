@@ -521,7 +521,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					gdouble pixelWidth,
 					gchar drawMode, gerbv_selection_info_t *selectionInfo,
 					gerbv_render_info_t *renderInfo, gboolean allowOptimization,
- 					gerbv_user_transformation_t transform){
+ 					gerbv_user_transformation_t transform, gboolean limitPixelSize){
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
 	gdouble p1, p2, p3, p4, p5, dx, dy;
@@ -742,8 +742,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				/* NOTE: also, make sure all lines are at least 1 pixel wide, so they
 				   always show up at low zoom levels */
 				
-				if (image->aperture[net->aperture]->parameter[0] > pixelWidth)
-					criticalRadius = image->aperture[net->aperture]->parameter[0]/2.0;
+				if ((image->aperture[net->aperture]->parameter[0] < pixelWidth)&&
+				(limitPixelSize))
+					criticalRadius = pixelWidth/2.0;
 				/* 
 				else if (image->aperture[net->aperture]->parameter[0] == 0)
 					criticalRadius = pixelWidth/2.0;
@@ -753,7 +754,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					break;
 				*/
 				else
-					criticalRadius = pixelWidth/2.0;
+					criticalRadius = image->aperture[net->aperture]->parameter[0]/2.0;
+
 				cairo_set_line_width (cairoTarget, criticalRadius*2.0);
 				switch (net->interpolation) {
 					case GERBV_INTERPOLATION_x10 :

@@ -1856,7 +1856,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    state->layer->stepAndRepeat.dist_Y = 0.0;
 	    break;
 	}
-	while ((op[0] != '*')&&(op[0] != EOF)) { 
+	while ((op[0] != '*')&&(op[0] != EOF)) {
 	    switch (op[0]) {
 	    case 'X':
 		state->layer->stepAndRepeat.X = gerb_fgetint(fd, NULL);

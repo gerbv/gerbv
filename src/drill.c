@@ -397,13 +397,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    gerb_ungetc (fd);
 	    tmps = get_line (fd);
 	    if (strcmp (tmps, "DETECT,ON") == 0 ||
-		strcmp (tmps, "DETECT,GERBV_APERTURE_STATE_OFF") == 0) {
+		strcmp (tmps, "DETECT,OFF") == 0) {
 		gchar *tmps2;
 		gchar *tmps3;
 		if (strcmp (tmps, "DETECT,ON") == 0)
 		    tmps3 = "ON";
 		else
-		    tmps3 = "GERBV_APERTURE_STATE_OFF";
+		    tmps3 = "OFF";
 
 		/* broken tool detect on/off.  Silently ignored. */
 		if (stats->detect) {

@@ -765,7 +765,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerb
 	for(i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
 
-		    gerbv_render_layer_to_cairo_target_without_transforming(cr, gerbvProject->file[i], renderInfo);
+		    gerbv_render_layer_to_cairo_target_without_transforming(cr, gerbvProject->file[i], renderInfo, FALSE);
 		}
 	}
 }
@@ -795,7 +795,7 @@ void
 gerbv_render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 						gerbv_render_info_t *renderInfo) {
 	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
-	gerbv_render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo);
+	gerbv_render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo, TRUE);
 }
 
 /* ------------------------------------------------------------------ */
@@ -828,7 +828,7 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo ) {
+gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean limitPixelSize) {
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
 		(double) fileInfo->color.green/G_MAXUINT16,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
@@ -838,7 +838,7 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 	
 	draw_image_to_cairo_target (cr, fileInfo->image,
 		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL,
-		renderInfo, TRUE, fileInfo->transform);
+		renderInfo, TRUE, fileInfo->transform, limitPixelSize);
 	cairo_restore (cr);
 }
 

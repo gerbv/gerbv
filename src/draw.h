@@ -47,7 +47,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					gdouble pixelWidth,
 					gchar drawMode, gerbv_selection_info_t *selectionInfo,
 					gerbv_render_info_t *renderInfo, gboolean allowOptimization,
- 					gerbv_user_transformation_t transform);
+ 					gerbv_user_transformation_t transform, gboolean limitPixelSize);
 
 
 

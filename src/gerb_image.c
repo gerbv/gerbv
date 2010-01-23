@@ -664,6 +664,15 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, gdouble coordinateX,
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = GERBV_INTERPOLATION_PAREA_START;
 	
+	/* go to start point (we need this to create correct RS274X export code) */
+	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
+	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
+	currentNet->aperture_state = GERBV_APERTURE_STATE_OFF;
+	currentNet->start_x = coordinateX;
+	currentNet->start_y = coordinateY;
+	currentNet->stop_x = coordinateX;
+	currentNet->stop_y = coordinateY;
+	
 	/* draw the 4 corners */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
