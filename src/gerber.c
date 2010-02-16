@@ -2275,6 +2275,16 @@ parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
     ad = gerb_fgetstring(fd, '*');
     token = strtok(ad, ",");
     
+    if (token == NULL) {
+		string = g_strdup_printf("Invalid aperture definition in file \n%s\n", 
+					 fd->filename);
+		gerbv_stats_add_error(stats->error_list,
+				     -1,
+				      string,
+				     GERBV_MESSAGE_ERROR);	
+		g_free(string);
+		return -1;
+    }
     if (strlen(token) == 1) {
 	switch (token[0]) {
 	case 'C':
