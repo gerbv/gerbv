@@ -244,13 +244,51 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	case 'I':
 	    dprintf("... Found I code\n");
 	    stats->I++;
-	    state->delta_cp_x = gerb_fgetint(fd, NULL);
+	    coord = gerb_fgetint(fd, &len);
+	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
+
+		switch ((image->format->y_int + image->format->y_dec) - len) {
+		case 5:
+		    coord *= 10;
+		case 4:
+		    coord *= 10;
+		case 3:
+		    coord *= 10;
+		case 2:
+		    coord *= 10;
+		case 1:
+		    coord *= 10;
+		    break;
+		default:
+		    ;
+		}
+	    }
+	    state->delta_cp_x = coord;
 	    state->changed = 1;
 	    break;
 	case 'J':
 	    dprintf("... Found J code\n");
 	    stats->J++;
-	    state->delta_cp_y = gerb_fgetint(fd, NULL);
+	    coord = gerb_fgetint(fd, &len);
+	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
+
+		switch ((image->format->y_int + image->format->y_dec) - len) {
+		case 5:
+		    coord *= 10;
+		case 4:
+		    coord *= 10;
+		case 3:
+		    coord *= 10;
+		case 2:
+		    coord *= 10;
+		case 1:
+		    coord *= 10;
+		    break;
+		default:
+		    ;
+		}
+	    }
+	    state->delta_cp_y = coord;
 	    state->changed = 1;
 	    break;
 	case '%':
@@ -296,8 +334,6 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    curr_net->stop_y = (double)state->curr_y / y_scale;
 	    delta_cp_x = (double)state->delta_cp_x / x_scale;
 	    delta_cp_y = (double)state->delta_cp_y / y_scale;
-	    
-	    
 	    switch (state->interpolation) {
 	    case GERBV_INTERPOLATION_CW_CIRCULAR :
 		curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
