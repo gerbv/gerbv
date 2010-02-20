@@ -74,14 +74,14 @@ To make a gerbv release do the following:
 =)	if this is a major release, then tag and branch:
 
         1. Create the release branch and push to the remote repository
-                git branch gerbv-2-3
-                git push origin gerbv-2-3
+                git branch gerbv-2-4
+                git push origin gerbv-2-4
 
 	2. On the trunk, update configure.ac to update the version.
            The rules for versioning is that we append uppercase
            letters to the branch version.
  
-           For example 2.3A after creating the gerbv-2-3 branch
+           For example 2.4A after creating the gerbv-2-4 branch
                 git checkout master
                 vi configure.ac
                 git commit configure.ac
@@ -89,9 +89,9 @@ To make a gerbv release do the following:
 
 	3. On the release branch, update configure.ac to update the
            version.  On a new branch, add a 0RC1 to the teeny number.
-           for example 2.3.0RC1.
+           for example 2.4.0RC1.
 
-                git checkout gerbv-2-3
+                git checkout gerbv-2-4
                 vi configure.ac
                 git commit configure.ac
                 git push
@@ -104,9 +104,9 @@ To make a gerbv release do the following:
 
 	4. When the release branch is ready to go,  update configure.ac to
 	   set the final release version.  The first version from a
-	   branch has 0 for the teeny version.  For example, 2.3.0.
+	   branch has 0 for the teeny version.  For example, 2.4.0.
 
-                git checkout gerbv-2-3
+                git checkout gerbv-2-4
                 vi configure.ac
                 git commit configure.ac
                 ./autogen.sh
@@ -115,17 +115,17 @@ To make a gerbv release do the following:
 
 	   Next tag the release.
 
-                git tag -a gerbv-2-3-RELEASE
+                git tag -a gerbv-2-4-RELEASE
                 git push --tags
 
-	   Update the version on the branch to 2.3.1RC1
-                git checkout gerbv-2-3
+	   Update the version on the branch to 2.4.1RC1
+                git checkout gerbv-2-4
                 vi configure.ac
                 git commit configure.ac
                 git push
 		
 	   Update to the tagged released sources and build tarballs
-                git checkout gerbv-2-3-RELEASE
+                git checkout gerbv-2-4-RELEASE
 		./autogen.sh 
 		./configure --enable-maintainer-mode --disable-update-desktop-database
 		gmake maintainer-clean
@@ -134,17 +134,17 @@ To make a gerbv release do the following:
 		gmake distcheck
 
            If teeny version bumps are made for a bug fix, then the tag name
-	   should be gerbv-2-3-PATCH001 for gerbv-2.3.1,
-	   gerbv-2-3-PATCH002 for gerbv-2.3.2, etc.
+	   should be gerbv-2-4-PATCH001 for gerbv-2.4.1,
+	   gerbv-2-4-PATCH002 for gerbv-2.4.2, etc.
 
 	5. Create checksums
 
-		openssl md5 gerbv-2.3.0.tar.gz > gerbv-2.3.0.cksum
-		openssl rmd160 gerbv-2.3.0.tar.gz >> gerbv-2.3.0.cksum
-		openssl sha1 gerbv-2.3.0.tar.gz >> gerbv-2.3.0.cksum
+		openssl md5 gerbv-2.4.0.tar.gz > gerbv-2.4.0.cksum
+		openssl rmd160 gerbv-2.4.0.tar.gz >> gerbv-2.4.0.cksum
+		openssl sha1 gerbv-2.4.0.tar.gz >> gerbv-2.4.0.cksum
 
 	6. Create a new file release for the package "gerbv" with a release name of
-	   "gerbv-2.3.0" (for gerbv-2.3.0).  Do this by logging into www.sourceforge.net
+	   "gerbv-2.4.0" (for gerbv-2.4.0).  Do this by logging into www.sourceforge.net
 	   and then navigating to
 
 	   https://sourceforge.net/projects/gerbv  (you must be logged in to sourceforge)
@@ -173,13 +173,13 @@ To make a gerbv release do the following:
 
 		git checkout master
 
-=) 	if this is a patch release (2.3.1 for example), then simply
+=) 	if this is a patch release (2.4.1 for example), then simply
 	make desired changes to the branch:
 
-		git checkout gerbv-2-3
+		git checkout gerbv-2-4
 		# make changes
 		git commit
-                git tag -a gerbv-2-3-PATCH001
+                git tag -a gerbv-2-4-PATCH001
                 git push
 
 
