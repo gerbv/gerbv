@@ -1,4 +1,29 @@
 ========================================================================
+Release Notes for gerbv-2.4.0
+========================================================================
+The following is a summary of the changes which went into gerbv-2.4.0.
+For a complete list of changes, refer to ChangeLog.  This release
+is primarily a bug fix release.  A number of corner cases are handled
+more smoothly now.
+
+- libgerbv:  fix bug parsing cirular moves with trailing zero suppression.
+- libgerbv:  catch null strtok results in the aperture parser.  Causes
+             a more graceful failure when parsing bad input files.
+- gerbv:     fix a bug in the rendering of text in exported PDF files
+- libgerbv:  fix bugs in the file format recognition code
+- libgerbv:  allow the RS-274X parser to handle multiple blocks within
+             a single line per the RS-274X spec.
+- gerbv:     Fix sidebar bug displaying small scale and translations in X
+- gerbv:     Show the total aperture uses in the analysis tool
+- gerbv:     Fix regression in FAST mode rendering of flashed apertures
+- libgerbv:  If given an RS-274D file, create dummy apertures
+- gerbv:     Fix FAST mode translation error in Y
+- libgerbv:  Add #ifdef's to gerbv.h to allow use in a C++ program
+- gerbv:     Fix segfaults if trying to change orientation of an empty layer
+- man page:  Remove spurious line
+- gerbv:     Update some information in the "About..." dialog
+
+========================================================================
 Release Notes for gerbv-2.3.0
 ========================================================================
 The following is a summary of the changes which went into gerbv-2.3.0.
