@@ -41,7 +41,12 @@ To make a gerbv release do the following:
 	./configure --disable-update-desktop-database
 	gmake distcheck
 
-=)	cvs ci
+=)	commit and push any changes which were needed to fix 'distcheck' problems.
+        Of course if the changes aren't related then they should be committed in
+        multiple commits.
+
+        git commit <files>
+        git push <files>
 
 =)      Read the section in src/Makefile.am about the shared library versioning
         and make sure we have done the right thing.  Check in src/Makefile.am
@@ -52,56 +57,75 @@ To make a gerbv release do the following:
 =)      if there were any new developers added then update the
         ./utils/umap file.
 
-=)	update the ChangeLog with 'cvs2cl.pl'.
-        ./utils/cvs2cl.pl -U ./utils/umap
+=)	update the ChangeLog with 'git2cl'.
+	./utils/git2cl -O > ChangeLog
 
 =)	update the NEWS file with some sort of release notes.
         I typically try to condense what I see in ChangeLog
-	Check in changes to  NEWS and ChangeLog
+	You can find the number of commits with something like
+
+            awk '/^2008-11-28/ {print "Changes: " c ; exit} /^20[01][0-9]/ {c++}' ChangeLog
+
+        Commit and push NEWS and ChangeLog:
+
+        git commit NEWS ChangeLog
+        git push
 
 =)	if this is a major release, then tag and branch:
 
-	1. Tag the base of the release branch
-		cvs tag gerbv-2-3-base 
+        1. Create the release branch and push to the remote repository
+                git branch gerbv-2-3
+                git push origin gerbv-2-3
 
-	2. Create the release branch
-		cvs tag -R -b -r gerbv-2-3-base gerbv-2-3
-
-	3. On the trunk, update configure.ac to update the version.
+	2. On the trunk, update configure.ac to update the version.
            The rules for versioning is that we append uppercase
            letters to the branch version.
  
-		for example 2.3A after creating the gerbv-2-3 branch
-		cvs update -PdA
-		vi configure.ac
-		cvs ci configure.ac
+           For example 2.3A after creating the gerbv-2-3 branch
+                git checkout master
+                vi configure.ac
+                git commit configure.ac
+                git push
 
-	4. On the release branch, update configure.ac to update the
+	3. On the release branch, update configure.ac to update the
            version.  On a new branch, add a 0RC1 to the teeny number.
+           for example 2.3.0RC1.
 
-		for example 2.3.0RC1.
-		cvs update -PdA -r gerbv-2-3
-		vi configure.ac
-		cvs ci configure.ac
+                git checkout gerbv-2-3
+                vi configure.ac
+                git commit configure.ac
+                git push
 
-	4a.Ask users to test the branch.
+           NOTE:  if you are not going to do a release candidate step,
+                  then skip this push and directly put in the release
+                  version.
 
-	5. When the release branch is ready to go,  update configure.ac to
+	3a.Ask users to test the branch.
+
+	4. When the release branch is ready to go,  update configure.ac to
 	   set the final release version.  The first version from a
 	   branch has 0 for the teeny version.  For example, 2.3.0.
+
+                git checkout gerbv-2-3
+                vi configure.ac
+                git commit configure.ac
+                ./autogen.sh
+                git commit -a  # after we expunge all generate files from git, we can skip this one
+                git push
+
 	   Next tag the release.
-		cvs update -PdA -r gerbv-2-3
-		vi configure.ac
-		cvs ci configure.ac
-		cvs tag -R -r gerbv-2-3 gerbv-2-3-RELEASE
+
+                git tag -a gerbv-2-3-RELEASE
+                git push --tags
 
 	   Update the version on the branch to 2.3.1RC1
-		cvs update -PdA -r gerbv-2-3
-		vi configure.ac
-		cvs ci configure.ac
+                git checkout gerbv-2-3
+                vi configure.ac
+                git commit configure.ac
+                git push
 		
 	   Update to the tagged released sources and build tarballs
-		cvs update -PdA -r gerbv-2-3-RELEASE
+                git checkout gerbv-2-3-RELEASE
 		./autogen.sh 
 		./configure --enable-maintainer-mode --disable-update-desktop-database
 		gmake maintainer-clean
@@ -113,29 +137,17 @@ To make a gerbv release do the following:
 	   should be gerbv-2-3-PATCH001 for gerbv-2.3.1,
 	   gerbv-2-3-PATCH002 for gerbv-2.3.2, etc.
 
-	7. Create checksums
+	5. Create checksums
 
 		openssl md5 gerbv-2.3.0.tar.gz > gerbv-2.3.0.cksum
 		openssl rmd160 gerbv-2.3.0.tar.gz >> gerbv-2.3.0.cksum
 		openssl sha1 gerbv-2.3.0.tar.gz >> gerbv-2.3.0.cksum
 
-	8. Create a new file release for the package "gerbv" with a release name of
+	6. Create a new file release for the package "gerbv" with a release name of
 	   "gerbv-2.3.0" (for gerbv-2.3.0).  Do this by logging into www.sourceforge.net
 	   and then navigating to
 
 	   https://sourceforge.net/projects/gerbv  (you must be logged in to sourceforge)
-
-	   Pick Admin->File Releases
-
-	   Next to the "gerbv" package, click "Add Release"
-
-           In the "Step 1:  Edit Existing Release" section, paste in the section of the NEWS
-	   for this version.  Check the "Preserve my pre-formatted text" radio button and click
-	   "Submit/Refresh".
-
-           In the "Step 2: Add Files To This Release" section follow the "upload new files" link
-	   and then in the next page the "Web Upload" link.  You will have to log in to
-	   sourceforge again.
 
            Upload the .tar.gz, .cksum, and if you built one, the windows installer.
 
@@ -153,40 +165,22 @@ To make a gerbv release do the following:
            In the "Step 4:  Email Release Notice" section, check the "I'm sure" 
 	   radio button and click the "Send Notice" button.
         
-	 9. Have a project admin go to the Admin->File Releases page and then
+	 7. Have a project admin go to the Admin->File Releases page and then
 	    follow the "Create/Edit Download page" to change the default download
 	    file to the new release.
 
-	10. Return to your regularly scheduled trunk development
+	 8. Return to your regularly scheduled trunk development
 
-		cvs update -PdA
+		git checkout master
 
 =) 	if this is a patch release (2.3.1 for example), then simply
 	make desired changes to the branch:
 
-		cvs update -PdA -r gerbv-2-3
+		git checkout gerbv-2-3
 		# make changes
-		cvs ci
+		git commit
+                git tag -a gerbv-2-3-PATCH001
+                git push
 
-        update the version for the release 
-		vi configure.ac
-		cvs ci configure.ac
-
-        tag the release
-		cvs tag -R -r gerbv-2-3 gerbv-2-3-PATCH001
-
-        update the version on the branch to 2.3.2RC1
-		vi configure.ac
-		cvs ci configure.ac
-		
-
-        update to the tagged release sources and build tarballs
-		cvs update -PdA -r gerbv-2-3-PATCH001
-		./autogen.sh 
-		./configure --enable-maintainer-mode --disable-update-desktop-database
-		gmake maintainer-clean
-		./autogen.sh 
-		./configure --disable-update-desktop-database
-		gmake distcheck
 
 
