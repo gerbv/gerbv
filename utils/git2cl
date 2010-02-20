@@ -426,7 +426,9 @@ while (my $_l = <$fh>) {
     }
 
     if ($done) {
-	print (strftime "%Y-%m-%d  $author\n\n", @date);
+	my $now = (strftime "%Y-%m-%d  $author\n\n", @date);
+	$now =~ s/[ \t]+\n/\n/g;
+	print "$now";
 
 	my $files = join (", ", @files);
 	$files = mywrap ("\t", "\t", "* $files");
@@ -438,10 +440,12 @@ while (my $_l = <$fh>) {
 	my $files_last_line_len = 0;
 	$files_last_line_len = last_line_len($files) + 1;
 	my $msg = wrap_log_entry($comment, "\t", 69-$files_last_line_len, 69);
+	$msg = "$files: $msg\n";
 
+	# clean up any whitespace at the end of lines
 	$msg =~ s/[ \t]+\n/\n/g;
 
-	print "$files: $msg\n";
+	print "$msg";
 
 	@date = ();
 	$author = "";
@@ -455,10 +459,16 @@ while (my $_l = <$fh>) {
 
 if (@date + 0)
 {
-    print (strftime "%Y-%m-%d  $author\n\n", @date);
+    my $when = (strftime "%Y-%m-%d  $author\n\n", @date);
+    $when =~ s/[ \t]+\n/\n/g;
+    print "$when";
+
     my $msg = wrap_log_entry($comment, "\t", 69, 69);
+    $msg = "\t* $msg\n";
+
+    # clean up any whitespace at the end
     $msg =~ s/[ \t]+\n/\n/g;
-    print "\t* $msg\n";
+    print "$msg";
 }
 
 __DATA__
