@@ -77,7 +77,7 @@ libgerbv_la_SOURCES= \
 # 6. If any interfaces have been removed since the last public release, then
 #    set age to 0.
 #
-libgerbv_la_LDFLAGS = -version-info 1:4:0 -no-undefined
+libgerbv_la_LDFLAGS = -version-info 1:5:0 -no-undefined
 
 gerbv_SOURCES = \
 		opdefines.h \
