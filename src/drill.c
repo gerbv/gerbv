@@ -518,6 +518,9 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 							 GERBV_MESSAGE_WARNING);
 			       }
 			   }
+			   else
+			   /* unget the char in case we just advanced past a new line char */
+			   	gerb_ungetc (fd);
 		       }
 		   }
 		   break;
