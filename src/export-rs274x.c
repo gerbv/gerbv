@@ -61,8 +61,8 @@ export_rs274x_write_macro (FILE *fd, gerbv_aperture_t *currentAperture,
 			
 			fprintf(fd, "4,%d,%d,\n",(int) ls->parameter[OUTLINE_EXPOSURE],
 				numberOfPoints);
-			
-			for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
+			/* add 1 point for the starting point here */
+			for (pointCounter=0; pointCounter <= numberOfPoints; pointCounter++) {
 			    fprintf(fd, "%f,%f,",ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X],
 					   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_Y]);
 			}
