@@ -295,7 +295,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    dprintf("... Found %% code\n");
 	    while (1) {
 	    	parse_rs274x(levelOfRecursion, fd, image, state, curr_net, stats, directoryPath);
+	    	/* advance past any whitespace here */
 		int c = gerb_fgetc(fd);
+		while ((c == '\n')||(c == '\r')||(c == ' ')||(c == '\t')||(c == 0))
+			c = gerb_fgetc(fd);
 		if(c == EOF || c == '%')
 		    break;
 		// loop again to catch multiple blocks on the same line (separated by * char)
