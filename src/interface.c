@@ -382,7 +382,7 @@ interface_create_gui (int req_width, int req_height)
 	                        GDK_Delete, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
 
 	modify_selected = gtk_menu_item_new_with_mnemonic (_("_Modify layer orientation"));
-	gtk_tooltips_set_tip (tooltips, delete_selected, 
+	gtk_tooltips_set_tip (tooltips, modify_selected, 
 			      "Translate, zoom, rotate, or mirror the active layer", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_edit_menu), modify_selected);
 
