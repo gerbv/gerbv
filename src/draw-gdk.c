@@ -531,19 +531,19 @@ gerbv_gdk_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, double *p,
 
     points[2].x = (int)round((p[x_lower_left_idx]  + p[width_idx])
 			     * scale);
-    points[2].y = (int)round((p[y_lower_left_idx]  - p[height_idx])
+    points[2].y = (int)round((p[y_lower_left_idx]  + p[height_idx])
 			     * scale);
 
     points[3].x = (int)round(p[x_lower_left_idx] * scale);
-    points[3].y = (int)round((p[y_lower_left_idx] - p[height_idx])
+    points[3].y = (int)round((p[y_lower_left_idx] + p[height_idx])
 			     * scale);
 
     for (i = 0; i < nuf_points; i++) {
 	points[i] = rotate_point(points[i], p[rotation_idx]);
-	points[i].x += x;
-	points[i].y += y;
+	points[i].x = x + points[i].x;
+	points[i].y = y - points[i].y;
     }
-    
+
     gdk_gc_copy(local_gc, gc);
 
     /* Exposure */
