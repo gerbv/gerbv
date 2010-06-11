@@ -41,7 +41,7 @@ main(int argc, char *argv[]) {
 	/* export the first (and only) image in the project, which will be the
 	   one we just loaded */
 	gerbv_export_rs274x_file_from_image ("example1-output.gbx",
-			mainProject->file[0]->image);
+			mainProject->file[0]->image, NULL);
 
 	/* destroy the top-level structure and free all memory */
 	gerbv_destroy_project (mainProject);

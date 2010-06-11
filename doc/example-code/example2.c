@@ -55,7 +55,7 @@ main(int argc, char *argv[]) {
 	gerbv_image_copy_image (duplicatedImage, &newTransformation, originalImage);
 	
 	/* export the merged image to a new rs274x file */
-	gerbv_export_rs274x_file_from_image ("example2-output.gbx",	originalImage);
+	gerbv_export_rs274x_file_from_image ("example2-output.gbx",	originalImage, NULL);
 
 	/* destroy all created structures */
 	gerbv_destroy_image (originalImage);

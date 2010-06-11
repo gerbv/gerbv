@@ -199,14 +199,22 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
 	gboolean insidePolygon=FALSE;
-
+	gerbv_user_transformation_t *thisTransform;
+	
+	if (transform != NULL) {
+		thisTransform = transform;
+	}
+	else {
+		gerbv_user_transformation_t identityTransform = {0,0,1,1,0,FALSE,FALSE,FALSE};
+		thisTransform = &identityTransform;
+	}
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
 		return FALSE;
 	}
 	
 	/* duplicate the image, cleaning it in the process */
-	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, transform);
+	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, thisTransform);
 	
 	/* write header info */
 	fprintf(fd, "G04 This is an RS-274x file exported by *\n");
@@ -233,8 +241,8 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	if (image->info->plotterFilm)
 		fprintf(fd, "%%PF%s*%%\n",image->info->plotterFilm);
 	/* image rotation */
-	if ((image->info->imageRotation != 0.0)||(transform->rotation != 0.0))
-		fprintf(fd, "%%IR%d*%%\n",(int) ((image->info->imageRotation + transform->rotation)*180/M_PI)%360);
+	if ((image->info->imageRotation != 0.0)||(thisTransform->rotation != 0.0))
+		fprintf(fd, "%%IR%d*%%\n",(int) ((image->info->imageRotation + thisTransform->rotation)*180/M_PI)%360);
 	if ((image->info->imageJustifyTypeA != GERBV_JUSTIFY_NOJUSTIFY) ||
 		(image->info->imageJustifyTypeB != GERBV_JUSTIFY_NOJUSTIFY)) {
 		fprintf(fd, "%%IJA");
@@ -251,13 +259,13 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 
 	}
 	/* handle scale user orientation transforms */
-	if ((fabs(transform->scaleX - 1) > 0.00001) ||
-	(fabs(transform->scaleY - 1) > 0.00001)) {
-		fprintf(fd, "%%SFA%.4fB%.4f*%%\n",transform->scaleX,transform->scaleY);
+	if ((fabs(thisTransform->scaleX - 1) > 0.00001) ||
+	(fabs(thisTransform->scaleY - 1) > 0.00001)) {
+		fprintf(fd, "%%SFA%.4fB%.4f*%%\n",thisTransform->scaleX,thisTransform->scaleY);
 	}
 	/* handle mirror image user orientation transform */
-	if ((transform->mirrorAroundX)||(transform->mirrorAroundY)) {
-		fprintf(fd, "%%MIA%dB%d*%%\n",transform->mirrorAroundY,transform->mirrorAroundX);
+	if ((thisTransform->mirrorAroundX)||(thisTransform->mirrorAroundY)) {
+		fprintf(fd, "%%MIA%dB%d*%%\n",thisTransform->mirrorAroundY,thisTransform->mirrorAroundX);
 	}
 	
 	/* define all apertures */

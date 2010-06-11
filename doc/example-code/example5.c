@@ -53,7 +53,7 @@ main(int argc, char *argv[]) {
 	gerbv_image_create_rectangle_object (workingImage, 3, 1.3, 0.2, 0.4);
 
 	/* export the drawn image to a new rs274x file */
-	gerbv_export_rs274x_file_from_image ("example5-output.gbx",	workingImage);
+	gerbv_export_rs274x_file_from_image ("example5-output.gbx",	workingImage, NULL);
 
 	/* destroy all created structures */
 	gerbv_destroy_image (workingImage);

@@ -53,7 +53,7 @@ main(int argc, char *argv[]) {
 	}
 
 	/* export the modified image to a new rs274x file */
-	gerbv_export_rs274x_file_from_image ("example4-output.gbx", workingImage);
+	gerbv_export_rs274x_file_from_image ("example4-output.gbx", workingImage, NULL);
 
 	/* destroy all created structures */
 	gerbv_destroy_image (workingImage);
