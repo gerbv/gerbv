@@ -192,6 +192,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
 		
 		switch ((image->format->x_int + image->format->x_dec) - len) {
+		case 7:
+		    coord *= 10;
+		case 6:
+		    coord *= 10;
 		case 5:
 		    coord *= 10;
 		case 4:
@@ -220,6 +224,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
 
 		switch ((image->format->y_int + image->format->y_dec) - len) {
+		case 7:
+		    coord *= 10;
+		case 6:
+		    coord *= 10;
 		case 5:
 		    coord *= 10;
 		case 4:
@@ -248,6 +256,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
 
 		switch ((image->format->y_int + image->format->y_dec) - len) {
+		case 7:
+		    coord *= 10;
+		case 6:
+		    coord *= 10;
 		case 5:
 		    coord *= 10;
 		case 4:
@@ -273,6 +285,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
 
 		switch ((image->format->y_int + image->format->y_dec) - len) {
+		case 7:
+		    coord *= 10;
+		case 6:
+		    coord *= 10;
 		case 5:
 		    coord *= 10;
 		case 4:
