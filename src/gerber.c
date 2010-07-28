@@ -75,12 +75,6 @@ static void calc_cirseg_sq(struct gerbv_net *net, int cw,
 static void calc_cirseg_mq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 
-static void
-gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
-			  gdouble x, gdouble y, gdouble apertureSizeX1,
-			  gdouble apertureSizeX2,gdouble apertureSizeY1,
-			  gdouble apertureSizeY2);
-
 
 static void gerber_update_any_running_knockout_measurements(gerbv_image_t *image);
 
@@ -691,14 +685,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 					     
 		}
 		/* update the info bounding box with this latest bounding box */
-		if (boundingBox.left < image->info->min_x)
-			image->info->min_x = boundingBox.left;
-		if (boundingBox.right+repeat_off_X > image->info->max_x)
-			image->info->max_x = boundingBox.right+repeat_off_X;
-		if (boundingBox.bottom < image->info->min_y)
-			image->info->min_y = boundingBox.bottom;
-		if (boundingBox.top+repeat_off_Y > image->info->max_y)
-			image->info->max_y = boundingBox.top+repeat_off_Y;
+		gerber_update_image_min_max(&boundingBox, repeat_off_X, repeat_off_Y, image);
+		
 		/* optionally update the knockout measurement box */
 		if (knockoutMeasure) {
 			if (boundingBox.left < knockoutLimitXmin)
@@ -2671,7 +2659,19 @@ gerber_calculate_final_justify_effects(gerbv_image_t *image)
 } /* gerber_calculate_final_justify_effects */
 
 
-static void
+void gerber_update_image_min_max (gerbv_render_size_t *boundingBox, double repeat_off_X,
+		double repeat_off_Y, gerbv_image_t* image) {
+	if (boundingBox->left < image->info->min_x)
+		image->info->min_x = boundingBox->left;
+	if (boundingBox->right+repeat_off_X > image->info->max_x)
+		image->info->max_x = boundingBox->right+repeat_off_X;
+	if (boundingBox->bottom < image->info->min_y)
+		image->info->min_y = boundingBox->bottom;
+	if (boundingBox->top+repeat_off_Y > image->info->max_y)
+		image->info->max_y = boundingBox->top+repeat_off_Y;
+}
+
+void
 gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
 			  gdouble x, gdouble y, gdouble apertureSizeX1,
 			  gdouble apertureSizeX2,gdouble apertureSizeY1,

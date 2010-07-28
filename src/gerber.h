@@ -69,6 +69,13 @@ gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_nets
 gboolean
 gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
 		gerbv_aperture_type_t apertureType, gdouble parameter1, gdouble parameter2);
+		
+void gerber_update_image_min_max (gerbv_render_size_t *boundingBox, double repeat_off_X,
+		double repeat_off_Y, gerbv_image_t* image);
+void gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
+			  gdouble x, gdouble y, gdouble apertureSizeX1,
+			  gdouble apertureSizeX2,gdouble apertureSizeY1,
+			  gdouble apertureSizeY2);
 #ifdef __cplusplus
 }
 #endif

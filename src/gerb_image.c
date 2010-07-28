@@ -681,24 +681,36 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, gdouble coordinateX,
 	currentNet->start_y = coordinateY;
 	currentNet->stop_x = coordinateX + width;
 	currentNet->stop_y = coordinateY;
-	
+	gerber_update_min_and_max (&currentNet->boundingBox,currentNet->stop_x,currentNet->stop_y, 
+		0,0,0,0);
+	gerber_update_image_min_max (&currentNet->boundingBox, 0, 0, image);
+		
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->stop_x = coordinateX + width;
 	currentNet->stop_y = coordinateY + height;
+	gerber_update_min_and_max (&currentNet->boundingBox,currentNet->stop_x,currentNet->stop_y, 
+		0,0,0,0);
+	gerber_update_image_min_max (&currentNet->boundingBox, 0, 0, image);
 	
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->stop_x = coordinateX;
 	currentNet->stop_y = coordinateY + height;
+	gerber_update_min_and_max (&currentNet->boundingBox,currentNet->stop_x,currentNet->stop_y, 
+		0,0,0,0);
+	gerber_update_image_min_max (&currentNet->boundingBox, 0, 0, image);
 	
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
 	currentNet->interpolation = GERBV_INTERPOLATION_LINEARx1;
 	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->stop_x = coordinateX;
 	currentNet->stop_y = coordinateY;
+	gerber_update_min_and_max (&currentNet->boundingBox,currentNet->stop_x,currentNet->stop_y, 
+		0,0,0,0);
+	gerber_update_image_min_max (&currentNet->boundingBox, 0, 0, image);
 	
 	/* create the polygon end node */
 	currentNet = gerber_create_new_net (currentNet, NULL, NULL);
@@ -764,6 +776,21 @@ gerbv_image_create_arc_object (gerbv_image_t *image, gdouble centerX, gdouble ce
 	currentNet->cirseg = g_new0 (gerbv_cirseg_t,1);
 	*(currentNet->cirseg) = cirSeg;
 	
+	gdouble angleDiff = currentNet->cirseg->angle2 - currentNet->cirseg->angle1;
+	gint i, steps = abs(angleDiff);
+	for (i=0; i<=steps; i++){
+		gdouble tempX = currentNet->cirseg->cp_x + currentNet->cirseg->width / 2.0 *
+				 cos ((currentNet->cirseg->angle1 +
+				 (angleDiff * i) / steps)*M_PI/180);
+		gdouble tempY = currentNet->cirseg->cp_y + currentNet->cirseg->width / 2.0 *
+				 sin ((currentNet->cirseg->angle1 +
+				 (angleDiff * i) / steps)*M_PI/180);
+		gerber_update_min_and_max (&currentNet->boundingBox,
+			       tempX, tempY, 
+			       lineWidth/2,lineWidth/2,
+			       lineWidth/2,lineWidth/2);
+	}
+	gerber_update_image_min_max (&currentNet->boundingBox, 0, 0, image);	
 	return;
 }
 
@@ -793,6 +820,11 @@ gerbv_image_create_line_object (gerbv_image_t *image, gdouble startX, gdouble st
 	currentNet->stop_x = endX;
 	currentNet->stop_y = endY;
 
+	gerber_update_min_and_max (&currentNet->boundingBox,currentNet->stop_x,currentNet->stop_y, 
+		lineWidth/2,lineWidth/2,lineWidth/2,lineWidth/2);
+	gerber_update_min_and_max (&currentNet->boundingBox,currentNet->start_x,currentNet->start_y, 
+		lineWidth/2,lineWidth/2,lineWidth/2,lineWidth/2);
+	gerber_update_image_min_max (&currentNet->boundingBox, 0, 0, image);
 	return;
 }
 
