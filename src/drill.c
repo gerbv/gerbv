@@ -880,6 +880,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 				if(buf[i]=='\n' && buf[i+1] != ';' && buf[i+1] != '\r' && buf[i+1] != '\n'){
 					end_comments=TRUE;
 					buf=&tbuf[i+1];	/* set rest of parser to end of comments  */
+					
 				}
 			}
 			if(!end_comments)
@@ -890,7 +891,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	}
 
 	/* First look through the file for indications of its type */
-
+	len = strlen(buf);
 	/* check that file is not binary (non-printing chars) */
 	for (i = 0; i < len; i++) {
 	    ascii = (int) buf[i];
