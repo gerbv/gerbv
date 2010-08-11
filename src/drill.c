@@ -850,7 +850,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 gboolean
 drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 {
-    char *buf;
+    char *buf=NULL, *tbuf;
     int len = 0;
     char *letter;
     int ascii;
@@ -864,13 +864,30 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     gboolean found_T = FALSE;
     gboolean found_X = FALSE;
     gboolean found_Y = FALSE;
+    gboolean end_comments=FALSE;
  
-    buf = g_malloc(MAXL);
-    if (buf == NULL) 
-	GERB_FATAL_ERROR("malloc buf failed while checking for drill file.\n");
+    tbuf = g_malloc(MAXL);
+    if (tbuf == NULL) 
+		GERB_FATAL_ERROR("malloc buf failed while checking for drill file.\n");
 
-    while (fgets(buf, MAXL, fd->fd) != NULL) {
-	len = strlen(buf);
+    while (fgets(tbuf, MAXL, fd->fd) != NULL) {
+	len = strlen(tbuf);
+	buf=tbuf;
+	/* check for comments at top of file.  */
+	if(!end_comments){
+		if(g_strstr_len(buf, len, ";")!=NULL){/* comments at top of file  */
+			for (i=0;i<len-1;++i){
+				if(buf[i]=='\n' && buf[i+1] != ';' && buf[i+1] != '\r' && buf[i+1] != '\n'){
+					end_comments=TRUE;
+					buf=&tbuf[i+1];	/* set rest of parser to end of comments  */
+				}
+			}
+			if(!end_comments)
+				continue;
+		}			
+		else 
+			end_comments=TRUE;
+	}
 
 	/* First look through the file for indications of its type */
 
@@ -927,7 +944,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     } /* while (fgets(buf, MAXL, fd->fd) */
 
     rewind(fd->fd);
-    free(buf);
+    free(tbuf);
     *returnFoundBinary = found_binary;
     
     /* Now form logical expression determining if this is a drill file */
