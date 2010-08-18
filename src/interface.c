@@ -122,6 +122,8 @@ interface_create_gui (int req_width, int req_height)
 
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
+	GtkWidget *show_toolbar;
+	GtkWidget *separator3;
 	GtkWidget *zoom_in;
 	GtkWidget *zoom_out;
 	GtkWidget *separator5;
@@ -277,6 +279,8 @@ interface_create_gui (int req_width, int req_height)
 	
 	revert = gtk_image_menu_item_new_from_stock ("gtk-revert-to-saved", accel_group);
 	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
+	gtk_widget_add_accelerator (revert, "activate", accel_group,
+	                        GDK_F5, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
 
 	/* File menu items dealing individual layers. */
@@ -314,7 +318,7 @@ interface_create_gui (int req_width, int req_height)
 	export_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (export), export_menu);
 
-	png = gtk_menu_item_new_with_mnemonic (_("PNG..."));
+	png = gtk_menu_item_new_with_mnemonic (_("P_NG..."));
 	gtk_container_add (GTK_CONTAINER (export_menu), png);
 	gtk_tooltips_set_tip (tooltips, png, _("Export project to a PNG file..."), NULL);
 
@@ -323,22 +327,22 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *svg;
 	GtkWidget *postscript;
 	
-	pdf = gtk_menu_item_new_with_mnemonic (_("PDF..."));
+	pdf = gtk_menu_item_new_with_mnemonic (_("P_DF..."));
 	gtk_container_add (GTK_CONTAINER (export_menu), pdf);
 	gtk_tooltips_set_tip (tooltips, pdf, _("Export project to a PDF file..."), NULL);
 
-	svg = gtk_menu_item_new_with_mnemonic (_("SVG..."));
+	svg = gtk_menu_item_new_with_mnemonic (_("_SVG..."));
 	gtk_container_add (GTK_CONTAINER (export_menu), svg);
 	gtk_tooltips_set_tip (tooltips, svg, _("Export project to a SVG file"), NULL);
 	
-	postscript = gtk_menu_item_new_with_mnemonic (_("PostScript..."));
+	postscript = gtk_menu_item_new_with_mnemonic (_("_PostScript..."));
 	gtk_container_add (GTK_CONTAINER (export_menu), postscript);
 	gtk_tooltips_set_tip (tooltips, postscript, _("Export project to a PostScript file"), NULL);
-	rs274x = gtk_menu_item_new_with_mnemonic (_("RS-274X (Gerber)..."));
+	rs274x = gtk_menu_item_new_with_mnemonic (_("RS-274X (_Gerber)..."));
 	gtk_container_add (GTK_CONTAINER (export_menu), rs274x);
 	gtk_tooltips_set_tip (tooltips, rs274x, _("Export layer to a RS-274X (Gerber) file"), NULL);
 	
-	drill = gtk_menu_item_new_with_mnemonic (_("Excellon drill..."));
+	drill = gtk_menu_item_new_with_mnemonic (_("_Excellon drill..."));
 	gtk_container_add (GTK_CONTAINER (export_menu), drill);
 	gtk_tooltips_set_tip (tooltips, drill, _("Export layer to an Excellon drill file"), NULL);
 	
@@ -355,6 +359,9 @@ interface_create_gui (int req_width, int req_height)
 
 	print = gtk_image_menu_item_new_from_stock ("gtk-print", accel_group);
 	gtk_tooltips_set_tip (tooltips, print, "Print the visible layers", NULL);
+	gtk_widget_add_accelerator (print, "activate", accel_group,
+	                        GDK_p, (GdkModifierType) GDK_CONTROL_MASK,
+	                        GTK_ACCEL_VISIBLE);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), print);
 
 	separator2 = gtk_separator_menu_item_new ();
@@ -392,6 +399,15 @@ interface_create_gui (int req_width, int req_height)
 
 	menuitem_view_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_view), menuitem_view_menu);
+
+	show_toolbar = gtk_check_menu_item_new_with_mnemonic (_("Show _Toolbar"));
+	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_toolbar), TRUE);
+	gtk_tooltips_set_tip (tooltips, show_toolbar, "Toggle visibility of the toolbar", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_toolbar);
+
+	separator3 = gtk_separator_menu_item_new ();
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator3);
+	gtk_widget_set_sensitive (separator3, FALSE);
 
 	zoom_in = gtk_image_menu_item_new_from_stock ("gtk-zoom-in", accel_group);
 	gtk_tooltips_set_tip (tooltips, zoom_in, "Zoom in", NULL);
@@ -847,6 +863,9 @@ interface_create_gui (int req_width, int req_height)
 	                  NULL);
 
 	/* --- View menu --- */
+	g_signal_connect ((gpointer) show_toolbar, "toggled",
+	                  G_CALLBACK (callbacks_show_toolbar_toggled),
+	                  toolbar_hbox);
 	g_signal_connect ((gpointer) zoom_in, "activate",
 	                  G_CALLBACK (callbacks_zoom_in_activate),
 	                  NULL);
