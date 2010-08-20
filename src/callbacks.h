@@ -79,6 +79,14 @@ callbacks_show_toolbar_toggled                (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
+callbacks_show_sidepane_toggled               (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
+callbacks_toggle_layer_visibility_activate                (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
 callbacks_zoom_in_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 

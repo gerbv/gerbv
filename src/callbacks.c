@@ -517,6 +517,37 @@ callbacks_show_toolbar_toggled (GtkMenuItem *menuitem, gpointer user_data)
 
 /* --------------------------------------------------------- */
 void
+callbacks_show_sidepane_toggled (GtkMenuItem *menuitem, gpointer user_data)
+{
+	gtk_widget_set_visible (user_data, GTK_CHECK_MENU_ITEM(menuitem)->active);
+}
+
+/* --------------------------------------------------------- */
+/** View/"Toggle visibility layer X" menu item was activated.
+  * Set the isVisible flag on file X and update the treeview and rendering.
+*/
+void
+callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user_data)
+{
+	int i = GPOINTER_TO_INT(user_data);
+	if (0 <= i && i <= mainProject->last_loaded) {
+		mainProject->file[i]->isVisible = !mainProject->file[i]->isVisible;
+		/* clear any selected items so they don't show after the layer is hidden */
+		render_clear_selection_buffer();
+
+	    callbacks_update_layer_tree ();
+		if (screenRenderInfo.renderType < 2) {
+			render_refresh_rendered_image_on_screen();
+		}
+		else {
+			render_recreate_composite_surface (screen.drawing_area);
+			callbacks_force_expose_event_for_screen ();
+		}
+	}
+}
+
+/* --------------------------------------------------------- */
+void
 callbacks_zoom_in_activate                    (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {

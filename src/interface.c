@@ -123,7 +123,18 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
 	GtkWidget *show_toolbar;
+	GtkWidget *show_sidepane;
 	GtkWidget *separator3;
+	GtkWidget *toggle_layer_visibility_item1;
+	GtkWidget *toggle_layer_visibility_item2;
+	GtkWidget *toggle_layer_visibility_item3;
+	GtkWidget *toggle_layer_visibility_item4;
+	GtkWidget *toggle_layer_visibility_item5;
+	GtkWidget *toggle_layer_visibility_item6;
+	GtkWidget *toggle_layer_visibility_item7;
+	GtkWidget *toggle_layer_visibility_item8;
+	GtkWidget *toggle_layer_visibility_item9;
+	GtkWidget *toggle_layer_visibility_item10;
 	GtkWidget *zoom_in;
 	GtkWidget *zoom_out;
 	GtkWidget *separator5;
@@ -147,6 +158,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *zoom_tool;
 	GtkWidget *measure_tool;
 	GtkWidget *menuitem10;
+	GtkWidget *layer_visibility_menu;
+	GtkWidget *layer_visibility_main_menu;
 	GtkWidget *menuitem10_menu;
 	/*GtkWidget *online_manual;*/
 	GtkWidget *about;
@@ -405,9 +418,77 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, show_toolbar, "Toggle visibility of the toolbar", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_toolbar);
 
+	show_sidepane = gtk_check_menu_item_new_with_mnemonic (_("Show _Sidepane"));
+	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_sidepane), TRUE);
+	gtk_tooltips_set_tip (tooltips, show_sidepane, "Toggle visibility of the sidepane", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_sidepane);
+	gtk_widget_add_accelerator (show_sidepane, "activate", accel_group,
+	                        GDK_F9, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
+
 	separator3 = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator3);
 	gtk_widget_set_sensitive (separator3, FALSE);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator3);
+	
+	layer_visibility_main_menu = gtk_menu_item_new_with_mnemonic (_("Toggle visility of layer"));
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), layer_visibility_main_menu);
+	
+	layer_visibility_menu = gtk_menu_new ();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (layer_visibility_main_menu), layer_visibility_menu);
+	
+	toggle_layer_visibility_item1 = gtk_menu_item_new_with_label ("Toggle visibility of layer 1");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item1);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item1, "activate", accel_group,
+	                        GDK_1, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item2 = gtk_menu_item_new_with_label ("Toggle visibility of layer 2");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item2);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item2, "activate", accel_group,
+	                        GDK_2, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item3 = gtk_menu_item_new_with_label ("Toggle visibility of layer 3");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item3);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item3, "activate", accel_group,
+	                        GDK_3, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item4 = gtk_menu_item_new_with_label ("Toggle visibility of layer 4");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item4);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item4, "activate", accel_group,
+	                        GDK_4, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item5 = gtk_menu_item_new_with_label ("Toggle visibility of layer 5");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item5);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item5, "activate", accel_group,
+	                        GDK_5, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item6 = gtk_menu_item_new_with_label ("Toggle visibility of layer 6");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item6);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item6, "activate", accel_group,
+	                        GDK_6, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item7 = gtk_menu_item_new_with_label ("Toggle visibility of layer 7");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item7);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item7, "activate", accel_group,
+	                        GDK_7, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item8 = gtk_menu_item_new_with_label ("Toggle visibility of layer 8");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item8);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item8, "activate", accel_group,
+	                        GDK_8, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item9 = gtk_menu_item_new_with_label ("Toggle visibility of layer 9");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item9);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item9, "activate", accel_group,
+	                        GDK_9, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	toggle_layer_visibility_item10 = gtk_menu_item_new_with_label ("Toggle visibility of layer 10");
+	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item10);
+	gtk_widget_add_accelerator (toggle_layer_visibility_item10, "activate", accel_group,
+	                        GDK_0, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+
+	separator3 = gtk_separator_menu_item_new ();
+	gtk_widget_set_sensitive (separator3, FALSE);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator3);
 
 	zoom_in = gtk_image_menu_item_new_from_stock ("gtk-zoom-in", accel_group);
 	gtk_tooltips_set_tip (tooltips, zoom_in, "Zoom in", NULL);
@@ -866,6 +947,39 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) show_toolbar, "toggled",
 	                  G_CALLBACK (callbacks_show_toolbar_toggled),
 	                  toolbar_hbox);
+	g_signal_connect ((gpointer) show_sidepane, "toggled",
+	                  G_CALLBACK (callbacks_show_sidepane_toggled),
+	                  sidepane_vbox);
+	g_signal_connect ((gpointer) toggle_layer_visibility_item1, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(0));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item2, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(1));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item3, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(2));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item4, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(3));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item5, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(4));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item6, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(5));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item7, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(6));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item8, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(7));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item9, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(8));
+	g_signal_connect ((gpointer) toggle_layer_visibility_item10, "activate",
+	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+	                  GINT_TO_POINTER(9));
 	g_signal_connect ((gpointer) zoom_in, "activate",
 	                  G_CALLBACK (callbacks_zoom_in_activate),
 	                  NULL);

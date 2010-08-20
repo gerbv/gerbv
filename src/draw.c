@@ -813,9 +813,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				lineWidth = criticalRadius*2.0;
 				// convert to a pixel integer
 				cairo_user_to_device_distance (cairoTarget, &lineWidth, &x1);
-				//g_warning ("1line width:%f",lineWidth);
 				lineWidth = round(lineWidth);
-				//g_warning ("2line width:%f",lineWidth);
 				if ((int)lineWidth % 2) {
 					oddWidth = TRUE;
 				}
