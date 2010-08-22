@@ -425,7 +425,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, show_toolbar, "Toggle visibility of the toolbar", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_toolbar);
 	gtk_widget_add_accelerator (show_toolbar, "activate", accel_group,
-	                        GDK_F10, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
+	                        GDK_F8, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
 
 	show_sidepane = gtk_check_menu_item_new_with_mnemonic (_("Show _Sidepane"));
 	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_sidepane), TRUE);
