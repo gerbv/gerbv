@@ -116,10 +116,10 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *quit;
 	GtkWidget *backgroundColor;
 
+	GtkWidget *delete_selected, *modify_selected;
 	GtkWidget *menuitem_edit;
 	GtkWidget *menuitem_edit_menu;
-	GtkWidget *delete_selected, *modify_selected;
-
+	GtkWidget *view_fullscreen;
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
 	GtkWidget *show_toolbar;
@@ -412,11 +412,20 @@ interface_create_gui (int req_width, int req_height)
 
 	menuitem_view_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_view), menuitem_view_menu);
+	
+	view_fullscreen = gtk_check_menu_item_new_with_mnemonic (_("Fullscr_een"));
+	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (view_fullscreen), FALSE);
+	gtk_tooltips_set_tip (tooltips, view_fullscreen, "Toggle between fullscreen and normal view", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), view_fullscreen);
+	gtk_widget_add_accelerator (view_fullscreen, "activate", accel_group,
+	                        GDK_F11, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
 
 	show_toolbar = gtk_check_menu_item_new_with_mnemonic (_("Show _Toolbar"));
 	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_toolbar), TRUE);
 	gtk_tooltips_set_tip (tooltips, show_toolbar, "Toggle visibility of the toolbar", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_toolbar);
+	gtk_widget_add_accelerator (show_toolbar, "activate", accel_group,
+	                        GDK_F10, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
 
 	show_sidepane = gtk_check_menu_item_new_with_mnemonic (_("Show _Sidepane"));
 	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_sidepane), TRUE);
@@ -429,7 +438,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_set_sensitive (separator3, FALSE);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator3);
 	
-	layer_visibility_main_menu = gtk_menu_item_new_with_mnemonic (_("Toggle visility of layer"));
+	layer_visibility_main_menu = gtk_menu_item_new_with_mnemonic (_("Toggle layer visibility"));
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), layer_visibility_main_menu);
 	
 	layer_visibility_menu = gtk_menu_new ();
@@ -944,6 +953,9 @@ interface_create_gui (int req_width, int req_height)
 	                  NULL);
 
 	/* --- View menu --- */
+	g_signal_connect ((gpointer) view_fullscreen, "activate",
+	                  G_CALLBACK (callbacks_fullscreen_toggled),
+	                  GINT_TO_POINTER(0));
 	g_signal_connect ((gpointer) show_toolbar, "toggled",
 	                  G_CALLBACK (callbacks_show_toolbar_toggled),
 	                  toolbar_hbox);

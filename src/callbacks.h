@@ -75,6 +75,10 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
+callbacks_fullscreen_toggled                  (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
 callbacks_show_toolbar_toggled                (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
