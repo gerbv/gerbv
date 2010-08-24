@@ -199,9 +199,13 @@ void callbacks_add_layer_button_clicked  (GtkButton *button, gpointer   user_dat
 
 void callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data);
 
+void callbacks_move_layer_down_menu_activate (GtkMenuItem *menuitem, gpointer user_data);
+
 void callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_data);
 
-void callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data);
+void callbacks_move_layer_up_menu_activate (GtkMenuItem *menuitem, gpointer user_data);
+
+void callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data);
 
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
                               GtkTreeIter  *oIter, gpointer      user_data);

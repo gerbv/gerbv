@@ -1900,6 +1900,13 @@ callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data)
 
 /* --------------------------------------------------------- */
 void
+callbacks_move_layer_down_menu_activate (GtkMenuItem *menuitem, gpointer user_data) {
+	callbacks_move_layer_down_button_clicked(NULL, NULL);
+	gtk_widget_grab_focus (screen.win.layerTree);
+}
+
+/* --------------------------------------------------------- */
+void
 callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
@@ -1919,7 +1926,14 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 
 /* --------------------------------------------------------- */
 void
-callbacks_move_layer_up_clicked  (GtkButton *button, gpointer   user_data) {
+callbacks_move_layer_up_menu_activate (GtkMenuItem *menuitem, gpointer user_data) {
+	callbacks_move_layer_up_button_clicked(NULL, NULL);
+	gtk_widget_grab_focus (screen.win.layerTree);
+}
+
+/* --------------------------------------------------------- */
+void
+callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
 	
 	if (index > 0) {

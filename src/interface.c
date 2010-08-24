@@ -123,6 +123,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
 	GtkWidget *show_toolbar;
+	GtkWidget *layer_up;
+	GtkWidget *layer_down;
 	GtkWidget *show_sidepane;
 	GtkWidget *separator3;
 	GtkWidget *toggle_layer_visibility_item1;
@@ -438,7 +440,19 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_set_sensitive (separator3, FALSE);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator3);
 	
-	layer_visibility_main_menu = gtk_menu_item_new_with_mnemonic (_("Toggle layer visibility"));
+	layer_up = gtk_menu_item_new_with_mnemonic (_("Move current layer _up"));
+	gtk_tooltips_set_tip (tooltips, layer_up, "Move the layer selected in the sidepane one step up", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), layer_up);
+	gtk_widget_add_accelerator (layer_up, "activate", accel_group,
+	                        GDK_Up, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	layer_down = gtk_menu_item_new_with_mnemonic (_("Move current layer _down"));
+	gtk_tooltips_set_tip (tooltips, layer_down, "Move the layer selected in the sidepane one step down", NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), layer_down);
+	gtk_widget_add_accelerator (layer_down, "activate", accel_group,
+	                        GDK_Down, (GdkModifierType) GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+	layer_visibility_main_menu = gtk_menu_item_new_with_mnemonic (_("Toggle layer _visibility"));
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), layer_visibility_main_menu);
 	
 	layer_visibility_menu = gtk_menu_new ();
@@ -962,6 +976,10 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) show_sidepane, "toggled",
 	                  G_CALLBACK (callbacks_show_sidepane_toggled),
 	                  sidepane_vbox);
+	g_signal_connect ((gpointer) layer_up, "activate",
+	                  G_CALLBACK (callbacks_move_layer_up_menu_activate), NULL);
+	g_signal_connect ((gpointer) layer_down, "activate",
+	                  G_CALLBACK (callbacks_move_layer_down_menu_activate), NULL);
 	g_signal_connect ((gpointer) toggle_layer_visibility_item1, "activate",
 	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
 	                  GINT_TO_POINTER(0));
@@ -1100,7 +1118,7 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) button5, "clicked",
 	                  G_CALLBACK (callbacks_move_layer_down_button_clicked), NULL);
 	g_signal_connect ((gpointer) button6, "clicked",
-	                  G_CALLBACK (callbacks_move_layer_up_clicked), NULL);
+	                  G_CALLBACK (callbacks_move_layer_up_button_clicked), NULL);
 
 	g_signal_connect ((gpointer) hAdjustment, "value-changed",
 	                  G_CALLBACK (callbacks_hadjustment_value_changed), NULL);
@@ -1308,7 +1326,7 @@ interface_create_gui (int req_width, int req_height)
 	tempImage = gtk_image_new_from_stock ("gtk-go-up", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (tempMenuItem), tempImage);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
-	                  G_CALLBACK (callbacks_move_layer_up_clicked), NULL);
+	                  G_CALLBACK (callbacks_move_layer_up_button_clicked), NULL);
 	                  	
 	tempMenuItem = gtk_image_menu_item_new_with_label ("Delete layer");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.layerTreePopupMenu, tempMenuItem);
