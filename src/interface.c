@@ -1282,7 +1282,9 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Change the display color of the layer", NULL);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_change_layer_color_clicked), NULL);
-	                  
+	gtk_widget_add_accelerator (tempMenuItem, "activate", accel_group,
+	                        GDK_F6, (GdkModifierType) 0, GTK_ACCEL_VISIBLE);
+	                                
 	tempMenuItem = gtk_image_menu_item_new_with_label ("Reload layer");
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.layerTreePopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, "Reload the layer from disk", 
