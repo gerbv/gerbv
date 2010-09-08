@@ -623,7 +623,6 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 				      -1,
 				      string,
 				      GERBV_MESSAGE_NOTE);
-		g_free(string);
 		g_free(tmps);
 		break;
 	    case DRILL_M_NOT_IMPLEMENTED :
@@ -1702,7 +1701,7 @@ static char *
 get_line(gerb_file_t *fd)
 {
     int read = gerb_fgetc(fd);
-    gchar *retstring = "";
+    gchar *retstring = g_strdup("");
     gchar *tmps = NULL;
 
     while(read != 10 && read != 13) {
