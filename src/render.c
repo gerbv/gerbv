@@ -81,9 +81,9 @@ render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t 
 
 gboolean
 render_check_scale_factor_limits (void) {
-	if ((screenRenderInfo.scaleFactorX > 5000)||(screenRenderInfo.scaleFactorY > 5000)) {
-		screenRenderInfo.scaleFactorX = 5000;
-		screenRenderInfo.scaleFactorY = 5000;
+	if ((screenRenderInfo.scaleFactorX > 20000)||(screenRenderInfo.scaleFactorY > 20000)) {
+		screenRenderInfo.scaleFactorX = 20000;
+		screenRenderInfo.scaleFactorY = 20000;
 		return FALSE;
 	}
 	return TRUE;
