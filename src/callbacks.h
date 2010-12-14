@@ -169,6 +169,12 @@ void
 callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data);
 
 void
+callbacks_viewmenu_units_changed (GtkCheckMenuItem *widget, gpointer user_data);
+
+void
+callbacks_viewmenu_rendertype_changed (GtkCheckMenuItem *widget, gpointer user_data);
+
+void
 callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer user_data);
 
 void
@@ -190,6 +196,10 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy);
 
 void
 callbacks_update_layer_tree (void);
+
+gboolean
+callbacks_layer_tree_key_press (GtkWidget *widget, GdkEventKey *event,
+                                   gpointer user_data);
 
 gboolean
 callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,

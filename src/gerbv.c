@@ -689,10 +689,10 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 			gdk_gc_set_function(gc, GDK_COPY);
 			gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
 			
-			if (renderInfo->renderType == 0) {
+			if (renderInfo->renderType == GERBV_RENDER_TYPE_GDK) {
 				gdk_gc_set_function(gc, GDK_COPY);
 			}
-			else if (renderInfo->renderType == 1) {
+			else if (renderInfo->renderType == GERBV_RENDER_TYPE_GDK_XOR) {
 				gdk_gc_set_function(gc, GDK_XOR);
 			}
 			/*
@@ -808,11 +808,11 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 	
 	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
 	   this far */
-	if (renderInfo->renderType == 2) {
+	if (renderInfo->renderType == GERBV_RENDER_TYPE_CAIRO_NORMAL) {
 		cairo_set_tolerance (cr, 1.0);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
 	}
-	else if (renderInfo->renderType == 3) {
+	else if (renderInfo->renderType == GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY) {
 		cairo_set_tolerance (cr, 0.1);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
 	}

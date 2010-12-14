@@ -53,6 +53,7 @@ typedef struct {
 	GtkWidget *statusMessageLeft;
 	GtkWidget *statusMessageRight;
 	GtkWidget *statusUnitComboBox;
+	GtkCheckMenuItem **menu_view_unit_group;
 	GtkWidget *layerTree;
 	gboolean treeIsUpdating;
 	GtkWidget *colorSelectionDialog;
@@ -62,6 +63,8 @@ typedef struct {
 	GtkWidget *hRuler;
 	GtkWidget *vRuler;
 	GtkWidget *sidepane_notebook;
+	GtkComboBox *sidepaneRenderComboBox;
+	GtkCheckMenuItem **menu_view_render_group;
 	GtkWidget *project;
 	GtkWidget *gerber;
 	GtkWidget *about_dialog;

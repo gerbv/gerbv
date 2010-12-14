@@ -444,7 +444,7 @@ void render_refresh_rendered_image_on_screen (void) {
 	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
 	gdk_cursor_destroy(cursor);
 
-	if (screenRenderInfo.renderType < 2){
+	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR){
 	    if (screen.pixmap) 
 		gdk_pixmap_unref(screen.pixmap);
 	    screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
@@ -556,7 +556,7 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean
 	if (!screen.selectionInfo.selectedNodeArray->len)
 		screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
 	/* re-render the selection buffer layer */
-	if (screenRenderInfo.renderType < 2){
+	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR){
 		render_refresh_rendered_image_on_screen ();
 	}
 	else {
@@ -611,7 +611,7 @@ void render_recreate_composite_surface () {
 			cairo_set_source_surface (cr, (cairo_surface_t *) mainProject->file[i]->privateRenderData,
 			                              0, 0);
 			/* ignore alpha if we are in high-speed render mode */
-			if (((double) mainProject->file[i]->alpha < 65535)&&(screenRenderInfo.renderType != 1)) {
+			if (((double) mainProject->file[i]->alpha < 65535)&&(screenRenderInfo.renderType != GERBV_RENDER_TYPE_GDK_XOR)) {
 				cairo_paint_with_alpha(cr,(double) mainProject->file[i]->alpha/G_MAXUINT16);
 			}
 			else {

@@ -115,7 +115,11 @@ char *ap_names[] = {"NONE",
 		    "MACRO_LINE22"    /* a RS274X line (code 22) macro */
 };
 
-gint callbacks_get_selected_row_index  (void);
+static gint callbacks_get_selected_row_index (void);
+static void callbacks_units_changed (gerbv_gui_unit_t unit);
+static void callbacks_update_statusbar_coordinates (gint x, gint y);
+static void callbacks_update_ruler_scales (void);
+static void callbacks_render_type_changed (void);
 
 /* --------------------------------------------------------- */
 GtkWidget *
@@ -548,7 +552,7 @@ callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user
 		render_clear_selection_buffer();
 
 	    callbacks_update_layer_tree ();
-		if (screenRenderInfo.renderType < 2) {
+		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen();
 		}
 		else {
@@ -1564,7 +1568,57 @@ void callbacks_update_ruler_pointers (void) {
 }
 
 /* --------------------------------------------------------- */
-void callbacks_update_ruler_scales (void) {
+static void
+callbacks_render_type_changed () {
+	static gboolean isChanging = FALSE;
+	if (isChanging)
+		return;
+
+	isChanging = TRUE;
+	gerbv_render_types_t type = screenRenderInfo.renderType;
+	GtkCheckMenuItem *check_item = screen.win.menu_view_render_group[type];
+	dprintf ("%s():  type = %d, check_item = %p\n", __FUNCTION__, type, check_item);
+	gtk_check_menu_item_set_active (check_item, TRUE);
+	gtk_combo_box_set_active (screen.win.sidepaneRenderComboBox, type);
+
+	render_refresh_rendered_image_on_screen();
+	isChanging = FALSE;
+}
+
+/* --------------------------------------------------------- */
+static void
+callbacks_units_changed (gerbv_gui_unit_t unit) {
+	static gboolean isChanging = FALSE;
+
+	if (isChanging)
+		return;
+
+	isChanging = TRUE;
+	screen.unit = unit;
+
+	if (unit == GERBV_MILS){
+		gtk_combo_box_set_active (GTK_COMBO_BOX (screen.win.statusUnitComboBox), GERBV_MILS);
+		gtk_check_menu_item_set_active (screen.win.menu_view_unit_group[GERBV_MILS], TRUE);
+	} else if (unit == GERBV_MMS){
+		gtk_combo_box_set_active (GTK_COMBO_BOX (screen.win.statusUnitComboBox), GERBV_MMS);
+		gtk_check_menu_item_set_active (screen.win.menu_view_unit_group[GERBV_MMS], TRUE);
+	} else {
+		gtk_combo_box_set_active (GTK_COMBO_BOX (screen.win.statusUnitComboBox), GERBV_INS);
+		gtk_check_menu_item_set_active (screen.win.menu_view_unit_group[GERBV_INS], TRUE);
+	}
+
+	callbacks_update_ruler_scales ();
+	callbacks_update_statusbar_coordinates (screen.last_x, screen.last_y);
+	
+	if (screen.tool == MEASURE)
+		callbacks_update_statusbar_measured_distance (screen.win.lastMeasuredX, screen.win.lastMeasuredY);
+	
+	isChanging = FALSE;
+}
+
+/* --------------------------------------------------------- */
+static void
+callbacks_update_ruler_scales (void) {
 	double xStart, xEnd, yStart, yEnd;
 
 	xStart = screenRenderInfo.lowerLeftX;
@@ -1683,10 +1737,10 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 	
 	GtkTreePath *treePath = gtk_tree_path_new_from_string (path);
 	if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, treePath)) {
-	      gint *indeces;
+	      gint *indices;
 	      
-	      indeces = gtk_tree_path_get_indices (treePath);
-	      index = indeces[0];
+	      indices = gtk_tree_path_get_indices (treePath);
+	      index = indices[0];
 		if (mainProject->file[index]->isVisible)
 			 newVisibility = FALSE;
 		mainProject->file[index]->isVisible = newVisibility;
@@ -1694,7 +1748,7 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 		render_clear_selection_buffer();
 
 	      callbacks_update_layer_tree ();
-		if (screenRenderInfo.renderType < 2) {
+		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen();
 		}
 		else {
@@ -1888,7 +1942,7 @@ callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data)
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (0);
 
-		if (screenRenderInfo.renderType < 2) {
+		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen();
 		}
 		else {
@@ -1914,7 +1968,7 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 		gerbv_change_layer_order (mainProject, index, index + 1);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (index + 1);
-		if (screenRenderInfo.renderType < 2) {
+		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen();
 		}
 		else {
@@ -1940,7 +1994,7 @@ callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data
 		gerbv_change_layer_order (mainProject, index, index - 1);
 		callbacks_update_layer_tree ();
 		callbacks_select_row (index - 1);
-		if (screenRenderInfo.renderType < 2) {
+		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen();
 		}
 		else {
@@ -1953,12 +2007,12 @@ callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data
 /* --------------------------------------------------------- */
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
                               GtkTreeIter  *oIter, gpointer user_data) {
-	gint *indeces=NULL,oldPosition,newPosition;
+	gint *indices=NULL,oldPosition,newPosition;
       
 	if ((!screen.win.treeIsUpdating)&&(path != NULL)) {
-		indeces = gtk_tree_path_get_indices (path);
-		if (indeces) {
-			newPosition = indeces[0];
+		indices = gtk_tree_path_get_indices (path);
+		if (indices) {
+			newPosition = indices[0];
 			oldPosition = callbacks_get_selected_row_index ();
 			/* compensate for the fact that the old row has already
 			   been removed */
@@ -1968,7 +2022,7 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 				oldPosition--;
 			gerbv_change_layer_order (mainProject, oldPosition, newPosition);
 
-			if (screenRenderInfo.renderType < 2) {
+			if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 				render_refresh_rendered_image_on_screen();
 			}
 			else {
@@ -2001,7 +2055,7 @@ callbacks_show_color_picker_dialog (gint index){
 		gtk_color_selection_set_current_color (colorsel, &mainProject->file[index]->color);
 	else
 		gtk_color_selection_set_current_color (colorsel, &mainProject->background);
-	if ((screenRenderInfo.renderType >= 2)&&(index >= 0)) {
+	if ((screenRenderInfo.renderType >= GERBV_RENDER_TYPE_CAIRO_NORMAL)&&(index >= 0)) {
 		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
 		gtk_color_selection_set_current_alpha (colorsel, mainProject->file[index]->alpha);
 	}
@@ -2018,7 +2072,7 @@ callbacks_show_color_picker_dialog (gint index){
 			gtk_color_selection_get_current_color (colorsel, &mainProject->background);
 			gdk_colormap_alloc_color(gdk_colormap_get_system(), &mainProject->background, FALSE, TRUE);
 		}
-		if ((screenRenderInfo.renderType >= 2)&&(index >= 0)) {
+		if ((screenRenderInfo.renderType >= GERBV_RENDER_TYPE_CAIRO_NORMAL)&&(index >= 0)) {
 			mainProject->file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
 		}
 		
@@ -2153,6 +2207,35 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 
 /* --------------------------------------------------------------------------- */
 gboolean
+callbacks_layer_tree_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
+	/* if space is pressed while a color picker icon is in focus,
+	show the color picker dialog. */
+	if(event->keyval == GDK_space){
+		GtkTreeView *tree;
+		GtkTreePath *path;
+		GtkTreeViewColumn *col;
+		gint *indices;
+		gint idx;
+
+		tree = (GtkTreeView *) screen.win.layerTree;
+		gtk_tree_view_get_cursor (tree, &path, &col);
+		if (path) {
+			indices = gtk_tree_path_get_indices (path);
+			if (indices) {
+				idx = callbacks_get_col_number_from_tree_view_column (col);
+				if ((idx == 1) && (indices[0] <= mainProject->last_loaded)){
+					callbacks_show_color_picker_dialog (indices[0]);
+				}
+			}
+			gtk_tree_path_free (path);
+		}
+	}
+	/* by default propagate the key press */
+	return FALSE;
+}
+
+/* --------------------------------------------------------------------------- */
+gboolean
 callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
                                    gpointer user_data) {
       GtkTreePath *path;
@@ -2167,12 +2250,12 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 	      if (gtk_tree_view_get_path_at_pos  ((GtkTreeView *) widget, event->x, event->y,
 	      	&path, &column, &x, &y)) {
 		      if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, path)) {
-		      	gint *indeces;
-		      	indeces = gtk_tree_path_get_indices (path);
-		      	if (indeces) {
+		      	gint *indices;
+		      	indices = gtk_tree_path_get_indices (path);
+		      	if (indices) {
 					columnIndex = callbacks_get_col_number_from_tree_view_column (column);
-					if ((columnIndex == 1) && (indeces[0] <= mainProject->last_loaded)){
-						callbacks_show_color_picker_dialog (indeces[0]);
+					if ((columnIndex == 1) && (indices[0] <= mainProject->last_loaded)){
+						callbacks_show_color_picker_dialog (indices[0]);
 						/* don't propagate the signal, since drag and drop can
 					   	sometimes activated during color selection */
 						return TRUE;
@@ -2433,7 +2516,7 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 		now = time(NULL);
 		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
-	g_message("FAST mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n",
+	g_message("FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n",
 		      i, (long int) (now - start), (double) i / (double)(now - start));
 	gdk_pixmap_unref(renderedPixmap);
 	
@@ -2441,7 +2524,7 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	i = 0;
 	start = time(NULL);
 	now = start;
-	renderInfo->renderType = 2;
+	renderInfo->renderType = GERBV_RENDER_TYPE_CAIRO_NORMAL;
 	while( now - 30 < start) {
 		i++;
 		dprintf("Benchmark():  Starting redraw #%d\n", i);
@@ -2454,7 +2537,7 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 		now = time(NULL);
 		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
-	g_message("NORMAL mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n",
+	g_message("NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n",
 		      i, (long int) (now - start), (double) i / (double)(now - start));
 }
 
@@ -2591,7 +2674,7 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 gboolean
 callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
-	if (screenRenderInfo.renderType < 2) {
+	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 		GdkPixmap *new_pixmap;
 		GdkGC *gc = gdk_gc_new(widget->window);
 
@@ -2708,7 +2791,7 @@ callbacks_screen2board(gdouble *X, gdouble *Y, gint x, gint y) {
 }
 
 /* --------------------------------------------------------- */
-void
+static void
 callbacks_update_statusbar_coordinates (gint x, gint y) {
 	gdouble X, Y;
 
@@ -3074,28 +3157,53 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 /* --------------------------------------------------------- */
 void
 callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
-	int activeRow = gtk_combo_box_get_active (widget);
+	int type = gtk_combo_box_get_active (widget);
 	
-	dprintf ("%s():  activeRow = %d\n", __FUNCTION__, activeRow);
-	screenRenderInfo.renderType = activeRow;
-	
-	render_refresh_rendered_image_on_screen();
+	dprintf ("%s():  type = %d\n", __FUNCTION__, type);
+
+	if (type < 0 || type == screenRenderInfo.renderType)
+		return;
+
+	screenRenderInfo.renderType = type;
+	callbacks_render_type_changed ();
+}
+
+/* --------------------------------------------------------- */
+void
+callbacks_viewmenu_rendertype_changed (GtkCheckMenuItem *widget, gpointer user_data) {
+	gint type = GPOINTER_TO_INT(user_data);
+
+	if (type == screenRenderInfo.renderType)
+		return;
+
+	dprintf ("%s():  type = %d\n", __FUNCTION__, type);
+
+	screenRenderInfo.renderType = type;
+	callbacks_render_type_changed ();
+}
+
+/* --------------------------------------------------------- */
+void
+callbacks_viewmenu_units_changed (GtkCheckMenuItem *widget, gpointer user_data) {
+	gint unit = GPOINTER_TO_INT(user_data);
+
+	if (unit < 0 || unit == screen.unit)
+		return;
+
+	dprintf ("%s():  unit = %d, screen.unit = %d\n", __FUNCTION__, unit, screen.unit);
+
+	callbacks_units_changed (unit);
 }
 
 /* --------------------------------------------------------- */
 void
 callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
-	int activeRow = gtk_combo_box_get_active (widget);
+	int unit = gtk_combo_box_get_active (widget);
 	
-	if (activeRow >= 0) {
-		screen.unit = activeRow;	
-	}
-	callbacks_update_ruler_scales();
-	callbacks_update_statusbar_coordinates (screen.last_x, screen.last_y);
-	
-	if (screen.tool == MEASURE)
-		callbacks_update_statusbar_measured_distance (screen.win.lastMeasuredX,
-							screen.win.lastMeasuredY);
+	if (unit < 0 || unit == screen.unit)
+		return;
+
+	callbacks_units_changed (unit);
 }
 
 /* --------------------------------------------------------- */
@@ -3231,8 +3339,8 @@ void callbacks_force_expose_event_for_screen (void){
 	gdk_window_invalidate_rect (screen.drawing_area->window, &update_rect, FALSE);
 	
 	/* update other gui things that could have changed */
-	callbacks_update_ruler_scales();
-	callbacks_update_scrollbar_limits();
-	callbacks_update_scrollbar_positions();
+	callbacks_update_ruler_scales ();
+	callbacks_update_scrollbar_limits ();
+	callbacks_update_scrollbar_positions ();
 }
 

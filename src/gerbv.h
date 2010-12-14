@@ -226,7 +226,8 @@ typedef enum {GERBV_SELECTION_EMPTY, /*!< the selection buffer is empty */
 typedef enum {GERBV_RENDER_TYPE_GDK, /*!< render using normal GDK drawing functions */
 		GERBV_RENDER_TYPE_GDK_XOR, /*!< use the GDK_XOR mask to draw a pseudo-transparent scene */
 		GERBV_RENDER_TYPE_CAIRO_NORMAL, /*!< use the cairo library */
-		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY /*!< use the cairo library with the smoothest edges */
+		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, /*!< use the cairo library with the smoothest edges */
+		GERBV_RENDER_TYPE_MAX /*!< End-of-enum indicator */
 } gerbv_render_types_t;
 
 /* 

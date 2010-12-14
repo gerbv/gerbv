@@ -26,6 +26,142 @@
     \ingroup gerbv
 */
 
+/** Sets the key acceleration of a menu item.
+First tries to lookup the given STOCK_ID with gtk_stock_lookup.
+If this succeeds and the retrieved GtkStockItem has an accelerator defined this accelerator is used.
+Otherwise the defaults given below are used.
+
+\warning There has to be a GtkStockItem variable 'stock' in scope where this macro is used.
+*/
+#define SET_ACCELS_FROM_STOCK(STOCK_ID, GERBV_ACCEL_ID)\
+if(gtk_stock_lookup (STOCK_ID, &stock) && stock.keyval != GDK_VoidSymbol && stock.keyval != 0)\
+	gtk_accel_map_add_entry (GERBV_ACCEL_ID ## _PATH, stock.keyval, stock.modifier);\
+else\
+	gtk_accel_map_add_entry (GERBV_ACCEL_ID ## _PATH, GERBV_ACCEL_ID ## _KEY, GERBV_ACCEL_ID ## _MOD)
+
+#define SET_ACCELS(GERBV_ACCEL_ID)\
+	gtk_accel_map_add_entry (GERBV_ACCEL_ID ## _PATH, GERBV_ACCEL_ID ## _KEY, GERBV_ACCEL_ID ## _MOD)
+
+/* If stock items/IDs are used the ACCEL_*_PATH macros have to match the labels of the stock items.
+Otherwise the (persistent) accelerators are broken. One workaround would be to look the labels up. */
+#define GERBV_ACCELS_RELPATH ".gnome2/accels/gerbv"
+#define ACCEL_ROOT						"<main>/"
+#define ACCEL_FILE						ACCEL_ROOT "file"
+#define ACCEL_FILE_NEW_PATH				ACCEL_FILE "/New"
+#define ACCEL_FILE_NEW_KEY				GDK_n
+#define ACCEL_FILE_NEW_MOD				(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_FILE_REVERT_PATH			ACCEL_FILE "/Revert"
+#define ACCEL_FILE_REVERT_KEY			GDK_F5
+#define ACCEL_FILE_REVERT_MOD			(GdkModifierType) 0
+#define ACCEL_FILE_OPEN_LAYER_PATH		ACCEL_FILE "/Open layer(s)..."
+#define ACCEL_FILE_OPEN_LAYER_KEY		GDK_O
+#define ACCEL_FILE_OPEN_LAYER_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_FILE_SAVE_LAYER_PATH		ACCEL_FILE "/Save active layer"
+#define ACCEL_FILE_SAVE_LAYER_KEY		GDK_S
+#define ACCEL_FILE_SAVE_LAYER_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_FILE_SAVE_LAYER_AS_PATH	ACCEL_FILE "/Save active layer as..."
+#define ACCEL_FILE_SAVE_LAYER_AS_KEY	GDK_S
+#define ACCEL_FILE_SAVE_LAYER_AS_MOD	(GdkModifierType) GDK_CONTROL_MASK | GDK_SHIFT_MASK
+#define ACCEL_FILE_EXPORT				ACCEL_FILE "/Export"
+#define ACCEL_FILE_PRINT_PATH			ACCEL_FILE "/Print..."
+#define ACCEL_FILE_PRINT_KEY			GDK_P
+#define ACCEL_FILE_PRINT_MOD			(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_FILE_QUIT_PATH			ACCEL_FILE "/Quit"
+#define ACCEL_FILE_QUIT_KEY				GDK_Q
+#define ACCEL_FILE_QUIT_MOD				(GdkModifierType) GDK_CONTROL_MASK
+
+#define ACCEL_EDIT						ACCEL_ROOT "edit"
+#define ACCEL_EDIT_DELETE_PATH			ACCEL_EDIT "/Delete selected object(s)"
+#define ACCEL_EDIT_DELETE_KEY			GDK_Delete
+#define ACCEL_EDIT_DELETE_MOD			(GdkModifierType) 0
+
+#define ACCEL_VIEW						ACCEL_ROOT "view"
+#define ACCEL_VIEW_FULLSCREEN_PATH		ACCEL_VIEW "/Fullscreen"
+#define ACCEL_VIEW_FULLSCREEN_KEY		GDK_F11
+#define ACCEL_VIEW_FULLSCREEN_MOD		(GdkModifierType) 0
+#define ACCEL_VIEW_TOOLBAR_PATH			ACCEL_VIEW "/Show Toolbar"
+#define ACCEL_VIEW_TOOLBAR_KEY			GDK_F7
+#define ACCEL_VIEW_TOOLBAR_MOD			(GdkModifierType) 0
+#define ACCEL_VIEW_SIDEPANE_PATH		ACCEL_VIEW "/Show Sidepane"
+#define ACCEL_VIEW_SIDEPANE_KEY			GDK_F9
+#define ACCEL_VIEW_SIDEPANE_MOD			(GdkModifierType) 0
+#define ACCEL_VIEW_LAYER_UP_PATH		ACCEL_VIEW "/Move current layer up"
+#define ACCEL_VIEW_LAYER_UP_KEY			GDK_Up
+#define ACCEL_VIEW_LAYER_UP_MOD			(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_LAYER_DOWN_PATH		ACCEL_VIEW "/Move current layer down"
+#define ACCEL_VIEW_LAYER_DOWN_KEY		GDK_Down
+#define ACCEL_VIEW_LAYER_DOWN_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS					ACCEL_VIEW "/Toggle layer visibilty"
+#define ACCEL_VIEW_VIS_LAYER1_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 1"
+#define ACCEL_VIEW_VIS_LAYER1_KEY		GDK_1
+#define ACCEL_VIEW_VIS_LAYER1_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER2_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 2"
+#define ACCEL_VIEW_VIS_LAYER2_KEY		GDK_2
+#define ACCEL_VIEW_VIS_LAYER2_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER3_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 3"
+#define ACCEL_VIEW_VIS_LAYER3_KEY		GDK_3
+#define ACCEL_VIEW_VIS_LAYER3_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER4_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 4"
+#define ACCEL_VIEW_VIS_LAYER4_KEY		GDK_4
+#define ACCEL_VIEW_VIS_LAYER4_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER5_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 5"
+#define ACCEL_VIEW_VIS_LAYER5_KEY		GDK_5
+#define ACCEL_VIEW_VIS_LAYER5_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER6_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 6"
+#define ACCEL_VIEW_VIS_LAYER6_KEY		GDK_6
+#define ACCEL_VIEW_VIS_LAYER6_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER7_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 7"
+#define ACCEL_VIEW_VIS_LAYER7_KEY		GDK_7
+#define ACCEL_VIEW_VIS_LAYER7_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER8_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 8"
+#define ACCEL_VIEW_VIS_LAYER8_KEY		GDK_8
+#define ACCEL_VIEW_VIS_LAYER8_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER9_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 9"
+#define ACCEL_VIEW_VIS_LAYER9_KEY		GDK_9
+#define ACCEL_VIEW_VIS_LAYER9_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_VIS_LAYER10_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 10"
+#define ACCEL_VIEW_VIS_LAYER10_KEY		GDK_0
+#define ACCEL_VIEW_VIS_LAYER10_MOD		(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_VIEW_ZOOM_IN_PATH			ACCEL_VIEW "/Zoom In"
+#define ACCEL_VIEW_ZOOM_IN_KEY			GDK_z
+#define ACCEL_VIEW_ZOOM_IN_MOD			(GdkModifierType) 0
+#define ACCEL_VIEW_ZOOM_OUT_PATH		ACCEL_VIEW "/Zoom Out"
+#define ACCEL_VIEW_ZOOM_OUT_KEY			GDK_z
+#define ACCEL_VIEW_ZOOM_OUT_MOD			(GdkModifierType) GDK_SHIFT_MASK
+#define ACCEL_VIEW_ZOOM_FIT_PATH		ACCEL_VIEW "/Best Fit"
+#define ACCEL_VIEW_ZOOM_FIT_KEY			GDK_f
+#define ACCEL_VIEW_ZOOM_FIT_MOD			(GdkModifierType) 0
+#define ACCEL_VIEW_RENDER				ACCEL_VIEW "/Rendering"
+#define ACCEL_VIEW_UNITS				ACCEL_VIEW "/Units"
+
+#define ACCEL_ANAL						ACCEL_ROOT "analyze"
+#define ACCEL_ANAL_PROPERTIES_PATH		ACCEL_ANAL "/Display object properties"
+#define ACCEL_ANAL_PROPERTIES_KEY		GDK_Return
+#define ACCEL_ANAL_PROPERTIES_MOD		(GdkModifierType) GDK_MOD1_MASK
+
+#define ACCEL_TOOLS						ACCEL_ROOT "tools"
+#define ACCEL_TOOLS_POINTER_PATH		ACCEL_TOOLS "/Pointer Tool"
+#define ACCEL_TOOLS_POINTER_KEY			GDK_1
+#define ACCEL_TOOLS_POINTER_MOD			(GdkModifierType) 0
+#define ACCEL_TOOLS_PAN_PATH			ACCEL_TOOLS "/Pan Tool"
+#define ACCEL_TOOLS_PAN_KEY				GDK_2
+#define ACCEL_TOOLS_PAN_MOD				(GdkModifierType) 0
+#define ACCEL_TOOLS_ZOOM_PATH			ACCEL_TOOLS "/Zoom Tool"
+#define ACCEL_TOOLS_ZOOM_KEY			GDK_3
+#define ACCEL_TOOLS_ZOOM_MOD			(GdkModifierType) 0
+#define ACCEL_TOOLS_MEASURE_PATH		ACCEL_TOOLS "/Measure Tool"
+#define ACCEL_TOOLS_MEASURE_KEY			GDK_4
+#define ACCEL_TOOLS_MEASURE_MOD			(GdkModifierType) 0
+
+#define ACCEL_HELP						ACCEL_ROOT "help"
+
+
+#define ACCEL_WINPOPUP					ACCEL_ROOT "WindowPopupMenu"
+
+#define ACCEL_TREEPOPUP					ACCEL_ROOT "TreePopupMenu"
+#define ACCEL_TREEPOPUP_COLOR_PATH		ACCEL_TREEPOPUP "/Change color"
+#define ACCEL_TREEPOPUP_COLOR_KEY		GDK_F6
+#define ACCEL_TREEPOPUP_COLOR_MOD		(GdkModifierType) 0
 
 void
 interface_create_gui (int req_width, int req_height);

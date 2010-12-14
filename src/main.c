@@ -348,9 +348,9 @@ main(int argc, char *argv[])
     /* set default rendering mode */
 #ifdef WIN32
     /* Cairo seems to render faster on Windows, so use it for default */
-    screenRenderInfo.renderType = 2;
+    screenRenderInfo.renderType = GERBV_RENDER_TYPE_CAIRO_NORMAL;
 #else
-    screenRenderInfo.renderType = 0;
+    screenRenderInfo.renderType = GERBV_RENDER_TYPE_GDK;
 #endif
 
     logToFileOption = FALSE;

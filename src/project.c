@@ -766,7 +766,7 @@ gerbv_file_version(scheme *sc, pointer args)
     current_file_version = r;
 
     return sc->NIL;
-} /* set_render_type */
+} /* gerbv_file_version */
 
 
 /** Reads the content of a project file.
