@@ -840,11 +840,13 @@ void
 pick_and_place_parse_file_to_images(gerb_file_t *fd, gerbv_image_t **topImage,
 			gerbv_image_t **bottomImage) 
 { 
-    GArray *parsedPickAndPlaceData = pick_and_place_parse_file (fd);
+	GArray *parsedPickAndPlaceData = pick_and_place_parse_file (fd);
 
-    *bottomImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 0);
-    *topImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 1);
+	if (parsedPickAndPlaceData != NULL) {
+		*bottomImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 0);
+		*topImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 1);
 
-    g_array_free (parsedPickAndPlaceData, TRUE);
+		g_array_free (parsedPickAndPlaceData, TRUE);
+	}
 } /* pick_and_place_parse_file_to_image */
 
