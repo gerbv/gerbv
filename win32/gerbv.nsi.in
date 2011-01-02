@@ -29,18 +29,18 @@
 ;General
 
   ;Name and file
-  Name "gerbv-@gerbv_version@"
-  OutFile "gerbvinst-@gerbv_version@.exe"
+  Name "gerbv-@prog_version@"
+  OutFile "gerbvinst-@prog_version@.exe"
 
   ;See http://nsis.sourceforge.net/Shortcuts_removal_fails_on_Windows_Vista
   ;for more details.
   RequestExecutionLevel admin
 
   ;Default installation folder
-  InstallDir "$PROGRAMFILES\gerbv-@gerbv_version@"
+  InstallDir "$PROGRAMFILES\gerbv-@prog_version@"
   
   ;Get installation folder from registry if available
-  InstallDirRegKey HKCU "Software\gerbv-@gerbv_version@" ""
+  InstallDirRegKey HKCU "Software\gerbv-@prog_version@" ""
 
 ;--------------------------------
 ;Variables
@@ -56,7 +56,7 @@
 ;--------------------------------
 ;Pages
 
-  !insertmacro MUI_PAGE_LICENSE "@gerbv_srcdir@\COPYING"
+  !insertmacro MUI_PAGE_LICENSE "@prog_srcdir@\COPYING"
   !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-gpl2"
   !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-gpl3"
   !insertmacro MUI_PAGE_LICENSE "@gtk_win32_runtime@\LICENSE-lgpl"
@@ -72,7 +72,7 @@
   
   ;Start Menu Folder Page Configuration
   !define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU" 
-  !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\gerbv-@gerbv_version@" 
+  !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\gerbv-@prog_version@" 
   !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
   
   !insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER
@@ -97,7 +97,7 @@ Section "Dummy Section" SecDummy
   
   ;ADD YOUR OWN FILES HERE...
   File /a /r "@gtk_win32_runtime@\*.*"
-  File /a /r "@gerbv_prefix@\*.*"
+  File /a /r "@prog_prefix@\*.*"
 
   ;Associate file types and icons
   ${registerExtension} "$INSTDIR\bin\gerbv.exe" "" ".gbr" "RS274-X File"
@@ -108,7 +108,7 @@ Section "Dummy Section" SecDummy
   ${registerExtension} "$INSTDIR\bin\gerbv.exe" "-p" ".gvp" "Gerbv Project File"
  
   ;Store installation folder
-  WriteRegStr HKCU "Software\gerbv-@gerbv_version@" "" $INSTDIR
+  WriteRegStr HKCU "Software\gerbv-@prog_version@" "" $INSTDIR
   
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -186,6 +186,6 @@ Section "Uninstall"
     StrCmp $MUI_TEMP $SMPROGRAMS startMenuDeleteLoopDone startMenuDeleteLoop
   startMenuDeleteLoopDone:
 
-  DeleteRegKey /ifempty HKCU "Software\gerbv-@gerbv_version@"
+  DeleteRegKey /ifempty HKCU "Software\gerbv-@prog_version@"
 
 SectionEnd
