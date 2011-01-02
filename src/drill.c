@@ -1695,26 +1695,27 @@ eat_line(gerb_file_t *fd)
     }
 } /* eat_line */
 
-
 /* -------------------------------------------------------------- */
 static char *
 get_line(gerb_file_t *fd)
 {
-    int read = gerb_fgetc(fd);
-    gchar *retstring = g_strdup("");
-    gchar *tmps = NULL;
+	int read = gerb_fgetc(fd);
+	gchar *retstring;
+	gchar *tmps=g_strdup("");
 
-    while(read != 10 && read != 13) {
-	if (read == EOF) return retstring;
-	retstring = g_strdup_printf("%s%c", retstring, read);
+	while(read != 10 && read != 13) {
+		if (read == EOF)
+			return tmps;
+		retstring = g_strdup_printf("%s%c", tmps, read);
 
-	/* since g_strdup_printf allocates memory, we need to free it */
-	if (tmps)  {
-	    g_free (tmps);
-	    tmps = NULL;
+		/* since g_strdup_printf allocates memory, we need to free it */
+		if (tmps)  {
+			g_free (tmps);
+			tmps = NULL;
+		}
+		tmps = retstring;;
+		read = gerb_fgetc(fd);
 	}
-	tmps = retstring;;
-	read = gerb_fgetc(fd);
-    }
-    return retstring;
+	return tmps;
 } /* get_line */
+

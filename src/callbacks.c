@@ -517,7 +517,10 @@ void
 callbacks_fullscreen_toggled (GtkMenuItem *menuitem, gpointer user_data)
 {
 	//struct GtkWindow *win = (struct GtkWindow *)(screen.win.topLevelWindow);
-	GdkWindowState state = gdk_window_get_state (gtk_widget_get_window(screen.win.topLevelWindow));
+	GdkWindow *win;
+	g_object_get(screen.win.topLevelWindow, "window", &win, NULL);
+	GdkWindowState state = gdk_window_get_state (win);
+
 	if(state & GDK_WINDOW_STATE_FULLSCREEN)
 		gtk_window_unfullscreen (GTK_WINDOW(screen.win.topLevelWindow));
 	else
@@ -528,14 +531,24 @@ callbacks_fullscreen_toggled (GtkMenuItem *menuitem, gpointer user_data)
 void
 callbacks_show_toolbar_toggled (GtkMenuItem *menuitem, gpointer user_data)
 {
-	gtk_widget_set_visible (user_data, GTK_CHECK_MENU_ITEM(menuitem)->active);
+	if (GTK_CHECK_MENU_ITEM(menuitem)->active){
+		gtk_widget_show (user_data);
+	}
+	else {
+		gtk_widget_hide (user_data);
+	}
 }
 
 /* --------------------------------------------------------- */
 void
 callbacks_show_sidepane_toggled (GtkMenuItem *menuitem, gpointer user_data)
 {
-	gtk_widget_set_visible (user_data, GTK_CHECK_MENU_ITEM(menuitem)->active);
+	if (GTK_CHECK_MENU_ITEM(menuitem)->active){
+		gtk_widget_show (user_data);
+	}
+	else {
+		gtk_widget_hide (user_data);
+	}
 }
 
 /* --------------------------------------------------------- */
