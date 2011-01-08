@@ -6,8 +6,6 @@
 ##
 ##    Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
 ##
-##  $Id$
-##
 ##  This program is free software; you can redistribute it and/or modify
 ##  it under the terms of the GNU General Public License as published by
 ##  the Free Software Foundation; either version 2 of the License, or
@@ -77,7 +75,7 @@ libgerbv_la_SOURCES= \
 # 6. If any interfaces have been removed since the last public release, then
 #    set age to 0.
 #
-libgerbv_la_LDFLAGS = -version-info 1:5:0 -no-undefined
+libgerbv_la_LDFLAGS = -version-info 1:6:0 -no-undefined
 
 gerbv_SOURCES = \
 		opdefines.h \
