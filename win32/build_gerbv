@@ -146,6 +146,14 @@ while test $# -ne 0 ; do
 	esac
 done
 
+do_fake_crossbuild=no
+if test -f /mingw/bin/mingw32-gcc.exe ; then
+	do_fake_crossbuild=yes
+fi
+
+echo "do_fake_crossbuild = ${do_fake_crossbuild}"
+
+enable_doc=
 prog_name=unknown
 if test ! -d win32 ; then
 	echo "$0:  ERROR.  This script must be run from the top level of the source tree"
@@ -158,6 +166,18 @@ fi
 
 if test -f src/pcb-menu.res ; then
 	prog_name=pcb
+	config_args="${config_args} --disable-dbus --disable-m4lib-png "
+	if test -f .gitignore -o -f CVS/Root ; then
+		echo "Building from git or CVS so the documentation"
+		echo "build will be disabled (since we are cross building"
+		config_args="${config_args} --disable-doc" 
+		enable_doc=";"
+	fi
+fi
+
+if test -f libwcalc/microstrip.c ; then
+	prog_name=wcalc
+	config_args="${config_args} --disable-htdocs --disable-cgi --disable-stdio"
 fi
 
 if test ${prog_name} = unknown ; then
@@ -169,15 +189,20 @@ EOF
 	exit 1
 fi
 
+echo "Building program:  ${prog_name}"
+
 # Run this under cygwin to build gerbv or pcb and create a windows installer for
 # it.  Thanks to Bob Paddock for pointing me to NSIS and answering some 
 # beginner windows questions.
 
 # where gtk_win32 is installed
 gtk_win32=c:\\cygwin\\home\\${USER}\\gtk_win32
+gd_win32=c:\\cygwin\\home\\${USER}\\gd_win32
+gd_win32_f=c:/cygwin/home/${USER}/gd_win32
 
 # where only the runtime components are installed
 gtk_win32_runtime=c:\\\\cygwin\\\\home\\\\${USER}\\\\gtk_win32_runtime
+gd_win32_runtime=c:\\\\cygwin\\\\home\\\\${USER}\\\\gd_win32_runtime
 
 # program version
 
@@ -194,6 +219,12 @@ makensis="/cygdrive/c/Program Files/NSIS/makensis.exe"
 #
 # ########################################################################
 
+
+######################################################################
+#
+# AUTOGEN
+#
+######################################################################
 
 if test ! -f configure -o $do_autogen = yes ; then
 	echo "Bootstrapping autotools"
@@ -226,9 +257,23 @@ pkg-config --list-all
 
 # do not try to use libpng-config, it seems broken on win32
 if test $prog_name = pcb ; then
-	LIBPNG_CFLAGS="-I${HOME}/gtk_win32/include"
-	LIBPNG_LDFLAGS="-L${HOME}/gtk_win32/lib"
-	LIBPNG_LIBS="-lpng12"
+	LIBPNG_CFLAGS="-I${gtk_win32}\\include"
+	LIBPNG_CPPFLAGS="-I${gtk_win32}\\include"
+	LIBPNG_LDFLAGS="-L${gtk_win32}\\lib"
+	LIBPNG_LIBS="-lpng14"
+	LIBGD_CFLAGS="-I${gd_win32}\\include -I${gd_win32_f}/include"
+	LIBGD_CPPFLAGS="-I${gd_win32}\\include"
+	LIBGD_LDFLAGS="-L${gd_win32}\\lib -L${gd_win32_f}/lib"
+	LIBGD_LIBS="-lbgd"
+	# this ugly hack is here because the AC_CHECK_FUNC autoconf
+	# test doesn't include gd.h.  Inside of gd.h, gdImageGif and
+	# friends are declared with
+	#  __declspec(dllimport) void _stdcall
+	# which causes a change in how the function is named in the DLL
+	# which in turn causes the autoconf test to fail.  ugh!  FIXME! 
+	export ac_cv_func_gdImageGif=yes
+	export ac_cv_func_gdImageJpeg=yes
+	export ac_cv_func_gdImagePng=yes
 else
 	LIBPNG_CFLAGS=""
 	LIBPNG_LDFLAGS=""
@@ -250,13 +295,6 @@ CYGWIN_CPPFLAGS="-mms-bitfields -mno-cygwin ${EXTRA_FLAGS}"
 export CYGWIN_CPPFLAGS
 
 
-do_fake_crossbuild=no
-if test -f /mingw/bin/mingw32-gcc.exe ; then
-	do_fake_crossbuild=yes
-fi
-
-echo "do_fake_crossbuild = ${do_fake_crossbuild}"
-
 # older releases of cygwin had a gcc that accepted -mno-cygwin.
 # in more recent releases this flag (which builds and links without
 # the cygwin dll) has been removed.  We either need a normal
@@ -275,12 +313,20 @@ if test ${do_fake_crossbuild} = yes ; then
 	# in PATH causes the mingw ranlib to be called.  The problem
 	# with that is tht libtool is passing an absolute cygwin
 	# path at install time to ranlib which can't deal.  The
-	# func_convert... stuff is supposed to help but it didn't
+	# func_convert... stuff is supposed to help but it didn't.
+	# The libtool folks have a patch for this so at some point
+	# this can go away.
 	RANLIB=/usr/bin/ranlib
 	export RANLIB
 	PATH=/cygdrive/c/MinGW/bin:${PATH}
 	export lt_cv_to_tool_file_cmd=func_convert_file_cygwin_to_w32
 fi
+
+######################################################################
+#
+# CONFIGURE
+#
+######################################################################
 
 # setting WIN32=yes will make sure that the desktop icon
 # gets compiled in
@@ -296,9 +342,10 @@ echo "Configuring for cygwin"
 	--disable-update-desktop-database \
 	--disable-update-mime-database \
 	${config_args} \
-	CFLAGS="${LIBPNG_CFLAGS}" \
-	LDFLAGS="${LIBPNG_LDFLAGS}" \
-	LIBS="${LIBPNG_LIBS}" \
+	CFLAGS="${LIBPNG_CFLAGS} ${LIBGD_CFLAGS}" \
+	CPPFLAGS="${LIBPNG_CPPFLAGS} ${LIBGD_CPPFLAGS}" \
+	LDFLAGS="${LIBPNG_LDFLAGS} ${LIBGD_LDFLAGS}" \
+	LIBS="${LIBPNG_LIBS} ${LIBGD_LIBS}" \
 	WIN32=yes \
 	2>&1 ; echo $? >&4 ) | tee c.log 1>&3) 4>&1 | (read a ; exit $a)) 3>&1
 
@@ -321,10 +368,18 @@ for f in `find . -name Makefile -print` ; do
 	remove_rc "$f"
 done
 
-echo "Removing spurious carriage returns in libtool..."
-remove_rc libtool
+if test -f libtool ; then
+	echo "Removing spurious carriage returns in libtool..."
+	remove_rc libtool
+fi
 
 fi # do_config
+
+######################################################################
+#
+# CLEAN
+#
+######################################################################
 
 if test "$do_clean" = "yes" ; then
 echo "Cleaning"
@@ -335,6 +390,12 @@ if test $? -ne 0 ; then
 fi
 fi
 
+######################################################################
+#
+# BUILD
+#
+######################################################################
+
 if test "$do_build" = "yes" ; then
 echo "Building for cygwin"
 ( ( ( make 2>&1 ; echo $? >&4) | tee m.log 1>&3) 4>&1 | (read a ; exit $a) ) 3>&1
@@ -343,6 +404,12 @@ if test $? -ne 0 ; then
 	exit 1
 fi
 fi
+
+######################################################################
+#
+# INSTALL
+#
+######################################################################
 
 if test "$do_install" = "yes" ; then
 echo "Installing for cygwin"
@@ -358,6 +425,12 @@ if test $? -ne 0 ; then
 fi
 fi
 
+######################################################################
+#
+# NSIS INSTALLER CREATION
+#
+######################################################################
+
 if test "$do_nsis" = "yes" ; then
 echo "Creating NSIS script"
 echo "srcdir = ${srcdir}"
@@ -366,9 +439,11 @@ echo "top_srcdir = ${top_srcdir}"
 echo "top_src_dir = ${top_src_dir}"
 
 sed \
+	-e "s|@enable_doc@|${enable_doc}|g" \
 	-e "s;@prog_version@;${prog_version};g" \
 	-e "s;@prog_prefix@;${prog_inst_dir};g" \
 	-e "s;@prog_srcdir@;${top_src_dir};g" \
+	-e "s;@gd_win32_runtime@;${gd_win32_runtime};g" \
 	-e "s;@gtk_win32_runtime@;${gtk_win32_runtime};g" \
 	${srcdir}/${prog_name}.nsi.in > ${srcdir}/${prog_name}.nsi
 
