@@ -1,6 +1,5 @@
 #!/bin/sh
 #
-# $Id$
 #
 # This script is probably not useful to most people.  It is used
 # to extract a set of downloaded files for gtk for windows and 
@@ -9,12 +8,22 @@
 # It is used when initially setting up a cygwin environment for 
 # building gerbv or pcb with a non-cygwin version for windows
 # as the goal.
+#
+# Among the several limitations of this script are:
+#
+# - most (all?) directory locations are hard coded.
+#
+# - it is really only "correct" for a particular set of downloaded
+#   files.  If you get a different version of anything, then you
+#   really need to spend time and verify that the licenses are all
+#   still correct.
+#
 
 # directory where all the files have been downloaded
 gtk_win32_downloads=${HOME}/gtk_win32_downloads
 
 # directory to extract everything (including headers) to.
-# This must match ./build_pcb.
+# This must match ./build_gerbv, or ./build_pcb.
 gtk_win32=${HOME}/gtk_win32
 gd_win32=${HOME}/gd_win32
 
@@ -23,7 +32,31 @@ gd_win32=${HOME}/gd_win32
 gtk_win32_runtime=${HOME}/gtk_win32_runtime
 gd_win32_runtime=${HOME}/gd_win32_runtime
 
+cat << EOF
+
+Configured directories:
+
+--------------------------------------------------
+GTK+ and friends developer and runtime directories
+--------------------------------------------------
+gtk_win32           ${gtk_win32}
+gtk_win32_runtime   ${gtk_win32_runtime}
+
+--------------------------------------
+GD developer and run time directories:
+--------------------------------------
+gd_win32            ${gd_win32}
+gd_win32_runtime    ${gd_win32_runtime}
+
+--------------------------------------------
+Directory where the downloaded files reside:
+--------------------------------------------
+gtk_win32_downloads ${gtk_win32_downloads}
+
+EOF
+
 # clean out old directories
+echo "Cleaning out old developer and runtime directories"
 test ! -d ${gtk_win32} || rm -fr ${gtk_win32}
 test ! -d ${gtk_win32_runtime} || rm -fr ${gtk_win32_runtime}
 
@@ -31,6 +64,7 @@ test ! -d ${gd_win32} || rm -fr ${gd_win32}
 test ! -d ${gd_win32_runtime} || rm -fr ${gd_win32_runtime}
 
 # make the new ones
+echo "Creating new old developer and runtime directories"
 mkdir -p ${gtk_win32}
 mkdir -p ${gtk_win32_runtime}
 
@@ -38,6 +72,7 @@ mkdir -p ${gd_win32}
 mkdir -p ${gd_win32_runtime}/bin
 
 # extract the runtime files
+echo "Extracting runtime files"
 cd ${gtk_win32_runtime}
 for f in ${gtk_win32_downloads}/*.zip ; do
 	fb=`basename "${f}"`
@@ -59,6 +94,7 @@ for f in ${gtk_win32_downloads}/*.zip ; do
 done
 
 # extract the runtime+developer files
+echo "Extracting developer files (to be used at compile time)"
 cd ${gtk_win32}
 for f in ${gtk_win32_downloads}/*.zip ; do
 	fb=`basename "${f}"`
@@ -76,15 +112,21 @@ for f in ${gtk_win32_downloads}/*.zip ; do
 	esac
 done
 
+# this was needed for older zlibs
+#mv ${gtk_win32_runtime}/zlib*.dll ${gtk_win32_runtime}/bin
+
+mv ${gtk_win32}/lib/libpng.def ${gtk_win32}/lib/png14.def
+mv ${gtk_win32}/lib/libpng.lib ${gtk_win32}/lib/png14.lib
+
 chmod 755 ${gtk_win32}/bin/*
-mv ${gtk_win32_runtime}/zlib*.dll ${gtk_win32_runtime}/bin
 chmod 755 ${gtk_win32_runtime}/bin/*
 
 cd ${HOME}
 
+echo "Extracting license files"
 
 cd ${gd_win32}
-unzip ${gtk_win32_downloads}/gd-*-win32.zip
+unzip -q ${gtk_win32_downloads}/gd-*-win32.zip
 cp */*.dll ${gd_win32_runtime}/bin
 cat > ${gd_win32_runtime}/gd-license.txt << EOF
 The GD library which provides png/gif/jpeg exporting
@@ -106,17 +148,26 @@ mkdir ${tmpd}
 cd ${tmpd}
 
 
-cat > ${gtk_win32_runtime}/LICENSE-lgpl << EOF
+cat > ${gtk_win32_runtime}/LICENSE-lgpl2 << EOF
 The following packages are covered by the 
-GNU Library General Public License (LGPL)
+GNU Library General Public License (LGPL) version 2
 
 atk
-cairo
 glib
 gtk+
 libiconv
 pango
 proxy-libintl
+
+----------------------------------------
+
+EOF
+
+cat > ${gtk_win32_runtime}/LICENSE-lgpl2-1 << EOF
+The following packages are covered by the 
+GNU Library General Public License (LGPL) version 2.1
+
+cairo
 
 ----------------------------------------
 
@@ -144,97 +195,101 @@ EOF
 
 # LGPL
 #
-# atk-1.22.0.tar.bz2
-# atk-1.22.0.zip
-# atk-dev-1.22.0.zip
+# atk-1.32.0.tar.bz2
+# atk_1.32.0-1_win32.zip
+# atk-dev_1.32.0-1_win32.zip
 
 bzcat ${gtk_win32_downloads}/atk-*.tar.bz2 | tar -xf -
-cat atk-*/COPYING >> ${gtk_win32_runtime}/LICENSE-lgpl
+cat atk-*/COPYING >> ${gtk_win32_runtime}/LICENSE-lgpl2
 rm -fr atk-*
 
-# dual LGPL and MPL (Mozilla public license)
+# dual LGPL-2.1 and MPL-1.1 (Mozilla public license)
 #
-#cairo-1.6.4.tar.gz
-#cairo-1.6.4.zip
-#cairo-dev-1.6.4.zip
+#cairo-1.10.0.tar.gz
+#cairo-1.10.0-1_win32.zip
+#cairo-dev_1.10.0-1_win32.zip
+tar -zxf ${gtk_win32_downloads}/cairo-*.tar.gz
+cat cairo-*/COPYING-LGPL-2.1 >> ${gtk_win32_runtime}/LICENSE-lgpl2-1
+rm -fr cairo-*
 
 # no copyright assigned and placed in public domain
 #
 # dirent.zip
 
 # sort of BSD with advertising like
-#expat-2.0.0.zip
+# download the license from:
+# http://expat.cvs.sourceforge.net/viewvc/expat/expat/COPYING?view=log
+# expat-2.0.1-1_win32.zip
 echo "expat is covered by the following copyright and license" > ${gtk_win32_runtime}/LICENSE-expat
 cat ${gtk_win32_downloads}/COPYING-expat >> ${gtk_win32_runtime}/LICENSE-expat
 
 
-#fontconfig-2.4.2-tml-20071015.diff
-#fontconfig-2.4.2-tml-20071015.zip
-#fontconfig-2.4.2.tar.gz
-#fontconfig-dev-2.4.2-tml-20071015.zip
-tar -zxvf ${gtk_win32_downloads}/fontconfig-*.tar.gz 
+# fontconfig-2.8.0.tar.gz
+# fontconfig-dev_2.8.0-2_win32.zip
+# fontconfig_2.8.0-2_win32.zip
+tar -zxf ${gtk_win32_downloads}/fontconfig-*.tar.gz 
 echo "fontconfig is covered by the following license" > ${gtk_win32_runtime}/LICENSE-fontconfig
 cat fontconfig*/COPYING >> ${gtk_win32_runtime}/LICENSE-fontconfig
 rm -fr fontconfig-*
 
 #
 # Dual, "you choose" license.  We pick GPL v2.
-#freetype-2.3.4.tar.bz2
-#freetype-2.3.4.zip
-#freetype-dev-2.3.4.zip
-#bzcat  ${gtk_win32_downloads}/freetype-2.3.4.tar.bz2  | tar -xvf - mv freetype-*/*/LICENSE.TXT ${gtk_win32_runtime}/LICENSE-freetype
+# freetype-2.4.2.tar.bz2
+# freetype-dev_2.4.2-1_win32.zip
+# freetype_2.4.2-1_win32.zip
+#bzcat  ${gtk_win32_downloads}/freetype-2.3.4.tar.bz2  | tar -xf - mv freetype-*/*/LICENSE.TXT ${gtk_win32_runtime}/LICENSE-freetype
 #rm -fr freetype-*
 
 
 # GPL v3
 #
-#gettext-0.17.tar.gz
-#gettext-runtime-0.17.zip
-#gettext-runtime-dev-0.17.zip
-#gettext-tools-0.17.zip
-tar -zxvf ${gtk_win32_downloads}/gettext-*.tar.gz
+# gettext-0.18.1.1.tar.gz
+# gettext-runtime-dev_0.18.1.1-2_win32.zip
+# gettext-runtime_0.18.1.1-2_win32.zip
+# gettext-tools-dev_0.18.1.1-2_win32.zip
+
+tar -zxf ${gtk_win32_downloads}/gettext-*.tar.gz
 cat gettext-*/COPYING >> ${gtk_win32_runtime}/LICENSE-gpl3
 rm -fr gettext-*
 
 
 # LGPL
-#glib-2.16.5.tar.bz2
-#glib-2.16.5.zip
-#glib-dev-2.16.5.zip
+# glib-2.26.1.tar.bz2
+# glib-dev_2.26.1-1_win32.zip
+# glib_2.26.1-1_win32.zip
 
 # LGPL
 #
-#gtk+-2.12.11.tar.bz2
-#gtk+-2.12.11.zip
-#gtk+-dev-2.12.11.zip
-
+# gtk+-2.22.1.tar.bz2
+# gtk+-dev_2.22.1-1_win32.zip
+# gtk+_2.22.1-1_win32.zip
 
 # jpeg license
 #
-#jpeg-6b-4-bin.zip
-#jpeg-6b-4-dep.zip
-#jpeg-6b-4-lib.zip
-#jpegsrc.v6b.tar.gz
+# jpeg-6b-4-bin.zip
+# jpeg-6b-4-dep.zip
+# jpeg-6b-4-lib.zip
+# jpegsrc.v6b.tar.gz
 
-#unzip ${gtk_win32_downloads}/jpeg-*-src.zip
-tar -zxvf ${gtk_win32_downloads}/jpegsrc.v6b.tar.gz
-echo "libjpeg is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-jpeg
-cat jpeg-6b/README >> ${gtk_win32_runtime}/LICENSE-jpeg
-rm -fr jpeg-6b
+# FIXME -- missing jpeg.  Do I care?
+#unzip -q ${gtk_win32_downloads}/jpeg-*-src.zip
+#tar -zxf ${gtk_win32_downloads}/jpegsrc.v6b.tar.gz
+#echo "libjpeg is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-jpeg
+#cat jpeg-6b/README >> ${gtk_win32_runtime}/LICENSE-jpeg
+#rm -fr jpeg-6b
 
 # LGPL
-#
+# not used anymore
 #libiconv-1.9.1.bin.woe32.zip
 #libiconv-1.9.1.tar.gz
 
-#libpng-1.2.9.tar.gz
-#libpng-dev-1.2.9.zip
-#libpng-1.2.9.zip
+# 
+# libpng-1.4.3.tar.gz
+# libpng-dev_1.4.3-1_win32.zip
+# libpng_1.4.3-1_win32.zip
 mkdir tmppng
 cd tmppng
-unzip ${gtk_win32_downloads}/libpng-dev-*.zip
-ls 
-ls include
+unzip -q ${gtk_win32_downloads}/libpng-dev*.zip
 
 echo "libpng is covered by the following copyright and license" > ${gtk_win32_runtime}/LICENSE-png
 awk '/COPYRIGHT/,/^[ \t]*$/ {print}' include/png.h >> ${gtk_win32_runtime}/LICENSE-png
@@ -243,44 +298,50 @@ rm -fr tmppng
 
 # LGPL
 #
-#pango-1.20.5.tar.bz2
-#pango-1.20.5.zip
-#pango-dev-1.20.5.zip
-
+# pango-1.28.3.tar.bz2
+# pango-dev_1.28.3-1_win32.zip
+# pango_1.28.3-1_win32.zip
 
 # GPL
 #
-#pkg-config-0.23.tar.gz
-#pkg-config-0.23-2.zip
-tar -zxvf ${gtk_win32_downloads}/pkg-config-*.tar.gz
+# pkg-config-0.23.tar.gz
+# pkg-config-dev_0.23-3_win32.zip
+# pkg-config_0.23-3_win32.zip
+tar -zxf ${gtk_win32_downloads}/pkg-config-*.tar.gz
 cat pkg-config-*/COPYING >> ${gtk_win32_runtime}/LICENSE-gpl2
 rm -fr pkg-config-*
 
 # LGPL
-#
+# no longer used
 # proxy-libintl-20080728.zip
 
 # BSD-like with advertising clause
 #
-#tiff-3.8.2.tar.gz
-#libtiff-3.8.2.zip
-#libtiff-dev-3.8.2.zip
-tar -zxvf ${gtk_win32_downloads}/tiff-*.tar.gz
-echo "libtiff is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-tiff
-cat tiff-*/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-tiff
-rm -fr tiff-*
+# FIXME - do I need this one?  I don't have the files
+# tiff-3.8.2.tar.gz
+# libtiff-3.8.2.zip
+# libtiff-dev-3.8.2.zip
+# tar -zxf ${gtk_win32_downloads}/tiff-*.tar.gz
+# echo "libtiff is covered by the following license:" > ${gtk_win32_runtime}/LICENSE-tiff
+# cat tiff-*/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-tiff
+# rm -fr tiff-*
 
 # Not needed anymore
 #xpm-nox-4.0.3-20020617.zip
 #xpm-nox-dev-4.0.3-20020112.zip
-#tar -zxvf ${gtk_win32_downloads}/xpm-*.tar.gz
+#tar -zxf ${gtk_win32_downloads}/xpm-*.tar.gz
 #echo "The xpm library is covered by the following license and copyright:" > ${gtk_win32_runtime}/LICENSE-xpm
 #cat xpm-*/COPYRIGHT >> ${gtk_win32_runtime}/LICENSE-xpm
 #rm -fr xpm-*
 
-#zlib123-dll.zip
-# the license had to be found on the zlib web site
+# zlib-dev_1.2.5-2_win32.zip
+# zlib125.zip
+# zlib_1.2.5-2_win32.zip
+unzip -q ${gtk_win32_downloads}/zlib125.zip
 echo "zlib is covered by the following license and copyright" > ${gtk_win32_runtime}/LICENSE-zlib
-cat ${gtk_win32_downloads}/zlib_license.txt >> ${gtk_win32_runtime}/LICENSE-zlib
+#cat ${gtk_win32_downloads}/zlib_license.txt >> ${gtk_win32_runtime}/LICENSE-zlib
+awk '/Copyright/ {p=1} p==1{print}' zlib-1.2.5/README >> ${gtk_win32_runtime}/LICENSE-zlib
+rm -fr zlib-1.2.5
 
+echo "All done!"
 
