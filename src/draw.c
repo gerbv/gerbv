@@ -638,15 +638,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		invertPolarity = FALSE;
 		
     if (invertPolarity) {
-    	drawOperatorClear = CAIRO_OPERATOR_OVER;
-    	drawOperatorDark = CAIRO_OPERATOR_CLEAR;
-    	cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
-    	cairo_paint (cairoTarget);
-    	cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
+		drawOperatorClear = CAIRO_OPERATOR_OVER;
+		drawOperatorDark = CAIRO_OPERATOR_CLEAR;
+		cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
+		cairo_paint (cairoTarget);
+		cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
     }
     else {
-      drawOperatorClear = CAIRO_OPERATOR_CLEAR;
-    	drawOperatorDark = CAIRO_OPERATOR_OVER;
+		drawOperatorClear = CAIRO_OPERATOR_CLEAR;
+		drawOperatorDark = CAIRO_OPERATOR_OVER;
     }
     /* next, push two cairo states to simulate the first layer and netstate
        translations (these will be popped when another layer or netstate is
@@ -670,11 +670,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		/* do any rotations */
 		cairo_rotate (cairoTarget, net->layer->rotation);
 		/* handle the layer polarity */
-		if ((net->layer->polarity == GERBV_POLARITY_CLEAR)) {
-			cairo_set_operator (cairoTarget, drawOperatorClear);
+		if ((net->layer->polarity == GERBV_POLARITY_CLEAR)^invertPolarity) {
+			cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
+			drawOperatorClear = CAIRO_OPERATOR_OVER;
+    			drawOperatorDark = CAIRO_OPERATOR_CLEAR;
 		}
 		else {
-			cairo_set_operator (cairoTarget, drawOperatorDark);
+			cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
+			drawOperatorClear = CAIRO_OPERATOR_CLEAR;
+    			drawOperatorDark = CAIRO_OPERATOR_OVER;
 		}
 		/* check for changes to step and repeat */
 		repeat_X = net->layer->stepAndRepeat.X;
