@@ -341,7 +341,73 @@ callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
   callbacks_update_layer_tree();
   return;
 }
+struct l_image_info {
+	gerbv_image_t *image;
+	gerbv_user_transformation_t *transform;
+};
+/* --------------------------------------------------------- */
+/**Go through each file and look at visibility, then type.  
+Make sure we have at least 2 files.
+*/
 
+gerbv_image_t *merge_images (int type)
+{
+	gint i, filecount, img;
+/*	struct l_image_info *images; */
+	gerbv_image_t *out;
+	struct l_image_info {
+	gerbv_image_t *image;
+	gerbv_user_transformation_t *transform;
+	}*images;
+	
+	
+	images=(struct l_image_info *)g_new0(struct l_image_info,1);
+	out=NULL;
+	switch(type){
+		case CALLBACKS_SAVE_FILE_DRILLM:
+				type=GERBV_LAYERTYPE_DRILL;
+			break;
+		case CALLBACKS_SAVE_FILE_RS274XM:
+				type=GERBV_LAYERTYPE_RS274X;
+			break;
+		default:
+			GERB_MESSAGE("Unknown Layer type for merge\n");
+			goto err;
+	}
+	dprintf("Looking for matching files\n"); 
+	for (i=img=filecount=0;i<mainProject->max_files;++i){
+		if (mainProject->file[i] &&  mainProject->file[i]->isVisible &&
+	    (mainProject->file[i]->image->layertype == type) ) {
+			++filecount;
+			dprintf("Adding '%s'\n",mainProject->file[i]->name); 
+			images[img].image=mainProject->file[i]->image;
+/*			printf("Adding transform\n"); */
+		  images[img++].transform=&mainProject->file[i]->transform;
+/*			printf("Realloc\n"); */
+			images=(struct l_image_info *)g_renew(struct l_image_info, images,img+1);
+		}
+/*		printf("Done with add\n"); */
+	}
+	if(2>filecount){
+		GERB_MESSAGE ("Not Enough Files of same type to merge\n");
+		goto err;
+	}
+	dprintf("Now merging files\n");
+	for (i=0;i<img;++i){
+		gerbv_user_transformation_t *thisTransform;
+		gerbv_user_transformation_t identityTransform = {0,0,1,1,0,FALSE,FALSE,FALSE};
+		thisTransform=images[i].transform;
+		if (NULL == thisTransform ) 
+			thisTransform = &identityTransform;
+		if(0 == i)
+			out = gerbv_image_duplicate_image (images[i].image, thisTransform);
+		else
+			gerbv_image_copy_image(images[i].image,thisTransform,out);
+	}
+err:
+	g_free(images);
+	return out;
+}
 /* --------------------------------------------------------- */
 void
 callbacks_generic_save_activate (GtkMenuItem     *menuitem,
@@ -366,6 +432,10 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		windowTitle = g_strdup ("Export RS-274X file as...");
 	else if (processType == CALLBACKS_SAVE_FILE_DRILL)
 		windowTitle = g_strdup ("Export Excellon drill file as...");
+	else if (processType == CALLBACKS_SAVE_FILE_RS274XM)
+		windowTitle = g_strdup ("Export RS-274Xm file as...");
+	else if (processType == CALLBACKS_SAVE_FILE_DRILLM)
+		windowTitle = g_strdup ("Export Excellon drillm file as...");
 	else if (processType == CALLBACKS_SAVE_LAYER_AS)
 		windowTitle = g_strdup ("Save layer as...");
 		
@@ -448,7 +518,26 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			
 			gerbv_export_drill_file_from_image (filename, mainProject->file[index]->image,
 				&mainProject->file[index]->transform);
+		}	/**create new image....  */
+		else if (processType == CALLBACKS_SAVE_FILE_RS274XM) {
+			gerbv_image_t *image;
+			gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};
+			if(NULL != (image=merge_images(processType)) ){
+				/*printf("Preparing to export merge\n"); */
+				gerbv_export_rs274x_file_from_image (filename, image,	&t);	
+				gerbv_destroy_image(image);
+				GERB_MESSAGE ("Merged visible gerber layers and placed in '%s'\n",filename);
+			}
 		}
+		else if (processType == CALLBACKS_SAVE_FILE_DRILLM) {
+			gerbv_image_t *image;
+			gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};
+			if(NULL != (image=merge_images(processType)) ){
+				gerbv_export_drill_file_from_image (filename, image,&t);
+				gerbv_destroy_image(image);
+				GERB_MESSAGE ("Merged visible drill layers and placed in '%s'\n",filename);
+			}	
+		}		
 	}
 	g_free (filename);
 	callbacks_update_layer_tree();
@@ -525,10 +614,7 @@ void
 callbacks_fullscreen_toggled (GtkMenuItem *menuitem, gpointer user_data)
 {
 	//struct GtkWindow *win = (struct GtkWindow *)(screen.win.topLevelWindow);
-	GdkWindow *win;
-	g_object_get(screen.win.topLevelWindow, "window", &win, NULL);
-	GdkWindowState state = gdk_window_get_state (win);
-
+	GdkWindowState state = gdk_window_get_state (gtk_widget_get_window(screen.win.topLevelWindow));
 	if(state & GDK_WINDOW_STATE_FULLSCREEN)
 		gtk_window_unfullscreen (GTK_WINDOW(screen.win.topLevelWindow));
 	else
@@ -539,24 +625,14 @@ callbacks_fullscreen_toggled (GtkMenuItem *menuitem, gpointer user_data)
 void
 callbacks_show_toolbar_toggled (GtkMenuItem *menuitem, gpointer user_data)
 {
-	if (GTK_CHECK_MENU_ITEM(menuitem)->active){
-		gtk_widget_show (user_data);
-	}
-	else {
-		gtk_widget_hide (user_data);
-	}
+	gtk_widget_set_visible (user_data, GTK_CHECK_MENU_ITEM(menuitem)->active);
 }
 
 /* --------------------------------------------------------- */
 void
 callbacks_show_sidepane_toggled (GtkMenuItem *menuitem, gpointer user_data)
 {
-	if (GTK_CHECK_MENU_ITEM(menuitem)->active){
-		gtk_widget_show (user_data);
-	}
-	else {
-		gtk_widget_hide (user_data);
-	}
+	gtk_widget_set_visible (user_data, GTK_CHECK_MENU_ITEM(menuitem)->active);
 }
 
 /* --------------------------------------------------------- */

@@ -34,7 +34,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -140,8 +139,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *pdf;
 	GtkWidget *svg;
 	GtkWidget *postscript;
-	GtkWidget *rs274x;
-	GtkWidget *drill;
+	GtkWidget *rs274x,*drill,*rs274xm,*drillm;
+	
 	GtkWidget *separator1;
 #if GTK_CHECK_VERSION(2,10,0)
 	GtkWidget *print;
@@ -398,6 +397,14 @@ interface_create_gui (int req_width, int req_height)
 	drill = gtk_menu_item_new_with_mnemonic (_("_Excellon drill..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), drill);
 	gtk_tooltips_set_tip (tooltips, drill, _("Export layer to an Excellon drill file"), NULL);
+	
+	rs274xm = gtk_menu_item_new_with_mnemonic (_("RS-274X Merge (Gerber)..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), rs274xm);
+	gtk_tooltips_set_tip (tooltips, rs274xm, _("Export (merge visible gerber layers) to a RS-274X (Gerber) file"), NULL);
+	
+	drillm = gtk_menu_item_new_with_mnemonic (_("Excellon drill Merge..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), drillm);
+	gtk_tooltips_set_tip (tooltips, drillm, _("Export (merge visible drill layers) to an Excellon drill file"), NULL);	
 	
 	/* File menu items dealing with printing and quitting. */
 	separator1 = gtk_separator_menu_item_new ();
@@ -1105,6 +1112,12 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) drill, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_DRILL);
+	g_signal_connect ((gpointer) rs274xm, "activate",
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_RS274XM);
+	g_signal_connect ((gpointer) drillm, "activate",
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_DRILLM);
 
 #if GTK_CHECK_VERSION(2,10,0)
 	g_signal_connect ((gpointer) print, "activate",
