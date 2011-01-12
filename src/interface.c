@@ -656,7 +656,7 @@ interface_create_gui (int req_width, int req_height)
 	}
 
 	/* --- Next menu item (Current Layer) --- */
-	menuitem_layer = gtk_menu_item_new_with_mnemonic (_("Current _Layer"));
+	menuitem_layer = gtk_menu_item_new_with_mnemonic (_("_Layer"));
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_layer);
 
 	menuitem_layer_menu = gtk_menu_new ();
