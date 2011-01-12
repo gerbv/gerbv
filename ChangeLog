@@ -1,3 +1,196 @@
+2011-01-08   Dan McMahill * dan AT mcmahill dot net *
+
+	* src/Makefile.am: Bump shared lib version in prep for 2.5 release.
+
+2011-01-07   Dan McMahill * dan AT mcmahill dot net *
+
+	* README-release.txt: Minor updates (version numbers only) for the
+	up and coming 2.5 release.
+
+2011-01-07   Dan McMahill * dan AT mcmahill dot net *
+
+	* win32/build_gerbv: Expand this script to cover pcb and wcalc as
+	well as gerbv.  Until such time as I get a decent NetBSD or Linux
+	hosted cross build environment set up I should at least have an
+	easier job of maintaining this script since it should be shared with
+	no changes between the three projects now.
+
+2011-01-07   Dan McMahill * dan AT mcmahill dot net *
+
+	* win32/gerbv.nsi.in: Update some of the installer license info to
+	reflect the latest set of gtk for win32 and friends downloads
+
+2011-01-07   Dan McMahill * dan AT mcmahill dot net *
+
+	* win32/extract_gtk_win32: Update for the latest set of downloads of
+	gtk for win32
+
+2011-01-02   Dan McMahill * dan AT mcmahill dot net *
+
+	* win32/gerbv.nsi.in:  Use @prog instead of @gerbv in this file
+	which makes it a little easier to use the same top level build
+	script for both pcb and gerbv.
+
+2011-01-02   Dan McMahill * dan AT mcmahill dot net *
+
+	* : commit 966ac7e1567380978f8f6e63e11829105c055179  Author: Dan
+	McMahill * dan AT mcmahill dot net * Date:   Sat Jan 1 13:26:43 2011
+	-0500
+
+2011-01-01   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* : commit 3b0ad206c7df6a5b1aa9cc0d6d308f70c32e68dc  Author: Julian
+	Lamb * thepurlieu AT gmail dot com * Date:   Sat Jan 1 09:58:53 2011
+	-0500
+
+2010-12-31   Dan McMahill * dan AT mcmahill dot net *
+
+	* src/interface.c: Add missing header for malloc().
+
+2010-12-30   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/drill.c: * fix leak and possible segfault in drill parser (patch by Doug
+	Springer)
+
+2010-12-22   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/pick-and-place.c: * fix segfault in pick-and-place parser (bug 3141941)
+
+2010-12-14   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/gerbv.c, src/gerbv.h,
+	src/interface.c, src/interface.h, src/main.c, src/main.h,
+	src/project.c, src/render.c: * add persistent keyboard accelerators, extra menu options, and do
+	general cleanup large patch from Stefan Tauner, which finishes
+	mapping every possible command to the menus, as well as add
+	persistent keyboard accelerators for everything. Also lots of
+	general cleanup in the interface code.
+
+2010-10-12   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/render.c: * increase max zoom 4 times, to allow more accurate measurements The
+	previous zoom limit was set to prevent GDK rendering artifacts, but
+	the rendering speedups in the code now eliminate those so there is
+	no issue with zooming in.
+
+2010-09-08   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/drill.c: * fix crasher in drill parsing (bug 3061736) crasher was caused in
+	bug in get_line function when given an empty line
+
+2010-08-24   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/interface.c: * add accelerator for color changing
+
+2010-08-24   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/interface.c: * change F8 shortcut to F7, per the GNOME HIG
+
+2010-08-24   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c: * add keyboard shortcut for moving layers up and down (patch by
+	Stefan Tauner)
+
+2010-08-22   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/interface.c: * change toolbar visibility key shortcut to F8, since F10 is
+	normally stolen for the GTK menu
+
+2010-08-22   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c: * add pseudo-fullscreen mode (patch by Stefan Tauner)
+
+2010-08-20   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/draw.c, src/interface.c: add
+	ability to toggle sidebar visibility and add menu and keyboard
+	shortcut for layer visibility (patch by Stefan Tauner)
+
+2010-08-18   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c: add ability to
+	toggle toolbar visibility, and add additional menu accelerators
+	(patch by Stefan Tauner)
+
+2010-08-18   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/draw.c: pixel-align the coordinates when rendering via cairo
+	(benchmark shows a 10%-15% speed boost)
+
+2010-08-11   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/drill.c: * fix length calcs in previous patch to prevent possible buffer
+	overruns
+
+2010-08-11   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/drill.c: * ignore comments in drill files when determining file type patch by Doug Springer (ID:3043154)
+
+2010-07-28   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/gerb_image.c, src/gerber.c, src/gerber.h: recalculate the
+	bounding boxes when drawing primatives via the libgerbv API
+
+2010-06-30   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/gerber.c: fix handling of trailing zero suppression with very
+	large precisions (TAX35, etc) (bug 3022957)
+
+2010-06-11   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* doc/example-code/example1.c, doc/example-code/example2.c,
+	doc/example-code/example4.c, doc/example-code/example5.c,
+	src/export-rs274x.c: fix the example code files showing how to use
+	libgerv, and use a default identity transform during exporting if
+	nothing is specified
+
+2010-04-29   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/draw-gdk.c: fix GDK rendering or Macro 22 elements when
+	negative coordinates are present (bug 2994471)
+
+2010-04-27   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/interface.c: fix tooltip for modify layer button (patch by
+	Joerg Wunsch)
+
+2010-03-25   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/gerber.c: fix handling of whitespace in the middle of an
+	RS274X command (bug 2976400)
+
+2010-03-11   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/export-rs274x.c: * fix bug in exporting outline macros (fixes bug 2968567 and
+	2968550)
+
+2010-02-25   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c: unselect all items if a layer is hidden (bug
+	2957479)
+
+2010-02-25   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/drill.c: fix drill parsing bug when INCH command has nothing
+	after it (bug 2957994)
+
+2010-02-20   Dan McMahill * dan AT mcmahill dot net *
+
+	* configure.ac: Welcome to 2.4A
+
+2010-02-20   Dan McMahill * dan AT mcmahill dot net *
+
+	* src/Makefile.am: Increment revision for shared lib in prep for the
+	2.4.0 release.
+
+2010-02-20   Dan McMahill * dan AT mcmahill dot net *
+
+	* ChangeLog, NEWS: Update ChangeLog and NEWS for the 2.4.0 release
+
+2010-02-20   Dan McMahill * dan AT mcmahill dot net *
+
+	* utils/git2cl: Strip trailing whitespace on comment lines.
+
 2010-02-20   Dan McMahill * dan AT mcmahill dot net *
 
 	* README-release.txt: Minor updates for 2.4.0 release.
