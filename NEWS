@@ -1,4 +1,33 @@
 ========================================================================
+Release Notes for gerbv-2.5.0
+========================================================================
+The following is a summary of the changes which went into gerbv-2.5.0.
+For a complete list of changes, refer to ChangeLog.  This release
+is primarily a bug fix release.
+
+- libgerbv:  fix leak and possible segfault in drill parser
+- libgerbv:  fix segfault in pick and place parser
+- gerbv:     add persistent keyboard accelerators and extra menu options
+- gerbv:     increase max zoom 4x to allow more accurate measurements
+- libgerbv:  fix bug which caused the drill parser to crash on an empty line
+- gerbv:     change F8 shortcut to F7 per GNOME HIG
+- gerbv:     add psuedo fullscreen mode
+- gerbv:     add ability to toggle sidebar visibility
+- gerbv:     speed up cairo rendering.
+- libgerbv:  improved detection of drill files (comment lines are now
+             ignored during file type detection)
+- libgerbv:  fix handling of trailing zero suppression with very large
+             precisions.
+- examples:  fix some of the example code showing how to use libgerbv.
+- gerbv:     fix gdk rendering of macro 22 elements with negative coordinates
+- gerbv:     fix tooltip for modify layer button
+- libgerbv:  fix handling of whitespace in the middle of an RS-274X command
+- libgerbv:  fix bug in exporting outline macros
+- gerbv:     unselect all items if a layer is hidden
+- libgerbv:  fix drill parsing when INCH has nothing after it
+
+
+========================================================================
 Release Notes for gerbv-2.4.0
 ========================================================================
 The following is a summary of the changes which went into gerbv-2.4.0.
