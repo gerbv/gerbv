@@ -70,7 +70,7 @@ void
 callbacks_print_activate                      (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
-void
+gboolean
 callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 

@@ -75,6 +75,7 @@ typedef struct {
 	gboolean updatingTools;
 	GtkWidget *layerTreePopupMenu;
 	GtkWidget *drawWindowPopupMenu;
+	GtkWidget *curLayerMenuItem;
 	gdouble lastMeasuredX;
 	gdouble lastMeasuredY;
     } win;

@@ -120,6 +120,15 @@ static void callbacks_units_changed (gerbv_gui_unit_t unit);
 static void callbacks_update_statusbar_coordinates (gint x, gint y);
 static void callbacks_update_ruler_scales (void);
 static void callbacks_render_type_changed (void);
+static void show_no_layers_warning (void);
+
+/* --------------------------------------------------------- */
+
+static void show_no_layers_warning (void) {
+	snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
+		"<b>No layers are currently loaded. A layer must be loaded first.</b>");
+	callbacks_update_statusbar();
+}
 
 /* --------------------------------------------------------- */
 GtkWidget *
@@ -147,8 +156,7 @@ callbacks_generate_alert_dialog (gchar *primaryText, gchar *secondaryText){
   *
   */
 void
-callbacks_new_activate                        (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+callbacks_new_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
@@ -552,13 +560,16 @@ callbacks_show_sidepane_toggled (GtkMenuItem *menuitem, gpointer user_data)
 }
 
 /* --------------------------------------------------------- */
-/** View/"Toggle visibility layer X" menu item was activated.
+/** View/"Toggle visibility layer X" or Current layer/"Toggle visibility" menu item was activated.
   * Set the isVisible flag on file X and update the treeview and rendering.
 */
 void
 callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
 	int i = GPOINTER_TO_INT(user_data);
+	if (i < 0)
+		i = callbacks_get_selected_row_index ();
+
 	if (0 <= i && i <= mainProject->last_loaded) {
 		mainProject->file[i]->isVisible = !mainProject->file[i]->isVisible;
 		/* clear any selected items so they don't show after the layer is hidden */
@@ -1393,11 +1404,12 @@ callbacks_online_manual_activate              (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 /**
-  * The file -> quit menu item was selected.  
+  * The file -> quit menu item was selected or
+  * the user requested the main window to be closed by other means.
   * Check that all changes have been saved, and then quit.
   *
   */
-void
+gboolean
 callbacks_quit_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
@@ -1415,10 +1427,12 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
             "Quitting the program will cause any unsaved changes to be lost.",
 	    FALSE,
 	    NULL)) {
-    return;
+    return TRUE; // stop propagation of the delete_event.
+	// this would destroy the gui but not return from the gtk event loop.
   }
   gerbv_unload_all_layers (mainProject);
   gtk_main_quit();
+  return FALSE; // more or less... meaningless :)
 }
 
 /* --------------------------------------------------------- */
@@ -1939,7 +1953,7 @@ callbacks_get_selected_row_index  (void) {
 				return i;
 			}
 			i++;
-     		}	
+     		}
 	}
 	return index;
 }
@@ -1976,13 +1990,17 @@ callbacks_move_layer_down_menu_activate (GtkMenuItem *menuitem, gpointer user_da
 void
 callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
-	
-	if ((index >= 0) && (index < mainProject->last_loaded)) {
+	if (index < 0) {
+		show_no_layers_warning ();
+		return;
+	}
+
+	if (index < mainProject->last_loaded) {
 		gerbv_change_layer_order (mainProject, index, index + 1);
 	      callbacks_update_layer_tree ();
 	      callbacks_select_row (index + 1);
 		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-			render_refresh_rendered_image_on_screen();
+			render_refresh_rendered_image_on_screen ();
 		}
 		else {
 			render_recreate_composite_surface (screen.drawing_area);
@@ -1994,7 +2012,7 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 /* --------------------------------------------------------- */
 void
 callbacks_move_layer_up_menu_activate (GtkMenuItem *menuitem, gpointer user_data) {
-	callbacks_move_layer_up_button_clicked(NULL, NULL);
+	callbacks_move_layer_up_button_clicked (NULL, NULL);
 	gtk_widget_grab_focus (screen.win.layerTree);
 }
 
@@ -2002,7 +2020,10 @@ callbacks_move_layer_up_menu_activate (GtkMenuItem *menuitem, gpointer user_data
 void
 callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
-	
+	if (index < 0) {
+		show_no_layers_warning ();
+		return;
+	}
 	if (index > 0) {
 		gerbv_change_layer_order (mainProject, index, index - 1);
 		callbacks_update_layer_tree ();
@@ -2100,7 +2121,10 @@ callbacks_show_color_picker_dialog (gint index){
 void
 callbacks_invert_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
-	
+	if (index < 0) {
+		show_no_layers_warning ();
+		return;
+	}
 	mainProject->file[index]->transform.inverted = !mainProject->file[index]->transform.inverted;
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree ();
@@ -2110,7 +2134,10 @@ callbacks_invert_layer_clicked  (GtkButton *button, gpointer   user_data) {
 void
 callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index=callbacks_get_selected_row_index();
-
+	if (index < 0) {
+		show_no_layers_warning ();
+		return;
+	}
 	callbacks_show_color_picker_dialog (index);
 }
 
@@ -2123,8 +2150,11 @@ callbacks_change_background_color_clicked  (GtkButton *button, gpointer   user_d
 void
 callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 	gint index = callbacks_get_selected_row_index();
-
-	render_remove_selected_objects_belonging_to_layer (index);	
+	if (index < 0) {
+		show_no_layers_warning ();
+		return;
+	}
+	render_remove_selected_objects_belonging_to_layer (index);
 	gerbv_revert_file (mainProject, index);
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree();
@@ -2135,13 +2165,10 @@ callbacks_change_layer_orientation_clicked  (GtkButton *button, gpointer userDat
 	gint index = callbacks_get_selected_row_index();
 
 	if (index < 0) {
-		interface_show_alert_dialog("No layers are currently loaded",
-	                        "A layer must be loaded before the orientation can be modified.",
-	                        FALSE,
-	                        NULL);
+		show_no_layers_warning ();
 		return;
 	}
-        
+
 	interface_show_modify_orientation_dialog(&mainProject->file[index]->transform,screen.unit);
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree ();	
@@ -2158,7 +2185,10 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     gint index = callbacks_get_selected_row_index();
     gchar *type;
     gint rc;
-
+	if (index < 0) {
+		show_no_layers_warning ();
+		return;
+	}
     dprintf ("%s(): index = %d\n", __FUNCTION__, index);
     attr = mainProject->file[index]->image->info->attr_list;
     n =  mainProject->file[index]->image->info->n_attr;
@@ -2401,29 +2431,35 @@ callbacks_update_layer_tree (void) {
 				gtk_tree_selection_select_iter (selection, &iter);
 			}
 		}
+		
+		if (mainProject->last_loaded >= 0){
+			dprintf("%s(): enabling layer menu; index=%d\n", __FUNCTION__, mainProject->last_loaded);
+			gtk_widget_set_sensitive (screen.win.curLayerMenuItem, TRUE);
+		}else{
+			dprintf("%s(): disabling layer menu; index=%d\n", __FUNCTION__, mainProject->last_loaded);
+			gtk_widget_set_sensitive (screen.win.curLayerMenuItem, FALSE);
+		}
+
 		screen.win.treeIsUpdating = FALSE;
 	}
 }
 
 /* --------------------------------------------------------------------------- */
 void
-callbacks_display_object_properties_clicked (GtkButton *button, gpointer   user_data){
+callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_data) {
 	int i;
 	gchar *layer_name;
 	gchar *net_label;
 	gboolean validAperture;
 
-	gint index=callbacks_get_selected_row_index();
-	if (index < 0)
+	gint index=callbacks_get_selected_row_index ();
+	if (index < 0 || screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
+		interface_show_alert_dialog("No object is currently selected",
+			"Objects must be selected using the pointer tool before you can view the object properties.",
+			FALSE,
+			NULL);
 		return;
-
-        if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
-	    interface_show_alert_dialog("No object is currently selected",
-                                        "Objects must be selected using the pointer tool before you can view the object properties.",
-                                        FALSE,
-                                        NULL);
-	    return;
-        }
+	}
 	
 	for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
 		gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,

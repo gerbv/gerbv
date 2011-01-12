@@ -71,6 +71,9 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_FILE_QUIT_MOD				(GdkModifierType) GDK_CONTROL_MASK
 
 #define ACCEL_EDIT						ACCEL_ROOT "edit"
+#define ACCEL_EDIT_PROPERTIES_PATH		ACCEL_EDIT "/Display properties of selected object(s)"
+#define ACCEL_EDIT_PROPERTIES_KEY		GDK_Return
+#define ACCEL_EDIT_PROPERTIES_MOD		(GdkModifierType) GDK_MOD1_MASK
 #define ACCEL_EDIT_DELETE_PATH			ACCEL_EDIT "/Delete selected object(s)"
 #define ACCEL_EDIT_DELETE_KEY			GDK_Delete
 #define ACCEL_EDIT_DELETE_MOD			(GdkModifierType) 0
@@ -85,12 +88,6 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_VIEW_SIDEPANE_PATH		ACCEL_VIEW "/Show Sidepane"
 #define ACCEL_VIEW_SIDEPANE_KEY			GDK_F9
 #define ACCEL_VIEW_SIDEPANE_MOD			(GdkModifierType) 0
-#define ACCEL_VIEW_LAYER_UP_PATH		ACCEL_VIEW "/Move current layer up"
-#define ACCEL_VIEW_LAYER_UP_KEY			GDK_Up
-#define ACCEL_VIEW_LAYER_UP_MOD			(GdkModifierType) GDK_CONTROL_MASK
-#define ACCEL_VIEW_LAYER_DOWN_PATH		ACCEL_VIEW "/Move current layer down"
-#define ACCEL_VIEW_LAYER_DOWN_KEY		GDK_Down
-#define ACCEL_VIEW_LAYER_DOWN_MOD		(GdkModifierType) GDK_CONTROL_MASK
 #define ACCEL_VIEW_VIS					ACCEL_VIEW "/Toggle layer visibilty"
 #define ACCEL_VIEW_VIS_LAYER1_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 1"
 #define ACCEL_VIEW_VIS_LAYER1_KEY		GDK_1
@@ -134,10 +131,18 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_VIEW_RENDER				ACCEL_VIEW "/Rendering"
 #define ACCEL_VIEW_UNITS				ACCEL_VIEW "/Units"
 
+#define ACCEL_LAYER						ACCEL_ROOT "layer"
+#define ACCEL_LAYER_COLOR_PATH			ACCEL_LAYER "/Change color"
+#define ACCEL_LAYER_COLOR_KEY			GDK_F6
+#define ACCEL_LAYER_COLOR_MOD			(GdkModifierType) 0
+#define ACCEL_LAYER_UP_PATH				ACCEL_LAYER "/Move up"
+#define ACCEL_LAYER_UP_KEY				GDK_Up
+#define ACCEL_LAYER_UP_MOD				(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_LAYER_DOWN_PATH			ACCEL_LAYER "/Move down"
+#define ACCEL_LAYER_DOWN_KEY			GDK_Down
+#define ACCEL_LAYER_DOWN_MOD			(GdkModifierType) GDK_CONTROL_MASK
+
 #define ACCEL_ANAL						ACCEL_ROOT "analyze"
-#define ACCEL_ANAL_PROPERTIES_PATH		ACCEL_ANAL "/Display object properties"
-#define ACCEL_ANAL_PROPERTIES_KEY		GDK_Return
-#define ACCEL_ANAL_PROPERTIES_MOD		(GdkModifierType) GDK_MOD1_MASK
 
 #define ACCEL_TOOLS						ACCEL_ROOT "tools"
 #define ACCEL_TOOLS_POINTER_PATH		ACCEL_TOOLS "/Pointer Tool"
@@ -154,14 +159,6 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_TOOLS_MEASURE_MOD			(GdkModifierType) 0
 
 #define ACCEL_HELP						ACCEL_ROOT "help"
-
-
-#define ACCEL_WINPOPUP					ACCEL_ROOT "WindowPopupMenu"
-
-#define ACCEL_TREEPOPUP					ACCEL_ROOT "TreePopupMenu"
-#define ACCEL_TREEPOPUP_COLOR_PATH		ACCEL_TREEPOPUP "/Change color"
-#define ACCEL_TREEPOPUP_COLOR_KEY		GDK_F6
-#define ACCEL_TREEPOPUP_COLOR_MOD		(GdkModifierType) 0
 
 void
 interface_create_gui (int req_width, int req_height);
