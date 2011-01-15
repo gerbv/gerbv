@@ -566,7 +566,6 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 		(gint) gtk_print_context_get_width (context),
 		(gint) gtk_print_context_get_height (context)};
 	cairo_t *cr;
-	int i;
 	
 	/* have to assume x and y resolutions are the same for now, since we
 	   don't support differing scales in the gerb_render_info_t struct yet */
@@ -578,14 +577,7 @@ callbacks_print_render_page (GtkPrintOperation *operation,
 
 	gerbv_render_translate_to_fit_display (mainProject, &renderInfo);
 	cr = gtk_print_context_get_cairo_context (context);
-	for(i = 0; i <= mainProject->last_loaded; i++) {
-		if (mainProject->file[i] && mainProject->file[i]->isVisible) {
-			//cairo_push_group (cr);
-			gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &renderInfo);
-			//cairo_pop_group_to_source (cr);
-			//cairo_paint_with_alpha (cr, screen.file[i]->alpha);		
-		}
-	}
+	gerbv_render_all_layers_to_cairo_target_for_vector_output (mainProject, cr, &renderInfo);
 }
 
 /* --------------------------------------------------------- */
