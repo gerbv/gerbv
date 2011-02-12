@@ -1588,6 +1588,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	}
 	break;
     case A2I('S','F'): /* Scale Factor */
+     state->state = gerbv_image_return_new_netstate (state->state);
 	if (gerb_fgetc(fd) == 'A')
 	    state->state->scaleA = gerb_fgetdouble(fd);
 	else 
