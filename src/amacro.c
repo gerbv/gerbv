@@ -75,6 +75,40 @@ new_amacro(void)
 
 
 /*
+ * Defines precedence of operators used in aperture macros
+ */
+static int
+math_op_prec(gerbv_opcodes_t math_op)
+{
+    switch (math_op) {
+    case GERBV_OPCODE_ADD:
+    case GERBV_OPCODE_SUB:
+	return 1;
+    case GERBV_OPCODE_MUL:
+    case GERBV_OPCODE_DIV:
+	return 2;
+    default:
+	;
+    }
+
+    return 0;
+} /* math_op_prec */
+
+
+/*
+ * Operations on the operator stack. The operator stack is used in the
+ * "shunting yard algorithm" to achive precedence.
+ * Aperture macros has a very limited set of operators and matching precedence,
+ * so it is solved by a small array and an index to that array.
+ */
+#define MATH_OP_STACK_SIZE 2
+#define MATH_OP_PUSH(val) math_op[math_op_idx++] = val
+#define MATH_OP_POP math_op[--math_op_idx]
+#define MATH_OP_TOP (math_op_idx > 0)?math_op[math_op_idx - 1]:GERBV_OPCODE_NOP
+#define MATH_OP_EMPTY (math_op_idx == 0)
+
+
+/*
  * Parses the definition of an aperture macro
  */
 gerbv_amacro_t *
@@ -83,13 +117,16 @@ parse_aperture_macro(gerb_file_t *fd)
     gerbv_amacro_t *amacro;
     gerbv_instruction_t *ip = NULL;
     int primitive = 0, c, found_primitive = 0;
-    gerbv_opcodes_t math_op = GERBV_OPCODE_NOP;
+    gerbv_opcodes_t math_op[MATH_OP_STACK_SIZE];
+    int math_op_idx = 0;
     int comma = 0; /* Just read an operator (one of '*+X/) */
     int neg = 0; /* negative numbers succeding , */
     unsigned char continueLoop = 1;
     int equate = 0;
 
     amacro = new_amacro();
+
+    memset(math_op, GERBV_OPCODE_NOP, MATH_OP_STACK_SIZE);
 
     /*
      * Get macroname
@@ -124,11 +161,10 @@ parse_aperture_macro(gerb_file_t *fd)
 	    }
 	    break;
 	case '*':
-	    if (math_op != GERBV_OPCODE_NOP) {
+	    while (!MATH_OP_EMPTY) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = math_op;
-		math_op = GERBV_OPCODE_NOP;
+		ip->opcode = MATH_OP_POP;
 	    }
 	    /*
 	     * Check is due to some gerber files has spurious empty lines.
@@ -159,21 +195,21 @@ parse_aperture_macro(gerb_file_t *fd)
 		found_primitive = 1;
 		break;
 	    }
-	    if (math_op != GERBV_OPCODE_NOP) {
+	    while (!MATH_OP_EMPTY) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = math_op;
-		math_op = GERBV_OPCODE_NOP;
+		ip->opcode = MATH_OP_POP;
 	    }
 	    comma = 1;
 	    break;
 	case '+':
-	    if (math_op != GERBV_OPCODE_NOP) {
+	    while ((!MATH_OP_EMPTY) &&
+		   (math_op_prec(MATH_OP_TOP) >= math_op_prec(GERBV_OPCODE_ADD))) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = math_op;
+		ip->opcode = MATH_OP_POP;
 	    }
-	    math_op = GERBV_OPCODE_ADD;
+	    MATH_OP_PUSH(GERBV_OPCODE_ADD);
 	    comma = 1;
 	    break;
 	case '-':
@@ -182,30 +218,33 @@ parse_aperture_macro(gerb_file_t *fd)
 		comma = 0;
 		break;
 	    }
-	    if (math_op != GERBV_OPCODE_NOP) {
+	    while((!MATH_OP_EMPTY) &&
+		  (math_op_prec(MATH_OP_TOP) >= math_op_prec(GERBV_OPCODE_SUB))) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = math_op;
+		ip->opcode = MATH_OP_POP;
 	    }
-	    math_op = GERBV_OPCODE_SUB;
+	    MATH_OP_PUSH(GERBV_OPCODE_SUB);
 	    break;
 	case '/':
-	    if (math_op != GERBV_OPCODE_NOP) {
+	    while ((!MATH_OP_EMPTY)  &&
+		   (math_op_prec(MATH_OP_TOP) >= math_op_prec(GERBV_OPCODE_DIV))) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = math_op;
+		ip->opcode = MATH_OP_POP;
 	    }
-	    math_op = GERBV_OPCODE_DIV;
+	    MATH_OP_PUSH(GERBV_OPCODE_DIV);
 	    comma = 1;
 	    break;
 	case 'X':
 	case 'x':
-	    if (math_op != GERBV_OPCODE_NOP) {
+	    while ((!MATH_OP_EMPTY) &&
+		   (math_op_prec(MATH_OP_TOP) >= math_op_prec(GERBV_OPCODE_MUL))) {
 		ip->next = new_instruction(); /* XXX Check return value */
 		ip = ip->next;
-		ip->opcode = math_op;
+		ip->opcode = MATH_OP_POP;
 	    }
-	    math_op = GERBV_OPCODE_MUL;
+	    MATH_OP_PUSH(GERBV_OPCODE_MUL);
 	    comma = 1;
 	    break;
 	case '0':
