@@ -605,7 +605,7 @@ gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_in
 
 	/* if the values aren't sane (probably we have no models loaded), then
 	   put in some defaults */
-	if ((width < 0.01) && (height < 0.01)) {
+	if (!isnormal(width)||!isnormal(height)||((width < 0.01) && (height < 0.01))) {
 		renderInfo->lowerLeftX = 0.0;
 		renderInfo->lowerLeftY = 0.0;
 		renderInfo->scaleFactorX = 200;
