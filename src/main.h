@@ -76,6 +76,16 @@ typedef struct {
 	GtkWidget *layerTreePopupMenu;
 	GtkWidget *drawWindowPopupMenu;
 	GtkWidget *curLayerMenuItem;
+	GtkWidget *curAnalyzeMenuItem;
+	GtkWidget *curEditMenuItem;
+	GtkWidget *curFileMenuItem1;
+	GtkWidget *curFileMenuItem2;
+	GtkWidget *curFileMenuItem3;
+	GtkWidget *curFileMenuItem4;
+	GtkWidget *curFileMenuItem5;
+	GtkWidget *curFileMenuItem6;
+	GtkWidget *curFileMenuItem7;
+	
 	gdouble lastMeasuredX;
 	gdouble lastMeasuredY;
     } win;

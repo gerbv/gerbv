@@ -324,18 +324,21 @@ interface_create_gui (int req_width, int req_height)
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
 
 	save = gtk_image_menu_item_new_with_mnemonic (_("Save project"));
+	screen.win.curFileMenuItem1 = save;
 	gtk_tooltips_set_tip (tooltips, save, "Save the current project", NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save);
 
 	save_as = gtk_image_menu_item_new_with_mnemonic (_("Save project as..."));
+	screen.win.curFileMenuItem2 = save_as;
 	gtk_tooltips_set_tip (tooltips, save_as, "Save the current project to a new file", NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_SAVE_AS, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save_as), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as);
 	
 	revert = gtk_image_menu_item_new_from_stock (GTK_STOCK_REVERT_TO_SAVED, NULL);
+	screen.win.curFileMenuItem3 = revert;
 	SET_ACCELS_FROM_STOCK (GTK_STOCK_REVERT_TO_SAVED, ACCEL_FILE_REVERT);
 	gtk_tooltips_set_tip (tooltips, revert, "Reload all layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), revert);
@@ -351,11 +354,13 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, open_layer, "Open Gerber, drill, or pick and place file(s)", NULL);
 
 	save_layer = gtk_menu_item_new_with_mnemonic (_("_Save active layer"));
+	screen.win.curFileMenuItem4 = save_layer;
 	gtk_tooltips_set_tip (tooltips, save_layer, "Save the active layer", NULL);
 	gtk_accel_map_add_entry (ACCEL_FILE_SAVE_LAYER_PATH, ACCEL_FILE_SAVE_LAYER_KEY, ACCEL_FILE_SAVE_LAYER_MOD);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_layer);
 	
 	save_as_layer = gtk_menu_item_new_with_mnemonic (_("Save active layer _as..."));
+	screen.win.curFileMenuItem5 = save_as_layer;
 	gtk_tooltips_set_tip (tooltips, save_as_layer, "Save the active layer to a new file", NULL);
 	gtk_accel_map_add_entry (ACCEL_FILE_SAVE_LAYER_AS_PATH, ACCEL_FILE_SAVE_LAYER_AS_KEY, ACCEL_FILE_SAVE_LAYER_AS_MOD);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as_layer);
@@ -366,6 +371,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_set_sensitive (separatormenuitem1, FALSE);
 
 	menuitem_file_export = gtk_menu_item_new_with_mnemonic (_("_Export"));
+	screen.win.curFileMenuItem6 = menuitem_file_export;
 	gtk_tooltips_set_tip (tooltips, menuitem_file_export, "Export all visible layers to a new format", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), menuitem_file_export);
 
@@ -419,6 +425,7 @@ interface_create_gui (int req_width, int req_height)
 	}
 
 	print = gtk_image_menu_item_new_from_stock (GTK_STOCK_PRINT, NULL);
+	screen.win.curFileMenuItem7 = print;
 	SET_ACCELS_FROM_STOCK (GTK_STOCK_PRINT, ACCEL_FILE_PRINT);
 	gtk_tooltips_set_tip (tooltips, print, "Print the visible layers", NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), print);
@@ -434,6 +441,7 @@ interface_create_gui (int req_width, int req_height)
 
 	/* --- Next menu item (Edit) --- */
 	menuitem_edit = gtk_menu_item_new_with_mnemonic (_("_Edit"));
+	screen.win.curEditMenuItem = menuitem_edit;
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_edit);
 
 	menuitem_edit_menu = gtk_menu_new ();
@@ -717,6 +725,7 @@ interface_create_gui (int req_width, int req_height)
 
 	/* --- Next menu item (Analyze) --- */
 	menuitem_analyze = gtk_menu_item_new_with_mnemonic (_("_Analyze"));
+	screen.win.curAnalyzeMenuItem = menuitem_analyze;
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_analyze);
 
 	menuitem_analyze_menu = gtk_menu_new ();

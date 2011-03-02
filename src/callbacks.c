@@ -2499,15 +2499,17 @@ callbacks_update_layer_tree (void) {
 				gtk_tree_selection_select_iter (selection, &iter);
 			}
 		}
-		
-		if (mainProject->last_loaded >= 0){
-			dprintf("%s(): enabling layer menu; index=%d\n", __FUNCTION__, mainProject->last_loaded);
-			gtk_widget_set_sensitive (screen.win.curLayerMenuItem, TRUE);
-		}else{
-			dprintf("%s(): disabling layer menu; index=%d\n", __FUNCTION__, mainProject->last_loaded);
-			gtk_widget_set_sensitive (screen.win.curLayerMenuItem, FALSE);
-		}
-
+		gboolean showItems = (mainProject->last_loaded >= 0);
+		gtk_widget_set_sensitive (screen.win.curLayerMenuItem, showItems);
+		gtk_widget_set_sensitive (screen.win.curAnalyzeMenuItem, showItems);
+		gtk_widget_set_sensitive (screen.win.curEditMenuItem, showItems);
+		gtk_widget_set_sensitive (screen.win.curFileMenuItem1, showItems);
+		gtk_widget_set_sensitive (screen.win.curFileMenuItem2, showItems);
+		gtk_widget_set_sensitive (screen.win.curFileMenuItem3, showItems);
+		gtk_widget_set_sensitive (screen.win.curFileMenuItem4, showItems);
+		gtk_widget_set_sensitive (screen.win.curFileMenuItem5, showItems);
+		gtk_widget_set_sensitive (screen.win.curFileMenuItem6, showItems);
+		gtk_widget_set_sensitive (screen.win.curFileMenuItem7, showItems);
 		screen.win.treeIsUpdating = FALSE;
 	}
 }
