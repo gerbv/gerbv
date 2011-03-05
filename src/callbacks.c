@@ -418,6 +418,15 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	gchar *windowTitle=NULL;
 	GtkFileFilter * filter;
 	
+	gint index=callbacks_get_selected_row_index ();
+	if (index < 0) {
+		interface_show_alert_dialog("No layer is currently selected",
+			"Please select a layer and try again.",
+			FALSE,
+			NULL);
+		return;
+	}
+	
 	if (processType == CALLBACKS_SAVE_PROJECT_AS)
 		windowTitle = g_strdup ("Save project as...");
 	else if (processType == CALLBACKS_SAVE_FILE_PS)
