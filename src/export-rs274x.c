@@ -223,7 +223,7 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	fprintf(fd, "G04 http://gerbv.gpleda.org/ *\n");
 	fprintf(fd, "G04 --End of header info--*\n");
 	fprintf(fd, "%%MOIN*%%\n");
-	fprintf(fd, "%%FSLAX23Y23*%%\n");
+	fprintf(fd, "%%FSLAX34Y34*%%\n");
 	
 	/* check the image info struct for any non-default settings */
 	/* image offset */
@@ -310,13 +310,13 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 				/* see if we need to write an "aperture off" line to get
 				   the pen to the right start point */
 				if ((!insidePolygon) && (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)) {
-					xVal = (long) round(currentNet->start_x * 1000.0);
-					yVal = (long) round(currentNet->start_y * 1000.0);
-					fprintf(fd, "G01X%05ldY%05ldD02*\n",xVal,yVal);
+					xVal = (long) round(currentNet->start_x * 10000.0);
+					yVal = (long) round(currentNet->start_y * 10000.0);
+					fprintf(fd, "G01X%07ldY%07ldD02*\n",xVal,yVal);
 				}
-				xVal = (long) round(currentNet->stop_x * 1000.0);
-				yVal = (long) round(currentNet->stop_y * 1000.0);
-				fprintf(fd, "G01X%05ldY%05ld",xVal,yVal);
+				xVal = (long) round(currentNet->stop_x * 10000.0);
+				yVal = (long) round(currentNet->stop_y * 10000.0);
+				fprintf(fd, "G01X%07ldY%07ld",xVal,yVal);
 				/* and finally, write the esposure value */
 				if (currentNet->aperture_state == GERBV_APERTURE_STATE_OFF)
 					fprintf(fd, "D02*\n");
@@ -330,14 +330,14 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 				/* see if we need to write an "aperture off" line to get
 				   the pen to the right start point */
 				if ((!insidePolygon) && (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)) {
-					xVal = (long) round(currentNet->start_x * 1000.0);
-					yVal = (long) round(currentNet->start_y * 1000.0);
-					fprintf(fd, "G01X%05ldY%05ldD02*\n",xVal,yVal);
+					xVal = (long) round(currentNet->start_x * 10000.0);
+					yVal = (long) round(currentNet->start_y * 10000.0);
+					fprintf(fd, "G01X%07ldY%07ldD02*\n",xVal,yVal);
 				}
-				centerX= (long) round((currentNet->cirseg->cp_x - currentNet->start_x) * 1000.0);
-				centerY= (long) round((currentNet->cirseg->cp_y - currentNet->start_y) * 1000.0);
-				endX = (long) round(currentNet->stop_x * 1000.0);
-				endY = (long) round(currentNet->stop_y * 1000.0);
+				centerX= (long) round((currentNet->cirseg->cp_x - currentNet->start_x) * 10000.0);
+				centerY= (long) round((currentNet->cirseg->cp_y - currentNet->start_y) * 10000.0);
+				endX = (long) round(currentNet->stop_x * 10000.0);
+				endY = (long) round(currentNet->stop_y * 10000.0);
 				
 				/* always use multi-quadrant, since it's much easier to export */
 				/*  and most all software should support it */
@@ -349,9 +349,9 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 					fprintf(fd, "G02");
 				/* don't write the I and J values if the exposure is off */
 				if (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)
-					fprintf(fd, "X%05ldY%05ldI%05ldJ%05ld",endX,endY,centerX,centerY);
+					fprintf(fd, "X%07ldY%07ldI%07ldJ%07ld",endX,endY,centerX,centerY);
 				else
-					fprintf(fd, "X%05ldY%05ld",endX,endY);
+					fprintf(fd, "X%07ldY%07ld",endX,endY);
 				/* and finally, write the esposure value */
 				if (currentNet->aperture_state == GERBV_APERTURE_STATE_OFF)
 					fprintf(fd, "D02*\n");
