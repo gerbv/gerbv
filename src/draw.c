@@ -45,49 +45,48 @@
 #include <cairo.h>
 
 #define dprintf if(DEBUG) printf
-#define PIXEL_ALIGN 1
 
 void
-draw_cairo_line_to (cairo_t *cairoTarget, gdouble x, gdouble y, gboolean adjustByHalf){
+draw_cairo_line_to (cairo_t *cairoTarget, gdouble x, gdouble y, gboolean adjustByHalf, gboolean pixelOutput){
 	gdouble x1 = x, y1 = y;
-#ifdef PIXEL_ALIGN
-	cairo_user_to_device (cairoTarget, &x1, &y1);
-	x1 = round(x1);
-	y1 = round(y1);
-	if (adjustByHalf) {
-		x1 += 0.5;
-		y1 += 0.5;
+	if (pixelOutput) {
+		cairo_user_to_device (cairoTarget, &x1, &y1);
+		x1 = round(x1);
+		y1 = round(y1);
+		if (adjustByHalf) {
+			x1 += 0.5;
+			y1 += 0.5;
+		}
+		cairo_device_to_user (cairoTarget, &x1, &y1);		
 	}
-	cairo_device_to_user (cairoTarget, &x1, &y1);
-#endif
 	cairo_line_to (cairoTarget, x1, y1);
 }
 
 void
-draw_cairo_move_to (cairo_t *cairoTarget, gdouble x, gdouble y, gboolean oddWidth){
+draw_cairo_move_to (cairo_t *cairoTarget, gdouble x, gdouble y, gboolean oddWidth, gboolean pixelOutput){
 	gdouble x1 = x, y1 = y;
-#ifdef PIXEL_ALIGN
-	cairo_user_to_device (cairoTarget, &x1, &y1);
-	x1 = round(x1);
-	y1 = round(y1);
-	if (oddWidth) {
-		x1 += 0.5;
-		y1 += 0.5;
+	if (pixelOutput) {
+		cairo_user_to_device (cairoTarget, &x1, &y1);
+		x1 = round(x1);
+		y1 = round(y1);
+		if (oddWidth) {
+			x1 += 0.5;
+			y1 += 0.5;
+		}
+		cairo_device_to_user (cairoTarget, &x1, &y1);
 	}
-	cairo_device_to_user (cairoTarget, &x1, &y1);
-#endif
 	cairo_move_to (cairoTarget, x1, y1);
 }
 
 void
-draw_cairo_translate_adjust (cairo_t *cairoTarget, gdouble x, gdouble y){
+draw_cairo_translate_adjust (cairo_t *cairoTarget, gdouble x, gdouble y, gboolean pixelOutput){
 	gdouble x1 = x, y1 = y;
-#ifdef PIXEL_ALIGN
-	cairo_user_to_device (cairoTarget, &x1, &y1);
-	x1 = round(x1);
-	y1 = round(y1);
-	cairo_device_to_user (cairoTarget, &x1, &y1);
-#endif
+	if (pixelOutput) {
+		cairo_user_to_device (cairoTarget, &x1, &y1);
+		x1 = round(x1);
+		y1 = round(y1);
+		cairo_device_to_user (cairoTarget, &x1, &y1);
+	}
 	cairo_translate (cairoTarget, x1, y1);
 }
 
@@ -193,16 +192,17 @@ gerbv_draw_circle(cairo_t *cairoTarget, gdouble diameter)
  * Draws a rectangle _centered_ at x,y with sides x_side, y_side
  */
 static void
-gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width1, gdouble height1)
+gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width1, gdouble height1, gboolean pixelOutput)
 {
 	gdouble width = width1, height = height1;
-	cairo_user_to_device_distance (cairoTarget, &width, &height);
-	width = round(width);
-	height = round(height);
-	width -= ((int)width % 2);
-	height -= ((int)height % 2);
-	cairo_device_to_user_distance (cairoTarget, &width, &height);
-	
+	if (pixelOutput) {
+		cairo_user_to_device_distance (cairoTarget, &width, &height);
+		width = round(width);
+		height = round(height);
+		width -= ((int)width % 2);
+		height -= ((int)height % 2);
+		cairo_device_to_user_distance (cairoTarget, &width, &height);
+	}
     cairo_rectangle (cairoTarget, - width / 2.0, - height / 2.0, width, height);
     return;
 } /* gerbv_draw_rectangle */
@@ -267,11 +267,11 @@ gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideDiameter,
 
 
 static void 
-gerbv_draw_aperature_hole(cairo_t *cairoTarget, gdouble dimensionX, gdouble dimensionY)
+gerbv_draw_aperature_hole(cairo_t *cairoTarget, gdouble dimensionX, gdouble dimensionY, gboolean pixelOutput)
 {
     if (dimensionX) {
 	if (dimensionY) {
-	    gerbv_draw_rectangle (cairoTarget, dimensionX, dimensionY);
+	    gerbv_draw_rectangle (cairoTarget, dimensionX, dimensionY, pixelOutput);
 	} else {
 	    gerbv_draw_circle (cairoTarget, dimensionX);
 	}
@@ -509,7 +509,7 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *stat
 
 void
 draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble sr_x, gdouble sr_y,
-		gerbv_image_t *image, gchar drawMode, gerbv_selection_info_t *selectionInfo ){
+		gerbv_image_t *image, gchar drawMode, gerbv_selection_info_t *selectionInfo, gboolean pixelOutput){
 	gerbv_net_t *currentNet, *polygonStartNet;
 	int haveDrawnFirstFillPoint = 0;
 	gdouble x1,y1,x2,y2,cp_x=0,cp_y=0;
@@ -532,7 +532,7 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble s
 			cp_y = currentNet->cirseg->cp_y + sr_y;
 		}
 		if (!haveDrawnFirstFillPoint) {
-			draw_cairo_move_to (cairoTarget, x2, y2, FALSE);
+			draw_cairo_move_to (cairoTarget, x2, y2, FALSE, pixelOutput);
 			haveDrawnFirstFillPoint=TRUE;
 			continue;
 		}
@@ -541,7 +541,7 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble s
 			case GERBV_INTERPOLATION_LINEARx01 :
 			case GERBV_INTERPOLATION_LINEARx001 :
 			case GERBV_INTERPOLATION_LINEARx1 :
-				draw_cairo_line_to (cairoTarget, x2, y2, FALSE);
+				draw_cairo_line_to (cairoTarget, x2, y2, FALSE, pixelOutput);
 				break;
 			case GERBV_INTERPOLATION_CW_CIRCULAR :
 			case GERBV_INTERPOLATION_CCW_CIRCULAR :
@@ -576,7 +576,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					gdouble pixelWidth,
 					gchar drawMode, gerbv_selection_info_t *selectionInfo,
 					gerbv_render_info_t *renderInfo, gboolean allowOptimization,
- 					gerbv_user_transformation_t transform, gboolean limitPixelSize){
+ 					gerbv_user_transformation_t transform, gboolean pixelOutput){
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
 	gdouble p1, p2, p3, p4, p5, dx, dy, lineWidth;
@@ -598,6 +598,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	if ((scaleX != 1)||(scaleY != 1)){
 		limitLineWidth = FALSE;
 	}
+	
 	if (transform.mirrorAroundX)
 		scaleY *= -1;
 	if (transform.mirrorAroundY)
@@ -617,7 +618,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			transform.mirrorAroundX || transform.mirrorAroundY)
 		useOptimizations = FALSE;
 				
-	if (useOptimizations) {
+	if (useOptimizations && pixelOutput) {
 		minX = renderInfo->lowerLeftX;
 		minY = renderInfo->lowerLeftY;
 		maxX = renderInfo->lowerLeftX + (renderInfo->displayWidth /
@@ -742,7 +743,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		double sr_y = repeat_j * repeat_dist_Y;
 		
 		
-		if ((useOptimizations) &&
+		if ((useOptimizations && pixelOutput) &&
 				((net->boundingBox.right+sr_x < minX)
 				|| (net->boundingBox.left+sr_x > maxX)
 				|| (net->boundingBox.top+sr_y < minY)
@@ -779,7 +780,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		switch (net->interpolation) {
 			case GERBV_INTERPOLATION_PAREA_START :
 				draw_render_polygon_object (net, cairoTarget, sr_x, sr_y, image,
-					drawMode, selectionInfo);
+					drawMode, selectionInfo, pixelOutput);
 				continue;
 			case GERBV_INTERPOLATION_DELETED:
 				continue;
@@ -807,8 +808,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				/* NOTE: also, make sure all lines are at least 1 pixel wide, so they
 				   always show up at low zoom levels */
 				
-				if (limitLineWidth && ((image->aperture[net->aperture]->parameter[0] < pixelWidth)&&
-						(limitPixelSize)))
+				if (limitLineWidth&&((image->aperture[net->aperture]->parameter[0] < pixelWidth)&&
+						(pixelOutput)))
 					criticalRadius = pixelWidth/2.0;
 				/* 
 				else if (image->aperture[net->aperture]->parameter[0] == 0)
@@ -823,12 +824,14 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				lineWidth = criticalRadius*2.0;
 				// convert to a pixel integer
 				cairo_user_to_device_distance (cairoTarget, &lineWidth, &x1);
-				lineWidth = round(lineWidth);
-				if ((int)lineWidth % 2) {
-					oddWidth = TRUE;
-				}
-				else {
-					oddWidth = FALSE;
+				if (pixelOutput) {
+					lineWidth = round(lineWidth);
+					if ((int)lineWidth % 2) {
+						oddWidth = TRUE;
+					}
+					else {
+						oddWidth = FALSE;
+					}
 				}
 				cairo_device_to_user_distance (cairoTarget, &lineWidth, &x1);
 				cairo_set_line_width (cairoTarget, lineWidth);
@@ -843,8 +846,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 
 						switch (image->aperture[net->aperture]->type) {
 							case GERBV_APTYPE_CIRCLE :
-								draw_cairo_move_to (cairoTarget, x1, y1, oddWidth);
-								draw_cairo_line_to (cairoTarget, x2, y2, oddWidth);
+								draw_cairo_move_to (cairoTarget, x1, y1, oddWidth, pixelOutput);
+								draw_cairo_line_to (cairoTarget, x2, y2, oddWidth, pixelOutput);
 								draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 								break;
 							case GERBV_APTYPE_RECTANGLE :				
@@ -855,19 +858,19 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 								if(y1 > y2)
 									dy = -dy;
 								cairo_new_path(cairoTarget);
-								draw_cairo_move_to (cairoTarget, x1 - dx, y1 - dy, FALSE);
-								draw_cairo_line_to (cairoTarget, x1 - dx, y1 + dy, FALSE);
-								draw_cairo_line_to (cairoTarget, x2 - dx, y2 + dy, FALSE);
-								draw_cairo_line_to (cairoTarget, x2 + dx, y2 + dy, FALSE);
-								draw_cairo_line_to (cairoTarget, x2 + dx, y2 - dy, FALSE);
-								draw_cairo_line_to (cairoTarget, x1 + dx, y1 - dy, FALSE);
+								draw_cairo_move_to (cairoTarget, x1 - dx, y1 - dy, FALSE, pixelOutput);
+								draw_cairo_line_to (cairoTarget, x1 - dx, y1 + dy, FALSE, pixelOutput);
+								draw_cairo_line_to (cairoTarget, x2 - dx, y2 + dy, FALSE, pixelOutput);
+								draw_cairo_line_to (cairoTarget, x2 + dx, y2 + dy, FALSE, pixelOutput);
+								draw_cairo_line_to (cairoTarget, x2 + dx, y2 - dy, FALSE, pixelOutput);
+								draw_cairo_line_to (cairoTarget, x1 + dx, y1 - dy, FALSE, pixelOutput);
 								draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 								break;
 							/* for now, just render ovals or polygons like a circle */
 							case GERBV_APTYPE_OVAL :
 							case GERBV_APTYPE_POLYGON :
-								draw_cairo_move_to (cairoTarget, x1,y1, oddWidth);
-								draw_cairo_line_to (cairoTarget, x2,y2, oddWidth);
+								draw_cairo_move_to (cairoTarget, x1,y1, oddWidth, pixelOutput);
+								draw_cairo_line_to (cairoTarget, x2,y2, oddWidth, pixelOutput);
 								draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 								break;
 							/* macros can only be flashed, so ignore any that might be here */
@@ -915,24 +918,24 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				p5 = image->aperture[net->aperture]->parameter[4];
 
 				cairo_save (cairoTarget);
-				draw_cairo_translate_adjust(cairoTarget, x2, y2);
+				draw_cairo_translate_adjust(cairoTarget, x2, y2, pixelOutput);
 				
 				switch (image->aperture[net->aperture]->type) {
 					case GERBV_APTYPE_CIRCLE :
 						gerbv_draw_circle(cairoTarget, p1);
-						gerbv_draw_aperature_hole (cairoTarget, p2, p3);
+						gerbv_draw_aperature_hole (cairoTarget, p2, p3, pixelOutput);
 						break;
 					case GERBV_APTYPE_RECTANGLE :
-						gerbv_draw_rectangle(cairoTarget, p1, p2);
-						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
+						gerbv_draw_rectangle(cairoTarget, p1, p2, pixelOutput);
+						gerbv_draw_aperature_hole (cairoTarget, p3, p4, pixelOutput);
 						break;
 					case GERBV_APTYPE_OVAL :
 						gerbv_draw_oblong(cairoTarget, p1, p2);
-						gerbv_draw_aperature_hole (cairoTarget, p3, p4);
+						gerbv_draw_aperature_hole (cairoTarget, p3, p4, pixelOutput);
 						break;
 					case GERBV_APTYPE_POLYGON :
 						gerbv_draw_polygon(cairoTarget, p1, p2, p3);
-						gerbv_draw_aperature_hole (cairoTarget, p4, p5);
+						gerbv_draw_aperature_hole (cairoTarget, p4, p5, pixelOutput);
 						break;
 					case GERBV_APTYPE_MACRO :
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,

@@ -828,7 +828,7 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean limitPixelSize) {
+gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean pixelOutput) {
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
 		(double) fileInfo->color.green/G_MAXUINT16,
 		(double) fileInfo->color.blue/G_MAXUINT16, 1);
@@ -838,7 +838,7 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 	
 	draw_image_to_cairo_target (cr, fileInfo->image,
 		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL,
-		renderInfo, TRUE, fileInfo->transform, limitPixelSize);
+		renderInfo, TRUE, fileInfo->transform, pixelOutput);
 	cairo_restore (cr);
 }
 
