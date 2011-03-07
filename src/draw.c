@@ -591,7 +591,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	gdouble criticalRadius;
 	gdouble scaleX = transform.scaleX;
 	gdouble scaleY = transform.scaleY;
-
+	gboolean limitLineWidth = TRUE;
+	
+	// if we are scaling the image at all, ignore the line width checks since scaled up
+	//	lines can still be visible
+	if ((scaleX != 1)||(scaleY != 1)){
+		limitLineWidth = FALSE;
+	}
 	if (transform.mirrorAroundX)
 		scaleY *= -1;
 	if (transform.mirrorAroundY)
@@ -801,8 +807,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				/* NOTE: also, make sure all lines are at least 1 pixel wide, so they
 				   always show up at low zoom levels */
 				
-				if ((image->aperture[net->aperture]->parameter[0] < pixelWidth)&&
-				(limitPixelSize))
+				if (limitLineWidth && ((image->aperture[net->aperture]->parameter[0] < pixelWidth)&&
+						(limitPixelSize)))
 					criticalRadius = pixelWidth/2.0;
 				/* 
 				else if (image->aperture[net->aperture]->parameter[0] == 0)
