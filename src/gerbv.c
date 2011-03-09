@@ -547,10 +547,15 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 			* Find the biggest image and use as a size reference
 			*/
 			/* cairo info already has offset calculated into min/max */
+			
 			minX = info->min_x;
 			minY = info->min_y;
 			maxX = info->max_x;
 			maxY = info->max_y;
+			
+			if (!isnormal(minX)||!isnormal(minY)||!isnormal(maxX)||!isnormal(maxY)){
+				continue;
+			}
 			/* transform the bounding box based on the user transform */
 	
 			cairo_matrix_t fullMatrix;
