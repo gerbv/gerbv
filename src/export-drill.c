@@ -32,6 +32,7 @@
 
 #include <glib.h>
 #include <math.h>
+#include <locale.h>
 
 #include <glib/gstdio.h>
 #include "gerbv.h"
@@ -46,6 +47,9 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	FILE *fd;
 	GArray *apertureTable = g_array_new(FALSE,FALSE,sizeof(int));
 	gerbv_net_t *currentNet;
+	
+	// force gerbv to output decimals as dots (not commas for other locales)
+	setlocale(LC_NUMERIC, "en_US");
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
 		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
@@ -106,5 +110,8 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	fprintf(fd, "M30\n\n");
 	gerbv_destroy_image (image);
 	fclose(fd);
+	
+	// return to the default locale
+	setlocale(LC_NUMERIC, "C");
 	return TRUE;
 }

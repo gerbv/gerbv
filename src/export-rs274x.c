@@ -33,6 +33,7 @@
 
 #include <glib.h>
 #include <math.h>
+#include <locale.h>
 
 #include <glib/gstdio.h>
 #include "gerbv.h"
@@ -200,7 +201,10 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	gerbv_layer_t *oldLayer;
 	gboolean insidePolygon=FALSE;
 	gerbv_user_transformation_t *thisTransform;
-	
+
+	// force gerbv to output decimals as dots (not commas for other locales)
+	setlocale(LC_NUMERIC, "en_US");
+
 	if (transform != NULL) {
 		thisTransform = transform;
 	}
@@ -377,5 +381,8 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	
 	gerbv_destroy_image (image);
 	fclose(fd);
+	
+	// return to the default locale
+	setlocale(LC_NUMERIC, "C");
 	return TRUE;
 }
