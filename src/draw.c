@@ -592,7 +592,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	gdouble scaleX = transform.scaleX;
 	gdouble scaleY = transform.scaleY;
 	gboolean limitLineWidth = TRUE;
-	
+	gboolean displayPixel = TRUE;
 	// if we are scaling the image at all, ignore the line width checks since scaled up
 	//	lines can still be visible
 	if ((scaleX != 1)||(scaleY != 1)){
@@ -811,14 +811,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				if (limitLineWidth&&((image->aperture[net->aperture]->parameter[0] < pixelWidth)&&
 						(pixelOutput)))
 					criticalRadius = pixelWidth/2.0;
-				/* 
-				else if (image->aperture[net->aperture]->parameter[0] == 0)
-					criticalRadius = pixelWidth/2.0;
-				else if (random() < (RAND_MAX / 10))
-					criticalRadius = pixelWidth/2.0;
-				else
-					break;
-				*/
 				else
 					criticalRadius = image->aperture[net->aperture]->parameter[0]/2.0;
 				lineWidth = criticalRadius*2.0;
@@ -926,8 +918,21 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						gerbv_draw_aperature_hole (cairoTarget, p2, p3, pixelOutput);
 						break;
 					case GERBV_APTYPE_RECTANGLE :
-						gerbv_draw_rectangle(cairoTarget, p1, p2, pixelOutput);
-						gerbv_draw_aperature_hole (cairoTarget, p3, p4, pixelOutput);
+						// some CAD programs use very thin flashed rectangles to compose
+						//	logos/images, so we must make sure those display here
+						displayPixel = pixelOutput;
+						if (limitLineWidth&&((p1 < pixelWidth)&&
+								(pixelOutput))) {
+							p1 = pixelWidth;
+							displayPixel = FALSE;
+						}
+						if (limitLineWidth&&((p2 < pixelWidth)&&
+								(pixelOutput))) {
+							p2 = pixelWidth;
+							displayPixel = FALSE;
+						}
+						gerbv_draw_rectangle(cairoTarget, p1, p2, displayPixel);
+						gerbv_draw_aperature_hole (cairoTarget, p3, p4, displayPixel);
 						break;
 					case GERBV_APTYPE_OVAL :
 						gerbv_draw_oblong(cairoTarget, p1, p2);
