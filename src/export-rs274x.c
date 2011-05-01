@@ -203,7 +203,7 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	gerbv_user_transformation_t *thisTransform;
 
 	// force gerbv to output decimals as dots (not commas for other locales)
-	setlocale(LC_NUMERIC, "en_US");
+	setlocale(LC_NUMERIC, "C");
 
 	if (transform != NULL) {
 		thisTransform = transform;
@@ -383,6 +383,6 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	fclose(fd);
 	
 	// return to the default locale
-	setlocale(LC_NUMERIC, "C");
+	setlocale(LC_NUMERIC, "");
 	return TRUE;
 }
