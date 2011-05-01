@@ -33,7 +33,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#ifndef WIN32
+#if !defined(WIN32) && !defined(QUARTZ)
 #include <gdk/gdkx.h>
 #endif
 #include <gdk/gdkkeysyms.h>
@@ -68,6 +68,8 @@
 #include "draw.h"
 #ifdef WIN32
 #include <cairo-win32.h>
+#elif QUARTZ
+#include <cairo-quartz.h>
 #else
 #include <cairo-xlib.h>
 #endif
@@ -2774,7 +2776,8 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	if (screen.windowSurface)
 		cairo_surface_destroy ((cairo_surface_t *)
 			screen.windowSurface);
-#ifdef WIN32
+
+#if defined(WIN32) || defined(QUARTZ)
 	cairo_t *cairoTarget = gdk_cairo_create (GDK_WINDOW(widget->window));
 	
 	screen.windowSurface = cairo_get_target (cairoTarget);
@@ -2878,7 +2881,7 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	visual = gdk_drawable_get_visual (drawable);
 	gdk_drawable_get_size (drawable, &width, &height);
 
-#ifdef WIN32
+#if defined(WIN32) || defined(QUARTZ)
 	/* FIXME */
 	cr = gdk_cairo_create (GDK_WINDOW(widget->window));
 #else      
@@ -2893,7 +2896,7 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	cairo_translate (cr, -event->area.x + screen.off_x, -event->area.y + screen.off_y);
 	render_project_to_cairo_target (cr);
 	cairo_destroy (cr);
-#ifndef WIN32
+#if !defined(WIN32) && !defined(QUARTZ)
 	cairo_surface_destroy (buffert);
 #endif
 
