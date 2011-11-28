@@ -196,6 +196,9 @@ fi
 
 AC_CHECK_LIB(m, sin)
 
+# used by src/dynload.c (part of tinyscheme)
+AC_CHECK_LIB(dl, dlopen)
+
 #
 #
 ############################################################
