@@ -1301,12 +1301,13 @@ static pointer port_from_filename(scheme *sc, const char *fn, int prop) {
 }
 
 static port *port_rep_from_file(scheme *sc, FILE *f, int prop) {
-  char *rw;
+  /*char *rw;*/
   port *pt;
   pt=(port*)sc->malloc(sizeof(port));
   if(pt==0) {
     return 0;
   }
+  /*
   if(prop==(port_input|port_output)) {
     rw="a+";
   } else if(prop==port_output) {
@@ -1314,6 +1315,7 @@ static port *port_rep_from_file(scheme *sc, FILE *f, int prop) {
   } else {
     rw="r";
   }
+  */
   pt->kind=port_file|prop;
   pt->rep.stdio.file=f;
   pt->rep.stdio.closeit=0;
@@ -3923,7 +3925,7 @@ static const char *procname(pointer x) {
 /* kernel of this interpreter */
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
   int count=0;
-  int old_op;
+  /*int old_op;*/
   
   sc->op = op;
   for (;;) {
@@ -3989,7 +3991,7 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
 	pcd=dispatch_table+sc->op;
       }
     }
-    old_op=sc->op;
+    /*old_op=sc->op;*/
     if (pcd->func(sc, (enum scheme_opcodes)sc->op) == sc->NIL) {
       return;
     }

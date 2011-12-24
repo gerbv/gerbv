@@ -512,7 +512,7 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble s
 		gerbv_image_t *image, gchar drawMode, gerbv_selection_info_t *selectionInfo, gboolean pixelOutput){
 	gerbv_net_t *currentNet, *polygonStartNet;
 	int haveDrawnFirstFillPoint = 0;
-	gdouble x1,y1,x2,y2,cp_x=0,cp_y=0;
+	gdouble x2,y2,cp_x=0,cp_y=0;
 	
 	haveDrawnFirstFillPoint = FALSE;
 	/* save the first net in the polygon as the "ID" net pointer
@@ -521,8 +521,6 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble s
 	cairo_new_path(cairoTarget);
 		
 	for (currentNet = oldNet->next; currentNet!=NULL; currentNet = currentNet->next){
-		x1 = currentNet->start_x + sr_x;
-		y1 = currentNet->start_y + sr_y;
 		x2 = currentNet->stop_x + sr_x;
 		y2 = currentNet->stop_y + sr_y;
            

@@ -708,7 +708,7 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 			cairo_matrix_t *fullMatrix, cairo_matrix_t *scaleMatrix, GdkGC *gc, GdkGC *pgc,
 			GdkPixmap **pixmap) {
 	gerbv_net_t *currentNet;
-	gint x1,x2,y1,y2,cp_x=0,cp_y=0,cir_width=0,cir_height=0;
+	gint x2,y2,cp_x=0,cp_y=0,cir_width=0;
 	GdkPoint *points = NULL;
 	int pointArraySize=0;
 	int curr_point_idx = 0;
@@ -720,13 +720,7 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 	curr_point_idx = 0;
 	pointArraySize = 0;
 
-	for (currentNet = oldNet->next; currentNet!=NULL; currentNet = currentNet->next){
-		tempX = currentNet->start_x + sr_x;
-		tempY = currentNet->start_y + sr_y;
-		cairo_matrix_transform_point (fullMatrix, &tempX, &tempY);
-		x1 = (int)round(tempX);
-		y1 = (int)round(tempY);
-		
+	for (currentNet = oldNet->next; currentNet!=NULL; currentNet = currentNet->next){	
 		tempX = currentNet->stop_x + sr_x;
 		tempY = currentNet->stop_y + sr_y;
 		cairo_matrix_transform_point (fullMatrix, &tempX, &tempY);
@@ -741,7 +735,6 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 			tempY = currentNet->cirseg->height;
 			cairo_matrix_transform_point (scaleMatrix, &tempX, &tempY);
 			cir_width = (int)round(tempX);
-			cir_height = (int)round(tempY);
 
 			tempX = currentNet->cirseg->cp_x + sr_x;
 			tempY = currentNet->cirseg->cp_y + sr_y;
@@ -850,7 +843,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	gerbv_layer_t *oldLayer;
 	gint x1, y1, x2, y2;
 	glong xlong1, ylong1, xlong2, ylong2;
-	int p1, p2, p3;
+	int p1, p2;
 	int cir_width = 0, cir_height = 0;
 	int cp_x = 0, cp_y = 0;
 	GdkColor transparent, opaque;
@@ -1172,7 +1165,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    p2 = (int)round(tempY);
 		    tempX = image->aperture[net->aperture]->parameter[2];
 		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
-		    p3 = (int)round(tempX);
 		    
 		    switch (image->aperture[net->aperture]->type) {
 		    case GERBV_APTYPE_CIRCLE :

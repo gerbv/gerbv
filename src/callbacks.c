@@ -596,7 +596,7 @@ void
 callbacks_print_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
 	GtkPrintOperation *print;
-	GtkPrintOperationResult res;
+	/*GtkPrintOperationResult res;*/
 
 	print = gtk_print_operation_new ();
 
@@ -605,7 +605,7 @@ callbacks_print_activate (GtkMenuItem *menuitem, gpointer user_data)
 
 	//GtkPrintSettings *pSettings = gtk_print_operation_get_print_settings (print);
 	
-	res = gtk_print_operation_run (print, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
+	(void) gtk_print_operation_run (print, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
 	                              (GtkWindow *) screen.win.topLevelWindow , NULL);
 
 	g_object_unref (print);

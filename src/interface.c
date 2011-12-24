@@ -217,7 +217,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *toolbar_hbox;
 	GtkWidget *handlebox;
 	GtkWidget *button_toolbar;
-	GtkIconSize tmp_toolbar_icon_size;
+	/*GtkIconSize tmp_toolbar_icon_size;*/
 	GtkWidget *toolbutton_new;
 	GtkWidget *toolbutton_open;
 	GtkWidget *toolbutton_revert;
@@ -832,7 +832,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_widget_set_size_request (button_toolbar, 500, -1);
 	gtk_container_add (GTK_CONTAINER (handlebox), button_toolbar);
 	gtk_toolbar_set_style (GTK_TOOLBAR (button_toolbar), GTK_TOOLBAR_ICONS);
-	tmp_toolbar_icon_size = gtk_toolbar_get_icon_size (GTK_TOOLBAR (button_toolbar));
+	/*tmp_toolbar_icon_size = gtk_toolbar_get_icon_size (GTK_TOOLBAR (button_toolbar));*/
 
 	toolbutton_new = (GtkWidget*) gtk_tool_button_new_from_stock (GTK_STOCK_NEW);
 	gtk_tooltips_set_tip (tooltips, toolbutton_new, "Close all layers and start a new project", NULL);
@@ -1761,13 +1761,13 @@ interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,1,1,2,0,0,0,0);
 	gdouble translateX, translateY;
 	
-	if (screenUnit == GERBV_MILS) {
+	if (screenUnit == (gerbv_unit_t) GERBV_MILS) {
 		tempWidget = gtk_label_new ("X (mils):");
 		tempWidget2 = gtk_label_new ("Y (mils):");
 		translateX = transform->translateX * 1000;
 		translateY = transform->translateY * 1000;
 	}
-	else if (screen.unit == GERBV_MMS) {
+	else if (screen.unit == (gerbv_gui_unit_t) GERBV_MMS) {
 		tempWidget = gtk_label_new ("X (mms):");
 		tempWidget2 = gtk_label_new ("Y (mms):");
 		translateX = transform->translateX * 25.4;
@@ -1871,13 +1871,13 @@ interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform
 		result = gtk_dialog_run (GTK_DIALOG(dialog));
 		if (result != GTK_RESPONSE_NONE) {
 			/* extract all the parameters */
-			if (screenUnit == GERBV_MILS) {
+			if (screenUnit == (gerbv_unit_t) GERBV_MILS) {
 				transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1)/
 					1000;
 				transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2)/
 					1000;
 			}
-			else if (screen.unit == GERBV_MMS) {
+			else if (screen.unit == (gerbv_gui_unit_t) GERBV_MMS) {
 				transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1)/
 					25.4;
 				transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2)/

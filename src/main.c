@@ -323,7 +323,7 @@ main(int argc, char *argv[])
     int       i,r,g,b,a;
     int       req_width = -1, req_height = -1;
 #ifdef HAVE_GETOPT_LONG
-    int       req_x = 0, req_y = 0;
+    /*int       req_x = 0, req_y = 0;*/
     char      *rest;
 #endif
     char      *project_filename = NULL;
@@ -393,6 +393,7 @@ main(int argc, char *argv[])
 		    perror("Height");
 		    break;
 		}
+		/*
 		if ((rest[0] == 0) || ((rest[0] != '-') && (rest[0] != '+')))
 		    break;
 		errno = 0;
@@ -409,6 +410,7 @@ main(int argc, char *argv[])
 		    perror("Y");
 		    break;
 		}
+		*/
 		break;
 	    default:
 		break;

@@ -94,15 +94,17 @@ render_check_scale_factor_limits (void) {
 /* ------------------------------------------------------ */
 void
 render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY) {
-	double us_midx, us_midy;	/* unscaled translation for screen center */
-	int half_w, half_h;		/* cache for half window dimensions */
+	/*double us_midx, us_midy;*/	/* unscaled translation for screen center */
+	/*int half_w, half_h;*/		/* cache for half window dimensions */
 	gdouble mouseCoordinateX = 0.0;
 	gdouble mouseCoordinateY = 0.0;
 	double oldWidth, oldHeight;
 
+	/*
 	half_w = screenRenderInfo.displayWidth / 2;
 	half_h = screenRenderInfo.displayHeight / 2;
-
+	*/
+	
 	oldWidth = screenRenderInfo.displayWidth / screenRenderInfo.scaleFactorX;
 	oldHeight = screenRenderInfo.displayHeight / screenRenderInfo.scaleFactorY;
 	if (zoomType == ZOOM_IN_CMOUSE || zoomType == ZOOM_OUT_CMOUSE) {
@@ -112,11 +114,13 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 			screenRenderInfo.scaleFactorY + screenRenderInfo.lowerLeftY;
 	}
 
+	/*
 	us_midx = screenRenderInfo.lowerLeftX + (screenRenderInfo.displayWidth / 2.0 )/
 			screenRenderInfo.scaleFactorX;
 	us_midy = screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / 2.0 )/
 			screenRenderInfo.scaleFactorY;		
-
+	*/
+	
 	switch(zoomType) {
 		case ZOOM_IN : /* Zoom In */
 		case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
