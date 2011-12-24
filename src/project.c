@@ -669,7 +669,7 @@ define_layer(scheme *sc, pointer args)
 static pointer
 set_render_type(scheme *sc, pointer args)
 {
-    pointer car_el, cdr_el;
+    pointer car_el;
     int r;
 
     dprintf("--> entering project.c:%s()\n", __FUNCTION__);
@@ -680,7 +680,6 @@ set_render_type(scheme *sc, pointer args)
     }
 
     car_el = sc->vptr->pair_car(args);
-    cdr_el = sc->vptr->pair_cdr(args);
 
     r = sc->vptr->ivalue (car_el);
     dprintf ("%s():  Setting render type to %d\n", __FUNCTION__, r);
@@ -692,7 +691,7 @@ set_render_type(scheme *sc, pointer args)
 static pointer
 gerbv_file_version(scheme *sc, pointer args)
 {
-    pointer car_el, cdr_el;
+    pointer car_el;
     int r;
     char *vstr;
     char *tmps;
@@ -705,7 +704,6 @@ gerbv_file_version(scheme *sc, pointer args)
     }
 
     car_el = sc->vptr->pair_car(args);
-    cdr_el = sc->vptr->pair_cdr(args);
     vstr = get_value_string(sc, car_el);
     
     /* find our internal integer code */
