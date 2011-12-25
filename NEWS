@@ -1,4 +1,36 @@
 ========================================================================
+Release Notes for gerbv-2.6.0
+========================================================================
+The following is a summary of the changes which went into gerbv-2.6.0.
+For a complete list of changes, refer to ChangeLog.  This release
+is primarily a bug fix release.
+
+-libgerbv:  Removed all gcc compiler warnings.
+-gerbv:     Removed all gcc compiler warnings.
+-libgerbv:  Updated the export code to be more portable in the face of
+            different locale settings.
+-gerbv:     Fix compilation on Quartz.
+-libgerbv:  Fix a bug where very thin flashed rectangles in logos/images
+            from Eagle CAD were not always rendered.
+-examples:  Added example on using precedence sensitive calculations of
+            aperture macros.
+-libgerbv:  Improve vector output accuracy.
+-gerbv:     Improve vector output accuracy.
+-libgerbv:  Fix bug related to minimum line widths in scaled layers
+-libgerbv:  Increase resolution in exported RS-274X files.
+-gerbv:     Fix bug around exporting selected layers.
+-gerbv:     Gray out menu items when no layers are open.
+-gerbv:     Set secreen size to a default when the board size is not valid.
+-libgerbv:  Implemented operator precedence in aperture macro
+	    parsing as per updated std
+-libgerbv:  Fix scaling bug when multiple scale factors are present.
+-gerbv:     Fix bug where only the bottom layer would print out.
+-gerbv:     Add file merging to the GUI which allows the user to do basic
+            panelization via the GUI.
+-gerbv:     Added "current layer" menuitem to the main menu.
+-libgerbv:  Fix macro rendering on clear layers (bug 3154966)
+
+========================================================================
 Release Notes for gerbv-2.5.0
 ========================================================================
 The following is a summary of the changes which went into gerbv-2.5.0.

@@ -1,3 +1,149 @@
+2011-12-25   Dan McMahill * dan AT mcmahill dot net *
+
+	* src/Makefile.am: Set shared lib version number in prep for 2.6.0
+	release.
+
+2011-12-24   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/draw-gdk.c, src/draw.c, src/interface.c,
+	src/main.c, src/render.c, src/scheme.c: * clean up all 'unused variable' compiler warnings
+
+2011-12-24   Dan McMahill * dan AT mcmahill dot net *
+
+	* src/project.c: Remove 2 unused variables (they were set but the
+	values never used) to increase the SNR of the compiler warning
+	output
+
+2011-12-24   Dan McMahill * dan AT mcmahill dot net *
+
+	* NEWS: Somehow the 2.5.0 release notes in NEWS never got committed
+	so add them now.
+
+2011-11-28   Dan McMahill * dan AT mcmahill dot net *
+
+	* configure.ac: Check for dlopen in -ldl.  This is used by the
+	TinyScheme dynamic loader (src/dynload.c).  Fixes linking problems
+	seen on some systems like Fedora 16.
+
+2011-09-04   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* .gitignore: * add .gitignore file to better track changed files with git (patch
+	from Uwe Bonnes)
+
+2011-05-01   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/export-drill.c, src/export-rs274x.c: Change LC_NUMERIC calls
+	in the export functions to ensure portability
+
+2011-05-01   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/render.c: patch from Canonical to allow
+	better compilation with quartz (ticket 3295792)
+
+2011-04-02   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/export-drill.c, src/export-rs274x.c: force rs274x and drill
+	export to use dots for commas this should prevent exporting
+	incorrect formats on machines with other locales
+
+2011-04-01   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/draw.c: enforce a minimum width on flashed rectangle apertures
+	Eagle CAD seems to use very thin flashed rectangles for
+	logos/images, and the cairo rendering did not render them sometimes
+
+2011-03-08   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* : commit f990adcfab61c16a3992be4d00e21da5a2bfe251  Author: Julian
+	Lamb * thepurlieu AT gmail dot com * Date:   Tue Mar 8 21:07:39 2011
+	-0500
+
+2011-02-19   Stefan Petersen * spe AT stacken dot kth dot se *
+
+	* example/amacro-ref/README.txt,
+	example/amacro-ref/gerbv_am_expression_bug.ger: Added example on
+	using precedence sensitive calculations of aperture macros.
+
+2011-03-07   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/draw.c, src/draw.h, src/gerbv.c, src/gerbv.h: greatly improve
+	vector output accuracy many thanks for the bug and patch from Simon
+	Bichler (3197830)
+
+2011-03-07   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/draw.c: disable the minimum line width rendering logic for
+	scaled layers fixes bug 3202311
+
+2011-03-05   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/export-rs274x.c: increase the resolution for exported RS274X
+	files from 2.3 to 3.4 format fixes bug 3197816
+
+2011-03-05   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c: check for a selected layer before trying to
+	save/export it fixes bug 3197797
+
+2011-03-02   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/gerbv.c: set the screen size to a default size when the board
+	size is invalid fixes bug 3196664
+
+2011-03-02   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c, src/main.h: grey out all
+	applicable menu items when no layers are open fixes bug 3196584,
+	where Excellon export crashes with no file open
+
+2011-02-18   Stefan Petersen * spe AT stacken dot kth dot se *
+
+	* src/amacro.c: Implemented operator precedence in aperture macro
+	parsing as per updated std.  Closes bug #3172530. Uses shunting yard algorithm, suggested by bug
+	reporter Ben Rampling.
+
+2011-02-12   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/gerber.c: * fix scaling bug when multiple scale factors are present (bug
+	3172964)
+
+2011-01-15   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c: fix printing bug where only the bottom layer
+	printed out (patch by cloudfish)
+
+2011-01-12   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/interface.c: relabel the "Current layer" menu to Layer to make
+	it one word only
+
+2011-01-12   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c: add a file
+	merging feature to the GUI menu thanks to Doug Springer for this
+	nice feature which allows the user to do things like basic
+	panelizing using the GUI now (it was previously only possible via
+	the command line)
+
+2011-01-12   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c,
+	src/interface.h, src/main.h: patches by Stefan Tauner to add the
+	"current layer" menuitem to the main menu also includes some other
+	cleanup work by Stefan as well
+
+2011-01-12   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/draw.c: * fix macro rendering on clear layers (bug 3154966)
+
+2011-01-11   Dan McMahill * dan AT mcmahill dot net *
+
+	* configure.ac: Welcome to 2.5A
+
+2011-01-11   Dan McMahill * dan AT mcmahill dot net *
+
+	* ChangeLog: update for 2.5.0
+
 2011-01-08   Dan McMahill * dan AT mcmahill dot net *
 
 	* src/Makefile.am: Bump shared lib version in prep for 2.5 release.
