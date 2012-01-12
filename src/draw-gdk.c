@@ -259,7 +259,7 @@ gerbv_gdk_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, double *p,
     const int rotation_idx = 8;
     GdkGC *local_gc = gdk_gc_new(pixmap);
     double real_dia;
-    double real_gap;
+    double real_dia_diff;
     int circle;
     GdkPoint crosshair[4];
     int point;
@@ -272,17 +272,18 @@ gerbv_gdk_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, double *p,
 			       GDK_JOIN_MITER);
 
     real_dia = p[outside_dia_idx] -  p[ci_thickness_idx] / 2.0;
-    real_gap = p[gap_idx] + p[ci_thickness_idx];
+    real_dia_diff = 2*(p[gap_idx] + p[ci_thickness_idx]);
 
     for (circle = 0; circle != (int)p[nuf_circles_idx];  circle++) {
 	/* 
 	 * Non filled circle 
 	 */
 	const gint full_circle = 23360;
-	gint dia = (real_dia - real_gap * circle) * scale;
-	gdk_draw_arc(pixmap, local_gc, 0, x - dia / 2, y - dia / 2, 
-		     dia, dia, 0, full_circle);
-			  
+	gint dia = (real_dia - real_dia_diff * circle) * scale;
+	if (dia >= 0){
+		gdk_draw_arc(pixmap, local_gc, 0, x - dia / 2, y - dia / 2, 
+				dia, dia, 0, full_circle);
+	}
     }
 
     /*

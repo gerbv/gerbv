@@ -369,20 +369,23 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 		}
 	    } else if (ls->type == GERBV_APTYPE_MACRO_MOIRE) {
-		gdouble diameter, gap;
+		gdouble diameter, diameterDifference;
 		int circleIndex;
 		
 		cairo_translate (cairoTarget, ls->parameter[MOIRE_CENTER_X],
 			       ls->parameter[MOIRE_CENTER_Y]);
 		cairo_rotate (cairoTarget, ls->parameter[MOIRE_ROTATION] * M_PI/180);
 		diameter = ls->parameter[MOIRE_OUTSIDE_DIAMETER] -  ls->parameter[MOIRE_CIRCLE_THICKNESS];
-		gap = ls->parameter[MOIRE_GAP_WIDTH] + ls->parameter[MOIRE_CIRCLE_THICKNESS];
+		diameterDifference = 2*(ls->parameter[MOIRE_GAP_WIDTH] +
+			ls->parameter[MOIRE_CIRCLE_THICKNESS]);
 		cairo_set_line_width (cairoTarget, ls->parameter[MOIRE_CIRCLE_THICKNESS]);
 		
 		for (circleIndex = 0; circleIndex < (int)ls->parameter[MOIRE_NUMBER_OF_CIRCLES];  circleIndex++) {
-		    gdouble currentDiameter = (diameter - gap * (float) circleIndex);
-		    gerbv_draw_circle (cairoTarget, currentDiameter);
-		    draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
+		    gdouble currentDiameter = (diameter - diameterDifference * (float) circleIndex);
+		    if (currentDiameter >= 0){
+				gerbv_draw_circle (cairoTarget, currentDiameter);
+				draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
+		    }
 		}
 		
 		gdouble crosshairRadius = (ls->parameter[MOIRE_CROSSHAIR_LENGTH] / 2.0);
