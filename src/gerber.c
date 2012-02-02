@@ -685,8 +685,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 					     
 		}
 		/* update the info bounding box with this latest bounding box */
-		gerber_update_image_min_max(&boundingBox, repeat_off_X, repeat_off_Y, image);
-		
+		/* don't change the bounding box if the polarity is clear */
+		if (state->layer->polarity != GERBV_POLARITY_CLEAR){
+			gerber_update_image_min_max(&boundingBox, repeat_off_X, repeat_off_Y, image);
+		}
 		/* optionally update the knockout measurement box */
 		if (knockoutMeasure) {
 			if (boundingBox.left < knockoutLimitXmin)
