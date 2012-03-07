@@ -226,10 +226,8 @@ gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, double *p,
     radius = p[diameter_idx] / 2.0;
     for (i = 0; i < nuf_vertices; i++) {
 	vertex =  tick * (double)i + rotation;
-	points[i].x = (int)round(scale * radius * cos(vertex)) + x +
-	    p[center_x_idx];
-	points[i].y = (int)round(scale * radius * sin(vertex)) + y +
-	    p[center_y_idx];
+	points[i].x = (int)round(scale * (radius * cos(vertex) + p[center_x_idx])) + x;
+	points[i].y = (int)round(scale * (radius * sin(vertex) - p[center_y_idx])) + y;
     }
 
     gdk_draw_polygon(pixmap, local_gc, 1, points, nuf_vertices);
@@ -484,9 +482,11 @@ gerbv_gdk_draw_prim21(GdkPixmap *pixmap, GdkGC *gc, double *p,
     points[3].y = half_height;
 
     for (i = 0; i < nuf_points; i++) {
+	points[i].x += (int)(p[exp_x_idx] * scale);
+	points[i].y -= (int)(p[exp_y_idx] * scale);
 	points[i] = rotate_point(points[i], p[rotation_idx]);
-	points[i].x += (x + (int)(p[exp_x_idx] * scale));
-	points[i].y += (y - (int)(p[exp_y_idx] * scale));
+	points[i].x += x;
+	points[i].y += y;
     }
 
     gdk_gc_copy(local_gc, gc);
@@ -541,7 +541,7 @@ gerbv_gdk_draw_prim22(GdkPixmap *pixmap, GdkGC *gc, double *p,
 			     * scale);
 
     for (i = 0; i < nuf_points; i++) {
-	points[i] = rotate_point(points[i], p[rotation_idx]);
+	points[i] = rotate_point(points[i], -p[rotation_idx]);
 	points[i].x = x + points[i].x;
 	points[i].y = y - points[i].y;
     }

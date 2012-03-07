@@ -488,17 +488,17 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			gdouble halfWidth, halfHeight; 
 
 			if (draw_update_macro_exposure (cairoTarget, clearOperator,
-						darkOperator, ls->parameter[LINE22_EXPOSURE])) {
+						darkOperator, ls->parameter[LINE21_EXPOSURE])) {
 				halfWidth = ls->parameter[LINE21_WIDTH] / 2.0;
 				halfHeight = ls->parameter[LINE21_HEIGHT] / 2.0;
 				if (halfWidth < pixelWidth)
 					halfWidth = pixelWidth;
 				if (halfHeight < pixelWidth)
 					halfHeight = pixelWidth;
-				cairo_translate (cairoTarget, ls->parameter[LINE21_CENTER_X],
-						ls->parameter[LINE21_CENTER_Y]);
 				cairo_rotate (cairoTarget,
 						DEG2RAD(ls->parameter[LINE21_ROTATION]));
+				cairo_translate (cairoTarget, ls->parameter[LINE21_CENTER_X],
+						ls->parameter[LINE21_CENTER_Y]);
 				cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
 						ls->parameter[LINE21_WIDTH], ls->parameter[LINE21_HEIGHT]);
 				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
@@ -516,11 +516,11 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 					halfWidth = pixelWidth;
 				if (halfHeight < pixelWidth)
 					halfHeight = pixelWidth;
+				cairo_rotate (cairoTarget,
+						DEG2RAD(ls->parameter[LINE22_ROTATION]));
 				cairo_translate (cairoTarget,
 						ls->parameter[LINE22_LOWER_LEFT_X],
 						ls->parameter[LINE22_LOWER_LEFT_Y]);
-				cairo_rotate (cairoTarget,
-						DEG2RAD(ls->parameter[LINE22_ROTATION]));
 				cairo_rectangle (cairoTarget, 0, 0,
 						ls->parameter[LINE22_WIDTH],
 						ls->parameter[LINE22_HEIGHT]);
