@@ -28,7 +28,7 @@ lib_LTLIBRARIES = libgerbv.la
 
 # public header file(s)
 pkgincludedir=	$(includedir)/${PACKAGE}-${VERSION}
-pkginclude_DATA= gerbv.h
+pkginclude_HEADERS= gerbv.h
 
 # pkg-config data file
 pkgconfigdir = $(libdir)/pkgconfig
