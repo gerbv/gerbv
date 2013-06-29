@@ -143,6 +143,9 @@ run_gerbv:     $(srcdir)/run_gerbv.in Makefile
 		$(srcdir)/run_gerbv.in > $@
 	chmod 755 $@
 
+localedir = @datadir@/locale
+DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
+
 DISTCLEANFILES = run_gerbv
 
 MOSTLYCLEANFILES = *~

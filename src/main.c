@@ -54,6 +54,7 @@
 
 #include <locale.h>
 
+#include "common.h"
 #include "gerbv.h"
 #include "main.h"
 #include "callbacks.h"
@@ -333,6 +334,12 @@ main(int argc, char *argv[])
     gchar *exportFilename = NULL;
     gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
 	   userSuppliedWidth=0, userSuppliedHeight=0, userSuppliedBorder=0.05;
+
+#if ENABLE_NLS
+    setlocale(LC_ALL, "");
+    bindtextdomain(PACKAGE, LOCALEDIR);
+    textdomain(PACKAGE);
+#endif
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
