@@ -153,7 +153,7 @@ const struct option longopts[] = {
     {0, 0, 0, 0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "Vadh:B:D:O:W:b:f:l:o:p:t:T:w:x:";
+const char *opt_options = "VadhB:D:O:W:b:f:l:o:p:t:T:w:x:";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
