@@ -24,6 +24,7 @@ dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
 AC_INIT([gerbv], [2.6A])
 AC_CONFIG_SRCDIR([src/gerbv.c])
+AC_GNU_SOURCE
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.9])
 
@@ -33,6 +34,11 @@ AM_CONFIG_HEADER([config.h])
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
 
+dnl Internationalisation
+AM_NLS
+AM_GNU_GETTEXT
+AM_GNU_GETTEXT_VERSION([0.16])
+#AX_DESKTOP_I18N
 
 ############################################################
 #
@@ -362,6 +368,7 @@ AC_DEFINE_UNQUOTED(BINDIR_TO_EXECPREFIX, "$bindir_to_execprefix", [Relative path
 ############################################################
 
 AC_OUTPUT(	Makefile \
+		intl/Makefile \
 		desktop/Makefile \
 		doc/PNG-print/Makefile \
 		doc/eagle/Makefile \
@@ -385,6 +392,7 @@ AC_OUTPUT(	Makefile \
 		example/trailing/Makefile \
 		example/Makefile \
 		man/Makefile \
+		po/Makefile.in \
 		scheme/Makefile \
 		src/Makefile \
 		src/libgerbv.pc \
