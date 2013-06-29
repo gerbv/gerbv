@@ -1,0 +1,25 @@
+# List of source files which contain translatable strings.
+src/attribute.c
+src/authors.c
+src/bugs.c
+src/callbacks.c
+src/csv.c
+src/draw-gdk.c
+src/draw.c
+src/drill.c
+src/drill_stats.c
+src/dynload.c
+src/export-drill.c
+src/export-rs274x.c
+src/gerb_file.c
+src/gerb_image.c
+src/gerb_stats.c
+src/gerber.c
+src/gerbv.c
+src/interface.c
+src/interface.h
+src/main.c
+src/pick-and-place.c
+src/project.c
+src/render.c
+src/tooltable.c
