@@ -2164,7 +2164,10 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 
 	    if (type != GERBV_APTYPE_NONE) { 
 		if (nuf_parameters > APERTURE_PARAMETERS_MAX) {
-		    GERB_COMPILE_ERROR("Number of parameters to aperture macro are more than gerbv is able to store\n");
+			GERB_COMPILE_ERROR("Number of parameters to aperture macro (%d) "
+							"are more than gerbv is able to store (%d)\n",
+							nuf_parameters, APERTURE_PARAMETERS_MAX);
+			nuf_parameters = APERTURE_PARAMETERS_MAX;
 		}
 
 		/*
