@@ -968,24 +968,28 @@ interface_create_gui (int req_width, int req_height)
 
 	image8 = gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button4), image8);
+	gtk_tooltips_set_tip (tooltips, button4, _("Open Gerber, drill, or pick and place file(s)"), NULL);
 
 	button5 = gtk_button_new ();
 	gtk_box_pack_start (GTK_BOX (hbox1), button5, FALSE, TRUE, 0);
 
 	image9 = gtk_image_new_from_stock (GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button5), image9);
+	gtk_tooltips_set_tip (tooltips, button5, _("Move the layer currently selected in the sidepane one step down"), NULL);
 
 	button6 = gtk_button_new ();
 	gtk_box_pack_start (GTK_BOX (hbox1), button6, FALSE, TRUE, 0);
 
 	image10 = gtk_image_new_from_stock (GTK_STOCK_GO_UP, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button6), image10);
+	gtk_tooltips_set_tip (tooltips, button6, _("Move the layer currently selected in the sidepane one step up"), NULL);
 
 	button7 = gtk_button_new ();
 	gtk_box_pack_start (GTK_BOX (hbox1), button7, FALSE, TRUE, 0);
 
 	image11 = gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button7), image11);
+	gtk_tooltips_set_tip (tooltips, button7, _("Remove the layer currently selected in the sidepane"), NULL);
 
 	Layer_label = gtk_label_new (_("Layers"));
 	gtk_notebook_set_tab_label (GTK_NOTEBOOK (sidepane_notebook), 
