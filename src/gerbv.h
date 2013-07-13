@@ -87,7 +87,7 @@ extern "C" {
 #define INITIAL_SCALE 200
 #define MAX_ERRMSGLEN 25
 #define MAX_COORDLEN 28
-#define MAX_DISTLEN 90
+#define MAX_DISTLEN 180
 #define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
 
 /* Macros to convert between unscaled gerber coordinates and other units */
