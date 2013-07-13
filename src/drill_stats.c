@@ -65,13 +65,13 @@ gerbv_drill_stats_new(void) {
     /* Initialize drill list */
     drill_list = gerbv_drill_stats_new_drill_list();
     if (drill_list == NULL)
-        GERB_FATAL_ERROR("malloc drill_list failed\n");
+        GERB_FATAL_ERROR(_("malloc drill_list failed\n"));
     stats->drill_list = (gerbv_drill_list_t *) drill_list;
 
     /* Initialize error list */
     error_list = gerbv_drill_stats_new_error_list();
     if (error_list == NULL)
-        GERB_FATAL_ERROR("malloc error_list failed\n");
+        GERB_FATAL_ERROR(_("malloc error_list failed\n"));
     stats->error_list = (gerbv_error_list_t *) error_list;
 
     stats->detect = NULL;
@@ -196,7 +196,7 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     tmps = NULL;
     tmps2 = NULL;
     if (input_stats->detect) {
-	tmps2 = g_strdup_printf ("Broken tool detect %s (layer %d)", input_stats->detect, this_layer);
+	tmps2 = g_strdup_printf (_("Broken tool detect %s (layer %d)"), input_stats->detect, this_layer);
     }    
     if (accum_stats->detect) {
 	if (tmps2) {
@@ -311,7 +311,7 @@ drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
     /* Now malloc space for new drill list element */
     drill_list_new = (gerbv_drill_list_t *) g_malloc(sizeof(gerbv_drill_list_t));
     if (drill_list_new == NULL) {
-	GERB_FATAL_ERROR("malloc format failed\n");
+	GERB_FATAL_ERROR(_("malloc format failed\n"));
     }
 
     /* Now set various parameters based upon calling args */
@@ -466,7 +466,7 @@ drill_stats_add_error(gerbv_error_list_t *error_list_in,
     /* Now malloc space for new error list element */
     error_list_new = (gerbv_error_list_t *) g_malloc(sizeof(gerbv_error_list_t));
     if (error_list_new == NULL) {
-	GERB_FATAL_ERROR("malloc error_list failed\n");
+	GERB_FATAL_ERROR(_("malloc error_list failed\n"));
     }
     
     /* Set member elements */
