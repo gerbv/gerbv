@@ -37,6 +37,7 @@
 
 #include <glib/gstdio.h>
 #include "gerbv.h"
+#include "common.h"
 #include "draw-gdk.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
@@ -213,7 +214,7 @@ gerbv_export_rs274x_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 		thisTransform = &identityTransform;
 	}
 	if ((fd = g_fopen(filename, "w")) == NULL) {
-		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
+		GERB_MESSAGE(_("Can't open file for writing: %s\n"), filename);
 		return FALSE;
 	}
 	
