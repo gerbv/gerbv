@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "common.h"
+
 #ifndef MAXPATHLEN
 # define MAXPATHLEN 1024
 #endif
@@ -44,7 +46,7 @@ typedef void (*FARPROC)();
    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, 
 		 NULL, GetLastError(), 0, 
 		 (LPTSTR)&msg_buf, 0, NULL); 
-   fprintf(stderr, "scheme load-extension: %s: %s", additional_message, (char *) msg_buf); 
+   fprintf(stderr, _("scheme load-extension: %s: %s"), additional_message, (char *) msg_buf); 
    LocalFree(msg_buf); 
  } 
 
@@ -74,7 +76,7 @@ static void dl_detach(HMODULE mo) {
 static HMODULE dl_attach(const char *module) {
   HMODULE so=dlopen(module,RTLD_LAZY);
   if(!so) {
-    fprintf(stderr, "Error loading scheme extension \"%s\": %s\n", module, dlerror()); 
+    fprintf(stderr, _("Error loading scheme extension \"%s\": %s\n"), module, dlerror()); 
   }
   return so;
 }
@@ -85,7 +87,7 @@ static FARPROC dl_proc(HMODULE mo, const char *proc) {
   if ((errmsg = dlerror()) == 0) {
     return fp;
   }
-  fprintf(stderr, "Error initializing scheme module \"%s\": %s\n", proc, errmsg);
+  fprintf(stderr, _("Error initializing scheme module \"%s\": %s\n"), proc, errmsg);
  return 0;
 }
 #if 0
