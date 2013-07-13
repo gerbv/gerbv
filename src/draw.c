@@ -43,6 +43,7 @@
 #include "draw.h"
 #include "draw-gdk.h"
 #include <cairo.h>
+#include "common.h"
 
 #define dprintf if(DEBUG) printf
 
@@ -313,7 +314,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
     int handled = 1;  
     gerbv_simplified_amacro_t *ls = s;
 
-    dprintf("Drawing simplified aperture macros:\n");
+    dprintf(_("Drawing simplified aperture macros:\n"));
     if (usesClearPrimative)
     	cairo_push_group (cairoTarget);
     while (ls != NULL) {
@@ -950,7 +951,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 								  drawMode, selectionInfo, image, net);
 						break;   
 					default :
-						GERB_MESSAGE("Unknown aperture type\n");
+						GERB_MESSAGE(_("Unknown aperture type\n"));
 						return 0;
 				}
 				/* and finally fill the path */
@@ -958,7 +959,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				cairo_restore (cairoTarget);
 				break;
 			default:
-				GERB_MESSAGE("Unknown aperture state\n");
+				GERB_MESSAGE(_("Unknown aperture state\n"));
 				return 0;
 		}
 	    }
