@@ -62,11 +62,9 @@
   #include "draw.h"
 #endif
 
+#include "common.h"
 #include "csv.h"
 #include "pick-and-place.h"
-
-/* CHECKME - here gi18n is disabled */
-#define _(String) (String)
 
 #undef max
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -431,7 +429,7 @@ pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary)
 
     buf = malloc(MAXL);
     if (buf == NULL)
-	GERB_FATAL_ERROR("malloc buf failed while checking for pick-place file.\n");
+	GERB_FATAL_ERROR(_("malloc buf failed while checking for pick-place file.\n"));
 
     while (fgets(buf, MAXL, fd->fd) != NULL) {
 	len = strlen(buf);
@@ -564,19 +562,19 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 
     image = gerbv_create_image(image, "Pick and Place (X-Y) File");
     if (image == NULL) {
-	GERB_FATAL_ERROR("malloc image failed\n");
+	GERB_FATAL_ERROR(_("malloc image failed\n"));
     }
 	
     image->format = (gerbv_format_t *)g_malloc(sizeof(gerbv_format_t));
     if (image->format == NULL) {
-	GERB_FATAL_ERROR("malloc format failed\n");
+	GERB_FATAL_ERROR(_("malloc format failed\n"));
     }
     memset((void *)image->format, 0, sizeof(gerbv_format_t));
     
     image->layertype = GERBV_LAYERTYPE_PICKANDPLACE;
     stats = gerbv_drill_stats_new();
     if (stats == NULL)
-        GERB_FATAL_ERROR("malloc pick_place_stats failed\n");
+        GERB_FATAL_ERROR(_("malloc pick_place_stats failed\n"));
     image->drill_stats = stats;
 
 
