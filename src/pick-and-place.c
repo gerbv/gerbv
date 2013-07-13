@@ -56,6 +56,7 @@
 
 #include "gerbv.h"
 #include "gerber.h"
+#include "main.h"
 #ifdef RENDER_USING_GDK
   #include "draw-gdk.h"
 #else
@@ -165,15 +166,31 @@ pick_and_place_get_float_unit(char *str)
 {
     double x = 0.0;
     char unit[41];
+    extern gerbv_screen_t screen;
 
     /* float, optional space, optional unit mm,cm,in,mil */
     sscanf(str, "%lf %40s", &x, unit);
     if(strstr(unit,"in")) {
 	;
+    } else if(strstr(unit, "mil")) {
+	x /= 1000;
     } else if(strstr(unit, "cm")) {
 	x /= 2.54;
-    } else { /* default to mils */
-	x /= 1000;	
+    } else if(strstr(unit, "mm")) {
+	x /= 25.4;
+    } else { /* default to GUI units */
+	switch (screen.unit) {
+	case GERBV_INS:
+	    break;
+	case GERBV_MILS:
+	    x /= 1000;
+	    break;
+	case GERBV_MMS:
+	    x /= 25.4;
+	    break;
+	default:
+	    assert(screen.unit);
+	}
     }
 
     return x;
