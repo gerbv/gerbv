@@ -36,6 +36,7 @@
 #include <math.h>
 
 #include "gerbv.h"
+#include "common.h"
 #include "gerb_image.h"
 #include "gerber.h"
 #include "amacro.h"
@@ -96,7 +97,7 @@ gerbv_create_image(gerbv_image_t *image, const gchar *type)
     image->netlist->state = image->states;
     
     if (type == NULL)
-	image->info->type = g_strdup ("unknown");
+	image->info->type = g_strdup (_("unknown"));
     else
 	image->info->type = g_strdup (type);
 
@@ -244,31 +245,31 @@ gerbv_image_interpolation(gerbv_interpolation_t interpolation)
 {
     switch (interpolation) {
     case GERBV_INTERPOLATION_LINEARx1:
-	printf("linearX1");
+	printf(_("linearX1"));
 	break;
     case GERBV_INTERPOLATION_x10:
-	printf("linearX10");
+	printf(_("linearX10"));
 	break;
     case GERBV_INTERPOLATION_LINEARx01:
-	printf("linearX01");
+	printf(_("linearX01"));
 	break;
     case GERBV_INTERPOLATION_LINEARx001:
-	printf("linearX001");
+	printf(_("linearX001"));
 	break;
     case GERBV_INTERPOLATION_CW_CIRCULAR:
-	printf("CW circular");
+	printf(_("CW circular"));
 	break;
     case GERBV_INTERPOLATION_CCW_CIRCULAR:
-	printf("CCW circular");
+	printf(_("CCW circular"));
 	break;
     case  GERBV_INTERPOLATION_PAREA_START:
-	printf("polygon area start");
+	printf(_("polygon area start"));
 	break;
     case  GERBV_INTERPOLATION_PAREA_END:
-	printf("polygon area end");
+	printf(_("polygon area end"));
 	break;
     default:
-	printf("unknown");
+	printf(_("unknown"));
     }
 } /* gerb_image_interpolation */
 
@@ -277,16 +278,16 @@ gerbv_image_aperture_state(gerbv_aperture_state_t state)
 {
     switch (state) {
     case GERBV_APERTURE_STATE_OFF:
-	printf("..state off");
+	printf(_("..state off"));
 	break;
     case GERBV_APERTURE_STATE_ON:
-	printf("..state on");
+	printf(_("..state on"));
 	break;
     case GERBV_APERTURE_STATE_FLASH:
-	printf("..state flash");
+	printf(_("..state flash"));
 	break;
     default:
-	printf("..state unknown");
+	printf(_("..state unknown"));
     }
 }
 
@@ -299,29 +300,29 @@ gerbv_image_dump(gerbv_image_t const* image)
     gerbv_net_t const * net;
 
     /* Apertures */
-    printf("Apertures:\n");
+    printf(_("Apertures:\n"));
     aperture = image->aperture;
     for (i = 0; i < APERTURE_MAX; i++) {
 	if (aperture[i]) {
-	    printf(" Aperture no:%d is an ", i);
+	    printf(_(" Aperture no:%d is an "), i);
 	    switch(aperture[i]->type) {
 	    case GERBV_APTYPE_CIRCLE:
-		printf("circle");
+		printf(_("circle"));
 		break;
 	    case GERBV_APTYPE_RECTANGLE:
-		printf("rectangle");
+		printf(_("rectangle"));
 		break;
 	    case GERBV_APTYPE_OVAL:
-		printf("oval");
+		printf(_("oval"));
 		break;
 	    case GERBV_APTYPE_POLYGON:
-		printf("polygon");
+		printf(_("polygon"));
 		break;
 	    case GERBV_APTYPE_MACRO:
-		printf("macro");
+		printf(_("macro"));
 		break;
 	    default:
-		printf("unknown");
+		printf(_("unknown"));
 	    }
 	    for (j = 0; j < aperture[i]->nuf_parameters; j++) {
 		printf(" %f", aperture[i]->parameter[j]);
@@ -333,7 +334,7 @@ gerbv_image_dump(gerbv_image_t const* image)
     /* Netlist */
     net = image->netlist;
     while (net){
-	printf("(%f,%f)->(%f,%f) with %d (", net->start_x, net->start_y, 
+	printf(_("(%f,%f)->(%f,%f) with %d ("), net->start_x, net->start_y,
 	       net->stop_x, net->stop_y, net->aperture);
 	gerbv_image_interpolation(net->interpolation);
 	gerbv_image_aperture_state(net->aperture_state);
