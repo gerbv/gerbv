@@ -172,7 +172,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	project_list_t *project_list, *originalList;
 	gint i,maxLayerNumber = -1;
 
-	dprintf("Opening project = %s\n", (gchar *) filename);
+	dprintf(_("Opening project = %s\n"), (gchar *) filename);
 	originalList = project_list = read_project_file(filename);
 
 	if (project_list) {
@@ -211,7 +211,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 								fileIndex, FALSE, 
 								project_list->attr_list, 
 								project_list->n_attr, TRUE) == -1) {
-							GERB_MESSAGE("could not read file: %s", fullName);
+							GERB_MESSAGE(_("could not read file: %s"), fullName);
 						}
 						else {
 							g_free (dirName);
@@ -238,10 +238,10 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 		}
 		gerbvProject->project = g_strdup (filename);
 		if (gerbvProject->project == NULL)
-		GERB_FATAL_ERROR("malloc gerbvProject->project failed\n");
+		GERB_FATAL_ERROR(_("malloc gerbvProject->project failed\n"));
 	}
 	else {
-		GERB_MESSAGE("could not read %s[%d]\n", (gchar *) filename,
+		GERB_MESSAGE(_("could not read %s[%d]\n"), (gchar *) filename,
 		gerbvProject->last_loaded);
 	}
 } /* gerbv_open_project_from_filename */
@@ -291,7 +291,7 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
     }
     
     if (write_project_file(gerbvProject, gerbvProject->project, project_list)) {
-	GERB_MESSAGE("Failed to write project\n");
+	GERB_MESSAGE(_("Failed to write project\n"));
     }
     project_destroy_project_list (project_list);
     g_free (dirName);
@@ -311,7 +311,7 @@ main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filenam
     }
     gerbvProject->project = g_strdup(filename);
     if (gerbvProject->project == NULL)
-	GERB_FATAL_ERROR("malloc gerbvProject->project failed\n");
+	GERB_FATAL_ERROR(_("malloc gerbvProject->project failed\n"));
     main_save_project_from_filename (gerbvProject, filename);
 } /* gerbv_save_as_project_from_filename */
 
@@ -380,24 +380,24 @@ main(int argc, char *argv[])
 	    /* Only long options like GDK/GTK debug */
 	    switch (longopt_val) {
 	    case 0: /* default value if nothing is set */
-		fprintf(stderr, "Not handled option %s\n", longopts[longopt_idx].name);
+		fprintf(stderr, _("Not handled option %s\n"), longopts[longopt_idx].name);
 		break;
 	    case 1: /* geometry */
 		errno = 0;
 		req_width = (int)strtol(optarg, &rest, 10);
 		if (errno) {
-		    perror("Width");
+		    perror(_("Width"));
 		    break;
 		}
 		if (rest[0] != 'x'){
-		    fprintf(stderr, "Split X and Y parameters with an x\n");
+		    fprintf(stderr, _("Split X and Y parameters with an x\n"));
 		    break;
 		}
 		rest++;
 		errno = 0;
 		req_height = (int)strtol(rest, &rest, 10);
 		if (errno) {
-		    perror("Height");
+		    perror(_("Height"));
 		    break;
 		}
 		/*
@@ -426,27 +426,27 @@ main(int argc, char *argv[])
 #endif /* HAVE_GETOPT_LONG */
     	case 'B' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must specify the border in the format <alpha>.\n");
+		fprintf(stderr, _("You must specify the border in the format <alpha>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 10) {
-		fprintf(stderr, "Specified border is not recognized.\n");
+		fprintf(stderr, _("Specified border is not recognized.\n"));
 		exit(1);
 	    }
 	    sscanf (optarg,"%f",&userSuppliedBorder);
 	    if (userSuppliedBorder <  0) {
-		fprintf(stderr, "Specified border is smaller than zero!\n");
+		fprintf(stderr, _("Specified border is smaller than zero!\n"));
 		exit(1);
 	    }
 	    userSuppliedBorder/=100.0;
 	    break;
 	case 'D' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give an resolution in the format <DPI X,DPI Y> or <DPI_X_and_Y>.\n");
+		fprintf(stderr, _("You must give an resolution in the format <DPI X,DPI Y> or <DPI_X_and_Y>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 20) {
-		fprintf(stderr, "Specified resolution is not recognized.\n");
+		fprintf(stderr, _("Specified resolution is not recognized.\n"));
 		exit(1);
 	    }
 	    if(strchr(optarg, 'x')!=NULL){
@@ -456,45 +456,45 @@ main(int argc, char *argv[])
 		userSuppliedDpiY = userSuppliedDpiX;
 	    }
 	    if ((userSuppliedDpiX <= 0) || (userSuppliedDpiY <= 0)) {
-		fprintf(stderr, "Specified resolution should be greater than 0.\n");
+		fprintf(stderr, _("Specified resolution should be greater than 0.\n"));
 		exit(1);
 	    }
 	    userSuppliedDpi=TRUE;
 	    break;
     	case 'O' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give an origin in the format <lower_left_X x lower_left_Y>.\n");
+		fprintf(stderr, _("You must give an origin in the format <lower_left_X x lower_left_Y>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 20) {
-		fprintf(stderr, "Specified origin is not recognized.\n");
+		fprintf(stderr, _("Specified origin is not recognized.\n"));
 		exit(1);
 	    }
 	    sscanf (optarg,"%fx%f",&userSuppliedOriginX,&userSuppliedOriginY);
 	    userSuppliedOrigin=TRUE;
 	    break;
     	case 'V' :
-	    printf("gerbv version %s\n", VERSION);
-	    printf("Copyright (C) 2001 -- 2008 by Stefan Petersen\n");
-	    printf("and the respective original authors listed in the source files.\n");
+	    printf(_("gerbv version %s\n"), VERSION);
+	    printf(_("Copyright (C) 2001 -- 2008 by Stefan Petersen\n"));
+	    printf(_("and the respective original authors listed in the source files.\n"));
 	    exit(0);	
 	case 'a' :
 	    userSuppliedAntiAlias = TRUE;
 	    break;
     	case 'b' :	// Set background to this color
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give an background color in the hex-format <#RRGGBB>.\n");
+		fprintf(stderr, _("You must give an background color in the hex-format <#RRGGBB>.\n"));
 		exit(1);
 	    }
 	    if ((strlen (optarg) != 7)||(optarg[0]!='#')) {
-		fprintf(stderr, "Specified color format is not recognized.\n");
+		fprintf(stderr, _("Specified color format is not recognized.\n"));
 		exit(1);
 	    }
     	    r=g=b=-1;
 	    sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
 	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)) {
 
-		fprintf(stderr, "Specified color values should be between 00 and FF.\n");
+		fprintf(stderr, _("Specified color values should be between 00 and FF.\n"));
 		exit(1);
 	    }
 	    mainProject->background.red = r*257;
@@ -503,11 +503,11 @@ main(int argc, char *argv[])
 	    break;
 	case 'f' :	// Set layer colors to this color (foreground color)
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give an foreground color in the hex-format <#RRGGBB> or <#RRGGBBAA>.\n");
+		fprintf(stderr, _("You must give an foreground color in the hex-format <#RRGGBB> or <#RRGGBBAA>.\n"));
 		exit(1);
 	    }
 	    if (((strlen (optarg) != 7)&&(strlen (optarg) != 9))||(optarg[0]!='#')) {
-		fprintf(stderr, "Specified color format is not recognized.\n");
+		fprintf(stderr, _("Specified color format is not recognized.\n"));
 		exit(1);
 	    }
 	    r=g=b=a=-1;
@@ -521,7 +521,7 @@ main(int argc, char *argv[])
 
 	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)||(a<0)||(a>255) ) {
 
-		fprintf(stderr, "Specified color values should be between 0x00 (0) and 0xFF (255).\n");
+		fprintf(stderr, _("Specified color values should be between 0x00 (0) and 0xFF (255).\n"));
 		exit(1);
 	    }
 	    mainDefaultColors[layerctr].red   = r;
@@ -535,7 +535,7 @@ main(int argc, char *argv[])
 	    break;
 	case 'l' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a filename to send log to\n");
+		fprintf(stderr, _("You must give a filename to send log to\n"));
 		exit(1);
 	    }
 	    logToFileOption = TRUE;
@@ -543,38 +543,38 @@ main(int argc, char *argv[])
 	    break;
     	case 'o' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a filename to export to.\n");
+		fprintf(stderr, _("You must give a filename to export to.\n"));
 		exit(1);
 	    }
 	    exportFilename = optarg;
 	    break;
 	case 'p' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a project filename\n");
+		fprintf(stderr, _("You must give a project filename\n"));
 		exit(1);
 	    }
 	    project_filename = optarg;
 	    break;
 	case 't' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a filename to read the tools from.\n");
+		fprintf(stderr, _("You must give a filename to read the tools from.\n"));
 		exit(1);
 	    }
 	    if (!gerbv_process_tools_file(optarg)) {
-		fprintf(stderr, "*** ERROR processing tools file \"%s\".\n", optarg);
-		fprintf(stderr, "Make sure all lines of the file are formatted like this:\n");
-		fprintf(stderr, "T01 0.024\nT02 0.032\nT03 0.040\n...\n");
-		fprintf(stderr, "*** EXITING to prevent erroneous display.\n");
+		fprintf(stderr, _("*** ERROR processing tools file \"%s\".\n"), optarg);
+		fprintf(stderr, _("Make sure all lines of the file are formatted like this:\n"));
+		fprintf(stderr, _("T01 0.024\nT02 0.032\nT03 0.040\n...\n"));
+		fprintf(stderr, _("*** EXITING to prevent erroneous display.\n"));
 		exit(1);
 	    }
 	    break;
 	case 'T' :	// Translate the layer
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a translation in the format <X,Y>.\n");
+		fprintf(stderr, _("You must give a translation in the format <X,Y>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 30) {
-		fprintf(stderr, "The translation format is not recognized.\n");
+		fprintf(stderr, _("The translation format is not recognized.\n"));
 		exit(1);
 	    }
 	    float transX=0, transY=0;
@@ -591,24 +591,24 @@ main(int argc, char *argv[])
 	    userSuppliedWindowInPixels = TRUE;
     	case 'W' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must give a window size in the format <width x height>.\n");
+		fprintf(stderr, _("You must give a window size in the format <width x height>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 20) {
-		fprintf(stderr, "Specified window size is not recognized.\n");
+		fprintf(stderr, _("Specified window size is not recognized.\n"));
 		exit(1);
 	    }
 	    sscanf (optarg, "%fx%f", &userSuppliedWidth, &userSuppliedHeight);
 	    if (((userSuppliedWidth < 0.001) || (userSuppliedHeight < 0.001)) ||
 		((userSuppliedWidth > 2000) || (userSuppliedHeight > 2000))) {
-		fprintf(stderr, "Specified window size is out of bounds.\n");
+		fprintf(stderr, _("Specified window size is out of bounds.\n"));
 		exit(1);
 	    }
 	    userSuppliedWindow = TRUE;
 	    break;
 	case 'x' :
 	    if (optarg == NULL) {
-		fprintf(stderr, "You must supply an export type.\n");
+		fprintf(stderr, _("You must supply an export type.\n"));
 		exit(1);
 	    }
 	    if (strcmp (optarg,"png") == 0) {
@@ -634,7 +634,7 @@ main(int argc, char *argv[])
 		exportFromCommandline = TRUE;
 	    }
 	    else {
-		fprintf(stderr, "Unrecognized export type.\n");
+		fprintf(stderr, _("Unrecognized export type.\n"));
 		exit(1);				
 	    }		
 	    break;
@@ -644,82 +644,80 @@ main(int argc, char *argv[])
 	case '?':
 	case 'h':
 #ifdef HAVE_GETOPT_LONG
-	    printf("Usage: gerbv [OPTIONS...] [FILE...]\n\n");
-	    printf("Available options:\n");
-	    printf("  -B, --border=<b>                Border around the image in percent of the\n");
-	    printf("                                  width/height. Defaults to 5%%.\n");
-	    printf("  -D, --dpi=<XxY>or<R>            Resolution (Dots per inch) for the output\n");
-	    printf("                                  bitmap. With the format <XxY>, different\n");
-	    printf("                                  resolutions for X- and Y-direction are used.\n");
-	    printf("                                  With the format <R>, both are the same.\n");
-	    printf("  -O, --origin=<XxY>              Use the specified coordinates (in inches)\n");
-	    printf("                                  for the lower left corner.\n");
-	    printf("  -V, --version                   Print version of gerbv.\n");
-	    printf("  -a, --antialias                 Use antialiasing for generated bitmap output.\n");
-	    printf("  -b, --background=<hex>          Use background color <hex> (like #RRGGBB).\n");
-          printf("  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB or\n");
-          printf("                                  #RRGGBBAA for setting the alpha).\n");
-          printf("                                  Use multiple -f flags to set the color for\n");
-	    printf("                                  multiple layers.\n");
-	    printf("  -h, --help                      Print this help message.\n");
-	    printf("  -l, --log=<logfile>             Send error messages to <logfile>.\n");
-	    printf("  -o, --output=<filename>         Export to <filename>\n");
-	    printf("  -p, --project=<prjfile>         Load project file <prjfile>\n");
-	    printf("  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n");
-	    printf("                                  exported image.\n");
-   	    printf("  -w, --window=<WxH>              Window size in pixels <WxH> for the\n");
-	    printf("                                  exported image. Autoscales to fit\n");
-	    printf("                                  if no resolution is specified. If a\n");
-	    printf("                                  resolution is specified, it will clip.\n");
-	    printf("  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n");
-	    printf("  -T, --translate=<X,Y>           Translate the image by <X,Y> (useful for\n");
-	    printf("                                  arranging panels). Use multiple -T flags\n");
-	    printf("                                  for multiple layers.\n");
-	    printf("  -x, --export=<png/pdf/ps/svg/   Export a rendered picture to a file with\n");
-	    printf("                rs274x/drill>     the specified format.\n");
-
-
+	    printf(_("Usage: gerbv [OPTIONS...] [FILE...]\n\n"
+		"Available options:\n"
+		"  -B, --border=<b>                Border around the image in percent of the\n"
+		"                                  width/height. Defaults to 5%%.\n"
+		"  -D, --dpi=<XxY>or<R>            Resolution (Dots per inch) for the output\n"
+		"                                  bitmap. With the format <XxY>, different\n"
+		"                                  resolutions for X- and Y-direction are used.\n"
+		"                                  With the format <R>, both are the same.\n"
+		"  -O, --origin=<XxY>              Use the specified coordinates (in inches)\n"
+		"                                  for the lower left corner.\n"
+		"  -V, --version                   Print version of gerbv.\n"
+		"  -a, --antialias                 Use antialiasing for generated bitmap output.\n"
+		"  -b, --background=<hex>          Use background color <hex> (like #RRGGBB).\n"
+		"  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB or\n"
+		"                                  #RRGGBBAA for setting the alpha).\n"
+		"                                  Use multiple -f flags to set the color for\n"
+		"                                  multiple layers.\n"
+		"  -h, --help                      Print this help message.\n"
+		"  -l, --log=<logfile>             Send error messages to <logfile>.\n"
+		"  -o, --output=<filename>         Export to <filename>\n"
+		"  -p, --project=<prjfile>         Load project file <prjfile>\n"
+		"  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n"
+		"                                  exported image.\n"
+		"  -w, --window=<WxH>              Window size in pixels <WxH> for the\n"
+		"                                  exported image. Autoscales to fit\n"
+		"                                  if no resolution is specified. If a\n"
+		"                                  resolution is specified, it will clip.\n"
+		"  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n"
+		"  -T, --translate=<X,Y>           Translate the image by <X,Y> (useful for\n"
+		"                                  arranging panels). Use multiple -T flags\n"
+		"                                  for multiple layers.\n"
+		"  -x, --export=<png/pdf/ps/svg/   Export a rendered picture to a file with\n"
+		"                rs274x/drill>     the specified format.\n"));
 #else
-	    printf("Usage: gerbv [OPTIONS...] [FILE...]\n\n");
-	    printf("Available options:\n");
-	    printf("  -B<b>                   Border around the image in percent of the\n");
-	    printf("                          width/height. Defaults to 5%%.\n");
-	    printf("  -D<XxY>or<R>            Resolution (Dots per inch) for the output\n");
-	    printf("                          bitmap. With the format <XxY>, different\n");
-	    printf("                          resolutions for X- and Y-direction are used.\n");
-	    printf("                          With the format <R>, both are the same.\n");
-	    printf("  -O<XxY>                 Use the specified coordinates (in inches)\n");
-	    printf("                          for the lower left corner.\n");
-    	    printf("  -V                      Print version of gerbv.\n");
-    	    printf("  -a                      Use antialiasing for generated bitmap output.\n");
-	    printf("  -b<hexcolor>	      Use background color <hexcolor> (like #RRGGBB)\n");
-	    printf("  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n");
-	    printf("                          #RRGGBBAA for setting the alpha).\n");
-          printf("                          Use multiple -f flags to set the color for\n");
-	    printf("                          multiple layers.\n");
-	    printf("  -h                      Print this help message.\n");
-	    printf("  -l<logfile>             Send error messages to <logfile>\n");
-	    printf("  -o<filename>            Export to <filename>\n");
-	    printf("  -p<prjfile>             Load project file <prjfile>\n");
-	    printf("  -W<WxH>                 Window size in inches <WxH> for the\n");
-	    printf("                          exported image\n");
-          printf("  -w<WxH>                 Window size in pixels <WxH> for the\n");
-	    printf("                          exported image. Autoscales to fit\n");
-	    printf("                          if no resolution is specified. If a\n");
-	    printf("                          resolution is specified, it will clip.\n");
-	    printf("                          exported image\n");
-	    printf("  -t<toolfile>            Read Excellon tools from file <toolfile>\n");
-	    printf("  -T<X,Y>                 Translate the image by <X,Y> (useful for\n");
-	    printf("                          arranging panels). Use multiple -T flags\n");
-	    printf("                          for multiple layers.\n");
-	    printf("  -x <png/pdf/ps/svg/     Export a rendered picture to a file with\n");
-	    printf("      rs274x/drill>       the specified format\n");
+	    printf(_("Usage: gerbv [OPTIONS...] [FILE...]\n\n"
+		"Available options:\n"
+		"  -B<b>                   Border around the image in percent of the\n"
+		"                          width/height. Defaults to 5%%.\n"
+		"  -D<XxY>or<R>            Resolution (Dots per inch) for the output\n"
+		"                          bitmap. With the format <XxY>, different\n"
+		"                          resolutions for X- and Y-direction are used.\n"
+		"                          With the format <R>, both are the same.\n"
+		"  -O<XxY>                 Use the specified coordinates (in inches)\n"
+		"                          for the lower left corner.\n"
+		"  -V                      Print version of gerbv.\n"
+		"  -a                      Use antialiasing for generated bitmap output.\n"
+		"  -b<hexcolor>	      Use background color <hexcolor> (like #RRGGBB)\n"
+		"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
+		"                          #RRGGBBAA for setting the alpha).\n"
+		"                          Use multiple -f flags to set the color for\n"
+		"                          multiple layers.\n"
+		"  -h                      Print this help message.\n"
+		"  -l<logfile>             Send error messages to <logfile>\n"
+		"  -o<filename>            Export to <filename>\n"
+		"  -p<prjfile>             Load project file <prjfile>\n"
+		"  -W<WxH>                 Window size in inches <WxH> for the\n"
+		"                          exported image\n"
+		"  -w<WxH>                 Window size in pixels <WxH> for the\n"
+		"                          exported image. Autoscales to fit\n"
+		"                          if no resolution is specified. If a\n"
+		"                          resolution is specified, it will clip.\n"
+		"                          exported image\n"
+		"  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
+		"  -T<X,Y>                 Translate the image by <X,Y> (useful for\n"
+		"                          arranging panels). Use multiple -T flags\n"
+		"                          for multiple layers.\n"
+		"  -x <png/pdf/ps/svg/     Export a rendered picture to a file with\n"
+		"      rs274x/drill>       the specified format\n"));
 
 #endif /* HAVE_GETOPT_LONG */
 	    exit(1);
 	    break;
 	default :
-	    printf("Not handled option [%d=%c]\n", read_opt, read_opt);
+	    printf(_("Not handled option [%d=%c]\n"), read_opt, read_opt);
 	}
     }
     
@@ -730,7 +728,7 @@ main(int argc, char *argv[])
      * a project.
      */
     if (project_filename) {
-	printf("Loading project %s...\n", project_filename);
+	printf(_("Loading project %s...\n"), project_filename);
 	/* calculate the absolute pathname to the project if the user
 	   used a relative path */
 	g_free (mainProject->path);
@@ -875,7 +873,7 @@ main(int argc, char *argv[])
 		gerbv_destroy_image (exportImage);
 	    }
 	    else {
-		fprintf(stderr, "A valid file was not loaded.\n");
+		fprintf(stderr, _("A valid file was not loaded.\n"));
 		exit(1);
 	    }
 	} else if (exportType == 6) {
@@ -893,7 +891,7 @@ main(int argc, char *argv[])
 		gerbv_destroy_image (exportImage);
 	    }
 	    else {
-		fprintf(stderr, "A valid file was not loaded.\n");
+		fprintf(stderr, _("A valid file was not loaded.\n"));
 		exit(1);
 	    }
 	}
