@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <math.h>
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -130,6 +131,8 @@ const struct option longopts[] = {
     {"background",      required_argument,  NULL,    'b'},
     {"dump",            no_argument,	    NULL,    'd'},
     {"foreground",      required_argument,  NULL,    'f'},
+    {"rotate",          required_argument,  NULL,    'r'},
+    {"mirror",          required_argument,  NULL,    'm'},
     {"help",            no_argument,	    NULL,    'h'},
     {"log",             required_argument,  NULL,    'l'},
     {"output",          required_argument,  NULL,    'o'},
@@ -154,7 +157,7 @@ const struct option longopts[] = {
     {0, 0, 0, 0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "VadhB:D:O:W:b:f:l:o:p:t:T:w:x:";
+const char *opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:w:x:";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
@@ -331,6 +334,9 @@ main(int argc, char *argv[])
     gboolean exportFromCommandline = FALSE,  userSuppliedOrigin=FALSE, userSuppliedWindow=FALSE, 
 	     userSuppliedAntiAlias=FALSE, userSuppliedWindowInPixels=FALSE, userSuppliedDpi=FALSE;
     gint  layerctr =0, transformCount = 0, exportType = 0;
+    gdouble initial_rotation = 0.0;
+    gboolean initial_mirror_x = FALSE;
+    gboolean initial_mirror_y = FALSE;
     gchar *exportFilename = NULL;
     gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
 	   userSuppliedWidth=0, userSuppliedHeight=0, userSuppliedBorder=0.05;
@@ -533,6 +539,38 @@ main(int argc, char *argv[])
 	    if (layerctr == NUMBER_OF_DEFAULT_COLORS)
 	    	layerctr = 0;
 	    break;
+	case 'r' :	// Set initial orientation for all layers (rotation)
+	    if (optarg == NULL) {
+		fprintf(stderr, _("You must give the initial rotation angle\n"));
+		exit(1);
+	    }
+	    errno = 0;
+	    initial_rotation = (gdouble)strtod(optarg, &rest);
+	    if (errno) {
+		perror(_("Rotate"));
+		exit(1);
+	    }
+	    if (*rest) {
+		fprintf(stderr, _("Failed parsing rotate value\n"));
+		exit(1);
+	    }
+	    break;
+	case 'm' :	// Set initial mirroring state for all layers
+	    if (optarg == NULL) {
+		fprintf(stderr, _("You must give the axis to mirror about\n"));
+		exit(1);
+	    }
+	    if (index(optarg, 'x') != NULL || index(optarg, 'X') != NULL) {
+		initial_mirror_x = TRUE;
+	    }
+	    if (index(optarg, 'y') != NULL || index(optarg, 'Y') != NULL) {
+		initial_mirror_y = TRUE;
+	    }
+	    if (!(initial_mirror_x || initial_mirror_y)) {
+		fprintf(stderr, _("Failed parsing mirror axis\n"));
+		exit(1);
+	    }
+	    break;
 	case 'l' :
 	    if (optarg == NULL) {
 		fprintf(stderr, _("You must give a filename to send log to\n"));
@@ -652,7 +690,7 @@ main(int argc, char *argv[])
 		"                                  bitmap. With the format <XxY>, different\n"
 		"                                  resolutions for X- and Y-direction are used.\n"
 		"                                  With the format <R>, both are the same.\n"
-		"  -O, --origin=<XxY>              Use the specified coordinates (in inches)\n"
+		"  -O, --origin=<XxY>              Use the specified coordinates (in inches).\n"
 		"                                  for the lower left corner.\n"
 		"  -V, --version                   Print version of gerbv.\n"
 		"  -a, --antialias                 Use antialiasing for generated bitmap output.\n"
@@ -661,10 +699,12 @@ main(int argc, char *argv[])
 		"                                  #RRGGBBAA for setting the alpha).\n"
 		"                                  Use multiple -f flags to set the color for\n"
 		"                                  multiple layers.\n"
+		"  -r, --rotate=<degree>           Set initial orientation for all layers.\n"
+		"  -m, --mirror=<axis>             Set initial mirroring axis (X or Y).\n"
 		"  -h, --help                      Print this help message.\n"
 		"  -l, --log=<logfile>             Send error messages to <logfile>.\n"
-		"  -o, --output=<filename>         Export to <filename>\n"
-		"  -p, --project=<prjfile>         Load project file <prjfile>\n"
+		"  -o, --output=<filename>         Export to <filename>.\n"
+		"  -p, --project=<prjfile>         Load project file <prjfile>.\n"
 		"  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n"
 		"                                  exported image.\n"
 		"  -w, --window=<WxH>              Window size in pixels <WxH> for the\n"
@@ -690,28 +730,30 @@ main(int argc, char *argv[])
 		"                          for the lower left corner.\n"
 		"  -V                      Print version of gerbv.\n"
 		"  -a                      Use antialiasing for generated bitmap output.\n"
-		"  -b<hexcolor>	      Use background color <hexcolor> (like #RRGGBB)\n"
+		"  -b<hexcolor>	           Use background color <hexcolor> (like #RRGGBB).\n"
 		"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
 		"                          #RRGGBBAA for setting the alpha).\n"
 		"                          Use multiple -f flags to set the color for\n"
 		"                          multiple layers.\n"
+		"  -r<degree>              Set initial orientation for all layers.\n"
+		"  -m<axis>                Set initial mirroring axis (X or Y).\n"
 		"  -h                      Print this help message.\n"
-		"  -l<logfile>             Send error messages to <logfile>\n"
-		"  -o<filename>            Export to <filename>\n"
-		"  -p<prjfile>             Load project file <prjfile>\n"
+		"  -l<logfile>             Send error messages to <logfile>.\n"
+		"  -o<filename>            Export to <filename>.\n"
+		"  -p<prjfile>             Load project file <prjfile>.\n"
 		"  -W<WxH>                 Window size in inches <WxH> for the\n"
-		"                          exported image\n"
+		"                          exported image.\n"
 		"  -w<WxH>                 Window size in pixels <WxH> for the\n"
 		"                          exported image. Autoscales to fit\n"
 		"                          if no resolution is specified. If a\n"
 		"                          resolution is specified, it will clip.\n"
-		"                          exported image\n"
+		"                          exported image.\n"
 		"  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
 		"  -T<X,Y>                 Translate the image by <X,Y> (useful for\n"
 		"                          arranging panels). Use multiple -T flags\n"
 		"                          for multiple layers.\n"
 		"  -x <png/pdf/ps/svg/     Export a rendered picture to a file with\n"
-		"      rs274x/drill>       the specified format\n"));
+		"      rs274x/drill>       the specified format.\n"));
 
 #endif /* HAVE_GETOPT_LONG */
 	    exit(1);
@@ -765,6 +807,36 @@ main(int argc, char *argv[])
 		mainProject->path = g_path_get_dirname (argv[i]);
 	    }
 	    loadedIndex++;
+	}
+    }
+
+    if (initial_rotation != 0.0) {
+	/* Set initial layer orientation */
+
+	gdouble initial_radians = M_PI*initial_rotation/180;
+
+	dprintf("Rotating all layers by %.0f degrees\n", (float) initial_rotation);
+	for(i = 0; i < mainProject->max_files; i++) {
+	    if (mainProject->file[i])
+		mainProject->file[i]->transform.rotation = initial_radians;
+	}
+    }
+
+    if (initial_mirror_x || initial_mirror_y) {
+	/* Set initial mirroring of all layers */
+
+	if (initial_mirror_x) {
+	    dprintf("Mirroring all layers about x axis\n");
+	}
+	if (initial_mirror_y) {
+	    dprintf("Mirroring all layers about y axis\n");
+	}
+
+	for (i = 0; i < mainProject->max_files; i++) {
+	    if (mainProject->file[i]) {
+		mainProject->file[i]->transform.mirrorAroundX = initial_mirror_x;
+		mainProject->file[i]->transform.mirrorAroundY = initial_mirror_y;
+	    }
 	}
     }
 
