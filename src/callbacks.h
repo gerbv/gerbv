@@ -40,6 +40,12 @@ enum {
 	
 } CALLBACKS_SAVE_FILE_TYPE;
 
+enum {
+	LAYER_SELECTED =	-1,
+	LAYER_ALL_ON =		-2,
+	LAYER_ALL_OFF =		-3,
+} toggle_layer;
+
 void
 callbacks_new_activate                        (GtkMenuItem     *menuitem,
                                         gpointer         user_data);

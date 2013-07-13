@@ -183,6 +183,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_layer;
 	GtkWidget *menuitem_layer_menu;
 	GtkWidget *layer_visibility;
+	GtkWidget *layer_visibility_all_on;
+	GtkWidget *layer_visibility_all_off;
 	GtkWidget *layer_invert;
 	GtkWidget *layer_color;
 	GtkWidget *layer_reload;
@@ -676,6 +678,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, layer_visibility, _("Toggles the visibility of the layer currently selected in the sidepane"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility);
 
+	layer_visibility_all_on = gtk_menu_item_new_with_mnemonic (_("All o_n"));
+	gtk_tooltips_set_tip (tooltips, layer_visibility_all_on, _("Turn on visibility of all layers"), NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility_all_on);
+
+	layer_visibility_all_off = gtk_menu_item_new_with_mnemonic (_("All _off"));
+	gtk_tooltips_set_tip (tooltips, layer_visibility_all_off, _("Turn off visibility of all layers"), NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility_all_off);
+
 	layer_invert = gtk_menu_item_new_with_mnemonic (_("_Invert color"));
 	gtk_tooltips_set_tip (tooltips, layer_invert, _("Invert the display polarity of the layer currently selected in the sidepane"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_invert);
@@ -689,7 +699,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, layer_reload, _("Reload the layer from disk"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_reload);
 
-	layer_orientation = gtk_menu_item_new_with_mnemonic (_("Modify _orientation"));
+	layer_orientation = gtk_menu_item_new_with_mnemonic (_("_Modify orientation"));
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_orientation);
 	gtk_tooltips_set_tip (tooltips, layer_orientation, _("Translate, scale, rotate, or mirror the layer currently selected in the sidepane"), NULL);
 
@@ -1212,7 +1222,15 @@ interface_create_gui (int req_width, int req_height)
 	                  GINT_TO_POINTER(GERBV_INS));
 
 	/* --- Current Layer menu --- */
-	g_signal_connect ((gpointer) layer_visibility, "activate", G_CALLBACK (callbacks_toggle_layer_visibility_activate), GINT_TO_POINTER(-1));
+	g_signal_connect ((gpointer) layer_visibility, "activate",
+			G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+			GINT_TO_POINTER (LAYER_SELECTED));
+	g_signal_connect ((gpointer) layer_visibility_all_on, "activate",
+			G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+			GINT_TO_POINTER (LAYER_ALL_ON));
+	g_signal_connect ((gpointer) layer_visibility_all_off, "activate",
+			G_CALLBACK (callbacks_toggle_layer_visibility_activate),
+			GINT_TO_POINTER (LAYER_ALL_OFF));
 	g_signal_connect ((gpointer) layer_invert, "activate", G_CALLBACK (callbacks_invert_layer_clicked), NULL);
 	g_signal_connect ((gpointer) layer_color, "activate", G_CALLBACK (callbacks_change_layer_color_clicked), NULL);
 	g_signal_connect ((gpointer) layer_reload, "activate", G_CALLBACK (callbacks_reload_layer_clicked), NULL);

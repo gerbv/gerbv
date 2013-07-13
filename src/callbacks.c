@@ -666,22 +666,40 @@ void
 callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
 	int i = GPOINTER_TO_INT(user_data);
-	if (i < 0)
+
+	switch (i) {
+	case LAYER_SELECTED:
 		i = callbacks_get_selected_row_index ();
-
-	if (0 <= i && i <= mainProject->last_loaded) {
-		mainProject->file[i]->isVisible = !mainProject->file[i]->isVisible;
-		/* clear any selected items so they don't show after the layer is hidden */
-		render_clear_selection_buffer();
-
-	    callbacks_update_layer_tree ();
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-			render_refresh_rendered_image_on_screen();
+		/* No break */
+	default:
+		if (0 <= i && i <= mainProject->last_loaded) {
+			mainProject->file[i]->isVisible = !mainProject->file[i]->isVisible;
+		} else {
+			/* Not in range */
+			return;
 		}
-		else {
-			render_recreate_composite_surface (screen.drawing_area);
-			callbacks_force_expose_event_for_screen ();
+		break;
+	case LAYER_ALL_ON:
+		for (i = 0; i <= mainProject->last_loaded; i++) {
+			mainProject->file[i]->isVisible = TRUE;
 		}
+		break;
+	case LAYER_ALL_OFF:
+		for (i = 0; i <= mainProject->last_loaded; i++) {
+			mainProject->file[i]->isVisible = FALSE;
+		}
+		break;
+	}
+
+	/* Clear any selected items so they don't show after the layer is hidden */
+	render_clear_selection_buffer ();
+	callbacks_update_layer_tree ();
+
+	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+		render_refresh_rendered_image_on_screen ();
+	} else {
+		render_recreate_composite_surface (screen.drawing_area);
+		callbacks_force_expose_event_for_screen ();
 	}
 }
 
