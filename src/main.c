@@ -64,10 +64,10 @@
 #include "project.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
-#ifdef DEBUG
-#define dprintf printf("%s():  ", __FUNCTION__); printf
+#if (DEBUG)
+# define dprintf printf("%s():  ", __FUNCTION__); printf
 #else
-#define dprintf if(0) printf
+# define dprintf if(0) printf
 #endif
 
 #define NUMBER_OF_DEFAULT_COLORS 18
