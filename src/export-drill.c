@@ -36,6 +36,7 @@
 
 #include <glib/gstdio.h>
 #include "gerbv.h"
+#include "common.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -52,7 +53,7 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	setlocale(LC_NUMERIC, "C");
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
-		GERB_MESSAGE("Can't open file for writing: %s\n", filename);
+		GERB_MESSAGE(_("Can't open file for writing: %s\n"), filename);
 		return FALSE;
 	}
 	
