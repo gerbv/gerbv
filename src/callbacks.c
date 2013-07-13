@@ -1575,9 +1575,8 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					  "gerbv is part of the gEDA Project.\n"
 					  "\n"
 					  "For more information see:\n"
-					  "  gerbv homepage: http://gerbv.gpleda.org/\n"
-					  "  gEDA homepage: http://gpleda.org/\n"
-					  "  gEDA Wiki: http://geda.seul.org/wiki/"),
+					  "  gEDA homepage: http://geda-project.org/\n"
+					  "  gEDA Wiki: http://wiki.geda-project.org/"),
 					  VERSION, __DATE__, __TIME__);
 #if GTK_CHECK_VERSION(2,6,0)
 	gchar *license = g_strdup_printf(_("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
@@ -1612,7 +1611,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 		a[i] = _(authors_string_array[i]);
 
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG (aboutdialog1), (const gchar **)a);
-	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG (aboutdialog1), "http://gerbv.gpleda.org/");
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG (aboutdialog1), "http://gerbv.geda-project.org/");
 	g_free(a);
 
 	g_signal_connect (G_OBJECT(aboutdialog1),"response",
