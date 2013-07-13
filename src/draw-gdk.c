@@ -41,6 +41,7 @@
 #include <gtk/gtk.h>
 #include "gerbv.h"
 #include "draw-gdk.h"
+#include "common.h"
 
 #undef round
 #define round(x) ceil((double)(x))
@@ -568,44 +569,44 @@ gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 {
     gerbv_simplified_amacro_t *ls = s;
 
-    dprintf("Drawing simplified aperture macros:\n");
+    dprintf(_("Drawing simplified aperture macros:\n"));
     while (ls != NULL) {
 
 	switch (ls->type) {
 	case GERBV_APTYPE_MACRO_CIRCLE:
 	    gerbv_gdk_draw_prim1(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf("  Circle\n");
+	    dprintf(_("  Circle\n"));
 	    break;
 	case GERBV_APTYPE_MACRO_OUTLINE:
 	    gerbv_gdk_draw_prim4(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf("  Outline\n");
+	    dprintf(_("  Outline\n"));
 	    break;
 	case GERBV_APTYPE_MACRO_POLYGON:
 	    gerbv_gdk_draw_prim5(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf("  Polygon\n");
+	    dprintf(_("  Polygon\n"));
 	    break;
 	case GERBV_APTYPE_MACRO_MOIRE:
 	    gerbv_gdk_draw_prim6(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf("  Moiré\n");
+	    dprintf(_("  Moire\n"));
 	    break;
 	case GERBV_APTYPE_MACRO_THERMAL:
 	    gerbv_gdk_draw_prim7(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf("  Thermal\n");
+	    dprintf(_("  Thermal\n"));
 	    break;
 	case GERBV_APTYPE_MACRO_LINE20:
 	    gerbv_gdk_draw_prim20(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf("  Line 20\n");
+	    dprintf(_("  Line 20\n"));
 	    break;
 	case GERBV_APTYPE_MACRO_LINE21:
 	    gerbv_gdk_draw_prim21(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf("  Line 21\n");
+	    dprintf(_("  Line 21\n"));
 	    break;
 	case GERBV_APTYPE_MACRO_LINE22:
 	    gerbv_gdk_draw_prim22(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf("  Line 22\n");
+	    dprintf(_("  Line 22\n"));
 	    break;
 	default:
-	    GERB_FATAL_ERROR("Unknown simplified aperture macro");
+	    GERB_FATAL_ERROR(_("Unknown simplified aperture macro"));
 	}
 
 	ls = ls->next;
@@ -1112,7 +1113,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    case GERBV_INTERPOLATION_x10 :
 		    case GERBV_INTERPOLATION_LINEARx01 :
 		    case GERBV_INTERPOLATION_LINEARx001 :
-			GERB_MESSAGE("Linear != x1\n");
+			GERB_MESSAGE(_("Linear != x1\n"));
 			gdk_gc_set_line_attributes(gc, p1, 
 						   GDK_LINE_ON_OFF_DASH, 
 						   GDK_CAP_ROUND, 
@@ -1205,12 +1206,12 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					      scale, x2, y2);
 			break;
 		    default :
-			GERB_MESSAGE("Unknown aperture type\n");
+			GERB_MESSAGE(_("Unknown aperture type\n"));
 			return 0;
 		    }
 		    break;
 		default :
-		    GERB_MESSAGE("Unknown aperture state\n");
+		    GERB_MESSAGE(_("Unknown aperture state\n"));
 		    return 0;
 		}
 		}
