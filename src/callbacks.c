@@ -122,6 +122,7 @@ static void callbacks_update_statusbar_coordinates (gint x, gint y);
 static void callbacks_update_ruler_scales (void);
 static void callbacks_render_type_changed (void);
 static void show_no_layers_warning (void);
+static double screen_units(double);
 
 
 gchar *utf8_strncpy(gchar *dst, const gchar *src, gsize byte_len)
@@ -1693,16 +1694,7 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 gdouble callbacks_calculate_actual_distance (gdouble inputDimension) {
-	gdouble returnValue = 0.0;
-	
-	if (screen.unit == GERBV_MILS) {
-	    returnValue = COORD2MILS(inputDimension);
-	} else if (screen.unit == GERBV_MMS) {
-	    returnValue = COORD2MMS(inputDimension);
-	} else {
-	    returnValue = COORD2MILS(inputDimension)/1000;
-	}
-	return returnValue;
+	return screen_units(inputDimension);
 }
 
 /* --------------------------------------------------------- */
@@ -2652,8 +2644,10 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 						g_message (_("    Aperture used: D%d\n"), net->aperture);
 						g_message (_("    Aperture type: %s\n"), ap_names[ap_type]);
 					}
-					g_message (_("    Start location: (%g, %g)\n"), net->start_x, net->start_y);
-					g_message (_("    Stop location: (%g, %g)\n"), net->stop_x, net->stop_y);
+					g_message (_("    Start location: (%g, %g)\n"),
+							screen_units(net->start_x), screen_units(net->start_y));
+					g_message (_("    Stop location: (%g, %g)\n"),
+							screen_units(net->stop_x), screen_units(net->stop_y));
 					g_message (_("    Layer name: %s\n"), layer_name);
 					g_message (_("    Net label: %s\n"), net_label);
 					g_message (_("    In file: %s\n"), mainProject->file[index]->name);
@@ -2665,7 +2659,8 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 						g_message (_("    Aperture used: D%d\n"), net->aperture);
 						g_message (_("    Aperture type: %s\n"), ap_names[ap_type]);
 					}
-					g_message (_("    Location: (%g, %g)\n"), net->stop_x, net->stop_y);
+					g_message (_("    Location: (%g, %g)\n"),
+							screen_units(net->stop_x), screen_units(net->stop_y));
 					g_message (_("    Layer name: %s\n"), layer_name);
 					g_message (_("    Net label: %s\n"), net_label);
 					g_message (_("    In file: %s\n"), mainProject->file[index]->name);
@@ -3534,3 +3529,17 @@ void callbacks_force_expose_event_for_screen (void){
 	callbacks_update_scrollbar_positions ();
 }
 
+static double screen_units(double d) {
+	switch (screen.unit) {
+	case GERBV_INS:
+		break;
+	case GERBV_MILS:
+		return COORD2MILS(d);
+		break;
+	case GERBV_MMS:
+		return COORD2MMS(d);
+		break;
+	}
+
+	return d;
+}
