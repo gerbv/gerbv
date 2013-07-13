@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common.h"
+
 #define MIN_TOOL_NUMBER         1       /* T01 */
 #define MAX_TOOL_NUMBER         99      /* T99 */
 
@@ -52,11 +54,11 @@ ProcessToolLine(const char *cp)
     }
     
     if (*cp != 'T') {
-        fprintf(stderr, "*** WARNING: Strange tool \"%s\" ignored.\n", cp0);
+        fprintf(stderr, _("*** WARNING: Strange tool \"%s\" ignored.\n"), cp0);
         return;
     }
     if ((!isdigit((int) cp[1])) || (!isdigit((int) cp[2]))) {
-        fprintf(stderr, "*** WARNING: No tool number in \"%s\".\n", cp0);
+        fprintf(stderr, _("*** WARNING: No tool number in \"%s\".\n"), cp0);
         return;
     }
     do {
@@ -66,7 +68,7 @@ ProcessToolLine(const char *cp)
         tnb[2] = '\0';
         toolNumber = atoi(tnb);
         if ((toolNumber < MIN_TOOL_NUMBER) || (toolNumber > MAX_TOOL_NUMBER)) {
-            fprintf(stderr, "*** WARNING: Can't parse tool number in \"%s\".\n", cp0);
+            fprintf(stderr, _("*** WARNING: Can't parse tool number in \"%s\".\n"), cp0);
             return;
         }
     } while (0);
@@ -83,17 +85,17 @@ ProcessToolLine(const char *cp)
     toolDia = atof(cp);
 
     if (toolDia <= 0) {
-        fprintf(stderr, "*** WARNING: Tool T%02d diameter is impossible.\n", toolNumber);
+        fprintf(stderr, _("*** WARNING: Tool T%02d diameter is impossible.\n"), toolNumber);
         return;
     }
     if (toolDia < 0.001) {
-        fprintf(stderr, "*** WARNING: Tool T%02d diameter is very small - "
-                "are you sure?\n", toolNumber);
+        fprintf(stderr, _("*** WARNING: Tool T%02d diameter is very small - "
+                "are you sure?\n"), toolNumber);
     }
     
     if (tools[toolNumber] != 0) {
-        fprintf(stderr, "*** ERROR: Tool T%02d is already defined.\n", toolNumber);
-        fprintf(stderr, "*** Exiting because this is a HOLD error at any board house.\n");
+        fprintf(stderr, _("*** ERROR: Tool T%02d is already defined.\n"), toolNumber);
+        fprintf(stderr, _("*** Exiting because this is a HOLD error at any board house.\n"));
         exit(1);
         return;
     }
@@ -116,7 +118,7 @@ gerbv_process_tools_file(const char *tf)
     
     f = fopen(tf, "r");
     if (f == NULL) {
-        fprintf(stderr, "*** ERROR: Failed to open file \"%s\" to read.\n", tf);
+        fprintf(stderr, _("*** ERROR: Failed to open file \"%s\" to read.\n"), tf);
         return 0;
     }
     while (!feof(f)) {
