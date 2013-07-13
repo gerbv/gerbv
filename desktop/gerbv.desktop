@@ -2,8 +2,11 @@
 Version=1.0
 Encoding=UTF-8
 Name=Gerbv Gerber File Viewer
+Name[ru]= Gerbv — просмотр Gerber-файлов
 GenericName=Gerber File Viewer
+GenericName[ru]=Просмотр Gerber-файлов
 Comment=Gerber file viewer for PCB design
+Comment[ru]=Просмотр Gerber-файлов конструкции печатных плат
 Type=Application
 Exec=gerbv %F
 Icon=gerbv
