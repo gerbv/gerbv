@@ -188,8 +188,10 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *layer_invert;
 	GtkWidget *layer_color;
 	GtkWidget *layer_reload;
+	GtkWidget *separator6;
 	GtkWidget *layer_orientation;
 	GtkWidget *layer_format;
+	GtkWidget *separator7;
 	GtkWidget *layer_up;
 	GtkWidget *layer_down;
 	GtkWidget *layer_remove;
@@ -590,8 +592,10 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator5);
 	gtk_widget_set_sensitive (separator5, FALSE);
 	
-	backgroundColor = gtk_menu_item_new_with_mnemonic (_("Change background color"));
+	backgroundColor = gtk_image_menu_item_new_with_mnemonic (_("Change background color"));
 	gtk_tooltips_set_tip (tooltips, backgroundColor, _("Change the background color"), NULL);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (backgroundColor), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), backgroundColor);
 
 	{	// rendering submenu
@@ -678,34 +682,50 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, layer_visibility, _("Toggles the visibility of the layer currently selected in the sidepane"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility);
 
-	layer_visibility_all_on = gtk_menu_item_new_with_mnemonic (_("All o_n"));
+	layer_visibility_all_on = gtk_image_menu_item_new_with_mnemonic (_("All o_n"));
 	gtk_tooltips_set_tip (tooltips, layer_visibility_all_on, _("Turn on visibility of all layers"), NULL);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_YES, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_visibility_all_on), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility_all_on);
 
-	layer_visibility_all_off = gtk_menu_item_new_with_mnemonic (_("All _off"));
+	layer_visibility_all_off = gtk_image_menu_item_new_with_mnemonic (_("All _off"));
 	gtk_tooltips_set_tip (tooltips, layer_visibility_all_off, _("Turn off visibility of all layers"), NULL);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_NO, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_visibility_all_off), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility_all_off);
 
 	layer_invert = gtk_menu_item_new_with_mnemonic (_("_Invert color"));
 	gtk_tooltips_set_tip (tooltips, layer_invert, _("Invert the display polarity of the layer currently selected in the sidepane"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_invert);
 
-	layer_color = gtk_menu_item_new_with_mnemonic (_("_Change color"));
+	layer_color = gtk_image_menu_item_new_with_mnemonic (_("_Change color"));
 	SET_ACCELS (layer_color, ACCEL_LAYER_COLOR);
 	gtk_tooltips_set_tip (tooltips, layer_color, _("Change the display color of the layer currently selected in the sidepane"), NULL);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_color), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_color);
 
-	layer_reload = gtk_menu_item_new_with_mnemonic (_("_Reload layer"));
+	separator6 = gtk_separator_menu_item_new ();
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), separator6);
+
+	layer_reload = gtk_image_menu_item_new_with_mnemonic (_("_Reload layer"));
 	gtk_tooltips_set_tip (tooltips, layer_reload, _("Reload the layer from disk"), NULL);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_REVERT_TO_SAVED, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_reload), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_reload);
 
 	layer_orientation = gtk_menu_item_new_with_mnemonic (_("_Modify orientation"));
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_orientation);
 	gtk_tooltips_set_tip (tooltips, layer_orientation, _("Translate, scale, rotate, or mirror the layer currently selected in the sidepane"), NULL);
 
-	layer_format = gtk_menu_item_new_with_mnemonic (_("Edit file _format"));
-	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_format);
+	layer_format = gtk_image_menu_item_new_with_mnemonic (_("Edit file _format"));
 	gtk_tooltips_set_tip (tooltips, layer_format, _("View and edit the numerical format used to parse this layer currently selected in the sidepane"), NULL);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_format), tempImage);
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_format);
+
+	separator7 = gtk_separator_menu_item_new ();
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), separator7);
 
 	layer_up = gtk_image_menu_item_new_with_mnemonic (_("Move u_p"));
 	gtk_tooltips_set_tip (tooltips, layer_up, _("Move the layer currently selected in the sidepane one step up"), NULL);
@@ -772,36 +792,28 @@ interface_create_gui (int req_width, int req_height)
 	gtk_menu_set_accel_path (GTK_MENU(menuitem_tools_menu), ACCEL_TOOLS);
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_tools), menuitem_tools_menu);
 	pointer_tool = gtk_image_menu_item_new_with_mnemonic (_("_Pointer Tool"));
-	/*
-	GtkWidget *tempImage = gtk_image_new_from_pixbuf (pointerpixbuf);
+	tempImage = gtk_image_new_from_pixbuf (pointerpixbuf);
 	gtk_image_menu_item_set_image ((GtkImageMenuItem *)pointer_tool, tempImage);
-	*/
 	SET_ACCELS (pointer_tool, ACCEL_TOOLS_POINTER);
 	gtk_container_add (GTK_CONTAINER (menuitem_tools_menu), pointer_tool);
 	gtk_tooltips_set_tip (tooltips, pointer_tool, _("Select objects on the screen"), NULL);
 	pan_tool = gtk_image_menu_item_new_with_mnemonic (_("Pa_n Tool"));
-	/*
 	tempImage = gtk_image_new_from_pixbuf (movepixbuf);
 	gtk_image_menu_item_set_image ((GtkImageMenuItem *)pan_tool, tempImage);
-	*/
 	SET_ACCELS (pan_tool, ACCEL_TOOLS_PAN);
 	gtk_container_add (GTK_CONTAINER (menuitem_tools_menu), pan_tool);
 	gtk_tooltips_set_tip (tooltips, pan_tool, _("Pan by left clicking and dragging"), NULL);
 
 	zoom_tool = gtk_image_menu_item_new_with_mnemonic (_("_Zoom Tool"));
-	/*
 	tempImage = gtk_image_new_from_pixbuf (zoompixbuf);
 	gtk_image_menu_item_set_image ((GtkImageMenuItem *)zoom_tool, tempImage);
-	*/
 	SET_ACCELS (zoom_tool, ACCEL_TOOLS_ZOOM);
 	gtk_container_add (GTK_CONTAINER (menuitem_tools_menu), zoom_tool);
 	gtk_tooltips_set_tip (tooltips, zoom_tool, _("Zoom by left clicking or dragging"), NULL);
 
 	measure_tool = gtk_image_menu_item_new_with_mnemonic (_("_Measure Tool"));
-	/*
 	tempImage = gtk_image_new_from_pixbuf (measurepixbuf);
 	gtk_image_menu_item_set_image ((GtkImageMenuItem *)measure_tool, tempImage);
-	*/
 	SET_ACCELS (measure_tool, ACCEL_TOOLS_MEASURE);
 	gtk_container_add (GTK_CONTAINER (menuitem_tools_menu), measure_tool);
 	gtk_tooltips_set_tip (tooltips, measure_tool, _("Measure distances on the screen"), NULL);
@@ -826,9 +838,11 @@ interface_create_gui (int req_width, int req_height)
 	image34 = gtk_image_new_from_stock (GTK_STOCK_DIALOG_INFO, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (about), image34);
 
-	bugs_menuitem = gtk_menu_item_new_with_mnemonic (_("Known _bugs in this version..."));
-	gtk_container_add (GTK_CONTAINER (menuitem_help_menu), bugs_menuitem);
+	bugs_menuitem = gtk_image_menu_item_new_with_mnemonic (_("Known _bugs in this version..."));
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (bugs_menuitem), tempImage);
 	gtk_tooltips_set_tip (tooltips, bugs_menuitem, _("View list of known gerbv bugs"), NULL);	
+	gtk_container_add (GTK_CONTAINER (menuitem_help_menu), bugs_menuitem);
 
 	/* Create toolbar (button bar) beneath main menu */
 	toolbar_hbox = gtk_hbox_new (FALSE, 0);
