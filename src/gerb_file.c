@@ -179,7 +179,7 @@ gerb_fgetint(gerb_file_t *fd, int *len)
     errno = 0;
     result = strtol(fd->data + fd->ptr, &end, 10);
     if (errno) {
-	GERB_COMPILE_ERROR("Failed to read integer");
+	GERB_COMPILE_ERROR(_("Failed to read integer"));
 	return 0;
     }
 
@@ -205,7 +205,7 @@ gerb_fgetdouble(gerb_file_t *fd)
     errno = 0;    
     result = strtod(fd->data + fd->ptr, &end);
     if (errno) {
-	GERB_COMPILE_ERROR("Failed to read double");
+	GERB_COMPILE_ERROR(_("Failed to read double"));
 	return 0.0;
     }
 
@@ -263,12 +263,12 @@ gerb_fclose(gerb_file_t *fd)
     if (fd) {
 #ifdef HAVE_SYS_MMAN_H
 	if (munmap(fd->data, fd->datalen) < 0)
-	    GERB_FATAL_ERROR("munmap:%s", strerror(errno));
+	    GERB_FATAL_ERROR("munmap: %s", strerror(errno));
 #else
 	g_free(fd->data);
 #endif   
 	if (fclose(fd->fd) == EOF)
-	    GERB_FATAL_ERROR("fclose:%s", strerror(errno));
+	    GERB_FATAL_ERROR("fclose: %s", strerror(errno));
 	g_free(fd);
     }
 
