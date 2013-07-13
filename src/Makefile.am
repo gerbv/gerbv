@@ -108,7 +108,7 @@ endif
 
 callbacks.$(OBJEXT) : authors.c bugs.c
 
-TXT2CL=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;";g' -e 's;$$;",;g'
+TXT2CL=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;N_(";g' -e 's;$$;"),;g' -e 's;N_("");"";g'
 
 authors.c: $(top_srcdir)/AUTHORS Makefile
 	if test -f $@.tmp ; then rm -f $@.tmp ; fi
