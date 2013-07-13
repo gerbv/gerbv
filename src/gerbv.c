@@ -182,7 +182,7 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
+    GERB_MESSAGE(_("could not read %s[%d]"), (gchar *) filename,
 		 gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
@@ -201,7 +201,7 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE("could not read %s[%d]", (gchar *) filename,
+    GERB_MESSAGE(_("could not read %s[%d]"), (gchar *) filename,
 		 gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
@@ -325,7 +325,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
 
     if (error) {
 	if (error & GERB_IMAGE_MISSING_NETLIST) {
-	    GERB_COMPILE_ERROR("Missing netlist - aborting file read\n");
+	    GERB_COMPILE_ERROR(_("Missing netlist - aborting file read\n"));
 	    GERB_COMPILE_ERROR("\n");
 	    gerbv_destroy_image(parsed_image);
 	    return -1;
@@ -333,15 +333,15 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
 	/* if the error was one of the following, try to open up the file anyways in case
 	   the file is a poorly formatted RS-274X file */
 	if (error & GERB_IMAGE_MISSING_FORMAT)
-	    g_warning("Missing format in file...trying to load anyways\n");
+	    g_warning(_("Missing format in file...trying to load anyways\n"));
 	if (error & GERB_IMAGE_MISSING_APERTURES) {
-	    g_warning("Missing apertures/drill sizes...trying to load anyways\n");
+	    g_warning(_("Missing apertures/drill sizes...trying to load anyways\n"));
 	    /* step through the file and check for aperture references. For each one found, create
 	       a dummy aperture holder to visually draw something on the screen */
 	    gerbv_image_create_dummy_apertures (parsed_image);
 	}
 	if (error & GERB_IMAGE_MISSING_INFO)
-	    g_warning("Missing info...trying to load anyways\n");
+	    g_warning(_("Missing info...trying to load anyways\n"));
     }
     
     /*
@@ -425,7 +425,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     
     fd = gerb_fopen(filename);
     if (fd == NULL) {
-	GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
+	GERB_MESSAGE(_("Trying to open %s:%s\n"), filename, strerror(errno));
 	return -1;
     }
 
@@ -461,7 +461,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	}
     } else if (gerber_is_rs274d_p(fd)) {
 	dprintf("Most likely found a RS-274D file...trying to open anyways");
-	g_warning("Most likely found a RS-274D file...trying to open anyways");
+	g_warning(_("Most likely found a RS-274D file...trying to open anyways"));
 	if ((!foundBinary || forceLoadFile)) {
 		/* figure out the directory path in case parse_gerb needs to
 		 * load any include files */
@@ -472,7 +472,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     } else {
 	/* This is not a known file */
 	dprintf("Unknown filetype");
-	GERB_COMPILE_ERROR("%s: Unknown file type.\n", filename);
+	GERB_COMPILE_ERROR(_("%s: Unknown file type.\n"), filename);
 	parsed_image = NULL;
     }
     
@@ -486,7 +486,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	gchar *baseName = g_path_get_basename (filename);
 	gchar *displayedName;
 	if (isPnpFile)
-		displayedName = g_strconcat (baseName, " (top)",NULL);
+		displayedName = g_strconcat (baseName, _(" (top)"), NULL);
 	else
 		displayedName = g_strdup (baseName);
     	retv = gerbv_add_parsed_image_to_project (gerbvProject, parsed_image, filename, displayedName, idx, reload);
@@ -503,7 +503,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
       /* strip the filename to the base */
 	gchar *baseName = g_path_get_basename (filename);
 	gchar *displayedName;
-	displayedName = g_strconcat (baseName, " (bottom)",NULL);
+	displayedName = g_strconcat (baseName, _(" (bottom)"), NULL);
     	retv = gerbv_add_parsed_image_to_project (gerbvProject, parsed_image2, filename, displayedName, idx + 1, reload);
     	g_free (baseName);
     	g_free (displayedName);
@@ -519,7 +519,7 @@ gerbv_create_rs274x_image_from_filename (gchar *filename){
 	
 	fd = gerb_fopen(filename);
 	if (fd == NULL) {
-		GERB_MESSAGE("Trying to open %s:%s\n", filename, strerror(errno));
+		GERB_MESSAGE(_("Trying to open %s:%s\n"), filename, strerror(errno));
 		return NULL;
 	}
 	gchar *currentLoadDirectory = g_path_get_dirname (filename);
@@ -877,7 +877,7 @@ gerbv_attribute_dup (gerbv_HID_Attribute *attributeList, int n_attr)
 
   nl = (gerbv_HID_Attribute *) malloc (n_attr * sizeof (gerbv_HID_Attribute));
   if (nl == NULL) {
-    fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+    fprintf (stderr, _("%s():  malloc failed\n"), __FUNCTION__);
     exit (1);
   }
 
