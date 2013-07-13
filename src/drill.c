@@ -1629,12 +1629,15 @@ read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zero
 	     */
 	    dprintf("%s():  wantdigits = %d, strlen(\"%s\") = %ld\n",
 		    __FUNCTION__, wantdigits, temp, (long) strlen(temp));
-	    for (i = 0 ; i < wantdigits ; i++) {
+	    for (i = 0 ; i < wantdigits && i < strlen(temp) ; i++) {
 	      tmp2[i] = temp[i];
 	    }
-	    tmp2[wantdigits] = '.';
-	    for (i = wantdigits ; i <= strlen(temp) ; i++) {
-	      tmp2[i+1] = temp[i];
+	    for ( ; i < wantdigits ; i++) {
+	      tmp2[i] = '0';
+	    }
+	    tmp2[i++] = '.';
+	    for ( ; i <= strlen(temp) ; i++) {
+	      tmp2[i] = temp[i-1];
 	    }
 	    dprintf("%s():  After dealing with trailing zero supression, convert \"%s\"\n", __FUNCTION__, tmp2);
 	    scale = 1.0;
