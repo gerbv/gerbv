@@ -253,11 +253,11 @@ get_color(scheme *sc, pointer value, int *color)
     pointer elem;
 
     if (!sc->vptr->is_vector(value)) {
-	GERB_MESSAGE("Color parameter not a vector\n");
+	GERB_MESSAGE(_("Color parameter not a vector\n"));
 	return;
     }
     if (sc->vptr->vector_length(value) != 3) {
-	GERB_MESSAGE("Color vector of incorrect length\n");
+	GERB_MESSAGE(_("Color vector of incorrect length\n"));
 	return;
     }
     
@@ -267,7 +267,7 @@ get_color(scheme *sc, pointer value, int *color)
 	    color[i] = sc->vptr->ivalue(elem);
 	else { 
 	    color[i] = -1;
-	    GERB_MESSAGE("Illegal color in projectfile\n");
+	    GERB_MESSAGE(_("Illegal color in projectfile\n"));
 	}
     }
     
@@ -370,7 +370,7 @@ init_paths (char *argv0)
 	      dprintf ("Looking for %s in %s\n", argv0, p);
               if ( (tmps = malloc ( (strlen (argv0) + strlen (p) + 2) * sizeof (char))) == NULL )
                 {
-                  fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+                  fprintf (stderr, _("%s():  malloc failed\n"), __FUNCTION__);
                   exit (1);
                 }
               sprintf (tmps, "%s%s%s", p, GERBV_DIR_SEPARATOR_S, argv0);
@@ -419,7 +419,7 @@ init_paths (char *argv0)
   l = strlen (bindir) + 1 + strlen (BINDIR_TO_EXECPREFIX) + 1;
   if ( (exec_prefix = (char *) malloc (l * sizeof (char) )) == NULL )
     {
-      fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+      fprintf (stderr, _("%s():  malloc failed\n"), __FUNCTION__);
       exit (1);
     }
   sprintf (exec_prefix, "%s%s%s", bindir, GERBV_DIR_SEPARATOR_S,
@@ -429,7 +429,7 @@ init_paths (char *argv0)
   l = strlen (bindir) + 1 + strlen (BINDIR_TO_PKGDATADIR) + 1;
   if ( (pkgdatadir = (char *) malloc (l * sizeof (char) )) == NULL )
     {
-      fprintf (stderr, "%s():  malloc failed\n", __FUNCTION__);
+      fprintf (stderr, _("%s():  malloc failed\n"), __FUNCTION__);
       exit (1);
     }
   sprintf (pkgdatadir, "%s%s%s", bindir, GERBV_DIR_SEPARATOR_S,
@@ -492,7 +492,7 @@ define_layer(scheme *sc, pointer args)
     dprintf("--> entering project.c:define_layer\n");
 
     if (!sc->vptr->is_pair(args)){
-	GERB_MESSAGE("define-layer!: Too few arguments\n");
+	GERB_MESSAGE(_("define-layer!: Too few arguments\n"));
 	return sc->F;
     }
 
@@ -500,7 +500,7 @@ define_layer(scheme *sc, pointer args)
     cdr_el = sc->vptr->pair_cdr(args);
 
     if (!sc->vptr->is_integer(car_el) || !sc->vptr->is_number(car_el)) {
-	GERB_MESSAGE("define-layer!: Layer number missing/incorrect\n");
+	GERB_MESSAGE(_("define-layer!: Layer number missing/incorrect\n"));
 	return sc->F;
     }
 
@@ -525,7 +525,7 @@ define_layer(scheme *sc, pointer args)
 	value =  sc->vptr->pair_cdr(car_el);
 	
 	if (!sc->vptr->is_symbol(name)) {
-	    GERB_MESSAGE("define-layer!:non-symbol found, ignoring\n");
+	    GERB_MESSAGE(_("define-layer!:non-symbol found, ignoring\n"));
 	    goto end_name_value_parse;
 	}
 	
@@ -549,7 +549,7 @@ define_layer(scheme *sc, pointer args)
 	    } else if (value == sc->T) {
 		plist_top->inverted = 1;
 	    } else {
-		GERB_MESSAGE("Argument to inverted must be #t or #f\n");
+		GERB_MESSAGE(_("Argument to inverted must be #t or #f\n"));
 	    }
 	} else if (strcmp(sc->vptr->symname(name), "visible") == 0) {
 	    if (value == sc->F) {
@@ -557,7 +557,7 @@ define_layer(scheme *sc, pointer args)
 	    } else if (value == sc->T) {
 		plist_top->visible = 1;
 	    } else {
-		GERB_MESSAGE("Argument to visible must be #t or #f\n");
+		GERB_MESSAGE(_("Argument to visible must be #t or #f\n"));
 	    }
        	} else if (strcmp(sc->vptr->symname(name), "attribs") == 0) {
 	    pointer attr_car_el, attr_cdr_el;
@@ -575,7 +575,7 @@ define_layer(scheme *sc, pointer args)
 		    realloc (plist_top->attr_list, 
 			     plist_top->n_attr * sizeof (gerbv_HID_Attribute));
 		if (plist_top->attr_list == NULL ) {
-		    fprintf (stderr, "%s():  realloc failed\n", __FUNCTION__);
+		    fprintf (stderr, _("%s():  realloc failed\n"), __FUNCTION__);
 		    exit (1);
 		}								  
 
@@ -638,7 +638,7 @@ define_layer(scheme *sc, pointer args)
 		} else if (strcmp (type, "mixed") == 0) {
 		    plist_top->attr_list[p].type = HID_Mixed;
 		    plist_top->attr_list[p].default_val.str_value = NULL;
-		    fprintf (stderr, "%s():  WARNING:  HID_Mixed is not yet supported\n",
+		    fprintf (stderr, _("%s():  WARNING:  HID_Mixed is not yet supported\n"),
 			     __FUNCTION__);
 
 		} else if (strcmp (type, "path") == 0) {
@@ -647,7 +647,7 @@ define_layer(scheme *sc, pointer args)
 		    plist_top->attr_list[p].default_val.str_value = 
 			strdup (sc->vptr->string_value (attr_value));
 		} else {
-		    fprintf (stderr, "%s():  Unknown attribute type: \"%s\"\n",
+		    fprintf (stderr, _("%s():  Unknown attribute type: \"%s\"\n"),
 			     __FUNCTION__, type);
 		}
 		dprintf ("\n");
@@ -675,7 +675,7 @@ set_render_type(scheme *sc, pointer args)
     dprintf("--> entering project.c:%s()\n", __FUNCTION__);
 
     if (!sc->vptr->is_pair(args)){
-	GERB_MESSAGE("set-render-type!: Too few arguments\n");
+	GERB_MESSAGE(_("set-render-type!: Too few arguments\n"));
 	return sc->F;
     }
 
@@ -699,7 +699,7 @@ gerbv_file_version(scheme *sc, pointer args)
     dprintf("--> entering project.c:%s()\n", __FUNCTION__);
 
     if (!sc->vptr->is_pair(args)){
-	GERB_MESSAGE("gerbv-file-version!: Too few arguments\n");
+	GERB_MESSAGE(_("gerbv-file-version!: Too few arguments\n"));
 	return sc->F;
     }
 
@@ -711,17 +711,17 @@ gerbv_file_version(scheme *sc, pointer args)
 
     if( r == -1) {
       r = version_str_to_int( GERBV_DEFAULT_PROJECT_FILE_VERSION );
-      GERB_MESSAGE("The project file you are attempting to load has specified that it\n"
+      GERB_MESSAGE(_("The project file you are attempting to load has specified that it\n"
 		   "uses project file version \"%s\" but this string is not\n"
 		   "a valid version.  Gerbv will attempt to load the file using\n"
-		   "version \"%s\".  You may experience unexpected results.\n",
+		   "version \"%s\".  You may experience unexpected results.\n"),
 		   vstr, version_int_to_str( r ));
       vstr = GERBV_DEFAULT_PROJECT_FILE_VERSION;
     }
     if( DEBUG ) {
       tmps = version_int_to_str( r );
-      printf ("%s():  Read a project file version of %s (%d)\n", __FUNCTION__, vstr, r);
-      printf ("      Translated back to \"%s\"\n", tmps);
+      printf (_("%s():  Read a project file version of %s (%d)\n"), __FUNCTION__, vstr, r);
+      printf (_("      Translated back to \"%s\"\n"), tmps);
       g_free (tmps);
     }
 
@@ -729,9 +729,9 @@ gerbv_file_version(scheme *sc, pointer args)
 
     if ( r > version_str_to_int( GERBV_PROJECT_FILE_VERSION )) {
         /* The project file we're trying to load is too new for this version of gerbv */
-	GERB_MESSAGE("The project file you are attempting to load is version \"%s\"\n"
+	GERB_MESSAGE(_("The project file you are attempting to load is version \"%s\"\n"
 	    "but this copy of gerbv is only capable of loading project files\n"
-	    "using version \"%s\" or older.  You may experience unexpected results.", 
+	    "using version \"%s\" or older.  You may experience unexpected results."),
 		     vstr, GERBV_PROJECT_FILE_VERSION);
     } else {
       int i = 0;
@@ -748,9 +748,9 @@ gerbv_file_version(scheme *sc, pointer args)
 	/* The project file we're trying to load is not too new
 	 * but it is unknown to us
 	 */
-	GERB_MESSAGE("The project file you are attempting to load is version \"%s\"\n"
+	GERB_MESSAGE(_("The project file you are attempting to load is version \"%s\"\n"
 		     "which is an unknown version.\n"
-		     "You may experience unexpected results.", 
+		     "You may experience unexpected results."),
 		     vstr);
 	
       }
@@ -821,12 +821,12 @@ read_project_file(char const* filename)
     current_file_version = version_str_to_int( GERBV_DEFAULT_PROJECT_FILE_VERSION );
 
     if (stat(filename, &stat_info)) {
-	GERB_MESSAGE("Failed to read %s\n", filename);
+	GERB_MESSAGE(_("Failed to read %s\n"), filename);
 	return NULL;
     }
 
     if (!S_ISREG(stat_info.st_mode)) {
-	GERB_MESSAGE("Failed to read %s\n", filename);
+	GERB_MESSAGE(_("Failed to read %s\n"), filename);
 	return NULL;
     }
 
@@ -834,7 +834,7 @@ read_project_file(char const* filename)
     scheme_set_output_port_file(sc, stdout);
 
     if(!sc){
-	GERB_FATAL_ERROR("Couldn't init scheme\n");
+	GERB_FATAL_ERROR(_("Couldn't init scheme\n"));
 	exit(1);
     }
 
@@ -842,14 +842,14 @@ read_project_file(char const* filename)
     initfile = gerb_find_file("init.scm", initdirs);
     if (initfile == NULL) {
 	scheme_deinit(sc);
-	GERB_MESSAGE("Problem loading init.scm (%s)\n", strerror(errno));
+	GERB_MESSAGE(_("Problem loading init.scm (%s)\n"), strerror(errno));
 	return NULL;
     }
     dprintf("%s():  initfile = \"%s\"\n", __FUNCTION__, initfile);
 
     if ((fd = fopen(initfile, "r")) == NULL) {
 	scheme_deinit(sc);
-	GERB_MESSAGE("Couldn't open %s (%s)\n", initfile, strerror(errno));
+	GERB_MESSAGE(_("Couldn't open %s (%s)\n"), initfile, strerror(errno));
 	return NULL;
     }
     sc->vptr->load_file(sc, fd);
@@ -869,7 +869,7 @@ read_project_file(char const* filename)
 
     if ((fd = fopen(filename, "r")) == NULL) {
 	scheme_deinit(sc);
-	GERB_MESSAGE("Couldn't open project file %s (%s)\n", filename,
+	GERB_MESSAGE(_("Couldn't open project file %s (%s)\n"), filename,
 		     strerror(errno));
 	return NULL;
     }
@@ -913,7 +913,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
     int i;
 
     if ((fd = fopen(filename, "w")) == NULL) {
-	    GERB_MESSAGE("Couldn't save project %s\n", filename);
+	    GERB_MESSAGE(_("Couldn't save project %s\n"), filename);
 	    return(-1);
     }
     fprintf(fd, "(gerbv-file-version! \"%s\")\n", GERBV_PROJECT_FILE_VERSION);
@@ -983,7 +983,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 
 	      case HID_Mixed:
 		  dprintf ("HID_Mixed\n");
-		  fprintf (stderr, "%s():  WARNING:  HID_Mixed is not yet supported.\n",
+		  fprintf (stderr, _("%s():  WARNING:  HID_Mixed is not yet supported.\n"),
 			   __FUNCTION__);
 		  break;
 
@@ -993,7 +993,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 		  break;
 
 	      default:
-		  fprintf (stderr, "%s: unknown type of HID attribute (%d)\n", 
+		  fprintf (stderr, _("%s: unknown type of HID attribute (%d)\n"),
 			   __FUNCTION__, attr_list[i].type);
 		  break;
 	      }
