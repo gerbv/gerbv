@@ -81,14 +81,13 @@
  * must change, the ../win32/gerbv.nsi.in *must* be changed to reflect that.
  * Just grep for the extension (gvp) and change it in two places in that file.
  */
-#define GERBV_PROJECT_FILE_NAME "Gerbv Project"
+#define GERBV_PROJECT_FILE_NAME N_("Gerbv Project")
 #define GERBV_PROJECT_FILE_EXT ".gvp"
 #define GERBV_PROJECT_FILE_PAT "*.gvp"
 
 #define SAVE_PROJECT 0
 #define SAVE_AS_PROJECT 1
 #define OPEN_PROJECT 2
-#  define _(String) (String)
 
 /**Global variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
@@ -128,7 +127,7 @@ static void show_no_layers_warning (void);
 
 static void show_no_layers_warning (void) {
 	snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-		"<b>No layers are currently loaded. A layer must be loaded first.</b>");
+		_("<b>No layers are currently loaded. A layer must be loaded first.</b>"));
 	callbacks_update_statusbar();
 }
 
@@ -162,8 +161,8 @@ callbacks_new_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
-		       "Do you want to close any open layers and start a new project?",
-		       "Starting a new project will cause all currently open layers to be closed. Any unsaved changes will be lost.",
+		       _("Do you want to close any open layers and start a new project?"),
+		       _("Starting a new project will cause all currently open layers to be closed. Any unsaved changes will be lost."),
 		       FALSE,
 		       NULL))
 			return;
@@ -197,15 +196,15 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
-                       "Do you want to close any open layers and load an existing project?",
-		       "Loading a project will cause all currently open layers to be closed. Any unsaved changes will be lost.",
+                       _("Do you want to close any open layers and load an existing project?"),
+		       _("Loading a project will cause all currently open layers to be closed. Any unsaved changes will be lost."),
 			FALSE,
 			NULL))
 			return;
 	}
 	
 	screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Open project file...",
+	gtk_file_chooser_dialog_new (_("Open project file..."),
 				     NULL,
 				     GTK_FILE_CHOOSER_ACTION_OPEN,
 				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -215,13 +214,13 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 		mainProject->path);
 
 	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, GERBV_PROJECT_FILE_NAME);
+	gtk_file_filter_set_name(filter, _(GERBV_PROJECT_FILE_NAME));
 	gtk_file_filter_add_pattern(filter, GERBV_PROJECT_FILE_PAT);
 	gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
 	        filter);
 
 	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "All");
+	gtk_file_filter_set_name(filter, _("All"));
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
 	        filter);
@@ -262,7 +261,7 @@ callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
 	GSList *filename=NULL;
 
 	screen.win.gerber = 
-	gtk_file_chooser_dialog_new ("Open Gerber, drill, or pick & place file(s)...",
+	gtk_file_chooser_dialog_new (_("Open Gerber, drill, or pick & place file(s)..."),
 				     NULL,
 				     GTK_FILE_CHOOSER_ACTION_OPEN,
 				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -331,7 +330,7 @@ callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
   /* Now save that layer */
   if (index >= 0) {
     if (!gerbv_save_layer_from_index (mainProject, index, mainProject->file[index]->fullPathname)) {
-      interface_show_alert_dialog("Gerbv cannot export this file type", 
+      interface_show_alert_dialog(_("Gerbv cannot export this file type"), 
 				  NULL,
 				  FALSE,
 				  NULL);
@@ -373,15 +372,15 @@ gerbv_image_t *merge_images (int type)
 				type=GERBV_LAYERTYPE_RS274X;
 			break;
 		default:
-			GERB_MESSAGE("Unknown Layer type for merge\n");
+			GERB_MESSAGE(_("Unknown Layer type for merge\n"));
 			goto err;
 	}
-	dprintf("Looking for matching files\n"); 
+	dprintf(_("Looking for matching files\n")); 
 	for (i=img=filecount=0;i<mainProject->max_files;++i){
 		if (mainProject->file[i] &&  mainProject->file[i]->isVisible &&
 	    (mainProject->file[i]->image->layertype == type) ) {
 			++filecount;
-			dprintf("Adding '%s'\n",mainProject->file[i]->name); 
+			dprintf(_("Adding '%s'\n"),mainProject->file[i]->name); 
 			images[img].image=mainProject->file[i]->image;
 /*			printf("Adding transform\n"); */
 		  images[img++].transform=&mainProject->file[i]->transform;
@@ -391,10 +390,10 @@ gerbv_image_t *merge_images (int type)
 /*		printf("Done with add\n"); */
 	}
 	if(2>filecount){
-		GERB_MESSAGE ("Not Enough Files of same type to merge\n");
+		GERB_MESSAGE (_("Not Enough Files of same type to merge\n"));
 		goto err;
 	}
-	dprintf("Now merging files\n");
+	dprintf(_("Now merging files\n"));
 	for (i=0;i<img;++i){
 		gerbv_user_transformation_t *thisTransform;
 		gerbv_user_transformation_t identityTransform = {0,0,1,1,0,FALSE,FALSE,FALSE};
@@ -422,33 +421,33 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	
 	gint index=callbacks_get_selected_row_index ();
 	if (index < 0) {
-		interface_show_alert_dialog("No layer is currently selected",
-			"Please select a layer and try again.",
+		interface_show_alert_dialog(_("No layer is currently selected"),
+			_("Please select a layer and try again."),
 			FALSE,
 			NULL);
 		return;
 	}
 	
 	if (processType == CALLBACKS_SAVE_PROJECT_AS)
-		windowTitle = g_strdup ("Save project as...");
+		windowTitle = g_strdup (_("Save project as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_PS)
-		windowTitle = g_strdup ("Export PS file as...");
+		windowTitle = g_strdup (_("Export PS file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_PDF)
-		windowTitle = g_strdup ("Export PDF file as...");
+		windowTitle = g_strdup (_("Export PDF file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_SVG)
-		windowTitle = g_strdup ("Export SVG file as...");
+		windowTitle = g_strdup (_("Export SVG file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_PNG)
-		windowTitle = g_strdup ("Export PNG file as...");
+		windowTitle = g_strdup (_("Export PNG file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_RS274X)
-		windowTitle = g_strdup ("Export RS-274X file as...");
+		windowTitle = g_strdup (_("Export RS-274X file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_DRILL)
-		windowTitle = g_strdup ("Export Excellon drill file as...");
+		windowTitle = g_strdup (_("Export Excellon drill file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_RS274XM)
-		windowTitle = g_strdup ("Export RS-274Xm file as...");
+		windowTitle = g_strdup (_("Export RS-274Xm file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_DRILLM)
-		windowTitle = g_strdup ("Export Excellon drillm file as...");
+		windowTitle = g_strdup (_("Export Excellon drillm file as..."));
 	else if (processType == CALLBACKS_SAVE_LAYER_AS)
-		windowTitle = g_strdup ("Save layer as...");
+		windowTitle = g_strdup (_("Save layer as..."));
 		
 	screen.win.gerber = 
 	gtk_file_chooser_dialog_new (windowTitle, NULL,
@@ -472,13 +471,13 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 
 	if (processType == CALLBACKS_SAVE_PROJECT_AS) {
 	  filter = gtk_file_filter_new();
-	  gtk_file_filter_set_name(filter, GERBV_PROJECT_FILE_NAME);
+	  gtk_file_filter_set_name(filter, _(GERBV_PROJECT_FILE_NAME));
 	  gtk_file_filter_add_pattern(filter, GERBV_PROJECT_FILE_PAT);
 	  gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
 				       filter);
 
 	  filter = gtk_file_filter_new();
-	  gtk_file_filter_set_name(filter, "All");
+	  gtk_file_filter_set_name(filter, _("All"));
 	  gtk_file_filter_add_pattern(filter, "*");
 	  gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
 				       filter);
@@ -537,7 +536,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 				/*printf("Preparing to export merge\n"); */
 				gerbv_export_rs274x_file_from_image (filename, image,	&t);	
 				gerbv_destroy_image(image);
-				GERB_MESSAGE ("Merged visible gerber layers and placed in '%s'\n",filename);
+				GERB_MESSAGE (_("Merged visible gerber layers and placed in '%s'\n"),filename);
 			}
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_DRILLM) {
@@ -546,7 +545,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			if(NULL != (image=merge_images(processType)) ){
 				gerbv_export_drill_file_from_image (filename, image,&t);
 				gerbv_destroy_image(image);
-				GERB_MESSAGE ("Merged visible drill layers and placed in '%s'\n",filename);
+				GERB_MESSAGE (_("Merged visible drill layers and placed in '%s'\n"),filename);
 			}	
 		}		
 	}
@@ -722,14 +721,14 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
     /* General info report */
     g_string_printf(general_report_string, 
-		    "General information\n");
+		    _("General information\n"));
     g_string_append_printf(general_report_string, 
-			   "  Active layer count = %d\n", 
+			   _("  Active layer count = %d\n"), 
 			   stats_report->layer_count);
     g_string_append_printf(general_report_string,
 			   "\n\n%-45s   %-10s\n",
-			   "Files processed",
-			   "Layer number");
+			   _("Files processed"),
+			   _("Layer number"));
     for (idx = 0; idx <= mainProject->last_loaded; idx++) {
 	if (mainProject->file[idx] &&
 	    mainProject->file[idx]->isVisible &&
@@ -742,33 +741,33 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     /* Error report (goes into general report tab) */
     if (stats_report->layer_count == 0) {
 	g_string_printf(error_report_string, 
-			"\n\nNo Gerber files active (visible)!\n");
+			_("\n\nNo Gerber files active (visible)!\n"));
     } else if (stats_report->error_list->error_text == NULL) {
 	g_string_printf(error_report_string, 
-			"\n\nNo errors found in active Gerber file(s)!\n"); 
+			_("\n\nNo errors found in active Gerber file(s)!\n")); 
     } else {
 	g_string_printf(error_report_string, 
-			"\n\nErrors found in active Gerber file(s):\n"); 
+			_("\n\nErrors found in active Gerber file(s):\n")); 
 	for(my_error_list = stats_report->error_list; 
 	    my_error_list != NULL; 
 	    my_error_list = my_error_list->next) {
 	    switch(my_error_list->type) {
 		case GERBV_MESSAGE_FATAL: /* We should never get this one since the 
                 			   * program should terminate first.... */
-		    error_level = g_strdup_printf("FATAL: ");
+		    error_level = g_strdup_printf(_("FATAL: "));
 		    break;
 		case GERBV_MESSAGE_ERROR:
-		    error_level = g_strdup_printf("ERROR: ");
+		    error_level = g_strdup_printf(_("ERROR: "));
 		    break;
 		case GERBV_MESSAGE_WARNING:
-		    error_level = g_strdup_printf("WARNING: ");
+		    error_level = g_strdup_printf(_("WARNING: "));
 		    break;
 		case GERBV_MESSAGE_NOTE:
-		    error_level = g_strdup_printf("NOTE: ");
+		    error_level = g_strdup_printf(_("NOTE: "));
 		    break;
 	    }
 	    g_string_append_printf(error_report_string,
-				   "  Layer %d: %s %s", 
+				   _("  Layer %d: %s %s"), 
 				   my_error_list->layer,
 				   error_level,
 				   my_error_list->error_text );
@@ -784,132 +783,132 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     
     /* Now compile stats related to reading G codes */
     g_string_printf(G_report_string, 
-		    "G code statistics (all active layers)\n");
+		    _("G code statistics (all active layers)\n"));
     g_string_append_printf(G_report_string, 
-			   "<code> = <number of incidences>\n");
+			   _("<code> = <number of incidences>\n"));
     g_string_append_printf(G_report_string,
 			   "G0 = %-6d (%s)\n", 
 			   stats_report->G0,
-			   "Move");
+			   _("Move"));
     g_string_append_printf(G_report_string,
 			   "G1 = %-6d (%s)\n", 
 			   stats_report->G1,
-			   "1X linear interpolation");
+			   _("1X linear interpolation"));
     g_string_append_printf(G_report_string,
 			   "G2 = %-6d (%s)\n", 
 			   stats_report->G2,
-			   "CW interpolation");
+			   _("CW interpolation"));
     g_string_append_printf(G_report_string,
 			   "G3 = %-6d (%s)\n", 
 			   stats_report->G3,
-			   "CCW interpolation");
+			   _("CCW interpolation"));
     g_string_append_printf(G_report_string,
 			   "G4 = %-6d (%s)\n", 
 			   stats_report->G4,
-			   "Comment/ignore block");
+			   _("Comment/ignore block"));
     g_string_append_printf(G_report_string,
 			   "G10 = %-6d (%s)\n", 
 			   stats_report->G10,
-			   "10X linear interpolation");
+			   _("10X linear interpolation"));
     g_string_append_printf(G_report_string,
 			   "G11 = %-6d (%s)\n", 
 			   stats_report->G11,
-			   "0.1X linear interpolation");
+			   _("0.1X linear interpolation"));
     g_string_append_printf(G_report_string,
 			   "G12 = %-6d (%s)\n", 
 			   stats_report->G12,
-			   "0.01X linear interpolation");
+			   _("0.01X linear interpolation"));
     g_string_append_printf(G_report_string,
 			   "G36 = %-6d (%s)\n", 
 			   stats_report->G36,
-			   "Poly fill on");
+			   _("Poly fill on"));
     g_string_append_printf(G_report_string,
 			   "G37 = %-6d (%s)\n", 
 			   stats_report->G37,
-			   "Poly fill off");
+			   _("Poly fill off"));
     g_string_append_printf(G_report_string,
 			   "G54 = %-6d (%s)\n", 
 			   stats_report->G54,
-			   "Tool prepare");
+			   _("Tool prepare"));
     g_string_append_printf(G_report_string,
 			   "G55 = %-6d (%s)\n", 
 			   stats_report->G55,
-			   "Flash prepare");
+			   _("Flash prepare"));
     g_string_append_printf(G_report_string,
 			   "G70 = %-6d (%s)\n", 
 			   stats_report->G70,
-			   "Units = inches");
+			   _("Units = inches"));
     g_string_append_printf(G_report_string,
 			   "G71 = %-6d (%s)\n", 
 			   stats_report->G71,
-			   "Units = mm");
+			   _("Units = mm"));
     g_string_append_printf(G_report_string,
 			   "G74 = %-6d (%s)\n", 
 			   stats_report->G74,
-			   "Disable 360 circ. interpolation");
+			   _("Disable 360 circ. interpolation"));
     g_string_append_printf(G_report_string,
 			   "G75 = %-6d (%s)\n", 
 			   stats_report->G75,
-			   "Enable 360 circ. interpolation");
+			   _("Enable 360 circ. interpolation"));
     g_string_append_printf(G_report_string,
 			   "G90 = %-6d (%s)\n", 
 			   stats_report->G90,
-			   "Absolute units");
+			   _("Absolute units"));
     g_string_append_printf(G_report_string,
 			   "G91 = %-6d (%s)\n", 
 			   stats_report->G91,
-			   "Incremental units");
+			   _("Incremental units"));
     g_string_append_printf(G_report_string,
-			   "Unknown G codes = %d\n", 
+			   _("Unknown G codes = %d\n"), 
 			   stats_report->G_unknown);
     
 
-    g_string_printf(D_report_string, "D code statistics (all active layers)\n");
+    g_string_printf(D_report_string, _("D code statistics (all active layers)\n"));
     g_string_append_printf(D_report_string,
-			   "<code> = <number of incidences>\n");
+			   _("<code> = <number of incidences>\n"));
     g_string_append_printf(D_report_string,
 			   "D1 = %-6d (%s)\n", 
 			   stats_report->D1,
-			   "Exposure on");
+			   _("Exposure on"));
     g_string_append_printf(D_report_string,
 			   "D2 = %-6d (%s)\n", 
 			   stats_report->D2,
-			   "Exposure off");
+			   _("Exposure off"));
     g_string_append_printf(D_report_string, 
 			   "D3 = %-6d (%s)\n", 
 			   stats_report->D3,
-			   "Flash aperture");
+			   _("Flash aperture"));
     g_string_append_printf(D_report_string, 
-			   "Undefined D codes = %d\n", 
+			   _("Undefined D codes = %d\n"), 
 			   stats_report->D_unknown);
     g_string_append_printf(D_report_string,
-			   "D code Errors = %d\n", 
+			   _("D code Errors = %d\n"), 
 			   stats_report->D_error);
     
 
-    g_string_printf(M_report_string, "M code statistics (all active layers)\n");
+    g_string_printf(M_report_string, _("M code statistics (all active layers)\n"));
     g_string_append_printf(M_report_string, 
-			   "<code> = <number of incidences>\n");
+			   _("<code> = <number of incidences>\n"));
     g_string_append_printf(M_report_string, 
 			   "M0 = %-6d (%s)\n", 
 			   stats_report->M0,
-			   "Program start");
+			   _("Program start"));
     g_string_append_printf(M_report_string, 
 			   "M1 = %-6d (%s)\n", 
 			   stats_report->M1,
-			   "Program stop");
+			   _("Program stop"));
     g_string_append_printf(M_report_string, 
 			   "M2 = %-6d (%s)\n", 
 			   stats_report->M2,
-			   "Program end");
+			   _("Program end"));
     g_string_append_printf(M_report_string, 
-			   "Unknown M codes = %d\n", 
+			   _("Unknown M codes = %d\n"), 
 			   stats_report->M_unknown);
     
 
-    g_string_printf(misc_report_string, "Misc code statistics (all active layers)\n");
+    g_string_printf(misc_report_string, _("Misc code statistics (all active layers)\n"));
     g_string_append_printf(misc_report_string, 
-			   "<code> = <number of incidences>\n");
+			   _("<code> = <number of incidences>\n"));
     g_string_append_printf(misc_report_string, 
 			   "X = %d\n", stats_report->X);
     g_string_append_printf(misc_report_string, 
@@ -921,25 +920,25 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     g_string_append_printf(misc_report_string, 
 			   "* = %d\n", stats_report->star);
     g_string_append_printf(misc_report_string, 
-			   "Unknown codes = %d\n", 
+			   _("Unknown codes = %d\n"), 
 			   stats_report->unknown);
     
     /* Report apertures defined in input files. */
 
     if (stats_report->aperture_list->number == -1) {
 	g_string_printf(aperture_def_report_string,
-			"No aperture definitions found in Gerber file(s)!\n"); 
+			_("No aperture definitions found in Gerber file(s)!\n")); 
     } else {
 	g_string_printf(aperture_def_report_string,
-			"Apertures defined in Gerber file(s) (by layer)\n"); 
+			_("Apertures defined in Gerber file(s) (by layer)\n")); 
 	g_string_append_printf(aperture_def_report_string, 
 			" %-6s %-8s %12s  %8s %8s %8s\n",
-			"Layer",
-			"D code",
-			"Aperture",
-			"Param[0]",
-			"Param[1]",
-			"Param[2]"
+			_("Layer"),
+			_("D code"),
+			_("Aperture"),
+			_("Param[0]"),
+			_("Param[1]"),
+			_("Param[2]")
 	    );
 	for(my_aperture_list = stats_report->aperture_list; 
 	    my_aperture_list != NULL; 
@@ -960,15 +959,15 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     /* Report apertures usage count in input files. */
     if (stats_report->D_code_list->number == -1) {
       g_string_printf(aperture_use_report_string,
-		      "No apertures used in Gerber file(s)!\n"); 
+		      _("No apertures used in Gerber file(s)!\n")); 
     } else {
     	
       /* Now add list of user-defined D codes (apertures) */
       
       g_string_printf(aperture_use_report_string,
-		      "Apertures used in Gerber file(s) (all active layers)\n"); 
+		      _("Apertures used in Gerber file(s) (all active layers)\n")); 
       g_string_append_printf(aperture_use_report_string,
-			     "<aperture code> = <number of uses>\n");
+			     _("<aperture code> = <number of uses>\n"));
       for (my_aperture_list = stats_report->D_code_list; 
 	   my_aperture_list != NULL; 
 	   my_aperture_list = my_aperture_list->next) {
@@ -982,12 +981,12 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
       }
     }
     g_string_append_printf(aperture_use_report_string,
-         "\nTotal number of aperture uses: %d\n", aperture_count);
+         _("\nTotal number of aperture uses: %d\n"), aperture_count);
 
 
     /* Create top level dialog window for report */
     GtkWidget *analyze_active_gerbers;
-    analyze_active_gerbers = gtk_dialog_new_with_buttons("Gerber codes report",
+    analyze_active_gerbers = gtk_dialog_new_with_buttons(_("Gerber codes report"),
 							NULL,
 							GTK_DIALOG_DESTROY_WITH_PARENT,
 							GTK_STOCK_OK,
@@ -1098,31 +1097,31 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(general_code_report_window),
-			     gtk_label_new("General"));
+			     gtk_label_new(_("General")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(G_report_label),
-			     gtk_label_new("G codes"));
+			     gtk_label_new(_("G codes")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(D_report_label),
-			     gtk_label_new("D codes"));
+			     gtk_label_new(_("D codes")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(M_report_label),
-			     gtk_label_new("M codes"));
+			     gtk_label_new(_("M codes")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(misc_report_label),
-			     gtk_label_new("Misc. codes"));
+			     gtk_label_new(_("Misc. codes")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(aperture_def_report_window),
-			     gtk_label_new("Aperture definitions"));
+			     gtk_label_new(_("Aperture definitions")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(aperture_use_report_window),
-			     gtk_label_new("Aperture usage"));
+			     gtk_label_new(_("Aperture usage")));
     
     
     /* Now put notebook into dialog window and show the whole thing */
@@ -1163,13 +1162,13 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     stats_report = (gerbv_drill_stats_t *) generate_drill_analysis();
     
     /* General and error window strings */
-    g_string_printf(general_report_string, "General information\n");
+    g_string_printf(general_report_string, _("General information\n"));
     g_string_append_printf(general_report_string, 
-			   "  Active layer count = %d\n", 
+			   _("  Active layer count = %d\n"), 
 			   stats_report->layer_count);
     
     g_string_append_printf(general_report_string, 
-			   "\n\nFiles processed:\n");
+			   _("\n\nFiles processed:\n"));
     for (idx = mainProject->last_loaded; idx >= 0; idx--) {
 	if (mainProject->file[idx] &&
 	    mainProject->file[idx]->isVisible &&
@@ -1182,33 +1181,33 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
 
     if (stats_report->layer_count == 0) {
-        g_string_printf(error_report_string, "\n\nNo drill files active (visible)!\n"); 
+        g_string_printf(error_report_string, _("\n\nNo drill files active (visible)!\n")); 
     } else if (stats_report->error_list->error_text == NULL) {
 	g_string_printf(error_report_string, 
-			"\n\nNo errors found in active drill file(s)!\n"); 
+			_("\n\nNo errors found in active drill file(s)!\n")); 
     } else {
 	g_string_printf(error_report_string, 
-			"\n\nErrors found in active drill file(s):\n"); 
+			_("\n\nErrors found in active drill file(s):\n")); 
 	for(my_error_list = stats_report->error_list; 
 	    my_error_list != NULL; 
 	    my_error_list = my_error_list->next) {
 	    switch(my_error_list->type) {
 		case GERBV_MESSAGE_FATAL: /* We should never get this one since the 
 			     * program should terminate first.... */
-		    error_level = g_strdup_printf("FATAL: ");
+		    error_level = g_strdup_printf(_("FATAL: "));
 		    break;
 		case GERBV_MESSAGE_ERROR:
-		    error_level = g_strdup_printf("ERROR: ");
+		    error_level = g_strdup_printf(_("ERROR: "));
 		    break;
 		case GERBV_MESSAGE_WARNING:
-		    error_level = g_strdup_printf("WARNING: ");
+		    error_level = g_strdup_printf(_("WARNING: "));
 		    break;
 		case GERBV_MESSAGE_NOTE:
-		    error_level = g_strdup_printf("NOTE: ");
+		    error_level = g_strdup_printf(_("NOTE: "));
 		    break;
 	    }
 	    g_string_append_printf(error_report_string, 
-				   "  Layer %d: %s %s", 
+				   _("  Layer %d: %s %s"), 
 				   my_error_list->layer,
 				   error_level,
 				   my_error_list->error_text);
@@ -1221,129 +1220,129 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
 
     /* G code window strings */
-    g_string_printf(G_report_string, "G code statistics (all active layers)\n");
+    g_string_printf(G_report_string, _("G code statistics (all active layers)\n"));
     g_string_append_printf(G_report_string, 
-			   "<code> = <number of incidences>\n");
+			   _("<code> = <number of incidences>\n"));
     g_string_append_printf(G_report_string, 
 			   "G00 = %-6d (%s)\n", 
 			   stats_report->G00,
-			   "Rout mode");
+			   _("Rout mode"));
     g_string_append_printf(G_report_string, 
 			   "G01 = %-6d (%s)\n", 
 			   stats_report->G01,
-			   "1X linear interpolation");
+			   _("1X linear interpolation"));
     g_string_append_printf(G_report_string, 
 			   "G02 = %-6d (%s)\n", 
 			   stats_report->G02,
-			   "CW interpolation");
+			   _("CW interpolation"));
     g_string_append_printf(G_report_string, 
 			   "G03 = %-6d (%s)\n", 
 			   stats_report->G03,
-			   "CCW interpolation");
+			   _("CCW interpolation"));
     g_string_append_printf(G_report_string, 
 			   "G04 = %-6d (%s)\n", 
 			   stats_report->G04,
-			   "Variable dwell");
+			   _("Variable dwell"));
     g_string_append_printf(G_report_string, 
 			   "G05 = %-6d (%s)\n", 
 			   stats_report->G05,
-			   "Drill mode");
+			   _("Drill mode"));
     g_string_append_printf(G_report_string, 
 			   "G90 = %-6d (%s)\n", 
 			   stats_report->G90,
-			   "Absolute units");
+			   _("Absolute units"));
     g_string_append_printf(G_report_string, 
 			   "G91 = %-6d (%s)\n", 
 			   stats_report->G91,
-			   "Incremental units");
+			   _("Incremental units"));
     g_string_append_printf(G_report_string, 
 			   "G93 = %-6d (%s)\n", 
 			   stats_report->G93,
-			   "Zero set");
+			   _("Zero set"));
     g_string_append_printf(G_report_string, 
-			   "Unknown G codes = %d\n", 
+			   _("Unknown G codes = %d\n"), 
 			   stats_report->G_unknown);
     
     /* M code window strings */
-    g_string_printf(M_report_string, "M code statistics (all active layers)\n");
+    g_string_printf(M_report_string, _("M code statistics (all active layers)\n"));
     g_string_append_printf(M_report_string, 
-			   "<code> = <number of incidences>\n");
+			   _("<code> = <number of incidences>\n"));
     g_string_append_printf(M_report_string, 
 			   "M00 = %-6d (%s)\n", 
 			   stats_report->M00,
-			   "End of program");
+			   _("End of program"));
     g_string_append_printf(M_report_string, 
 			   "M01 = %-6d (%s)\n", 
 			   stats_report->M01,
-			   "End of pattern");
+			   _("End of pattern"));
     g_string_append_printf(M_report_string, 
 			   "M18 = %-6d (%s)\n", 
 			   stats_report->M18,
-			   "Tool tip check");
+			   _("Tool tip check"));
     g_string_append_printf(M_report_string, 
 			   "M25 = %-6d (%s)\n", 
 			   stats_report->M25,
-			   "Begin pattern");
+			   _("Begin pattern"));
     g_string_append_printf(M_report_string, 
 			   "M30 = %-6d (%s)\n", 
 			   stats_report->M30,
-			   "End program rewind");
+			   _("End program rewind"));
     g_string_append_printf(M_report_string, 
 			   "M31 = %-6d (%s)\n", 
 			   stats_report->M31,
-			   "Begin pattern");
+			   _("Begin pattern"));
     g_string_append_printf(M_report_string, 
 			   "M45 = %-6d (%s)\n", 
 			   stats_report->M45,
-			   "Long message");
+			   _("Long message"));
     g_string_append_printf(M_report_string, 
 			   "M47 = %-6d (%s)\n", 
 			   stats_report->M47,
-			   "Operator message");
+			   _("Operator message"));
     g_string_append_printf(M_report_string, 
 			   "M48 = %-6d (%s)\n", 
 			   stats_report->M48,
-			   "Begin program header");
+			   _("Begin program header"));
     g_string_append_printf(M_report_string, 
 			   "M71 = %-6d (%s)\n", 
 			   stats_report->M71,
-			   "Metric units");
+			   _("Metric units"));
     g_string_append_printf(M_report_string, 
 			   "M72 = %-6d (%s)\n", 
 			   stats_report->M72,
-			   "English units");
+			   _("English units"));
     g_string_append_printf(M_report_string, 
 			   "M95 = %-6d (%s)\n", 
 			   stats_report->M95,
-			   "End program header");
+			   _("End program header"));
     g_string_append_printf(M_report_string, 
 			   "M97 = %-6d (%s)\n", 
 			   stats_report->M97,
-			   "Canned text");
+			   _("Canned text"));
     g_string_append_printf(M_report_string, 
 			   "M98 = %-6d (%s)\n", 
 			   stats_report->M98,
-			   "Canned text");
+			   _("Canned text"));
     g_string_append_printf(M_report_string, 
-			   "Unknown M codes = %d\n", 
+			   _("Unknown M codes = %d\n"), 
 			   stats_report->M_unknown);
     
     
     /* misc report strings */
-    g_string_printf(misc_report_string, "Misc code statistics (all active layers)\n");
+    g_string_printf(misc_report_string, _("Misc code statistics (all active layers)\n"));
     g_string_append_printf(misc_report_string, 
-			   "<code> = <number of incidences>\n");
+			   _("<code> = <number of incidences>\n"));
     g_string_append_printf(misc_report_string, 
-			   "comments = %d\n", 
+			   _("comments = %d\n"), 
 			   stats_report->comment);
     g_string_append_printf(misc_report_string, 
-			   "Unknown codes = %d\n", 
+			   _("Unknown codes = %d\n"), 
 			   stats_report->unknown);
     
     g_string_append_printf(misc_report_string, 
 			   "R = %-6d (%s)\n", 
 			   stats_report->R,
-			   "Repeat hole");
+			   _("Repeat hole"));
 
     if (stats_report->detect != NULL ) {
 	g_string_append_printf(misc_report_string, 
@@ -1351,9 +1350,9 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 			       stats_report->detect);
     }	
     /* drill report window strings */
-    g_string_printf(drill_report_string, "Drills used (all active layers)\n");
+    g_string_printf(drill_report_string, _("Drills used (all active layers)\n"));
     g_string_append_printf(drill_report_string, "%10s %8s %8s %8s\n", 
-			   "Drill no.", "Dia.", "Units", "Count");
+			   _("Drill no."), _("Dia."), _("Units"), _("Count"));
     for(my_drill_list = stats_report->drill_list; 
 	my_drill_list != NULL; 
 	my_drill_list = my_drill_list->next) {
@@ -1366,7 +1365,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 			       my_drill_list->drill_count);
     }
 
-    g_string_append_printf(drill_report_string, "Total drill count %d\n", 
+    g_string_append_printf(drill_report_string, _("Total drill count %d\n"), 
 			   stats_report->total_count);
 
     /* Use fixed width font for all reports */
@@ -1375,7 +1374,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
 
     /* Create top level dialog window for report */
     GtkWidget *analyze_active_drill;
-    analyze_active_drill = gtk_dialog_new_with_buttons("Drill file codes report",
+    analyze_active_drill = gtk_dialog_new_with_buttons(_("Drill file codes report"),
 							NULL,
 							GTK_DIALOG_DESTROY_WITH_PARENT,
 							GTK_STOCK_OK,
@@ -1439,23 +1438,23 @@ callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(general_report_label),
-			     gtk_label_new("General"));
+			     gtk_label_new(_("General")));
 
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(G_report_label),
-			     gtk_label_new("G codes"));
+			     gtk_label_new(_("G codes")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(M_report_label),
-			     gtk_label_new("M codes"));
+			     gtk_label_new(_("M codes")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(misc_report_label),
-			     gtk_label_new("Misc. codes"));
+			     gtk_label_new(_("Misc. codes")));
     
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			     GTK_WIDGET(drill_report_label),
-			     gtk_label_new("Drills used"));
+			     gtk_label_new(_("Drills used")));
     
     /* Now put notebook into dialog window and show the whole thing */
     gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_drill)->vbox),
@@ -1502,8 +1501,8 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
 
   if (layers_dirty &&
       !interface_get_alert_dialog_response(
-            "Do you want to close all open layers and quit the program?",
-            "Quitting the program will cause any unsaved changes to be lost.",
+            _("Do you want to close all open layers and quit the program?"),
+            _("Quitting the program will cause any unsaved changes to be lost."),
 	    FALSE,
 	    NULL)) {
     return TRUE; // stop propagation of the delete_event.
@@ -1528,7 +1527,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
 	/* gchar *translators = _("translator-credits"); */
 
-	gchar *string = g_strdup_printf ( "gerbv -- a Gerber (RS-274/X) viewer.\n\n"
+	gchar *string = g_strdup_printf(_("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 					  "This is gerbv version %s\n"
 					  "Compiled on %s at %s\n"
 					  "\n"
@@ -1537,10 +1536,10 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					  "For more information see:\n"
 					  "  gerbv homepage: http://gerbv.gpleda.org/\n"
 					  "  gEDA homepage: http://gpleda.org/\n"
-					  "  gEDA Wiki: http://geda.seul.org/wiki/",
+					  "  gEDA Wiki: http://geda.seul.org/wiki/"),
 					  VERSION, __DATE__, __TIME__);
 #if GTK_CHECK_VERSION(2,6,0)
-	gchar *license = g_strdup_printf("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
+	gchar *license = g_strdup_printf(_("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 					 "Copyright (C) 2000-2007 Stefan Petersen\n\n"
 					 "This program is free software: you can redistribute it and/or modify\n"
 					 "it under the terms of the GNU General Public License as published by\n"
@@ -1551,8 +1550,10 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
 					 "GNU General Public License for more details.\n\n"
 					 "You should have received a copy of the GNU General Public License\n"
-					 "along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+					 "along with this program.  If not, see <http://www.gnu.org/licenses/>."));
 	#include "authors.c"
+	int a_size, i;
+	gchar **a;
 
 	aboutdialog1 = gtk_about_dialog_new ();
 	gtk_container_set_border_width (GTK_CONTAINER (aboutdialog1), 5);
@@ -1564,8 +1565,14 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG (aboutdialog1), license);
 
 	/* The authors.c file is autogenerated at build time */
-	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG (aboutdialog1), authors_string_array);
+	a_size = sizeof(authors_string_array)/sizeof(authors_string_array[0]);
+	a = g_new(gchar *, a_size);
+	for (i = 0; i < a_size; i++)
+		a[i] = _(authors_string_array[i]);
+
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG (aboutdialog1), (const gchar **)a);
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG (aboutdialog1), "http://gerbv.gpleda.org/");
+	g_free(a);
 
 	g_signal_connect (G_OBJECT(aboutdialog1),"response",
 		      G_CALLBACK (gtk_widget_destroy), GTK_WIDGET(aboutdialog1));
@@ -1607,7 +1614,7 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
     #include "bugs.c"
 
     /* Create the top level dialog widget with an OK button */
-    GtkWidget *bugs_dialog = gtk_dialog_new_with_buttons("Known bugs in gerbv",
+    GtkWidget *bugs_dialog = gtk_dialog_new_with_buttons(_("Known bugs in gerbv"),
 							 NULL,
 							 GTK_DIALOG_DESTROY_WITH_PARENT,
 							 GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
@@ -1621,14 +1628,14 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
     /* First create single bugs_string from bugs_string_array */
     GString *bugs_string = g_string_new(NULL);
     for (i=0; bugs_string_array[i] != NULL; i++) {
-	g_string_append_printf(bugs_string, 
-			       "%s\n",
-			       bugs_string_array[i]);
+	/* gettext("") will return info string */
+	g_string_append_printf(bugs_string, "%s\n",
+		(bugs_string_array[i][0] == '\0') ? "" : _(bugs_string_array[i]));
     }
     
     /* Create GtkLabel to hold text */
     GtkWidget *bugs_label = gtk_label_new (bugs_string->str);
-    g_string_free(bugs_string, TRUE);
+    g_string_free(bugs_string, FALSE);
     gtk_misc_set_alignment(GTK_MISC(bugs_label), 0, 0);
     gtk_misc_set_padding(GTK_MISC(bugs_label), 13, 13);
     
@@ -1964,27 +1971,27 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.tool = POINTER;
 			screen.state = NORMAL;
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 "Click to select objects in the current layer. Middle click and drag to pan.");
+				 _("Click to select objects in the current layer. Middle click and drag to pan."));
 			break;
 		case PAN:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), TRUE);
 			screen.tool = PAN;
 			screen.state = NORMAL;
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 "Click and drag to pan. Right click and drag to zoom.");
+				 _("Click and drag to pan. Right click and drag to zoom."));
 			break;
 		case ZOOM:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonZoom), TRUE);
 			screen.tool = ZOOM;
 			screen.state = NORMAL;
 			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 "Click and drag to zoom in. Shift+click to zoom out.");
+				 _("Click and drag to zoom in. Shift+click to zoom out."));
 			break;
 		case MEASURE:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), TRUE);
 			screen.tool = MEASURE;
 			screen.state = NORMAL;
-			snprintf(screen.statusbar.diststr, MAX_DISTLEN, "Click and drag to measure a distance.");
+			snprintf(screen.statusbar.diststr, MAX_DISTLEN, _("Click and drag to measure a distance."));
 			break;
 		default:
 			break;
@@ -2159,7 +2166,7 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 void
 callbacks_show_color_picker_dialog (gint index){
 	screen.win.colorSelectionDialog = NULL;
-	GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new ("Select a color");
+	GtkColorSelectionDialog *cs= (GtkColorSelectionDialog *) gtk_color_selection_dialog_new (_("Select a color"));
 	GtkColorSelection *colorsel = (GtkColorSelection *) cs->colorsel;
 	
 	screen.win.colorSelectionDialog = (GtkWidget *) cs;
@@ -2273,12 +2280,12 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     n =  mainProject->file[index]->image->info->n_attr;
     type =  mainProject->file[index]->image->info->type;
     if (type == NULL) 
-	type = "Unknown";
+	type = N_("Unknown");
 
     if (attr == NULL || n == 0) 
 	{
-	  interface_show_alert_dialog("This file type does not currently have any editable features", 
-				      "Format editing is currently only supported for Excellon drill file formats.",
+	  interface_show_alert_dialog(_("This file type does not currently have any editable features"), 
+				      _("Format editing is currently only supported for Excellon drill file formats."),
 				      FALSE,
 				      NULL);
 	  return;
@@ -2288,8 +2295,8 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     if (n > 0)
 	{
 	    if (mainProject->file[index]->layer_dirty) {
-		rc = interface_get_alert_dialog_response ("This layer has changed!", 
-							  "Editing the file type will reload the layer, destroying your changes.  Click OK to edit the file type and destroy your changes, or Cancel to leave.",
+		rc = interface_get_alert_dialog_response (_("This layer has changed!"), 
+							  _("Editing the file type will reload the layer, destroying your changes.  Click OK to edit the file type and destroy your changes, or Cancel to leave."),
 							  TRUE,
 							  NULL);
 		if (rc == 0) return;  /* Return if user hit Cancel */
@@ -2304,15 +2311,15 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
       
 	    /* non-zero means cancel was picked */
 	    if (attribute_interface_dialog (attr, n, results, 
-					    "Edit file format", 
-					    type))
+					    _("Edit file format"), 
+					    _(type)))
 		{
 		    return;
 		}
           
     }
 
-    dprintf ("%s():  Reloading layer\n", __FUNCTION__);
+    dprintf (_("%s():  Reloading layer\n"), __FUNCTION__);
     gerbv_revert_file (mainProject, index);
 
     for (i = 0; i < n; i++)
@@ -2535,8 +2542,8 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 
 	gint index=callbacks_get_selected_row_index ();
 	if (index < 0 || screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
-		interface_show_alert_dialog("No object is currently selected",
-			"Objects must be selected using the pointer tool before you can view the object properties.",
+		interface_show_alert_dialog(_("No object is currently selected"),
+			_("Objects must be selected using the pointer tool before you can view the object properties."),
 			FALSE,
 			NULL);
 		return;
@@ -2562,18 +2569,18 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 		/* Also get layer name specified in file by %LN directive
 		* (if it exists).  */
 		if (net->layer->name == NULL) {
-			layer_name = g_strdup("<unnamed layer>");
+			layer_name = g_strdup(_("<unnamed layer>"));
 		} else {
 			layer_name = g_strdup(net->layer->name);
 		}
 
 		if (net->label == NULL) {
-			net_label = g_strdup("<unlabeled net>");
+			net_label = g_strdup(_("<unlabeled net>"));
 		} else {
 			net_label = g_strdup((gchar *)net->label);
 		}
 		if (net->interpolation == GERBV_INTERPOLATION_PAREA_START) {
-			g_message ("Object type: Polygon\n");
+			g_message (_("Object type: Polygon\n"));
 		}
 		else {
 			switch (net->aperture_state){
@@ -2586,38 +2593,38 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 						case GERBV_INTERPOLATION_LINEARx01 :
 						case GERBV_INTERPOLATION_LINEARx001 :
 						case GERBV_INTERPOLATION_LINEARx1 :
-							g_message ("Object type: Line\n");
+							g_message (_("Object type: Line\n"));
 							break;
 						case GERBV_INTERPOLATION_CW_CIRCULAR :
 						case GERBV_INTERPOLATION_CCW_CIRCULAR :
-							g_message ("Object type: Arc\n");
+							g_message (_("Object type: Arc\n"));
 							break;
 						default :
-							g_message ("Object type: Unknown\n");
+							g_message (_("Object type: Unknown\n"));
 							break;
 					}
-					g_message ("    Exposure: On\n");
+					g_message (_("    Exposure: On\n"));
 					if (validAperture) {
-						g_message ("    Aperture used: D%d\n", net->aperture);
-						g_message ("    Aperture type: %s\n", ap_names[ap_type]);
+						g_message (_("    Aperture used: D%d\n"), net->aperture);
+						g_message (_("    Aperture type: %s\n"), ap_names[ap_type]);
 					}
-					g_message ("    Start location: (%g, %g)\n", net->start_x, net->start_y);
-					g_message ("    Stop location: (%g, %g)\n", net->stop_x, net->stop_y);
-					g_message ("    Layer name: %s\n", layer_name);
-					g_message ("    Net label: %s\n", net_label);
-					g_message ("    In file: %s\n", mainProject->file[index]->name);
+					g_message (_("    Start location: (%g, %g)\n"), net->start_x, net->start_y);
+					g_message (_("    Stop location: (%g, %g)\n"), net->stop_x, net->stop_y);
+					g_message (_("    Layer name: %s\n"), layer_name);
+					g_message (_("    Net label: %s\n"), net_label);
+					g_message (_("    In file: %s\n"), mainProject->file[index]->name);
 					break;
 				case GERBV_APERTURE_STATE_FLASH:
 					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
-					g_message ("Object type: Flashed aperture\n");
+					g_message (_("Object type: Flashed aperture\n"));
 					if (validAperture) {
-						g_message ("    Aperture used: D%d\n", net->aperture);
-						g_message ("    Aperture type: %s\n", ap_names[ap_type]);
+						g_message (_("    Aperture used: D%d\n"), net->aperture);
+						g_message (_("    Aperture type: %s\n"), ap_names[ap_type]);
 					}
-					g_message ("    Location: (%g, %g)\n", net->stop_x, net->stop_y);
-					g_message ("    Layer name: %s\n", layer_name);
-					g_message ("    Net label: %s\n", net_label);
-					g_message ("    In file: %s\n", mainProject->file[index]->name);
+					g_message (_("    Location: (%g, %g)\n"), net->stop_x, net->stop_y);
+					g_message (_("    Layer name: %s\n"), layer_name);
+					g_message (_("    Net label: %s\n"), net_label);
+					g_message (_("    In file: %s\n"), mainProject->file[index]->name);
 					break;
 			}
 		}
@@ -2641,12 +2648,12 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	now = start;
 	while( now - 30 < start) {
 		i++;
-		dprintf("Benchmark():  Starting redraw #%d\n", i);
+		dprintf(_("Benchmark():  Starting redraw #%d\n"), i);
 		gerbv_render_to_pixmap_using_gdk (mainProject, renderedPixmap, renderInfo, NULL, NULL);
 		now = time(NULL);
-		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
+		dprintf(_("Elapsed time = %ld seconds\n"), (long int) (now - start));
 	}
-	g_message("FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n",
+	g_message(_("FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n"),
 		      i, (long int) (now - start), (double) i / (double)(now - start));
 	gdk_pixmap_unref(renderedPixmap);
 	
@@ -2657,7 +2664,7 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	renderInfo->renderType = GERBV_RENDER_TYPE_CAIRO_NORMAL;
 	while( now - 30 < start) {
 		i++;
-		dprintf("Benchmark():  Starting redraw #%d\n", i);
+		dprintf(_("Benchmark():  Starting redraw #%d\n"), i);
 		cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
 	                              renderInfo->displayWidth, renderInfo->displayHeight);
 		cairo_t *cairoTarget = cairo_create (cSurface);
@@ -2665,9 +2672,9 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 		cairo_destroy (cairoTarget);
 		cairo_surface_destroy (cSurface);
 		now = time(NULL);
-		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
+		dprintf(_("Elapsed time = %ld seconds\n"), (long int) (now - start));
 	}
-	g_message("NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n",
+	g_message(_("NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n"),
 		      i, (long int) (now - start), (double) i / (double)(now - start));
 }
 
@@ -2681,11 +2688,11 @@ callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
 	//   allow benchmarking of different zoom levels?
 	gerbv_render_zoom_to_fit_display (mainProject, &renderInfo);
 
-	g_message("Full zoom benchmarks\n");
+	g_message(_("Full zoom benchmarks\n"));
 	callbacks_support_benchmark (&renderInfo);
 
 		   
-	g_message("x5 zoom benchmarks\n");
+	g_message(_("x5 zoom benchmarks\n"));
 	renderInfo.lowerLeftX += (screenRenderInfo.displayWidth /
 				screenRenderInfo.scaleFactorX) / 3.0;
 	renderInfo.lowerLeftY += (screenRenderInfo.displayHeight /
@@ -2723,8 +2730,8 @@ callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
-		interface_show_alert_dialog("No object is currently selected",
-		                        "Objects must be selected using the pointer tool before they can be deleted.",
+		interface_show_alert_dialog(_("No object is currently selected"),
+		                        _("Objects must be selected using the pointer tool before they can be deleted."),
 		                        FALSE,
 		                        NULL);
 		return;
@@ -2736,8 +2743,8 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
 
 	if (mainProject->check_before_delete == TRUE) {
 		if (!interface_get_alert_dialog_response(
-						     "Do you want to permanently delete the selected objects?",
-						     "Gerbv currently has no undo function, so this action cannot be undone. This action will not change the saved file unless you save the file afterwards.",
+						     _("Do you want to permanently delete the selected objects?"),
+						     _("Gerbv currently has no undo function, so this action cannot be undone. This action will not change the saved file unless you save the file afterwards."),
 						     TRUE,
 						     &(mainProject->check_before_delete)))
 		return;
@@ -2929,15 +2936,15 @@ callbacks_update_statusbar_coordinates (gint x, gint y) {
 	callbacks_screen2board(&X, &Y, x, y);
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		     "(%8.2f, %8.2f)",
+		     _("(%8.2f, %8.2f)"),
 		     COORD2MILS(X), COORD2MILS(Y));
 	} else if (screen.unit == GERBV_MMS) {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		     "(%8.3f, %8.3f)",
+		     _("(%8.3f, %8.3f)"),
 		     COORD2MMS(X), COORD2MMS(Y));
 	} else {
 	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
-		     "(%4.5f, %4.5f)",
+		     _("(%4.5f, %4.5f)"),
 		     COORD2MILS(X) / 1000.0, COORD2MILS(Y) / 1000.0);
 	}
 	callbacks_update_statusbar();
@@ -2953,19 +2960,19 @@ callbacks_update_selected_object_message (gboolean userTriedToSelect) {
 		/* update status bar message to make sure the user knows
 		   about needing to select the layer */
 		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-	 		"<b>No object selected. Objects can only be selected in the active layer.</b>");
+	 		_("<b>No object selected. Objects can only be selected in the active layer.</b>"));
 	}
 	else if (selectionLength == 0) {
 		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-	 		"Click to select objects in the current layer. Middle click and drag to pan.");
+	 		_("Click to select objects in the current layer. Middle click and drag to pan."));
 	}
 	else if (selectionLength == 1) {
 		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-	 		"1 object is currently selected");
+	 		_("1 object is currently selected"));
 	}
 	else {
 		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-	 		"%d objects are currently selected",selectionLength);
+	 		_("%d objects are currently selected"),selectionLength);
 	}
 	callbacks_update_statusbar();
 }
@@ -3195,7 +3202,7 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 		case GDK_Escape:
 			if (screen.tool == POINTER) {
 				snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-		 			"No objects are currently selected");
+		 			_("No objects are currently selected"));
 		 		callbacks_update_statusbar();
 		 		render_clear_selection_buffer ();
 		 	}
@@ -3268,17 +3275,17 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 	
 	if (screen.unit == GERBV_MILS) {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %8.2f mils (%8.2f x, %8.2f y)",
+		     _("Measured distance: %8.2f mils (%8.2f x, %8.2f y)"),
 		     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
 	} 
 	else if (screen.unit == GERBV_MMS) {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %8.3f mms (%8.3f x, %8.3f y)",
+		     _("Measured distance: %8.3f mms (%8.3f x, %8.3f y)"),
 		     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
 	}
 	else {
 	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     "Measured distance: %4.5f inches (%4.5f x, %4.5f y)",
+		     _("Measured distance: %4.5f inches (%4.5f x, %4.5f y)"),
 		     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
 		     COORD2MILS(dy) / 1000.0);
 	}
@@ -3441,7 +3448,7 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 	* Fatal aborts application. We will try to get the message out anyhow.
 	*/
 	if (log_level & G_LOG_FLAG_FATAL)
-		fprintf(stderr, "Fatal error : %s\n", message);
+		fprintf(stderr, _("Fatal error : %s\n"), message);
 
 	gtk_text_buffer_insert(textbuffer, &iter, message, -1);
 
