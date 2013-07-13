@@ -125,6 +125,7 @@ static void show_no_layers_warning (void);
 static double screen_units(double);
 static double line_length(double, double, double, double);
 static double arc_length(double, double);
+static void aperture_report(gerbv_aperture_t *[], int);
 
 
 gchar *utf8_strncpy(gchar *dst, const gchar *src, gsize byte_len)
@@ -2593,15 +2594,12 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 
 		gerbv_net_t *net = sItem.net;
 		gerbv_image_t *image = sItem.image;
-		int ap_type=0;
 		gboolean show_length;
 
 		/* get the aperture definition for the selected item */
 		if (net->aperture > 0) {
-			ap_type = image->aperture[net->aperture]->type;
 			validAperture = TRUE;
-		}
-		else {
+		} else {
 			validAperture = FALSE;
 		}
 
@@ -2653,8 +2651,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					}
 					g_message (_("    Exposure: On\n"));
 					if (validAperture) {
-						g_message (_("    Aperture used: D%d\n"), net->aperture);
-						g_message (_("    Aperture type: %s\n"), ap_names[ap_type]);
+						aperture_report(image->aperture, net->aperture);
 					}
 					g_message (_("    Start location: (%g, %g)\n"),
 							screen_units(net->start_x), screen_units(net->start_y));
@@ -2673,20 +2670,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
 					g_message (_("Object type: Flashed aperture\n"));
 					if (validAperture) {
-						g_message (_("    Aperture used: D%d\n"), net->aperture);
-						g_message (_("    Aperture type: %s\n"), ap_names[ap_type]);
-						switch (ap_type) {
-							case GERBV_APTYPE_CIRCLE:
-								g_message (_("    Diameter: %g\n"),
-									screen_units(image->aperture[net->aperture]->parameter[0]));
-								break;
-							case GERBV_APTYPE_RECTANGLE:
-							case GERBV_APTYPE_OVAL:
-								g_message (_("    Dimensions: %g / %g\n"),
-									screen_units(image->aperture[net->aperture]->parameter[0]),
-									screen_units(image->aperture[net->aperture]->parameter[1]));
-								break;
-						}
+						aperture_report(image->aperture, net->aperture);
 					}
 					g_message (_("    Location: (%g, %g)\n"),
 							screen_units(net->stop_x), screen_units(net->stop_y));
@@ -3584,4 +3568,27 @@ static double line_length(double x0, double y0, double x1, double y1) {
 
 static double arc_length(double dia, double angle) {
 	return M_PI*dia*(angle/360.0);
+}
+
+static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num) {
+	gerbv_aperture_type_t type = apertures[aperture_num]->type;
+	double *params = apertures[aperture_num]->parameter;
+
+	g_message (_("    Aperture used: D%d\n"), aperture_num);
+	g_message (_("    Aperture type: %s\n"), ap_names[type]);
+
+	switch (type) {
+		case GERBV_APTYPE_CIRCLE:
+			g_message (_("    Diameter: %g\n"),
+				screen_units(params[0]));
+			break;
+		case GERBV_APTYPE_RECTANGLE:
+		case GERBV_APTYPE_OVAL:
+			g_message (_("    Dimensions: %gx%g\n"),
+				screen_units(params[0]),
+				screen_units(params[1]));
+			break;
+		default:
+			break;
+	}
 }
