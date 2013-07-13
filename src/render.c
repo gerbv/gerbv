@@ -156,7 +156,7 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 				screenRenderInfo.scaleFactorY)) / 2.0;
 		      break;
 		default :
-			GERB_MESSAGE("Illegal zoom direction %d\n", zoomType);
+			GERB_MESSAGE(_("Illegal zoom direction %d\n"), zoomType);
 	}
 
 	if (zoomType == ZOOM_IN_CMOUSE || zoomType == ZOOM_OUT_CMOUSE) {
