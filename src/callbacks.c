@@ -1546,7 +1546,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 {
 	GtkWidget *aboutdialog1;
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
-	/* gchar *translators = _("translator-credits"); */
+	gchar *translators = _("translator-credits");
 
 	gchar *string = g_strdup_printf(_("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
 					  "This is gerbv version %s\n"
@@ -1581,7 +1581,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
 	gtk_about_dialog_set_name (GTK_ABOUT_DIALOG (aboutdialog1), _("Gerbv"));
 
-	/* gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators); */
+	gtk_about_dialog_set_translator_credits (GTK_ABOUT_DIALOG (aboutdialog1), translators);
 	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), string);
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG (aboutdialog1), license);
 
