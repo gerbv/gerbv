@@ -3003,7 +3003,9 @@ callbacks_update_selected_object_message (gboolean userTriedToSelect) {
 	}
 	else {
 		utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			_("%d objects are currently selected"), selectionLength);
+			ngettext("%d object are currently selected",
+				"%d objects are currently selected",
+				selectionLength), selectionLength);
 	}
 	callbacks_update_statusbar();
 }
