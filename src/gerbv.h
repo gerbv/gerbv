@@ -462,8 +462,8 @@ typedef struct {
 } gerbv_render_size_t;
 
 typedef struct gerbv_cirseg {
-    double cp_x;
-    double cp_y;
+    double cp_x;   /* center point x */
+    double cp_y;   /* center point y */
     double width;  /* of oval */
     double height; /* of oval */
     double angle1;

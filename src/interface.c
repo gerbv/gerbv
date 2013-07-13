@@ -1487,6 +1487,8 @@ interface_create_gui (int req_width, int req_height)
 	screen.dist_measure_color = dist_measure_color;
 	screen.selection_color = selection_color;
 
+	screen.length_sum = 0;
+
 	screen.drawing_area = drawingarea;
 	screen.win.hAdjustment = hAdjustment;
 	screen.win.vAdjustment = vAdjustment;

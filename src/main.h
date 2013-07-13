@@ -124,6 +124,8 @@ typedef struct {
     gdouble measure_last_x;	/* Measure end board coordinates */
     gdouble measure_last_y;
 
+    gdouble length_sum;
+
     int dump_parsed_image;
 } gerbv_screen_t;
 

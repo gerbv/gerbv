@@ -124,6 +124,7 @@ static void callbacks_render_type_changed (void);
 static void show_no_layers_warning (void);
 static double screen_units(double);
 static double line_length(double, double, double, double);
+static double arc_length(double, double);
 
 
 gchar *utf8_strncpy(gchar *dst, const gchar *src, gsize byte_len)
@@ -2575,6 +2576,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 	gchar *layer_name;
 	gchar *net_label;
 	gboolean validAperture;
+	double length = 0;
 
 	gint index=callbacks_get_selected_row_index ();
 	if (index < 0 || screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
@@ -2592,7 +2594,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 		gerbv_net_t *net = sItem.net;
 		gerbv_image_t *image = sItem.image;
 		int ap_type=0;
-		gboolean show_line_length;
+		gboolean show_length;
 
 		/* get the aperture definition for the selected item */
 		if (net->aperture > 0) {
@@ -2625,18 +2627,25 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					break;
 				case GERBV_APERTURE_STATE_ON:
 					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
-					show_line_length = 0;
+					show_length = 0;
 					switch (net->interpolation) {
 						case GERBV_INTERPOLATION_x10 :
 						case GERBV_INTERPOLATION_LINEARx01 :
 						case GERBV_INTERPOLATION_LINEARx001 :
 						case GERBV_INTERPOLATION_LINEARx1 :
 							g_message (_("Object type: Line\n"));
-							show_line_length = 1;
+							length = line_length(net->start_x, net->start_y, net->stop_x, net->stop_y);
+							show_length = 1;
 							break;
 						case GERBV_INTERPOLATION_CW_CIRCULAR :
 						case GERBV_INTERPOLATION_CCW_CIRCULAR :
 							g_message (_("Object type: Arc\n"));
+							if (net->cirseg->width == net->cirseg->height) {
+								length = arc_length(net->cirseg->width,
+										fabs(net->cirseg->angle1 - net->cirseg->angle2));
+								show_length = 1;
+							}
+
 							break;
 						default :
 							g_message (_("Object type: Unknown\n"));
@@ -2651,9 +2660,11 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 							screen_units(net->start_x), screen_units(net->start_y));
 					g_message (_("    Stop location: (%g, %g)\n"),
 							screen_units(net->stop_x), screen_units(net->stop_y));
-					if (show_line_length)
-						g_message (_("    Length: %g\n"), screen_units(line_length(
-								net->start_x, net->start_y, net->stop_x, net->stop_y)));
+					if (show_length) {
+						screen.length_sum += length;
+						g_message (_("    Length: %g (sum: %g)\n"),
+							screen_units(length), screen_units(screen.length_sum));
+					}
 					g_message (_("    Layer name: %s\n"), layer_name);
 					g_message (_("    Net label: %s\n"), net_label);
 					g_message (_("    In file: %s\n"), mainProject->file[index]->name);
@@ -3415,6 +3426,8 @@ callbacks_clear_messages_button_clicked  (GtkButton *button, gpointer   user_dat
 	GtkTextBuffer *textbuffer;
 	GtkTextIter start, end;
 
+	screen.length_sum = 0;
+
 	textbuffer = gtk_text_view_get_buffer((GtkTextView*)screen.win.messageTextView);
 	gtk_text_buffer_get_start_iter(textbuffer, &start);
 	gtk_text_buffer_get_end_iter(textbuffer, &end);
@@ -3567,4 +3580,8 @@ static double line_length(double x0, double y0, double x1, double y1) {
 	double dy = y0 - y1;
 
 	return sqrt(dx*dx + dy*dy);
+}
+
+static double arc_length(double dia, double angle) {
+	return M_PI*dia*(angle/360.0);
 }
