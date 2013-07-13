@@ -48,6 +48,7 @@
 #include <wchar.h>
 #include <wctype.h>
 
+#include "common.h"
 #include "gerbv.h"
 #include "csv.h"
 #include "csv_defines.h"
@@ -163,7 +164,7 @@ csv_parse_str(struct sinput *in, char *buf, size_t bn, char *row[], int rn, int 
 					break;
 				} else if (quotes && ch == '"') {
 					errno = EILSEQ;
-					GERB_MESSAGE("%d: unexpected quote in element",errno);
+					GERB_MESSAGE(_("%d: unexpected quote in element"),errno);
 					return -1;
 				}
 				buf[j++] = ch; bn--;
@@ -194,7 +195,7 @@ csv_parse_str(struct sinput *in, char *buf, size_t bn, char *row[], int rn, int 
 					break;
 				}
 				errno = EILSEQ;
-				GERB_MESSAGE("%d: bad end quote in element", errno);
+				GERB_MESSAGE(_("%d: bad end quote in element"), errno);
 				return -1;
 		}
 	}
@@ -284,7 +285,7 @@ csv_parse_wcs(struct winput *in, wchar_t *buf, size_t bn, wchar_t *row[], int rn
 					break;
 				} else if (quotes && ch == L'"') {
 					errno = EILSEQ;
-					GERB_MESSAGE("%d: unexpected quote in element", errno);
+					GERB_MESSAGE(_("%d: unexpected quote in element"), errno);
 					return -1;
 				}
 				buf[j++] = ch; bn--;
@@ -315,7 +316,7 @@ csv_parse_wcs(struct winput *in, wchar_t *buf, size_t bn, wchar_t *row[], int rn
 					break;
 				}
 				errno = EILSEQ;
-				GERB_MESSAGE("%d: bad end quote in element ", errno);
+				GERB_MESSAGE(_("%d: bad end quote in element "), errno);
 				return -1;
 		}
 	}
