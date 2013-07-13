@@ -2665,6 +2665,18 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					if (validAperture) {
 						g_message (_("    Aperture used: D%d\n"), net->aperture);
 						g_message (_("    Aperture type: %s\n"), ap_names[ap_type]);
+						switch (ap_type) {
+							case GERBV_APTYPE_CIRCLE:
+								g_message (_("    Diameter: %g\n"),
+									screen_units(image->aperture[net->aperture]->parameter[0]));
+								break;
+							case GERBV_APTYPE_RECTANGLE:
+							case GERBV_APTYPE_OVAL:
+								g_message (_("    Dimensions: %g / %g\n"),
+									screen_units(image->aperture[net->aperture]->parameter[0]),
+									screen_units(image->aperture[net->aperture]->parameter[1]));
+								break;
+						}
 					}
 					g_message (_("    Location: (%g, %g)\n"),
 							screen_units(net->stop_x), screen_units(net->stop_y));
