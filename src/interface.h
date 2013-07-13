@@ -33,13 +33,15 @@ Otherwise the defaults given below are used.
 
 \warning There has to be a GtkStockItem variable 'stock' in scope where this macro is used.
 */
-#define SET_ACCELS_FROM_STOCK(STOCK_ID, GERBV_ACCEL_ID)\
+#define SET_ACCELS_FROM_STOCK(MENU_ITEM, STOCK_ID, GERBV_ACCEL_ID)\
+gtk_menu_item_set_accel_path (GTK_MENU_ITEM (MENU_ITEM), GERBV_ACCEL_ID ## _PATH);\
 if(gtk_stock_lookup (STOCK_ID, &stock) && stock.keyval != GDK_VoidSymbol && stock.keyval != 0)\
 	gtk_accel_map_add_entry (GERBV_ACCEL_ID ## _PATH, stock.keyval, stock.modifier);\
 else\
 	gtk_accel_map_add_entry (GERBV_ACCEL_ID ## _PATH, GERBV_ACCEL_ID ## _KEY, GERBV_ACCEL_ID ## _MOD)
 
-#define SET_ACCELS(GERBV_ACCEL_ID)\
+#define SET_ACCELS(MENU_ITEM, GERBV_ACCEL_ID)\
+	gtk_menu_item_set_accel_path (GTK_MENU_ITEM (MENU_ITEM), GERBV_ACCEL_ID ## _PATH);\
 	gtk_accel_map_add_entry (GERBV_ACCEL_ID ## _PATH, GERBV_ACCEL_ID ## _KEY, GERBV_ACCEL_ID ## _MOD)
 
 /* If stock items/IDs are used the ACCEL_*_PATH macros have to match the labels of the stock items.
