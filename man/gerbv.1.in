@@ -1,4 +1,4 @@
-.TH gerbv 1 "January 11, 2008" Version @version@
+.TH gerbv 1 "Jule 13, 2013" Version @version@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
@@ -9,7 +9,7 @@ gerbv - Gerber Viewer
 RS274-X files are generated from different PCB CAD programs and are
 used in the printed circuit board manufacturing process.
 \fIgerbv\fP also supports Excellon/NC drill files as well as XY (centroid)
-files produced by the program PCB (http://pcb.sf.net).
+files produced by the program PCB (http://pcb.geda-project.org/).
 
 .SH OPTIONS
 
@@ -46,9 +46,10 @@ the same directory as the gerber files.
 
 .SS gerbv Export-specific options:
 The following commands can be used in combination with the -x flag:
+.TP
 .BI -B<b>|--Border=<b>
 Set the border around the image <b> percent of the width and height. 
-Default <b> is 5%%.
+Default <b> is 5%.
 .TP
 .BI -D<XxY>or<R>|--dpi=<XxY>or<R>
 Resolution (Dots per inch) for the output bitmap. Use <XxY> for different 
@@ -120,57 +121,54 @@ Program class as used by the window manager
 When you start gerbv you can give the files to be loaded on the command line,
 either as each file separated with a space or by using wildcards.
 
-The user interface is graphical. Simply press left mouse button and the image
-will pan as you move the mouse. To manipulate a layer, right-click on
-one of the rightmost buttons. That will bring up a pop-up menu where
-you can select what you want to do with that layer (load file, change
-color, etc).
+The user interface is graphical. Simply press and drag middle mouse button
+(scroll wheel) and the image will pan as you move the mouse. To manipulate a
+layer, right-click on one of the rightmost list items. That will bring up a
+pop-up menu where you can select what you want to do with that layer (reload
+file, change color, etc).
 
 If you hold the mouse button over one the rightmost button a tooltips will
 show you the name of the file loaded on that layer.
 
 
 .SH ACTIVATION AND DEACTIVATION OF LAYERS
-You can load several files at one time. You can then turn displaying
-of the layers on and off by clicking on one of the rightmost buttons.
+You can load several files at one time. You can then turn displaying of the
+layers on and off by clicking on one of check boxes near the layer names.
 
-You can also control this from the keyboard. Press Alt, enter the number
+You can also control this from the keyboard. Press Ctrl, enter the number
 on the layer you want activate/deactivate on the numerical keypad and then
-release the Alt key.
+release the Ctrl key.
 
 .SH ZOOMING
-Zooming can be handled by either menu choices, keypressing, middle mouse 
-button or scroll wheel. If you press Alt+I you will zoom in and if you
-press Alt+O you will zoom out. If you press middle mouse button you will zoom
-out, and if you press Shift and middle mouse button you will zoom in. 
-Scroll wheel works if you enabled that in your X server and mapped it
-to button 4 and 5. You can also zoom in by pressing z and zoom out by pressing
-shift+z (ie Z). You can make the image fit by pressing f (there is also a 
-menu alternative for this).
+Zooming can be handled by either menu choices, keypressing or mouse scroll
+wheel. If you press z you will zoom in and if you press Shift+z (i.e. Z) you
+will zoom out. Scroll wheel works if you enabled that in your X server and
+mapped it to button 4 and 5. You can make the image fit by pressing f (there is
+also a menu alternative for this). If Pan, Zoom, or Measure Tool is selected
+you can press right mouse button for zoom in, and if you press Shift and right
+mouse button you will zoom out.
 
-You can also do zooming by outline. Press right mouse button, draw,
-release.  The dashed line shows how the zooming will be dependent on
-the resolution of the window. The non-dashed outline will show what
-you actually selected. If you change your mind when started to mark
-outline, you can always abort by pressing escape. By holding down
-the shift key when you press the right mouse button, you will select 
-an area where the point you started at will be the center of your selection.
+You can also do zooming by outline. Select Zoom Tool, press mouse button, draw,
+release. The dashed line shows how the zooming will be dependent on the
+resolution of the window. The non-dashed outline will show what you actually
+selected. If you change your mind when started to mark outline, you can always
+abort by pressing escape. By holding down the Shift key when you press the
+mouse button, you will select an area where the point you started at will be
+the center of your selection.
 
 .SH MEASUREMENTS
-You can do measurement on the image displayed. By pressing shift, the 
-cursor changes to a plus. By using left mouse button you can draw the lines
-that you want to measure. 
-The result of the last measurement is also displayed on the statusbar.
-All measurements are in the drawing until you either zoom, pan or press the
-escape key.
+You can do measurement on the image displayed. Select Measure Tool, the cursor
+changes to a plus. By using left mouse button you can draw the lines that you
+want to measure. The result of the last measurement is also displayed on the
+statusbar. All measurements are in the drawing until you select other Tool.
 
 The statusbar shows the current mouse position on the layer in the same 
-coordinates as in the file. Ie if you have (0,0) in the middle of the image
+coordinates as in the file. I.e. if you have (0,0) in the middle of the image
 in the gerber files, the statusbar will show (0,0) at the same place.
 
 .SH SUPERIMPOSING
 When you load several Gerber files, you can display them "on top of each other",
-ie superimposing. The general way to display them are that upper layers
+i.e. superimposing. The general way to display them are that upper layers
 cover the layers beneath, which is called copy (GTK+ terms).
 
 The other ways selectable are and, or, xor and invert. They map directly to
@@ -249,7 +247,7 @@ is used by the project reader.
 .nf
 Stefan Petersen (spetm at users.sourceforge.net): Overall hacker and project leader
 Andreas Andersson (e92_aan at e.kth.se): Drill file support and general hacking
-Anders Eriksson (aenfaldor at users.sourceforge.net) : X and GTK+ ideas and hacking
+Anders Eriksson (aenfaldor at users.sourceforge.net): X and GTK+ ideas and hacking
 
 .SH COPYRIGHT
 .nf
