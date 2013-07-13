@@ -123,11 +123,32 @@ static void callbacks_update_ruler_scales (void);
 static void callbacks_render_type_changed (void);
 static void show_no_layers_warning (void);
 
+
+gchar *utf8_strncpy(gchar *dst, const gchar *src, gsize byte_len)
+{
+	/* -1 for '\0' in buffer */
+	glong char_len = g_utf8_strlen(src, byte_len - 1);
+	return g_utf8_strncpy(dst, src, char_len);
+}
+
+void utf8_snprintf(gchar *dst, gsize byte_len, const gchar *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	gchar *str = g_strdup_vprintf(fmt, ap); 
+	utf8_strncpy(dst, str, byte_len);
+	g_free(str);
+}
+
 /* --------------------------------------------------------- */
 
 static void show_no_layers_warning (void) {
-	snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-		_("<b>No layers are currently loaded. A layer must be loaded first.</b>"));
+	gchar *str = g_new(gchar, MAX_DISTLEN);
+	utf8_strncpy(str, _("No layers are currently loaded. A layer must be loaded first."), MAX_DISTLEN - 7);
+	utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN, "<b>%s</b>", str);
+	g_free(str);
+		
 	callbacks_update_statusbar();
 }
 
@@ -1970,28 +1991,33 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPointer), TRUE);
 			screen.tool = POINTER;
 			screen.state = NORMAL;
-			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 _("Click to select objects in the current layer. Middle click and drag to pan."));
+			utf8_strncpy(screen.statusbar.diststr,
+				_("Click to select objects in the current layer. Middle click and drag to pan."),
+				MAX_DISTLEN);
 			break;
 		case PAN:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonPan), TRUE);
 			screen.tool = PAN;
 			screen.state = NORMAL;
-			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 _("Click and drag to pan. Right click and drag to zoom."));
+			utf8_strncpy(screen.statusbar.diststr,
+				_("Click and drag to pan. Right click and drag to zoom."),
+				MAX_DISTLEN);
 			break;
 		case ZOOM:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonZoom), TRUE);
 			screen.tool = ZOOM;
 			screen.state = NORMAL;
-			snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-				 _("Click and drag to zoom in. Shift+click to zoom out."));
+			utf8_strncpy(screen.statusbar.diststr,
+				_("Click and drag to zoom in. Shift+click to zoom out."),
+				MAX_DISTLEN);
 			break;
 		case MEASURE:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), TRUE);
 			screen.tool = MEASURE;
 			screen.state = NORMAL;
-			snprintf(screen.statusbar.diststr, MAX_DISTLEN, _("Click and drag to measure a distance."));
+			utf8_strncpy(screen.statusbar.diststr,
+				_("Click and drag to measure a distance."),
+				MAX_DISTLEN);
 			break;
 		default:
 			break;
@@ -2935,15 +2961,15 @@ callbacks_update_statusbar_coordinates (gint x, gint y) {
 
 	callbacks_screen2board(&X, &Y, x, y);
 	if (screen.unit == GERBV_MILS) {
-	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+	    utf8_snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     _("(%8.2f, %8.2f)"),
 		     COORD2MILS(X), COORD2MILS(Y));
 	} else if (screen.unit == GERBV_MMS) {
-	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+	    utf8_snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     _("(%8.3f, %8.3f)"),
 		     COORD2MMS(X), COORD2MMS(Y));
 	} else {
-	    snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
+	    utf8_snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     _("(%4.5f, %4.5f)"),
 		     COORD2MILS(X) / 1000.0, COORD2MILS(Y) / 1000.0);
 	}
@@ -2959,20 +2985,25 @@ callbacks_update_selected_object_message (gboolean userTriedToSelect) {
 	if ((selectionLength == 0)&&(userTriedToSelect)) {
 		/* update status bar message to make sure the user knows
 		   about needing to select the layer */
-		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-	 		_("<b>No object selected. Objects can only be selected in the active layer.</b>"));
+		gchar *str = g_new(gchar, MAX_DISTLEN);
+		utf8_strncpy(str, _("No object selected. Objects can only be selected in the active layer."),
+				MAX_DISTLEN - 7);
+		utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN, "<b>%s</b>", str);
+		g_free(str);
 	}
 	else if (selectionLength == 0) {
-		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-	 		_("Click to select objects in the current layer. Middle click and drag to pan."));
+		utf8_strncpy(screen.statusbar.diststr,
+			_("Click to select objects in the current layer. Middle click and drag to pan."),
+			MAX_DISTLEN);
 	}
 	else if (selectionLength == 1) {
-		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-	 		_("1 object is currently selected"));
+		utf8_strncpy(screen.statusbar.diststr,
+			_("1 object is currently selected"),
+			MAX_DISTLEN);
 	}
 	else {
-		snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-	 		_("%d objects are currently selected"),selectionLength);
+		utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+			_("%d objects are currently selected"), selectionLength);
 	}
 	callbacks_update_statusbar();
 }
@@ -3201,8 +3232,9 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 	switch(event->keyval) {
 		case GDK_Escape:
 			if (screen.tool == POINTER) {
-				snprintf(screen.statusbar.diststr, MAX_DISTLEN, 
-		 			_("No objects are currently selected"));
+				utf8_strncpy(screen.statusbar.diststr,
+					_("No objects are currently selected"),
+					MAX_DISTLEN);
 		 		callbacks_update_statusbar();
 		 		render_clear_selection_buffer ();
 		 	}
@@ -3274,17 +3306,17 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 	gdouble delta = sqrt(dx*dx + dy*dy);
 	
 	if (screen.unit == GERBV_MILS) {
-	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+	    utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
 		     _("Measured distance: %8.2f mils (%8.2f x, %8.2f y)"),
 		     COORD2MILS(delta), COORD2MILS(dx), COORD2MILS(dy));
 	} 
 	else if (screen.unit == GERBV_MMS) {
-	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+	    utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
 		     _("Measured distance: %8.3f mms (%8.3f x, %8.3f y)"),
 		     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
 	}
 	else {
-	    snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+	    utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
 		     _("Measured distance: %4.5f inches (%4.5f x, %4.5f y)"),
 		     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
 		     COORD2MILS(dy) / 1000.0);
