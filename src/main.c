@@ -475,8 +475,8 @@ main(int argc, char *argv[])
 	    break;
     	case 'V' :
 	    printf(_("gerbv version %s\n"), VERSION);
-	    printf(_("Copyright (C) 2001 -- 2008 by Stefan Petersen\n"));
-	    printf(_("and the respective original authors listed in the source files.\n"));
+	    printf(_("Copyright (C) 2001 -- 2008 by Stefan Petersen\n"
+		"and the respective original authors listed in the source files.\n"));
 	    exit(0);	
 	case 'a' :
 	    userSuppliedAntiAlias = TRUE;
@@ -562,9 +562,9 @@ main(int argc, char *argv[])
 	    }
 	    if (!gerbv_process_tools_file(optarg)) {
 		fprintf(stderr, _("*** ERROR processing tools file \"%s\".\n"), optarg);
-		fprintf(stderr, _("Make sure all lines of the file are formatted like this:\n"));
-		fprintf(stderr, _("T01 0.024\nT02 0.032\nT03 0.040\n...\n"));
-		fprintf(stderr, _("*** EXITING to prevent erroneous display.\n"));
+		fprintf(stderr, _("Make sure all lines of the file are formatted like this:\n"
+			"T01 0.024\nT02 0.032\nT03 0.040\n...\n"
+			"*** EXITING to prevent erroneous display.\n"));
 		exit(1);
 	    }
 	    break;
