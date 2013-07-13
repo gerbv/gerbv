@@ -78,7 +78,7 @@ void gerb_transf_free(gerbv_transf_t *transf)
 {
     g_free(transf);
     
-}/*gerbv_transf_t*/
+}
 
 
 void gerb_transf_reset(gerbv_transf_t* transf)
@@ -90,7 +90,7 @@ void gerb_transf_reset(gerbv_transf_t* transf)
     transf->scale = 1.0;
     //transf->offset[0] = transf->offset[1] = 0.0;
     
-} /*gerb_transf_reset*/
+} /* gerb_transf_reset */
 
 
 gerbv_transf_t* gerb_transf_new(void)
@@ -102,7 +102,7 @@ gerbv_transf_t* gerb_transf_new(void)
     return transf;
     
 
-} /*gerb_transf_new*/
+} /* gerb_transf_new */
 
 
 //!Rotation
@@ -122,7 +122,7 @@ void gerb_transf_rotate(gerbv_transf_t* transf, double angle)
     transf->r_mat[1][1] = s * m[0][1] + c * m[1][1];
 //    transf->offset[0] = transf->offset[1] = 0.0; CHECK ME
     
-} /*gerb_transf_rotate*/
+} /* gerb_transf_rotate */
 
 //!Translation
 /*! append translation to transformation.
@@ -136,7 +136,7 @@ void gerb_transf_shift(gerbv_transf_t* transf, double shift_x, double shift_y)
     transf->offset[0] += shift_x;
     transf->offset[1] += shift_y;
             
-} /*gerb_transf_shift*/
+} /* gerb_transf_shift */
 
 void gerb_transf_apply(double x, double y, gerbv_transf_t* transf, double *out_x, double *out_y)
 {
@@ -149,7 +149,7 @@ void gerb_transf_apply(double x, double y, gerbv_transf_t* transf, double *out_x
     *out_y += transf->offset[1];
     
     
-}/*gerb_transf_apply*/
+} /* gerb_transf_apply */
 
 void
 pick_and_place_reset_bounding_box (gerbv_net_t *net) {
@@ -177,7 +177,7 @@ pick_and_place_get_float_unit(char *str)
     }
 
     return x;
-} /* pick_and_place_get_float_unit*/
+} /* pick_and_place_get_float_unit */
 
 
 /** search a string for a delimiter.
@@ -220,7 +220,7 @@ pick_and_place_screen_for_delimiter(char *str, int n)
     } else {
 	return -1;
     }
-} /* pnp_screen_for_delimiter */
+} /* pick_and_place_screen_for_delimiter */
 
 
 /**Parses the PNP data.
@@ -823,11 +823,11 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     
     gerb_transf_free(tr_rot);
     return image;
-} /* pick_and_place_parse_file_to_image */
+} /* pick_and_place_convert_pnp_data_to_image */
 
 
 /*	------------------------------------------------------------------
- *	pick_and_place_parse_file_to_image
+ *	pick_and_place_parse_file_to_images
  *	------------------------------------------------------------------
  *	Description: Renders a pick and place file to a gerb_image.
  *	Notes: The file format should already be verified before calling
@@ -846,5 +846,5 @@ pick_and_place_parse_file_to_images(gerb_file_t *fd, gerbv_image_t **topImage,
 
 		g_array_free (parsedPickAndPlaceData, TRUE);
 	}
-} /* pick_and_place_parse_file_to_image */
+} /* pick_and_place_parse_file_to_images */
 
