@@ -43,3 +43,7 @@ $(PO_FILES): gerbv.1.in.pot
 
 gerbv.1.in.pot: gerbv.1.in
 	po4a-gettextize -M UTF-8 -f man -m $< -p $@
+
+update-po:
+	@touch gerbv.1.in.pot
+	make $(PO_FILES)
