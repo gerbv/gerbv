@@ -560,10 +560,10 @@ main(int argc, char *argv[])
 		fprintf(stderr, _("You must give the axis to mirror about\n"));
 		exit(1);
 	    }
-	    if (index(optarg, 'x') != NULL || index(optarg, 'X') != NULL) {
+	    if (strchr(optarg, 'x') != NULL || strchr(optarg, 'X') != NULL) {
 		initial_mirror_x = TRUE;
 	    }
-	    if (index(optarg, 'y') != NULL || index(optarg, 'Y') != NULL) {
+	    if (strchr(optarg, 'y') != NULL || strchr(optarg, 'Y') != NULL) {
 		initial_mirror_y = TRUE;
 	    }
 	    if (!(initial_mirror_x || initial_mirror_y)) {
