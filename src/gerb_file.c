@@ -112,13 +112,12 @@ gerb_fopen(char const * filename)
 	return NULL;
     }
 
-    if (stat(filename, &statinfo) < 0) {
-	fclose(fd->fd);
+    /* fopen() can't open files with non ASCII filenames on windows */
+    fd->fd = g_fopen(filename, "rb");
+    if (fd->fd == NULL) {
 	g_free(fd);
-        return NULL;
+	return NULL;
     }
-    
-    fd->fd = fopen(filename, "rb");
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
     if (fstat(fd->fileno, &statinfo) < 0) {
