@@ -448,7 +448,7 @@ main(int argc, char *argv[])
 	    break;
 	case 'D' :
 	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give an resolution in the format <DPI XxDPI Y> or <DPI_X_and_Y>.\n"));
+		fprintf(stderr, _("You must give an resolution in the format <DPI_XxDPI_Y> or <DPI_X_and_Y>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 20) {
