@@ -17,12 +17,12 @@ ap_teeny=`echo $ver | sed -e 's;^[0-9]*\.[0-9]*\.;;g'`
 echo "    $ver"
 
 case $ap_maj in
-	0)
-		if test $ap_min -lt 14 ; then
-			echo "You must have gettext >= 0.14.0 but you seem to have $ver"
-			exit 1
-		fi
-		;;
+    0)
+        if test $ap_min -lt 14 ; then
+            echo "You must have gettext >= 0.14.0 but you seem to have $ver"
+            exit 1
+        fi
+        ;;
 esac
 echo "Running autopoint..."
 autopoint --force || exit 1
@@ -68,7 +68,7 @@ case $lt_maj in
 	echo "It will probably work, but this is a warning that it may not."
 	;;
 esac
-													echo "Running libtoolize..."
+echo "Running libtoolize..."
 libtoolize --force --copy --automake || exit 1
 
 ############################################################################
