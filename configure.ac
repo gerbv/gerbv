@@ -223,8 +223,8 @@ $CAIRO_PKG_ERRORS])]
 
 CAIRO_VER=`$PKG_CONFIG cairo --modversion`
 
-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.4.0, , [AC_MSG_ERROR([
-*** GTK >= 2.4.0 is required but was not found.  Please review
+PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.18.0, , [AC_MSG_ERROR([
+*** GTK >= 2.18.0 is required but was not found.  Please review
 the following errors:
 $GTK_PKG_ERRORS])]
 )
