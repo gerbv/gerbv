@@ -1,0 +1,853 @@
+# Translation of man 1 gerbv to Russian
+#
+# This file is distributed under the same license as the gerbv package.
+#
+# Sergey Alyoshin <alyoshin.s@gmail.com>, 2012, 2013
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gerbv man ru\n"
+"POT-Creation-Date: 2013-08-03 14:08+0400\n"
+"PO-Revision-Date: 2013-08-03 14:09+0400\n"
+"Last-Translator: Sergey Alyoshin <alyoshin.s@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: TH
+#: gerbv.1.in:1
+#, no-wrap
+msgid "gerbv"
+msgstr "gerbv"
+
+#. type: TH
+#: gerbv.1.in:1
+#, no-wrap
+msgid "Jule 13, 2013"
+msgstr "13 июля 2013"
+
+#. type: TH
+#: gerbv.1.in:1
+#, no-wrap
+msgid "Version"
+msgstr "Версия"
+
+#. type: TH
+#: gerbv.1.in:1
+#, no-wrap
+msgid "@version@"
+msgstr "@version@"
+
+#. type: SH
+#: gerbv.1.in:2
+#, no-wrap
+msgid "NAME"
+msgstr "НАЗВАНИЕ"
+
+#. type: Plain text
+#: gerbv.1.in:4
+msgid "gerbv - Gerber Viewer"
+msgstr "gerbv — просмотр Gerber-файлов"
+
+#. type: SH
+#: gerbv.1.in:4
+#, no-wrap
+msgid "SYNOPSIS"
+msgstr "ОБЗОР"
+
+#. type: Plain text
+#: gerbv.1.in:6
+msgid "B<gerbv [OPTIONS] [gerberfile[s]]>"
+msgstr "B<gerbv [ПАРАМЕТРЫ] [gerber-файл[ы]]>"
+
+#. type: SH
+#: gerbv.1.in:6
+#, no-wrap
+msgid "DESCRIPTION"
+msgstr "ОПИСАНИЕ"
+
+#. type: Plain text
+#: gerbv.1.in:13
+msgid ""
+"I<gerbv> is a viewer for RS274-X, commonly known as Gerber, files.  RS274-"
+"X files are generated from different PCB CAD programs and are used in the "
+"printed circuit board manufacturing process.  I<gerbv> also supports "
+"Excellon/NC drill files as well as XY (centroid)  files produced by the "
+"program PCB (http://pcb.geda-project.org/)."
+msgstr ""
+"I<gerbv> — это программа для просмотра файлов RS274-X, более известных "
+"как Gerber. Файлы RS274-X создаются различными программами "
+"автоматизированного проектирования печатных плат и используются при их "
+"изготовлении на производстве. I<gerbv> также поддерживает файлы сверловки "
+"Excellon/NC drill и файлы расположения (координаты центров элементов), "
+"создаваемые программой PCB (http://pcb.geda-project.org/)."
+
+#. type: SH
+#: gerbv.1.in:14
+#, no-wrap
+msgid "OPTIONS"
+msgstr "ПАРАМЕТРЫ"
+
+#. type: Plain text
+#: gerbv.1.in:19
+msgid ""
+"B<Warning!> On some platforms, which hasn't long option available, only "
+"short options are available."
+msgstr ""
+"B<Внимание!> На некоторых платформах, не имеющих поддержку длинных "
+"параметров, доступны только короткие параметры."
+
+#. type: SS
+#: gerbv.1.in:20
+#, no-wrap
+msgid "gerbv General options:"
+msgstr "Общие параметры gerbv:"
+
+#. type: Plain text
+#: gerbv.1.in:23
+msgid "B<-V|--version> Print the version number of gerbv and exit."
+msgstr "B<-V|--version> Вывести версию gerbv и выйти."
+
+#. type: TP
+#: gerbv.1.in:23
+#, no-wrap
+msgid "B<-h|--help>"
+msgstr "B<-h|--help>"
+
+#. type: Plain text
+#: gerbv.1.in:26
+msgid "Print a brief usage guide and exit."
+msgstr "Вывести краткое руководство и выйти."
+
+#. type: TP
+#: gerbv.1.in:26
+#, no-wrap
+msgid "B<-bE<lt>hexE<gt>|--background=E<lt>hexE<gt>>"
+msgstr "B<-bE<lt>hexE<gt>|--background=E<lt>hexE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:30
+msgid ""
+"Use background color E<lt>hexE<gt>. E<lt>hexE<gt> is specified as an html-"
+"color code, e.g. #FF0000 for Red."
+msgstr ""
+"Задать цвет фона E<lt>hexE<gt>. Код цвета E<lt>hexE<gt> должен быть "
+"указан как в HTML, например, #FF0000 для красного."
+
+#. type: TP
+#: gerbv.1.in:30
+#, no-wrap
+msgid "B<-fE<lt>hexE<gt>|--foreground=E<lt>hexE<gt>>"
+msgstr "B<-fE<lt>hexE<gt>|--foreground=E<lt>hexE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:36
+msgid ""
+"Use foreground color E<lt>hexE<gt>. E<lt>hexE<gt> is specified as an html-"
+"color code, e.g. #00FF00 for Green. If a user also wants to set the alpha "
+"(rendering with Cairo) it can be specified as an #RRGGBBAA code. Use "
+"multiple -f flags to set the color for multiple layers."
+msgstr ""
+"Задать цвет элементов E<lt>hexE<gt>. Код цвета E<lt>hexE<gt> должен быть "
+"указан как в HTML, например, #00FF00 для зелёного. Прозрачность (при "
+"отображении средствами Cairo) указывается в виде кода #RRGGBBAA (A — "
+"alpha). Для задания цвета нескольких слоёв используйте флаг -f несколько "
+"раз."
+
+#. type: TP
+#: gerbv.1.in:36
+#, no-wrap
+msgid "B<-l\\ E<lt>filenameE<gt>|--log=E<lt>filenameE<gt>>"
+msgstr "B<-l\\ E<lt>имя-файлаE<gt>|--log=E<lt>имя-файлаE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:39
+msgid ""
+"All error messages etc are stored in a file with filename "
+"I<E<lt>filenameE<gt>>."
+msgstr "Записывать все сообщения об ошибках в файл I<E<lt>имя-файлаE<gt>>."
+
+#. type: TP
+#: gerbv.1.in:39
+#, no-wrap
+msgid "B<-t\\ E<lt>filenameE<gt>|--tools=E<lt>filenameE<gt>>"
+msgstr "B<-t\\ E<lt>имя-файлаE<gt>|--tools=E<lt>имя-файлаE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:42
+msgid "Read Excellon tools from the file I<E<lt>filenameE<gt>>."
+msgstr "Прочитать инструменты Excellon из файла I<E<lt>имя-файлаE<gt>>."
+
+#. type: TP
+#: gerbv.1.in:42
+#, no-wrap
+msgid "B<-p\\ E<lt>project\\ filenameE<gt>|--project=E<lt>project\\ filenameE<gt>>"
+msgstr "B<-p\\ E<lt>имя-файла\\ проектаE<gt>|--project=E<lt>имя-файла\\ проектаE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:46
+msgid ""
+"Load a stored project. Please note that the project file must be stored "
+"in the same directory as the gerber files."
+msgstr ""
+"Загрузить проект. Заметьте, что файл проекта должен находиться в том же "
+"каталоге, что и файлы Gerber."
+
+#. type: SS
+#: gerbv.1.in:47
+#, no-wrap
+msgid "gerbv Export-specific options:"
+msgstr "Параметры экспорта gerbv:"
+
+#. type: Plain text
+#: gerbv.1.in:49
+msgid "The following commands can be used in combination with the -x flag:"
+msgstr "Вместе с флагом -x могут быть использованы следующие команды:"
+
+#. type: TP
+#: gerbv.1.in:49
+#, no-wrap
+msgid "B<-BE<lt>bE<gt>|--border=E<lt>bE<gt>>"
+msgstr "B<-BE<lt>bE<gt>|--border=E<lt>bE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:53
+msgid ""
+"Set the border around the image E<lt>bE<gt> percent of the width and "
+"height.  Default E<lt>bE<gt> is 5%."
+msgstr ""
+"Установить рамку вокруг изображения размером E<lt>bE<gt> процентов от "
+"ширины и высоты. По умолчанию, E<lt>bE<gt> равно 5%."
+
+#. type: TP
+#: gerbv.1.in:53
+#, no-wrap
+msgid "B<-DE<lt>XxYE<gt>orE<lt>RE<gt>|--dpi=E<lt>XxYE<gt>orE<lt>RE<gt>>"
+msgstr "B<-DE<lt>XxYE<gt>илиE<lt>RE<gt>|--dpi=E<lt>XxYE<gt>илиE<lt>RE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:59
+msgid ""
+"Resolution (Dots per inch) for the output bitmap. Use E<lt>XxYE<gt> for "
+"different resolutions for the width and height (only when compiled with "
+"Cairo as render engine). Use E<lt>RE<gt> to have the same resolution in "
+"both directions.  Defaults to 72 DPI in both directions."
+msgstr ""
+"Разрешение (в точках на дюйм, DPI) выводимого bitmap-изображения. Для "
+"различного разрешения по ширине и высоте используйте E<lt>XxYE<gt> "
+"(только при сборке с Cairo). Используйте E<lt>RE<gt> для одинакового "
+"разрешения по двум измерениям. По умолчанию, E<lt>RE<gt> равно 72 DPI."
+
+#. type: TP
+#: gerbv.1.in:59
+#, no-wrap
+msgid "B<-TE<lt>X,YE<gt>|--translate=E<lt>X,YE<gt>>"
+msgstr "B<-TE<lt>X,YE<gt>|--translate=E<lt>X,YE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:63
+msgid ""
+"Translate the image by the distance E<lt>X,YE<gt>. Use multiple -T flags "
+"to translate multiple files."
+msgstr ""
+"Переместить изображение на расстояние E<lt>X,YE<gt>. Для задания "
+"перемещения нескольких слоёв используйте флаг -T несколько раз."
+
+#. type: TP
+#: gerbv.1.in:63
+#, no-wrap
+msgid "B<-OE<lt>XxYE<gt>|--origin=E<lt>XxYE<gt>>"
+msgstr "B<-OE<lt>XxYE<gt>|--origin=E<lt>XxYE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:67
+msgid ""
+"Set the lower left corner of the exported image to coordinate "
+"E<lt>XxYE<gt>.  Coordinates are in inches."
+msgstr ""
+"Установить координаты E<lt>XxYE<gt> левого нижнего угла экспортируемого "
+"изображения. Значение в дюймах."
+
+#. type: TP
+#: gerbv.1.in:67
+#, no-wrap
+msgid "B<-a|--antialias>"
+msgstr "B<-a|--antialias>"
+
+#. type: Plain text
+#: gerbv.1.in:70
+msgid "Use antialiasing for the generated output-bitmap."
+msgstr "Использовать антиалиасинг для выходного bitmap-файла."
+
+#. type: TP
+#: gerbv.1.in:70
+#, no-wrap
+msgid "B<-o\\ E<lt>filenameE<gt>|--output=E<lt>filenameE<gt>>"
+msgstr "B<-o\\ E<lt>имя-файлаE<gt>|--output=E<lt>имя-файлаE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:73
+msgid "Export to E<lt>filenameE<gt>."
+msgstr "Экспортировать в файл E<lt>имя-файлаE<gt>."
+
+#. type: TP
+#: gerbv.1.in:73
+#, no-wrap
+msgid "B<-WE<lt>WxHE<gt>|--window_inch=E<lt>WxHE<gt>>"
+msgstr "B<-WE<lt>ШxВE<gt>|--window_inch=E<lt>ШxВE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:76
+msgid "Window size in inches E<lt>WxHE<gt> for the exported image."
+msgstr "Размер окна в дюймах E<lt>ШxВE<gt> для экспортируемого изображения."
+
+#. type: TP
+#: gerbv.1.in:76
+#, no-wrap
+msgid "B<-wE<lt>WxHE<gt>|--window=WxHE<gt>>"
+msgstr "B<-wE<lt>ШxВE<gt>|--window=E<lt>ШxВE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:82
+msgid ""
+"Window size in pixels E<lt>WxHE<gt> for the exported image. Autoscales to "
+"fit if no resolution is specified (note that the default 72 DPI also "
+"changes in that case). If a resolution is specified, it will clip the "
+"image to this size."
+msgstr ""
+"Размер окна E<lt>ШxВE<gt> в пикселях экспортируемого изображения. Если "
+"разрешение не указано, то выполняется масштабирование (заметьте, что в "
+"этом случае разрешение по умолчанию 72 DPI также изменяется). Если "
+"разрешение указано, то изображение обрезается."
+
+#. type: TP
+#: gerbv.1.in:82
+#, no-wrap
+msgid "B<-xE<lt>png/pdf/ps/svg/rs274x/drillE<gt>|--export=E<lt>png/pdf/ps/svg/rs274x/drillE<gt>>"
+msgstr "B<-xE<lt>png/pdf/ps/svg/rs274x/drillE<gt>|--export=E<lt>png/pdf/ps/svg/rs274x/drillE<gt>>"
+
+#. type: Plain text
+#: gerbv.1.in:85
+msgid "Export to a file and set the format for the output file."
+msgstr "Экспортировать в файл и установить формат выходного файла."
+
+#. type: SS
+#: gerbv.1.in:86
+#, no-wrap
+msgid "GTK Options"
+msgstr "Параметры GTK"
+
+#. type: Plain text
+#: gerbv.1.in:89
+msgid "B<--gtk-module=>I<MODULE> Load an additional GTK module"
+msgstr "B<--gtk-module=>I<МОДУЛЬ> Загрузить дополнительный модуль GTK"
+
+#. type: TP
+#: gerbv.1.in:89
+#, no-wrap
+msgid "B<--g-fatal-warnings>"
+msgstr "B<--g-fatal-warnings>"
+
+#. type: Plain text
+#: gerbv.1.in:92
+msgid "Make all warnings fatal"
+msgstr "Сделать все предупреждения фатальными"
+
+#. type: TP
+#: gerbv.1.in:92
+#, no-wrap
+msgid "B<--gtk-debug=>I<FLAGS>"
+msgstr "B<--gtk-debug=>I<ФЛАГИ>"
+
+#. type: Plain text
+#: gerbv.1.in:95
+msgid "GTK debugging flags to set"
+msgstr "Установить флаги отладки GTK"
+
+#. type: TP
+#: gerbv.1.in:95
+#, no-wrap
+msgid "B<--gtk-no-debug=>I<FLAGS>"
+msgstr "B<--gtk-no-debug=>I<ФЛАГИ>"
+
+#. type: Plain text
+#: gerbv.1.in:98
+msgid "GTK debugging flags to unset"
+msgstr "Снять флаги отладки GTK"
+
+#. type: TP
+#: gerbv.1.in:98
+#, no-wrap
+msgid "B<--gdk-debug=>I<FLAGS>"
+msgstr "B<--gdk-debug=>I<ФЛАГИ>"
+
+#. type: Plain text
+#: gerbv.1.in:101
+msgid "GDK debugging flags to set"
+msgstr "Установить флаги отладки GDK"
+
+#. type: TP
+#: gerbv.1.in:101
+#, no-wrap
+msgid "B<--gdk-no-debug=>I<FLAGS>"
+msgstr "B<--gdk-no-debug=>I<ФЛАГИ>"
+
+#. type: Plain text
+#: gerbv.1.in:104
+msgid "GDK debugging flags to unset"
+msgstr "Снять флаги отладки GDK"
+
+#. type: TP
+#: gerbv.1.in:104
+#, no-wrap
+msgid "B<--display=>I<DISPLAY>"
+msgstr "B<--display=>I<ДИСПЛЕЙ>"
+
+#. type: Plain text
+#: gerbv.1.in:107
+msgid "X display to use"
+msgstr "Использовать X-дисплей"
+
+#. type: TP
+#: gerbv.1.in:107
+#, no-wrap
+msgid "B<--sync>"
+msgstr "B<--sync>"
+
+#. type: Plain text
+#: gerbv.1.in:110
+msgid "Make X call synchronous"
+msgstr "Сделать синхронными X-вызовы"
+
+#. type: TP
+#: gerbv.1.in:110
+#, no-wrap
+msgid "B<--no-xshm>"
+msgstr "B<--no-xshm>"
+
+#. type: Plain text
+#: gerbv.1.in:113
+msgid "Don't use X shared memory extension"
+msgstr "Не использовать расширение разделяемой памяти X"
+
+#. type: TP
+#: gerbv.1.in:113
+#, no-wrap
+msgid "B<--name=>I<NAME>"
+msgstr "B<--name=>I<НАЗВАНИЕ>"
+
+#. type: Plain text
+#: gerbv.1.in:116
+msgid "Program name as used by the window manager"
+msgstr "Название программы используемое оконным менеджером"
+
+#. type: TP
+#: gerbv.1.in:116
+#, no-wrap
+msgid "B<--class=>I<CLASS>"
+msgstr "B<--class=>I<КЛАСС>"
+
+#. type: Plain text
+#: gerbv.1.in:119
+msgid "Program class as used by the window manager"
+msgstr "Класс программы используемый оконным менеджером"
+
+#. type: SH
+#: gerbv.1.in:120
+#, no-wrap
+msgid "GENERAL"
+msgstr "ОБЩИЕ ЗАМЕЧАНИЯ"
+
+#. type: Plain text
+#: gerbv.1.in:123
+msgid ""
+"When you start gerbv you can give the files to be loaded on the command "
+"line, either as each file separated with a space or by using wildcards."
+msgstr ""
+"Вы можете указать в командной строке файлы для открытия в I<gerbv> при "
+"запуске: или все файлы разделённые пробелами, или применяя в названии "
+"файлов шаблоны."
+
+#. type: Plain text
+#: gerbv.1.in:129
+msgid ""
+"The user interface is graphical. Simply press and drag middle mouse "
+"button (scroll wheel) and the image will pan as you move the mouse. To "
+"manipulate a layer, right-click on one of the rightmost list items. That "
+"will bring up a pop-up menu where you can select what you want to do with "
+"that layer (reload file, change color, etc)."
+msgstr ""
+"Gerbv использует графический пользовательский интерфейс. Для прокрутки "
+"перемещайте мышь удерживая среднюю кнопку (колесо прокрутки) или "
+"используйте инструмент Прокрутка. Для изменения свойств слоя выберите "
+"название слоя и откройте контекстное меню правой кнопкой мыши, через "
+"которое можно изменить цвет слоя, перезагрузить слой и т.д."
+
+#. type: Plain text
+#: gerbv.1.in:132
+msgid ""
+"If you hold the mouse button over one the rightmost button a tooltips "
+"will show you the name of the file loaded on that layer."
+msgstr ""
+"При удержании курсора мыши над названием слоя появится всплывающая "
+"подсказка с именем файла, который соответствует этому слою."
+
+#. type: SH
+#: gerbv.1.in:134
+#, no-wrap
+msgid "ACTIVATION AND DEACTIVATION OF LAYERS"
+msgstr "ВКЛЮЧЕНИЕ И ВЫКЛЮЧЕНИЕ СЛОЁВ"
+
+#. type: Plain text
+#: gerbv.1.in:137
+msgid ""
+"You can load several files at one time. You can then turn displaying of "
+"the layers on and off by clicking on one of check boxes near the layer "
+"names."
+msgstr ""
+"Несколько файлов могут быть загружены одновременно. Отображение слоёв "
+"выключается и включается галочкой рядом с названием слоя."
+
+#. type: Plain text
+#: gerbv.1.in:141
+msgid ""
+"You can also control this from the keyboard. Press Ctrl, enter the number "
+"on the layer you want activate/deactivate on the numerical keypad and "
+"then release the Ctrl key."
+msgstr ""
+"Отображением слоёв можно управлять с клавиатуры. Удерживая Ctrl, нажмите "
+"номер слоя на клавиатуре и отпустите Ctrl."
+
+#. type: SH
+#: gerbv.1.in:142
+#, no-wrap
+msgid "ZOOMING"
+msgstr "МАСШТАБИРОВАНИЕ"
+
+#. type: Plain text
+#: gerbv.1.in:150
+msgid ""
+"Zooming can be handled by either menu choices, keypressing or mouse "
+"scroll wheel. If you press z you will zoom in and if you press Shift+z (i."
+"e. Z) you will zoom out. Scroll wheel works if you enabled that in your X "
+"server and mapped it to button 4 and 5. You can make the image fit by "
+"pressing f (there is also a menu alternative for this). If Pan, Zoom, or "
+"Measure Tool is selected you can press right mouse button for zoom in, "
+"and if you press Shift and right mouse button you will zoom out."
+msgstr ""
+"Масштабирование может быть выполнено через меню, клавиатуру или колесо "
+"мыши. Для увеличения нажмите клавишу z и Shift+z (т.е. Z) для уменьшения. "
+"Колесо прокрутки мыши также используется для масштабирования. Для "
+"масштаба наилучшего заполнения нажмите клавишу f или используйте меню. "
+"Если выбраны инструменты Прокрутка, Масштаб или Измерение, то для "
+"увеличения можно использовать правую кнопку мыши, а для уменьшения правую "
+"кнопку мыши с удерживаемой клавишей Shift."
+
+#. type: Plain text
+#: gerbv.1.in:158
+msgid ""
+"You can also do zooming by outline. Select Zoom Tool, press mouse button, "
+"draw, release. The dashed line shows how the zooming will be dependent on "
+"the resolution of the window. The non-dashed outline will show what you "
+"actually selected. If you change your mind when started to mark outline, "
+"you can always abort by pressing escape. By holding down the Shift key "
+"when you press the mouse button, you will select an area where the point "
+"you started at will be the center of your selection."
+msgstr ""
+"Для увеличения контуром выберите инструмент Масштаб, нажмите кнопку мыши "
+"и, удерживая её, укажите контур. Пунктирная линия отображает зависимость "
+"масштабирования от разрешения окна. Сплошная линия соответствует "
+"указанному контуру. Отменить указание контура можно клавишей Esc. Для "
+"указания контура относительно центра, удерживайте нажатой клавишу Shift."
+
+#. type: SH
+#: gerbv.1.in:159
+#, no-wrap
+msgid "MEASUREMENTS"
+msgstr "ИЗМЕРЕНИЕ"
+
+#. type: Plain text
+#: gerbv.1.in:164
+msgid ""
+"You can do measurement on the image displayed. Select Measure Tool, the "
+"cursor changes to a plus. By using left mouse button you can draw the "
+"lines that you want to measure. The result of the last measurement is "
+"also displayed on the statusbar. All measurements are in the drawing "
+"until you select other Tool."
+msgstr ""
+"Для измерения элементов изображения слоя выберите инструмент Измерение "
+"(курсор изменится на перекрестие), нажмите левую кнопку мыши для точки "
+"начала измерения и, удерживая её, укажите точку окончания измерения. "
+"Результат в выбранных единицах измерения отображается в строке статуса. "
+"Линия измерения отображается до тех пор, пока не выбран другой инструмент."
+
+#. type: Plain text
+#: gerbv.1.in:168
+msgid ""
+"The statusbar shows the current mouse position on the layer in the same "
+"coordinates as in the file. I.e. if you have (0,0) in the middle of the "
+"image in the gerber files, the statusbar will show (0,0) at the same "
+"place."
+msgstr ""
+"Текущие координаты указателя мыши (соответствующие координатам в файле) "
+"отображаются в строке статуса в выбранных единицах измерения. Т.е. если "
+"центр изображения Gerber-файла имеет координаты (0; 0), то в этом месте "
+"изображения слоя в строке статуса будут отображены координаты (0; 0)."
+
+#. type: SH
+#: gerbv.1.in:169
+#, no-wrap
+msgid "SUPERIMPOSING"
+msgstr "НАЛОЖЕНИЕ"
+
+#. type: Plain text
+#: gerbv.1.in:173
+msgid ""
+"When you load several Gerber files, you can display them \"on top of each "
+"other\", i.e. superimposing. The general way to display them are that "
+"upper layers cover the layers beneath, which is called copy (GTK+ terms)."
+msgstr ""
+"Если открыто несколько файлов, вы можете отображать слои \"один поверх "
+"другого\", т.е. наложением. По умолчанию верхний слой закрывает собой "
+"нижние слои."
+
+#. type: Plain text
+#: gerbv.1.in:178
+msgid ""
+"The other ways selectable are and, or, xor and invert. They map directly "
+"to corresponding functions in GTK. In GTK they are described as: \"For "
+"colored images, only GDK_COPY, GDK_XOR and GDK_INVERT are generally "
+"useful. For bitmaps, GDK_AND and GDK_OR are also useful.\""
+msgstr ""
+"Также можно выбрать отображение исключающим ИЛИ (XOR) или инвертированным "
+"из контекстного меню слоя."
+
+#. type: SH
+#: gerbv.1.in:179
+#, no-wrap
+msgid "PROJECTS"
+msgstr "ПРОЕКТЫ"
+
+#. type: Plain text
+#: gerbv.1.in:184
+msgid ""
+"gerbv can also handle projects. A project consist of bunch of loaded "
+"layers with their resp. color and the background color. The easiest way "
+"to create a project is to load all files you want into the layer you "
+"want, set all the colors etc and do a \"Save Project As...\"."
+msgstr ""
+"gerbv может работать с проектами. Файл проекта состоит из списка слоёв, "
+"их цвета и цвета фона. Для создания файла проекта, откройте желаемые "
+"файлы, организуйте порядок слоёв, задайте их цвет и выберите пункт меню "
+"\"Сохранить проект как...\""
+
+#. type: Plain text
+#: gerbv.1.in:187
+msgid ""
+"You load a project either from the menu bar or by using the commandline "
+"switches -p or --project."
+msgstr ""
+"Загрузить проект можно через меню или параметром командной строки -p или "
+"--project."
+
+#. type: Plain text
+#: gerbv.1.in:190
+msgid ""
+"Currently there is a limit in that the project file must be in the same "
+"directory as the gerber files to be loaded."
+msgstr ""
+"В настоящее время существует ограничение: файл проекта должен "
+"располагаться в том же каталоге, что и загружаемые gerber-файлы."
+
+#. type: SH
+#: gerbv.1.in:191
+#, no-wrap
+msgid "SCHEME"
+msgstr "SCHEME"
+
+#. type: Plain text
+#: gerbv.1.in:199
+msgid ""
+"The project files are simple Scheme programs that is interpreted by a "
+"built in Scheme interpreter. The Scheme interpreter is TinyScheme and "
+"needs a Scheme program called init.scm to initialize itself. The search "
+"path for init.scm is (in the following order)  @scmdir@, the directory "
+"with the executable gerbv, the directory gerbv was invoked from and "
+"finally according to the environment variable GERBV_SCHEMEINIT."
+msgstr ""
+"Файл проекта это сценарий Scheme, обрабатываемый встроенным Scheme-"
+"интерпретатором TinyScheme. Для инициализации TinyScheme необходим файл "
+"init.scm, поиск расположения которого выполняется в следующей "
+"последовательности: @scmdir@, каталог исполняемого файла gerbv, каталог "
+"запуска gerbv, значение переменной окружения GERBV_SCHEMEINIT."
+
+#. type: SH
+#: gerbv.1.in:200
+#, no-wrap
+msgid "TOOLS FILE"
+msgstr "ФАЙЛ ИНСТРУМЕНТОВ"
+
+#. type: Plain text
+#: gerbv.1.in:205
+msgid ""
+"Not every Excellon drill file is self-sufficient. Some CADs produce .drd "
+"files where tools are only referenced, but never defined (such as what "
+"diameter of the tool is.) Eagle CAD is one of such CADs, and there are "
+"more since many board houses require Tools files."
+msgstr ""
+"Не все файлы Excellon самодостаточны. Некоторые программы "
+"автоматизированного проектирования создают файлы \".drd\" содержащие "
+"только обозначение инструментов, а не их определение (т.е. не указывают "
+"их диаметр). Eagle — одна из таких программ, но есть и другие, поэтому "
+"многие производители печатных плат требуют файлы инструментов."
+
+#. type: Plain text
+#: gerbv.1.in:208
+msgid ""
+"A Tools file is a plain text file which you create in an editor. Each "
+"line of the file describes one tool (the name and the diameter, in "
+"inches):"
+msgstr ""
+"Файл инструментов — это обычный текстовый файл, который можно создать в "
+"текстовом редакторе. Каждая строка файла описывает один инструмент "
+"(название и диаметр в дюймах):"
+
+#. type: Plain text
+#: gerbv.1.in:213
+#, no-wrap
+msgid ""
+"\tT01 0.024\n"
+"\tT02 0.040\n"
+"\t...\n"
+msgstr ""
+"\tT01 0.024\n"
+"\tT02 0.040\n"
+"\t...\n"
+
+#. type: Plain text
+#: gerbv.1.in:219
+msgid ""
+"These are the same tools (T01 etc.) that are used in the Drill file.  A "
+"standard practice with Eagle is to create an empty Tools file, run the "
+"CAM processor, and the error report tells you which tools you \"forgot"
+"\".  Then you put these tools into the file and rerun the CAM processor."
+msgstr ""
+"Это те же инструменты (T01 и т.д.), которые используются в файле "
+"сверловки. Обычная практика в Eagle — создавать пустой файл инструментов, "
+"запускать CAM-обработчик и по сообщениям об ошибках выяснять какие "
+"инструменты \"отсутствуют\". Затем эти инструменты добавляются в файл и "
+"CAM-процессор запускается повторно."
+
+#. type: Plain text
+#: gerbv.1.in:225
+msgid ""
+"You load a tool file by using the commandline switches -t or --tools.  "
+"The file can have any name you wish, but Eagle expects the file type to "
+"be \".drl\", so it makes sense to keep it this way. Some board houses are "
+"still using CAM software from DOS era, so you may want to excercise "
+"caution before going beyond the 8.3 naming convention."
+msgstr ""
+"Для загрузки файла инструментов используйте флаг командной строки -t или "
+"--tools. Имя файла может быть любым (Eagle предполагает расширение \".drl"
+"\" для таких файлов). Некоторые производители печатных плат до сих пор "
+"используют программное обеспечение из эры DOS, что может накладывать "
+"ограничение 8.3 на длину имён файлов."
+
+#. type: Plain text
+#: gerbv.1.in:235
+msgid ""
+"When I<gerbv> reads the Tools file it also checks that there are no "
+"duplicate definitions of tools. This does happen from time to time as you "
+"edit the file by hand, especially if you, during design, add or remove "
+"parts from the board and then have to add new tools into the Tools file. "
+"The duplicate tools are a very serious error which will stop (HOLD) your "
+"board until you fix the Tools file and maybe the Excellon file. I<gerbv> "
+"will detect duplicate tools if they are present, and will exit "
+"immediately to indicate such a fatal error in a very obvious way. A "
+"message will also be printed to standard error."
+msgstr ""
+"При чтении файла инструментов I<gerbv> проверяет отсутствие повторяющихся "
+"определений инструментов. Это может случиться при редактировании файла "
+"инструментов вручную. Повторяющиеся определения инструментов — серьёзная "
+"ошибка, которая приостановит производство вашей печатной платы до "
+"исправления файла инструментов и, возможно, файла сверловки Excellon. При "
+"обнаружении повторяющихся определений инструментов I<gerbv> немедленно "
+"сообщает об ошибке и завершает работу."
+
+#. type: Plain text
+#: gerbv.1.in:240
+msgid ""
+"If your Excellon file does not contain tool definitions then I<gerbv> "
+"will preconfigure the tools by deriving the diameter of the drill bit "
+"from the tool number. This is probably not what you want, and you will "
+"see warnings printed on the console."
+msgstr ""
+"Если файл Excellon не содержит определения инструментов, то I<gerbv> "
+"установит диаметр инструментов по номеру инструмента. Вероятно, это не "
+"то, что вы хотите, поэтому будет выведено предупреждение."
+
+#. type: SH
+#: gerbv.1.in:241
+#, no-wrap
+msgid "ENVIRONMENT"
+msgstr "ОКРУЖЕНИЕ"
+
+#. type: IP
+#: gerbv.1.in:242
+#, no-wrap
+msgid "GERBV_SCHEMEINIT"
+msgstr "GERBV_SCHEMEINIT"
+
+#. type: Plain text
+#: gerbv.1.in:245
+msgid ""
+"Defines where the init.scm file is stored. Used by scheme interpreter, "
+"which is used by the project reader."
+msgstr ""
+"Задаёт расположение файла init.scm, используемого Scheme-интерпретатором "
+"для чтения файла проекта."
+
+#. type: SH
+#: gerbv.1.in:246
+#, no-wrap
+msgid "AUTHOR"
+msgstr "АВТОРЫ"
+
+#. type: Plain text
+#: gerbv.1.in:251
+#, no-wrap
+msgid ""
+"Stefan Petersen (spetm at users.sourceforge.net): Overall hacker and project leader\n"
+"Andreas Andersson (e92_aan at e.kth.se): Drill file support and general hacking\n"
+"Anders Eriksson (aenfaldor at users.sourceforge.net): X and GTK+ ideas and hacking\n"
+msgstr ""
+"Stefan Petersen (spetm at users.sourceforge.net):\n"
+"\tобщее программирование и ведение проекта\n"
+"Andreas Andersson (e92_aan at e.kth.se):\n"
+"\tподдержка файла сверловки и общее программирование\n"
+"Anders Eriksson (aenfaldor at users.sourceforge.net):\n"
+"\tидеи X и GTK+ и программирование\n"
+
+#. type: SH
+#: gerbv.1.in:252
+#, no-wrap
+msgid "COPYRIGHT"
+msgstr "COPYRIGHT"
+
+#. type: Plain text
+#: gerbv.1.in:255
+#, no-wrap
+msgid "Copyright \\(co  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Stefan Petersen\n"
+msgstr "Copyright \\(co  2001—2008 Stefan Petersen\n"
+
+#. type: Plain text
+#: gerbv.1.in:257
+#, no-wrap
+msgid ""
+"This document can be freely redistributed according to the terms of the \n"
+"GNU General Public License version 2.0\n"
+msgstr ""
+"Данный документ может свободно распространяться в соответствии с \n"
+"требованиями GNU Универсальной общественной лицензии (GPL) версии 2.0\n"
