@@ -40,6 +40,28 @@ AM_GNU_GETTEXT
 AM_GNU_GETTEXT_VERSION([0.16])
 #AX_DESKTOP_I18N
 
+dnl man-page internationalization
+AC_PATH_PROG([po4a_gettextize],[po4a-gettextize])
+AC_PATH_PROG([po4a_translate],[po4a-translate])
+if test -z "$po4a_gettextize" -o -z "$po4a_translate" ; then
+	AC_MSG_WARN([po4a was not found. If you want to change and compile \
+internationalized documentation, please install po4a])
+else
+	have_po4a=yes
+fi
+
+dnl po4a depend on nsgmls
+AC_PATH_PROG([nsgmls],[nsgmls])
+if test -z "$nsgmls" ; then
+	AC_MSG_WARN([nsgmls was not found. If you want to change and compile \
+internationalized documentation, please install sp])
+else
+	have_nsgmls=yes
+fi
+
+AM_CONDITIONAL(HAVE_PO4A,
+		test "x$have_po4a" = "xyes" -a "x$have_nsgmls" = "xyes")
+
 ############################################################
 #
 # Checks for cygwin/mingw32
