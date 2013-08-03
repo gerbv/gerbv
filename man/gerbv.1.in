@@ -47,7 +47,7 @@ the same directory as the gerber files.
 .SS gerbv Export-specific options:
 The following commands can be used in combination with the -x flag:
 .TP
-.BI -B<b>|--Border=<b>
+.BI -B<b>|--border=<b>
 Set the border around the image <b> percent of the width and height. 
 Default <b> is 5%.
 .TP
