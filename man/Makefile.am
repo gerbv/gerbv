@@ -19,8 +19,19 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
+if HAVE_PO4A
 man_MANS = gerbv.1 gerbv.ru.1
-PO_FILES= gerbv.ru.1.in.po
+else
+man_MANS = gerbv.1
+
+all:
+	@ echo
+	@ echo "WARNING: missing po4a or sp (nsgmls). Rerun configure and" \
+		"check for 'checking for po4a-*' and 'checking for nsgmls'"
+	@ echo
+endif
+
+PO_FILES = gerbv.ru.1.in.po
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~  *.pot $(man_MANS)
@@ -35,15 +46,15 @@ SUFFIXES = .1 .1.in .in .in.po
 
 # .in << .in.po
 .in.po.in:
-	po4a-translate -k 70 -M UTF-8 -f man -m gerbv.1.in -p $< -l $@
+	$(po4a_translate) -k 70 -M UTF-8 -f man -m gerbv.1.in -p $< -l $@
 
 $(PO_FILES): gerbv.1.in.pot
-	msgmerge --width=76 $@ $< -o $@.new
+	$(MSGMERGE) --width=76 $@ $< -o $@.new
 	mv $@.new $@
 
 gerbv.1.in.pot: gerbv.1.in
-	po4a-gettextize -M UTF-8 -f man -m $< -p $@
+	$(po4a_gettextize) -M UTF-8 -f man -m $< -p $@
 
 update-po:
-	@touch gerbv.1.in.pot
-	make $(PO_FILES)
+	@ touch -c gerbv.1.in.pot
+	$(MAKE) $(PO_FILES)
