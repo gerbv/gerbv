@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gerbv 2.6A ru\n"
 "Report-Msgid-Bugs-To: gerbv-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2013-07-28 19:31+0400\n"
-"PO-Revision-Date: 2013-01-26 22:01+0400\n"
+"POT-Creation-Date: 2013-08-11 19:41+0400\n"
+"PO-Revision-Date: 2013-08-11 19:44+0400\n"
 "Last-Translator: Sergey Alyoshin <alyoshin.s@gmail.com>\n"
 "Language-Team: gEDA user <geda-user@delorie.com>\n"
 "Language: ru\n"
@@ -1825,10 +1825,10 @@ msgstr "Отрицательная ширина (%f) в квадранте %d [%
 msgid "Negative height [%f] in quadrant %d [%f][%f]\n"
 msgstr "Отрицательная высота (%f) в квадранте %d [%f][%f]\n"
 
-#: src/gerbv.c:185 src/gerbv.c:204
+#: src/gerbv.c:185 src/gerbv.c:204 src/main.c:247
 #, c-format
-msgid "could not read %s[%d]"
-msgstr "Невозможно прочитать «%s»[%d]"
+msgid "could not read %s[%d]\n"
+msgstr "Невозможно прочитать «%s»[%d]\n"
 
 #: src/gerbv.c:328
 msgid "Missing netlist - aborting file read\n"
@@ -1852,8 +1852,8 @@ msgid "Trying to open %s:%s\n"
 msgstr "Открытие «%s»: %s\n"
 
 #: src/gerbv.c:464
-msgid "Most likely found a RS-274D file...trying to open anyways"
-msgstr "Вероятно, файл RS-274D... открытие"
+msgid "Most likely found a RS-274D file...trying to open anyways\n"
+msgstr "Вероятно, файл RS-274D... открытие\n"
 
 #: src/gerbv.c:475
 #, c-format
@@ -2502,17 +2502,12 @@ msgstr "Открывается проект %s\n"
 
 #: src/main.c:217
 #, c-format
-msgid "could not read file: %s"
-msgstr "Невозможно прочитать файл «%s»"
+msgid "could not read file: %s\n"
+msgstr "Невозможно прочитать файл «%s»\n"
 
 #: src/main.c:244 src/main.c:317
 msgid "malloc gerbvProject->project failed\n"
 msgstr "Ошибка выделения памяти для gerbvProject->project\n"
-
-#: src/main.c:247
-#, c-format
-msgid "could not read %s[%d]\n"
-msgstr "Невозможно прочитать «%s»[%d]\n"
 
 #: src/main.c:297
 msgid "Failed to write project\n"
@@ -3116,37 +3111,3 @@ msgstr "*** Выход, так как любой изготовитель пла
 #, c-format
 msgid "*** ERROR: Failed to open file \"%s\" to read.\n"
 msgstr "*** ОШИБКА: невозможно открыть для чтения файл «%s».\n"
-
-#, fuzzy
-#~ msgid "Gx codes"
-#~ msgstr "G-коды"
-
-#~ msgid "file"
-#~ msgstr "файл"
-
-#~ msgid "/New"
-#~ msgstr "/Создать"
-
-#~ msgid "/Revert"
-#~ msgstr "/Восстановить"
-
-#~ msgid "/Save active layer"
-#~ msgstr "/Сохранить активный слой"
-
-#~ msgid "/Save active layer as..."
-#~ msgstr "/Сохранить активный слой как..."
-
-#~ msgid "file/New"
-#~ msgstr "файл/Создать"
-
-#~ msgid "/Open layer(s)..."
-#~ msgstr "/Открыть слой..."
-
-#~ msgid "Excellon Drill File"
-#~ msgstr "Сверловка Excellon"
-
-#~ msgid "RS274-X (Gerber) File"
-#~ msgstr "Файл RS-274X (Gerber)"
-
-#~ msgid "malloc new gerb aperture list failed\n"
-#~ msgstr "Ошибка выделения памяти для нового списка апертур\n"
