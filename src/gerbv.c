@@ -182,7 +182,7 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE(_("could not read %s[%d]"), (gchar *) filename,
+    GERB_MESSAGE(_("could not read %s[%d]\n"), (gchar *) filename,
 		 gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
@@ -201,7 +201,7 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE(_("could not read %s[%d]"), (gchar *) filename,
+    GERB_MESSAGE(_("could not read %s[%d]\n"), (gchar *) filename,
 		 gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
@@ -460,8 +460,8 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 		isPnpFile = TRUE;
 	}
     } else if (gerber_is_rs274d_p(fd)) {
-	dprintf("Most likely found a RS-274D file...trying to open anyways");
-	g_warning(_("Most likely found a RS-274D file...trying to open anyways"));
+	dprintf("Most likely found a RS-274D file...trying to open anyways\n");
+	g_warning(_("Most likely found a RS-274D file...trying to open anyways\n"));
 	if ((!foundBinary || forceLoadFile)) {
 		/* figure out the directory path in case parse_gerb needs to
 		 * load any include files */

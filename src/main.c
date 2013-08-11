@@ -214,7 +214,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 								fileIndex, FALSE, 
 								project_list->attr_list, 
 								project_list->n_attr, TRUE) == -1) {
-							GERB_MESSAGE(_("could not read file: %s"), fullName);
+							GERB_MESSAGE(_("could not read file: %s\n"), fullName);
 						}
 						else {
 							g_free (dirName);
