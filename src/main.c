@@ -919,7 +919,8 @@ main(int argc, char *argv[])
 
 
 	gerbv_render_info_t renderInfo = {userSuppliedDpiX, userSuppliedDpiY, 
-	    userSuppliedOriginX, userSuppliedOriginY, userSuppliedAntiAlias?3:2, 
+	    userSuppliedOriginX, userSuppliedOriginY,
+	    userSuppliedAntiAlias? GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY: GERBV_RENDER_TYPE_CAIRO_NORMAL,
 	    userSuppliedWidth,userSuppliedHeight };
 	
 	if (exportType == 1) {

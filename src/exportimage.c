@@ -73,13 +73,16 @@ gerbv_render_info_t gerbv_export_autoscale_project (gerbv_project_t *gerbvProjec
 	float width  = bb.right  - bb.left + 0.001;	// Plus a little extra to prevent from 
 	float height = bb.bottom - bb.top + 0.001; // missing items due to round-off errors
 
-	gerbv_render_info_t renderInfo = {72, 72, bb.left, bb.top, 3, width*72, height*72};
+	gerbv_render_info_t renderInfo = {72, 72, bb.left, bb.top,
+		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, width*72, height*72};
 	return renderInfo;
 }
 
 void gerbv_export_png_file_from_project_autoscaled (gerbv_project_t *gerbvProject, int widthInPixels,
 		int heightInPixels, gchar const* filename) {
-	gerbv_render_info_t renderInfo = {1, 1, 0, 0, 3, widthInPixels, heightInPixels};
+	gerbv_render_info_t renderInfo = {1, 1, 0, 0,
+		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY,
+		widthInPixels, heightInPixels};
 
 	gerbv_render_zoom_to_fit_display (gerbvProject, &renderInfo);
 	gerbv_export_png_file_from_project (gerbvProject, &renderInfo, filename);

@@ -597,7 +597,8 @@ callbacks_print_render_page (GtkPrintOperation *operation,
            gpointer           user_data)
 {
 	GtkPrintSettings *pSettings = gtk_print_operation_get_print_settings (operation);
-	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 3,
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0,
+		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY,
 		(gint) gtk_print_context_get_width (context),
 		(gint) gtk_print_context_get_height (context)};
 	cairo_t *cr;
@@ -1791,8 +1792,10 @@ callbacks_update_ruler_scales (void) {
 
 /* --------------------------------------------------------- */
 void callbacks_update_scrollbar_limits (void){
-	gerbv_render_info_t tempRenderInfo = {0, 0, 0, 0, 3, screenRenderInfo.displayWidth,
-			screenRenderInfo.displayHeight};
+	gerbv_render_info_t tempRenderInfo = {0, 0, 0, 0,
+		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY,
+		screenRenderInfo.displayWidth,
+		screenRenderInfo.displayHeight};
 
 	GtkAdjustment *hAdjust = (GtkAdjustment *)screen.win.hAdjustment;
 	GtkAdjustment *vAdjust = (GtkAdjustment *)screen.win.vAdjustment;
@@ -2735,7 +2738,7 @@ void
 callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
 {
 	// prepare render	size and options (canvas size width and height are last 2 variables)		
-	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, 0, 640, 480};
+	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, GERBV_RENDER_TYPE_GDK, 640, 480};
 	// autoscale the image for now...maybe we don't want to do this in order to
 	//   allow benchmarking of different zoom levels?
 	gerbv_render_zoom_to_fit_display (mainProject, &renderInfo);
