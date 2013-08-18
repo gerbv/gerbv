@@ -339,7 +339,8 @@ main(int argc, char *argv[])
     gboolean initial_mirror_y = FALSE;
     gchar *exportFilename = NULL;
     gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
-	   userSuppliedWidth=0, userSuppliedHeight=0, userSuppliedBorder=0.05;
+	   userSuppliedWidth=0, userSuppliedHeight=0,
+	   userSuppliedBorder = GERBV_DEFAULT_BORDER_COEFF;
 
 #if ENABLE_NLS
     setlocale(LC_ALL, "");

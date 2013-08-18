@@ -128,6 +128,7 @@ AC_ARG_ENABLE(debug,
 	debug=0
     ])
 AC_DEFINE_UNQUOTED(DEBUG, $debug, [Define to 1 to enable debugging code])
+AC_DEFINE_UNQUOTED(GERBV_DEFAULT_BORDER_COEFF, 0.05, [Default border coefficient for export])
 
 dnl --enable-unit-mm : Set default unit for coordinates in status bar to mm
 AC_ARG_ENABLE(unit-mm,

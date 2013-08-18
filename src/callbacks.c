@@ -437,21 +437,43 @@ err:
 /* --------------------------------------------------------- */
 void
 callbacks_generic_save_activate (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+				 gpointer         user_data)
 {
-	gchar *filename=NULL;
+	gchar *filename = NULL;
+	gchar *windowTitle = NULL;
 	gint processType = GPOINTER_TO_INT (user_data);
-	gchar *windowTitle=NULL;
-	GtkFileFilter * filter;
+	GtkFileFilter *filter;
+	GtkSpinButton *spin_but;
+	gint spin_but_val;
+	GtkTooltips *tooltips;
+	GtkWidget *label;
+	GtkWidget *hbox;
+	static gint dpi;
 	
 	gint index=callbacks_get_selected_row_index ();
 	if (index < 0) {
-		interface_show_alert_dialog(_("No layer is currently selected"),
+		interface_show_alert_dialog (_("No layer is currently selected"),
 			_("Please select a layer and try again."),
 			FALSE,
 			NULL);
 		return;
 	}
+
+	screen.win.gerber =
+		gtk_file_chooser_dialog_new ("", NULL,
+				GTK_FILE_CHOOSER_ACTION_SAVE,
+				NULL, NULL, NULL);
+	GtkFileChooser *file_chooser_p =
+			GTK_FILE_CHOOSER(screen.win.gerber);
+
+	hbox = gtk_hbox_new (0, 0);
+	spin_but = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range (0, 0, 1));
+	label = gtk_label_new ("");
+	tooltips = gtk_tooltips_new ();
+	gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(spin_but), 0, 0, 1);
+	gtk_box_pack_end (GTK_BOX(hbox), label, 0, 0, 5);
+	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
+			hbox, 0, 0, 2);
 	
 	if (processType == CALLBACKS_SAVE_PROJECT_AS)
 		windowTitle = g_strdup (_("Save project as..."));
@@ -461,9 +483,18 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		windowTitle = g_strdup (_("Export PDF file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_SVG)
 		windowTitle = g_strdup (_("Export SVG file as..."));
-	else if (processType == CALLBACKS_SAVE_FILE_PNG)
+	else if (processType == CALLBACKS_SAVE_FILE_PNG) {
 		windowTitle = g_strdup (_("Export PNG file as..."));
-	else if (processType == CALLBACKS_SAVE_FILE_RS274X)
+		gtk_label_set_text (GTK_LABEL(label), _("DPI:"));
+		gtk_spin_button_set_range (spin_but, 0, 6000);
+		gtk_spin_button_set_increments (spin_but, 10, 100);
+		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(label),
+				_("DPI value, autoscaling if 0"), NULL);
+		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(spin_but),
+				_("DPI value, autoscaling if 0"), NULL);
+		gtk_spin_button_set_value (spin_but, dpi);
+		gtk_widget_show_all (hbox);
+	} else if (processType == CALLBACKS_SAVE_FILE_RS274X)
 		windowTitle = g_strdup (_("Export RS-274X file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_DRILL)
 		windowTitle = g_strdup (_("Export Excellon drill file as..."));
@@ -473,47 +504,45 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		windowTitle = g_strdup (_("Export Excellon drillm file as..."));
 	else if (processType == CALLBACKS_SAVE_LAYER_AS)
 		windowTitle = g_strdup (_("Save layer as..."));
-		
-	screen.win.gerber = 
-	gtk_file_chooser_dialog_new (windowTitle, NULL,
-				     GTK_FILE_CHOOSER_ACTION_SAVE,
-				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				     GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
-				     NULL);
+
+	gtk_dialog_add_buttons (GTK_DIALOG(screen.win.gerber),
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
+			NULL);
+
+	gtk_window_set_title (GTK_WINDOW(screen.win.gerber), windowTitle);
 	g_free (windowTitle);
 	
 	/* if we're saving or exporting a layer, start off in the location of the
 	   loaded file */
 	if (processType != CALLBACKS_SAVE_PROJECT_AS) {
-		gint index=callbacks_get_selected_row_index();
+		gint index=callbacks_get_selected_row_index ();
 		if (index >= 0) {
 			gchar *dirName = g_path_get_dirname (mainProject->file[index]->fullPathname);
-			gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
-				dirName);
+			gtk_file_chooser_set_current_folder (file_chooser_p, dirName);
 			g_free (dirName);
 		}
 	}
 
 	if (processType == CALLBACKS_SAVE_PROJECT_AS) {
-	  filter = gtk_file_filter_new();
-	  gtk_file_filter_set_name(filter, _(GERBV_PROJECT_FILE_NAME));
-	  gtk_file_filter_add_pattern(filter, GERBV_PROJECT_FILE_PAT);
-	  gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
-				       filter);
+		filter = gtk_file_filter_new ();
+		gtk_file_filter_set_name (filter, _(GERBV_PROJECT_FILE_NAME));
+		gtk_file_filter_add_pattern (filter, GERBV_PROJECT_FILE_PAT);
+		gtk_file_chooser_add_filter (file_chooser_p, filter);
 
-	  filter = gtk_file_filter_new();
-	  gtk_file_filter_set_name(filter, _("All"));
-	  gtk_file_filter_add_pattern(filter, "*");
-	  gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
-				       filter);
-	  
-	  gtk_file_chooser_set_current_name ((GtkFileChooser *) screen.win.gerber, 
-					     "untitled" GERBV_PROJECT_FILE_EXT );
+		filter = gtk_file_filter_new ();
+		gtk_file_filter_set_name (filter, _("All"));
+		gtk_file_filter_add_pattern (filter, "*");
+		gtk_file_chooser_add_filter (file_chooser_p, filter);
+
+		gtk_file_chooser_set_current_name (file_chooser_p,
+				"untitled" GERBV_PROJECT_FILE_EXT);
 	}
 
 	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
+	if (gtk_dialog_run (GTK_DIALOG(screen.win.gerber)) == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename (file_chooser_p);
+		spin_but_val = gtk_spin_button_get_value_as_int (spin_but);
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
@@ -528,12 +557,30 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			gerbv_export_pdf_file_from_project_autoscaled (mainProject, filename);
 		else if (processType == CALLBACKS_SAVE_FILE_SVG)
 			gerbv_export_svg_file_from_project_autoscaled (mainProject, filename);
-		else if (processType == CALLBACKS_SAVE_FILE_PNG)
-			gerbv_export_png_file_from_project_autoscaled (mainProject,
-				screenRenderInfo.displayWidth, screenRenderInfo.displayHeight,
-				filename);
-		else if (processType == CALLBACKS_SAVE_LAYER_AS) {
-			gint index=callbacks_get_selected_row_index();
+		else if (processType == CALLBACKS_SAVE_FILE_PNG) {
+			dpi = spin_but_val;
+			if (dpi == 0) {
+				gerbv_export_png_file_from_project_autoscaled (mainProject,
+					screenRenderInfo.displayWidth, screenRenderInfo.displayHeight,
+					filename);
+			} else {	/* Non zero DPI */
+				gerbv_render_size_t bb;
+				gerbv_render_get_boundingbox (mainProject, &bb);
+				gfloat w = bb.right - bb.left;
+				gfloat h = bb.bottom - bb.top;
+				gerbv_render_info_t renderInfo = {
+					dpi, dpi,
+					bb.left - (w*GERBV_DEFAULT_BORDER_COEFF)/2.0,
+					bb.top - (h*GERBV_DEFAULT_BORDER_COEFF)/2.0,
+					GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY,
+					w*dpi*(1 + GERBV_DEFAULT_BORDER_COEFF),
+					h*dpi*(1 + GERBV_DEFAULT_BORDER_COEFF),
+				};
+				gerbv_export_png_file_from_project (mainProject,
+						&renderInfo, filename);
+			}
+		} else if (processType == CALLBACKS_SAVE_LAYER_AS) {
+			gint index=callbacks_get_selected_row_index ();
 			
 			gerbv_save_layer_from_index (mainProject, index, filename);
 			/* rename the file path in the index, so future saves will reference the new file path */
@@ -543,39 +590,38 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			mainProject->file[index]->name = g_path_get_basename (filename);
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_RS274X) {
-			gint index=callbacks_get_selected_row_index();
+			gint index=callbacks_get_selected_row_index ();
 
 			gerbv_export_rs274x_file_from_image (filename, mainProject->file[index]->image,
 				&mainProject->file[index]->transform);	
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_DRILL) {
-			gint index=callbacks_get_selected_row_index();
+			gint index=callbacks_get_selected_row_index ();
 			
 			gerbv_export_drill_file_from_image (filename, mainProject->file[index]->image,
 				&mainProject->file[index]->transform);
-		}	/**create new image....  */
+		}	/* create new image....  */
 		else if (processType == CALLBACKS_SAVE_FILE_RS274XM) {
 			gerbv_image_t *image;
 			gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};
-			if(NULL != (image=merge_images(processType)) ){
-				/*printf("Preparing to export merge\n"); */
+			if (NULL != (image=merge_images (processType)) ){
 				gerbv_export_rs274x_file_from_image (filename, image,	&t);	
-				gerbv_destroy_image(image);
+				gerbv_destroy_image (image);
 				GERB_MESSAGE (_("Merged visible gerber layers and placed in '%s'\n"),filename);
 			}
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_DRILLM) {
 			gerbv_image_t *image;
 			gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};
-			if(NULL != (image=merge_images(processType)) ){
+			if (NULL != (image = merge_images (processType))) {
 				gerbv_export_drill_file_from_image (filename, image,&t);
-				gerbv_destroy_image(image);
+				gerbv_destroy_image (image);
 				GERB_MESSAGE (_("Merged visible drill layers and placed in '%s'\n"),filename);
 			}	
 		}		
 	}
 	g_free (filename);
-	callbacks_update_layer_tree();
+	callbacks_update_layer_tree ();
 	return;
 }
 
