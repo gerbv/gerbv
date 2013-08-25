@@ -345,6 +345,9 @@ main(int argc, char *argv[])
 #if ENABLE_NLS
     setlocale(LC_ALL, "");
     bindtextdomain(PACKAGE, LOCALEDIR);
+# ifdef WIN32
+    bind_textdomain_codeset(PACKAGE, "UTF-8");
+# endif
     textdomain(PACKAGE);
 #endif
 
