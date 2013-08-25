@@ -2,7 +2,10 @@ Currently KNOWN BUGS
 
 All OS:
 
+If layer orientation modified with rotation and rendering mode is 'Fast' or
+'Fast, with XOR' (GDK rendering) rectangular and oval apertures are not rotated
+and not correctly displayed.
+
 Reporting about macro parameters (obtained via analyze -> analyze visible
 Gerber layers, and found in the Aperture definitions tab) incorrectly
 reports the macro parameters found.
-
