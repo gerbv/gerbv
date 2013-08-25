@@ -43,6 +43,7 @@
 #include <sys/mman.h>
 #endif
 #include <errno.h>
+#include <glib/gstdio.h>
 
 #include "common.h"
 #include "gerbv.h"
