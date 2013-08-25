@@ -96,10 +96,10 @@ extern "C" {
 #define COORD2MILS(c) ((c)*1000.0)
 #define COORD2MMS(c) ((c)*25.4)
 
-#define GERB_FATAL_ERROR(t...) g_log(NULL, G_LOG_LEVEL_ERROR, ##t);
-#define GERB_COMPILE_ERROR(t...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, ##t);
-#define GERB_COMPILE_WARNING(t...)  g_log(NULL, G_LOG_LEVEL_WARNING, ##t);
-#define GERB_MESSAGE(t...)  g_log(NULL, G_LOG_LEVEL_MESSAGE, ##t);
+#define GERB_FATAL_ERROR(...) g_log(NULL, G_LOG_LEVEL_ERROR, __VA_ARGS__)
+#define GERB_COMPILE_ERROR(...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, __VA_ARGS__)
+#define GERB_COMPILE_WARNING(...)  g_log(NULL, G_LOG_LEVEL_WARNING, __VA_ARGS__)
+#define GERB_MESSAGE(...)  g_log(NULL, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 
 /*! The aperture macro commands */  
 typedef enum {GERBV_OPCODE_NOP, /*!< no operation */
