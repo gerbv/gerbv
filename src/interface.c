@@ -1767,6 +1767,14 @@ interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText,
   return;
 }
 
+static int focused_widget_num = 0;
+
+void
+focus_in_event_callback (int *widget_num)
+{
+	focused_widget_num = *widget_num;
+}
+
 void
 interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform,
 		gerbv_unit_t screenUnit) {
@@ -1775,6 +1783,9 @@ interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform
 	GtkWidget *spin1,*spin2,*spin3,*spin4,*spin5;
 	GtkAdjustment *adj;
 	gerbv_user_transformation_t startTransform = *transform;
+	GtkWidget **focus_widgets[] = {&spin1, &spin2, &spin3, &spin4, &spin5, &check1, &check2, NULL};
+	int focus_nums[G_N_ELEMENTS(focus_widgets)];
+	int i;
 
 	dialog = gtk_dialog_new_with_buttons (_("Modify layer orientation"),
 					GTK_WINDOW (screen.win.topLevelWindow), GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1900,6 +1911,18 @@ interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform
 	gtk_toggle_button_set_active ((GtkToggleButton *) check2, transform->mirrorAroundY);
 	gtk_table_attach ((GtkTable *) tableWidget, check2,2,3,13,14,0,0,0,2);
 
+	for (i = 0; focus_widgets[i] != NULL; i++) {
+		/* Set stored focus */
+		if (i == focused_widget_num) {
+			gtk_widget_grab_focus (*focus_widgets[i]);
+		}
+
+		/* Set focus-in-event callback */
+		focus_nums[i] = i;
+		g_signal_connect_swapped ((gpointer)(*focus_widgets[i]), "focus-in-event",
+			G_CALLBACK (focus_in_event_callback), (gpointer)(focus_nums + i));
+	}
+
 	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 14, 8);
 	gtk_widget_show_all (dialog);
 	gint result = GTK_RESPONSE_APPLY;
@@ -1947,9 +1970,19 @@ interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform
 		// revert back to the start values if the user cancelled
 		*transform = startTransform;
 	}
+#if 0
+	/* Store focus */
+	for (i = 0; focus_widgets[i] != NULL; i++) {
+		g_object_get (*focus_widgets[i], "has-focus", &has_focus, NULL);
+		if (has_focus) {
+			focus_widget_num = i;
+			break;
+		}
+	}
+#endif
+
 	gtk_widget_destroy (dialog);
 
 	return;
 }
-
 
