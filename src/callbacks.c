@@ -450,7 +450,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	GtkWidget *hbox;
 	static gint dpi;
 	
-	gint index=callbacks_get_selected_row_index ();
+	gint index = callbacks_get_selected_row_index ();
 	if (index < 0) {
 		interface_show_alert_dialog (_("No layer is currently selected"),
 			_("Please select a layer and try again."),
@@ -465,6 +465,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 				NULL, NULL, NULL);
 	GtkFileChooser *file_chooser_p =
 			GTK_FILE_CHOOSER(screen.win.gerber);
+	gtk_file_chooser_set_do_overwrite_confirmation (file_chooser_p, TRUE);
 
 	hbox = gtk_hbox_new (0, 0);
 	spin_but = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range (0, 0, 1));
