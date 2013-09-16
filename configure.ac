@@ -27,6 +27,7 @@ AC_CONFIG_SRCDIR([src/gerbv.c])
 AC_GNU_SOURCE
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.9])
+AC_CONFIG_MACRO_DIR([m4])
 
 dnl Create a configuration header 
 AM_CONFIG_HEADER([config.h])

@@ -80,7 +80,7 @@ acl_ver=`aclocal --version | awk '{print $NF; exit}'`
 echo "    $acl_ver"
 
 echo "Running aclocal..."
-aclocal $ACLOCAL_FLAGS || exit 1
+aclocal -I m4 $ACLOCAL_FLAGS || exit 1
 echo "... done with aclocal."
 
 ############################################################################
