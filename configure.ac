@@ -24,9 +24,9 @@ dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
 AC_INIT([gerbv], [2.6.1])
 AC_CONFIG_SRCDIR([src/gerbv.c])
-AC_GNU_SOURCE
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.9])
+AC_GNU_SOURCE
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Create a configuration header 
