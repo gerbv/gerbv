@@ -1469,13 +1469,6 @@ interface_create_gui (int req_width, int req_height)
 			  );
 
 	/*
-	* Set gtk error log handler
-	*/
-	g_log_set_handler (NULL, 
-		       G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK, 
-		       callbacks_handle_log_messages, NULL); 
-  
-	/*
 	 * Setup some GTK+ defaults.
 	 * These should really be somewhere else.
 	 */
@@ -1542,6 +1535,25 @@ interface_create_gui (int req_width, int req_height)
 
 	set_window_icon (mainWindow);
 	callbacks_update_layer_tree ();
+
+	/* Set GTK error log handler */
+	g_log_set_handler (NULL,
+		G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK,
+		callbacks_handle_log_messages, NULL);
+
+	/* Output temporary stored log messages */
+	extern GArray *log_array_tmp;
+	struct log_struct log_item;
+	int i;
+
+	for (i = 0; i < log_array_tmp->len; i++) {
+		log_item = g_array_index (log_array_tmp, struct log_struct, i);
+		callbacks_handle_log_messages (log_item.domain, log_item.level,
+				log_item.message, NULL);
+		g_free(log_item.domain);
+		g_free(log_item.message);
+	}
+	g_array_free (log_array_tmp, TRUE);
 
 	/* connect this signals as late as possible to avoid triggering them before
 	   the gui is drawn */

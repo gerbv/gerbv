@@ -89,7 +89,7 @@ typedef struct {
 	gdouble lastMeasuredX;
 	gdouble lastMeasuredY;
     } win;
-    
+
     gpointer windowSurface;
     gpointer bufferSurface;
     gpointer selectionRenderData;
@@ -105,12 +105,12 @@ typedef struct {
 
     gboolean centered_outline_zoom;
 
-    int selected_layer;         /* Selected layer by Alt+keypad */
+    int selected_layer;		/* Selected layer by Alt+keypad */
     gerbv_selection_info_t selectionInfo;
     gerbv_state_t state;
     gerbv_tool_t tool;
     gerbv_gui_unit_t unit;
-           
+
     gint last_x;
     gint last_y;
     gint start_x;		/* Zoom box start screen coordinates */
@@ -119,7 +119,7 @@ typedef struct {
     gint off_x;			/* Offset current pixmap when panning */
     gint off_y;
 
-    gdouble measure_start_x;/* Measure start board coordinates */
+    gdouble measure_start_x;	/* Measure start board coordinates */
     gdouble measure_start_y;
     gdouble measure_last_x;	/* Measure end board coordinates */
     gdouble measure_last_y;
@@ -129,16 +129,22 @@ typedef struct {
     int dump_parsed_image;
 } gerbv_screen_t;
 
+struct log_struct {
+    gchar *domain;
+    GLogLevelFlags level;
+    gchar *message;
+};
+
 extern gerbv_screen_t screen;
 extern gerbv_project_t *mainProject;
 
-void 
+void
 main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
 
-void 
+void
 main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
 
-void 
+void
 main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
 #endif /* GERBV_H */
 

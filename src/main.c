@@ -318,7 +318,23 @@ main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filenam
     main_save_project_from_filename (gerbvProject, filename);
 } /* gerbv_save_as_project_from_filename */
 
+GArray *log_array_tmp = NULL;
 
+/* Temporary log messages handler. It will store log messages before GUI
+ * initialization. */
+void
+callbacks_temporary_handle_log_messages(const gchar *log_domain,
+		GLogLevelFlags log_level,
+		const gchar *message, gpointer user_data) {
+    struct log_struct item;
+
+    item.domain = g_strdup (log_domain);
+    item.level = log_level;
+    item.message = g_strdup (message);
+    g_array_append_val (log_array_tmp, item);
+
+    g_log_default_handler (log_domain, log_level, message, user_data);
+}
 /* ------------------------------------------------------------------ */
 int
 main(int argc, char *argv[])
@@ -773,6 +789,11 @@ main(int argc, char *argv[])
      * This limits you to either give files on the commandline or just load
      * a project.
      */
+
+    log_array_tmp = g_array_new (TRUE, FALSE, sizeof (struct log_struct));
+    g_log_set_handler (NULL,
+		    G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK,
+		    callbacks_temporary_handle_log_messages, NULL);
     if (project_filename) {
 	printf(_("Loading project %s...\n"), project_filename);
 	/* calculate the absolute pathname to the project if the user
