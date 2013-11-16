@@ -72,11 +72,6 @@
 #define MAXL 200
 #define DRILL_READ_DOUBLE_SIZE 32
 
-#undef max
-#define max(a,b) ((a) > (b) ? (a) : (b))
-#undef min
-#define min(a,b) ((a) < (b) ? (a) : (b))
-
 enum drill_file_section_t {DRILL_NONE, DRILL_HEADER, DRILL_DATA};
 enum drill_coordinate_mode_t {DRILL_MODE_ABSOLUTE, DRILL_MODE_INCREMENTAL};
 

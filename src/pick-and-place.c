@@ -40,11 +40,6 @@
 #include "csv.h"
 #include "pick-and-place.h"
 
-#undef max
-#define max(a,b) ((a) > (b) ? (a) : (b))
-#undef min
-#define min(a,b) ((a) < (b) ? (a) : (b))
-
 void gerb_transf_free(gerbv_transf_t *transf)
 {
     g_free(transf);

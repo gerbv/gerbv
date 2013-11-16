@@ -50,5 +50,10 @@
 # define N_(str) (str)
 #endif
 
+#undef max
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#undef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
+
 #endif /* __COMMON_H__ */
 
