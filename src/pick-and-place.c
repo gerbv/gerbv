@@ -25,43 +25,17 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif /* HAVE_CONFIG_H */
-
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <glib.h>
-#include <gtk/gtk.h> /* What's this for? */
-
-#ifdef HAVE_STRING_H
-#include <string.h>
+# include <config.h>
 #endif
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-
-#include <ctype.h>
-#include <locale.h>
-
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif /* HAVE_GETOPT_H */
-
 #include <assert.h>
+#include <ctype.h>
+#include <glib.h>
+#include <math.h>
+#include <stdlib.h>
 
 #include "gerbv.h"
 #include "gerber.h"
-#ifdef RENDER_USING_GDK
-  #include "draw-gdk.h"
-#else
-  #include "draw.h"
-#endif
-
 #include "common.h"
 #include "csv.h"
 #include "pick-and-place.h"
@@ -71,13 +45,9 @@
 #undef min
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
-/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
-#define dprintf if(DEBUG) printf
-
 void gerb_transf_free(gerbv_transf_t *transf)
 {
     g_free(transf);
-    
 }
 
 
