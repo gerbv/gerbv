@@ -65,19 +65,19 @@ gerbv_stats_new(void) {
     /* Initialize error list */
     error_list = gerbv_stats_new_error_list();
     if (error_list == NULL)
-        GERB_FATAL_ERROR(_("malloc error_list failed\n"));
+        GERB_FATAL_ERROR(_("malloc error_list failed"));
     stats->error_list = (gerbv_error_list_t *) error_list;
 
     /* Initialize aperture list */
     aperture_list = gerbv_stats_new_aperture_list();
     if (aperture_list == NULL)
-        GERB_FATAL_ERROR(_("malloc aperture_list failed\n"));
+        GERB_FATAL_ERROR(_("malloc aperture_list failed"));
     stats->aperture_list = (gerbv_aperture_list_t *) aperture_list;
 
     /* Initialize D codes list */
     D_code_list = gerbv_stats_new_aperture_list();
     if (D_code_list == NULL)
-        GERB_FATAL_ERROR(_("malloc D_code_list failed\n"));
+        GERB_FATAL_ERROR(_("malloc D_code_list failed"));
     stats->D_code_list = (gerbv_aperture_list_t *) D_code_list;
 
     return stats;
@@ -287,7 +287,7 @@ gerbv_stats_add_error(gerbv_error_list_t *error_list_in,
     /* Now malloc space for new error list element */
     error_list_new = (gerbv_error_list_t *) g_malloc(sizeof(gerbv_error_list_t));
     if (error_list_new == NULL) {
-        GERB_FATAL_ERROR(_("malloc error_list failed\n"));
+        GERB_FATAL_ERROR(_("malloc error_list failed"));
     }
 
     /* Set member elements */
@@ -373,7 +373,7 @@ gerbv_stats_add_aperture(gerbv_aperture_list_t *aperture_list_in,
     /* Now malloc space for new aperture list element */
     aperture_list_new = (gerbv_aperture_list_t *) g_malloc(sizeof(gerbv_aperture_list_t));
     if (aperture_list_new == NULL) {
-        GERB_FATAL_ERROR(_("malloc aperture_list failed\n"));
+        GERB_FATAL_ERROR(_("malloc aperture_list failed"));
     }
 
     /* Set member elements */
@@ -431,7 +431,7 @@ gerbv_stats_add_to_D_list(gerbv_aperture_list_t *D_list_in,
     /* Malloc space for new aperture list element */
     D_list_new = (gerbv_aperture_list_t *) g_malloc(sizeof(gerbv_aperture_list_t));
     if (D_list_new == NULL) {
-        GERB_FATAL_ERROR(_("malloc D_list failed\n"));
+        GERB_FATAL_ERROR(_("malloc D_list failed"));
     }
 
     /* Set member elements */
@@ -473,7 +473,7 @@ gerbv_stats_increment_D_list_count(gerbv_aperture_list_t *D_list_in,
     dprintf("   <---  .... Leaving inc_D_list_count.\n"); 
     gerbv_stats_add_error(error,
 			 -1,
-			 _("Undefined aperture number called out in D code.\n"),
+			 _("Undefined aperture number called out in D code"),
 			 GERBV_MESSAGE_ERROR);
     return -1;  /* Return -1 for failure */
 }

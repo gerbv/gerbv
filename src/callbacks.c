@@ -3560,9 +3560,10 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 	* Fatal aborts application. We will try to get the message out anyhow.
 	*/
 	if (log_level & G_LOG_FLAG_FATAL)
-		fprintf(stderr, _("Fatal error : %s\n"), message);
+		fprintf(stderr, _("Fatal error : %s"), message);
 
 	gtk_text_buffer_insert(textbuffer, &iter, message, -1);
+	gtk_text_buffer_insert(textbuffer, &iter, "\n", -1);
 
 	gtk_text_buffer_get_end_iter(textbuffer, &iter);
 
