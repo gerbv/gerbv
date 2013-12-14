@@ -705,7 +705,7 @@ main(int argc, char *argv[])
 	    printf(_("Usage: gerbv [OPTIONS...] [FILE...]\n\n"
 		"Available options:\n"
 		"  -B, --border=<b>                Border around the image in percent of the\n"
-		"                                  width/height. Defaults to 5%%.\n"
+		"                                  width/height. Defaults to %d%%.\n"
 		"  -D, --dpi=<XxY>or<R>            Resolution (Dots per inch) for the output\n"
 		"                                  bitmap. With the format <XxY>, different\n"
 		"                                  resolutions for X- and Y-direction are used.\n"
@@ -736,12 +736,13 @@ main(int argc, char *argv[])
 		"                                  arranging panels). Use multiple -T flags\n"
 		"                                  for multiple layers.\n"
 		"  -x, --export=<png/pdf/ps/svg/   Export a rendered picture to a file with\n"
-		"                rs274x/drill>     the specified format.\n"));
+		"                rs274x/drill>     the specified format.\n"),
+			(int)(GERBV_DEFAULT_BORDER_COEFF * 100));
 #else
 	    printf(_("Usage: gerbv [OPTIONS...] [FILE...]\n\n"
 		"Available options:\n"
 		"  -B<b>                   Border around the image in percent of the\n"
-		"                          width/height. Defaults to 5%%.\n"
+		"                          width/height. Defaults to %d%%.\n"
 		"  -D<XxY>or<R>            Resolution (Dots per inch) for the output\n"
 		"                          bitmap. With the format <XxY>, different\n"
 		"                          resolutions for X- and Y-direction are used.\n"
@@ -773,7 +774,8 @@ main(int argc, char *argv[])
 		"                          arranging panels). Use multiple -T flags\n"
 		"                          for multiple layers.\n"
 		"  -x <png/pdf/ps/svg/     Export a rendered picture to a file with\n"
-		"      rs274x/drill>       the specified format.\n"));
+		"      rs274x/drill>       the specified format.\n"),
+			(int)(GERBV_DEFAULT_BORDER_COEFF * 100));
 
 #endif /* HAVE_GETOPT_LONG */
 	    exit(1);
