@@ -85,6 +85,7 @@ gerbv_SOURCES = \
 		main.h main.c \
 		project.c project.h scheme-private.h scheme.c \
 		scheme.h \
+		table.h table.c \
 		callbacks.c callbacks.h interface.c \
 		interface.h render.c render.h \
 		icons.h

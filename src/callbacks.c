@@ -62,6 +62,7 @@
 #include "interface.h"
 #include "attribute.h"
 #include "render.h"
+#include "table.h"
 
 #include "draw-gdk.h"
 
@@ -100,7 +101,7 @@ extern gerbv_render_info_t screenRenderInfo;
  * values are used in several places in this file.
  * Please keep this in sync with the gerbv_aperture_type_t 
  * enum defined in gerbv.h */
-char *ap_names[] = {"NONE",
+char *aperture_names[] = {"NONE",
 		    "CIRCLE",
 		    "RECTANGLE",
 		    "OVAL",           /* an ovular (obround) aperture */
@@ -780,779 +781,665 @@ callbacks_fit_to_window_activate              (GtkMenuItem     *menuitem,
 	render_refresh_rendered_image_on_screen();
 }
 
+/* --------------------------------------------------------- */
+
+static const char *error_type_string(gerbv_message_type_t type) {
+	switch (type) {
+	case GERBV_MESSAGE_FATAL:
+		return _("FATAL");
+	case GERBV_MESSAGE_ERROR:
+		return _("ERROR");
+	case GERBV_MESSAGE_WARNING:
+		return _("Warning");
+	case GERBV_MESSAGE_NOTE:
+		return _("Note");
+	default:
+		return "Unknown";
+	}
+}
 
 /* --------------------------------------------------------- */
 /**
-  * The analyze -> analyze Gerbers  menu item was selected.  
+  * The analyze -> analyze Gerbers  menu item was selected.
   * Compile statistics on all open Gerber layers and then display
   * them.
   *
   */
 void
-callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem, 
-				 gpointer user_data)
+callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
+					gpointer user_data)
 {
-    gerbv_stats_t *stats_report;
-    GString *G_report_string = g_string_new(NULL);
-    GString *D_report_string = g_string_new(NULL);
-    GString *M_report_string = g_string_new(NULL);
-    GString *misc_report_string = g_string_new(NULL);
-    GString *general_report_string = g_string_new(NULL);
-    GString *error_report_string = g_string_new(NULL);
-    gerbv_error_list_t *my_error_list;
-    gchar *error_level = NULL;
-    GString *aperture_def_report_string = g_string_new(NULL);
-    GString *aperture_use_report_string = g_string_new(NULL);
-    gerbv_aperture_list_t *my_aperture_list;
-    int idx;
-    int aperture_count = 0;
+	gerbv_aperture_list_t *aperture_list;
+	int i;
 
-    /* First get a report of stats & errors accumulated from all layers */
-    stats_report = generate_gerber_analysis();
+	/* Get a report of stats & errors accumulated from all layers */
+	gerbv_stats_t *stats_report = generate_gerber_analysis();
 
-    /* General info report */
-    g_string_printf(general_report_string, 
-		    _("General information\n"));
-    g_string_append_printf(general_report_string, 
-			   _("  Active layer count = %d\n"), 
-			   stats_report->layer_count);
-    g_string_append_printf(general_report_string,
-			   "\n\n%-45s   %-10s\n",
-			   _("Files processed"),
-			   _("Layer number"));
-    for (idx = 0; idx <= mainProject->last_loaded; idx++) {
-	if (mainProject->file[idx] &&
-	    mainProject->file[idx]->isVisible &&
-	    (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_RS274X) ) {
-	    g_string_append_printf(general_report_string, 
-				   "  %-45s   %-10d\n", mainProject->file[idx]->name, idx+1);
+	/* General info report */
+	GString *general_report_str = g_string_new(NULL);
+	if (stats_report->layer_count == 0) {
+		g_string_printf(general_report_str,
+				_("No Gerber layers visible!"));
+	} else {
+		if (stats_report->error_list->error_text == NULL) {
+			g_string_printf(general_report_str,
+				_("No errors found in %d visible "
+					"Gerber layer(s)."),
+				stats_report->layer_count);
+		} else {
+			g_string_printf(general_report_str,
+				_("Found errors in %d visible "
+					"Gerber layer(s)."),
+				stats_report->layer_count);
+		}
 	}
-    }
 
-    /* Error report (goes into general report tab) */
-    if (stats_report->layer_count == 0) {
-	g_string_printf(error_report_string, 
-			_("\n\nNo Gerber files active (visible)!\n"));
-    } else if (stats_report->error_list->error_text == NULL) {
-	g_string_printf(error_report_string, 
-			_("\n\nNo errors found in active Gerber file(s)!\n")); 
-    } else {
-	g_string_printf(error_report_string, 
-			_("\n\nErrors found in active Gerber file(s):\n")); 
-	for(my_error_list = stats_report->error_list; 
-	    my_error_list != NULL; 
-	    my_error_list = my_error_list->next) {
-	    switch(my_error_list->type) {
-		case GERBV_MESSAGE_FATAL: /* We should never get this one since the 
-                			   * program should terminate first.... */
-		    error_level = g_strdup_printf(_("FATAL: "));
-		    break;
-		case GERBV_MESSAGE_ERROR:
-		    error_level = g_strdup_printf(_("ERROR: "));
-		    break;
-		case GERBV_MESSAGE_WARNING:
-		    error_level = g_strdup_printf(_("WARNING: "));
-		    break;
-		case GERBV_MESSAGE_NOTE:
-		    error_level = g_strdup_printf(_("NOTE: "));
-		    break;
-	    }
-	    g_string_append_printf(error_report_string,
-				   _("  Layer %d: %s %s"), 
-				   my_error_list->layer,
-				   error_level,
-				   my_error_list->error_text );
-	    g_free(error_level);
-	}
-    }
+	GtkWidget *general_label = gtk_label_new(general_report_str->str);
+	g_string_free(general_report_str, TRUE);
+	gtk_misc_set_alignment(GTK_MISC(general_label), 0, 0);
+	gtk_misc_set_padding(GTK_MISC(general_label), 7, 7);
+	gtk_label_set_selectable(GTK_LABEL(general_label), TRUE);
 
-
-    g_string_append_printf(general_report_string, 
-			   "%s", 
-			   error_report_string->str);
-    g_string_free(error_report_string, TRUE);
-    
-    /* Now compile stats related to reading G codes */
-    g_string_printf(G_report_string, 
-		    _("G code statistics (all active layers)\n"));
-    g_string_append_printf(G_report_string, 
-			   _("<code> = <number of incidences>\n"));
-    g_string_append_printf(G_report_string,
-			   "G0 = %-6d (%s)\n", 
-			   stats_report->G0,
-			   _("Move"));
-    g_string_append_printf(G_report_string,
-			   "G1 = %-6d (%s)\n", 
-			   stats_report->G1,
-			   _("1X linear interpolation"));
-    g_string_append_printf(G_report_string,
-			   "G2 = %-6d (%s)\n", 
-			   stats_report->G2,
-			   _("CW interpolation"));
-    g_string_append_printf(G_report_string,
-			   "G3 = %-6d (%s)\n", 
-			   stats_report->G3,
-			   _("CCW interpolation"));
-    g_string_append_printf(G_report_string,
-			   "G4 = %-6d (%s)\n", 
-			   stats_report->G4,
-			   _("Comment/ignore block"));
-    g_string_append_printf(G_report_string,
-			   "G10 = %-6d (%s)\n", 
-			   stats_report->G10,
-			   _("10X linear interpolation"));
-    g_string_append_printf(G_report_string,
-			   "G11 = %-6d (%s)\n", 
-			   stats_report->G11,
-			   _("0.1X linear interpolation"));
-    g_string_append_printf(G_report_string,
-			   "G12 = %-6d (%s)\n", 
-			   stats_report->G12,
-			   _("0.01X linear interpolation"));
-    g_string_append_printf(G_report_string,
-			   "G36 = %-6d (%s)\n", 
-			   stats_report->G36,
-			   _("Poly fill on"));
-    g_string_append_printf(G_report_string,
-			   "G37 = %-6d (%s)\n", 
-			   stats_report->G37,
-			   _("Poly fill off"));
-    g_string_append_printf(G_report_string,
-			   "G54 = %-6d (%s)\n", 
-			   stats_report->G54,
-			   _("Tool prepare"));
-    g_string_append_printf(G_report_string,
-			   "G55 = %-6d (%s)\n", 
-			   stats_report->G55,
-			   _("Flash prepare"));
-    g_string_append_printf(G_report_string,
-			   "G70 = %-6d (%s)\n", 
-			   stats_report->G70,
-			   _("Units = inches"));
-    g_string_append_printf(G_report_string,
-			   "G71 = %-6d (%s)\n", 
-			   stats_report->G71,
-			   _("Units = mm"));
-    g_string_append_printf(G_report_string,
-			   "G74 = %-6d (%s)\n", 
-			   stats_report->G74,
-			   _("Disable 360 circ. interpolation"));
-    g_string_append_printf(G_report_string,
-			   "G75 = %-6d (%s)\n", 
-			   stats_report->G75,
-			   _("Enable 360 circ. interpolation"));
-    g_string_append_printf(G_report_string,
-			   "G90 = %-6d (%s)\n", 
-			   stats_report->G90,
-			   _("Absolute units"));
-    g_string_append_printf(G_report_string,
-			   "G91 = %-6d (%s)\n", 
-			   stats_report->G91,
-			   _("Incremental units"));
-    g_string_append_printf(G_report_string,
-			   _("Unknown G codes = %d\n"), 
-			   stats_report->G_unknown);
-    
-
-    g_string_printf(D_report_string, _("D code statistics (all active layers)\n"));
-    g_string_append_printf(D_report_string,
-			   _("<code> = <number of incidences>\n"));
-    g_string_append_printf(D_report_string,
-			   "D1 = %-6d (%s)\n", 
-			   stats_report->D1,
-			   _("Exposure on"));
-    g_string_append_printf(D_report_string,
-			   "D2 = %-6d (%s)\n", 
-			   stats_report->D2,
-			   _("Exposure off"));
-    g_string_append_printf(D_report_string, 
-			   "D3 = %-6d (%s)\n", 
-			   stats_report->D3,
-			   _("Flash aperture"));
-    g_string_append_printf(D_report_string, 
-			   _("Undefined D codes = %d\n"), 
-			   stats_report->D_unknown);
-    g_string_append_printf(D_report_string,
-			   _("D code Errors = %d\n"), 
-			   stats_report->D_error);
-    
-
-    g_string_printf(M_report_string, _("M code statistics (all active layers)\n"));
-    g_string_append_printf(M_report_string, 
-			   _("<code> = <number of incidences>\n"));
-    g_string_append_printf(M_report_string, 
-			   "M0 = %-6d (%s)\n", 
-			   stats_report->M0,
-			   _("Program start"));
-    g_string_append_printf(M_report_string, 
-			   "M1 = %-6d (%s)\n", 
-			   stats_report->M1,
-			   _("Program stop"));
-    g_string_append_printf(M_report_string, 
-			   "M2 = %-6d (%s)\n", 
-			   stats_report->M2,
-			   _("Program end"));
-    g_string_append_printf(M_report_string, 
-			   _("Unknown M codes = %d\n"), 
-			   stats_report->M_unknown);
-    
-
-    g_string_printf(misc_report_string, _("Misc code statistics (all active layers)\n"));
-    g_string_append_printf(misc_report_string, 
-			   _("<code> = <number of incidences>\n"));
-    g_string_append_printf(misc_report_string, 
-			   "X = %d\n", stats_report->X);
-    g_string_append_printf(misc_report_string, 
-			   "Y = %d\n", stats_report->Y);
-    g_string_append_printf(misc_report_string, 
-			   "I = %d\n", stats_report->I);
-    g_string_append_printf(misc_report_string, 
-			   "J = %d\n", stats_report->J);
-    g_string_append_printf(misc_report_string, 
-			   "* = %d\n", stats_report->star);
-    g_string_append_printf(misc_report_string, 
-			   _("Unknown codes = %d\n"), 
-			   stats_report->unknown);
-    
-    /* Report apertures defined in input files. */
-
-    if (stats_report->aperture_list->number == -1) {
-	g_string_printf(aperture_def_report_string,
-			_("No aperture definitions found in Gerber file(s)!\n")); 
-    } else {
-	g_string_printf(aperture_def_report_string,
-			_("Apertures defined in Gerber file(s) (by layer)\n")); 
-	g_string_append_printf(aperture_def_report_string, 
-			" %-6s %-8s %12s  %8s %8s %8s\n",
-			_("Layer"),
-			_("D code"),
-			_("Aperture"),
-			_("Param[0]"),
-			_("Param[1]"),
-			_("Param[2]")
-	    );
-	for(my_aperture_list = stats_report->aperture_list; 
-	    my_aperture_list != NULL; 
-	    my_aperture_list = my_aperture_list->next) {
-
-	    g_string_append_printf(aperture_def_report_string,
-				   " %-6d    D%-4d%13s  %8.3f %8.3f %8.3f\n", 
-				   my_aperture_list->layer,
-				   my_aperture_list->number,
-				   ap_names[my_aperture_list->type],
-				   my_aperture_list->parameter[0],
-				   my_aperture_list->parameter[1],
-				   my_aperture_list->parameter[2]
-		);
-	}
-    }
-
-    /* Report apertures usage count in input files. */
-    if (stats_report->D_code_list->number == -1) {
-      g_string_printf(aperture_use_report_string,
-		      _("No apertures used in Gerber file(s)!\n")); 
-    } else {
-    	
-      /* Now add list of user-defined D codes (apertures) */
-      
-      g_string_printf(aperture_use_report_string,
-		      _("Apertures used in Gerber file(s) (all active layers)\n")); 
-      g_string_append_printf(aperture_use_report_string,
-			     _("<aperture code> = <number of uses>\n"));
-      for (my_aperture_list = stats_report->D_code_list; 
-	   my_aperture_list != NULL; 
-	   my_aperture_list = my_aperture_list->next) {
+	struct table *general_table;
 	
-	   g_string_append_printf(aperture_use_report_string,
-				  " D%d = %-6d\n",
-				  my_aperture_list->number,
-				  my_aperture_list->count
-	       );
-	   aperture_count += my_aperture_list->count;
-      }
-    }
-    g_string_append_printf(aperture_use_report_string,
-         _("\nTotal number of aperture uses: %d\n"), aperture_count);
+	if (stats_report->layer_count > 0 &&
+			stats_report->error_list->error_text != NULL) {
+		general_table = table_new_with_columns(3,
+			_("Layer"), G_TYPE_UINT, _("File"), G_TYPE_STRING,
+			_("Error"), G_TYPE_STRING);
+	} else {
+		general_table = table_new_with_columns(2,
+			_("Layer"), G_TYPE_UINT, _("File"), G_TYPE_STRING);
+	}
+	table_set_column_align(general_table, 0, 1.0);
 
+	gerbv_fileinfo_t **files = mainProject->file;
+	gerbv_error_list_t *err_list;
+	for (i = 0; i <= mainProject->last_loaded; i++) {
+		if (files[i] && files[i]->isVisible &&
+				(files[i]->image->layertype ==
+				 GERBV_LAYERTYPE_RS274X)) {
+			table_add_row(general_table, i + 1, files[i]->name, "");
 
-    /* Create top level dialog window for report */
-    GtkWidget *analyze_active_gerbers;
-    analyze_active_gerbers = gtk_dialog_new_with_buttons(_("Gerber codes report"),
-							NULL,
-							GTK_DIALOG_DESTROY_WITH_PARENT,
-							GTK_STOCK_OK,
-							GTK_RESPONSE_ACCEPT,
-							NULL);
-    gtk_container_set_border_width (GTK_CONTAINER (analyze_active_gerbers), 5);
-    
-    gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_gerbers), 
-				     GTK_RESPONSE_ACCEPT);
-    g_signal_connect (G_OBJECT(analyze_active_gerbers),
-		      "response",
-		      G_CALLBACK (gtk_widget_destroy), 
-		      GTK_WIDGET(analyze_active_gerbers));
+			/* Check error report on layer */
+			if (stats_report->layer_count > 0 &&
+				stats_report->error_list->error_text != NULL) {
+				for (err_list = stats_report->error_list;
+						err_list != NULL;
+						err_list = err_list->next) {
+					if (i + 1 == err_list->layer) {
+						table_add_row(general_table,
+							err_list->layer,
+							error_type_string(
+								err_list->type),
+							err_list->error_text);
+					}
+				}
+			}
+		}
+	}
 
-    /* Use fixed width font for all reports */
-    PangoFontDescription *font = 
-	pango_font_description_from_string ("monospace");
+	/* G codes on active layers */
+	GtkWidget *G_report_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(G_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-    /* Create GtkLabel to hold general report text */
-    GtkWidget *general_report_label = gtk_label_new (general_report_string->str);
-    g_string_free (general_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(general_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(general_report_label),
-			    font);
-    /* Put general report text into scrolled window */
-    GtkWidget *general_code_report_window = gtk_scrolled_window_new (NULL, NULL);
-    /* This throws a warning.  Must find different approach.... */
-    gtk_widget_set_size_request(GTK_WIDGET(general_code_report_window),
-				200,
-				300);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(general_code_report_window),
-					  GTK_WIDGET(general_report_label));
+	struct table *G_table =
+		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
+			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+	table_set_column_align(G_table, 0, 1.0);
+	table_set_column_align(G_table, 1, 1.0);
+	gtk_tree_view_set_headers_clickable(
+			GTK_TREE_VIEW(G_table->widget), TRUE);
 
-    /* Create GtkLabel to hold G code text */
-    GtkWidget *G_report_label = gtk_label_new (G_report_string->str);
-    g_string_free (G_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(G_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(G_report_label),
-			    font);
+	table_add_row(G_table, "G0", stats_report->G0,
+			_("Move"));
+	table_add_row(G_table, "G1", stats_report->G1,
+			_("1X linear interpolation"));
+	table_add_row(G_table, "G2", stats_report->G2,
+			_("CW interpolation"));
+	table_add_row(G_table, "G3", stats_report->G3,
+			_("CCW interpolation"));
+	table_add_row(G_table, "G4", stats_report->G4,
+				_("Comment/ignore block"));
+	table_add_row(G_table, "G10", stats_report->G10,
+				_("10X linear interpolation"));
+	table_add_row(G_table, "G11", stats_report->G11,
+				_("0.1X linear interpolation"));
+	table_add_row(G_table, "G12", stats_report->G12,
+				_("0.01X linear interpolation"));
+	table_add_row(G_table, "G36", stats_report->G36,
+				_("Poly fill on"));
+	table_add_row(G_table, "G37", stats_report->G37,
+				_("Poly fill off"));
+	table_add_row(G_table, "G54", stats_report->G54,
+				_("Tool prepare"));
+	table_add_row(G_table, "G55", stats_report->G55,
+				_("Flash prepare"));
+	table_add_row(G_table, "G70", stats_report->G70,
+				_("Units = inches"));
+	table_add_row(G_table, "G71", stats_report->G71,
+				_("Units = mm"));
+	table_add_row(G_table, "G74", stats_report->G74,
+				_("Disable 360 circ. interpolation"));
+	table_add_row(G_table, "G75", stats_report->G75,
+				_("Enable 360 circ. interpolation"));
+	table_add_row(G_table, "G90", stats_report->G90,
+				_("Absolute units"));
+	table_add_row(G_table, "G91", stats_report->G91,
+				_("Incremental units"));
+	table_add_row(G_table, "", stats_report->G_unknown,
+				_("Unknown G codes"));
 
-    /* Create GtkLabel to hold D code text */
-    GtkWidget *D_report_label = gtk_label_new (D_report_string->str);
-    g_string_free (D_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(D_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(D_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(D_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(D_report_label),
-			    font);
+	gtk_container_add(GTK_CONTAINER(G_report_window), G_table->widget);
 
-    /* Create GtkLabel to hold M code text */
-    GtkWidget *M_report_label = gtk_label_new (M_report_string->str);
-    g_string_free (M_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(M_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(M_report_label),
-			    font);
+	/* D codes on active layers */
+	GtkWidget *D_report_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(D_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-    /* Create GtkLabel to hold misc code text */
-    GtkWidget *misc_report_label = gtk_label_new (misc_report_string->str);
-    g_string_free (misc_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(misc_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(misc_report_label),
-			    font);
+	struct table *D_table =
+		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
+			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+	table_set_column_align(D_table, 0, 1.0);
+	table_set_column_align(D_table, 1, 1.0);
+	gtk_tree_view_set_headers_clickable(
+			GTK_TREE_VIEW(D_table->widget), TRUE);
+	table_add_row(D_table, "D1", stats_report->D1,
+			_("Exposure on"));
+	table_add_row(D_table, "D2", stats_report->D2,
+			_("Exposure off"));
+	table_add_row(D_table, "D3", stats_report->D3,
+			_("Flash aperture"));
+	table_add_row(D_table, "", stats_report->D_unknown,
+			_("Undefined D codes"));
+	table_add_row(D_table, "", stats_report->D_error,
+			_("D code Errors"));
 
-    /* Create GtkLabel to hold aperture defintion text */
-    GtkWidget *aperture_def_report_label = gtk_label_new (aperture_def_report_string->str);
-    g_string_free (aperture_def_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(aperture_def_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(aperture_def_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(aperture_def_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(aperture_def_report_label),
-			    font);
-    /* Put aperture definintion text into scrolled window */
-    GtkWidget *aperture_def_report_window = gtk_scrolled_window_new (NULL, NULL);
-    /* This throws a warning.  Must find different approach.... */
-    gtk_widget_set_size_request(GTK_WIDGET(aperture_def_report_window),
-				200,
-				300);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(aperture_def_report_window),
-					  GTK_WIDGET(aperture_def_report_label));
+	gtk_container_add(GTK_CONTAINER(D_report_window), D_table->widget);
 
-    /* Create GtkLabel to hold aperture use text */
-    GtkWidget *aperture_use_report_label = gtk_label_new (aperture_use_report_string->str);
-    g_string_free (aperture_use_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(aperture_use_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(aperture_use_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(aperture_use_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(aperture_use_report_label),
-			    font);
-    /* Put aperture definintion text into scrolled window */
-    GtkWidget *aperture_use_report_window = gtk_scrolled_window_new (NULL, NULL);
-    /* This throws a warning.  Must find different approach.... */
-    gtk_widget_set_size_request(GTK_WIDGET(aperture_use_report_window),
-				200,
-				300);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(aperture_use_report_window),
-					  GTK_WIDGET(aperture_use_report_label));
+	/* M codes on active layers */
+	GtkWidget *M_report_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(M_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-    /* Create tabbed notebook widget and add report label widgets. */
-    GtkWidget *notebook = gtk_notebook_new();
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(general_code_report_window),
-			     gtk_label_new(_("General")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(G_report_label),
-			     gtk_label_new(_("G codes")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(D_report_label),
-			     gtk_label_new(_("D codes")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(M_report_label),
-			     gtk_label_new(_("M codes")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(misc_report_label),
-			     gtk_label_new(_("Misc. codes")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(aperture_def_report_window),
-			     gtk_label_new(_("Aperture definitions")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(aperture_use_report_window),
-			     gtk_label_new(_("Aperture usage")));
-    
-    
-    /* Now put notebook into dialog window and show the whole thing */
-    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_gerbers)->vbox),
-		      GTK_WIDGET(notebook));
-    
-    gtk_widget_show_all(analyze_active_gerbers);
-    
-    /* free the stats report */
-    gerbv_stats_destroy (stats_report);	
-    return;
+	struct table *M_table =
+		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
+			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+	table_set_column_align(M_table, 0, 1.0);
+	table_set_column_align(M_table, 1, 1.0);
+	gtk_tree_view_set_headers_clickable(
+			GTK_TREE_VIEW(M_table->widget), TRUE);
+	table_add_row(M_table, "M0", stats_report->M0,
+			_("Program start"));
+	table_add_row(M_table, "M1", stats_report->M1,
+			_("Program stop"));
+	table_add_row(M_table, "M2", stats_report->M2,
+			_("Program end"));
+	table_add_row(M_table, "", stats_report->M_unknown,
+			_("Unknown M codes"));
 
+	gtk_container_add(GTK_CONTAINER(M_report_window), M_table->widget);
+
+	/* Misc codes */
+	GtkWidget *misc_report_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(misc_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	struct table *misc_table =
+		table_new_with_columns(2, _("Code"), G_TYPE_STRING,
+				_("Count"), G_TYPE_UINT);
+	table_set_column_align(misc_table, 1, 1.0);
+	gtk_tree_view_set_headers_clickable(
+			GTK_TREE_VIEW(misc_table->widget), TRUE);
+	table_add_row(misc_table, "X", stats_report->X);
+	table_add_row(misc_table, "Y", stats_report->Y);
+	table_add_row(misc_table, "I", stats_report->I);
+	table_add_row(misc_table, "J", stats_report->J);
+	table_add_row(misc_table, "*", stats_report->star);
+	table_add_row(misc_table, _("Unknown"), stats_report->unknown);
+
+	gtk_container_add(GTK_CONTAINER(misc_report_window),
+			misc_table->widget);
+
+	/* Apertures definition in input files */
+	GtkWidget *aperture_def_report_window =
+		gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(
+			GTK_SCROLLED_WINDOW(aperture_def_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	if (stats_report->aperture_list->number == -1) {
+		GtkWidget *aperture_def_label = gtk_label_new(
+			_("No aperture definitions found in active Gerber file(s)!"));
+		gtk_misc_set_alignment(GTK_MISC(aperture_def_label), 0, 0);
+		gtk_misc_set_padding(GTK_MISC(aperture_def_label), 7, 7);
+		gtk_label_set_selectable(GTK_LABEL(aperture_def_label), TRUE);
+		gtk_scrolled_window_add_with_viewport(
+				GTK_SCROLLED_WINDOW(aperture_def_report_window),
+				aperture_def_label);
+	} else {
+		struct table *aperture_def_table = table_new_with_columns(6,
+				_("Layer"), G_TYPE_UINT,
+				_("D code"), G_TYPE_STRING,
+				_("Aperture"), G_TYPE_STRING,
+				_("Param[0]"), G_TYPE_DOUBLE,
+				_("Param[1]"), G_TYPE_DOUBLE,
+				_("Param[2]"), G_TYPE_DOUBLE);
+		table_set_column_align(aperture_def_table, 0, 1.0);
+		table_set_column_align(aperture_def_table, 1, 1.0);
+		gtk_tree_view_set_headers_clickable(
+				GTK_TREE_VIEW(aperture_def_table->widget), TRUE);
+		gtk_tree_view_set_search_column(
+				GTK_TREE_VIEW(aperture_def_table->widget), 1);
+
+		GString *gstr = g_string_new(NULL);
+		for (aperture_list = stats_report->aperture_list;
+				aperture_list != NULL;
+				aperture_list = aperture_list->next) {
+			g_string_printf(gstr, "D%d", aperture_list->number);
+			table_add_row(aperture_def_table,
+				aperture_list->layer,
+				gstr->str,
+				aperture_names[aperture_list->type],
+				aperture_list->parameter[0],
+				aperture_list->parameter[1],
+				aperture_list->parameter[2]);
+		}
+		g_string_free(gstr, TRUE);
+		gtk_container_add(GTK_CONTAINER(aperture_def_report_window),
+				aperture_def_table->widget);
+	}
+
+	/* Gerber aperture usage on active layers */
+	GtkWidget *aperture_usage_report_window =
+		gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(
+			GTK_SCROLLED_WINDOW(aperture_usage_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	unsigned int aperture_count = 0;
+
+	if (stats_report->D_code_list->number == -1) {
+		GtkWidget *aperture_usage_label = gtk_label_new(
+			_("No apertures used in Gerber file(s)!"));
+		gtk_misc_set_alignment(GTK_MISC(aperture_usage_label), 0, 0);
+		gtk_misc_set_padding(GTK_MISC(aperture_usage_label), 7, 7);
+		gtk_label_set_selectable(GTK_LABEL(aperture_usage_label), TRUE);
+		gtk_scrolled_window_add_with_viewport(
+			GTK_SCROLLED_WINDOW(aperture_usage_report_window),
+			aperture_usage_label);
+	} else {
+		struct table *aperture_usage_table = table_new_with_columns(2,
+				_("Code"), G_TYPE_STRING,
+				_("Count"), G_TYPE_UINT);
+		table_set_column_align(aperture_usage_table, 0, 1.0);
+		table_set_column_align(aperture_usage_table, 1, 1.0);
+		gtk_tree_view_set_headers_clickable(
+			GTK_TREE_VIEW(aperture_usage_table->widget), TRUE);
+
+		GString *gstr = g_string_new(NULL);
+		for (aperture_list = stats_report->D_code_list;
+				aperture_list != NULL;
+				aperture_list = aperture_list->next) {
+			g_string_printf(gstr, "D%d", aperture_list->number);
+			table_add_row(aperture_usage_table,
+					gstr->str,
+					aperture_list->count);
+			aperture_count += aperture_list->count;
+		}
+		g_string_free(gstr, TRUE);
+		table_add_row(aperture_usage_table, _("Total"), aperture_count);
+		gtk_container_add( GTK_CONTAINER(aperture_usage_report_window),
+				aperture_usage_table->widget);
+	}
+
+	/* Create top level dialog window for report */
+	GtkWidget *analyze_active_gerbers;
+	analyze_active_gerbers = gtk_dialog_new_with_buttons(
+			_("Gerber codes report on visible layers"),
+			NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+	gtk_container_set_border_width(GTK_CONTAINER (analyze_active_gerbers), 5);
+
+	gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_gerbers),
+			GTK_RESPONSE_ACCEPT);
+	g_signal_connect (G_OBJECT(analyze_active_gerbers),
+			"response",
+			G_CALLBACK (gtk_widget_destroy),
+			GTK_WIDGET(analyze_active_gerbers));
+
+	/* Put general report text into scrolled window */
+	GtkWidget *general_report_window =
+		gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(
+			GTK_SCROLLED_WINDOW(general_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	GtkWidget *vbox = gtk_vbox_new(0, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), general_label, 0, 0, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), general_table->widget, 0, 0, 0);
+	gtk_scrolled_window_add_with_viewport(
+			GTK_SCROLLED_WINDOW(general_report_window), vbox);
+
+	/* Create tabbed notebook widget and add report widgets. */
+	GtkWidget *notebook = gtk_notebook_new();
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(general_report_window),
+			gtk_label_new(_("General")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(G_report_window),
+			gtk_label_new(_("G codes")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(D_report_window),
+			gtk_label_new(_("D codes")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(M_report_window),
+			gtk_label_new(_("M codes")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(misc_report_window),
+			gtk_label_new(_("Misc. codes")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(aperture_def_report_window),
+			gtk_label_new(_("Aperture definitions")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(aperture_usage_report_window),
+			gtk_label_new(_("Aperture usage")));
+
+	/* Now put notebook into dialog window and show the whole thing */
+	gtk_container_add(
+			GTK_CONTAINER(GTK_DIALOG(analyze_active_gerbers)->vbox),
+			GTK_WIDGET(notebook));
+	gtk_widget_set_size_request(analyze_active_gerbers, 640, 300);
+	gtk_widget_show_all(analyze_active_gerbers);
+
+	gerbv_stats_destroy(stats_report);	
 }
 
 /* --------------------------------------------------------- */
 /**
-  * The analyze -> analyze drill file  menu item was selected.  
+  * The analyze -> analyze drill file  menu item was selected.
   * Complie statistics on all open drill layers and then display
   * them.
   *
   */
 void
-callbacks_analyze_active_drill_activate(GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
+					gpointer user_data)
 {
-    gerbv_drill_stats_t *stats_report;
-    GString *G_report_string = g_string_new(NULL);
-    GString *M_report_string = g_string_new(NULL);
-    GString *misc_report_string = g_string_new(NULL);
-    gerbv_drill_list_t *my_drill_list;
-    GString *drill_report_string = g_string_new(NULL);
-    GString *general_report_string = g_string_new(NULL);
-    GString *error_report_string = g_string_new(NULL);
-    gerbv_error_list_t *my_error_list;
-    gchar *error_level = NULL;
-    int idx;
+	int i;
 
-    stats_report = (gerbv_drill_stats_t *) generate_drill_analysis();
-    
-    /* General and error window strings */
-    g_string_printf(general_report_string, _("General information\n"));
-    g_string_append_printf(general_report_string, 
-			   _("  Active layer count = %d\n"), 
-			   stats_report->layer_count);
-    
-    g_string_append_printf(general_report_string, 
-			   _("\n\nFiles processed:\n"));
-    for (idx = mainProject->last_loaded; idx >= 0; idx--) {
-	if (mainProject->file[idx] &&
-	    mainProject->file[idx]->isVisible &&
-	    (mainProject->file[idx]->image->layertype == GERBV_LAYERTYPE_DRILL) ) {
-	    g_string_append_printf(general_report_string, 
-				   "  %s\n", 
-				   mainProject->file[idx]->name);
+	gerbv_drill_stats_t *stats_report = generate_drill_analysis();
+
+	/* General info report */
+	GString *general_report_str = g_string_new(NULL);
+	if (stats_report->layer_count == 0) {
+		g_string_printf(general_report_str,
+				_("No drill layers visible!"));
+	} else {
+		if (stats_report->error_list->error_text == NULL) {
+			g_string_printf(general_report_str,
+				_("No errors found in %d visible "
+					"drill layer(s)."),
+				stats_report->layer_count);
+		} else {
+			g_string_printf(general_report_str,
+				_("Found errors in %d visible "
+					"drill layer(s)."),
+				stats_report->layer_count);
+		}
 	}
-    }
 
+	GtkWidget *general_label = gtk_label_new(general_report_str->str);
+	g_string_free(general_report_str, TRUE);
+	gtk_misc_set_alignment(GTK_MISC(general_label), 0, 0);
+	gtk_misc_set_padding(GTK_MISC(general_label), 7, 7);
+	gtk_label_set_selectable(GTK_LABEL(general_label), TRUE);
 
-    if (stats_report->layer_count == 0) {
-        g_string_printf(error_report_string, _("\n\nNo drill files active (visible)!\n")); 
-    } else if (stats_report->error_list->error_text == NULL) {
-	g_string_printf(error_report_string, 
-			_("\n\nNo errors found in active drill file(s)!\n")); 
-    } else {
-	g_string_printf(error_report_string, 
-			_("\n\nErrors found in active drill file(s):\n")); 
-	for(my_error_list = stats_report->error_list; 
-	    my_error_list != NULL; 
-	    my_error_list = my_error_list->next) {
-	    switch(my_error_list->type) {
-		case GERBV_MESSAGE_FATAL: /* We should never get this one since the 
-			     * program should terminate first.... */
-		    error_level = g_strdup_printf(_("FATAL: "));
-		    break;
-		case GERBV_MESSAGE_ERROR:
-		    error_level = g_strdup_printf(_("ERROR: "));
-		    break;
-		case GERBV_MESSAGE_WARNING:
-		    error_level = g_strdup_printf(_("WARNING: "));
-		    break;
-		case GERBV_MESSAGE_NOTE:
-		    error_level = g_strdup_printf(_("NOTE: "));
-		    break;
-	    }
-	    g_string_append_printf(error_report_string, 
-				   _("  Layer %d: %s %s"), 
-				   my_error_list->layer,
-				   error_level,
-				   my_error_list->error_text);
+	struct table *general_table;
+	
+	if (stats_report->layer_count > 0 &&
+			stats_report->error_list->error_text != NULL) {
+		general_table = table_new_with_columns(3,
+			_("Layer"), G_TYPE_UINT, _("File"), G_TYPE_STRING,
+			_("Error"), G_TYPE_STRING);
+	} else {
+		general_table = table_new_with_columns(2,
+			_("Layer"), G_TYPE_UINT, _("File"), G_TYPE_STRING);
 	}
-    }
+	table_set_column_align(general_table, 0, 1.0);
 
-    g_string_append_printf(general_report_string,
-			   "%s", error_report_string->str);
-    g_string_free(error_report_string, TRUE);
+	gerbv_error_list_t *err_list;
+	gerbv_fileinfo_t **files = mainProject->file;
+	for (i = 0; i <= mainProject->last_loaded; i++) {
+		if (files[i] && files[i]->isVisible &&
+				(files[i]->image->layertype ==
+				 GERBV_LAYERTYPE_DRILL)) {
+			table_add_row(general_table, i + 1, files[i]->name, "");
 
+			/* Check error report on layer */
+			if (stats_report->layer_count > 0 &&
+				stats_report->error_list->error_text != NULL) {
+				for (err_list = stats_report->error_list;
+						err_list != NULL;
+						err_list = err_list->next) {
+					if (i + 1 != err_list->layer)
+						continue;
+					table_add_row(general_table,
+						err_list->layer,
+						error_type_string(err_list->type),
+						err_list->error_text);
+				}
+			}
+		}
+	}
 
-    /* G code window strings */
-    g_string_printf(G_report_string, _("G code statistics (all active layers)\n"));
-    g_string_append_printf(G_report_string, 
-			   _("<code> = <number of incidences>\n"));
-    g_string_append_printf(G_report_string, 
-			   "G00 = %-6d (%s)\n", 
-			   stats_report->G00,
-			   _("Rout mode"));
-    g_string_append_printf(G_report_string, 
-			   "G01 = %-6d (%s)\n", 
-			   stats_report->G01,
-			   _("1X linear interpolation"));
-    g_string_append_printf(G_report_string, 
-			   "G02 = %-6d (%s)\n", 
-			   stats_report->G02,
-			   _("CW interpolation"));
-    g_string_append_printf(G_report_string, 
-			   "G03 = %-6d (%s)\n", 
-			   stats_report->G03,
-			   _("CCW interpolation"));
-    g_string_append_printf(G_report_string, 
-			   "G04 = %-6d (%s)\n", 
-			   stats_report->G04,
-			   _("Variable dwell"));
-    g_string_append_printf(G_report_string, 
-			   "G05 = %-6d (%s)\n", 
-			   stats_report->G05,
-			   _("Drill mode"));
-    g_string_append_printf(G_report_string, 
-			   "G90 = %-6d (%s)\n", 
-			   stats_report->G90,
-			   _("Absolute units"));
-    g_string_append_printf(G_report_string, 
-			   "G91 = %-6d (%s)\n", 
-			   stats_report->G91,
-			   _("Incremental units"));
-    g_string_append_printf(G_report_string, 
-			   "G93 = %-6d (%s)\n", 
-			   stats_report->G93,
-			   _("Zero set"));
-    g_string_append_printf(G_report_string, 
-			   _("Unknown G codes = %d\n"), 
-			   stats_report->G_unknown);
-    
-    /* M code window strings */
-    g_string_printf(M_report_string, _("M code statistics (all active layers)\n"));
-    g_string_append_printf(M_report_string, 
-			   _("<code> = <number of incidences>\n"));
-    g_string_append_printf(M_report_string, 
-			   "M00 = %-6d (%s)\n", 
-			   stats_report->M00,
-			   _("End of program"));
-    g_string_append_printf(M_report_string, 
-			   "M01 = %-6d (%s)\n", 
-			   stats_report->M01,
-			   _("End of pattern"));
-    g_string_append_printf(M_report_string, 
-			   "M18 = %-6d (%s)\n", 
-			   stats_report->M18,
-			   _("Tool tip check"));
-    g_string_append_printf(M_report_string, 
-			   "M25 = %-6d (%s)\n", 
-			   stats_report->M25,
-			   _("Begin pattern"));
-    g_string_append_printf(M_report_string, 
-			   "M30 = %-6d (%s)\n", 
-			   stats_report->M30,
-			   _("End program rewind"));
-    g_string_append_printf(M_report_string, 
-			   "M31 = %-6d (%s)\n", 
-			   stats_report->M31,
-			   _("Begin pattern"));
-    g_string_append_printf(M_report_string, 
-			   "M45 = %-6d (%s)\n", 
-			   stats_report->M45,
-			   _("Long message"));
-    g_string_append_printf(M_report_string, 
-			   "M47 = %-6d (%s)\n", 
-			   stats_report->M47,
-			   _("Operator message"));
-    g_string_append_printf(M_report_string, 
-			   "M48 = %-6d (%s)\n", 
-			   stats_report->M48,
-			   _("Begin program header"));
-    g_string_append_printf(M_report_string, 
-			   "M71 = %-6d (%s)\n", 
-			   stats_report->M71,
-			   _("Metric units"));
-    g_string_append_printf(M_report_string, 
-			   "M72 = %-6d (%s)\n", 
-			   stats_report->M72,
-			   _("English units"));
-    g_string_append_printf(M_report_string, 
-			   "M95 = %-6d (%s)\n", 
-			   stats_report->M95,
-			   _("End program header"));
-    g_string_append_printf(M_report_string, 
-			   "M97 = %-6d (%s)\n", 
-			   stats_report->M97,
+	/* G codes on active layers */
+	GtkWidget *G_report_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(G_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	struct table *G_table =
+		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
+			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+	table_set_column_align(G_table, 0, 1.0);
+	table_set_column_align(G_table, 1, 1.0);
+	gtk_tree_view_set_headers_clickable(
+			GTK_TREE_VIEW(G_table->widget), TRUE);
+
+	table_add_row(G_table, "G00", stats_report->G00,
+			_("Rout mode"));
+	table_add_row(G_table, "G01", stats_report->G01,
+			_("1X linear interpolation"));
+	table_add_row(G_table, "G02", stats_report->G02,
+			_("CW interpolation"));
+	table_add_row(G_table, "G03", stats_report->G03,
+			_("CCW interpolation"));
+	table_add_row(G_table, "G04", stats_report->G04,
+			_("Variable dwell"));
+	table_add_row(G_table, "G05", stats_report->G05,
+			_("Drill mode"));
+	table_add_row(G_table, "G90", stats_report->G90,
+			_("Absolute units"));
+	table_add_row(G_table, "G91", stats_report->G91,
+			_("Incremental units"));
+	table_add_row(G_table, "G93", stats_report->G93,
+			_("Zero set"));
+	table_add_row(G_table, "", stats_report->G_unknown,
+				_("Unknown G codes"));
+
+	gtk_container_add(GTK_CONTAINER(G_report_window), G_table->widget);
+
+	/* M codes on active layers */
+	GtkWidget *M_report_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(M_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	struct table *M_table =
+		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
+			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+	table_set_column_align(M_table, 0, 1.0);
+	table_set_column_align(M_table, 1, 1.0);
+	gtk_tree_view_set_headers_clickable(
+			GTK_TREE_VIEW(M_table->widget), TRUE);
+	table_add_row(M_table, "M00", stats_report->M00,
+			_("End of program"));
+	table_add_row(M_table, "M01", stats_report->M01,
+			_("End of pattern"));
+	table_add_row(M_table, "M18", stats_report->M18,
+			_("Tool tip check"));
+	table_add_row(M_table, "M25", stats_report->M25,
+			_("Begin pattern"));
+	table_add_row(M_table, "M30", stats_report->M30,
+			_("End program rewind"));
+	table_add_row(M_table, "M31", stats_report->M31,
+			_("Begin pattern"));
+	table_add_row(M_table, "M45", stats_report->M45,
+			_("Long message"));
+	table_add_row(M_table, "M47", stats_report->M47,
+			_("Operator message"));
+	table_add_row(M_table, "M48", stats_report->M48,
+			_("Begin program header"));
+	table_add_row(M_table, "M71", stats_report->M71,
+			_("Metric units"));
+	table_add_row(M_table, "M72", stats_report->M72,
+			_("English units"));
+	table_add_row(M_table, "M95", stats_report->M95,
+			_("End program header"));
+	table_add_row(M_table, "M97", stats_report->M97,
 			   _("Canned text"));
-    g_string_append_printf(M_report_string, 
-			   "M98 = %-6d (%s)\n", 
-			   stats_report->M98,
-			   _("Canned text"));
-    g_string_append_printf(M_report_string, 
-			   _("Unknown M codes = %d\n"), 
-			   stats_report->M_unknown);
+	table_add_row(M_table, "M98", stats_report->M98,
+			_("Canned text"));
+	table_add_row(M_table, "", stats_report->M_unknown,
+			_("Unknown M codes"));
+
+	gtk_container_add(GTK_CONTAINER(M_report_window), M_table->widget);
+
+	/* Misc codes */
+	GtkWidget *misc_report_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(misc_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	struct table *misc_table =
+		table_new_with_columns(2,
+				/* Count is string for value hide. */
+				_("Count"), G_TYPE_STRING,
+				_("Code"), G_TYPE_STRING);
+	table_set_column_align(misc_table, 0, 1.0);
+	char *str = strdup("");
+	sprintf(str, "%d", stats_report->comment);
+	table_add_row(misc_table, str,_("Comments"));
+	sprintf(str, "%d", stats_report->unknown);
+	table_add_row(misc_table, str, _("Unknown codes"));
+	sprintf(str, "%d", stats_report->R);
+	table_add_row(misc_table, str, _("Repeat hole (R)"));
+	free(str);
+	if (stats_report->detect != NULL ) {
+		table_add_row(misc_table, "", stats_report->detect);
+	}
+
+	gtk_container_add(GTK_CONTAINER(misc_report_window),
+			misc_table->widget);
+
+	/* Drill usage on active layers */
+	GtkWidget *drill_usage_report_window =
+			gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(
+			GTK_SCROLLED_WINDOW(drill_usage_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	struct table *drill_usage_table = table_new_with_columns(4,
+			_("Drill no."), G_TYPE_UINT,
+			_("Dia."), G_TYPE_DOUBLE,
+			_("Units"), G_TYPE_STRING,
+			_("Count"), G_TYPE_UINT);
+
+	table_set_column_align(drill_usage_table, 0, 1.0);
+	table_set_column_align(drill_usage_table, 3, 1.0);
+	gtk_tree_view_set_headers_clickable(
+		GTK_TREE_VIEW(drill_usage_table->widget), TRUE);
+
+	gerbv_drill_list_t *drill_list;
+	for (drill_list = stats_report->drill_list;
+			drill_list != NULL; drill_list = drill_list->next) {
+		if (drill_list->drill_num == -1)
+			break;	/* No drill list */
+
+		table_add_row(drill_usage_table,
+				drill_list->drill_num,
+				drill_list->drill_size,
+				drill_list->drill_unit,
+				drill_list->drill_count);
+	}
+
+	gtk_container_add( GTK_CONTAINER(drill_usage_report_window),
+			drill_usage_table->widget);
+
+	/* Create top level dialog window for report */
+	GtkWidget *analyze_active_drill;
+	analyze_active_drill = gtk_dialog_new_with_buttons(
+			_("Drill codes report on visible layers"),
+			NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (analyze_active_drill), 5);
+
+	gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_drill),
+			GTK_RESPONSE_ACCEPT);
+	g_signal_connect (G_OBJECT(analyze_active_drill),
+			"response",
+			G_CALLBACK (gtk_widget_destroy),
+			GTK_WIDGET(analyze_active_drill));
+
+	/* Put general report text into scrolled window */
+	GtkWidget *general_report_window =
+		gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(
+			GTK_SCROLLED_WINDOW(general_report_window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	GtkWidget *vbox = gtk_vbox_new(0, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), general_label, 0, 0, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), general_table->widget, 0, 0, 0);
+	gtk_scrolled_window_add_with_viewport(
+			GTK_SCROLLED_WINDOW(general_report_window), vbox);
+
+	/* Create tabbed notebook widget and add report widgets. */
+	GtkWidget *notebook = gtk_notebook_new();
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(general_report_window),
+			gtk_label_new(_("General")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(G_report_window),
+			gtk_label_new(_("G codes")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(M_report_window),
+			gtk_label_new(_("M codes")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(misc_report_window),
+			gtk_label_new(_("Misc. codes")));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+			GTK_WIDGET(drill_usage_report_window),
+			gtk_label_new(_("Drill usage")));
     
-    
-    /* misc report strings */
-    g_string_printf(misc_report_string, _("Misc code statistics (all active layers)\n"));
-    g_string_append_printf(misc_report_string, 
-			   _("<code> = <number of incidences>\n"));
-    g_string_append_printf(misc_report_string, 
-			   _("comments = %d\n"), 
-			   stats_report->comment);
-    g_string_append_printf(misc_report_string, 
-			   _("Unknown codes = %d\n"), 
-			   stats_report->unknown);
-    
-    g_string_append_printf(misc_report_string, 
-			   "R = %-6d (%s)\n", 
-			   stats_report->R,
-			   _("Repeat hole"));
+	/* Now put notebook into dialog window and show the whole thing */
+	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_drill)->vbox),
+			GTK_WIDGET(notebook));
+	gtk_widget_set_size_request(analyze_active_drill, 400, 300);
+	gtk_widget_show_all(analyze_active_drill);
 
-    if (stats_report->detect != NULL ) {
-	g_string_append_printf(misc_report_string, 
-			       "\n%s\n", 
-			       stats_report->detect);
-    }	
-    /* drill report window strings */
-    g_string_printf(drill_report_string, _("Drills used (all active layers)\n"));
-    g_string_append_printf(drill_report_string, "%10s %8s %8s %8s\n", 
-			   _("Drill no."), _("Dia."), _("Units"), _("Count"));
-    for(my_drill_list = stats_report->drill_list; 
-	my_drill_list != NULL; 
-	my_drill_list = my_drill_list->next) {
-	if (my_drill_list->drill_num == -1) break;  /* No drill list */
-	g_string_append_printf(drill_report_string, 
-			       "%10d %8.3f %8s %8d\n", 
-			       my_drill_list->drill_num,
-			       my_drill_list->drill_size,
-			       my_drill_list->drill_unit,
-			       my_drill_list->drill_count);
-    }
-
-    g_string_append_printf(drill_report_string, _("Total drill count %d\n"), 
-			   stats_report->total_count);
-
-    /* Use fixed width font for all reports */
-    PangoFontDescription *font = 
-	pango_font_description_from_string ("monospace");
-
-    /* Create top level dialog window for report */
-    GtkWidget *analyze_active_drill;
-    analyze_active_drill = gtk_dialog_new_with_buttons(_("Drill file codes report"),
-							NULL,
-							GTK_DIALOG_DESTROY_WITH_PARENT,
-							GTK_STOCK_OK,
-							GTK_RESPONSE_ACCEPT,
-							NULL);
-    gtk_container_set_border_width (GTK_CONTAINER (analyze_active_drill), 5);
-    gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_drill), 
-				     GTK_RESPONSE_ACCEPT);
-    g_signal_connect (G_OBJECT(analyze_active_drill),
-		      "response",
-		      G_CALLBACK (gtk_widget_destroy), 
-		      GTK_WIDGET(analyze_active_drill));
-
-    /* Create GtkLabel to hold general report text */
-    GtkWidget *general_report_label = gtk_label_new (general_report_string->str);
-    g_string_free(general_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(general_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(general_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(general_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(general_report_label),
-			    font);
-
-    /* Create GtkLabel to hold G code text */
-    GtkWidget *G_report_label = gtk_label_new (G_report_string->str);
-    g_string_free(G_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(G_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(G_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(G_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(G_report_label),
-			    font);
-
-    /* Create GtkLabel to hold M code text */
-    GtkWidget *M_report_label = gtk_label_new (M_report_string->str);
-    g_string_free(M_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(M_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(M_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(M_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(M_report_label),
-			    font);
-
-    /* Create GtkLabel to hold misc code text */
-    GtkWidget *misc_report_label = gtk_label_new (misc_report_string->str);
-    g_string_free(misc_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(misc_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(misc_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(misc_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(misc_report_label),
-			    font);
-
-    /* Create GtkLabel to hold drills used text */
-    GtkWidget *drill_report_label = gtk_label_new (drill_report_string->str);
-    g_string_free(drill_report_string, TRUE);
-    gtk_misc_set_alignment(GTK_MISC(drill_report_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(drill_report_label), 13, 13);
-    gtk_label_set_selectable(GTK_LABEL(drill_report_label), TRUE);
-    gtk_widget_modify_font (GTK_WIDGET(drill_report_label),
-			    font);
-
-    /* Create tabbed notebook widget and add report label widgets. */
-    GtkWidget *notebook = gtk_notebook_new();
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(general_report_label),
-			     gtk_label_new(_("General")));
-
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(G_report_label),
-			     gtk_label_new(_("G codes")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(M_report_label),
-			     gtk_label_new(_("M codes")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(misc_report_label),
-			     gtk_label_new(_("Misc. codes")));
-    
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-			     GTK_WIDGET(drill_report_label),
-			     gtk_label_new(_("Drills used")));
-    
-    /* Now put notebook into dialog window and show the whole thing */
-    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_drill)->vbox),
-		      GTK_WIDGET(notebook));
-    gtk_widget_show_all(analyze_active_drill);
-    gerbv_drill_stats_destroy (stats_report);	
-    return;
+	gerbv_drill_stats_destroy(stats_report);
 }
 
 /* --------------------------------------------------------- */
@@ -1727,13 +1614,13 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
     GtkWidget *bugs_label = gtk_label_new (bugs_string->str);
     g_string_free(bugs_string, FALSE);
     gtk_misc_set_alignment(GTK_MISC(bugs_label), 0, 0);
-    gtk_misc_set_padding(GTK_MISC(bugs_label), 13, 13);
+    gtk_misc_set_padding(GTK_MISC(bugs_label), 7, 7);
     
     /* Put text into scrolled window */
     GtkWidget *bugs_window = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(bugs_window),
                                           GTK_WIDGET(bugs_label));
-    gtk_widget_set_size_request(GTK_WIDGET(bugs_window), 600, 300);
+    gtk_widget_set_size_request(bugs_window, 600, 300);
     gtk_container_add(GTK_CONTAINER(GTK_DIALOG(bugs_dialog)->vbox),
                       GTK_WIDGET(bugs_window));
 
@@ -2369,7 +2256,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     n =  mainProject->file[index]->image->info->n_attr;
     type =  mainProject->file[index]->image->info->type;
     if (type == NULL) 
-	type = N_("Unknown");
+	type = N_("Unknown type");
 
     if (attr == NULL || n == 0) 
 	{
@@ -3627,7 +3514,7 @@ static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num) {
 	double *params = apertures[aperture_num]->parameter;
 
 	g_message (_("    Aperture used: D%d"), aperture_num);
-	g_message (_("    Aperture type: %s"), ap_names[type]);
+	g_message (_("    Aperture type: %s"), aperture_names[type]);
 
 	switch (type) {
 		case GERBV_APTYPE_CIRCLE:
