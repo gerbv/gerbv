@@ -33,6 +33,7 @@
 #include <glib.h>
 #include <math.h>
 #include <stdlib.h>
+#include <locale.h>
 
 #include "gerbv.h"
 #include "gerber.h"
