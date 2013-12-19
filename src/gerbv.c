@@ -182,7 +182,7 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE(_("could not read %s[%d]\n"), (gchar *) filename,
+    GERB_MESSAGE(_("Could not read %s[%d]\n"), (gchar *) filename,
 		 gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
@@ -201,7 +201,7 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE(_("could not read %s[%d]\n"), (gchar *) filename,
+    GERB_MESSAGE(_("Could not read %s[%d]\n"), (gchar *) filename,
 		 gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
@@ -425,7 +425,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     
     fd = gerb_fopen(filename);
     if (fd == NULL) {
-	GERB_MESSAGE(_("Trying to open %s:%s\n"), filename, strerror(errno));
+	GERB_MESSAGE(_("Trying to open %s: %s\n"), filename, strerror(errno));
 	return -1;
     }
 
@@ -519,7 +519,7 @@ gerbv_create_rs274x_image_from_filename (gchar *filename){
 	
 	fd = gerb_fopen(filename);
 	if (fd == NULL) {
-		GERB_MESSAGE(_("Trying to open %s:%s\n"), filename, strerror(errno));
+		GERB_MESSAGE(_("Trying to open %s: %s\n"), filename, strerror(errno));
 		return NULL;
 	}
 	gchar *currentLoadDirectory = g_path_get_dirname (filename);
@@ -877,7 +877,7 @@ gerbv_attribute_dup (gerbv_HID_Attribute *attributeList, int n_attr)
 
   nl = (gerbv_HID_Attribute *) malloc (n_attr * sizeof (gerbv_HID_Attribute));
   if (nl == NULL) {
-    fprintf (stderr, _("%s():  malloc failed\n"), __FUNCTION__);
+    fprintf (stderr, _("%s(): malloc failed\n"), __FUNCTION__);
     exit (1);
   }
 
