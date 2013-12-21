@@ -2668,27 +2668,27 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 			net_label = g_strdup((gchar *)net->label);
 		}
 		if (net->interpolation == GERBV_INTERPOLATION_PAREA_START) {
-			g_message (_("Object type: Polygon\n"));
+			g_message (_("Object type: Polygon"));
 		}
 		else {
 			switch (net->aperture_state){
 				case GERBV_APERTURE_STATE_OFF:
 					break;
 				case GERBV_APERTURE_STATE_ON:
-					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
+					if (i != 0) g_message (" ");  /* Spacing for a pretty display */
 					show_length = 0;
 					switch (net->interpolation) {
 						case GERBV_INTERPOLATION_x10 :
 						case GERBV_INTERPOLATION_LINEARx01 :
 						case GERBV_INTERPOLATION_LINEARx001 :
 						case GERBV_INTERPOLATION_LINEARx1 :
-							g_message (_("Object type: Line\n"));
+							g_message (_("Object type: Line"));
 							length = line_length(net->start_x, net->start_y, net->stop_x, net->stop_y);
 							show_length = 1;
 							break;
 						case GERBV_INTERPOLATION_CW_CIRCULAR :
 						case GERBV_INTERPOLATION_CCW_CIRCULAR :
-							g_message (_("Object type: Arc\n"));
+							g_message (_("Object type: Arc"));
 							if (net->cirseg->width == net->cirseg->height) {
 								length = arc_length(net->cirseg->width,
 										fabs(net->cirseg->angle1 - net->cirseg->angle2));
@@ -2697,37 +2697,37 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 
 							break;
 						default :
-							g_message (_("Object type: Unknown\n"));
+							g_message (_("Object type: Unknown"));
 							break;
 					}
-					g_message (_("    Exposure: On\n"));
+					g_message (_("    Exposure: On"));
 					if (validAperture) {
 						aperture_report(image->aperture, net->aperture);
 					}
-					g_message (_("    Start location: (%g, %g)\n"),
+					g_message (_("    Start location: (%g, %g)"),
 							screen_units(net->start_x), screen_units(net->start_y));
-					g_message (_("    Stop location: (%g, %g)\n"),
+					g_message (_("    Stop location: (%g, %g)"),
 							screen_units(net->stop_x), screen_units(net->stop_y));
 					if (show_length) {
 						screen.length_sum += length;
-						g_message (_("    Length: %g (sum: %g)\n"),
+						g_message (_("    Length: %g (sum: %g)"),
 							screen_units(length), screen_units(screen.length_sum));
 					}
-					g_message (_("    Layer name: %s\n"), layer_name);
-					g_message (_("    Net label: %s\n"), net_label);
-					g_message (_("    In file: %s\n"), mainProject->file[index]->name);
+					g_message (_("    Layer name: %s"), layer_name);
+					g_message (_("    Net label: %s"), net_label);
+					g_message (_("    In file: %s"), mainProject->file[index]->name);
 					break;
 				case GERBV_APERTURE_STATE_FLASH:
-					if (i!=0) g_message ("\n");  /* Spacing for a pretty display */
-					g_message (_("Object type: Flashed aperture\n"));
+					if (i != 0) g_message (" ");  /* Spacing for a pretty display */
+					g_message (_("Object type: Flashed aperture"));
 					if (validAperture) {
 						aperture_report(image->aperture, net->aperture);
 					}
-					g_message (_("    Location: (%g, %g)\n"),
+					g_message (_("    Location: (%g, %g)"),
 							screen_units(net->stop_x), screen_units(net->stop_y));
-					g_message (_("    Layer name: %s\n"), layer_name);
-					g_message (_("    Net label: %s\n"), net_label);
-					g_message (_("    In file: %s\n"), mainProject->file[index]->name);
+					g_message (_("    Layer name: %s"), layer_name);
+					g_message (_("    Net label: %s"), net_label);
+					g_message (_("    In file: %s"), mainProject->file[index]->name);
 					break;
 			}
 		}
@@ -2735,7 +2735,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 		g_free (layer_name);
 	}
 	/* Use separator for different report requests */
-	g_message ("---------------------------------------\n");
+	g_message ("---------------------------------------");
 }
 
 void
@@ -3626,17 +3626,17 @@ static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num) {
 	gerbv_aperture_type_t type = apertures[aperture_num]->type;
 	double *params = apertures[aperture_num]->parameter;
 
-	g_message (_("    Aperture used: D%d\n"), aperture_num);
-	g_message (_("    Aperture type: %s\n"), ap_names[type]);
+	g_message (_("    Aperture used: D%d"), aperture_num);
+	g_message (_("    Aperture type: %s"), ap_names[type]);
 
 	switch (type) {
 		case GERBV_APTYPE_CIRCLE:
-			g_message (_("    Diameter: %g\n"),
+			g_message (_("    Diameter: %g"),
 				screen_units(params[0]));
 			break;
 		case GERBV_APTYPE_RECTANGLE:
 		case GERBV_APTYPE_OVAL:
-			g_message (_("    Dimensions: %gx%g\n"),
+			g_message (_("    Dimensions: %gx%g"),
 				screen_units(params[0]),
 				screen_units(params[1]));
 			break;
