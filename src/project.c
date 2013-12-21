@@ -56,6 +56,8 @@
 #endif
 
 #include <errno.h>
+#include <locale.h>
+#include <math.h>
 
 #include "common.h"
 #include "gerbv.h"
@@ -103,8 +105,9 @@ static const char * known_versions[] = {
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
-static project_list_t *plist_top = NULL;
+static project_list_t *project_list_top = NULL;
 
+static const int alpha_def_value = 177*257;
   
 /* When a project file is loaded, this variable is set to the
  * version of the project file.  That can be used by various 
@@ -246,20 +249,33 @@ version_int_to_str( int ver )
   return str;
 }
 
+static int
+check_vector_and_length(scheme *sc, pointer value,
+		unsigned int length, const char *item)
+{
+    if (!sc->vptr->is_vector(value)) {
+	GERB_MESSAGE(_("'%s' parameter not a vector\n"), item);
+
+	return 1;
+    }
+
+    if (sc->vptr->vector_length(value) != length) {
+	GERB_MESSAGE(_("'%s' vector of incorrect length\n"), item);
+
+	return 2;
+    }
+
+    return 0;
+}
+
 static void
 get_color(scheme *sc, pointer value, int *color)
 {
     int i;
     pointer elem;
 
-    if (!sc->vptr->is_vector(value)) {
-	GERB_MESSAGE(_("Color parameter not a vector\n"));
-	return;
-    }
-    if (sc->vptr->vector_length(value) != 3) {
-	GERB_MESSAGE(_("Color vector of incorrect length\n"));
-	return;
-    }
+    if (check_vector_and_length(sc, value, 3, "color"))
+	    return;
     
     for (i = 0; i < 3; i++) {
 	elem = sc->vptr->vector_elem(value, i);
@@ -273,6 +289,96 @@ get_color(scheme *sc, pointer value, int *color)
     
     return;
 } /* get_color */
+
+static void
+get_alpha(scheme *sc, pointer value, int *alpha)
+{
+    pointer elem;
+
+    if (check_vector_and_length(sc, value, 1, "alpha"))
+	return;
+
+    elem = sc->vptr->vector_elem(value, 0);
+    if (sc->vptr->is_integer(elem) && sc->vptr->is_number(elem)) {
+        *alpha = sc->vptr->ivalue(elem);
+        return;
+    }
+
+    GERB_MESSAGE(_("Illegal alpha value in projectfile\n"));
+} /* get_alpha */
+
+static void
+get_double(scheme *sc, pointer value, char *item, double *x, double def)
+{
+    pointer elem;
+
+    if (check_vector_and_length(sc, value, 1, item))
+	return;
+
+    elem = sc->vptr->vector_elem(value, 0);
+    if (sc->vptr->is_real(elem) && sc->vptr->is_number(elem)) {
+	*x = sc->vptr->rvalue(elem);
+    } else {
+	*x = def;
+	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+    }
+} /* get_double */
+
+static void
+get_double_pair(scheme *sc, pointer value, char *item,
+	double *x, double *y, double def)
+{
+    pointer elem;
+
+    if (check_vector_and_length(sc, value, 2, item))
+	return;
+
+    elem = sc->vptr->vector_elem(value, 0);
+    if (sc->vptr->is_real(elem) && sc->vptr->is_number(elem)) {
+	*x = sc->vptr->rvalue(elem);
+    } else {
+	*x = def;
+	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+    }
+
+    elem = sc->vptr->vector_elem(value, 1);
+    if (sc->vptr->is_real(elem) && sc->vptr->is_number(elem)) {
+	*y = sc->vptr->rvalue(elem);
+    } else {
+	*y = def;
+	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+    }
+} /* get_double_pair */
+
+static void
+get_bool_pair(scheme *sc, pointer value, char *item,
+		char *x, char *y, char def)
+{
+    pointer elem;
+
+    if (check_vector_and_length(sc, value, 2, item))
+	return;
+
+    elem = sc->vptr->vector_elem(value, 0);
+    if (elem == sc->F) {
+	*x = 0;
+    } else if (elem == sc->T) {
+	*x = 1;
+    } else {
+	*x = def;
+	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+    }
+
+    elem = sc->vptr->vector_elem(value, 1);
+    if (elem == sc->F) {
+	*y = 0;
+    } else if (elem == sc->T) {
+	*y = 1;
+    } else {
+	*y = def;
+	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+    }
+} /* get_bool_pair */
 
 /* ----------------------------------------------------------------------
  * Figure out the canonical name of the executed program
@@ -486,13 +592,15 @@ static pointer
 define_layer(scheme *sc, pointer args)
 {
     pointer car_el, cdr_el, name, value;
+    project_list_t *plist;
+    const char *str;
     int layerno;
-    project_list_t *plist_tmp = NULL;
 
-    dprintf("--> entering project.c:define_layer\n");
+    dprintf("--> entering %s: %s\n", __FILE__, __func__);
 
-    if (!sc->vptr->is_pair(args)){
-	GERB_MESSAGE(_("define-layer!: Too few arguments\n"));
+    if (!sc->vptr->is_pair(args)) {
+	GERB_MESSAGE(_("%s(): too few arguments\n"), __func__);
+
 	return sc->F;
     }
 
@@ -500,7 +608,8 @@ define_layer(scheme *sc, pointer args)
     cdr_el = sc->vptr->pair_cdr(args);
 
     if (!sc->vptr->is_integer(car_el) || !sc->vptr->is_number(car_el)) {
-	GERB_MESSAGE(_("define-layer!: Layer number missing/incorrect\n"));
+	GERB_MESSAGE(_("define-layer!: layer number missing/incorrect\n"));
+
 	return sc->F;
     }
 
@@ -510,14 +619,20 @@ define_layer(scheme *sc, pointer args)
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);
     
-    plist_tmp = (project_list_t *)g_malloc(sizeof(project_list_t));
-    memset(plist_tmp, 0, sizeof(project_list_t));
-    plist_tmp->next = plist_top;
-    plist_top = plist_tmp;
-    plist_top->layerno = layerno;
-    plist_top->visible = 1;
-    plist_top->n_attr = 0;
-    plist_top->attr_list = NULL;
+    plist = (project_list_t *)g_malloc(sizeof(project_list_t));
+    memset(plist, 0, sizeof(project_list_t));
+    plist->next = project_list_top;
+    project_list_top = plist;
+    plist->layerno = layerno;
+    plist->visible = 1;
+    plist->n_attr = 0;
+    plist->attr_list = NULL;
+    plist->translate_x = plist->translate_y = 0.0;
+    plist->scale_x = plist->scale_y = 1.0;
+    plist->mirror_x = plist->mirror_y = 0;
+
+    /* Set default alpha value, if alpha value is not in project file */
+    plist->alpha = alpha_def_value;
 
     while (sc->vptr->is_pair(car_el)) {
 	
@@ -525,41 +640,53 @@ define_layer(scheme *sc, pointer args)
 	value =  sc->vptr->pair_cdr(car_el);
 	
 	if (!sc->vptr->is_symbol(name)) {
-	    GERB_MESSAGE(_("define-layer!:non-symbol found, ignoring\n"));
+	    GERB_MESSAGE(_("define-layer!: non-symbol found, ignoring\n"));
 	    goto end_name_value_parse;
 	}
-	
-	if (strcmp(sc->vptr->symname(name), "color") == 0) {
-	    get_color(sc, value, plist_top->rgb);
-	} else if (strcmp(sc->vptr->symname(name), "filename") == 0) {
-	    
-            plist_top->filename = g_strdup(get_value_string(sc, value));
-	    plist_top->filename = convert_path_separators(plist_top->filename, 
-							  UNIX_MINGW);
-            plist_top->is_pnp = 0;
-	} else if (strcmp(sc->vptr->symname(name), "pick_and_place") == 0) {
 
-	    plist_top->filename = g_strdup(get_value_string(sc, value));
-	    plist_top->filename = convert_path_separators(plist_top->filename, 
-							  UNIX_MINGW);
-	    plist_top->is_pnp = 1;
-	} else if (strcmp(sc->vptr->symname(name), "inverted") == 0) {
+	str = sc->vptr->symname(name);
+	if (strcmp(str, "color") == 0) {
+	    get_color(sc, value, plist->rgb);
+	} else if (strcmp(str, "alpha") == 0) {
+	    get_alpha(sc, value, &plist->alpha);
+	} else if (strcmp(str, "translate") == 0) {
+	    get_double_pair(sc, value, "translate",
+		    &plist->translate_x, &plist->translate_y, 0.0);
+	} else if (strcmp(str, "rotation") == 0) {
+	    get_double(sc, value, "rotation", &plist->rotation, 0.0);
+	} else if (strcmp(str, "scale") == 0) {
+	    get_double_pair(sc, value, "scale",
+		    &plist->scale_x, &plist->scale_y, 1.0);
+	} else if (strcmp(str, "mirror") == 0) {
+	    get_bool_pair(sc, value, "mirror",
+		    &plist->mirror_x, &plist->mirror_y, 0);
+	} else if (strcmp(str, "filename") == 0) {
+            plist->filename = g_strdup(get_value_string(sc, value));
+	    plist->filename = convert_path_separators(plist->filename,
+			    UNIX_MINGW);
+            plist->is_pnp = 0;
+	} else if (strcmp(str, "pick_and_place") == 0) {
+	    plist->filename = g_strdup(get_value_string(sc, value));
+	    plist->filename = convert_path_separators(plist->filename,
+			    UNIX_MINGW);
+	    plist->is_pnp = 1;
+	} else if (strcmp(str, "inverted") == 0) {
 	    if (value == sc->F) {
-		plist_top->inverted = 0;
+		plist->inverted = 0;
 	    } else if (value == sc->T) {
-		plist_top->inverted = 1;
+		plist->inverted = 1;
 	    } else {
 		GERB_MESSAGE(_("Argument to inverted must be #t or #f\n"));
 	    }
-	} else if (strcmp(sc->vptr->symname(name), "visible") == 0) {
+	} else if (strcmp(str, "visible") == 0) {
 	    if (value == sc->F) {
-		plist_top->visible = 0;
+		plist->visible = 0;
 	    } else if (value == sc->T) {
-		plist_top->visible = 1;
+		plist->visible = 1;
 	    } else {
 		GERB_MESSAGE(_("Argument to visible must be #t or #f\n"));
 	    }
-       	} else if (strcmp(sc->vptr->symname(name), "attribs") == 0) {
+       	} else if (strcmp(str, "attribs") == 0) {
 	    pointer attr_car_el, attr_cdr_el;
 	    pointer attr_name, attr_type, attr_value;
 	    char *type;
@@ -569,12 +696,12 @@ define_layer(scheme *sc, pointer args)
 	    attr_car_el = sc->vptr->pair_car (value);
 	    attr_cdr_el = sc->vptr->pair_cdr (value);
 	    while (sc->vptr->is_pair(attr_car_el)) {
-		int p = plist_top->n_attr;
-		plist_top->n_attr++;
-		plist_top->attr_list = (gerbv_HID_Attribute *) 
-		    realloc (plist_top->attr_list, 
-			     plist_top->n_attr * sizeof (gerbv_HID_Attribute));
-		if (plist_top->attr_list == NULL ) {
+		int p = plist->n_attr;
+		plist->n_attr++;
+		plist->attr_list = (gerbv_HID_Attribute *)
+		    realloc (plist->attr_list,
+			     plist->n_attr * sizeof (gerbv_HID_Attribute));
+		if (plist->attr_list == NULL ) {
 		    fprintf (stderr, _("%s():  realloc failed\n"), __FUNCTION__);
 		    exit (1);
 		}								  
@@ -595,56 +722,56 @@ define_layer(scheme *sc, pointer args)
 			 sc->vptr->symname(attr_name),
 			 sc->vptr->symname(attr_type));
 
-		plist_top->attr_list[p].name = strdup (sc->vptr->symname (attr_name));
+		plist->attr_list[p].name = strdup (sc->vptr->symname (attr_name));
 
 		type = sc->vptr->symname (attr_type);
 
 		if (strcmp (type, "label") == 0) {
 		    dprintf ("%s", sc->vptr->string_value (attr_value));
-		    plist_top->attr_list[p].type = HID_Label;
-		    plist_top->attr_list[p].default_val.str_value = 
+		    plist->attr_list[p].type = HID_Label;
+		    plist->attr_list[p].default_val.str_value =
 			strdup (sc->vptr->string_value (attr_value));
 
 		} else if (strcmp (type, "integer") == 0) {
 		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
-		    plist_top->attr_list[p].type = HID_Integer;
-		    plist_top->attr_list[p].default_val.int_value = 
+		    plist->attr_list[p].type = HID_Integer;
+		    plist->attr_list[p].default_val.int_value =
 			sc->vptr->ivalue (attr_value);
 
 		} else if (strcmp (type, "real") == 0) {
 		    dprintf ("%g", sc->vptr->rvalue (attr_value));
-		    plist_top->attr_list[p].type = HID_Real;
-		    plist_top->attr_list[p].default_val.real_value = 
+		    plist->attr_list[p].type = HID_Real;
+		    plist->attr_list[p].default_val.real_value =
 			sc->vptr->rvalue (attr_value);
 
 		} else if (strcmp (type, "string") == 0) {
 		    dprintf ("%s", sc->vptr->string_value (attr_value));
-		    plist_top->attr_list[p].type = HID_String;
-		    plist_top->attr_list[p].default_val.str_value = 
+		    plist->attr_list[p].type = HID_String;
+		    plist->attr_list[p].default_val.str_value =
 			strdup (sc->vptr->string_value (attr_value));
 
 		} else if (strcmp (type, "boolean") == 0) {
 		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
-		    plist_top->attr_list[p].type = HID_Boolean;
-		    plist_top->attr_list[p].default_val.int_value = 
+		    plist->attr_list[p].type = HID_Boolean;
+		    plist->attr_list[p].default_val.int_value =
 			sc->vptr->ivalue (attr_value);
 
 		} else if (strcmp (type, "enum") == 0) {
 		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
-		    plist_top->attr_list[p].type = HID_Enum;
-		    plist_top->attr_list[p].default_val.int_value = 
+		    plist->attr_list[p].type = HID_Enum;
+		    plist->attr_list[p].default_val.int_value =
 			sc->vptr->ivalue (attr_value);
 
 		} else if (strcmp (type, "mixed") == 0) {
-		    plist_top->attr_list[p].type = HID_Mixed;
-		    plist_top->attr_list[p].default_val.str_value = NULL;
+		    plist->attr_list[p].type = HID_Mixed;
+		    plist->attr_list[p].default_val.str_value = NULL;
 		    fprintf (stderr, _("%s():  WARNING:  HID_Mixed is not yet supported\n"),
 			     __FUNCTION__);
 
 		} else if (strcmp (type, "path") == 0) {
 		    dprintf ("%s", sc->vptr->string_value (attr_value));
-		    plist_top->attr_list[p].type = HID_Path;
-		    plist_top->attr_list[p].default_val.str_value = 
+		    plist->attr_list[p].type = HID_Path;
+		    plist->attr_list[p].default_val.str_value =
 			strdup (sc->vptr->string_value (attr_value));
 		} else {
 		    fprintf (stderr, _("%s():  Unknown attribute type: \"%s\"\n"),
@@ -655,14 +782,13 @@ define_layer(scheme *sc, pointer args)
 		attr_car_el = sc->vptr->pair_car(attr_cdr_el);
 		attr_cdr_el = sc->vptr->pair_cdr(attr_cdr_el);
 	    }
-
 	}
-	
-    end_name_value_parse:
+
+end_name_value_parse:
 	car_el = sc->vptr->pair_car(cdr_el);
 	cdr_el = sc->vptr->pair_cdr(cdr_el);
     }
-    
+
     return sc->NIL;
 } /* define_layer */
 
@@ -818,15 +944,12 @@ read_project_file(char const* filename)
      * versioning to the files.  While the file is being loaded, this will
      * be set to the correct version on newer files and ignored on older files
      */
-    current_file_version = version_str_to_int( GERBV_DEFAULT_PROJECT_FILE_VERSION );
+    current_file_version =
+		version_str_to_int(GERBV_DEFAULT_PROJECT_FILE_VERSION);
 
-    if (stat(filename, &stat_info)) {
+    if (stat(filename, &stat_info) || !S_ISREG(stat_info.st_mode)) {
 	GERB_MESSAGE(_("Failed to read %s\n"), filename);
-	return NULL;
-    }
 
-    if (!S_ISREG(stat_info.st_mode)) {
-	GERB_MESSAGE(_("Failed to read %s\n"), filename);
 	return NULL;
     }
 
@@ -852,6 +975,10 @@ read_project_file(char const* filename)
 	GERB_MESSAGE(_("Couldn't open %s (%s)\n"), initfile, strerror(errno));
 	return NULL;
     }
+
+    /* Force gerbv to input decimals as dots */
+    setlocale(LC_NUMERIC, "C");
+
     sc->vptr->load_file(sc, fd);
     fclose(fd);
 
@@ -868,20 +995,23 @@ read_project_file(char const* filename)
 			    sc->vptr->mk_foreign_func(sc, gerbv_file_version));
 
     if ((fd = fopen(filename, "r")) == NULL) {
+	setlocale(LC_NUMERIC, "");	/* Default locale */
 	scheme_deinit(sc);
 	GERB_MESSAGE(_("Couldn't open project file %s (%s)\n"), filename,
 		     strerror(errno));
+
 	return NULL;
     }
 
-    plist_top = NULL;
+    project_list_top = NULL;
 
     scheme_load_file(sc, fd);
     fclose(fd);
 
+    setlocale(LC_NUMERIC, "");	/* Default locale */
     scheme_deinit(sc);
 
-    return plist_top;
+    return project_list_top;
 } /* read_project */
 
 
@@ -910,31 +1040,58 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
     project_list_t *p = project;
     int n_attr = 0;
     gerbv_HID_Attribute *attr_list = NULL;
+    const float min_val = 0.000001;
     int i;
 
     if ((fd = fopen(filename, "w")) == NULL) {
 	    GERB_MESSAGE(_("Couldn't save project %s\n"), filename);
-	    return(-1);
+	    return -1;
     }
+
+    /* Force gerbv to input decimals as dots */
+    setlocale(LC_NUMERIC, "C");
+
     fprintf(fd, "(gerbv-file-version! \"%s\")\n", GERBV_PROJECT_FILE_VERSION);
+
     while (p) {
 	fprintf(fd, "(define-layer! %d ", p->layerno);
 	
-#if defined (__MINGW32__)
-	fprintf(fd, "(cons 'filename \"%s\")", convert_path_separators(p->filename, MINGW_UNIX));    
-#else
-	fprintf(fd, "(cons 'filename \"%s\")", p->filename);    
-#endif
+	fprintf(fd, "(cons 'filename \"%s\")\n",
+		convert_path_separators(p->filename, MINGW_UNIX));
     
 	if (p->inverted)
-	    fprintf(fd, "(cons 'inverted #t)");
-	if (p->visible)
-	    fprintf(fd, "(cons 'visible #t)");
-	else
-	    fprintf(fd, "(cons 'visible #f)");
+	    fprintf(fd, "\t(cons 'inverted #t)\n");
 
-	fprintf(fd, "(cons 'color #(%d %d %d))", p->rgb[0], p->rgb[1],	p->rgb[2]);
+	if (p->layerno >= 0) {
+	    fprintf(fd, "\t(cons 'visible #%c)\n", p->visible? 't': 'f');
+	}
 
+	fprintf(fd, "\t(cons 'color #(%d %d %d))\n",
+		p->rgb[0], p->rgb[1], p->rgb[2]);
+
+	if (p->layerno >= 0) {
+	    if (p->alpha != alpha_def_value)
+		fprintf(fd, "\t(cons 'alpha #(%d))\n", p->alpha);
+
+	    /* Check if there is transformation. Write if so. */
+	    if ((fabs(p->translate_x) > min_val)
+		    || (fabs(p->translate_y) > min_val)) {
+		fprintf(fd, "\t(cons 'translate #(%f %f))\n",
+			p->translate_x, p->translate_y);
+	    }
+	    if (fabs(p->rotation) > min_val) {
+		fprintf(fd, "\t(cons 'rotation #(%f))\n", p->rotation);
+	    }
+	    if ((fabs(p->scale_x - 1.0) > min_val)
+		    || (fabs(p->scale_y - 1.0) > min_val)) {
+		fprintf(fd, "\t(cons 'scale #(%f %f))\n",
+				p->scale_x, p->scale_y);
+	    }
+	    if (p->mirror_x || p->mirror_y) {
+		fprintf(fd, "\t(cons 'mirror #(#%c #%c))\n",
+			p->mirror_x? 't': 'f', p->mirror_y? 't': 'f');
+	    }
+	}
 	/* now write out the attribute list which specifies the
 	 * file format 
 	 */
@@ -947,37 +1104,37 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 	}
 
 	if (n_attr > 0) {
-	    fprintf (fd, "(cons 'attribs (list");
+	    fprintf(fd, "\t(cons 'attribs (list\n");
 	}
 	for (i = 0; i < n_attr ; i++) {
 	    switch (attr_list[i].type) {
 	    case HID_Label:
-		  fprintf(fd, " (list '%s 'Label \"%s\")", attr_list[i].name,
+		  fprintf(fd, "\t\t(list '%s 'Label \"%s\")\n", attr_list[i].name,
 			  attr_list[i].default_val.str_value);
 		  break;
 		  
 	      case HID_Integer:
-		  fprintf(fd, " (list '%s 'Integer %d)", attr_list[i].name,
+		  fprintf(fd, "\t\t(list '%s 'Integer %d)\n", attr_list[i].name,
 			  attr_list[i].default_val.int_value);
 		  break;
 		  
 	      case HID_Real:
-		  fprintf(fd, " (list '%s 'Real %g)", attr_list[i].name,
+		  fprintf(fd, "\t\t(list '%s 'Real %g)\n", attr_list[i].name,
 			  attr_list[i].default_val.real_value);
 		  break;
 		  
 	      case HID_String:
-		  fprintf(fd, " (list '%s 'String \"%s\")", attr_list[i].name,
+		  fprintf(fd, "\t\t(list '%s 'String \"%s\")\n", attr_list[i].name,
 			  attr_list[i].default_val.str_value);
 		  break;
 		  
 	      case HID_Boolean:
-		  fprintf(fd, " (list '%s 'Boolean %d)", attr_list[i].name,
+		  fprintf(fd, "\t\t(list '%s 'Boolean %d)\n", attr_list[i].name,
 			  attr_list[i].default_val.int_value);
 		  break;
 		  
 	      case HID_Enum:
-		  fprintf(fd, " (list '%s 'Enum %d)", attr_list[i].name,
+		  fprintf(fd, "\t\t(list '%s 'Enum %d)\n", attr_list[i].name,
 			  attr_list[i].default_val.int_value);
 		  break;
 
@@ -988,7 +1145,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 		  break;
 
 	      case HID_Path:
-		  fprintf(fd, " (list '%s 'Path \"%s\")", attr_list[i].name,
+		  fprintf(fd, "\t\t(list '%s 'Path \"%s\")\n", attr_list[i].name,
 			  attr_list[i].default_val.str_value);
 		  break;
 
@@ -999,7 +1156,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 	      }
 	}
 	if (n_attr > 0) {
-	    fprintf (fd, "))");
+	    fprintf (fd, "\t))\n");
 	}
 
 	fprintf(fd, ")\n");
@@ -1007,8 +1164,10 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
     }
 
     fprintf (fd, "(set-render-type! %d)\n", screenRenderInfo.renderType);
-	     
+
+    setlocale(LC_NUMERIC, "");	/* Default locale */
+
     fclose(fd);
 
-    return(0);
+    return 0;
 } /* write_project */

@@ -172,131 +172,159 @@ gchar *logToFileFilename;
 void 
 main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
-	project_list_t *project_list, *originalList;
-	gint i,maxLayerNumber = -1;
+	project_list_t *list, *plist;
+	gint i, max_layer_num = -1;
+	gerbv_fileinfo_t *file_info;
 
 	dprintf(_("Opening project = %s\n"), (gchar *) filename);
-	originalList = project_list = read_project_file(filename);
+	list = read_project_file(filename);
 
-	if (project_list) {
-		/* first, get the max layer number in the project list */
-		while (project_list) {
-			if (project_list->layerno > maxLayerNumber)
-				maxLayerNumber = project_list->layerno;
-			project_list = project_list->next;
-		}
-		project_list = originalList;
-		/* increase the layer count each time and find (if any) the corresponding entry */
-		for (i = -1; i<=maxLayerNumber; i++){
-			project_list = originalList;
-			while (project_list) {
-				if (project_list->layerno == i) {
-					GdkColor colorTemplate = {0,project_list->rgb[0],
-					project_list->rgb[1],project_list->rgb[2]};
-					if (i == -1) {
-						gerbvProject->background = colorTemplate;
-					}
-					else {
-						gchar *fullName = NULL;
-						gchar *dirName = NULL;
-						gint fileIndex = gerbvProject->last_loaded + 1;
-
-						if (!g_path_is_absolute (project_list->filename)) {
-							/* build the full pathname to the layer */
-							dirName = g_path_get_dirname (filename);
-							fullName = g_build_filename (dirName,
-								project_list->filename, NULL);
-						}
-						else {
-							fullName = g_strdup (project_list->filename);
-						}
-						if (gerbv_open_image(gerbvProject, fullName,
-								fileIndex, FALSE, 
-								project_list->attr_list, 
-								project_list->n_attr, TRUE) == -1) {
-							GERB_MESSAGE(_("could not read file: %s\n"), fullName);
-						}
-						else {
-							g_free (dirName);
-							g_free (fullName);
-							/* 
-							* Change color from default to from the project list
-							*/
-							gerbvProject->file[fileIndex]->color = colorTemplate;
-							gerbvProject->file[fileIndex]->transform.inverted = project_list->inverted;
-							gerbvProject->file[fileIndex]->isVisible = project_list->visible;
-						}
-					}
-				}
-				project_list = project_list->next;
-			}
-		}
-		project_destroy_project_list (originalList);
-		/*
-		* Save project filename for later use
-		*/
-		if (gerbvProject->project) {
-		g_free(gerbvProject->project);
-		gerbvProject->project = NULL;
-		}
-		gerbvProject->project = g_strdup (filename);
-		if (gerbvProject->project == NULL)
-		GERB_FATAL_ERROR(_("malloc gerbvProject->project failed\n"));
-	}
-	else {
+	if (!list) {
 		GERB_MESSAGE(_("could not read %s[%d]\n"), (gchar *) filename,
 		gerbvProject->last_loaded);
+
+		return;
 	}
+
+	/* Get the max layer number in the project list */
+	plist = list;
+	while (plist) {
+		if (plist->layerno > max_layer_num)
+			max_layer_num = plist->layerno;
+
+		plist = plist->next;
+	}
+
+	/* Increase the layer count each time and find (if any) the
+	 * corresponding entry */
+	for (i = -1; i <= max_layer_num; i++) {
+		plist = list;
+		while (plist) {
+			if (plist->layerno != i) {
+				plist = plist->next;
+				continue;
+			}
+
+			GdkColor colorTemplate = {0,
+				plist->rgb[0], plist->rgb[1], plist->rgb[2]};
+			if (i == -1) {
+				gerbvProject->background = colorTemplate;
+				plist = plist->next;
+				continue;
+			}
+
+			gchar *fullName = NULL;
+			gchar *dirName = NULL;
+			gint fileIndex = gerbvProject->last_loaded + 1;
+
+			if (!g_path_is_absolute (plist->filename)) {
+				/* Build the full pathname to the layer */
+				dirName = g_path_get_dirname (filename);
+				fullName = g_build_filename (dirName,
+					plist->filename, NULL);
+			} else {
+				fullName = g_strdup (plist->filename);
+			}
+
+			if (gerbv_open_image(gerbvProject, fullName,
+					fileIndex, FALSE,
+					plist->attr_list,
+					plist->n_attr, TRUE) == -1) {
+				GERB_MESSAGE(_("could not read file: %s\n"),
+						fullName);
+				plist = plist->next;
+				continue;
+			}
+
+			g_free (dirName);
+			g_free (fullName);
+
+			/* Change color from default to from the project list */
+			file_info = gerbvProject->file[fileIndex];
+			file_info->color = colorTemplate;
+			file_info->alpha = plist->alpha;
+			file_info->transform.inverted =	plist->inverted;
+			file_info->transform.translateX = plist->translate_x;
+			file_info->transform.translateY = plist->translate_y;
+			file_info->transform.rotation = plist->rotation;
+			file_info->transform.scaleX = plist->scale_x;
+			file_info->transform.scaleY = plist->scale_y;
+			file_info->transform.mirrorAroundX = plist->mirror_x;
+			file_info->transform.mirrorAroundY = plist->mirror_y;
+			file_info->isVisible = plist->visible;
+
+			plist = plist->next;
+		}
+	}
+
+	project_destroy_project_list(list);
+
+	/* Save project filename for later use */
+	if (gerbvProject->project) {
+		g_free(gerbvProject->project);
+		gerbvProject->project = NULL;
+	}
+	gerbvProject->project = g_strdup(filename);
+	if (gerbvProject->project == NULL)
+		GERB_FATAL_ERROR(_("malloc gerbvProject->project failed\n"));
 } /* gerbv_open_project_from_filename */
 
 /* ------------------------------------------------------------------ */
 void 
 main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
 {
-    project_list_t *project_list = NULL, *tmp;
-    int idx;
+    project_list_t *list, *plist;
     gchar *dirName = g_path_get_dirname (filename);
+    gerbv_fileinfo_t *file_info;
+    int idx;
     
-    project_list = g_new0 (project_list_t, 1);
-    project_list->next = project_list;
-    project_list->layerno = -1;
-    project_list->filename = g_strdup(gerbvProject->path);
-    project_list->rgb[0] = gerbvProject->background.red;
-    project_list->rgb[1] = gerbvProject->background.green;
-    project_list->rgb[2] = gerbvProject->background.blue;
-    project_list->next = NULL;
+    list = g_new0 (project_list_t, 1);
+    list->next = NULL;
+    list->layerno = -1;
+    list->filename = g_strdup(gerbvProject->path);
+    list->rgb[0] = gerbvProject->background.red;
+    list->rgb[1] = gerbvProject->background.green;
+    list->rgb[2] = gerbvProject->background.blue;
     
     /* loop over all layer files */
     for (idx = 0; idx <= gerbvProject->last_loaded; idx++) {
 	if (gerbvProject->file[idx]) {
-	    tmp = g_new0 (project_list_t, 1);
-	    tmp->next = project_list;
-	    tmp->layerno = idx;
+	    plist = g_new0 (project_list_t, 1);
+	    plist->next = list;
+	    plist->layerno = idx;
 	    
 	    /* figure out the relative path to the layer from the project
 	       directory */
 	    if (strncmp (dirName, gerbvProject->file[idx]->fullPathname, strlen(dirName)) == 0) {
 		/* skip over the common dirname and the separator */
-		tmp->filename = g_strdup(gerbvProject->file[idx]->fullPathname + strlen(dirName) + 1);
+		plist->filename = g_strdup(gerbvProject->file[idx]->fullPathname + strlen(dirName) + 1);
 	    } else {
 		/* if we can't figure out a relative path, just save the 
 		 * absolute one */
-		tmp->filename = g_strdup(gerbvProject->file[idx]->fullPathname);
+		plist->filename = g_strdup(gerbvProject->file[idx]->fullPathname);
 	    }
-	    tmp->rgb[0] = gerbvProject->file[idx]->color.red;
-	    tmp->rgb[1] = gerbvProject->file[idx]->color.green;
-	    tmp->rgb[2] = gerbvProject->file[idx]->color.blue;
-	    tmp->inverted = gerbvProject->file[idx]->transform.inverted;
-	    tmp->visible = gerbvProject->file[idx]->isVisible;
-
-	    project_list = tmp;
+	    file_info = gerbvProject->file[idx];
+	    plist->rgb[0] =		file_info->color.red;
+	    plist->rgb[1] =		file_info->color.green;
+	    plist->rgb[2] =		file_info->color.blue;
+	    plist->alpha =		file_info->alpha;
+	    plist->inverted =		file_info->transform.inverted;
+	    plist->visible =		file_info->isVisible;
+	    plist->translate_x =	file_info->transform.translateX;
+	    plist->translate_y =	file_info->transform.translateY;
+	    plist->rotation =		file_info->transform.rotation;
+	    plist->scale_x =		file_info->transform.scaleX;
+	    plist->scale_y =		file_info->transform.scaleY;
+	    plist->mirror_x =		file_info->transform.mirrorAroundX;
+	    plist->mirror_y =		file_info->transform.mirrorAroundY;
+	    list= plist;
 	}
     }
     
-    if (write_project_file(gerbvProject, gerbvProject->project, project_list)) {
+    if (write_project_file(gerbvProject, gerbvProject->project, list)) {
 	GERB_MESSAGE(_("Failed to write project\n"));
     }
-    project_destroy_project_list (project_list);
+    project_destroy_project_list(list);
     g_free (dirName);
 } /* gerbv_save_project_from_filename */
 

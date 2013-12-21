@@ -34,7 +34,15 @@ typedef struct project_list_t {
     int layerno;
     char *filename;
     int rgb[3];
+    int alpha;
     char inverted;
+    double translate_x;
+    double translate_y;
+    double rotation;
+    double scale_x;
+    double scale_y;
+    char mirror_x;
+    char mirror_y;
     char is_pnp;
     char visible;
     gerbv_HID_Attribute *attr_list;
