@@ -125,7 +125,6 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_file_menu;
 	GtkWidget *new;
 	GtkWidget *open_project;
-	GtkWidget *image33;
 	GtkWidget *open_layer;
 	GtkWidget *revert;
 	GtkWidget *save;
@@ -189,7 +188,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *layer_color;
 	GtkWidget *layer_reload;
 	GtkWidget *separator6;
-	GtkWidget *layer_orientation;
+	GtkWidget *layer_edit;
 	GtkWidget *layer_format;
 	GtkWidget *separator7;
 	GtkWidget *layer_up;
@@ -324,8 +323,8 @@ interface_create_gui (int req_width, int req_height)
 	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open project..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_project);
 	gtk_tooltips_set_tip (tooltips, open_project, _("Open an existing Gerbv project"), NULL);
-	image33 = gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), image33);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), tempImage);
 
 	save = gtk_image_menu_item_new_with_mnemonic (_("Save project"));
 	screen.win.curFileMenuItem1 = save;
@@ -467,7 +466,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (delete_selected), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_edit_menu), delete_selected);
 
-	/*   Include these after they are coded.
+#if 0
+	/* Include these after they are coded. */
 	tempMenuItem = gtk_image_menu_item_new_with_label (_("Edit object properties"));
 	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, _("Edit the properties of the selected object"), NULL);
@@ -485,7 +485,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, tempMenuItem, _("Reduce the area of the object (e.g. to prevent component floating)"),NULL);
 	g_signal_connect ((gpointer) tempMenuItem, "activate",
 	                  G_CALLBACK (callbacks_reduce_object_area_clicked), NULL);
-	*/
+#endif
 
 	/* Use the "Edit" menu as right click popup menu for the drawing area */
 	screen.win.drawWindowPopupMenu = menuitem_edit_menu;
@@ -714,13 +714,15 @@ interface_create_gui (int req_width, int req_height)
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_reload), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_reload);
 
-	layer_orientation = gtk_menu_item_new_with_mnemonic (_("_Modify orientation"));
-	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_orientation);
-	gtk_tooltips_set_tip (tooltips, layer_orientation, _("Translate, scale, rotate, or mirror the layer currently selected in the sidepane"), NULL);
+	layer_edit = gtk_image_menu_item_new_with_mnemonic (_("_Edit layer"));
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_edit);
+	gtk_tooltips_set_tip (tooltips, layer_edit, _("Translate, scale, rotate, or mirror the layer currently selected in the sidepane"), NULL);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_edit), tempImage);
 
 	layer_format = gtk_image_menu_item_new_with_mnemonic (_("Edit file _format"));
 	gtk_tooltips_set_tip (tooltips, layer_format, _("View and edit the numerical format used to parse this layer currently selected in the sidepane"), NULL);
-	tempImage = gtk_image_new_from_stock (GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU);
+	tempImage = gtk_image_new_from_stock (GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_format), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_format);
 
@@ -1248,7 +1250,7 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) layer_invert, "activate", G_CALLBACK (callbacks_invert_layer_clicked), NULL);
 	g_signal_connect ((gpointer) layer_color, "activate", G_CALLBACK (callbacks_change_layer_color_clicked), NULL);
 	g_signal_connect ((gpointer) layer_reload, "activate", G_CALLBACK (callbacks_reload_layer_clicked), NULL);
-	g_signal_connect ((gpointer) layer_orientation, "activate", G_CALLBACK (callbacks_change_layer_orientation_clicked), NULL);
+	g_signal_connect ((gpointer) layer_edit, "activate", G_CALLBACK (callbacks_change_layer_edit_clicked), NULL);
 	g_signal_connect ((gpointer) layer_format, "activate", G_CALLBACK (callbacks_change_layer_format_clicked), NULL);
 	g_signal_connect ((gpointer) layer_remove, "activate", G_CALLBACK (callbacks_remove_layer_button_clicked), NULL);
 	g_signal_connect ((gpointer) layer_up, "activate", G_CALLBACK (callbacks_move_layer_up_menu_activate), NULL);
@@ -1788,7 +1790,7 @@ focus_in_event_callback (int *widget_num)
 }
 
 void
-interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform,
+interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 		gerbv_unit_t screenUnit) {
 	GtkWidget *dialog;
 	GtkWidget *check1,*check2,*tempWidget,*tempWidget2,*tableWidget;
@@ -1799,7 +1801,7 @@ interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform
 	int focus_nums[G_N_ELEMENTS(focus_widgets)];
 	int i;
 
-	dialog = gtk_dialog_new_with_buttons (_("Modify layer orientation"),
+	dialog = gtk_dialog_new_with_buttons (_("Edit layer"),
 					GTK_WINDOW (screen.win.topLevelWindow), GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_STOCK_CANCEL, GTK_RESPONSE_NONE, GTK_STOCK_OK, GTK_RESPONSE_OK,
 					GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,

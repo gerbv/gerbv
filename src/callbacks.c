@@ -2335,7 +2335,7 @@ callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
 }
 
 void
-callbacks_change_layer_orientation_clicked  (GtkButton *button, gpointer userData){
+callbacks_change_layer_edit_clicked  (GtkButton *button, gpointer userData){
 	gint index = callbacks_get_selected_row_index();
 
 	if (index < 0) {
@@ -2343,7 +2343,8 @@ callbacks_change_layer_orientation_clicked  (GtkButton *button, gpointer userDat
 		return;
 	}
 
-	interface_show_modify_orientation_dialog(&mainProject->file[index]->transform,screen.unit);
+	interface_show_layer_edit_dialog(&mainProject->file[index]->transform,
+			screen.unit);
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree ();	
 }

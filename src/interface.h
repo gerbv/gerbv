@@ -174,16 +174,17 @@ void
 set_window_icon (GtkWidget * this_window);
 
 gboolean
-interface_get_alert_dialog_response (gchar *primaryText, 
+interface_get_alert_dialog_response (gchar *primaryText,
 				     gchar *secondaryText,
-                                     gboolean show_checkbox, 
-				     gboolean *ask_to_show_again );
+				     gboolean show_checkbox,
+				     gboolean *ask_to_show_again);
 
 void
-interface_show_alert_dialog (gchar *primaryText, 
-			     gchar *secondaryText, 
-			     gboolean show_checkbox, 
-			     gboolean *ask_to_show_again );
+interface_show_alert_dialog (gchar *primaryText,
+			     gchar *secondaryText,
+			     gboolean show_checkbox,
+			     gboolean *ask_to_show_again);
 
 void
-interface_show_modify_orientation_dialog (gerbv_user_transformation_t *transform, gerbv_unit_t screenUnit);
+interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
+				  gerbv_unit_t screenUnit);
