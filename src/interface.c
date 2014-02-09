@@ -30,6 +30,10 @@
 #  include <config.h>
 #endif
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
