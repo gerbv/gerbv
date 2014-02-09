@@ -31,6 +31,8 @@ all:
 	@ echo
 endif
 
+EXTRA_DIST=	gerbv.1.in
+
 PO_FILES = gerbv.ru.1.in.po
 
 MOSTLYCLEANFILES = *~
@@ -54,6 +56,7 @@ $(PO_FILES): gerbv.1.in.pot
 
 gerbv.1.in.pot: gerbv.1.in
 	$(po4a_gettextize) -M UTF-8 -f man -m $< -p $@
+
 
 update-po:
 	@ touch -c gerbv.1.in.pot
