@@ -109,7 +109,7 @@ gerbv_DEPENDENCIES+=	gerbv_icon.o
 
 endif
 
-callbacks.$(OBJEXT) : authors.c bugs.c
+BUILT_SOURCES=	authors.c bugs.c
 
 TXT2CL=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;N_(";g' -e 's;$$;"),;g' -e 's;N_("");"";g'
 
@@ -129,7 +129,12 @@ bugs.c: $(top_srcdir)/BUGS Makefile
 
 CLEANFILES=	authors.c bugs.c
 
-EXTRA_DIST=	gerbv.rc libgerbv.pc.in run_gerbv.in
+## authors.c and bugs.c are both built sources, however they are a bit problematic
+## because of i18n.  Certain built targets will try to update the po files but those
+## rules may not cause authors.c and bugs.c to be built.  Work around this by
+## putting them in the distfile.  They shouldn't change anyway.
+
+EXTRA_DIST=	authors.c bugs.c gerbv.rc libgerbv.pc.in run_gerbv.in
 
 SCMSUBDIR = scheme
 scmdatadir = $(pkgdatadir)/${SCMSUBDIR}/
@@ -152,4 +157,4 @@ DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
 DISTCLEANFILES = run_gerbv
 
 MOSTLYCLEANFILES = *~
-MAINTAINERCLEANFILES = *~ *.o Makefile Makefile.in
+MAINTAINERCLEANFILES = *~ *.o Makefile Makefile.in authors.c bugs.c
