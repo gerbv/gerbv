@@ -443,5 +443,7 @@ AC_MSG_RESULT([
 
    Electric Fence Debugging: $with_efence
 
+   ImageMagick:              $have_magick
+   (for test suite)
 ])
 
