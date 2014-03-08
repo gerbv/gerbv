@@ -1677,7 +1677,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    	}
 		break;
 	    default :
-		string = g_strdup_printf(_("Wrong character %c in image justify in file %s"),
+		string = g_strdup_printf(_("Wrong character %c in image justify in file \"%s\""),
 					 op[0], fd->filename);
 		gerbv_stats_add_error(stats->error_list,
 				     -1,

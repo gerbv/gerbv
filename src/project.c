@@ -608,7 +608,7 @@ define_layer(scheme *sc, pointer args)
     cdr_el = sc->vptr->pair_cdr(args);
 
     if (!sc->vptr->is_integer(car_el) || !sc->vptr->is_number(car_el)) {
-	GERB_MESSAGE(_("define-layer!: layer number missing/incorrect\n"));
+	GERB_MESSAGE(_("%s(): layer number missing/incorrect\n"), __func__);
 
 	return sc->F;
     }
@@ -640,7 +640,7 @@ define_layer(scheme *sc, pointer args)
 	value =  sc->vptr->pair_cdr(car_el);
 	
 	if (!sc->vptr->is_symbol(name)) {
-	    GERB_MESSAGE(_("define-layer!: non-symbol found, ignoring\n"));
+	    GERB_MESSAGE(_("%s(): non-symbol found, ignoring\n"), __func__);
 	    goto end_name_value_parse;
 	}
 
