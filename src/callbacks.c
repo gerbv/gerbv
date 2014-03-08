@@ -823,13 +823,19 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	} else {
 		if (stats_report->error_list->error_text == NULL) {
 			g_string_printf(general_report_str,
-				_("No errors found in %d visible "
-					"Gerber layer(s)."),
+				ngettext("No errors found in %d visible "
+					"Gerber layer.",
+					"No errors found in %d visible "
+					"Gerber layers.",
+					stats_report->layer_count),
 				stats_report->layer_count);
 		} else {
 			g_string_printf(general_report_str,
-				_("Found errors in %d visible "
-					"Gerber layer(s)."),
+				ngettext("Found errors in %d visible "
+					"Gerber layer.",
+					"Found errors in %d visible "
+					"Gerber layers.",
+					stats_report->layer_count),
 				stats_report->layer_count);
 		}
 	}
@@ -1186,13 +1192,19 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	} else {
 		if (stats_report->error_list->error_text == NULL) {
 			g_string_printf(general_report_str,
-				_("No errors found in %d visible "
-					"drill layer(s)."),
+				ngettext("No errors found in %d visible "
+					"drill layer.",
+					"No errors found in %d visible "
+					"drill layers.",
+					stats_report->layer_count),
 				stats_report->layer_count);
 		} else {
 			g_string_printf(general_report_str,
-				_("Found errors in %d visible "
-					"drill layer(s)."),
+				ngettext("Found errors found in %d visible "
+					"drill layer.",
+					"Found errors found in %d visible "
+					"drill layers.",
+					stats_report->layer_count),
 				stats_report->layer_count);
 		}
 	}
