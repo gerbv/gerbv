@@ -180,7 +180,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	list = read_project_file(filename);
 
 	if (!list) {
-		GERB_MESSAGE(_("could not read %s[%d]\n"), (gchar *) filename,
+		GERB_MESSAGE(_("could not read %s[%d]"), (gchar *) filename,
 		gerbvProject->last_loaded);
 
 		return;
@@ -230,7 +230,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 					fileIndex, FALSE,
 					plist->attr_list,
 					plist->n_attr, TRUE) == -1) {
-				GERB_MESSAGE(_("could not read file: %s\n"),
+				GERB_MESSAGE(_("could not read file: %s"),
 						fullName);
 				plist = plist->next;
 				continue;
@@ -266,7 +266,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	}
 	gerbvProject->project = g_strdup(filename);
 	if (gerbvProject->project == NULL)
-		GERB_FATAL_ERROR(_("malloc gerbvProject->project failed\n"));
+		GERB_FATAL_ERROR(_("malloc gerbvProject->project failed"));
 } /* gerbv_open_project_from_filename */
 
 /* ------------------------------------------------------------------ */
@@ -322,7 +322,7 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
     }
     
     if (write_project_file(gerbvProject, gerbvProject->project, list)) {
-	GERB_MESSAGE(_("Failed to write project\n"));
+	GERB_MESSAGE(_("Failed to write project"));
     }
     project_destroy_project_list(list);
     g_free (dirName);
@@ -342,7 +342,7 @@ main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filenam
     }
     gerbvProject->project = g_strdup(filename);
     if (gerbvProject->project == NULL)
-	GERB_FATAL_ERROR(_("malloc gerbvProject->project failed\n"));
+	GERB_FATAL_ERROR(_("malloc gerbvProject->project failed"));
     main_save_project_from_filename (gerbvProject, filename);
 } /* gerbv_save_as_project_from_filename */
 

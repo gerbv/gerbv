@@ -398,7 +398,7 @@ gerbv_image_t *merge_images (int type)
 				type=GERBV_LAYERTYPE_RS274X;
 			break;
 		default:
-			GERB_MESSAGE(_("Unknown Layer type for merge\n"));
+			GERB_MESSAGE(_("Unknown Layer type for merge"));
 			goto err;
 	}
 	dprintf(_("Looking for matching files\n")); 
@@ -416,7 +416,7 @@ gerbv_image_t *merge_images (int type)
 /*		printf("Done with add\n"); */
 	}
 	if(2>filecount){
-		GERB_MESSAGE (_("Not Enough Files of same type to merge\n"));
+		GERB_MESSAGE (_("Not Enough Files of same type to merge"));
 		goto err;
 	}
 	dprintf(_("Now merging files\n"));
@@ -609,7 +609,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			if (NULL != (image=merge_images (processType)) ){
 				gerbv_export_rs274x_file_from_image (filename, image,	&t);	
 				gerbv_destroy_image (image);
-				GERB_MESSAGE (_("Merged visible gerber layers and placed in '%s'\n"),filename);
+				GERB_MESSAGE (_("Merged visible gerber layers and placed in '%s'"),filename);
 			}
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_DRILLM) {
@@ -618,7 +618,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			if (NULL != (image = merge_images (processType))) {
 				gerbv_export_drill_file_from_image (filename, image,&t);
 				gerbv_destroy_image (image);
-				GERB_MESSAGE (_("Merged visible drill layers and placed in '%s'\n"),filename);
+				GERB_MESSAGE (_("Merged visible drill layers and placed in '%s'"),filename);
 			}	
 		}		
 	}

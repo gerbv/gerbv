@@ -1044,7 +1044,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		if (image->aperture[net->aperture] == NULL) {
 		  /* Commenting this out since it gets emitted every time you click on the screen 
 		     if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
-		     GERB_MESSAGE("Aperture D%d is not defined\n", net->aperture);
+		     GERB_MESSAGE("Aperture D%d is not defined", net->aperture);
 		  */
 		    continue;
 		}
@@ -1113,7 +1113,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    case GERBV_INTERPOLATION_x10 :
 		    case GERBV_INTERPOLATION_LINEARx01 :
 		    case GERBV_INTERPOLATION_LINEARx001 :
-			GERB_MESSAGE(_("Linear != x1\n"));
+			GERB_MESSAGE(_("Linear != x1"));
 			gdk_gc_set_line_attributes(gc, p1, 
 						   GDK_LINE_ON_OFF_DASH, 
 						   GDK_CAP_ROUND, 
@@ -1206,12 +1206,12 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					      scale, x2, y2);
 			break;
 		    default :
-			GERB_MESSAGE(_("Unknown aperture type\n"));
+			GERB_MESSAGE(_("Unknown aperture type"));
 			return 0;
 		    }
 		    break;
 		default :
-		    GERB_MESSAGE(_("Unknown aperture state\n"));
+		    GERB_MESSAGE(_("Unknown aperture state"));
 		    return 0;
 		}
 		}

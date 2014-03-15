@@ -798,7 +798,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		if (image->aperture[net->aperture] == NULL) {
 		  /* Commenting this out since it gets emitted every time you click on the screen 
 		  if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
-		    GERB_MESSAGE("Aperture D%d is not defined\n", net->aperture);
+		    GERB_MESSAGE("Aperture D%d is not defined", net->aperture);
 		  */
 		  continue;
 		}
@@ -951,7 +951,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 								  drawMode, selectionInfo, image, net);
 						break;   
 					default :
-						GERB_MESSAGE(_("Unknown aperture type\n"));
+						GERB_MESSAGE(_("Unknown aperture type"));
 						return 0;
 				}
 				/* and finally fill the path */
@@ -959,7 +959,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				cairo_restore (cairoTarget);
 				break;
 			default:
-				GERB_MESSAGE(_("Unknown aperture state\n"));
+				GERB_MESSAGE(_("Unknown aperture state"));
 				return 0;
 		}
 	    }

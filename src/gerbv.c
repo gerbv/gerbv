@@ -182,7 +182,7 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE(_("Could not read %s[%d]\n"), (gchar *) filename,
+    GERB_MESSAGE(_("Could not read %s[%d]"), (gchar *) filename,
 		 gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
@@ -201,7 +201,7 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE(_("Could not read %s[%d]\n"), (gchar *) filename,
+    GERB_MESSAGE(_("Could not read %s[%d]"), (gchar *) filename,
 		 gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
@@ -325,8 +325,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
 
     if (error) {
 	if (error & GERB_IMAGE_MISSING_NETLIST) {
-	    GERB_COMPILE_ERROR(_("Missing netlist - aborting file read\n"));
-	    GERB_COMPILE_ERROR("\n");
+	    GERB_COMPILE_ERROR(_("Missing netlist - aborting file read"));
 	    gerbv_destroy_image(parsed_image);
 	    return -1;
 	}
@@ -425,7 +424,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     
     fd = gerb_fopen(filename);
     if (fd == NULL) {
-	GERB_MESSAGE(_("Trying to open %s: %s\n"), filename, strerror(errno));
+	GERB_MESSAGE(_("Trying to open %s: %s"), filename, strerror(errno));
 	return -1;
     }
 
@@ -472,7 +471,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     } else {
 	/* This is not a known file */
 	dprintf("Unknown filetype");
-	GERB_COMPILE_ERROR(_("%s: Unknown file type.\n"), filename);
+	GERB_COMPILE_ERROR(_("%s: Unknown file type."), filename);
 	parsed_image = NULL;
     }
     
@@ -519,7 +518,7 @@ gerbv_create_rs274x_image_from_filename (gchar *filename){
 	
 	fd = gerb_fopen(filename);
 	if (fd == NULL) {
-		GERB_MESSAGE(_("Trying to open %s: %s\n"), filename, strerror(errno));
+		GERB_MESSAGE(_("Trying to open %s: %s"), filename, strerror(errno));
 		return NULL;
 	}
 	gchar *currentLoadDirectory = g_path_get_dirname (filename);

@@ -254,13 +254,13 @@ check_vector_and_length(scheme *sc, pointer value,
 		unsigned int length, const char *item)
 {
     if (!sc->vptr->is_vector(value)) {
-	GERB_MESSAGE(_("'%s' parameter not a vector\n"), item);
+	GERB_MESSAGE(_("'%s' parameter not a vector"), item);
 
 	return 1;
     }
 
     if (sc->vptr->vector_length(value) != length) {
-	GERB_MESSAGE(_("'%s' vector of incorrect length\n"), item);
+	GERB_MESSAGE(_("'%s' vector of incorrect length"), item);
 
 	return 2;
     }
@@ -283,7 +283,7 @@ get_color(scheme *sc, pointer value, int *color)
 	    color[i] = sc->vptr->ivalue(elem);
 	else { 
 	    color[i] = -1;
-	    GERB_MESSAGE(_("Illegal color in projectfile\n"));
+	    GERB_MESSAGE(_("Illegal color in projectfile"));
 	}
     }
     
@@ -304,7 +304,7 @@ get_alpha(scheme *sc, pointer value, int *alpha)
         return;
     }
 
-    GERB_MESSAGE(_("Illegal alpha value in projectfile\n"));
+    GERB_MESSAGE(_("Illegal alpha value in projectfile"));
 } /* get_alpha */
 
 static void
@@ -320,7 +320,7 @@ get_double(scheme *sc, pointer value, char *item, double *x, double def)
 	*x = sc->vptr->rvalue(elem);
     } else {
 	*x = def;
-	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+	GERB_MESSAGE(_("Illegal %s in projectfile"), item);
     }
 } /* get_double */
 
@@ -338,7 +338,7 @@ get_double_pair(scheme *sc, pointer value, char *item,
 	*x = sc->vptr->rvalue(elem);
     } else {
 	*x = def;
-	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+	GERB_MESSAGE(_("Illegal %s in projectfile"), item);
     }
 
     elem = sc->vptr->vector_elem(value, 1);
@@ -346,7 +346,7 @@ get_double_pair(scheme *sc, pointer value, char *item,
 	*y = sc->vptr->rvalue(elem);
     } else {
 	*y = def;
-	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+	GERB_MESSAGE(_("Illegal %s in projectfile"), item);
     }
 } /* get_double_pair */
 
@@ -366,7 +366,7 @@ get_bool_pair(scheme *sc, pointer value, char *item,
 	*x = 1;
     } else {
 	*x = def;
-	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+	GERB_MESSAGE(_("Illegal %s in projectfile"), item);
     }
 
     elem = sc->vptr->vector_elem(value, 1);
@@ -376,7 +376,7 @@ get_bool_pair(scheme *sc, pointer value, char *item,
 	*y = 1;
     } else {
 	*y = def;
-	GERB_MESSAGE(_("Illegal %s in projectfile\n"), item);
+	GERB_MESSAGE(_("Illegal %s in projectfile"), item);
     }
 } /* get_bool_pair */
 
@@ -599,7 +599,7 @@ define_layer(scheme *sc, pointer args)
     dprintf("--> entering %s: %s\n", __FILE__, __func__);
 
     if (!sc->vptr->is_pair(args)) {
-	GERB_MESSAGE(_("%s(): too few arguments\n"), __func__);
+	GERB_MESSAGE(_("%s(): too few arguments"), __func__);
 
 	return sc->F;
     }
@@ -608,7 +608,7 @@ define_layer(scheme *sc, pointer args)
     cdr_el = sc->vptr->pair_cdr(args);
 
     if (!sc->vptr->is_integer(car_el) || !sc->vptr->is_number(car_el)) {
-	GERB_MESSAGE(_("%s(): layer number missing/incorrect\n"), __func__);
+	GERB_MESSAGE(_("%s(): layer number missing/incorrect"), __func__);
 
 	return sc->F;
     }
@@ -640,7 +640,7 @@ define_layer(scheme *sc, pointer args)
 	value =  sc->vptr->pair_cdr(car_el);
 	
 	if (!sc->vptr->is_symbol(name)) {
-	    GERB_MESSAGE(_("%s(): non-symbol found, ignoring\n"), __func__);
+	    GERB_MESSAGE(_("%s(): non-symbol found, ignoring"), __func__);
 	    goto end_name_value_parse;
 	}
 
@@ -676,7 +676,7 @@ define_layer(scheme *sc, pointer args)
 	    } else if (value == sc->T) {
 		plist->inverted = 1;
 	    } else {
-		GERB_MESSAGE(_("Argument to inverted must be #t or #f\n"));
+		GERB_MESSAGE(_("Argument to inverted must be #t or #f"));
 	    }
 	} else if (strcmp(str, "visible") == 0) {
 	    if (value == sc->F) {
@@ -684,7 +684,7 @@ define_layer(scheme *sc, pointer args)
 	    } else if (value == sc->T) {
 		plist->visible = 1;
 	    } else {
-		GERB_MESSAGE(_("Argument to visible must be #t or #f\n"));
+		GERB_MESSAGE(_("Argument to visible must be #t or #f"));
 	    }
        	} else if (strcmp(str, "attribs") == 0) {
 	    pointer attr_car_el, attr_cdr_el;
@@ -801,7 +801,7 @@ set_render_type(scheme *sc, pointer args)
     dprintf("--> entering project.c:%s()\n", __FUNCTION__);
 
     if (!sc->vptr->is_pair(args)){
-	GERB_MESSAGE(_("set-render-type!: Too few arguments\n"));
+	GERB_MESSAGE(_("set-render-type!: Too few arguments"));
 	return sc->F;
     }
 
@@ -825,7 +825,7 @@ gerbv_file_version(scheme *sc, pointer args)
     dprintf("--> entering project.c:%s()\n", __FUNCTION__);
 
     if (!sc->vptr->is_pair(args)){
-	GERB_MESSAGE(_("gerbv-file-version!: Too few arguments\n"));
+	GERB_MESSAGE(_("gerbv-file-version!: Too few arguments"));
 	return sc->F;
     }
 
@@ -840,7 +840,7 @@ gerbv_file_version(scheme *sc, pointer args)
       GERB_MESSAGE(_("The project file you are attempting to load has specified that it\n"
 		   "uses project file version \"%s\" but this string is not\n"
 		   "a valid version.  Gerbv will attempt to load the file using\n"
-		   "version \"%s\".  You may experience unexpected results.\n"),
+		   "version \"%s\".  You may experience unexpected results."),
 		   vstr, version_int_to_str( r ));
       vstr = GERBV_DEFAULT_PROJECT_FILE_VERSION;
     }
@@ -948,7 +948,7 @@ read_project_file(char const* filename)
 		version_str_to_int(GERBV_DEFAULT_PROJECT_FILE_VERSION);
 
     if (stat(filename, &stat_info) || !S_ISREG(stat_info.st_mode)) {
-	GERB_MESSAGE(_("Failed to read %s\n"), filename);
+	GERB_MESSAGE(_("Failed to read %s"), filename);
 
 	return NULL;
     }
@@ -957,7 +957,7 @@ read_project_file(char const* filename)
     scheme_set_output_port_file(sc, stdout);
 
     if(!sc){
-	GERB_FATAL_ERROR(_("Couldn't init scheme\n"));
+	GERB_FATAL_ERROR(_("Couldn't init scheme"));
 	exit(1);
     }
 
@@ -965,14 +965,14 @@ read_project_file(char const* filename)
     initfile = gerb_find_file("init.scm", initdirs);
     if (initfile == NULL) {
 	scheme_deinit(sc);
-	GERB_MESSAGE(_("Problem loading init.scm (%s)\n"), strerror(errno));
+	GERB_MESSAGE(_("Problem loading init.scm (%s)"), strerror(errno));
 	return NULL;
     }
     dprintf("%s():  initfile = \"%s\"\n", __FUNCTION__, initfile);
 
     if ((fd = fopen(initfile, "r")) == NULL) {
 	scheme_deinit(sc);
-	GERB_MESSAGE(_("Couldn't open %s (%s)\n"), initfile, strerror(errno));
+	GERB_MESSAGE(_("Couldn't open %s (%s)"), initfile, strerror(errno));
 	return NULL;
     }
 
@@ -997,7 +997,7 @@ read_project_file(char const* filename)
     if ((fd = fopen(filename, "r")) == NULL) {
 	setlocale(LC_NUMERIC, "");	/* Default locale */
 	scheme_deinit(sc);
-	GERB_MESSAGE(_("Couldn't open project file %s (%s)\n"), filename,
+	GERB_MESSAGE(_("Couldn't open project file %s (%s)"), filename,
 		     strerror(errno));
 
 	return NULL;
@@ -1044,7 +1044,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
     int i;
 
     if ((fd = fopen(filename, "w")) == NULL) {
-	    GERB_MESSAGE(_("Couldn't save project %s\n"), filename);
+	    GERB_MESSAGE(_("Couldn't save project %s"), filename);
 	    return -1;
     }
 

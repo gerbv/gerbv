@@ -94,7 +94,7 @@ void gerbv_export_png_file_from_project (gerbv_project_t *gerbvProject, gerbv_re
 	cairo_t *cairoTarget = cairo_create (cSurface);
 	gerbv_render_all_layers_to_cairo_target (gerbvProject, cairoTarget, renderInfo);
 	if (CAIRO_STATUS_SUCCESS != cairo_surface_write_to_png (cSurface, filename)) {
-		GERB_COMPILE_ERROR (_("Exporting error to file \"%s\"\n"), filename);
+		GERB_COMPILE_ERROR (_("Exporting error to file \"%s\""), filename);
 	}
 	cairo_destroy (cairoTarget);
 	cairo_surface_destroy (cSurface);
