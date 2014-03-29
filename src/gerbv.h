@@ -93,6 +93,7 @@ extern "C" {
 /* Macros to convert between unscaled gerber coordinates and other units */
 /* XXX NOTE: Currently unscaled units are assumed as inch, this is not
    XXX necessarily true for all files */
+#define COORD2INS(c) (c)
 #define COORD2MILS(c) ((c)*1000.0)
 #define COORD2MMS(c) ((c)*25.4)
 

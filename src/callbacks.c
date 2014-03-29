@@ -2947,7 +2947,7 @@ callbacks_update_statusbar_coordinates (gint x, gint y) {
 	} else {
 	    utf8_snprintf(screen.statusbar.coordstr, MAX_COORDLEN,
 		     _("(%4.5f, %4.5f)"),
-		     COORD2MILS(X) / 1000.0, COORD2MILS(Y) / 1000.0);
+		     COORD2INS(X), COORD2INS(Y));
 	}
 	callbacks_update_statusbar();
 }
@@ -3296,8 +3296,7 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 	else {
 	    utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
 		     _("Measured distance: %4.5f inches (%4.5f x, %4.5f y)"),
-		     COORD2MILS(delta) / 1000.0, COORD2MILS(dx) / 1000.0,
-		     COORD2MILS(dy) / 1000.0);
+		     COORD2INS(delta), COORD2INS(dx), COORD2INS(dy));
 	}
 	callbacks_update_statusbar();
 }
@@ -3498,6 +3497,7 @@ void callbacks_force_expose_event_for_screen (void){
 static double screen_units(double d) {
 	switch (screen.unit) {
 	case GERBV_INS:
+		return COORD2INS(d);
 		break;
 	case GERBV_MILS:
 		return COORD2MILS(d);
