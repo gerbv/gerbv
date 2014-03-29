@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gerbv 2.6A ru\n"
 "Report-Msgid-Bugs-To: gerbv-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2014-03-08 22:27+0400\n"
-"PO-Revision-Date: 2014-03-08 2014-03-08 22:34+0400\n"
+"POT-Creation-Date: 2014-03-29 17:50+0400\n"
+"PO-Revision-Date: 2014-03-29 17:57+0400\n"
 "Last-Translator: Sergey Alyoshin <alyoshin.s@gmail.com>\n"
 "Language-Team: gEDA user <geda-user@delorie.com>\n"
 "Language: ru\n"
@@ -180,8 +180,8 @@ msgid "Gerbv cannot export this file type"
 msgstr "Gerbv не может экспортировать этот формат файла"
 
 #: src/callbacks.c:401
-msgid "Unknown Layer type for merge\n"
-msgstr "Неизвестный тип слоя для объединения\n"
+msgid "Unknown Layer type for merge"
+msgstr "Неизвестный тип слоя для объединения"
 
 #: src/callbacks.c:404
 msgid "Looking for matching files\n"
@@ -193,8 +193,8 @@ msgid "Adding '%s'\n"
 msgstr "Добавление «%s»\n"
 
 #: src/callbacks.c:419
-msgid "Not Enough Files of same type to merge\n"
-msgstr "Недостаточно слоёв одного типа для объединения\n"
+msgid "Not Enough Files of same type to merge"
+msgstr "Недостаточно слоёв одного типа для объединения"
 
 #: src/callbacks.c:422
 msgid "Now merging files\n"
@@ -258,13 +258,13 @@ msgstr "Сохранить слой как..."
 
 #: src/callbacks.c:612
 #, c-format
-msgid "Merged visible gerber layers and placed in '%s'\n"
-msgstr "Видимые слои Gerber объединены и сохранены в «%s»\n"
+msgid "Merged visible gerber layers and placed in '%s'"
+msgstr "Видимые слои Gerber объединены и сохранены в «%s»"
 
 #: src/callbacks.c:621
 #, c-format
-msgid "Merged visible drill layers and placed in '%s'\n"
-msgstr "Видимые слои сверловки объединены и сохранены в «%s»\n"
+msgid "Merged visible drill layers and placed in '%s'"
+msgstr "Видимые слои сверловки объединены и сохранены в «%s»"
 
 #: src/callbacks.c:789
 msgid "FATAL"
@@ -1026,16 +1026,16 @@ msgid "Unknown simplified aperture macro"
 msgstr "Неизвестный макрос упрощённой апертуры"
 
 #: src/draw-gdk.c:1116
-msgid "Linear != x1\n"
-msgstr "Линейный != ×1\n"
+msgid "Linear != x1"
+msgstr "Линейный != ×1"
 
 #: src/draw-gdk.c:1209 src/draw.c:954
-msgid "Unknown aperture type\n"
-msgstr "Неизвестный тип апертуры\n"
+msgid "Unknown aperture type"
+msgstr "Неизвестный тип апертуры"
 
 #: src/draw-gdk.c:1214 src/draw.c:962
-msgid "Unknown aperture state\n"
-msgstr "Неизвестное состояние апертуры\n"
+msgid "Unknown aperture state"
+msgstr "Неизвестное состояние апертуры"
 
 #: src/drill.c:150 src/interface.c:1891
 msgid "None"
@@ -1091,24 +1091,24 @@ msgstr ""
 "после, при отбрасывании спереди."
 
 #: src/drill.c:236
-msgid "malloc curr_net->next failed\n"
-msgstr "Ошибка выделения памяти для curr_net->next\n"
+msgid "malloc curr_net->next failed"
+msgstr "Ошибка выделения памяти для curr_net->next"
 
-#: src/drill.c:319 src/pick-and-place.c:533
-msgid "malloc image failed\n"
-msgstr "Ошибка выделения памяти для изображения\n"
+#: src/drill.c:319 src/gerber.c:770 src/pick-and-place.c:533
+msgid "malloc image failed"
+msgstr "Ошибка выделения памяти для изображения"
 
 #: src/drill.c:347
-msgid "malloc stats failed\n"
-msgstr "Ошибка выделения памяти для статуса\n"
+msgid "malloc stats failed"
+msgstr "Ошибка выделения памяти для статуса"
 
 #: src/drill.c:353
-msgid "malloc state failed\n"
-msgstr "Ошибка выделения памяти для состояния\n"
+msgid "malloc state failed"
+msgstr "Ошибка выделения памяти для состояния"
 
 #: src/drill.c:357 src/drill_stats.c:314 src/pick-and-place.c:538
-msgid "malloc format failed\n"
-msgstr "Ошибка выделения памяти\n"
+msgid "malloc format failed"
+msgstr "Ошибка выделения памяти"
 
 #: src/drill.c:412 src/drill.c:426 src/drill.c:722 src/drill.c:725
 #: src/drill.c:758
@@ -1178,8 +1178,8 @@ msgid "No EOF found in drill file.\n"
 msgstr "В файле сверловки отсутствует код конца файла.\n"
 
 #: src/drill.c:865
-msgid "malloc buf failed while checking for drill file.\n"
-msgstr "Ошибка выделения памяти при проверке является ли файл сверловкой.\n"
+msgid "malloc buf failed while checking for drill file."
+msgstr "Ошибка выделения памяти при проверке является ли файл сверловкой."
 
 #: src/drill.c:984
 #, c-format
@@ -1224,8 +1224,8 @@ msgid "Found redefinition of drill %d.\n"
 msgstr "Переопределение отверстия %d.\n"
 
 #: src/drill.c:1103 src/drill.c:1158
-msgid "malloc tool failed\n"
-msgstr "Ошибка выделения памяти для инструмента\n"
+msgid "malloc tool failed"
+msgstr "Ошибка выделения памяти для инструмента"
 
 #: src/drill.c:1145
 msgid "Unexpected EOF encountered header of drill file.\n"
@@ -1273,12 +1273,13 @@ msgid "%s(): Unhandled fmt ` %d\n"
 msgstr "%s(): формат %d не обработан\n"
 
 #: src/drill_stats.c:68
-msgid "malloc drill_list failed\n"
-msgstr "Ошибка выделения памяти для списка отверстий сверловки\n"
+msgid "malloc drill_list failed"
+msgstr "Ошибка выделения памяти для списка отверстий сверловки drill_list"
 
-#: src/drill_stats.c:74 src/drill_stats.c:469
-msgid "malloc error_list failed\n"
-msgstr "Ошибка выделения памяти для списка ошибок\n"
+#: src/drill_stats.c:74 src/drill_stats.c:469 src/gerb_stats.c:68
+#: src/gerb_stats.c:290
+msgid "malloc error_list failed"
+msgstr "Ошибка выделения памяти для списка ошибок error_list"
 
 #: src/drill_stats.c:199
 #, c-format
@@ -1302,13 +1303,13 @@ msgstr "Ошибка инициализации модуля scheme «%s»: %s\n
 
 #: src/export-drill.c:56 src/export-rs274x.c:217
 #, c-format
-msgid "Can't open file for writing: %s\n"
-msgstr "Невозможно открыть файл «%s» для записи\n"
+msgid "Can't open file for writing: %s"
+msgstr "Невозможно открыть файл «%s» для записи"
 
 #: src/exportimage.c:97
 #, c-format
-msgid "Exporting error to file \"%s\"\n"
-msgstr "Ошибка экспорта в файл «%s»\n"
+msgid "Exporting error to file \"%s\""
+msgstr "Ошибка экспорта в файл «%s»"
 
 #: src/gerb_file.c:182
 msgid "Failed to read integer"
@@ -1423,10 +1424,6 @@ msgstr "макрос"
 msgid "(%f,%f)->(%f,%f) with %d ("
 msgstr "(%f,%f)->(%f,%f) с %d ("
 
-#: src/gerb_stats.c:68 src/gerb_stats.c:290
-msgid "malloc error_list failed"
-msgstr "Ошибка выделения памяти для списка ошибок error_list"
-
 #: src/gerb_stats.c:74 src/gerb_stats.c:376
 msgid "malloc aperture_list failed"
 msgstr "Ошибка выделения памяти для списка апертур aperture_list"
@@ -1456,10 +1453,6 @@ msgstr "Неопределённый D-код D%d в файле «%s»"
 #, c-format
 msgid "Found unknown character (whitespace?) [%d]%c"
 msgstr "Неизвестный символ (пробел?) [%d]%c"
-
-#: src/gerber.c:770
-msgid "malloc image failed"
-msgstr "Ошибка выделения памяти для изображения"
 
 #: src/gerber.c:775
 msgid "malloc gerbv_stats failed"
@@ -1733,48 +1726,48 @@ msgstr "Отрицательная высота (%f) в квадранте %d [%
 
 #: src/gerbv.c:185 src/gerbv.c:204
 #, c-format
-msgid "Could not read %s[%d]\n"
-msgstr "Невозможно прочитать «%s»[%d]\n"
+msgid "Could not read %s[%d]"
+msgstr "Невозможно прочитать «%s»[%d]"
 
 #: src/gerbv.c:328
-msgid "Missing netlist - aborting file read\n"
-msgstr "Список соединений отсутствует, чтение файла прервано\n"
+msgid "Missing netlist - aborting file read"
+msgstr "Список соединений отсутствует, чтение файла прервано"
 
-#: src/gerbv.c:336
+#: src/gerbv.c:335
 msgid "Missing format in file...trying to load anyways\n"
 msgstr "Формат файла отсутствует, загрузка продолжена\n"
 
-#: src/gerbv.c:338
+#: src/gerbv.c:337
 msgid "Missing apertures/drill sizes...trying to load anyways\n"
 msgstr "Размеры апертур/отверстий отсутствуют, загрузка продолжена\n"
 
-#: src/gerbv.c:344
+#: src/gerbv.c:343
 msgid "Missing info...trying to load anyways\n"
 msgstr "Информация отсутствует, загрузка продолжена\n"
 
-#: src/gerbv.c:428 src/gerbv.c:522
+#: src/gerbv.c:427 src/gerbv.c:521
 #, c-format
-msgid "Trying to open %s: %s\n"
-msgstr "Открытие «%s»: %s\n"
+msgid "Trying to open %s: %s"
+msgstr "Открытие «%s»: %s"
 
-#: src/gerbv.c:464
+#: src/gerbv.c:463
 msgid "Most likely found a RS-274D file...trying to open anyways\n"
 msgstr "Вероятно, файл RS-274D... открытие\n"
 
-#: src/gerbv.c:475
+#: src/gerbv.c:474
 #, c-format
-msgid "%s: Unknown file type.\n"
-msgstr "Неизвестный тип файла «%s»\n"
+msgid "%s: Unknown file type."
+msgstr "Неизвестный тип файла «%s»"
 
-#: src/gerbv.c:489
+#: src/gerbv.c:488
 msgid " (top)"
 msgstr " (верх)"
 
-#: src/gerbv.c:506
+#: src/gerbv.c:505
 msgid " (bottom)"
 msgstr " (низ)"
 
-#: src/gerbv.c:880
+#: src/gerbv.c:879
 #, c-format
 msgid "%s(): malloc failed\n"
 msgstr "%s(): ошибка выделения памяти\n"
@@ -2433,21 +2426,21 @@ msgstr "Открывается проект %s\n"
 
 #: src/main.c:183
 #, c-format
-msgid "could not read %s[%d]\n"
-msgstr "Невозможно прочитать «%s»[%d]\n"
+msgid "could not read %s[%d]"
+msgstr "Невозможно прочитать «%s»[%d]"
 
 #: src/main.c:233
 #, c-format
-msgid "could not read file: %s\n"
-msgstr "Невозможно прочитать файл «%s»\n"
+msgid "could not read file: %s"
+msgstr "Невозможно прочитать файл «%s»"
 
 #: src/main.c:269 src/main.c:345
-msgid "malloc gerbvProject->project failed\n"
-msgstr "Ошибка выделения памяти для gerbvProject->project\n"
+msgid "malloc gerbvProject->project failed"
+msgstr "Ошибка выделения памяти для gerbvProject->project"
 
 #: src/main.c:325
-msgid "Failed to write project\n"
-msgstr "Ошибка при сохранении проекта\n"
+msgid "Failed to write project"
+msgstr "Ошибка при сохранении проекта"
 
 #: src/main.c:437
 #, c-format
@@ -2859,36 +2852,36 @@ msgid "A valid file was not loaded.\n"
 msgstr "Не был загружен допустимый файл.\n"
 
 #: src/pick-and-place.c:400
-msgid "malloc buf failed while checking for pick-place file.\n"
-msgstr "Ошибка выделения памяти при проверке является ли файл расположением.\n"
+msgid "malloc buf failed while checking for pick-place file."
+msgstr "Ошибка выделения памяти при проверке является ли файл расположением."
 
 #: src/pick-and-place.c:545
-msgid "malloc pick_place_stats failed\n"
-msgstr "Ошибка выделения памяти для статистики расположения\n"
+msgid "malloc pick_place_stats failed"
+msgstr "Ошибка выделения памяти для статистики расположения pick_place_stats"
 
 #: src/project.c:257
 #, c-format
-msgid "'%s' parameter not a vector\n"
-msgstr "Параметр «%s» не является вектором\n"
+msgid "'%s' parameter not a vector"
+msgstr "Параметр «%s» не является вектором"
 
 #: src/project.c:263
 #, c-format
-msgid "'%s' vector of incorrect length\n"
-msgstr "Недопустимая длина вектора «%s»\n"
+msgid "'%s' vector of incorrect length"
+msgstr "Недопустимая длина вектора «%s»"
 
 #: src/project.c:286
-msgid "Illegal color in projectfile\n"
-msgstr "Недопустимый цвет в файле проекта\n"
+msgid "Illegal color in projectfile"
+msgstr "Недопустимый цвет в файле проекта"
 
 #: src/project.c:307
-msgid "Illegal alpha value in projectfile\n"
-msgstr "Недопустимое значение alpha в файле проекта\n"
+msgid "Illegal alpha value in projectfile"
+msgstr "Недопустимое значение alpha в файле проекта"
 
 #: src/project.c:323 src/project.c:341 src/project.c:349 src/project.c:369
 #: src/project.c:379
 #, c-format
-msgid "Illegal %s in projectfile\n"
-msgstr "Недопустимое значение %s в файле проекта\n"
+msgid "Illegal %s in projectfile"
+msgstr "Недопустимое значение %s в файле проекта"
 
 #: src/project.c:479 src/project.c:528 src/project.c:538
 #, c-format
@@ -2897,26 +2890,26 @@ msgstr "%s(): ошибка выделения памяти\n"
 
 #: src/project.c:602
 #, c-format
-msgid "%s(): too few arguments\n"
-msgstr "%s(): слишком мало аргументов\n"
+msgid "%s(): too few arguments"
+msgstr "%s(): слишком мало аргументов"
 
 #: src/project.c:611
 #, c-format
-msgid "%s(): layer number missing/incorrect\n"
-msgstr "%s(): номер слоя пропущен или недопустим\n"
+msgid "%s(): layer number missing/incorrect"
+msgstr "%s(): номер слоя пропущен или недопустим"
 
 #: src/project.c:643
 #, c-format
-msgid "%s(): non-symbol found, ignoring\n"
-msgstr "%s(): пропуск не символа\n"
+msgid "%s(): non-symbol found, ignoring"
+msgstr "%s(): пропуск не символа"
 
 #: src/project.c:679
-msgid "Argument to inverted must be #t or #f\n"
-msgstr "Аргумент для инвертирования должен быть #t или #f\n"
+msgid "Argument to inverted must be #t or #f"
+msgstr "Аргумент для инвертирования должен быть #t или #f"
 
 #: src/project.c:687
-msgid "Argument to visible must be #t or #f\n"
-msgstr "Аргумент для видимости должен быть #t или #f\n"
+msgid "Argument to visible must be #t or #f"
+msgstr "Аргумент для видимости должен быть #t или #f"
 
 #: src/project.c:705
 #, c-format
@@ -2934,12 +2927,12 @@ msgid "%s():  Unknown attribute type: \"%s\"\n"
 msgstr "%s(): неизвестный тип атрибута «%s»\n"
 
 #: src/project.c:804
-msgid "set-render-type!: Too few arguments\n"
-msgstr "set-render-type(): слишком мало аргументов\n"
+msgid "set-render-type!: Too few arguments"
+msgstr "set-render-type(): слишком мало аргументов"
 
 #: src/project.c:828
-msgid "gerbv-file-version!: Too few arguments\n"
-msgstr "gerbv-file-version(): слишком мало аргументов\n"
+msgid "gerbv-file-version!: Too few arguments"
+msgstr "gerbv-file-version(): слишком мало аргументов"
 
 #: src/project.c:840
 #, c-format
@@ -2947,11 +2940,11 @@ msgid ""
 "The project file you are attempting to load has specified that it\n"
 "uses project file version \"%s\" but this string is not\n"
 "a valid version.  Gerbv will attempt to load the file using\n"
-"version \"%s\".  You may experience unexpected results.\n"
+"version \"%s\".  You may experience unexpected results."
 msgstr ""
 "В загружаемом файле проекта указана недействительная версия «%s».\n"
 "Gerbv попытается загрузить этот файл как версии «%s». Могут быть\n"
-"получены неожиданные результаты.\n"
+"получены неожиданные результаты."
 
 #: src/project.c:849
 #, c-format
@@ -2986,32 +2979,32 @@ msgstr ""
 
 #: src/project.c:951
 #, c-format
-msgid "Failed to read %s\n"
-msgstr "Невозможно прочитать «%s»\n"
+msgid "Failed to read %s"
+msgstr "Невозможно прочитать «%s»"
 
 #: src/project.c:960
-msgid "Couldn't init scheme\n"
-msgstr "Невозможно инициализировать scheme\n"
+msgid "Couldn't init scheme"
+msgstr "Невозможно инициализировать scheme"
 
 #: src/project.c:968
 #, c-format
-msgid "Problem loading init.scm (%s)\n"
-msgstr "Проблема при загрузке init.scm: %s\n"
+msgid "Problem loading init.scm (%s)"
+msgstr "Проблема при загрузке init.scm: %s"
 
 #: src/project.c:975
 #, c-format
-msgid "Couldn't open %s (%s)\n"
-msgstr "Невозможно открыть «%s»: %s\n"
+msgid "Couldn't open %s (%s)"
+msgstr "Невозможно открыть «%s»: %s"
 
 #: src/project.c:1000
 #, c-format
-msgid "Couldn't open project file %s (%s)\n"
-msgstr "Невозможно открыть файл проекта «%s»: %s\n"
+msgid "Couldn't open project file %s (%s)"
+msgstr "Невозможно открыть файл проекта «%s»: %s"
 
 #: src/project.c:1047
 #, c-format
-msgid "Couldn't save project %s\n"
-msgstr "Невозможно сохранить проект %s\n"
+msgid "Couldn't save project %s"
+msgstr "Невозможно сохранить проект %s"
 
 #: src/project.c:1143
 #, c-format
@@ -3025,8 +3018,8 @@ msgstr "%s: неизвестный тип HID-атрибута (%d)\n"
 
 #: src/render.c:159
 #, c-format
-msgid "Illegal zoom direction %d\n"
-msgstr "Недопустимый тип масштабирования %d\n"
+msgid "Illegal zoom direction %d"
+msgstr "Недопустимый тип масштабирования %d"
 
 #: src/tooltable.c:57
 #, c-format
