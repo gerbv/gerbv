@@ -1042,6 +1042,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (message_textview), FALSE);
 
 	clear_messages_button = gtk_button_new_from_stock (GTK_STOCK_CLEAR);
+	gtk_tooltips_set_tip (tooltips, clear_messages_button,
+			_("Clear all messages and accumulated sum"), NULL);
 	gtk_box_pack_start (GTK_BOX (vbox11), clear_messages_button, FALSE, FALSE, 0);
 
 	Message_label = gtk_label_new (_("Messages"));
