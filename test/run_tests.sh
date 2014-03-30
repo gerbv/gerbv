@@ -224,18 +224,17 @@ for t in $all_tests ; do
     # extract the details for the test
     #
 
-    gerbv_flags="${GERBV_DEFAULT_FLAGS}"
-
     refpng="${REFDIR}/${t}.png"
     outpng="${OUTDIR}/${t}.png"
     errdir="${ERRDIR}/${t}"
 
     # test_name | layout file(s) | [optional arguments to gerbv] | [mismatch]
-    name=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST | $AWK 'BEGIN{FS="|"} {print $1}'`
-    files=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST | $AWK 'BEGIN{FS="|"} {print $2}'`
-    args=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST | $AWK 'BEGIN{FS="|"} {print $3}'`
-    mismatch=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST | $AWK 'BEGIN{FS="|"} {if($2 == "mismatch"){print "yes"}else{print "no"}}'`
-   
+    tmp=`grep "^[ \t]*${t}[ \t]*|" $TESTLIST`
+    name=`echo $tmp | $AWK 'BEGIN{FS="|"} {print $1}'`
+    files=`echo $tmp | $AWK 'BEGIN{FS="|"} {print $2}'`
+    args=`echo $tmp | $AWK 'BEGIN{FS="|"} {print $3}'`
+    mismatch=`echo $tmp | $AWK 'BEGIN{FS="|"} {if($2 == "mismatch"){print "yes"}else{print "no"}}'`
+
     if test "X${name}" = "X" ; then
 	echo "ERROR:  Specified test ${t} does not appear to exist"
 	skip=`expr $skip + 1`
@@ -243,7 +242,15 @@ for t in $all_tests ; do
     fi
 
     if test "X${args}" != "X" ; then
-	gerbv_flags="${args}"
+    	# check if args contain '+', then add this args to GERBV_DEFAULT_FLAGS
+    	tmp=`echo ${args} | cut -d+ -s -f2`
+    	if test "X${tmp}" != "X"; then
+	    gerbv_flags="${GERBV_DEFAULT_FLAGS} ${tmp}"
+	else
+	    gerbv_flags="${args}"
+	fi
+    else
+	gerbv_flags="${GERBV_DEFAULT_FLAGS}"
     fi
 
     ######################################################################
