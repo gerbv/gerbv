@@ -31,9 +31,10 @@
 # layout file(s) - a list of layout files.  Files listed are relative to
 # the $(top_srcdir)/tests/inputs directory.
 #
-# [optional arguments to gerbv] If specified, this last field will be used as 
+# [optional arguments to gerbv] If specified, this last field will be used as
 # the gerbv export command line.  Otherwise a default set of options will be
-# used.
+# used. If preceded with +, then optional arguments will be added to default
+# set of options.
 #
 # [mismatch] If specified as "mismatch" (no quotes), then the given layout
 # should *not* match the reference layout.  This can be thought of as a test
@@ -182,3 +183,4 @@ test-drill-leading-zero-1 | test-drill-leading-zero-1.exc
 # number of times with the given x and y step size
 test-drill-repeat-1 | test-drill-repeat-1.exc
 
+test-drill-trailing-zero-suppression | test-drill-trailing-zero-suppression.exc | + -p inputs/test-drill-trailing-zero-suppression.gvp
