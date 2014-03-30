@@ -146,7 +146,7 @@ all-local: run_gerbv
 # create wrapper script that lets you test gerbv prior to installation
 run_gerbv:     $(srcdir)/run_gerbv.in Makefile
 	sed \
-		-e 's;@SRCDIR@;${srcdir};g' \
+		-e 's;@SRCDIR@;${abs_srcdir};g' \
 		-e 's;@BUILDDIR@;${abs_builddir};g' \
 		$(srcdir)/run_gerbv.in > $@
 	chmod 755 $@
