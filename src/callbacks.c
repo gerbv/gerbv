@@ -158,25 +158,6 @@ static void show_no_layers_warning (void) {
 }
 
 /* --------------------------------------------------------- */
-GtkWidget *
-callbacks_generate_alert_dialog (gchar *primaryText, gchar *secondaryText){
-	GtkWidget *dialog, *label;
-
-	dialog = gtk_dialog_new_with_buttons (primaryText,
-	                                    (GtkWindow *)screen.win.topLevelWindow,
-	                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-	                                    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-	                                    GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-	                                    NULL);
-	label = gtk_label_new (secondaryText);
-	/* Add the label, and show everything we've added to the dialog. */
-	gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
-	                  label);
-	gtk_widget_show_all (dialog);
-	return dialog;
-}
-
-/* --------------------------------------------------------- */
 /**
   * The file -> new menu item was selected.  Create new
   * project.
