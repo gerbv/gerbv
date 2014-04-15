@@ -3370,12 +3370,14 @@ callbacks_clear_messages_button_clicked  (GtkButton *button, gpointer   user_dat
 /* --------------------------------------------------------- */
 void
 callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
-		      const gchar *message, gpointer user_data) {
+		      const gchar *message, gpointer user_data)
+{
 	GtkTextBuffer *textbuffer = NULL;
 	GtkTextIter iter;
 	GtkTextTag *tag;
 	GtkTextMark *StartMark = NULL, *StopMark = NULL;
 	GtkTextIter StartIter, StopIter;
+	GtkWidget *dialog, *label;
 
 	if (!screen.win.messageTextView)
 		return;
@@ -3458,8 +3460,26 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 	/*
 	* Fatal aborts application. We will try to get the message out anyhow.
 	*/
-	if (log_level & G_LOG_FLAG_FATAL)
-		fprintf(stderr, _("Fatal error : %s"), message);
+	if (log_level & G_LOG_FLAG_FATAL) {
+		fprintf(stderr, _("Fatal error: %s\n"), message);
+
+		/* Try to show dialog box with error message */
+		dialog = gtk_dialog_new_with_buttons(_("Fatal Error"),
+			NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+
+		label = gtk_label_new(g_strdup_printf(_("Fatal error: %s"), message));
+		gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),
+				label);
+		gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+		gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox),
+				gtk_label_new(_("\nGerbv will be closed now!")));
+
+		gtk_container_set_border_width(GTK_CONTAINER(dialog), 5);
+
+		gtk_widget_show_all(dialog);
+		gtk_dialog_run(GTK_DIALOG(dialog));
+	}
 
 	gtk_text_buffer_insert(textbuffer, &iter, message, -1);
 	gtk_text_buffer_insert(textbuffer, &iter, "\n", -1);
