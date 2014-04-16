@@ -60,14 +60,8 @@
 #include "drill.h"
 #include "drill_stats.h"
 
-#include "common.h"
-
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
-
-#define NOT_IMPL(fd, s) do { \
-                             GERB_MESSAGE("Not Implemented:%s", s); \
-                           } while(0)
 
 #define MAXL 200
 #define DRILL_READ_DOUBLE_SIZE 32
