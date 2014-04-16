@@ -123,7 +123,7 @@ typedef enum {GERBV_MESSAGE_FATAL, /*!< processing cannot continue */
 
 /*! The different aperture types available 
  *  Please keep these in sync with the aperture names defined by
- *  ap_names in callbacks.c */
+ *  aperture_names in callbacks.c */
 typedef enum {GERBV_APTYPE_NONE, /*!< no aperture used */
 		GERBV_APTYPE_CIRCLE, /*!< a round aperture */
 		GERBV_APTYPE_RECTANGLE, /*!< a rectangular aperture */
