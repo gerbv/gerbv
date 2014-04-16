@@ -46,10 +46,10 @@ gboolean
 gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 		gerbv_user_transformation_t *transform) {
 	FILE *fd;
-	GArray *apertureTable = g_array_new(FALSE,FALSE,sizeof(int));
-	gerbv_net_t *currentNet;
+	GArray *apertureTable = g_array_new(FALSE, FALSE, sizeof(int));
+	gerbv_net_t *net;
 	
-	// force gerbv to output decimals as dots (not commas for other locales)
+	/* force gerbv to output decimals as dots (not commas for other locales) */
 	setlocale(LC_NUMERIC, "C");
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
@@ -65,54 +65,68 @@ gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage,
 	fprintf(fd, "INCH,TZ\n");
 
 	/* define all apertures */
-	gerbv_aperture_t *currentAperture;
+	gerbv_aperture_t *aperture;
 	gint i;
 
 	/* the image should already have been cleaned by a duplicate_image call, so we can safely
 	   assume the aperture range is correct */
-	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {
-		currentAperture = image->aperture[i];
+	for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+		aperture = image->aperture[i];
 		
-		if (!currentAperture)
+		if (!aperture)
 			continue;
 
-		switch (currentAperture->type) {
-			case GERBV_APTYPE_CIRCLE:
-				fprintf(fd, "T%dC%1.3f\n",i,currentAperture->parameter[0]);
-				/* add the "approved" aperture to our valid list */
-	  			g_array_append_val (apertureTable, i);
-				break;  
-			default:
-				break;
+		switch (aperture->type) {
+		case GERBV_APTYPE_CIRCLE:
+			fprintf(fd, "T%dC%1.3f\n", i, aperture->parameter[0]);
+			/* add the "approved" aperture to our valid list */
+			g_array_append_val(apertureTable, i);
+			break;
+		default:
+			break;
 		}
 	}
 	
 	fprintf(fd, "%%\n");
 	/* write rest of image */
 	
-	for (i=0; i<apertureTable->len; i++) {
-		int currentAperture=g_array_index (apertureTable, int, i);
+	for (i = 0; i < apertureTable->len; i++) {
+		int aperture_idx = g_array_index(apertureTable, int, i);
 		
 		/* write tool change */
-		fprintf(fd, "T%d\n",currentAperture);
+		fprintf(fd, "T%d\n", aperture_idx);
 		
 		/* run through all nets and look for drills using this aperture */
-		for (currentNet = image->netlist; currentNet; currentNet = currentNet->next){
-			if ((currentNet->aperture == currentAperture)&&(currentNet->aperture_state == GERBV_APERTURE_STATE_FLASH)) {
-				long xVal,yVal;
-				xVal = (long) round(currentNet->stop_x * 10000.0);
-				yVal = (long) round(currentNet->stop_y * 10000.0);
-				fprintf(fd, "X%06ldY%06ld\n",xVal,yVal);
+		for (net = image->netlist; net; net = net->next) {
+			if (net->aperture != aperture_idx)
+				continue;
+
+			switch (net->aperture_state) {
+			case GERBV_APERTURE_STATE_FLASH:
+				fprintf(fd, "X%06ldY%06ld\n",
+					(long)round(net->stop_x * 10000.0),
+					(long)round(net->stop_y * 10000.0));
+				break;
+			case GERBV_APERTURE_STATE_ON:	/* Cut slot */
+				fprintf(fd, "X%06ldY%06ldG85X%06ldY%06ld\n",
+					(long)round(net->start_x * 10000.0),
+					(long)round(net->start_y * 10000.0),
+					(long)round(net->stop_x * 10000.0),
+					(long)round(net->stop_y * 10000.0));
+				break;
+			default:
+				break;
 			}
 		}
 	}
 	g_array_free (apertureTable, TRUE);
+
 	/* write footer */
 	fprintf(fd, "M30\n\n");
-	gerbv_destroy_image (image);
+	gerbv_destroy_image(image);
 	fclose(fd);
 	
-	// return to the default locale
+	/* return to the default locale */
 	setlocale(LC_NUMERIC, "");
 	return TRUE;
 }
