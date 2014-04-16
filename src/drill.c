@@ -88,7 +88,9 @@ enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED,
 enum drill_g_code_t {DRILL_G_ABSOLUTE, DRILL_G_INCREMENTAL,
 		     DRILL_G_ZEROSET, DRILL_G_UNKNOWN,
 		     DRILL_G_ROUT, DRILL_G_DRILL,
-		     DRILL_G_LINEARMOVE, DRILL_G_CWMOVE, DRILL_G_CCWMOVE};
+		     DRILL_G_LINEARMOVE, DRILL_G_CWMOVE, DRILL_G_CCWMOVE,
+		     DRILL_G_SLOT
+};
 
 enum number_fmt_t {FMT_00_0000 /* INCH */,
 		   FMT_000_000 /* METRIC 6-digit, 1 um */,
@@ -443,6 +445,26 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 				      GERBV_MESSAGE_ERROR);
 		break;
 	    case DRILL_G_DRILL :
+		break;
+	    case DRILL_G_SLOT :
+		/* Parse cut slot end coords */
+		if ((read = gerb_fgetc(fd)) != EOF) {
+		    drill_parse_coordinate(fd, read, image, state);
+
+		    /* Modify last curr_net as cut slot */
+		    curr_net->stop_x = (double)state->curr_x;
+		    curr_net->stop_y = (double)state->curr_y;
+		    if (state->unit == GERBV_UNIT_MM) {
+			/* Convert to inches -- internal units */
+			curr_net->stop_x /= 25.4;
+			curr_net->stop_y /= 25.4;
+		    }
+		    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+		} else {
+		    drill_stats_add_error(stats->error_list,
+			    -1, _("Unexpected EOF found.\n"),
+			    GERBV_MESSAGE_ERROR);
+		}
 		break;
 	    case DRILL_G_ABSOLUTE :
 		state->coordinate_mode = DRILL_MODE_ABSOLUTE;
@@ -1444,6 +1466,9 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image)
     } else if (strncmp(op, "05", 2) == 0) {
 	stats->G05++;
 	result = DRILL_G_DRILL;
+    } else if (strncmp(op, "85", 2) == 0) {
+	stats->G85++;
+	result = DRILL_G_SLOT;
     } else if (strncmp(op, "90", 2) == 0) {
 	stats->G90++;
 	result = DRILL_G_ABSOLUTE;
