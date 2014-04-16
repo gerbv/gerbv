@@ -230,7 +230,6 @@ drill_attribute_merge (gerbv_HID_Attribute *dest, int ndest, gerbv_HID_Attribute
 	    dest[j].default_val = src[i].default_val;
 	}
     }
-
 }
 
 /*
@@ -243,11 +242,11 @@ drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state, gerbv_drill_st
   drill_stats_increment_drill_counter(image->drill_stats->drill_list,
 				      state->current_tool);
 
-  curr_net->next = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t));
+  curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
   if (curr_net->next == NULL)
     GERB_FATAL_ERROR(_("malloc curr_net->next failed"));
+
   curr_net = curr_net->next;
-  memset((void *)curr_net, 0, sizeof(gerbv_net_t));
   curr_net->layer = image->layers;
   curr_net->state = image->states;
   curr_net->start_x = (double)state->curr_x;
@@ -364,12 +363,11 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     if (state == NULL)
 	GERB_FATAL_ERROR(_("malloc state failed"));
 
-    image->format = (gerbv_format_t *)g_malloc(sizeof(gerbv_format_t));
+    image->format = (gerbv_format_t *)g_malloc0(sizeof(gerbv_format_t));
     if (image->format == NULL)
 	GERB_FATAL_ERROR(_("malloc format failed"));
-    memset((void *)image->format, 0, sizeof(gerbv_format_t));
-    image->format->omit_zeros = GERBV_OMIT_ZEROS_UNSPECIFIED;
 
+    image->format->omit_zeros = GERBV_OMIT_ZEROS_UNSPECIFIED;
 
     if (!image->info->attr_list[HA_auto].default_val.int_value) {
 	state->autod = 0;
@@ -447,7 +445,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 	case 'G':
 	    /* Most G codes aren't used, for now */
-	    switch(drill_parse_G_code(fd, image)) {
+	    switch (drill_parse_G_code(fd, image)) {
 	    case DRILL_G_ROUT :
 		drill_stats_add_error(stats->error_list,
 				      -1,
@@ -898,7 +896,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 
     while (fgets(tbuf, MAXL, fd->fd) != NULL) {
 	len = strlen(tbuf);
-	buf=tbuf;
+	buf = tbuf;
 	/* check for comments at top of file.  */
 	if(!end_comments){
 		if(g_strstr_len(buf, len, ";")!=NULL){/* comments at top of file  */
@@ -1130,12 +1128,10 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 		    }
 		} else {
 		    image->aperture[tool_num] =
-			(gerbv_aperture_t *)g_malloc(sizeof(gerbv_aperture_t));
-		    if (image->aperture[tool_num] == NULL) {
+			(gerbv_aperture_t *)g_malloc0(sizeof(gerbv_aperture_t));
+		    if (image->aperture[tool_num] == NULL)
 			GERB_FATAL_ERROR(_("malloc tool failed"));
-		    }
-		    /* make sure we zero out all aperature parameters */
-		    memset((void *)image->aperture[tool_num], 0, sizeof(gerbv_aperture_t));
+
 		    /* There's really no way of knowing what unit the tools
 		       are defined in without sneaking a peek in the rest of
 		       the file first. That's done in drill_guess_format() */
@@ -1185,12 +1181,9 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
         double dia;
 
 	image->aperture[tool_num] =
-	    (gerbv_aperture_t *)g_malloc(sizeof(gerbv_aperture_t));
-	if (image->aperture[tool_num] == NULL) {
+	    (gerbv_aperture_t *)g_malloc0(sizeof(gerbv_aperture_t));
+	if (image->aperture[tool_num] == NULL)
 	    GERB_FATAL_ERROR(_("malloc tool failed"));
-	}
-	/* make sure we zero out all aperature parameters */
-	memset((void *)image->aperture[tool_num], 0, sizeof(gerbv_aperture_t));
 
         /* See if we have the tool table */
         dia = gerbv_get_tool_diameter(tool_num);
@@ -1536,10 +1529,9 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 static drill_state_t *
 new_state(drill_state_t *state)
 {
-    state = (drill_state_t *)g_malloc(sizeof(drill_state_t));
+    state = (drill_state_t *)g_malloc0(sizeof(drill_state_t));
     if (state != NULL) {
 	/* Init structure */
-	memset((void *)state, 0, sizeof(drill_state_t));
 	state->curr_section = DRILL_NONE;
 	state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 	state->origin_x = 0.0;
@@ -1549,8 +1541,8 @@ new_state(drill_state_t *state)
 	state->header_number_format = state->number_format = FMT_00_0000; /* i. e. INCH */
 	state->autod = 1;
 	state->decimals = 4;
-
     }
+
     return state;
 } /* new_state */
 
