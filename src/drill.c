@@ -152,54 +152,60 @@ static char *get_line(gerb_file_t *fd);
  * the point of view of parsing it.
  */
 
+enum {
+    SUP_NONE = 0,
+    SUP_LEAD,
+    SUP_TRAIL
+};
+
 static const char *supression_list[] = {
     N_("None"),
-#define SUP_NONE 0
     N_("Leading"),
-#define SUP_LEAD 1
     N_("Trailing"),
-#define SUP_TRAIL 2
     0
+};
+
+enum {
+    UNITS_INCH = 0,
+    UNITS_MM
 };
 
 static const char *units_list[] = {
     N_("inch"),
-#define UNITS_INCH 0
-    /* we don't do anything with mil yet so don't offer it as an
-       option 
-    N_("mil (1/1000 inch)"),
-#define UNITS_MIL 1
-    */
     N_("mm"),
-#define UNITS_MM 1
     0
+};
+
+enum {
+    HA_auto = 0,
+    HA_supression,
+    HA_xy_units,
+    HA_digits,
+#if 0
+    HA_tool_units,
+#endif
 };
 
 static gerbv_HID_Attribute drill_attribute_list[] = {
     /* This should be first */
   {N_("autodetect"), N_("Try to autodetect the file format"),
    HID_Boolean, 0, 0, {1, 0, 0}, 0, 0},
-#define HA_auto 0
 
   {N_("zero_supression"), N_("Zero supression"),
    HID_Enum, 0, 0, {0, 0, 0}, supression_list, 0},
-#define HA_supression 1
 
   {N_("units"), N_("Units"),
    HID_Enum, 0, 0, {0, 0, 0}, units_list, 0},
-#define HA_xy_units 2
-
-#if 0
-  {"tool_units", "Tool size units",
-   HID_Enum, 0, 0, {0, 0, 0}, units_list, 0},
-#define HA_tool_units 3
-#endif
 
   {N_("digits"), N_("Number of digits.  For trailing zero supression,"
    " this is the number of digits before the decimal point.  "
    "Otherwise this is the number of digits after the decimal point."),
    HID_Integer, 0, 20, {5, 0, 0}, 0, 0},
-#define HA_digits 3
+
+#if 0
+  {"tool_units", "Tool size units",
+   HID_Enum, 0, 0, {0, 0, 0}, units_list, 0},
+#endif
 };
 
 
