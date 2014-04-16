@@ -86,10 +86,6 @@
 #define GERBV_PROJECT_FILE_EXT ".gvp"
 #define GERBV_PROJECT_FILE_PAT "*.gvp"
 
-#define SAVE_PROJECT 0
-#define SAVE_AS_PROJECT 1
-#define OPEN_PROJECT 2
-
 /**Global variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
  */
