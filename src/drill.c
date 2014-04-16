@@ -969,7 +969,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     } /* while (fgets(buf, MAXL, fd->fd) */
 
     rewind(fd->fd);
-    free(tbuf);
+    g_free(tbuf);
     *returnFoundBinary = found_binary;
     
     /* Now form logical expression determining if this is a drill file */
