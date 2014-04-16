@@ -349,69 +349,65 @@ struct l_image_info {
 	gerbv_image_t *image;
 	gerbv_user_transformation_t *transform;
 };
+
 /* --------------------------------------------------------- */
-/**Go through each file and look at visibility, then type.  
+/**Go through each file and look at visibility, then type.
 Make sure we have at least 2 files.
 */
-
 gerbv_image_t *merge_images (int type)
 {
 	gint i, filecount, img;
-/*	struct l_image_info *images; */
 	gerbv_image_t *out;
 	struct l_image_info {
-	gerbv_image_t *image;
-	gerbv_user_transformation_t *transform;
-	}*images;
-	
+		gerbv_image_t *image;
+		gerbv_user_transformation_t *transform;
+	} *images;
 	
 	images=(struct l_image_info *)g_new0(struct l_image_info,1);
-	out=NULL;
+	out = NULL;
 	switch(type){
 		case CALLBACKS_SAVE_FILE_DRILLM:
-				type=GERBV_LAYERTYPE_DRILL;
+			type=GERBV_LAYERTYPE_DRILL;
 			break;
 		case CALLBACKS_SAVE_FILE_RS274XM:
-				type=GERBV_LAYERTYPE_RS274X;
+			type=GERBV_LAYERTYPE_RS274X;
 			break;
 		default:
 			GERB_MESSAGE(_("Unknown Layer type for merge"));
 			goto err;
 	}
-	dprintf(_("Looking for matching files\n")); 
-	for (i=img=filecount=0;i<mainProject->max_files;++i){
+	dprintf(_("Looking for matching files\n"));
+	for (i = img = filecount = 0; i < mainProject->max_files; ++i) {
 		if (mainProject->file[i] &&  mainProject->file[i]->isVisible &&
-	    (mainProject->file[i]->image->layertype == type) ) {
+		(mainProject->file[i]->image->layertype == type)) {
 			++filecount;
-			dprintf(_("Adding '%s'\n"),mainProject->file[i]->name); 
+			dprintf(_("Adding '%s'\n"),mainProject->file[i]->name);
 			images[img].image=mainProject->file[i]->image;
-/*			printf("Adding transform\n"); */
-		  images[img++].transform=&mainProject->file[i]->transform;
-/*			printf("Realloc\n"); */
-			images=(struct l_image_info *)g_renew(struct l_image_info, images,img+1);
+			images[img++].transform=&mainProject->file[i]->transform;
+			images = (struct l_image_info *)g_renew(struct l_image_info, images, img+1);
 		}
-/*		printf("Done with add\n"); */
 	}
-	if(2>filecount){
+	if (filecount < 2) {
 		GERB_MESSAGE (_("Not Enough Files of same type to merge"));
 		goto err;
 	}
 	dprintf(_("Now merging files\n"));
-	for (i=0;i<img;++i){
+	for (i = 0; i < img; ++i) {
 		gerbv_user_transformation_t *thisTransform;
 		gerbv_user_transformation_t identityTransform = {0,0,1,1,0,FALSE,FALSE,FALSE};
 		thisTransform=images[i].transform;
-		if (NULL == thisTransform ) 
+		if (NULL == thisTransform)
 			thisTransform = &identityTransform;
-		if(0 == i)
-			out = gerbv_image_duplicate_image (images[i].image, thisTransform);
+		if (0 == i)
+			out = gerbv_image_duplicate_image(images[i].image, thisTransform);
 		else
-			gerbv_image_copy_image(images[i].image,thisTransform,out);
+			gerbv_image_copy_image(images[i].image, thisTransform, out);
 	}
 err:
 	g_free(images);
 	return out;
 }
+
 /* --------------------------------------------------------- */
 void
 callbacks_generic_save_activate (GtkMenuItem     *menuitem,
