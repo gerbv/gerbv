@@ -66,38 +66,48 @@
 #define MAXL 200
 #define DRILL_READ_DOUBLE_SIZE 32
 
-enum drill_file_section_t {DRILL_NONE, DRILL_HEADER, DRILL_DATA};
-enum drill_coordinate_mode_t {DRILL_MODE_ABSOLUTE, DRILL_MODE_INCREMENTAL};
+typedef enum {
+    DRILL_NONE, DRILL_HEADER, DRILL_DATA
+} drill_file_section_t;
 
-enum drill_m_code_t {DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED,
-		     DRILL_M_END, DRILL_M_ENDREWIND,
-		     DRILL_M_MESSAGE, DRILL_M_LONGMESSAGE,
-		     DRILL_M_HEADER, DRILL_M_ENDHEADER,
-		     DRILL_M_METRIC, DRILL_M_IMPERIAL,
-		     DRILL_M_BEGINPATTERN, DRILL_M_ENDPATTERN,
-		     DRILL_M_CANNEDTEXT, DRILL_M_TIPCHECK,
-		     DRILL_M_METRICHEADER, DRILL_M_IMPERIALHEADER};
+typedef enum {
+    DRILL_MODE_ABSOLUTE, DRILL_MODE_INCREMENTAL
+} drill_coordinate_mode_t;
 
+typedef enum {
+    DRILL_M_UNKNOWN, DRILL_M_NOT_IMPLEMENTED,
+    DRILL_M_END, DRILL_M_ENDREWIND,
+    DRILL_M_MESSAGE, DRILL_M_LONGMESSAGE,
+    DRILL_M_HEADER, DRILL_M_ENDHEADER,
+    DRILL_M_METRIC, DRILL_M_IMPERIAL,
+    DRILL_M_BEGINPATTERN, DRILL_M_ENDPATTERN,
+    DRILL_M_CANNEDTEXT, DRILL_M_TIPCHECK,
+    DRILL_M_METRICHEADER, DRILL_M_IMPERIALHEADER
+} drill_m_code_t;
 
-enum drill_g_code_t {DRILL_G_ABSOLUTE, DRILL_G_INCREMENTAL,
-		     DRILL_G_ZEROSET, DRILL_G_UNKNOWN,
-		     DRILL_G_ROUT, DRILL_G_DRILL,
-		     DRILL_G_LINEARMOVE, DRILL_G_CWMOVE, DRILL_G_CCWMOVE,
-		     DRILL_G_SLOT
-};
+typedef enum {
+    DRILL_G_ABSOLUTE, DRILL_G_INCREMENTAL,
+    DRILL_G_ZEROSET, DRILL_G_UNKNOWN,
+    DRILL_G_ROUT, DRILL_G_DRILL,
+    DRILL_G_LINEARMOVE,
+    DRILL_G_CWMOVE, DRILL_G_CCWMOVE,
+    DRILL_G_SLOT
+} drill_g_code_t;
 
-enum number_fmt_t {FMT_00_0000 /* INCH */,
-		   FMT_000_000 /* METRIC 6-digit, 1 um */,
-		   FMT_000_00  /* METRIC 5-digit, 10 um */,
-		   FMT_0000_00 /* METRIC 6-digit, 10 um */,
-		   FMT_USER    /* User defined format */};
+typedef enum {
+    FMT_00_0000	/* INCH */,
+    FMT_000_000	/* METRIC 6-digit, 1 um */,
+    FMT_000_00	/* METRIC 5-digit, 10 um */,
+    FMT_0000_00	/* METRIC 6-digit, 10 um */,
+    FMT_USER	/* User defined format */
+} number_fmt_t;
 
 typedef struct drill_state {
     double curr_x;
     double curr_y;
     int current_tool;
-    int curr_section;
-    int coordinate_mode;
+    drill_file_section_t curr_section;
+    drill_coordinate_mode_t coordinate_mode;
     double origin_x;
     double origin_y;
     gerbv_unit_t unit;
@@ -107,9 +117,9 @@ typedef struct drill_state {
        codes within the header.  It is fixed to FMT_00_0000 for INCH
        measures, and FMT_000_000 (1 um resolution) for metric
        measures. */
-    enum number_fmt_t number_format, header_number_format;
+    number_fmt_t number_format, header_number_format;
     /* Used as a backup when temporarily switching to INCH. */
-    enum number_fmt_t backup_number_format;
+    number_fmt_t backup_number_format;
 
     /* 0 means we don't try to autodetect any of the other values */
     int autod;
@@ -124,16 +134,16 @@ typedef struct drill_state {
 } drill_state_t;
 
 /* Local function prototypes */
-static int drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image);
-static int drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, 
+static drill_g_code_t drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image);
+static drill_m_code_t drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
 			      gerbv_image_t *image);
-static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, 
+static int drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 			      gerbv_image_t *image);
-static void drill_parse_coordinate(gerb_file_t *fd, char firstchar, 
-				   gerbv_image_t *image, drill_state_t *state);
+static void drill_parse_coordinate(gerb_file_t *fd, char firstchar,
+			      gerbv_image_t *image, drill_state_t *state);
 static drill_state_t *new_state(drill_state_t *state);
-static double read_double(gerb_file_t *fd, enum number_fmt_t fmt, 
-			  gerbv_omit_zeros_t omit_zeros, int decimals);
+static double read_double(gerb_file_t *fd, number_fmt_t fmt,
+			      gerbv_omit_zeros_t omit_zeros, int decimals);
 static void eat_line(gerb_file_t *fd);
 static char *get_line(gerb_file_t *fd);
 
@@ -1229,13 +1239,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 
 
 /* -------------------------------------------------------------- */
-static int
+static drill_m_code_t
 drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
     gerbv_drill_stats_t *stats = image->drill_stats;
-    int result=0;
+    drill_m_code_t result = DRILL_M_UNKNOWN;
 
     dprintf("---> entering drill_parse_M_code ...\n");
 
@@ -1423,13 +1433,13 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 
 
 /* -------------------------------------------------------------- */
-static int
+static drill_g_code_t 
 drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image)
 {
     char op[3] = "  ";
     int  read[3];
     gerbv_drill_stats_t *stats = image->drill_stats;
-    int result;
+    drill_g_code_t result;
     
     dprintf("---> entering drill_parse_G_code ...\n");
 
@@ -1489,7 +1499,6 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image)
 static void
 drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 		       gerbv_image_t *image, drill_state_t *state)
-
 {
     int read;
 
@@ -1544,7 +1553,7 @@ new_state(drill_state_t *state)
 /* Reads one double from fd and returns it.
    If a decimal point is found, fmt is not used. */
 static double
-read_double(gerb_file_t *fd, enum number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, int decimals)
+read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, int decimals)
 {
     int read;
     char temp[DRILL_READ_DOUBLE_SIZE];
