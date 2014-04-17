@@ -27,42 +27,34 @@
     \ingroup libgerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "gerbv.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#ifdef HAVE_LIBGEN_H
-#include <libgen.h> /* dirname */
-#endif
 #include <errno.h>
 
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h> /* dirname */
+#endif
+
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
 #endif
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+# include <unistd.h>
 #endif
 
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-
 #ifdef HAVE_GETOPT_H
-  #include <getopt.h>
+# include <getopt.h>
 #endif
 
 #include <pango/pango.h>
-
 #include <locale.h>
 
 #include "common.h"
-#include "gerbv.h"
 #include "gerber.h"
 #include "drill.h"
 

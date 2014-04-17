@@ -32,12 +32,9 @@
  * 3) ICI command parsed in the header
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "gerbv.h"
 
 #include <stdlib.h>
-#include <glib.h>
 #include <locale.h>
 
 #ifdef HAVE_STRING_H
@@ -56,7 +53,6 @@
 
 #include "attribute.h"
 #include "common.h"
-#include "gerbv.h"
 #include "drill.h"
 #include "drill_stats.h"
 

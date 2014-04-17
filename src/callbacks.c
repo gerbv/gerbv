@@ -26,17 +26,11 @@
     \ingroup gerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "gerbv.h"
 
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
 #if !defined(WIN32) && !defined(QUARTZ)
-#include <gdk/gdkx.h>
+# include <gdk/gdkx.h>
 #endif
-#include <gdk/gdkkeysyms.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -56,7 +50,6 @@
 
 #include <math.h>
 #include "common.h"
-#include "gerbv.h"
 #include "main.h"
 #include "callbacks.h"
 #include "interface.h"
@@ -68,11 +61,11 @@
 
 #include "draw.h"
 #ifdef WIN32
-#include <cairo-win32.h>
+# include <cairo-win32.h>
 #elif QUARTZ
-#include <cairo-quartz.h>
+# include <cairo-quartz.h>
 #else
-#include <cairo-xlib.h>
+# include <cairo-xlib.h>
 #endif
 
 

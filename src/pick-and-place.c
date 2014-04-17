@@ -24,18 +24,14 @@
     \ingroup libgerbv
 */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include "gerbv.h"
 
 #include <assert.h>
 #include <ctype.h>
-#include <glib.h>
 #include <math.h>
 #include <stdlib.h>
 #include <locale.h>
 
-#include "gerbv.h"
 #include "gerber.h"
 #include "common.h"
 #include "csv.h"

@@ -26,23 +26,18 @@
     \ingroup libgerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "gerbv.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>  /* ceil(), atan2() */
 
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
 #endif
 
-#include <gtk/gtk.h>
-#include "gerbv.h"
 #include "draw.h"
 #include "draw-gdk.h"
-#include <cairo.h>
 #include "common.h"
 
 #define dprintf if(DEBUG) printf

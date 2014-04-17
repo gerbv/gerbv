@@ -26,20 +26,16 @@
     \ingroup libgerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "gerbv.h"
 
-#include <glib.h>
 #include <math.h>
 #include <locale.h>
-
 #include <glib/gstdio.h>
-#include "gerbv.h"
+
 #include "common.h"
 
-/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
+
 #define round(x) floor(x+0.5)
 
 gboolean

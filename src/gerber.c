@@ -26,33 +26,26 @@
     \ingroup libgerbv
 */
 
+#include "gerbv.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>  /* pow() */
-#include <glib.h>
 #include <locale.h>
 #include <errno.h>
 #include <ctype.h>
 
-#include "config.h"
 #include "common.h"
-#include "gerbv.h"
 #include "gerb_image.h"
 #include "gerber.h"
 #include "gerb_stats.h"
 #include "amacro.h"
 
-//#define AMACRO_DEBUG
-
-#include <cairo.h>
-
 /* include this for macro enums */
 #include "draw-gdk.h"
 
-/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#undef AMACRO_DEBUG
 #define dprintf if(DEBUG) printf
-
-//#define AMACRO_DEBUG
 
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 

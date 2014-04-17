@@ -26,9 +26,7 @@
     \ingroup gerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "gerbv.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -37,33 +35,26 @@
 #include <math.h>
 
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
 #endif
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+# include <unistd.h>
 #endif
 
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-
 #ifdef HAVE_GETOPT_H
-  #include <getopt.h>
+# include <getopt.h>
 #endif
 
 #include <locale.h>
 
 #include "common.h"
-#include "gerbv.h"
 #include "main.h"
 #include "callbacks.h"
 #include "interface.h"
 #include "render.h"
 #include "project.h"
 
-/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #if (DEBUG)
 # define dprintf printf("%s():  ", __FUNCTION__); printf
 #else

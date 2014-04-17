@@ -26,21 +26,15 @@
     \ingroup libgerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "gerbv.h"
 
 #include <stdlib.h>
 #include <string.h>
-#include <glib.h>
 #include <math.h>
 
 #include "common.h"
-#include "gerbv.h"
 #include "gerb_stats.h"
 
-
-/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
 /* ------------------------------------------------------- */

@@ -26,16 +26,12 @@
     \ingroup libgerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "gerbv.h"
 
 #include <stdlib.h>
 #include <string.h>
-#include <glib.h>
 #include <math.h>
 
-#include "gerbv.h"
 #include "common.h"
 #include "gerb_image.h"
 #include "gerber.h"

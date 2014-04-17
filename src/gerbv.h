@@ -63,7 +63,7 @@ extern "C" {
 #endif
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <glib.h>
@@ -72,7 +72,7 @@ extern "C" {
 #include <gdk/gdkkeysyms.h>
 
 #ifndef RENDER_USING_GDK
-#include <cairo.h>
+# include <cairo.h>
 #endif
 
 #define APERTURE_MIN 10

@@ -27,43 +27,39 @@
     \ingroup libgerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include "gerbv.h"
 
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+# include <stdlib.h>
 #endif
 
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
 #endif
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+# include <unistd.h>
 #endif
 
 #ifdef HAVE_LIBGEN_H
-#include <libgen.h> /* dirname */
+# include <libgen.h> /* dirname */
 #endif
 
 #include <math.h>
 
 #include "common.h"
-#include "gerbv.h"
 #include "main.h"
 #include "callbacks.h"
 #include "interface.h"
 #include "render.h"
 
 #ifdef WIN32
-#include <cairo-win32.h>
+# include <cairo-win32.h>
 #elif QUARTZ
-#include <cairo-quartz.h>
+# include <cairo-quartz.h>
 #else
-#include <cairo-xlib.h>
+# include <cairo-xlib.h>
 #endif
-#include <cairo.h>
 #include "draw-gdk.h"
 #include "draw.h"
 

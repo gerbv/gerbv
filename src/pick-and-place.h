@@ -27,8 +27,6 @@
 #ifndef GERBV_LAYERTYPE_PICKANDPLACE_H
 #define GERBV_LAYERTYPE_PICKANDPLACE_H
 
-#include <glib.h>
- 
 #define MAXL 200
 
 typedef struct gerb_transf {
