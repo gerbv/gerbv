@@ -903,6 +903,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	table_add_row(G_table, "", stats_report->G_unknown,
 				_("Unknown G codes"));
 
+	table_set_sortable(G_table);
 	gtk_container_add(GTK_CONTAINER(G_report_window), G_table->widget);
 
 	/* D codes on active layers */
@@ -928,6 +929,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	table_add_row(D_table, "", stats_report->D_error,
 			_("D code Errors"));
 
+	table_set_sortable(D_table);
 	gtk_container_add(GTK_CONTAINER(D_report_window), D_table->widget);
 
 	/* M codes on active layers */
@@ -951,6 +953,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	table_add_row(M_table, "", stats_report->M_unknown,
 			_("Unknown M codes"));
 
+	table_set_sortable(M_table);
 	gtk_container_add(GTK_CONTAINER(M_report_window), M_table->widget);
 
 	/* Misc codes */
@@ -971,6 +974,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	table_add_row(misc_table, "*", stats_report->star);
 	table_add_row(misc_table, _("Unknown"), stats_report->unknown);
 
+	table_set_sortable(misc_table);
 	gtk_container_add(GTK_CONTAINER(misc_report_window),
 			misc_table->widget);
 
@@ -1019,6 +1023,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				aperture_list->parameter[2]);
 		}
 		g_string_free(gstr, TRUE);
+		table_set_sortable(aperture_def_table);
 		gtk_container_add(GTK_CONTAINER(aperture_def_report_window),
 				aperture_def_table->widget);
 	}
@@ -1062,6 +1067,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		}
 		g_string_free(gstr, TRUE);
 		table_add_row(aperture_usage_table, _("Total"), aperture_count);
+		table_set_sortable(aperture_usage_table);
 		gtk_container_add( GTK_CONTAINER(aperture_usage_report_window),
 				aperture_usage_table->widget);
 	}
@@ -1255,6 +1261,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	table_add_row(G_table, "", stats_report->G_unknown,
 				_("Unknown G codes"));
 
+	table_set_sortable(G_table);
 	gtk_container_add(GTK_CONTAINER(G_report_window), G_table->widget);
 
 	/* M codes on active layers */
@@ -1300,6 +1307,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	table_add_row(M_table, "", stats_report->M_unknown,
 			_("Unknown M codes"));
 
+	table_set_sortable(M_table);
 	gtk_container_add(GTK_CONTAINER(M_report_window), M_table->widget);
 
 	/* Misc codes */
@@ -1325,6 +1333,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 		table_add_row(misc_table, "", stats_report->detect);
 	}
 
+	table_set_sortable(misc_table);
 	gtk_container_add(GTK_CONTAINER(misc_report_window),
 			misc_table->widget);
 
@@ -1359,7 +1368,8 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 				drill_list->drill_count);
 	}
 
-	gtk_container_add( GTK_CONTAINER(drill_usage_report_window),
+	table_set_sortable(drill_usage_table);
+	gtk_container_add(GTK_CONTAINER(drill_usage_report_window),
 			drill_usage_table->widget);
 
 	/* Create top level dialog window for report */

@@ -11,6 +11,7 @@ struct table {
 
 struct table *table_new_with_columns(gint col_nums, ...);
 void table_destroy(struct table *table);
+void table_set_sortable(struct table *table);
 void table_set_column_align(struct table *table, gint column_num, gfloat align);
 int table_add_row(struct table *table, ...);
 

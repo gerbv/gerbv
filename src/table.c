@@ -4,6 +4,79 @@
 
 #include "table.h"
 
+static gint compare_uint(GtkTreeModel *model,
+		GtkTreeIter *a, GtkTreeIter *b,
+		gpointer p)
+{
+	gint sort_col = GPOINTER_TO_INT(p);
+	guint no1, no2;
+
+	gtk_tree_model_get(model, a, sort_col, &no1, -1);
+	gtk_tree_model_get(model, b, sort_col, &no2, -1);
+
+	return no1 - no2;
+}
+
+static gint compare_int(GtkTreeModel *model,
+		GtkTreeIter *a, GtkTreeIter *b,
+		gpointer p)
+{
+	gint sort_col = GPOINTER_TO_INT(p);
+	gint no1, no2;
+
+	gtk_tree_model_get(model, a, sort_col, &no1, -1);
+	gtk_tree_model_get(model, b, sort_col, &no2, -1);
+
+	return no1 - no2;
+}
+
+static gint compare_double(GtkTreeModel *model,
+		GtkTreeIter *a, GtkTreeIter *b,
+		gpointer p)
+{
+	gint sort_col = GPOINTER_TO_INT(p);
+	double no1, no2;
+
+	gtk_tree_model_get(model, a, sort_col, &no1, -1);
+	gtk_tree_model_get(model, b, sort_col, &no2, -1);
+
+	if (no1 > no2)
+		return 1;
+
+	if (no1 < no2)
+		return -1;
+	
+	return 0;
+}
+
+static gint compare_str(GtkTreeModel *model,
+		GtkTreeIter *a, GtkTreeIter *b,
+		gpointer p)
+{
+	gint sort_col = GPOINTER_TO_INT(p);
+	gchar *str1, *str2;
+	gint ret;
+
+	/* TODO: rewrite and sort D1 -- D10 */
+
+	gtk_tree_model_get(model, a, sort_col, &str1, -1);
+	gtk_tree_model_get(model, b, sort_col, &str2, -1);
+
+	if (str1 == NULL || str2 == NULL) {
+		if (str1 == NULL && str2 == NULL)
+			return 0;
+
+		ret = (str1 == NULL) ? -1 : 1;
+	} else {
+		ret = g_utf8_collate(str1, str2);
+	}
+
+	g_free(str1);
+	g_free(str2);
+
+	return ret;
+}
+
 /* ... is (char *)title / (GType)type pairs */
 struct table *table_new_with_columns(gint col_nums, ...)
 {
@@ -53,6 +126,60 @@ void table_destroy(struct table *table)
 	gtk_widget_destroy(table->widget);
 	g_free(table->types);
 	g_free(table);
+}
+
+void table_set_sortable(struct table *table)
+{
+	GtkTreeSortable *sortable = GTK_TREE_SORTABLE(table->list_store);
+	GtkTreeViewColumn *column;
+	gint i, first_sort_col = -1;
+
+	for (i = 0; i < table->column_nums; i++) {
+		column = gtk_tree_view_get_column(
+				GTK_TREE_VIEW(table->widget), i);
+		switch (table->types[i]) {
+		case G_TYPE_UINT:
+			gtk_tree_sortable_set_sort_func(sortable, i,
+					&compare_uint, GINT_TO_POINTER(i),
+					NULL);
+			if (first_sort_col == -1)
+				first_sort_col = i;
+			break;
+		case G_TYPE_INT:
+			gtk_tree_sortable_set_sort_func(sortable, i,
+					&compare_int, GINT_TO_POINTER(i),
+					NULL);
+			if (first_sort_col == -1)
+				first_sort_col = i;
+			break;
+		case G_TYPE_DOUBLE:
+			gtk_tree_sortable_set_sort_func(sortable, i,
+					&compare_double, GINT_TO_POINTER(i),
+					NULL);
+			if (first_sort_col == -1)
+				first_sort_col = i;
+			break;
+		case G_TYPE_STRING:
+			gtk_tree_sortable_set_sort_func(sortable, i,
+					&compare_str, GINT_TO_POINTER(i),
+					NULL);
+			if (first_sort_col == -1)
+				first_sort_col = i;
+			break;
+		}
+
+		switch (table->types[i]) {
+		case G_TYPE_UINT:
+		case G_TYPE_INT:
+		case G_TYPE_DOUBLE:
+		case G_TYPE_STRING:
+			gtk_tree_view_column_set_sort_column_id(column, i);
+		}
+	}
+
+	if (first_sort_col != -1)
+		gtk_tree_sortable_set_sort_column_id(sortable,
+				first_sort_col, GTK_SORT_ASCENDING);
 }
 
 /* Set column alignment:
