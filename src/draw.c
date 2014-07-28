@@ -195,8 +195,8 @@ gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width1, gdouble height1, gboo
 		cairo_user_to_device_distance (cairoTarget, &width, &height);
 		width = round(width);
 		height = round(height);
-		width -= ((int)width % 2);
-		height -= ((int)height % 2);
+		width -= (int)width % 2;
+		height -= (int)height % 2;
 		cairo_device_to_user_distance (cairoTarget, &width, &height);
 	}
     cairo_rectangle (cairoTarget, - width / 2.0, - height / 2.0, width, height);
@@ -377,14 +377,14 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_set_line_width (cairoTarget, ls->parameter[MOIRE_CIRCLE_THICKNESS]);
 		
 		for (circleIndex = 0; circleIndex < (int)ls->parameter[MOIRE_NUMBER_OF_CIRCLES];  circleIndex++) {
-		    gdouble currentDiameter = (diameter - diameterDifference * (float) circleIndex);
+		    gdouble currentDiameter = diameter - diameterDifference * (float) circleIndex;
 		    if (currentDiameter >= 0){
 				gerbv_draw_circle (cairoTarget, currentDiameter);
 				draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 		    }
 		}
 		
-		gdouble crosshairRadius = (ls->parameter[MOIRE_CROSSHAIR_LENGTH] / 2.0);
+		gdouble crosshairRadius = ls->parameter[MOIRE_CROSSHAIR_LENGTH] / 2.0;
 		
 		cairo_set_line_width (cairoTarget, ls->parameter[MOIRE_CROSSHAIR_THICKNESS]);
 		cairo_move_to (cairoTarget, -crosshairRadius, 0);
@@ -840,8 +840,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 								draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 								break;
 							case GERBV_APTYPE_RECTANGLE :				
-								dx = (image->aperture[net->aperture]->parameter[0]/ 2);
-								dy = (image->aperture[net->aperture]->parameter[1]/ 2);
+								dx = image->aperture[net->aperture]->parameter[0]/2;
+								dy = image->aperture[net->aperture]->parameter[1]/2;
 								if(x1 > x2)
 									dx = -dx;
 								if(y1 > y2)
@@ -918,13 +918,11 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						// some CAD programs use very thin flashed rectangles to compose
 						//	logos/images, so we must make sure those display here
 						displayPixel = pixelOutput;
-						if (limitLineWidth&&((p1 < pixelWidth)&&
-								(pixelOutput))) {
+						if (limitLineWidth && (p1 < pixelWidth) && pixelOutput) {
 							p1 = pixelWidth;
 							displayPixel = FALSE;
 						}
-						if (limitLineWidth&&((p2 < pixelWidth)&&
-								(pixelOutput))) {
+						if (limitLineWidth && (p2 < pixelWidth) && pixelOutput) {
 							p2 = pixelWidth;
 							displayPixel = FALSE;
 						}
