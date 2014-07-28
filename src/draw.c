@@ -576,12 +576,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
  					gerbv_user_transformation_t transform, gboolean pixelOutput){
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
-	gdouble p1, p2, p3, p4, p5, dx, dy, lineWidth;
+	gdouble p0, p1, p2, p3, p4, dx, dy, lineWidth;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
-	int repeat_X=1, repeat_Y=1;
-	double repeat_dist_X = 0, repeat_dist_Y = 0;
-	int repeat_i, repeat_j;
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
 	gboolean invertPolarity = FALSE, oddWidth = FALSE;
 	gdouble minX=0, minY=0, maxX=0, maxY=0;
@@ -684,11 +681,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			drawOperatorClear = CAIRO_OPERATOR_CLEAR;
     			drawOperatorDark = CAIRO_OPERATOR_OVER;
 		}
-		/* check for changes to step and repeat */
-		repeat_X = net->layer->stepAndRepeat.X;
-		repeat_Y = net->layer->stepAndRepeat.Y;
-		repeat_dist_X = net->layer->stepAndRepeat.dist_X;
-		repeat_dist_Y = net->layer->stepAndRepeat.dist_Y;
 		/* draw any knockout areas */
 		if (net->layer->knockout.firstInstance == TRUE) {
 			cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
@@ -734,11 +726,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				continue;		
 		}
 	}
-	for(repeat_i = 0; repeat_i < repeat_X; repeat_i++) {
-	    for(repeat_j = 0; repeat_j < repeat_Y; repeat_j++) {
-		double sr_x = repeat_i * repeat_dist_X;
-		double sr_y = repeat_j * repeat_dist_Y;
-		
+
+	/* step and repeat */
+	int ix, iy;
+	for (ix = 0; ix < net->layer->stepAndRepeat.X; ix++) {
+	    for (iy = 0; iy < net->layer->stepAndRepeat.Y; iy++) {
+		double sr_x = ix * net->layer->stepAndRepeat.dist_X;
+		double sr_y = iy * net->layer->stepAndRepeat.dist_Y;
 		
 		if ((useOptimizations && pixelOutput) &&
 				((net->boundingBox.right+sr_x < minX)
@@ -752,7 +746,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		y1 = net->start_y + sr_y;
 		x2 = net->stop_x + sr_x;
 		y2 = net->stop_y + sr_y;
-           
+
 		/* translate circular x,y data as well */
 		if (net->cirseg) {
 			cp_x = net->cirseg->cp_x + sr_x;
@@ -900,47 +894,47 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			case GERBV_APERTURE_STATE_OFF :
 				break;
 			case GERBV_APERTURE_STATE_FLASH :
-				p1 = image->aperture[net->aperture]->parameter[0];
-				p2 = image->aperture[net->aperture]->parameter[1];
-				p3 = image->aperture[net->aperture]->parameter[2];
-				p4 = image->aperture[net->aperture]->parameter[3];
-				p5 = image->aperture[net->aperture]->parameter[4];
+				p0 = image->aperture[net->aperture]->parameter[0];
+				p1 = image->aperture[net->aperture]->parameter[1];
+				p2 = image->aperture[net->aperture]->parameter[2];
+				p3 = image->aperture[net->aperture]->parameter[3];
+				p4 = image->aperture[net->aperture]->parameter[4];
 
 				cairo_save (cairoTarget);
 				draw_cairo_translate_adjust(cairoTarget, x2, y2, pixelOutput);
 				
 				switch (image->aperture[net->aperture]->type) {
 					case GERBV_APTYPE_CIRCLE :
-						gerbv_draw_circle(cairoTarget, p1);
-						gerbv_draw_aperature_hole (cairoTarget, p2, p3, pixelOutput);
+						gerbv_draw_circle(cairoTarget, p0);
+						gerbv_draw_aperature_hole (cairoTarget, p1, p2, pixelOutput);
 						break;
 					case GERBV_APTYPE_RECTANGLE :
 						// some CAD programs use very thin flashed rectangles to compose
 						//	logos/images, so we must make sure those display here
 						displayPixel = pixelOutput;
+						if (limitLineWidth && (p0 < pixelWidth) && pixelOutput) {
+							p0 = pixelWidth;
+							displayPixel = FALSE;
+						}
 						if (limitLineWidth && (p1 < pixelWidth) && pixelOutput) {
 							p1 = pixelWidth;
 							displayPixel = FALSE;
 						}
-						if (limitLineWidth && (p2 < pixelWidth) && pixelOutput) {
-							p2 = pixelWidth;
-							displayPixel = FALSE;
-						}
-						gerbv_draw_rectangle(cairoTarget, p1, p2, displayPixel);
-						gerbv_draw_aperature_hole (cairoTarget, p3, p4, displayPixel);
+						gerbv_draw_rectangle(cairoTarget, p0, p1, displayPixel);
+						gerbv_draw_aperature_hole (cairoTarget, p2, p3, displayPixel);
 						break;
 					case GERBV_APTYPE_OVAL :
-						gerbv_draw_oblong(cairoTarget, p1, p2);
-						gerbv_draw_aperature_hole (cairoTarget, p3, p4, pixelOutput);
+						gerbv_draw_oblong(cairoTarget, p0, p1);
+						gerbv_draw_aperature_hole (cairoTarget, p2, p3, pixelOutput);
 						break;
 					case GERBV_APTYPE_POLYGON :
-						gerbv_draw_polygon(cairoTarget, p1, p2, p3);
-						gerbv_draw_aperature_hole (cairoTarget, p4, p5, pixelOutput);
+						gerbv_draw_polygon(cairoTarget, p0, p1, p2);
+						gerbv_draw_aperature_hole (cairoTarget, p3, p4, pixelOutput);
 						break;
 					case GERBV_APTYPE_MACRO :
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 								  image->aperture[net->aperture]->simplified,
-								  (int) image->aperture[net->aperture]->parameter[0], pixelWidth,
+								  (gint) image->aperture[net->aperture]->parameter[0], pixelWidth,
 								  drawMode, selectionInfo, image, net);
 						break;   
 					default :
