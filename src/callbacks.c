@@ -2542,7 +2542,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 		if (net->label == NULL) {
 			net_label = g_strdup(_("<unlabeled net>"));
 		} else {
-			net_label = g_strdup((gchar *)net->label);
+			net_label = g_strdup(net->label->str);
 		}
 		if (net->interpolation == GERBV_INTERPOLATION_PAREA_START) {
 			g_message (_("Object type: Polygon"));
