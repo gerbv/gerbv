@@ -192,9 +192,11 @@ typedef enum {GERBV_ENCODING_NONE,
 } gerbv_encoding_t;
 
 /*! The different layer types used */
-typedef enum {GERBV_LAYERTYPE_RS274X, /*!< the file is a RS274X file */
+typedef enum {
+		GERBV_LAYERTYPE_RS274X, /*!< the file is a RS274X file */
 		GERBV_LAYERTYPE_DRILL, /*!< the file is an Excellon drill file */
-		GERBV_LAYERTYPE_PICKANDPLACE /*!< the file is a CSV pick and place file */
+		GERBV_LAYERTYPE_PICKANDPLACE_TOP, /*!< the file is a CSV pick and place file, top side */
+		GERBV_LAYERTYPE_PICKANDPLACE_BOT, /*!< the file is a CSV pick and place file, bottom side */
 } gerbv_layertype_t;
 
 typedef enum {GERBV_KNOCKOUT_TYPE_NOKNOCKOUT,

@@ -534,8 +534,13 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	GERB_FATAL_ERROR(_("malloc format failed"));
     }
     memset((void *)image->format, 0, sizeof(gerbv_format_t));
-    
-    image->layertype = GERBV_LAYERTYPE_PICKANDPLACE;
+
+    /* Separate top/bot layer type is needed for reload purpose */
+    if (boardSide == 1)
+	    image->layertype = GERBV_LAYERTYPE_PICKANDPLACE_TOP;
+    else
+	    image->layertype = GERBV_LAYERTYPE_PICKANDPLACE_BOT;
+
     stats = gerbv_drill_stats_new();
     if (stats == NULL)
         GERB_FATAL_ERROR(_("malloc pick_place_stats failed"));
@@ -602,13 +607,6 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	curr_net->state = image->states;
 	pick_and_place_reset_bounding_box (curr_net);
 
-	/* assign a label to this first draw primitive, in case we want
-	* to render some text next to the mark
-	*/
-	if (strlen (partData.designator) > 0) {
-	curr_net->label = g_string_new (partData.designator);
-	}
-
 	gerb_transf_reset(tr_rot);
 	gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
 	gerb_transf_rotate(tr_rot, -partData.rotation);
@@ -628,6 +626,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    gerb_transf_apply(-partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
+	    if (strlen (partData.designator) > 0) {
+		curr_net->label = g_string_new (partData.designator);
+	    }
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
@@ -645,6 +646,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    gerb_transf_apply(-partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
+	    if (strlen (partData.designator) > 0) {
+		curr_net->label = g_string_new (partData.designator);
+	    }
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
@@ -662,6 +666,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    gerb_transf_apply(partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
+	    if (strlen (partData.designator) > 0) {
+		curr_net->label = g_string_new (partData.designator);
+	    }
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
@@ -679,6 +686,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    gerb_transf_apply(partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
+	    if (strlen (partData.designator) > 0) {
+		curr_net->label = g_string_new (partData.designator);
+	    }
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
@@ -702,6 +712,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 		gerb_transf_apply(partData.length/4, partData.width/4, tr_rot, 
 				  &curr_net->stop_x, &curr_net->stop_y);
 		
+		if (strlen (partData.designator) > 0) {
+		    curr_net->label = g_string_new (partData.designator);
+		}
 		curr_net->aperture = 0;
 		curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 		curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
@@ -717,6 +730,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 				  &curr_net->start_x, &curr_net->start_y);
 		gerb_transf_apply(partData.length/4, partData.width/4, tr_rot, 
 				  &curr_net->stop_x, &curr_net->stop_y);     
+	    }
+
+	    if (strlen (partData.designator) > 0) {
+		curr_net->label = g_string_new (partData.designator);
 	    }
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
@@ -738,6 +755,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->stop_x = tmp_x;
 	    curr_net->stop_y = tmp_y;
 	    
+	    if (strlen (partData.designator) > 0) {
+		curr_net->label = g_string_new (partData.designator);
+	    }
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
@@ -754,6 +774,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->stop_x = partData.pad_x;
 	    curr_net->stop_y = partData.pad_y;
 	    
+	    if (strlen(partData.designator) > 0) {
+		curr_net->label = g_string_new (partData.designator);
+	    }
 	    curr_net->aperture = 0;
 	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 	    curr_net->interpolation = GERBV_INTERPOLATION_CW_CIRCULAR;
@@ -794,6 +817,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
  *	pick_and_place_parse_file_to_images
  *	------------------------------------------------------------------
  *	Description: Renders a pick and place file to a gerb_image.
+ *	If image pointer is not NULL, then corresponding image will not be
+ *	populated.
  *	Notes: The file format should already be verified before calling
  *       this function, since it does very little sanity checking itself.
  *	------------------------------------------------------------------
@@ -805,8 +830,12 @@ pick_and_place_parse_file_to_images(gerb_file_t *fd, gerbv_image_t **topImage,
 	GArray *parsedPickAndPlaceData = pick_and_place_parse_file (fd);
 
 	if (parsedPickAndPlaceData != NULL) {
-		*bottomImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 0);
-		*topImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 1);
+		/* Non NULL pointer is used as "not to reload" mark */
+		if (*bottomImage == NULL)
+			*bottomImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 0);
+
+		if (*topImage == NULL)
+			*topImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 1);
 
 		g_array_free (parsedPickAndPlaceData, TRUE);
 	}

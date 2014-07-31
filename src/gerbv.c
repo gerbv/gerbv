@@ -446,8 +446,28 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	
     } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
 	dprintf("Found pick-n-place file\n");
-	if ((!foundBinary || forceLoadFile)) {
-		pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
+	if (!foundBinary || forceLoadFile) {
+		if (!reload) {
+			pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
+		} else {
+			switch (gerbvProject->file[idx]->image->layertype) {
+			case GERBV_LAYERTYPE_PICKANDPLACE_TOP:
+				/* Non NULL pointer is used as "not to reload" mark */
+				parsed_image2 = (void *)!NULL;
+				pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
+				parsed_image2 = NULL;
+				break;
+			case GERBV_LAYERTYPE_PICKANDPLACE_BOT:
+				/* Non NULL pointer is used as "not to reload" mark */
+				parsed_image2 = (void *)!NULL;
+				pick_and_place_parse_file_to_images(fd, &parsed_image2, &parsed_image);
+				parsed_image2 = NULL;
+				break;
+			default:
+				GERB_COMPILE_ERROR(_("%s: unknown pick-and-place board side to reload"), filename);
+			}
+		}
+			
 		isPnpFile = TRUE;
 	}
     } else if (gerber_is_rs274d_p(fd)) {
