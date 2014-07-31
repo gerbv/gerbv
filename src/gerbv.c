@@ -432,7 +432,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 
     if (gerber_is_rs274x_p(fd, &foundBinary)) {
 	dprintf("Found RS-274X file\n");
-	if ((!foundBinary || forceLoadFile)) {
+	if (!foundBinary || forceLoadFile) {
 		/* figure out the directory path in case parse_gerb needs to
 		 * load any include files */
 		gchar *currentLoadDirectory = g_path_get_dirname (filename);
@@ -441,7 +441,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	}
     } else if(drill_file_p(fd, &foundBinary)) {
 	dprintf("Found drill file\n");
-	if ((!foundBinary || forceLoadFile))
+	if (!foundBinary || forceLoadFile)
 	    parsed_image = parse_drillfile(fd, attr_list, n_attr, reload);
 	
     } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
@@ -473,7 +473,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     } else if (gerber_is_rs274d_p(fd)) {
 	dprintf("Most likely found a RS-274D file...trying to open anyways\n");
 	g_warning(_("Most likely found a RS-274D file...trying to open anyways\n"));
-	if ((!foundBinary || forceLoadFile)) {
+	if (!foundBinary || forceLoadFile) {
 		/* figure out the directory path in case parse_gerb needs to
 		 * load any include files */
 		gchar *currentLoadDirectory = g_path_get_dirname (filename);
@@ -550,7 +550,7 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 	gdouble minX, minY, maxX, maxY;
 	
 	for(i = 0; i <= gerbvProject->last_loaded; i++) {
-		if ((gerbvProject->file[i]) && (gerbvProject->file[i]->isVisible)){
+		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible){
 			
 			
 			info = gerbvProject->file[i]->image->info;
@@ -734,7 +734,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 		}
 	}
 	/* render the selection group to the top of the output */
-	if ((selectionInfo) && (selectionInfo->type != GERBV_SELECTION_EMPTY)) {
+	if (selectionInfo && (selectionInfo->type != GERBV_SELECTION_EMPTY)) {
 		if (!selectionColor->pixel)
 	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), selectionColor, FALSE, TRUE);
 
@@ -751,7 +751,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 			matchImage = (gerbv_image_t *) sItem.image;	
 
 			for(j = gerbvProject->last_loaded; j >= 0; j--) {
-				if ((gerbvProject->file[j]) && (gerbvProject->file[j]->image == matchImage)) {
+				if (gerbvProject->file[j] && (gerbvProject->file[j]->image == matchImage)) {
 					draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[j]->image,
 						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
 						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
