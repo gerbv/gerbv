@@ -15,6 +15,10 @@ config.rpath
 config.status
 config.sub
 configure
+doc/html/*.css
+doc/html/*.html
+doc/html/*.js
+doc/html/*.png
 depcomp
 install-sh
 intl/
