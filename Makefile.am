@@ -28,3 +28,7 @@ EXTRA_DIST = BUGS CONTRIBUTORS HACKING AUTHORS ChangeLog COPYING INSTALL \
 	README-win32.txt icon-theme-installer BUGS
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-update-desktop-database GTK_UPDATE_ICON_THEME_BIN=true
+
+.PHONY: doxygen
+doxygen:
+	doxygen doc/Doxyfile.nopreprocessing
