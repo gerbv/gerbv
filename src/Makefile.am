@@ -1,4 +1,3 @@
-## -*- makefile -*-
 ## Process this file with automake to produce Makefile.in
 ##
 ##  gEDA - GNU Electronic Design Automation
@@ -116,14 +115,25 @@ TXT2CL=	sed -e 's;%;%%;g' -e 's;\\;\\\\;g' -e 's;";\\";g' -e 's;^;N_(";g' -e 's;
 authors.c: $(top_srcdir)/AUTHORS Makefile
 	if test -f $@.tmp ; then rm -f $@.tmp ; fi
 	awk -F: '/^[ \t]*#/ {next}; /^[ \t]*$$/ {next}; {print $$1}' $(top_srcdir)/AUTHORS | ${TXT2CL} > $@.tmp
-	num=`wc -l $@.tmp | awk '{print $$1 + 1}'` && echo "const gchar * authors_string_array[$$num] = {" > $@
+	echo '/* Generated from AUTHORS file */' > $@
+	echo '/*! \file $@' >> $@
+	echo '    \brief Generated at build time authors list.' >> $@
+	echo '    \ingroup gerbv' >> $@
+	echo ' */' >> $@
+	num=`wc -l $@.tmp | awk '{print $$1 + 1}'` && \
+		echo "const gchar * authors_string_array[$$num] = {" >> $@
 	cat $@.tmp >> $@
 	rm -f $@.tmp
 	echo 'NULL};' >> $@
 
 bugs.c: $(top_srcdir)/BUGS Makefile
+	echo '/* Generated from BUGS file */' > $@
+	echo '/*! \file $@' >> $@
+	echo '    \brief Generated at build time bugs list.' >> $@
+	echo '    \ingroup gerbv' >> $@
+	echo ' */' >> $@
 	num=`wc -l $(top_srcdir)/BUGS | awk '{print $$1 + 1}'` && \
-		echo "const gchar * bugs_string_array[$$num] = {" > $@
+		echo "const gchar * bugs_string_array[$$num] = {" >> $@
 	${TXT2CL} $(top_srcdir)/BUGS >> $@
 	echo 'NULL};' >> $@
 
