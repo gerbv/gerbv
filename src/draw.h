@@ -22,8 +22,8 @@
  */
 
 /** \file draw.h
-    \brief Header info for the cairo rendering functions and the related 
-selection calculating functions
+    \brief Header info for the cairo rendering functions and the related
+    selection calculating functions
     \ingroup gerbv
 */
 

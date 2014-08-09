@@ -23,7 +23,7 @@
  */
 
 /*! \file project.c
-    \brief routines for loading and saving project files
+    \brief Routines for loading and saving project files.
     \ingroup gerbv
  */ 
 

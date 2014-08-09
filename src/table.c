@@ -1,3 +1,8 @@
+/*! \file table.c
+    \brief GTK widgets functions for table.
+    \ingroup gerbv
+ */ 
+
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <string.h>

@@ -21,7 +21,7 @@
  */
 
 /** \file drill.h
-    \brief Header infor for the Excellon drill parsing functions
+    \brief Header info for the Excellon drill parsing functions
     \ingroup libgerbv
 */
 

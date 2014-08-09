@@ -28,8 +28,11 @@
 //! \example example5.c
 //! \example example6.c
 
-//! \defgroup libgerbv libgerbv
 //! \defgroup gerbv Gerbv
+//! @{ Gerbv program @}
+
+//! \defgroup libgerbv libgerbv
+//! @{ Gerber library @}
 
 /** \file gerbv.h
     \brief The main header file for the libgerbv library

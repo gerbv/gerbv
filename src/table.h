@@ -1,3 +1,8 @@
+/** \file table.h
+    \brief Header info for GTK widgets table functions.
+    \ingroup gerbv
+ */ 
+
 #ifndef TABLE_H
 #define TABLE_H
 

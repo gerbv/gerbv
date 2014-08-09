@@ -23,7 +23,7 @@
  */
  
 /** \file project.h
-    \brief routines for loading and saving project files
+    \brief Header info for loading and saving project files.
     \ingroup gerbv
  */ 
 
