@@ -67,32 +67,17 @@
 
 gerbv_render_info_t screenRenderInfo;
 
-gboolean
-render_check_scale_factor_limits (void) {
-	if ((screenRenderInfo.scaleFactorX > 20000)||(screenRenderInfo.scaleFactorY > 20000)) {
-		screenRenderInfo.scaleFactorX = 20000;
-		screenRenderInfo.scaleFactorY = 20000;
-		return FALSE;
-	}
-	return TRUE;
-}
-
 /* ------------------------------------------------------ */
 void
-render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY) {
-	/*double us_midx, us_midy;*/	/* unscaled translation for screen center */
-	/*int half_w, half_h;*/		/* cache for half window dimensions */
+render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY)
+{
 	gdouble mouseCoordinateX = 0.0;
 	gdouble mouseCoordinateY = 0.0;
 	double oldWidth, oldHeight;
 
-	/*
-	half_w = screenRenderInfo.displayWidth / 2;
-	half_h = screenRenderInfo.displayHeight / 2;
-	*/
-	
 	oldWidth = screenRenderInfo.displayWidth / screenRenderInfo.scaleFactorX;
 	oldHeight = screenRenderInfo.displayHeight / screenRenderInfo.scaleFactorY;
+
 	if (zoomType == ZOOM_IN_CMOUSE || zoomType == ZOOM_OUT_CMOUSE) {
 		/* calculate what user coordinate the mouse is pointing at */
 		mouseCoordinateX = mouseX / screenRenderInfo.scaleFactorX + screenRenderInfo.lowerLeftX;
@@ -100,47 +85,38 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 			screenRenderInfo.scaleFactorY + screenRenderInfo.lowerLeftY;
 	}
 
-	/*
-	us_midx = screenRenderInfo.lowerLeftX + (screenRenderInfo.displayWidth / 2.0 )/
-			screenRenderInfo.scaleFactorX;
-	us_midy = screenRenderInfo.lowerLeftY + (screenRenderInfo.displayHeight / 2.0 )/
-			screenRenderInfo.scaleFactorY;		
-	*/
-	
 	switch(zoomType) {
 		case ZOOM_IN : /* Zoom In */
 		case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
-			screenRenderInfo.scaleFactorX += screenRenderInfo.scaleFactorX/3;
-			screenRenderInfo.scaleFactorY += screenRenderInfo.scaleFactorY/3;
-			(void) render_check_scale_factor_limits ();
+			screenRenderInfo.scaleFactorX = MIN(GERBV_SCALE_MAX,
+					(1 + 1/3.0)*screenRenderInfo.scaleFactorX);
+			screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
-				screenRenderInfo.scaleFactorX)) / 2.0;
+						screenRenderInfo.scaleFactorX)) / 2.0;
 			screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
-				screenRenderInfo.scaleFactorY)) / 2.0;	
+						screenRenderInfo.scaleFactorY)) / 2.0;
 			break;
 		case ZOOM_OUT :  /* Zoom Out */
 		case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
-			if ((screenRenderInfo.scaleFactorX > 10)&&(screenRenderInfo.scaleFactorY > 10)) {
-				screenRenderInfo.scaleFactorX -= screenRenderInfo.scaleFactorX/3;
-				screenRenderInfo.scaleFactorY -= screenRenderInfo.scaleFactorY/3;
-				screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
-					screenRenderInfo.scaleFactorX)) / 2.0;
-				screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
-					screenRenderInfo.scaleFactorY)) / 2.0;
-			}
+			screenRenderInfo.scaleFactorX = MAX(GERBV_SCALE_MIN,
+					(1 - 1/3.0)*screenRenderInfo.scaleFactorX);
+			screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
+			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
+						screenRenderInfo.scaleFactorX)) / 2.0;
+			screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
+						screenRenderInfo.scaleFactorY)) / 2.0;
 			break;
 		case ZOOM_FIT : /* Zoom Fit */
 			gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 			break;
 		case ZOOM_SET : /*explicit scale set by user */
-			screenRenderInfo.scaleFactorX = scaleFactor;
-			screenRenderInfo.scaleFactorY = scaleFactor;
-			(void) render_check_scale_factor_limits ();
+			screenRenderInfo.scaleFactorX = MIN(GERBV_SCALE_MAX, scaleFactor);
+			screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
-				screenRenderInfo.scaleFactorX)) / 2.0;
+						screenRenderInfo.scaleFactorX)) / 2.0;
 			screenRenderInfo.lowerLeftY += (oldHeight - (screenRenderInfo.displayHeight /
-				screenRenderInfo.scaleFactorY)) / 2.0;
-		      break;
+						screenRenderInfo.scaleFactorY)) / 2.0;
+			break;
 		default :
 			GERB_MESSAGE(_("Illegal zoom direction %d"), zoomType);
 	}
@@ -189,15 +165,17 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 		centerPointX = half_x/screenRenderInfo.scaleFactorX + screenRenderInfo.lowerLeftX;
 		centerPointY = (screenRenderInfo.displayHeight - half_y)/screenRenderInfo.scaleFactorY +
 				screenRenderInfo.lowerLeftY;
-		
-		screenRenderInfo.scaleFactorX *= MIN(((double)screenRenderInfo.displayWidth / dx),
-							((double)screenRenderInfo.displayHeight / dy));
+
+		screenRenderInfo.scaleFactorX *=
+			MIN((double)screenRenderInfo.displayWidth / dx,
+				(double)screenRenderInfo.displayHeight / dy);
+		screenRenderInfo.scaleFactorX = MIN(GERBV_SCALE_MAX,
+				screenRenderInfo.scaleFactorX);
 		screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
-		(void) render_check_scale_factor_limits ();
 		screenRenderInfo.lowerLeftX = centerPointX - (screenRenderInfo.displayWidth /
 					2.0 / screenRenderInfo.scaleFactorX);
 		screenRenderInfo.lowerLeftY = centerPointY - (screenRenderInfo.displayHeight /
-					2.0 / screenRenderInfo.scaleFactorY);				
+					2.0 / screenRenderInfo.scaleFactorY);
 	}
 	render_refresh_rendered_image_on_screen();
 }

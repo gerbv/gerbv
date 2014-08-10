@@ -606,7 +606,8 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo) {
+gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo)
+{
 	gerbv_render_size_t bb;
 	double width, height;
 	double x_scale, y_scale;
@@ -625,7 +626,7 @@ gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_in
 		renderInfo->lowerLeftX = 0.0;
 		renderInfo->lowerLeftY = 0.0;
 		renderInfo->scaleFactorX = 200;
-		renderInfo->scaleFactorY = 200;
+		renderInfo->scaleFactorY = renderInfo->scaleFactorX;
 		return;
 	}
 	/*
@@ -637,11 +638,8 @@ gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_in
 	* Take the scale that fits both directions with some extra checks
 	*/
 	renderInfo->scaleFactorX = MIN(x_scale, y_scale);
+	renderInfo->scaleFactorX = MAX(GERBV_SCALE_MIN, renderInfo->scaleFactorX);
 	renderInfo->scaleFactorY = renderInfo->scaleFactorX;
-	if (renderInfo->scaleFactorX < 1){
-	    renderInfo->scaleFactorX = 1;
-	    renderInfo->scaleFactorY = 1;
-	}
 	renderInfo->lowerLeftX = ((bb.left + bb.right) / 2.0) -
 		((double) renderInfo->displayWidth / 2.0 / renderInfo->scaleFactorX);
 	renderInfo->lowerLeftY = ((bb.top + bb.bottom) / 2.0) -
