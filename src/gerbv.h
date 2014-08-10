@@ -1,6 +1,6 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * This file is a part of Gerbv.
  *
  *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
  *
@@ -44,18 +44,22 @@
 
 \section intro_sec Introduction
 
-Gerbv is a program which can display, edit, export, and do other manipulation of
-file formats used in PCB design (RS274X, Excellon drill, and pick-and-place). The core
-library (libgerbv) is available as a separate library, allowing other software to easily
-incorporate advanced Gerber functionality.
+Gerbv is a program which can display, edit, export, and do other manipulation
+of file formats used in PCB design (RS274X, Excellon drill, and
+pick-and-place). The core library (libgerbv) is available as a separate
+library, allowing other software to easily incorporate advanced Gerber
+functionality.
 
-This code documentation is mainly intended to help explain the libgerbv API to developers
-wishing to use libgerbv in his/her own projects. The easiest way to learn to use libgerbv is
-by reading through and compiling the example source files (click on "Examples" in the navigation
-tree in the left pane, or look in the doc/example-code/ directory in CVS).
+This code documentation is mainly intended to help explain the libgerbv API to
+developers wishing to use libgerbv in his/her own projects. The easiest way to
+learn to use libgerbv is by reading through and compiling the example source
+files (click on "Examples" in the navigation tree in the left pane, or look in
+the doc/example-code/ directory in CVS).
 
-For help with using the standalone Gerbv software, please refer to the man page (using
-the command "man gerbv") or go to the Gerbv homepage for documentation (http://gerbv.sourceforge.net).
+For help with using the standalone Gerbv software, please refer to the man page
+(using the command "man gerbv") or go to the Gerbv homepage for documentation
+(http://gerbv.geda-project.org).
+
 */
 
 #ifndef __GERBV_H__
@@ -87,7 +91,8 @@ extern "C" {
  * So 50 points with x and y plus two for holding extra data gives...
  */
 #define APERTURE_PARAMETERS_MAX 102
-#define INITIAL_SCALE 200
+#define GERBV_SCALE_MIN 10
+#define GERBV_SCALE_MAX 3000
 #define MAX_ERRMSGLEN 25
 #define MAX_COORDLEN 28
 #define MAX_DISTLEN 180
@@ -625,8 +630,8 @@ typedef struct {
   int renderType; /*!< the type of renderer to use */
   gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
   gchar *path; /*!< the default path to load new files from */
-  gchar *execpath;    /*!< the path to executed version of gerbv */
-  gchar *execname;    /*!< the path plus executible name for gerbv */
+  gchar *execpath;    /*!< the path to executed version of Gerbv */
+  gchar *execname;    /*!< the path plus executible name for Gerbv */
   gchar *project;     /*!< the default name for the private project file */
 } gerbv_project_t;
 

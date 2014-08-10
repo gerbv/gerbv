@@ -43,4 +43,4 @@ http://www.excellon.com/manuals/program.htm
 
 * Example on other free (as in free speech) implementations
 I try to list as many program as possible living up to the standards on
-gerbv's homepage http://gerbv.sourceforge.net/.
+Gerbv's homepage http://gerbv.geda-project.org/.
