@@ -65,17 +65,7 @@
 
 #define dprintf if(DEBUG) printf
 
-/**Global variable to keep track of what's happening on the screen.
-   Declared extern in gerbv_screen.h
- */
-extern gerbv_screen_t screen;
-
-extern gerbv_render_info_t screenRenderInfo;
-
-/*
-static void
-render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo );
-*/
+gerbv_render_info_t screenRenderInfo;
 
 gboolean
 render_check_scale_factor_limits (void) {

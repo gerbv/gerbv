@@ -79,13 +79,6 @@
 const char *gerbv_project_file_name = N_("Gerbv Project");
 const char *gerbv_project_file_pat = "*" GERBV_PROJECT_FILE_EXT;
 
-/**Global variable to keep track of what's happening on the screen.
-   Declared extern in gerbv_screen.h
- */
-extern gerbv_screen_t screen;
-extern gerbv_render_info_t screenRenderInfo;
-
-
 /* These are the names of the valid apertures.  These
  * values are used in several places in this file.
  * Please keep this in sync with the gerbv_aperture_type_t 

@@ -28,28 +28,20 @@
     \ingroup libgerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include "gerbv.h"
+#include "common.h"
 
 #include <math.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <png.h>
 
-#include "common.h"
-#include "gerbv.h"
+#include "render.h"
 
 #include "draw.h"
 #include <cairo.h>
 #include <cairo-pdf.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>
-
-extern gerbv_render_info_t screenRenderInfo;
 
 void exportimage_render_to_surface_and_destroy (gerbv_project_t *gerbvProject,
 		cairo_surface_t *cSurface, gerbv_render_info_t *renderInfo, gchar const* filename) {

@@ -151,7 +151,7 @@ const struct option longopts[] = {
 const char *opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:w:x:";
 
 /**Global state variable to keep track of what's happening on the screen.
-   Declared extern in gerbv_screen.h
+   Declared extern in main.h
  */
 gerbv_project_t *mainProject;
 gerbv_screen_t screen;

@@ -57,7 +57,6 @@
 #include "gerbv_icon.h"
 #include "icons.h"
 
-extern gerbv_render_info_t screenRenderInfo;
 static const gchar *gerbv_win_title = N_("Gerbv -- gEDA's Gerber Viewer");
 
 #define dprintf if(DEBUG) printf
