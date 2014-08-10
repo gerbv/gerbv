@@ -56,9 +56,9 @@
 
 #include "gerbv_icon.h"
 #include "icons.h"
-extern gerbv_render_info_t screenRenderInfo;
 
-#define WIN_TITLE N_("Gerbv -- gEDA's Gerber Viewer")
+extern gerbv_render_info_t screenRenderInfo;
+static const gchar *gerbv_win_title = N_("Gerbv -- gEDA's Gerber Viewer");
 
 #define dprintf if(DEBUG) printf
 
@@ -66,17 +66,18 @@ extern gerbv_render_info_t screenRenderInfo;
 void
 rename_main_window(char const* filename, GtkWidget *main_win)
 {
-	GString *win_title=g_string_new(NULL);
-	static GtkWidget *win=NULL;
+	GString *win_title = g_string_new(NULL);
+	static GtkWidget *win = NULL;
 
-	if( main_win != NULL )
-	win = main_win;
+	if (main_win != NULL)
+		win = main_win;
 
 	g_assert(win != NULL);
 
-	g_string_printf (win_title, _("%s version %s: %s"), _(WIN_TITLE), VERSION, filename);
+	g_string_printf (win_title, _("%s version %s: %s"), _(gerbv_win_title),
+			VERSION, filename);
 	gtk_window_set_title(GTK_WINDOW(win), win_title->str);
-	g_string_free(win_title,TRUE);			 
+	g_string_free(win_title, TRUE);
 }
 
 /* ---------------------------------------------- */
@@ -301,7 +302,7 @@ interface_create_gui (int req_width, int req_height)
 	accel_group = gtk_accel_group_new ();
 
 	mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title (GTK_WINDOW (mainWindow), _(WIN_TITLE));
+	gtk_window_set_title (GTK_WINDOW (mainWindow), _(gerbv_win_title));
 
 	vbox1 = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (mainWindow), vbox1);
@@ -1095,7 +1096,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_left, FALSE, FALSE, 0);
 	gtk_widget_set_size_request (statusbar_label_left, 130, -1);
 	gtk_label_set_justify ((GtkLabel *) statusbar_label_left, GTK_JUSTIFY_RIGHT);
-	
+
 	statusUnitComboBox = gtk_combo_box_new_text ();
 	gtk_box_pack_start (GTK_BOX (hbox5), statusUnitComboBox, FALSE, FALSE, 0);
 	gtk_combo_box_append_text (GTK_COMBO_BOX (statusUnitComboBox), _("mil"));
@@ -1510,7 +1511,7 @@ interface_create_gui (int req_width, int req_height)
 	if ((req_width != -1) && (req_height != -1)) {
 		width = req_width;
 		height = req_height;
-		} 
+	} 
 	else {
 		GdkScreen *screen;
 		int nmonitors;

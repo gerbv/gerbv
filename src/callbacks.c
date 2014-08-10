@@ -75,9 +75,9 @@
  * must change, the ../win32/gerbv.nsi.in *must* be changed to reflect that.
  * Just grep for the extension (gvp) and change it in two places in that file.
  */
-#define GERBV_PROJECT_FILE_NAME N_("Gerbv Project")
 #define GERBV_PROJECT_FILE_EXT ".gvp"
-#define GERBV_PROJECT_FILE_PAT "*.gvp"
+const char *gerbv_project_file_name = N_("Gerbv Project");
+const char *gerbv_project_file_pat = "*" GERBV_PROJECT_FILE_EXT;
 
 /**Global variable to keep track of what's happening on the screen.
    Declared extern in gerbv_screen.h
@@ -210,8 +210,8 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 		mainProject->path);
 
 	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _(GERBV_PROJECT_FILE_NAME));
-	gtk_file_filter_add_pattern(filter, GERBV_PROJECT_FILE_PAT);
+	gtk_file_filter_set_name(filter, _(gerbv_project_file_name));
+	gtk_file_filter_add_pattern(filter, gerbv_project_file_pat);
 	gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
 	        filter);
 
@@ -494,8 +494,8 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 
 	if (processType == CALLBACKS_SAVE_PROJECT_AS) {
 		filter = gtk_file_filter_new ();
-		gtk_file_filter_set_name (filter, _(GERBV_PROJECT_FILE_NAME));
-		gtk_file_filter_add_pattern (filter, GERBV_PROJECT_FILE_PAT);
+		gtk_file_filter_set_name (filter, _(gerbv_project_file_name));
+		gtk_file_filter_add_pattern (filter, gerbv_project_file_pat);
 		gtk_file_chooser_add_filter (file_chooser_p, filter);
 
 		filter = gtk_file_filter_new ();
@@ -1859,53 +1859,51 @@ callbacks_unselect_all_tool_buttons (void) {
 }
 
 void
-callbacks_switch_to_normal_tool_cursor (gint toolNumber) {
+callbacks_switch_to_normal_tool_cursor (gint toolNumber)
+{
+	GdkWindow *drawing_area_window = screen.drawing_area->window;
 	GdkCursor *cursor;
 
 	switch (toolNumber) {
-		case POINTER:
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-						  GERBV_DEF_CURSOR);
-			break;
-		case PAN:
-			cursor = gdk_cursor_new(GDK_FLEUR);
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-					  cursor);
-			gdk_cursor_destroy(cursor);
-			break;
-		case ZOOM:
-			cursor = gdk_cursor_new(GDK_SIZING);
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-					      cursor);
-			gdk_cursor_destroy(cursor);
-			break;
-		case MEASURE:
-			cursor = gdk_cursor_new(GDK_CROSSHAIR);
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-					  cursor);
-			gdk_cursor_destroy(cursor);
-			break;
-		default:
-			break;
+	case POINTER:
+		gdk_window_set_cursor(drawing_area_window, GERBV_DEF_CURSOR);
+		break;
+	case PAN:
+		cursor = gdk_cursor_new(GDK_FLEUR);
+		gdk_window_set_cursor(drawing_area_window, cursor);
+		gdk_cursor_destroy(cursor);
+		break;
+	case ZOOM:
+		cursor = gdk_cursor_new(GDK_SIZING);
+		gdk_window_set_cursor(drawing_area_window, cursor);
+		gdk_cursor_destroy(cursor);
+		break;
+	case MEASURE:
+		cursor = gdk_cursor_new(GDK_CROSSHAIR);
+		gdk_window_set_cursor(drawing_area_window, cursor);
+		gdk_cursor_destroy(cursor);
+		break;
+	default:
+		break;
 	}
 }
 
 /* --------------------------------------------------------- */
 void
-callbacks_switch_to_correct_cursor (void) {
+callbacks_switch_to_correct_cursor (void)
+{
+	GdkWindow *drawing_area_window = screen.drawing_area->window;
 	GdkCursor *cursor;
 
 	if (screen.state == IN_MOVE) {
 		cursor = gdk_cursor_new(GDK_FLEUR);
-		gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-				  cursor);
+		gdk_window_set_cursor(drawing_area_window, cursor);
 		gdk_cursor_destroy(cursor);
 		return;
 	}
 	else if (screen.state == IN_ZOOM_OUTLINE) {
 		cursor = gdk_cursor_new(GDK_SIZING);
-		gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-				  cursor);
+		gdk_window_set_cursor(drawing_area_window, cursor);
 		gdk_cursor_destroy(cursor);
 		return;
 	}
@@ -3036,6 +3034,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 gboolean
 callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
+	GdkWindow *drawing_area_window = screen.drawing_area->window;
 	GdkCursor *cursor;
 	
 	switch (event->button) {
@@ -3076,8 +3075,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			screen.last_x = event->x;
 			screen.last_y = event->y;
 			cursor = gdk_cursor_new(GDK_FLEUR);
-			gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-					  cursor);
+			gdk_window_set_cursor(drawing_area_window, cursor);
 			gdk_cursor_destroy(cursor);
 			break;
 		case 3 :
@@ -3106,8 +3104,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				screen.start_y = event->y;
 				screen.centered_outline_zoom = event->state & GDK_SHIFT_MASK;
 				cursor = gdk_cursor_new(GDK_SIZING);
-				gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window),
-						  cursor);
+				gdk_window_set_cursor(drawing_area_window, cursor);
 				gdk_cursor_destroy(cursor);
 			}
 			break;
