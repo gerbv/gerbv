@@ -287,3 +287,5 @@ callbacks_update_selected_object_message (gboolean userTriedToSelect);
 cairo_surface_t *
 callbacks_create_window_surface (GtkWidget *widget);
 
+void utf8_snprintf(gchar *dst, gsize byte_len, const gchar *fmt, ...);
+

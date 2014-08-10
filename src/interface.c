@@ -26,13 +26,7 @@
     \ingroup gerbv
 */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "gerbv.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -45,7 +39,6 @@
 #include <gtk/gtk.h>
 
 #include "common.h"
-#include "gerbv.h"
 #include "main.h"
 #include "callbacks.h"
 #include "interface.h"
@@ -57,9 +50,12 @@
 #include "gerbv_icon.h"
 #include "icons.h"
 
+#define dprintf if(DEBUG) printf
+
 static const gchar *gerbv_win_title = N_("Gerbv -- gEDA's Gerber Viewer");
 
-#define dprintf if(DEBUG) printf
+/* Declared in callbacks.c */
+extern const char *gerbv_coords_pattern_mils_str;
 
 /* ---------------------------------------------- */
 void
@@ -113,6 +109,20 @@ interface_save_accels (void)
 		gtk_accel_map_save (accel_map_filename);
 		g_free (accel_map_filename);
 	}
+}
+
+static void
+request_label_max_size_by_text (GtkWidget *label, const gchar *str)
+{
+	GtkRequisition req;
+
+	gtk_label_set_text (GTK_LABEL (label), str);
+
+	/* Reset previous size request */
+	gtk_widget_set_size_request (label, -1, -1);
+	gtk_widget_size_request (label, &req);
+	gtk_widget_set_size_request (label, req.width, req.height);
+	gtk_label_set_text (GTK_LABEL (label), "");
 }
 
 /* ---------------------------------------------- */
@@ -291,6 +301,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *moveimage;
 
 	GtkWidget *tempImage;
+
+	gchar str_coord[MAX_COORDLEN];
 	
 	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
 	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
@@ -1091,10 +1103,9 @@ interface_create_gui (int req_width, int req_height)
 	hbox5 = gtk_hbox_new (FALSE, 10);
 	gtk_box_pack_start (GTK_BOX (vbox2), hbox5, FALSE, FALSE, 0);
 
-	statusbar_label_left = gtk_label_new ("( 0.0,  0.0 )");
+	statusbar_label_left = gtk_label_new ("");
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_left, FALSE, FALSE, 0);
-	gtk_widget_set_size_request (statusbar_label_left, 130, -1);
-	gtk_label_set_justify ((GtkLabel *) statusbar_label_left, GTK_JUSTIFY_RIGHT);
+	gtk_label_set_justify (GTK_LABEL (statusbar_label_left), GTK_JUSTIFY_CENTER);
 
 	statusUnitComboBox = gtk_combo_box_new_text ();
 	gtk_box_pack_start (GTK_BOX (hbox5), statusUnitComboBox, FALSE, FALSE, 0);
@@ -1104,10 +1115,8 @@ interface_create_gui (int req_width, int req_height)
 
 	statusbar_label_right = gtk_label_new ("");
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_right, TRUE, TRUE, 0);
-	gtk_label_set_ellipsize ((GtkLabel *)statusbar_label_right, PANGO_ELLIPSIZE_END);
+	gtk_label_set_ellipsize (GTK_LABEL (statusbar_label_right), PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment (GTK_MISC (statusbar_label_right), 0, 0.5);
-
-
 
     /*
      *  Connect signals to widgets
@@ -1527,7 +1536,9 @@ interface_create_gui (int req_width, int req_height)
 	GtkSettings* gtksettings = gtk_settings_get_default ();
 	g_object_set (G_OBJECT(gtksettings), "gtk-can-change-accels", TRUE, NULL);
 	interface_load_accels ();
+
 	gtk_widget_show_all (mainWindow);
+
 	screen.win.topLevelWindow = mainWindow;
 	screen.win.messageTextView = message_textview;
 	screen.win.statusMessageLeft = statusbar_label_left;
@@ -1535,6 +1546,13 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.statusUnitComboBox = statusUnitComboBox;
 	screen.win.layerTree = tree;
 	screen.win.treeIsUpdating = FALSE;
+
+	/* Request label largest width: negative mils coords require largest space */
+	utf8_snprintf (str_coord, MAX_COORDLEN, _(gerbv_coords_pattern_mils_str),
+		COORD2MILS (-screenRenderInfo.displayWidth/2.0/GERBV_SCALE_MIN),
+		COORD2MILS (-screenRenderInfo.displayHeight/2.0/GERBV_SCALE_MIN));
+
+	request_label_max_size_by_text (screen.win.statusMessageLeft, str_coord);
 
 	screen.selectionInfo.selectedNodeArray = g_array_new (FALSE,
 			FALSE, sizeof(gerbv_selection_item_t));
