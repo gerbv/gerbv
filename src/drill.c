@@ -210,7 +210,7 @@ drill_attribute_merge (gerbv_HID_Attribute *dest, int ndest, gerbv_HID_Attribute
 {
     int i, j;
 
-    /* Here is a brain dead merge algorithm which shold make anyone cringe.
+    /* Here is a brain dead merge algorithm which should make anyone cringe.
      * Still, it is simple and we won't merge many attributes and not
      * many times either.
      */
@@ -224,6 +224,8 @@ drill_attribute_merge (gerbv_HID_Attribute *dest, int ndest, gerbv_HID_Attribute
 	/* if we wanted it and it is the same type, copy it over */
 	if (j < ndest && src[i].type == dest[j].type) {
 	    dest[j].default_val = src[i].default_val;
+	} else {
+	    GERB_MESSAGE("Ignoring \"%s\" attribute for drill file", src[i].name);
 	}
     }
 }
