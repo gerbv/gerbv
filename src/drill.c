@@ -121,7 +121,7 @@ typedef struct drill_state {
     int autod;
     
     /* in FMT_USER this specifies the number of digits before the
-     * decimal point when doing trailing zero supression.  Otherwise
+     * decimal point when doing trailing zero suppression.  Otherwise
      * it is the number of digits *after* the decimal 
      * place in the file
      */
@@ -154,7 +154,7 @@ enum {
     SUP_TRAIL
 };
 
-static const char *supression_list[] = {
+static const char *suppression_list[] = {
     N_("None"),
     N_("Leading"),
     N_("Trailing"),
@@ -174,7 +174,7 @@ static const char *units_list[] = {
 
 enum {
     HA_auto = 0,
-    HA_supression,
+    HA_suppression,
     HA_xy_units,
     HA_digits,
 #if 0
@@ -187,13 +187,13 @@ static gerbv_HID_Attribute drill_attribute_list[] = {
   {N_("autodetect"), N_("Try to autodetect the file format"),
    HID_Boolean, 0, 0, {1, 0, 0}, 0, 0},
 
-  {N_("zero_supression"), N_("Zero supression"),
-   HID_Enum, 0, 0, {0, 0, 0}, supression_list, 0},
+  {N_("zero_suppression"), N_("Zero suppression"),
+   HID_Enum, 0, 0, {0, 0, 0}, suppression_list, 0},
 
   {N_("units"), N_("Units"),
    HID_Enum, 0, 0, {0, 0, 0}, units_list, 0},
 
-  {N_("digits"), N_("Number of digits.  For trailing zero supression,"
+  {N_("digits"), N_("Number of digits.  For trailing zero suppression,"
    " this is the number of digits before the decimal point.  "
    "Otherwise this is the number of digits after the decimal point."),
    HID_Integer, 0, 20, {5, 0, 0}, 0, 0},
@@ -371,7 +371,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	state->decimals = image->info->attr_list[HA_digits].default_val.int_value;
 	if (image->info->attr_list[HA_xy_units].default_val.int_value == UNITS_MM)
 	    state->unit = GERBV_UNIT_MM;
-	switch (image->info->attr_list[HA_supression].default_val.int_value) {
+	switch (image->info->attr_list[HA_suppression].default_val.int_value) {
 	case SUP_LEAD:
 	    image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
 	    break;
@@ -844,15 +844,15 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
     switch (image->format->omit_zeros) {
     case GERBV_OMIT_ZEROS_LEADING:
-	image->info->attr_list[HA_supression].default_val.int_value = SUP_LEAD;
+	image->info->attr_list[HA_suppression].default_val.int_value = SUP_LEAD;
 	break;
 	    
     case GERBV_OMIT_ZEROS_TRAILING:
-	image->info->attr_list[HA_supression].default_val.int_value = SUP_TRAIL;
+	image->info->attr_list[HA_suppression].default_val.int_value = SUP_TRAIL;
 	break;
 
     default:
-	image->info->attr_list[HA_supression].default_val.int_value = SUP_NONE;
+	image->info->attr_list[HA_suppression].default_val.int_value = SUP_NONE;
 	break;
     }
 
@@ -1321,7 +1321,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 			goto junk;
 		    if (c == 'L')
 			{
-			    dprintf ("%s(): Detected a file that probably has trailing zero supression\n", __FUNCTION__);
+			    dprintf ("%s(): Detected a file that probably has trailing zero suppression\n", __FUNCTION__);
 			    if (state->autod)
 				{
 				    image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
@@ -1329,7 +1329,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 			}
 		    else
 			{
-			    dprintf ("%s(): Detected a file that probably has leading zero supression\n", __FUNCTION__);
+			    dprintf ("%s(): Detected a file that probably has leading zero suppression\n", __FUNCTION__);
 			    if (state->autod)
 				{
 				    image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
@@ -1656,7 +1656,7 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
 	    for ( ; i <= strlen(temp) ; i++) {
 	      tmp2[i] = temp[i-1];
 	    }
-	    dprintf("%s():  After dealing with trailing zero supression, convert \"%s\"\n", __FUNCTION__, tmp2);
+	    dprintf("%s():  After dealing with trailing zero suppression, convert \"%s\"\n", __FUNCTION__, tmp2);
 	    scale = 1.0;
 	    
 	    for (i = 0 ; i <= strlen(tmp2) && i < sizeof (temp) ; i++) {

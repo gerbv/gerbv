@@ -1087,11 +1087,11 @@ msgid "Try to autodetect the file format"
 msgstr "Попытаться автоматически определить формат"
 
 #: src/drill.c:190
-msgid "zero_supression"
+msgid "zero_suppression"
 msgstr "Отбрасывать нули"
 
 #: src/drill.c:190
-msgid "Zero supression"
+msgid "Zero suppression"
 msgstr "Отбрасывать нули"
 
 #: src/drill.c:193
@@ -1104,7 +1104,7 @@ msgstr "Цифры"
 
 #: src/drill.c:196
 msgid ""
-"Number of digits.  For trailing zero supression, this is the number of "
+"Number of digits.  For trailing zero suppression, this is the number of "
 "digits before the decimal point.  Otherwise this is the number of digits "
 "after the decimal point."
 msgstr ""
