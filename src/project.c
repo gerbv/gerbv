@@ -782,6 +782,8 @@ define_layer(scheme *sc, pointer args)
 		attr_car_el = sc->vptr->pair_car(attr_cdr_el);
 		attr_cdr_el = sc->vptr->pair_cdr(attr_cdr_el);
 	    }
+	} else {
+            GERB_MESSAGE(_("Ignoring \"%s\" in project file"), str);
 	}
 
 end_name_value_parse:
