@@ -4,7 +4,7 @@
 	(cons 'color #(29555 29555 57054))
 	(cons 'attribs (list
 		(list 'autodetect 'Boolean 0)
-		(list 'zero_supression 'Enum 2)
+		(list 'zero_suppression 'Enum 2)
 		(list 'units 'Enum 1)
 		(list 'digits 'Integer 3)
 	))
