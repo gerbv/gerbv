@@ -360,7 +360,7 @@ gerbv_image_t *merge_images (int type)
 			type=GERBV_LAYERTYPE_RS274X;
 			break;
 		default:
-			GERB_MESSAGE(_("Unknown Layer type for merge"));
+			GERB_COMPILE_ERROR(_("Unknown Layer type for merge"));
 			goto err;
 	}
 	dprintf(_("Looking for matching files\n"));
@@ -375,7 +375,7 @@ gerbv_image_t *merge_images (int type)
 		}
 	}
 	if (filecount < 2) {
-		GERB_MESSAGE (_("Not Enough Files of same type to merge"));
+		GERB_COMPILE_ERROR(_("Not Enough Files of same type to merge"));
 		goto err;
 	}
 	dprintf(_("Now merging files\n"));
