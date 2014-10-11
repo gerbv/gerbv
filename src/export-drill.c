@@ -39,7 +39,7 @@
 #define round(x) floor(x+0.5)
 
 gboolean
-gerbv_export_drill_file_from_image (gchar *filename, gerbv_image_t *inputImage,
+gerbv_export_drill_file_from_image (const gchar *filename, gerbv_image_t *inputImage,
 		gerbv_user_transformation_t *transform) {
 	FILE *fd;
 	GArray *apertureTable = g_array_new(FALSE, FALSE, sizeof(int));

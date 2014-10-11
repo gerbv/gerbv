@@ -354,6 +354,7 @@ callbacks_temporary_handle_log_messages(const gchar *log_domain,
 
     g_log_default_handler (log_domain, log_level, message, user_data);
 }
+
 /* ------------------------------------------------------------------ */
 int
 main(int argc, char *argv[])
@@ -366,16 +367,45 @@ main(int argc, char *argv[])
     char      *rest;
 #endif
     char      *project_filename = NULL;
-    gboolean exportFromCommandline = FALSE,  userSuppliedOrigin=FALSE, userSuppliedWindow=FALSE, 
+    gboolean userSuppliedOrigin=FALSE, userSuppliedWindow=FALSE, 
 	     userSuppliedAntiAlias=FALSE, userSuppliedWindowInPixels=FALSE, userSuppliedDpi=FALSE;
-    gint  layerctr =0, transformCount = 0, exportType = 0;
+    gint  layerctr =0, transformCount = 0;
     gdouble initial_rotation = 0.0;
     gboolean initial_mirror_x = FALSE;
     gboolean initial_mirror_y = FALSE;
-    gchar *exportFilename = NULL;
+    const gchar *exportFilename = NULL;
     gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
 	   userSuppliedWidth=0, userSuppliedHeight=0,
 	   userSuppliedBorder = GERBV_DEFAULT_BORDER_COEFF;
+
+    enum exp_type {
+	EXP_TYPE_NONE = -1,
+	EXP_TYPE_PNG,
+	EXP_TYPE_PDF,
+	EXP_TYPE_SVG,
+	EXP_TYPE_PS,
+	EXP_TYPE_RS274X,
+	EXP_TYPE_DRILL,
+    };
+    enum exp_type exportType = EXP_TYPE_NONE;
+    const char *export_type_names[] = {
+	"png",
+	"pdf",
+	"svg",
+	"ps",
+	"rs274x",
+	"drill",
+	NULL
+    };
+    const gchar *export_def_file_names[] = {
+	"output.png",
+	"output.pdf",
+	"output.svg",
+	"output.ps",
+	"output.gbx",
+	"output.cnc",
+	NULL
+    };
 
 #if ENABLE_NLS
     setlocale(LC_ALL, "");
@@ -688,32 +718,19 @@ main(int argc, char *argv[])
 		fprintf(stderr, _("You must supply an export type.\n"));
 		exit(1);
 	    }
-	    if (strcmp (optarg,"png") == 0) {
-		exportType = 1;
-		exportFromCommandline = TRUE;
+
+	    for (i = 0; export_type_names[i] != NULL; i++) {
+		if (strcmp (optarg, export_type_names[i]) == 0) {
+		    exportType = i;
+		    break;
+		}
 	    }
-	    else if (strcmp (optarg,"pdf") == 0) {
-		exportType = 2;
-		exportFromCommandline = TRUE;
-	    } else if (strcmp (optarg,"svg") == 0) {
-		exportType = 3;
-		exportFromCommandline = TRUE;
-	    } else if (strcmp (optarg,"ps") == 0) {
-		exportType = 4;
-		exportFromCommandline = TRUE;
-	    }
-	    else if (strcmp (optarg,"rs274x") == 0) {
-		exportType = 5;
-		exportFromCommandline = TRUE;
-	    }
-	    else if (strcmp (optarg,"drill") == 0) {
-		exportType = 6;
-		exportFromCommandline = TRUE;
-	    }
-	    else {
-		fprintf(stderr, _("Unrecognized export type.\n"));
+
+	    if (exportType == EXP_TYPE_NONE) {
+		fprintf(stderr, _("Unrecognized \"%s\" export type.\n"),
+				optarg);
 		exit(1);				
-	    }		
+	    }
 	    break;
 	case 'd':
 	    screen.dump_parsed_image = 1;
@@ -754,8 +771,8 @@ main(int argc, char *argv[])
 		"  -T, --translate=<X,Y>           Translate the image by <X,Y> (useful for\n"
 		"                                  arranging panels). Use multiple -T flags\n"
 		"                                  for multiple layers.\n"
-		"  -x, --export=<png/pdf/ps/svg/   Export a rendered picture to a file with\n"
-		"                rs274x/drill>     the specified format.\n"),
+		"  -x, --export=<png|pdf|ps|svg|   Export a rendered picture to a file with\n"
+		"                rs274x|drill>     the specified format.\n"),
 			(int)(GERBV_DEFAULT_BORDER_COEFF * 100));
 #else
 	    printf(_("Usage: gerbv [OPTIONS...] [FILE...]\n\n"
@@ -792,8 +809,8 @@ main(int argc, char *argv[])
 		"  -T<X,Y>                 Translate the image by <X,Y> (useful for\n"
 		"                          arranging panels). Use multiple -T flags\n"
 		"                          for multiple layers.\n"
-		"  -x <png/pdf/ps/svg/     Export a rendered picture to a file with\n"
-		"      rs274x/drill>       the specified format.\n"),
+		"  -x <png|pdf|ps|svg|     Export a rendered picture to a file with\n"
+		"      rs274x|drill>       the specified format.\n"),
 			(int)(GERBV_DEFAULT_BORDER_COEFF * 100));
 
 #endif /* HAVE_GETOPT_LONG */
@@ -887,27 +904,11 @@ main(int argc, char *argv[])
     }
 
     screen.unit = GERBV_DEFAULT_UNIT;
-    if (exportFromCommandline) {
+    if (exportType != EXP_TYPE_NONE) {
 	/* load the info struct with the default values */
 
-	gboolean freeFilename = FALSE;
-	
-	if (!exportFilename) {
-		if (exportType == 1) {
-		    exportFilename = g_strdup ("output.png");
-		} else if (exportType == 2) {
-		    exportFilename = g_strdup ("output.pdf");
-		} else if (exportType == 3) {
-		    exportFilename = g_strdup ("output.svg");
-		} else if (exportType == 4){
-		    exportFilename = g_strdup ("output.ps");
-		} else if (exportType == 5){
-		    exportFilename = g_strdup ("output.gbx");
-		} else {
-		    exportFilename = g_strdup ("output.cnc");
-		}
-		freeFilename = TRUE;
-	}
+	if (!exportFilename)
+		exportFilename = export_def_file_names[exportType];
 
 	gerbv_render_size_t bb;
 	gerbv_render_get_boundingbox(mainProject, &bb);
@@ -969,54 +970,54 @@ main(int argc, char *argv[])
 	    userSuppliedAntiAlias? GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY: GERBV_RENDER_TYPE_CAIRO_NORMAL,
 	    userSuppliedWidth,userSuppliedHeight };
 	
-	if (exportType == 1) {
-	    gerbv_export_png_file_from_project (mainProject, &renderInfo, exportFilename);
-	} else if (exportType == 2) {
-	    gerbv_export_pdf_file_from_project (mainProject, &renderInfo, exportFilename);
-	} else if (exportType == 3) {
-	    gerbv_export_svg_file_from_project (mainProject, &renderInfo, exportFilename);
-	} else if (exportType == 4) {
-	    gerbv_export_postscript_file_from_project (mainProject, &renderInfo, exportFilename);
-	} else if (exportType == 5) {
-	    if (mainProject->file[0]->image) {
-		gerbv_image_t *exportImage;
-		exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainDefaultTransformations[0]);
-		/* if we have more than one file, we need to merge them before exporting */
-		for(i = mainProject->last_loaded; i > 0; i--) {
-		  if (mainProject->file[i]) {
-		    gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
-		  }
-		}
-		gerbv_export_rs274x_file_from_image (exportFilename, exportImage,
-			&mainProject->file[0]->transform);
-		gerbv_destroy_image (exportImage);
-	    }
-	    else {
+	switch (exportType) {
+	case EXP_TYPE_PNG:
+	    gerbv_export_png_file_from_project(mainProject,
+			    &renderInfo, exportFilename);
+	    break;
+	case EXP_TYPE_PDF:
+	    gerbv_export_pdf_file_from_project(mainProject,
+			    &renderInfo, exportFilename);
+	    break;
+	case EXP_TYPE_SVG:
+	    gerbv_export_svg_file_from_project(mainProject,
+			    &renderInfo, exportFilename);
+	    break;
+	case EXP_TYPE_PS:
+	    gerbv_export_postscript_file_from_project(mainProject,
+			    &renderInfo, exportFilename);
+	    break;
+	case EXP_TYPE_RS274X:
+	case EXP_TYPE_DRILL:
+	    if (!mainProject->file[0]->image) {
 		fprintf(stderr, _("A valid file was not loaded.\n"));
 		exit(1);
 	    }
-	} else if (exportType == 6) {
-	    if (mainProject->file[0]->image) {
-	      gerbv_image_t *exportImage;
-		exportImage = gerbv_image_duplicate_image (mainProject->file[0]->image, &mainDefaultTransformations[0]);
-		/* if we have more than one file, we need to merge them before exporting */
-		for(i = mainProject->last_loaded; i > 0; i--) {
-		  if (mainProject->file[i]) {
-		    gerbv_image_copy_image (mainProject->file[i]->image, &mainDefaultTransformations[i], exportImage);
-		  }
-		}
-		gerbv_export_drill_file_from_image (exportFilename, exportImage,
-			&mainProject->file[0]->transform);
-		gerbv_destroy_image (exportImage);
+
+	    gerbv_image_t *exportImage =
+		    gerbv_image_duplicate_image(mainProject->file[0]->image,
+					&mainDefaultTransformations[0]);
+
+	    /* if more than one file, merge them before exporting */
+	    for (i = mainProject->last_loaded; i > 0; i--) {
+		if (mainProject->file[i])
+			gerbv_image_copy_image(mainProject->file[i]->image,
+				&mainDefaultTransformations[i], exportImage);
 	    }
-	    else {
-		fprintf(stderr, _("A valid file was not loaded.\n"));
-		exit(1);
-	    }
+	    if (exportType == EXP_TYPE_RS274X)
+		gerbv_export_rs274x_file_from_image(exportFilename,
+				exportImage, &mainProject->file[0]->transform);
+	    if (exportType == EXP_TYPE_DRILL)
+		gerbv_export_drill_file_from_image(exportFilename,
+				exportImage, &mainProject->file[0]->transform);
+
+	    gerbv_destroy_image(exportImage);
+	    break;
+	default:
+	    fprintf(stderr, _("A valid file was not loaded.\n"));
+	    exit(1);
 	}
 
-	if (freeFilename)
-	    free (exportFilename);
 	/* exit now and don't start up gtk if this is a command line export */
 	exit(0);
     }
