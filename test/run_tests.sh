@@ -241,18 +241,6 @@ for t in $all_tests ; do
 	continue
     fi
 
-    if test "X${args}" != "X" ; then
-    	# check if args contain '+', then add this args to GERBV_DEFAULT_FLAGS
-    	tmp=`echo ${args} | cut -d+ -s -f2`
-    	if test "X${tmp}" != "X"; then
-	    gerbv_flags="${GERBV_DEFAULT_FLAGS} ${tmp}"
-	else
-	    gerbv_flags="${args}"
-	fi
-    else
-	gerbv_flags="${GERBV_DEFAULT_FLAGS}"
-    fi
-
     ######################################################################
     #
     # check to see if the files we need exist
@@ -269,11 +257,41 @@ for t in $all_tests ; do
 	fi
     done
     if test "$missing_files" = "yes" ; then
-	echo "${t} had missing input files.  Skipping test"
+	echo "SKIPPED: ${t} had missing input files"
 	skip=`expr $skip + 1`
 	continue
     fi
     
+
+    if test "X${args}" != "X" ; then
+    	# check if args is starting with '!',
+        # then just run gerbv with this args
+    	tmp1=`echo ${args} | cut -d! -s -f1`
+	tmp1=`echo $tmp1`	# strip whitespaces
+    	tmp2=`echo ${args} | cut -d! -s -f2-`
+    	if test "X${tmp1}" = "X" -a "X${tmp2}" != "X"; then
+	    gerbv_flags="${tmp2}"
+	    echo "${GERBV} ${gerbv_flags} ${path_files}"
+	    ${GERBV} ${gerbv_flags} ${path_files}
+	    echo "EXECUTED ONLY"
+	    tot=`expr $tot - 1`
+	    continue
+	fi
+
+    	# check if args is starting with '+',
+        # then add this args to GERBV_DEFAULT_FLAGS
+    	tmp1=`echo ${args} | cut -d+ -s -f1`
+	tmp1=`echo $tmp1`	# strip whitespaces
+    	tmp2=`echo ${args} | cut -d+ -s -f2-`
+    	if test "X${tmp1}" = "X" -a "X${tmp2}" != "X"; then
+	    gerbv_flags="${GERBV_DEFAULT_FLAGS} ${tmp2}"
+	else
+	    gerbv_flags="${args}"
+	fi
+    else
+	gerbv_flags="${GERBV_DEFAULT_FLAGS}"
+    fi
+
     ######################################################################
     #
     # export the layout to PNG
@@ -310,7 +328,7 @@ EOF
 		fail=`expr $fail + 1`
 	    fi
 	else
-	    echo "No reference file ${REFDIR}/${t}.png.  Skipping test"
+	    echo "SKIPPED: No reference file ${REFDIR}/${t}.png"
 	    skip=`expr $skip + 1`
 	fi
     else
