@@ -34,7 +34,8 @@
 # [optional arguments to gerbv] If specified, this last field will be used as
 # the gerbv export command line.  Otherwise a default set of options will be
 # used. If preceded with +, then optional arguments will be added to default
-# set of options.
+# set of options. If preceded with !, then gerbv will be only executed with
+# optional arguments (can be used for merging Gerber files).
 #
 # [mismatch] If specified as "mismatch" (no quotes), then the given layout
 # should *not* match the reference layout.  This can be thought of as a test
@@ -172,6 +173,9 @@ test-aperture-obround-1  |  test-aperture-obround-1.gbx
 test-aperture-polygon-flash-1  |  test-aperture-polygon-flash-1.gbx
 test-polygon-fill-1  |  test-polygon-fill-1.gbx
 test-circular-interpolation-1  |  test-circular-interpolation-1.gbx
+
+test-merge-a+b_temporary | test-merge-a.gbx test-merge-b.gbx | ! --export=rs274x --output=inputs/test-merge-a+b_temporary.gbx
+test-merge-a+b | test-merge-a+b_temporary.gbx
 
 # ---------------------------------------------
 # Excellon drill tests
