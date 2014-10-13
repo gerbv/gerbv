@@ -413,32 +413,29 @@ gerbv_image_duplicate_aperture (gerbv_aperture_t *oldAperture){
 }
 
 void
-gerbv_image_copy_all_nets (gerbv_image_t *sourceImage, gerbv_image_t *newImage, gerbv_layer_t *lastLayer,
+gerbv_image_copy_all_nets (gerbv_image_t *sourceImage, gerbv_image_t *destImage, gerbv_layer_t *lastLayer,
 		gerbv_netstate_t *lastState, gerbv_net_t *lastNet, gerbv_user_transformation_t *transform,
-		GArray *translationTable){
-    gerbv_netstate_t *oldState,*newSavedState;
-    gerbv_layer_t *oldLayer,*newSavedLayer;
-    gerbv_net_t *currentNet,*newNet,*newSavedNet;
+		GArray *translationTable)
+{
+    /* NOTE: destImage already contains data, latest data is: lastLayer,
+       lastState, lastNet. */
+
+    gerbv_net_t *currentNet,*newNet;
     int i;
-    
-    oldLayer = sourceImage->layers;
-    oldState = sourceImage->states;
-    
-    newSavedLayer = lastLayer;
-    newSavedState = lastState;
-    newSavedNet = lastNet;
-    
+
     for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){
-      /* check for any new layers and duplicate them if needed */
-	if (currentNet->layer != oldLayer) {
-	  newSavedLayer->next = gerbv_image_duplicate_layer (currentNet->layer);
-	  newSavedLayer = newSavedLayer->next;
+	/* check for any new layers and duplicate them if needed */
+	if (currentNet->layer != lastLayer) {
+	  lastLayer->next = gerbv_image_duplicate_layer (currentNet->layer);
+	  lastLayer = lastLayer->next;
 	}
+
 	/* check for any new states and duplicate them if needed */
-	if (currentNet->state != oldState) {
-	  newSavedState->next = gerbv_image_duplicate_state (currentNet->state);
-	  newSavedState = newSavedState->next;
-      }
+	if (currentNet->state != lastState) {
+	  lastState->next = gerbv_image_duplicate_state (currentNet->state);
+	  lastState = lastState->next;
+	}
+
       /* create and copy the actual net over */
       newNet = g_new (gerbv_net_t,1);
       *newNet = *currentNet;
@@ -451,8 +448,9 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage, gerbv_image_t *newImage, 
       if (currentNet->label)
       	newNet->label = g_string_new(currentNet->label->str);
       
-      newNet->state = newSavedState;
-      newNet->layer = newSavedLayer;
+      newNet->state = lastState;
+      newNet->layer = lastLayer;
+
       /* check if we need to translate the aperture number */
       if (translationTable) {
         for (i=0; i<translationTable->len; i++){
@@ -464,24 +462,27 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage, gerbv_image_t *newImage, 
           }
         }
       }
+
       /* check if we are transforming the net (translating, scaling, etc) */
       if (transform) {
         newNet->start_x += transform->translateX;
         newNet->start_y += transform->translateY;
         newNet->stop_x += transform->translateX;
         newNet->stop_y += transform->translateY;
+
         if (newNet->cirseg) {
           newNet->cirseg->cp_x += transform->translateX;
           newNet->cirseg->cp_y += transform->translateY;
         }
       }
-      if (newSavedNet)
-      	newSavedNet->next = newNet;
+
+      if (lastNet)
+      	lastNet->next = newNet;
       else
-      	newImage->netlist = newNet;
-      newSavedNet = newNet;
-    }		
-		
+      	destImage->netlist = newNet;
+
+      lastNet = newNet;
+    }
 }
 
 gint
