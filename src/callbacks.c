@@ -2493,9 +2493,8 @@ callbacks_update_layer_tree (void) {
 /* --------------------------------------------------------------------------- */
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_data) {
-	int i;
-	gchar *layer_name;
-	gchar *net_label;
+	int i, j;
+	const char *layer_name, *net_label, *file_name;
 	gboolean validAperture;
 	double length = 0;
 
@@ -2526,20 +2525,27 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 		/* Also get layer name specified in file by %LN directive
 		* (if it exists).  */
 		if (net->layer->name == NULL) {
-			layer_name = g_strdup(_("<unnamed layer>"));
+			layer_name = _("<unnamed layer>");
 		} else {
-			layer_name = g_strdup(net->layer->name);
+			layer_name = net->layer->name;
 		}
 
 		if (net->label == NULL) {
-			net_label = g_strdup(_("<unlabeled net>"));
+			net_label = _("<unlabeled net>");
 		} else {
-			net_label = g_strdup(net->label->str);
+			net_label = net->label->str;
 		}
+
+		/* Search item file_name in project files array */
+		file_name = _("<unnamed file>");
+		for (j = 0; j <= mainProject->last_loaded; j++) {
+			if (sItem.image == mainProject->file[j]->image)
+				file_name = mainProject->file[j]->name;
+		}
+
 		if (net->interpolation == GERBV_INTERPOLATION_PAREA_START) {
 			g_message (_("Object type: Polygon"));
-		}
-		else {
+		} else {
 			switch (net->aperture_state){
 				case GERBV_APERTURE_STATE_OFF:
 					break;
@@ -2584,7 +2590,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					}
 					g_message (_("    Layer name: %s"), layer_name);
 					g_message (_("    Net label: %s"), net_label);
-					g_message (_("    In file: %s"), mainProject->file[index]->name);
+					g_message (_("    In file: %s"), file_name);
 					break;
 				case GERBV_APERTURE_STATE_FLASH:
 					if (i != 0) g_message (" ");  /* Spacing for a pretty display */
@@ -2596,12 +2602,10 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 							screen_units(net->stop_x), screen_units(net->stop_y));
 					g_message (_("    Layer name: %s"), layer_name);
 					g_message (_("    Net label: %s"), net_label);
-					g_message (_("    In file: %s"), mainProject->file[index]->name);
+					g_message (_("    In file: %s"), file_name);
 					break;
 			}
 		}
-		g_free (net_label);
-		g_free (layer_name);
 	}
 	/* Use separator for different report requests */
 	g_message ("---------------------------------------");
