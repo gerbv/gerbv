@@ -739,28 +739,38 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 		gdk_gc_set_foreground(gc, selectionColor);
 		gdk_gc_set_function(gc, GDK_COPY);
 		gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
-		
-		/* for now, assume everything in the selection buffer is from one image */
-		gerbv_image_t *matchImage;
-		int j;
-		if (selectionInfo->selectedNodeArray->len > 0) {
-			gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-					gerbv_selection_item_t, 0);
-			matchImage = (gerbv_image_t *) sItem.image;	
 
-			for(j = gerbvProject->last_loaded; j >= 0; j--) {
-				if (gerbvProject->file[j] && (gerbvProject->file[j]->image == matchImage)) {
-					draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[j]->image,
-						renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
+		gerbv_selection_item_t sItem;
+		gerbv_fileinfo_t *file;
+		int j, k;
+		if (selectionInfo->selectedNodeArray->len > 0) {
+			for (j = gerbvProject->last_loaded; j >= 0; j--) {
+				file = gerbvProject->file[j]; 
+				if (!file || !file->isVisible)
+					continue;
+
+				for (k = 0; k < selectionInfo->selectedNodeArray->len; k++) {
+					sItem = g_array_index(selectionInfo->selectedNodeArray,
+							gerbv_selection_item_t, k);
+
+					if (file->image != sItem.image)
+						continue;
+
+					draw_gdk_image_to_pixmap(&clipmask, file->image,
+						renderInfo->scaleFactorX,
+						-(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
 						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
 						DRAW_SELECTIONS, selectionInfo,
-						renderInfo, gerbvProject->file[j]->transform);
+						renderInfo, file->transform);
+
+					gdk_gc_set_clip_mask(gc, clipmask);
+					gdk_gc_set_clip_origin(gc, 0, 0);
+					gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
+					gdk_gc_set_clip_mask(gc, NULL);
+
+					break;
 				}
 			}
-			gdk_gc_set_clip_mask(gc, clipmask);
-			gdk_gc_set_clip_origin(gc, 0, 0);
-			gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
-			gdk_gc_set_clip_mask(gc, NULL);
 		}
 	}
 
