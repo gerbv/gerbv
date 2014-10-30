@@ -746,11 +746,8 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 		int j, k;
 		if (selectionInfo->selectedNodeArray->len > 0) {
 			for (j = gerbvProject->last_loaded; j >= 0; j--) {
-#if 1
-int show_invisible_selection = 1;
-#endif
 				file = gerbvProject->file[j]; 
-				if (!file || (!show_invisible_selection && !file->isVisible))
+				if (!file || (!gerbvProject->show_invisible_selection && !file->isVisible))
 					continue;
 
 				for (k = 0; k < selectionInfo->selectedNodeArray->len; k++) {

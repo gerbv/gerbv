@@ -47,11 +47,11 @@ else\
 /* If stock items/IDs are used the ACCEL_*_PATH macros have to match the labels of the stock items.
 Otherwise the (persistent) accelerators are broken. One workaround would be to look the labels up. */
 #define GERBV_ACCELS_RELPATH ".gnome2/accels/gerbv"
-#define ACCEL_ROOT						"<main>/"
-#define ACCEL_FILE						ACCEL_ROOT "file"
-#define ACCEL_FILE_NEW_PATH				ACCEL_FILE "/New"
-#define ACCEL_FILE_NEW_KEY				GDK_n
-#define ACCEL_FILE_NEW_MOD				(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_ROOT				"<main>/"
+#define ACCEL_FILE				ACCEL_ROOT "file"
+#define ACCEL_FILE_NEW_PATH			ACCEL_FILE "/New"
+#define ACCEL_FILE_NEW_KEY			GDK_n
+#define ACCEL_FILE_NEW_MOD			(GdkModifierType) GDK_CONTROL_MASK
 #define ACCEL_FILE_REVERT_PATH			ACCEL_FILE "/Revert"
 #define ACCEL_FILE_REVERT_KEY			GDK_F5
 #define ACCEL_FILE_REVERT_MOD			(GdkModifierType) 0
@@ -61,18 +61,18 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_FILE_SAVE_LAYER_PATH		ACCEL_FILE "/Save active layer"
 #define ACCEL_FILE_SAVE_LAYER_KEY		GDK_S
 #define ACCEL_FILE_SAVE_LAYER_MOD		(GdkModifierType) GDK_CONTROL_MASK
-#define ACCEL_FILE_SAVE_LAYER_AS_PATH	ACCEL_FILE "/Save active layer as..."
-#define ACCEL_FILE_SAVE_LAYER_AS_KEY	GDK_S
-#define ACCEL_FILE_SAVE_LAYER_AS_MOD	(GdkModifierType) GDK_CONTROL_MASK | GDK_SHIFT_MASK
-#define ACCEL_FILE_EXPORT				ACCEL_FILE "/Export"
+#define ACCEL_FILE_SAVE_LAYER_AS_PATH		ACCEL_FILE "/Save active layer as..."
+#define ACCEL_FILE_SAVE_LAYER_AS_KEY		GDK_S
+#define ACCEL_FILE_SAVE_LAYER_AS_MOD		(GdkModifierType) GDK_CONTROL_MASK | GDK_SHIFT_MASK
+#define ACCEL_FILE_EXPORT			ACCEL_FILE "/Export"
 #define ACCEL_FILE_PRINT_PATH			ACCEL_FILE "/Print..."
 #define ACCEL_FILE_PRINT_KEY			GDK_P
 #define ACCEL_FILE_PRINT_MOD			(GdkModifierType) GDK_CONTROL_MASK
 #define ACCEL_FILE_QUIT_PATH			ACCEL_FILE "/Quit"
-#define ACCEL_FILE_QUIT_KEY				GDK_Q
-#define ACCEL_FILE_QUIT_MOD				(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_FILE_QUIT_KEY			GDK_Q
+#define ACCEL_FILE_QUIT_MOD			(GdkModifierType) GDK_CONTROL_MASK
 
-#define ACCEL_EDIT						ACCEL_ROOT "edit"
+#define ACCEL_EDIT				ACCEL_ROOT "edit"
 #define ACCEL_EDIT_PROPERTIES_PATH		ACCEL_EDIT "/Display properties of selected object(s)"
 #define ACCEL_EDIT_PROPERTIES_KEY		GDK_Return
 #define ACCEL_EDIT_PROPERTIES_MOD		(GdkModifierType) GDK_MOD1_MASK
@@ -80,7 +80,7 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_EDIT_DELETE_KEY			GDK_Delete
 #define ACCEL_EDIT_DELETE_MOD			(GdkModifierType) 0
 
-#define ACCEL_VIEW						ACCEL_ROOT "view"
+#define ACCEL_VIEW				ACCEL_ROOT "view"
 #define ACCEL_VIEW_FULLSCREEN_PATH		ACCEL_VIEW "/Fullscreen"
 #define ACCEL_VIEW_FULLSCREEN_KEY		GDK_F11
 #define ACCEL_VIEW_FULLSCREEN_MOD		(GdkModifierType) 0
@@ -90,7 +90,10 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_VIEW_SIDEPANE_PATH		ACCEL_VIEW "/Show Sidepane"
 #define ACCEL_VIEW_SIDEPANE_KEY			GDK_F9
 #define ACCEL_VIEW_SIDEPANE_MOD			(GdkModifierType) 0
-#define ACCEL_VIEW_VIS					ACCEL_VIEW "/Toggle layer visibilty"
+#define ACCEL_VIEW_ALL_SELECTION_PATH		ACCEL_VIEW "/Show all selection"
+#define ACCEL_VIEW_ALL_SELECTION_KEY		GDK_l
+#define ACCEL_VIEW_ALL_SELECTION_MOD		(GdkModifierType) 0
+#define ACCEL_VIEW_VIS				ACCEL_VIEW "/Toggle layer visibilty"
 #define ACCEL_VIEW_VIS_LAYER1_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 1"
 #define ACCEL_VIEW_VIS_LAYER1_KEY		GDK_1
 #define ACCEL_VIEW_VIS_LAYER1_MOD		(GdkModifierType) GDK_CONTROL_MASK
@@ -130,29 +133,29 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_VIEW_ZOOM_FIT_PATH		ACCEL_VIEW "/Best Fit"
 #define ACCEL_VIEW_ZOOM_FIT_KEY			GDK_f
 #define ACCEL_VIEW_ZOOM_FIT_MOD			(GdkModifierType) 0
-#define ACCEL_VIEW_RENDER				ACCEL_VIEW "/Rendering"
-#define ACCEL_VIEW_UNITS				ACCEL_VIEW "/Units"
+#define ACCEL_VIEW_RENDER			ACCEL_VIEW "/Rendering"
+#define ACCEL_VIEW_UNITS			ACCEL_VIEW "/Units"
 
-#define ACCEL_LAYER						ACCEL_ROOT "layer"
+#define ACCEL_LAYER				ACCEL_ROOT "layer"
 #define ACCEL_LAYER_COLOR_PATH			ACCEL_LAYER "/Change color"
 #define ACCEL_LAYER_COLOR_KEY			GDK_F6
 #define ACCEL_LAYER_COLOR_MOD			(GdkModifierType) 0
-#define ACCEL_LAYER_UP_PATH				ACCEL_LAYER "/Move up"
-#define ACCEL_LAYER_UP_KEY				GDK_Up
-#define ACCEL_LAYER_UP_MOD				(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_LAYER_UP_PATH			ACCEL_LAYER "/Move up"
+#define ACCEL_LAYER_UP_KEY			GDK_Up
+#define ACCEL_LAYER_UP_MOD			(GdkModifierType) GDK_CONTROL_MASK
 #define ACCEL_LAYER_DOWN_PATH			ACCEL_LAYER "/Move down"
 #define ACCEL_LAYER_DOWN_KEY			GDK_Down
 #define ACCEL_LAYER_DOWN_MOD			(GdkModifierType) GDK_CONTROL_MASK
 
-#define ACCEL_ANAL						ACCEL_ROOT "analyze"
+#define ACCEL_ANAL				ACCEL_ROOT "analyze"
 
-#define ACCEL_TOOLS						ACCEL_ROOT "tools"
+#define ACCEL_TOOLS				ACCEL_ROOT "tools"
 #define ACCEL_TOOLS_POINTER_PATH		ACCEL_TOOLS "/Pointer Tool"
 #define ACCEL_TOOLS_POINTER_KEY			GDK_1
 #define ACCEL_TOOLS_POINTER_MOD			(GdkModifierType) 0
 #define ACCEL_TOOLS_PAN_PATH			ACCEL_TOOLS "/Pan Tool"
-#define ACCEL_TOOLS_PAN_KEY				GDK_2
-#define ACCEL_TOOLS_PAN_MOD				(GdkModifierType) 0
+#define ACCEL_TOOLS_PAN_KEY			GDK_2
+#define ACCEL_TOOLS_PAN_MOD			(GdkModifierType) 0
 #define ACCEL_TOOLS_ZOOM_PATH			ACCEL_TOOLS "/Zoom Tool"
 #define ACCEL_TOOLS_ZOOM_KEY			GDK_3
 #define ACCEL_TOOLS_ZOOM_MOD			(GdkModifierType) 0
@@ -160,7 +163,7 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_TOOLS_MEASURE_KEY			GDK_4
 #define ACCEL_TOOLS_MEASURE_MOD			(GdkModifierType) 0
 
-#define ACCEL_HELP						ACCEL_ROOT "help"
+#define ACCEL_HELP				ACCEL_ROOT "help"
 
 void
 interface_create_gui (int req_width, int req_height);

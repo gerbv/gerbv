@@ -168,6 +168,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
 	GtkWidget *view_fullscreen;
+	GtkWidget *show_selection_on_invisible;
 	GtkWidget *show_toolbar;
 	GtkWidget *show_sidepane;
 	GtkWidget *separator3;
@@ -539,6 +540,12 @@ interface_create_gui (int req_width, int req_height)
 	
 	layer_visibility_main_menu = gtk_menu_item_new_with_mnemonic (_("Toggle layer _visibility"));
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), layer_visibility_main_menu);
+
+	show_selection_on_invisible = gtk_check_menu_item_new_with_mnemonic (_("Show all se_lection"));
+	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_selection_on_invisible), FALSE);
+	gtk_tooltips_set_tip (tooltips, show_selection_on_invisible, _("Show selected objects on invisible layers"), NULL);
+	SET_ACCELS (show_selection_on_invisible, ACCEL_VIEW_ALL_SELECTION);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_selection_on_invisible);
 	
 	layer_visibility_menu = gtk_menu_new ();
 	gtk_menu_set_accel_group (GTK_MENU(layer_visibility_menu), accel_group);
@@ -1200,6 +1207,9 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) show_sidepane, "toggled",
 	                  G_CALLBACK (callbacks_show_sidepane_toggled),
 	                  sidepane_vbox);
+	g_signal_connect ((gpointer) show_selection_on_invisible, "toggled",
+	                  G_CALLBACK (callbacks_show_selection_on_invisible),
+	                  NULL);
 	g_signal_connect ((gpointer) toggle_layer_visibility_item1, "activate",
 	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),
 	                  GINT_TO_POINTER(0));

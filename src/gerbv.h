@@ -629,6 +629,7 @@ typedef struct {
   int last_loaded; /*!< the number of fileinfos currently in the project */
   int renderType; /*!< the type of renderer to use */
   gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
+  gboolean show_invisible_selection; /*!< TRUE to show selected objects on invisible layers */
   gchar *path; /*!< the default path to load new files from */
   gchar *execpath;    /*!< the path to executed version of Gerbv */
   gchar *execname;    /*!< the path plus executible name for Gerbv */

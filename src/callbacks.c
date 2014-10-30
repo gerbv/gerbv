@@ -672,6 +672,14 @@ callbacks_show_sidepane_toggled (GtkMenuItem *menuitem, gpointer user_data)
 }
 
 /* --------------------------------------------------------- */
+void
+callbacks_show_selection_on_invisible (GtkMenuItem *menuitem, gpointer user_data)
+{
+	mainProject->show_invisible_selection = GTK_CHECK_MENU_ITEM(menuitem)->active;
+	render_refresh_rendered_image_on_screen();
+}
+
+/* --------------------------------------------------------- */
 /** View/"Toggle visibility layer X" or Current layer/"Toggle visibility" menu item was activated.
   * Set the isVisible flag on file X and update the treeview and rendering.
 */
