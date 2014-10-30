@@ -704,8 +704,6 @@ callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user
 		break;
 	}
 
-	/* Clear any selected items so they don't show after the layer is hidden */
-	render_clear_selection_buffer ();
 	callbacks_update_layer_tree ();
 
 	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
@@ -1811,8 +1809,6 @@ callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_rend
 		if (mainProject->file[index]->isVisible)
 			 newVisibility = FALSE;
 		mainProject->file[index]->isVisible = newVisibility;
-		/* clear any selected items so they don't show after the layer is hidden */
-		render_clear_selection_buffer();
 
 	      callbacks_update_layer_tree ();
 		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {

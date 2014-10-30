@@ -731,7 +731,8 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 			gdk_gc_set_clip_mask(gc, NULL);
 		}
 	}
-	/* render the selection group to the top of the output */
+
+	/* Render the selection group to the top of the output */
 	if (selectionInfo && (selectionInfo->type != GERBV_SELECTION_EMPTY)) {
 		if (!selectionColor->pixel)
 	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), selectionColor, FALSE, TRUE);
@@ -745,8 +746,11 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 		int j, k;
 		if (selectionInfo->selectedNodeArray->len > 0) {
 			for (j = gerbvProject->last_loaded; j >= 0; j--) {
+#if 1
+int show_invisible_selection = 1;
+#endif
 				file = gerbvProject->file[j]; 
-				if (!file || !file->isVisible)
+				if (!file || (!show_invisible_selection && !file->isVisible))
 					continue;
 
 				for (k = 0; k < selectionInfo->selectedNodeArray->len; k++) {
@@ -756,6 +760,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 					if (file->image != sItem.image)
 						continue;
 
+					/* Have selected image(s) on this layer, draw it */
 					draw_gdk_image_to_pixmap(&clipmask, file->image,
 						renderInfo->scaleFactorX,
 						-(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
