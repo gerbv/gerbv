@@ -65,11 +65,18 @@ render_remove_selected_objects_belonging_to_layer (gint index);
 void
 render_free_screen_resources (void);
 
-void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex,
-		gboolean eraseOldSelection);
-void
-render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
-	gint corner2X, gint corner2Y, gint activeFileIndex, gboolean eraseOldSelection);
+enum selection_action {
+	SELECTION_REPLACE = 0,
+	SELECTION_ADD,
+	SELECTION_TOGGLE,
+};
+
+void render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY,
+		gint activeFileIndex, enum selection_action action);
+
+void render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
+		gint corner2X, gint corner2Y,
+		gint activeFileIndex, enum selection_action action);
 
 extern gerbv_render_info_t screenRenderInfo;
 

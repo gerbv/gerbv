@@ -833,7 +833,7 @@ draw_gdk_apply_netstate_transformation  (cairo_matrix_t *fullMatrix, cairo_matri
 int
 draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image, 
 	     double scale, double trans_x, double trans_y,
-	     gchar drawMode,
+	     enum draw_mode drawMode,
 	     gerbv_selection_info_t *selectionInfo, gerbv_render_info_t *renderInfo,
 	     gerbv_user_transformation_t transform)
 {

@@ -34,16 +34,15 @@
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
 
-enum draw_mode_t {DRAW_IMAGE, DRAW_SELECTIONS, FIND_SELECTIONS};
-
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
-int draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image, 
-	     double scale, double trans_x, double trans_y,
-	     gchar drawMode,
-	     gerbv_selection_info_t *selectionInfo, gerbv_render_info_t *renderInfo,
-	     gerbv_user_transformation_t transform);
+int draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
+		double scale, double trans_x, double trans_y,
+		enum draw_mode drawMode,
+		gerbv_selection_info_t *selectionInfo,
+		gerbv_render_info_t *renderInfo,
+		gerbv_user_transformation_t transform);
 
 typedef enum {
 	CIRCLE_EXPOSURE,

@@ -233,6 +233,13 @@ typedef enum {GERBV_SELECTION_EMPTY, /*!< the selection buffer is empty */
 		GERBV_SELECTION_DRAG_BOX /*!< the user dragged a box to encompass one or more objects */
 } gerbv_selection_t;
 
+enum draw_mode {
+	DRAW_IMAGE = 0,
+	DRAW_SELECTIONS,
+	FIND_SELECTIONS,
+	FIND_SELECTIONS_TOGGLE,
+};
+
 /*! The different rendering modes available to libgerbv */
 typedef enum {GERBV_RENDER_TYPE_GDK, /*!< render using normal GDK drawing functions */
 		GERBV_RENDER_TYPE_GDK_XOR, /*!< use the GDK_XOR mask to draw a pseudo-transparent scene */

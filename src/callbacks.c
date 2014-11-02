@@ -3097,16 +3097,21 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 					if ((index >= 0) && 
 					    (index <= mainProject->last_loaded) &&
 					    (mainProject->file[index]->isVisible)) {
-					  render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,TRUE);
+					  render_fill_selection_buffer_from_mouse_click(
+							  event->x, event->y,
+							  index, SELECTION_REPLACE);
 					} else {
 					    render_clear_selection_buffer ();
 					    render_refresh_rendered_image_on_screen ();
 					}
 				}
 				/* only show the popup if we actually have something selected now */
-				if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY)
+				if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
+					callbacks_update_selected_object_message (TRUE);
 					gtk_menu_popup(GTK_MENU(screen.win.drawWindowPopupMenu), NULL, NULL, NULL, NULL, 
-			  	 		event->button, event->time);
+							event->button, event->time);
+				}
+
 			} else {
 				/* Zoom outline mode initiated */
 				screen.state = IN_ZOOM_OUTLINE;
@@ -3134,57 +3139,75 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 /* --------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *event)
-{ 
-	if (event->type == GDK_BUTTON_RELEASE) {
-		if (screen.state == IN_MOVE) {  
-			screen.off_x = 0;
-			screen.off_y = 0;
-			render_refresh_rendered_image_on_screen();
-			callbacks_switch_to_normal_tool_cursor (screen.tool);
+{
+	gint index;
+
+	if (event->type != GDK_BUTTON_RELEASE)
+		return TRUE;
+
+	switch (screen.state) {
+	case IN_MOVE:
+		screen.off_x = 0;
+		screen.off_y = 0;
+		render_refresh_rendered_image_on_screen ();
+		callbacks_switch_to_normal_tool_cursor (screen.tool);
+		break;
+
+	case IN_ZOOM_OUTLINE:
+		if ((event->state & GDK_SHIFT_MASK) != 0) {
+			render_zoom_display (ZOOM_OUT_CMOUSE, 0,
+					event->x, event->y);
 		}
-		else if (screen.state == IN_ZOOM_OUTLINE) {
-			if ((event->state & GDK_SHIFT_MASK) != 0) {
-				render_zoom_display (ZOOM_OUT_CMOUSE, 0, event->x, event->y);
-			}
-			/* if the user just clicks without dragging, then simply
-			   zoom in a preset amount */
-			else if ((abs(screen.start_x - event->x) < 4) &&
-					(abs(screen.start_y - event->y) < 4)) {
-				render_zoom_display (ZOOM_IN_CMOUSE, 0, event->x, event->y);
-			}
-			else
-				render_calculate_zoom_from_outline (widget, event);
-			callbacks_switch_to_normal_tool_cursor (screen.tool);
+		/* if the user just clicks without dragging, then simply
+		   zoom in a preset amount */
+		else if ((abs(screen.start_x - event->x) < 4) &&
+				(abs(screen.start_y - event->y) < 4)) {
+			render_zoom_display (ZOOM_IN_CMOUSE, 0,
+					event->x, event->y);
+		} else {
+			render_calculate_zoom_from_outline (widget, event);
 		}
-		else if (screen.state == IN_SELECTION_DRAG) {
-			/* selection will only work with cairo, so do nothing if it's
-			   not compiled */
-			gint index=callbacks_get_selected_row_index();
+		callbacks_switch_to_normal_tool_cursor (screen.tool);
+		break;
+
+	case IN_SELECTION_DRAG:
+		/* selection will only work with cairo, so do nothing if it's
+		   not compiled */
+		index = callbacks_get_selected_row_index ();
+
+		if ((index >= 0) && mainProject->file[index]->isVisible) {
+			enum selection_action sel_action = SELECTION_REPLACE;
+			
+			if (event->state & GDK_SHIFT_MASK)
+				sel_action = SELECTION_ADD;
+			else if (event->state & GDK_CONTROL_MASK)
+				sel_action = SELECTION_TOGGLE;
+
 			/* determine if this was just a click or a box drag */
-			if ((index >= 0) && 
-			    (mainProject->file[index]->isVisible)) {
-				gboolean eraseOldSelection = TRUE;
-				
-				if ((event->state & GDK_SHIFT_MASK) ||
-				   (event->state & GDK_CONTROL_MASK)) {
-					eraseOldSelection = FALSE;
-				}
-				if ((fabs((double)(screen.last_x - screen.start_x)) < 5) &&
-					 (fabs((double)(screen.last_y - screen.start_y)) < 5))
-					render_fill_selection_buffer_from_mouse_click(event->x,event->y,index,eraseOldSelection);
-				else
-					render_fill_selection_buffer_from_mouse_drag(event->x,event->y,
-						screen.start_x,screen.start_y,index,eraseOldSelection);
-				/* check if anything was selected */
-				callbacks_update_selected_object_message (TRUE);
+			if ((fabs((double)(screen.last_x - screen.start_x)) < 5)
+			 && (fabs((double)(screen.last_y - screen.start_y)) < 5)) {
+				render_fill_selection_buffer_from_mouse_click (
+						event->x, event->y, index,
+						sel_action);
 			} else {
-			    render_clear_selection_buffer ();
-			    render_refresh_rendered_image_on_screen ();
+				render_fill_selection_buffer_from_mouse_drag (
+						event->x, event->y,
+						screen.start_x, screen.start_y,
+						index, sel_action);
 			}
+
+			/* check if anything was selected */
+			callbacks_update_selected_object_message (TRUE);
+		} else {
+			render_refresh_rendered_image_on_screen ();
 		}
-		screen.last_x = screen.last_y = 0;
-		screen.state = NORMAL;
+		break;
+	default:
+		break;
 	}
+
+	screen.state = NORMAL;
+
 	return TRUE;
 } /* button_release_event */
 
@@ -3192,24 +3215,24 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 gboolean
 callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
-	switch(event->keyval) {
-		case GDK_Escape:
-			if (screen.tool == POINTER) {
-				utf8_strncpy(screen.statusbar.diststr,
-					_("No objects are currently selected"),
-					MAX_DISTLEN);
-		 		callbacks_update_statusbar();
-		 		render_clear_selection_buffer ();
-		 	}
-			break;
-		default:
-			break;
-	}
+	switch (event->keyval) {
+	case GDK_Escape:
+		if (screen.tool == POINTER) {
+			utf8_strncpy(screen.statusbar.diststr,
+				_("No objects are currently selected"),
+				MAX_DISTLEN);
+			callbacks_update_statusbar();
+			render_clear_selection_buffer ();
+		}
 
-	/* Escape may be used to abort outline zoom and just plain repaint */
-	if (event->keyval == GDK_Escape) {
+		/* Escape may be used to abort outline zoom and just plain
+		 * repaint */
 		screen.state = NORMAL;
 		render_refresh_rendered_image_on_screen();
+
+		break;
+	default:
+		break;
 	}
 
 	return TRUE;

@@ -522,56 +522,71 @@ render_create_cairo_buffer_surface () {
 }
 
 /* ------------------------------------------------------ */
-void
-render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean eraseOldSelection){
+static void
+render_find_selected_objects_and_refresh_display (gint activeFileIndex,
+		enum selection_action action)
+{
+	enum draw_mode mode = FIND_SELECTIONS;
+
 	/* clear the old selection array if desired */
-	if ((eraseOldSelection)&&(screen.selectionInfo.selectedNodeArray->len))
+	if ((action == SELECTION_REPLACE)
+	&& (screen.selectionInfo.selectedNodeArray->len))
 		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
-			screen.selectionInfo.selectedNodeArray->len);
+				screen.selectionInfo.selectedNodeArray->len);
+
+	if (action == SELECTION_TOGGLE)
+		mode = FIND_SELECTIONS_TOGGLE;
 
 	/* make sure we have a bufferSurface...if we start up in FAST mode, we may not
 	   have one yet, but we need it for selections */
-	if (!render_create_cairo_buffer_surface())
+	if (!render_create_cairo_buffer_surface ())
 		return;
 
 	/* call draw_image... passing the FILL_SELECTION mode to just search for
 	   nets which match the selection, and fill the selection buffer with them */
-	cairo_t *cr= cairo_create(screen.bufferSurface);	
-	gerbv_render_cairo_set_scale_and_translation(cr,&screenRenderInfo);
-	draw_image_to_cairo_target (cr, mainProject->file[activeFileIndex]->image,
-		1.0/MAX(screenRenderInfo.scaleFactorX, screenRenderInfo.scaleFactorY),
-		FIND_SELECTIONS, &screen.selectionInfo, &screenRenderInfo, TRUE,
-		mainProject->file[activeFileIndex]->transform, TRUE);
+	cairo_t *cr = cairo_create (screen.bufferSurface);	
+	gerbv_render_cairo_set_scale_and_translation (cr, &screenRenderInfo);
+	draw_image_to_cairo_target (cr,
+			mainProject->file[activeFileIndex]->image,
+			1.0/MAX (screenRenderInfo.scaleFactorX,
+				screenRenderInfo.scaleFactorY),
+			mode, &screen.selectionInfo, &screenRenderInfo, TRUE,
+			mainProject->file[activeFileIndex]->transform, TRUE);
 	cairo_destroy (cr);
+
 	/* if the selection array is empty, switch the "mode" to empty to make it
 	   easier to check if it is holding anything */
-	if (!screen.selectionInfo.selectedNodeArray->len)
+	if (screen.selectionInfo.selectedNodeArray->len == 0)
 		screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
+
 	/* re-render the selection buffer layer */
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR){
+	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 		render_refresh_rendered_image_on_screen ();
-	}
-	else {
+	} else {
 		render_recreate_composite_surface ();
-		callbacks_force_expose_event_for_screen();
+		callbacks_force_expose_event_for_screen ();
 	}
 }
 
 /* ------------------------------------------------------ */
 void
-render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY, gint activeFileIndex,
-		gboolean eraseOldSelection) {
+render_fill_selection_buffer_from_mouse_click (gint mouseX, gint mouseY,
+		gint activeFileIndex, enum selection_action action)
+{
 	screen.selectionInfo.lowerLeftX = mouseX;
 	screen.selectionInfo.lowerLeftY = mouseY;
 	/* no need to populate the upperright coordinates for a point_click */
 	screen.selectionInfo.type = GERBV_SELECTION_POINT_CLICK;
-	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
+	render_find_selected_objects_and_refresh_display (
+			activeFileIndex, action);
 }
 
 /* ------------------------------------------------------ */
 void
 render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
-	gint corner2X, gint corner2Y, gint activeFileIndex, gboolean eraseOldSelection) {
+		gint corner2X, gint corner2Y,
+		gint activeFileIndex, enum selection_action action)
+{
 	/* figure out the lower left corner of the box */
 	screen.selectionInfo.lowerLeftX = MIN(corner1X, corner2X);
 	screen.selectionInfo.lowerLeftY = MIN(corner1Y, corner2Y);
@@ -580,7 +595,8 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 	screen.selectionInfo.upperRightY = MAX(corner1Y, corner2Y);
 	
 	screen.selectionInfo.type = GERBV_SELECTION_DRAG_BOX;
-	render_find_selected_objects_and_refresh_display (activeFileIndex, eraseOldSelection);
+	render_find_selected_objects_and_refresh_display (
+			activeFileIndex, action);
 }
 
 /* ------------------------------------------------------ */

@@ -26,8 +26,6 @@
     \ingroup libgerbv
 */
 
-#include "gerbv.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>  /* ceil(), atan2() */
@@ -36,6 +34,7 @@
 # include <string.h>
 #endif
 
+#include "gerbv.h"
 #include "draw.h"
 #include "draw-gdk.h"
 #include "common.h"
@@ -86,24 +85,39 @@ draw_cairo_translate_adjust (cairo_t *cairoTarget, gdouble x, gdouble y, gboolea
 	cairo_translate (cairoTarget, x1, y1);
 }
 
-gboolean
-draw_net_in_selection_buffer (gerbv_net_t *net, gerbv_selection_info_t *selectionInfo) {
+static gboolean
+draw_net_is_in_selection_buffer_remove (gerbv_net_t *net,
+		gerbv_selection_info_t *selectionInfo, gboolean remove)
+{
+	gerbv_selection_item_t sItem;
 	int i;
 	
-	for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
-		gerbv_selection_item_t sItem = g_array_index (selectionInfo->selectedNodeArray,
-			gerbv_selection_item_t, i);
-		if (sItem.net == net)
+	for (i = 0; i<selectionInfo->selectedNodeArray->len; i++) {
+		sItem = g_array_index (selectionInfo->selectedNodeArray,
+				gerbv_selection_item_t, i);
+		if (sItem.net == net) {
+			if (remove)
+				g_array_remove_index (
+					selectionInfo->selectedNodeArray, i);
 			return TRUE;
+		}
 	}
+
 	return FALSE;
 }
 			
 static void
-draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStroke,
-		gerbv_selection_info_t *selectionInfo, gerbv_image_t *image, struct gerbv_net *net){
-	gdouble corner1X,corner1Y,corner2X,corner2Y;
-
+draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget,
+		gboolean isStroke, gerbv_selection_info_t *selectionInfo,
+		gerbv_image_t *image, struct gerbv_net *net,
+		enum draw_mode drawMode)
+{
+	GArray *selected = selectionInfo->selectedNodeArray;
+	gerbv_selection_item_t sItem = {image, net};
+	gdouble corner1X, corner1Y, corner2X, corner2Y;
+	gdouble x1, x2, y1, y2;
+	gdouble minX, minY, maxX, maxY;
+		
 	corner1X = selectionInfo->lowerLeftX;
 	corner1Y = selectionInfo->lowerLeftY;
 	corner2X = selectionInfo->upperRightX;
@@ -111,42 +125,49 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 
 	/* calculate the coordinate of the user's click in the current
 	   transformation matrix */
-	cairo_device_to_user  (cairoTarget, &corner1X, &corner1Y);
-	cairo_device_to_user  (cairoTarget, &corner2X, &corner2Y);
-	if (selectionInfo->type == GERBV_SELECTION_POINT_CLICK) {
+	cairo_device_to_user (cairoTarget, &corner1X, &corner1Y);
+	cairo_device_to_user (cairoTarget, &corner2X, &corner2Y);
+
+	switch (selectionInfo->type) {
+	case GERBV_SELECTION_POINT_CLICK:
 		/* use the cairo in_fill routine to see if the point is within the
 		   drawn area */
 		if ((isStroke && cairo_in_stroke (cairoTarget, corner1X, corner1Y)) ||
 			(!isStroke && cairo_in_fill (cairoTarget, corner1X, corner1Y))) {
-			/* add the net to the selection array */
-			if (!draw_net_in_selection_buffer(net, selectionInfo)) {
-				gerbv_selection_item_t sItem = {image, net};
-				g_array_append_val (selectionInfo->selectedNodeArray, sItem);
+
+			if (!draw_net_is_in_selection_buffer_remove (net,
+					selectionInfo,
+					(drawMode == FIND_SELECTIONS_TOGGLE))) {
+				/* add the net to the selection array */
+				g_array_append_val (selected, sItem);
 			}
 		}
-	}
-	else if (selectionInfo->type == GERBV_SELECTION_DRAG_BOX) {
-		gdouble x1,x2,y1,y2;
-		gdouble minX,minY,maxX,maxY;
-		
+		break;
+
+	case GERBV_SELECTION_DRAG_BOX:
 		/* we can't assume the "lowerleft" corner is actually in the lower left,
 		   since the cairo transformation matrix may be mirrored,etc */
 		minX = MIN(corner1X,corner2X);
 		maxX = MAX(corner1X,corner2X);
 		minY = MIN(corner1Y,corner2Y);
 		maxY = MAX(corner1Y,corner2Y);
+
 		if (isStroke)
 			cairo_stroke_extents (cairoTarget, &x1, &y1, &x2, &y2);
 		else
 			cairo_fill_extents (cairoTarget, &x1, &y1, &x2, &y2);
 		
 		if ((minX < x1) && (minY < y1) && (maxX > x2) && (maxY > y2)) {
-			/* add the net to the selection array */
-			if (!draw_net_in_selection_buffer(net, selectionInfo)) {
-				gerbv_selection_item_t sItem = {image, net};
-				g_array_append_val (selectionInfo->selectedNodeArray, sItem);
+			if (!draw_net_is_in_selection_buffer_remove (net,
+					selectionInfo,
+					(drawMode == FIND_SELECTIONS_TOGGLE))) {
+				/* add the net to the selection array */
+				g_array_append_val (selected, sItem);
 			}
 		}
+		break;
+	default:
+		break;
 	}
 	/* clear the path, since we didn't actually draw it and cairo
 		 doesn't reset it after the previous calls */
@@ -154,23 +175,27 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget, gboolean isStrok
 }
 
 static void
-draw_fill (cairo_t *cairoTarget, gchar drawMode, gerbv_selection_info_t *selectionInfo,
-		gerbv_image_t *image, struct gerbv_net *net){
+draw_fill (cairo_t *cairoTarget, enum draw_mode drawMode,
+		gerbv_selection_info_t *selectionInfo,
+		gerbv_image_t *image, struct gerbv_net *net)
+{
 	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_SELECTIONS))
 		cairo_fill (cairoTarget);
 	else
 		draw_check_if_object_is_in_selected_area (cairoTarget, FALSE,
-			selectionInfo, image, net);
+			selectionInfo, image, net, drawMode);
 }
 
 static void
-draw_stroke (cairo_t *cairoTarget, gchar drawMode, gerbv_selection_info_t *selectionInfo,
-		gerbv_image_t *image, struct gerbv_net *net){
+draw_stroke (cairo_t *cairoTarget, enum draw_mode drawMode,
+		gerbv_selection_info_t *selectionInfo,
+		gerbv_image_t *image, struct gerbv_net *net)
+{
 	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_SELECTIONS))
 		cairo_stroke (cairoTarget);
 	else
 		draw_check_if_object_is_in_selected_area (cairoTarget, TRUE,
-			selectionInfo, image, net);
+			selectionInfo, image, net, drawMode);
 }
 
 /*
@@ -302,7 +327,7 @@ draw_update_macro_exposure (cairo_t *cairoTarget, cairo_operator_t clearOperator
 int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	cairo_operator_t darkOperator, gerbv_simplified_amacro_t *s,
-	gint usesClearPrimative, gdouble pixelWidth, gchar drawMode,
+	gint usesClearPrimative, gdouble pixelWidth, enum draw_mode drawMode,
 	gerbv_selection_info_t *selectionInfo,
 	gerbv_image_t *image, struct gerbv_net *net)
 {
@@ -507,8 +532,11 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *stat
 }
 
 void
-draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble sr_x, gdouble sr_y,
-		gerbv_image_t *image, gchar drawMode, gerbv_selection_info_t *selectionInfo, gboolean pixelOutput){
+draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget,
+		gdouble sr_x, gdouble sr_y, gerbv_image_t *image,
+		enum draw_mode drawMode, gerbv_selection_info_t *selectionInfo,
+		gboolean pixelOutput)
+{
 	gerbv_net_t *currentNet, *polygonStartNet;
 	int haveDrawnFirstFillPoint = 0;
 	gdouble x2,y2,cp_x=0,cp_y=0;
@@ -566,14 +594,13 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget, gdouble s
 	}
 }
 
-
-
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
-					gdouble pixelWidth,
-					gchar drawMode, gerbv_selection_info_t *selectionInfo,
-					gerbv_render_info_t *renderInfo, gboolean allowOptimization,
- 					gerbv_user_transformation_t transform, gboolean pixelOutput){
+		gdouble pixelWidth, enum draw_mode drawMode,
+		gerbv_selection_info_t *selectionInfo,
+		gerbv_render_info_t *renderInfo, gboolean allowOptimization,
+		gerbv_user_transformation_t transform, gboolean pixelOutput)
+{
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
 	gdouble p0, p1, p2, p3, p4, dx, dy, lineWidth;
@@ -722,7 +749,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		   we don't want to check the nets inside the polygon) then
 		   polygonStartNet will be set */
 		if (!polygonStartNet) {
-			if (!draw_net_in_selection_buffer(net, selectionInfo))
+			if (!draw_net_is_in_selection_buffer_remove (net,
+						selectionInfo, FALSE))
 				continue;		
 		}
 	}
