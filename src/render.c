@@ -370,38 +370,62 @@ render_draw_measure_distance(void)
 } /* draw_measure_distance */
 
 /* ------------------------------------------------------ */
-void render_selection_layer (void){
+static void render_selection (void)
+{
+	gerbv_selection_item_t sel_item;
+	gerbv_fileinfo_t *file;
+	gdouble pixel_width;
 	cairo_t *cr;
+	int i, j;
 	
-	if (screen.selectionRenderData) 
-		cairo_surface_destroy ((cairo_surface_t *) screen.selectionRenderData);
-	screen.selectionRenderData = 
-		(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-		CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
-		screenRenderInfo.displayHeight);
-	if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
-		cr= cairo_create(screen.selectionRenderData);
-		gerbv_render_cairo_set_scale_and_translation(cr, &screenRenderInfo);
-		cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.85);
-		/* for now, assume everything in the selection buffer is from one image */
-		gerbv_image_t *matchImage;
-		int j;
-		if (screen.selectionInfo.selectedNodeArray->len > 0) {
-			gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
-					gerbv_selection_item_t, 0);
-			matchImage = (gerbv_image_t *) sItem.image;	
-			dprintf("    .... calling render_image_to_cairo_target on selection layer...\n");
-			for(j = mainProject->last_loaded; j >= 0; j--) {
-				if ((mainProject->file[j]) && (mainProject->file[j]->image == matchImage)) {
-					draw_image_to_cairo_target (cr, mainProject->file[j]->image,
-						1.0/MAX(screenRenderInfo.scaleFactorX,
-						screenRenderInfo.scaleFactorY),
-						DRAW_SELECTIONS, &screen.selectionInfo, &screenRenderInfo,
-						TRUE, mainProject->file[j]->transform, TRUE);
-				}
-			}
+	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY
+	|| screen.selectionInfo.selectedNodeArray->len == 0)
+		return;
+
+	if (screen.selectionRenderData)
+		cairo_surface_destroy (
+				(cairo_surface_t *)screen.selectionRenderData);
+
+	screen.selectionRenderData =
+		(gpointer) cairo_surface_create_similar (
+			(cairo_surface_t *)screen.windowSurface,
+			CAIRO_CONTENT_COLOR_ALPHA,
+			screenRenderInfo.displayWidth,
+			screenRenderInfo.displayHeight);
+
+	pixel_width = 1.0/MAX(screenRenderInfo.scaleFactorX,
+				screenRenderInfo.scaleFactorY);
+
+	for (i = mainProject->last_loaded; i >= 0; i--) {
+		file = mainProject->file[i]; 
+
+		if (!file ||
+		(!mainProject->show_invisible_selection && !file->isVisible))
+			continue;
+
+		for (j = 0; j < screen.selectionInfo.selectedNodeArray->len; j++) {
+			sel_item = g_array_index(
+					screen.selectionInfo.selectedNodeArray,
+					gerbv_selection_item_t, j);
+
+			if (file->image != sel_item.image)
+				continue;
+
+			/* Have selected image(s) on this file, draw it */
+
+			cr = cairo_create(screen.selectionRenderData);
+			gerbv_render_cairo_set_scale_and_translation(cr,
+					&screenRenderInfo);
+			cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.85);
+			draw_image_to_cairo_target (cr,
+				file->image, pixel_width,
+				DRAW_SELECTIONS, &screen.selectionInfo,
+				&screenRenderInfo, TRUE,
+				file->transform, TRUE);
+			cairo_destroy (cr);
+
+			break;	/* All done, go to next file */
 		}
-		cairo_destroy (cr);
 	}
 }
 
@@ -445,8 +469,6 @@ void render_refresh_rendered_image_on_screen (void) {
 		    cairo_destroy (cr);
 		}
 	    }
-	    /* render the selection layer */
-	    render_selection_layer();
 	    
 	    render_recreate_composite_surface ();
 	}
@@ -530,7 +552,6 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex, gboolean
 		render_refresh_rendered_image_on_screen ();
 	}
 	else {
-		render_selection_layer();
 		render_recreate_composite_surface ();
 		callbacks_force_expose_event_for_screen();
 	}
@@ -563,7 +584,8 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 }
 
 /* ------------------------------------------------------ */
-void render_recreate_composite_surface () {
+void render_recreate_composite_surface ()
+{
 	gint i;
 	
 	if (!render_create_cairo_buffer_surface())
@@ -591,6 +613,7 @@ void render_recreate_composite_surface () {
 	}
 	/* render the selection layer at the end */
 	if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
+		render_selection ();
 		cairo_set_source_surface (cr, (cairo_surface_t *) screen.selectionRenderData,
 			                              0, 0);
 		cairo_paint_with_alpha (cr,1.0);
