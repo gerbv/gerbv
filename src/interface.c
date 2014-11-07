@@ -1416,9 +1416,7 @@ interface_create_gui (int req_width, int req_height)
 	                                                renderer,
 	                                                "active", 0,
 	                                                NULL);
-	gtk_tree_view_column_set_min_width  ((GtkTreeViewColumn *)column,25);
-	gtk_signal_connect(GTK_OBJECT(renderer), "toggled",
-		       GTK_SIGNAL_FUNC(callbacks_layer_tree_visibility_button_toggled), NULL);
+	gtk_tree_view_column_set_min_width ((GtkTreeViewColumn *)column, 25);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
 
 	renderer = gtk_cell_renderer_pixbuf_new ();

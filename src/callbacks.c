@@ -1796,42 +1796,24 @@ void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment, gpointer us
 }
 
 /* --------------------------------------------------------- */
-void
-callbacks_layer_tree_visibility_button_toggled (GtkCellRendererToggle *cell_renderer,
-                                                        gchar *path,
-                                                        gpointer user_data){
-	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
-			((GtkTreeView *) screen.win.layerTree);
-	GtkTreeIter iter;
-	gboolean newVisibility=TRUE;
-	gint index;
-	
-	gtk_tree_model_get_iter_from_string ((GtkTreeModel *)list_store, &iter, path);
-	
-	GtkTreePath *treePath = gtk_tree_path_new_from_string (path);
-	if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, treePath)) {
-	      gint *indices;
-	      
-	      indices = gtk_tree_path_get_indices (treePath);
-	      index = indices[0];
-		if (mainProject->file[index]->isVisible)
-			 newVisibility = FALSE;
-		mainProject->file[index]->isVisible = newVisibility;
+static void
+callbacks_layer_tree_visibility_toggled (gint index)
+{
+	mainProject->file[index]->isVisible =
+		!mainProject->file[index]->isVisible;
 
-	      callbacks_update_layer_tree ();
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-			render_refresh_rendered_image_on_screen();
-		}
-		else {
-			render_recreate_composite_surface (screen.drawing_area);
-			callbacks_force_expose_event_for_screen ();
-		}
+	callbacks_update_layer_tree ();
+	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+		render_refresh_rendered_image_on_screen ();
+	} else {
+		render_recreate_composite_surface (screen.drawing_area);
+		callbacks_force_expose_event_for_screen ();
 	}
 }
 
 /* --------------------------------------------------------- */
-gint
-callbacks_get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
+static gint
+callbacks_get_col_num_from_tree_view_col (GtkTreeViewColumn *col)
 {
 	GList *cols;
 	gint   num;
@@ -1964,15 +1946,18 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 }
 
 /* --------------------------------------------------------- */
-void
-callbacks_select_row (gint rowIndex) {
+static void
+callbacks_select_row (gint rowIndex)
+{
 	GtkTreeSelection *selection;
-	GtkTreeIter       iter;
+	GtkTreeIter iter;
 	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
 			((GtkTreeView *) screen.win.layerTree);
 
 	selection = gtk_tree_view_get_selection((GtkTreeView *) screen.win.layerTree);
-	if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store), &iter, NULL, rowIndex)) {
+
+	if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store),
+				&iter, NULL, rowIndex)) {
 		gtk_tree_selection_select_iter (selection, &iter);
 	}
 }
@@ -2313,7 +2298,7 @@ callbacks_layer_tree_key_press (GtkWidget *widget, GdkEventKey *event, gpointer 
 		if (path) {
 			indices = gtk_tree_path_get_indices (path);
 			if (indices) {
-				idx = callbacks_get_col_number_from_tree_view_column (col);
+				idx = callbacks_get_col_num_from_tree_view_col (col);
 				if ((idx == 1) && (indices[0] <= mainProject->last_loaded)){
 					callbacks_show_color_picker_dialog (indices[0]);
 				}
@@ -2328,38 +2313,45 @@ callbacks_layer_tree_key_press (GtkWidget *widget, GdkEventKey *event, gpointer 
 /* --------------------------------------------------------------------------- */
 gboolean
 callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
-                                   gpointer user_data) {
-      GtkTreePath *path;
-      GtkTreeIter iter;
-      GtkTreeViewColumn *column;
-      gint x,y;
-      gint columnIndex;
-      
-      GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
-			((GtkTreeView *) screen.win.layerTree);
-      if (event->button == 1) {
-	      if (gtk_tree_view_get_path_at_pos  ((GtkTreeView *) widget, event->x, event->y,
-	      	&path, &column, &x, &y)) {
-		      if (gtk_tree_model_get_iter((GtkTreeModel *)list_store, &iter, path)) {
-		      	gint *indices;
-		      	indices = gtk_tree_path_get_indices (path);
-		      	if (indices) {
-					columnIndex = callbacks_get_col_number_from_tree_view_column (column);
-					if ((columnIndex == 1) && (indices[0] <= mainProject->last_loaded)){
-						callbacks_show_color_picker_dialog (indices[0]);
-						/* don't propagate the signal, since drag and drop can
-					   	sometimes activated during color selection */
-						return TRUE;
-					}
+					gpointer user_data)
+{
+	GtkTreePath *path;
+	GtkTreeIter iter;
+	GtkTreeViewColumn *col;
+	gint x,y;
+	gint *indices;
+
+	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model (
+			(GtkTreeView *) screen.win.layerTree);
+
+	if (event->button == 1) {
+		if (gtk_tree_view_get_path_at_pos ((GtkTreeView *) widget,
+				event->x, event->y, &path, &col, &x, &y)
+		&& gtk_tree_model_get_iter ((GtkTreeModel *)list_store,
+				&iter, path)) {
+			indices = gtk_tree_path_get_indices (path);
+			if (indices && (indices[0] <= mainProject->last_loaded)) {
+				switch (callbacks_get_col_num_from_tree_view_col (col)) {
+				case 0:
+					callbacks_select_row (indices[0]);
+					callbacks_layer_tree_visibility_toggled (indices[0]);
+					return TRUE;
+				case 1:
+					callbacks_show_color_picker_dialog (indices[0]);
+					/* don't propagate the signal, since drag and drop can
+					   sometimes activated during color selection */
+					return TRUE;
 				}
 			}
 		}
 	}
 	/* don't pop up the menu if we don't have any loaded files */
 	else if ((event->button == 3)&&(mainProject->last_loaded >= 0)) {
-		gtk_menu_popup(GTK_MENU(screen.win.layerTreePopupMenu), NULL, NULL, NULL, NULL, 
-			   event->button, event->time);
+		gtk_menu_popup (GTK_MENU (screen.win.layerTreePopupMenu),
+				NULL, NULL, NULL, NULL, 
+				event->button, event->time);
 	}
+
 	/* always allow the click to propagate and make sure the line is activated */
 	return FALSE;
 }
