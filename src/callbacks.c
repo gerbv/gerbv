@@ -1928,17 +1928,52 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 				_("Click and drag to zoom in. Shift+click to zoom out."),
 				MAX_DISTLEN);
 			break;
+
 		case MEASURE:
 			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (screen.win.toolButtonMeasure), TRUE);
 			screen.tool = MEASURE;
 			screen.state = NORMAL;
 			utf8_strncpy(screen.statusbar.diststr,
-				_("Click and drag to measure a distance."),
+				_("Click and drag to measure a distance or select two apertures."),
 				MAX_DISTLEN);
+
+			/* To not show previous measure drag-line */
+			screen.measure_start_x = 0;
+			screen.measure_start_y = 0;
+			screen.measure_last_x =  0;
+			screen.measure_last_y =  0;
+
+			/* If two items are selected, measure they distance */
+			if (screen.selectionInfo.selectedNodeArray->len == 2) {
+				gerbv_selection_item_t item[2];
+				gerbv_net_t *net[2];
+
+				item[0] = g_array_index (
+					screen.selectionInfo.selectedNodeArray,
+						  gerbv_selection_item_t, 0);
+				item[1] = g_array_index (
+					screen.selectionInfo.selectedNodeArray,
+						  gerbv_selection_item_t, 1);
+				net[0] = item[0].net;
+				net[1] = item[1].net;
+
+				if ((net[0]->aperture_state ==
+						net[1]->aperture_state)
+				 && (net[0]->aperture_state ==
+						GERBV_APERTURE_STATE_FLASH)) {
+					screen.measure_start_x = net[0]->stop_x;
+					screen.measure_start_y = net[0]->stop_y;
+					screen.measure_last_x =  net[1]->stop_x;
+					screen.measure_last_y =  net[1]->stop_y;
+
+					render_draw_measure_distance();
+				}
+			}
 			break;
 		default:
 			break;
 	}
+
 	callbacks_switch_to_normal_tool_cursor (toolNumber);
 	callbacks_update_statusbar();
 	screen.win.updatingTools = FALSE;
