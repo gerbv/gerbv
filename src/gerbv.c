@@ -540,6 +540,12 @@ gerbv_create_rs274x_image_from_filename (gchar *filename){
 	return returnImage;
 }
 
+static inline int isnormal_or_zero(double x)
+{
+	int cl = fpclassify(x);
+	return cl == FP_NORMAL || cl == FP_ZERO;
+}
+
 /* ------------------------------------------------------------------ */
 void
 gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t *boundingbox)
@@ -563,12 +569,13 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 			minY = info->min_y;
 			maxX = info->max_x;
 			maxY = info->max_y;
-			
-			if (!isnormal(minX)||!isnormal(minY)||!isnormal(maxX)||!isnormal(maxY)){
+
+			if (!isnormal_or_zero(minX) || !isnormal_or_zero(minY)
+			 || !isnormal_or_zero(maxX) || !isnormal_or_zero(maxY)) {
 				continue;
 			}
+
 			/* transform the bounding box based on the user transform */
-	
 			cairo_matrix_t fullMatrix;
 			cairo_matrix_init (&fullMatrix, 1, 0, 0, 1, 0, 0);
 
