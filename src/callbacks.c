@@ -1961,10 +1961,17 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 						net[1]->aperture_state)
 				 && (net[0]->aperture_state ==
 						GERBV_APERTURE_STATE_FLASH)) {
-					screen.measure_start_x = net[0]->stop_x;
-					screen.measure_start_y = net[0]->stop_y;
-					screen.measure_last_x =  net[1]->stop_x;
-					screen.measure_last_y =  net[1]->stop_y;
+					gerbv_get_transformed_coord(
+							&screen.measure_start_x,
+							&screen.measure_start_y,
+							net[0], item[0].image,
+							mainProject);
+
+					gerbv_get_transformed_coord(
+							&screen.measure_last_x,
+							&screen.measure_last_y,
+							net[1], item[1].image,
+							mainProject);
 
 					render_draw_measure_distance();
 				}

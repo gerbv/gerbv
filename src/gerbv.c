@@ -929,4 +929,57 @@ gerbv_attribute_dup (gerbv_HID_Attribute *attributeList, int n_attr)
   return nl;
 }
 
+gerbv_fileinfo_t *
+gerbv_get_fileinfo_for_image(const gerbv_image_t *image,
+		const gerbv_project_t *project)
+{
+	int i;
+
+	for (i = 0; i <= project->last_loaded; i++) {
+		if (project->file[i]->image == image)
+			return project->file[i];
+	}
+
+	return NULL;	
+}
+
+static inline void
+rotate_coord(double *x, double *y, double rad)
+{
+	double x0 = *x;
+
+	*x = x0*cos(rad) - *y*sin(rad);
+	*y = x0*sin(rad) + *y*cos(rad);
+}
+
+int
+gerbv_get_transformed_coord(double *x, double *y, const gerbv_net_t *net,
+		const gerbv_image_t *image, const gerbv_project_t *project)
+{
+	gerbv_user_transformation_t *trans;
+	gerbv_fileinfo_t *fileinfo;
+
+	fileinfo = gerbv_get_fileinfo_for_image(image, project);
+	if (fileinfo == NULL) {
+		dprintf("%s(): NULL fileinfo\n", __func__);
+		return -1;
+	}
+	trans = &fileinfo->transform;
+
+	*x = trans->scaleX * net->stop_x;
+	*y = trans->scaleY * net->stop_y;
+
+	rotate_coord(x, y, trans->rotation);
+
+	if (trans->mirrorAroundY)
+		*x = -*x;
+
+	if (trans->mirrorAroundX)
+		*y = -*y;
+
+	*x += trans->translateX;
+	*y += trans->translateY;
+
+	return 0;
+}
 

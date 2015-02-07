@@ -445,8 +445,8 @@ typedef struct {
 } gerbv_drill_stats_t;
 
 typedef struct {
-	gpointer image;
-	gpointer net;
+	gpointer image;		/* gerbv_image_t* */
+	gpointer net;		/* gerbv_net_t* */
 } gerbv_selection_item_t;
 
 /*! Struct holding info about the last selection */
@@ -968,6 +968,16 @@ gerbv_attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList, int n
 
 gerbv_HID_Attribute *
 gerbv_attribute_dup (gerbv_HID_Attribute *, int);
+
+/*! Return found fileinfo for image, or NULL */
+gerbv_fileinfo_t *
+gerbv_get_fileinfo_for_image(const gerbv_image_t *image,
+				const gerbv_project_t *project);
+
+/*! Get transformed coordinate x and y for net in image in project */
+int
+gerbv_get_transformed_coord(double *x, double *y, const gerbv_net_t *net,
+		const gerbv_image_t *image, const gerbv_project_t *project);
 
 #if defined(__cplusplus)
 }
