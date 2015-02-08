@@ -353,21 +353,16 @@ render_toggle_measure_line(void)
 void
 render_draw_measure_distance(void)
 {
-	gdouble x1, y1, x2, y2;
 	gdouble dx, dy;
 
-	x1 = MIN(screen.measure_start_x, screen.measure_last_x);
-	y1 = MIN(screen.measure_start_y, screen.measure_last_y);
-	x2 = MAX(screen.measure_start_x, screen.measure_last_x);
-	y2 = MAX(screen.measure_start_y, screen.measure_last_y);
-	dx = (x2 - x1);
-	dy = (y2 - y1);
-    
+	dx = fabs (screen.measure_start_x - screen.measure_last_x);
+	dy = fabs (screen.measure_start_y - screen.measure_last_y);
+
 	screen.win.lastMeasuredX = dx;
 	screen.win.lastMeasuredY = dy;
 	callbacks_update_statusbar_measured_distance (dx, dy);
 	render_toggle_measure_line();
-} /* draw_measure_distance */
+}
 
 /* ------------------------------------------------------ */
 static void render_selection (void)
