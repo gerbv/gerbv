@@ -594,6 +594,16 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget,
 	}
 }
 
+static void
+draw_cairo_cross (cairo_t *cairoTarget, gdouble xc, gdouble yc, gdouble r)
+{
+	cairo_move_to (cairoTarget, xc, yc - r);
+	cairo_rel_line_to (cairoTarget,  0, 2*r);
+	cairo_move_to (cairoTarget, xc - r, yc);
+	cairo_rel_line_to (cairoTarget, 2*r, 0);
+	cairo_stroke (cairoTarget);
+}
+
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		gdouble pixelWidth, enum draw_mode drawMode,
@@ -601,9 +611,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		gerbv_render_info_t *renderInfo, gboolean allowOptimization,
 		gerbv_user_transformation_t transform, gboolean pixelOutput)
 {
+	const int hole_cross_inc_px = 8;
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
-	gdouble p0, p1, p2, p3, p4, dx, dy, lineWidth;
+	gdouble p0, p1, p2, p3, p4, dx, dy, lineWidth, r;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
@@ -857,6 +868,19 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 
 						switch (image->aperture[net->aperture]->type) {
 							case GERBV_APTYPE_CIRCLE :
+								if (renderInfo->show_cross_on_drill_holes
+								&&  image->layertype == GERBV_LAYERTYPE_DRILL) {
+									/* Draw center crosses on slot hole */
+									cairo_set_line_width (cairoTarget, pixelWidth);
+									cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
+									r = image->aperture[net->aperture]->parameter[0]/2.0 +
+										hole_cross_inc_px*pixelWidth;
+									draw_cairo_cross (cairoTarget, x1, y1, r);
+									draw_cairo_cross (cairoTarget, x2, y2, r);
+									cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+									cairo_set_line_width (cairoTarget, lineWidth);
+								}
+
 								draw_cairo_move_to (cairoTarget, x1, y1, oddWidth, pixelOutput);
 								draw_cairo_line_to (cairoTarget, x2, y2, oddWidth, pixelOutput);
 								draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
@@ -933,6 +957,17 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				
 				switch (image->aperture[net->aperture]->type) {
 					case GERBV_APTYPE_CIRCLE :
+						if (renderInfo->show_cross_on_drill_holes
+						&& image->layertype == GERBV_LAYERTYPE_DRILL) {
+							/* Draw center cross on drill hole */
+							cairo_set_line_width (cairoTarget, pixelWidth);
+							cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
+							r = p0/2.0 + hole_cross_inc_px*pixelWidth;
+							draw_cairo_cross (cairoTarget, 0, 0, r);
+							cairo_set_line_width (cairoTarget, lineWidth);
+							cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+						}
+
 						gerbv_draw_circle(cairoTarget, p0);
 						gerbv_draw_aperature_hole (cairoTarget, p1, p2, pixelOutput);
 						break;

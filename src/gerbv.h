@@ -636,7 +636,7 @@ typedef struct {
   int last_loaded; /*!< the number of fileinfos currently in the project */
   int renderType; /*!< the type of renderer to use */
   gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
-  gboolean show_invisible_selection; /*!< TRUE to show selected objects on invisible layers */
+  gboolean show_invisible_selection; /*!< TRUE to show selected objects on invisible files */
   gchar *path; /*!< the default path to load new files from */
   gchar *execpath;    /*!< the path to executed version of Gerbv */
   gchar *execname;    /*!< the path plus executible name for Gerbv */
@@ -660,6 +660,7 @@ typedef struct {
 	gerbv_render_types_t renderType; /*!< the type of rendering to use */
 	gint displayWidth; /*!< the width of the scene (in pixels, or points depending on the surface type) */
 	gint displayHeight; /*!< the height of the scene (in pixels, or points depending on the surface type) */
+	gboolean show_cross_on_drill_holes; /*!< TRUE to show cross on drill holes */
 } gerbv_render_info_t;
 
 //! Allocate a new gerbv_image structure

@@ -169,6 +169,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_view_menu;
 	GtkWidget *view_fullscreen;
 	GtkWidget *show_selection_on_invisible;
+	GtkWidget *show_cross_on_drill_holes;
 	GtkWidget *show_toolbar;
 	GtkWidget *show_sidepane;
 	GtkWidget *separator3;
@@ -546,6 +547,13 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, show_selection_on_invisible, _("Show selected objects on invisible layers"), NULL);
 	SET_ACCELS (show_selection_on_invisible, ACCEL_VIEW_ALL_SELECTION);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_selection_on_invisible);
+
+	show_cross_on_drill_holes = gtk_check_menu_item_new_with_mnemonic (_("Show _cross on drill holes"));
+	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_cross_on_drill_holes), FALSE);
+	gtk_tooltips_set_tip (tooltips, show_cross_on_drill_holes,
+			_("Show cross on drill holes for Normal or High quality rendering"), NULL);
+	SET_ACCELS (show_cross_on_drill_holes, ACCEL_VIEW_CROSS_ON_DRILL_HOLES);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_cross_on_drill_holes);
 	
 	layer_visibility_menu = gtk_menu_new ();
 	gtk_menu_set_accel_group (GTK_MENU(layer_visibility_menu), accel_group);
@@ -1209,6 +1217,9 @@ interface_create_gui (int req_width, int req_height)
 	                  sidepane_vbox);
 	g_signal_connect ((gpointer) show_selection_on_invisible, "toggled",
 	                  G_CALLBACK (callbacks_show_selection_on_invisible),
+	                  NULL);
+	g_signal_connect ((gpointer) show_cross_on_drill_holes, "toggled",
+	                  G_CALLBACK (callbacks_show_cross_on_drill_holes),
 	                  NULL);
 	g_signal_connect ((gpointer) toggle_layer_visibility_item1, "activate",
 	                  G_CALLBACK (callbacks_toggle_layer_visibility_activate),

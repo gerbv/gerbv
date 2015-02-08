@@ -93,6 +93,9 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_VIEW_ALL_SELECTION_PATH		ACCEL_VIEW "/Show all selection"
 #define ACCEL_VIEW_ALL_SELECTION_KEY		GDK_l
 #define ACCEL_VIEW_ALL_SELECTION_MOD		(GdkModifierType) 0
+#define ACCEL_VIEW_CROSS_ON_DRILL_HOLES_PATH	ACCEL_VIEW "/Show cross on drill holes"
+#define ACCEL_VIEW_CROSS_ON_DRILL_HOLES_KEY	GDK_x
+#define ACCEL_VIEW_CROSS_ON_DRILL_HOLES_MOD	(GdkModifierType) 0
 #define ACCEL_VIEW_VIS				ACCEL_VIEW "/Toggle layer visibilty"
 #define ACCEL_VIEW_VIS_LAYER1_PATH		ACCEL_VIEW_VIS "/Toggle visibility of layer 1"
 #define ACCEL_VIEW_VIS_LAYER1_KEY		GDK_1
