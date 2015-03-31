@@ -551,7 +551,7 @@ interface_create_gui (int req_width, int req_height)
 	show_cross_on_drill_holes = gtk_check_menu_item_new_with_mnemonic (_("Show _cross on drill holes"));
 	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_cross_on_drill_holes), FALSE);
 	gtk_tooltips_set_tip (tooltips, show_cross_on_drill_holes,
-			_("Show cross on drill holes for Normal or High quality rendering"), NULL);
+			_("Show cross on drill holes"), NULL);
 	SET_ACCELS (show_cross_on_drill_holes, ACCEL_VIEW_CROSS_ON_DRILL_HOLES);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_cross_on_drill_holes);
 	

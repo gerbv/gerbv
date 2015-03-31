@@ -827,6 +827,15 @@ draw_gdk_apply_netstate_transformation  (cairo_matrix_t *fullMatrix, cairo_matri
 	}
 }
 
+static void
+draw_gdk_cross (GdkPixmap *pixmap, GdkGC *gc, gint xc, gint yc, gint r)
+{
+	gdk_gc_set_line_attributes (gc, 1, GDK_LINE_SOLID,
+			GDK_CAP_BUTT, GDK_JOIN_MITER);
+	gdk_draw_line (pixmap, gc, xc - r, yc, xc + r, yc);
+	gdk_draw_line (pixmap, gc, xc, yc - r, xc, yc + r);
+}
+
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
@@ -837,6 +846,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	     gerbv_selection_info_t *selectionInfo, gerbv_render_info_t *renderInfo,
 	     gerbv_user_transformation_t transform)
 {
+	const int hole_cross_inc_px = 8;
 	GdkGC *gc = gdk_gc_new(*pixmap);
 	GdkGC *pgc = gdk_gc_new(*pixmap);
 	GdkGCValues gc_values;
@@ -850,8 +860,15 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	int cp_x = 0, cp_y = 0;
 	GdkColor transparent, opaque;
 	gerbv_polarity_t polarity;
-	gdouble tempX,tempY;
+	gdouble tempX, tempY, r;
 	gdouble minX=0,minY=0,maxX=0,maxY=0;
+
+	if (image == NULL || image->netlist == NULL) {
+		gdk_gc_unref(gc);
+		gdk_gc_unref(pgc);
+
+		return 0;
+	}
 
 	if (transform.inverted) {
 		if (image->info->polarity == GERBV_POLARITY_POSITIVE)
@@ -910,16 +927,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					renderInfo->scaleFactorX);
 		maxY = renderInfo->lowerLeftY + (renderInfo->displayHeight /
 					renderInfo->scaleFactorY);
-	}
-
-	if (image == NULL || image->netlist == NULL) {
-		/*
-		 * Destroy GCs before exiting
-		 */
-		gdk_gc_unref(gc);
-		gdk_gc_unref(pgc);
-
-		return 0;
 	}
 
 	/* Set up the two "colors" we have */
@@ -1093,24 +1100,17 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		if (ylong2 > G_MAXINT) y2 = G_MAXINT;
 		else if (ylong2 < G_MININT) y2 = G_MININT;
 		else y2 = (int)ylong2;
-			
+
 		switch (net->aperture_state) {
 		case GERBV_APERTURE_STATE_ON :
 		    tempX = image->aperture[net->aperture]->parameter[0];
 		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
 		    p1 = (int)round(tempX);
 
-		   // p1 = (int)round(image->aperture[net->aperture]->parameter[0] * scale);
-		    if (image->aperture[net->aperture]->type == GERBV_APTYPE_RECTANGLE)
-			gdk_gc_set_line_attributes(gc, p1, 
-						   GDK_LINE_SOLID, 
-						   GDK_CAP_PROJECTING, 
-						   GDK_JOIN_MITER);
-		    else
-			gdk_gc_set_line_attributes(gc, p1, 
-						   GDK_LINE_SOLID, 
-						   GDK_CAP_ROUND, 
-						   GDK_JOIN_MITER);
+		    gdk_gc_set_line_attributes(gc, p1, GDK_LINE_SOLID,
+				    (image->aperture[net->aperture]->type == GERBV_APTYPE_RECTANGLE)?
+						GDK_CAP_PROJECTING: GDK_CAP_ROUND,
+				    GDK_JOIN_MITER);
 		    
 		    switch (net->interpolation) {
 		    case GERBV_INTERPOLATION_x10 :
@@ -1128,29 +1128,39 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 						   GDK_JOIN_MITER);
 			break;
 		    case GERBV_INTERPOLATION_LINEARx1 :
-			if (image->aperture[net->aperture]->type != GERBV_APTYPE_RECTANGLE)
-			    gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
-			else {
-			    gint dx, dy;
-			    GdkPoint poly[6];
-			    
-			    tempX = image->aperture[net->aperture]->parameter[0]/2;
-			    tempY = image->aperture[net->aperture]->parameter[1]/2;
-			    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
-			    dx = (int)round(tempX);
-			    dy = (int)round(tempY);
+			if (image->aperture[net->aperture]->type != GERBV_APTYPE_RECTANGLE) {
+				gdk_draw_line(*pixmap, gc, x1, y1, x2, y2);
 
-			    if(x1 > x2) dx = -dx;
-			    if(y1 > y2) dy = -dy;
-			    poly[0].x = x1 - dx; poly[0].y = y1 - dy;
-			    poly[1].x = x1 - dx; poly[1].y = y1 + dy;
-			    poly[2].x = x2 - dx; poly[2].y = y2 + dy;
-			    poly[3].x = x2 + dx; poly[3].y = y2 + dy;
-			    poly[4].x = x2 + dx; poly[4].y = y2 - dy;
-			    poly[5].x = x1 + dx; poly[5].y = y1 - dy;
-			    gdk_draw_polygon(*pixmap, gc, 1, poly, 6);
+				if (renderInfo->show_cross_on_drill_holes
+				&& image->layertype == GERBV_LAYERTYPE_DRILL) {
+					/* Draw crosses on drill slot start and end */
+					r = p1/2.0 + hole_cross_inc_px;
+					draw_gdk_cross(*pixmap, gc, x1, y1, r);
+					draw_gdk_cross(*pixmap, gc, x2, y2, r);
+				}
+			    break;
 			}
-				break;
+
+			gint dx, dy;
+			GdkPoint poly[6];
+
+			tempX = image->aperture[net->aperture]->parameter[0]/2;
+			tempY = image->aperture[net->aperture]->parameter[1]/2;
+			cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
+			dx = (int)round(tempX);
+			dy = (int)round(tempY);
+
+			if(x1 > x2) dx = -dx;
+			if(y1 > y2) dy = -dy;
+			poly[0].x = x1 - dx; poly[0].y = y1 - dy;
+			poly[1].x = x1 - dx; poly[1].y = y1 + dy;
+			poly[2].x = x2 - dx; poly[2].y = y2 + dy;
+			poly[3].x = x2 + dx; poly[3].y = y2 + dy;
+			poly[4].x = x2 + dx; poly[4].y = y2 - dy;
+			poly[5].x = x1 + dx; poly[5].y = y1 - dy;
+			gdk_draw_polygon(*pixmap, gc, 1, poly, 6);
+			break;
+
 		    case GERBV_INTERPOLATION_CW_CIRCULAR :
 		    case GERBV_INTERPOLATION_CCW_CIRCULAR :
 			gerbv_gdk_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
@@ -1169,11 +1179,19 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    p1 = (int)round(tempX);
 		    p2 = (int)round(tempY);
 		    tempX = image->aperture[net->aperture]->parameter[2];
+		    tempY = 0;
 		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
 		    
 		    switch (image->aperture[net->aperture]->type) {
 		    case GERBV_APTYPE_CIRCLE :
 			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
+
+			if (renderInfo->show_cross_on_drill_holes
+			&& image->layertype == GERBV_LAYERTYPE_DRILL) {
+				r = p1/2.0 + hole_cross_inc_px;
+				draw_gdk_cross(*pixmap, gc, x2, y2, r);
+			}
+
 			/*
 			 * If circle has an inner diameter we must remove
 			 * that part of the circle to make a hole in it.
