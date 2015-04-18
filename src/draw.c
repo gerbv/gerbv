@@ -719,28 +719,33 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			drawOperatorClear = CAIRO_OPERATOR_CLEAR;
     			drawOperatorDark = CAIRO_OPERATOR_OVER;
 		}
-		/* draw any knockout areas */
-		if (net->layer->knockout.firstInstance == TRUE) {
+
+		/* Draw any knockout areas */
+		gerbv_knockout_t *ko = &net->layer->knockout;
+		if (ko->firstInstance == TRUE) {
 			cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
-			if (net->layer->knockout.polarity == GERBV_POLARITY_CLEAR) {
+
+			if (ko->polarity == GERBV_POLARITY_CLEAR) {
 				cairo_set_operator (cairoTarget, drawOperatorClear);
-			}
-			else {
+			} else {
 				cairo_set_operator (cairoTarget, drawOperatorDark);
 			}
 			cairo_new_path (cairoTarget);
-			cairo_rectangle (cairoTarget, net->layer->knockout.lowerLeftX - net->layer->knockout.border,
-					net->layer->knockout.lowerLeftY - net->layer->knockout.border,
-					net->layer->knockout.width + (net->layer->knockout.border*2),
-					net->layer->knockout.height + (net->layer->knockout.border*2));
+			cairo_rectangle (cairoTarget,
+					ko->lowerLeftX - ko->border,
+					ko->lowerLeftY - ko->border,
+					ko->width + 2*ko->border,
+					ko->height + 2*ko->border);
 			draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 			cairo_set_operator (cairoTarget, oldOperator);
 		}
-		/* finally, reapply old netstate transformation */
+
+		/* Finally, reapply old netstate transformation */
 		cairo_save (cairoTarget);
 		draw_apply_netstate_transformation (cairoTarget, net->state);
 		oldLayer = net->layer;
 	}
+
 	/* check if this is a new netstate */
 	if (net->state != oldState){
 		/* pop the transformation matrix back to the "pre-state" state and
@@ -752,6 +757,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		draw_apply_netstate_transformation (cairoTarget, net->state);
 		oldState = net->state;	
 	}
+
 	/* if we are only drawing from the selection buffer, search if this net is
 	   in the buffer */
 	if (drawMode == DRAW_SELECTIONS) {
@@ -767,11 +773,12 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	}
 
 	/* step and repeat */
+	gerbv_step_and_repeat_t *sr = &net->layer->stepAndRepeat;
 	int ix, iy;
-	for (ix = 0; ix < net->layer->stepAndRepeat.X; ix++) {
-	    for (iy = 0; iy < net->layer->stepAndRepeat.Y; iy++) {
-		double sr_x = ix * net->layer->stepAndRepeat.dist_X;
-		double sr_y = iy * net->layer->stepAndRepeat.dist_Y;
+	for (ix = 0; ix < sr->X; ix++) {
+	    for (iy = 0; iy < sr->Y; iy++) {
+		double sr_x = ix * sr->dist_X;
+		double sr_y = iy * sr->dist_Y;
 		
 		if ((useOptimizations && pixelOutput) &&
 				((net->boundingBox.right+sr_x < minX)
@@ -804,9 +811,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			cairo_show_text (cairoTarget, net->label->str);
 			cairo_restore (cairoTarget);
 		}
-		/*
-		* Polygon Area Fill routines
-		*/
+
+		/* Polygon area fill routines */
 		switch (net->interpolation) {
 			case GERBV_INTERPOLATION_PAREA_START :
 				draw_render_polygon_object (net, cairoTarget, sr_x, sr_y, image,
@@ -823,13 +829,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		 * This happens when gerber files starts, but hasn't decided on 
 		 * which aperture to use.
 		 */
-		if (image->aperture[net->aperture] == NULL) {
-		  /* Commenting this out since it gets emitted every time you click on the screen 
-		  if (net->aperture_state != GERBV_APERTURE_STATE_OFF)
-		    GERB_MESSAGE("Aperture D%d is not defined", net->aperture);
-		  */
-		  continue;
-		}
+		if (image->aperture[net->aperture] == NULL)
+			continue;
+
 		switch (net->aperture_state) {
 			case GERBV_APERTURE_STATE_ON :
 				/* if the aperture width is truly 0, then render as a 1 pixel width
@@ -997,7 +999,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					case GERBV_APTYPE_MACRO :
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 								  image->aperture[net->aperture]->simplified,
-								  (gint) image->aperture[net->aperture]->parameter[0], pixelWidth,
+								  (gint)p0, pixelWidth,
 								  drawMode, selectionInfo, image, net);
 						break;   
 					default :
@@ -1022,5 +1024,4 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 
     return 1;
 }
-
 
