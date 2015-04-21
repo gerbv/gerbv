@@ -953,7 +953,7 @@ rotate_coord(double *x, double *y, double rad)
 }
 
 int
-gerbv_get_transformed_coord(double *x, double *y, const gerbv_net_t *net,
+gerbv_transform_coord_for_image(double *x, double *y,
 		const gerbv_image_t *image, const gerbv_project_t *project)
 {
 	gerbv_user_transformation_t *trans;
@@ -966,8 +966,8 @@ gerbv_get_transformed_coord(double *x, double *y, const gerbv_net_t *net,
 	}
 	trans = &fileinfo->transform;
 
-	*x = trans->scaleX * net->stop_x;
-	*y = trans->scaleY * net->stop_y;
+	*x = trans->scaleX * *x;
+	*y = trans->scaleY * *y;
 
 	rotate_coord(x, y, trans->rotation);
 

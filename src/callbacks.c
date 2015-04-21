@@ -1969,16 +1969,20 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 						net[1]->aperture_state)
 				 && (net[0]->aperture_state ==
 						GERBV_APERTURE_STATE_FLASH)) {
-					gerbv_get_transformed_coord(
+					screen.measure_start_x = net[0]->stop_x;
+					screen.measure_start_y = net[0]->stop_y;
+					gerbv_transform_coord_for_image(
 							&screen.measure_start_x,
 							&screen.measure_start_y,
-							net[0], item[0].image,
+							item[0].image,
 							mainProject);
 
-					gerbv_get_transformed_coord(
+					screen.measure_last_x = net[1]->stop_x;
+					screen.measure_last_y = net[1]->stop_y;
+					gerbv_transform_coord_for_image(
 							&screen.measure_last_x,
 							&screen.measure_last_y,
-							net[1], item[1].image,
+							item[1].image,
 							mainProject);
 
 					render_draw_measure_distance();
@@ -2538,11 +2542,13 @@ callbacks_update_layer_tree (void) {
 
 /* --------------------------------------------------------------------------- */
 void
-callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_data) {
+callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_data)
+{
 	int i, j;
 	const char *layer_name, *net_label, *file_name;
 	gboolean validAperture;
 	double length = 0;
+	double x, y;
 
 	gint index=callbacks_get_selected_row_index ();
 	if (index < 0 || screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
@@ -2625,10 +2631,21 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					if (validAperture) {
 						aperture_report(image->aperture, net->aperture);
 					}
+
+					x = net->start_x;
+					y = net->start_y;
+					gerbv_transform_coord_for_image(&x, &y,
+							image, mainProject);
 					g_message (_("    Start location: (%g, %g)"),
-							screen_units(net->start_x), screen_units(net->start_y));
+							screen_units(x), screen_units(y));
+
+					x = net->stop_x;
+					y = net->stop_y;
+					gerbv_transform_coord_for_image(&x, &y,
+							image, mainProject);
 					g_message (_("    Stop location: (%g, %g)"),
-							screen_units(net->stop_x), screen_units(net->stop_y));
+							screen_units(x), screen_units(y));
+
 					if (show_length) {
 						screen.length_sum += length;
 						g_message (_("    Length: %g (sum: %g)"),
@@ -2644,8 +2661,13 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					if (validAperture) {
 						aperture_report(image->aperture, net->aperture);
 					}
+
+					x = net->stop_x;
+					y = net->stop_y;
+					gerbv_transform_coord_for_image(&x, &y,
+							image, mainProject);
 					g_message (_("    Location: (%g, %g)"),
-							screen_units(net->stop_x), screen_units(net->stop_y));
+							screen_units(x), screen_units(y));
 					g_message (_("    Layer name: %s"), layer_name);
 					g_message (_("    Net label: %s"), net_label);
 					g_message (_("    In file: %s"), file_name);

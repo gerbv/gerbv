@@ -975,9 +975,9 @@ gerbv_fileinfo_t *
 gerbv_get_fileinfo_for_image(const gerbv_image_t *image,
 				const gerbv_project_t *project);
 
-/*! Get transformed coordinate x and y for net in image in project */
+/*! Transform coordinate x and y for image in project */
 int
-gerbv_get_transformed_coord(double *x, double *y, const gerbv_net_t *net,
+gerbv_transform_coord_for_image(double *x, double *y,
 		const gerbv_image_t *image, const gerbv_project_t *project);
 
 #if defined(__cplusplus)
