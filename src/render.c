@@ -23,8 +23,8 @@
  */
 
 /** \file render.c
-    \brief Rendering support functions for libgerbv
-    \ingroup libgerbv
+    \brief Rendering support functions for gerbv
+    \ingroup gerbv
 */
 
 #include "gerbv.h"
@@ -52,6 +52,7 @@
 #include "callbacks.h"
 #include "interface.h"
 #include "render.h"
+#include "selection.h"
 
 #ifdef WIN32
 # include <cairo-win32.h>
@@ -371,10 +372,10 @@ static void render_selection (void)
 	gerbv_fileinfo_t *file;
 	gdouble pixel_width;
 	cairo_t *cr;
-	int i, j;
-	
-	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY
-	|| screen.selectionInfo.selectedNodeArray->len == 0)
+	int i;
+	guint j;
+
+	if (selection_length (&screen.selectionInfo) == 0)
 		return;
 
 	if (screen.selectionRenderData)
@@ -398,11 +399,9 @@ static void render_selection (void)
 		(!mainProject->show_invisible_selection && !file->isVisible))
 			continue;
 
-		for (j = 0; j < screen.selectionInfo.selectedNodeArray->len; j++) {
-			sel_item = g_array_index(
-					screen.selectionInfo.selectedNodeArray,
-					gerbv_selection_item_t, j);
-
+		for (j = 0; j < selection_length (&screen.selectionInfo); j++) {
+			sel_item = selection_get_item_by_index (
+					&screen.selectionInfo, j);
 			if (file->image != sel_item.image)
 				continue;
 
@@ -474,30 +473,20 @@ void render_refresh_rendered_image_on_screen (void) {
 
 /* ------------------------------------------------------ */
 void
-render_clear_selection_buffer (void){
-	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY)
-		return;
+render_remove_selected_objects_belonging_to_layer (
+			gerbv_selection_info_t *sel_info, gerbv_image_t *image)
+{
+	guint i;
 
-	g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
-		screen.selectionInfo.selectedNodeArray->len);
-	screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
-	callbacks_update_selected_object_message (FALSE);
-}
+	for (i = 0; i < selection_length (sel_info);) {
+		gerbv_selection_item_t sItem =
+			selection_get_item_by_index (sel_info, i);
 
-void
-render_remove_selected_objects_belonging_to_layer (gint index) {
-	int i;
-	
-	for (i=screen.selectionInfo.selectedNodeArray->len-1; i>=0; i--) {
-		gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
-				gerbv_selection_item_t, i);
-
-		gerbv_image_t *matchImage = (gerbv_image_t *) sItem.image;	
-		if (mainProject->file[index]->image == matchImage) {
-			g_array_remove_index (screen.selectionInfo.selectedNodeArray, index);
-		}
+		if (image == (gerbv_image_t *) sItem.image)
+			selection_clear_item_by_index (sel_info, i);
+		else
+			i++;
 	}
-	callbacks_update_selected_object_message (FALSE);
 }
 
 /* ------------------------------------------------------ */
@@ -525,9 +514,8 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex,
 
 	/* clear the old selection array if desired */
 	if ((action == SELECTION_REPLACE)
-	&& (screen.selectionInfo.selectedNodeArray->len))
-		g_array_remove_range (screen.selectionInfo.selectedNodeArray, 0,
-				screen.selectionInfo.selectedNodeArray->len);
+	 && (selection_length (&screen.selectionInfo) != 0))
+		selection_clear (&screen.selectionInfo);
 
 	if (action == SELECTION_TOGGLE)
 		mode = FIND_SELECTIONS_TOGGLE;
@@ -548,11 +536,6 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex,
 			mode, &screen.selectionInfo, &screenRenderInfo, TRUE,
 			mainProject->file[activeFileIndex]->transform, TRUE);
 	cairo_destroy (cr);
-
-	/* if the selection array is empty, switch the "mode" to empty to make it
-	   easier to check if it is holding anything */
-	if (screen.selectionInfo.selectedNodeArray->len == 0)
-		screen.selectionInfo.type = GERBV_SELECTION_EMPTY;
 
 	/* re-render the selection buffer layer */
 	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
@@ -622,8 +605,9 @@ void render_recreate_composite_surface ()
 			}
 		}
 	}
+
 	/* render the selection layer at the end */
-	if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
+	if (selection_length (&screen.selectionInfo) != 0) {
 		render_selection ();
 		cairo_set_source_surface (cr, (cairo_surface_t *) screen.selectionRenderData,
 			                              0, 0);

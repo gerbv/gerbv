@@ -35,21 +35,25 @@ pkgconfig_DATA = libgerbv.pc
 
 libgerbv_la_SOURCES= \
 		amacro.c amacro.h \
-		common.h tooltable.c \
-		draw.c \
-		draw.h \
-		draw-gdk.c \
-		draw-gdk.h \
+		common.h \
+		csv.c csv.h csv_defines.h \
+		draw-gdk.c draw-gdk.h \
+		draw.c draw.h \
 		drill.c drill.h \
+		drill_stats.c drill_stats.h \
+		export-drill.c \
+		export-rs274x.c \
 		exportimage.c \
-		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
-		gerber.h gerbv.c gerbv.h gerbv_icon.h \
+		gerb_file.c gerb_file.h \
+		gerb_image.c gerb_image.h \
+		gerb_stats.c gerb_stats.h \
+		gerber.c gerber.h \
+		gerbv.c gerbv.h \
+		gerbv_icon.h \
 		gettext.h \
 		pick-and-place.c pick-and-place.h \
-		csv.c csv.h csv_defines.h \
-		gerb_stats.c gerb_stats.h \
-		drill_stats.c drill_stats.h export-rs274x.c \
-		export-drill.c
+		selection.c selection.h \
+		tooltable.c
 
 # libgerbv shared library version.  A fairly strict rule should
 # be followed for when this version is updated.  Those rules,
@@ -78,18 +82,19 @@ libgerbv_la_SOURCES= \
 libgerbv_la_LDFLAGS = -version-info 1:7:0 -no-undefined
 
 gerbv_SOURCES = \
-		opdefines.h \
-		dynload.c dynload.h \
 		attribute.c attribute.h \
+		callbacks.c callbacks.h \
 		common.h \
-                lrealpath.c lrealpath.h \
-		main.h main.c \
-		project.c project.h scheme-private.h scheme.c \
-		scheme.h \
-		table.h table.c \
-		callbacks.c callbacks.h interface.c \
-		interface.h render.c render.h \
-		icons.h
+		dynload.c dynload.h \
+		icons.h \
+		interface.c interface.h \
+		main.c main.h \
+		opdefines.h \
+		project.c project.h \
+		render.c render.h \
+		scheme-private.h scheme.c scheme.h \
+		table.c table.h \
+		lrealpath.c lrealpath.h
 
 gerbv_LDADD = libgerbv.la
 gerbv_DEPENDENCIES = libgerbv.la

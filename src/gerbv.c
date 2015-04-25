@@ -57,6 +57,7 @@
 #include "common.h"
 #include "gerber.h"
 #include "drill.h"
+#include "selection.h"
 
 #include "draw-gdk.h"
 #include "draw.h"
@@ -740,7 +741,8 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 	}
 
 	/* Render the selection group to the top of the output */
-	if (selectionInfo && (selectionInfo->type != GERBV_SELECTION_EMPTY)) {
+	if (selectionInfo->selectedNodeArray
+	&& (selection_length (selectionInfo) != 0)) {
 		if (!selectionColor->pixel)
 	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), selectionColor, FALSE, TRUE);
 
@@ -750,35 +752,34 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 
 		gerbv_selection_item_t sItem;
 		gerbv_fileinfo_t *file;
-		int j, k;
-		if (selectionInfo->selectedNodeArray->len > 0) {
-			for (j = gerbvProject->last_loaded; j >= 0; j--) {
-				file = gerbvProject->file[j]; 
-				if (!file || (!gerbvProject->show_invisible_selection && !file->isVisible))
+		int j;
+		guint k;
+
+		for (j = gerbvProject->last_loaded; j >= 0; j--) {
+			file = gerbvProject->file[j]; 
+			if (!file || (!gerbvProject->show_invisible_selection && !file->isVisible))
+				continue;
+
+			for (k = 0; k < selection_length (selectionInfo); k++) {
+				sItem = selection_get_item_by_index (selectionInfo, k);
+
+				if (file->image != sItem.image)
 					continue;
 
-				for (k = 0; k < selectionInfo->selectedNodeArray->len; k++) {
-					sItem = g_array_index(selectionInfo->selectedNodeArray,
-							gerbv_selection_item_t, k);
+				/* Have selected image(s) on this layer, draw it */
+				draw_gdk_image_to_pixmap(&clipmask, file->image,
+					renderInfo->scaleFactorX,
+					-(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
+					(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
+					DRAW_SELECTIONS, selectionInfo,
+					renderInfo, file->transform);
 
-					if (file->image != sItem.image)
-						continue;
+				gdk_gc_set_clip_mask(gc, clipmask);
+				gdk_gc_set_clip_origin(gc, 0, 0);
+				gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
+				gdk_gc_set_clip_mask(gc, NULL);
 
-					/* Have selected image(s) on this layer, draw it */
-					draw_gdk_image_to_pixmap(&clipmask, file->image,
-						renderInfo->scaleFactorX,
-						-(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
-						(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-						DRAW_SELECTIONS, selectionInfo,
-						renderInfo, file->transform);
-
-					gdk_gc_set_clip_mask(gc, clipmask);
-					gdk_gc_set_clip_origin(gc, 0, 0);
-					gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
-					gdk_gc_set_clip_mask(gc, NULL);
-
-					break;
-				}
+				break;
 			}
 		}
 	}

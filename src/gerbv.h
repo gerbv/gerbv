@@ -228,8 +228,7 @@ typedef enum {GERBV_JUSTIFY_NOJUSTIFY,
 } gerbv_image_justify_type_t;
 
 /*! The different selection modes available */
-typedef enum {GERBV_SELECTION_EMPTY, /*!< the selection buffer is empty */
-		GERBV_SELECTION_POINT_CLICK, /*!< the user clicked on a single point */
+typedef enum {	GERBV_SELECTION_POINT_CLICK = 1, /*!< the user clicked on a single point */
 		GERBV_SELECTION_DRAG_BOX /*!< the user dragged a box to encompass one or more objects */
 } gerbv_selection_t;
 
@@ -633,7 +632,7 @@ typedef struct {
   int max_files; /*!< the current number of fileinfos in the file array */
   gerbv_fileinfo_t **file; /*!< the array for holding the child fileinfos */
   int curr_index; /*!< the index of the currently active fileinfo */
-  int last_loaded; /*!< the number of fileinfos currently in the project */
+  int last_loaded; /*!< the (number-1) of fileinfos currently in the project */
   int renderType; /*!< the type of renderer to use */
   gboolean check_before_delete;  /*!< TRUE to ask before deleting objects */
   gboolean show_invisible_selection; /*!< TRUE to show selected objects on invisible files */
@@ -691,9 +690,6 @@ gerbv_image_duplicate_image (gerbv_image_t *sourceImage, /*!< the source image *
 void
 gerbv_image_delete_net (gerbv_net_t *currentNet /*!< the net to delete */
 );
-
-void
-gerbv_image_delete_selected_nets (gerbv_image_t *sourceImage, GArray *selectedNodeArray);
 
 gboolean
 gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray, gdouble areaReduction, gint paneRows,

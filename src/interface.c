@@ -43,6 +43,7 @@
 #include "callbacks.h"
 #include "interface.h"
 #include "render.h"
+#include "selection.h"
 
 #include "draw-gdk.h"
 #include "draw.h"
@@ -1573,8 +1574,7 @@ interface_create_gui (int req_width, int req_height)
 
 	request_label_max_size_by_text (screen.win.statusMessageLeft, str_coord);
 
-	screen.selectionInfo.selectedNodeArray = g_array_new (FALSE,
-			FALSE, sizeof(gerbv_selection_item_t));
+	screen.selectionInfo.selectedNodeArray = selection_new_array ();
 	callbacks_change_tool (NULL, (gpointer) 0);
 	rename_main_window("",mainWindow);
 

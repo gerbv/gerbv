@@ -56,6 +56,7 @@
 #include "attribute.h"
 #include "render.h"
 #include "table.h"
+#include "selection.h"
 
 #include "draw-gdk.h"
 
@@ -109,6 +110,7 @@ static double screen_units(double);
 static double line_length(double, double, double, double);
 static double arc_length(double, double);
 static void aperture_report(gerbv_aperture_t *[], int);
+static void update_selected_object_message (gboolean userTriedToSelect);
 
 
 gchar *utf8_strncpy(gchar *dst, const gchar *src, gsize byte_len)
@@ -160,7 +162,8 @@ callbacks_new_activate (GtkMenuItem *menuitem, gpointer user_data)
 	/* Unload all layers and then clear layer window */
 	gerbv_unload_all_layers (mainProject);
 	callbacks_update_layer_tree ();
-	render_clear_selection_buffer ();
+	selection_clear (&screen.selectionInfo);
+	update_selected_object_message (FALSE);
 	
 	/* Destroy project info */
 	if (mainProject->project) {
@@ -286,14 +289,13 @@ callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
 
 /* --------------------------------------------------------- */
 void
-callbacks_revert_activate                     (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+callbacks_revert_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
 	gerbv_revert_all_files (mainProject);
-	render_clear_selection_buffer();
-	callbacks_update_selected_object_message(FALSE);
-	render_refresh_rendered_image_on_screen();
-	callbacks_update_layer_tree();
+	selection_clear (&screen.selectionInfo);
+	update_selected_object_message (FALSE);
+	render_refresh_rendered_image_on_screen ();
+	callbacks_update_layer_tree ();
 }
 
 /* --------------------------------------------------------- */
@@ -1952,16 +1954,14 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.measure_last_y =  0;
 
 			/* If two items are selected, measure they distance */
-			if (screen.selectionInfo.selectedNodeArray->len == 2) {
+			if (selection_length (&screen.selectionInfo) == 2) {
 				gerbv_selection_item_t item[2];
 				gerbv_net_t *net[2];
 
-				item[0] = g_array_index (
-					screen.selectionInfo.selectedNodeArray,
-						  gerbv_selection_item_t, 0);
-				item[1] = g_array_index (
-					screen.selectionInfo.selectedNodeArray,
-						  gerbv_selection_item_t, 1);
+				item[0] = selection_get_item_by_index(
+						&screen.selectionInfo, 0);
+				item[1] = selection_get_item_by_index(
+						&screen.selectionInfo, 1);
 				net[0] = item[0].net;
 				net[1] = item[1].net;
 
@@ -2022,8 +2022,9 @@ callbacks_select_row (gint rowIndex)
   * the layer window on left).
   *
   */
-gint
-callbacks_get_selected_row_index  (void) {
+static gint
+callbacks_get_selected_row_index (void)
+{
 	GtkTreeSelection *selection;
 	GtkTreeIter       iter;
 	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
@@ -2046,19 +2047,21 @@ callbacks_get_selected_row_index  (void) {
 
 /* --------------------------------------------------------- */
 void
-callbacks_remove_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
-	gint index=callbacks_get_selected_row_index();
+callbacks_remove_layer_button_clicked (GtkButton *button, gpointer user_data)
+{
+	gint index = callbacks_get_selected_row_index ();
 	
 	if ((index >= 0) && (index <= mainProject->last_loaded)) {
-		render_remove_selected_objects_belonging_to_layer (index);
+		render_remove_selected_objects_belonging_to_layer (&screen.selectionInfo, mainProject->file[index]->image);
+		update_selected_object_message (FALSE);
+
 		gerbv_unload_layer (mainProject, index);
-	      callbacks_update_layer_tree ();
-	      callbacks_select_row (0);
+		callbacks_update_layer_tree ();
+		callbacks_select_row (0);
 
 		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-			render_refresh_rendered_image_on_screen();
-		}
-		else {
+			render_refresh_rendered_image_on_screen ();
+		} else {
 			render_recreate_composite_surface (screen.drawing_area);
 			callbacks_force_expose_event_for_screen ();
 		}
@@ -2234,13 +2237,19 @@ callbacks_change_background_color_clicked  (GtkButton *button, gpointer   user_d
 
 /* --------------------------------------------------------------------------- */					
 void
-callbacks_reload_layer_clicked  (GtkButton *button, gpointer   user_data) {
-	gint index = callbacks_get_selected_row_index();
+callbacks_reload_layer_clicked (GtkButton *button, gpointer user_data)
+{
+	gint index = callbacks_get_selected_row_index ();
+
 	if (index < 0) {
 		show_no_layers_warning ();
 		return;
 	}
-	render_remove_selected_objects_belonging_to_layer (index);
+
+	render_remove_selected_objects_belonging_to_layer (
+			&screen.selectionInfo, mainProject->file[index]->image);
+	update_selected_object_message (FALSE);
+
 	gerbv_revert_file (mainProject, index);
 	render_refresh_rendered_image_on_screen ();
 	callbacks_update_layer_tree();
@@ -2544,14 +2553,15 @@ callbacks_update_layer_tree (void) {
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_data)
 {
-	int i, j;
+	guint i;
+	int j;
 	const char *layer_name, *net_label, *file_name;
 	gboolean validAperture;
 	double length = 0;
 	double x, y;
 
 	gint index=callbacks_get_selected_row_index ();
-	if (index < 0 || screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
+	if (index < 0 || selection_length (&screen.selectionInfo) == 0) {
 		interface_show_alert_dialog(_("No object is currently selected"),
 			_("Objects must be selected using the pointer tool before you can view the object properties."),
 			FALSE,
@@ -2559,9 +2569,9 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 		return;
 	}
 	
-	for (i=0; i<screen.selectionInfo.selectedNodeArray->len; i++){
-		gerbv_selection_item_t sItem = g_array_index (screen.selectionInfo.selectedNodeArray,
-						  gerbv_selection_item_t, i);
+	for (i = 0; i < selection_length (&screen.selectionInfo); i++){
+		gerbv_selection_item_t sItem =
+			selection_get_item_by_index (&screen.selectionInfo, i);
 
 		gerbv_net_t *net = sItem.net;
 		gerbv_image_t *image = sItem.image;
@@ -2757,7 +2767,8 @@ callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
 	/* for testing, just hard code in some translations here */
 	gerbv_image_move_selected_objects (screen.selectionInfo.selectedNodeArray, -0.050, 0.050);
 	callbacks_update_layer_tree();
-	render_clear_selection_buffer ();
+	selection_clear (&screen.selectionInfo);
+	update_selected_object_message (FALSE);
 	render_refresh_rendered_image_on_screen ();
 }
 
@@ -2766,43 +2777,63 @@ void
 callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 	/* for testing, just hard code in some parameters */
 	gerbv_image_reduce_area_of_selected_objects (screen.selectionInfo.selectedNodeArray, 0.20, 3, 3, 0.01);
-	render_clear_selection_buffer ();
+	selection_clear (&screen.selectionInfo);
+	update_selected_object_message (FALSE);
 	render_refresh_rendered_image_on_screen ();
 }
 
 /* --------------------------------------------------------------------------- */
 void
-callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data){
-	if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
-		interface_show_alert_dialog(_("No object is currently selected"),
-		                        _("Objects must be selected using the pointer tool before they can be deleted."),
-		                        FALSE,
-		                        NULL);
+callbacks_delete_objects_clicked (GtkButton *button, gpointer user_data)
+{
+	if (selection_length (&screen.selectionInfo) == 0) {
+		interface_show_alert_dialog (
+			_("No object is currently selected"),
+			_("Objects must be selected using the pointer tool "
+				"before they can be deleted."),
+			FALSE,
+			NULL);
 		return;
 	}
 
-	gint index=callbacks_get_selected_row_index();
+	gint index = callbacks_get_selected_row_index ();
 	if (index < 0)
 		return;
 
-	if (mainProject->check_before_delete == TRUE) {
-		if (!interface_get_alert_dialog_response(
-						     _("Do you want to permanently delete the selected objects?"),
-						     _("Gerbv currently has no undo function, so this action cannot be undone. This action will not change the saved file unless you save the file afterwards."),
-						     TRUE,
-						     &(mainProject->check_before_delete)))
-		return;
+	if (mainProject->check_before_delete) {
+		if (!interface_get_alert_dialog_response (
+			_("Do you want to permanently delete "
+				"the selected objects from visible layers?"),
+			_("Gerbv currently has no undo function, so "
+				"this action cannot be undone. This action "
+				"will not change the saved file unless you "
+				"save the file afterwards."),
+			TRUE, &(mainProject->check_before_delete))) {
+				return;
+		}
 	}
 
-	gerbv_image_delete_selected_nets (mainProject->file[index]->image,
-				    screen.selectionInfo.selectedNodeArray); 
-	render_refresh_rendered_image_on_screen ();
-	/* Set layer_dirty flag to TRUE */
-	mainProject->file[index]->layer_dirty = TRUE;
-	callbacks_update_layer_tree();
+	guint i;
+	for (i = 0; i < selection_length (&screen.selectionInfo);) {
+		gerbv_selection_item_t sel_item =
+			selection_get_item_by_index (&screen.selectionInfo, i);
+		gerbv_fileinfo_t *file_info =
+			gerbv_get_fileinfo_for_image(sel_item.image, mainProject);
 
-	render_clear_selection_buffer ();
-	callbacks_update_selected_object_message(FALSE);
+		/* Preserve currently invisible selection from deletion */
+		if (!file_info->isVisible) {
+			i++;
+			continue;
+		}
+
+		file_info->layer_dirty = TRUE;
+		selection_clear_item_by_index (&screen.selectionInfo, i);
+		gerbv_image_delete_net (sel_item.net);
+	}
+	update_selected_object_message (FALSE);
+
+	render_refresh_rendered_image_on_screen ();
+	callbacks_update_layer_tree();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -3002,37 +3033,41 @@ callbacks_update_statusbar_coordinates (gint x, gint y)
 	callbacks_update_statusbar();
 }
 
-void
-callbacks_update_selected_object_message (gboolean userTriedToSelect) {
+static void
+update_selected_object_message (gboolean userTriedToSelect)
+{
 	if (screen.tool != POINTER)
 		return;
 
-	gint selectionLength = screen.selectionInfo.selectedNodeArray->len;
-	if ((selectionLength == 0)&&(userTriedToSelect)) {
-		/* update status bar message to make sure the user knows
-		   about needing to select the layer */
-		gchar *str = g_new(gchar, MAX_DISTLEN);
-		utf8_strncpy(str, _("No object selected. Objects can only be selected in the active layer."),
-				MAX_DISTLEN - 7);
-		utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN, "<b>%s</b>", str);
-		g_free(str);
-	}
-	else if (selectionLength == 0) {
-		utf8_strncpy(screen.statusbar.diststr,
-			_("Click to select objects in the current layer. Middle click and drag to pan."),
-			MAX_DISTLEN);
-	}
-	else if (selectionLength == 1) {
-		utf8_strncpy(screen.statusbar.diststr,
-			_("1 object is currently selected"),
-			MAX_DISTLEN);
-	}
-	else {
+	gint selectionLength = selection_length (&screen.selectionInfo);
+
+	if (selectionLength == 0) {
+		if (userTriedToSelect) {
+			/* Update status bar message to make sure the user
+			 * knows about needing to select the layer */
+			gchar *str = g_new(gchar, MAX_DISTLEN);
+			utf8_strncpy(str,
+					_("No object selected. Objects can "
+					"only be selected in the active "
+					"layer."),
+					MAX_DISTLEN - 7);
+			utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
+					"<b>%s</b>", str);
+			g_free(str);
+		} else {
+			utf8_strncpy(screen.statusbar.diststr,
+					_("Click to select objects in the "
+					"current layer. Middle click and drag "
+					"to pan."),
+					MAX_DISTLEN);
+		}
+	} else {
 		utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-			ngettext("%d object are currently selected",
-				"%d objects are currently selected",
-				selectionLength), selectionLength);
+				ngettext("%d object are currently selected",
+					"%d objects are currently selected",
+					selectionLength), selectionLength);
 	}
+
 	callbacks_update_statusbar();
 }
 			
@@ -3156,7 +3191,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			if (screen.tool == POINTER) {
 				/* if no items are selected, try and find the item the user
 				   is pointing at */
-				if (screen.selectionInfo.type == GERBV_SELECTION_EMPTY) {
+				if (selection_length (&screen.selectionInfo) == 0) {
 					gint index=callbacks_get_selected_row_index();
 					if ((index >= 0) && 
 					    (index <= mainProject->last_loaded) &&
@@ -3165,13 +3200,15 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 							  event->x, event->y,
 							  index, SELECTION_REPLACE);
 					} else {
-					    render_clear_selection_buffer ();
+					    selection_clear (&screen.selectionInfo);
+					    update_selected_object_message (FALSE);
 					    render_refresh_rendered_image_on_screen ();
 					}
 				}
+
 				/* only show the popup if we actually have something selected now */
-				if (screen.selectionInfo.type != GERBV_SELECTION_EMPTY) {
-					callbacks_update_selected_object_message (TRUE);
+				if (selection_length (&screen.selectionInfo) != 0) {
+					update_selected_object_message (TRUE);
 					gtk_menu_popup(GTK_MENU(screen.win.drawWindowPopupMenu), NULL, NULL, NULL, NULL, 
 							event->button, event->time);
 				}
@@ -3261,7 +3298,7 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 			}
 
 			/* check if anything was selected */
-			callbacks_update_selected_object_message (TRUE);
+			update_selected_object_message (TRUE);
 		} else {
 			render_refresh_rendered_image_on_screen ();
 		}
@@ -3282,11 +3319,8 @@ callbacks_window_key_press_event (GtkWidget *widget, GdkEventKey *event)
 	switch (event->keyval) {
 	case GDK_Escape:
 		if (screen.tool == POINTER) {
-			utf8_strncpy(screen.statusbar.diststr,
-				_("No objects are currently selected"),
-				MAX_DISTLEN);
-			callbacks_update_statusbar();
-			render_clear_selection_buffer ();
+			selection_clear (&screen.selectionInfo);
+			update_selected_object_message (FALSE);
 		}
 
 		/* Escape may be used to abort outline zoom and just plain

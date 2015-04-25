@@ -23,8 +23,8 @@
  */
 
 /** \file render.h
-    \brief Header info for the rendering support functions for libgerbv
-    \ingroup libgerbv
+    \brief Header info for the rendering support functions for gerbv
+    \ingroup gerbv
 */
 
 #include "gerber.h"
@@ -57,10 +57,8 @@ render_draw_measure_distance(void);
 void render_refresh_rendered_image_on_screen (void);
 
 void
-render_clear_selection_buffer (void);
-
-void
-render_remove_selected_objects_belonging_to_layer (gint index);
+render_remove_selected_objects_belonging_to_layer (
+			gerbv_selection_info_t *sel_info, gerbv_image_t *image);
 
 void
 render_free_screen_resources (void);

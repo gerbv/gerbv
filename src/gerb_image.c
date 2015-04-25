@@ -634,23 +634,6 @@ gerbv_image_delete_net (gerbv_net_t *currentNet) {
 }
 
 void
-gerbv_image_delete_selected_nets (gerbv_image_t *sourceImage, GArray *selectedNodeArray) {
-	int i;
-	gerbv_net_t *currentNet;
-    
-	for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){	
-		for (i=0; i<selectedNodeArray->len; i++){
-			gerbv_selection_item_t sItem = g_array_index (selectedNodeArray,
-				gerbv_selection_item_t, i);
-			if (sItem.net == currentNet) {
-				gerbv_image_delete_net (currentNet);
-				
-			}
-		}
-	}
-}
-
-void
 gerbv_image_create_rectangle_object (gerbv_image_t *image, gdouble coordinateX,
 		gdouble coordinateY, gdouble width, gdouble height) {
 	gerbv_net_t *currentNet;

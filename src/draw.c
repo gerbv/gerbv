@@ -38,6 +38,7 @@
 #include "draw.h"
 #include "draw-gdk.h"
 #include "common.h"
+#include "selection.h"
 
 #define dprintf if(DEBUG) printf
 
@@ -90,15 +91,13 @@ draw_net_is_in_selection_buffer_remove (gerbv_net_t *net,
 		gerbv_selection_info_t *selectionInfo, gboolean remove)
 {
 	gerbv_selection_item_t sItem;
-	int i;
+	gint i;
 
-	for (i = 0; i<selectionInfo->selectedNodeArray->len; i++) {
-		sItem = g_array_index (selectionInfo->selectedNodeArray,
-				gerbv_selection_item_t, i);
-		if (sItem.net == net) {
-			if (remove)
-				g_array_remove_index (
-					selectionInfo->selectedNodeArray, i);
+	for (i = 0; i < selection_length (selectionInfo); i++) {
+		sItem = selection_get_item_by_index (selectionInfo, i);
+		if ((sItem.net == net) && remove) {
+			selection_clear_item_by_index (selectionInfo, i);
+
 			return TRUE;
 		}
 	}
@@ -112,7 +111,6 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget,
 		gerbv_image_t *image, struct gerbv_net *net,
 		enum draw_mode drawMode)
 {
-	GArray *selected = selectionInfo->selectedNodeArray;
 	gerbv_selection_item_t sItem = {image, net};
 	gdouble corner1X, corner1Y, corner2X, corner2Y;
 	gdouble x1, x2, y1, y2;
@@ -138,8 +136,7 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget,
 			if (!draw_net_is_in_selection_buffer_remove (net,
 					selectionInfo,
 					(drawMode == FIND_SELECTIONS_TOGGLE))) {
-				/* add the net to the selection array */
-				g_array_append_val (selected, sItem);
+				selection_add_item (selectionInfo, &sItem);
 			}
 		}
 		break;
@@ -161,8 +158,7 @@ draw_check_if_object_is_in_selected_area (cairo_t *cairoTarget,
 			if (!draw_net_is_in_selection_buffer_remove (net,
 					selectionInfo,
 					(drawMode == FIND_SELECTIONS_TOGGLE))) {
-				/* add the net to the selection array */
-				g_array_append_val (selected, sItem);
+				selection_add_item (selectionInfo, &sItem);
 			}
 		}
 		break;
