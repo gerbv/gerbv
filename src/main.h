@@ -78,13 +78,7 @@ typedef struct {
 	GtkWidget *curLayerMenuItem;
 	GtkWidget *curAnalyzeMenuItem;
 	GtkWidget *curEditMenuItem;
-	GtkWidget *curFileMenuItem1;
-	GtkWidget *curFileMenuItem2;
-	GtkWidget *curFileMenuItem3;
-	GtkWidget *curFileMenuItem4;
-	GtkWidget *curFileMenuItem5;
-	GtkWidget *curFileMenuItem6;
-	GtkWidget *curFileMenuItem7;
+	GtkWidget *curFileMenuItem[7];
 	
 	gdouble lastMeasuredX;
 	gdouble lastMeasuredY;
