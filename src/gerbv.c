@@ -953,19 +953,10 @@ rotate_coord(double *x, double *y, double rad)
 	*y = x0*sin(rad) + *y*cos(rad);
 }
 
-int
-gerbv_transform_coord_for_image(double *x, double *y,
-		const gerbv_image_t *image, const gerbv_project_t *project)
+void
+gerbv_transform_coord(double *x, double *y,
+			const gerbv_user_transformation_t *trans)
 {
-	gerbv_user_transformation_t *trans;
-	gerbv_fileinfo_t *fileinfo;
-
-	fileinfo = gerbv_get_fileinfo_for_image(image, project);
-	if (fileinfo == NULL) {
-		dprintf("%s(): NULL fileinfo\n", __func__);
-		return -1;
-	}
-	trans = &fileinfo->transform;
 
 	*x = trans->scaleX * *x;
 	*y = trans->scaleY * *y;
@@ -980,6 +971,21 @@ gerbv_transform_coord_for_image(double *x, double *y,
 
 	*x += trans->translateX;
 	*y += trans->translateY;
+}
+
+int
+gerbv_transform_coord_for_image(double *x, double *y,
+		const gerbv_image_t *image, const gerbv_project_t *project)
+{
+	gerbv_fileinfo_t *fileinfo =
+		gerbv_get_fileinfo_for_image(image, project);
+
+	if (fileinfo == NULL) {
+		dprintf("%s(): NULL fileinfo\n", __func__);
+		return -1;
+	}
+
+	gerbv_transform_coord(x, y, &fileinfo->transform);
 
 	return 0;
 }

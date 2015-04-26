@@ -976,6 +976,11 @@ int
 gerbv_transform_coord_for_image(double *x, double *y,
 		const gerbv_image_t *image, const gerbv_project_t *project);
 
+/*! Transform coordinate x and y */
+void
+gerbv_transform_coord(double *x, double *y,
+		const gerbv_user_transformation_t *trans);
+
 #if defined(__cplusplus)
 }
 #endif
