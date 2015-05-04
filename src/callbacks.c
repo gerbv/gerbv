@@ -2809,7 +2809,8 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer user_data)
 	if (mainProject->check_before_delete) {
 		if (!interface_get_alert_dialog_response (
 			_("Do you want to permanently delete "
-				"the selected objects from visible layers?"),
+				"the selected objects from "
+				"<i>visible</i> layers?"),
 			_("Gerbv currently has no undo function, so "
 				"this action cannot be undone. This action "
 				"will not change the saved file unless you "
