@@ -257,6 +257,9 @@ void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer   user_data);
 
 void
+callbacks_align_files_from_sel_clicked (GtkMenuItem *menu_item, gpointer user_data);
+
+void
 callbacks_change_layer_edit_clicked (GtkButton *button, gpointer   user_data);
 
 void

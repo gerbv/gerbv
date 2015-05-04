@@ -166,6 +166,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_edit_menu;
 	GtkWidget *properties_selected;
 	GtkWidget *delete_selected;
+	GtkWidget *align, *align_layers;
 	GtkWidget *menuitem_view;
 	GtkWidget *menuitem_view_menu;
 	GtkWidget *view_fullscreen;
@@ -484,6 +485,22 @@ interface_create_gui (int req_width, int req_height)
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_DELETE, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (delete_selected), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_edit_menu), delete_selected);
+
+	align = gtk_menu_item_new_with_mnemonic (_("_Align layers"));
+	screen.win.curEditAlingMenuItem = align;
+	gtk_tooltips_set_tip (tooltips, align,
+			_("Align two layers by two selected objects"), NULL);
+	gtk_widget_set_sensitive (align, FALSE);
+	gtk_container_add (GTK_CONTAINER (menuitem_edit_menu), align);
+
+	align_layers = gtk_menu_new ();
+	screen.win.curEditAlingItem[0] = gtk_menu_item_new_with_mnemonic ("");
+	screen.win.curEditAlingItem[1] = gtk_menu_item_new_with_mnemonic ("");
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (align), align_layers);
+	gtk_container_add (GTK_CONTAINER (align_layers),
+			screen.win.curEditAlingItem[0]);
+	gtk_container_add (GTK_CONTAINER (align_layers),
+			screen.win.curEditAlingItem[1]);
 
 #if 0
 	/* Include these after they are coded. */
@@ -1205,6 +1222,12 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) properties_selected, "activate",
 	                  G_CALLBACK (callbacks_display_object_properties_clicked),
 	                  NULL);
+	g_signal_connect ((gpointer) screen.win.curEditAlingItem[0], "activate",
+			G_CALLBACK (callbacks_align_files_from_sel_clicked),
+			GINT_TO_POINTER(0));
+	g_signal_connect ((gpointer) screen.win.curEditAlingItem[1], "activate",
+			G_CALLBACK (callbacks_align_files_from_sel_clicked),
+			GINT_TO_POINTER(1));
 
 	/* --- View menu --- */
 	g_signal_connect ((gpointer) view_fullscreen, "activate",

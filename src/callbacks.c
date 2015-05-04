@@ -3241,6 +3241,139 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 	return TRUE;
 }
 
+static gboolean
+check_align_files_possibility (gerbv_selection_info_t *sel_info)
+{
+	gerbv_fileinfo_t **f = mainProject->file;
+	GtkMenuItem **menu_items = (GtkMenuItem **) screen.win.curEditAlingItem;
+	gerbv_selection_item_t si[2];
+	int id[2] = {-1, -1};
+	int i;
+
+	/* If has two objects, then can do files aligning */
+	if (selection_length (sel_info) == 2) {
+		si[0] = selection_get_item_by_index(sel_info, 0);
+		si[1] = selection_get_item_by_index(sel_info, 1);
+
+		for (i = 0; i <= mainProject->last_loaded; i++) {
+			if (f[i]->image == si[0].image)
+				id[0] = i;
+						
+			if (f[i]->image == si[1].image)
+				id[1] = i;
+		}
+
+		/* Can align if on different files */
+		if (id[0]*id[1] >= 0 && id[0] != id[1]) {
+			gchar *str;
+
+/* TODO: add color boxes for layers as hint */
+
+			/* Update align menu items */
+			str = g_strdup_printf (_("#_%i %s  >  #%i %s"),
+					id[0]+1, f[id[0]]->name,
+					id[1]+1, f[id[1]]->name);
+			gtk_menu_item_set_label (menu_items[0], str);
+			g_free (str);
+
+			str = g_strdup_printf (_("#_%i %s  >  #%i %s"),
+					id[1]+1, f[id[1]]->name,
+					id[0]+1, f[id[0]]->name);
+			gtk_menu_item_set_label (menu_items[1], str);
+			g_free (str);
+
+			gtk_widget_set_sensitive (
+				screen.win.curEditAlingMenuItem, TRUE);
+
+			return TRUE;
+		}
+	}
+
+	/* Can't align, disable align menu */
+	gtk_widget_set_sensitive (screen.win.curEditAlingMenuItem, FALSE);
+	gtk_menu_item_set_label (menu_items[0], "");
+	gtk_menu_item_set_label (menu_items[1], "");
+
+	return FALSE;
+}
+
+/** The edit -> align layers menu item was selected.  Align first to second or
+  * second to first layers by selected elements */
+void
+callbacks_align_files_from_sel_clicked (
+		GtkMenuItem *menu_item, gpointer user_data)
+{
+	gerbv_fileinfo_t *fi[2];
+	gerbv_selection_item_t item[2];
+	gerbv_net_t *net;
+	gerbv_selection_info_t *sel_info = &screen.selectionInfo;
+	int align_second_to_first = GPOINTER_TO_INT(user_data);
+	gdouble x[2], y[2];
+	int i;
+
+	if (selection_length (sel_info) != 2)
+		return;
+
+	item[0] = selection_get_item_by_index(sel_info, 0);
+	item[1] = selection_get_item_by_index(sel_info, 1);
+
+	fi[0] = gerbv_get_fileinfo_for_image (item[0].image, mainProject);
+	fi[1] = gerbv_get_fileinfo_for_image (item[1].image, mainProject);
+
+	if (fi[0] == NULL || fi[1] == NULL || fi[0] == fi[1])
+		return;
+
+	/* Calculate aligning coords */
+	for (i = 0; i < 2; i++) {
+		net = item[i].net;
+
+		switch (net->aperture_state) {
+		case GERBV_APERTURE_STATE_FLASH:
+			x[i] = net->stop_x;
+			y[i] = net->stop_y;
+			break;
+		case GERBV_APERTURE_STATE_ON:
+			switch (net->interpolation) {
+			case GERBV_INTERPOLATION_LINEARx1:
+			case GERBV_INTERPOLATION_x10:
+			case GERBV_INTERPOLATION_LINEARx01:
+			case GERBV_INTERPOLATION_LINEARx001:
+				x[i] = (net->stop_x + net->start_x)/2;
+				y[i] = (net->stop_y + net->start_y)/2;
+				break;
+			case GERBV_INTERPOLATION_CW_CIRCULAR:
+			case GERBV_INTERPOLATION_CCW_CIRCULAR:
+				x[i] = net->cirseg->cp_x;
+				y[i] = net->cirseg->cp_y;
+				break;
+			default:
+				GERB_COMPILE_ERROR (_("Can't align by this "
+							"type of object"));
+				return;
+			}
+			break;
+		default:
+			GERB_COMPILE_ERROR (_("Can't align by this "
+						"type of object"));
+			return;
+		}
+
+		gerbv_transform_coord_for_image(x + i, y + i,
+				item[i].image, mainProject);
+	}
+
+	if (align_second_to_first) {
+		fi[1]->transform.translateX += x[0] - x[1];
+		fi[1]->transform.translateY += y[0] - y[1];
+	} else {
+		fi[0]->transform.translateX += x[1] - x[0];
+		fi[0]->transform.translateY += y[1] - y[0];
+	}
+
+	render_refresh_rendered_image_on_screen ();
+	callbacks_update_layer_tree ();
+}
+
 /* --------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *event)
@@ -3301,8 +3434,10 @@ callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *e
 						index, sel_action);
 			}
 
-			/* check if anything was selected */
+			/* Check if anything was selected */
 			update_selected_object_message (TRUE);
+
+			check_align_files_possibility (&screen.selectionInfo);
 		} else {
 			render_refresh_rendered_image_on_screen ();
 		}
