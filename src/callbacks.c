@@ -1331,14 +1331,16 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 				_("Count"), G_TYPE_STRING,
 				_("Code"), G_TYPE_STRING);
 	table_set_column_align(misc_table, 0, 1.0);
-	char *str = strdup("");
-	sprintf(str, "%d", stats_report->comment);
+	gchar *str;
+	str = g_strdup_printf("%d", stats_report->comment);
 	table_add_row(misc_table, str,_("Comments"));
-	sprintf(str, "%d", stats_report->unknown);
+	g_free(str);
+	str = g_strdup_printf("%d", stats_report->unknown);
 	table_add_row(misc_table, str, _("Unknown codes"));
-	sprintf(str, "%d", stats_report->R);
+	g_free(str);
+	str = g_strdup_printf("%d", stats_report->R);
 	table_add_row(misc_table, str, _("Repeat hole (R)"));
-	free(str);
+	g_free(str);
 	if (stats_report->detect != NULL ) {
 		table_add_row(misc_table, "", stats_report->detect);
 	}
