@@ -46,7 +46,6 @@
 #include "render.h"
 #include "selection.h"
 
-#include "draw-gdk.h"
 #include "draw.h"
 
 #include "gerbv_icon.h"

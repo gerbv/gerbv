@@ -34,7 +34,6 @@
 #include <glib/gstdio.h>
 
 #include "common.h"
-#include "draw-gdk.h"
 
 #define dprintf if(DEBUG) printf
 

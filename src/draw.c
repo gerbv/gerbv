@@ -36,7 +36,6 @@
 
 #include "gerbv.h"
 #include "draw.h"
-#include "draw-gdk.h"
 #include "common.h"
 #include "selection.h"
 

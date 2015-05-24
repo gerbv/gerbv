@@ -141,48 +141,126 @@ typedef enum {GERBV_APTYPE_NONE, /*!< no aperture used */
 		GERBV_APTYPE_OVAL, /*!< an ovular (obround) aperture */
 		GERBV_APTYPE_POLYGON, /*!< a polygon aperture */
 		GERBV_APTYPE_MACRO, /*!< a RS274X macro */
-		GERBV_APTYPE_MACRO_CIRCLE, /*!< a RS274X circle macro */
-		GERBV_APTYPE_MACRO_OUTLINE, /*!< a RS274X outline macro */
-		GERBV_APTYPE_MACRO_POLYGON, /*!< a RS274X polygon macro */
-		GERBV_APTYPE_MACRO_MOIRE, /*!< a RS274X moire macro */
-		GERBV_APTYPE_MACRO_THERMAL, /*!< a RS274X thermal macro */
-		GERBV_APTYPE_MACRO_LINE20, /*!< a RS274X line (code 20) macro */
-		GERBV_APTYPE_MACRO_LINE21, /*!< a RS274X line (code 21) macro */
-		GERBV_APTYPE_MACRO_LINE22 /*!< a RS274X line (code 22) macro */
+			GERBV_APTYPE_MACRO_CIRCLE, /*!< a RS274X circle macro */
+			GERBV_APTYPE_MACRO_OUTLINE, /*!< a RS274X outline macro */
+			GERBV_APTYPE_MACRO_POLYGON, /*!< a RS274X polygon macro */
+			GERBV_APTYPE_MACRO_MOIRE, /*!< a RS274X moire macro */
+			GERBV_APTYPE_MACRO_THERMAL, /*!< a RS274X thermal macro */
+			GERBV_APTYPE_MACRO_LINE20, /*!< a RS274X vector line (code 20) macro */
+			GERBV_APTYPE_MACRO_LINE21, /*!< a RS274X centered line (code 21) macro */
+			GERBV_APTYPE_MACRO_LINE22 /*!< a RS274X lower left line (code 22) macro */
 } gerbv_aperture_type_t;
 
-/*! the current state of the aperture drawing tool */
+/*! The current state of the aperture drawing tool */
 typedef enum {GERBV_APERTURE_STATE_OFF, /*!< tool drawing is off, and nothing will be drawn */
 		GERBV_APERTURE_STATE_ON, /*!< tool drawing is on, and something will be drawn */
 		GERBV_APERTURE_STATE_FLASH /*!< tool is flashing, and will draw a single aperture */
 } gerbv_aperture_state_t;
 
-/*! the current unit used */
+/*! The circle aperture macro parameter indexes */
+typedef enum {
+		CIRCLE_EXPOSURE,
+		CIRCLE_DIAMETER,
+		CIRCLE_CENTER_X,
+		CIRCLE_CENTER_Y,
+} gerbv_aptype_macro_circle_index_t;
+
+typedef enum {
+		OUTLINE_EXPOSURE,
+		OUTLINE_NUMBER_OF_POINTS,
+		OUTLINE_FIRST_X,
+		OUTLINE_FIRST_Y,
+		OUTLINE_ROTATION,
+} gerbv_aptype_macro_outline_index_t;
+
+typedef enum {
+		POLYGON_EXPOSURE,
+		POLYGON_NUMBER_OF_POINTS,
+		POLYGON_CENTER_X,
+		POLYGON_CENTER_Y,
+		POLYGON_DIAMETER,
+		POLYGON_ROTATION,
+} gerbv_aptype_macro_polygon_index_t;
+
+typedef enum {
+		MOIRE_CENTER_X,
+		MOIRE_CENTER_Y,
+		MOIRE_OUTSIDE_DIAMETER,
+		MOIRE_CIRCLE_THICKNESS,
+		MOIRE_GAP_WIDTH,
+		MOIRE_NUMBER_OF_CIRCLES,
+		MOIRE_CROSSHAIR_THICKNESS,
+		MOIRE_CROSSHAIR_LENGTH,
+		MOIRE_ROTATION,
+} gerbv_aptype_macro_moire_index_t;
+
+typedef enum {
+		THERMAL_CENTER_X,
+		THERMAL_CENTER_Y,
+		THERMAL_OUTSIDE_DIAMETER,
+		THERMAL_INSIDE_DIAMETER,
+		THERMAL_CROSSHAIR_THICKNESS,
+		THERMAL_ROTATION,
+} gerbv_aptype_macro_thermal_index_t;
+
+/*! The vector line aperture macro parameter indexes */
+typedef enum {
+		LINE20_EXPOSURE,
+		LINE20_LINE_WIDTH,
+		LINE20_START_X,
+		LINE20_START_Y,
+		LINE20_END_X,
+		LINE20_END_Y,
+		LINE20_ROTATION,
+} gerbv_aptype_macro_line20_index_t;
+
+/*! The centered line aperture macro parameter indexes */
+typedef enum {
+		LINE21_EXPOSURE,
+		LINE21_WIDTH,
+		LINE21_HEIGHT,
+		LINE21_CENTER_X,
+		LINE21_CENTER_Y,
+		LINE21_ROTATION,
+} gerbv_aptype_macro_line21_index_t;
+
+/*! The lower left line aperture macro parameter indexes */
+typedef enum {
+		LINE22_EXPOSURE,
+		LINE22_WIDTH,
+		LINE22_HEIGHT,
+		LINE22_LOWER_LEFT_X,
+		LINE22_LOWER_LEFT_Y,
+		LINE22_ROTATION,
+} gerbv_aptype_macro_line22_index_t;
+
+
+/*! The current unit used */
 typedef enum {GERBV_UNIT_INCH, /*!< inches */
 		GERBV_UNIT_MM, /*!< mm */
 		GERBV_UNIT_UNSPECIFIED /*!< use default units */
 } gerbv_unit_t;
 
-/*! the different drawing polarities available */
+/*! The different drawing polarities available */
 typedef enum {GERBV_POLARITY_POSITIVE, /*!< draw "positive", using the current layer's polarity */
 		GERBV_POLARITY_NEGATIVE, /*!< draw "negative", reversing the current layer's polarity */
 		GERBV_POLARITY_DARK, /*!< add to the current rendering */
 		GERBV_POLARITY_CLEAR /*!< subtract from the current rendering */
 } gerbv_polarity_t;
 
-/*! the decimal point parsing style used */
+/*! The decimal point parsing style used */
 typedef enum {GERBV_OMIT_ZEROS_LEADING, /*!< omit extra zeros before the decimal point */
 		GERBV_OMIT_ZEROS_TRAILING, /*!< omit extra zeros after the decimal point */
 		GERBV_OMIT_ZEROS_EXPLICIT, /*!< explicitly specify how many decimal places are used */
 		GERBV_OMIT_ZEROS_UNSPECIFIED /*!< use the default parsing style */
 } gerbv_omit_zeros_t;
 
-/*! the coordinate system used */
+/*! The coordinate system used */
 typedef enum {GERBV_COORDINATE_ABSOLUTE, /*!< all coordinates are absolute from a common origin */
 		GERBV_COORDINATE_INCREMENTAL /*!< all coordinates are relative to the previous coordinate */
 } gerbv_coordinate_t;
 
-/*! the interpolation methods available */
+/*! The interpolation methods available */
 typedef enum {GERBV_INTERPOLATION_LINEARx1, /*!< draw a line */
 		GERBV_INTERPOLATION_x10, /*!< draw a line */
 		GERBV_INTERPOLATION_LINEARx01, /*!< draw a line */

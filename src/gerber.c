@@ -41,9 +41,6 @@
 #include "gerb_stats.h"
 #include "amacro.h"
 
-/* include this for macro enums */
-#include "draw-gdk.h"
-
 #undef AMACRO_DEBUG
 #define dprintf if(DEBUG) printf
 
