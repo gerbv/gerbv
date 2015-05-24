@@ -378,21 +378,23 @@ gerbv_image_duplicate_layer (gerbv_layer_t *oldLayer) {
     return newLayer;
 }
 
-gerbv_netstate_t *
-gerbv_image_duplicate_state (gerbv_netstate_t *oldState) {
-    gerbv_netstate_t *newState = g_new (gerbv_netstate_t,1);
-    
-    *newState = *oldState;
-    return newState;
+static gerbv_netstate_t *
+gerbv_image_duplicate_state (gerbv_netstate_t *oldState)
+{
+	gerbv_netstate_t *newState = g_new (gerbv_netstate_t, 1);
+
+	*newState = *oldState;
+	return newState;
 }
 
-gerbv_aperture_t *
-gerbv_image_duplicate_aperture (gerbv_aperture_t *oldAperture){
+static gerbv_aperture_t *
+gerbv_image_duplicate_aperture (gerbv_aperture_t *oldAperture)
+{
     gerbv_aperture_t *newAperture = g_new0 (gerbv_aperture_t,1);
     gerbv_simplified_amacro_t *simplifiedMacro, *tempSimplified;
-       
+
     *newAperture = *oldAperture;
-	  
+
     /* delete the amacro section, since we really don't need it anymore
     now that we have the simplified section */
     newAperture->amacro = NULL;
@@ -412,77 +414,291 @@ gerbv_image_duplicate_aperture (gerbv_aperture_t *oldAperture){
     return newAperture;
 }
 
-void
-gerbv_image_copy_all_nets (gerbv_image_t *sourceImage, gerbv_image_t *destImage, gerbv_layer_t *lastLayer,
-		gerbv_netstate_t *lastState, gerbv_net_t *lastNet, gerbv_user_transformation_t *transform,
+static void
+gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
+		gerbv_image_t *destImage, gerbv_layer_t *lastLayer,
+		gerbv_netstate_t *lastState, gerbv_net_t *lastNet,
+		gerbv_user_transformation_t *trans,
 		GArray *translationTable)
 {
-    /* NOTE: destImage already contains data, latest data is: lastLayer,
-       lastState, lastNet. */
+	/* NOTE: destImage already contains apertures and data,
+	 * latest data is: lastLayer, lastState, lastNet. */
 
-    gerbv_net_t *currentNet,*newNet;
-    int i;
+	gerbv_net_t *currentNet, *newNet;
+	gerbv_aperture_type_t aper_type;
+	gerbv_aperture_t *aper;
+	gerbv_simplified_amacro_t *sam;
+	int *trans_apers = NULL; /* Transformed apertures */
+	int aper_last_id = 0;
+	guint	err_circle_to_ellipse = 0,
+		err_unknown_aperture_type = 0,
+		err_unknown_macro_aperture_type = 0,
+		err_oval_rotate = 0,
+		err_rect_rotate = 0;
+	guint i;
 
-    for (currentNet = sourceImage->netlist; currentNet; currentNet = currentNet->next){
-	/* check for any new layers and duplicate them if needed */
-	if (currentNet->layer != lastLayer) {
-	  lastLayer->next = gerbv_image_duplicate_layer (currentNet->layer);
-	  lastLayer = lastLayer->next;
+	if (trans != NULL) {
+		/* Find last used aperture to add transformed apertures if
+		 * needed */
+		for (aper_last_id = APERTURE_MAX - 1; aper_last_id > 0;
+						aper_last_id--) {
+			if (destImage->aperture[aper_last_id] != NULL)
+				break;
+		}
+
+		trans_apers = g_new (int, aper_last_id + 1);
+		/* Initialize trans_apers array */
+		for (i = 0; i < aper_last_id + 1; i++)
+			trans_apers[i] = -1;
 	}
 
-	/* check for any new states and duplicate them if needed */
-	if (currentNet->state != lastState) {
-	  lastState->next = gerbv_image_duplicate_state (currentNet->state);
-	  lastState = lastState->next;
+	for (currentNet = sourceImage->netlist; currentNet != NULL;
+			currentNet = currentNet->next) {
+
+		/* Check for any new layers and duplicate them if needed */
+		if (currentNet->layer != lastLayer) {
+			lastLayer->next =
+				gerbv_image_duplicate_layer (currentNet->layer);
+			lastLayer = lastLayer->next;
+		}
+
+		/* Check for any new states and duplicate them if needed */
+		if (currentNet->state != lastState) {
+			lastState->next =
+				gerbv_image_duplicate_state (currentNet->state);
+			lastState = lastState->next;
+		}
+
+		/* Create and copy the actual net over */
+		newNet = g_new (gerbv_net_t, 1);
+		*newNet = *currentNet;
+
+/* TODO: cirseg: width height angle1 angle2 */
+		if (currentNet->cirseg) {
+			newNet->cirseg = g_new (gerbv_cirseg_t, 1);
+			*(newNet->cirseg) = *(currentNet->cirseg);
+		}
+
+		if (currentNet->label)
+			newNet->label = g_string_new (currentNet->label->str);
+		else
+			newNet->label = NULL;
+
+		newNet->state = lastState;
+		newNet->layer = lastLayer;
+
+		if (lastNet)
+			lastNet->next = newNet;
+		else
+			destImage->netlist = newNet;
+
+		lastNet = newNet;
+
+		/* Check if we need to translate the aperture number */
+		if (translationTable) {
+			for (i = 0; i < translationTable->len; i++) {
+				gerb_translation_entry_t translationEntry;
+
+				translationEntry =
+					g_array_index (translationTable,
+						gerb_translation_entry_t, i);
+
+				if (translationEntry.oldAperture ==
+						newNet->aperture) {
+					newNet->aperture =
+						translationEntry.newAperture;
+					break;
+				}
+			}
+		}
+
+		if (trans == NULL)
+			continue;
+
+		/* Transforming coords */
+		gerbv_transform_coord (&newNet->start_x,
+				&newNet->start_y, trans);
+		gerbv_transform_coord (&newNet->stop_x,
+				&newNet->stop_y, trans);
+
+		if (newNet->cirseg) {
+			gerbv_transform_coord (&newNet->cirseg->cp_x,
+				&newNet->cirseg->cp_y, trans);
+		}
+
+		if (destImage->aperture[newNet->aperture] == NULL)
+			continue;
+
+		if (trans->scaleX == trans->scaleY
+				&& trans->scaleX == 1.0
+				&& trans->rotation == 0.0)
+			continue;
+
+		/* Aperture is already transformed, use it */
+		if (trans_apers[newNet->aperture] != -1) {
+			newNet->aperture = trans_apers[newNet->aperture];
+			continue;
+		}
+
+		/* Transforming apertures */
+		aper_type = destImage->aperture[newNet->aperture]->type;
+		switch (aper_type) {
+		case GERBV_APTYPE_NONE:
+		case GERBV_APTYPE_POLYGON:
+			break;
+		case GERBV_APTYPE_CIRCLE:
+			if (trans->scaleX == trans->scaleY
+					&& trans->scaleX == 1.0) {
+				break;
+			}
+
+			if (trans->scaleX == trans->scaleY) {
+				aper = gerbv_image_duplicate_aperture (
+						destImage->aperture[
+							newNet->aperture]);
+				aper->parameter[0] *= trans->scaleX;
+
+				trans_apers[newNet->aperture] = ++aper_last_id;
+				destImage->aperture[aper_last_id] = aper;
+				newNet->aperture = aper_last_id;
+			} else {
+				err_circle_to_ellipse++;
+			}
+			break;
+		case GERBV_APTYPE_RECTANGLE:
+		case GERBV_APTYPE_OVAL:
+			if (trans->scaleX == trans->scaleY
+			&& trans->scaleX == 1.0
+			&& (fabs(trans->rotation) == M_PI
+			 || fabs(trans->rotation) == DEG2RAD(180)))
+				break;	/* DEG2RAD for calc error */
+
+			aper = gerbv_image_duplicate_aperture (
+					destImage->aperture[newNet->aperture]);
+			aper->parameter[0] *= trans->scaleX;
+			aper->parameter[1] *= trans->scaleY;
+
+			if (fabs(trans->rotation) == M_PI_2
+			 || fabs(trans->rotation) == DEG2RAD(90)
+			 || fabs(trans->rotation) == (M_PI+M_PI_2)
+			 || fabs(trans->rotation) == DEG2RAD(270)) {
+						/* DEG2RAD for calc error */
+				double t = aper->parameter[0];
+				aper->parameter[0] = aper->parameter[1];
+				aper->parameter[1] = t;
+			} else {
+				if (aper_type == GERBV_APTYPE_RECTANGLE)
+					err_rect_rotate++;
+				else
+					err_oval_rotate++;
+
+				break;
+			}
+
+			trans_apers[newNet->aperture] = ++aper_last_id;
+			destImage->aperture[aper_last_id] = aper;
+			newNet->aperture = aper_last_id;
+
+			break;
+		case GERBV_APTYPE_MACRO:
+			aper = gerbv_image_duplicate_aperture (
+					destImage->aperture[newNet->aperture]);
+			sam = aper->simplified;
+
+			for (; sam != NULL; sam = sam->next) {
+				switch (sam->type) {
+				case GERBV_APTYPE_MACRO_CIRCLE:
+#if 0
+#include "main.h"
+gerbv_selection_item_t sItem = {sourceImage, currentNet};
+selection_add_item (&screen.selectionInfo, &sItem);
+}
+#endif
+
+/* TODO: test circle macro center rotation */
+
+					sam->parameter[CIRCLE_CENTER_X] *=
+								trans->scaleX;
+					sam->parameter[CIRCLE_CENTER_Y] *=
+								trans->scaleY;
+					gerbv_rotate_coord(
+						sam->parameter +CIRCLE_CENTER_X,
+						sam->parameter +CIRCLE_CENTER_Y,
+						trans->rotation);
+
+					if (trans->scaleX != trans->scaleY) {
+						err_circle_to_ellipse++;
+						break;
+					}
+					sam->parameter[CIRCLE_DIAMETER] *=
+								trans->scaleX;
+					break;
+				case GERBV_APTYPE_MACRO_LINE20:
+				case GERBV_APTYPE_MACRO_LINE21:
+				case GERBV_APTYPE_MACRO_LINE22:
+				case GERBV_APTYPE_MACRO_OUTLINE:
+				case GERBV_APTYPE_MACRO_POLYGON:
+				case GERBV_APTYPE_MACRO_MOIRE:
+				case GERBV_APTYPE_MACRO_THERMAL:
+/* TODO */
+/* TODO: remove this counter line when all macro done */
+err_unknown_macro_aperture_type++;
+
+					/* TODO: free aper if it is skipped (i.e. unused)? */
+					GERB_MESSAGE("Skipped type %d macro aperture",
+						aper->simplified->type);
+					break;
+				default:
+					err_unknown_macro_aperture_type++;
+				}
+			}
+
+			trans_apers[newNet->aperture] = ++aper_last_id;
+			destImage->aperture[aper_last_id] = aper;
+			newNet->aperture = aper_last_id;
+
+			break;
+		default:
+			err_unknown_aperture_type++;
+		}
 	}
 
-      /* create and copy the actual net over */
-      newNet = g_new (gerbv_net_t,1);
-      *newNet = *currentNet;
-      
-      if (currentNet->cirseg) {
-      	newNet->cirseg = g_new (gerbv_cirseg_t,1);
-      	*(newNet->cirseg) = *(currentNet->cirseg);
-      }
-      
-      if (currentNet->label)
-      	newNet->label = g_string_new(currentNet->label->str);
-      
-      newNet->state = lastState;
-      newNet->layer = lastLayer;
+	if (err_rect_rotate)
+		GERB_COMPILE_ERROR(ngettext(
+			"Can't rotate %u rectangular aperture to %.2f "
+			"degrees (non 90 multiply)!",
+			"Can't rotate %u rectangular apertures to %.2f "
+			"degrees (non 90 multiply)!", err_rect_rotate),
+			err_rect_rotate, RAD2DEG(trans->rotation));
 
-      /* check if we need to translate the aperture number */
-      if (translationTable) {
-        for (i=0; i<translationTable->len; i++){
-          gerb_translation_entry_t translationEntry=g_array_index (translationTable, gerb_translation_entry_t, i);
-          
-          if (translationEntry.oldAperture == newNet->aperture) {
-            newNet->aperture = translationEntry.newAperture;
-            break;
-          }
-        }
-      }
+	if (err_oval_rotate)
+		GERB_COMPILE_ERROR(ngettext(
+			"Can't rotate %u oval aperture to %.2f "
+			"degrees (non 90 multiply)!",
+			"Can't rotate %u oval apertures to %.2f "
+			"degrees (non 90 multiply)!", err_oval_rotate),
+			err_oval_rotate, RAD2DEG(trans->rotation));
 
-      /* check if we are transforming the net (translating, scaling, etc) */
-      if (transform) {
-        newNet->start_x += transform->translateX;
-        newNet->start_y += transform->translateY;
-        newNet->stop_x += transform->translateX;
-        newNet->stop_y += transform->translateY;
+	if (err_circle_to_ellipse > 0)
+		GERB_COMPILE_ERROR(ngettext(
+			"Can't scale %u circle aperture to ellipse!",
+			"Can't scale %u circle apertures to ellipse!",
+			err_circle_to_ellipse), err_circle_to_ellipse);
 
-        if (newNet->cirseg) {
-          newNet->cirseg->cp_x += transform->translateX;
-          newNet->cirseg->cp_y += transform->translateY;
-        }
-      }
+	if (err_unknown_aperture_type > 0)
+		GERB_COMPILE_ERROR(ngettext(
+			"Skipped %u aperture with unknown type!",
+			"Skipped %u apertures with unknown type!",
+			err_unknown_aperture_type), err_unknown_aperture_type);
 
-      if (lastNet)
-      	lastNet->next = newNet;
-      else
-      	destImage->netlist = newNet;
+	if (err_unknown_macro_aperture_type > 0)
+		GERB_COMPILE_ERROR(ngettext(
+			"Skipped %u macro aperture!",
+			"Skipped %u macro apertures!",
+			err_unknown_macro_aperture_type),
+				err_unknown_macro_aperture_type);
 
-      lastNet = newNet;
-    }
+	g_free (trans_apers);
 }
 
 gint
@@ -750,10 +966,10 @@ gerbv_image_create_arc_object (gerbv_image_t *image, gdouble centerX, gdouble ce
 	currentNet->interpolation = GERBV_INTERPOLATION_CCW_CIRCULAR;
 	currentNet->aperture_state = GERBV_APERTURE_STATE_ON;
 	currentNet->aperture = apertureIndex;
-	currentNet->start_x = centerX + (cos(startAngle*M_PI/180) * radius);
-	currentNet->start_y = centerY + (sin(startAngle*M_PI/180) * radius);
-	currentNet->stop_x = centerX + (cos(endAngle*M_PI/180) * radius);
-	currentNet->stop_y = centerY + (sin(endAngle*M_PI/180) * radius);;
+	currentNet->start_x = centerX + (cos(DEG2RAD(startAngle)) * radius);
+	currentNet->start_y = centerY + (sin(DEG2RAD(startAngle)) * radius);
+	currentNet->stop_x = centerX + (cos(DEG2RAD(endAngle)) * radius);
+	currentNet->stop_y = centerY + (sin(DEG2RAD(endAngle)) * radius);
 	currentNet->cirseg = g_new0 (gerbv_cirseg_t,1);
 	*(currentNet->cirseg) = cirSeg;
 	
@@ -761,11 +977,11 @@ gerbv_image_create_arc_object (gerbv_image_t *image, gdouble centerX, gdouble ce
 	gint i, steps = abs(angleDiff);
 	for (i=0; i<=steps; i++){
 		gdouble tempX = currentNet->cirseg->cp_x + currentNet->cirseg->width / 2.0 *
-				 cos ((currentNet->cirseg->angle1 +
-				 (angleDiff * i) / steps)*M_PI/180);
+				cos (DEG2RAD(currentNet->cirseg->angle1 +
+						(i*angleDiff)/steps));
 		gdouble tempY = currentNet->cirseg->cp_y + currentNet->cirseg->width / 2.0 *
-				 sin ((currentNet->cirseg->angle1 +
-				 (angleDiff * i) / steps)*M_PI/180);
+				sin (DEG2RAD(currentNet->cirseg->angle1 +
+						(i*angleDiff)/steps));
 		gerber_update_min_and_max (&currentNet->boundingBox,
 			       tempX, tempY, 
 			       lineWidth/2,lineWidth/2,

@@ -1062,6 +1062,10 @@ void
 gerbv_transform_coord(double *x, double *y,
 		const gerbv_user_transformation_t *trans);
 
+/*! Rotate coordinate x and y buy angle in radians */
+void
+gerbv_rotate_coord(double *x, double *y, double rad);
+
 #if defined(__cplusplus)
 }
 #endif

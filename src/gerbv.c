@@ -944,8 +944,8 @@ gerbv_get_fileinfo_for_image(const gerbv_image_t *image,
 	return NULL;	
 }
 
-static inline void
-rotate_coord(double *x, double *y, double rad)
+inline void
+gerbv_rotate_coord(double *x, double *y, double rad)
 {
 	double x0 = *x;
 
@@ -961,7 +961,7 @@ gerbv_transform_coord(double *x, double *y,
 	*x = trans->scaleX * *x;
 	*y = trans->scaleY * *y;
 
-	rotate_coord(x, y, trans->rotation);
+	gerbv_rotate_coord(x, y, trans->rotation);
 
 	if (trans->mirrorAroundY)
 		*x = -*x;
