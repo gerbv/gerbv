@@ -203,7 +203,9 @@ int table_add_row(struct table *table, ...)
 	va_list args;
 	gint i;
 
+#if !GLIB_CHECK_VERSION(2, 36, 0)
 	g_type_init();
+#endif
 
 	va_start(args, table);
 	gtk_list_store_append(table->list_store, &iter);
