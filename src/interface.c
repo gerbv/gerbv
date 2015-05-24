@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include <gdk/gdkkeysyms.h>
@@ -1950,21 +1951,21 @@ interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,9,10,GTK_EXPAND|GTK_FILL,0,0,0);
 	spin5 = gtk_combo_box_new_text();
-	gtk_combo_box_append_text ((GtkComboBox *)spin5, _("None"));
-	gtk_combo_box_append_text ((GtkComboBox *)spin5, _("90 deg CCW"));
-	gtk_combo_box_append_text ((GtkComboBox *)spin5, _("180 deg CCW"));
-	gtk_combo_box_append_text ((GtkComboBox *)spin5, _("270 deg CCW"));
-	gdouble degreeRotation = transform->rotation/M_PI*180;
-	if ((degreeRotation < 135)&&(degreeRotation >= 45))
-		gtk_combo_box_set_active ((GtkComboBox *)spin5, 1);
-	else if ((degreeRotation < 225)&&(degreeRotation >= 135))
-		gtk_combo_box_set_active ((GtkComboBox *)spin5, 2);
-	else if ((degreeRotation < 315)&&(degreeRotation >= 225))
-		gtk_combo_box_set_active ((GtkComboBox *)spin5, 3);
+	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("None"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("90 deg CCW"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("180 deg CCW"));
+	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("270 deg CCW"));
+	gdouble rot_deg = RAD2DEG(transform->rotation);
+	if (rot_deg < 135 && rot_deg >= 45)
+		gtk_combo_box_set_active (GTK_COMBO_BOX(spin5), 1);
+	else if (rot_deg < 225 && rot_deg >= 135)
+		gtk_combo_box_set_active (GTK_COMBO_BOX(spin5), 2);
+	else if (rot_deg < 315 && rot_deg >= 225)
+		gtk_combo_box_set_active (GTK_COMBO_BOX(spin5), 3);
 	else
-		gtk_combo_box_set_active ((GtkComboBox *)spin5, 0);
+		gtk_combo_box_set_active (GTK_COMBO_BOX(spin5), 0);
 	/*
-	adj = (GtkAdjustment *) gtk_adjustment_new (transform->rotation/M_PI*180, -1000000, 1000000,
+	adj = (GtkAdjustment *) gtk_adjustment_new (RAD2DEG(transform->rotation), -1000000, 1000000,
 		1, 10, 0.0);
 	spin5 = (GtkWidget *) gtk_spin_button_new (adj, 0, 3);
 	*/
@@ -2034,11 +2035,11 @@ interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 			if (rotationIndex == 0)
 				transform->rotation = 0;
 			else if (rotationIndex == 1)
-				transform->rotation = 90.0/180*M_PI;
+				transform->rotation = M_PI_2;
 			else if (rotationIndex == 2)
-				transform->rotation = 180.0/180*M_PI;
+				transform->rotation = M_PI;
 			else if (rotationIndex == 3)
-				transform->rotation = 270.0/180*M_PI;	
+				transform->rotation = M_PI + M_PI_2;
 			transform->mirrorAroundX = gtk_toggle_button_get_active ((GtkToggleButton *) check1);
 			transform->mirrorAroundY = gtk_toggle_button_get_active ((GtkToggleButton *) check2);
 			

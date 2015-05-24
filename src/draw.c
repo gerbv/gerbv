@@ -246,10 +246,14 @@ gerbv_draw_oblong(cairo_t *cairoTarget, gdouble width, gdouble height)
 	} else {
 		circleDiameter = height;
 		strokeDistance = (width - height)/2.0;
-		cairo_arc (cairoTarget, -strokeDistance, 0.0, circleDiameter/2.0, M_PI/2.0, -M_PI/2.0);
-		cairo_line_to (cairoTarget, strokeDistance, -circleDiameter/2.0);
-		cairo_arc (cairoTarget, strokeDistance, 0.0, circleDiameter/2.0, -M_PI/2.0, M_PI/2.0);
-		cairo_line_to (cairoTarget, -strokeDistance, circleDiameter/2.0);
+		cairo_arc (cairoTarget, -strokeDistance, 0.0,
+				circleDiameter/2.0, M_PI_2, -M_PI_2);
+		cairo_line_to (cairoTarget, strokeDistance,
+				-circleDiameter/2.0);
+		cairo_arc (cairoTarget, strokeDistance, 0.0,
+				circleDiameter/2.0, -M_PI_2, M_PI_2);
+		cairo_line_to (cairoTarget, -strokeDistance,
+				circleDiameter/2.0);
 	}
 
 #if 0
@@ -270,7 +274,7 @@ gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideDiameter,
 {
 	int i, numberOfSidesInteger = (int) numberOfSides;
 
-	cairo_rotate(cairoTarget, degreesOfRotation * M_PI/180);
+	cairo_rotate(cairoTarget, DEG2RAD(degreesOfRotation));
 	cairo_move_to(cairoTarget, outsideDiameter / 2.0, 0);
 
 	/* skip first point, since we've moved there already */
@@ -367,7 +371,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			if (draw_update_macro_exposure (cairoTarget, clearOperator,
 					darkOperator, ls->parameter[OUTLINE_EXPOSURE])) {
 				cairo_rotate (cairoTarget,
-						ls->parameter[(numberOfPoints - 1) * 2 + OUTLINE_ROTATION] * M_PI/180.0);
+						DEG2RAD(ls->parameter[2*(numberOfPoints - 1) + OUTLINE_ROTATION]));
 				cairo_move_to (cairoTarget, ls->parameter[OUTLINE_FIRST_X],
 						ls->parameter[OUTLINE_FIRST_Y]);
 
@@ -403,7 +407,8 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 
 			cairo_translate (cairoTarget, ls->parameter[MOIRE_CENTER_X],
 					ls->parameter[MOIRE_CENTER_Y]);
-			cairo_rotate (cairoTarget, ls->parameter[MOIRE_ROTATION] * M_PI/180);
+			cairo_rotate (cairoTarget,
+					DEG2RAD(ls->parameter[MOIRE_ROTATION]));
 			diameter = ls->parameter[MOIRE_OUTSIDE_DIAMETER]
 				 - ls->parameter[MOIRE_CIRCLE_THICKNESS];
 			diameterDifference = 2*(ls->parameter[MOIRE_GAP_WIDTH]
@@ -437,11 +442,12 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 
 			cairo_translate (cairoTarget, ls->parameter[THERMAL_CENTER_X],
 					ls->parameter[THERMAL_CENTER_Y]);
-			cairo_rotate (cairoTarget, ls->parameter[THERMAL_ROTATION] * M_PI/180.0);
+			cairo_rotate (cairoTarget,
+				DEG2RAD(ls->parameter[THERMAL_ROTATION]));
 			startAngle1 = atan (ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/ls->parameter[THERMAL_INSIDE_DIAMETER]);
-			endAngle1 = M_PI/2 - startAngle1;
+			endAngle1 = M_PI_2 - startAngle1;
 			endAngle2 = atan (ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/ls->parameter[THERMAL_OUTSIDE_DIAMETER]);
-			startAngle2 = M_PI/2 - endAngle2;
+			startAngle2 = M_PI_2 - endAngle2;
 
 			for (i = 0; i < 4; i++) {
 				cairo_arc (cairoTarget, 0, 0,
@@ -455,7 +461,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 				cairo_rel_line_to (cairoTarget,
 						-ls->parameter[THERMAL_CROSSHAIR_THICKNESS],0);
 				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
-				cairo_rotate (cairoTarget, 90 * M_PI/180);
+				cairo_rotate (cairoTarget, M_PI_2);
 			}
 			break;
 		}
@@ -468,7 +474,8 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 
 				cairo_set_line_width (cairoTarget, cParameter);
 				cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
-				cairo_rotate (cairoTarget, ls->parameter[LINE20_ROTATION] * M_PI/180.0);
+				cairo_rotate (cairoTarget,
+						DEG2RAD(ls->parameter[LINE20_ROTATION]));
 				cairo_move_to (cairoTarget, ls->parameter[LINE20_START_X],
 						ls->parameter[LINE20_START_Y]);
 				cairo_line_to (cairoTarget, ls->parameter[LINE20_END_X],
@@ -489,7 +496,8 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 					halfHeight = pixelWidth;
 				cairo_translate (cairoTarget, ls->parameter[LINE21_CENTER_X],
 						ls->parameter[LINE21_CENTER_Y]);
-				cairo_rotate (cairoTarget, ls->parameter[LINE21_ROTATION] * M_PI/180.0);
+				cairo_rotate (cairoTarget,
+						DEG2RAD(ls->parameter[LINE21_ROTATION]));
 				cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
 						ls->parameter[LINE21_WIDTH], ls->parameter[LINE21_HEIGHT]);
 				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
@@ -511,7 +519,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 						ls->parameter[LINE22_LOWER_LEFT_X],
 						ls->parameter[LINE22_LOWER_LEFT_Y]);
 				cairo_rotate (cairoTarget,
-						ls->parameter[LINE22_ROTATION] * M_PI/180.0);
+						DEG2RAD(ls->parameter[LINE22_ROTATION]));
 				cairo_rectangle (cairoTarget, 0, 0,
 						ls->parameter[LINE22_WIDTH],
 						ls->parameter[LINE22_HEIGHT]);
@@ -562,7 +570,7 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *stat
 	if (state->axisSelect == GERBV_AXIS_SELECT_SWAPAB) {
 		/* we do this by rotating 270 (counterclockwise, then mirroring
 		   the Y axis */
-		cairo_rotate (cairoTarget, 3 * M_PI / 2);
+		cairo_rotate (cairoTarget, 3 * M_PI_2);
 		cairo_scale (cairoTarget, 1, -1);
 	}
 }
@@ -610,10 +618,12 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget,
 		case GERBV_INTERPOLATION_CCW_CIRCULAR :
 			if (currentNet->cirseg->angle2 > currentNet->cirseg->angle1) {
 				cairo_arc (cairoTarget, cp_x, cp_y, currentNet->cirseg->width/2.0,
-					currentNet->cirseg->angle1 * M_PI/180,currentNet->cirseg->angle2 * M_PI/180);
+					DEG2RAD(currentNet->cirseg->angle1),
+					DEG2RAD(currentNet->cirseg->angle2));
 			} else {
 				cairo_arc_negative (cairoTarget, cp_x, cp_y, currentNet->cirseg->width/2.0,
-					currentNet->cirseg->angle1 * M_PI/180,currentNet->cirseg->angle2 * M_PI/180);
+					DEG2RAD(currentNet->cirseg->angle1),
+					DEG2RAD(currentNet->cirseg->angle2));
 			}
 			break;
 		case GERBV_INTERPOLATION_PAREA_END :
@@ -976,12 +986,14 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						cairo_translate(cairoTarget, cp_x, cp_y);
 						cairo_scale (cairoTarget, net->cirseg->width, net->cirseg->height);
 						if (net->cirseg->angle2 > net->cirseg->angle1) {
-							cairo_arc (cairoTarget, 0.0, 0.0, 0.5, net->cirseg->angle1 * M_PI/180,
-								net->cirseg->angle2 * M_PI/180);
+							cairo_arc (cairoTarget, 0.0, 0.0, 0.5,
+								DEG2RAD(net->cirseg->angle1),
+								DEG2RAD(net->cirseg->angle2));
 						}
 						else {
-							cairo_arc_negative (cairoTarget, 0.0, 0.0, 0.5, net->cirseg->angle1 * M_PI/180,
-								net->cirseg->angle2 * M_PI/180);
+							cairo_arc_negative (cairoTarget, 0.0, 0.0, 0.5,
+								DEG2RAD(net->cirseg->angle1),
+								DEG2RAD(net->cirseg->angle2));
 						}
 						cairo_restore (cairoTarget);
 						draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);

@@ -69,8 +69,8 @@ rotate_point(GdkPoint point, int angle)
     if (angle == 0)
 	return point;
 
-    sint = sin(-(double)angle * M_PI / 180.0);
-    cost = cos(-(double)angle * M_PI / 180.0);
+    sint = sin(DEG2RAD(-(double)angle));
+    cost = cos(DEG2RAD(-(double)angle));
     
     returned.x = (int)round(cost * (double)point.x - sint * (double)point.y);
     returned.y = (int)round(sint * (double)point.x + cost * (double)point.y);
@@ -222,7 +222,7 @@ gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, double *p,
     }
 
     tick = 2 * M_PI / (double)nuf_vertices;
-    rotation = -p[rotation_idx] * M_PI / 180.0;
+    rotation = DEG2RAD(-p[rotation_idx]);
     radius = p[diameter_idx] / 2.0;
     for (i = 0; i < nuf_vertices; i++) {
 	vertex =  tick * (double)i + rotation;
@@ -769,10 +769,10 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 					pointArraySize = (curr_point_idx + steps);
 				}
 				for (i=0; i<steps; i++){
-					points[curr_point_idx].x = cp_x + cir_width / 2.0 * cos ((currentNet->cirseg->angle1 +
-									      (angleDiff * i) / steps)*M_PI/180);
-					points[curr_point_idx].y = cp_y - cir_width / 2.0 * sin ((currentNet->cirseg->angle1 +
-									      (angleDiff * i) / steps)*M_PI/180);
+					points[curr_point_idx].x = cp_x + cir_width / 2.0 * cos (DEG2RAD(currentNet->cirseg->angle1 +
+									      (angleDiff * i) / steps));
+					points[curr_point_idx].y = cp_y - cir_width / 2.0 * sin (DEG2RAD(currentNet->cirseg->angle1 +
+									      (angleDiff * i) / steps));
 					curr_point_idx++;
 				}
 				break;

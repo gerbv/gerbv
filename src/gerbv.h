@@ -105,6 +105,9 @@ extern "C" {
 #define COORD2MILS(c) ((c)*1000.0)
 #define COORD2MMS(c) ((c)*25.4)
 
+#define DEG2RAD(d) ((d)*M_PI/180.0)
+#define RAD2DEG(r) ((r)*180.0/M_PI)
+
 #define GERB_FATAL_ERROR(...) g_log(NULL, G_LOG_LEVEL_ERROR, __VA_ARGS__)
 #define GERB_COMPILE_ERROR(...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, __VA_ARGS__)
 #define GERB_COMPILE_WARNING(...)  g_log(NULL, G_LOG_LEVEL_WARNING, __VA_ARGS__)
