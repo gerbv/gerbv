@@ -563,10 +563,10 @@ typedef struct {
 typedef struct gerbv_cirseg {
     double cp_x;   /* center point x */
     double cp_y;   /* center point y */
-    double width;  /* of oval */
-    double height; /* of oval */
-    double angle1;
-    double angle2;
+    double width;  /* used as diameter */
+    double height; /* */
+    double angle1; /* in degrees */
+    double angle2; /* in degrees */
 } gerbv_cirseg_t;
 
 typedef struct gerbv_step_and_repeat { /* SR parameters */

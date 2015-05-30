@@ -430,11 +430,12 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 	gerbv_simplified_amacro_t *sam;
 	int *trans_apers = NULL; /* Transformed apertures */
 	int aper_last_id = 0;
-	guint	err_circle_to_ellipse = 0,
-		err_unknown_aperture_type = 0,
-		err_unknown_macro_aperture_type = 0,
-		err_oval_rotate = 0,
-		err_rect_rotate = 0;
+	guint	err_scale_circle = 0,
+		err_scale_line_macro = 0,
+		err_unknown_aperture = 0,
+		err_unknown_macro_aperture = 0,
+		err_rotate_oval = 0,
+		err_rotate_rect = 0;
 	guint i;
 
 	if (trans != NULL) {
@@ -477,6 +478,18 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		if (currentNet->cirseg) {
 			newNet->cirseg = g_new (gerbv_cirseg_t, 1);
 			*(newNet->cirseg) = *(currentNet->cirseg);
+printf(
+"DBG: %f %f %f %f circ %f %f %f %f\n",
+
+newNet->start_x,
+newNet->start_y,
+newNet->stop_x,
+newNet->stop_y,
+newNet->cirseg->width,
+newNet->cirseg->height,
+newNet->cirseg->angle1,
+newNet->cirseg->angle2
+);
 		}
 
 		if (currentNet->label)
@@ -562,7 +575,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 				destImage->aperture[aper_last_id] = aper;
 				newNet->aperture = aper_last_id;
 			} else {
-				err_circle_to_ellipse++;
+				err_scale_circle++;
 			}
 			break;
 		case GERBV_APTYPE_RECTANGLE:
@@ -588,9 +601,9 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 				aper->parameter[1] = t;
 			} else {
 				if (aper_type == GERBV_APTYPE_RECTANGLE)
-					err_rect_rotate++;
+					err_rotate_rect++;	/* TODO: make line21 macro */
 				else
-					err_oval_rotate++;
+					err_rotate_oval++;
 
 				break;
 			}
@@ -608,15 +621,8 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 			for (; sam != NULL; sam = sam->next) {
 				switch (sam->type) {
 				case GERBV_APTYPE_MACRO_CIRCLE:
-#if 0
-#include "main.h"
-gerbv_selection_item_t sItem = {sourceImage, currentNet};
-selection_add_item (&screen.selectionInfo, &sItem);
-}
-#endif
 
 /* TODO: test circle macro center rotation */
-
 					sam->parameter[CIRCLE_CENTER_X] *=
 								trans->scaleX;
 					sam->parameter[CIRCLE_CENTER_Y] *=
@@ -627,29 +633,91 @@ selection_add_item (&screen.selectionInfo, &sItem);
 						trans->rotation);
 
 					if (trans->scaleX != trans->scaleY) {
-						err_circle_to_ellipse++;
+						err_scale_circle++;
 						break;
 					}
 					sam->parameter[CIRCLE_DIAMETER] *=
 								trans->scaleX;
 					break;
+
 				case GERBV_APTYPE_MACRO_LINE20:
+					/* Vector line rectangle */
+// TODO
+GERB_MESSAGE("line20");
+break;
 				case GERBV_APTYPE_MACRO_LINE21:
+					/* Centered line rectangle */
+#if 1
+{
+#include "main.h"
+gerbv_selection_item_t sItem = {sourceImage, currentNet};
+selection_add_item (&screen.selectionInfo, &sItem);
+}
+#endif
+					if (trans->scaleX == trans->scaleY) {
+						sam->parameter[LINE21_WIDTH] *=
+								trans->scaleX;
+						sam->parameter[LINE21_HEIGHT] *=
+								trans->scaleX;
+
+					} else if (fabs(sam->parameter[LINE21_ROTATION]) == 0
+					|| fabs(sam->parameter[LINE21_ROTATION]) == 190) {
+						sam->parameter[LINE21_WIDTH] *=
+								trans->scaleX;
+						sam->parameter[LINE21_HEIGHT] *=
+								trans->scaleY;
+
+					} else if (fabs(sam->parameter[LINE21_ROTATION]) == 90
+					|| fabs(sam->parameter[LINE21_ROTATION]) == 270) {
+						/* DEG2RAD for calc error */
+						double t;
+						t =sam->parameter[LINE21_WIDTH];
+						sam->parameter[LINE21_WIDTH] =
+							trans->scaleY *
+							sam->parameter[
+								LINE21_HEIGHT];
+						sam->parameter[LINE21_HEIGHT] =
+							trans->scaleX * t;
+					} else {
+						err_scale_line_macro++;
+						break;
+					}
+
+					sam->parameter[LINE21_CENTER_X] *=
+								trans->scaleX;
+					sam->parameter[LINE21_CENTER_Y] *=
+								trans->scaleY;
+
+					sam->parameter[LINE21_ROTATION] +=
+						RAD2DEG(trans->rotation);
+					gerbv_rotate_coord(
+						sam->parameter +LINE21_CENTER_X,
+						sam->parameter +LINE21_CENTER_Y,
+						trans->rotation);
+					break;
+
 				case GERBV_APTYPE_MACRO_LINE22:
+#if 0
+			GERB_MESSAGE("line22");
+			break;
+#endif
 				case GERBV_APTYPE_MACRO_OUTLINE:
+// TODO
+GERB_MESSAGE("outline");
+break;
 				case GERBV_APTYPE_MACRO_POLYGON:
 				case GERBV_APTYPE_MACRO_MOIRE:
 				case GERBV_APTYPE_MACRO_THERMAL:
 /* TODO */
 /* TODO: remove this counter line when all macro done */
-err_unknown_macro_aperture_type++;
+err_unknown_macro_aperture++;
 
 					/* TODO: free aper if it is skipped (i.e. unused)? */
 					GERB_MESSAGE("Skipped type %d macro aperture",
 						aper->simplified->type);
 					break;
 				default:
-					err_unknown_macro_aperture_type++;
+					err_unknown_macro_aperture++;
 				}
 			}
 
@@ -659,44 +727,50 @@ err_unknown_macro_aperture_type++;
 
 			break;
 		default:
-			err_unknown_aperture_type++;
+			err_unknown_aperture++;
 		}
 	}
 
-	if (err_rect_rotate)
+	if (err_rotate_rect)
 		GERB_COMPILE_ERROR(ngettext(
 			"Can't rotate %u rectangular aperture to %.2f "
 			"degrees (non 90 multiply)!",
 			"Can't rotate %u rectangular apertures to %.2f "
-			"degrees (non 90 multiply)!", err_rect_rotate),
-			err_rect_rotate, RAD2DEG(trans->rotation));
+			"degrees (non 90 multiply)!", err_rotate_rect),
+			err_rotate_rect, RAD2DEG(trans->rotation));
 
-	if (err_oval_rotate)
+	if (err_scale_line_macro)
+		GERB_COMPILE_ERROR(ngettext(
+			"Can't scale %u line macro",
+			"Can't scale %u line macros",
+			err_scale_line_macro), err_scale_line_macro);
+
+	if (err_rotate_oval)
 		GERB_COMPILE_ERROR(ngettext(
 			"Can't rotate %u oval aperture to %.2f "
 			"degrees (non 90 multiply)!",
 			"Can't rotate %u oval apertures to %.2f "
-			"degrees (non 90 multiply)!", err_oval_rotate),
-			err_oval_rotate, RAD2DEG(trans->rotation));
+			"degrees (non 90 multiply)!", err_rotate_oval),
+			err_rotate_oval, RAD2DEG(trans->rotation));
 
-	if (err_circle_to_ellipse > 0)
+	if (err_scale_circle > 0)
 		GERB_COMPILE_ERROR(ngettext(
 			"Can't scale %u circle aperture to ellipse!",
 			"Can't scale %u circle apertures to ellipse!",
-			err_circle_to_ellipse), err_circle_to_ellipse);
+			err_scale_circle), err_scale_circle);
 
-	if (err_unknown_aperture_type > 0)
+	if (err_unknown_aperture > 0)
 		GERB_COMPILE_ERROR(ngettext(
 			"Skipped %u aperture with unknown type!",
 			"Skipped %u apertures with unknown type!",
-			err_unknown_aperture_type), err_unknown_aperture_type);
+			err_unknown_aperture), err_unknown_aperture);
 
-	if (err_unknown_macro_aperture_type > 0)
+	if (err_unknown_macro_aperture > 0)
 		GERB_COMPILE_ERROR(ngettext(
 			"Skipped %u macro aperture!",
 			"Skipped %u macro apertures!",
-			err_unknown_macro_aperture_type),
-				err_unknown_macro_aperture_type);
+			err_unknown_macro_aperture),
+				err_unknown_macro_aperture);
 
 	g_free (trans_apers);
 }
