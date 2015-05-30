@@ -342,11 +342,10 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 				/* always use multi-quadrant, since it's much easier to export */
 				/*  and most all software should support it */
 				fprintf(fd, "G75*\n");
-				/* figure out clockwise or c-clockwise */
-				if (currentNet->cirseg->angle2 > currentNet->cirseg->angle1)
-					fprintf(fd, "G03");
-				else
-					fprintf(fd, "G02");
+
+				/* Always conter clockwise */
+				fprintf(fd, "G03");
+
 				/* don't write the I and J values if the exposure is off */
 				if (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)
 					fprintf(fd, "X%07ldY%07ldI%07ldJ%07ld",endX,endY,centerX,centerY);
