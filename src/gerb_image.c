@@ -438,7 +438,19 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		err_rotate_rect = 0;
 	guint i;
 
-	if (trans != NULL) {
+	if (trans && (trans->mirrorAroundX || trans->mirrorAroundY)) {
+		GERB_COMPILE_ERROR(_("Exporting mirrored file "
+					"is not supported!"));
+		return;
+	}
+
+	if (trans && trans->inverted) {
+		GERB_COMPILE_ERROR(_("Exporting inverted file "
+					"is not supported!"));
+		return;
+	}
+
+	if (trans) {
 		/* Find last used aperture to add transformed apertures if
 		 * needed */
 		for (aper_last_id = APERTURE_MAX - 1; aper_last_id > 0;
@@ -474,22 +486,9 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		newNet = g_new (gerbv_net_t, 1);
 		*newNet = *currentNet;
 
-/* TODO: cirseg: width height angle1 angle2 */
 		if (currentNet->cirseg) {
 			newNet->cirseg = g_new (gerbv_cirseg_t, 1);
 			*(newNet->cirseg) = *(currentNet->cirseg);
-printf(
-"DBG: %f %f %f %f circ %f %f %f %f\n",
-
-newNet->start_x,
-newNet->start_y,
-newNet->stop_x,
-newNet->stop_y,
-newNet->cirseg->width,
-newNet->cirseg->height,
-newNet->cirseg->angle1,
-newNet->cirseg->angle2
-);
 		}
 
 		if (currentNet->label)
@@ -535,6 +534,8 @@ newNet->cirseg->angle2
 				&newNet->stop_y, trans);
 
 		if (newNet->cirseg) {
+			/* Circular interpolation only exported by start, stop
+			 * end center coordinates. */
 			gerbv_transform_coord (&newNet->cirseg->cp_x,
 				&newNet->cirseg->cp_y, trans);
 		}
@@ -642,18 +643,41 @@ newNet->cirseg->angle2
 
 				case GERBV_APTYPE_MACRO_LINE20:
 					/* Vector line rectangle */
-// TODO
-GERB_MESSAGE("line20");
-break;
+					if (trans->scaleX == trans->scaleY) {
+						sam->parameter[LINE20_LINE_WIDTH] *=
+								trans->scaleX;
+					} else if (sam->parameter[LINE20_START_X] ==
+							sam->parameter[LINE20_END_X]) {
+						sam->parameter[LINE20_LINE_WIDTH] *=
+							trans->scaleX;	/* Vertical */
+					} else if (sam->parameter[LINE20_START_Y] ==
+							sam->parameter[LINE20_END_Y]) {
+						sam->parameter[LINE20_LINE_WIDTH] *=
+							trans->scaleY;	/* Horizontal */
+					} else {
+						/* TODO: make outline macro */
+						err_scale_line_macro++;
+						break;
+					}
+
+					sam->parameter[LINE20_START_X] *=
+							trans->scaleX;
+					sam->parameter[LINE20_START_Y] *=
+							trans->scaleY;
+					sam->parameter[LINE20_END_X] *=
+							trans->scaleX;
+					sam->parameter[LINE20_END_Y] *=
+							trans->scaleY;
+
+					/* LINE20_START_X, LINE20_START_Y,
+					 * LINE20_END_X, LINE20_END_Y is not
+					 * rotated */
+					sam->parameter[LINE20_ROTATION] +=
+						RAD2DEG(trans->rotation);
+					break;
+
 				case GERBV_APTYPE_MACRO_LINE21:
 					/* Centered line rectangle */
-#if 1
-{
-#include "main.h"
-gerbv_selection_item_t sItem = {sourceImage, currentNet};
-selection_add_item (&screen.selectionInfo, &sItem);
-}
-#endif
 					if (trans->scaleX == trans->scaleY) {
 						sam->parameter[LINE21_WIDTH] *=
 								trans->scaleX;
@@ -679,6 +703,7 @@ selection_add_item (&screen.selectionInfo, &sItem);
 						sam->parameter[LINE21_HEIGHT] =
 							trans->scaleX * t;
 					} else {
+						/* TODO: make outline macro */
 						err_scale_line_macro++;
 						break;
 					}
@@ -697,14 +722,32 @@ selection_add_item (&screen.selectionInfo, &sItem);
 					break;
 
 				case GERBV_APTYPE_MACRO_LINE22:
-#if 0
-			GERB_MESSAGE("line22");
-			break;
+					/* Lower left line rectangle */
+#if 1
+/* TODO */
+GERB_MESSAGE("Skipped line22");
+break;
 #endif
 				case GERBV_APTYPE_MACRO_OUTLINE:
-// TODO
-GERB_MESSAGE("outline");
-break;
+					for (i = 0; i < 1 + sam->parameter[
+							OUTLINE_NUMBER_OF_POINTS]; i++) {
+						sam->parameter[OUTLINE_X_IDX_OF_POINT(i)] *=
+								trans->scaleX;
+						sam->parameter[OUTLINE_Y_IDX_OF_POINT(i)] *=
+								trans->scaleY;
+					}
+
+					sam->parameter[OUTLINE_ROTATION_IDX(sam->parameter)] +=
+									RAD2DEG(trans->rotation);
+#if 0
+{
+#include "main.h"
+gerbv_selection_item_t sItem = {sourceImage, currentNet};
+selection_add_item (&screen.selectionInfo, &sItem);
+}
+#endif
+					break;
+
 				case GERBV_APTYPE_MACRO_POLYGON:
 				case GERBV_APTYPE_MACRO_MOIRE:
 				case GERBV_APTYPE_MACRO_THERMAL:
@@ -753,19 +796,19 @@ err_unknown_macro_aperture++;
 			"degrees (non 90 multiply)!", err_rotate_oval),
 			err_rotate_oval, RAD2DEG(trans->rotation));
 
-	if (err_scale_circle > 0)
+	if (err_scale_circle)
 		GERB_COMPILE_ERROR(ngettext(
 			"Can't scale %u circle aperture to ellipse!",
 			"Can't scale %u circle apertures to ellipse!",
 			err_scale_circle), err_scale_circle);
 
-	if (err_unknown_aperture > 0)
+	if (err_unknown_aperture)
 		GERB_COMPILE_ERROR(ngettext(
 			"Skipped %u aperture with unknown type!",
 			"Skipped %u apertures with unknown type!",
 			err_unknown_aperture), err_unknown_aperture);
 
-	if (err_unknown_macro_aperture > 0)
+	if (err_unknown_macro_aperture)
 		GERB_COMPILE_ERROR(ngettext(
 			"Skipped %u macro aperture!",
 			"Skipped %u macro apertures!",

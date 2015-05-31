@@ -168,10 +168,18 @@ typedef enum {
 typedef enum {
 		OUTLINE_EXPOSURE,
 		OUTLINE_NUMBER_OF_POINTS,
-		OUTLINE_FIRST_X,
-		OUTLINE_FIRST_Y,
-		OUTLINE_ROTATION,
+		OUTLINE_FIRST_X, /* x0 */
+		OUTLINE_FIRST_Y, /* y0 */
+		/* x1, y1, x2, y2, ..., rotation */
+		OUTLINE_ROTATION, /* Rotation index is correct if outline has
+				     no point except first */
 } gerbv_aptype_macro_outline_index_t;
+
+/* Point number is from 0 (first) to (including) OUTLINE_NUMBER_OF_POINTS */
+#define OUTLINE_X_IDX_OF_POINT(number) ((number) + OUTLINE_FIRST_X)
+#define OUTLINE_Y_IDX_OF_POINT(number) ((number) + OUTLINE_FIRST_Y)
+#define	OUTLINE_ROTATION_IDX(param_array) \
+			((int)param_array[OUTLINE_NUMBER_OF_POINTS]*2 + 4)
 
 typedef enum {
 		POLYGON_EXPOSURE,
