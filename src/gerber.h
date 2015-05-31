@@ -54,7 +54,7 @@ typedef struct gerb_state {
     gerbv_layer_t *layer;
     gerbv_netstate_t *state;
     int in_parea_fill;
-    int mq_on;
+    int mq_on;		/* Is multiquadrant circular iterpolation */
 } gerb_state_t;
 
 /*

@@ -2632,11 +2632,9 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 						case GERBV_INTERPOLATION_CW_CIRCULAR :
 						case GERBV_INTERPOLATION_CCW_CIRCULAR :
 							g_message (_("Object type: Arc"));
-							if (net->cirseg->width == net->cirseg->height) {
-								length = arc_length(net->cirseg->width,
-										fabs(net->cirseg->angle1 - net->cirseg->angle2));
-								show_length = 1;
-							}
+							length = arc_length(net->cirseg->width,
+									fabs(net->cirseg->angle1 - net->cirseg->angle2));
+							show_length = 1;
 
 							break;
 						default :
@@ -2652,15 +2650,36 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					y = net->start_y;
 					gerbv_transform_coord_for_image(&x, &y,
 							image, mainProject);
-					g_message (_("    Start location: (%g, %g)"),
+					g_message (_("    Start: (%g, %g)"),
 							screen_units(x), screen_units(y));
 
 					x = net->stop_x;
 					y = net->stop_y;
 					gerbv_transform_coord_for_image(&x, &y,
 							image, mainProject);
-					g_message (_("    Stop location: (%g, %g)"),
+					g_message (_("    Stop: (%g, %g)"),
 							screen_units(x), screen_units(y));
+
+					switch (net->interpolation) {
+					case GERBV_INTERPOLATION_CW_CIRCULAR :
+					case GERBV_INTERPOLATION_CCW_CIRCULAR :
+						x = net->cirseg->cp_x;
+						y = net->cirseg->cp_y;
+						gerbv_transform_coord_for_image(&x, &y,
+								image, mainProject);
+						g_message (_("    Center: (%g, %g)"),
+								screen_units(x), screen_units(y));
+						g_message (_("    Angles (deg): %g, %g"),
+								net->cirseg->angle1, net->cirseg->angle2);
+						g_message (_("    Direction: %s"),
+							(net->interpolation ==
+								 GERBV_INTERPOLATION_CW_CIRCULAR)?
+									_("CW"):
+									_("CCW")); 
+						break;
+					default:
+						break;
+					}
 
 					if (show_length) {
 						screen.length_sum += length;

@@ -2545,7 +2545,7 @@ calc_cirseg_sq(struct gerbv_net *net, int cw,
 } /* calc_cirseg_sq */
 
 
-/* ------------------------------------------------------------------ */
+/* Multiquadrant circular interpolation */
 static void 
 calc_cirseg_mq(struct gerbv_net *net, int cw, 
 	       double delta_cp_x, double delta_cp_y)
