@@ -432,6 +432,9 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 	int aper_last_id = 0;
 	guint	err_scale_circle = 0,
 		err_scale_line_macro = 0,
+		err_scale_poly_macro = 0,
+		err_scale_thermo_macro = 0,
+		err_scale_moire_macro = 0,
 		err_unknown_aperture = 0,
 		err_unknown_macro_aperture = 0,
 		err_rotate_oval = 0,
@@ -560,6 +563,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		case GERBV_APTYPE_NONE:
 		case GERBV_APTYPE_POLYGON:
 			break;
+
 		case GERBV_APTYPE_CIRCLE:
 			if (trans->scaleX == trans->scaleY
 					&& trans->scaleX == 1.0) {
@@ -579,6 +583,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 				err_scale_circle++;
 			}
 			break;
+
 		case GERBV_APTYPE_RECTANGLE:
 		case GERBV_APTYPE_OVAL:
 			if (trans->scaleX == trans->scaleY
@@ -614,6 +619,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 			newNet->aperture = aper_last_id;
 
 			break;
+
 		case GERBV_APTYPE_MACRO:
 			aper = gerbv_image_duplicate_aperture (
 					destImage->aperture[newNet->aperture]);
@@ -670,14 +676,29 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 							trans->scaleY;
 
 					/* LINE20_START_X, LINE20_START_Y,
-					 * LINE20_END_X, LINE20_END_Y is not
-					 * rotated */
+					 * LINE20_END_X, LINE20_END_Y are not
+					 * rotated, change only rotation angle */
 					sam->parameter[LINE20_ROTATION] +=
 						RAD2DEG(trans->rotation);
 					break;
 
+/* Compile time check if LINE21 and LINE22 parameters indexes are equal */
+#if (LINE21_WIDTH != LINE22_WIDTH) \
+ || (LINE21_HEIGHT != LINE22_HEIGHT) \
+ || (LINE21_ROTATION != LINE22_ROTATION) \
+ || (LINE21_CENTER_X != LINE22_LOWER_LEFT_X) \
+ || (LINE21_CENTER_Y != LINE22_LOWER_LEFT_Y)
+# error "LINE21 and LINE22 indexes are not equal"
+#endif
+
 				case GERBV_APTYPE_MACRO_LINE21:
-					/* Centered line rectangle */
+						/* Centered line rectangle */
+				case GERBV_APTYPE_MACRO_LINE22:
+						/* Lower left line rectangle */
+
+					/* Using LINE21 parameters array
+					 * indexes for LINE21 and LINE22, as
+					 * they are equal */
 					if (trans->scaleX == trans->scaleY) {
 						sam->parameter[LINE21_WIDTH] *=
 								trans->scaleX;
@@ -721,13 +742,6 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 						trans->rotation);
 					break;
 
-				case GERBV_APTYPE_MACRO_LINE22:
-					/* Lower left line rectangle */
-#if 1
-/* TODO */
-GERB_MESSAGE("Skipped line22");
-break;
-#endif
 				case GERBV_APTYPE_MACRO_OUTLINE:
 					for (i = 0; i < 1 + sam->parameter[
 							OUTLINE_NUMBER_OF_POINTS]; i++) {
@@ -738,28 +752,83 @@ break;
 					}
 
 					sam->parameter[OUTLINE_ROTATION_IDX(sam->parameter)] +=
-									RAD2DEG(trans->rotation);
+								RAD2DEG(trans->rotation);
+					break;
 #if 0
 {
+/* TODO */
 #include "main.h"
 gerbv_selection_item_t sItem = {sourceImage, currentNet};
 selection_add_item (&screen.selectionInfo, &sItem);
 }
 #endif
-					break;
 
 				case GERBV_APTYPE_MACRO_POLYGON:
-				case GERBV_APTYPE_MACRO_MOIRE:
-				case GERBV_APTYPE_MACRO_THERMAL:
-/* TODO */
-/* TODO: remove this counter line when all macro done */
-err_unknown_macro_aperture++;
+					if (trans->scaleX == trans->scaleY) {
+						sam->parameter[POLYGON_CENTER_X]
+							*= trans->scaleX;
+						sam->parameter[POLYGON_CENTER_Y]
+							*= trans->scaleX;
+						sam->parameter[POLYGON_DIAMETER]
+							*= trans->scaleX;
+					} else {
+						/* TODO: make outline macro */
+						err_scale_poly_macro++;
+						break;
+					}
 
-					/* TODO: free aper if it is skipped (i.e. unused)? */
-					GERB_MESSAGE("Skipped type %d macro aperture",
-						aper->simplified->type);
+					sam->parameter[POLYGON_ROTATION] +=
+						RAD2DEG(trans->rotation);
 					break;
+
+				case GERBV_APTYPE_MACRO_MOIRE:
+					if (trans->scaleX == trans->scaleY) {
+						sam->parameter[MOIRE_CENTER_X]
+							*= trans->scaleX;
+						sam->parameter[MOIRE_CENTER_Y]
+							*= trans->scaleX;
+						sam->parameter[MOIRE_OUTSIDE_DIAMETER]
+							*= trans->scaleX;
+						sam->parameter[MOIRE_CIRCLE_THICKNESS]
+							*= trans->scaleX;
+						sam->parameter[MOIRE_GAP_WIDTH]
+							*= trans->scaleX;
+						sam->parameter[MOIRE_CROSSHAIR_THICKNESS]
+							*= trans->scaleX;
+						sam->parameter[MOIRE_CROSSHAIR_LENGTH]
+							*= trans->scaleX;
+					} else {
+						err_scale_moire_macro++;
+						break;
+					}
+
+					sam->parameter[MOIRE_ROTATION] +=
+						RAD2DEG(trans->rotation);
+					break;
+
+				case GERBV_APTYPE_MACRO_THERMAL:
+					if (trans->scaleX == trans->scaleY) {
+						sam->parameter[THERMAL_CENTER_X]
+							*= trans->scaleX;
+						sam->parameter[THERMAL_CENTER_Y]
+							*= trans->scaleX;
+						sam->parameter[THERMAL_INSIDE_DIAMETER]
+							*= trans->scaleX;
+						sam->parameter[THERMAL_OUTSIDE_DIAMETER]
+							*= trans->scaleX;
+						sam->parameter[THERMAL_CROSSHAIR_THICKNESS]
+							*= trans->scaleX;
+					} else {
+						err_scale_thermo_macro++;
+						break;
+					}
+
+					sam->parameter[THERMAL_ROTATION] +=
+						RAD2DEG(trans->rotation);
+					break;
+
 				default:
+					/* TODO: free aper if it is skipped (i.e. unused)? */
 					err_unknown_macro_aperture++;
 				}
 			}
@@ -784,9 +853,27 @@ err_unknown_macro_aperture++;
 
 	if (err_scale_line_macro)
 		GERB_COMPILE_ERROR(ngettext(
-			"Can't scale %u line macro",
-			"Can't scale %u line macros",
+			"Can't scale %u line macro!",
+			"Can't scale %u line macros!",
 			err_scale_line_macro), err_scale_line_macro);
+
+	if (err_scale_poly_macro)
+		GERB_COMPILE_ERROR(ngettext(
+			"Can't scale %u polygon macro!",
+			"Can't scale %u polygon macros!",
+			err_scale_poly_macro), err_scale_poly_macro);
+
+	if (err_scale_thermo_macro)
+		GERB_COMPILE_ERROR(ngettext(
+			"Can't scale %u thermal macro!",
+			"Can't scale %u thermal macros!",
+			err_scale_poly_macro), err_scale_poly_macro);
+
+	if (err_scale_moire_macro)
+		GERB_COMPILE_ERROR(ngettext(
+			"Can't scale %u moire macro!",
+			"Can't scale %u moire macros!",
+			err_scale_poly_macro), err_scale_poly_macro);
 
 	if (err_rotate_oval)
 		GERB_COMPILE_ERROR(ngettext(
