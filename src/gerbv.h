@@ -176,8 +176,8 @@ typedef enum {
 } gerbv_aptype_macro_outline_index_t;
 
 /* Point number is from 0 (first) to (including) OUTLINE_NUMBER_OF_POINTS */
-#define OUTLINE_X_IDX_OF_POINT(number) ((number) + OUTLINE_FIRST_X)
-#define OUTLINE_Y_IDX_OF_POINT(number) ((number) + OUTLINE_FIRST_Y)
+#define OUTLINE_X_IDX_OF_POINT(number) (2*(number) + OUTLINE_FIRST_X)
+#define OUTLINE_Y_IDX_OF_POINT(number) (2*(number) + OUTLINE_FIRST_Y)
 #define	OUTLINE_ROTATION_IDX(param_array) \
 			((int)param_array[OUTLINE_NUMBER_OF_POINTS]*2 + 4)
 

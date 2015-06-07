@@ -80,24 +80,24 @@
 const char *gerbv_project_file_name = N_("Gerbv Project");
 const char *gerbv_project_file_pat = "*" GERBV_PROJECT_FILE_EXT;
 
-/* These are the names of the valid apertures.  These
- * values are used in several places in this file.
- * Please keep this in sync with the gerbv_aperture_type_t 
- * enum defined in gerbv.h */
-char *aperture_names[] = {"NONE",
-		    "CIRCLE",
-		    "RECTANGLE",
-		    "OVAL",           /* an ovular (obround) aperture */
-		    "POLYGON",        /* a polygon aperture */
-		    "MACRO",          /* a RS274X macro */
-		    "MACRO_CIRCLE",   /* a RS274X circle macro */
-		    "MACRO_OUTLINE",  /* a RS274X outline macro */
-		    "MACRO_POLYGON",  /* a RS274X polygon macro */
-		    "MACRO_MOIRE",    /* a RS274X moire macro */
-		    "MACRO_THERMAL",  /* a RS274X thermal macro */
-		    "MACRO_LINE20",   /* a RS274X line (code 20) macro */
-		    "MACRO_LINE21",   /* a RS274X line (code 21) macro */
-		    "MACRO_LINE22"    /* a RS274X line (code 22) macro */
+/* These are the names of the valid apertures.  These values are used in
+ * several places in this file.  Please keep this in sync with the
+ * gerbv_aperture_type_t enum defined in gerbv.h */
+const char *aperture_names[] = {
+	N_("none"),
+	N_("circle"),
+	N_("rectangle"),
+	N_("oval"),		/* an ovular (obround) aperture */
+	N_("polygon"),		/* a polygon aperture */
+	N_("macro"),		/* a RS274X macro */
+	N_("circle macro"),	/* a RS274X circle macro */
+	N_("outline macro"),	/* a RS274X outline macro */
+	N_("polygon macro"),	/* a RS274X polygon macro */
+	N_("moire macro"),	/* a RS274X moire macro */
+	N_("thermal macro"),	/* a RS274X thermal macro */
+	N_("line20 macro"),	/* a RS274X line (code 20) macro */
+	N_("line21 macro"),	/* a RS274X line (code 21) macro */
+	N_("line22 macro"),	/* a RS274X line (code 22) macro */
 };
 
 static gint callbacks_get_selected_row_index (void);
@@ -1027,7 +1027,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			table_add_row(aperture_def_table,
 				aperture_list->layer,
 				gstr->str,
-				aperture_names[aperture_list->type],
+				_(aperture_names[aperture_list->type]),
 				aperture_list->parameter[0],
 				aperture_list->parameter[1],
 				aperture_list->parameter[2]);
@@ -3808,12 +3808,17 @@ static double arc_length(double dia, double angle) {
 	return M_PI*dia*(angle/360.0);
 }
 
-static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num) {
+static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num)
+{
 	gerbv_aperture_type_t type = apertures[aperture_num]->type;
 	double *params = apertures[aperture_num]->parameter;
 
 	g_message (_("    Aperture used: D%d"), aperture_num);
-	g_message (_("    Aperture type: %s"), aperture_names[type]);
+	g_message (_("    Aperture type: %s"),
+		(type == GERBV_APTYPE_MACRO)?
+			_(aperture_names[apertures[
+					aperture_num]->simplified->type]):
+			_(aperture_names[type]));
 
 	switch (type) {
 		case GERBV_APTYPE_CIRCLE:
