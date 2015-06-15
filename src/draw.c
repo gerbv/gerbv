@@ -290,11 +290,13 @@ gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideDiameter,
 
 
 static void
-gerbv_draw_aperature_hole(cairo_t *cairoTarget, gdouble dimensionX, gdouble dimensionY, gboolean pixelOutput)
+gerbv_draw_aperture_hole(cairo_t *cairoTarget,
+		gdouble dimensionX, gdouble dimensionY, gboolean pixelOutput)
 {
 	if (dimensionX) {
 		if (dimensionY)
-			gerbv_draw_rectangle (cairoTarget, dimensionX, dimensionY, pixelOutput);
+			gerbv_draw_rectangle (cairoTarget,
+					dimensionX, dimensionY, pixelOutput);
 		else
 			gerbv_draw_circle (cairoTarget, dimensionX);
 	}
@@ -1027,7 +1029,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						}
 
 						gerbv_draw_circle(cairoTarget, p0);
-						gerbv_draw_aperature_hole (cairoTarget, p1, p2, pixelOutput);
+						gerbv_draw_aperture_hole (cairoTarget, p1, p2, pixelOutput);
 						break;
 					case GERBV_APTYPE_RECTANGLE :
 						// some CAD programs use very thin flashed rectangles to compose
@@ -1042,15 +1044,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 							displayPixel = FALSE;
 						}
 						gerbv_draw_rectangle(cairoTarget, p0, p1, displayPixel);
-						gerbv_draw_aperature_hole (cairoTarget, p2, p3, displayPixel);
+						gerbv_draw_aperture_hole (cairoTarget, p2, p3, displayPixel);
 						break;
 					case GERBV_APTYPE_OVAL :
 						gerbv_draw_oblong(cairoTarget, p0, p1);
-						gerbv_draw_aperature_hole (cairoTarget, p2, p3, pixelOutput);
+						gerbv_draw_aperture_hole (cairoTarget, p2, p3, pixelOutput);
 						break;
 					case GERBV_APTYPE_POLYGON :
 						gerbv_draw_polygon(cairoTarget, p0, p1, p2);
-						gerbv_draw_aperature_hole (cairoTarget, p3, p4, pixelOutput);
+						gerbv_draw_aperture_hole (cairoTarget, p3, p4, pixelOutput);
 						break;
 					case GERBV_APTYPE_MACRO :
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
