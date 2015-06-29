@@ -1856,22 +1856,33 @@ focus_in_event_callback (int *widget_num)
 }
 
 void
-interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
+interface_show_layer_edit_dialog (gerbv_user_transformation_t *transforms[],
 		gerbv_unit_t screenUnit) {
 	GtkWidget *dialog;
 	GtkWidget *check1,*check2,*tempWidget,*tempWidget2,*tableWidget;
 	GtkWidget *spin1,*spin2,*spin3,*spin4,*spin5;
 	GtkAdjustment *adj;
-	gerbv_user_transformation_t startTransform = *transform;
+	/* NOTE: transforms[0] is selected layer, other in array is visible. */
+	/* Copy _selected_ layer transformation to use as initial. */
+	gerbv_user_transformation_t trans_init = *transforms[0],
+					*trans = &trans_init;
+
+#if 0
+/* TODO: cancel, backup array of initial transforms */
+gerbv_user_transformation_t startTransform = trans;
+#endif
 	GtkWidget **focus_widgets[] = {&spin1, &spin2, &spin3, &spin4, &spin5, &check1, &check2, NULL};
 	int focus_nums[G_N_ELEMENTS(focus_widgets)];
 	int i;
 
 	dialog = gtk_dialog_new_with_buttons (_("Edit layer"),
-					GTK_WINDOW (screen.win.topLevelWindow), GTK_DIALOG_DESTROY_WITH_PARENT,
-					GTK_STOCK_CANCEL, GTK_RESPONSE_NONE, GTK_STOCK_OK, GTK_RESPONSE_OK,
-					GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
-					NULL);
+				GTK_WINDOW (screen.win.topLevelWindow),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				_("Apply to _selected"), GTK_RESPONSE_APPLY,
+				/* Yes -- apply to all visible */
+				_("Apply to _visible"), GTK_RESPONSE_YES,
+				GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+				NULL);
 
 	gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
 	gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
@@ -1886,33 +1897,33 @@ interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,0,1,GTK_EXPAND|GTK_FILL,0,0,5);
 
-	tempWidget = gtk_label_new ("    ");
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,1,1,2,0,0,0,0);
+	tempWidget = gtk_label_new ("");
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,1,1,2,GTK_EXPAND|GTK_FILL,0,0,0);
 	gdouble translateX, translateY;
 	
 	if (screenUnit == (gerbv_unit_t) GERBV_MILS) {
 		tempWidget = gtk_label_new (_("X (mils):"));
 		tempWidget2 = gtk_label_new (_("Y (mils):"));
-		translateX = transform->translateX * 1000;
-		translateY = transform->translateY * 1000;
+		translateX = trans->translateX * 1000;
+		translateY = trans->translateY * 1000;
 	}
 	else if (screen.unit == (gerbv_gui_unit_t) GERBV_MMS) {
 		tempWidget = gtk_label_new (_("X (mms):"));
 		tempWidget2 = gtk_label_new (_("Y (mms):"));
-		translateX = transform->translateX * 25.4;
-		translateY = transform->translateY * 25.4;
+		translateX = trans->translateX * 25.4;
+		translateY = trans->translateY * 25.4;
 	}
 	else {
 		tempWidget = gtk_label_new (_("X (inches):"));
 		tempWidget2 = gtk_label_new (_("Y (inches):"));
-		translateX = transform->translateX;
-		translateY = transform->translateY;
+		translateX = trans->translateX;
+		translateY = trans->translateY;
 	}
 
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,1,2,GTK_EXPAND|GTK_FILL,0,0,0);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,1,2,GTK_FILL,0,5,0);
 	gtk_misc_set_alignment (GTK_MISC (tempWidget2), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget2,1,2,2,3,GTK_EXPAND|GTK_FILL,0,0,0);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget2,1,2,2,3,GTK_FILL,0,5,0);
 	adj = (GtkAdjustment *) gtk_adjustment_new (translateX, -1000000, 1000000, 1, 10, 0.0);
 	spin1 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
 	gtk_table_attach ((GtkTable *) tableWidget, spin1,2,3,1,2,GTK_FILL,0,0,0);
@@ -1928,14 +1939,14 @@ interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 
 	tempWidget = gtk_label_new (_("X direction:"));
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,5,6,GTK_EXPAND|GTK_FILL,0,0,0);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,5,6,GTK_FILL,0,5,0);
 	tempWidget = gtk_label_new (_("Y direction:"));
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,6,7,GTK_EXPAND|GTK_FILL,0,0,0);
-	adj = (GtkAdjustment *) gtk_adjustment_new (transform->scaleX, -1000000, 1000000, 1, 10, 0.0);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,6,7,GTK_FILL,0,5,0);
+	adj = (GtkAdjustment *) gtk_adjustment_new (trans->scaleX, -1000000, 1000000, 1, 10, 0.0);
 	spin3 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
 	gtk_table_attach ((GtkTable *) tableWidget, spin3,2,3,5,6,GTK_FILL,0,0,0);
-	adj = (GtkAdjustment *) gtk_adjustment_new (transform->scaleY, -1000000, 1000000, 1, 10, 0.0);
+	adj = (GtkAdjustment *) gtk_adjustment_new (trans->scaleY, -1000000, 1000000, 1, 10, 0.0);
 	spin4 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
 	gtk_table_attach ((GtkTable *) tableWidget, spin4,2,3,6,7,GTK_FILL,0,0,0);
 
@@ -1946,15 +1957,15 @@ interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,8,9,GTK_EXPAND|GTK_FILL,0,0,5);
 
-	tempWidget = gtk_label_new (_("Rotation (degrees):   "));
+	tempWidget = gtk_label_new (_("Rotation (degrees):"));
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,9,10,GTK_EXPAND|GTK_FILL,0,0,0);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,9,10,GTK_FILL,0,5,0);
 	spin5 = gtk_combo_box_new_text();
 	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("None"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("90 deg CCW"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("180 deg CCW"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("270 deg CCW"));
-	gdouble rot_deg = RAD2DEG(transform->rotation);
+	gdouble rot_deg = RAD2DEG(trans->rotation);
 	if (rot_deg < 135 && rot_deg >= 45)
 		gtk_combo_box_set_active (GTK_COMBO_BOX(spin5), 1);
 	else if (rot_deg < 225 && rot_deg >= 135)
@@ -1963,13 +1974,13 @@ interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 		gtk_combo_box_set_active (GTK_COMBO_BOX(spin5), 3);
 	else
 		gtk_combo_box_set_active (GTK_COMBO_BOX(spin5), 0);
-	/*
-	adj = (GtkAdjustment *) gtk_adjustment_new (RAD2DEG(transform->rotation), -1000000, 1000000,
+#if 0
+	adj = (GtkAdjustment *) gtk_adjustment_new (RAD2DEG(trans->rotation), -1000000, 1000000,
 		1, 10, 0.0);
 	spin5 = (GtkWidget *) gtk_spin_button_new (adj, 0, 3);
-	*/
+#endif
+
 	gtk_table_attach ((GtkTable *) tableWidget, spin5,2,3,9,10,GTK_FILL,0,0,0);
-	
 
 	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 10, 8);
 	tempWidget = gtk_label_new (NULL);
@@ -1978,17 +1989,17 @@ interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,11,12,GTK_EXPAND|GTK_FILL,0,0,5);
 
 	tempWidget = gtk_label_new (_("About X axis:"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,12,13,GTK_EXPAND|GTK_FILL,0,0,0);
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 1.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,12,13,GTK_FILL,0,5,0);
 	check1 = (GtkWidget *) gtk_check_button_new ();
-	gtk_toggle_button_set_active ((GtkToggleButton *) check1, transform->mirrorAroundX);
+	gtk_toggle_button_set_active ((GtkToggleButton *) check1, trans->mirrorAroundX);
 	gtk_table_attach ((GtkTable *) tableWidget, check1,2,3,12,13,0,0,0,2);
 
 	tempWidget = gtk_label_new (_("About Y axis:"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,13,14,GTK_EXPAND|GTK_FILL,0,0,0);
+	gtk_misc_set_alignment (GTK_MISC (tempWidget), 1.0, 0.5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,13,14,GTK_FILL,0,5,0);
 	check2 = (GtkWidget *) gtk_check_button_new ();
-	gtk_toggle_button_set_active ((GtkToggleButton *) check2, transform->mirrorAroundY);
+	gtk_toggle_button_set_active ((GtkToggleButton *) check2, trans->mirrorAroundY);
 	gtk_table_attach ((GtkTable *) tableWidget, check2,2,3,13,14,0,0,0,2);
 
 	for (i = 0; focus_widgets[i] != NULL; i++) {
@@ -2007,57 +2018,63 @@ interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
 	gtk_widget_show_all (dialog);
 	gint result = GTK_RESPONSE_APPLY;
 
-	// each time the user selects "apply", update the screen and re-enter the dialog loop
-	while (result == GTK_RESPONSE_APPLY) {
+	/* Each time the user selects "apply" or "apply to all", update the
+	 * screen and re-enter the dialog loop */
+	while (result == GTK_RESPONSE_APPLY || result == GTK_RESPONSE_YES) {
 		result = gtk_dialog_run (GTK_DIALOG(dialog));
-		if (result != GTK_RESPONSE_NONE) {
-			/* extract all the parameters */
+		if (result != GTK_RESPONSE_CLOSE) {
+			/* Extract all the parameters */
 			if (screenUnit == (gerbv_unit_t) GERBV_MILS) {
-				transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1)/
+				trans->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1)/
 					1000;
-				transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2)/
+				trans->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2)/
 					1000;
-			}
-			else if (screen.unit == (gerbv_gui_unit_t) GERBV_MMS) {
-				transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1)/
+			} else if (screen.unit == (gerbv_gui_unit_t) GERBV_MMS) {
+				trans->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1)/
 					25.4;
-				transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2)/
+				trans->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2)/
 					25.4;
+			} else {
+				trans->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1);
+				trans->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2);
 			}
-			else {
-				transform->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1);
-				transform->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2);
-			}
-			transform->scaleX = gtk_spin_button_get_value ((GtkSpinButton *)spin3);
-			transform->scaleY = gtk_spin_button_get_value ((GtkSpinButton *)spin4);
+
+			trans->scaleX = gtk_spin_button_get_value ((GtkSpinButton *)spin3);
+			trans->scaleY = gtk_spin_button_get_value ((GtkSpinButton *)spin4);
 			gint rotationIndex = gtk_combo_box_get_active ((GtkComboBox *)spin5);
+
 			if (rotationIndex == 0)
-				transform->rotation = 0;
+				trans->rotation = 0;
 			else if (rotationIndex == 1)
-				transform->rotation = M_PI_2;
+				trans->rotation = M_PI_2;
 			else if (rotationIndex == 2)
-				transform->rotation = M_PI;
+				trans->rotation = M_PI;
 			else if (rotationIndex == 3)
-				transform->rotation = M_PI + M_PI_2;
-			transform->mirrorAroundX = gtk_toggle_button_get_active ((GtkToggleButton *) check1);
-			transform->mirrorAroundY = gtk_toggle_button_get_active ((GtkToggleButton *) check2);
-			
+				trans->rotation = M_PI + M_PI_2;
+
+			trans->mirrorAroundX = gtk_toggle_button_get_active ((GtkToggleButton *) check1);
+			trans->mirrorAroundY = gtk_toggle_button_get_active ((GtkToggleButton *) check2);
+
+			if (result == GTK_RESPONSE_APPLY) {
+				/* Apply to selected layer */
+				*transforms[0] = *trans;
+			} else if (result == GTK_RESPONSE_YES) {
+				/* Apply to all visible layers (but not selected one) */
+				i = 1;
+				while (transforms[i] != NULL) {
+					*transforms[i++] = *trans;
+				}
+			}
+
 			render_refresh_rendered_image_on_screen ();
 			callbacks_update_layer_tree ();
 		}
 	}
-	if (result == GTK_RESPONSE_NONE) {
+#if 0
+	/* TODO: restore from backup array */
+	if (result == GTK_RESPONSE_CANCEL) {
 		// revert back to the start values if the user cancelled
 		*transform = startTransform;
-	}
-#if 0
-	/* Store focus */
-	for (i = 0; focus_widgets[i] != NULL; i++) {
-		g_object_get (*focus_widgets[i], "has-focus", &has_focus, NULL);
-		if (has_focus) {
-			focus_widget_num = i;
-			break;
-		}
 	}
 #endif
 

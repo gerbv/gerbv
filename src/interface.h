@@ -191,6 +191,8 @@ interface_show_alert_dialog (gchar *primaryText,
 			     gboolean show_checkbox,
 			     gboolean *ask_to_show_again);
 
+/* transforms[0] is selected layer transformation, other is visible layers,
+ * array must be terminated with NULL */
 void
-interface_show_layer_edit_dialog (gerbv_user_transformation_t *transform,
+interface_show_layer_edit_dialog (gerbv_user_transformation_t *transforms[],
 				  gerbv_unit_t screenUnit);
