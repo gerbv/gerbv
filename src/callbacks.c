@@ -149,7 +149,7 @@ static void show_no_layers_warning (void) {
   *
   */
 void
-callbacks_new_activate (GtkMenuItem *menuitem, gpointer user_data)
+callbacks_new_project_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (

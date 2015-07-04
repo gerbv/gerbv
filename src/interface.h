@@ -62,7 +62,7 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_FILE_SAVE_LAYER_KEY		GDK_S
 #define ACCEL_FILE_SAVE_LAYER_MOD		(GdkModifierType) GDK_CONTROL_MASK
 #define ACCEL_FILE_SAVE_LAYER_AS_PATH		ACCEL_FILE "/Save active layer as..."
-#define ACCEL_FILE_SAVE_LAYER_AS_KEY		GDK_S
+#define ACCEL_FILE_SAVE_LAYER_AS_KEY		GDK_A
 #define ACCEL_FILE_SAVE_LAYER_AS_MOD		(GdkModifierType) GDK_CONTROL_MASK | GDK_SHIFT_MASK
 #define ACCEL_FILE_EXPORT			ACCEL_FILE "/Export"
 #define ACCEL_FILE_PRINT_PATH			ACCEL_FILE "/Print..."

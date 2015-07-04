@@ -47,7 +47,7 @@ enum {
 } toggle_layer;
 
 void
-callbacks_new_activate                        (GtkMenuItem     *menuitem,
+callbacks_new_project_activate                (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
