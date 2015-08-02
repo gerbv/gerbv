@@ -132,10 +132,11 @@ typedef enum {GERBV_MESSAGE_FATAL, /*!< processing cannot continue */
 		GERBV_MESSAGE_NOTE /*!< an irregularity was encountered, but needs no intervention */
 } gerbv_message_type_t;
 
-/*! The different aperture types available 
+/*! The different aperture types available
  *  Please keep these in sync with the aperture names defined by
- *  aperture_names in callbacks.c */
-typedef enum {GERBV_APTYPE_NONE, /*!< no aperture used */
+ *  aperture_names in gerbv.c */
+typedef enum {
+		GERBV_APTYPE_NONE, /*!< no aperture used */
 		GERBV_APTYPE_CIRCLE, /*!< a round aperture */
 		GERBV_APTYPE_RECTANGLE, /*!< a rectangular aperture */
 		GERBV_APTYPE_OVAL, /*!< an ovular (obround) aperture */
@@ -150,6 +151,8 @@ typedef enum {GERBV_APTYPE_NONE, /*!< no aperture used */
 			GERBV_APTYPE_MACRO_LINE21, /*!< a RS274X centered line (code 21) macro */
 			GERBV_APTYPE_MACRO_LINE22 /*!< a RS274X lower left line (code 22) macro */
 } gerbv_aperture_type_t;
+
+extern const char *aperture_names[];
 
 /*! The current state of the aperture drawing tool */
 typedef enum {GERBV_APERTURE_STATE_OFF, /*!< tool drawing is off, and nothing will be drawn */

@@ -833,11 +833,11 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				double sr_x = ix * sr->dist_X;
 				double sr_y = iy * sr->dist_Y;
 
-				if ((useOptimizations && pixelOutput) &&
-						((net->boundingBox.right+sr_x < minX)
-						|| (net->boundingBox.left+sr_x > maxX)
-						|| (net->boundingBox.top+sr_y < minY)
-						|| (net->boundingBox.bottom+sr_y > maxY))) {
+				if (useOptimizations && pixelOutput
+				&& ((net->boundingBox.right+sr_x < minX)
+				 || (net->boundingBox.left+sr_x > maxX)
+				 || (net->boundingBox.top+sr_y < minY)
+				 || (net->boundingBox.bottom+sr_y > maxY))) {
 					continue;
 				}
 
@@ -959,7 +959,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 							draw_cairo_line_to (cairoTarget, x1 + dx, y1 - dy, FALSE, pixelOutput);
 							draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 							break;
-						/* for now, just render ovals or polygons like a circle */
+						/* TODO: for now, just render ovals or polygons like a circle */
 						case GERBV_APTYPE_OVAL :
 						case GERBV_APTYPE_POLYGON :
 							draw_cairo_move_to (cairoTarget, x1,y1, oddWidth, pixelOutput);
@@ -967,7 +967,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 							draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 							break;
 						/* macros can only be flashed, so ignore any that might be here */
-						default :
+						default:
+							GERB_COMPILE_WARNING(_("Skipped aperture type \"%s\""),
+								_(aperture_names[image->aperture[net->aperture]->type]));
 							break;
 						}
 						break;
@@ -1000,6 +1002,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 						break;
 					default :
+						GERB_COMPILE_WARNING(_("Skipped interpolation type %d"),
+								net->interpolation);
 						break;
 					}
 					break;

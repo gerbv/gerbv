@@ -80,26 +80,6 @@
 const char *gerbv_project_file_name = N_("Gerbv Project");
 const char *gerbv_project_file_pat = "*" GERBV_PROJECT_FILE_EXT;
 
-/* These are the names of the valid apertures.  These values are used in
- * several places in this file.  Please keep this in sync with the
- * gerbv_aperture_type_t enum defined in gerbv.h */
-const char *aperture_names[] = {
-	N_("none"),
-	N_("circle"),
-	N_("rectangle"),
-	N_("oval"),		/* an ovular (obround) aperture */
-	N_("polygon"),		/* a polygon aperture */
-	N_("macro"),		/* a RS274X macro */
-	N_("circle macro"),	/* a RS274X circle macro */
-	N_("outline macro"),	/* a RS274X outline macro */
-	N_("polygon macro"),	/* a RS274X polygon macro */
-	N_("moire macro"),	/* a RS274X moire macro */
-	N_("thermal macro"),	/* a RS274X thermal macro */
-	N_("line20 macro"),	/* a RS274X line (code 20) macro */
-	N_("line21 macro"),	/* a RS274X line (code 21) macro */
-	N_("line22 macro"),	/* a RS274X line (code 22) macro */
-};
-
 static gint callbacks_get_selected_row_index (void);
 static void callbacks_units_changed (gerbv_gui_unit_t unit);
 static void callbacks_update_statusbar_coordinates (gint x, gint y);

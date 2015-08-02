@@ -67,6 +67,25 @@
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
+/* These are the names of the valid apertures.  Please keep this in sync with
+ * the gerbv_aperture_type_t enum defined in gerbv.h */
+const char *aperture_names[] = {
+	N_("none"),
+	N_("circle"),
+	N_("rectangle"),
+	N_("oval"),		/* an ovular (obround) aperture */
+	N_("polygon"),		/* a polygon aperture */
+	N_("macro"),		/* a RS274X macro */
+	N_("circle macro"),	/* a RS274X circle macro */
+	N_("outline macro"),	/* a RS274X outline macro */
+	N_("polygon macro"),	/* a RS274X polygon macro */
+	N_("moire macro"),	/* a RS274X moire macro */
+	N_("thermal macro"),	/* a RS274X thermal macro */
+	N_("line20 macro"),	/* a RS274X line (code 20) macro */
+	N_("line21 macro"),	/* a RS274X line (code 21) macro */
+	N_("line22 macro"),	/* a RS274X line (code 22) macro */
+};
+
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 
