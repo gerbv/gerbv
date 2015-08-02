@@ -538,7 +538,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    /* we do this by rotating 270 (counterclockwise, then 
 		     *  mirroring the Y axis 
 		     */
-		    cairo_matrix_rotate (&currentMatrix, 3 * M_PI / 2);
+		    cairo_matrix_rotate (&currentMatrix, M_PI + M_PI_2);
 		    cairo_matrix_scale (&currentMatrix, 1, -1);
 		}
 		/* if it's a macro, step through all the primitive components
@@ -646,10 +646,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			for (i=0; i<=steps; i++){
 				gdouble tempX = curr_net->cirseg->cp_x + curr_net->cirseg->width / 2.0 *
 						 cos ((curr_net->cirseg->angle1 +
-						 (angleDiff * i) / steps)*M_PI/180);
+						 (angleDiff * i) / steps)*M_PI/180.0);
 				gdouble tempY = curr_net->cirseg->cp_y + curr_net->cirseg->width / 2.0 *
 						 sin ((curr_net->cirseg->angle1 +
-						 (angleDiff * i) / steps)*M_PI/180);
+						 (angleDiff * i) / steps)*M_PI/180.0);
 				gerber_update_min_and_max (&boundingBox,
 					       tempX, tempY, 
 					       aperture_sizeX/2,aperture_sizeX/2,
@@ -1715,11 +1715,11 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	if (tmp == 0)
 	    image->info->imageRotation = 0.0;
 	else if (tmp == 90)
-	    image->info->imageRotation = M_PI / 2.0;
+	    image->info->imageRotation = M_PI_2;
 	else if (tmp == 180)
 	    image->info->imageRotation = M_PI;
 	else if (tmp == 270)
-	    image->info->imageRotation = 3.0 * M_PI / 2.0;
+	    image->info->imageRotation = M_PI + M_PI_2;
 	else {
 	    string = g_strdup_printf(_("Image rotation must be 0, 90, 180 or 270 (is actually %d)"), tmp);
 	    gerbv_stats_add_error(stats->error_list,
@@ -1934,7 +1934,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
     case A2I('R','O'):
 	state->layer = gerbv_image_return_new_layer (state->layer);
 	
-	state->layer->rotation = gerb_fgetdouble(fd) * M_PI / 180;
+	state->layer->rotation = gerb_fgetdouble(fd) * M_PI / 180.0;
 	op[0] = gerb_fgetc(fd);
 	if (op[0] != '*') {
 	    string = g_strdup_printf(_("Error in layer rotation command in file \"%s\""),
