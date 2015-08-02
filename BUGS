@@ -3,7 +3,7 @@ Currently KNOWN BUGS
 All OS:
 
 If layer orientation modified with rotation and rendering mode is 'Fast' or
-'Fast, with XOR' (GDK rendering) rectangular and oval apertures are not rotated
+'Fast, with XOR' (GDK rendering) line22 macro apertures are not rotated
 and not correctly displayed.
 
 Reporting about macro parameters (obtained via analyze -> analyze visible

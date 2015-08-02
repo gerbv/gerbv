@@ -61,19 +61,19 @@
  *
  */
 static GdkPoint 
-rotate_point(GdkPoint point, int angle)
+rotate_point(GdkPoint point, double angle)
 {
     double sint, cost;
     GdkPoint returned;
     
-    if (angle == 0)
+    if (angle == 0.0)
 	return point;
 
-    sint = sin(DEG2RAD(-(double)angle));
-    cost = cos(DEG2RAD(-(double)angle));
+    sint = sin(DEG2RAD(-angle));
+    cost = cos(DEG2RAD(-angle));
     
-    returned.x = (int)round(cost * (double)point.x - sint * (double)point.y);
-    returned.y = (int)round(sint * (double)point.x + cost * (double)point.y);
+    returned.x = lround(cost*point.x - sint*point.y);
+    returned.y = lround(sint*point.x + cost*point.y);
     
     return returned;
 }
@@ -635,17 +635,32 @@ gerbv_gdk_draw_circle(GdkPixmap *pixmap, GdkGC *gc,
 /*
  * Draws a rectangle _centered_ at x,y with sides x_side, y_side
  */
-static void 
-gerbv_gdk_draw_rectangle(GdkPixmap *pixmap, GdkGC *gc, 
-		     gint filled, gint x, gint y, gint x_side, gint y_side)
+static void
+gerbv_gdk_draw_rectangle(GdkPixmap *pixmap, GdkGC *gc,
+		int filled, gint x, gint y, gint x_side, gint y_side,
+		double angle_deg)
 {
-    
-    gint real_x = x - x_side / 2;
-    gint real_y = y - y_side / 2;
-    
-    gdk_draw_rectangle(pixmap, gc, filled, real_x, real_y, x_side, y_side);
-    
-    return;
+	int i;
+	GdkPoint points[4];
+
+	points[0].x = -(x_side >> 1);
+	points[0].y = -(y_side >> 1);
+	points[1].x = x_side >> 1;
+	points[1].y = points[0].y;
+	points[2].x = points[1].x;
+	points[2].y = y_side >> 1;
+	points[3].x = points[0].x;
+	points[3].y = points[2].y;
+
+	for (i = 0; i < 4; i++) {
+		points[i] = rotate_point(points[i], angle_deg);
+		points[i].x += x;
+		points[i].y += y;
+	}
+
+	gdk_draw_polygon(pixmap, gc, filled, points, 4);
+
+	return;
 } /* gerbv_gdk_draw_rectangle */
 
 
@@ -653,31 +668,46 @@ gerbv_gdk_draw_rectangle(GdkPixmap *pixmap, GdkGC *gc,
  * Draws an oval _centered_ at x,y with x axis x_axis and y axis y_axis
  */ 
 static void
-gerbv_gdk_draw_oval(GdkPixmap *pixmap, GdkGC *gc, 
-		gint filled, gint x, gint y, gint x_axis, gint y_axis)
+gerbv_gdk_draw_oval(GdkPixmap *pixmap, GdkGC *gc,
+		int filled, gint x, gint y, gint x_axis, gint y_axis,
+		double angle_deg)
 {
-    gint delta = 0;
-    GdkGC *local_gc = gdk_gc_new(pixmap);
+	gint width;
+	GdkPoint points[2];
+	GdkGC *local_gc = gdk_gc_new(pixmap);
 
-    gdk_gc_copy(local_gc, gc);
+	gdk_gc_copy(local_gc, gc);
 
-    if (x_axis > y_axis) {
-	/* Draw in x axis */
-	delta = x_axis / 2 - y_axis / 2;
-	gdk_gc_set_line_attributes(local_gc, y_axis, 
-				   GDK_LINE_SOLID, 
-				   GDK_CAP_ROUND, 
-				   GDK_JOIN_MITER);
-	gdk_draw_line(pixmap, local_gc, x - delta, y, x + delta, y);
-    } else {
-	/* Draw in y axis */
-	delta = y_axis / 2 - x_axis / 2;
-	gdk_gc_set_line_attributes(local_gc, x_axis, 
-				   GDK_LINE_SOLID, 
-				   GDK_CAP_ROUND, 
-				   GDK_JOIN_MITER);
-	gdk_draw_line(pixmap, local_gc, x, y - delta, x, y + delta);
-    }
+	if (x_axis > y_axis) {
+		/* Draw in x axis */
+		width = y_axis;
+
+		points[0].x = -(x_axis >> 1) + (y_axis >> 1);
+		points[0].y = 0;
+		points[1].x =  (x_axis >> 1) - (y_axis >> 1);
+		points[1].y = 0;
+	} else {
+		/* Draw in y axis */
+		width = x_axis;
+
+		points[0].x = 0;
+		points[0].y = -(y_axis >> 1) + (x_axis >> 1);
+		points[1].x = 0;
+		points[1].y =  (y_axis >> 1) - (x_axis >> 1);
+	}
+
+	points[0] = rotate_point(points[0], angle_deg);
+	points[0].x += x;
+	points[0].y += y;
+	points[1] = rotate_point(points[1], angle_deg);
+	points[1].x += x;
+	points[1].y += y;
+
+	gdk_gc_set_line_attributes(local_gc, width,
+			GDK_LINE_SOLID, GDK_CAP_ROUND, GDK_JOIN_MITER);
+	gdk_draw_line(pixmap, local_gc,
+			points[0].x, points[0].y,
+			points[1].x, points[1].y);
 
     gdk_gc_unref(local_gc);
 
@@ -1213,15 +1243,21 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 
 			break;
 		    case GERBV_APTYPE_RECTANGLE:
-			gerbv_gdk_draw_rectangle(*pixmap, gc, TRUE, x2, y2, p1, p2);
+			gerbv_gdk_draw_rectangle(*pixmap, gc, TRUE,
+				x2, y2, p1, p2, RAD2DEG(transform.rotation +
+					image->info->imageRotation));
 			break;
 		    case GERBV_APTYPE_OVAL :
-			gerbv_gdk_draw_oval(*pixmap, gc, TRUE, x2, y2, p1, p2);
+			gerbv_gdk_draw_oval(*pixmap, gc, TRUE,
+				x2, y2, p1, p2, RAD2DEG(transform.rotation +
+					image->info->imageRotation));
 			break;
 		    case GERBV_APTYPE_POLYGON :
+			/* TODO: gdk_draw_polygon() */
 			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
 			break;
 		    case GERBV_APTYPE_MACRO :
+			/* TODO: check line22 and others */
 			gerbv_gdk_draw_amacro(*pixmap, gc, 
 					      image->aperture[net->aperture]->simplified,
 					      scale, x2, y2);
