@@ -662,7 +662,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	const int hole_cross_inc_px = 8;
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
-	gdouble p0, p1, p2, p3, p4, dx, dy, lineWidth, r;
+	gdouble *p, dx, dy, lineWidth, r;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
@@ -1010,11 +1010,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				case GERBV_APERTURE_STATE_OFF :
 					break;
 				case GERBV_APERTURE_STATE_FLASH :
-					p0 = image->aperture[net->aperture]->parameter[0];
-					p1 = image->aperture[net->aperture]->parameter[1];
-					p2 = image->aperture[net->aperture]->parameter[2];
-					p3 = image->aperture[net->aperture]->parameter[3];
-					p4 = image->aperture[net->aperture]->parameter[4];
+					p = image->aperture[net->aperture]->parameter;
 
 					cairo_save (cairoTarget);
 					draw_cairo_translate_adjust(cairoTarget, x2, y2, pixelOutput);
@@ -1026,42 +1022,42 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 							/* Draw center cross on drill hole */
 							cairo_set_line_width (cairoTarget, pixelWidth);
 							cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
-							r = p0/2.0 + hole_cross_inc_px*pixelWidth;
+							r = p[0]/2.0 + hole_cross_inc_px*pixelWidth;
 							draw_cairo_cross (cairoTarget, 0, 0, r);
 							cairo_set_line_width (cairoTarget, lineWidth);
 							cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
 						}
 
-						gerbv_draw_circle(cairoTarget, p0);
-						gerbv_draw_aperture_hole (cairoTarget, p1, p2, pixelOutput);
+						gerbv_draw_circle(cairoTarget, p[0]);
+						gerbv_draw_aperture_hole (cairoTarget, p[1], p[2], pixelOutput);
 						break;
 					case GERBV_APTYPE_RECTANGLE :
 						// some CAD programs use very thin flashed rectangles to compose
 						//	logos/images, so we must make sure those display here
 						displayPixel = pixelOutput;
-						if (limitLineWidth && (p0 < pixelWidth) && pixelOutput) {
-							p0 = pixelWidth;
+						if (limitLineWidth && (p[0] < pixelWidth) && pixelOutput) {
+							p[0] = pixelWidth;
 							displayPixel = FALSE;
 						}
-						if (limitLineWidth && (p1 < pixelWidth) && pixelOutput) {
-							p1 = pixelWidth;
+						if (limitLineWidth && (p[1] < pixelWidth) && pixelOutput) {
+							p[1] = pixelWidth;
 							displayPixel = FALSE;
 						}
-						gerbv_draw_rectangle(cairoTarget, p0, p1, displayPixel);
-						gerbv_draw_aperture_hole (cairoTarget, p2, p3, displayPixel);
+						gerbv_draw_rectangle(cairoTarget, p[0], p[1], displayPixel);
+						gerbv_draw_aperture_hole (cairoTarget, p[2], p[3], displayPixel);
 						break;
 					case GERBV_APTYPE_OVAL :
-						gerbv_draw_oblong(cairoTarget, p0, p1);
-						gerbv_draw_aperture_hole (cairoTarget, p2, p3, pixelOutput);
+						gerbv_draw_oblong(cairoTarget, p[0], p[1]);
+						gerbv_draw_aperture_hole (cairoTarget, p[2], p[3], pixelOutput);
 						break;
 					case GERBV_APTYPE_POLYGON :
-						gerbv_draw_polygon(cairoTarget, p0, p1, p2);
-						gerbv_draw_aperture_hole (cairoTarget, p3, p4, pixelOutput);
+						gerbv_draw_polygon(cairoTarget, p[0], p[1], p[2]);
+						gerbv_draw_aperture_hole (cairoTarget, p[3], p[4], pixelOutput);
 						break;
 					case GERBV_APTYPE_MACRO :
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 							image->aperture[net->aperture]->simplified,
-							(gint)p0, pixelWidth,
+							(gint)p[0], pixelWidth,
 							drawMode, selectionInfo, image, net);
 						break;
 					default :
