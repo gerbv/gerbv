@@ -57,8 +57,9 @@ inline void selection_clear_item_by_index (
 
 inline void selection_clear (gerbv_selection_info_t *sel_info)
 {
-	g_array_remove_range (sel_info->selectedNodeArray, 0,
-			sel_info->selectedNodeArray->len);
+	if (selection_length(sel_info))
+		g_array_remove_range (sel_info->selectedNodeArray, 0,
+				sel_info->selectedNodeArray->len);
 }
 
 inline void selection_add_item (gerbv_selection_info_t *sel_info,
