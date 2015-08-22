@@ -814,6 +814,8 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.curAnalyzeMenuItem = menuitem_analyze;
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_analyze);
 
+	screen.selectionInfo.selectedNodeArray = selection_new_array ();
+
 	menuitem_analyze_menu = gtk_menu_new ();
 	gtk_menu_set_accel_group (GTK_MENU(menuitem_analyze_menu), accel_group);
 	gtk_menu_set_accel_path (GTK_MENU(menuitem_analyze_menu), ACCEL_ANAL);
@@ -1602,7 +1604,6 @@ interface_create_gui (int req_width, int req_height)
 
 	request_label_max_size_by_text (screen.win.statusMessageLeft, str_coord);
 
-	screen.selectionInfo.selectedNodeArray = selection_new_array ();
 	callbacks_change_tool (NULL, (gpointer) 0);
 	rename_main_window("",mainWindow);
 
