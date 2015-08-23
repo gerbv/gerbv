@@ -345,12 +345,12 @@ gerbv_image_t *merge_images (int type)
 			GERB_COMPILE_ERROR(_("Unknown Layer type for merge"));
 			goto err;
 	}
-	dprintf(_("Looking for matching files\n"));
+	dprintf("Looking for matching files\n");
 	for (i = img = filecount = 0; i < mainProject->max_files; ++i) {
 		if (mainProject->file[i] &&  mainProject->file[i]->isVisible &&
 		(mainProject->file[i]->image->layertype == type)) {
 			++filecount;
-			dprintf(_("Adding '%s'\n"),mainProject->file[i]->name);
+			dprintf("Adding '%s'\n", mainProject->file[i]->name);
 			images[img].image=mainProject->file[i]->image;
 			images[img++].transform=&mainProject->file[i]->transform;
 			images = (struct l_image_info *)g_renew(struct l_image_info, images, img+1);
@@ -360,7 +360,7 @@ gerbv_image_t *merge_images (int type)
 		GERB_COMPILE_ERROR(_("Not Enough Files of same type to merge"));
 		goto err;
 	}
-	dprintf(_("Now merging files\n"));
+	dprintf("Now merging files\n");
 	for (i = 0; i < img; ++i) {
 		gerbv_user_transformation_t *thisTransform;
 		gerbv_user_transformation_t identityTransform = {0,0,1,1,0,FALSE,FALSE,FALSE};
@@ -2342,7 +2342,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
           
     }
 
-    dprintf (_("%s():  Reloading layer\n"), __FUNCTION__);
+    dprintf ("%s(): reloading layer\n", __func__);
     gerbv_revert_file (mainProject, index);
 
     for (i = 0; i < n; i++)
@@ -2738,10 +2738,10 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	now = start;
 	while( now - 30 < start) {
 		i++;
-		dprintf(_("Benchmark():  Starting redraw #%d\n"), i);
+		dprintf("Benchmark():  Starting redraw #%d\n", i);
 		gerbv_render_to_pixmap_using_gdk (mainProject, renderedPixmap, renderInfo, NULL, NULL);
 		now = time(NULL);
-		dprintf(_("Elapsed time = %ld seconds\n"), (long int) (now - start));
+		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
 	g_message(_("FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n"),
 		      i, (long int) (now - start), (double) i / (double)(now - start));
@@ -2754,7 +2754,7 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	renderInfo->renderType = GERBV_RENDER_TYPE_CAIRO_NORMAL;
 	while( now - 30 < start) {
 		i++;
-		dprintf(_("Benchmark():  Starting redraw #%d\n"), i);
+		dprintf("Benchmark():  Starting redraw #%d\n", i);
 		cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
 	                              renderInfo->displayWidth, renderInfo->displayHeight);
 		cairo_t *cairoTarget = cairo_create (cSurface);
@@ -2762,7 +2762,7 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 		cairo_destroy (cairoTarget);
 		cairo_surface_destroy (cSurface);
 		now = time(NULL);
-		dprintf(_("Elapsed time = %ld seconds\n"), (long int) (now - start));
+		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
 	g_message(_("NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n"),
 		      i, (long int) (now - start), (double) i / (double)(now - start));

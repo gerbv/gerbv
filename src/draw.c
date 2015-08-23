@@ -336,7 +336,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	int handled = 1;
 	gerbv_simplified_amacro_t *ls = s;
 
-	dprintf(_("Drawing simplified aperture macros:\n"));
+	dprintf("Drawing simplified aperture macros:\n");
 
 	if (usesClearPrimative)
 		cairo_push_group (cairoTarget);

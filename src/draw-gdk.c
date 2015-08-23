@@ -569,41 +569,41 @@ gerbv_gdk_draw_amacro(GdkPixmap *pixmap, GdkGC *gc,
 {
     gerbv_simplified_amacro_t *ls = s;
 
-    dprintf(_("Drawing simplified aperture macros:\n"));
+    dprintf("Drawing simplified aperture macros:\n");
     while (ls != NULL) {
 
 	switch (ls->type) {
 	case GERBV_APTYPE_MACRO_CIRCLE:
 	    gerbv_gdk_draw_prim1(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf(_("  Circle\n"));
+	    dprintf("  Circle\n");
 	    break;
 	case GERBV_APTYPE_MACRO_OUTLINE:
 	    gerbv_gdk_draw_prim4(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf(_("  Outline\n"));
+	    dprintf("  Outline\n");
 	    break;
 	case GERBV_APTYPE_MACRO_POLYGON:
 	    gerbv_gdk_draw_prim5(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf(_("  Polygon\n"));
+	    dprintf("  Polygon\n");
 	    break;
 	case GERBV_APTYPE_MACRO_MOIRE:
 	    gerbv_gdk_draw_prim6(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf(_("  Moire\n"));
+	    dprintf("  Moire\n");
 	    break;
 	case GERBV_APTYPE_MACRO_THERMAL:
 	    gerbv_gdk_draw_prim7(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf(_("  Thermal\n"));
+	    dprintf("  Thermal\n");
 	    break;
 	case GERBV_APTYPE_MACRO_LINE20:
 	    gerbv_gdk_draw_prim20(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf(_("  Line 20\n"));
+	    dprintf("  Line 20\n");
 	    break;
 	case GERBV_APTYPE_MACRO_LINE21:
 	    gerbv_gdk_draw_prim21(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf(_("  Line 21\n"));
+	    dprintf("  Line 21\n");
 	    break;
 	case GERBV_APTYPE_MACRO_LINE22:
 	    gerbv_gdk_draw_prim22(pixmap, gc, ls->parameter, scale, x, y);
-	    dprintf(_("  Line 22\n"));
+	    dprintf("  Line 22\n");
 	    break;
 	default:
 	    GERB_FATAL_ERROR(_("Unknown simplified aperture macro"));

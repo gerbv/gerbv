@@ -167,7 +167,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	gint i, max_layer_num = -1;
 	gerbv_fileinfo_t *file_info;
 
-	dprintf(_("Opening project = %s\n"), (gchar *) filename);
+	dprintf("Opening project = %s\n", (gchar *) filename);
 	list = read_project_file(filename);
 
 	if (!list) {

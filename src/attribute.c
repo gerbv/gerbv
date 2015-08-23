@@ -338,7 +338,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
    */
   for (j = 0; j < n_attrs; j++)
       {
-	  dprintf (_("%s():  Adding attribute #%d\n"), __FUNCTION__, j);
+	  dprintf ("%s(): adding attribute #%d\n", __func__, j);
 	  switch (attrs[j].type)
 	      {
 	      case HID_Label:
