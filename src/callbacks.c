@@ -442,6 +442,8 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		windowTitle = g_strdup (_("Export RS-274X file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_DRILL)
 		windowTitle = g_strdup (_("Export Excellon drill file as..."));
+	else if (processType == CALLBACKS_SAVE_FILE_IDRILL)
+		windowTitle = g_strdup (_("Export ISEL NCP drill file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_RS274XM)
 		windowTitle = g_strdup (_("Export RS-274Xm file as..."));
 	else if (processType == CALLBACKS_SAVE_FILE_DRILLM)
@@ -541,10 +543,16 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		}
 		else if (processType == CALLBACKS_SAVE_FILE_DRILL) {
 			gint index=callbacks_get_selected_row_index ();
-			
+
 			gerbv_export_drill_file_from_image (filename, mainProject->file[index]->image,
 				&mainProject->file[index]->transform);
-		}	/* create new image....  */
+		}
+		else if (processType == CALLBACKS_SAVE_FILE_IDRILL) {
+			gint index=callbacks_get_selected_row_index ();
+
+			gerbv_export_isel_drill_file_from_image (filename, mainProject->file[index]->image,
+				&mainProject->file[index]->transform);
+		}
 		else if (processType == CALLBACKS_SAVE_FILE_RS274XM) {
 			gerbv_image_t *image;
 			gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};

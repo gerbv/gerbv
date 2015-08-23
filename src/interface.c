@@ -153,7 +153,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *pdf;
 	GtkWidget *svg;
 	GtkWidget *postscript;
-	GtkWidget *rs274x,*drill,*rs274xm,*drillm;
+	GtkWidget *rs274x,*drill,*rs274xm,*drillm,*idrill;
 	
 	GtkWidget *separator;
 #if GTK_CHECK_VERSION(2,10,0)
@@ -398,7 +398,11 @@ interface_create_gui (int req_width, int req_height)
 	drill = gtk_menu_item_new_with_mnemonic (_("_Excellon drill..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), drill);
 	gtk_tooltips_set_tip (tooltips, drill, _("Export layer to an Excellon drill file"), NULL);
-	
+
+	idrill = gtk_menu_item_new_with_mnemonic (_("_ISEL NCP drill..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), idrill);
+	gtk_tooltips_set_tip (tooltips, idrill, _("Export layer to an ISEL Automation NCP drill file"), NULL);
+
 	rs274xm = gtk_menu_item_new_with_mnemonic (_("RS-274X Merge (Gerber)..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), rs274xm);
 	gtk_tooltips_set_tip (tooltips, rs274xm, _("Export (merge visible gerber layers) to a RS-274X (Gerber) file"), NULL);
@@ -1206,6 +1210,9 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) drill, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_DRILL);
+	g_signal_connect ((gpointer) idrill, "activate",
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_IDRILL);
 	g_signal_connect ((gpointer) rs274xm, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_RS274XM);

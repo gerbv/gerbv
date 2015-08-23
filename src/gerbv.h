@@ -983,6 +983,14 @@ gerbv_export_drill_file_from_image (const gchar *filename, /*!< the filename for
 		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
 );
 
+//! Export an image to a new file in ISEL NCP drill format
+//! \return TRUE if successful, or FALSE if not
+gboolean
+gerbv_export_isel_drill_file_from_image (const gchar *filename, /*!< the filename for the new file */
+		gerbv_image_t *image, /*!< the image to export */
+		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
+);
+
 //! Draw a line on the specified image
 void
 gerbv_image_create_line_object (gerbv_image_t *image, /*!< the image to draw to */

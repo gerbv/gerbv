@@ -378,6 +378,8 @@ main(int argc, char *argv[])
 	   userSuppliedWidth=0, userSuppliedHeight=0,
 	   userSuppliedBorder = GERBV_DEFAULT_BORDER_COEFF;
 
+    gerbv_image_t *exportImage;
+
     enum exp_type {
 	EXP_TYPE_NONE = -1,
 	EXP_TYPE_PNG,
@@ -386,6 +388,7 @@ main(int argc, char *argv[])
 	EXP_TYPE_PS,
 	EXP_TYPE_RS274X,
 	EXP_TYPE_DRILL,
+	EXP_TYPE_IDRILL,
     };
     enum exp_type exportType = EXP_TYPE_NONE;
     const char *export_type_names[] = {
@@ -395,6 +398,7 @@ main(int argc, char *argv[])
 	"ps",
 	"rs274x",
 	"drill",
+	"idrill",
 	NULL
     };
     const gchar *export_def_file_names[] = {
@@ -404,6 +408,7 @@ main(int argc, char *argv[])
 	"output.ps",
 	"output.gbx",
 	"output.cnc",
+	"output.ncp",
 	NULL
     };
 
@@ -772,7 +777,8 @@ main(int argc, char *argv[])
 		"                                  arranging panels). Use multiple -T flags\n"
 		"                                  for multiple layers.\n"
 		"  -x, --export=<png|pdf|ps|svg|   Export a rendered picture to a file with\n"
-		"                rs274x|drill>     the specified format.\n"),
+		"                rs274x|drill|     the specified format.\n"
+		"                idrill>\n"),
 			(int)(GERBV_DEFAULT_BORDER_COEFF * 100));
 #else
 	    printf(_("Usage: gerbv [OPTIONS...] [FILE...]\n\n"
@@ -810,7 +816,8 @@ main(int argc, char *argv[])
 		"                          arranging panels). Use multiple -T flags\n"
 		"                          for multiple layers.\n"
 		"  -x <png|pdf|ps|svg|     Export a rendered picture to a file with\n"
-		"      rs274x|drill>       the specified format.\n"),
+		"      rs274x|drill|       the specified format.\n"
+		"      idrill>\n"),
 			(int)(GERBV_DEFAULT_BORDER_COEFF * 100));
 
 #endif /* HAVE_GETOPT_LONG */
@@ -994,9 +1001,9 @@ main(int argc, char *argv[])
 		exit(1);
 	    }
 
-	    gerbv_image_t *exportImage =
-		    gerbv_image_duplicate_image(mainProject->file[0]->image,
-					&mainDefaultTransformations[0]);
+	    exportImage = gerbv_image_duplicate_image(
+			    mainProject->file[0]->image,
+			    &mainDefaultTransformations[0]);
 
 	    /* if more than one file, merge them before exporting */
 	    for (i = mainProject->last_loaded; i > 0; i--) {
@@ -1012,6 +1019,29 @@ main(int argc, char *argv[])
 				exportImage, &mainProject->file[0]->transform);
 
 	    gerbv_destroy_image(exportImage);
+	    break;
+	case EXP_TYPE_IDRILL:
+	    if (!mainProject->file[0]->image) {
+		fprintf(stderr, _("A valid file was not loaded.\n"));
+		exit(1);
+	    }
+
+	    exportImage = gerbv_image_duplicate_image (
+			    mainProject->file[0]->image,
+			    &mainDefaultTransformations[0]);
+	    /* If we have more than one file, we need to merge them before
+	     * exporting */
+	    for (i = mainProject->last_loaded; i > 0; i--) {
+		    if (mainProject->file[i]) {
+			    gerbv_image_copy_image (mainProject->file[i]->image,
+					    &mainDefaultTransformations[i],
+					    exportImage);
+		    }
+	    }
+	    gerbv_export_isel_drill_file_from_image (exportFilename,
+			    exportImage,
+			    &mainProject->file[0]->transform);
+	    gerbv_destroy_image (exportImage);
 	    break;
 	default:
 	    fprintf(stderr, _("A valid file was not loaded.\n"));
