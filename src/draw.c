@@ -445,22 +445,18 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 					ls->parameter[THERMAL_CENTER_Y]);
 			cairo_rotate (cairoTarget,
 				DEG2RAD(ls->parameter[THERMAL_ROTATION]));
-			startAngle1 = atan (ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/ls->parameter[THERMAL_INSIDE_DIAMETER]);
+			startAngle1 = asin (ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/ls->parameter[THERMAL_INSIDE_DIAMETER]);
 			endAngle1 = M_PI_2 - startAngle1;
-			endAngle2 = atan (ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/ls->parameter[THERMAL_OUTSIDE_DIAMETER]);
+			endAngle2 = asin (ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/ls->parameter[THERMAL_OUTSIDE_DIAMETER]);
 			startAngle2 = M_PI_2 - endAngle2;
 
 			for (i = 0; i < 4; i++) {
 				cairo_arc (cairoTarget, 0, 0,
 						ls->parameter[THERMAL_INSIDE_DIAMETER]/2.0,
 						startAngle1, endAngle1);
-				cairo_rel_line_to (cairoTarget, 0,
-						ls->parameter[THERMAL_CROSSHAIR_THICKNESS]);
 				cairo_arc_negative (cairoTarget, 0, 0,
 						ls->parameter[THERMAL_OUTSIDE_DIAMETER]/2.0,
 						startAngle2, endAngle2);
-				cairo_rel_line_to (cairoTarget,
-						-ls->parameter[THERMAL_CROSSHAIR_THICKNESS],0);
 				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 				cairo_rotate (cairoTarget, M_PI_2);
 			}
