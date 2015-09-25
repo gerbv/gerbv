@@ -2585,9 +2585,6 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
     if (net->cirseg->angle2 < 0.0) 
 	net->cirseg->angle2 += 360.0;
 
-    if(net->cirseg->angle2 == 0.0) 
-	net->cirseg->angle2 = 360.0;
-
     /*
      * This is a sanity check for angles after the nature of atan2.
      * If cw we must make sure angle1-angle2 are always positive,
