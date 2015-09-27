@@ -781,8 +781,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->cirseg->angle2 = 360.0;
 	    curr_net->cirseg->cp_x = partData.mid_x;
 	    curr_net->cirseg->cp_y = partData.mid_y;
-	    radius = sqrt((partData.pad_x-partData.mid_x)*(partData.pad_x-partData.mid_x) +
-			  (partData.pad_y-partData.mid_y)*(partData.pad_y-partData.mid_y));
+	    radius = hypot(partData.pad_x-partData.mid_x, partData.pad_y-partData.mid_y);
 	    if (radius < 0.001)
 	    	radius = 0.1;
 	    curr_net->cirseg->width = 2*radius; /* fabs(pad_x-mid_x) */

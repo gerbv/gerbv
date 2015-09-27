@@ -596,18 +596,12 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 						       widthx/2,widthx/2,widthy/2,widthy/2);
 			    calculatedAlready = TRUE;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE21) {
-			    gdouble largestDimension = sqrt (ls->parameter[LINE21_WIDTH]/2 *
-							     ls->parameter[LINE21_WIDTH]/2 + ls->parameter[LINE21_HEIGHT/2] *
-							     ls->parameter[LINE21_HEIGHT]/2);
-
+			    gdouble largestDimension = hypot (ls->parameter[LINE21_WIDTH], ls->parameter[LINE21_HEIGHT]) / 2;
 			    offsetx = ls->parameter[LINE21_CENTER_X];
 			    offsety = ls->parameter[LINE21_CENTER_Y];
 			    widthx = widthy=largestDimension;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE22) {
-			    gdouble largestDimension = sqrt (ls->parameter[LINE22_WIDTH]/2 *
-							     ls->parameter[LINE22_WIDTH]/2 + ls->parameter[LINE22_HEIGHT/2] *
-							     ls->parameter[LINE22_HEIGHT]/2);
-
+			    gdouble largestDimension = hypot (ls->parameter[LINE22_WIDTH], ls->parameter[LINE22_HEIGHT]) / 2;
 			    offsetx = ls->parameter[LINE22_LOWER_LEFT_X] +
 	      			ls->parameter[LINE22_WIDTH]/2;
 			    offsety = ls->parameter[LINE22_LOWER_LEFT_Y] +
@@ -2567,8 +2561,7 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
     alfa = atan2(d1y, d1x);
     beta = atan2(d2y, d2x);
 
-    net->cirseg->width = sqrt(delta_cp_x*delta_cp_x + delta_cp_y*delta_cp_y);
-    net->cirseg->width *= 2.0;
+    net->cirseg->width = 2 * hypot(delta_cp_x, delta_cp_y);
     net->cirseg->height = net->cirseg->width;
 
     net->cirseg->angle1 = RAD2DEG(alfa);
