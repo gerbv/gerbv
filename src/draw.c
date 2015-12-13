@@ -94,8 +94,9 @@ draw_net_is_in_selection_buffer_remove (gerbv_net_t *net,
 
 	for (i = 0; i < selection_length (selectionInfo); i++) {
 		sItem = selection_get_item_by_index (selectionInfo, i);
-		if ((sItem.net == net) && remove) {
-			selection_clear_item_by_index (selectionInfo, i);
+		if (sItem.net == net) {
+			if (remove)
+				selection_clear_item_by_index (selectionInfo, i);
 
 			return TRUE;
 		}
