@@ -42,47 +42,51 @@
 #define dprintf if(DEBUG) printf
 
 void
-draw_cairo_line_to (cairo_t *cairoTarget, gdouble x, gdouble y, gboolean adjustByHalf, gboolean pixelOutput){
-	gdouble x1 = x, y1 = y;
+draw_cairo_line_to (cairo_t *cairoTarget, gdouble x, gdouble y,
+			gboolean adjustByHalf, gboolean pixelOutput)
+{
 	if (pixelOutput) {
-		cairo_user_to_device (cairoTarget, &x1, &y1);
-		x1 = round(x1);
-		y1 = round(y1);
+		cairo_user_to_device (cairoTarget, &x, &y);
+		x = round(x);
+		y = round(y);
 		if (adjustByHalf) {
-			x1 += 0.5;
-			y1 += 0.5;
+			x += 0.5;
+			y += 0.5;
 		}
-		cairo_device_to_user (cairoTarget, &x1, &y1);
+		cairo_device_to_user (cairoTarget, &x, &y);
 	}
-	cairo_line_to (cairoTarget, x1, y1);
+	cairo_line_to (cairoTarget, x, y);
 }
 
 void
-draw_cairo_move_to (cairo_t *cairoTarget, gdouble x, gdouble y, gboolean oddWidth, gboolean pixelOutput){
-	gdouble x1 = x, y1 = y;
+draw_cairo_move_to (cairo_t *cairoTarget, gdouble x, gdouble y,
+			gboolean oddWidth, gboolean pixelOutput)
+{
 	if (pixelOutput) {
-		cairo_user_to_device (cairoTarget, &x1, &y1);
-		x1 = round(x1);
-		y1 = round(y1);
+		cairo_user_to_device (cairoTarget, &x, &y);
+		x = round(x);
+		y = round(y);
 		if (oddWidth) {
-			x1 += 0.5;
-			y1 += 0.5;
+			x += 0.5;
+			y += 0.5;
 		}
-		cairo_device_to_user (cairoTarget, &x1, &y1);
+		cairo_device_to_user (cairoTarget, &x, &y);
 	}
-	cairo_move_to (cairoTarget, x1, y1);
+	cairo_move_to (cairoTarget, x, y);
 }
 
 void
-draw_cairo_translate_adjust (cairo_t *cairoTarget, gdouble x, gdouble y, gboolean pixelOutput){
-	gdouble x1 = x, y1 = y;
+draw_cairo_translate_adjust (cairo_t *cairoTarget, gdouble x, gdouble y,
+				gboolean pixelOutput)
+{
 	if (pixelOutput) {
-		cairo_user_to_device (cairoTarget, &x1, &y1);
-		x1 = round(x1);
-		y1 = round(y1);
-		cairo_device_to_user (cairoTarget, &x1, &y1);
+		cairo_user_to_device (cairoTarget, &x, &y);
+		x = round(x);
+		y = round(y);
+		cairo_device_to_user (cairoTarget, &x, &y);
 	}
-	cairo_translate (cairoTarget, x1, y1);
+
+	cairo_translate (cairoTarget, x, y);
 }
 
 static gboolean
@@ -209,20 +213,18 @@ gerbv_draw_circle(cairo_t *cairoTarget, gdouble diameter)
  * Draws a rectangle _centered_ at x,y with sides x_side, y_side
  */
 static void
-gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width1, gdouble height1, gboolean pixelOutput)
+gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height,
+			gboolean pixelOutput)
 {
-	gdouble width = width1, height = height1;
-
 	if (pixelOutput) {
 		cairo_user_to_device_distance (cairoTarget, &width, &height);
-		width = round(width);
-		height = round(height);
-		width -= (int)width % 2;
-		height -= (int)height % 2;
+		width  -= (int)round(width)  % 2;
+		height -= (int)round(height) % 2;
 		cairo_device_to_user_distance (cairoTarget, &width, &height);
 	}
 
-	cairo_rectangle (cairoTarget, - width / 2.0, - height / 2.0, width, height);
+	cairo_rectangle (cairoTarget, -width/2.0, -height/2.0, width, height);
+
 	return;
 }
 
