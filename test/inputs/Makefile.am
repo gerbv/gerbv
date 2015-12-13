@@ -25,7 +25,6 @@ EXTRA_DIST= \
 	test-aperture-obround-flash-1.gbx \
 	test-aperture-rectangle-1.gbx \
 	test-aperture-circle-flash-1.gbx \
-	test-aperture-polygon-1.gbx \
 	test-aperture-rectangle-flash-1.gbx \
 	test-aperture-obround-1.gbx \
 	test-aperture-polygon-flash-1.gbx \

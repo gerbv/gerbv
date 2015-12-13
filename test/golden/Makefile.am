@@ -79,7 +79,6 @@ EXTRA_DIST= \
 	test-aperture-obround-flash-1.png \
 	test-aperture-rectangle-1.png \
 	test-aperture-circle-flash-1.png \
-	test-aperture-polygon-1.png \
 	test-aperture-rectangle-flash-1.png \
 	test-aperture-obround-1.png \
 	test-aperture-polygon-flash-1.png \
