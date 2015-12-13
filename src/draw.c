@@ -41,6 +41,12 @@
 
 #define dprintf if(DEBUG) printf
 
+/** Draw Cairo line from current coordinates.
+  @param x	End of line x coordinate.
+  @param y	End of line y coordinate.
+  @param adjustByHalf	Increase x and y by 0.5.
+  @param pixelOutput	Round x and y coordinates to pixels.
+*/
 void
 draw_cairo_line_to (cairo_t *cairoTarget, gdouble x, gdouble y,
 			gboolean adjustByHalf, gboolean pixelOutput)
@@ -58,6 +64,12 @@ draw_cairo_line_to (cairo_t *cairoTarget, gdouble x, gdouble y,
 	cairo_line_to (cairoTarget, x, y);
 }
 
+/** Move Cairo coordinates.
+  @param x	Move to x coordinate.
+  @param y	Move to y coordinate.
+  @param oddWidth	Increase x and y by 0.5.
+  @param pixelOutput	Round x and y coordinates to pixels.
+*/
 void
 draw_cairo_move_to (cairo_t *cairoTarget, gdouble x, gdouble y,
 			gboolean oddWidth, gboolean pixelOutput)
@@ -75,6 +87,11 @@ draw_cairo_move_to (cairo_t *cairoTarget, gdouble x, gdouble y,
 	cairo_move_to (cairoTarget, x, y);
 }
 
+/** Cairo translate user-space origin.
+  @param x	The x coordinate.
+  @param y	The y coordinate.
+  @param pixelOutput	Round x and y coordinates to pixels.
+*/
 void
 draw_cairo_translate_adjust (cairo_t *cairoTarget, gdouble x, gdouble y,
 				gboolean pixelOutput)
@@ -89,6 +106,12 @@ draw_cairo_translate_adjust (cairo_t *cairoTarget, gdouble x, gdouble y,
 	cairo_translate (cairoTarget, x, y);
 }
 
+/** Check if net is in selection buffer and possibly deselect it.
+  @return TRUE if net is selected, FALSE if not selected.
+  @param net	Checked net.
+  @param selectionInfo	Selection buffer.
+  @param remove		TRUE for deselect net.
+ */
 static gboolean
 draw_net_is_in_selection_buffer_remove (gerbv_net_t *net,
 		gerbv_selection_info_t *selectionInfo, gboolean remove)
@@ -198,8 +221,8 @@ draw_stroke (cairo_t *cairoTarget, enum draw_mode drawMode,
 			selectionInfo, image, net, drawMode);
 }
 
-/*
- * Draws a circle _centered_ at x,y with diameter dia
+/** Draw the circle _centered_ at current Cairo coordinates.
+  @param diameter	Circle diameter.
  */
 static void
 gerbv_draw_circle(cairo_t *cairoTarget, gdouble diameter)
@@ -209,8 +232,10 @@ gerbv_draw_circle(cairo_t *cairoTarget, gdouble diameter)
 	return;
 }
 
-/*
- * Draws a rectangle _centered_ at x,y with sides x_side, y_side
+/** Draw the rectangle _centered_ at current Cairo coordinates.
+  @param width	Width of the rectangle.
+  @param height	Height of the rectangle.
+  @param pixelOutput	Round width and height to pixels.
  */
 static void
 gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height,
@@ -228,8 +253,9 @@ gerbv_draw_rectangle(cairo_t *cairoTarget, gdouble width, gdouble height,
 	return;
 }
 
-/*
- * Draws an oblong _centered_ at x,y with x axis x_axis and y axis y_axis
+/** Draw the oblong _centered_ at current Cairo coordinates.
+  @param width	Width of the oblong.
+  @param height	Height of the oblong.
  */
 static void
 gerbv_draw_oblong(cairo_t *cairoTarget, gdouble width, gdouble height)
@@ -641,6 +667,11 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget,
 	}
 }
 
+/** Draw Cairo cross.
+  @param xc	Cross center x coordinate.
+  @param yc	Cross center y coordinate.
+  @param r	Cross half size.
+*/
 static void
 draw_cairo_cross (cairo_t *cairoTarget, gdouble xc, gdouble yc, gdouble r)
 {
