@@ -203,9 +203,9 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 
 	if (transform != NULL) {
 		thisTransform = transform;
-	}
-	else {
-		gerbv_user_transformation_t identityTransform = {0,0,1,1,0,FALSE,FALSE,FALSE};
+	} else {
+		static gerbv_user_transformation_t identityTransform =
+						{0,0,1,1,0,FALSE,FALSE,FALSE};
 		thisTransform = &identityTransform;
 	}
 	if ((fd = g_fopen(filename, "w")) == NULL) {
