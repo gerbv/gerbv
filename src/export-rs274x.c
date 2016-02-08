@@ -343,8 +343,10 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 				/*  and most all software should support it */
 				fprintf(fd, "G75*\n");
 
-				/* Always conter clockwise */
-				fprintf(fd, "G03");
+				if (currentNet->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR)
+					fprintf(fd, "G02");	/* Clockwise */
+				else
+					fprintf(fd, "G03");	/* Counter clockwise */
 
 				/* don't write the I and J values if the exposure is off */
 				if (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)
