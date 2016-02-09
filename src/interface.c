@@ -1009,8 +1009,8 @@ interface_create_gui (int req_width, int req_height)
 
 	sidepane_vbox = gtk_vbox_new (FALSE, 0);
 	gtk_widget_set_size_request (sidepane_vbox, 150, -1);
-	
-	gtk_paned_pack1 (GTK_PANED (hpaned1), sidepane_vbox, TRUE, FALSE);
+
+	gtk_paned_pack1 (GTK_PANED (hpaned1), sidepane_vbox, FALSE, FALSE);
 	gtk_container_set_border_width (GTK_CONTAINER (sidepane_vbox), 5);
 
 	sidepane_notebook = gtk_notebook_new ();
