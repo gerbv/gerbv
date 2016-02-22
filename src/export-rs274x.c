@@ -240,11 +240,16 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 	/* plotter film */
 	if (image->info->plotterFilm)
 		fprintf(fd, "%%PF%s*%%\n",image->info->plotterFilm);
+
 	/* image rotation */
-	if ((image->info->imageRotation != 0.0)||(thisTransform->rotation != 0.0))
-		fprintf(fd, "%%IR%d*%%\n",(int) ((image->info->imageRotation + thisTransform->rotation)*180/M_PI)%360);
-	if ((image->info->imageJustifyTypeA != GERBV_JUSTIFY_NOJUSTIFY) ||
-		(image->info->imageJustifyTypeB != GERBV_JUSTIFY_NOJUSTIFY)) {
+	if ((image->info->imageRotation != 0.0)
+	||  (thisTransform->rotation != 0.0))
+		fprintf(fd, "%%IR%d*%%\n",
+			(int)(DEG2RAD(image->info->imageRotation +
+					thisTransform->rotation))%360);
+
+	if ((image->info->imageJustifyTypeA != GERBV_JUSTIFY_NOJUSTIFY)
+	||  (image->info->imageJustifyTypeB != GERBV_JUSTIFY_NOJUSTIFY)) {
 		fprintf(fd, "%%IJA");
 		if (image->info->imageJustifyTypeA == GERBV_JUSTIFY_CENTERJUSTIFY)
 			fprintf(fd, "C");

@@ -643,17 +643,23 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			   the point at each step, and use it to figure out the bounding box */
 			gdouble angleDiff = curr_net->cirseg->angle2 - curr_net->cirseg->angle1;
 			gint i, steps = abs(angleDiff);
-			for (i=0; i<=steps; i++){
-				gdouble tempX = curr_net->cirseg->cp_x + curr_net->cirseg->width / 2.0 *
-						 cos ((curr_net->cirseg->angle1 +
-						 (angleDiff * i) / steps)*M_PI/180.0);
-				gdouble tempY = curr_net->cirseg->cp_y + curr_net->cirseg->width / 2.0 *
-						 sin ((curr_net->cirseg->angle1 +
-						 (angleDiff * i) / steps)*M_PI/180.0);
+			for (i=0; i<=steps; i++) {
+				gdouble tempX =
+					curr_net->cirseg->cp_x +
+					curr_net->cirseg->width/2.0*
+					cos (DEG2RAD(curr_net->cirseg->angle1 +
+						(angleDiff*i)/steps));
+				gdouble tempY =
+					curr_net->cirseg->cp_y +
+					curr_net->cirseg->width/2.0*
+					sin (DEG2RAD(curr_net->cirseg->angle1 +
+						(angleDiff * i) / steps));
 				gerber_update_min_and_max (&boundingBox,
-					       tempX, tempY, 
-					       aperture_sizeX/2,aperture_sizeX/2,
-					       aperture_sizeY/2,aperture_sizeY/2);
+						tempX, tempY,
+						aperture_sizeX/2,
+						aperture_sizeX/2,
+						aperture_sizeY/2,
+						aperture_sizeY/2);
 			}
 			
 		    }
@@ -1934,7 +1940,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
     case A2I('R','O'):
 	state->layer = gerbv_image_return_new_layer (state->layer);
 	
-	state->layer->rotation = gerb_fgetdouble(fd) * M_PI / 180.0;
+	state->layer->rotation = DEG2RAD(gerb_fgetdouble(fd));
 	op[0] = gerb_fgetc(fd);
 	if (op[0] != '*') {
 	    string = g_strdup_printf(_("Error in layer rotation command in file \"%s\""),

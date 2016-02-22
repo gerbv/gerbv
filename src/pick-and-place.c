@@ -332,7 +332,7 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    pnpPartData.shape = PART_SHAPE_RECTANGLE;
 	} else { 
 	    gerb_transf_reset(tr_rot);
-	    gerb_transf_rotate(tr_rot, -pnpPartData.rotation * M_PI/180);/* rotate it back to get dimensions */
+	    gerb_transf_rotate(tr_rot, -DEG2RAD(pnpPartData.rotation));/* rotate it back to get dimensions */
 	    gerb_transf_apply( pnpPartData.pad_x -  pnpPartData.mid_x, 
 			       pnpPartData.pad_y - pnpPartData.mid_y, tr_rot, &tmp_x, &tmp_y);
 	    if ((fabs(tmp_y) > fabs(tmp_x/100)) && (fabs(tmp_x) > fabs(tmp_y/100))){
@@ -585,8 +585,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	else if ((partData.rotation > -271) && (partData.rotation < -269))
 		labelOffset = fabs(partData.length/2);
 	else labelOffset = fabs(partData.width/2);
-	
-	partData.rotation *= M_PI/180; /* convert deg to rad */
+
+	partData.rotation = DEG2RAD(partData.rotation);
+
 	/* check if the entry is on the specified layer */
 	if ((boardSide == 0) && !((partData.layer[0]=='b') || (partData.layer[0]=='B')))
 		continue;

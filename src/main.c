@@ -883,7 +883,7 @@ main(int argc, char *argv[])
     if (initial_rotation != 0.0) {
 	/* Set initial layer orientation */
 
-	gdouble initial_radians = M_PI*initial_rotation/180;
+	gdouble initial_radians = DEG2RAD(initial_rotation);
 
 	dprintf("Rotating all layers by %.0f degrees\n", (float) initial_rotation);
 	for(i = 0; i < mainProject->max_files; i++) {
