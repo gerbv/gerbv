@@ -835,7 +835,7 @@ draw_gdk_apply_netstate_transformation  (cairo_matrix_t *fullMatrix, cairo_matri
 	if (state->axisSelect == GERBV_AXIS_SELECT_SWAPAB) {
 		/* we do this by rotating 270 (counterclockwise, then mirroring
 		   the Y axis */
-		cairo_matrix_rotate (fullMatrix, 3 * M_PI / 2);
+		cairo_matrix_rotate (fullMatrix, M_PI + M_PI_2);
 		cairo_matrix_scale (fullMatrix, 1, -1);
 	}
 }
