@@ -442,9 +442,11 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 	guint i;
 
 	if (trans && (trans->mirrorAroundX || trans->mirrorAroundY)) {
-		GERB_COMPILE_ERROR(_("Exporting mirrored file "
-					"is not supported!"));
-		return;
+		if (sourceImage->layertype != GERBV_LAYERTYPE_DRILL) {
+			GERB_COMPILE_ERROR(_("Exporting mirrored file "
+						"is not supported!"));
+			return;
+		}
 	}
 
 	if (trans && trans->inverted) {

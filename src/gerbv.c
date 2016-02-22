@@ -230,20 +230,50 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
 gboolean 
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename) 
 {
-    if (strcmp (gerbvProject->file[index]->image->info->type,"RS274-X (Gerber) File")==0) {
-	gerbv_export_rs274x_file_from_image (filename, gerbvProject->file[index]->image,
-		&gerbvProject->file[index]->transform);
-    }
-    else if (strcmp (gerbvProject->file[index]->image->info->type,"Excellon Drill File")==0) {
-	gerbv_export_drill_file_from_image (filename, gerbvProject->file[index]->image,
-		&gerbvProject->file[index]->transform);
-    }
-    else {
-	return FALSE;
-    }
-    gerbvProject->file[index]->layer_dirty = FALSE;
-    return TRUE;
-} /* gerbv_save_project_from_filename */
+	gerbv_user_transformation_t *trans = &gerbvProject->file[index]->transform;
+
+	if (strcmp (gerbvProject->file[index]->image->info->type,
+					"RS274-X (Gerber) File") == 0) {
+		if (trans) {
+			/* NOTE: mirrored file is not yet supported */
+			if (trans->mirrorAroundX || trans->mirrorAroundY) {
+				GERB_COMPILE_ERROR(_("Exporting mirrored file "
+							"is not supported!"));
+				return FALSE;
+			}
+
+			/* NOTE: inverted file is not yet supported */
+			if (trans->inverted) {
+				GERB_COMPILE_ERROR(_("Exporting inverted file "
+							"is not supported!"));
+				return FALSE;
+			}
+		}
+
+		gerbv_export_rs274x_file_from_image (filename,
+				gerbvProject->file[index]->image, trans);
+
+	} else if (strcmp (gerbvProject->file[index]->image->info->type,
+					"Excellon Drill File") == 0) {
+		if (trans) {
+			/* NOTE: inverted file is not yet supported */
+			if (trans->inverted) {
+				GERB_COMPILE_ERROR(_("Exporting inverted file "
+							"is not supported!"));
+				return FALSE;
+			}
+		}
+
+		gerbv_export_drill_file_from_image (filename,
+				gerbvProject->file[index]->image, trans);
+	} else {
+		return FALSE;
+	}
+
+	gerbvProject->file[index]->layer_dirty = FALSE;
+
+	return TRUE;
+}
 
 
 /* ------------------------------------------------------------------ */
