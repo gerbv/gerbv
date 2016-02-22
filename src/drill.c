@@ -417,7 +417,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		}
 		stats->detect = tmps2;
 	    } else {
-		string = g_strdup_printf(_("Undefined header line = '%s'\n"),tmps);
+		string = g_strdup_printf(_("Undefined header line = '%s'"),tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      string,
@@ -431,7 +431,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    tmps = get_line (fd);
 	    /* Silently ignore FMAT,2.  Not sure what others are allowed */
 	    if (strcmp (tmps, "FMAT,2") != 0) {
-		string = g_strdup_printf(_("Undefined header line = '%s'\n"),tmps);
+		string = g_strdup_printf(_("Undefined header line = '%s'"),tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      string,
@@ -447,7 +447,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    case DRILL_G_ROUT :
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      _("Rout mode data is not supported\n"),
+				      _("Rout mode data is not supported."),
 				      GERBV_MESSAGE_ERROR);
 		break;
 	    case DRILL_G_DRILL :
@@ -468,7 +468,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 		} else {
 		    drill_stats_add_error(stats->error_list,
-			    -1, _("Unexpected EOF found.\n"),
+			    -1, _("Unexpected EOF found."),
 			    GERBV_MESSAGE_ERROR);
 		}
 		break;
@@ -482,7 +482,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		if((read = gerb_fgetc(fd)) == EOF)
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      _("Unexpected EOF found.\n"),
+				      _("Unexpected EOF found."),
 				      GERBV_MESSAGE_ERROR);
 		drill_parse_coordinate(fd, (char)read, image, state);
 		state->origin_x = state->curr_x;
@@ -530,14 +530,14 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 				   default:
 				       drill_stats_add_error(stats->error_list,
 							     -1,
-							     _("Found junk after INCH command\n"),
+							     _("Found junk after INCH command."),
 							     GERBV_MESSAGE_WARNING);
 				       break;
 				   }
 			       } else {
 				   drill_stats_add_error(stats->error_list,
 							 -1,
-							 _("Found junk after INCH command\n"),
+							 _("Found junk after INCH command."),
 							 GERBV_MESSAGE_WARNING);
 			       }
 			   }
@@ -581,11 +581,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 		    drill_stats_add_error(stats->error_list,
 					  -1,
-					  _("End of Excellon header reached but no leading/trailing zero handling specified.\n"),
+					  _("End of Excellon header reached "
+					  "but no leading/trailing zero "
+					  "handling specified."),
 					  GERBV_MESSAGE_ERROR);
 		    drill_stats_add_error(stats->error_list,
 					  -1,
-					  _("Assuming leading zeros.\n"),
+					  _("Assuming leading zeros."),
 					  GERBV_MESSAGE_WARNING);
 		    image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
 		}
@@ -595,11 +597,11 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		    state->curr_section != DRILL_HEADER) {
 		    drill_stats_add_error(stats->error_list,
 					  -1,
-					  _("M71 code found but no METRIC specification in header.\n"),
+					  _("M71 code found but no METRIC specification in header."),
 					  GERBV_MESSAGE_ERROR);
 		    drill_stats_add_error(stats->error_list,
 					  -1,
-					  _("Assuming all tool sizes are MM.\n"),
+					  _("Assuming all tool sizes are MM."),
 					  GERBV_MESSAGE_WARNING);
 		    int tool_num;
 		    double size;
@@ -640,7 +642,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    case DRILL_M_MESSAGE :
 	    case DRILL_M_CANNEDTEXT :
 		tmps = get_line(fd);
-		string = g_strdup_printf(_("Message embedded in drill file: '%s'\n"), 
+		string = g_strdup_printf(_("Message embedded in drill file: '%s'"), 
 					 tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
@@ -664,7 +666,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    default:
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      _("Undefined M code found.\n"),
+				      _("Undefined M code found."),
 				      GERBV_MESSAGE_ERROR);
 	    }
 	    break;
@@ -673,7 +675,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    if(state->curr_section == DRILL_HEADER) {
 	      drill_stats_add_error(stats->error_list,
 				    -1,
-				    _("R codes are not allowed in the header.\n"),
+				    _("R codes are not allowed in the header."),
 				    GERBV_MESSAGE_ERROR);
 	    } else {
 	      double start_x, start_y;
@@ -735,7 +737,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	case 'S':
 	    drill_stats_add_error(stats->error_list,
 				  -1,
-				  _("Drill file sets spindle speed -- ignoring.\n"),
+				  _("Drill file sets spindle speed -- ignoring."),
 				  GERBV_MESSAGE_NOTE);
 	    eat_line(fd);
 	    break;
@@ -747,10 +749,10 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    tmps = get_line (fd);
 	    /* Silently ignore VER,1.  Not sure what others are allowed */
 	    if (strcmp (tmps, "VER,1") != 0) {
-		string = g_strdup_printf(_("Undefined header line = '%s'\n"),tmps);
+		string = g_strdup_printf(_("Undefined header line = '%s'"),tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      g_strdup_printf(_("Undefined header line = '%s'\n"),tmps),
+				      g_strdup_printf(_("Undefined header line = '%s'"),tmps),
 				      GERBV_MESSAGE_NOTE);
 		g_free(string);
 	    }
@@ -779,11 +781,11 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		/* Unrecognised crap in the header is thrown away */
 		drill_stats_add_error(stats->error_list,
 				      -1,
-				      _("Undefined codes found in header.\n"),
+				      _("Undefined codes found in header."),
 				      GERBV_MESSAGE_ERROR);
 		gerb_ungetc(fd);
 		tmps = get_line(fd);
-		string = g_strdup_printf(_("Undefined header line = '%s'\n"),
+		string = g_strdup_printf(_("Undefined header line = '%s'"),
 					 tmps);
 		drill_stats_add_error(stats->error_list,
 				      -1,
@@ -792,7 +794,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		g_free(string);
 		g_free (tmps);
 	    } else {
-		string = g_strdup_printf(_("Undefined character '%c' [0x%02x] found inside data, ignoring\n"),
+		string = g_strdup_printf(_("Undefined character '%c' [0x%02x] found inside data, ignoring."),
 					 read, read);
 		drill_stats_add_error(stats->error_list,
 				      -1,
@@ -804,7 +806,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     }
     drill_stats_add_error(stats->error_list,
 			  -1,
-			  _("No EOF found in drill file.\n"),
+			  _("No EOF found in drill file."),
 			  GERBV_MESSAGE_ERROR);
 
  drill_parse_end:
@@ -1009,7 +1011,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
     	    if (gerb_fgetc(fd) == 'T' ){
     	  	fd->ptr -= 4;
     	  	tmps = get_line(fd++);
-		string = g_strdup_printf(_("Tool change stop switch found: %s\n"), tmps);
+		string = g_strdup_printf(_("Tool change stop switch found: %s"), tmps);
     	  	drill_stats_add_error(stats->error_list, 
 				      -1,
 				      string,
@@ -1027,10 +1029,10 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 	if(temp != EOF) {
 	    drill_stats_add_error(stats->error_list,
 				  -1,
-				  _("Orcad bug: Junk text found in place of tool definition.\n"),
+				  _("OrCAD bug: Junk text found in place of tool definition."),
 				  GERBV_MESSAGE_ERROR);
 	    tmps = get_line(fd);
-	    string = g_strdup_printf(_("Junk text = %s\n"),
+	    string = g_strdup_printf(_("Junk text = %s"),
 				     tmps);
 	    drill_stats_add_error(stats->error_list,
 				  -1,
@@ -1040,7 +1042,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 	    g_free (tmps);
 	    drill_stats_add_error(stats->error_list,
 				  -1,
-				  _("Ignorning junk text.\n"),
+				  _("Ignorning junk text."),
 				  GERBV_MESSAGE_WARNING);
 	}
 	return -1;
@@ -1054,7 +1056,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 	return tool_num; /* T00 is a command to unload the drill */
 
     if ( (tool_num < TOOL_MIN) || (tool_num >= TOOL_MAX) ) {
-	string = g_strdup_printf(_("Drill number out of bounds: %d.\n"), tool_num);
+	string = g_strdup_printf(_("Drill number out of bounds: %d."), tool_num);
 	drill_stats_add_error(stats->error_list,
 			      -1,
 			      string,
@@ -1085,13 +1087,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 		   The limit being 4 inches is because the smallest drill
 		   I've ever seen used is 0,3mm(about 12mil). Half of that
 		   seemed a bit too small a margin, so a third it is */
-		string = g_strdup_printf(_("Read a drill of diameter %g inches.\n"), size);
+		string = g_strdup_printf(_("Read a drill of diameter %g inches."), size);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      string,
 				      GERBV_MESSAGE_ERROR); 
 		g_free(string);
-		string = g_strdup_printf(_("Assuming units are mils.\n"));
+		string = g_strdup_printf(_("Assuming units are mils."));
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      string,
@@ -1101,7 +1103,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 	    }
 
 	    if(size <= 0. || size >= 10000.) {
-		string = g_strdup_printf(_("Unreasonable drill size found for drill %d: %g\n"), tool_num, size);
+		string = g_strdup_printf(_("Unreasonable drill size found for drill %d: %g"), tool_num, size);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      string,
@@ -1117,7 +1119,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 			image->aperture[tool_num]->type != GERBV_APTYPE_CIRCLE ||
 			image->aperture[tool_num]->nuf_parameters != 1 ||
 			image->aperture[tool_num]->unit != GERBV_UNIT_INCH) {
-			string = g_strdup_printf(_("Found redefinition of drill %d.\n"), tool_num);
+			string = g_strdup_printf(_("Found redefinition of drill %d."), tool_num);
 			drill_stats_add_error(stats->error_list,
 					      -1,
 					      string,
@@ -1168,7 +1170,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 	if( (temp = gerb_fgetc(fd)) == EOF) {
 	    drill_stats_add_error(stats->error_list,
 				  -1,
-				  _("Unexpected EOF encountered header of drill file.\n"),
+				  _("Unexpected EOF encountered header of drill file."),
 				  GERBV_MESSAGE_ERROR);
 	}
     }   /* while(!done) */  /* Done looking at tool definitions */
@@ -1197,13 +1199,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
              * tool definitions inside the file never seem to use T00 at all.
              */
             if(tool_num != 0) {
-		string = g_strdup_printf(_("Tool %02d used without being defined\n"), tool_num);
+		string = g_strdup_printf(_("Tool %02d used without being defined."), tool_num);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      string,
 				      GERBV_MESSAGE_ERROR);
 		g_free(string);
-		string = g_strdup_printf(_("Setting a default size of %g\"\n"), dia);
+		string = g_strdup_printf(_("Setting a default size of %g\""), dia);
 		drill_stats_add_error(stats->error_list,
 				      -1,
 				      string,
@@ -1252,7 +1254,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
     if ((read[0] == EOF) || (read[1] == EOF))
 	drill_stats_add_error(stats->error_list,
 			      -1,
-			      _("Unexpected EOF found while parsing M code.\n"),
+			      _("Unexpected EOF found while parsing M code."),
 			      GERBV_MESSAGE_ERROR);
     op[0] = read[0], op[1] = read[1], op[2] = 0;
  
@@ -1406,7 +1408,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 		junk:
 		    drill_stats_add_error(stats->error_list,
 					  -1,
-					  _("Found junk after METRIC command\n"),
+					  _("Found junk after METRIC command."),
 					  GERBV_MESSAGE_WARNING);
 		    gerb_ungetc(fd);
 		    eat_line(fd);
@@ -1446,7 +1448,7 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image)
     if ((read[0] == EOF) || (read[1] == EOF)) {
 	drill_stats_add_error(stats->error_list,
 			      -1,
-			      _("Unexpected EOF found while parsing G code.\n"),
+			      _("Unexpected EOF found while parsing G code."),
 			      GERBV_MESSAGE_ERROR);
     }
 
