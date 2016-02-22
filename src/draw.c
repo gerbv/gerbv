@@ -309,7 +309,7 @@ gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideDiameter,
 	/* include last point, since we may be drawing an aperture hole next
 	   and cairo may not correctly close the path itself */
 	for (i = 1; i <= (int)numberOfSidesInteger; i++){
-	    gdouble angle = (double) i / numberOfSidesInteger * M_PI * 2.0;
+	    gdouble angle = ((double)i)*M_PI*2.0 / numberOfSidesInteger;
 	    cairo_line_to (cairoTarget, cos(angle) * outsideDiameter / 2.0,
 		       sin(angle) * outsideDiameter / 2.0);
 	}
@@ -596,7 +596,7 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *stat
 	if (state->axisSelect == GERBV_AXIS_SELECT_SWAPAB) {
 		/* we do this by rotating 270 (counterclockwise, then mirroring
 		   the Y axis */
-		cairo_rotate (cairoTarget, 3 * M_PI_2);
+		cairo_rotate (cairoTarget, M_PI + M_PI_2);
 		cairo_scale (cairoTarget, 1, -1);
 	}
 }
