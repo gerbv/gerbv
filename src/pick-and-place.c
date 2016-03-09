@@ -121,15 +121,17 @@ pick_and_place_reset_bounding_box (gerbv_net_t *net) {
 	net->boundingBox.top = HUGE_VAL;
 }
 
-//! Parses a string representing float number with a unit, default is mil
+/* Parses a string representing float number with a unit.
+ * Default unit can be specified with def_unit. */
 static double
-pick_and_place_get_float_unit(const char *str)
+pick_and_place_get_float_unit(const char *str, const char *def_unit)
 {
     double x = 0.0;
-    char unit[41];
+    char unit[41] = {0,};
 
     /* float, optional space, optional unit mm,cm,in,mil */
     sscanf(str, "%lf %40s", &x, unit);
+    if (unit[0] == '\0') strncpy(unit, def_unit, sizeof(unit) - 1);
     if(strstr(unit,"in")) {
 	;
     } else if(strstr(unit, "cm")) {
@@ -201,10 +203,13 @@ pick_and_place_parse_file(gerb_file_t *fd)
     int           ret;
     char          *row[12];
     char          buf[MAXL+2], buf0[MAXL+2];
+    char          def_unit[41] = {0,};
     double        tmp_x, tmp_y;
     gerbv_transf_t *tr_rot = gerb_transf_new();
     GArray 	*pnpParseDataArray = g_array_new (FALSE, FALSE, sizeof(PnpPartData));
     gboolean foundValidDataRow = FALSE;
+    /* Unit declaration for "PcbXY Version 1.0" files as exported by pcb */
+    const char *def_unit_prefix = "# X,Y in ";
     
     /*
      * many locales redefine "." as "," and so on, so sscanf has problems when
@@ -229,6 +234,9 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	}
 	if(len >= 0 && buf[len] == '\r') {
 	    buf[len--] = 0;
+	}
+	if (0 == strncmp(buf, def_unit_prefix, strlen(def_unit_prefix))) {
+	    sscanf(&buf[strlen(def_unit_prefix)], "%40s.", def_unit);
 	}
 	if (len <= 11)  {  //lets check a minimum length of 11
 	    continue;
@@ -287,12 +295,12 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    /*
 	      gchar* g_convert(const gchar *str, gssize len, const gchar *to_codeset, const gchar *from_codeset, gsize *bytes_read, gsize *bytes_written, GError **error);
 	    */
-	    pnpPartData.mid_x = pick_and_place_get_float_unit(row[2]);
-	    pnpPartData.mid_y = pick_and_place_get_float_unit(row[3]);
-	    pnpPartData.ref_x = pick_and_place_get_float_unit(row[4]);
-	    pnpPartData.ref_y = pick_and_place_get_float_unit(row[5]);
-	    pnpPartData.pad_x = pick_and_place_get_float_unit(row[6]);
-	    pnpPartData.pad_y = pick_and_place_get_float_unit(row[7]);
+	    pnpPartData.mid_x = pick_and_place_get_float_unit(row[2], def_unit);
+	    pnpPartData.mid_y = pick_and_place_get_float_unit(row[3], def_unit);
+	    pnpPartData.ref_x = pick_and_place_get_float_unit(row[4], def_unit);
+	    pnpPartData.ref_y = pick_and_place_get_float_unit(row[5], def_unit);
+	    pnpPartData.pad_x = pick_and_place_get_float_unit(row[6], def_unit);
+	    pnpPartData.pad_y = pick_and_place_get_float_unit(row[7], def_unit);
 	    /* This line causes segfault if we accidently starts parsing 
 	     * a gerber file. It is crap crap crap */
 	    if (row[9])
@@ -305,8 +313,8 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    snprintf (pnpPartData.designator, sizeof(pnpPartData.designator)-1, "%s", row[0]);
 	    snprintf (pnpPartData.footprint, sizeof(pnpPartData.footprint)-1, "%s", row[1]);		
 	    snprintf (pnpPartData.layer, sizeof(pnpPartData.layer)-1, "%s", row[6]);	
-	    pnpPartData.mid_x = pick_and_place_get_float_unit(row[3]);
-	    pnpPartData.mid_y = pick_and_place_get_float_unit(row[4]);
+	    pnpPartData.mid_x = pick_and_place_get_float_unit(row[3], def_unit);
+	    pnpPartData.mid_y = pick_and_place_get_float_unit(row[4], def_unit);
 	    pnpPartData.pad_x = pnpPartData.mid_x + 0.03;
 	    pnpPartData.pad_y = pnpPartData.mid_y + 0.03;
 	    sscanf(row[5], "%lf", &pnpPartData.rotation); // no units, always deg
