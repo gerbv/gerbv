@@ -56,7 +56,8 @@ export_rs274x_write_macro (FILE *fd, gerbv_aperture_t *currentAperture,
 			int pointCounter;
 			int numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
 			
-			fprintf(fd, "4,%d,%d,\n",(int) ls->parameter[OUTLINE_EXPOSURE],
+			/* for Flatcam no new line after this 3 digits */
+			fprintf(fd, "4,%d,%d,",(int) ls->parameter[OUTLINE_EXPOSURE],
 				numberOfPoints);
 			/* add 1 point for the starting point here */
 			for (pointCounter=0; pointCounter <= numberOfPoints; pointCounter++) {
