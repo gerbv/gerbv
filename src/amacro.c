@@ -126,7 +126,7 @@ parse_aperture_macro(gerb_file_t *fd)
 
     amacro = new_amacro();
 
-    memset(math_op, GERBV_OPCODE_NOP, MATH_OP_STACK_SIZE);
+    memset(math_op, GERBV_OPCODE_NOP, sizeof(math_op));
 
     /*
      * Get macroname
