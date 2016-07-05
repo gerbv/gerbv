@@ -2565,31 +2565,31 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
     /*
      * Some good values 
      */
-    d1x = net->start_x - net->cirseg->cp_x;
-    d1y = net->start_y - net->cirseg->cp_y;
+    d1x = -delta_cp_x;
+    d1y = -delta_cp_y;
     d2x = net->stop_x - net->cirseg->cp_x;
     d2y = net->stop_y - net->cirseg->cp_y;
-    
-    alfa = atan2(d1y, d1x);
-    beta = atan2(d2y, d2x);
 
     net->cirseg->width = sqrt(delta_cp_x*delta_cp_x + delta_cp_y*delta_cp_y);
     net->cirseg->width *= 2.0;
     net->cirseg->height = net->cirseg->width;
 
-    net->cirseg->angle1 = RAD2DEG(alfa);
-    net->cirseg->angle2 = RAD2DEG(beta);
+    /*
+     *  Keep values in radians, convert to degrees only results
+     */
+    alfa = atan2(d1y, d1x);
+    beta = atan2(d2y, d2x);
 
     /*
      * Make sure it's always positive angles
      */
-    if (net->cirseg->angle1 < 0.0) {
-	net->cirseg->angle1 += 360.0;
-	net->cirseg->angle2 += 360.0;
+    if (alfa < 0.0) {
+	alfa += M_PI + M_PI;
+	beta += M_PI + M_PI;
     }
 
-    if (net->cirseg->angle2 < 0.0) 
-	net->cirseg->angle2 += 360.0;
+    if (beta < 0.0)
+	beta += M_PI + M_PI;
 
     /*
      * This is a sanity check for angles after the nature of atan2.
@@ -2599,12 +2599,15 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
      * uses them. But what the heck, it works for me.
      */
     if (cw) {
-	if (net->cirseg->angle1 <= net->cirseg->angle2)
-	    net->cirseg->angle2 -= 360.0;
+	if (alfa - beta < DBL_EPSILON)
+	    beta -= M_PI + M_PI;
     } else {
-	if (net->cirseg->angle1 >= net->cirseg->angle2)
-	    net->cirseg->angle2 += 360.0;
+	if (beta - alfa < DBL_EPSILON)
+	    beta += M_PI + M_PI;
     }
+
+    net->cirseg->angle1 = RAD2DEG(alfa);
+    net->cirseg->angle2 = RAD2DEG(beta);
 
     return;
 } /* calc_cirseg_mq */
