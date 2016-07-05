@@ -173,6 +173,7 @@ test-aperture-obround-1  |  test-aperture-obround-1.gbx
 test-aperture-polygon-flash-1  |  test-aperture-polygon-flash-1.gbx
 test-polygon-fill-1  |  test-polygon-fill-1.gbx
 test-circular-interpolation-1  |  test-circular-interpolation-1.gbx
+test-circular-interpolation-mq-ccw  |  test-circular-interpolation-mq-ccw.gbx
 
 test-merge-a+b_temporary | test-merge-a.gbx test-merge-b.gbx | ! --export=rs274x --output=inputs/test-merge-a+b_temporary.gbx
 test-merge-a+b | test-merge-a+b_temporary.gbx
