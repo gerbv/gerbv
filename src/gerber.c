@@ -2540,7 +2540,7 @@ calc_cirseg_sq(struct gerbv_net *net, int cw,
 
     if (net->cirseg->width < 0.0)
 	GERB_COMPILE_WARNING(_("Negative width [%f] in quadrant %d [%f][%f]"),
-			     net->cirseg->width, quadrant, alfa, beta);
+			     net->cirseg->width, quadrant, RAD2DEG(alfa), RAD2DEG(beta));
     
     if (net->cirseg->height < 0.0)
 	GERB_COMPILE_WARNING(_("Negative height [%f] in quadrant %d [%f][%f]"),
