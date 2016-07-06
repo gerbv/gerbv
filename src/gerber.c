@@ -2130,7 +2130,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 		nuf_parameters = 6;
 		break;
 	    case 6 :
-		dprintf("  Aperture macro moiré [6] (");
+		dprintf("  Aperture macro moire [6] (");
 		type = GERBV_APTYPE_MACRO_MOIRE;
 		nuf_parameters = 9;
 		break;
