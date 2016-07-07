@@ -65,7 +65,9 @@ static void calc_cirseg_sq(struct gerbv_net *net, int cw,
 			   double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_mq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
-
+static void calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
+			double apert_size_x, double apert_size_y,
+			gerbv_render_size_t *bbox);
 
 static void gerber_update_any_running_knockout_measurements(gerbv_image_t *image);
 
@@ -636,34 +638,17 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			   is "zero" */
 			aperture_sizeX = aperture_sizeY = 0;
 		    }
+
 		    /* if it's an arc path, use a special calc */
-		    if ((curr_net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR) || 
-				 (curr_net->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR)) {
-			/* to calculate the arc bounding box, we chop it into 1 degree steps, calculate
-			   the point at each step, and use it to figure out the bounding box */
-			gdouble angleDiff = curr_net->cirseg->angle2 - curr_net->cirseg->angle1;
-			gint i, steps = abs(angleDiff);
-			for (i=0; i<=steps; i++) {
-				gdouble tempX =
-					curr_net->cirseg->cp_x +
-					curr_net->cirseg->width/2.0*
-					cos (DEG2RAD(curr_net->cirseg->angle1 +
-						(angleDiff*i)/steps));
-				gdouble tempY =
-					curr_net->cirseg->cp_y +
-					curr_net->cirseg->width/2.0*
-					sin (DEG2RAD(curr_net->cirseg->angle1 +
-						(angleDiff * i) / steps));
-				gerber_update_min_and_max (&boundingBox,
-						tempX, tempY,
-						aperture_sizeX/2,
-						aperture_sizeX/2,
-						aperture_sizeY/2,
-						aperture_sizeY/2);
-			}
-			
-		    }
-		    else {
+
+		    if ((curr_net->interpolation ==
+					GERBV_INTERPOLATION_CW_CIRCULAR) ||
+			(curr_net->interpolation ==
+					GERBV_INTERPOLATION_CCW_CIRCULAR)) {
+				calc_cirseg_bbox(curr_net->cirseg,
+						aperture_sizeX, aperture_sizeY,
+						&boundingBox);
+		    } else {
 			    /* check both the start and stop of the aperture points against
 			       a running min/max counter */
 			    /* Note: only check start coordinate if this isn't a flash, 
@@ -2608,10 +2593,48 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
 
     net->cirseg->angle1 = RAD2DEG(alfa);
     net->cirseg->angle2 = RAD2DEG(beta);
+}
 
-    return;
-} /* calc_cirseg_mq */
+/* Calculate circular interpolation bounding box */
+static void
+calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
+		double apert_size_x, double apert_size_y,
+		gerbv_render_size_t *bbox)
+{
+	gdouble x, y, ang1, ang2, step_pi_2;
 
+	/* For bounding box calculation only half of aperture size is used */
+	apert_size_x /= 2;
+	apert_size_y /= 2;
+
+	ang1 = DEG2RAD(min(cirseg->angle1, cirseg->angle2));
+	ang2 = DEG2RAD(max(cirseg->angle1, cirseg->angle2));
+
+	/* Start arc point */
+	x = cirseg->cp_x + cirseg->width*cos(ang1)/2;
+	y = cirseg->cp_y + cirseg->width*sin(ang1)/2;
+	gerber_update_min_and_max(bbox, x, y,
+				apert_size_x, apert_size_x,
+				apert_size_y, apert_size_y);
+
+	/* Middle arc points */
+	for (step_pi_2 = (ang1/M_PI_2 + 1)*M_PI_2;
+				step_pi_2 < min(ang2, ang1 + 2*M_PI);
+				step_pi_2 += M_PI_2) {
+		x = cirseg->cp_x + cirseg->width*cos(step_pi_2)/2;
+		y = cirseg->cp_y + cirseg->width*sin(step_pi_2)/2;
+		gerber_update_min_and_max(bbox, x, y,
+					apert_size_x, apert_size_x,
+					apert_size_y, apert_size_y);
+	}
+
+	/* Stop arc point */
+	x = cirseg->cp_x + cirseg->width*cos(ang2)/2;
+	y = cirseg->cp_y + cirseg->width*sin(ang2)/2;
+	gerber_update_min_and_max(bbox, x, y,
+				apert_size_x, apert_size_x,
+				apert_size_y, apert_size_y);
+}
 
 static void
 gerber_update_any_running_knockout_measurements (gerbv_image_t *image)
