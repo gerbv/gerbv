@@ -692,7 +692,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	const int hole_cross_inc_px = 8;
 	struct gerbv_net *net, *polygonStartNet=NULL;
 	double x1, y1, x2, y2, cp_x=0, cp_y=0;
-	gdouble *p, dx, dy, lineWidth, r;
+	gdouble *p, p0, p1, dx, dy, lineWidth, r;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
 	cairo_operator_t drawOperatorClear, drawOperatorDark;
@@ -1065,15 +1065,17 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						// some CAD programs use very thin flashed rectangles to compose
 						//	logos/images, so we must make sure those display here
 						displayPixel = pixelOutput;
+						p0 = p[0];
+						p1 = p[1];
 						if (limitLineWidth && (p[0] < pixelWidth) && pixelOutput) {
-							p[0] = pixelWidth;
+							p0 = pixelWidth;
 							displayPixel = FALSE;
 						}
 						if (limitLineWidth && (p[1] < pixelWidth) && pixelOutput) {
-							p[1] = pixelWidth;
+							p1 = pixelWidth;
 							displayPixel = FALSE;
 						}
-						gerbv_draw_rectangle(cairoTarget, p[0], p[1], displayPixel);
+						gerbv_draw_rectangle(cairoTarget, p0, p1, displayPixel);
 						gerbv_draw_aperture_hole (cairoTarget, p[2], p[3], displayPixel);
 						break;
 					case GERBV_APTYPE_OVAL :
