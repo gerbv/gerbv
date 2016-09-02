@@ -1679,15 +1679,19 @@ interface_set_render_type (int t)
 /* ----------------------------------------------------  */
 /**
   * This dialog box shows a message and two buttons:
-  * "OK" and "Cancel".  It returns gboolean 1 if the
-  * user clicked "OK", and gboolean 0 if the user
-  * clicked "Cancel".
+  * "True" and "False".  It returns gboolean 1 if the
+  * user clicked "True", and gboolean 0 if the user
+  * clicked "False".
   *
   */
 
 gboolean
-interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText, 
-				     gboolean show_checkbox, gboolean *ask_to_show_again )
+interface_get_alert_dialog_response (const gchar *primaryText,
+				     const gchar *secondaryText,
+				     gboolean show_checkbox,
+				     gboolean *ask_to_show_again,
+				     const gchar *true_button_label,
+				     const gchar *false_button_label)
      /* This fcn returns TRUE if the user presses the OK button,
 	otherwise it returns FALSE. */
 {
@@ -1700,11 +1704,11 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText,
   GtkWidget *label1;
   GtkWidget *checkbox=NULL;
   GtkWidget *dialog_action_area1;
-  GtkWidget *cancelbutton1;
-  GtkWidget *okbutton1;
+  GtkWidget *true_button, *false_button;
   gboolean returnVal = FALSE;
 
   dialog1 = gtk_dialog_new ();
+  gtk_window_set_title (GTK_WINDOW (dialog1), _("Gerbv Alert"));
   gtk_container_set_border_width (GTK_CONTAINER (dialog1), 6);
   gtk_window_set_resizable (GTK_WINDOW (dialog1), FALSE);
   gtk_window_set_type_hint (GTK_WINDOW (dialog1), GDK_WINDOW_TYPE_HINT_DIALOG);
@@ -1746,15 +1750,17 @@ interface_get_alert_dialog_response (gchar *primaryText, gchar *secondaryText,
   dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
   gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
 
-  cancelbutton1 = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
-  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1), cancelbutton1, GTK_RESPONSE_CANCEL);
-  GTK_WIDGET_SET_FLAGS (cancelbutton1, GTK_CAN_DEFAULT);
-  gtk_widget_grab_default (cancelbutton1);
-  gtk_widget_grab_focus (cancelbutton1);
+  false_button = gtk_button_new_from_stock (false_button_label);
+  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1),
+		false_button, GTK_RESPONSE_CANCEL);
+  GTK_WIDGET_SET_FLAGS (false_button, GTK_CAN_DEFAULT);
+  gtk_widget_grab_default (false_button);
+  gtk_widget_grab_focus (false_button);
 
-  okbutton1 = gtk_button_new_from_stock (GTK_STOCK_OK);
-  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1), okbutton1, GTK_RESPONSE_OK);
-  GTK_WIDGET_SET_FLAGS (okbutton1, GTK_CAN_DEFAULT);
+  true_button = gtk_button_new_from_stock (true_button_label);
+  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1),
+		true_button, GTK_RESPONSE_OK);
+  GTK_WIDGET_SET_FLAGS (true_button, GTK_CAN_DEFAULT);
 
   gtk_widget_show_all (dialog1);
 

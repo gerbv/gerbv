@@ -133,10 +133,12 @@ callbacks_new_project_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
-		       _("Do you want to close any open layers and start a new project?"),
-		       _("Starting a new project will cause all currently open layers to be closed. Any unsaved changes will be lost."),
-		       FALSE,
-		       NULL))
+			_("Do you want to close any open layers "
+			"and start a new project?"),
+			_("Starting a new project will cause all currently "
+			"open layers to be closed. Any unsaved changes "
+			"will be lost."),
+			FALSE, NULL, GTK_STOCK_CLOSE, GTK_STOCK_CANCEL))
 			return;
 	}
 	/* Unload all layers and then clear layer window */
@@ -169,10 +171,12 @@ callbacks_open_project_activate               (GtkMenuItem     *menuitem,
 
 	if (mainProject->last_loaded >= 0) {
 		if (!interface_get_alert_dialog_response (
-                       _("Do you want to close any open layers and load an existing project?"),
-		       _("Loading a project will cause all currently open layers to be closed. Any unsaved changes will be lost."),
-			FALSE,
-			NULL))
+			_("Do you want to close any open layers and load "
+			"an existing project?"),
+			_("Loading a project will cause all currently open "
+			"layers to be closed. Any unsaved changes "
+			"will be lost."),
+			FALSE, NULL, GTK_STOCK_CLOSE, GTK_STOCK_CANCEL))
 			return;
 	}
 	
@@ -1469,10 +1473,10 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
 
   if (layers_dirty &&
       !interface_get_alert_dialog_response(
-            _("Do you want to close all open layers and quit the program?"),
-            _("Quitting the program will cause any unsaved changes to be lost."),
-	    FALSE,
-	    NULL)) {
+		_("Do you want to close all open layers and quit the program?"),
+		_("Quitting the program will cause any unsaved changes "
+		"to be lost."),
+		FALSE, NULL, GTK_STOCK_QUIT, GTK_STOCK_CANCEL)) {
     return TRUE; // stop propagation of the delete_event.
 	// this would destroy the gui but not return from the gtk event loop.
   }
@@ -2318,10 +2322,13 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
     if (n > 0)
 	{
 	    if (mainProject->file[index]->layer_dirty) {
-		rc = interface_get_alert_dialog_response (_("This layer has changed!"), 
-							  _("Editing the file type will reload the layer, destroying your changes.  Click OK to edit the file type and destroy your changes, or Cancel to leave."),
-							  TRUE,
-							  NULL);
+		rc = interface_get_alert_dialog_response (
+			_("This layer has changed!"),
+			_("Editing the file type will reload the layer, "
+			"destroying your changes.  Click OK to edit "
+			"the file type and destroy your changes, "
+			"or Cancel to leave."),
+			TRUE, NULL, GTK_STOCK_OK, GTK_STOCK_CANCEL);
 		if (rc == 0) return;  /* Return if user hit Cancel */
 	    }
 
@@ -2839,13 +2846,13 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer user_data)
 	if (mainProject->check_before_delete) {
 		if (!interface_get_alert_dialog_response (
 			_("Do you want to permanently delete "
-				"the selected objects from "
-				"<i>visible</i> layers?"),
+			"the selected objects from <i>visible</i> layers?"),
 			_("Gerbv currently has no undo function, so "
-				"this action cannot be undone. This action "
-				"will not change the saved file unless you "
-				"save the file afterwards."),
-			TRUE, &(mainProject->check_before_delete))) {
+			"this action cannot be undone. This action "
+			"will not change the saved file unless you "
+			"save the file afterwards."),
+			TRUE, &(mainProject->check_before_delete),
+			GTK_STOCK_DELETE, GTK_STOCK_CANCEL)) {
 				return;
 		}
 	}

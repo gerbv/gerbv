@@ -180,10 +180,12 @@ void
 set_window_icon (GtkWidget * this_window);
 
 gboolean
-interface_get_alert_dialog_response (gchar *primaryText,
-				     gchar *secondaryText,
+interface_get_alert_dialog_response (const gchar *primaryText,
+				     const gchar *secondaryText,
 				     gboolean show_checkbox,
-				     gboolean *ask_to_show_again);
+				     gboolean *ask_to_show_again,
+				     const gchar *true_button_label,
+				     const gchar *false_button_label);
 
 void
 interface_show_alert_dialog (gchar *primaryText,
