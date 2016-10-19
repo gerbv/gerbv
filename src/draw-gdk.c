@@ -712,10 +712,8 @@ gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
     gint real_x = x - width / 2;
     gint real_y = y - height / 2;
 
-    gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, width, height, 
-		 (gint)(angle1 * 64.0), (gint)(((angle2 - angle1) * 64.0)));
-    
-    return;
+    gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, width, height,
+		round(64*fmod(angle1, 360)), round(64*(angle2 - angle1)));
 } /* gerbv_gdk_draw_arc */
 
 void
@@ -1176,8 +1174,12 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 
 		    case GERBV_INTERPOLATION_CW_CIRCULAR :
 		    case GERBV_INTERPOLATION_CCW_CIRCULAR :
-			gerbv_gdk_draw_arc(*pixmap, gc, cp_x, cp_y, cir_width, cir_height, 
-					   net->cirseg->angle1, net->cirseg->angle2);
+			gerbv_gdk_draw_arc(*pixmap, gc, cp_x, cp_y,
+				cir_width, cir_height,
+				net->cirseg->angle1 +
+					RAD2DEG(transform.rotation),
+				net->cirseg->angle2 +
+					RAD2DEG(transform.rotation));
 			break;
 		    default :
 			break;
