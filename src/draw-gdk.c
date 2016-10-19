@@ -798,6 +798,8 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 				points = NULL;
 				return;
 			default:
+				GERB_MESSAGE(_("Unknown interpolation type %d"),
+						currentNet->interpolation);
 				break;
 		}
 	}
@@ -1182,6 +1184,8 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					RAD2DEG(transform.rotation));
 			break;
 		    default :
+			GERB_MESSAGE(_("Unknown interpolation type %d"),
+					net->interpolation);
 			break;
 		    }
 		    break;
@@ -1248,12 +1252,14 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					      scale, x2, y2);
 			break;
 		    default :
-			GERB_MESSAGE(_("Unknown aperture type"));
+			GERB_MESSAGE(_("Unknown aperture type %d"),
+					image->aperture[net->aperture]->type);
 			return 0;
 		    }
 		    break;
 		default :
-		    GERB_MESSAGE(_("Unknown aperture state"));
+		    GERB_MESSAGE(_("Unknown aperture state %d"),
+				net->aperture_state);
 		    return 0;
 		}
 		}
