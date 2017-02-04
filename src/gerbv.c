@@ -840,35 +840,57 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerbvProject,
-		cairo_t *cr, gerbv_render_info_t *renderInfo) {
+gerbv_render_all_layers_to_cairo_target_for_vector_output (
+		gerbv_project_t *gerbvProject, cairo_t *cr,
+		gerbv_render_info_t *renderInfo)
+{
+	GdkColor *bg = &gerbvProject->background;
 	int i;
-	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
-	/* don't paint background for vector output, since it isn't needed */
-	for(i = gerbvProject->last_loaded; i >= 0; i--) {
-		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
 
-		    gerbv_render_layer_to_cairo_target_without_transforming(cr, gerbvProject->file[i], renderInfo, FALSE);
+	gerbv_render_cairo_set_scale_and_translation (cr, renderInfo);
+
+	/* Fill the background with the appropriate not white and not black
+	 * color for backward culpability. */ 
+	if ((bg->red != 0xffff || bg->green != 0xffff || bg->blue != 0xffff)
+	 && (bg->red != 0x0000 || bg->green != 0x0000 || bg->blue != 0x0000)) {
+		cairo_set_source_rgba (cr,
+			(double) bg->red/G_MAXUINT16,
+			(double) bg->green/G_MAXUINT16,
+			(double) bg->blue/G_MAXUINT16, 1);
+		cairo_paint (cr);
+	}
+
+	for (i = gerbvProject->last_loaded; i >= 0; i--) {
+		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
+			gerbv_render_layer_to_cairo_target_without_transforming(
+					cr, gerbvProject->file[i],
+					renderInfo, FALSE);
 		}
 	}
 }
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t *cr,
-			gerbv_render_info_t *renderInfo) {
+gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
+		cairo_t *cr, gerbv_render_info_t *renderInfo)
+{
 	int i;
-	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) gerbvProject->background.red/G_MAXUINT16,
-		(double) gerbvProject->background.green/G_MAXUINT16,
-		(double) gerbvProject->background.blue/G_MAXUINT16, 1);
+
+	/* Fill the background with the appropriate color. */
+	cairo_set_source_rgba (cr,
+			(double) gerbvProject->background.red/G_MAXUINT16,
+			(double) gerbvProject->background.green/G_MAXUINT16,
+			(double) gerbvProject->background.blue/G_MAXUINT16, 1);
 	cairo_paint (cr);
-	for(i = gerbvProject->last_loaded; i >= 0; i--) {
+
+	for (i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
 			cairo_push_group (cr);
-			gerbv_render_layer_to_cairo_target (cr, gerbvProject->file[i], renderInfo);
+			gerbv_render_layer_to_cairo_target (cr,
+					gerbvProject->file[i], renderInfo);
 			cairo_pop_group_to_source (cr);
-			cairo_paint_with_alpha (cr, (double) gerbvProject->file[i]->alpha/G_MAXUINT16);
+			cairo_paint_with_alpha (cr, (double)
+					gerbvProject->file[i]->alpha/G_MAXUINT16);
 		}
 	}
 }
