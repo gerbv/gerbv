@@ -1,4 +1,11 @@
 ========================================================================
+Release Notes for gerbv-2.6.2
+========================================================================
+This is a minor patch release on top of gerbv-2.6.1.  The change
+is to property create the tarball with the build framework so that
+the automake/autoconf/etc generated files are included.
+
+========================================================================
 Release Notes for gerbv-2.6.0
 ========================================================================
 The following is a summary of the changes which went into gerbv-2.6.0.
