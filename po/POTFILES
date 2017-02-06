@@ -1,6 +1,4 @@
      ../src/attribute.c \
-     ../src/authors.c \
-     ../src/bugs.c \
      ../src/callbacks.c \
      ../src/csv.c \
      ../src/draw-gdk.c \
