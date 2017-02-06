@@ -45,6 +45,7 @@ libgerbv_la_SOURCES= \
 		exportimage.c \
 		gerb_file.c gerb_file.h gerb_image.c gerb_image.h gerber.c \
 		gerber.h gerbv.c gerbv.h gerbv_icon.h \
+		gettext.h \
 		pick-and-place.c pick-and-place.h \
 		csv.c csv.h csv_defines.h \
 		gerb_stats.c gerb_stats.h \
@@ -81,6 +82,7 @@ gerbv_SOURCES = \
 		opdefines.h \
 		dynload.c dynload.h \
 		attribute.c attribute.h \
+		gettext.h \
                 lrealpath.c lrealpath.h \
 		main.h main.c \
 		project.c project.h scheme-private.h scheme.c \
