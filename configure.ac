@@ -22,7 +22,7 @@ dnl  along with this program; if not, write to the Free Software
 dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
 
-AC_INIT([gerbv], [2.6.2])
+AC_INIT([gerbv], [2.6.3RC1])
 AC_CONFIG_SRCDIR([src/gerbv.c])
 AC_GNU_SOURCE
 AC_PREREQ([2.59])
