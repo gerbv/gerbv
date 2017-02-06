@@ -27,6 +27,8 @@ CLEANFILES = *~  *.pot $(man_MANS)
 
 SUFFIXES = .1 .1.in .in .in.po
 
+EXTRA_DIST=	gerbv.1.in
+
 # .1 << .1.in
 .1.in.1:
 	sed -e "s;@scmdir@;${pkgdatadir}/scheme;g" \
