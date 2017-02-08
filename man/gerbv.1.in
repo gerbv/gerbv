@@ -59,17 +59,20 @@ Defaults to 72 DPI in both directions.
 .TP
 .BI -T<X,Y>|--translate=<X,Y>   
 Translate the image by the distance <X,Y>. Use multiple -T flags to translate
-multiple files.
+multiple files. Distance defaults to inches but may be changed with --units.
 .TP
 .BI -O<XxY>|--origin=<XxY>
 Set the lower left corner of the exported image to coordinate <XxY>.
-Coordinates are in inches.
+Coordinates defaults to inches but may be changed with --units.
 .TP
 .BI -a|--antialias
 Use antialiasing for the generated output-bitmap.
 .TP
 .BI -o\ <filename>|--output=<filename>
 Export to <filename>. 
+.TP
+.BI -u<inch/mm/mil>|--units=<inch/mm/mil>
+Use given unit for coordinates. Default to inches.
 .TP
 .BI -W<WxH>|--window_inch=<WxH>
 Window size in inches <WxH> for the exported image.

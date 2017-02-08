@@ -130,6 +130,7 @@ const struct option longopts[] = {
     {"project",         required_argument,  NULL,    'p'},
     {"tools",           required_argument,  NULL,    't'},
     {"translate",       required_argument,  NULL,    'T'},
+    {"units",           required_argument,  NULL,    'u'},
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
     {"geometry",        required_argument,  &longopt_val, 1},
@@ -148,7 +149,7 @@ const struct option longopts[] = {
     {0, 0, 0, 0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:w:x:";
+const char *opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:u:w:x:";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in main.h
@@ -371,6 +372,7 @@ main(int argc, char *argv[])
 	     userSuppliedAntiAlias=FALSE, userSuppliedWindowInPixels=FALSE, userSuppliedDpi=FALSE;
     gint  layerctr =0, transformCount = 0;
     gdouble initial_rotation = 0.0;
+    gdouble input_divisor = 1.0;
     gboolean initial_mirror_x = FALSE;
     gboolean initial_mirror_y = FALSE;
     const gchar *exportFilename = NULL;
@@ -551,6 +553,8 @@ main(int argc, char *argv[])
 		exit(1);
 	    }
 	    sscanf (optarg,"%fx%f",&userSuppliedOriginX,&userSuppliedOriginY);
+	    userSuppliedOriginX /= input_divisor;
+	    userSuppliedOriginY /= input_divisor;
 	    userSuppliedOrigin=TRUE;
 	    break;
     	case 'V' :
@@ -692,12 +696,21 @@ main(int argc, char *argv[])
 	    float transX=0, transY=0;
 	    
 	    sscanf (optarg,"%f,%f",&transX,&transY);
+	    transX /= input_divisor;
+	    transY /= input_divisor;
 	    mainDefaultTransformations[transformCount].translateX = transX;
 	    mainDefaultTransformations[transformCount].translateY = transY;
 	    transformCount++;
 	    /* just reset the counter back to 0 if we read too many */
 	    if (transformCount == NUMBER_OF_DEFAULT_TRANSFORMATIONS)
 	    	transformCount = 0;
+	    break;
+	case 'u':
+	    if (strncasecmp(optarg, "mm", 2) == 0) {
+		input_divisor = 25.4;
+	    } else if (strncasecmp(optarg, "mil", 3) == 0) {
+		input_divisor = 1000.0;
+	    }
 	    break;
 	case 'w':
 	    userSuppliedWindowInPixels = TRUE;
@@ -766,6 +779,8 @@ main(int argc, char *argv[])
 		"  -l, --log=<logfile>             Send error messages to <logfile>.\n"
 		"  -o, --output=<filename>         Export to <filename>.\n"
 		"  -p, --project=<prjfile>         Load project file <prjfile>.\n"
+		"  -u, --units=<inch|mm|mil>       Use given unit for coordinates.\n"
+		"                                  Default to inch.\n"
 		"  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n"
 		"                                  exported image.\n"
 		"  -w, --window=<WxH>              Window size in pixels <WxH> for the\n"
@@ -804,6 +819,8 @@ main(int argc, char *argv[])
 		"  -l<logfile>             Send error messages to <logfile>.\n"
 		"  -o<filename>            Export to <filename>.\n"
 		"  -p<prjfile>             Load project file <prjfile>.\n"
+		"  -u<inch|mm|mil>         Use given unit for coordinates.\n",
+		"                          Default to inch.\n"
 		"  -W<WxH>                 Window size in inches <WxH> for the\n"
 		"                          exported image.\n"
 		"  -w<WxH>                 Window size in pixels <WxH> for the\n"
