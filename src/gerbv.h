@@ -712,11 +712,6 @@ typedef struct {
   gboolean layer_dirty;  /*!< True if layer has been modified since last save */
 } gerbv_fileinfo_t;
 
-typedef struct {
-	double x1, y1;
-	double x2, y2;
-} gerbv_bbox_t;
-
 /*!  The top-level structure used in libgerbv.  A gerbv_project_t groups together
 any number of layers, while keeping track of other basic paramters needed for rendering */
 typedef struct {
