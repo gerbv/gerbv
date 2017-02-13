@@ -171,6 +171,7 @@ test-aperture-circle-flash-1  |  test-aperture-circle-flash-1.gbx
 test-aperture-rectangle-flash-1  |  test-aperture-rectangle-flash-1.gbx
 test-aperture-obround-1  |  test-aperture-obround-1.gbx
 test-aperture-polygon-flash-1  |  test-aperture-polygon-flash-1.gbx
+test-aperture-macro-line21-rotation  |  test-aperture-macro-line21-rotation.gbx
 test-polygon-fill-1  |  test-polygon-fill-1.gbx
 test-circular-interpolation-1  |  test-circular-interpolation-1.gbx
 test-circular-interpolation-mq-ccw  |  test-circular-interpolation-mq-ccw.gbx
