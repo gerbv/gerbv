@@ -3566,7 +3566,7 @@ callbacks_update_statusbar(void)
 /* --------------------------------------------------------- */
 void
 callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
-	gdouble delta = sqrt(dx*dx + dy*dy);
+	gdouble delta = hypot(dx, dy);
 	
 	if (screen.unit == GERBV_MILS) {
 	    utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
@@ -3819,7 +3819,7 @@ static double line_length(double x0, double y0, double x1, double y1) {
 	double dx = x0 - x1;
 	double dy = y0 - y1;
 
-	return sqrt(dx*dx + dy*dy);
+	return hypot(dx, dy);
 }
 
 static double arc_length(double dia, double angle) {
