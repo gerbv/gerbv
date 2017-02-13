@@ -708,7 +708,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 								trans->scaleX;
 
 					} else if (fabs(sam->parameter[LINE21_ROTATION]) == 0
-					|| fabs(sam->parameter[LINE21_ROTATION]) == 190) {
+					|| fabs(sam->parameter[LINE21_ROTATION]) == 180) {
 						sam->parameter[LINE21_WIDTH] *=
 								trans->scaleX;
 						sam->parameter[LINE21_HEIGHT] *=
@@ -716,9 +716,8 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 
 					} else if (fabs(sam->parameter[LINE21_ROTATION]) == 90
 					|| fabs(sam->parameter[LINE21_ROTATION]) == 270) {
-						/* DEG2RAD for calc error */
 						double t;
-						t =sam->parameter[LINE21_WIDTH];
+						t = sam->parameter[LINE21_WIDTH];
 						sam->parameter[LINE21_WIDTH] =
 							trans->scaleY *
 							sam->parameter[
