@@ -598,14 +598,14 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 						       widthx/2,widthx/2,widthy/2,widthy/2);
 			    calculatedAlready = TRUE;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE21) {
-			    gdouble largestDimension = hypot(ls->parameter[LINE21_WIDTH]/2,
-							     ls->parameter[LINE21_HEIGHT]/2);
+			    gdouble largestDimension = hypot(ls->parameter[LINE21_WIDTH],
+							     ls->parameter[LINE21_HEIGHT]);
 			    offsetx = ls->parameter[LINE21_CENTER_X];
 			    offsety = ls->parameter[LINE21_CENTER_Y];
 			    widthx = widthy = largestDimension;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE22) {
-			    gdouble largestDimension = hypot(ls->parameter[LINE22_WIDTH]/2,
-							     ls->parameter[LINE22_HEIGHT]/2);
+			    gdouble largestDimension = hypot(ls->parameter[LINE22_WIDTH],
+							     ls->parameter[LINE22_HEIGHT]);
 
 			    offsetx = ls->parameter[LINE22_LOWER_LEFT_X] +
 	      			ls->parameter[LINE22_WIDTH]/2;
