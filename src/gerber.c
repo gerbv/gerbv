@@ -131,7 +131,8 @@ gboolean
 gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image, 
 			   gerb_state_t *state,	gerbv_net_t *curr_net, 
 			   gerbv_stats_t *stats, gerb_file_t *fd, 
-			   gchar *directoryPath) {
+			   gchar *directoryPath)
+{
     int read, coord, len, polygonPoints=0;
     double x_scale = 0.0, y_scale = 0.0;
     double delta_cp_x = 0.0, delta_cp_y = 0.0;
@@ -139,7 +140,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
     double scale;
     gboolean foundEOF = FALSE;
     gchar *string;
-    gerbv_render_size_t boundingBox={HUGE_VAL,-HUGE_VAL,HUGE_VAL,-HUGE_VAL};
+    gerbv_render_size_t boundingBoxNew = {HUGE_VAL,-HUGE_VAL,HUGE_VAL,-HUGE_VAL},
+			boundingBox = boundingBoxNew;
     
     while ((read = gerb_fgetc(fd)) != EOF) {
         /* figure out the scale, since we need to normalize 
@@ -362,11 +364,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		state->parea_start_node = curr_net;
 		state->in_parea_fill = 1;
 		polygonPoints = 0;
-		/* reset the bounding box */
-		boundingBox.left = HUGE_VAL;
-		boundingBox.right = -HUGE_VAL;
-		boundingBox.top = -HUGE_VAL;
-		boundingBox.bottom = HUGE_VAL;
+		boundingBox = boundingBoxNew;
 		break;
 	    case GERBV_INTERPOLATION_PAREA_END :
 	      /* save the calculated bounding box to the master node */
@@ -407,11 +405,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    curr_net->start_y = (double)state->prev_y / y_scale;
 		    curr_net->stop_x = (double)state->curr_x / x_scale;
 		    curr_net->stop_y = (double)state->curr_y / y_scale;
-		    /* reset the bounding box */
-		    boundingBox.left = HUGE_VAL;
-		    boundingBox.right = -HUGE_VAL;
-		    boundingBox.top = -HUGE_VAL;
-		    boundingBox.bottom = HUGE_VAL;
+		    boundingBox = boundingBoxNew;
 		}
 		else if (state->interpolation != GERBV_INTERPOLATION_PAREA_START)
 		    polygonPoints++;
@@ -559,14 +553,14 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			    widthx=widthy=ls->parameter[CIRCLE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_OUTLINE) {
 			    int pointCounter,numberOfPoints;
-			    numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS];
+			    numberOfPoints = ls->parameter[OUTLINE_NUMBER_OF_POINTS] + 1;
 		
-			    for (pointCounter = 0; pointCounter <= numberOfPoints; pointCounter++) {
+			    for (pointCounter = 0; pointCounter < numberOfPoints; pointCounter++) {
 				gerber_update_min_and_max (&boundingBox,
 							   curr_net->stop_x +
-							   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X],
+							   ls->parameter[OUTLINE_X_IDX_OF_POINT(pointCounter)],
 							   curr_net->stop_y +
-							   ls->parameter[pointCounter * 2 + OUTLINE_FIRST_Y], 
+							   ls->parameter[OUTLINE_Y_IDX_OF_POINT(pointCounter)], 
 							   0,0,0,0);
 			    }
 			    calculatedAlready = TRUE;
@@ -682,19 +676,12 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		/* if we're not in a polygon fill, then update the object bounding box */
 		if (!state->in_parea_fill) {
 			curr_net->boundingBox = boundingBox;
-			/* and reset the bounding box */
-			boundingBox.left = HUGE_VAL;
-			boundingBox.right = -HUGE_VAL;
-			boundingBox.bottom = HUGE_VAL;
-			boundingBox.top = -HUGE_VAL;
+			boundingBox = boundingBoxNew;
 		}
 	    }
 	    break;
-	case 10 :   /* White space */
-	case 13 :
-	case ' ' :
-	case '\t' :
-	case 0 :
+
+	case '\0': case '\t': case '\n': case '\r': case ' ':
 	    break;
 	default:
 	    stats->unknown++;
