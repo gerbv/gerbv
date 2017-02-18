@@ -218,6 +218,7 @@ typedef enum {
 typedef enum {
 		LINE20_EXPOSURE,
 		LINE20_LINE_WIDTH,
+		LINE20_WIDTH = LINE20_LINE_WIDTH,	/* Unification alias */
 		LINE20_START_X,
 		LINE20_START_Y,
 		LINE20_END_X,
