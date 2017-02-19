@@ -57,9 +57,10 @@ resolutions for the width and height (only when compiled with Cairo as
 render engine). Use <R> to have the same resolution in both directions.
 Defaults to 72 DPI in both directions.
 .TP
-.BI -T<XxY>|--translate=<XxY>   
-Translate the image by the distance <XxY>. Use multiple -T flags to translate
-multiple files. Distance defaults to inches but may be changed with --units.
+.BI -T<XxYrR>|--translate=<XxYrR>
+Translate image by X and Y and rotate by R degree. Use multiple -T flags to
+translate multiple files. Distance defaults to inches but may be changed with
+--units.  Only evaluated when exporting (-x ...).
 .TP
 .BI -O<XxY>|--origin=<XxY>
 Set the lower left corner of the exported image to coordinate <XxY>.

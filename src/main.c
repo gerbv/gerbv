@@ -709,14 +709,15 @@ main(int argc, char *argv[])
 		exit(1);
 	    }
 
-	    float transX=0, transY=0;
+	    float transX = 0, transY = 0, rotate = 0;
 
 	    care_for_x_in_cords(optarg);
-	    sscanf(optarg, "%f;%f", &transX, &transY);
+	    sscanf(optarg, "%f;%fr%f", &transX, &transY, &rotate);
 	    transX /= input_divisor;
 	    transY /= input_divisor;
 	    mainDefaultTransformations[transformCount].translateX = transX;
 	    mainDefaultTransformations[transformCount].translateY = transY;
+	    mainDefaultTransformations[transformCount].rotation   = DEG2RAD(rotate);
 	    transformCount++;
 	    /* just reset the counter back to 0 if we read too many */
 	    if (transformCount == NUMBER_OF_DEFAULT_TRANSFORMATIONS)
@@ -805,9 +806,10 @@ main(int argc, char *argv[])
 		"                                  if no resolution is specified. If a\n"
 		"                                  resolution is specified, it will clip.\n"
 		"  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n"
-		"  -T, --translate=<XxY>           Translate the image by <XxY> (useful for\n"
-		"                                  arranging panels). Use multiple -T flags\n"
-		"                                  for multiple layers.\n"
+		"  -T, --translate=<XxYrR>         Translate image by X and Y and rotate by\n"
+		"                                  R degree. Useful for arranging panels.\n"
+		"                                  Use multiple -T flags for multiple layers.\n"
+		"                                  Only evaluated when exporting (-x ...).\n"
 		"  -x, --export=<png|pdf|ps|svg|   Export a rendered picture to a file with\n"
 		"                rs274x|drill|     the specified format.\n"
 		"                idrill>\n"),
@@ -846,9 +848,10 @@ main(int argc, char *argv[])
 		"                          resolution is specified, it will clip.\n"
 		"                          exported image.\n"
 		"  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
-		"  -T<XxY>                 Translate the image by <XxY> (useful for\n"
-		"                          arranging panels). Use multiple -T flags\n"
-		"                          for multiple layers.\n"
+		"  -T<XxYrR>               Translate image by X and Y and rotate by R degree.\n"
+		"                          Useful for arranging panels.\n"
+		"                          Use multiple -T flags for multiple files.\n"
+		"                          Only evaluated when exporting (-x ...).\n"
 		"  -x <png|pdf|ps|svg|     Export a rendered picture to a file with\n"
 		"      rs274x|drill|       the specified format.\n"
 		"      idrill>\n"),
