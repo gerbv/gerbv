@@ -160,6 +160,19 @@ gerbv_screen_t screen;
 gboolean logToFileOption;
 gchar *logToFileFilename;
 
+/* Coords like "0x2" parsed by "%fx%f" will result in first number = 2 and
+   second number 0. Replace 'x' in coordinate string with ';'*/
+static void
+care_for_x_in_cords(char *string)
+{
+	char *found;
+	found = strchr(string, 'x');
+	if (!found)
+		found = strchr(string, 'X');
+	if (found)
+		*found = ';';
+}
+
 /* ------------------------------------------------------------------ */
 void 
 main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
@@ -552,7 +565,9 @@ main(int argc, char *argv[])
 		fprintf(stderr, _("Specified origin is not recognized.\n"));
 		exit(1);
 	    }
-	    sscanf (optarg,"%fx%f",&userSuppliedOriginX,&userSuppliedOriginY);
+
+	    care_for_x_in_cords(optarg);
+	    sscanf(optarg,"%f;%f", &userSuppliedOriginX, &userSuppliedOriginY);
 	    userSuppliedOriginX /= input_divisor;
 	    userSuppliedOriginY /= input_divisor;
 	    userSuppliedOrigin=TRUE;
@@ -686,16 +701,18 @@ main(int argc, char *argv[])
 	    break;
 	case 'T' :	// Translate the layer
 	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give a translation in the format <X,Y>.\n"));
+		fprintf(stderr, _("You must give a translation in the format <XxY>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 30) {
 		fprintf(stderr, _("The translation format is not recognized.\n"));
 		exit(1);
 	    }
+
 	    float transX=0, transY=0;
-	    
-	    sscanf (optarg,"%f,%f",&transX,&transY);
+
+	    care_for_x_in_cords(optarg);
+	    sscanf(optarg, "%f;%f", &transX, &transY);
 	    transX /= input_divisor;
 	    transY /= input_divisor;
 	    mainDefaultTransformations[transformCount].translateX = transX;
@@ -788,7 +805,7 @@ main(int argc, char *argv[])
 		"                                  if no resolution is specified. If a\n"
 		"                                  resolution is specified, it will clip.\n"
 		"  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n"
-		"  -T, --translate=<X,Y>           Translate the image by <X,Y> (useful for\n"
+		"  -T, --translate=<XxY>           Translate the image by <XxY> (useful for\n"
 		"                                  arranging panels). Use multiple -T flags\n"
 		"                                  for multiple layers.\n"
 		"  -x, --export=<png|pdf|ps|svg|   Export a rendered picture to a file with\n"
@@ -829,7 +846,7 @@ main(int argc, char *argv[])
 		"                          resolution is specified, it will clip.\n"
 		"                          exported image.\n"
 		"  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
-		"  -T<X,Y>                 Translate the image by <X,Y> (useful for\n"
+		"  -T<XxY>                 Translate the image by <XxY> (useful for\n"
 		"                          arranging panels). Use multiple -T flags\n"
 		"                          for multiple layers.\n"
 		"  -x <png|pdf|ps|svg|     Export a rendered picture to a file with\n"
