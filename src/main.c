@@ -1033,6 +1033,7 @@ main(int argc, char *argv[])
 	    break;
 	case EXP_TYPE_RS274X:
 	case EXP_TYPE_DRILL:
+	case EXP_TYPE_IDRILL:
 	    if (!mainProject->file[0]->image) {
 		fprintf(stderr, _("A valid file was not loaded.\n"));
 		exit(1);
@@ -1042,42 +1043,30 @@ main(int argc, char *argv[])
 			    mainProject->file[0]->image,
 			    &mainDefaultTransformations[0]);
 
-	    /* if more than one file, merge them before exporting */
+	    /* If more than one file, merge them before exporting */
 	    for (i = mainProject->last_loaded; i > 0; i--) {
 		if (mainProject->file[i])
 			gerbv_image_copy_image(mainProject->file[i]->image,
 				&mainDefaultTransformations[i], exportImage);
 	    }
-	    if (exportType == EXP_TYPE_RS274X)
+
+	    switch (exportType) {
+	    case EXP_TYPE_RS274X:
 		gerbv_export_rs274x_file_from_image(exportFilename,
-				exportImage, &mainProject->file[0]->transform);
-	    if (exportType == EXP_TYPE_DRILL)
+			exportImage, &mainProject->file[0]->transform);
+		break;
+	    case EXP_TYPE_DRILL:
 		gerbv_export_drill_file_from_image(exportFilename,
-				exportImage, &mainProject->file[0]->transform);
-
-	    gerbv_destroy_image(exportImage);
-	    break;
-	case EXP_TYPE_IDRILL:
-	    if (!mainProject->file[0]->image) {
-		fprintf(stderr, _("A valid file was not loaded.\n"));
-		exit(1);
+			exportImage, &mainProject->file[0]->transform);
+		break;
+	    case EXP_TYPE_IDRILL:
+		gerbv_export_isel_drill_file_from_image (exportFilename,
+			exportImage, &mainProject->file[0]->transform);
+		break;
+	    default:
+		break;
 	    }
 
-	    exportImage = gerbv_image_duplicate_image (
-			    mainProject->file[0]->image,
-			    &mainDefaultTransformations[0]);
-	    /* If we have more than one file, we need to merge them before
-	     * exporting */
-	    for (i = mainProject->last_loaded; i > 0; i--) {
-		    if (mainProject->file[i]) {
-			    gerbv_image_copy_image (mainProject->file[i]->image,
-					    &mainDefaultTransformations[i],
-					    exportImage);
-		    }
-	    }
-	    gerbv_export_isel_drill_file_from_image (exportFilename,
-			    exportImage,
-			    &mainProject->file[0]->transform);
 	    gerbv_destroy_image (exportImage);
 	    break;
 	default:
