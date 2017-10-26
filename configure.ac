@@ -221,8 +221,8 @@ fi
 AM_CONDITIONAL(HAVE_MAGICK, test x$have_magick = xyes)
 
 # Check for pkg-config
-AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-if test "$PKG_CONFIG" = "no"; then
+PKG_PROG_PKG_CONFIG
+if test "x$PKG_CONFIG" = "x"; then
 	AC_MSG_ERROR([Cannot find pkg-config, make sure it is installed and in your PATH])
 fi
 
