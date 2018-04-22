@@ -2554,6 +2554,16 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
     d2x = net->stop_x - net->cirseg->cp_x;
     d2y = net->stop_y - net->cirseg->cp_y;
 
+    /*
+     * It's possible for values to be calculated that smaller than epsilon,
+     * but containing opposite signs. These values cause essentially a
+     * "signed zero" effect, which makes atan2 results unpredictable.
+     */
+    if (fabs(d1x) < DBL_EPSILON) d1x = 0;
+    if (fabs(d1y) < DBL_EPSILON) d1y = 0;
+    if (fabs(d2x) < DBL_EPSILON) d2x = 0;
+    if (fabs(d2y) < DBL_EPSILON) d2y = 0;
+
     net->cirseg->width = hypot(delta_cp_x, delta_cp_y);
     net->cirseg->width *= 2.0;
     net->cirseg->height = net->cirseg->width;
