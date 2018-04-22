@@ -192,7 +192,9 @@ export_rs274x_write_state_change (gerbv_netstate_t *oldState, gerbv_netstate_t *
 
 gboolean
 gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *inputImage,
-		gerbv_user_transformation_t *transform) {
+		gerbv_user_transformation_t *transform)
+{
+	const double decimal_coeff = 1e6;
 	FILE *fd;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
@@ -224,7 +226,7 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 	fprintf(fd, "G04 http://gerbv.geda-project.org/ *\n");
 	fprintf(fd, "G04 --End of header info--*\n");
 	fprintf(fd, "%%MOIN*%%\n");
-	fprintf(fd, "%%FSLAX34Y34*%%\n");
+	fprintf(fd, "%%FSLAX36Y36*%%\n");
 	
 	/* check the image info struct for any non-default settings */
 	/* image offset */
@@ -316,12 +318,12 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 				/* see if we need to write an "aperture off" line to get
 				   the pen to the right start point */
 				if ((!insidePolygon) && (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)) {
-					xVal = (long) round(currentNet->start_x * 10000.0);
-					yVal = (long) round(currentNet->start_y * 10000.0);
+					xVal = (long) round(currentNet->start_x * decimal_coeff);
+					yVal = (long) round(currentNet->start_y * decimal_coeff);
 					fprintf(fd, "G01X%07ldY%07ldD02*\n",xVal,yVal);
 				}
-				xVal = (long) round(currentNet->stop_x * 10000.0);
-				yVal = (long) round(currentNet->stop_y * 10000.0);
+				xVal = (long) round(currentNet->stop_x * decimal_coeff);
+				yVal = (long) round(currentNet->stop_y * decimal_coeff);
 				fprintf(fd, "G01X%07ldY%07ld",xVal,yVal);
 				/* and finally, write the esposure value */
 				if (currentNet->aperture_state == GERBV_APERTURE_STATE_OFF)
@@ -336,14 +338,14 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 				/* see if we need to write an "aperture off" line to get
 				   the pen to the right start point */
 				if ((!insidePolygon) && (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)) {
-					xVal = (long) round(currentNet->start_x * 10000.0);
-					yVal = (long) round(currentNet->start_y * 10000.0);
+					xVal = (long) round(currentNet->start_x * decimal_coeff);
+					yVal = (long) round(currentNet->start_y * decimal_coeff);
 					fprintf(fd, "G01X%07ldY%07ldD02*\n",xVal,yVal);
 				}
-				centerX= (long) round((currentNet->cirseg->cp_x - currentNet->start_x) * 10000.0);
-				centerY= (long) round((currentNet->cirseg->cp_y - currentNet->start_y) * 10000.0);
-				endX = (long) round(currentNet->stop_x * 10000.0);
-				endY = (long) round(currentNet->stop_y * 10000.0);
+				centerX= (long) round((currentNet->cirseg->cp_x - currentNet->start_x) * decimal_coeff);
+				centerY= (long) round((currentNet->cirseg->cp_y - currentNet->start_y) * decimal_coeff);
+				endX = (long) round(currentNet->stop_x * decimal_coeff);
+				endY = (long) round(currentNet->stop_y * decimal_coeff);
 				
 				/* always use multi-quadrant, since it's much easier to export */
 				/*  and most all software should support it */
