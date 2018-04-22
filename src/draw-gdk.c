@@ -723,8 +723,7 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 	gerbv_net_t *currentNet;
 	gint x2,y2,cp_x=0,cp_y=0,cir_width=0;
 	GdkPoint *points = NULL;
-	int pointArraySize=0;
-	int curr_point_idx = 0;
+	unsigned int pointArraySize, curr_point_idx;
 	int steps,i;
 	gdouble angleDiff, tempX, tempY;
 
@@ -765,8 +764,9 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 			case GERBV_INTERPOLATION_LINEARx001 :
 			case GERBV_INTERPOLATION_LINEARx1 :
 				if (pointArraySize < (curr_point_idx + 1)) {
-					points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + 1));
-					pointArraySize = (curr_point_idx + 1);
+					pointArraySize = curr_point_idx + 1;
+					points = (GdkPoint *)g_realloc(points,
+							pointArraySize*sizeof(GdkPoint));
 				}
 				points[curr_point_idx].x = x2;
 				points[curr_point_idx].y = y2;
@@ -779,8 +779,9 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 				angleDiff = currentNet->cirseg->angle2 - currentNet->cirseg->angle1;
 				steps = (int) abs(angleDiff);
 				if (pointArraySize < (curr_point_idx + steps)) {
-					points = (GdkPoint *)g_realloc(points,sizeof(GdkPoint) *  (curr_point_idx + steps));
-					pointArraySize = (curr_point_idx + steps);
+					pointArraySize = curr_point_idx + steps;
+					points = (GdkPoint *)g_realloc(points,
+							pointArraySize*sizeof(GdkPoint));
 				}
 				for (i=0; i<steps; i++){
 					points[curr_point_idx].x = cp_x + cir_width / 2.0 * cos (DEG2RAD(currentNet->cirseg->angle1 +
