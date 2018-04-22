@@ -747,6 +747,9 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 			tempX = currentNet->cirseg->width;
 			tempY = currentNet->cirseg->height;
 			cairo_matrix_transform_point (scaleMatrix, &tempX, &tempY);
+
+			/* Variables can be negative after transformation */
+			tempX = fabs(tempX);
 			cir_width = (int)round(tempX);
 
 			tempX = currentNet->cirseg->cp_x + sr_x;
@@ -1023,7 +1026,11 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    tempX = net->cirseg->width;
 		    tempY = net->cirseg->height;
 		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
-		    cir_width = (int)round(tempX);
+
+		    /* Variables can be negative after transformation */
+		    tempX = fabs(tempX);
+		    tempY = fabs(tempY);
+		    cir_width =  (int)round(tempX);
 		    cir_height = (int)round(tempY);
 		    
 		    tempX = net->cirseg->cp_x;
@@ -1118,6 +1125,9 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		case GERBV_APERTURE_STATE_ON :
 		    tempX = image->aperture[net->aperture]->parameter[0];
 		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
+
+		    /* Variables can be negative after transformation */
+		    tempX = fabs(tempX);
 		    p1 = (int)round(tempX);
 
 		    gdk_gc_set_line_attributes(gc, p1, GDK_LINE_SOLID,
@@ -1195,11 +1205,12 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    tempX = image->aperture[net->aperture]->parameter[0];
 		    tempY = image->aperture[net->aperture]->parameter[1];
 		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
+
+		    /* Variables can be negative after transformation */
+		    tempX = fabs(tempX);
+		    tempY = fabs(tempY);
 		    p1 = (int)round(tempX);
 		    p2 = (int)round(tempY);
-		    tempX = image->aperture[net->aperture]->parameter[2];
-		    tempY = 0;
-		    cairo_matrix_transform_point (&scaleMatrix, &tempX, &tempY);
 		    
 		    switch (image->aperture[net->aperture]->type) {
 		    case GERBV_APTYPE_CIRCLE :
