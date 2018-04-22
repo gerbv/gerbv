@@ -866,15 +866,15 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(G_table->widget), TRUE);
 
-	table_add_row(G_table, "G0", stats_report->G0,
+	table_add_row(G_table, "G00", stats_report->G0,
 			_("Move"));
-	table_add_row(G_table, "G1", stats_report->G1,
+	table_add_row(G_table, "G01", stats_report->G1,
 			_("1X linear interpolation"));
-	table_add_row(G_table, "G2", stats_report->G2,
+	table_add_row(G_table, "G02", stats_report->G2,
 			_("CW interpolation"));
-	table_add_row(G_table, "G3", stats_report->G3,
+	table_add_row(G_table, "G03", stats_report->G3,
 			_("CCW interpolation"));
-	table_add_row(G_table, "G4", stats_report->G4,
+	table_add_row(G_table, "G04", stats_report->G4,
 				_("Comment/ignore block"));
 	table_add_row(G_table, "G10", stats_report->G10,
 				_("10X linear interpolation"));
