@@ -344,19 +344,34 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    delta_cp_y = (double)state->delta_cp_y / y_scale;
 	    switch (state->interpolation) {
 	    case GERBV_INTERPOLATION_CW_CIRCULAR :
-		curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
-		if (state->mq_on)
-		    calc_cirseg_mq(curr_net, 1, delta_cp_x, delta_cp_y);
-		else
-		    calc_cirseg_sq(curr_net, 1, delta_cp_x, delta_cp_y);
+	    case GERBV_INTERPOLATION_CCW_CIRCULAR : {
+		int cw = (state->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR);
+
+		curr_net->cirseg = g_new0 (gerbv_cirseg_t, 1);
+		if (state->mq_on) {
+		    calc_cirseg_mq(curr_net, cw, delta_cp_x, delta_cp_y);
+		} else {
+		    calc_cirseg_sq(curr_net, cw, delta_cp_x, delta_cp_y);
+
+		    /*
+		     * In single quadrant circular interpolation Ix and Jy
+		     * incremental distance must be unsigned.
+		     */
+		    if (delta_cp_x < 0 || delta_cp_y < 0) {
+			gchar *string = g_strdup_printf(
+				_("Signed incremental distance IxJy "
+				    "in single quadrant %s circular "
+				    "interpolation %s in file \"%s\""),
+				cw? _("CW"): _("CCW"), cw? "G02": "G03",
+				fd->filename);
+			gerbv_stats_add_error(stats->error_list, -1, string,
+				GERBV_MESSAGE_ERROR);
+			g_free(string);
+		    }
+
+		}
 		break;
-	    case GERBV_INTERPOLATION_CCW_CIRCULAR :
-		curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
-		if (state->mq_on)
-		    calc_cirseg_mq(curr_net, 0, delta_cp_x, delta_cp_y);
-		else
-		    calc_cirseg_sq(curr_net, 0, delta_cp_x, delta_cp_y);
-		break;
+	    }
 	    case GERBV_INTERPOLATION_PAREA_START :
 		/* 
 		 * To be able to get back and fill in number of polygon corners
