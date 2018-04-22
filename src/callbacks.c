@@ -2630,7 +2630,18 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 		}
 
 		if (net->interpolation == GERBV_INTERPOLATION_PAREA_START) {
+			gerbv_net_t *n;
+			unsigned int c = 0;
+
 			g_message (_("Object type: Polygon"));
+
+			for (n = net->next; n != NULL; n = n->next) {
+				if (n->interpolation ==
+						GERBV_INTERPOLATION_PAREA_END)
+					break;
+				c++;
+			}
+			g_message (_("    Number of vertices: %u"), c);
 		} else {
 			switch (net->aperture_state){
 				case GERBV_APERTURE_STATE_OFF:
@@ -2687,6 +2698,8 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 								image, mainProject);
 						g_message (_("    Center: (%g, %g)"),
 								screen_units(x), screen_units(y));
+						g_message (_("    Angle (deg): %g"),
+								fabs(net->cirseg->angle1 - net->cirseg->angle2));
 						g_message (_("    Angles (deg): %g, %g"),
 								net->cirseg->angle1, net->cirseg->angle2);
 						g_message (_("    Direction: %s"),
