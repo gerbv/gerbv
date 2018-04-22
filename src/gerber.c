@@ -175,7 +175,6 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    } /* switch(parse_M_code) */
 	    break;
 	case 'X':
-	    dprintf("... Found X code\n");
 	    stats->X++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
@@ -200,6 +199,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    ;
 		}
 	    }
+	    dprintf("... Found X code: %d\n", coord);
 	    if (image->format && (image->format->coordinate==GERBV_COORDINATE_INCREMENTAL))
 	        state->curr_x += coord;
 	    else
@@ -207,7 +207,6 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    state->changed = 1;
 	    break;
 	case 'Y':
-	    dprintf("... Found Y code\n");
 	    stats->Y++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
@@ -232,6 +231,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    ;
 		}
 	    }
+	    dprintf("... Found Y code: %d\n", coord);
 	    if (image->format && (image->format->coordinate==GERBV_COORDINATE_INCREMENTAL))
 	        state->curr_y += coord;
 	    else
@@ -239,7 +239,6 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    state->changed = 1;
 	    break;
 	case 'I':
-	    dprintf("... Found I code\n");
 	    stats->I++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
@@ -264,11 +263,11 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    ;
 		}
 	    }
+	    dprintf("... Found I code: %d\n", coord);
 	    state->delta_cp_x = coord;
 	    state->changed = 1;
 	    break;
 	case 'J':
-	    dprintf("... Found J code\n");
 	    stats->J++;
 	    coord = gerb_fgetint(fd, &len);
 	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
@@ -293,6 +292,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    ;
 		}
 	    }
+	    dprintf("... Found J code: %d\n", coord);
 	    state->delta_cp_y = coord;
 	    state->changed = 1;
 	    break;
