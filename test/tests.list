@@ -98,7 +98,7 @@ example_jj_l1-3             | ../../example/jj/l1-3.grb
 example_jj_l1-orig          | ../../example/jj/l1-orig.grb
 #
 #
-example_nollezappare_EtchLayer2Bottom. | ../../example/nollezappare/EtchLayer2Bottom.gdo
+example_nollezappare_EtchLayer2Bottom  | ../../example/nollezappare/EtchLayer2Bottom.gdo
 example_nollezappare_ThruHolePlated    | ../../example/nollezappare/ThruHolePlated.ncd
 #
 #
@@ -173,8 +173,9 @@ test-aperture-obround-1  |  test-aperture-obround-1.gbx
 test-aperture-polygon-flash-1  |  test-aperture-polygon-flash-1.gbx
 test-aperture-macro-line21-rotation  |  test-aperture-macro-line21-rotation.gbx
 test-polygon-fill-1  |  test-polygon-fill-1.gbx
-test-circular-interpolation-1  |  test-circular-interpolation-1.gbx
-test-circular-interpolation-mq-ccw  |  test-circular-interpolation-mq-ccw.gbx
+test-circular-interpolation-1           |  test-circular-interpolation-1.gbx
+test-circular-interpolation-mq-ccw      |  test-circular-interpolation-mq-ccw.gbx
+test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-error.gbx
 
 test-merge-a+b_temporary | test-merge-a.gbx test-merge-b.gbx | ! --export=rs274x --output=inputs/test-merge-a+b_temporary.gbx
 test-merge-a+b | test-merge-a+b_temporary.gbx
