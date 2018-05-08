@@ -2506,17 +2506,22 @@ callbacks_update_layer_tree (void)
 			startChar[0] = 'M';
 			numberOfModifications++;
 		}
-		if ((fabs(file->transform.translateX) > 0.000001)
-		||  (fabs(file->transform.translateY) > 0.000001)) {
+		if (fabs(file->transform.translateX)
+					> GERBV_PRECISION_LINEAR_INCH
+		||  fabs(file->transform.translateY)
+					> GERBV_PRECISION_LINEAR_INCH) {
 			startChar[0] = 'T';
 			numberOfModifications++;
 		}
-		if ((fabs(file->transform.scaleX - 1) > 0.000001)
-		||  (fabs(file->transform.scaleY - 1) > 0.000001)) {
+		if (fabs(file->transform.scaleX - 1)
+					> GERBV_PRECISION_LINEAR_INCH
+		||  fabs(file->transform.scaleY - 1)
+					> GERBV_PRECISION_LINEAR_INCH) {
 			startChar[0] = 'S';
 			numberOfModifications++;
 		}
-		if (fabs(file->transform.rotation) > 0.000001) {
+		if (fabs(file->transform.rotation)
+					> GERBV_PRECISION_ANGLE_RAD) {
 			startChar[0] = 'R';
 			numberOfModifications++;
 		}

@@ -901,12 +901,12 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	gboolean useOptimizations = TRUE;
 	// if the user is using any transformations for this layer, then don't bother using rendering
 	//   optimizations
-	if ((fabs(transform.translateX) > 0.00001) ||
-			(fabs(transform.translateY) > 0.00001) ||
-			(fabs(transform.scaleX - 1) > 0.00001) ||
-			(fabs(transform.scaleY - 1) > 0.00001) ||
-			(fabs(transform.rotation) > 0.00001) ||
-			transform.mirrorAroundX || transform.mirrorAroundY)
+	if (fabs(transform.translateX) > GERBV_PRECISION_LINEAR_INCH
+	||  fabs(transform.translateY) > GERBV_PRECISION_LINEAR_INCH
+	||  fabs(transform.scaleX - 1) > GERBV_PRECISION_LINEAR_INCH 
+	||  fabs(transform.scaleY - 1) > GERBV_PRECISION_LINEAR_INCH
+	||  fabs(transform.rotation) > GERBV_PRECISION_ANGLE_RAD
+	||  transform.mirrorAroundX || transform.mirrorAroundY)
 		useOptimizations = FALSE;
 
 	// calculate the transformation matrix for the user_transformation options

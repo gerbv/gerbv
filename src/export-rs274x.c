@@ -267,8 +267,8 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 
 	}
 	/* handle scale user orientation transforms */
-	if ((fabs(thisTransform->scaleX - 1) > 0.00001) ||
-	(fabs(thisTransform->scaleY - 1) > 0.00001)) {
+	if (fabs(thisTransform->scaleX - 1) > GERBV_PRECISION_LINEAR_INCH
+	||  fabs(thisTransform->scaleY - 1) > GERBV_PRECISION_LINEAR_INCH) {
 		fprintf(fd, "%%SFA%.4fB%.4f*%%\n",thisTransform->scaleX,thisTransform->scaleY);
 	}
 	/* handle mirror image user orientation transform */

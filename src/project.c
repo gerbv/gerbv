@@ -1042,7 +1042,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
     project_list_t *p = project;
     int n_attr = 0;
     gerbv_HID_Attribute *attr_list = NULL;
-    const float min_val = 0.000001;
+    const float min_val = GERBV_PRECISION_LINEAR_INCH;
     int i;
 
     if ((fd = fopen(filename, "w")) == NULL) {
@@ -1081,7 +1081,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 		fprintf(fd, "\t(cons 'translate #(%f %f))\n",
 			p->translate_x, p->translate_y);
 	    }
-	    if (fabs(p->rotation) > min_val) {
+	    if (fabs(p->rotation) > GERBV_PRECISION_ANGLE_RAD) {
 		fprintf(fd, "\t(cons 'rotation #(%f))\n", p->rotation);
 	    }
 	    if ((fabs(p->scale_x - 1.0) > min_val)

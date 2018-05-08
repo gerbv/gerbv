@@ -2497,7 +2497,8 @@ calc_cirseg_sq(struct gerbv_net *net, int cw,
     net->cirseg->height = alfa > beta ? 
 	2 * (d1y / sin(alfa)) : 2 * (d2y / sin(beta));
 
-    if (alfa < 0.000001 && beta < 0.000001) {
+    if (alfa < GERBV_PRECISION_ANGLE_RAD
+    &&  beta < GERBV_PRECISION_ANGLE_RAD) {
 	net->cirseg->height = 0;
     }
 
