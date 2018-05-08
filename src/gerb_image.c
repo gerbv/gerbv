@@ -548,9 +548,8 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		if (destImage->aperture[newNet->aperture] == NULL)
 			continue;
 
-		if (trans->scaleX == trans->scaleY
-				&& trans->scaleX == 1.0
-				&& trans->rotation == 0.0)
+		if (trans->scaleX == 1.0 && trans->scaleY == 1.0
+		&& fabs(trans->rotation) < GERBV_PRECISION_ANGLE_RAD)
 			continue;
 
 		/* Aperture is already transformed, use it */
@@ -588,22 +587,20 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 
 		case GERBV_APTYPE_RECTANGLE:
 		case GERBV_APTYPE_OVAL:
-			if (trans->scaleX == trans->scaleY
-			&& trans->scaleX == 1.0
-			&& (fabs(trans->rotation) == M_PI
-			 || fabs(trans->rotation) == DEG2RAD(180)))
-				break;	/* DEG2RAD for calc error */
+			if (trans->scaleX == 1.0 && trans->scaleY == 1.0
+			&&  fabs(fabs(trans->rotation) - M_PI)
+						< GERBV_PRECISION_ANGLE_RAD)
+				break;
 
 			aper = gerbv_image_duplicate_aperture (
 					destImage->aperture[newNet->aperture]);
 			aper->parameter[0] *= trans->scaleX;
 			aper->parameter[1] *= trans->scaleY;
 
-			if (fabs(trans->rotation) == M_PI_2
-			 || fabs(trans->rotation) == DEG2RAD(90)
-			 || fabs(trans->rotation) == (M_PI+M_PI_2)
-			 || fabs(trans->rotation) == DEG2RAD(270)) {
-						/* DEG2RAD for calc error */
+			if (fabs(fabs(trans->rotation) - M_PI_2)
+						< GERBV_PRECISION_ANGLE_RAD
+			||  fabs(fabs(trans->rotation) - (M_PI+M_PI_2))
+						< GERBV_PRECISION_ANGLE_RAD) {
 				double t = aper->parameter[0];
 				aper->parameter[0] = aper->parameter[1];
 				aper->parameter[1] = t;

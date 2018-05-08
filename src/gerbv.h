@@ -98,6 +98,14 @@ extern "C" {
 #define MAX_DISTLEN 180
 #define MAX_STATUSMSGLEN (MAX_ERRMSGLEN+MAX_COORDLEN+MAX_DISTLEN)
 
+/*
+ * Files only have a limited precision in their data, so when interpreting
+ * layer rotations or linear size that have been read from a project file, we
+ * have to tolerate a certain amount of error.
+ */
+#define GERBV_PRECISION_ANGLE_RAD	1e-6
+#define GERBV_PRECISION_LINEAR_INCH	1e-6
+
 /* Macros to convert between unscaled gerber coordinates and other units */
 /* XXX NOTE: Currently unscaled units are assumed as inch, this is not
    XXX necessarily true for all files */
