@@ -718,6 +718,45 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	gdouble scaleY = transform.scaleY;
 	gboolean limitLineWidth = TRUE;
 	gboolean displayPixel = TRUE;
+	gboolean doVectorExportFix = FALSE;
+	double bg_r = 1.0, bg_g = 1.0, bg_b = 1.0; /* Background color */
+
+	/* Cairo library produce _raster_ output if polygon is cleared by
+	 * negative aperture or other polygon. A workaround is to draw over
+	 * with background color instead of clearing. Drawback is: there won't
+	 * be any see thru negative opening if two layers printed one on the
+	 * another. */
+
+	switch (cairo_surface_get_type (cairo_get_target (cairoTarget))) {
+
+	case CAIRO_SURFACE_TYPE_PDF:
+	case CAIRO_SURFACE_TYPE_PS:
+	case CAIRO_SURFACE_TYPE_SVG: {
+		double *p0, *p1, *p2;
+
+		doVectorExportFix = TRUE;
+
+		/* Get background color from cairo user data to emulate clear
+		 * operator */
+		p0 = cairo_get_user_data (cairoTarget,
+				(cairo_user_data_key_t *)0);
+		p1 = cairo_get_user_data (cairoTarget,
+				(cairo_user_data_key_t *)1);
+		p2 = cairo_get_user_data (cairoTarget,
+				(cairo_user_data_key_t *)2);
+
+		if (p0 != NULL && p1 != NULL && p2 != NULL) {
+			bg_r = *p0;
+			bg_g = *p1;
+			bg_b = *p2;
+		}
+
+		break; 
+	}
+
+	default:
+		break;
+	}
 
 	/* If we are scaling the image at all, ignore the line width checks
 	 * since scaled up lines can still be visible */
@@ -823,13 +862,25 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			/* Draw any knockout areas */
 			gerbv_knockout_t *ko = &net->layer->knockout;
 			if (ko->firstInstance == TRUE) {
-				cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
+				cairo_save (cairoTarget);
 
 				if (ko->polarity == GERBV_POLARITY_CLEAR) {
 					cairo_set_operator (cairoTarget, drawOperatorClear);
 				} else {
 					cairo_set_operator (cairoTarget, drawOperatorDark);
 				}
+
+				if (doVectorExportFix
+				&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+
+					cairo_set_operator (cairoTarget,
+							CAIRO_OPERATOR_OVER);
+					cairo_set_source_rgba (
+							cairoTarget, bg_r,
+							bg_g, bg_b, 1.0);
+				}
+
 				cairo_new_path (cairoTarget);
 				cairo_rectangle (cairoTarget,
 						ko->lowerLeftX - ko->border,
@@ -837,7 +888,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						ko->width + 2*ko->border,
 						ko->height + 2*ko->border);
 				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
-				cairo_set_operator (cairoTarget, oldOperator);
+
+				cairo_restore (cairoTarget);
 			}
 
 			/* Finally, reapply old netstate transformation */
@@ -930,9 +982,34 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				/* Polygon area fill routines */
 				switch (net->interpolation) {
 				case GERBV_INTERPOLATION_PAREA_START :
-					draw_render_polygon_object (net, cairoTarget,
-							sr_x, sr_y, image, drawMode,
-							selectionInfo, pixelOutput);
+
+					if (doVectorExportFix
+					&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+
+						cairo_save (cairoTarget);
+
+						cairo_set_operator (cairoTarget,
+							CAIRO_OPERATOR_OVER);
+						cairo_set_source_rgba (
+							cairoTarget, bg_r,
+							bg_g, bg_b, 1.0);
+
+						draw_render_polygon_object (net,
+							cairoTarget,
+							sr_x, sr_y, image,
+							drawMode, selectionInfo,
+							pixelOutput);
+
+						cairo_restore (cairoTarget);
+					} else {
+						draw_render_polygon_object (net,
+							cairoTarget,
+							sr_x, sr_y, image,
+							drawMode, selectionInfo,
+							pixelOutput);
+					}
+
 					continue;
 				case GERBV_INTERPOLATION_DELETED:
 					continue;
@@ -1003,7 +1080,37 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 
 							draw_cairo_move_to (cairoTarget, x1, y1, oddWidth, pixelOutput);
 							draw_cairo_line_to (cairoTarget, x2, y2, oddWidth, pixelOutput);
-							draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
+
+							if (doVectorExportFix
+							&& CAIRO_OPERATOR_CLEAR ==
+							cairo_get_operator (cairoTarget)) {
+								cairo_save (cairoTarget);
+								cairo_set_source_rgba (
+									cairoTarget,
+									bg_r,
+									bg_g,
+									bg_b,
+									1.0);
+								cairo_set_operator (
+									cairoTarget,
+									CAIRO_OPERATOR_OVER);
+
+								draw_stroke (
+									cairoTarget,
+									drawMode,
+									selectionInfo,
+									image, net);
+
+								cairo_restore (
+									cairoTarget);
+							} else {
+								draw_stroke (
+									cairoTarget,
+									drawMode,
+									selectionInfo,
+									image, net);
+							}
+
 							break;
 						case GERBV_APTYPE_RECTANGLE :
 							dx = image->aperture[net->aperture]->parameter[0]/2;
@@ -1128,7 +1235,19 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						GERB_MESSAGE(_("Unknown aperture type"));
 						return 0;
 					}
-					/* and finally fill the path */
+
+					/* And finally fill the path */
+					if (doVectorExportFix
+					&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+						cairo_set_source_rgba (
+								cairoTarget,
+								bg_r, bg_g,
+								bg_b, 1.0);
+						cairo_set_operator (cairoTarget,
+							CAIRO_OPERATOR_OVER);
+					}
+
 					draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
 					cairo_restore (cairoTarget);
 					break;

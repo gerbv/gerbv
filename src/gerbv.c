@@ -854,6 +854,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 {
 	GdkColor *bg = &gerbvProject->background;
 	int i;
+	double r, g, b;
 
 	gerbv_render_cairo_set_scale_and_translation (cr, renderInfo);
 
@@ -861,11 +862,17 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 	 * color for backward culpability. */ 
 	if ((bg->red != 0xffff || bg->green != 0xffff || bg->blue != 0xffff)
 	 && (bg->red != 0x0000 || bg->green != 0x0000 || bg->blue != 0x0000)) {
-		cairo_set_source_rgba (cr,
-			(double) bg->red/G_MAXUINT16,
-			(double) bg->green/G_MAXUINT16,
-			(double) bg->blue/G_MAXUINT16, 1);
+		r = (double) bg->red/G_MAXUINT16;
+		g = (double) bg->green/G_MAXUINT16;
+		b = (double) bg->blue/G_MAXUINT16;
+		cairo_set_source_rgba (cr, r, g, b, 1);
 		cairo_paint (cr);
+
+		/* Set cairo user data with background color information, to be
+		 * used for clear color. */
+		cairo_set_user_data (cr, (cairo_user_data_key_t *)0, &r, NULL);
+		cairo_set_user_data (cr, (cairo_user_data_key_t *)1, &g, NULL);
+		cairo_set_user_data (cr, (cairo_user_data_key_t *)2, &b, NULL);
 	}
 
 	for (i = gerbvProject->last_loaded; i >= 0; i--) {
