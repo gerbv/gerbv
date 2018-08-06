@@ -367,6 +367,21 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 
 	dprintf("Drawing simplified aperture macros:\n");
 
+	switch (cairo_surface_get_type (cairo_get_target (cairoTarget))) {
+
+	case CAIRO_SURFACE_TYPE_PDF:
+	case CAIRO_SURFACE_TYPE_PS:
+	case CAIRO_SURFACE_TYPE_SVG:
+
+		/* Don't limit "pixel width" in vector export */
+		pixelWidth = DBL_MIN;
+
+		break;
+
+	default:
+		break;
+	}
+
 	if (usesClearPrimative)
 		cairo_push_group (cairoTarget);
 
