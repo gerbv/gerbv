@@ -524,8 +524,12 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 		isPnpFile = TRUE;
 	}
     } else if (gerber_is_rs274d_p(fd)) {
-	dprintf("Most likely found a RS-274D file...trying to open anyways\n");
-	g_warning(_("Most likely found a RS-274D file...trying to open anyways\n"));
+	gchar *str = g_strdup_printf(_("Most likely found a RS-274D file "
+			"\"%s\" ... trying to open anyways\n"), filename);
+	dprintf(str);
+	g_warning(str);
+	g_free (str);
+
 	if (!foundBinary || forceLoadFile) {
 		/* figure out the directory path in case parse_gerb needs to
 		 * load any include files */
