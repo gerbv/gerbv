@@ -779,6 +779,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	oldLayer = image->layers;
 	oldState = image->states;
 
+	const char *pnp_net_label_str_prev = NULL;
+
 	for (net = image->netlist->next; net != NULL;
 			net = gerbv_image_return_next_renderable_object(net)) {
 
@@ -885,13 +887,28 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				/* render any labels attached to this net */
 				/* NOTE: this is currently only used on PNP files, so we may
 				   make some assumptions here... */
-				if (net->label) {
-					cairo_set_font_size (cairoTarget, 0.05);
+				if (drawMode != DRAW_SELECTIONS
+				&&  net->label
+				&& (image->layertype ==
+					GERBV_LAYERTYPE_PICKANDPLACE_TOP
+				 || image->layertype ==
+					GERBV_LAYERTYPE_PICKANDPLACE_BOT)
+				&&  g_strcmp0 (net->label->str,
+					pnp_net_label_str_prev)) {
+
+					/* Add PNP text label only one time per
+					 * net and if it is not selected. */
+					pnp_net_label_str_prev =
+						net->label->str; 
+
 					cairo_save (cairoTarget);
 
+					cairo_set_font_size (cairoTarget, 0.05);
 					cairo_move_to (cairoTarget, x1, y1);
 					cairo_scale (cairoTarget, 1, -1);
-					cairo_show_text (cairoTarget, net->label->str);
+					cairo_show_text (cairoTarget,
+							net->label->str);
+
 					cairo_restore (cairoTarget);
 				}
 
