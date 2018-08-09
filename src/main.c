@@ -34,6 +34,10 @@
 #include <errno.h>
 #include <math.h>
 
+#ifdef WIN32
+# include <windows.h>
+#endif
+
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
@@ -369,6 +373,38 @@ callbacks_temporary_handle_log_messages(const gchar *log_domain,
     g_log_default_handler (log_domain, log_level, message, user_data);
 }
 
+#ifdef WIN32
+static void
+wait_console_for_win(void)
+{
+    FILE *console = fopen("CONOUT$", "w");
+
+    fprintf(console, _("\n*** Press Enter to continue ***"));
+    fflush(console);
+}
+
+/* Attach console in application which is build with -mwindows flag */
+static void
+attach_console_for_win(void)
+{
+    if (((HANDLE)_get_osfhandle(fileno(stdout)) == INVALID_HANDLE_VALUE
+      || (HANDLE)_get_osfhandle(fileno(stderr)) == INVALID_HANDLE_VALUE)
+    && AttachConsole(ATTACH_PARENT_PROCESS)) {
+
+	if ((HANDLE)_get_osfhandle(fileno (stdout)) == INVALID_HANDLE_VALUE)
+	    freopen("CONOUT$", "w", stdout);
+
+	if ((HANDLE)_get_osfhandle(fileno (stderr)) == INVALID_HANDLE_VALUE)
+	    freopen("CONOUT$", "w", stderr);
+
+	atexit(wait_console_for_win);
+    }
+}
+#else
+static void
+attach_console_for_win(void) {}
+#endif
+
 /* ------------------------------------------------------------------ */
 int
 main(int argc, char *argv[])
@@ -435,6 +471,8 @@ main(int argc, char *argv[])
 # endif
     textdomain(PACKAGE);
 #endif
+
+    attach_console_for_win();
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
