@@ -265,7 +265,6 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *sidepane_notebook;
 	GtkWidget *vbox10;
 	GtkWidget *hbox4;
-	GtkWidget *label1;
 	GtkWidget *render_combobox;
 	GtkWidget *scrolledwindow1;
 	GtkWidget *hbox1;
@@ -1025,11 +1024,10 @@ interface_create_gui (int req_width, int req_height)
 	hbox4 = gtk_hbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox10), hbox4, FALSE, FALSE, 0);
 
-	label1 = gtk_label_new (_("Rendering: "));
-	gtk_box_pack_start (GTK_BOX (hbox4), label1, FALSE, FALSE, 0);
-
 	render_combobox = gtk_combo_box_new_text ();
 	gtk_box_pack_start (GTK_BOX (hbox4), render_combobox, TRUE, TRUE, 0);
+	gtk_tooltips_set_tip (tooltips, render_combobox,
+			_("Rendering type"), NULL);
 
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Fast"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Fast, with XOR"));
