@@ -187,6 +187,12 @@ interface_get_alert_dialog_response (const gchar *primaryText,
 				     const gchar *true_button_label,
 				     const gchar *false_button_label);
 
+int
+interface_reopen_question (GSList *filename,
+			   GSList *is_modified,
+			   GSList *files_counter,
+			   GSList *layer_number);
+
 void
 interface_show_alert_dialog (gchar *primaryText,
 			     gchar *secondaryText,

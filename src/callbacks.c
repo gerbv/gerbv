@@ -51,12 +51,14 @@
 #include <math.h>
 #include "common.h"
 #include "main.h"
+
+#include "attribute.h"
 #include "callbacks.h"
 #include "interface.h"
-#include "attribute.h"
+#include "project.h"
 #include "render.h"
-#include "table.h"
 #include "selection.h"
+#include "table.h"
 
 #include "draw-gdk.h"
 
@@ -162,113 +164,203 @@ callbacks_new_project_activate (GtkMenuItem *menuitem, gpointer user_data)
   * project file.
   *
   */
-void
-callbacks_open_project_activate               (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+void open_project(char *project_filename)
 {
-	gchar *filename=NULL;
-	GtkFileFilter * filter;
 
-	if (mainProject->last_loaded >= 0) {
-		if (!interface_get_alert_dialog_response (
-			_("Do you want to close any open layers and load "
-			"an existing project?"),
-			_("Loading a project will cause all currently open "
-			"layers to be closed. Any unsaved changes "
-			"will be lost."),
-			FALSE, NULL, GTK_STOCK_CLOSE, GTK_STOCK_CANCEL))
+/* TODO: check if layers is modified and show it to user. */
+
+	if (mainProject->last_loaded >= 0
+	&&  !interface_get_alert_dialog_response (
+		_("Do you want to close any open layers and load "
+		"an existing project?"),
+		_("Loading a project will cause all currently open "
+		"layers to be closed. Any unsaved changes "
+		"will be lost."),
+		FALSE, NULL, GTK_STOCK_CLOSE, GTK_STOCK_CANCEL)) {
+
 			return;
 	}
-	
-	screen.win.gerber = 
-	gtk_file_chooser_dialog_new (_("Open project file..."),
-				     NULL,
-				     GTK_FILE_CHOOSER_ACTION_OPEN,
-				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
-				     NULL);
-	gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
-		mainProject->path);
 
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _(gerbv_project_file_name));
-	gtk_file_filter_add_pattern(filter, gerbv_project_file_pat);
-	gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
-	        filter);
+	/* Update the last folder */
+	g_free (mainProject->path);
+	mainProject->path = project_filename;
 
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _("All"));
-	gtk_file_filter_add_pattern(filter, "*");
-	gtk_file_chooser_add_filter ((GtkFileChooser *) screen.win.gerber,
-	        filter);
-
-	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-		filename =
-		    gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (screen.win.gerber));
-		/* update the last folder */
-		g_free (mainProject->path);
-		mainProject->path = gtk_file_chooser_get_current_folder ((GtkFileChooser *) screen.win.gerber);
-	}
-	gtk_widget_destroy (screen.win.gerber);
-
-	if (filename) {
-		gerbv_unload_all_layers (mainProject);
-		main_open_project_from_filename (mainProject, filename);
-	}
-	gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
-	render_refresh_rendered_image_on_screen();
-	callbacks_update_layer_tree();
-
-	return;
+	gerbv_unload_all_layers (mainProject);
+	main_open_project_from_filename (mainProject, project_filename);
 }
 
 
 /* --------------------------------------------------------- */
 /**
-  * The file -> open layer menu item was selected.  Open a
-  * layer (or layers) from a file.
-  *
+  * File -> open action requested
+  * or file drop event happened.
+  * Open a layer (or layers) or one Gerbv project from the files.
+  * This function will show a question if the layer to be opened
+  * is already open.
   */
-void
-callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+void open_files(GSList *filenames)
 {
-	GSList *filenames=NULL;
-	GSList *filename=NULL;
+	GSList *fns = NULL;		/* File names to ask */
+	GSList *fns_is_mod = NULL;	/* File name layer is modified */
+	GSList *fns_cnt = NULL;		/* File names count */
+	GSList *fns_lay_num = NULL;	/* Layer number for fns */
+	GSList *cnt = NULL;		/* File names count unsorted by layers,
+					   0 -- file not yet loaded as layer */
+	gint answer;
 
-	screen.win.gerber = 
-	gtk_file_chooser_dialog_new (_("Open Gerber, drill, or pick & place file(s)..."),
-				     NULL,
-				     GTK_FILE_CHOOSER_ACTION_OPEN,
-				     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				     GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
-				     NULL);
+	if (filenames == NULL)
+		return;
 
-	gtk_file_chooser_set_select_multiple((GtkFileChooser *) screen.win.gerber, TRUE);
-	gtk_file_chooser_set_current_folder ((GtkFileChooser *) screen.win.gerber,
-		mainProject->path);
-	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) == GTK_RESPONSE_ACCEPT) {
-		filenames =
-		    gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER (screen.win.gerber));
-		/* update the last folder */
-		g_free (mainProject->path);
-		mainProject->path = gtk_file_chooser_get_current_folder ((GtkFileChooser *) screen.win.gerber);
+	/* Check if there is a Gerbv project in the list.
+	 * If there is least open only that and ignore the rest. */
+	for (GSList *fn = filenames; fn; fn = fn->next) {
+		gboolean is_project = FALSE;
+		if (0 == project_is_gerbv_project(fn->data, &is_project)
+		&&  is_project) {
+			open_project(fn->data);
+
+			gerbv_render_zoom_to_fit_display(mainProject,
+					&screenRenderInfo);
+			render_refresh_rendered_image_on_screen();
+			callbacks_update_layer_tree();
+
+			return;
+		}
 	}
-	gtk_widget_destroy (screen.win.gerber);
 
-	/* Now try to open all gerbers specified */
-	for (filename=filenames; filename; filename=filename->next) {
-		gerbv_open_layer_from_filename (mainProject, filename->data);
+	/* Count opened filenames and place result in list */
+	for (GSList *fn = filenames; fn; fn = fn->next) {
+		gint c = 0;
+
+		for (gint fidx = 0; fidx <= mainProject->last_loaded; ++fidx) {
+			gchar *fpn = mainProject->file[fidx]->fullPathname;
+
+			if (strlen(fpn) == strlen(fn->data)
+			&&  0 == g_ascii_strncasecmp(fpn, fn->data,
+						strlen(fn->data))) {
+				c++;
+			}
+		}
+
+		cnt = g_slist_append(cnt, GINT_TO_POINTER(c));
 	}
-	g_slist_free(filenames);
-	
+
+	/* Make fns, fns_is_mod and fns_cnt lists sorted by layers */
+	for (gint fidx = 0; fidx <= mainProject->last_loaded; ++fidx) {
+		gchar *fpn = mainProject->file[fidx]->fullPathname;
+
+		for (GSList *fn = filenames; fn; fn = fn->next) {
+			if (strlen(fpn) == strlen(fn->data)
+			&&  0 == g_ascii_strncasecmp(fpn, fn->data,
+					strlen(fn->data))) {
+				fns = g_slist_append(fns, fn->data);
+				fns_is_mod = g_slist_append(fns_is_mod,
+						GINT_TO_POINTER(mainProject->
+							file[fidx]->
+							layer_dirty));
+				fns_cnt = g_slist_append(fns_cnt,
+						g_slist_nth_data(cnt,
+							g_slist_position(
+								filenames,
+								fn)));
+				fns_lay_num = g_slist_append(fns_lay_num,
+						GINT_TO_POINTER(fidx));
+
+				break;
+			}
+		}
+	}
+
+	answer = GTK_RESPONSE_NONE;
+	if (g_slist_length(fns) > 0)
+		answer = interface_reopen_question(fns, fns_is_mod,
+							fns_cnt, fns_lay_num);
+
+	switch (answer) {
+
+	case GTK_RESPONSE_CANCEL:
+	case GTK_RESPONSE_NONE:
+	case GTK_RESPONSE_DELETE_EVENT:
+		/* Dialog is closed or Esc is pressed, skip all */
+		break;
+
+	case GTK_RESPONSE_YES: /* Reload layer was selected */
+		for (GSList *fn = fns; fn; fn = fn->next) {
+			if (fn->data != NULL)
+				gerbv_revert_file(mainProject,
+					GPOINTER_TO_INT(
+						g_slist_nth_data (fns_lay_num,
+							g_slist_position (fns,
+									fn))));
+		}
+		break;
+
+	case GTK_RESPONSE_OK: /* Open as a new layer was selected */
+		/* To open as new only _one_ instance of file, check filenames
+		 * by selected files in fns */
+		for (GSList *fn = filenames; fn; fn = fn->next) {
+			if (NULL != g_slist_find (fns, fn->data))
+				gerbv_open_layer_from_filename(mainProject,
+								fn->data);
+		}
+		break;
+	}
+
+	/* Add not loaded files (cnt == 0) in the end */
+	for (GSList *fn = filenames; fn; fn = fn->next) {
+		if (0 == GPOINTER_TO_INT(g_slist_nth_data(cnt,
+					g_slist_position(filenames, fn))))
+			gerbv_open_layer_from_filename (mainProject, fn->data);
+	}
+
+	g_slist_free(fns);
+	g_slist_free(fns_is_mod);
+	g_slist_free(fns_cnt);
+	g_slist_free(fns_lay_num);
+	g_slist_free(cnt);
+
 	gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 	render_refresh_rendered_image_on_screen();
 	callbacks_update_layer_tree();
+}
 
-	return;
+/* --------------------------------------------------------- */
+/**
+  * The file -> open action was selected.  Open a
+  * layer (or layers) or a project file.
+  *
+  */
+void
+callbacks_open_activate(GtkMenuItem *menuitem, gpointer user_data)
+{
+	GSList *fns = NULL;
+	screen.win.gerber = 
+		gtk_file_chooser_dialog_new (
+				_("Open Gerbv project, Gerber, drill, "
+				"or pick&place files"),
+			NULL, GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN,   GTK_RESPONSE_ACCEPT,
+			NULL);
+
+	gtk_file_chooser_set_select_multiple(
+			(GtkFileChooser *)screen.win.gerber, TRUE);
+	gtk_file_chooser_set_current_folder(
+			(GtkFileChooser *)screen.win.gerber, mainProject->path);
+	gtk_widget_show (screen.win.gerber);
+	if (gtk_dialog_run ((GtkDialog*)screen.win.gerber) ==
+			GTK_RESPONSE_ACCEPT) {
+		fns = gtk_file_chooser_get_filenames(
+				GTK_FILE_CHOOSER (screen.win.gerber));
+		/* Update the last folder */
+		g_free (mainProject->path);
+		mainProject->path = gtk_file_chooser_get_current_folder(
+				(GtkFileChooser *)screen.win.gerber);
+	}
+	gtk_widget_destroy (screen.win.gerber);
+
+	open_files (fns);
+	g_slist_free_full (fns, g_free);
 }
 
 /* --------------------------------------------------------- */
@@ -1832,8 +1924,9 @@ callbacks_get_col_num_from_tree_view_col (GtkTreeViewColumn *col)
 
 /* --------------------------------------------------------- */
 void
-callbacks_add_layer_button_clicked  (GtkButton *button, gpointer   user_data) {
-	callbacks_open_layer_activate (NULL, NULL);
+callbacks_add_layer_button_clicked (GtkButton *button, gpointer user_data)
+{
+	callbacks_open_activate (NULL, NULL);
 }
 
 /* --------------------------------------------------------- */
@@ -2362,6 +2455,37 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 	free (results);
     render_refresh_rendered_image_on_screen();
     callbacks_update_layer_tree();
+}
+
+/* --------------------------------------------------------------------------- */
+gboolean
+callbacks_file_drop_event(GtkWidget *widget, GdkDragContext *dc,
+		gint x, gint y, GtkSelectionData *data,
+		guint info, guint time, gpointer p)
+{
+	gchar **uris, **uri;
+	GSList *fns = NULL;
+
+	uris = gtk_selection_data_get_uris(data);
+	if (!uris)
+		return FALSE;
+
+	for (uri = uris; *uri; uri++) {
+		const char *prefix_str =
+#ifdef WIN32
+			"file:///";
+#else
+			"file://";
+#endif
+		if (g_strrstr(*uri, prefix_str) == *uri)
+			fns = g_slist_append(fns, *uri + strlen(prefix_str));
+	}
+
+	open_files(fns);
+	g_slist_free(fns);
+	g_strfreev(uris);
+
+	return TRUE;
 }
 
 /* --------------------------------------------------------------------------- */

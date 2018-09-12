@@ -894,6 +894,39 @@ gerbv_file_version(scheme *sc, pointer args)
     return sc->NIL;
 } /* gerbv_file_version */
 
+/** Checks whether the supplied file look like a gerbv project by
+ * reading the first line and checking if it contains gerbv-file-version
+ *
+ * Returns 0 on success -1 on open error
+  */
+int
+project_is_gerbv_project(const char *filename, gboolean *ret)
+{
+	FILE *fd;
+	*ret = FALSE;
+	char *buf;
+	const gsize buf_size = 200;
+
+	fd = fopen(filename, "rb");
+	if (fd == NULL) {
+		GERB_MESSAGE(_("Failed to open \"%s\" for reading: %s"),
+				filename, strerror(errno));
+		return -1;
+	}
+
+	buf = (char *) g_malloc(buf_size);
+	if (buf == NULL)
+		GERB_FATAL_ERROR(_("malloc buf failed while checking for "
+					"Gerbv project"));
+
+	if (fgets(buf, buf_size, fd) != NULL)
+		*ret = (g_strrstr(buf, "gerbv-file-version") != NULL);
+
+	fclose(fd);
+	g_free(buf);
+
+	return 0;
+}
 
 /** Reads the content of a project file.
   *  Global:\n

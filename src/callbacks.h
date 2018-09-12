@@ -51,13 +51,11 @@ void
 callbacks_new_project_activate                (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
-void
-callbacks_open_project_activate               (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
+void open_project (char *project_filename);
 
-void
-callbacks_open_layer_activate                 (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
+void callbacks_open_activate (GtkMenuItem *menuitem, gpointer user_data);
+
+void open_files (GSList *filenames);
 
 void
 callbacks_revert_activate                     (GtkMenuItem     *menuitem,
@@ -221,6 +219,11 @@ callbacks_layer_tree_key_press (GtkWidget *widget, GdkEventKey *event,
 gboolean
 callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
                                    gpointer user_data);
+
+gboolean
+callbacks_file_drop_event (GtkWidget *widget, GdkDragContext *dc,
+		gint x, gint y, GtkSelectionData *data,
+		guint info, guint time, gpointer p);
 
 void callbacks_add_layer_button_clicked  (GtkButton *button, gpointer   user_data);
 

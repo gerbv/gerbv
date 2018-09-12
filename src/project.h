@@ -56,6 +56,7 @@ enum conv_type {
     UNIX_MINGW = 1
 };
 
+int project_is_gerbv_project(const char *filename, gboolean *ret);
 
 /*
  * Reads a project from a file and returns a linked list describing the project

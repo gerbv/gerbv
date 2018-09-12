@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gerbv 2.6A ru\n"
 "Report-Msgid-Bugs-To: gerbv-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2016-02-22 14:07+0300\n"
+"POT-Creation-Date: 2018-09-12 23:04+0300\n"
 "PO-Revision-Date: 2016-02-22 14:17+0300\n"
 "Last-Translator: Sergey Alyoshin <alyoshin.s@gmail.com>\n"
 "Language-Team: gEDA user <geda-user@delorie.com>\n"
@@ -124,30 +124,30 @@ msgstr ""
 msgid "reports the macro parameters found."
 msgstr "найденным макропараметрам."
 
-#: src/callbacks.c:80
+#: src/callbacks.c:82
 msgid "Gerbv Project"
 msgstr "Проект Gerbv"
 
-#: src/callbacks.c:118
+#: src/callbacks.c:120
 msgid "No layers are currently loaded. A layer must be loaded first."
 msgstr "Не открыто ни одного слоя."
 
-#: src/callbacks.c:136
+#: src/callbacks.c:138
 msgid "Do you want to close any open layers and start a new project?"
 msgstr "Закрыть все открытые слои и начать новый проект?"
 
-#: src/callbacks.c:137
+#: src/callbacks.c:140
 msgid ""
 "Starting a new project will cause all currently open layers to be closed. "
 "Any unsaved changes will be lost."
 msgstr ""
 "Все открытые слои будут закрыты. Все не сохранённые изменения будут потеряны."
 
-#: src/callbacks.c:172
+#: src/callbacks.c:174
 msgid "Do you want to close any open layers and load an existing project?"
 msgstr "Закрыть все открытые слои и открыть существующий проект?"
 
-#: src/callbacks.c:173
+#: src/callbacks.c:176
 msgid ""
 "Loading a project will cause all currently open layers to be closed. Any "
 "unsaved changes will be lost."
@@ -155,122 +155,119 @@ msgstr ""
 "При открытии проекта все текущие слои будут закрыты. Все не сохранённые "
 "изменения будут потеряны."
 
-#: src/callbacks.c:180
-msgid "Open project file..."
-msgstr "Открыть файл проекта"
-
-#: src/callbacks.c:196 src/callbacks.c:480
-msgid "All"
-msgstr "Все"
-
-#: src/callbacks.c:237
-msgid "Open Gerber, drill, or pick & place file(s)..."
+#: src/callbacks.c:339 src/interface.c:350 src/interface.c:932
+#, fuzzy
+msgid "Open Gerbv project, Gerber, drill, or pick&place files"
 msgstr "Открыть файлы Gerber, сверловки или расположения"
 
-#: src/callbacks.c:305
+#: src/callbacks.c:401
 msgid "Gerbv cannot export this file type"
 msgstr "Gerbv не может экспортировать этот формат файла"
 
-#: src/callbacks.c:345
+#: src/callbacks.c:441
 msgid "Unknown Layer type for merge"
 msgstr "Неизвестный тип слоя для объединения"
 
-#: src/callbacks.c:360
+#: src/callbacks.c:456
 msgid "Not Enough Files of same type to merge"
 msgstr "Недостаточно слоёв одного типа для объединения"
 
-#: src/callbacks.c:398
+#: src/callbacks.c:494
 msgid "No layer is currently selected"
 msgstr "Слой не выбран"
 
-#: src/callbacks.c:399
+#: src/callbacks.c:495
 msgid "Please select a layer and try again."
 msgstr "Выберите слой и попробуйте снова."
 
-#: src/callbacks.c:423 src/interface.c:439
+#: src/callbacks.c:519 src/interface.c:442
 msgid "Save project as..."
 msgstr "Сохранить проект как..."
 
-#: src/callbacks.c:425
+#: src/callbacks.c:521
 msgid "Export PS file as..."
 msgstr "Экспортировать в формат PS"
 
-#: src/callbacks.c:427
+#: src/callbacks.c:523
 msgid "Export PDF file as..."
 msgstr "Экспортировать в формат PDF"
 
-#: src/callbacks.c:429
+#: src/callbacks.c:525
 msgid "Export SVG file as..."
 msgstr "Экспортировать в формат SVG"
 
-#: src/callbacks.c:431
+#: src/callbacks.c:527
 msgid "Export PNG file as..."
 msgstr "Экспортировать в формат PNG"
 
-#: src/callbacks.c:432
+#: src/callbacks.c:528
 msgid "DPI:"
 msgstr "DPI:"
 
-#: src/callbacks.c:436 src/callbacks.c:438
+#: src/callbacks.c:532 src/callbacks.c:534
 msgid "DPI value, autoscaling if 0"
 msgstr "Значение DPI, 0 для автомасштабирования"
 
-#: src/callbacks.c:442
+#: src/callbacks.c:538
 msgid "Export RS-274X file as..."
 msgstr "Экспортировать в формат RS-274X"
 
-#: src/callbacks.c:444
+#: src/callbacks.c:540
 msgid "Export Excellon drill file as..."
 msgstr "Экспортировать в формат Excellon"
 
-#: src/callbacks.c:446
+#: src/callbacks.c:542
 msgid "Export ISEL NCP drill file as..."
 msgstr "Экспортировать в формат ISEL NCP"
 
-#: src/callbacks.c:448
+#: src/callbacks.c:544
 msgid "Export RS-274Xm file as..."
 msgstr "Экспортировать объединение в формат RS-274X"
 
-#: src/callbacks.c:450
+#: src/callbacks.c:546
 msgid "Export Excellon drillm file as..."
 msgstr "Экспортировать объединение в формат Excellon"
 
-#: src/callbacks.c:452
+#: src/callbacks.c:548
 msgid "Save layer as..."
 msgstr "Сохранить слой как..."
 
-#: src/callbacks.c:562
+#: src/callbacks.c:576
+msgid "All"
+msgstr "Все"
+
+#: src/callbacks.c:658
 #, c-format
 msgid "Merged visible gerber layers and placed in '%s'"
 msgstr "Видимые слои Gerber объединены и сохранены в «%s»"
 
-#: src/callbacks.c:571
+#: src/callbacks.c:667
 #, c-format
 msgid "Merged visible drill layers and placed in '%s'"
 msgstr "Видимые слои сверловки объединены и сохранены в «%s»"
 
-#: src/callbacks.c:753
+#: src/callbacks.c:849
 msgid "FATAL"
 msgstr "ФАТАЛЬНАЯ ОШИБКА"
 
-#: src/callbacks.c:755
+#: src/callbacks.c:851
 msgid "ERROR"
 msgstr "ОШИБКА"
 
-#: src/callbacks.c:757
+#: src/callbacks.c:853
 msgid "Warning"
 msgstr "Предупреждение"
 
-#: src/callbacks.c:759 src/callbacks.c:859 src/callbacks.c:914
-#: src/callbacks.c:940 src/callbacks.c:1233 src/callbacks.c:1272
+#: src/callbacks.c:855 src/callbacks.c:955 src/callbacks.c:1010
+#: src/callbacks.c:1036 src/callbacks.c:1329 src/callbacks.c:1368
 msgid "Note"
 msgstr "Замечание"
 
-#: src/callbacks.c:786
+#: src/callbacks.c:882
 msgid "No Gerber layers visible!"
 msgstr "Нет видимых слоёв Gerber!"
 
-#: src/callbacks.c:790
+#: src/callbacks.c:886
 #, c-format
 msgid "No errors found in %d visible Gerber layer."
 msgid_plural "No errors found in %d visible Gerber layers."
@@ -278,7 +275,7 @@ msgstr[0] "Ошибок не найдено в %d видимом слое Gerber
 msgstr[1] "Ошибок не найдено в %d видимых слоях Gerber."
 msgstr[2] "Ошибок не найдено в %d видимых слоях Gerber."
 
-#: src/callbacks.c:798
+#: src/callbacks.c:894
 #, c-format
 msgid "Found errors in %d visible Gerber layer."
 msgid_plural "Found errors in %d visible Gerber layers."
@@ -286,217 +283,217 @@ msgstr[0] "Найдены ошибки в %d видимом слое Gerber."
 msgstr[1] "Найдены ошибки в %d видимых слоях Gerber."
 msgstr[2] "Найдены ошибки в %d видимых слоях Gerber."
 
-#: src/callbacks.c:818 src/callbacks.c:822 src/callbacks.c:997
-#: src/callbacks.c:1193 src/callbacks.c:1197
+#: src/callbacks.c:914 src/callbacks.c:918 src/callbacks.c:1093
+#: src/callbacks.c:1289 src/callbacks.c:1293
 msgid "Layer"
 msgstr "Слой"
 
-#: src/callbacks.c:818 src/callbacks.c:822 src/callbacks.c:1193
-#: src/callbacks.c:1197
+#: src/callbacks.c:914 src/callbacks.c:918 src/callbacks.c:1289
+#: src/callbacks.c:1293
 msgid "File"
 msgstr "Файл"
 
-#: src/callbacks.c:819 src/callbacks.c:1194
+#: src/callbacks.c:915 src/callbacks.c:1290
 msgid "Error"
 msgstr "Ошибка"
 
-#: src/callbacks.c:858 src/callbacks.c:913 src/callbacks.c:939
-#: src/callbacks.c:963 src/callbacks.c:1049 src/callbacks.c:1232
-#: src/callbacks.c:1271 src/callbacks.c:1320
+#: src/callbacks.c:954 src/callbacks.c:1009 src/callbacks.c:1035
+#: src/callbacks.c:1059 src/callbacks.c:1145 src/callbacks.c:1328
+#: src/callbacks.c:1367 src/callbacks.c:1416
 msgid "Code"
 msgstr "Код"
 
-#: src/callbacks.c:859 src/callbacks.c:914 src/callbacks.c:940
-#: src/callbacks.c:964 src/callbacks.c:1050 src/callbacks.c:1233
-#: src/callbacks.c:1272 src/callbacks.c:1319 src/callbacks.c:1351
+#: src/callbacks.c:955 src/callbacks.c:1010 src/callbacks.c:1036
+#: src/callbacks.c:1060 src/callbacks.c:1146 src/callbacks.c:1329
+#: src/callbacks.c:1368 src/callbacks.c:1415 src/callbacks.c:1447
 msgid "Count"
 msgstr "Количество"
 
-#: src/callbacks.c:866
+#: src/callbacks.c:962
 msgid "Move"
 msgstr "Переход"
 
-#: src/callbacks.c:868 src/callbacks.c:1242
+#: src/callbacks.c:964 src/callbacks.c:1338
 msgid "1X linear interpolation"
 msgstr "1× линейная интерполяция"
 
-#: src/callbacks.c:870 src/callbacks.c:1244
+#: src/callbacks.c:966 src/callbacks.c:1340
 msgid "CW interpolation"
 msgstr "Интерполяция по часовой стрелки"
 
-#: src/callbacks.c:872 src/callbacks.c:1246
+#: src/callbacks.c:968 src/callbacks.c:1342
 msgid "CCW interpolation"
 msgstr "Интерполяция против часовой стрелки"
 
-#: src/callbacks.c:874
+#: src/callbacks.c:970
 msgid "Comment/ignore block"
 msgstr "Блок комментария"
 
-#: src/callbacks.c:876
+#: src/callbacks.c:972
 msgid "10X linear interpolation"
 msgstr "10× линейная интерполяция"
 
-#: src/callbacks.c:878
+#: src/callbacks.c:974
 msgid "0.1X linear interpolation"
 msgstr "0.1× линейная интерполяция"
 
-#: src/callbacks.c:880
+#: src/callbacks.c:976
 msgid "0.01X linear interpolation"
 msgstr "0.01× линейная интерполяция"
 
-#: src/callbacks.c:882
+#: src/callbacks.c:978
 msgid "Poly fill on"
 msgstr "Заполненный полигон"
 
-#: src/callbacks.c:884
+#: src/callbacks.c:980
 msgid "Poly fill off"
 msgstr "Незаполненный полигон"
 
-#: src/callbacks.c:886
+#: src/callbacks.c:982
 msgid "Tool prepare"
 msgstr "Подготовка инструмента"
 
-#: src/callbacks.c:888
+#: src/callbacks.c:984
 msgid "Flash prepare"
 msgstr "Подготовка экспозиции"
 
-#: src/callbacks.c:890
+#: src/callbacks.c:986
 msgid "Units = inches"
 msgstr "Единицы изменения: дюймы"
 
-#: src/callbacks.c:892
+#: src/callbacks.c:988
 msgid "Units = mm"
 msgstr "Единицы измерения: мм"
 
-#: src/callbacks.c:894
+#: src/callbacks.c:990
 msgid "Disable 360 circ. interpolation"
 msgstr "Откл. 360° интерполяции"
 
-#: src/callbacks.c:896
+#: src/callbacks.c:992
 msgid "Enable 360 circ. interpolation"
 msgstr "Вкл. 360° интерполяции"
 
-#: src/callbacks.c:898 src/callbacks.c:1254
+#: src/callbacks.c:994 src/callbacks.c:1350
 msgid "Absolute units"
 msgstr "Абсолютные единицы"
 
-#: src/callbacks.c:900 src/callbacks.c:1256
+#: src/callbacks.c:996 src/callbacks.c:1352
 msgid "Incremental units"
 msgstr "Инкрементальные единицы"
 
-#: src/callbacks.c:902 src/callbacks.c:1260
+#: src/callbacks.c:998 src/callbacks.c:1356
 msgid "Unknown G codes"
 msgstr "Неизвестные G-коды"
 
-#: src/callbacks.c:920
+#: src/callbacks.c:1016
 msgid "Exposure on"
 msgstr "Вкл. экспозиции"
 
-#: src/callbacks.c:922
+#: src/callbacks.c:1018
 msgid "Exposure off"
 msgstr "Откл. экспозиции"
 
-#: src/callbacks.c:924
+#: src/callbacks.c:1020
 msgid "Flash aperture"
 msgstr "Апертура экспозиции"
 
-#: src/callbacks.c:926
+#: src/callbacks.c:1022
 msgid "Undefined D codes"
 msgstr "Неопределённые D-коды"
 
-#: src/callbacks.c:928
+#: src/callbacks.c:1024
 msgid "D code Errors"
 msgstr "Ошибки D-кодов"
 
-#: src/callbacks.c:946
+#: src/callbacks.c:1042
 msgid "Program start"
 msgstr "Начало программы"
 
-#: src/callbacks.c:948
+#: src/callbacks.c:1044
 msgid "Program stop"
 msgstr "Останов программы"
 
-#: src/callbacks.c:950
+#: src/callbacks.c:1046
 msgid "Program end"
 msgstr "Конец программы"
 
-#: src/callbacks.c:952 src/callbacks.c:1306
+#: src/callbacks.c:1048 src/callbacks.c:1402
 msgid "Unknown M codes"
 msgstr "Неизвестные M-коды"
 
-#: src/callbacks.c:973
+#: src/callbacks.c:1069
 msgid "Unknown"
 msgstr "Неизвестный тип"
 
-#: src/callbacks.c:988
+#: src/callbacks.c:1084
 msgid "No aperture definitions found in active Gerber file(s)!"
 msgstr "Нет определения апертур в видимых слоях Gerber!"
 
-#: src/callbacks.c:998
+#: src/callbacks.c:1094
 msgid "D code"
 msgstr "D-код"
 
-#: src/callbacks.c:999
+#: src/callbacks.c:1095
 msgid "Aperture"
 msgstr "Апертура"
 
-#: src/callbacks.c:1000
+#: src/callbacks.c:1096
 msgid "Param[0]"
 msgstr "Параметр[0]"
 
-#: src/callbacks.c:1001
+#: src/callbacks.c:1097
 msgid "Param[1]"
 msgstr "Параметр[1]"
 
-#: src/callbacks.c:1002
+#: src/callbacks.c:1098
 msgid "Param[2]"
 msgstr "Параметр[2]"
 
-#: src/callbacks.c:1040
+#: src/callbacks.c:1136
 msgid "No apertures used in Gerber file(s)!"
 msgstr "Нет используемых апертур в видимых слоях Gerber!"
 
-#: src/callbacks.c:1067
+#: src/callbacks.c:1163
 msgid "Total"
 msgstr "Всего"
 
-#: src/callbacks.c:1076
+#: src/callbacks.c:1172
 msgid "Gerber codes report on visible layers"
 msgstr "Отчёт по кодам Gerber на видимых слоях"
 
-#: src/callbacks.c:1106 src/callbacks.c:1408
+#: src/callbacks.c:1202 src/callbacks.c:1504
 msgid "General"
 msgstr "Общая информация"
 
-#: src/callbacks.c:1110 src/callbacks.c:1412
+#: src/callbacks.c:1206 src/callbacks.c:1508
 msgid "G codes"
 msgstr "G-коды"
 
-#: src/callbacks.c:1114
+#: src/callbacks.c:1210
 msgid "D codes"
 msgstr "D-коды"
 
-#: src/callbacks.c:1118 src/callbacks.c:1416
+#: src/callbacks.c:1214 src/callbacks.c:1512
 msgid "M codes"
 msgstr "M-коды"
 
-#: src/callbacks.c:1122 src/callbacks.c:1420
+#: src/callbacks.c:1218 src/callbacks.c:1516
 msgid "Misc. codes"
 msgstr "Прочие коды"
 
-#: src/callbacks.c:1126
+#: src/callbacks.c:1222
 msgid "Aperture definitions"
 msgstr "Определение апертур"
 
-#: src/callbacks.c:1130
+#: src/callbacks.c:1226
 msgid "Aperture usage"
 msgstr "Использование апертур"
 
-#: src/callbacks.c:1161
+#: src/callbacks.c:1257
 msgid "No drill layers visible!"
 msgstr "Нет видимых слоёв сверловки!"
 
-#: src/callbacks.c:1165
+#: src/callbacks.c:1261
 #, c-format
 msgid "No errors found in %d visible drill layer."
 msgid_plural "No errors found in %d visible drill layers."
@@ -504,7 +501,7 @@ msgstr[0] "Ошибок не найдено в %d видимом слое све
 msgstr[1] "Ошибок не найдено в %d видимых слоях сверловки."
 msgstr[2] "Ошибок не найдено в %d видимых слоях сверловки."
 
-#: src/callbacks.c:1173
+#: src/callbacks.c:1269
 #, c-format
 msgid "Found errors found in %d visible drill layer."
 msgid_plural "Found errors found in %d visible drill layers."
@@ -512,120 +509,120 @@ msgstr[0] "Найдены ошибки в %d видимом слое сверл�
 msgstr[1] "Найдены ошибки в %d видимых слоях сверловки."
 msgstr[2] "Найдены ошибки в %d видимых слоях сверловки."
 
-#: src/callbacks.c:1240
+#: src/callbacks.c:1336
 msgid "Rout mode"
 msgstr "Холостой ход"
 
-#: src/callbacks.c:1248
+#: src/callbacks.c:1344
 msgid "Variable dwell"
 msgstr "Переменная задержка"
 
-#: src/callbacks.c:1250
+#: src/callbacks.c:1346
 msgid "Drill mode"
 msgstr "Режим сверловки"
 
-#: src/callbacks.c:1252
+#: src/callbacks.c:1348
 msgid "Cut slot"
 msgstr "Прорезь"
 
-#: src/callbacks.c:1258
+#: src/callbacks.c:1354
 msgid "Zero set"
 msgstr "Установка нуля"
 
-#: src/callbacks.c:1278
+#: src/callbacks.c:1374
 msgid "End of program"
 msgstr "Конец программы"
 
-#: src/callbacks.c:1280
+#: src/callbacks.c:1376
 msgid "End of pattern"
 msgstr "Конец комбинации"
 
-#: src/callbacks.c:1282
+#: src/callbacks.c:1378
 msgid "Tool tip check"
 msgstr "Проверка инструмента"
 
-#: src/callbacks.c:1284 src/callbacks.c:1288
+#: src/callbacks.c:1380 src/callbacks.c:1384
 msgid "Begin pattern"
 msgstr "Начало комбинации"
 
-#: src/callbacks.c:1286
+#: src/callbacks.c:1382
 msgid "End program rewind"
 msgstr "Конец программы со сбросом"
 
-#: src/callbacks.c:1290
+#: src/callbacks.c:1386
 msgid "Long message"
 msgstr "Длинное сообщение"
 
-#: src/callbacks.c:1292
+#: src/callbacks.c:1388
 msgid "Operator message"
 msgstr "Сообщение оператора"
 
-#: src/callbacks.c:1294
+#: src/callbacks.c:1390
 msgid "Begin program header"
 msgstr "Начало заголовка программы"
 
-#: src/callbacks.c:1296
+#: src/callbacks.c:1392
 msgid "Metric units"
 msgstr "Метрические единицы измерения"
 
-#: src/callbacks.c:1298
+#: src/callbacks.c:1394
 msgid "English units"
 msgstr "Английские единицы измерения"
 
-#: src/callbacks.c:1300
+#: src/callbacks.c:1396
 msgid "End program header"
 msgstr "Конец заголовка программы"
 
-#: src/callbacks.c:1302 src/callbacks.c:1304
+#: src/callbacks.c:1398 src/callbacks.c:1400
 msgid "Canned text"
 msgstr "Высверленный текст"
 
-#: src/callbacks.c:1324
+#: src/callbacks.c:1420
 msgid "Comments"
 msgstr "комментарии"
 
-#: src/callbacks.c:1327
+#: src/callbacks.c:1423
 msgid "Unknown codes"
 msgstr "Неизвестные коды"
 
-#: src/callbacks.c:1330
+#: src/callbacks.c:1426
 msgid "Repeat hole (R)"
 msgstr "Повтор отверстия (R)"
 
-#: src/callbacks.c:1348
+#: src/callbacks.c:1444
 msgid "Drill no."
 msgstr "№ отв."
 
-#: src/callbacks.c:1349
+#: src/callbacks.c:1445
 msgid "Dia."
 msgstr "Диаметр"
 
-#: src/callbacks.c:1350 src/drill.c:193
+#: src/callbacks.c:1446 src/drill.c:193
 msgid "Units"
 msgstr "Единицы измерения"
 
-#: src/callbacks.c:1378
+#: src/callbacks.c:1474
 msgid "Drill codes report on visible layers"
 msgstr "Отчёт по кодам сверловки на видимых слоях"
 
-#: src/callbacks.c:1424
+#: src/callbacks.c:1520
 msgid "Drill usage"
 msgstr "Используемые отверстия"
 
-#: src/callbacks.c:1472
+#: src/callbacks.c:1568
 msgid "Do you want to close all open layers and quit the program?"
 msgstr "Закрыть все открытые слои и выйти из программы?"
 
-#: src/callbacks.c:1473
+#: src/callbacks.c:1569
 msgid "Quitting the program will cause any unsaved changes to be lost."
 msgstr "Выход из программы приведёт к потере всех не сохранённых изменений."
 
 #. TRANSLATORS: Replace this string with your names, one name per line.
-#: src/callbacks.c:1496
+#: src/callbacks.c:1592
 msgid "translator-credits"
 msgstr "Сергей Алёшин <alyoshin.s@gmail.com>, 2012—2014"
 
-#: src/callbacks.c:1498
+#: src/callbacks.c:1594
 #, c-format
 msgid ""
 "gerbv -- a Gerber (RS-274/X) viewer.\n"
@@ -649,7 +646,7 @@ msgstr ""
 "  Домашняя страница gEDA: http://geda-project.org/\n"
 "  gEDA Wiki: http://wiki.geda-project.org/"
 
-#: src/callbacks.c:1509
+#: src/callbacks.c:1605
 msgid ""
 "gerbv -- a Gerber (RS-274/X) viewer.\n"
 "\n"
@@ -685,57 +682,57 @@ msgstr ""
 "Вы должны были получить копию лицензии GNU GPL вместе с этой программой\n"
 "Если вы её не получили, см. <http://www.gnu.org/licenses/>."
 
-#: src/callbacks.c:1528
+#: src/callbacks.c:1624
 msgid "Gerbv"
 msgstr "Gerbv"
 
-#: src/callbacks.c:1557
+#: src/callbacks.c:1653
 msgid "About Gerbv"
 msgstr "О программе"
 
-#: src/callbacks.c:1584
+#: src/callbacks.c:1680
 msgid "Known bugs in gerbv"
 msgstr "Известные ошибки в Gerbv"
 
-#: src/callbacks.c:1912 src/callbacks.c:3096
+#: src/callbacks.c:2009 src/callbacks.c:3245
 msgid ""
 "Click to select objects in the current layer. Middle click and drag to pan."
 msgstr "Выделите объекты в активном слое. Средняя кнопка для масштабирования."
 
-#: src/callbacks.c:1920
+#: src/callbacks.c:2017
 msgid "Click and drag to pan. Right click and drag to zoom."
 msgstr "Перетащите для прокрутки. Правая кнопка для масштабирования."
 
-#: src/callbacks.c:1928
+#: src/callbacks.c:2025
 msgid "Click and drag to zoom in. Shift+click to zoom out."
 msgstr "Перетащите для увеличения. Удерживайте клавишу Shift для уменьшения."
 
-#: src/callbacks.c:1937
+#: src/callbacks.c:2034
 msgid "Click and drag to measure a distance or select two apertures."
 msgstr "Перетащите для измерения расстояния или выберите две апертуры."
 
-#: src/callbacks.c:2162
+#: src/callbacks.c:2259
 msgid "Select a color"
 msgstr "Выберите цвет"
 
-#: src/callbacks.c:2306
+#: src/callbacks.c:2403
 msgid "Unknown type"
 msgstr "Неизвестный тип"
 
-#: src/callbacks.c:2310
+#: src/callbacks.c:2407
 msgid "This file type does not currently have any editable features"
 msgstr "В настоящее время этот формат не имеет изменяемых свойств"
 
-#: src/callbacks.c:2311
+#: src/callbacks.c:2408
 msgid ""
 "Format editing is currently only supported for Excellon drill file formats."
 msgstr "Изменение формата возможно только для сверловки Excellon."
 
-#: src/callbacks.c:2321
+#: src/callbacks.c:2419
 msgid "This layer has changed!"
 msgstr "Слой изменён!"
 
-#: src/callbacks.c:2322
+#: src/callbacks.c:2420
 msgid ""
 "Editing the file type will reload the layer, destroying your changes.  Click "
 "OK to edit the file type and destroy your changes, or Cancel to leave."
@@ -743,115 +740,126 @@ msgstr ""
 "Изменение формата файла приведёт к перезагрузке слоя и потере всех его "
 "изменений. При нажатии OK изменения будут потеряны."
 
-#: src/callbacks.c:2337
+#: src/callbacks.c:2437
 msgid "Edit file format"
 msgstr "Изменить формат"
 
-#: src/callbacks.c:2582 src/callbacks.c:2827
+#: src/callbacks.c:2718 src/callbacks.c:2976
 msgid "No object is currently selected"
 msgstr "Нет выделенных объектов"
 
-#: src/callbacks.c:2583
+#: src/callbacks.c:2719
 msgid ""
 "Objects must be selected using the pointer tool before you can view the "
 "object properties."
 msgstr "Объект должен быть выделен для просмотра его свойств."
 
-#: src/callbacks.c:2607
+#: src/callbacks.c:2743
 msgid "<unnamed layer>"
 msgstr "<безымянный>"
 
-#: src/callbacks.c:2613
+#: src/callbacks.c:2749
 msgid "<unlabeled net>"
 msgstr "<безымянное>"
 
-#: src/callbacks.c:2619
+#: src/callbacks.c:2755
 msgid "<unnamed file>"
 msgstr "<безымянный файл>"
 
-#: src/callbacks.c:2626
+#: src/callbacks.c:2765
 msgid "Object type: Polygon"
 msgstr "Тип объекта: полигон"
 
-#: src/callbacks.c:2639
+#: src/callbacks.c:2773
+#, c-format
+msgid "    Number of vertices: %u"
+msgstr ""
+
+#: src/callbacks.c:2786
 msgid "Object type: Line"
 msgstr "Тип объекта: линия"
 
-#: src/callbacks.c:2645
+#: src/callbacks.c:2792
 msgid "Object type: Arc"
 msgstr "Тип объекта: дуга"
 
-#: src/callbacks.c:2652
+#: src/callbacks.c:2799
 msgid "Object type: Unknown"
 msgstr "Тип объекта: неизвестный"
 
-#: src/callbacks.c:2655
+#: src/callbacks.c:2802
 msgid "    Exposure: On"
 msgstr "    Экспозиция: вкл."
 
-#: src/callbacks.c:2664
+#: src/callbacks.c:2811 src/callbacks.c:4008 src/callbacks.c:4066
 #, c-format
 msgid "    Start: (%g, %g)"
 msgstr "    Начало: (%g; %g)"
 
-#: src/callbacks.c:2671
+#: src/callbacks.c:2818 src/callbacks.c:4069
 #, c-format
 msgid "    Stop: (%g, %g)"
 msgstr "    Конец: (%g; %g)"
 
-#: src/callbacks.c:2681
+#: src/callbacks.c:2828 src/callbacks.c:4000 src/callbacks.c:4020
+#: src/callbacks.c:4041 src/callbacks.c:4056 src/callbacks.c:4081
 #, c-format
 msgid "    Center: (%g, %g)"
 msgstr "    Центр: (%g; %g)"
 
-#: src/callbacks.c:2683
+#: src/callbacks.c:2830
+#, fuzzy, c-format
+msgid "    Angle (deg): %g"
+msgstr "    Углы, град.: %g, %g"
+
+#: src/callbacks.c:2832
 #, c-format
 msgid "    Angles (deg): %g, %g"
 msgstr "    Углы, град.: %g, %g"
 
-#: src/callbacks.c:2685
+#: src/callbacks.c:2834
 #, c-format
 msgid "    Direction: %s"
 msgstr "    Направление: %s"
 
-#: src/callbacks.c:2688
+#: src/callbacks.c:2837 src/gerber.c:365
 msgid "CW"
 msgstr "ЧС"
 
-#: src/callbacks.c:2689
+#: src/callbacks.c:2838 src/gerber.c:365
 msgid "CCW"
 msgstr "ПЧС"
 
-#: src/callbacks.c:2697
+#: src/callbacks.c:2846
 #, c-format
 msgid "    Length: %g (sum: %g)"
 msgstr "    Длина: %g (сумма: %g)"
 
-#: src/callbacks.c:2700 src/callbacks.c:2717
+#: src/callbacks.c:2849 src/callbacks.c:2866
 #, c-format
 msgid "    Layer name: %s"
 msgstr "    Слой: %s"
 
-#: src/callbacks.c:2701 src/callbacks.c:2718
+#: src/callbacks.c:2850 src/callbacks.c:2867
 #, c-format
 msgid "    Net label: %s"
 msgstr "    Соединение: %s"
 
-#: src/callbacks.c:2702 src/callbacks.c:2719
+#: src/callbacks.c:2851 src/callbacks.c:2868
 #, c-format
 msgid "    In file: %s"
 msgstr "    Файл: %s"
 
-#: src/callbacks.c:2706
+#: src/callbacks.c:2855
 msgid "Object type: Flashed aperture"
 msgstr "Тип объекта: апертура экспозиции"
 
-#: src/callbacks.c:2715
+#: src/callbacks.c:2864
 #, c-format
 msgid "    Location: (%g, %g)"
 msgstr "    Расположение: (%g; %g)"
 
-#: src/callbacks.c:2746
+#: src/callbacks.c:2895
 #, c-format
 msgid ""
 "FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n"
@@ -859,7 +867,7 @@ msgstr ""
 "Проверка производительности БЫСТРОГО (GDK) режима: %d отрисовок за %ld с (%g "
 "отрисовок/c)\n"
 
-#: src/callbacks.c:2767
+#: src/callbacks.c:2916
 #, c-format
 msgid ""
 "NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g redraws/"
@@ -868,26 +876,26 @@ msgstr ""
 "Проверка производительности ОБЫЧНОГО (Cairo) режима: %d отрисовок за %ld с "
 "(%g отрисовок/c)\n"
 
-#: src/callbacks.c:2781
+#: src/callbacks.c:2930
 msgid "Full zoom benchmarks\n"
 msgstr "Проверка производительности полного увеличения\n"
 
-#: src/callbacks.c:2785
+#: src/callbacks.c:2934
 msgid "x5 zoom benchmarks\n"
 msgstr "Проверка производительности x5 увеличения\n"
 
-#: src/callbacks.c:2828
+#: src/callbacks.c:2977
 msgid ""
 "Objects must be selected using the pointer tool before they can be deleted."
 msgstr "Для того чтобы удалить объекты, они должны быть выделены указателем"
 
-#: src/callbacks.c:2841
+#: src/callbacks.c:2990
 msgid ""
 "Do you want to permanently delete the selected objects from <i>visible</i> "
 "layers?"
 msgstr "Безвозвратно удалить выделенные объекты с <i>видимых</i> слоёв?"
 
-#: src/callbacks.c:2844
+#: src/callbacks.c:2992
 msgid ""
 "Gerbv currently has no undo function, so this action cannot be undone. This "
 "action will not change the saved file unless you save the file afterwards."
@@ -895,27 +903,27 @@ msgstr ""
 "В настоящее время Gerbv не имеет функции отмены, поэтому это действие нельзя "
 "будет отменить. Файл не будет изменён, если изменения не будут сохранены."
 
-#: src/callbacks.c:3043
+#: src/callbacks.c:3192
 #, c-format
 msgid "%8.2f %8.2f"
 msgstr "%8.2f %8.2f"
 
-#: src/callbacks.c:3061
+#: src/callbacks.c:3210
 #, c-format
 msgid "%8.3f %8.3f"
 msgstr "%8.3f %8.3f"
 
-#: src/callbacks.c:3066
+#: src/callbacks.c:3215
 #, c-format
 msgid "%4.5f %4.5f"
 msgstr "%4.5f %4.5f"
 
-#: src/callbacks.c:3087
+#: src/callbacks.c:3236
 msgid "No object selected. Objects can only be selected in the active layer."
 msgstr ""
 "Нет выделенных объектов. Они могут быть выделены только на активном слое."
 
-#: src/callbacks.c:3103
+#: src/callbacks.c:3252
 #, c-format
 msgid "%d object are currently selected"
 msgid_plural "%d objects are currently selected"
@@ -923,45 +931,45 @@ msgstr[0] "Выделен %d объект"
 msgstr[1] "Выделено %d объекта"
 msgstr[2] "Выделено %d объектов"
 
-#: src/callbacks.c:3306 src/callbacks.c:3312
+#: src/callbacks.c:3455 src/callbacks.c:3461
 #, c-format
 msgid "#_%i %s  >  #%i %s"
 msgstr "№_%i %s  ⇒  №%i %s"
 
-#: src/callbacks.c:3383 src/callbacks.c:3389
+#: src/callbacks.c:3532 src/callbacks.c:3538
 msgid "Can't align by this type of object"
 msgstr "Невозможно выравнять по данному типу выделенных объектов"
 
-#: src/callbacks.c:3566
+#: src/callbacks.c:3715
 #, c-format
 msgid "Measured distance: %8.2f mils (%8.2f x, %8.2f y)"
 msgstr "Расстояние: %.2f мил (x: %.2f; y: %.2f)"
 
-#: src/callbacks.c:3571
+#: src/callbacks.c:3720
 #, c-format
 msgid "Measured distance: %8.3f mms (%8.3f x, %8.3f y)"
 msgstr "Расстояние: %.3f мм (x: %.3f; y: %.3f)"
 
-#: src/callbacks.c:3576
+#: src/callbacks.c:3725
 #, c-format
 msgid "Measured distance: %4.5f inches (%4.5f x, %4.5f y)"
 msgstr "Расстояние: %.5f дюйм (x: %.5f; y: %.5f)"
 
-#: src/callbacks.c:3742
+#: src/callbacks.c:3891
 #, c-format
 msgid "Fatal error: %s\n"
 msgstr "Фатальная ошибка: %s\n"
 
-#: src/callbacks.c:3745
+#: src/callbacks.c:3894
 msgid "Fatal Error"
 msgstr "Фатальная ошибка"
 
-#: src/callbacks.c:3749
+#: src/callbacks.c:3898
 #, c-format
 msgid "Fatal error: %s"
 msgstr "Фатальная ошибка: %s"
 
-#: src/callbacks.c:3754
+#: src/callbacks.c:3903
 msgid ""
 "\n"
 "Gerbv will be closed now!"
@@ -969,25 +977,87 @@ msgstr ""
 "\n"
 "Gerbv сейчас будет закрыт!"
 
-#: src/callbacks.c:3827
+#: src/callbacks.c:3978
 #, c-format
 msgid "    Aperture used: D%d"
 msgstr "    Апертура: D%d"
 
-#: src/callbacks.c:3828
+#: src/callbacks.c:3979
 #, c-format
 msgid "    Aperture type: %s"
 msgstr "    Тип апертуры: %s"
 
-#: src/callbacks.c:3836
+#: src/callbacks.c:3986 src/callbacks.c:3998 src/callbacks.c:4018
 #, c-format
 msgid "    Diameter: %g"
 msgstr "    Диаметр: %g"
 
-#: src/callbacks.c:3841
+#: src/callbacks.c:3991
 #, c-format
 msgid "    Dimensions: %gx%g"
 msgstr "    Размер: %g×%g"
+
+#: src/callbacks.c:4006 src/callbacks.c:4016
+#, c-format
+msgid "    Number of points: %g"
+msgstr ""
+
+#: src/callbacks.c:4011 src/callbacks.c:4023 src/callbacks.c:4044
+#: src/callbacks.c:4059 src/callbacks.c:4072 src/callbacks.c:4084
+#: src/callbacks.c:4096
+#, fuzzy, c-format
+msgid "    Rotation (deg): %g"
+msgstr "Поворот, градусы:"
+
+#: src/callbacks.c:4028 src/callbacks.c:4049
+#, fuzzy, c-format
+msgid "    Outside diameter: %g"
+msgstr "    Диаметр: %g"
+
+#: src/callbacks.c:4030
+#, fuzzy, c-format
+msgid "    Circle thickness: %g"
+msgstr "    Направление: %s"
+
+#: src/callbacks.c:4032
+#, fuzzy, c-format
+msgid "    Gap width: %g"
+msgstr "    Диаметр: %g"
+
+#: src/callbacks.c:4034
+#, fuzzy, c-format
+msgid "    Number of circles: %g"
+msgstr "    Файл: %s"
+
+#: src/callbacks.c:4036 src/callbacks.c:4053
+#, c-format
+msgid "    Crosshair thickness: %g"
+msgstr ""
+
+#: src/callbacks.c:4039
+#, c-format
+msgid "    Crosshair length: %g"
+msgstr ""
+
+#: src/callbacks.c:4051
+#, fuzzy, c-format
+msgid "    Inside diameter: %g"
+msgstr "    Диаметр: %g"
+
+#: src/callbacks.c:4064 src/callbacks.c:4077 src/callbacks.c:4089
+#, fuzzy, c-format
+msgid "    Width: %g"
+msgstr "    Диаметр: %g"
+
+#: src/callbacks.c:4079 src/callbacks.c:4091
+#, fuzzy, c-format
+msgid "    Height: %g"
+msgstr "    Диаметр: %g"
+
+#: src/callbacks.c:4093
+#, fuzzy, c-format
+msgid "    Lower left: (%g, %g)"
+msgstr "    Начало: (%g; %g)"
 
 #: src/csv.c:167 src/csv.c:288
 #, c-format
@@ -1009,29 +1079,44 @@ msgstr "%d: ошибочная закрывающая кавычка в элем
 msgid "Unknown simplified aperture macro type %d"
 msgstr "Неизвестный макрос упрощённой апертуры %d"
 
-#: src/draw-gdk.c:1132
+#: src/draw-gdk.c:805 src/draw-gdk.c:1198
+#, fuzzy, c-format
+msgid "Unknown interpolation type %d"
+msgstr "Пропущена интерполяция типа %d"
+
+#: src/draw-gdk.c:1143
 msgid "Linear != x1"
 msgstr "Линейный != ×1"
 
-#: src/draw-gdk.c:1249 src/draw.c:1094
-msgid "Unknown aperture type"
+#: src/draw-gdk.c:1267
+#, fuzzy, c-format
+msgid "Unknown aperture type %d"
 msgstr "Неизвестный тип апертуры"
 
-#: src/draw-gdk.c:1254 src/draw.c:1102
-msgid "Unknown aperture state"
+#: src/draw-gdk.c:1273
+#, fuzzy, c-format
+msgid "Unknown aperture state %d"
 msgstr "Неизвестное состояние апертуры"
 
-#: src/draw.c:1001
+#: src/draw.c:1140
 #, c-format
 msgid "Skipped aperture type \"%s\""
 msgstr "Пропущена апертура типа «%s»"
 
-#: src/draw.c:1035
+#: src/draw.c:1174
 #, c-format
 msgid "Skipped interpolation type %d"
 msgstr "Пропущена интерполяция типа %d"
 
-#: src/drill.c:158 src/interface.c:1977
+#: src/draw.c:1235
+msgid "Unknown aperture type"
+msgstr "Неизвестный тип апертуры"
+
+#: src/draw.c:1255
+msgid "Unknown aperture state"
+msgstr "Неизвестное состояние апертуры"
+
+#: src/drill.c:158 src/interface.c:2225
 msgid "None"
 msgstr "Нет"
 
@@ -1047,7 +1132,7 @@ msgstr "Сзади"
 msgid "inch"
 msgstr "дюймы"
 
-#: src/drill.c:171 src/drill.c:1148 src/drill.c:1227 src/interface.c:1157
+#: src/drill.c:171 src/drill.c:1148 src/drill.c:1227 src/interface.c:1162
 msgid "mm"
 msgstr "мм"
 
@@ -1088,7 +1173,7 @@ msgstr ""
 msgid "malloc curr_net->next failed"
 msgstr "Ошибка выделения памяти для curr_net->next"
 
-#: src/drill.c:328 src/gerber.c:760 src/pick-and-place.c:529
+#: src/drill.c:328 src/gerber.c:750 src/pick-and-place.c:529
 msgid "malloc image failed"
 msgstr "Ошибка выделения памяти для изображения"
 
@@ -1294,7 +1379,7 @@ msgstr "Ошибка загрузки расширения scheme «%s»: %s\n"
 msgid "Error initializing scheme module \"%s\": %s\n"
 msgstr "Ошибка инициализации модуля scheme «%s»: %s\n"
 
-#: src/export-drill.c:52 src/export-rs274x.c:212
+#: src/export-drill.c:52 src/export-rs274x.c:215
 #, c-format
 msgid "Can't open file for writing: %s"
 msgstr "Невозможно открыть файл «%s» для записи"
@@ -1417,15 +1502,15 @@ msgstr "макрос"
 msgid "(%f,%f)->(%f,%f) with %d ("
 msgstr "(%f,%f)->(%f,%f) с %d ("
 
-#: src/gerb_image.c:446 src/gerbv.c:240
+#: src/gerb_image.c:446 src/gerbv.c:243
 msgid "Exporting mirrored file is not supported!"
 msgstr "Экспорт отражённого файла не поддерживается!"
 
-#: src/gerb_image.c:453 src/gerbv.c:247 src/gerbv.c:261
+#: src/gerb_image.c:453 src/gerbv.c:250 src/gerbv.c:264
 msgid "Exporting inverted file is not supported!"
 msgstr "Экспорт инвертированного файла не поддерживается!"
 
-#: src/gerb_image.c:850
+#: src/gerb_image.c:846
 #, c-format
 msgid "Can't rotate %u rectangular aperture to %.2f degrees (non 90 multiply)!"
 msgid_plural ""
@@ -1437,7 +1522,7 @@ msgstr[1] ""
 msgstr[2] ""
 "Невозможно повернуть %u прямоугольных апертур на %.2f° (не кратно 90°)!"
 
-#: src/gerb_image.c:858
+#: src/gerb_image.c:854
 #, c-format
 msgid "Can't scale %u line macro!"
 msgid_plural "Can't scale %u line macros!"
@@ -1445,7 +1530,7 @@ msgstr[0] "Невозможно масштабировать %u макролин
 msgstr[1] "Невозможно масштабировать %u макролинии!"
 msgstr[2] "Невозможно масштабировать %u макролиний!"
 
-#: src/gerb_image.c:864
+#: src/gerb_image.c:860
 #, c-format
 msgid "Can't scale %u polygon macro!"
 msgid_plural "Can't scale %u polygon macros!"
@@ -1453,7 +1538,7 @@ msgstr[0] "Невозможно масштабировать %u макропол
 msgstr[1] "Невозможно масштабировать %u макрополигона!"
 msgstr[2] "Невозможно масштабировать %u макрополигонов!"
 
-#: src/gerb_image.c:870
+#: src/gerb_image.c:866
 #, c-format
 msgid "Can't scale %u thermal macro!"
 msgid_plural "Can't scale %u thermal macros!"
@@ -1461,7 +1546,7 @@ msgstr[0] "Невозможно масштабировать %u макротер
 msgstr[1] "Невозможно масштабировать %u макротермо!"
 msgstr[2] "Невозможно масштабировать %u макротермо!"
 
-#: src/gerb_image.c:876
+#: src/gerb_image.c:872
 #, c-format
 msgid "Can't scale %u moire macro!"
 msgid_plural "Can't scale %u moire macros!"
@@ -1469,7 +1554,7 @@ msgstr[0] "Невозможно масштабировать %u макромуа
 msgstr[1] "Невозможно масштабировать %u макромуара!"
 msgstr[2] "Невозможно масштабировать %u макромуаров!"
 
-#: src/gerb_image.c:882
+#: src/gerb_image.c:878
 #, c-format
 msgid "Can't rotate %u oval aperture to %.2f degrees (non 90 multiply)!"
 msgid_plural ""
@@ -1478,7 +1563,7 @@ msgstr[0] "Невозможно повернуть %u овальную апер�
 msgstr[1] "Невозможно повернуть %u овальные апертуры на %.2f° (не кратно 90°)!"
 msgstr[2] "Невозможно повернуть %u овальных апертур на %.2f° (не кратно 90°)!"
 
-#: src/gerb_image.c:890
+#: src/gerb_image.c:886
 #, c-format
 msgid "Can't scale %u circle aperture to ellipse!"
 msgid_plural "Can't scale %u circle apertures to ellipse!"
@@ -1486,7 +1571,7 @@ msgstr[0] "Невозможно масштабировать %u круглую �
 msgstr[1] "Невозможно масштабировать %u круглые апертуры!"
 msgstr[2] "Невозможно масштабировать %u круглых апертур!"
 
-#: src/gerb_image.c:896
+#: src/gerb_image.c:892
 #, c-format
 msgid "Skipped %u aperture with unknown type!"
 msgid_plural "Skipped %u apertures with unknown type!"
@@ -1494,7 +1579,7 @@ msgstr[0] "Пропущена %u апертура неизвестного ти�
 msgstr[1] "Пропущено %u апертуры неизвестного типа!"
 msgstr[2] "Пропущено %u апертур неизвестного типа!"
 
-#: src/gerb_image.c:902
+#: src/gerb_image.c:898
 #, c-format
 msgid "Skipped %u macro aperture!"
 msgid_plural "Skipped %u macro apertures!"
@@ -1518,141 +1603,148 @@ msgstr "Ошибка выделения памяти для списка D-ко�
 msgid "Undefined aperture number called out in D code"
 msgstr "В D-коде указан неизвестный номер апертуры"
 
-#: src/gerber.c:169
+#: src/gerber.c:173
 msgid "Unknown M code found"
 msgstr "Неизвестный M-код"
 
-#: src/gerber.c:479
+#: src/gerber.c:362
+#, c-format
+msgid ""
+"Signed incremental distance IxJy in single quadrant %s circular "
+"interpolation %s in file \"%s\""
+msgstr ""
+
+#: src/gerber.c:490
 #, c-format
 msgid "Found undefined D code D%d in file \"%s\""
 msgstr "Неопределённый D-код D%d в файле «%s»"
 
-#: src/gerber.c:713
+#: src/gerber.c:703
 #, c-format
 msgid "Found unknown character (whitespace?) [%d]%c"
 msgstr "Неизвестный символ (пробел?) [%d]%c"
 
-#: src/gerber.c:765
+#: src/gerber.c:755
 msgid "malloc gerbv_stats failed"
 msgstr "Ошибка выделения памяти для структуры статистики gerbv_stats"
 
-#: src/gerber.c:782
+#: src/gerber.c:772
 #, c-format
 msgid "Missing Gerber EOF code in file \"%s\""
 msgstr "Файл «%s» не содержит код конца Gerber-файла"
 
-#: src/gerber.c:823
+#: src/gerber.c:813
 msgid "malloc buf failed while checking for rs274x"
 msgstr "Ошибка выделения памяти при проверке RS274X"
 
-#: src/gerber.c:917
+#: src/gerber.c:907
 msgid "malloc buf failed while checking for rs274d"
 msgstr "Ошибка выделения памяти при проверке RS274D"
 
-#: src/gerber.c:1050
+#: src/gerber.c:1040
 #, c-format
 msgid "Found aperture D%d out of bounds while parsing G code in file \"%s\""
 msgstr "Апертура D%d превышает границы при разборе G-кода в файле «%s»"
 
-#: src/gerber.c:1059
+#: src/gerber.c:1049
 #, c-format
 msgid "Found unexpected code after G54 in file \"%s\""
 msgstr "Неизвестный код после G54 в файле «%s»"
 
-#: src/gerber.c:1099
+#: src/gerber.c:1089
 #, c-format
 msgid "Encountered unknown G code G%d in file \"%s\""
 msgstr "Неизвестный G-код G%d в файле «%s»"
 
-#: src/gerber.c:1105
+#: src/gerber.c:1095
 #, c-format
 msgid "Ignorning unknown G code G%d"
 msgstr "Пропуск неизвестного G-кода G%d"
 
-#: src/gerber.c:1135
+#: src/gerber.c:1125
 #, c-format
 msgid "Found invalid D00 code in file \"%s\""
 msgstr "Недопустимый код D00 в файле «%s»"
 
-#: src/gerber.c:1163
+#: src/gerber.c:1153
 #, c-format
 msgid "Found out of bounds aperture D%d in file \"%s\""
 msgstr "Превышающая границы апертура D%d в файле «%s»"
 
-#: src/gerber.c:1201
+#: src/gerber.c:1191
 #, c-format
 msgid "Encountered unknown M code M%d in file \"%s\""
 msgstr "Неизвестный M-код M%d в файле «%s»"
 
-#: src/gerber.c:1208
+#: src/gerber.c:1198
 #, c-format
 msgid "Ignorning unknown M code M%d"
 msgstr "Пропуск неизвестного M-кода M%d"
 
-#: src/gerber.c:1242 src/gerber.c:1261 src/gerber.c:1280 src/gerber.c:1604
+#: src/gerber.c:1232 src/gerber.c:1251 src/gerber.c:1270 src/gerber.c:1594
 #, c-format
 msgid "Unexpected EOF found in file \"%s\""
 msgstr "Неожиданный код конца файла в «%s»"
 
-#: src/gerber.c:1310
+#: src/gerber.c:1300
 #, c-format
 msgid ""
 "EagleCad bug detected: Undefined handling of zeros in format code in file "
 "\"%s\""
 msgstr "Ошибка EagleCad: формат не определяет обработку нулей в файле «%s»"
 
-#: src/gerber.c:1317
+#: src/gerber.c:1307
 msgid "Defaulting to omitting leading zeros"
 msgstr "Пропуск ведущих нулей, по умолчанию"
 
-#: src/gerber.c:1335
+#: src/gerber.c:1325
 #, c-format
 msgid "Invalid coordinate type defined in format code in file \"%s\""
 msgstr "Недопустимый тип координат в коде формата файла «%s»"
 
-#: src/gerber.c:1342
+#: src/gerber.c:1332
 msgid "Defaulting to absolute coordinates"
 msgstr "Установка по умолчанию абсолютных координат"
 
-#: src/gerber.c:1372 src/gerber.c:1383 src/gerber.c:1396 src/gerber.c:1407
+#: src/gerber.c:1362 src/gerber.c:1373 src/gerber.c:1386 src/gerber.c:1397
 #, c-format
 msgid "Illegal format size %c in file \"%s\""
 msgstr "Недопустимый размер формата %c в файле «%s»"
 
-#: src/gerber.c:1418
+#: src/gerber.c:1408
 #, c-format
 msgid "Illegal format statement [%c] in file \"%s\""
 msgstr "Недопустимое выражение формата [%c] в файле «%s»"
 
-#: src/gerber.c:1425
+#: src/gerber.c:1415
 msgid "Ignoring invalid format statement"
 msgstr "Пропуск недопустимого выражения формата"
 
-#: src/gerber.c:1461
+#: src/gerber.c:1451
 #, c-format
 msgid "Wrong character in mirror: %c"
 msgstr "Недопустимый символ зеркального отражения: %c"
 
-#: src/gerber.c:1478
+#: src/gerber.c:1468
 msgid "Unexpected EOF found"
 msgstr "Неожиданный код конца файла"
 
-#: src/gerber.c:1490
+#: src/gerber.c:1480
 #, c-format
 msgid "Illegal unit: %c%c"
 msgstr "Недопустимые единицы измерения: %c%c"
 
-#: src/gerber.c:1510
+#: src/gerber.c:1500
 #, c-format
 msgid "Wrong character in offset: %c"
 msgstr "Недопустимый символ в смещении: %c"
 
-#: src/gerber.c:1539
+#: src/gerber.c:1529
 #, c-format
 msgid "In file \"%s\", included file \"%s\" cannot be found"
 msgstr "В файле «%s» не может быть найден включённый файл «%s»"
 
-#: src/gerber.c:1549
+#: src/gerber.c:1539
 msgid ""
 "Parser encountered more than 10 levels of include file recursion which is "
 "not allowed by the RS-274X spec"
@@ -1660,100 +1752,100 @@ msgstr ""
 "Более чем 10 уровней рекурсии включения файлов не допускается спецификацией "
 "RS-274X"
 
-#: src/gerber.c:1572
+#: src/gerber.c:1562
 #, c-format
 msgid "Wrong character in image offset %c in file \"%s\""
 msgstr "Недопустимый символ в смещении %c в файле «%s»"
 
-#: src/gerber.c:1628
+#: src/gerber.c:1618
 #, c-format
 msgid "Unknown input code (IC): %c%c in file \"%s\""
 msgstr "Неизвестный входной код (IC) %c%c в файле «%s»"
 
-#: src/gerber.c:1670
+#: src/gerber.c:1660
 #, c-format
 msgid "Wrong character %c in image justify in file \"%s\""
 msgstr "Недопустимый символ выравнивания изображения %c в файле «%s»"
 
-#: src/gerber.c:1689
+#: src/gerber.c:1679
 #, c-format
 msgid "Unexpected EOF while reading image polarity (IP) in file \"%s\""
 msgstr ""
 "Неожиданный код конца файла при чтении полярности изображения (IP) в файле "
 "«%s»"
 
-#: src/gerber.c:1705
+#: src/gerber.c:1695
 #, c-format
 msgid "Unknown polarity: %c%c%c"
 msgstr "Неизвестная полярность: %c%c%c"
 
-#: src/gerber.c:1724
+#: src/gerber.c:1714
 #, c-format
 msgid "Image rotation must be 0, 90, 180 or 270 (is actually %d)"
 msgstr ""
 "Изображение должно быть повёрнуто на 0°, 90°, 180° или 270° (указано %d°)"
 
-#: src/gerber.c:1755 src/gerber.c:1760
+#: src/gerber.c:1745 src/gerber.c:1750
 #, c-format
 msgid "Aperture number out of bounds %d in file \"%s\""
 msgstr "Номер апертуры выходит за границы %d в файле «%s»"
 
-#: src/gerber.c:1780
+#: src/gerber.c:1770
 #, c-format
 msgid "Failed to parse aperture macro in file \"%s\""
 msgstr "Ошибка разбора макроса апертуры в файле «%s»"
 
-#: src/gerber.c:1805
+#: src/gerber.c:1795
 #, c-format
 msgid "Unknown Layer Polarity %c in file \"%s\""
 msgstr "Неизвестная полярность слоя %c в файле «%s»"
 
-#: src/gerber.c:1828
+#: src/gerber.c:1818
 #, c-format
 msgid "Knockout must supply a polarity (C, D, or *) in file \"%s\""
 msgstr "Врезка должна содержать полярность (C, D или *) в файле «%s»"
 
-#: src/gerber.c:1874
+#: src/gerber.c:1864
 #, c-format
 msgid "Unknown variable in knockout in file \"%s\""
 msgstr "Неизвестная переменная врезки в файле «%s»"
 
-#: src/gerber.c:1911
+#: src/gerber.c:1901
 #, c-format
 msgid "Step-and-repeat parameter error in file \"%s\""
 msgstr ""
 "Ошибка параметра многократного экспонирования с шаговым перемещением в файле "
 "«%s»"
 
-#: src/gerber.c:1940
+#: src/gerber.c:1930
 #, c-format
 msgid "Error in layer rotation command in file \"%s\""
 msgstr "Ошибка в команде поворота слоя в файле «%s»"
 
-#: src/gerber.c:1950
+#: src/gerber.c:1940
 #, c-format
 msgid "Unknown RS-274X extension found %%%c%c%% in file \"%s\""
 msgstr "Неизвестное расширение RS-274X %%%c%c%% в файле «%s»"
 
-#: src/gerber.c:2038
+#: src/gerber.c:2028
 msgid "aperture NULL in simplify aperture macro"
 msgstr "Отсутствует апертура в макросе упрощения апертуры"
 
-#: src/gerber.c:2041
+#: src/gerber.c:2031
 msgid "aperture->amacro NULL in simplify aperture macro"
 msgstr "Отсутствует структура amacro в макросе упрощения апертуры"
 
-#: src/gerber.c:2046
+#: src/gerber.c:2036
 msgid "malloc stack failed"
 msgstr "Ошибка выделения памяти для стека"
 
-#: src/gerber.c:2065 src/gerber.c:2070 src/gerber.c:2072 src/gerber.c:2077
-#: src/gerber.c:2079 src/gerber.c:2084 src/gerber.c:2086 src/gerber.c:2091
-#: src/gerber.c:2093
+#: src/gerber.c:2055 src/gerber.c:2060 src/gerber.c:2062 src/gerber.c:2067
+#: src/gerber.c:2069 src/gerber.c:2074 src/gerber.c:2076 src/gerber.c:2081
+#: src/gerber.c:2083
 msgid "Tried to pop an empty stack"
 msgstr "Попытка удаления из пустого стека"
 
-#: src/gerber.c:2158
+#: src/gerber.c:2148
 #, c-format
 msgid ""
 "Number of parameters to aperture macro (%d) are more than gerbv is able to "
@@ -1761,43 +1853,43 @@ msgid ""
 msgstr ""
 "Количество параметров макроса апертуры (%d) больше чем допускает Gerbv (%d)"
 
-#: src/gerber.c:2297
+#: src/gerber.c:2287
 #, c-format
 msgid "Found AD code with no following 'D' in file \"%s\""
 msgstr "AD-код без последующего ‘D’ в файле «%s»"
 
-#: src/gerber.c:2319
+#: src/gerber.c:2309
 #, c-format
 msgid "Invalid aperture definition in file \"%s\""
 msgstr "Недопустимое определение апертуры в файле «%s»"
 
-#: src/gerber.c:2367
+#: src/gerber.c:2357
 #, c-format
 msgid ""
 "Maximum number of allowed parameters exceeded in aperture %d in file \"%s\""
 msgstr ""
 "Превышено максимальное количество параметров для апертуры %d в файле «%s»"
 
-#: src/gerber.c:2388
+#: src/gerber.c:2378
 #, c-format
 msgid "Failed to read all parameters exceeded in aperture %d"
 msgstr "Не удалось прочитать все параметры апертуры %d"
 
-#: src/gerber.c:2463
+#: src/gerber.c:2453
 msgid "Unknow quadrant value while converting to cw"
 msgstr "Неизвестное значение квадранта при преобразовании по часовой стрелке"
 
-#: src/gerber.c:2488 src/gerber.c:2532
+#: src/gerber.c:2478 src/gerber.c:2523
 #, c-format
 msgid "Strange quadrant: %d"
 msgstr "Неизвестный квадрант: %d"
 
-#: src/gerber.c:2536
+#: src/gerber.c:2527
 #, c-format
 msgid "Negative width [%f] in quadrant %d [%f][%f]"
 msgstr "Отрицательная ширина (%f) в квадранте %d [%f][%f]"
 
-#: src/gerber.c:2540
+#: src/gerber.c:2531
 #, c-format
 msgid "Negative height [%f] in quadrant %d [%f][%f]"
 msgstr "Отрицательная высота (%f) в квадранте %d [%f][%f]"
@@ -1838,55 +1930,56 @@ msgstr "макролиния21"
 msgid "line22 macro"
 msgstr "макролиния22"
 
-#: src/gerbv.c:197 src/gerbv.c:216
+#: src/gerbv.c:200 src/gerbv.c:219
 #, c-format
 msgid "Could not read %s[%d]"
 msgstr "Невозможно прочитать «%s»[%d]"
 
-#: src/gerbv.c:370
+#: src/gerbv.c:373
 msgid "Missing netlist - aborting file read"
 msgstr "Список соединений отсутствует, чтение файла прервано"
 
-#: src/gerbv.c:377
+#: src/gerbv.c:380
 msgid "Missing format in file...trying to load anyways\n"
 msgstr "Формат файла отсутствует, загрузка продолжена\n"
 
-#: src/gerbv.c:379
+#: src/gerbv.c:382
 msgid "Missing apertures/drill sizes...trying to load anyways\n"
 msgstr "Размеры апертур/отверстий отсутствуют, загрузка продолжена\n"
 
-#: src/gerbv.c:385
+#: src/gerbv.c:388
 msgid "Missing info...trying to load anyways\n"
 msgstr "Информация отсутствует, загрузка продолжена\n"
 
-#: src/gerbv.c:469 src/gerbv.c:583
+#: src/gerbv.c:472 src/gerbv.c:591
 #, c-format
 msgid "Trying to open %s: %s"
 msgstr "Открытие «%s»: %s"
 
-#: src/gerbv.c:517
+#: src/gerbv.c:520
 #, c-format
 msgid "%s: unknown pick-and-place board side to reload"
 msgstr "%s: неизвестна сторона платы для загрузки расположения"
 
-#: src/gerbv.c:525
-msgid "Most likely found a RS-274D file...trying to open anyways\n"
+#: src/gerbv.c:527
+#, fuzzy, c-format
+msgid "Most likely found a RS-274D file \"%s\" ... trying to open anyways\n"
 msgstr "Вероятно, файл RS-274D... открытие\n"
 
-#: src/gerbv.c:536
+#: src/gerbv.c:543
 #, c-format
 msgid "%s: Unknown file type."
 msgstr "Неизвестный тип файла «%s»"
 
-#: src/gerbv.c:550
+#: src/gerbv.c:558
 msgid " (top)"
 msgstr " (верх)"
 
-#: src/gerbv.c:567
+#: src/gerbv.c:575
 msgid " (bottom)"
 msgstr " (низ)"
 
-#: src/gerbv.c:958
+#: src/gerbv.c:995
 #, c-format
 msgid "%s(): malloc failed\n"
 msgstr "%s(): ошибка выделения памяти\n"
@@ -1900,436 +1993,424 @@ msgstr "Gerbv — gEDA просмотр Gerber-файлов"
 msgid "%s version %s: %s"
 msgstr "%s версии %s: %s"
 
-#: src/interface.c:329
+#: src/interface.c:336
 msgid "_File"
 msgstr "_Файл"
 
-#: src/interface.c:339
-msgid "Open _layer(s)..."
-msgstr "Открыть с_лой..."
+#: src/interface.c:346
+msgid "Open"
+msgstr ""
 
-#: src/interface.c:342 src/interface.c:1057
-msgid "Open Gerber, drill, or pick and place file(s)"
-msgstr "Открыть файлы Gerber, сверловки или расположения"
-
-#: src/interface.c:344
+#: src/interface.c:353
 msgid "_Save active layer"
 msgstr "_Сохранить активный слой"
 
-#: src/interface.c:346
+#: src/interface.c:355
 msgid "Save the active layer"
 msgstr "Сохранить активный слой"
 
-#: src/interface.c:350
+#: src/interface.c:359
 msgid "Save active layer _as..."
 msgstr "Сохранить _активный слой как..."
 
-#: src/interface.c:352
+#: src/interface.c:361
 msgid "Save the active layer to a new file"
 msgstr "Сохранить активный слой в указанный файл"
 
-#: src/interface.c:359
+#: src/interface.c:368
 msgid "Reload all layers"
 msgstr "Перезагрузить все слои"
 
-#: src/interface.c:368
+#: src/interface.c:377
 msgid "_Export"
 msgstr "_Экспорт"
 
-#: src/interface.c:370
+#: src/interface.c:379
 msgid "Export all visible layers to a new format"
 msgstr "Экспортировать видимые слои в указанный формат"
 
-#: src/interface.c:378
+#: src/interface.c:387
 msgid "P_NG..."
 msgstr "P_NG..."
 
-#: src/interface.c:380
+#: src/interface.c:389
 msgid "Export project to a PNG file..."
 msgstr "Экспортировать проект в формат PNG"
 
-#: src/interface.c:382
+#: src/interface.c:391
 msgid "P_DF..."
 msgstr "P_DF..."
 
-#: src/interface.c:384
+#: src/interface.c:393
 msgid "Export project to a PDF file..."
 msgstr "Экспортировать проект в формат PDF"
 
-#: src/interface.c:386
+#: src/interface.c:395
 msgid "_SVG..."
 msgstr "_SVG..."
 
-#: src/interface.c:388
+#: src/interface.c:397
 msgid "Export project to a SVG file"
 msgstr "Экспортировать проект в формат SVG"
 
-#: src/interface.c:390
+#: src/interface.c:399
 msgid "_PostScript..."
 msgstr "_PostScript..."
 
-#: src/interface.c:392
+#: src/interface.c:401
 msgid "Export project to a PostScript file"
 msgstr "Экспортировать проект в формат PostScript"
 
-#: src/interface.c:394
+#: src/interface.c:403
 msgid "RS-274X (_Gerber)..."
 msgstr "RS-274X (_Gerber)..."
 
-#: src/interface.c:396
+#: src/interface.c:405
 msgid "Export layer to a RS-274X (Gerber) file"
 msgstr "Экспортировать проект в формат RS-274X (Gerber)"
 
-#: src/interface.c:398
+#: src/interface.c:407
 msgid "_Excellon drill..."
 msgstr "Сверловка _Excellon... "
 
-#: src/interface.c:400
+#: src/interface.c:409
 msgid "Export layer to an Excellon drill file"
 msgstr "Экспортировать слой в формат сверловки Excellon"
 
-#: src/interface.c:402
+#: src/interface.c:411
 msgid "_ISEL NCP drill..."
 msgstr "Сверловка _ISEL NCP..."
 
-#: src/interface.c:404
+#: src/interface.c:413
 msgid "Export layer to an ISEL Automation NCP drill file"
 msgstr "Экспортировать слой в формат сверловки ISEL Automation NCP"
 
-#: src/interface.c:406
+#: src/interface.c:415
 msgid "RS-274X Merge (Gerber)..."
 msgstr "Объединить в RS-274X (Gerber)..."
 
-#: src/interface.c:408
+#: src/interface.c:417
 msgid "Export (merge visible gerber layers) to a RS-274X (Gerber) file"
 msgstr ""
 "Экспортировать проект в формат RS-274X (Gerber), объединив видимые слои "
 "Gerber"
 
-#: src/interface.c:410
+#: src/interface.c:419
 msgid "Excellon drill Merge..."
 msgstr "Объединить в сверловку Excellon..."
 
-#: src/interface.c:412
+#: src/interface.c:421
 msgid "Export (merge visible drill layers) to an Excellon drill file"
 msgstr ""
 "Экспортировать проект в формат сверловки Excellon, объединив видимые слои "
 "сверловки"
 
-#: src/interface.c:420
+#: src/interface.c:429
 msgid "_New project"
 msgstr "_Новый проект"
 
-#: src/interface.c:422 src/interface.c:924
+#: src/interface.c:431 src/interface.c:927
 msgid "Close all layers and start a new project"
 msgstr "Закрыть все слои и начать новый проект"
 
-#: src/interface.c:426
-msgid "_Open project..."
-msgstr "_Открыть проект..."
-
-#: src/interface.c:428
-msgid "Open an existing Gerbv project"
-msgstr "Открыть существующий проект Gerbv"
-
-#: src/interface.c:432
+#: src/interface.c:435
 msgid "Save project"
 msgstr "Сохранить проект"
 
-#: src/interface.c:434 src/interface.c:936
+#: src/interface.c:437 src/interface.c:941
 msgid "Save the current project"
 msgstr "Сохранить текущий проект"
 
-#: src/interface.c:441
+#: src/interface.c:444
 msgid "Save the current project to a new file"
 msgstr "Сохранить текущий проект в указанный файл"
 
-#: src/interface.c:454
+#: src/interface.c:457
 msgid "_Print..."
 msgstr "_Печать..."
 
-#: src/interface.c:462 src/interface.c:943
+#: src/interface.c:465 src/interface.c:948
 msgid "Print the visible layers"
 msgstr "Печатать видимые слои"
 
-#: src/interface.c:471
+#: src/interface.c:474
 msgid "Quit Gerbv"
 msgstr "Выйти из Gerbv"
 
-#: src/interface.c:475
+#: src/interface.c:478
 msgid "_Edit"
 msgstr "_Правка"
 
-#: src/interface.c:484
+#: src/interface.c:487
 msgid "Display _properties of selected object(s)"
 msgstr "_Свойства объектов"
 
-#: src/interface.c:486
+#: src/interface.c:489
 msgid "Examine the properties of the selected object"
 msgstr "Показать свойства выделенных объектов"
 
-#: src/interface.c:491
+#: src/interface.c:494
 msgid "_Delete selected object(s)"
 msgstr "_Удалить объекты"
 
-#: src/interface.c:493
+#: src/interface.c:496
 msgid "Delete selected objects"
 msgstr "Удалить выделенные объекты"
 
-#: src/interface.c:498
+#: src/interface.c:501
 msgid "_Align layers"
 msgstr "_Выравнять слои"
 
-#: src/interface.c:501
+#: src/interface.c:504
 msgid "Align two layers by two selected objects"
 msgstr "_Выравнять два слоя по двум выделенным объектам"
 
-#: src/interface.c:516
+#: src/interface.c:519
 msgid "Edit object properties"
 msgstr "Изменить свойства объекта"
 
-#: src/interface.c:518
+#: src/interface.c:521
 msgid "Edit the properties of the selected object"
 msgstr "Показать свойства выделенных объектов"
 
-#: src/interface.c:522
+#: src/interface.c:525
 msgid "Move object(s)"
 msgstr "Переместить объект(ы)"
 
-#: src/interface.c:524
+#: src/interface.c:527
 msgid "Move the selected object(s)"
 msgstr "Переместить выделенный объект(ы)"
 
-#: src/interface.c:528
+#: src/interface.c:531
 msgid "Reduce area"
 msgstr "Уменьшить область"
 
-#: src/interface.c:530
+#: src/interface.c:533
 msgid "Reduce the area of the object (e.g. to prevent component floating)"
 msgstr ""
 "Уменьшить область объекта (например, для предотвращения плавания объекта)"
 
-#: src/interface.c:539
+#: src/interface.c:542
 msgid "_View"
 msgstr "_Вид"
 
-#: src/interface.c:547
+#: src/interface.c:550
 msgid "Fullscr_een"
 msgstr "Во в_есь экран"
 
-#: src/interface.c:549
+#: src/interface.c:552
 msgid "Toggle between fullscreen and normal view"
 msgstr "Переключить между полноэкранным и обычным режимами"
 
-#: src/interface.c:553
+#: src/interface.c:556
 msgid "Show _Toolbar"
 msgstr "_Панель инструментов"
 
-#: src/interface.c:555
+#: src/interface.c:558
 msgid "Toggle visibility of the toolbar"
 msgstr "Показать панель инструментов"
 
-#: src/interface.c:559
+#: src/interface.c:562
 msgid "Show _Sidepane"
 msgstr "_Боковая панель"
 
-#: src/interface.c:561
+#: src/interface.c:564
 msgid "Toggle visibility of the sidepane"
 msgstr "Показать боковую панель"
 
-#: src/interface.c:569
+#: src/interface.c:572
 msgid "Toggle layer _visibility"
 msgstr "Изменить _видимость слоя"
 
-#: src/interface.c:572
+#: src/interface.c:575
 msgid "Show all se_lection"
 msgstr "Показывать в_сё выделенное"
 
-#: src/interface.c:574
+#: src/interface.c:577
 msgid "Show selected objects on invisible layers"
 msgstr "Показывать выделенные объекты на невидимых слоях"
 
-#: src/interface.c:578
+#: src/interface.c:581
 msgid "Show _cross on drill holes"
 msgstr "Показывать _метки отверстий сверловки"
 
-#: src/interface.c:581
+#: src/interface.c:584
 msgid "Show cross on drill holes"
 msgstr "Показывать метки на центрах отверстий сверловки"
 
-#: src/interface.c:590
+#: src/interface.c:593
 msgid "Toggle visibility of layer 1"
 msgstr "№1"
 
-#: src/interface.c:594
+#: src/interface.c:597
 msgid "Toggle visibility of layer 2"
 msgstr "№2"
 
-#: src/interface.c:598
+#: src/interface.c:601
 msgid "Toggle visibility of layer 3"
 msgstr "№3"
 
-#: src/interface.c:602
+#: src/interface.c:605
 msgid "Toggle visibility of layer 4"
 msgstr "№4"
 
-#: src/interface.c:606
+#: src/interface.c:609
 msgid "Toggle visibility of layer 5"
 msgstr "№5"
 
-#: src/interface.c:610
+#: src/interface.c:613
 msgid "Toggle visibility of layer 6"
 msgstr "№6"
 
-#: src/interface.c:614
+#: src/interface.c:617
 msgid "Toggle visibility of layer 7"
 msgstr "№7"
 
-#: src/interface.c:618
+#: src/interface.c:621
 msgid "Toggle visibility of layer 8"
 msgstr "№8"
 
-#: src/interface.c:622
+#: src/interface.c:625
 msgid "Toggle visibility of layer 9"
 msgstr "№9"
 
-#: src/interface.c:626
+#: src/interface.c:629
 msgid "Toggle visibility of layer 10"
 msgstr "№10"
 
-#: src/interface.c:636 src/interface.c:950
+#: src/interface.c:639 src/interface.c:955
 msgid "Zoom in"
 msgstr "Увеличить"
 
-#: src/interface.c:641 src/interface.c:954
+#: src/interface.c:644 src/interface.c:959
 msgid "Zoom out"
 msgstr "Уменьшить"
 
-#: src/interface.c:645 src/interface.c:958
+#: src/interface.c:648 src/interface.c:963
 msgid "Zoom to fit all visible layers in the window"
 msgstr "Масштабировать для отображения видимых слоёв на всё окно"
 
-#: src/interface.c:653
+#: src/interface.c:656
 msgid "Change background color"
 msgstr "Изменить цвет фона"
 
-#: src/interface.c:654
+#: src/interface.c:657
 msgid "Change the background color"
 msgstr "Изменить цвет фона"
 
-#: src/interface.c:660
+#: src/interface.c:663
 msgid "_Rendering"
 msgstr "_Отображение"
 
-#: src/interface.c:670
+#: src/interface.c:673
 msgid "_Fast"
 msgstr "_Быстрое"
 
-#: src/interface.c:674
+#: src/interface.c:677
 msgid "Fast (_XOR)"
 msgstr "_Искл. ИЛИ"
 
-#: src/interface.c:678
+#: src/interface.c:681
 msgid "_Normal"
 msgstr "_Обычное"
 
-#: src/interface.c:682
+#: src/interface.c:685
 msgid "High _Quality"
 msgstr "_Качественное"
 
-#: src/interface.c:688
+#: src/interface.c:691
 msgid "malloc for rendering type synchronization failed.\n"
 msgstr "ошибка выделения памяти для элемента типа отображения.\n"
 
-#: src/interface.c:699
+#: src/interface.c:702
 msgid "U_nits"
 msgstr "_Единицы измерения"
 
-#: src/interface.c:709
+#: src/interface.c:712
 msgid "mi_l"
 msgstr "ми_л"
 
-#: src/interface.c:713
+#: src/interface.c:716
 msgid "_mm"
 msgstr "_мм"
 
-#: src/interface.c:717
+#: src/interface.c:720
 msgid "_in"
 msgstr "_дюймы"
 
-#: src/interface.c:723
+#: src/interface.c:726
 msgid "malloc for display unit synchronization failed.\n"
 msgstr "ошибка выделения памяти для элемента единиц измерения.\n"
 
-#: src/interface.c:731
+#: src/interface.c:734
 msgid "_Layer"
 msgstr "_Слой"
 
-#: src/interface.c:739
+#: src/interface.c:742
 msgid "Toggle _visibility"
 msgstr "Изменить ви_димость"
 
-#: src/interface.c:740
+#: src/interface.c:743
 msgid "Toggles the visibility of the layer currently selected in the sidepane"
 msgstr "Изменить видимость выделенного слоя"
 
-#: src/interface.c:743
+#: src/interface.c:746
 msgid "All o_n"
 msgstr "В_ключить все"
 
-#: src/interface.c:744
+#: src/interface.c:747
 msgid "Turn on visibility of all layers"
 msgstr "Включить видимость всех слоёв"
 
-#: src/interface.c:749
+#: src/interface.c:752
 msgid "All _off"
 msgstr "В_ыключить все"
 
-#: src/interface.c:750
+#: src/interface.c:753
 msgid "Turn off visibility of all layers"
 msgstr "Выключить видимость всех слоёв"
 
-#: src/interface.c:755
+#: src/interface.c:758
 msgid "_Invert color"
 msgstr "_Инвертировать"
 
-#: src/interface.c:756
+#: src/interface.c:759
 msgid ""
 "Invert the display polarity of the layer currently selected in the sidepane"
 msgstr "Инвертировать полярность выделенного слоя"
 
-#: src/interface.c:759
+#: src/interface.c:762
 msgid "_Change color"
 msgstr "Изменить _цвет"
 
-#: src/interface.c:761
+#: src/interface.c:764
 msgid ""
 "Change the display color of the layer currently selected in the sidepane"
 msgstr "Изменить цвет выделенного слоя"
 
-#: src/interface.c:769
+#: src/interface.c:772
 msgid "_Reload layer"
 msgstr "_Перезагрузить слой"
 
-#: src/interface.c:770
+#: src/interface.c:773
 msgid "Reload the layer from disk"
 msgstr "Перезагрузить данные слоя из файла"
 
-#: src/interface.c:775
+#: src/interface.c:778
 msgid "_Edit layer"
 msgstr "_Изменить слой"
 
-#: src/interface.c:777
+#: src/interface.c:780
 msgid ""
 "Translate, scale, rotate, or mirror the layer currently selected in the "
 "sidepane"
 msgstr "Переместить, масштабировать, повернуть или отразить выделенный слой"
 
-#: src/interface.c:781
+#: src/interface.c:784
 msgid "Edit file _format"
 msgstr "Изменить _формат"
 
-#: src/interface.c:782
+#: src/interface.c:785
 msgid ""
 "View and edit the numerical format used to parse this layer currently "
 "selected in the sidepane"
@@ -2337,56 +2418,56 @@ msgstr ""
 "Просмотр и изменение формата используемого для слоя выделенного в боковой "
 "панели"
 
-#: src/interface.c:790
+#: src/interface.c:793
 msgid "Move u_p"
 msgstr "Перенести в_верх"
 
-#: src/interface.c:791 src/interface.c:1071
+#: src/interface.c:794 src/interface.c:1076
 msgid "Move the layer currently selected in the sidepane one step up"
 msgstr "Перенести выделенный слой выше"
 
-#: src/interface.c:797
+#: src/interface.c:800
 msgid "Move dow_n"
 msgstr "Перенести в_низ"
 
-#: src/interface.c:798 src/interface.c:1064
+#: src/interface.c:801 src/interface.c:1069
 msgid "Move the layer currently selected in the sidepane one step down"
 msgstr "Перенести выделенный слой ниже"
 
-#: src/interface.c:804
+#: src/interface.c:807
 msgid "_Delete"
 msgstr "_Удалить"
 
-#: src/interface.c:806 src/interface.c:1078
+#: src/interface.c:809 src/interface.c:1083
 msgid "Remove the layer currently selected in the sidepane"
 msgstr "Удалить выделенный слой"
 
-#: src/interface.c:817
+#: src/interface.c:820
 msgid "_Analyze"
 msgstr "_Анализ"
 
-#: src/interface.c:828
+#: src/interface.c:831
 msgid "Analyze visible _Gerber layers"
 msgstr "_Gerber"
 
-#: src/interface.c:830
+#: src/interface.c:833
 msgid ""
 "Examine a detailed anaylsis of the contents of all visible Gerber layers"
 msgstr "Выполнить детальный анализ содержимого всех видимых слоёв Gerber"
 
-#: src/interface.c:833
+#: src/interface.c:836
 msgid "Analyze visible _drill layers"
 msgstr "_Сверловки"
 
-#: src/interface.c:835
+#: src/interface.c:838
 msgid "Examine a detailed anaylsis of the contents of all visible drill layers"
 msgstr "Выполнить детальный анализ содержимого всех видимых слоёв сверловки"
 
-#: src/interface.c:838
+#: src/interface.c:841
 msgid "_Benchmark (1 min)"
 msgstr "_Производительности (1 мин)"
 
-#: src/interface.c:840
+#: src/interface.c:843
 msgid ""
 "Benchmark different rendering methods. Will make the application "
 "unresponsive for 1 minute!"
@@ -2394,284 +2475,371 @@ msgstr ""
 "Проверить производительность различных способов отрисовки. Программа не "
 "будет отвечать в течение одной минуты!"
 
-#: src/interface.c:849
+#: src/interface.c:852
 msgid "_Tools"
 msgstr "_Инструменты"
 
-#: src/interface.c:856
+#: src/interface.c:859
 msgid "_Pointer Tool"
 msgstr "_Указатель"
 
-#: src/interface.c:861 src/interface.c:982
+#: src/interface.c:864 src/interface.c:987
 msgid "Select objects on the screen"
 msgstr "Выделить объекты на экране"
 
-#: src/interface.c:862
+#: src/interface.c:865
 msgid "Pa_n Tool"
 msgstr "_Прокрутка"
 
-#: src/interface.c:867 src/interface.c:988
+#: src/interface.c:870 src/interface.c:993
 msgid "Pan by left clicking and dragging"
 msgstr "Выполнить прокрутку перетаскиванием"
 
-#: src/interface.c:869
+#: src/interface.c:872
 msgid "_Zoom Tool"
 msgstr "_Масштаб"
 
-#: src/interface.c:874 src/interface.c:996
+#: src/interface.c:877 src/interface.c:1001
 msgid "Zoom by left clicking or dragging"
 msgstr "Масштабировать щелчком или перетаскиванием"
 
-#: src/interface.c:876
+#: src/interface.c:879
 msgid "_Measure Tool"
 msgstr "_Измерение"
 
-#: src/interface.c:881 src/interface.c:1003
+#: src/interface.c:884 src/interface.c:1008
 msgid "Measure distances on the screen"
 msgstr "Измерить расстояние на экране"
 
-#: src/interface.c:883
+#: src/interface.c:886
 msgid "_Help"
 msgstr "_Помощь"
 
-#: src/interface.c:897
+#: src/interface.c:900
 msgid "_About Gerbv..."
 msgstr "_О программе..."
 
-#: src/interface.c:899
-msgid "View information about gerbv"
+#: src/interface.c:902
+#, fuzzy
+msgid "View information about Gerbv"
 msgstr "Показать информацию о Gerbv"
 
-#: src/interface.c:903
+#: src/interface.c:906
 msgid "Known _bugs in this version..."
 msgstr "_Известные ошибки в этой версии..."
 
-#: src/interface.c:906
-msgid "View list of known gerbv bugs"
+#: src/interface.c:909
+#, fuzzy
+msgid "View list of known Gerbv bugs"
 msgstr "Показать список известных ошибок в Gerbv"
 
-#: src/interface.c:928
-msgid "Open a previously saved gerbv project"
-msgstr "Открыть предыдущий сохранённый проект Gerbv"
-
-#: src/interface.c:932
+#: src/interface.c:937
 msgid "Reload all layers in project"
 msgstr "Перезагрузить все слои в проекте"
 
-#: src/interface.c:1028
-msgid "Rendering: "
+#: src/interface.c:1036
+#, fuzzy
+msgid "Rendering type"
 msgstr "Отображение: "
 
-#: src/interface.c:1034
+#: src/interface.c:1038
 msgid "Fast"
 msgstr "Быстрое"
 
-#: src/interface.c:1035
+#: src/interface.c:1039
 msgid "Fast, with XOR"
 msgstr "Быстрое искл. ИЛИ"
 
-#: src/interface.c:1036
+#: src/interface.c:1040
 msgid "Normal"
 msgstr "Обычное"
 
-#: src/interface.c:1037
+#: src/interface.c:1041
 msgid "High quality"
 msgstr "Качественное"
 
-#: src/interface.c:1080
+#: src/interface.c:1062
+#, fuzzy
+msgid "Open Gerber, drill, or pick&place file(s)"
+msgstr "Открыть файлы Gerber, сверловки или расположения"
+
+#: src/interface.c:1085
 msgid "Layers"
 msgstr "Слои"
 
-#: src/interface.c:1102
+#: src/interface.c:1107
 msgid "Clear all messages and accumulated sum"
 msgstr "Очистить все сообщения и накопленную сумму"
 
-#: src/interface.c:1105
+#: src/interface.c:1110
 msgid "Messages"
 msgstr "Журнал"
 
-#: src/interface.c:1156
+#: src/interface.c:1161
 msgid "mil"
 msgstr "мил"
 
-#: src/interface.c:1158
+#: src/interface.c:1163
 msgid "in"
 msgstr "дюймы"
 
-#: src/interface.c:1739 src/interface.c:1832
+#: src/interface.c:1713
+#, fuzzy
+msgid "Gerbv Alert"
+msgstr "Проект Gerbv"
+
+#: src/interface.c:1745 src/interface.c:2080
 msgid "Do not show this dialog again."
 msgstr "Больше не показывать этот диалог."
 
-#: src/interface.c:1891
+#: src/interface.c:1867
+#, c-format
+msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layer)"
+msgstr ""
+
+#: src/interface.c:1868
+#, c-format
+msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)"
+msgstr ""
+
+#: src/interface.c:1871
+#, c-format
+msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>)"
+msgstr ""
+
+#: src/interface.c:1877
+#, c-format
+msgid "<b>%d</b>  %s (%d layer)"
+msgstr ""
+
+#: src/interface.c:1878
+#, c-format
+msgid "<b>%d</b>  %s (%d layers)"
+msgstr ""
+
+#: src/interface.c:1880
+#, c-format
+msgid "<b>%d</b>  %s"
+msgstr ""
+
+#: src/interface.c:1923
+msgid "Gerbv — Reload Files"
+msgstr ""
+
+#: src/interface.c:1941
+#, c-format
+msgid ""
+"<span size=\"larger\">%u layer file is already loaded from directory</span>\n"
+"\"%s\""
+msgid_plural ""
+"<span size=\"larger\">%u layer files are already loaded from directory</"
+"span>\n"
+"\"%s\""
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: src/interface.c:1963
+#, fuzzy
+msgid "Select _all"
+msgstr "Выберите цвет"
+
+#: src/interface.c:1995
+#, fuzzy
+msgid "_Reload"
+msgstr "_Перезагрузить слой"
+
+#: src/interface.c:1997
+#, fuzzy
+msgid "Reload layers with selected files"
+msgstr "_Выравнять два слоя по двум выделенным объектам"
+
+#: src/interface.c:2001
+msgid "Add as _new"
+msgstr ""
+
+#: src/interface.c:2003
+#, fuzzy
+msgid "Add selected files as new layers"
+msgstr "Показывать выделенные объекты на невидимых слоях"
+
+#: src/interface.c:2139
 msgid "Edit layer"
 msgstr "Изменить слой"
 
-#: src/interface.c:1894
+#: src/interface.c:2142
 msgid "Apply to _selected"
 msgstr "Применить к вы_деленным"
 
-#: src/interface.c:1896
+#: src/interface.c:2144
 msgid "Apply to _visible"
 msgstr "Применить к _видимым"
 
-#: src/interface.c:1909
+#: src/interface.c:2157
 msgid "<span weight=\"bold\">Translation</span>"
 msgstr "<span weight=\"bold\">Перемещение</span>"
 
-#: src/interface.c:1918
+#: src/interface.c:2166
 msgid "X (mils):"
 msgstr "X, мил:"
 
-#: src/interface.c:1919
+#: src/interface.c:2167
 msgid "Y (mils):"
 msgstr "Y, мил:"
 
-#: src/interface.c:1924
+#: src/interface.c:2172
 msgid "X (mms):"
 msgstr "X, мм:"
 
-#: src/interface.c:1925
+#: src/interface.c:2173
 msgid "Y (mms):"
 msgstr "Y, мм:"
 
-#: src/interface.c:1930
+#: src/interface.c:2178
 msgid "X (inches):"
 msgstr "X, дюймы:"
 
-#: src/interface.c:1931
+#: src/interface.c:2179
 msgid "Y (inches):"
 msgstr "Y, дюймы:"
 
-#: src/interface.c:1949
+#: src/interface.c:2197
 msgid "<span weight=\"bold\">Scale</span>"
 msgstr "<span weight=\"bold\">Масштаб</span>"
 
-#: src/interface.c:1953
+#: src/interface.c:2201
 msgid "X direction:"
 msgstr "X-направление:"
 
-#: src/interface.c:1956
+#: src/interface.c:2204
 msgid "Y direction:"
 msgstr "Y-направление:"
 
-#: src/interface.c:1969
+#: src/interface.c:2217
 msgid "<span weight=\"bold\">Rotation</span>"
 msgstr "<span weight=\"bold\">Поворот</span>"
 
-#: src/interface.c:1973
+#: src/interface.c:2221
 msgid "Rotation (degrees):"
 msgstr "Поворот, градусы:"
 
-#: src/interface.c:1978
+#: src/interface.c:2226
 msgid "90 deg CCW"
 msgstr "90°"
 
-#: src/interface.c:1979
+#: src/interface.c:2227
 msgid "180 deg CCW"
 msgstr "180°"
 
-#: src/interface.c:1980
+#: src/interface.c:2228
 msgid "270 deg CCW"
 msgstr "270°"
 
-#: src/interface.c:2000
+#: src/interface.c:2248
 msgid "<span weight=\"bold\">Mirroring</span>"
 msgstr "<span weight=\"bold\">Отражение</span>"
 
-#: src/interface.c:2004
+#: src/interface.c:2252
 msgid "About X axis:"
 msgstr "Вокруг оси X:"
 
-#: src/interface.c:2011
+#: src/interface.c:2259
 msgid "About Y axis:"
 msgstr "Вокруг оси Y:"
 
-#: src/main.c:174
+#: src/main.c:192
 #, c-format
 msgid "could not read %s[%d]"
 msgstr "Невозможно прочитать «%s»[%d]"
 
-#: src/main.c:224
+#: src/main.c:242
 #, c-format
 msgid "could not read file: %s"
 msgstr "Невозможно прочитать файл «%s»"
 
-#: src/main.c:260 src/main.c:336
+#: src/main.c:278 src/main.c:354
 msgid "malloc gerbvProject->project failed"
 msgstr "Ошибка выделения памяти для gerbvProject->project"
 
-#: src/main.c:316
+#: src/main.c:334
 msgid "Failed to write project"
 msgstr "Ошибка при сохранении проекта"
 
-#: src/main.c:463
+#: src/main.c:382
+#, c-format
+msgid ""
+"\n"
+"*** Press Enter to continue ***"
+msgstr ""
+
+#: src/main.c:516
 #, c-format
 msgid "Not handled option %s\n"
 msgstr "Необработанный параметр %s\n"
 
-#: src/main.c:469
+#: src/main.c:522
 msgid "Width"
 msgstr "Ширина"
 
-#: src/main.c:473
+#: src/main.c:526
 #, c-format
 msgid "Split X and Y parameters with an x\n"
 msgstr "Параметры X и Y должны быть разделены символом x\n"
 
-#: src/main.c:480
+#: src/main.c:533
 msgid "Height"
 msgstr "Высота"
 
-#: src/main.c:509
+#: src/main.c:562
 #, c-format
 msgid "You must specify the border in the format <alpha>.\n"
 msgstr "Для границы должно быть указано значение.\n"
 
-#: src/main.c:513
+#: src/main.c:566
 #, c-format
 msgid "Specified border is not recognized.\n"
 msgstr "Указанное значение границы не распознано.\n"
 
-#: src/main.c:518
+#: src/main.c:571
 #, c-format
 msgid "Specified border is smaller than zero!\n"
 msgstr "Указанное значение границы меньше нуля!\n"
 
-#: src/main.c:525
+#: src/main.c:578
 #, c-format
 msgid ""
 "You must give an resolution in the format <DPI_XxDPI_Y> or <DPI_X_and_Y>.\n"
 msgstr ""
 "Разрешение должно быть указано в формате <DPI_XxDPI_Y> или <DPI_по_X_и_Y>.\n"
 
-#: src/main.c:529
+#: src/main.c:582
 #, c-format
 msgid "Specified resolution is not recognized.\n"
 msgstr "Указанное значение разрешения не распознано.\n"
 
-#: src/main.c:539
+#: src/main.c:592
 #, c-format
 msgid "Specified resolution should be greater than 0.\n"
 msgstr "Указанное значение разрешения должно быть больше нуля.\n"
 
-#: src/main.c:546
+#: src/main.c:599
 #, c-format
 msgid "You must give an origin in the format <lower_left_X x lower_left_Y>.\n"
 msgstr ""
 "Начало координат должно быть указано в формате <X x Y> координаты левой "
 "нижней точки.\n"
 
-#: src/main.c:550
+#: src/main.c:603
 #, c-format
 msgid "Specified origin is not recognized.\n"
 msgstr "Указанное значение начала координат не распознано.\n"
 
-#: src/main.c:557
+#: src/main.c:614
 #, c-format
 msgid "gerbv version %s\n"
 msgstr "Gerbv версии %s\n"
 
-#: src/main.c:558
+#: src/main.c:615
 #, c-format
 msgid ""
 "Copyright (C) 2001 -- 2008 by Stefan Petersen\n"
@@ -2680,22 +2848,22 @@ msgstr ""
 "Copyright © 2001—2008 Stefan Petersen\n"
 "и соответствующие оригинальные авторы указанные в файлах исходных кодов.\n"
 
-#: src/main.c:566
+#: src/main.c:623
 #, c-format
 msgid "You must give an background color in the hex-format <#RRGGBB>.\n"
 msgstr "Цвет фона должен быть указан в шестнадцатеричном формате <#RRGGBB>.\n"
 
-#: src/main.c:570 src/main.c:590
+#: src/main.c:627 src/main.c:647
 #, c-format
 msgid "Specified color format is not recognized.\n"
 msgstr "Указанный формат значения цвета не распознан.\n"
 
-#: src/main.c:577
+#: src/main.c:634
 #, c-format
 msgid "Specified color values should be between 00 and FF.\n"
 msgstr "Указанные значение цветов должны быть от 00 до FF.\n"
 
-#: src/main.c:586
+#: src/main.c:643
 #, c-format
 msgid ""
 "You must give an foreground color in the hex-format <#RRGGBB> or "
@@ -2704,61 +2872,61 @@ msgstr ""
 "Цвет элементов должен быть указан в шестнадцатеричном формате <#RRGGBB> или "
 "<#RRGGBBAA>.\n"
 
-#: src/main.c:604
+#: src/main.c:661
 #, c-format
 msgid "Specified color values should be between 0x00 (0) and 0xFF (255).\n"
 msgstr "Указанное значение цвета должно быть от 0x00 (0) до 0xFF (255).\n"
 
-#: src/main.c:618
+#: src/main.c:675
 #, c-format
 msgid "You must give the initial rotation angle\n"
 msgstr "Должен быть указан угол начального поворота\n"
 
-#: src/main.c:624
+#: src/main.c:681
 msgid "Rotate"
 msgstr "Поворот"
 
-#: src/main.c:628
+#: src/main.c:685
 #, c-format
 msgid "Failed parsing rotate value\n"
 msgstr "Невозможно разобрать значение поворота\n"
 
-#: src/main.c:634
+#: src/main.c:691
 #, c-format
 msgid "You must give the axis to mirror about\n"
 msgstr "Должна быть указана ось для отражения\n"
 
-#: src/main.c:644
+#: src/main.c:701
 #, c-format
 msgid "Failed parsing mirror axis\n"
 msgstr "Невозможно разобрать ось для отражения\n"
 
-#: src/main.c:650
+#: src/main.c:707
 #, c-format
 msgid "You must give a filename to send log to\n"
 msgstr "Должно быть указано имя файла для журнала\n"
 
-#: src/main.c:658
+#: src/main.c:715
 #, c-format
 msgid "You must give a filename to export to.\n"
 msgstr "Должно быть указано имя файла для экспорта.\n"
 
-#: src/main.c:665
+#: src/main.c:722
 #, c-format
 msgid "You must give a project filename\n"
 msgstr "Должно быть указано имя файла проекта.\n"
 
-#: src/main.c:672
+#: src/main.c:729
 #, c-format
 msgid "You must give a filename to read the tools from.\n"
 msgstr "Должно быть указано имя файла инструментов.\n"
 
-#: src/main.c:676
+#: src/main.c:733
 #, c-format
 msgid "*** ERROR processing tools file \"%s\".\n"
 msgstr "*** ОШИБКА обработки файла инструментов «%s».\n"
 
-#: src/main.c:677
+#: src/main.c:734
 #, c-format
 msgid ""
 "Make sure all lines of the file are formatted like this:\n"
@@ -2775,43 +2943,43 @@ msgstr ""
 "...\n"
 "*** ВЫХОД для предотвращения ошибочного отображения.\n"
 
-#: src/main.c:685
-#, c-format
-msgid "You must give a translation in the format <X,Y>.\n"
+#: src/main.c:742
+#, fuzzy, c-format
+msgid "You must give a translation in the format <XxY>.\n"
 msgstr "Сдвиг должен быть задан в формате <X,Y>.\n"
 
-#: src/main.c:689
+#: src/main.c:746
 #, c-format
 msgid "The translation format is not recognized.\n"
 msgstr "Указанный формат сдвига не распознан.\n"
 
-#: src/main.c:706
+#: src/main.c:775
 #, c-format
 msgid "You must give a window size in the format <width x height>.\n"
 msgstr "Размер окна должен быть указан в формате <ширина x высота>.\n"
 
-#: src/main.c:710
+#: src/main.c:779
 #, c-format
 msgid "Specified window size is not recognized.\n"
 msgstr "Указанный формат значения размера окна не распознан.\n"
 
-#: src/main.c:716
+#: src/main.c:785
 #, c-format
 msgid "Specified window size is out of bounds.\n"
 msgstr "Указанный размер окна вне допустимых границ.\n"
 
-#: src/main.c:723
+#: src/main.c:792
 #, c-format
 msgid "You must supply an export type.\n"
 msgstr "Должен быть указан тип формата для экспорта.\n"
 
-#: src/main.c:735
+#: src/main.c:804
 #, c-format
 msgid "Unrecognized \"%s\" export type.\n"
 msgstr "Не распознан тип экспорта «%s».\n"
 
-#: src/main.c:746
-#, c-format
+#: src/main.c:815
+#, fuzzy, c-format
 msgid ""
 "Usage: gerbv [OPTIONS...] [FILE...]\n"
 "\n"
@@ -2843,6 +3011,8 @@ msgid ""
 "  -l, --log=<logfile>             Send error messages to <logfile>.\n"
 "  -o, --output=<filename>         Export to <filename>.\n"
 "  -p, --project=<prjfile>         Load project file <prjfile>.\n"
+"  -u, --units=<inch|mm|mil>       Use given unit for coordinates.\n"
+"                                  Default to inch.\n"
 "  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n"
 "                                  exported image.\n"
 "  -w, --window=<WxH>              Window size in pixels <WxH> for the\n"
@@ -2850,9 +3020,11 @@ msgid ""
 "                                  if no resolution is specified. If a\n"
 "                                  resolution is specified, it will clip.\n"
 "  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n"
-"  -T, --translate=<X,Y>           Translate the image by <X,Y> (useful for\n"
-"                                  arranging panels). Use multiple -T flags\n"
-"                                  for multiple layers.\n"
+"  -T, --translate=<XxYrR>         Translate image by X and Y and rotate by\n"
+"                                  R degree. Useful for arranging panels.\n"
+"                                  Use multiple -T flags for multiple "
+"layers.\n"
+"                                  Only evaluated when exporting (-x ...).\n"
 "  -x, --export=<png|pdf|ps|svg|   Export a rendered picture to a file with\n"
 "                rs274x|drill|     the specified format.\n"
 "                idrill>\n"
@@ -2909,8 +3081,8 @@ msgstr ""
 "          svg|rs274x|drill|  формата.\n"
 "          idrill>\n"
 
-#: src/main.c:784
-#, c-format
+#: src/main.c:856
+#, fuzzy, c-format
 msgid ""
 "Usage: gerbv [OPTIONS...] [FILE...]\n"
 "\n"
@@ -2936,20 +3108,7 @@ msgid ""
 "  -l<logfile>             Send error messages to <logfile>.\n"
 "  -o<filename>            Export to <filename>.\n"
 "  -p<prjfile>             Load project file <prjfile>.\n"
-"  -W<WxH>                 Window size in inches <WxH> for the\n"
-"                          exported image.\n"
-"  -w<WxH>                 Window size in pixels <WxH> for the\n"
-"                          exported image. Autoscales to fit\n"
-"                          if no resolution is specified. If a\n"
-"                          resolution is specified, it will clip.\n"
-"                          exported image.\n"
-"  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
-"  -T<X,Y>                 Translate the image by <X,Y> (useful for\n"
-"                          arranging panels). Use multiple -T flags\n"
-"                          for multiple layers.\n"
-"  -x <png|pdf|ps|svg|     Export a rendered picture to a file with\n"
-"      rs274x|drill|       the specified format.\n"
-"      idrill>\n"
+"  -u<inch|mm|mil>         Use given unit for coordinates.\n"
 msgstr ""
 "Использование: gerbv [ПАРАМЕТРЫ...] [ФАЙЛ...]\n"
 "\n"
@@ -3002,17 +3161,17 @@ msgstr ""
 "     svg|rs274x|drill|       формата.\n"
 "     idrill>\n"
 
-#: src/main.c:827
+#: src/main.c:902
 #, c-format
 msgid "Not handled option [%d=%c]\n"
 msgstr "Необработанный параметр [%d=%c]\n"
 
-#: src/main.c:843
+#: src/main.c:918
 #, c-format
 msgid "Loading project %s...\n"
 msgstr "Открывается проект %s...\n"
 
-#: src/main.c:1000 src/main.c:1025 src/main.c:1047
+#: src/main.c:1076 src/main.c:1111
 #, c-format
 msgid "A valid file was not loaded.\n"
 msgstr "Не был загружен допустимый файл.\n"
@@ -3148,41 +3307,51 @@ msgstr ""
 "Версия «%s» загружаемого файла проекта неизвестна.\n"
 "Могут быть получены неожиданные результаты."
 
-#: src/project.c:953
+#: src/project.c:912
+#, fuzzy, c-format
+msgid "Failed to open \"%s\" for reading: %s"
+msgstr "Невозможно прочитать «%s»"
+
+#: src/project.c:919
+#, fuzzy
+msgid "malloc buf failed while checking for Gerbv project"
+msgstr "Ошибка выделения памяти при проверке RS274X"
+
+#: src/project.c:986
 #, c-format
 msgid "Failed to read %s"
 msgstr "Невозможно прочитать «%s»"
 
-#: src/project.c:962
+#: src/project.c:995
 msgid "Couldn't init scheme"
 msgstr "Невозможно инициализировать scheme"
 
-#: src/project.c:970
+#: src/project.c:1003
 #, c-format
 msgid "Problem loading init.scm (%s)"
 msgstr "Проблема при загрузке init.scm: %s"
 
-#: src/project.c:977
+#: src/project.c:1010
 #, c-format
 msgid "Couldn't open %s (%s)"
 msgstr "Невозможно открыть «%s»: %s"
 
-#: src/project.c:1002
+#: src/project.c:1035
 #, c-format
 msgid "Couldn't open project file %s (%s)"
 msgstr "Невозможно открыть файл проекта «%s»: %s"
 
-#: src/project.c:1049
+#: src/project.c:1082
 #, c-format
 msgid "Couldn't save project %s"
 msgstr "Невозможно сохранить проект %s"
 
-#: src/project.c:1145
+#: src/project.c:1178
 #, c-format
 msgid "%s():  WARNING:  HID_Mixed is not yet supported.\n"
 msgstr "%s(): предупреждение: HID_Mixed ещё не поддерживается.\n"
 
-#: src/project.c:1155
+#: src/project.c:1188
 #, c-format
 msgid "%s: unknown type of HID attribute (%d)\n"
 msgstr "%s: неизвестный тип HID-атрибута (%d)\n"
@@ -3231,6 +3400,24 @@ msgstr "*** Выход, так как любой изготовитель пла
 #, c-format
 msgid "*** ERROR: Failed to open file \"%s\" to read.\n"
 msgstr "*** ОШИБКА: невозможно открыть для чтения файл «%s».\n"
+
+#~ msgid "Open project file..."
+#~ msgstr "Открыть файл проекта"
+
+#~ msgid "Open _layer(s)..."
+#~ msgstr "Открыть с_лой..."
+
+#~ msgid "Open Gerber, drill, or pick and place file(s)"
+#~ msgstr "Открыть файлы Gerber, сверловки или расположения"
+
+#~ msgid "_Open project..."
+#~ msgstr "_Открыть проект..."
+
+#~ msgid "Open an existing Gerbv project"
+#~ msgstr "Открыть существующий проект Gerbv"
+
+#~ msgid "Open a previously saved gerbv project"
+#~ msgstr "Открыть предыдущий сохранённый проект Gerbv"
 
 #~ msgid "%s():  Adding attribute #%d\n"
 #~ msgstr "%s(): добавление атрибута №%d\n"

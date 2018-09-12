@@ -139,8 +139,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_file;
 	GtkWidget *menuitem_file_menu;
 	GtkWidget *new_project;
-	GtkWidget *open_project;
-	GtkWidget *open_layer;
+	GtkWidget *open;
 	GtkWidget *revert;
 	GtkWidget *save;
 	GtkWidget *save_as;
@@ -306,6 +305,10 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *tempImage;
 
 	gchar str_coord[MAX_COORDLEN];
+
+	const GtkTargetEntry dragTargetEntries[] = {
+		{ "text/uri-list", 0, 1 },
+	};
 	
 	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
 	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
@@ -324,6 +327,11 @@ interface_create_gui (int req_width, int req_height)
 	menubar1 = gtk_menu_bar_new ();
 	gtk_box_pack_start (GTK_BOX (vbox1), menubar1, FALSE, FALSE, 0);
 
+	gtk_drag_dest_set (mainWindow, GTK_DEST_DEFAULT_ALL, dragTargetEntries,
+			1, GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+	gtk_signal_connect (GTK_OBJECT(mainWindow), "drag-data-received",
+			GTK_SIGNAL_FUNC(callbacks_file_drop_event), NULL);
+
 	/* --- File menu --- */
 	menuitem_file = gtk_menu_item_new_with_mnemonic (_("_File"));
 	gtk_container_add (GTK_CONTAINER (menubar1), menuitem_file);
@@ -335,10 +343,12 @@ interface_create_gui (int req_width, int req_height)
 	
 	/* File menu items dealing individual layers. */
 
-	open_layer = gtk_menu_item_new_with_mnemonic (_("Open _layer(s)..."));
-	SET_ACCELS (open_layer, ACCEL_FILE_OPEN_LAYER);
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_layer);
-	gtk_tooltips_set_tip (tooltips, open_layer, _("Open Gerber, drill, or pick and place file(s)"), NULL);
+	open = gtk_menu_item_new_with_mnemonic (_("Open"));
+	SET_ACCELS (open, ACCEL_FILE_OPEN_LAYER);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open);
+	gtk_tooltips_set_tip (tooltips, open,
+			_("Open Gerbv project, Gerber, drill, "
+				"or pick&place files"), NULL);
 
 	save_layer = gtk_menu_item_new_with_mnemonic (_("_Save active layer"));
 	screen.win.curFileMenuItem[0] = save_layer;
@@ -421,12 +431,6 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, new_project, _("Close all layers and start a new project"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_NEW, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (new_project), tempImage);
-
-	open_project = gtk_image_menu_item_new_with_mnemonic (_("_Open project..."));
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open_project);
-	gtk_tooltips_set_tip (tooltips, open_project, _("Open an existing Gerbv project"), NULL);
-	tempImage = gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (open_project), tempImage);
 
 	save = gtk_image_menu_item_new_with_mnemonic (_("Save project"));
 	screen.win.curFileMenuItem[4] = save;
@@ -895,14 +899,14 @@ interface_create_gui (int req_width, int req_height)
 
 	about = gtk_image_menu_item_new_with_mnemonic (_("_About Gerbv..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_help_menu), about);
-	gtk_tooltips_set_tip (tooltips, about, _("View information about gerbv"), NULL);
+	gtk_tooltips_set_tip (tooltips, about, _("View information about Gerbv"), NULL);
 	image34 = gtk_image_new_from_stock (GTK_STOCK_DIALOG_INFO, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (about), image34);
 
 	bugs_menuitem = gtk_image_menu_item_new_with_mnemonic (_("Known _bugs in this version..."));
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (bugs_menuitem), tempImage);
-	gtk_tooltips_set_tip (tooltips, bugs_menuitem, _("View list of known gerbv bugs"), NULL);	
+	gtk_tooltips_set_tip (tooltips, bugs_menuitem, _("View list of known Gerbv bugs"), NULL);	
 	gtk_container_add (GTK_CONTAINER (menuitem_help_menu), bugs_menuitem);
 
 	/* Create toolbar (button bar) beneath main menu */
@@ -924,7 +928,9 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_new);
 
 	toolbutton_open = (GtkWidget*) gtk_tool_button_new_from_stock (GTK_STOCK_OPEN);
-	gtk_tooltips_set_tip (tooltips, toolbutton_open, _("Open a previously saved gerbv project"), NULL);
+	gtk_tooltips_set_tip (tooltips, toolbutton_open,
+			_("Open Gerbv project, Gerber, drill, "
+				"or pick&place files"), NULL);
 	gtk_container_add (GTK_CONTAINER (button_toolbar), toolbutton_open);
 
 	toolbutton_revert = (GtkWidget*) gtk_tool_button_new_from_stock (GTK_STOCK_REVERT_TO_SAVED);
@@ -1052,7 +1058,8 @@ interface_create_gui (int req_width, int req_height)
 
 	image8 = gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button4), image8);
-	gtk_tooltips_set_tip (tooltips, button4, _("Open Gerber, drill, or pick and place file(s)"), NULL);
+	gtk_tooltips_set_tip (tooltips, button4,
+			_("Open Gerber, drill, or pick&place file(s)"), NULL);
 
 	button5 = gtk_button_new ();
 	gtk_box_pack_start (GTK_BOX (hbox1), button5, FALSE, TRUE, 0);
@@ -1168,11 +1175,8 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) new_project, "activate",
 	                  G_CALLBACK (callbacks_new_project_activate),
 	                  NULL);
-	g_signal_connect ((gpointer) open_project, "activate",
-	                  G_CALLBACK (callbacks_open_project_activate),
-	                  NULL);
-	g_signal_connect ((gpointer) open_layer, "activate",
-	                  G_CALLBACK (callbacks_open_layer_activate),
+	g_signal_connect ((gpointer) open, "activate",
+					  G_CALLBACK (callbacks_open_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) revert, "activate",
 	                  G_CALLBACK (callbacks_revert_activate),
@@ -1378,7 +1382,7 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_save_project_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_open, "clicked",
-	                  G_CALLBACK (callbacks_open_project_activate),
+					  G_CALLBACK (callbacks_open_activate),
 	                  NULL);
 	g_signal_connect ((gpointer) toolbutton_revert, "clicked",
 	                  G_CALLBACK (callbacks_revert_activate),
@@ -1778,6 +1782,246 @@ interface_get_alert_dialog_response (const gchar *primaryText,
   return returnVal;
 }
 
+static void
+interface_reopen_question_callback_select_all (GtkWidget *checkbox,
+						gpointer user_data)
+{
+
+  /* Set select all checkbox if it was inconsistent. */
+  if (gtk_toggle_button_get_inconsistent (GTK_TOGGLE_BUTTON (checkbox)))
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
+
+  gtk_toggle_button_set_inconsistent (GTK_TOGGLE_BUTTON (checkbox), FALSE);
+
+  for (GSList *cb = user_data; cb; cb = cb->next) {
+    gtk_toggle_button_set_active (cb->data,
+	gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbox)));
+  }
+}
+
+struct interface_reopen_question_struct {
+  GtkWidget *set_all_checkbox;
+  GSList *checkbox_list;
+};
+
+static void
+interface_reopen_question_callback_checkbox(GtkWidget *checkbox,
+						gpointer user_data)
+{
+  struct interface_reopen_question_struct *st = user_data;
+  gboolean all_set = TRUE, all_clear = TRUE;
+
+  if (st->set_all_checkbox == NULL)
+    return;
+
+  for (GSList *cb = st->checkbox_list; cb; cb = cb->next) {
+    if (gtk_toggle_button_get_active(cb->data))
+      all_clear = FALSE;
+    else
+      all_set = FALSE;
+  }
+
+  gtk_toggle_button_set_inconsistent (
+      GTK_TOGGLE_BUTTON (st->set_all_checkbox), FALSE);
+
+  if (all_set)
+    gtk_toggle_button_set_active (
+	GTK_TOGGLE_BUTTON (st->set_all_checkbox), TRUE);
+  else if (all_clear)
+    gtk_toggle_button_set_active (
+	GTK_TOGGLE_BUTTON (st->set_all_checkbox), FALSE);
+  else
+    gtk_toggle_button_set_inconsistent (
+	GTK_TOGGLE_BUTTON (st->set_all_checkbox), TRUE);
+}
+
+/* Add checkboxes for filenames and return list with checkbox widgets */
+static GSList *
+interface_reopen_question_add_filename_checkboxes (
+		GSList *fns, GSList *fns_is_mod,
+		GSList *fns_cnt, GSList *fns_lay_num, GtkWidget *box)
+{
+  GtkWidget *scrl_win, *vbox;
+  GSList *checkboxes = NULL;
+
+  scrl_win = gtk_scrolled_window_new (NULL, NULL);
+  gtk_box_pack_start (GTK_BOX (box), scrl_win, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (scrl_win), 2);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrl_win), 
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+  vbox = gtk_vbox_new (FALSE, 2);
+  gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrl_win), vbox);
+
+  for (unsigned int i = 0; i < g_slist_length (fns); i++) { 
+    GtkWidget *cb;
+    GString *g_str = g_string_new (NULL);
+    gchar *bn = g_path_get_basename (g_slist_nth_data (fns, i));
+    int cnt = GPOINTER_TO_INT (g_slist_nth_data (fns_cnt, i));
+    int lay_num = 1 + GPOINTER_TO_INT (g_slist_nth_data (fns_lay_num, i));
+
+    if (GPOINTER_TO_INT (g_slist_nth_data (fns_is_mod, i))) {
+      /* Layer is modified */
+      if (cnt > 1)
+	g_string_printf (g_str, ngettext(
+	      _("<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layer)"),
+	      _("<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)"), cnt),
+			lay_num, bn, cnt);
+      else 
+	g_string_printf (g_str, _("<b>%d</b>  *<i>%s</i> (<b>changed</b>)"),
+			lay_num, bn);
+    } else {
+      /* Layer is not modified */
+      if (cnt > 1)
+	g_string_printf (g_str, ngettext(
+	      _("<b>%d</b>  %s (%d layer)"),
+	      _("<b>%d</b>  %s (%d layers)"), cnt), lay_num, bn, cnt);
+      else 
+	g_string_printf (g_str, _("<b>%d</b>  %s"), lay_num, bn);
+    }
+    g_free (bn);
+
+    cb = gtk_check_button_new_with_label ("");
+    gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child (GTK_BIN (cb))),
+				g_str->str);
+    g_string_free (g_str, TRUE);
+    checkboxes = g_slist_append (checkboxes, cb);
+    gtk_box_pack_start (GTK_BOX (vbox), cb, FALSE, FALSE, 0);
+  }
+
+  return checkboxes;
+}
+
+
+/* ----------------------------------------------------  */
+/**
+  * This dialog box shows a text message with three buttons in the case
+  * if the file to be open was already loaded:
+  * "Reload" (the already loaded file)
+  * "Open as new layer"
+  * "Skip loading"
+  */
+int
+interface_reopen_question (GSList *fns, GSList *fns_is_mod,
+				GSList *fns_cnt, GSList *fns_lay_num)
+{
+  GtkDialog *dialog;
+  GtkWidget *hbox, *vbox_main, *image,
+	    *selectAllCheckBox = NULL;
+  GSList *fnCheckButtons = NULL;
+  GtkWidget *label, *reloadButton, *openAsNewButton;
+  struct interface_reopen_question_struct checkboxes_struct;
+  GString *g_str = g_string_new (NULL);
+  guint fns_len;
+  gint ret = 0;
+
+  fns_len = g_slist_length (fns);
+  if (0 == fns_len)
+    return GTK_RESPONSE_NONE;
+
+  dialog = GTK_DIALOG (gtk_dialog_new());
+  gtk_window_set_title (GTK_WINDOW (dialog), _("Gerbv -- Reload Files"));
+  gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
+  gtk_window_set_type_hint (GTK_WINDOW (dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
+  gtk_dialog_set_has_separator (dialog, FALSE);
+
+  hbox = gtk_hbox_new (FALSE, 12);
+  gtk_box_pack_start (GTK_BOX (dialog->vbox), hbox, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 6);
+
+  image = gtk_image_new_from_icon_name (GTK_STOCK_DIALOG_WARNING,
+		  GTK_ICON_SIZE_DIALOG);
+  gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
+  gtk_misc_set_alignment (GTK_MISC (image), 0, 0);
+
+  vbox_main = gtk_vbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox), vbox_main, TRUE, TRUE, 0);
+
+  g_string_printf (g_str, ngettext(
+	"<span size=\"larger\">%u layer file "
+	"is already loaded from directory</span>\n\"%s\"",
+	"<span size=\"larger\">%u layer files "
+	"are already loaded from directory</span>\n\"%s\"", fns_len), fns_len,
+      g_path_get_dirname (fns->data));
+
+  /* Add title */
+  label = gtk_label_new (g_str->str);
+  gtk_box_pack_start (GTK_BOX (vbox_main), label, FALSE, FALSE, 0);
+  gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label), 0, 0);
+  gtk_label_set_line_wrap  (GTK_LABEL (label), TRUE);
+  gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+  g_string_free (g_str, TRUE);
+
+  fnCheckButtons = interface_reopen_question_add_filename_checkboxes (
+					fns, fns_is_mod,
+					fns_cnt, fns_lay_num, vbox_main);
+
+  /* Add "Select all" checkbox */
+  if (fns_len > 1) {
+    selectAllCheckBox =
+	    gtk_check_button_new_with_mnemonic (_("Select _all"));
+
+    g_signal_connect ((gpointer) selectAllCheckBox, "toggled",
+	G_CALLBACK (interface_reopen_question_callback_select_all),
+	fnCheckButtons);
+
+    gtk_box_pack_start (GTK_BOX(vbox_main), selectAllCheckBox, FALSE, FALSE, 0);
+  }
+
+  /* Select all chekboxes by default */
+  if (fns_len > 1) {
+    gtk_toggle_button_set_active (
+	GTK_TOGGLE_BUTTON(selectAllCheckBox), TRUE);
+  } else {
+    /* Only one checkbox in list */
+    gtk_toggle_button_set_active (
+	GTK_TOGGLE_BUTTON(fnCheckButtons->data), TRUE);
+  }
+
+  checkboxes_struct.checkbox_list = fnCheckButtons;
+  checkboxes_struct.set_all_checkbox = selectAllCheckBox;
+
+  /* Set callback for each file checkbox */
+  for (GSList *cb = checkboxes_struct.checkbox_list; cb; cb = cb->next) {
+    g_signal_connect ((gpointer) cb->data, "toggled",
+	G_CALLBACK (interface_reopen_question_callback_checkbox),
+	&checkboxes_struct);
+  }
+
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog->action_area),
+		  GTK_BUTTONBOX_END);
+
+  reloadButton = gtk_button_new_with_mnemonic (_("_Reload"));
+  gtk_widget_set_tooltip_text (reloadButton,
+				_("Reload layers with selected files"));
+  gtk_dialog_add_action_widget (dialog, reloadButton, GTK_RESPONSE_YES);
+  GTK_WIDGET_SET_FLAGS (reloadButton, GTK_CAN_DEFAULT);
+
+  openAsNewButton = gtk_button_new_with_mnemonic (_("Add as _new"));
+  gtk_widget_set_tooltip_text (openAsNewButton,
+				_("Add selected files as new layers"));
+  gtk_dialog_add_action_widget (dialog, openAsNewButton, GTK_RESPONSE_OK);
+
+  gtk_dialog_add_action_widget (dialog,
+      gtk_button_new_from_stock (GTK_STOCK_CANCEL), GTK_RESPONSE_CANCEL);
+
+  gtk_widget_show_all (GTK_WIDGET(dialog));
+
+  ret = gtk_dialog_run (dialog);
+
+  /* Mark with NULL filenames list data with unchecked filenames */
+  for (GSList *cb = fnCheckButtons, *fn = fns;
+			cb && fn; cb = cb->next, fn = fn->next) {
+    if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cb->data)))
+      fn->data = NULL;
+  }
+
+  g_slist_free_full (fnCheckButtons, (GDestroyNotify)gtk_widget_destroy);
+  gtk_widget_destroy (GTK_WIDGET(dialog));
+
+  return ret;
+}
 
 
 /* ----------------------------------------------------  */
