@@ -53,7 +53,7 @@
 
 #define dprintf if(DEBUG) printf
 
-static const gchar *gerbv_win_title = N_("Gerbv -- gEDA's Gerber Viewer");
+static const gchar *gerbv_win_title = N_("Gerbv — gEDA's Gerber Viewer");
 
 /* Declared in callbacks.c */
 extern const char *gerbv_coords_pattern_mils_str;
@@ -1920,7 +1920,7 @@ interface_reopen_question (GSList *fns, GSList *fns_is_mod,
     return GTK_RESPONSE_NONE;
 
   dialog = GTK_DIALOG (gtk_dialog_new());
-  gtk_window_set_title (GTK_WINDOW (dialog), _("Gerbv -- Reload Files"));
+  gtk_window_set_title (GTK_WINDOW (dialog), _("Gerbv — Reload Files"));
   gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
   gtk_window_set_type_hint (GTK_WINDOW (dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
   gtk_dialog_set_has_separator (dialog, FALSE);

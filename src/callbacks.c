@@ -1591,7 +1591,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
 	gchar *translators = _("translator-credits");
 
-	gchar *string = g_strdup_printf(_("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
+	gchar *string = g_strdup_printf(_("gerbv — a Gerber (RS-274/X) viewer.\n\n"
 					  "This is gerbv version %s\n"
 					  "Compiled on %s at %s\n"
 					  "\n"
@@ -1602,8 +1602,8 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 					  "  gEDA Wiki: http://wiki.geda-project.org/"),
 					  VERSION, __DATE__, __TIME__);
 #if GTK_CHECK_VERSION(2,6,0)
-	gchar *license = g_strdup_printf(_("gerbv -- a Gerber (RS-274/X) viewer.\n\n"
-					 "Copyright (C) 2000-2007 Stefan Petersen\n\n"
+	gchar *license = g_strdup_printf(_("gerbv — a Gerber (RS-274/X) viewer.\n\n"
+					 "Copyright (C) 2000—2007 Stefan Petersen\n\n"
 					 "This program is free software: you can redistribute it and/or modify\n"
 					 "it under the terms of the GNU General Public License as published by\n"
 					 "the Free Software Foundation, either version 2 of the License, or\n"
@@ -2428,7 +2428,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 	    results = (gerbv_HID_Attr_Val *) malloc (n * sizeof (gerbv_HID_Attr_Val));
 	    if (results == NULL)
 		{
-		    fprintf (stderr, "%s() -- malloc failed\n", __FUNCTION__);
+		    fprintf (stderr, "%s() — malloc failed\n", __FUNCTION__);
 		    exit (1);
 		}
       

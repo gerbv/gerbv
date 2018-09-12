@@ -728,7 +728,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	      for (c = 1 ; c <= rcnt ; c++) {
 		state->curr_x = start_x + c*step_x;
 		state->curr_y = start_y + c*step_y;
-		dprintf ("    Repeat #%d -- new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
+		dprintf ("    Repeat #%d — new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
 		curr_net = drill_add_drill_hole (image, state, stats, curr_net);
 	      }
 	      
@@ -737,7 +737,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	case 'S':
 	    drill_stats_add_error(stats->error_list,
 				  -1,
-				  _("Drill file sets spindle speed -- ignoring."),
+				  _("Ignoring setting spindle speed in drill file."),
 				  GERBV_MESSAGE_NOTE);
 	    eat_line(fd);
 	    break;
