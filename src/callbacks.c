@@ -89,6 +89,7 @@ static void callbacks_update_ruler_scales (void);
 static void callbacks_render_type_changed (void);
 static void show_no_layers_warning (void);
 static double screen_units(double);
+static const char *screen_units_str(void);
 static double line_length(double, double, double, double);
 static double arc_length(double, double);
 static void aperture_report(gerbv_aperture_t *[], int);
@@ -2808,15 +2809,19 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					y = net->start_y;
 					gerbv_transform_coord_for_image(&x, &y,
 							image, mainProject);
-					g_message (_("    Start: (%g, %g)"),
-							screen_units(x), screen_units(y));
+					g_message (_("    Start: (%g, %g) %s"),
+							screen_units(x),
+							screen_units(y),
+							screen_units_str());
 
 					x = net->stop_x;
 					y = net->stop_y;
 					gerbv_transform_coord_for_image(&x, &y,
 							image, mainProject);
-					g_message (_("    Stop: (%g, %g)"),
-							screen_units(x), screen_units(y));
+					g_message (_("    Stop: (%g, %g) %s"),
+							screen_units(x),
+							screen_units(y),
+							screen_units_str());
 
 					switch (net->interpolation) {
 					case GERBV_INTERPOLATION_CW_CIRCULAR :
@@ -2825,11 +2830,13 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 						y = net->cirseg->cp_y;
 						gerbv_transform_coord_for_image(&x, &y,
 								image, mainProject);
-						g_message (_("    Center: (%g, %g)"),
-								screen_units(x), screen_units(y));
-						g_message (_("    Angle (deg): %g"),
+						g_message (_("    Center: (%g, %g) %s"),
+								screen_units(x),
+								screen_units(y),
+								screen_units_str());
+						g_message (_("    Angle: %g deg"),
 								fabs(net->cirseg->angle1 - net->cirseg->angle2));
-						g_message (_("    Angles (deg): %g, %g"),
+						g_message (_("    Angles: (%g, %g) deg"),
 								net->cirseg->angle1, net->cirseg->angle2);
 						g_message (_("    Direction: %s"),
 							(net->interpolation ==
@@ -2843,8 +2850,10 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 
 					if (show_length) {
 						screen.length_sum += length;
-						g_message (_("    Length: %g (sum: %g)"),
-							screen_units(length), screen_units(screen.length_sum));
+						g_message (_("    Length: %g (sum: %g) %s"),
+							screen_units(length),
+							screen_units(screen.length_sum),
+							screen_units_str());
 					}
 					g_message (_("    Layer name: %s"), layer_name);
 					g_message (_("    Net label: %s"), net_label);
@@ -2861,8 +2870,10 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					y = net->stop_y;
 					gerbv_transform_coord_for_image(&x, &y,
 							image, mainProject);
-					g_message (_("    Location: (%g, %g)"),
-							screen_units(x), screen_units(y));
+					g_message (_("    Location: (%g, %g) %s"),
+							screen_units(x),
+							screen_units(y),
+							screen_units_str());
 					g_message (_("    Layer name: %s"), layer_name);
 					g_message (_("    Net label: %s"), net_label);
 					g_message (_("    In file: %s"), file_name);
@@ -3957,6 +3968,13 @@ static double screen_units(double d) {
 	return d;
 }
 
+static const char *screen_units_str(void) {
+	/* NOTE: in order of gerbv_gui_unit_t */
+	const char *units_str[] = {N_("mil"), N_("mm"), N_("in")};
+
+	return _(units_str[screen.unit]);
+}
+
 static double line_length(double x0, double y0, double x1, double y1) {
 	double dx = x0 - x1;
 	double dy = y0 - y1;
@@ -3983,31 +4001,36 @@ static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num)
 
 	switch (type) {
 	case GERBV_APTYPE_CIRCLE:
-		g_message (_("    Diameter: %g"),
-			screen_units(params[0]));
+		g_message (_("    Diameter: %g %s"),
+			screen_units(params[0]),
+			screen_units_str());
 		break;
 	case GERBV_APTYPE_RECTANGLE:
 	case GERBV_APTYPE_OVAL:
-		g_message (_("    Dimensions: %gx%g"),
+		g_message (_("    Dimensions: %gx%g %s"),
 			screen_units(params[0]),
-			screen_units(params[1]));
+			screen_units(params[1]),
+			screen_units_str());
 		break;
 	case GERBV_APTYPE_MACRO: {
 		switch (sim->type) {
 		case GERBV_APTYPE_MACRO_CIRCLE:
-			g_message (_("    Diameter: %g"),
-				screen_units(simpars[CIRCLE_DIAMETER]));
-			g_message (_("    Center: (%g, %g)"),
+			g_message (_("    Diameter: %g %s"),
+				screen_units(simpars[CIRCLE_DIAMETER]),
+				screen_units_str());
+			g_message (_("    Center: (%g, %g) %s"),
 				screen_units(simpars[CIRCLE_CENTER_X]),
-				screen_units(simpars[CIRCLE_CENTER_Y]));
+				screen_units(simpars[CIRCLE_CENTER_Y]),
+				screen_units_str());
 			break;
 
 		case GERBV_APTYPE_MACRO_OUTLINE:
 			g_message (_("    Number of points: %g"),
 				simpars[OUTLINE_NUMBER_OF_POINTS]);
-			g_message (_("    Start: (%g, %g)"),
+			g_message (_("    Start: (%g, %g) %s"),
 				screen_units(simpars[OUTLINE_FIRST_X]),
-				screen_units(simpars[OUTLINE_FIRST_Y]));
+				screen_units(simpars[OUTLINE_FIRST_Y]),
+				screen_units_str());
 			g_message (_("    Rotation (deg): %g"),
 				simpars[OUTLINE_ROTATION_IDX(simpars)]);
 			break;
@@ -4015,85 +4038,106 @@ static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num)
 		case GERBV_APTYPE_MACRO_POLYGON:
 			g_message (_("    Number of points: %g"),
 				simpars[POLYGON_NUMBER_OF_POINTS]);
-			g_message (_("    Diameter: %g"),
-				screen_units(simpars[POLYGON_DIAMETER]));
-			g_message (_("    Center: (%g, %g)"),
+			g_message (_("    Diameter: %g %s"),
+				screen_units(simpars[POLYGON_DIAMETER]),
+				screen_units_str());
+			g_message (_("    Center: (%g, %g) %s"),
 				screen_units(simpars[POLYGON_CENTER_X]),
-				screen_units(simpars[POLYGON_CENTER_Y]));
+				screen_units(simpars[POLYGON_CENTER_Y]),
+				screen_units_str());
 			g_message (_("    Rotation (deg): %g"),
 				simpars[POLYGON_ROTATION]);
 			break;
 
 		case GERBV_APTYPE_MACRO_MOIRE:
-			g_message (_("    Outside diameter: %g"),
-				screen_units(simpars[MOIRE_OUTSIDE_DIAMETER]));
-			g_message (_("    Circle thickness: %g"),
-				screen_units(simpars[MOIRE_CIRCLE_THICKNESS]));
-			g_message (_("    Gap width: %g"),
-				screen_units(simpars[MOIRE_GAP_WIDTH]));
+			g_message (_("    Outside diameter: %g %s"),
+				screen_units(simpars[MOIRE_OUTSIDE_DIAMETER]),
+				screen_units_str());
+			g_message (_("    Circle thickness: %g %s"),
+				screen_units(simpars[MOIRE_CIRCLE_THICKNESS]),
+				screen_units_str());
+			g_message (_("    Gap width: %g %s"),
+				screen_units(simpars[MOIRE_GAP_WIDTH]),
+				screen_units_str());
 			g_message (_("    Number of circles: %g"),
 				simpars[MOIRE_NUMBER_OF_CIRCLES]);
-			g_message (_("    Crosshair thickness: %g"),
+			g_message (_("    Crosshair thickness: %g %s"),
 				screen_units(
-					simpars[MOIRE_CROSSHAIR_THICKNESS]));
-			g_message (_("    Crosshair length: %g"),
-				screen_units(simpars[MOIRE_CROSSHAIR_LENGTH]));
-			g_message (_("    Center: (%g, %g)"),
+					simpars[MOIRE_CROSSHAIR_THICKNESS]),
+				screen_units_str());
+			g_message (_("    Crosshair length: %g %s"),
+				screen_units(simpars[MOIRE_CROSSHAIR_LENGTH]),
+				screen_units_str());
+			g_message (_("    Center: (%g, %g) %s"),
 				screen_units(simpars[MOIRE_CENTER_X]),
-				screen_units(simpars[MOIRE_CENTER_Y]));
+				screen_units(simpars[MOIRE_CENTER_Y]),
+				screen_units_str());
 			g_message (_("    Rotation (deg): %g"),
 				simpars[MOIRE_ROTATION]);
 			break;
 
 		case GERBV_APTYPE_MACRO_THERMAL:
-			g_message (_("    Outside diameter: %g"),
-				screen_units(simpars[THERMAL_OUTSIDE_DIAMETER]));
-			g_message (_("    Inside diameter: %g"),
-				screen_units(simpars[THERMAL_INSIDE_DIAMETER]));
-			g_message (_("    Crosshair thickness: %g"),
+			g_message (_("    Outside diameter: %g %s"),
+				screen_units(simpars[THERMAL_OUTSIDE_DIAMETER]),
+				screen_units_str());
+			g_message (_("    Inside diameter: %g %s"),
+				screen_units(simpars[THERMAL_INSIDE_DIAMETER]),
+				screen_units_str());
+			g_message (_("    Crosshair thickness: %g %s"),
 				screen_units(
-					simpars[THERMAL_CROSSHAIR_THICKNESS]));
-			g_message (_("    Center: (%g, %g)"),
+					simpars[THERMAL_CROSSHAIR_THICKNESS]),
+				screen_units_str());
+			g_message (_("    Center: (%g, %g) %s"),
 				screen_units(simpars[THERMAL_CENTER_X]),
-				screen_units(simpars[THERMAL_CENTER_Y]));
-			g_message (_("    Rotation (deg): %g"),
+				screen_units(simpars[THERMAL_CENTER_Y]),
+				screen_units_str());
+			g_message (_("    Rotation: %g deg"),
 				simpars[THERMAL_ROTATION]);
 			break;
 
 		case GERBV_APTYPE_MACRO_LINE20:
-			g_message (_("    Width: %g"),
-				screen_units(simpars[LINE20_WIDTH]));
-			g_message (_("    Start: (%g, %g)"),
+			g_message (_("    Width: %g %s"),
+				screen_units(simpars[LINE20_WIDTH]),
+				screen_units_str());
+			g_message (_("    Start: (%g, %g) %s"),
 				screen_units(simpars[LINE20_START_X]),
-				screen_units(simpars[LINE20_START_Y]));
-			g_message (_("    Stop: (%g, %g)"),
+				screen_units(simpars[LINE20_START_Y]),
+				screen_units_str());
+			g_message (_("    Stop: (%g, %g) %s"),
 				screen_units(simpars[LINE20_END_X]),
-				screen_units(simpars[LINE20_END_Y]));
-			g_message (_("    Rotation (deg): %g"),
+				screen_units(simpars[LINE20_END_Y]),
+				screen_units_str());
+			g_message (_("    Rotation: %g deg"),
 					simpars[LINE20_ROTATION]);
 			break;
 
 		case GERBV_APTYPE_MACRO_LINE21:
-			g_message (_("    Width: %g"),
-				screen_units(simpars[LINE21_WIDTH]));
-			g_message (_("    Height: %g"),
-				screen_units(simpars[LINE21_HEIGHT]));
-			g_message (_("    Center: (%g, %g)"),
+			g_message (_("    Width: %g %s"),
+				screen_units(simpars[LINE21_WIDTH]),
+				screen_units_str());
+			g_message (_("    Height: %g %s"),
+				screen_units(simpars[LINE21_HEIGHT]),
+				screen_units_str());
+			g_message (_("    Center: (%g, %g) %s"),
 				screen_units(simpars[LINE21_CENTER_X]),
-				screen_units(simpars[LINE21_CENTER_Y]));
-			g_message (_("    Rotation (deg): %g"),
+				screen_units(simpars[LINE21_CENTER_Y]),
+				screen_units_str());
+			g_message (_("    Rotation: %g deg"),
 					simpars[LINE21_ROTATION]);
 			break;
 
 		case GERBV_APTYPE_MACRO_LINE22:
-			g_message (_("    Width: %g"),
-				screen_units(simpars[LINE22_WIDTH]));
-			g_message (_("    Height: %g"),
-				screen_units(simpars[LINE22_HEIGHT]));
-			g_message (_("    Lower left: (%g, %g)"),
+			g_message (_("    Width: %g %s"),
+				screen_units(simpars[LINE22_WIDTH]),
+				screen_units_str());
+			g_message (_("    Height: %g %s"),
+				screen_units(simpars[LINE22_HEIGHT]),
+				screen_units_str());
+			g_message (_("    Lower left: (%g, %g) %s"),
 				screen_units(simpars[LINE22_LOWER_LEFT_X]),
-				screen_units(simpars[LINE22_LOWER_LEFT_Y]));
-			g_message (_("    Rotation (deg): %g"),
+				screen_units(simpars[LINE22_LOWER_LEFT_Y]),
+				screen_units_str());
+			g_message (_("    Rotation: %g deg"),
 					simpars[LINE22_ROTATION]);
 			break;
 
