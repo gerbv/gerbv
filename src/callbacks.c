@@ -93,6 +93,7 @@ static const char *screen_units_str(void);
 static double line_length(double, double, double, double);
 static double arc_length(double, double);
 static void aperture_report(gerbv_aperture_t *[], int);
+static void drill_report(gerbv_aperture_t *[], int);
 static void update_selected_object_message (gboolean userTriedToSelect);
 
 
@@ -2729,6 +2730,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 
 		gerbv_net_t *net = sItem.net;
 		gerbv_image_t *image = sItem.image;
+		gerbv_layertype_t layer_type = image->layertype;
 		gboolean show_length;
 
 		/* get the aperture definition for the selected item */
@@ -2784,7 +2786,10 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 						case GERBV_INTERPOLATION_LINEARx01 :
 						case GERBV_INTERPOLATION_LINEARx001 :
 						case GERBV_INTERPOLATION_LINEARx1 :
-							g_message (_("Object type: Line"));
+							if (layer_type != GERBV_LAYERTYPE_DRILL)
+								g_message (_("Object type: Line"));
+							else
+								g_message (_("Object type: Slot"));
 							length = line_length(net->start_x, net->start_y, net->stop_x, net->stop_y);
 							show_length = 1;
 							break;
@@ -2800,9 +2805,15 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 							g_message (_("Object type: Unknown"));
 							break;
 					}
-					g_message (_("    Exposure: On"));
+
+					if (layer_type != GERBV_LAYERTYPE_DRILL)
+						g_message (_("    Exposure: On"));
+
 					if (validAperture) {
-						aperture_report(image->aperture, net->aperture);
+						if (layer_type != GERBV_LAYERTYPE_DRILL)
+							aperture_report(image->aperture, net->aperture);
+						else
+							drill_report(image->aperture, net->aperture);
 					}
 
 					x = net->start_x;
@@ -2861,9 +2872,16 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					break;
 				case GERBV_APERTURE_STATE_FLASH:
 					if (i != 0) g_message (" ");  /* Spacing for a pretty display */
-					g_message (_("Object type: Flashed aperture"));
+					if (layer_type != GERBV_LAYERTYPE_DRILL)
+						g_message (_("Object type: Flashed aperture"));
+					else
+						g_message (_("Object type: Drill"));
+
 					if (validAperture) {
-						aperture_report(image->aperture, net->aperture);
+						if (layer_type != GERBV_LAYERTYPE_DRILL)
+							aperture_report(image->aperture, net->aperture);
+						else
+							drill_report(image->aperture, net->aperture);
 					}
 
 					x = net->stop_x;
@@ -4149,5 +4167,17 @@ static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num)
 	default:
 		break;
 	}
+}
+
+static void drill_report(gerbv_aperture_t *apertures[], int aperture_num)
+{
+	gerbv_aperture_type_t type = apertures[aperture_num]->type;
+	double *params = apertures[aperture_num]->parameter;
+
+	g_message (_("    Tool used: T%d"), aperture_num);
+	if (type == GERBV_APTYPE_CIRCLE)
+		g_message (_("    Diameter: %g %s"),
+				screen_units(params[0]),
+				screen_units_str());
 }
 
