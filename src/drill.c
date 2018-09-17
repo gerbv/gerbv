@@ -230,75 +230,71 @@ drill_attribute_merge (gerbv_HID_Attribute *dest, int ndest, gerbv_HID_Attribute
     }
 }
 
+static void
+drill_update_image_info_min_max_from_bbox(gerbv_image_info_t *info,
+		const gerbv_render_size_t *bbox)
+{
+    info->min_x = min(info->min_x, bbox->left);
+    info->min_y = min(info->min_y, bbox->bottom);
+    info->max_x = max(info->max_x, bbox->right);
+    info->max_y = max(info->max_y, bbox->top);
+}
+
 /*
  * Adds the actual drill hole to the drawing 
  */
 static gerbv_net_t *
-drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state, gerbv_drill_stats_t *stats, gerbv_net_t *curr_net)
+drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state,
+		gerbv_drill_stats_t *stats, gerbv_net_t *curr_net)
 {
-  /* Add one to drill stats  for the current tool */
-  drill_stats_increment_drill_counter(image->drill_stats->drill_list,
-				      state->current_tool);
+    gerbv_render_size_t *bbox;
+    double r;
 
-  curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-  if (curr_net->next == NULL)
-    GERB_FATAL_ERROR(_("malloc curr_net->next failed"));
+    /* Add one to drill stats  for the current tool */
+    drill_stats_increment_drill_counter(image->drill_stats->drill_list,
+	    state->current_tool);
 
-  curr_net = curr_net->next;
-  curr_net->layer = image->layers;
-  curr_net->state = image->states;
-  curr_net->start_x = (double)state->curr_x;
-  curr_net->start_y = (double)state->curr_y;
-  /* KLUDGE. This function isn't allowed to return anything
-     but inches */
-  if(state->unit == GERBV_UNIT_MM) {
-    curr_net->start_x /= 25.4;
-    curr_net->start_y /= 25.4;
-    /* KLUDGE. All images, regardless of input format,
-       are returned in INCH format */
-    curr_net->state->unit = GERBV_UNIT_INCH;
-  }
+    curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
+    if (curr_net->next == NULL)
+	GERB_FATAL_ERROR(_("malloc curr_net->next failed"));
 
-  curr_net->stop_x = curr_net->start_x - state->origin_x;
-  curr_net->stop_y = curr_net->start_y - state->origin_y;
-  curr_net->aperture = state->current_tool;
-  curr_net->aperture_state = GERBV_APERTURE_STATE_FLASH;
-  
-  /* Find min and max of image.
-     Mustn't forget (again) to add the hole radius */
-  
-  /* Check if aperture is set. Ignore the below instead of
-     causing SEGV... */
-  if(image->aperture[state->current_tool] == NULL)
+    curr_net = curr_net->next;
+    curr_net->layer = image->layers;
+    curr_net->state = image->states;
+    curr_net->start_x = state->curr_x;
+    curr_net->start_y = state->curr_y;
+    /* KLUDGE. This function isn't allowed to return anything
+       but inches */
+    if(state->unit == GERBV_UNIT_MM) {
+	curr_net->start_x /= 25.4;
+	curr_net->start_y /= 25.4;
+	/* KLUDGE. All images, regardless of input format,
+	   are returned in INCH format */
+	curr_net->state->unit = GERBV_UNIT_INCH;
+    }
+
+    curr_net->stop_x = curr_net->start_x - state->origin_x;
+    curr_net->stop_y = curr_net->start_y - state->origin_y;
+    curr_net->aperture = state->current_tool;
+    curr_net->aperture_state = GERBV_APERTURE_STATE_FLASH;
+
+    /* Check if aperture is set. Ignore the below instead of
+       causing SEGV... */
+    if(image->aperture[state->current_tool] == NULL)
+	return curr_net;
+
+    bbox = &curr_net->boundingBox;
+    r = image->aperture[state->current_tool]->parameter[0] / 2;
+
+    /* Set boundingBox */
+    bbox->left   = curr_net->start_x - r;
+    bbox->right  = curr_net->start_x + r;
+    bbox->bottom = curr_net->start_y - r;
+    bbox->top    = curr_net->start_y + r;
+
+    drill_update_image_info_min_max_from_bbox(image->info, bbox);
+
     return curr_net;
-  
-  curr_net->boundingBox.left=curr_net->start_x -
-    image->aperture[state->current_tool]->parameter[0] / 2;
-  curr_net->boundingBox.right=curr_net->start_x +
-    image->aperture[state->current_tool]->parameter[0] / 2;
-  curr_net->boundingBox.bottom=curr_net->start_y -
-    image->aperture[state->current_tool]->parameter[0] / 2;
-  curr_net->boundingBox.top=curr_net->start_y +
-    image->aperture[state->current_tool]->parameter[0] / 2;
-  
-  image->info->min_x =
-    min(image->info->min_x,
-	(curr_net->start_x -
-	 image->aperture[state->current_tool]->parameter[0] / 2));
-  image->info->min_y =
-    min(image->info->min_y,
-	(curr_net->start_y -
-	 image->aperture[state->current_tool]->parameter[0] / 2));
-  image->info->max_x =
-    max(image->info->max_x,
-	(curr_net->start_x +
-	 image->aperture[state->current_tool]->parameter[0] / 2));
-  image->info->max_y =
-    max(image->info->max_y,
-	(curr_net->start_y +
-	 image->aperture[state->current_tool]->parameter[0] / 2));
-
-  return curr_net;
 }
 
 /* -------------------------------------------------------------- */
@@ -452,26 +448,43 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    case DRILL_G_DRILL :
 		break;
-	    case DRILL_G_SLOT :
-		/* Parse cut slot end coords */
-		if ((read = gerb_fgetc(fd)) != EOF) {
-		    drill_parse_coordinate(fd, read, image, state);
+	    case DRILL_G_SLOT : {
+		/* Parse drilled slot end coords */
+		gerbv_render_size_t *bbox = &curr_net->boundingBox;
+		double r;
 
-		    /* Modify last curr_net as cut slot */
-		    curr_net->stop_x = (double)state->curr_x;
-		    curr_net->stop_y = (double)state->curr_y;
-		    if (state->unit == GERBV_UNIT_MM) {
-			/* Convert to inches -- internal units */
-			curr_net->stop_x /= 25.4;
-			curr_net->stop_y /= 25.4;
-		    }
-		    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-		} else {
+		if (EOF == (read = gerb_fgetc(fd))) {
 		    drill_stats_add_error(stats->error_list,
 			    -1, _("Unexpected EOF found."),
 			    GERBV_MESSAGE_ERROR);
+		    break;
 		}
+
+		drill_parse_coordinate(fd, read, image, state);
+
+		/* Modify last curr_net as drilled slot */
+		curr_net->stop_x = state->curr_x;
+		curr_net->stop_y = state->curr_y;
+
+		r = image->aperture[state->current_tool]->parameter[0]/2;
+
+		/* Update boundingBox with drilled slot stop_x,y coords */
+		bbox->left   = min(bbox->left,   curr_net->stop_x - r);
+		bbox->right  = max(bbox->right,  curr_net->stop_x + r);
+		bbox->bottom = min(bbox->bottom, curr_net->stop_y - r);
+		bbox->top    = max(bbox->top,    curr_net->stop_y + r);
+
+		drill_update_image_info_min_max_from_bbox(image->info, bbox);
+
+		if (state->unit == GERBV_UNIT_MM) {
+		    /* Convert to inches -- internal units */
+		    curr_net->stop_x /= 25.4;
+		    curr_net->stop_y /= 25.4;
+		}
+		curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+
 		break;
+	    }
 	    case DRILL_G_ABSOLUTE :
 		state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 		break;
