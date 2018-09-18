@@ -737,7 +737,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    pick_and_place_reset_bounding_box (curr_net);
 	    
 	    /* calculate a rough radius for the min/max screen calcs later */
-	    radius = max (partData.length/2, partData.width/2);
+	    radius = MAX(partData.length/2, partData.width/2);
 	} else {
 	    gdouble tmp_x,tmp_y;
 	    
@@ -794,10 +794,10 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	 * update min and max numbers so the screen zoom-to-fit 
 	 *function will work
 	 */
-	image->info->min_x = min(image->info->min_x, (partData.mid_x - radius - 0.02));
-	image->info->min_y = min(image->info->min_y, (partData.mid_y - radius - 0.02));
-	image->info->max_x = max(image->info->max_x, (partData.mid_x + radius + 0.02));
-	image->info->max_y = max(image->info->max_y, (partData.mid_y + radius + 0.02));
+	image->info->min_x = MIN(image->info->min_x, (partData.mid_x - radius - 0.02));
+	image->info->min_y = MIN(image->info->min_y, (partData.mid_y - radius - 0.02));
+	image->info->max_x = MAX(image->info->max_x, (partData.mid_x + radius + 0.02));
+	image->info->max_y = MAX(image->info->max_y, (partData.mid_y + radius + 0.02));
     }
     curr_net->next = NULL;
     

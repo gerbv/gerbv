@@ -703,8 +703,10 @@ gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_in
 	* Take the scale that fits both directions with some extra checks
 	*/
 	renderInfo->scaleFactorX = MIN(x_scale, y_scale);
-	renderInfo->scaleFactorX = MIN(GERBV_SCALE_MAX, renderInfo->scaleFactorX);
-	renderInfo->scaleFactorX = MAX(GERBV_SCALE_MIN, renderInfo->scaleFactorX);
+	renderInfo->scaleFactorX = MIN((gdouble)GERBV_SCALE_MAX,
+			renderInfo->scaleFactorX);
+	renderInfo->scaleFactorX = MAX((gdouble)GERBV_SCALE_MIN,
+			renderInfo->scaleFactorX);
 	renderInfo->scaleFactorY = renderInfo->scaleFactorX;
 	renderInfo->lowerLeftX = ((bb.left + bb.right) / 2.0) -
 		((double) renderInfo->displayWidth / 2.0 / renderInfo->scaleFactorX);

@@ -2617,8 +2617,8 @@ calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 	apert_size_x /= 2;
 	apert_size_y /= 2;
 
-	ang1 = DEG2RAD(min(cirseg->angle1, cirseg->angle2));
-	ang2 = DEG2RAD(max(cirseg->angle1, cirseg->angle2));
+	ang1 = DEG2RAD(MIN(cirseg->angle1, cirseg->angle2));
+	ang2 = DEG2RAD(MAX(cirseg->angle1, cirseg->angle2));
 
 	/* Start arc point */
 	x = cirseg->cp_x + cirseg->width*cos(ang1)/2;
@@ -2629,7 +2629,7 @@ calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 
 	/* Middle arc points */
 	for (step_pi_2 = (ang1/M_PI_2 + 1)*M_PI_2;
-				step_pi_2 < min(ang2, ang1 + 2*M_PI);
+				step_pi_2 < MIN(ang2, ang1 + 2*M_PI);
 				step_pi_2 += M_PI_2) {
 		x = cirseg->cp_x + cirseg->width*cos(step_pi_2)/2;
 		y = cirseg->cp_y + cirseg->width*sin(step_pi_2)/2;

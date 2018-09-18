@@ -1089,6 +1089,19 @@ gerbv_transform_coord(double *x, double *y,
 void
 gerbv_rotate_coord(double *x, double *y, double rad);
 
+#undef MIN
+#undef MAX
+#define MIN(x,y) ({ \
+		typeof(x) _x = (x);     \
+		typeof(y) _y = (y);     \
+		(void) (&_x == &_y);    \
+		_x < _y ? _x : _y; })
+#define MAX(x,y) ({ \
+		typeof(x) _x = (x);     \
+		typeof(y) _y = (y);     \
+		(void) (&_x == &_y);    \
+		_x > _y ? _x : _y; })
+
 #if defined(__cplusplus)
 }
 #endif

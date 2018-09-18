@@ -88,7 +88,7 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 	switch(zoomType) {
 		case ZOOM_IN : /* Zoom In */
 		case ZOOM_IN_CMOUSE : /* Zoom In Around Mouse Pointer */
-			screenRenderInfo.scaleFactorX = MIN(GERBV_SCALE_MAX,
+			screenRenderInfo.scaleFactorX = MIN((gdouble)GERBV_SCALE_MAX,
 					(1 + 1/3.0)*screenRenderInfo.scaleFactorX);
 			screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
@@ -98,7 +98,7 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 			break;
 		case ZOOM_OUT :  /* Zoom Out */
 		case ZOOM_OUT_CMOUSE : /* Zoom Out Around Mouse Pointer */
-			screenRenderInfo.scaleFactorX = MAX(GERBV_SCALE_MIN,
+			screenRenderInfo.scaleFactorX = MAX((gdouble)GERBV_SCALE_MIN,
 					(1 - 1/3.0)*screenRenderInfo.scaleFactorX);
 			screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
@@ -110,7 +110,8 @@ render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble
 			gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 			break;
 		case ZOOM_SET : /*explicit scale set by user */
-			screenRenderInfo.scaleFactorX = MIN(GERBV_SCALE_MAX, scaleFactor);
+			screenRenderInfo.scaleFactorX =
+				MIN((gdouble)GERBV_SCALE_MAX, scaleFactor);
 			screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
 			screenRenderInfo.lowerLeftX += (oldWidth - (screenRenderInfo.displayWidth /
 						screenRenderInfo.scaleFactorX)) / 2.0;
@@ -145,10 +146,10 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 	double centerPointX, centerPointY;
 	int half_x, half_y;		/* cache for half window dimensions */
 
-	x1 = MIN(screen.start_x, event->x);
-	y1 = MIN(screen.start_y, event->y);
-	x2 = MAX(screen.start_x, event->x);
-	y2 = MAX(screen.start_y, event->y);
+	x1 = MIN((gdouble)screen.start_x, event->x);
+	y1 = MIN((gdouble)screen.start_y, event->y);
+	x2 = MAX((gdouble)screen.start_x, event->x);
+	y2 = MAX((gdouble)screen.start_y, event->y);
 	dx = x2-x1;
 	dy = y2-y1;
 
@@ -169,7 +170,7 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 		screenRenderInfo.scaleFactorX *=
 			MIN((double)screenRenderInfo.displayWidth / dx,
 				(double)screenRenderInfo.displayHeight / dy);
-		screenRenderInfo.scaleFactorX = MIN(GERBV_SCALE_MAX,
+		screenRenderInfo.scaleFactorX = MIN((gdouble)GERBV_SCALE_MAX,
 				screenRenderInfo.scaleFactorX);
 		screenRenderInfo.scaleFactorY = screenRenderInfo.scaleFactorX;
 		screenRenderInfo.lowerLeftX = centerPointX - (screenRenderInfo.displayWidth /

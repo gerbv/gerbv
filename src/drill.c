@@ -234,10 +234,10 @@ static void
 drill_update_image_info_min_max_from_bbox(gerbv_image_info_t *info,
 		const gerbv_render_size_t *bbox)
 {
-    info->min_x = min(info->min_x, bbox->left);
-    info->min_y = min(info->min_y, bbox->bottom);
-    info->max_x = max(info->max_x, bbox->right);
-    info->max_y = max(info->max_y, bbox->top);
+    info->min_x = MIN(info->min_x, bbox->left);
+    info->min_y = MIN(info->min_y, bbox->bottom);
+    info->max_x = MAX(info->max_x, bbox->right);
+    info->max_y = MAX(info->max_y, bbox->top);
 }
 
 /*
@@ -469,10 +469,10 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		r = image->aperture[state->current_tool]->parameter[0]/2;
 
 		/* Update boundingBox with drilled slot stop_x,y coords */
-		bbox->left   = min(bbox->left,   curr_net->stop_x - r);
-		bbox->right  = max(bbox->right,  curr_net->stop_x + r);
-		bbox->bottom = min(bbox->bottom, curr_net->stop_y - r);
-		bbox->top    = max(bbox->top,    curr_net->stop_y + r);
+		bbox->left   = MIN(bbox->left,   curr_net->stop_x - r);
+		bbox->right  = MAX(bbox->right,  curr_net->stop_x + r);
+		bbox->bottom = MIN(bbox->bottom, curr_net->stop_y - r);
+		bbox->top    = MAX(bbox->top,    curr_net->stop_y + r);
 
 		drill_update_image_info_min_max_from_bbox(image->info, bbox);
 
