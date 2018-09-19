@@ -54,7 +54,9 @@ gerbv_export_isel_drill_file_from_image (const gchar *filename, gerbv_image_t *i
 	setlocale(LC_NUMERIC, "C");
 
 	if ((fd = g_fopen(filename, "w")) == NULL) {
-		GERB_MESSAGE(_("Can't open file for writing: %s\n"), filename);
+		GERB_COMPILE_ERROR(_("Can't open file for writing: %s"),
+				filename);
+
 		return FALSE;
 	}
 
@@ -123,12 +125,26 @@ gerbv_export_isel_drill_file_from_image (const gchar *filename, gerbv_image_t *i
 		fprintf(fd, "GETTOOL %d\r\n",currentAperture+1);
 
 		/* run through all nets and look for drills using this aperture */
-		for (currentNet = image->netlist; currentNet; currentNet = currentNet->next){
-			if ((currentNet->aperture == currentAperture)&&(currentNet->aperture_state == GERBV_APERTURE_STATE_FLASH)) {
+		for (currentNet = image->netlist; currentNet;
+				currentNet = currentNet->next) {
+
+			if (currentNet->aperture != currentAperture)
+				continue;
+
+			switch (currentNet->aperture_state) {
+			case GERBV_APERTURE_STATE_FLASH: {
 				long xVal,yVal;
-				xVal = (long) round(currentNet->stop_x * 25400);
-				yVal = (long) round(currentNet->stop_y * 25400);
-				fprintf(fd, "DRILL X%06ld Y%06ld\r\n",xVal,yVal);
+
+				xVal = (long) round(COORD2MMS(currentNet->stop_x)*1e3);
+				yVal = (long) round(COORD2MMS(currentNet->stop_y)*1e3);
+				fprintf(fd, "DRILL X%06ld Y%06ld\r\n",
+						xVal, yVal);
+				break;
+			}
+			default:
+				GERB_COMPILE_WARNING(
+					_("Skipped to export of unsupported state %d"),
+					currentNet->aperture_state);
 			}
 		}
 	}
