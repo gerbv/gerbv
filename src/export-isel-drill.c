@@ -106,13 +106,16 @@ gerbv_export_isel_drill_file_from_image (const gchar *filename, gerbv_image_t *i
 			continue;
 
 		switch (currentAperture->type) {
-			case GERBV_APTYPE_CIRCLE:
-				/* add the "approved" aperture to our valid list */
-				fprintf(fd, "; TOOL %d - Diameter %1.3f mm\r\n", i + 1, currentAperture->parameter[0] * 25.4);
-	  			g_array_append_val (apertureTable, i);
-				break;
-			default:
-				break;
+		case GERBV_APTYPE_CIRCLE:
+			/* add the "approved" aperture to our valid list */
+			fprintf(fd, "; TOOL %d - Diameter %1.3f mm\r\n",
+				i + 1,
+				COORD2MMS(currentAperture->parameter[0]));
+			g_array_append_val (apertureTable, i);
+
+			break;
+		default:
+			break;
 		}
 	}
 
