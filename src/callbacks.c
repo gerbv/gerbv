@@ -2789,7 +2789,7 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 							if (layer_type != GERBV_LAYERTYPE_DRILL)
 								g_message (_("Object type: Line"));
 							else
-								g_message (_("Object type: Slot"));
+								g_message (_("Object type: Slot (drilled)"));
 							length = line_length(net->start_x, net->start_y, net->stop_x, net->stop_y);
 							show_length = 1;
 							break;
@@ -2860,6 +2860,17 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 					}
 
 					if (show_length) {
+						gerbv_aperture_t *aper = image->aperture[net->aperture];
+
+						if (layer_type == GERBV_LAYERTYPE_DRILL
+						&&  validAperture
+						&&  aper->type == GERBV_APTYPE_CIRCLE) {
+							double dia = aper->parameter[0];
+							g_message (_("    Slot length: %g %s"),
+								screen_units(length + dia),
+								screen_units_str());
+						}
+
 						screen.length_sum += length;
 						g_message (_("    Length: %g (sum: %g) %s"),
 							screen_units(length),
