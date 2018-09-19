@@ -38,7 +38,7 @@ AM_MAINTAINER_MODE
 dnl Internationalisation
 AM_NLS
 AM_GNU_GETTEXT
-AM_GNU_GETTEXT_VERSION([0.16])
+AM_GNU_GETTEXT_VERSION([0.19])
 #AX_DESKTOP_I18N
 
 dnl man-page internationalization
