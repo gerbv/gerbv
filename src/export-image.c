@@ -23,7 +23,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-/** \file exportimage.c
+/** \file export-image.c
     \brief This file contains image exporting functions for exporting to PNG, PDF, SVG, and Postscript formats
     \ingroup libgerbv
 */

@@ -42,9 +42,9 @@ libgerbv_la_SOURCES= \
 		drill.c drill.h \
 		drill_stats.c drill_stats.h \
 		export-drill.c \
+		export-image.c \
 		export-isel-drill.c \
 		export-rs274x.c \
-		exportimage.c \
 		gerb_file.c gerb_file.h \
 		gerb_image.c gerb_image.h \
 		gerb_stats.c gerb_stats.h \

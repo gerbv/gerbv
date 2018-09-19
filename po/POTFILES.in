@@ -10,8 +10,9 @@ src/drill.c
 src/drill_stats.c
 src/dynload.c
 src/export-drill.c
+src/export-image.c
+src/export-isel-drill.c
 src/export-rs274x.c
-src/exportimage.c
 src/gerb_file.c
 src/gerb_image.c
 src/gerb_stats.c
