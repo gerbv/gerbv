@@ -191,3 +191,6 @@ test-drill-leading-zero-1 | test-drill-leading-zero-1.exc
 test-drill-repeat-1 | test-drill-repeat-1.exc
 
 test-drill-trailing-zero-suppression | test-drill-trailing-zero-suppression.exc | + -p inputs/test-drill-trailing-zero-suppression.gvp
+
+# Test "G85" drilled slot
+test-drill-slot-drilled-g85 | test-drill-slot-drilled-g85.exc
