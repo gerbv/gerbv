@@ -2480,7 +2480,8 @@ callbacks_file_drop_event(GtkWidget *widget, GdkDragContext *dc,
 			"file://";
 #endif
 		if (g_strrstr(*uri, prefix_str) == *uri)
-			fns = g_slist_append(fns, *uri + strlen(prefix_str));
+			fns = g_slist_append(fns, g_uri_unescape_string(
+					*uri + strlen(prefix_str), NULL));
 	}
 
 	open_files(fns);
