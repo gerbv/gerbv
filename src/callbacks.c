@@ -1347,7 +1347,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	table_add_row(G_table, "G05", stats_report->G05,
 			_("Drill mode"));
 	table_add_row(G_table, "G85", stats_report->G85,
-			_("Cut slot"));
+			_("Cut slot (series of holes)"));
 	table_add_row(G_table, "G90", stats_report->G90,
 			_("Absolute units"));
 	table_add_row(G_table, "G91", stats_report->G91,
