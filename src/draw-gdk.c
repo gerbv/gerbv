@@ -802,8 +802,9 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 				points = NULL;
 				return;
 			default:
-				GERB_MESSAGE(_("Unknown interpolation type %d"),
-						currentNet->interpolation);
+				GERB_COMPILE_WARNING(
+					_("Skipped interpolation type %d"),
+					currentNet->interpolation);
 				break;
 		}
 	}
@@ -1195,8 +1196,9 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 					RAD2DEG(transform.rotation));
 			break;
 		    default :
-			GERB_MESSAGE(_("Unknown interpolation type %d"),
-					net->interpolation);
+			GERB_COMPILE_WARNING(
+				_("Skipped interpolation type %d"),
+				net->interpolation);
 			break;
 		    }
 		    break;
