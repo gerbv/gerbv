@@ -343,11 +343,11 @@ msgstr "0.01× линейная интерполяция"
 
 #: src/callbacks.c:978
 msgid "Poly fill on"
-msgstr "Заполненный полигон"
+msgstr "Заполнение полигона"
 
 #: src/callbacks.c:980
 msgid "Poly fill off"
-msgstr "Незаполненный полигон"
+msgstr "Завершение заполнения полигона"
 
 #: src/callbacks.c:982
 msgid "Tool prepare"
@@ -522,8 +522,8 @@ msgid "Drill mode"
 msgstr "Режим сверловки"
 
 #: src/callbacks.c:1348
-msgid "Cut slot"
-msgstr "Прорезь"
+msgid "Cut slot (series of holes)"
+msgstr "Прорезь (сверлением)"
 
 #: src/callbacks.c:1354
 msgid "Zero set"
@@ -579,7 +579,7 @@ msgstr "Высверленный текст"
 
 #: src/callbacks.c:1420
 msgid "Comments"
-msgstr "комментарии"
+msgstr "Комментарии"
 
 #: src/callbacks.c:1423
 msgid "Unknown codes"
@@ -2304,7 +2304,7 @@ msgstr "_Отображение"
 
 #: src/interface.c:673
 msgid "_Fast"
-msgstr "_Быстрое"
+msgstr "_Быстро"
 
 #: src/interface.c:677
 msgid "Fast (_XOR)"
@@ -2312,11 +2312,11 @@ msgstr "_Искл. ИЛИ"
 
 #: src/interface.c:681
 msgid "_Normal"
-msgstr "_Обычное"
+msgstr "_Обычно"
 
 #: src/interface.c:685
 msgid "High _Quality"
-msgstr "_Качественное"
+msgstr "_Качественно"
 
 #: src/interface.c:691
 msgid "malloc for rendering type synchronization failed.\n"
