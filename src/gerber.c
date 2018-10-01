@@ -521,9 +521,11 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	     * Also if we detected any of the quadrant flags, since some
 	     * gerbers don't reset the interpolation (EagleCad again).
 	     */
-	    if ((state->interpolation == GERBV_INTERPOLATION_PAREA_START) ||
-		(state->interpolation == GERBV_INTERPOLATION_PAREA_END))
+	    if ((state->interpolation == GERBV_INTERPOLATION_PAREA_START
+	    ||   state->interpolation == GERBV_INTERPOLATION_PAREA_END)
+	    && state->prev_interpolation != GERBV_INTERPOLATION_PAREA_END) {
 		state->interpolation = state->prev_interpolation;
+	    }
 
 	    /*
 	     * Save layer polarity and unit
