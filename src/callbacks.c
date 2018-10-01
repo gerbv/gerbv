@@ -961,41 +961,41 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			GTK_TREE_VIEW(G_table->widget), TRUE);
 
 	table_add_row(G_table, "G00", stats_report->G0,
-			_("Move"));
+			_(gerber_g_code_name(0)));
 	table_add_row(G_table, "G01", stats_report->G1,
-			_("1X linear interpolation"));
+			_(gerber_g_code_name(1)));
 	table_add_row(G_table, "G02", stats_report->G2,
-			_("CW interpolation"));
+			_(gerber_g_code_name(2)));
 	table_add_row(G_table, "G03", stats_report->G3,
-			_("CCW interpolation"));
+			_(gerber_g_code_name(3)));
 	table_add_row(G_table, "G04", stats_report->G4,
-				_("Comment/ignore block"));
+			_(gerber_g_code_name(4)));
 	table_add_row(G_table, "G10", stats_report->G10,
-				_("10X linear interpolation"));
+			_(gerber_g_code_name(10)));
 	table_add_row(G_table, "G11", stats_report->G11,
-				_("0.1X linear interpolation"));
+			_(gerber_g_code_name(11)));
 	table_add_row(G_table, "G12", stats_report->G12,
-				_("0.01X linear interpolation"));
+			_(gerber_g_code_name(12)));
 	table_add_row(G_table, "G36", stats_report->G36,
-				_("Poly fill on"));
+			_(gerber_g_code_name(36)));
 	table_add_row(G_table, "G37", stats_report->G37,
-				_("Poly fill off"));
+			_(gerber_g_code_name(37)));
 	table_add_row(G_table, "G54", stats_report->G54,
-				_("Tool prepare"));
+			_(gerber_g_code_name(54)));
 	table_add_row(G_table, "G55", stats_report->G55,
-				_("Flash prepare"));
+			_(gerber_g_code_name(55)));
 	table_add_row(G_table, "G70", stats_report->G70,
-				_("Units = inches"));
+			_(gerber_g_code_name(70)));
 	table_add_row(G_table, "G71", stats_report->G71,
-				_("Units = mm"));
+			_(gerber_g_code_name(71)));
 	table_add_row(G_table, "G74", stats_report->G74,
-				_("Disable 360 circ. interpolation"));
+			_(gerber_g_code_name(74)));
 	table_add_row(G_table, "G75", stats_report->G75,
-				_("Enable 360 circ. interpolation"));
+			_(gerber_g_code_name(75)));
 	table_add_row(G_table, "G90", stats_report->G90,
-				_("Absolute units"));
+			_(gerber_g_code_name(90)));
 	table_add_row(G_table, "G91", stats_report->G91,
-				_("Incremental units"));
+			_(gerber_g_code_name(91)));
 	table_add_row(G_table, "", stats_report->G_unknown,
 				_("Unknown G codes"));
 

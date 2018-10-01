@@ -79,6 +79,35 @@ gdouble knockoutLimitXmin, knockoutLimitYmin, knockoutLimitXmax,
 gerbv_layer_t *knockoutLayer = NULL;
 cairo_matrix_t currentMatrix;
 
+/** Return Gerber format G code name by code number. */
+const char *gerber_g_code_name(int g_code_num)
+{
+	const char *str;
+
+	switch (g_code_num) {
+	case  0: str = N_("Move"); break;
+	case  1: str = N_("1X linear interpolation"); break;
+	case  2: str = N_("CW interpolation"); break;
+	case  3: str = N_("CCW interpolation"); break;
+	case  4: str = N_("Comment/ignore block"); break;
+	case 10: str = N_("10X linear interpolation"); break;
+	case 11: str = N_("0.1X linear interpolation"); break;
+	case 12: str = N_("0.01X linear interpolation"); break;
+	case 36: str = N_("Poly fill on"); break;
+	case 37: str = N_("Poly fill off"); break;
+	case 54: str = N_("Tool prepare"); break;
+	case 55: str = N_("Flash prepare"); break;
+	case 70: str = N_("Units = inches"); break;
+	case 71: str = N_("Units = mm"); break;
+	case 74: str = N_("Disable 360 circ. interpolation"); break;
+	case 75: str = N_("Enable 360 circ. interpolation"); break;
+	case 90: str = N_("Absolute units"); break;
+	case 91: str = N_("Incremental units"); break;
+	default: str = N_("Unknown G code");
+	}
+
+	return str;
+}
 
 /* --------------------------------------------------------- */
 gerbv_net_t *
