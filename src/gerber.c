@@ -71,13 +71,14 @@ static void calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 			double apert_size_x, double apert_size_y,
 			gerbv_render_size_t *bbox);
 
-static void gerber_update_any_running_knockout_measurements(gerbv_image_t *image);
+static void gerber_update_any_running_knockout_measurements(
+							gerbv_image_t *image);
 
 static void gerber_calculate_final_justify_effects (gerbv_image_t *image);
 
 gboolean knockoutMeasure = FALSE;
-gdouble knockoutLimitXmin, knockoutLimitYmin, knockoutLimitXmax, 
-    knockoutLimitYmax;
+gdouble knockoutLimitXmin, knockoutLimitYmin,
+	knockoutLimitXmax, knockoutLimitYmax;
 gerbv_layer_t *knockoutLayer = NULL;
 cairo_matrix_t currentMatrix;
 
@@ -369,8 +370,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 
 		if(c == EOF || c == '%')
 		    break;
-		// loop again to catch multiple blocks on the same line (separated by * char)
-		fd->ptr--;
+
+		/* Loop again to catch multiple blocks on the same line
+		 * (separated by * char) */
+		gerb_ungetc(fd);
 	    }
 	    break;
 	case '*':  
@@ -405,6 +408,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    curr_net->stop_y = (double)state->curr_y / y_scale;
 	    delta_cp_x = (double)state->delta_cp_x / x_scale;
 	    delta_cp_y = (double)state->delta_cp_y / y_scale;
+
 	    switch (state->interpolation) {
 	    case GERBV_INTERPOLATION_CW_CIRCULAR :
 	    case GERBV_INTERPOLATION_CCW_CIRCULAR : {
@@ -477,8 +481,9 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		 /* UPDATE: only end the polygon during a D02 call if we've already
 		    drawn a polygon edge (with D01) */
 		   
-		if ((state->aperture_state == GERBV_APERTURE_STATE_OFF &&
-		    	state->interpolation != GERBV_INTERPOLATION_PAREA_START) && (polygonPoints > 0)) {
+		if (state->aperture_state == GERBV_APERTURE_STATE_OFF
+		&&  state->interpolation  != GERBV_INTERPOLATION_PAREA_START
+		&&  polygonPoints > 0) {
 		    curr_net->interpolation = GERBV_INTERPOLATION_PAREA_END;
 		    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);
 		    curr_net->interpolation = GERBV_INTERPOLATION_PAREA_START;
@@ -1084,10 +1089,10 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 	/* Don't do anything, just read 'til * */
         /* SDB asks:  Should we look for other codes while reading G04 in case
 	 * user forgot to put * at end of comment block? */
-	c = gerb_fgetc(fd);
-	while ((c != EOF) && (c != '*')) {
+	do {
 	    c = gerb_fgetc(fd);
 	}
+	while (c != EOF && c != '*');
 
 	stats->G4++;
 	break;
@@ -1901,12 +1906,14 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    "at line %zd in file \"%s\""),
 		op[0], op[1], *line_num_p, fd->filename);
     }
+
     // make sure we read until the trailing * character
     // first, backspace once in case we already read the trailing *
-    fd->ptr--;
-    int c = gerb_fgetc(fd);
-    while ((c != EOF) && (c != '*'))
-    	c = gerb_fgetc(fd);
+    gerb_ungetc(fd);
+    do {
+    	tmp = gerb_fgetc(fd);
+    } while (tmp != EOF && tmp != '*');
+
     return;
 } /* parse_rs274x */
 
