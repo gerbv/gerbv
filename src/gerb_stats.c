@@ -233,6 +233,20 @@ gerbv_stats_new_error_list() {
     return error_list;
 }
 
+/* ------------------------------------------------------- */
+void
+gerbv_stats_printf(gerbv_error_list_t *list, gerbv_message_type_t type,
+			int layer, const char *text, ...)
+{
+    gchar *str;
+    va_list args;
+
+    va_start(args, text);
+    str = g_strdup_vprintf(text, args);
+    va_end(args);
+    gerbv_stats_add_error(list, layer, str, type);
+    g_free(str);
+}
 
 /* ------------------------------------------------------- */
 void
@@ -465,10 +479,10 @@ gerbv_stats_increment_D_list_count(gerbv_aperture_list_t *D_list_in,
     /* This D number is not defined.  Therefore, flag error */
     dprintf("    .... Didn't find this D code in defined list .... \n");
     dprintf("   <---  .... Leaving inc_D_list_count.\n"); 
-    gerbv_stats_add_error(error,
-			 -1,
-			 _("Undefined aperture number called out in D code"),
-			 GERBV_MESSAGE_ERROR);
+
+    gerbv_stats_printf(error, GERBV_MESSAGE_ERROR, -1,
+	    _("Undefined aperture number called out in D code"));
+
     return -1;  /* Return -1 for failure */
 }
 
