@@ -1067,7 +1067,9 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
     int c;
 
     op_int=gerb_fgetint(fd, NULL);
-    dprintf("     Found G%02d at line %zd (%s)\n",
+
+    /* Emphasize text with new line '\n' in the beginning */
+    dprintf("\n     Found G%02d at line %zd (%s)\n",
 		    op_int, *line_num_p, gerber_g_code_name(op_int));
     
     switch(op_int) {
