@@ -1138,7 +1138,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						/* macros can only be flashed, so ignore any that might be here */
 						default:
 							GERB_COMPILE_WARNING(_("Skipped aperture type \"%s\""),
-								_(aperture_names[image->aperture[net->aperture]->type]));
+								_(gerbv_aperture_type_name(
+									image->aperture[net->aperture]->type)));
 							break;
 						}
 						break;

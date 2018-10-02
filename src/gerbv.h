@@ -140,9 +140,9 @@ typedef enum {GERBV_MESSAGE_FATAL, /*!< processing cannot continue */
 		GERBV_MESSAGE_NOTE /*!< an irregularity was encountered, but needs no intervention */
 } gerbv_message_type_t;
 
-/*! The different aperture types available
- *  Please keep these in sync with the aperture names defined by
- *  aperture_names in gerbv.c */
+/*! The different aperture types available.
+ *  Please keep these in sync with the aperture names defined in
+ *  gerbv_aperture_type_name() in gerbv.c */
 typedef enum {
 		GERBV_APTYPE_NONE, /*!< no aperture used */
 		GERBV_APTYPE_CIRCLE, /*!< a round aperture */
@@ -160,7 +160,7 @@ typedef enum {
 			GERBV_APTYPE_MACRO_LINE22 /*!< a RS274X lower left line (code 22) macro */
 } gerbv_aperture_type_t;
 
-extern const char *aperture_names[];
+const char *gerbv_aperture_type_name(gerbv_aperture_type_t type);
 
 /*! The current state of the aperture drawing tool */
 typedef enum {GERBV_APERTURE_STATE_OFF, /*!< tool drawing is off, and nothing will be drawn */
@@ -280,7 +280,9 @@ typedef enum {GERBV_COORDINATE_ABSOLUTE, /*!< all coordinates are absolute from 
 		GERBV_COORDINATE_INCREMENTAL /*!< all coordinates are relative to the previous coordinate */
 } gerbv_coordinate_t;
 
-/*! The interpolation methods available */
+/*! The interpolation methods available.
+ *  Please keep these in sync with the interpolation names defined in
+ *  gerbv_interpolation_name() in gerbv.c */
 typedef enum {GERBV_INTERPOLATION_LINEARx1, /*!< draw a line */
 		GERBV_INTERPOLATION_x10, /*!< draw a line */
 		GERBV_INTERPOLATION_LINEARx01, /*!< draw a line */
@@ -291,6 +293,8 @@ typedef enum {GERBV_INTERPOLATION_LINEARx1, /*!< draw a line */
 		GERBV_INTERPOLATION_PAREA_END, /*!< end a polygon draw */
 		GERBV_INTERPOLATION_DELETED /*!< the net has been deleted by the user, and will not be drawn */
 } gerbv_interpolation_t;
+
+const char *gerbv_interpolation_name(gerbv_interpolation_t interp);
 
 typedef enum {GERBV_ENCODING_NONE,
 		GERBV_ENCODING_ASCII,

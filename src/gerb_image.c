@@ -235,40 +235,6 @@ gerbv_image_verify(gerbv_image_t const* image)
     return error;
 } /* gerb_image_verify */
 
-
-static void
-gerbv_image_interpolation(gerbv_interpolation_t interpolation)
-{
-    switch (interpolation) {
-    case GERBV_INTERPOLATION_LINEARx1:
-	printf(_("linearX1"));
-	break;
-    case GERBV_INTERPOLATION_x10:
-	printf(_("linearX10"));
-	break;
-    case GERBV_INTERPOLATION_LINEARx01:
-	printf(_("linearX01"));
-	break;
-    case GERBV_INTERPOLATION_LINEARx001:
-	printf(_("linearX001"));
-	break;
-    case GERBV_INTERPOLATION_CW_CIRCULAR:
-	printf(_("CW circular"));
-	break;
-    case GERBV_INTERPOLATION_CCW_CIRCULAR:
-	printf(_("CCW circular"));
-	break;
-    case  GERBV_INTERPOLATION_PAREA_START:
-	printf(_("polygon area start"));
-	break;
-    case  GERBV_INTERPOLATION_PAREA_END:
-	printf(_("polygon area end"));
-	break;
-    default:
-	printf(_("unknown"));
-    }
-} /* gerb_image_interpolation */
-
 static void
 gerbv_image_aperture_state(gerbv_aperture_state_t state)
 {
@@ -332,7 +298,7 @@ gerbv_image_dump(gerbv_image_t const* image)
     while (net){
 	printf(_("(%f,%f)->(%f,%f) with %d ("), net->start_x, net->start_y,
 	       net->stop_x, net->stop_y, net->aperture);
-	gerbv_image_interpolation(net->interpolation);
+	printf(_(gerbv_interpolation_name(net->interpolation)));
 	gerbv_image_aperture_state(net->aperture_state);
 	printf(")\n");
 	net = net->next;

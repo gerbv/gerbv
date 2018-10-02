@@ -67,24 +67,56 @@
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
 
-/* These are the names of the valid apertures.  Please keep this in sync with
- * the gerbv_aperture_type_t enum defined in gerbv.h */
-const char *aperture_names[] = {
-	N_("none"),
-	N_("circle"),
-	N_("rectangle"),
-	N_("oval"),		/* an ovular (obround) aperture */
-	N_("polygon"),		/* a polygon aperture */
-	N_("macro"),		/* a RS274X macro */
-	N_("circle macro"),	/* a RS274X circle macro */
-	N_("outline macro"),	/* a RS274X outline macro */
-	N_("polygon macro"),	/* a RS274X polygon macro */
-	N_("moire macro"),	/* a RS274X moire macro */
-	N_("thermal macro"),	/* a RS274X thermal macro */
-	N_("line20 macro"),	/* a RS274X line (code 20) macro */
-	N_("line21 macro"),	/* a RS274X line (code 21) macro */
-	N_("line22 macro"),	/* a RS274X line (code 22) macro */
-};
+/** Return string name of gerbv_aperture_type_t aperture type. */
+const char *gerbv_aperture_type_name(gerbv_aperture_type_t type)
+{
+	/* These are the names of the valid apertures.  Please keep this in
+	 * sync with the gerbv_aperture_type_t enum defined in gerbv.h */
+	const char *names[] = {
+		N_("none"),
+		N_("circle"),
+		N_("rectangle"),
+		N_("oval"),		/* ovular (obround) aperture */
+		N_("polygon"),		/* polygon aperture */
+		N_("macro"),		/* RS274X macro */
+		N_("circle macro"),	/* RS274X circle macro */
+		N_("outline macro"),	/* RS274X outline macro */
+		N_("polygon macro"),	/* RS274X polygon macro */
+		N_("moire macro"),	/* RS274X moire macro */
+		N_("thermal macro"),	/* RS274X thermal macro */
+		N_("line20 macro"),	/* RS274X line (code 20) macro */
+		N_("line21 macro"),	/* RS274X line (code 21) macro */
+		N_("line22 macro"),	/* RS274X line (code 22) macro */
+	};
+
+	if (type < sizeof(names)/sizeof(names[0]))
+		return names[type];
+
+	return N_("<undefined>");
+}
+
+/** Return string name of gerbv_interpolation_t interpolation. */
+const char *gerbv_interpolation_name(gerbv_interpolation_t interp)
+{
+	/* These are the names of the interpolation method.  Please keep this
+	 * in sync with the gerbv_interpolation_t enum defined in gerbv.h */
+	const char *names[] = {
+		N_("1X linear"),
+		N_("10X linear"),
+		N_("0.1X linear"),
+		N_("0.01X linear"),
+		N_("CW circular"),
+		N_("CCW circular"),
+		N_("poly area start"),
+		N_("poly area stop"),
+		N_("deleted"),
+	};
+
+	if (interp < sizeof(names)/sizeof(names[0]))
+		return names[interp];
+
+	return N_("<undefined>");
+}
 
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20

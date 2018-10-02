@@ -1113,7 +1113,8 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			table_add_row(aperture_def_table,
 				aperture_list->layer,
 				gstr->str,
-				_(aperture_names[aperture_list->type]),
+				_(gerbv_aperture_type_name(
+						aperture_list->type)),
 				aperture_list->parameter[0],
 				aperture_list->parameter[1],
 				aperture_list->parameter[2]);
@@ -4026,8 +4027,8 @@ static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num)
 	g_message (_("    Aperture used: D%d"), aperture_num);
 	g_message (_("    Aperture type: %s"),
 		(type == GERBV_APTYPE_MACRO)?
-			_(aperture_names[sim->type]):
-			_(aperture_names[type]));
+			_(gerbv_aperture_type_name(sim->type)):
+			_(gerbv_aperture_type_name(type)));
 
 	switch (type) {
 	case GERBV_APTYPE_CIRCLE:
