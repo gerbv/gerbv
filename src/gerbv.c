@@ -89,7 +89,7 @@ const char *gerbv_aperture_type_name(gerbv_aperture_type_t type)
 		N_("line22 macro"),	/* RS274X line (code 22) macro */
 	};
 
-	if (type < sizeof(names)/sizeof(names[0]))
+	if (type >=0 && type < sizeof(names)/sizeof(names[0]))
 		return names[type];
 
 	return N_("<undefined>");
@@ -112,7 +112,7 @@ const char *gerbv_interpolation_name(gerbv_interpolation_t interp)
 		N_("deleted"),
 	};
 
-	if (interp < sizeof(names)/sizeof(names[0]))
+	if (interp >= 0 && interp < sizeof(names)/sizeof(names[0]))
 		return names[interp];
 
 	return N_("<undefined>");
