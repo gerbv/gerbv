@@ -88,12 +88,22 @@ static void callbacks_update_statusbar_coordinates (gint x, gint y);
 static void callbacks_update_ruler_scales (void);
 static void callbacks_render_type_changed (void);
 static void show_no_layers_warning (void);
+
 static double screen_units(double);
 static const char *screen_units_str(void);
+
 static double line_length(double, double, double, double);
 static double arc_length(double, double);
+
+static void aperture_state_report (gerbv_net_t *,
+		gerbv_image_t *, gerbv_project_t *);
 static void aperture_report(gerbv_aperture_t *[], int);
 static void drill_report(gerbv_aperture_t *[], int);
+static void parea_report(gerbv_net_t *,
+		gerbv_image_t *, gerbv_project_t *);
+static void net_layer_file_report(gerbv_net_t *,
+		gerbv_image_t *, gerbv_project_t *);
+
 static void update_selected_object_message (gboolean userTriedToSelect);
 
 
@@ -1114,7 +1124,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				aperture_list->layer,
 				gstr->str,
 				_(gerbv_aperture_type_name(
-						aperture_list->type)),
+					aperture_list->type)),
 				aperture_list->parameter[0],
 				aperture_list->parameter[1],
 				aperture_list->parameter[2]);
@@ -2710,19 +2720,14 @@ callbacks_update_layer_tree (void)
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_data)
 {
+	gint index = callbacks_get_selected_row_index ();
 	guint i;
-	int j;
-	const char *layer_name, *net_label, *file_name;
-	gboolean validAperture;
-	double length = 0;
-	double x, y;
 
-	gint index=callbacks_get_selected_row_index ();
 	if (index < 0 || selection_length (&screen.selectionInfo) == 0) {
 		interface_show_alert_dialog(_("No object is currently selected"),
-			_("Objects must be selected using the pointer tool before you can view the object properties."),
-			FALSE,
-			NULL);
+			_("Objects must be selected using the pointer tool "
+			"before you can view the object properties."),
+			FALSE, NULL);
 		return;
 	}
 	
@@ -2732,184 +2737,30 @@ callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_da
 
 		gerbv_net_t *net = sItem.net;
 		gerbv_image_t *image = sItem.image;
-		gerbv_layertype_t layer_type = image->layertype;
-		gboolean show_length;
-
-		/* get the aperture definition for the selected item */
-		if (net->aperture > 0) {
-			validAperture = TRUE;
-		} else {
-			validAperture = FALSE;
-		}
-
-		/* Also get layer name specified in file by %LN directive
-		* (if it exists).  */
-		if (net->layer->name == NULL) {
-			layer_name = _("<unnamed layer>");
-		} else {
-			layer_name = net->layer->name;
-		}
-
-		if (net->label == NULL) {
-			net_label = _("<unlabeled net>");
-		} else {
-			net_label = net->label->str;
-		}
-
-		/* Search item file_name in project files array */
-		file_name = _("<unnamed file>");
-		for (j = 0; j <= mainProject->last_loaded; j++) {
-			if (sItem.image == mainProject->file[j]->image)
-				file_name = mainProject->file[j]->name;
-		}
 
 		if (net->interpolation == GERBV_INTERPOLATION_PAREA_START) {
-			gerbv_net_t *n;
-			unsigned int c = 0;
+			/* Spacing for a pretty display */
+			if (i != 0)
+				g_message (" ");
 
 			g_message (_("Object type: Polygon"));
-
-			for (n = net->next; n != NULL; n = n->next) {
-				if (n->interpolation ==
-						GERBV_INTERPOLATION_PAREA_END)
-					break;
-				c++;
-			}
-			g_message (_("    Number of vertices: %u"), c);
+			parea_report (net, image, mainProject);
+			net_layer_file_report (net, image, mainProject);
 		} else {
-			switch (net->aperture_state){
-				case GERBV_APERTURE_STATE_OFF:
-					break;
-				case GERBV_APERTURE_STATE_ON:
-					if (i != 0) g_message (" ");  /* Spacing for a pretty display */
-					show_length = 0;
-					switch (net->interpolation) {
-						case GERBV_INTERPOLATION_x10 :
-						case GERBV_INTERPOLATION_LINEARx01 :
-						case GERBV_INTERPOLATION_LINEARx001 :
-						case GERBV_INTERPOLATION_LINEARx1 :
-							if (layer_type != GERBV_LAYERTYPE_DRILL)
-								g_message (_("Object type: Line"));
-							else
-								g_message (_("Object type: Slot (drilled)"));
-							length = line_length(net->start_x, net->start_y, net->stop_x, net->stop_y);
-							show_length = 1;
-							break;
-						case GERBV_INTERPOLATION_CW_CIRCULAR :
-						case GERBV_INTERPOLATION_CCW_CIRCULAR :
-							g_message (_("Object type: Arc"));
-							length = arc_length(net->cirseg->width,
-									fabs(net->cirseg->angle1 - net->cirseg->angle2));
-							show_length = 1;
+			switch (net->aperture_state) {
 
-							break;
-						default :
-							g_message (_("Object type: Unknown"));
-							break;
-					}
+			case GERBV_APERTURE_STATE_ON:
+			case GERBV_APERTURE_STATE_FLASH:
+				/* Spacing for a pretty display */
+				if (i != 0)
+					g_message (" ");
+				break;
 
-					if (layer_type != GERBV_LAYERTYPE_DRILL)
-						g_message (_("    Exposure: On"));
-
-					if (validAperture) {
-						if (layer_type != GERBV_LAYERTYPE_DRILL)
-							aperture_report(image->aperture, net->aperture);
-						else
-							drill_report(image->aperture, net->aperture);
-					}
-
-					x = net->start_x;
-					y = net->start_y;
-					gerbv_transform_coord_for_image(&x, &y,
-							image, mainProject);
-					g_message (_("    Start: (%g, %g) %s"),
-							screen_units(x),
-							screen_units(y),
-							screen_units_str());
-
-					x = net->stop_x;
-					y = net->stop_y;
-					gerbv_transform_coord_for_image(&x, &y,
-							image, mainProject);
-					g_message (_("    Stop: (%g, %g) %s"),
-							screen_units(x),
-							screen_units(y),
-							screen_units_str());
-
-					switch (net->interpolation) {
-					case GERBV_INTERPOLATION_CW_CIRCULAR :
-					case GERBV_INTERPOLATION_CCW_CIRCULAR :
-						x = net->cirseg->cp_x;
-						y = net->cirseg->cp_y;
-						gerbv_transform_coord_for_image(&x, &y,
-								image, mainProject);
-						g_message (_("    Center: (%g, %g) %s"),
-								screen_units(x),
-								screen_units(y),
-								screen_units_str());
-						g_message (_("    Angle: %g deg"),
-								fabs(net->cirseg->angle1 - net->cirseg->angle2));
-						g_message (_("    Angles: (%g, %g) deg"),
-								net->cirseg->angle1, net->cirseg->angle2);
-						g_message (_("    Direction: %s"),
-							(net->interpolation ==
-								 GERBV_INTERPOLATION_CW_CIRCULAR)?
-									_("CW"):
-									_("CCW")); 
-						break;
-					default:
-						break;
-					}
-
-					if (show_length) {
-						gerbv_aperture_t *aper = image->aperture[net->aperture];
-
-						if (layer_type == GERBV_LAYERTYPE_DRILL
-						&&  validAperture
-						&&  aper->type == GERBV_APTYPE_CIRCLE) {
-							double dia = aper->parameter[0];
-							g_message (_("    Slot length: %g %s"),
-								screen_units(length + dia),
-								screen_units_str());
-						}
-
-						screen.length_sum += length;
-						g_message (_("    Length: %g (sum: %g) %s"),
-							screen_units(length),
-							screen_units(screen.length_sum),
-							screen_units_str());
-					}
-					g_message (_("    Layer name: %s"), layer_name);
-					g_message (_("    Net label: %s"), net_label);
-					g_message (_("    In file: %s"), file_name);
-					break;
-				case GERBV_APERTURE_STATE_FLASH:
-					if (i != 0) g_message (" ");  /* Spacing for a pretty display */
-					if (layer_type != GERBV_LAYERTYPE_DRILL)
-						g_message (_("Object type: Flashed aperture"));
-					else
-						g_message (_("Object type: Drill"));
-
-					if (validAperture) {
-						if (layer_type != GERBV_LAYERTYPE_DRILL)
-							aperture_report(image->aperture, net->aperture);
-						else
-							drill_report(image->aperture, net->aperture);
-					}
-
-					x = net->stop_x;
-					y = net->stop_y;
-					gerbv_transform_coord_for_image(&x, &y,
-							image, mainProject);
-					g_message (_("    Location: (%g, %g) %s"),
-							screen_units(x),
-							screen_units(y),
-							screen_units_str());
-					g_message (_("    Layer name: %s"), layer_name);
-					g_message (_("    Net label: %s"), net_label);
-					g_message (_("    In file: %s"), file_name);
-					break;
+			default:
+				break;
 			}
+
+			aperture_state_report (net, image, mainProject);
 		}
 	}
 	/* Use separator for different report requests */
@@ -3965,8 +3816,8 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 }
 
 /* --------------------------------------------------------- */
-void callbacks_force_expose_event_for_screen (void){
-
+void callbacks_force_expose_event_for_screen (void)
+{
 	GdkRectangle update_rect;
 	
 	update_rect.x = 0;
@@ -3983,7 +3834,8 @@ void callbacks_force_expose_event_for_screen (void){
 	callbacks_update_scrollbar_positions ();
 }
 
-static double screen_units(double d) {
+static double screen_units(double d)
+{
 	switch (screen.unit) {
 	case GERBV_INS:
 		return COORD2INS(d);
@@ -3999,22 +3851,185 @@ static double screen_units(double d) {
 	return d;
 }
 
-static const char *screen_units_str(void) {
+static const char *screen_units_str(void)
+{
 	/* NOTE: in order of gerbv_gui_unit_t */
 	const char *units_str[] = {N_("mil"), N_("mm"), N_("in")};
 
 	return _(units_str[screen.unit]);
 }
 
-static double line_length(double x0, double y0, double x1, double y1) {
+static double line_length(double x0, double y0, double x1, double y1)
+{
 	double dx = x0 - x1;
 	double dy = y0 - y1;
 
 	return hypot(dx, dy);
 }
 
-static double arc_length(double dia, double angle) {
+static double arc_length(double dia, double angle)
+{
 	return M_PI*dia*(angle/360.0);
+}
+
+static void aperture_state_report (gerbv_net_t *net,
+		gerbv_image_t *img, gerbv_project_t *prj)
+{
+	gerbv_layertype_t layer_type = img->layertype;
+
+	gboolean show_length = FALSE;
+	gboolean aperture_is_valid = FALSE;
+	double x, y, len = 0;
+
+	if (net->aperture > 0)
+		aperture_is_valid = TRUE;
+
+	switch (net->aperture_state) {
+
+	case GERBV_APERTURE_STATE_OFF:
+		break;
+
+	case GERBV_APERTURE_STATE_ON:
+		switch (net->interpolation) {
+
+		case GERBV_INTERPOLATION_x10:
+		case GERBV_INTERPOLATION_LINEARx01:
+		case GERBV_INTERPOLATION_LINEARx001:
+		case GERBV_INTERPOLATION_LINEARx1:
+			if (layer_type != GERBV_LAYERTYPE_DRILL)
+				g_message (_("Object type: Line"));
+			else
+				g_message (_("Object type: Slot (drilled)"));
+
+			len = line_length(net->start_x, net->start_y,
+					net->stop_x, net->stop_y);
+			show_length = 1;
+
+			break;
+
+		case GERBV_INTERPOLATION_CW_CIRCULAR:
+		case GERBV_INTERPOLATION_CCW_CIRCULAR:
+			g_message (_("Object type: Arc"));
+			len = arc_length(net->cirseg->width,
+					fabs(net->cirseg->angle1 -
+						net->cirseg->angle2));
+			show_length = 1;
+
+			break;
+		default:
+			g_message (_("Object type: Unknown"));
+			break;
+		}
+
+		if (layer_type != GERBV_LAYERTYPE_DRILL)
+			g_message (_("    Exposure: On"));
+
+		if (aperture_is_valid) {
+			if (layer_type != GERBV_LAYERTYPE_DRILL)
+				aperture_report(img->aperture, net->aperture);
+			else
+				drill_report(img->aperture, net->aperture);
+		}
+
+		x = net->start_x;
+		y = net->start_y;
+		gerbv_transform_coord_for_image(&x, &y, img, prj);
+		g_message (_("    Start: (%g, %g) %s"),
+				screen_units(x),
+				screen_units(y),
+				screen_units_str());
+
+		x = net->stop_x;
+		y = net->stop_y;
+		gerbv_transform_coord_for_image(&x, &y, img, prj);
+		g_message (_("    Stop: (%g, %g) %s"),
+				screen_units(x),
+				screen_units(y),
+				screen_units_str());
+
+		switch (net->interpolation) {
+
+		case GERBV_INTERPOLATION_CW_CIRCULAR:
+		case GERBV_INTERPOLATION_CCW_CIRCULAR:
+			x = net->cirseg->cp_x;
+			y = net->cirseg->cp_y;
+			gerbv_transform_coord_for_image(&x, &y, img, prj);
+			g_message (_("    Center: (%g, %g) %s"),
+					screen_units(x),
+					screen_units(y),
+					screen_units_str());
+
+			x = net->cirseg->width/2;
+			y = x;
+			gerbv_transform_coord_for_image(&x, &y, img, prj);
+			g_message (_("    Radius: %g %s"),
+					screen_units(x),
+					screen_units_str());
+
+			g_message (_("    Angle: %g deg"),
+					fabs(net->cirseg->angle1 -
+						net->cirseg->angle2));
+			g_message (_("    Angles: (%g, %g) deg"),
+					net->cirseg->angle1,
+					net->cirseg->angle2);
+			g_message (_("    Direction: %s"),
+					(net->interpolation ==
+					 GERBV_INTERPOLATION_CW_CIRCULAR)?
+						_("CW"): _("CCW"));
+			break;
+
+		default:
+			break;
+		}
+
+		if (show_length) {
+			gerbv_aperture_t *aper = img->aperture[net->aperture];
+
+			if (layer_type == GERBV_LAYERTYPE_DRILL
+			&&  aperture_is_valid
+			&&  aper->type == GERBV_APTYPE_CIRCLE) {
+				double dia = aper->parameter[0];
+				g_message (_("    Slot length: %g %s"),
+						screen_units(len + dia),
+						screen_units_str());
+			}
+
+			screen.length_sum += len;
+			g_message (_("    Length: %g (sum: %g) %s"),
+					screen_units(len),
+					screen_units(screen.length_sum),
+					screen_units_str());
+		}
+
+		net_layer_file_report (net, img, prj);
+
+		break;
+
+	case GERBV_APERTURE_STATE_FLASH:
+		if (layer_type != GERBV_LAYERTYPE_DRILL)
+			g_message (_("Object type: Flashed aperture"));
+		else
+			g_message (_("Object type: Drill"));
+
+		if (aperture_is_valid) {
+			if (layer_type != GERBV_LAYERTYPE_DRILL)
+				aperture_report(img->aperture, net->aperture);
+			else
+				drill_report(img->aperture, net->aperture);
+		}
+
+		x = net->stop_x;
+		y = net->stop_y;
+		gerbv_transform_coord_for_image(&x, &y, img, prj);
+		g_message (_("    Location: (%g, %g) %s"),
+				screen_units(x),
+				screen_units(y),
+				screen_units_str());
+
+		net_layer_file_report (net, img, prj);
+
+		break;
+	}
 }
 
 static void aperture_report(gerbv_aperture_t *apertures[], int aperture_num)
@@ -4194,3 +4209,120 @@ static void drill_report(gerbv_aperture_t *apertures[], int aperture_num)
 				screen_units_str());
 }
 
+static void parea_report (gerbv_net_t *net,
+		gerbv_image_t *img, gerbv_project_t *prj)
+{
+	gerbv_net_t *n;
+	unsigned int c = 0;
+	gerbv_interpolation_t inter_prev;
+	double x, y;
+
+	if (net->interpolation != GERBV_INTERPOLATION_PAREA_START)
+		return;
+
+	/* Count vertices */
+	for (gerbv_net_t *n = net->next; n != NULL; n = n->next) {
+		if (n->interpolation == GERBV_INTERPOLATION_PAREA_END)
+			break;
+		c++;
+	}
+
+	g_message (_("    Number of vertices: %u"), c - 1);
+
+	for (n = net->next, inter_prev = net->interpolation;
+			n != NULL
+			&& n->interpolation != GERBV_INTERPOLATION_PAREA_END;
+			n = n->next) {
+
+		if (n->aperture_state != GERBV_APERTURE_STATE_ON)
+			continue;
+
+		switch (n->interpolation) {
+
+		case GERBV_INTERPOLATION_LINEARx1:
+
+			if (inter_prev != n->interpolation) {
+				x = n->start_x;
+				y = n->start_y;
+				gerbv_transform_coord_for_image(&x, &y,
+						img, prj);
+				g_message (_("    Line from: (%g, %g) %s"),
+						screen_units(x),
+						screen_units(y),
+						screen_units_str());
+			}
+
+			x = n->stop_x;
+			y = n->stop_y;
+			gerbv_transform_coord_for_image(&x, &y, img, prj);
+			g_message (_("        Line to: (%g, %g) %s"),
+					screen_units(x), screen_units(y),
+					screen_units_str());
+			break;
+
+		case GERBV_INTERPOLATION_CW_CIRCULAR:
+		case GERBV_INTERPOLATION_CCW_CIRCULAR:
+
+			x = n->start_x;
+			y = n->start_y;
+			gerbv_transform_coord_for_image(&x, &y, img, prj);
+			g_message (_("    Arc from: (%g, %g) %s"),
+					screen_units(x), screen_units(y),
+					screen_units_str());
+
+			x = n->stop_x;
+			y = n->stop_y;
+			gerbv_transform_coord_for_image(&x, &y, img, prj);
+			g_message (_("        Arc to: (%g, %g) %s"),
+					screen_units(x), screen_units(y),
+					screen_units_str());
+
+			x = n->cirseg->cp_x;
+			y = n->cirseg->cp_y;
+			gerbv_transform_coord_for_image(&x, &y, img, prj);
+			g_message (_("        Center: (%g, %g) %s"),
+					screen_units(x), screen_units(y),
+					screen_units_str());
+
+			x = n->cirseg->width;
+			y = n->cirseg->height;
+			gerbv_transform_coord_for_image(&x, &y, img, prj);
+			g_message (_("        Radius: %g %s"),
+					screen_units(x)/2, screen_units_str());
+
+			g_message (_("        Angle: %g deg"),
+				fabs(n->cirseg->angle1 - n->cirseg->angle2));
+			g_message (_("        Angles: (%g, %g) deg"),
+					n->cirseg->angle1, n->cirseg->angle2);
+			g_message (_("        Direction: %s"),
+					(n->interpolation ==
+					 GERBV_INTERPOLATION_CW_CIRCULAR)?
+						_("CW"): _("CCW"));
+			break;
+
+		default:
+			g_message("       Skipping interpolation: %s",
+				_(gerbv_interpolation_name(n->interpolation)));
+		}
+
+		inter_prev = n->interpolation;
+	}
+}
+
+static void net_layer_file_report(gerbv_net_t *net,
+		gerbv_image_t *img, gerbv_project_t *prj)
+{
+	/* Don't report "no net" to keep log short */
+	if (net->label != NULL)
+		g_message (_("    Net label: %s"), net->label->str);
+
+	/* Don't report "no layer name" to keep log short */
+	if (net->layer->name != NULL)
+		g_message (_("    Layer name: %s"), net->layer->name);
+ 
+	/* Search file name in project files array */
+	for (int i = 0; i <= prj->last_loaded; i++) {
+		if (img == prj->file[i]->image)
+			g_message (_("    In file: %s"), prj->file[i]->name);
+	}
+}
