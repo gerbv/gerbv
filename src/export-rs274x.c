@@ -311,10 +311,10 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 		
 		long xVal,yVal,endX,endY,centerX,centerY;
 		switch (currentNet->interpolation) {
-			case GERBV_INTERPOLATION_x10 :
+			case GERBV_INTERPOLATION_LINEARx1 :
+			case GERBV_INTERPOLATION_LINEARx10 :
 			case GERBV_INTERPOLATION_LINEARx01 :
 			case GERBV_INTERPOLATION_LINEARx001 :
-			case GERBV_INTERPOLATION_LINEARx1 :
 				/* see if we need to write an "aperture off" line to get
 				   the pen to the right start point */
 				if ((!insidePolygon) && (currentNet->aperture_state == GERBV_APERTURE_STATE_ON)) {

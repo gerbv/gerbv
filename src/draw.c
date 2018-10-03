@@ -649,10 +649,10 @@ draw_render_polygon_object (gerbv_net_t *oldNet, cairo_t *cairoTarget,
 		}
 
 		switch (currentNet->interpolation) {
-		case GERBV_INTERPOLATION_x10 :
+		case GERBV_INTERPOLATION_LINEARx1 :
+		case GERBV_INTERPOLATION_LINEARx10 :
 		case GERBV_INTERPOLATION_LINEARx01 :
 		case GERBV_INTERPOLATION_LINEARx001 :
-		case GERBV_INTERPOLATION_LINEARx1 :
 			draw_cairo_line_to (cairoTarget, x2, y2, FALSE, pixelOutput);
 			break;
 		case GERBV_INTERPOLATION_CW_CIRCULAR :
@@ -1054,10 +1054,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					cairo_set_line_width (cairoTarget, lineWidth);
 
 					switch (net->interpolation) {
-					case GERBV_INTERPOLATION_x10 :
+					case GERBV_INTERPOLATION_LINEARx1 :
+					case GERBV_INTERPOLATION_LINEARx10 :
 					case GERBV_INTERPOLATION_LINEARx01 :
 					case GERBV_INTERPOLATION_LINEARx001 :
-					case GERBV_INTERPOLATION_LINEARx1 :
 						cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
 
 						/* weed out any lines that are

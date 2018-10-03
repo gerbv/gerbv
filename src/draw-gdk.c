@@ -759,10 +759,10 @@ draw_gdk_render_polygon_object (gerbv_net_t *oldNet, gerbv_image_t *image, doubl
 		}
 
 		switch (currentNet->interpolation) {
-			case GERBV_INTERPOLATION_x10 :
+			case GERBV_INTERPOLATION_LINEARx1 :
+			case GERBV_INTERPOLATION_LINEARx10 :
 			case GERBV_INTERPOLATION_LINEARx01 :
 			case GERBV_INTERPOLATION_LINEARx001 :
-			case GERBV_INTERPOLATION_LINEARx1 :
 				if (pointArraySize < (curr_point_idx + 1)) {
 					pointArraySize = curr_point_idx + 1;
 					points = (GdkPoint *)g_realloc(points,
@@ -1138,7 +1138,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 				    GDK_JOIN_MITER);
 		    
 		    switch (net->interpolation) {
-		    case GERBV_INTERPOLATION_x10 :
+		    case GERBV_INTERPOLATION_LINEARx10 :
 		    case GERBV_INTERPOLATION_LINEARx01 :
 		    case GERBV_INTERPOLATION_LINEARx001 :
 			GERB_MESSAGE(_("Linear != x1"));

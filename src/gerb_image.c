@@ -1232,7 +1232,8 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 		minY = HUGE_VAL;
 		maxY = -HUGE_VAL;
 		
-		if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_START) {
+		switch (currentNet->interpolation) {
+		case GERBV_INTERPOLATION_PAREA_START:
 			/* if it's a polygon, just determine the overall area of it and delete it */
 			currentNet->interpolation = GERBV_INTERPOLATION_DELETED;
 			
@@ -1250,25 +1251,30 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 					maxY = currentNet->stop_y;
 			}
 			currentNet->interpolation = GERBV_INTERPOLATION_DELETED;
-		}
-		else if ((currentNet->interpolation == GERBV_INTERPOLATION_x10) ||
-				(currentNet->interpolation == GERBV_INTERPOLATION_LINEARx01) ||
-				(currentNet->interpolation == GERBV_INTERPOLATION_LINEARx001) ||
-				(currentNet->interpolation == GERBV_INTERPOLATION_LINEARx1)) {
+
+			break;
+
+		case GERBV_INTERPOLATION_LINEARx1:
+		case GERBV_INTERPOLATION_LINEARx10:
+		case GERBV_INTERPOLATION_LINEARx01:
+		case GERBV_INTERPOLATION_LINEARx001: {
 			gdouble dx=0,dy=0;
+			gerbv_aperture_t *apert =
+				image->aperture[currentNet->aperture];
+
 			/* figure out the overall size of this element */
-			switch (image->aperture[currentNet->aperture]->type) {
-				case GERBV_APTYPE_CIRCLE :
-				case GERBV_APTYPE_OVAL :
-				case GERBV_APTYPE_POLYGON :
-					dx = dy = image->aperture[currentNet->aperture]->parameter[0];
-					break;
-				case GERBV_APTYPE_RECTANGLE :
-					dx = (image->aperture[currentNet->aperture]->parameter[0]/ 2);
-					dy = (image->aperture[currentNet->aperture]->parameter[1]/ 2);
-					break;
-				default :
-					break;
+			switch (apert->type) {
+			case GERBV_APTYPE_CIRCLE :
+			case GERBV_APTYPE_OVAL :
+			case GERBV_APTYPE_POLYGON :
+				dx = dy = apert->parameter[0];
+				break;
+			case GERBV_APTYPE_RECTANGLE :
+				dx = apert->parameter[0]/2;
+				dy = apert->parameter[1]/2;
+				break;
+			default :
+				break;
 			}
 			if (currentNet->start_x-dx < minX)
 				minX = currentNet->start_x-dx;
@@ -1290,10 +1296,14 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 			
 			/* finally, delete node */
 			currentNet->interpolation = GERBV_INTERPOLATION_DELETED;
+
+			break;
 		}
-		/* we don't current support arcs */
-		else
+
+		default:
+			/* we don't current support arcs */
 			return FALSE;
+		}
 		
 		/* create new structures */
 		gerbv_image_create_window_pane_objects (image, minX, minY, maxX - minX, maxY - minY,

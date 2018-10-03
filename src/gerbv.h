@@ -284,7 +284,7 @@ typedef enum {GERBV_COORDINATE_ABSOLUTE, /*!< all coordinates are absolute from 
  *  Please keep these in sync with the interpolation names defined in
  *  gerbv_interpolation_name() in gerbv.c */
 typedef enum {GERBV_INTERPOLATION_LINEARx1, /*!< draw a line */
-		GERBV_INTERPOLATION_x10, /*!< draw a line */
+		GERBV_INTERPOLATION_LINEARx10, /*!< draw a line */
 		GERBV_INTERPOLATION_LINEARx01, /*!< draw a line */
 		GERBV_INTERPOLATION_LINEARx001, /*!< draw a line */
 		GERBV_INTERPOLATION_CW_CIRCULAR, /*!< draw an arc in the clockwise direction */
@@ -293,6 +293,9 @@ typedef enum {GERBV_INTERPOLATION_LINEARx1, /*!< draw a line */
 		GERBV_INTERPOLATION_PAREA_END, /*!< end a polygon draw */
 		GERBV_INTERPOLATION_DELETED /*!< the net has been deleted by the user, and will not be drawn */
 } gerbv_interpolation_t;
+
+/* For backward compatibility */
+enum {GERBV_INTERPOLATION_x10 = GERBV_INTERPOLATION_LINEARx10};
 
 const char *gerbv_interpolation_name(gerbv_interpolation_t interp);
 

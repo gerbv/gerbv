@@ -1101,7 +1101,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 	stats->G4++;
 	break;
     case 10: /* Linear Interpolation (10X scale) */
-	state->interpolation = GERBV_INTERPOLATION_x10;
+	state->interpolation = GERBV_INTERPOLATION_LINEARx10;
 	stats->G10++;
 	break;
     case 11: /* Linear Interpolation (0.1X scale) */

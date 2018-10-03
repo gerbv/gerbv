@@ -3400,7 +3400,7 @@ callbacks_align_files_from_sel_clicked (
 		case GERBV_APERTURE_STATE_ON:
 			switch (net->interpolation) {
 			case GERBV_INTERPOLATION_LINEARx1:
-			case GERBV_INTERPOLATION_x10:
+			case GERBV_INTERPOLATION_LINEARx10:
 			case GERBV_INTERPOLATION_LINEARx01:
 			case GERBV_INTERPOLATION_LINEARx001:
 				x[i] = (net->stop_x + net->start_x)/2;
@@ -3882,10 +3882,10 @@ static void aperture_state_report (gerbv_net_t *net,
 	case GERBV_APERTURE_STATE_ON:
 		switch (net->interpolation) {
 
-		case GERBV_INTERPOLATION_x10:
+		case GERBV_INTERPOLATION_LINEARx1:
+		case GERBV_INTERPOLATION_LINEARx10:
 		case GERBV_INTERPOLATION_LINEARx01:
 		case GERBV_INTERPOLATION_LINEARx001:
-		case GERBV_INTERPOLATION_LINEARx1:
 			if (layer_type != GERBV_LAYERTYPE_DRILL)
 				g_message (_("Object type: Line"));
 			else
