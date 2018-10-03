@@ -920,15 +920,9 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 	struct table *general_table;
 	
-	if (stats_report->layer_count > 0 &&
-			stats_report->error_list->error_text != NULL) {
-		general_table = table_new_with_columns(3,
-			_("Layer"), G_TYPE_UINT, _("File"), G_TYPE_STRING,
-			_("Error"), G_TYPE_STRING);
-	} else {
-		general_table = table_new_with_columns(2,
-			_("Layer"), G_TYPE_UINT, _("File"), G_TYPE_STRING);
-	}
+	general_table = table_new_with_columns(3,
+			_("Layer"), G_TYPE_UINT, _("Type"), G_TYPE_STRING,
+			_("Description"), G_TYPE_STRING);
 	table_set_column_align(general_table, 0, 1.0);
 
 	gerbv_fileinfo_t **files = mainProject->file;
@@ -937,7 +931,8 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		if (files[i] && files[i]->isVisible &&
 				(files[i]->image->layertype ==
 				 GERBV_LAYERTYPE_RS274X)) {
-			table_add_row(general_table, i + 1, files[i]->name, "");
+			table_add_row(general_table, i + 1,
+					_("RS274-X file"), files[i]->name);
 
 			/* Check error report on layer */
 			if (stats_report->layer_count > 0 &&
@@ -1296,15 +1291,9 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 
 	struct table *general_table;
 	
-	if (stats_report->layer_count > 0 &&
-			stats_report->error_list->error_text != NULL) {
-		general_table = table_new_with_columns(3,
-			_("Layer"), G_TYPE_UINT, _("File"), G_TYPE_STRING,
-			_("Error"), G_TYPE_STRING);
-	} else {
-		general_table = table_new_with_columns(2,
-			_("Layer"), G_TYPE_UINT, _("File"), G_TYPE_STRING);
-	}
+	general_table = table_new_with_columns(3,
+			_("Layer"), G_TYPE_UINT, _("Type"), G_TYPE_STRING,
+			_("Description"), G_TYPE_STRING);
 	table_set_column_align(general_table, 0, 1.0);
 
 	gerbv_error_list_t *err_list;
@@ -1313,7 +1302,8 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 		if (files[i] && files[i]->isVisible &&
 				(files[i]->image->layertype ==
 				 GERBV_LAYERTYPE_DRILL)) {
-			table_add_row(general_table, i + 1, files[i]->name, "");
+			table_add_row(general_table, i + 1,
+					_("Excellon file"), files[i]->name);
 
 			/* Check error report on layer */
 			if (stats_report->layer_count > 0 &&
