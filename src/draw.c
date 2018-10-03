@@ -1137,7 +1137,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 							break;
 						/* macros can only be flashed, so ignore any that might be here */
 						default:
-							GERB_COMPILE_WARNING(_("Skipped aperture type \"%s\""),
+							GERB_COMPILE_WARNING(
+								_("Unknown aperture type: %s"),
 								_(gerbv_aperture_type_name(
 									image->aperture[net->aperture]->type)));
 							break;
@@ -1172,8 +1173,9 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
 						break;
 					default :
-						GERB_COMPILE_WARNING(_("Skipped interpolation type %d"),
-								net->interpolation);
+						GERB_COMPILE_WARNING(
+							_("Unknown interpolation type: %s"),
+							_(gerbv_interpolation_name(net->interpolation)));
 						break;
 					}
 					break;
@@ -1233,7 +1235,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 							drawMode, selectionInfo, image, net);
 						break;
 					default :
-						GERB_MESSAGE(_("Unknown aperture type"));
+						GERB_COMPILE_WARNING(
+							_("Unknown aperture type: %s"),
+							_(gerbv_aperture_type_name(
+								image->aperture[net->aperture]->type)));
 						return 0;
 					}
 
@@ -1253,7 +1258,11 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 					cairo_restore (cairoTarget);
 					break;
 				default:
-					GERB_MESSAGE(_("Unknown aperture state"));
+					GERB_COMPILE_WARNING(
+						_("Unknown aperture state: %s"),
+						_(gerbv_aperture_type_name(
+							net->aperture_state)));
+
 					return 0;
 				}
 			}
