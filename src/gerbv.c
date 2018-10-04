@@ -229,8 +229,8 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE(_("Could not read %s[%d]"), (gchar *) filename,
-		 gerbvProject->last_loaded);
+    GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
+		    (gchar *) filename, gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
     idx_loaded = gerbvProject->last_loaded;
@@ -248,8 +248,8 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
   dprintf("Opening filename = %s\n", (gchar *) filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
-    GERB_MESSAGE(_("Could not read %s[%d]"), (gchar *) filename,
-		 gerbvProject->last_loaded);
+    GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
+		    (gchar *) filename, gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
     idx_loaded = gerbvProject->last_loaded;
@@ -501,7 +501,8 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     
     fd = gerb_fopen(filename);
     if (fd == NULL) {
-	GERB_MESSAGE(_("Trying to open %s: %s"), filename, strerror(errno));
+	GERB_COMPILE_ERROR(_("Trying to open \"%s\": %s"),
+			filename, strerror(errno));
 	return -1;
     }
 
@@ -620,7 +621,8 @@ gerbv_create_rs274x_image_from_filename (gchar *filename){
 	
 	fd = gerb_fopen(filename);
 	if (fd == NULL) {
-		GERB_MESSAGE(_("Trying to open %s: %s"), filename, strerror(errno));
+		GERB_COMPILE_ERROR(_("Trying to open \"%s\": %s"),
+				filename, strerror(errno));
 		return NULL;
 	}
 	gchar *currentLoadDirectory = g_path_get_dirname (filename);

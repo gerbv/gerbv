@@ -189,8 +189,8 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	list = read_project_file(filename);
 
 	if (!list) {
-		GERB_MESSAGE(_("could not read %s[%d]"), (gchar *) filename,
-		gerbvProject->last_loaded);
+		GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
+				(gchar *) filename, gerbvProject->last_loaded);
 
 		return;
 	}
