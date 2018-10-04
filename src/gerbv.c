@@ -265,10 +265,11 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
 gboolean 
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename) 
 {
-	gerbv_user_transformation_t *trans = &gerbvProject->file[index]->transform;
+	gerbv_fileinfo_t *file = gerbvProject->file[index];
+	gerbv_user_transformation_t *trans = &file->transform;
 
-	if (strcmp (gerbvProject->file[index]->image->info->type,
-					"RS274-X (Gerber) File") == 0) {
+	switch (file->image->layertype) {
+	case GERBV_LAYERTYPE_RS274X:
 		if (trans) {
 			/* NOTE: mirrored file is not yet supported */
 			if (trans->mirrorAroundX || trans->mirrorAroundY) {
@@ -286,10 +287,10 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
 		}
 
 		gerbv_export_rs274x_file_from_image (filename,
-				gerbvProject->file[index]->image, trans);
+				file->image, trans);
+		break;
 
-	} else if (strcmp (gerbvProject->file[index]->image->info->type,
-					"Excellon Drill File") == 0) {
+	case GERBV_LAYERTYPE_DRILL:
 		if (trans) {
 			/* NOTE: inverted file is not yet supported */
 			if (trans->inverted) {
@@ -300,12 +301,13 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
 		}
 
 		gerbv_export_drill_file_from_image (filename,
-				gerbvProject->file[index]->image, trans);
-	} else {
+				file->image, trans);
+		break;
+	default:
 		return FALSE;
 	}
 
-	gerbvProject->file[index]->layer_dirty = FALSE;
+	file->layer_dirty = FALSE;
 
 	return TRUE;
 }

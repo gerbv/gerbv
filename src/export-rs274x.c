@@ -212,7 +212,8 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 		thisTransform = &identityTransform;
 	}
 	if ((fd = g_fopen(filename, "w")) == NULL) {
-		GERB_MESSAGE(_("Can't open file for writing: %s"), filename);
+		GERB_COMPILE_ERROR(_("Can't open file for writing: %s"),
+				filename);
 		return FALSE;
 	}
 	

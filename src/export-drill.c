@@ -49,7 +49,8 @@ gerbv_export_drill_file_from_image (const gchar *filename, gerbv_image_t *inputI
 	setlocale(LC_NUMERIC, "C");
 	
 	if ((fd = g_fopen(filename, "w")) == NULL) {
-		GERB_MESSAGE(_("Can't open file for writing: %s"), filename);
+		GERB_COMPILE_ERROR( _("Can't open file for writing: %s"),
+				filename);
 		return FALSE;
 	}
 	

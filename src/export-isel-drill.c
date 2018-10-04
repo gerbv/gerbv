@@ -146,8 +146,11 @@ gerbv_export_isel_drill_file_from_image (const gchar *filename, gerbv_image_t *i
 			}
 			default:
 				GERB_COMPILE_WARNING(
-					_("Skipped to export of unsupported state %d"),
-					currentNet->aperture_state);
+					_("Skipped to export of unsupported state %d "
+					"interpolation \"%s\""),
+					currentNet->aperture_state,
+					gerbv_interpolation_name(
+						currentNet->interpolation));
 			}
 		}
 	}
