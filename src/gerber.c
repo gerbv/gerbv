@@ -76,6 +76,9 @@ static void gerber_update_any_running_knockout_measurements(
 
 static void gerber_calculate_final_justify_effects (gerbv_image_t *image);
 
+static gboolean add_trailing_zeros_if_omitted(int *coord, int omitted_num,
+						gerbv_format_t *format);
+
 gboolean knockoutMeasure = FALSE;
 gdouble knockoutLimitXmin, knockoutLimitYmin,
 	knockoutLimitXmax, knockoutLimitYmax;
@@ -194,6 +197,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    break;
 	case 'M':
 	    dprintf("... Found M code at line %zd\n", line_num);
+
 	    switch(parse_M_code(fd, image, &line_num)) {
 	    case 1 :
 	    case 2 :
@@ -209,125 +213,58 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	case 'X':
 	    stats->X++;
 	    coord = gerb_fgetint(fd, &len);
-	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
-		
-		switch ((image->format->x_int + image->format->x_dec) - len) {
-		case 7:
-		    coord *= 10;
-		case 6:
-		    coord *= 10;
-		case 5:
-		    coord *= 10;
-		case 4:
-		    coord *= 10;
-		case 3:
-		    coord *= 10;
-		case 2:
-		    coord *= 10;
-		case 1:
-		    coord *= 10;
-		    break;
-		default:
-		    ;
-		}
-	    }
+
+	    add_trailing_zeros_if_omitted(&coord,
+			    image->format->x_int + image->format->x_dec - len,
+			    image->format);
 	    dprintf("... Found X code %d at line %zd\n", coord, line_num);
-	    if (image->format && (image->format->coordinate==GERBV_COORDINATE_INCREMENTAL))
+	    if (image->format
+	    &&  image->format->coordinate==GERBV_COORDINATE_INCREMENTAL)
 	        state->curr_x += coord;
 	    else
 	        state->curr_x = coord;
+
 	    state->changed = 1;
 	    break;
+
 	case 'Y':
 	    stats->Y++;
 	    coord = gerb_fgetint(fd, &len);
-	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
-
-		switch ((image->format->y_int + image->format->y_dec) - len) {
-		case 7:
-		    coord *= 10;
-		case 6:
-		    coord *= 10;
-		case 5:
-		    coord *= 10;
-		case 4:
-		    coord *= 10;
-		case 3:
-		    coord *= 10;
-		case 2:
-		    coord *= 10;
-		case 1:
-		    coord *= 10;
-		    break;
-		default:
-		    ;
-		}
-	    }
+	    add_trailing_zeros_if_omitted(&coord,
+			    image->format->y_int + image->format->y_dec - len,
+			    image->format);
 	    dprintf("... Found Y code %d at line %zd\n", coord, line_num);
-	    if (image->format && (image->format->coordinate==GERBV_COORDINATE_INCREMENTAL))
+	    if (image->format
+	    &&  image->format->coordinate==GERBV_COORDINATE_INCREMENTAL)
 	        state->curr_y += coord;
 	    else
 	        state->curr_y = coord;
+
 	    state->changed = 1;
 	    break;
+
 	case 'I':
 	    stats->I++;
 	    coord = gerb_fgetint(fd, &len);
-	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
-
-		switch ((image->format->y_int + image->format->y_dec) - len) {
-		case 7:
-		    coord *= 10;
-		case 6:
-		    coord *= 10;
-		case 5:
-		    coord *= 10;
-		case 4:
-		    coord *= 10;
-		case 3:
-		    coord *= 10;
-		case 2:
-		    coord *= 10;
-		case 1:
-		    coord *= 10;
-		    break;
-		default:
-		    ;
-		}
-	    }
+	    add_trailing_zeros_if_omitted(&coord,
+			    image->format->x_int + image->format->x_dec - len,
+			    image->format);
 	    dprintf("... Found I code %d at line %zd\n", coord, line_num);
 	    state->delta_cp_x = coord;
 	    state->changed = 1;
 	    break;
+
 	case 'J':
 	    stats->J++;
 	    coord = gerb_fgetint(fd, &len);
-	    if (image->format && image->format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
-
-		switch ((image->format->y_int + image->format->y_dec) - len) {
-		case 7:
-		    coord *= 10;
-		case 6:
-		    coord *= 10;
-		case 5:
-		    coord *= 10;
-		case 4:
-		    coord *= 10;
-		case 3:
-		    coord *= 10;
-		case 2:
-		    coord *= 10;
-		case 1:
-		    coord *= 10;
-		    break;
-		default:
-		    ;
-		}
-	    }
+	    add_trailing_zeros_if_omitted(&coord,
+			    image->format->y_int + image->format->y_dec - len,
+			    image->format);
 	    dprintf("... Found J code %d at line %zd\n", coord, line_num);
 	    state->delta_cp_y = coord;
 	    state->changed = 1;
 	    break;
+
 	case '%':
 	    dprintf("... Found %% code at line %zd\n", line_num);
 	    while (1) {
@@ -2697,3 +2634,18 @@ gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
 	boundingBox->top = ourY2;
 } /* gerber_update_min_and_max */
 
+static gboolean
+add_trailing_zeros_if_omitted(int *coord, int omitted_num,
+		gerbv_format_t *format)
+{
+	if (format
+	&&  format->omit_zeros == GERBV_OMIT_ZEROS_TRAILING
+	&&  omitted_num > 0) {
+		for (int i = 0; i < omitted_num; i++)
+			*coord *= 10;
+
+		return TRUE;
+	}
+
+	return FALSE;
+} /* add_trailing_zeros_if_omitted() */
