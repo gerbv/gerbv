@@ -145,7 +145,6 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *save_as;
 	GtkWidget *save_layer;
 	GtkWidget *save_as_layer;
-	GtkWidget *separatormenuitem1;
 	GtkWidget *menuitem_file_export;
 	GtkWidget *menuitem_file_export_menu;
 	GtkWidget *png;
@@ -154,10 +153,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *postscript;
 	GtkWidget *rs274x,*drill,*rs274xm,*drillm,*idrill;
 	
-	GtkWidget *separator;
 #if GTK_CHECK_VERSION(2,10,0)
 	GtkWidget *print;
-	GtkWidget *separator2;
 #endif
 	GtkWidget *quit;
 
@@ -173,7 +170,6 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *show_cross_on_drill_holes;
 	GtkWidget *show_toolbar;
 	GtkWidget *show_sidepane;
-	GtkWidget *separator3;
 	GtkWidget *toggle_layer_visibility_item1;
 	GtkWidget *toggle_layer_visibility_item2;
 	GtkWidget *toggle_layer_visibility_item3;
@@ -184,11 +180,9 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *toggle_layer_visibility_item8;
 	GtkWidget *toggle_layer_visibility_item9;
 	GtkWidget *toggle_layer_visibility_item10;
-	GtkWidget *separator4;
 	GtkWidget *zoom_in;
 	GtkWidget *zoom_out;
 	GtkWidget *fit_to_window;
-	GtkWidget *separator5;
 	GtkWidget *backgroundColor;
 	GtkWidget *menuitem_view_render, *menuitem_view_render_menu;
 	GSList *menu_view_render_group;
@@ -204,10 +198,8 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *layer_invert;
 	GtkWidget *layer_color;
 	GtkWidget *layer_reload;
-	GtkWidget *separator6;
 	GtkWidget *layer_edit;
 	GtkWidget *layer_format;
-	GtkWidget *separator7;
 	GtkWidget *layer_up;
 	GtkWidget *layer_down;
 	GtkWidget *layer_remove;
@@ -370,9 +362,8 @@ interface_create_gui (int req_width, int req_height)
 
 	/* File menu items dealing with exporting different types of files. */
 
-	separatormenuitem1 = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separatormenuitem1);
-	gtk_widget_set_sensitive (separatormenuitem1, FALSE);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu),
+			gtk_separator_menu_item_new ());
 
 	menuitem_file_export = gtk_menu_item_new_with_mnemonic (_("_Export"));
 	screen.win.curFileMenuItem[3] = menuitem_file_export;
@@ -386,45 +377,57 @@ interface_create_gui (int req_width, int req_height)
 
 	png = gtk_menu_item_new_with_mnemonic (_("P_NG..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), png);
-	gtk_tooltips_set_tip (tooltips, png, _("Export project to a PNG file..."), NULL);
+	gtk_tooltips_set_tip (tooltips, png, _("Export visible layers to a PNG file"), NULL);
 	
 	pdf = gtk_menu_item_new_with_mnemonic (_("P_DF..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), pdf);
-	gtk_tooltips_set_tip (tooltips, pdf, _("Export project to a PDF file..."), NULL);
+	gtk_tooltips_set_tip (tooltips, pdf, _("Export visible layers to a PDF file"), NULL);
 
 	svg = gtk_menu_item_new_with_mnemonic (_("_SVG..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), svg);
-	gtk_tooltips_set_tip (tooltips, svg, _("Export project to a SVG file"), NULL);
+	gtk_tooltips_set_tip (tooltips, svg, _("Export visible layers to a SVG file"), NULL);
 	
 	postscript = gtk_menu_item_new_with_mnemonic (_("_PostScript..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), postscript);
-	gtk_tooltips_set_tip (tooltips, postscript, _("Export project to a PostScript file"), NULL);
+	gtk_tooltips_set_tip (tooltips, postscript, _("Export visible layers to a PostScript file"), NULL);
+
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu),
+			gtk_separator_menu_item_new ());
 
 	rs274x = gtk_menu_item_new_with_mnemonic (_("RS-274X (_Gerber)..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), rs274x);
 	gtk_tooltips_set_tip (tooltips, rs274x, _("Export layer to a RS-274X (Gerber) file"), NULL);
+
+	rs274xm = gtk_menu_item_new_with_mnemonic (_("RS-274X Merge (Gerber)..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), rs274xm);
+	gtk_tooltips_set_tip (tooltips, rs274xm,
+			_("Export merged visible Gerber layers to "
+				"a RS-274X (Gerber) file"), NULL);
+
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu),
+			gtk_separator_menu_item_new ());
 	
 	drill = gtk_menu_item_new_with_mnemonic (_("_Excellon drill..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), drill);
 	gtk_tooltips_set_tip (tooltips, drill, _("Export layer to an Excellon drill file"), NULL);
 
+	drillm = gtk_menu_item_new_with_mnemonic (_("Excellon drill Merge..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), drillm);
+	gtk_tooltips_set_tip (tooltips, drillm,
+			_("Export merged visible drill layers to "
+				"an Excellon drill file"), NULL);	
+
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu),
+			gtk_separator_menu_item_new ());
+
 	idrill = gtk_menu_item_new_with_mnemonic (_("_ISEL NCP drill..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), idrill);
 	gtk_tooltips_set_tip (tooltips, idrill, _("Export layer to an ISEL Automation NCP drill file"), NULL);
 
-	rs274xm = gtk_menu_item_new_with_mnemonic (_("RS-274X Merge (Gerber)..."));
-	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), rs274xm);
-	gtk_tooltips_set_tip (tooltips, rs274xm, _("Export (merge visible gerber layers) to a RS-274X (Gerber) file"), NULL);
-	
-	drillm = gtk_menu_item_new_with_mnemonic (_("Excellon drill Merge..."));
-	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), drillm);
-	gtk_tooltips_set_tip (tooltips, drillm, _("Export (merge visible drill layers) to an Excellon drill file"), NULL);	
-
 	/* File menu items dealing with a gerbv project. */
 
-	separator = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator);
-	gtk_widget_set_sensitive (separator, FALSE);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu),
+			gtk_separator_menu_item_new ());
 
 	new_project = gtk_image_menu_item_new_with_mnemonic (_("_New project"));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), new_project);
@@ -448,9 +451,8 @@ interface_create_gui (int req_width, int req_height)
 	
 	/* File menu items dealing with printing and quitting. */
 
-	separator = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator);
-	gtk_widget_set_sensitive (separator, FALSE);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu),
+			gtk_separator_menu_item_new ());
 
 #if GTK_CHECK_VERSION(2,10,0)
 	if (gtk_stock_lookup(GTK_STOCK_PRINT, &stock)) {
@@ -464,11 +466,10 @@ interface_create_gui (int req_width, int req_height)
 	SET_ACCELS_FROM_STOCK (print, GTK_STOCK_PRINT, ACCEL_FILE_PRINT);
 	gtk_tooltips_set_tip (tooltips, print, _("Print the visible layers"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), print);
-
-	separator2 = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), separator2);
-	gtk_widget_set_sensitive (separator2, FALSE);
+	gtk_container_add (GTK_CONTAINER (menuitem_file_menu),
+			gtk_separator_menu_item_new ());
 #endif
+
 	quit = gtk_image_menu_item_new_from_stock (GTK_STOCK_QUIT, NULL);
 	SET_ACCELS_FROM_STOCK (quit, GTK_STOCK_QUIT, ACCEL_FILE_QUIT);
 	gtk_tooltips_set_tip (tooltips, quit, _("Quit Gerbv"), NULL);
@@ -565,9 +566,8 @@ interface_create_gui (int req_width, int req_height)
 	SET_ACCELS (show_sidepane, ACCEL_VIEW_SIDEPANE);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_sidepane);
 
-	separator3 = gtk_separator_menu_item_new ();
-	gtk_widget_set_sensitive (separator3, FALSE);
-	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator3);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu),
+			gtk_separator_menu_item_new ());
 	
 	layer_visibility_main_menu = gtk_menu_item_new_with_mnemonic (_("Toggle layer _visibility"));
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), layer_visibility_main_menu);
@@ -630,9 +630,8 @@ interface_create_gui (int req_width, int req_height)
 	SET_ACCELS (toggle_layer_visibility_item10, ACCEL_VIEW_VIS_LAYER10);
 	gtk_container_add (GTK_CONTAINER (layer_visibility_menu), toggle_layer_visibility_item10);
 
-	separator4 = gtk_separator_menu_item_new ();
-	gtk_widget_set_sensitive (separator4, FALSE);
-	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator4);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu),
+			gtk_separator_menu_item_new ());
 
 	zoom_in = gtk_image_menu_item_new_from_stock (GTK_STOCK_ZOOM_IN, NULL);
 	SET_ACCELS_FROM_STOCK (zoom_in, GTK_STOCK_ZOOM_IN, ACCEL_VIEW_ZOOM_IN);
@@ -649,9 +648,8 @@ interface_create_gui (int req_width, int req_height)
 	SET_ACCELS_FROM_STOCK (fit_to_window, GTK_STOCK_ZOOM_FIT, ACCEL_VIEW_ZOOM_FIT);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), fit_to_window);
 	                        
-	separator5 = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), separator5);
-	gtk_widget_set_sensitive (separator5, FALSE);
+	gtk_container_add (GTK_CONTAINER (menuitem_view_menu),
+			gtk_separator_menu_item_new ());
 	
 	backgroundColor = gtk_image_menu_item_new_with_mnemonic (_("Change background color"));
 	gtk_tooltips_set_tip (tooltips, backgroundColor, _("Change the background color"), NULL);
@@ -766,8 +764,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_color), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_color);
 
-	separator6 = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), separator6);
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu),
+			gtk_separator_menu_item_new ());
 
 	layer_reload = gtk_image_menu_item_new_with_mnemonic (_("_Reload layer"));
 	gtk_tooltips_set_tip (tooltips, layer_reload, _("Reload the layer from disk"), NULL);
@@ -787,8 +785,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_format), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_format);
 
-	separator7 = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), separator7);
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu),
+			gtk_separator_menu_item_new ());
 
 	layer_up = gtk_image_menu_item_new_with_mnemonic (_("Move u_p"));
 	gtk_tooltips_set_tip (tooltips, layer_up, _("Move the layer currently selected in the sidepane one step up"), NULL);
