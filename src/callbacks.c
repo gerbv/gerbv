@@ -3658,7 +3658,7 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 	} 
 	else if (screen.unit == GERBV_MMS) {
 	    utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-		     _("Measured distance: %8.3f mms (%8.3f x, %8.3f y)"),
+		     _("Measured distance: %8.3f mm (%8.3f x, %8.3f y)"),
 		     COORD2MMS(delta), COORD2MMS(dx), COORD2MMS(dy));
 	}
 	else {

@@ -2167,8 +2167,8 @@ gerbv_user_transformation_t startTransform = trans;
 		translateY = trans->translateY * 1000;
 	}
 	else if (screen.unit == (gerbv_gui_unit_t) GERBV_MMS) {
-		tempWidget = gtk_label_new (_("X (mms):"));
-		tempWidget2 = gtk_label_new (_("Y (mms):"));
+		tempWidget = gtk_label_new (_("X (mm):"));
+		tempWidget2 = gtk_label_new (_("Y (mm):"));
 		translateX = trans->translateX * 25.4;
 		translateY = trans->translateY * 25.4;
 	}

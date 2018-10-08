@@ -947,7 +947,7 @@ msgstr "Расстояние: %.2f мил (x: %.2f; y: %.2f)"
 
 #: src/callbacks.c:3720
 #, c-format
-msgid "Measured distance: %8.3f mms (%8.3f x, %8.3f y)"
+msgid "Measured distance: %8.3f mm (%8.3f x, %8.3f y)"
 msgstr "Расстояние: %.3f мм (x: %.3f; y: %.3f)"
 
 #: src/callbacks.c:3725
@@ -2688,11 +2688,11 @@ msgid "Y (mils):"
 msgstr "Y, мил:"
 
 #: src/interface.c:2172
-msgid "X (mms):"
+msgid "X (mm):"
 msgstr "X, мм:"
 
 #: src/interface.c:2173
-msgid "Y (mms):"
+msgid "Y (mm):"
 msgstr "Y, мм:"
 
 #: src/interface.c:2178
