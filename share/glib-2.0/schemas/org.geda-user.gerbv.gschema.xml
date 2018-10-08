@@ -1,0 +1,19 @@
+<schemalist>
+  <schema id="org.geda-user.gerbv" path="/org/geda-user/gerbv/">
+    <key name="cross-on-drill-holes" type="b">
+      <default>false</default>
+      <summary>Show cross on drill holes</summary>
+      <description></description>
+    </key>
+    <key name="visual-rendering-type" type="i">
+      <default>0</default>
+      <summary>Visual rendering type</summary>
+      <description></description>
+    </key>
+    <key name="visual-unit" type="i">
+      <default>0</default>
+      <summary>Visual unit of length</summary>
+      <description></description>
+    </key>
+  </schema>
+</schemalist>

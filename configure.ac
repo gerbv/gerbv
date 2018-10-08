@@ -213,7 +213,10 @@ AM_CONDITIONAL(HAVE_MAGICK, test x$have_magick = xyes)
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 if test "$PKG_CONFIG" = "no"; then
 	AC_MSG_ERROR([Cannot find pkg-config, make sure it is installed and in your PATH])
-fi      
+fi
+
+# Check GSettings support
+GLIB_GSETTINGS
 
 #
 #
@@ -393,13 +396,23 @@ AC_DEFINE_UNQUOTED(BINDIR_TO_EXECPREFIX, "$bindir_to_execprefix", [Relative path
 ############################################################
 
 AC_OUTPUT(	Makefile \
-		intl/Makefile \
+		src/Makefile \
+		src/libgerbv.pc \
+		scheme/Makefile \
+		\
+		share/glib-2.0/schemas/Makefile \
 		desktop/Makefile \
+		\
 		doc/PNG-print/Makefile \
 		doc/eagle/Makefile \
 		doc/html/Makefile \
 		doc/example-code/Makefile \
 		doc/Makefile \
+		man/Makefile \
+		\
+		intl/Makefile \
+		po/Makefile.in \
+		\
 		example/eaglecad1/Makefile \
 		example/nollezappare/Makefile \
 		example/numpres/Makefile \
@@ -416,15 +429,12 @@ AC_OUTPUT(	Makefile \
 		example/thermal/Makefile \
 		example/trailing/Makefile \
 		example/Makefile \
-		man/Makefile \
-		po/Makefile.in \
-		scheme/Makefile \
-		src/Makefile \
-		src/libgerbv.pc \
-		win32/Makefile \
+		\
 		test/Makefile \
 		test/golden/Makefile \
 		test/inputs/Makefile )
+		\
+		win32/Makefile \
         
 expandedXDGDATADIR=`eval "echo $XDGDATADIR"`
 

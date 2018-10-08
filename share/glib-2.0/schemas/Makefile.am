@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ##
-##    Copyright (C) 2000-2006 Stefan Petersen (spe at stacken.kth.se)
+##    Copyright (C) 2018 Sergey Alyoshin
 ##
 ##  This file is part of gerbv.
 ##  $Id$
@@ -19,26 +19,6 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-SUBDIRS = \
-	src \
-	scheme \
-	share/glib-2.0/schemas \
-	desktop \
-	doc man \
-	intl po \
-	example \
-	test \
-	win32
+gsettings_SCHEMAS = org.geda-user.gerbv.gschema.xml
 
-EXTRA_DIST = BUGS CONTRIBUTORS HACKING AUTHORS ChangeLog COPYING INSTALL \
-	NEWS README \
-	TODO \
-	autogen.sh  README-cvs.txt README-release.txt \
-	README-win32.txt icon-theme-installer BUGS
-
-DISTCHECK_CONFIGURE_FLAGS = \
-	--disable-update-desktop-database GTK_UPDATE_ICON_THEME_BIN=true
-
-.PHONY: doxygen
-doxygen:
-	doxygen doc/Doxyfile.nopreprocessing
+@GSETTINGS_RULES@
