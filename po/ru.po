@@ -2452,7 +2452,7 @@ msgstr "_Gerber"
 
 #: src/interface.c:833
 msgid ""
-"Examine a detailed anaylsis of the contents of all visible Gerber layers"
+"Examine a detailed analysis of the contents of all visible Gerber layers"
 msgstr "Выполнить детальный анализ содержимого всех видимых слоёв Gerber"
 
 #: src/interface.c:836
@@ -2460,7 +2460,7 @@ msgid "Analyze visible _drill layers"
 msgstr "_Сверловки"
 
 #: src/interface.c:838
-msgid "Examine a detailed anaylsis of the contents of all visible drill layers"
+msgid "Examine a detailed analysis of the contents of all visible drill layers"
 msgstr "Выполнить детальный анализ содержимого всех видимых слоёв сверловки"
 
 #: src/interface.c:841

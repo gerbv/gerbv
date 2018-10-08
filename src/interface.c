@@ -826,15 +826,21 @@ interface_create_gui (int req_width, int req_height)
 	gtk_menu_set_accel_path (GTK_MENU(menuitem_analyze_menu), ACCEL_ANAL);
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_analyze), menuitem_analyze_menu);
 
-	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (_("Analyze visible _Gerber layers"));
+	analyze_active_gerbers = gtk_menu_item_new_with_mnemonic (
+			_("Analyze visible _Gerber layers"));
 	gtk_tooltips_set_tip (tooltips, analyze_active_gerbers, 
-			      _("Examine a detailed anaylsis of the contents of all visible Gerber layers"), NULL);
-	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_gerbers);
+			_("Examine a detailed analysis of the contents "
+				"of all visible Gerber layers"), NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu),
+			analyze_active_gerbers);
 
-	analyze_active_drill = gtk_menu_item_new_with_mnemonic (_("Analyze visible _drill layers"));
+	analyze_active_drill = gtk_menu_item_new_with_mnemonic (
+			_("Analyze visible _drill layers"));
 	gtk_tooltips_set_tip (tooltips, analyze_active_drill, 
-			      _("Examine a detailed anaylsis of the contents of all visible drill layers"), NULL);
-	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_active_drill);
+			_("Examine a detailed analysis of the contents "
+				"of all visible drill layers"), NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu),
+			analyze_active_drill);
 
 	analyze_benchmark = gtk_menu_item_new_with_mnemonic (_("_Benchmark (1 min)"));
 	gtk_tooltips_set_tip (tooltips, analyze_benchmark, 
