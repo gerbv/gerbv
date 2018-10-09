@@ -432,9 +432,10 @@ AC_OUTPUT(	Makefile \
 		\
 		test/Makefile \
 		test/golden/Makefile \
-		test/inputs/Makefile )
+		test/inputs/Makefile \
 		\
 		win32/Makefile \
+		)
         
 expandedXDGDATADIR=`eval "echo $XDGDATADIR"`
 
