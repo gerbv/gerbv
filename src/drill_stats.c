@@ -35,6 +35,7 @@
 
 #include "common.h"
 #include "drill_stats.h"
+#include "gerb_stats.h"
 
 #define dprintf if(DEBUG) printf
 
@@ -177,15 +178,10 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     }
 
     /* ==== Now deal with the error list ==== */
-    for (error = input_stats->error_list;
-         error != NULL;
-	 error = error->next) {
-	if (error->error_text != NULL) {
-	    drill_stats_add_error(accum_stats->error_list,
-				  this_layer,
-				  error->error_text,
-				  error->type);
-	}
+    for (error = input_stats->error_list; error != NULL; error = error->next) {
+	if (error->error_text != NULL)
+	    gerbv_stats_printf(accum_stats->error_list, error->type,
+		    this_layer, error->error_text);
     }
 
     /* ==== Now deal with the misc header stuff ==== */
@@ -216,10 +212,8 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
          error != NULL;
 	 error = error->next) {
 	if (error->error_text != NULL) {
-	    drill_stats_add_error(accum_stats->error_list,
-				  this_layer,
-				  error->error_text,
-				  error->type);
+	    gerbv_stats_printf(accum_stats->error_list, error->type,
+			    this_layer, error->error_text);
 	}
     }
 
@@ -409,70 +403,13 @@ gerbv_drill_stats_new_error_list() {
     return error_list;
 } 
 
-
-
 /* ------------------------------------------------------- */
+/** Add statistic message for drill layer.
+ * It is recommend to use gerbv_stats_printf() instead of this function. */
 void
 drill_stats_add_error(gerbv_error_list_t *error_list_in, 
 		      int layer, const char *error_text,
-		      gerbv_message_type_t type) {
-
-    gerbv_error_list_t *error_list_new;
-    gerbv_error_list_t *error_last = NULL;
-    gerbv_error_list_t *error;
-
-    dprintf("   ----> Entering drill_stats_add_error......\n");
-
-    /* Replace embedded error messages */
-    switch (type) {
-	case GERBV_MESSAGE_FATAL:
-	    GERB_FATAL_ERROR("%s",error_text);
-	    break;
-	case GERBV_MESSAGE_ERROR:
-	    GERB_COMPILE_ERROR("%s",error_text);
-	    break;
-	case GERBV_MESSAGE_WARNING:
-	    GERB_COMPILE_WARNING("%s",error_text);
-	    break;
-	case GERBV_MESSAGE_NOTE:
-	    break;
-    }
-
-
-    /* First handle case where this is the first list element */
-    if (error_list_in->error_text == NULL) {
-	error_list_in->layer = layer;
-	error_list_in->error_text = g_strdup_printf("%s", error_text);
-	error_list_in->type = type;
-	error_list_in->next = NULL;
-	dprintf("   <---- .... Leaving drill_stats_add_error after adding first error message.\n");
-	return;
-    }
-
-    /* Next check to see if this error is already in the list */
-    for(error = error_list_in; error != NULL; error = error->next) {
-	if ((strcmp(error->error_text, error_text) == 0) && 
-	    (error->layer == layer) ) {
-	    return;  /* This error text is already in the error list */
-	}
-	error_last = error;  /* point to last element in error list */
-    }
-    /* This error text is unique.  Therefore, add it to the list */
-
-    /* Now malloc space for new error list element */
-    error_list_new = (gerbv_error_list_t *) g_malloc(sizeof(gerbv_error_list_t));
-    if (error_list_new == NULL) {
-	GERB_FATAL_ERROR(_("malloc error_list failed"));
-    }
-    
-    /* Set member elements */
-    error_list_new->layer = layer;
-    error_list_new->error_text = g_strdup_printf("%s", error_text);
-    error_list_new->type = type;
-    error_list_new->next = NULL;
-    error_last->next = error_list_new;
-
-    dprintf("   <---- .... Leaving drill_stats_add_error after adding new error message.\n");
-    return;
-
+		      gerbv_message_type_t type)
+{
+    gerbv_stats_add_error(error_list_in, layer, error_text, type);
 }
