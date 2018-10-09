@@ -68,6 +68,13 @@
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 
+static int
+getopt_configured(int argc, char * const argv[], const char *optstring,
+		const struct option *longopts, int *longindex);
+static int
+getopt_lengh_unit(const char *optarg, double *input_div,
+		gerbv_screen_t *screen);
+
 static gerbv_layer_color mainDefaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{115,115,222,177},
 	{255,127,115,177},
@@ -356,7 +363,6 @@ main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filenam
 } /* gerbv_save_as_project_from_filename */
 
 GArray *log_array_tmp = NULL;
-
 /* Temporary log messages handler. It will store log messages before GUI
  * initialization. */
 void
@@ -413,7 +419,6 @@ main(int argc, char *argv[])
     int       i,r,g,b,a;
     int       req_width = -1, req_height = -1;
 #ifdef HAVE_GETOPT_LONG
-    /*int       req_x = 0, req_y = 0;*/
     char      *rest;
 #endif
     char      *project_filename = NULL;
@@ -421,7 +426,8 @@ main(int argc, char *argv[])
 	     userSuppliedAntiAlias=FALSE, userSuppliedWindowInPixels=FALSE, userSuppliedDpi=FALSE;
     gint  layerctr =0, transformCount = 0;
     gdouble initial_rotation = 0.0;
-    gdouble input_divisor = 1.0;
+    gdouble input_divisor = 1.0; /* 1.0 for inch */
+    int unit_flag_counter;
     gboolean initial_mirror_x = FALSE;
     gboolean initial_mirror_y = FALSE;
     const gchar *exportFilename = NULL;
@@ -480,6 +486,7 @@ main(int argc, char *argv[])
      */
     memset((void *)&screen, 0, sizeof(gerbv_screen_t));
     screen.state = NORMAL;
+    screen.unit = GERBV_DEFAULT_UNIT;
     
     mainProject = gerbv_create_project();
     mainProject->execname = g_strdup(argv[0]);
@@ -495,25 +502,45 @@ main(int argc, char *argv[])
 
     logToFileOption = FALSE;
     logToFileFilename = NULL;
-    /*
-     * Now process command line flags
-     */
-    while (
-#ifdef HAVE_GETOPT_LONG
-	   (read_opt = getopt_long(argc, argv, opt_options, 
-				   longopts, &longopt_idx))
-#else
-	   (read_opt = getopt(argc, argv, opt_options))
-#endif /* HAVE_GETOPT_LONG */
-	   != -1) {
 
+    log_array_tmp = g_array_new (TRUE, FALSE, sizeof (struct log_struct));
+    g_log_set_handler (NULL,
+		    G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK,
+		    callbacks_temporary_handle_log_messages, NULL);
+
+
+    /* 1. Process "length unit" command line flag */
+    unit_flag_counter = 0;
+    opterr = 0; /* Disable getopt() error messages */
+    while (-1 != (read_opt = getopt_configured(argc, argv, opt_options,
+				    longopts, &longopt_idx))) {
+	switch (read_opt) {
+	case 'u':
+	    unit_flag_counter++;
+
+	    if (!getopt_lengh_unit(optarg, &input_divisor, &screen))
+		GERB_COMPILE_WARNING(
+			_("Unrecognized length unit \"%s\" in command line"),
+			optarg);
+
+	    break;
+	}
+    }
+
+    /* 2. Process all other command line flags */
+    optind = 0; /* Reset getopt() index */
+    opterr = 1; /* Enable getopt() error messages */
+    while (-1 != (read_opt = getopt_configured(argc, argv, opt_options,
+				    longopts, &longopt_idx))) {
 	switch (read_opt) {
 #ifdef HAVE_GETOPT_LONG
 	case 0:
 	    /* Only long options like GDK/GTK debug */
 	    switch (longopt_val) {
 	    case 0: /* default value if nothing is set */
-		fprintf(stderr, _("Not handled option %s\n"), longopts[longopt_idx].name);
+		GERB_COMPILE_WARNING(
+			_("Not handled option \"%s\" in command line\n"),
+			longopts[longopt_idx].name);
 		break;
 	    case 1: /* geometry */
 		errno = 0;
@@ -762,12 +789,18 @@ main(int argc, char *argv[])
 	    	transformCount = 0;
 	    break;
 	case 'u':
-	    if (strncasecmp(optarg, "mm", 2) == 0) {
-		input_divisor = 25.4;
-	    } else if (strncasecmp(optarg, "mil", 3) == 0) {
-		input_divisor = 1000.0;
-	    }
+	    if (unit_flag_counter == 1)
+		    /* Length unit flag occurred only once and processed */
+		    break;
+
+	    /* Length unit flag occurred more than once, process each one */
+	    if (!getopt_lengh_unit(optarg, &input_divisor, &screen))
+		GERB_COMPILE_WARNING(
+			_("Unrecognized length unit \"%s\" in command line"),
+			optarg);
+
 	    break;
+
 	case 'w':
 	    userSuppliedWindowInPixels = TRUE;
     	case 'W' :
@@ -899,7 +932,9 @@ main(int argc, char *argv[])
 	    exit(1);
 	    break;
 	default :
-	    printf(_("Not handled option [%d=%c]\n"), read_opt, read_opt);
+	    /* This should not be reached */
+	    GERB_COMPILE_WARNING(_("Not handled option '%c' in command line"),
+			    read_opt);
 	}
     }
     
@@ -910,12 +945,8 @@ main(int argc, char *argv[])
      * a project.
      */
 
-    log_array_tmp = g_array_new (TRUE, FALSE, sizeof (struct log_struct));
-    g_log_set_handler (NULL,
-		    G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION | G_LOG_LEVEL_MASK,
-		    callbacks_temporary_handle_log_messages, NULL);
     if (project_filename) {
-	printf(_("Loading project %s...\n"), project_filename);
+	dprintf(_("Loading project %s...\n"), project_filename);
 	/* calculate the absolute pathname to the project if the user
 	   used a relative path */
 	g_free (mainProject->path);
@@ -985,7 +1016,6 @@ main(int argc, char *argv[])
 	}
     }
 
-    screen.unit = GERBV_DEFAULT_UNIT;
     if (exportType != EXP_TYPE_NONE) {
 	/* load the info struct with the default values */
 
@@ -1125,3 +1155,35 @@ main(int argc, char *argv[])
     return 0;
 } /* main */
 
+static int
+getopt_configured(int argc, char * const argv[], const char *optstring,
+		const struct option *longopts, int *longindex)
+{
+#ifdef HAVE_GETOPT_LONG
+	return getopt_long(argc, argv, optstring, longopts, longindex);
+#else
+	return getopt(argc, argv, optstring);
+#endif
+}
+
+static int
+getopt_lengh_unit(const char *optarg, double *input_div, gerbv_screen_t *screen)
+{
+	if (strncasecmp(optarg, "mm", 2) == 0) {
+		*input_div = 25.4;
+		screen->unit = GERBV_MMS;
+		screen->unit_is_from_cmdline = TRUE;
+	} else if (strncasecmp(optarg, "mil", 3) == 0) {
+		*input_div = 1000.0;
+		screen->unit = GERBV_MILS;
+		screen->unit_is_from_cmdline = TRUE;
+	} else if (strncasecmp(optarg, "inch", 4) == 0) {
+		*input_div = 1.0;
+		screen->unit = GERBV_INS;
+		screen->unit_is_from_cmdline = TRUE;
+	} else {
+		return 0;
+	}
+
+	return 1;
+}

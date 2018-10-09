@@ -105,6 +105,7 @@ typedef struct {
     gerbv_state_t state;
     gerbv_tool_t tool;
     gerbv_gui_unit_t unit;
+    gboolean unit_is_from_cmdline;
 
     gint last_x;
     gint last_y;
