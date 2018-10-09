@@ -363,6 +363,7 @@ main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filenam
 } /* gerbv_save_as_project_from_filename */
 
 GArray *log_array_tmp = NULL;
+
 /* Temporary log messages handler. It will store log messages before GUI
  * initialization. */
 void
@@ -469,6 +470,15 @@ main(int argc, char *argv[])
 	NULL
     };
 
+    const gchar *settings_schema_env = "GSETTINGS_SCHEMA_DIR";
+#ifdef WIN32
+    /* On Windows executable is not in bin/ dir */
+    const gchar *settings_schema_fallback_dir = "share\\glib-2.0\\schemas";
+#else
+    const gchar *settings_schema_fallback_dir = "../share/glib-2.0/schemas";
+#endif
+    gchar *env_val;
+
 #if ENABLE_NLS
     setlocale(LC_ALL, "");
     bindtextdomain(PACKAGE, LOCALEDIR);
@@ -491,6 +501,24 @@ main(int argc, char *argv[])
     mainProject = gerbv_create_project();
     mainProject->execname = g_strdup(argv[0]);
     mainProject->execpath = g_path_get_dirname(argv[0]);
+
+    /* Add "fallback" directory with settings schema file from this
+     * executable path */
+    if (NULL == g_getenv(settings_schema_env))
+	    /* Empty env var */
+	    env_val = g_strconcat(
+		    mainProject->execpath, G_DIR_SEPARATOR_S,
+				settings_schema_fallback_dir,
+		    NULL);
+    else
+	    /* Not empty env var */
+	    env_val = g_strconcat(g_getenv(settings_schema_env),
+		    G_SEARCHPATH_SEPARATOR_S,
+		    mainProject->execpath, G_DIR_SEPARATOR_S,
+				settings_schema_fallback_dir,
+		    NULL);
+    g_setenv(settings_schema_env, env_val, TRUE);
+    g_free(env_val);
     
     /* set default rendering mode */
 #ifdef WIN32

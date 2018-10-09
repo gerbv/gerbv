@@ -301,7 +301,22 @@ interface_create_gui (int req_width, int req_height)
 	const GtkTargetEntry dragTargetEntries[] = {
 		{ "text/uri-list", 0, 1 },
 	};
-	
+
+	GSettingsSchema *settings_schema;
+	GSettings *settings = NULL;
+	const gchar *settings_id = "org.geda-user.gerbv";
+
+	/* Try to find settings schema, GSETTINGS_SCHEMA_DIR env. variable was
+	 * updated with fallback schema directory */
+	settings_schema = g_settings_schema_source_lookup(
+			g_settings_schema_source_get_default(),
+			settings_id, TRUE);
+
+	if (NULL != settings_schema) {
+		g_settings_schema_unref(settings_schema);
+		settings = g_settings_new(settings_id);
+	}
+
 	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
 	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
 	zoompixbuf = gdk_pixbuf_new_from_inline(-1, lzoom, FALSE, NULL);
@@ -579,11 +594,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_selection_on_invisible);
 
 	show_cross_on_drill_holes = gtk_check_menu_item_new_with_mnemonic (_("Show _cross on drill holes"));
-	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (show_cross_on_drill_holes), FALSE);
 	gtk_tooltips_set_tip (tooltips, show_cross_on_drill_holes,
 			_("Show cross on drill holes"), NULL);
 	SET_ACCELS (show_cross_on_drill_holes, ACCEL_VIEW_CROSS_ON_DRILL_HOLES);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_cross_on_drill_holes);
+	if (settings)
+		g_settings_bind (settings, "cross-on-drill-holes",
+				show_cross_on_drill_holes, "active",
+				G_SETTINGS_BIND_DEFAULT);
 	
 	layer_visibility_menu = gtk_menu_new ();
 	gtk_menu_set_accel_group (GTK_MENU(layer_visibility_menu), accel_group);
@@ -1043,8 +1061,27 @@ interface_create_gui (int req_width, int req_height)
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Fast, with XOR"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Normal"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("High quality"));
-	if (screenRenderInfo.renderType < GERBV_RENDER_TYPE_MAX)
-	    gtk_combo_box_set_active (GTK_COMBO_BOX (render_combobox), screenRenderInfo.renderType);
+
+	if (settings) {
+		g_settings_bind (settings, "visual-rendering-type",
+				render_combobox, "active",
+				G_SETTINGS_BIND_DEFAULT);
+
+		/* Sync menu item render type */
+		screenRenderInfo.renderType =
+			gtk_combo_box_get_active (
+					GTK_COMBO_BOX (render_combobox));
+		if ((unsigned int)screenRenderInfo.renderType <
+				GERBV_RENDER_TYPE_MAX) {
+			gtk_check_menu_item_set_active (
+					screen.win.menu_view_render_group[
+						screenRenderInfo.renderType],
+						TRUE);
+		}
+	} else {
+		gtk_combo_box_set_active (GTK_COMBO_BOX(render_combobox),
+				screenRenderInfo.renderType);
+	}
 
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_box_pack_start (GTK_BOX (vbox10), scrolledwindow1, TRUE, TRUE, 0);
@@ -1165,6 +1202,39 @@ interface_create_gui (int req_width, int req_height)
 	gtk_combo_box_append_text (GTK_COMBO_BOX (statusUnitComboBox), _("mil"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (statusUnitComboBox), _("mm"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (statusUnitComboBox), _("in"));
+	screen.win.statusUnitComboBox = statusUnitComboBox;
+
+	/* 1. Set default unit */
+	int screen_unit_orig = screen.unit;
+	/* Trigger change */
+
+	gtk_combo_box_set_active (GTK_COMBO_BOX (statusUnitComboBox),
+			screen_unit_orig);
+	/* Update unit item in menu */
+	callbacks_statusbar_unit_combo_box_changed (
+			GTK_COMBO_BOX (statusUnitComboBox),
+			GINT_TO_POINTER (TRUE));
+
+	/* 2. Try to set unit from stored settings */
+	if (settings) {
+		g_settings_bind (settings, "visual-unit",
+				statusUnitComboBox, "active",
+				G_SETTINGS_BIND_DEFAULT);
+		/* Update unit item in menu */
+		callbacks_statusbar_unit_combo_box_changed (
+				GTK_COMBO_BOX (statusUnitComboBox),
+				GINT_TO_POINTER (TRUE));
+	}
+
+	/* 3. Override unit from cmdline */
+	if (screen.unit_is_from_cmdline) {
+		gtk_combo_box_set_active (GTK_COMBO_BOX (statusUnitComboBox),
+				screen_unit_orig);
+		/* Update unit item in menu */
+		callbacks_statusbar_unit_combo_box_changed (
+				GTK_COMBO_BOX (statusUnitComboBox),
+				GINT_TO_POINTER (TRUE));
+	}
 
 	statusbar_label_right = gtk_label_new ("");
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_right, TRUE, TRUE, 0);
@@ -1442,15 +1512,7 @@ interface_create_gui (int req_width, int req_height)
 	                  G_CALLBACK (callbacks_scrollbar_button_pressed), NULL);                 
 	g_signal_connect ((gpointer) vScrollbar, "button-release-event",
 	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);               
-	
 
-	if (screen.unit == GERBV_MILS)
-		gtk_combo_box_set_active (GTK_COMBO_BOX (statusUnitComboBox), 0);
-	else if (screen.unit == GERBV_MMS)
-		gtk_combo_box_set_active (GTK_COMBO_BOX (statusUnitComboBox), 1);
-	else
-		gtk_combo_box_set_active (GTK_COMBO_BOX (statusUnitComboBox), 2);
-	   
 	gint width, height;
               
 	gtk_window_add_accel_group (GTK_WINDOW (mainWindow), accel_group);
@@ -1606,7 +1668,6 @@ interface_create_gui (int req_width, int req_height)
 	screen.win.messageTextView = message_textview;
 	screen.win.statusMessageLeft = statusbar_label_left;
 	screen.win.statusMessageRight = statusbar_label_right;
-	screen.win.statusUnitComboBox = statusUnitComboBox;
 	screen.win.layerTree = tree;
 	screen.win.treeIsUpdating = FALSE;
 

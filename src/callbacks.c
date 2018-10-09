@@ -1815,7 +1815,8 @@ callbacks_render_type_changed () {
 
 /* --------------------------------------------------------- */
 static void
-callbacks_units_changed (gerbv_gui_unit_t unit) {
+callbacks_units_changed (gerbv_gui_unit_t unit)
+{
 	static gboolean isChanging = FALSE;
 
 	if (isChanging)
@@ -1824,23 +1825,22 @@ callbacks_units_changed (gerbv_gui_unit_t unit) {
 	isChanging = TRUE;
 	screen.unit = unit;
 
-	if (unit == GERBV_MILS){
-		gtk_combo_box_set_active (GTK_COMBO_BOX (screen.win.statusUnitComboBox), GERBV_MILS);
-		gtk_check_menu_item_set_active (screen.win.menu_view_unit_group[GERBV_MILS], TRUE);
-	} else if (unit == GERBV_MMS){
-		gtk_combo_box_set_active (GTK_COMBO_BOX (screen.win.statusUnitComboBox), GERBV_MMS);
-		gtk_check_menu_item_set_active (screen.win.menu_view_unit_group[GERBV_MMS], TRUE);
-	} else {
-		gtk_combo_box_set_active (GTK_COMBO_BOX (screen.win.statusUnitComboBox), GERBV_INS);
-		gtk_check_menu_item_set_active (screen.win.menu_view_unit_group[GERBV_INS], TRUE);
+	if (unit == GERBV_MILS || unit == GERBV_MMS || unit == GERBV_INS) {
+		gtk_combo_box_set_active (
+				GTK_COMBO_BOX (screen.win.statusUnitComboBox),
+				unit);
+		gtk_check_menu_item_set_active (
+				screen.win.menu_view_unit_group[unit], TRUE);
 	}
 
 	callbacks_update_ruler_scales ();
 	callbacks_update_statusbar_coordinates (screen.last_x, screen.last_y);
 	
 	if (screen.tool == MEASURE)
-		callbacks_update_statusbar_measured_distance (screen.win.lastMeasuredX, screen.win.lastMeasuredY);
-	
+		callbacks_update_statusbar_measured_distance (
+				screen.win.lastMeasuredX,
+				screen.win.lastMeasuredY);
+
 	isChanging = FALSE;
 }
 
@@ -2178,7 +2178,7 @@ callbacks_get_selected_row_index (void)
 	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
 			((GtkTreeView *) screen.win.layerTree);
 	gint index=-1,i=0;
-	
+
 	/* This will only work in single or browse selection mode! */
 	selection = gtk_tree_view_get_selection((GtkTreeView *) screen.win.layerTree);
 	if (gtk_tree_selection_get_selected(selection, NULL, &iter)) {
@@ -3712,10 +3712,13 @@ callbacks_viewmenu_units_changed (GtkCheckMenuItem *widget, gpointer user_data) 
 
 /* --------------------------------------------------------- */
 void
-callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
+callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget,
+		gpointer user_data)
+{
 	int unit = gtk_combo_box_get_active (widget);
-	
-	if (unit < 0 || unit == screen.unit)
+	int force_change = GPOINTER_TO_INT (user_data);
+
+	if (!force_change && (unit < 0 || unit == screen.unit))
 		return;
 
 	callbacks_units_changed (unit);
