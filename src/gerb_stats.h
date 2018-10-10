@@ -36,6 +36,7 @@ gerbv_error_list_t *gerbv_stats_new_error_list(void);
 void gerbv_stats_printf(gerbv_error_list_t *list, gerbv_message_type_t type,
 			int layer, const char *text, ...)
 					__attribute__ ((format (printf, 4, 5)));
+const char *gerbv_escape_char(char c);
 void gerbv_stats_add_error(gerbv_error_list_t *error_list_in,
                            int layer, const char *error_text,
                            gerbv_message_type_t type);

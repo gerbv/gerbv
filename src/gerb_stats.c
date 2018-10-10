@@ -248,6 +248,59 @@ gerbv_stats_printf(gerbv_error_list_t *list, gerbv_message_type_t type,
     g_free(str);
 }
 
+/** Escape special ASCII char ('\n', '\0'). Return pointer to C string with
+ * escaped special char or original char. Return string must not be freed, and
+ * must be copied if used e.g. in other function arguments more than one time.
+ */
+/* ------------------------------------------------------- */
+const char *
+gerbv_escape_char(char c)
+{
+	static char ec[3];
+
+	ec[2] = '\0'; /* Two char string if escaped */
+
+	switch (c) {
+	case '\b':
+		ec[0] = '\\';
+		ec[1] = 'b';
+		break;
+	case '\f':
+		ec[0] = '\\';
+		ec[1] = 'f';
+		break;
+	case '\n':
+		ec[0] = '\\';
+		ec[1] = 'n';
+		break;
+	case '\r':
+		ec[0] = '\\';
+		ec[1] = 'r';
+		break;
+	case '\t':
+		ec[0] = '\\';
+		ec[1] = 't';
+		break;
+	case '\v':
+		ec[0] = '\\';
+		ec[1] = 'v';
+		break;
+	case '\\':
+		ec[0] = '\\';
+		ec[1] = '\\';
+		break;
+	case '"':
+		ec[0] = '\\';
+		ec[1] = '"';
+		break;
+	default:
+		ec[0] = c;
+		ec[1] = '\0'; /* One char string if not escaped */
+	}
+
+	return ec;
+}
+
 /* ------------------------------------------------------- */
 void
 gerbv_stats_add_error(gerbv_error_list_t *error_list_in,
