@@ -731,9 +731,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	default:
 	    stats->unknown++;
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		    _("Found unknown character (whitespace?) "
-			"[%d] '%c' at line %zd in file \"%s\""),
-		    read, read, line_num, fd->filename);
+		    _("Found unknown character '%s' (0x%x) "
+			"at line %zd in file \"%s\""),
+		    gerbv_escape_char(read), read,
+		    line_num, fd->filename);
 	}  /* switch((char) (read & 0xff)) */
     }
     return foundEOF;
@@ -1337,17 +1338,19 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6')) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			    _("Illegal format size %c "
+			    _("Illegal format size '%s' "
 				"at line %zd in file \"%s\""),
-			    (char)op[0], *line_num_p, fd->filename);
+			    gerbv_escape_char(op[0]),
+			    *line_num_p, fd->filename);
 		}
 		image->format->x_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6')) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			    _("Illegal format size %c "
+			    _("Illegal format size '%s' "
 				"at line %zd in file \"%s\""),
-			    (char)op[0], *line_num_p, fd->filename);
+			    gerbv_escape_char(op[0]),
+			    *line_num_p, fd->filename);
 		}
 		image->format->x_dec = op[0] - '0';
 		break;
@@ -1355,25 +1358,28 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6')) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			    _("Illegal format size %c "
+			    _("Illegal format size '%s' "
 				"at line %zd in file \"%s\""),
-			    (char)op[0], *line_num_p, fd->filename);
+			    gerbv_escape_char(op[0]),
+			    *line_num_p, fd->filename);
 		}
 		image->format->y_int = op[0] - '0';
 		op[0] = gerb_fgetc(fd);
 		if ((op[0] < '0') || (op[0] > '6')) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			    _("Illegal format size %c "
+			    _("Illegal format size '%s' "
 			       "at line %zd in file \"%s\""),
-			    (char)op[0], *line_num_p, fd->filename);
+			    gerbv_escape_char(op[0]),
+			    *line_num_p, fd->filename);
 		}
 		image->format->y_dec = op[0] - '0';
 		break;
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			_("Illegal format statement [%c] "
+			_("Illegal format statement '%s' "
 			   "at line %zd in file \"%s\""),
-			op[0], *line_num_p, fd->filename);
+			gerbv_escape_char(op[0]),
+			*line_num_p, fd->filename);
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
 			_("Ignoring invalid format statement"));
 	    }
@@ -1407,9 +1413,9 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		break;
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			_("Wrong character '%c' in mirror "
+			_("Wrong character '%s' in mirror "
 			    "at line %zd in file \"%s\""),
-			op[0], *line_num_p, fd->filename);
+			gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1433,8 +1439,9 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    break;
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		    _("Illegal unit '%c%c' at line %zd in file \"%s\""),
-		    op[0], op[1], *line_num_p, fd->filename);
+		    _("Illegal unit '%s%s' at line %zd in file \"%s\""),
+		    gerbv_escape_char(op[0]), gerbv_escape_char(op[1]),
+		    *line_num_p, fd->filename);
 	}
 	break;
     case A2I('O','F'): /* Offset */
@@ -1450,9 +1457,9 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		break;
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			_("Wrong character '%c' in offset "
+			_("Wrong character '%s' in offset "
 			    "at line %zd in file \"%s\""),
-			op[0], *line_num_p, fd->filename);
+			gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1505,9 +1512,9 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		break;
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			_("Wrong character '%c' in image offset "
+			_("Wrong character '%s' in image offset "
 			    "at line %zd in file \"%s\""),
-			op[0], *line_num_p, fd->filename);
+			gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1554,9 +1561,10 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    break;
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		    _("Unknown input code (IC) '%c%c' "
+		    _("Unknown input code (IC) '%s%s' "
 			"at line %zd in file \"%s\""),
-		    op[0], op[1], *line_num_p, fd->filename);
+		    gerbv_escape_char(op[0]), gerbv_escape_char(op[1]),
+		    *line_num_p, fd->filename);
 	}
 	break;
 	
@@ -1593,9 +1601,9 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		break;
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			_("Wrong character '%c' in image justify "
+			_("Wrong character '%s' in image justify "
 			    "at line %zd in file \"%s\""),
-			op[0], *line_num_p, fd->filename);
+			gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
 	}
@@ -1621,9 +1629,10 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    image->info->polarity = GERBV_POLARITY_NEGATIVE;
 	else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		    _("Unknown polarity: '%c%c%c' "
+		    _("Unknown polarity '%s%s%s' "
 			"at line %zd in file \"%s\""),
-		    str[0], str[1], str[2], *line_num_p, fd->filename);
+		    gerbv_escape_char(str[0]), gerbv_escape_char(str[1]),
+		    gerbv_escape_char(str[2]), *line_num_p, fd->filename);
 	}
 	break;
     case A2I('I','R'): /* Image Rotation */
@@ -1713,9 +1722,9 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    break;
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		    _("Unknown Layer Polarity '%c' "
+		    _("Unknown layer polarity '%s' "
 		       "at line %zd in file \"%s\""),
-		    op[0], *line_num_p, fd->filename);
+		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	}
 	break;
     case A2I('K','O'): /* Knock Out */
@@ -1843,9 +1852,10 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	break;
     default:
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		_("Unknown RS-274X extension found %%%c%c%% "
+		_("Unknown RS-274X extension found %%%s%s%% "
 		    "at line %zd in file \"%s\""),
-		op[0], op[1], *line_num_p, fd->filename);
+		gerbv_escape_char(op[0]), gerbv_escape_char(op[1]),
+		*line_num_p, fd->filename);
     }
 
     // make sure we read until the trailing * character
