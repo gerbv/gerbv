@@ -623,7 +623,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    gerb_transf_apply(-partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
-#warning "Write unifying function"
+/* TODO: write unifying function */
 	    if (strlen (partData.designator) > 0) {
 		curr_net->label = g_string_new (partData.designator);
 	    }
