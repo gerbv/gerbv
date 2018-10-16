@@ -27,6 +27,7 @@
 */
 
 #include "gerbv.h"
+#include "drill.h"
 
 #if !defined(WIN32) && !defined(QUARTZ)
 # include <gdk/gdkx.h>
@@ -1432,35 +1433,33 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(M_table->widget), TRUE);
 	table_add_row(M_table, "M00", stats_report->M00,
-			_("End of program"));
+				_(drill_m_code_name(0)));
 	table_add_row(M_table, "M01", stats_report->M01,
-			_("End of pattern"));
+				_(drill_m_code_name(1)));
 	table_add_row(M_table, "M18", stats_report->M18,
-			_("Tool tip check"));
+				_(drill_m_code_name(18)));
 	table_add_row(M_table, "M25", stats_report->M25,
-			_("Begin pattern"));
+				_(drill_m_code_name(25)));
 	table_add_row(M_table, "M30", stats_report->M30,
-			_("End program rewind"));
-	table_add_row(M_table, "M31", stats_report->M31,
-			_("Begin pattern"));
+				_(drill_m_code_name(30)));
 	table_add_row(M_table, "M45", stats_report->M45,
-			_("Long message"));
+				_(drill_m_code_name(45)));
 	table_add_row(M_table, "M47", stats_report->M47,
-			_("Operator message"));
+				_(drill_m_code_name(47)));
 	table_add_row(M_table, "M48", stats_report->M48,
-			_("Begin program header"));
+				_(drill_m_code_name(48)));
 	table_add_row(M_table, "M71", stats_report->M71,
-			_("Metric units"));
+				_(drill_m_code_name(71)));
 	table_add_row(M_table, "M72", stats_report->M72,
-			_("English units"));
+				_(drill_m_code_name(72)));
 	table_add_row(M_table, "M95", stats_report->M95,
-			_("End program header"));
+				_(drill_m_code_name(95)));
 	table_add_row(M_table, "M97", stats_report->M97,
-			   _("Canned text"));
+				_(drill_m_code_name(97)));
 	table_add_row(M_table, "M98", stats_report->M98,
-			_("Canned text"));
+				_(drill_m_code_name(98)));
 	table_add_row(M_table, "", stats_report->M_unknown,
-			_("Unknown M codes"));
+				_("Unknown M codes"));
 
 	table_set_sortable(M_table);
 	gtk_container_add(GTK_CONTAINER(M_report_window), M_table->widget);
@@ -2149,7 +2148,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 
 /* --------------------------------------------------------- */
 static void
-callbacks_select_row (gint rowIndex)
+callbacks_select_layer_row (gint rowIndex)
 {
 	GtkTreeSelection *selection;
 	GtkTreeIter iter;
@@ -2205,7 +2204,7 @@ callbacks_remove_layer_button_clicked (GtkButton *button, gpointer user_data)
 
 		gerbv_unload_layer (mainProject, index);
 		callbacks_update_layer_tree ();
-		callbacks_select_row (0);
+		callbacks_select_layer_row (0);
 
 		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen ();
@@ -2234,8 +2233,9 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 
 	if (index < mainProject->last_loaded) {
 		gerbv_change_layer_order (mainProject, index, index + 1);
-	      callbacks_update_layer_tree ();
-	      callbacks_select_row (index + 1);
+		callbacks_update_layer_tree ();
+		callbacks_select_layer_row (index + 1);
+
 		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen ();
 		}
@@ -2264,7 +2264,7 @@ callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data
 	if (index > 0) {
 		gerbv_change_layer_order (mainProject, index, index - 1);
 		callbacks_update_layer_tree ();
-		callbacks_select_row (index - 1);
+		callbacks_select_layer_row (index - 1);
 		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen();
 		}
@@ -2555,6 +2555,7 @@ gboolean
 callbacks_layer_tree_key_press (GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
 	/* if space is pressed while a color picker icon is in focus,
 	show the color picker dialog. */
+
 	if(event->keyval == GDK_space){
 		GtkTreeView *tree;
 		GtkTreePath *path;
@@ -2602,7 +2603,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 			if (indices && (indices[0] <= mainProject->last_loaded)) {
 				switch (callbacks_get_col_num_from_tree_view_col (col)) {
 				case 0:
-					callbacks_select_row (indices[0]);
+					callbacks_select_layer_row (indices[0]);
 					callbacks_layer_tree_visibility_toggled (indices[0]);
 					return TRUE;
 				case 1:
@@ -2833,7 +2834,8 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 		now = time(NULL);
 		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
-	g_message(_("FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n"),
+	g_message(_("FAST (=GDK) mode benchmark: %d redraws "
+				"in %ld seconds (%g redraws/second)"),
 		      i, (long int) (now - start), (double) i / (double)(now - start));
 	gdk_pixmap_unref(renderedPixmap);
 	
@@ -2854,7 +2856,8 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 		now = time(NULL);
 		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
-	g_message(_("NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g redraws/second)\n"),
+	g_message(_("NORMAL (=Cairo) mode benchmark: %d redraws "
+				"in %ld seconds (%g redraws/second)"),
 		      i, (long int) (now - start), (double) i / (double)(now - start));
 }
 
@@ -2864,15 +2867,22 @@ callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
 {
 	// prepare render	size and options (canvas size width and height are last 2 variables)		
 	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0, GERBV_RENDER_TYPE_GDK, 640, 480};
+
+	if (!interface_get_alert_dialog_response(_("Performance benchmark"),
+			_("Application will be unresponsive for 1 minute! "
+			"Run performance benchmark?"),
+			FALSE, FALSE, GTK_STOCK_OK, GTK_STOCK_CANCEL))
+		return;
+
 	// autoscale the image for now...maybe we don't want to do this in order to
 	//   allow benchmarking of different zoom levels?
 	gerbv_render_zoom_to_fit_display (mainProject, &renderInfo);
 
-	g_message(_("Full zoom benchmarks\n"));
+	g_message(_("Full zoom benchmarks"));
 	callbacks_support_benchmark (&renderInfo);
 
 		   
-	g_message(_("x5 zoom benchmarks\n"));
+	g_message(_("x5 zoom benchmarks"));
 	renderInfo.lowerLeftX += (screenRenderInfo.displayWidth /
 				screenRenderInfo.scaleFactorX) / 3.0;
 	renderInfo.lowerLeftY += (screenRenderInfo.displayHeight /
@@ -3712,9 +3722,7 @@ callbacks_viewmenu_units_changed (GtkCheckMenuItem *widget, gpointer user_data) 
 
 /* --------------------------------------------------------- */
 void
-callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget,
-		gpointer user_data)
-{
+callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
 	int unit = gtk_combo_box_get_active (widget);
 	int force_change = GPOINTER_TO_INT (user_data);
 
@@ -4286,7 +4294,10 @@ static void parea_report (gerbv_net_t *net,
 			n = n->next) {
 
 		if (n->aperture_state != GERBV_APERTURE_STATE_ON)
+			g_message("not on");
+#if 0
 			continue;
+#endif
 
 		switch (n->interpolation) {
 

@@ -860,11 +860,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu),
 			analyze_active_drill);
 
-	analyze_benchmark = gtk_menu_item_new_with_mnemonic (_("_Benchmark (1 min)"));
+	analyze_benchmark = gtk_menu_item_new_with_mnemonic (_("_Benchmark"));
 	gtk_tooltips_set_tip (tooltips, analyze_benchmark, 
-			      _("Benchmark different rendering methods. Will make the application unresponsive for 1 minute!"), NULL);
-	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu), analyze_benchmark);
-
+			_("Benchmark different rendering methods. Will make "
+			"the application unresponsive for 1 minute!"), NULL);
+	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu),
+			gtk_separator_menu_item_new ());
+	gtk_container_add (GTK_CONTAINER (menuitem_analyze_menu),
+			analyze_benchmark);
 
 	/* Wait and add in for 2.1??
 	control_gerber_options = gtk_menu_item_new_with_mnemonic (_("Control Gerber options..."));
