@@ -339,9 +339,9 @@ render_toggle_measure_line(void)
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
 	render_board2screen(&start_x, &start_y,
-				screen.measure_start_x, screen.measure_start_y); 
+				screen.measure_start_x, screen.measure_start_y);
 	render_board2screen(&last_x, &last_y,
-				screen.measure_last_x, screen.measure_last_y); 
+				screen.measure_stop_x, screen.measure_stop_y);
 	render_trim_point(&start_x, &start_y, last_x, last_y);
 	render_trim_point(&last_x, &last_y, start_x, start_y);
 	gdk_draw_line(screen.drawing_area->window, gc, start_x,
@@ -356,11 +356,11 @@ render_draw_measure_distance(void)
 {
 	gdouble dx, dy;
 
-	dx = fabs (screen.measure_start_x - screen.measure_last_x);
-	dy = fabs (screen.measure_start_y - screen.measure_last_y);
+	dx = fabs (screen.measure_start_x - screen.measure_stop_x);
+	dy = fabs (screen.measure_start_y - screen.measure_stop_y);
 
-	screen.win.lastMeasuredX = dx;
-	screen.win.lastMeasuredY = dy;
+	screen.measure_last_x = dx;
+	screen.measure_last_y = dy;
 	callbacks_update_statusbar_measured_distance (dx, dy);
 	render_toggle_measure_line();
 }

@@ -1837,8 +1837,8 @@ callbacks_units_changed (gerbv_gui_unit_t unit)
 	
 	if (screen.tool == MEASURE)
 		callbacks_update_statusbar_measured_distance (
-				screen.win.lastMeasuredX,
-				screen.win.lastMeasuredY);
+				screen.measure_last_x,
+				screen.measure_last_y);
 
 	isChanging = FALSE;
 }
@@ -2097,8 +2097,8 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			/* To not show previous measure drag-line */
 			screen.measure_start_x = 0;
 			screen.measure_start_y = 0;
-			screen.measure_last_x =  0;
-			screen.measure_last_y =  0;
+			screen.measure_stop_x =  0;
+			screen.measure_stop_y =  0;
 
 			/* If two items are selected, measure they distance */
 			if (selection_length (&screen.selectionInfo) == 2) {
@@ -2124,11 +2124,11 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 							item[0].image,
 							mainProject);
 
-					screen.measure_last_x = net[1]->stop_x;
-					screen.measure_last_y = net[1]->stop_y;
+					screen.measure_stop_x = net[1]->stop_x;
+					screen.measure_stop_y = net[1]->stop_y;
 					gerbv_transform_coord_for_image(
-							&screen.measure_last_x,
-							&screen.measure_last_y,
+							&screen.measure_stop_x,
+							&screen.measure_stop_y,
 							item[1].image,
 							mainProject);
 
@@ -3249,8 +3249,8 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		case IN_MEASURE: {
 			/* clear the previous drawn line by drawing over it */
 			render_toggle_measure_line();
-			callbacks_screen2board(&(screen.measure_last_x), &(screen.measure_last_y),
-							x, y);
+			callbacks_screen2board(&(screen.measure_stop_x),
+			    &(screen.measure_stop_y), x, y);
 			/* screen.last_[xy] are updated to move the ruler pointers */
 			screen.last_x = x;
 			screen.last_y = y;
@@ -3310,8 +3310,8 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				screen.state = IN_MEASURE;
 				callbacks_screen2board(&(screen.measure_start_x), &(screen.measure_start_y),
 								event->x, event->y);
-				screen.measure_last_x = screen.measure_start_x;
-				screen.measure_last_y = screen.measure_start_y;
+				screen.measure_stop_x = screen.measure_start_x;
+				screen.measure_stop_y = screen.measure_start_y;
 				/* force an expose event to clear any previous measure lines */
 				callbacks_force_expose_event_for_screen ();
 			}

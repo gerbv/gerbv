@@ -80,9 +80,6 @@ typedef struct {
 	GtkWidget *curEditMenuItem;
 	GtkWidget *curEditAlingMenuItem, *curEditAlingItem[2];
 	GtkWidget *curFileMenuItem[7];
-
-	gdouble lastMeasuredX;
-	gdouble lastMeasuredY;
     } win;
 
     gpointer windowSurface;
@@ -106,6 +103,7 @@ typedef struct {
     gerbv_tool_t tool;
     gerbv_gui_unit_t unit;
     gboolean unit_is_from_cmdline;
+    GSettings *settings;
 
     gint last_x;
     gint last_y;
@@ -117,7 +115,10 @@ typedef struct {
 
     gdouble measure_start_x;	/* Measure start board coordinates */
     gdouble measure_start_y;
-    gdouble measure_last_x;	/* Measure end board coordinates */
+    gdouble measure_stop_x;	/* Measure end board coordinates */
+    gdouble measure_stop_y;
+
+    gdouble measure_last_x;
     gdouble measure_last_y;
 
     gdouble length_sum;
