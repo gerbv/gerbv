@@ -104,6 +104,8 @@ static void parea_report(gerbv_net_t *,
 		gerbv_image_t *, gerbv_project_t *);
 static void net_layer_file_report(gerbv_net_t *,
 		gerbv_image_t *, gerbv_project_t *);
+static void analyze_window_size_restore(GtkWidget *);
+static void analyze_window_size_store(GtkWidget *, gpointer);
 
 static void update_selected_object_message (gboolean userTriedToSelect);
 
@@ -1243,7 +1245,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 	gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_gerbers),
 			GTK_RESPONSE_ACCEPT);
-	g_signal_connect (G_OBJECT(analyze_active_gerbers),
+	g_signal_connect_after (G_OBJECT(analyze_active_gerbers),
 			"response",
 			G_CALLBACK (gtk_widget_destroy),
 			GTK_WIDGET(analyze_active_gerbers));
@@ -1296,7 +1298,17 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	gtk_container_add(
 			GTK_CONTAINER(GTK_DIALOG(analyze_active_gerbers)->vbox),
 			GTK_WIDGET(notebook));
-	gtk_widget_set_size_request(analyze_active_gerbers, 640, 300);
+
+	if (screen.settings) {
+		analyze_window_size_restore(analyze_active_gerbers);
+		g_signal_connect (G_OBJECT(analyze_active_gerbers), "response",
+				G_CALLBACK (analyze_window_size_store),
+				GTK_WIDGET(analyze_active_gerbers));
+	} else {
+		gtk_window_set_default_size(GTK_WINDOW(analyze_active_gerbers),
+						640, 320);
+	}
+
 	gtk_widget_show_all(analyze_active_gerbers);
 
 	gerbv_stats_destroy(stats_report);	
@@ -1538,7 +1550,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 
 	gtk_dialog_set_default_response (GTK_DIALOG(analyze_active_drill),
 			GTK_RESPONSE_ACCEPT);
-	g_signal_connect (G_OBJECT(analyze_active_drill),
+	g_signal_connect_after (G_OBJECT(analyze_active_drill),
 			"response",
 			G_CALLBACK (gtk_widget_destroy),
 			GTK_WIDGET(analyze_active_drill));
@@ -1578,11 +1590,21 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
 			GTK_WIDGET(drill_usage_report_window),
 			gtk_label_new(_("Drill usage")));
-    
+
 	/* Now put notebook into dialog window and show the whole thing */
 	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(analyze_active_drill)->vbox),
 			GTK_WIDGET(notebook));
-	gtk_widget_set_size_request(analyze_active_drill, 400, 300);
+
+	if (screen.settings) {
+		analyze_window_size_restore(analyze_active_drill);
+		g_signal_connect (G_OBJECT(analyze_active_drill), "response",
+				G_CALLBACK (analyze_window_size_store),
+				GTK_WIDGET(analyze_active_drill));
+	} else {
+		gtk_window_set_default_size(GTK_WINDOW(analyze_active_drill),
+						640, 320);
+	}
+
 	gtk_widget_show_all(analyze_active_drill);
 
 	gerbv_drill_stats_destroy(stats_report);
@@ -1633,8 +1655,38 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
 	// this would destroy the gui but not return from the gtk event loop.
   }
   gerbv_unload_all_layers (mainProject);
+
+  /* Save main window size and postion */
+  if (screen.settings) {
+    GtkWindow *win = GTK_WINDOW(screen.win.topLevelWindow);
+    gint32 xy[2];
+    GVariant *var;
+    gboolean is_max;
+
+    is_max = FALSE != (GDK_WINDOW_STATE_MAXIMIZED & gdk_window_get_state (
+			    gtk_widget_get_window (GTK_WIDGET(win))));
+    g_settings_set_boolean (screen.settings, "window-maximized", is_max);
+
+    if (!is_max) {
+      gtk_window_get_size (win, (gint *)xy, (gint *)(xy+1));
+      var = g_variant_new_fixed_array (G_VARIANT_TYPE_INT32, xy, 2,
+		      sizeof (xy[0]));
+      g_settings_set_value (screen.settings, "window-size", var);
+      g_variant_ref_sink (var);
+      g_variant_unref (var);
+
+      gtk_window_get_position (win, (gint *)xy, (gint *)(xy+1));
+      var = g_variant_new_fixed_array (G_VARIANT_TYPE_INT32, xy, 2,
+		      sizeof (xy[0]));
+      g_settings_set_value (screen.settings, "window-position", var);
+      g_variant_ref_sink (var);
+      g_variant_unref (var);
+    }
+  }
+
   gtk_main_quit();
-  return FALSE; // more or less... meaningless :)
+
+  return FALSE;
 }
 
 /* --------------------------------------------------------- */
@@ -4387,4 +4439,60 @@ static void net_layer_file_report(gerbv_net_t *net,
 		if (img == prj->file[i]->image)
 			g_message (_("    In file: %s"), prj->file[i]->name);
 	}
+}
+
+/* Restore report window size and postion */
+static void
+analyze_window_size_restore(GtkWidget *win)
+{
+	GVariant *var;
+	const gint32 *xy;
+	gsize num;
+
+	if (!screen.settings)
+		return;
+
+	var = g_settings_get_value (screen.settings, "analyze-window-size");
+	xy = g_variant_get_fixed_array (var, &num, sizeof (*xy));
+	if (num == 2)
+		gtk_window_set_default_size (GTK_WINDOW (win), xy[0], xy[1]);
+	g_variant_unref (var);
+
+	var = g_settings_get_value (screen.settings, "analyze-window-position");
+	xy = g_variant_get_fixed_array (var, &num, sizeof (*xy));
+	if (num == 2)
+		gtk_window_move (GTK_WINDOW (win), xy[0], xy[1]);
+	g_variant_unref (var);
+}
+
+/* Store report window size and postion */
+static void
+analyze_window_size_store(GtkWidget *win, gpointer user_data)
+{
+	gint32 xy[2];
+	GVariant *var;
+	gboolean is_max;
+
+	if (!screen.settings)
+		return;
+
+	is_max = FALSE != (GDK_WINDOW_STATE_MAXIMIZED &
+			gdk_window_get_state (gtk_widget_get_window (win)));
+	if (is_max)
+		return;
+
+	gtk_window_get_size (GTK_WINDOW (win), (gint *)xy, (gint *)(xy+1));
+	var = g_variant_new_fixed_array (G_VARIANT_TYPE_INT32,
+			xy, 2, sizeof (xy[0]));
+	g_settings_set_value (screen.settings, "analyze-window-size", var);
+	g_variant_ref_sink (var);
+	g_variant_unref (var);
+
+	gtk_window_get_position (GTK_WINDOW (win),
+			(gint *)xy, (gint *)(xy+1));
+	var = g_variant_new_fixed_array (G_VARIANT_TYPE_INT32,
+			xy, 2, sizeof (xy[0]));
+	g_settings_set_value (screen.settings, "analyze-window-position", var);
+	g_variant_ref_sink (var);
+	g_variant_unref (var);
 }

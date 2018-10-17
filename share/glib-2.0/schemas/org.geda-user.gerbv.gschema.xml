@@ -15,5 +15,30 @@
       <summary>Visual unit of length</summary>
       <description></description>
     </key>
+    <key name="window-size" type="ai">
+      <default>[]</default>
+      <summary>Main window size</summary>
+      <description></description>
+    </key>
+    <key name="window-position" type="ai">
+      <default>[]</default>
+      <summary>Main window position</summary>
+      <description></description>
+    </key>
+    <key name="window-maximized" type="b">
+      <default>false</default>
+      <summary>Main window is maximized</summary>
+      <description></description>
+    </key>
+    <key name="analyze-window-size" type="ai">
+      <default>[640, 320]</default>
+      <summary>Report window size</summary>
+      <description></description>
+    </key>
+    <key name="analyze-window-position" type="ai">
+      <default>[]</default>
+      <summary>Report window position</summary>
+      <description></description>
+    </key>
   </schema>
 </schemalist>

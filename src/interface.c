@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.s
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it toowill be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -303,8 +303,8 @@ interface_create_gui (int req_width, int req_height)
 	};
 
 	GSettingsSchema *settings_schema;
-	GSettings *settings = NULL;
 	const gchar *settings_id = "org.geda-user.gerbv";
+	screen.settings = NULL;
 
 	/* Try to find settings schema, GSETTINGS_SCHEMA_DIR env. variable was
 	 * updated with fallback schema directory */
@@ -314,7 +314,7 @@ interface_create_gui (int req_width, int req_height)
 
 	if (NULL != settings_schema) {
 		g_settings_schema_unref(settings_schema);
-		settings = g_settings_new(settings_id);
+		screen.settings = g_settings_new(settings_id);
 	}
 
 	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
@@ -326,6 +326,7 @@ interface_create_gui (int req_width, int req_height)
 	accel_group = gtk_accel_group_new ();
 
 	mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	screen.win.topLevelWindow = mainWindow;
 	gtk_window_set_title (GTK_WINDOW (mainWindow), _(gerbv_win_title));
 
 	vbox1 = gtk_vbox_new (FALSE, 0);
@@ -598,8 +599,8 @@ interface_create_gui (int req_width, int req_height)
 			_("Show cross on drill holes"), NULL);
 	SET_ACCELS (show_cross_on_drill_holes, ACCEL_VIEW_CROSS_ON_DRILL_HOLES);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_cross_on_drill_holes);
-	if (settings)
-		g_settings_bind (settings, "cross-on-drill-holes",
+	if (screen.settings)
+		g_settings_bind (screen.settings, "cross-on-drill-holes",
 				show_cross_on_drill_holes, "active",
 				G_SETTINGS_BIND_DEFAULT);
 	
@@ -1065,8 +1066,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("Normal"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX (render_combobox), _("High quality"));
 
-	if (settings) {
-		g_settings_bind (settings, "visual-rendering-type",
+	if (screen.settings) {
+		g_settings_bind (screen.settings, "visual-rendering-type",
 				render_combobox, "active",
 				G_SETTINGS_BIND_DEFAULT);
 
@@ -1219,8 +1220,8 @@ interface_create_gui (int req_width, int req_height)
 			GINT_TO_POINTER (TRUE));
 
 	/* 2. Try to set unit from stored settings */
-	if (settings) {
-		g_settings_bind (settings, "visual-unit",
+	if (screen.settings) {
+		g_settings_bind (screen.settings, "visual-unit",
 				statusUnitComboBox, "active",
 				G_SETTINGS_BIND_DEFAULT);
 		/* Update unit item in menu */
@@ -1512,12 +1513,10 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) hScrollbar, "button-release-event",
 	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);
 	g_signal_connect ((gpointer) vScrollbar, "button-press-event",
-	                  G_CALLBACK (callbacks_scrollbar_button_pressed), NULL);                 
+	                  G_CALLBACK (callbacks_scrollbar_button_pressed), NULL);
 	g_signal_connect ((gpointer) vScrollbar, "button-release-event",
-	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);               
+	                  G_CALLBACK (callbacks_scrollbar_button_released), NULL);
 
-	gint width, height;
-              
 	gtk_window_add_accel_group (GTK_WINDOW (mainWindow), accel_group);
 
 	GtkListStore *list_store;
@@ -1641,14 +1640,15 @@ interface_create_gui (int req_width, int req_height)
 
 	/* make sure tooltips show on gtk <2.12 systems */
 	gtk_tooltips_enable (tooltips);
-	/* 
-	* Good defaults according to Ales. Gives aspect ratio of 1.3333...
-	*/
-	if ((req_width != -1) && (req_height != -1)) {
+
+	gint width, height;
+
+	/* Good defaults according to Ales. Gives aspect ratio
+	 * of 1.3333... */
+	if (req_width != -1 && req_height != -1) {
 		width = req_width;
 		height = req_height;
-	} 
-	else {
+	} else {
 		GdkScreen *screen;
 		int nmonitors;
 
@@ -1659,15 +1659,40 @@ interface_create_gui (int req_width, int req_height)
 		height = gdk_screen_get_height(screen) * 3/4 / nmonitors;
 	}
 
-	gtk_window_set_default_size((GtkWindow *)mainWindow, width, height);
-	
-	GtkSettings* gtksettings = gtk_settings_get_default ();
-	g_object_set (G_OBJECT(gtksettings), "gtk-can-change-accels", TRUE, NULL);
+	gtk_window_set_default_size(GTK_WINDOW(mainWindow), width, height);
+
+	/* Restore main window size */
+	if (screen.settings && req_width == -1 && req_height == -1) {
+		GVariant *var;
+		const gint32 *xy;
+		gsize num;
+		gboolean is_max;
+
+		var = g_settings_get_value (screen.settings, "window-size");
+		xy = g_variant_get_fixed_array (var, &num, sizeof (*xy));
+		if (num == 2)
+			gtk_window_set_default_size (GTK_WINDOW (mainWindow),
+					xy[0], xy[1]);
+		g_variant_unref (var);
+
+		var = g_settings_get_value (screen.settings, "window-position");
+		xy = g_variant_get_fixed_array (var, &num, sizeof (*xy));
+		if (num == 2)
+			gtk_window_move (GTK_WINDOW (mainWindow), xy[0], xy[1]);
+		g_variant_unref (var);
+
+		is_max = g_settings_get_boolean (
+				screen.settings, "window-maximized");
+		if (is_max)
+			gtk_window_maximize (GTK_WINDOW (mainWindow));
+	}
+
+	g_object_set (G_OBJECT(gtk_settings_get_default()),
+			"gtk-can-change-accels", TRUE, NULL);
 	interface_load_accels ();
 
 	gtk_widget_show_all (mainWindow);
 
-	screen.win.topLevelWindow = mainWindow;
 	screen.win.messageTextView = message_textview;
 	screen.win.statusMessageLeft = statusbar_label_left;
 	screen.win.statusMessageRight = statusbar_label_right;
