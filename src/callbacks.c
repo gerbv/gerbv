@@ -943,33 +943,34 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 					gpointer user_data)
 {
 	gerbv_aperture_list_t *aperture_list;
+	gchar *str;
 	int i;
 
 	/* Get a report of stats & errors accumulated from all layers */
-	gerbv_stats_t *stats_report = generate_gerber_analysis();
+	gerbv_stats_t *stat = generate_gerber_analysis();
 
 	/* General info report */
 	GString *general_report_str = g_string_new(NULL);
-	if (stats_report->layer_count == 0) {
+	if (stat->layer_count == 0) {
 		g_string_printf(general_report_str,
 				_("No Gerber layers visible!"));
 	} else {
-		if (stats_report->error_list->error_text == NULL) {
+		if (stat->error_list->error_text == NULL) {
 			g_string_printf(general_report_str,
 				ngettext("No errors found in %d visible "
 					"Gerber layer.",
 					"No errors found in %d visible "
 					"Gerber layers.",
-					stats_report->layer_count),
-				stats_report->layer_count);
+					stat->layer_count),
+				stat->layer_count);
 		} else {
 			g_string_printf(general_report_str,
 				ngettext("Found errors in %d visible "
 					"Gerber layer.",
 					"Found errors in %d visible "
 					"Gerber layers.",
-					stats_report->layer_count),
-				stats_report->layer_count);
+					stat->layer_count),
+				stat->layer_count);
 		}
 	}
 
@@ -986,29 +987,39 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			_("Description"), G_TYPE_STRING);
 	table_set_column_align(general_table, 0, 1.0);
 
-	gerbv_fileinfo_t **files = mainProject->file;
-	gerbv_error_list_t *err_list;
 	for (i = 0; i <= mainProject->last_loaded; i++) {
-		if (files[i] && files[i]->isVisible &&
-				(files[i]->image->layertype ==
-				 GERBV_LAYERTYPE_RS274X)) {
-			table_add_row(general_table, i + 1,
-					_("RS274-X file"), files[i]->name);
+		gerbv_fileinfo_t **files = mainProject->file;
 
-			/* Check error report on layer */
-			if (stats_report->layer_count > 0 &&
-				stats_report->error_list->error_text != NULL) {
-				for (err_list = stats_report->error_list;
-						err_list != NULL;
-						err_list = err_list->next) {
-					if (i + 1 == err_list->layer) {
-						table_add_row(general_table,
-							err_list->layer,
-							error_type_string(
-								err_list->type),
-							err_list->error_text);
-					}
-				}
+		if (!files[i]
+		||  !files[i]->isVisible
+		||   files[i]->image->layertype != GERBV_LAYERTYPE_RS274X)
+			continue;
+
+		table_add_row(general_table, i + 1,
+				_("RS-274X file"), files[i]->fullPathname);
+
+		str = g_strdup_printf(_("%g x %g %s"),
+				screen_units(fabs(files[i]->image->info->max_x -
+						files[i]->image->info->min_x)),
+				screen_units(fabs(files[i]->image->info->max_y -
+						files[i]->image->info->min_y)),
+				screen_units_str());
+		table_add_row(general_table, i + 1, _("Bounding size"), str);
+		g_free(str);
+
+		/* Check error report on layer */
+		if (stat->layer_count > 0
+		&&  stat->error_list->error_text != NULL) {
+			for (gerbv_error_list_t *err_list = stat->error_list;
+					err_list != NULL;
+					err_list = err_list->next) {
+
+				if (i != err_list->layer - 1)
+					continue;
+
+				table_add_row(general_table, err_list->layer,
+					error_type_string(err_list->type),
+					err_list->error_text);
 			}
 		}
 	}
@@ -1020,50 +1031,32 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 	struct table *G_table =
 		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
-			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+			pgettext("table", "Count"), G_TYPE_UINT,
+			_("Note"), G_TYPE_STRING);
 	table_set_column_align(G_table, 0, 1.0);
 	table_set_column_align(G_table, 1, 1.0);
 	gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(G_table->widget), TRUE);
 
-	table_add_row(G_table, "G00", stats_report->G0,
-			_(gerber_g_code_name(0)));
-	table_add_row(G_table, "G01", stats_report->G1,
-			_(gerber_g_code_name(1)));
-	table_add_row(G_table, "G02", stats_report->G2,
-			_(gerber_g_code_name(2)));
-	table_add_row(G_table, "G03", stats_report->G3,
-			_(gerber_g_code_name(3)));
-	table_add_row(G_table, "G04", stats_report->G4,
-			_(gerber_g_code_name(4)));
-	table_add_row(G_table, "G10", stats_report->G10,
-			_(gerber_g_code_name(10)));
-	table_add_row(G_table, "G11", stats_report->G11,
-			_(gerber_g_code_name(11)));
-	table_add_row(G_table, "G12", stats_report->G12,
-			_(gerber_g_code_name(12)));
-	table_add_row(G_table, "G36", stats_report->G36,
-			_(gerber_g_code_name(36)));
-	table_add_row(G_table, "G37", stats_report->G37,
-			_(gerber_g_code_name(37)));
-	table_add_row(G_table, "G54", stats_report->G54,
-			_(gerber_g_code_name(54)));
-	table_add_row(G_table, "G55", stats_report->G55,
-			_(gerber_g_code_name(55)));
-	table_add_row(G_table, "G70", stats_report->G70,
-			_(gerber_g_code_name(70)));
-	table_add_row(G_table, "G71", stats_report->G71,
-			_(gerber_g_code_name(71)));
-	table_add_row(G_table, "G74", stats_report->G74,
-			_(gerber_g_code_name(74)));
-	table_add_row(G_table, "G75", stats_report->G75,
-			_(gerber_g_code_name(75)));
-	table_add_row(G_table, "G90", stats_report->G90,
-			_(gerber_g_code_name(90)));
-	table_add_row(G_table, "G91", stats_report->G91,
-			_(gerber_g_code_name(91)));
-	table_add_row(G_table, "", stats_report->G_unknown,
-				_("Unknown G codes"));
+	table_add_row(G_table, "G00", stat->G0,  _(gerber_g_code_name(0)));
+	table_add_row(G_table, "G01", stat->G1,  _(gerber_g_code_name(1)));
+	table_add_row(G_table, "G02", stat->G2,  _(gerber_g_code_name(2)));
+	table_add_row(G_table, "G03", stat->G3,  _(gerber_g_code_name(3)));
+	table_add_row(G_table, "G04", stat->G4,  _(gerber_g_code_name(4)));
+	table_add_row(G_table, "G10", stat->G10, _(gerber_g_code_name(10)));
+	table_add_row(G_table, "G11", stat->G11, _(gerber_g_code_name(11)));
+	table_add_row(G_table, "G12", stat->G12, _(gerber_g_code_name(12)));
+	table_add_row(G_table, "G36", stat->G36, _(gerber_g_code_name(36)));
+	table_add_row(G_table, "G37", stat->G37, _(gerber_g_code_name(37)));
+	table_add_row(G_table, "G54", stat->G54, _(gerber_g_code_name(54)));
+	table_add_row(G_table, "G55", stat->G55, _(gerber_g_code_name(55)));
+	table_add_row(G_table, "G70", stat->G70, _(gerber_g_code_name(70)));
+	table_add_row(G_table, "G71", stat->G71, _(gerber_g_code_name(71)));
+	table_add_row(G_table, "G74", stat->G74, _(gerber_g_code_name(74)));
+	table_add_row(G_table, "G75", stat->G75, _(gerber_g_code_name(75)));
+	table_add_row(G_table, "G90", stat->G90, _(gerber_g_code_name(90)));
+	table_add_row(G_table, "G91", stat->G91, _(gerber_g_code_name(91)));
+	table_add_row(G_table, "", stat->G_unknown, _("unknown G-codes"));
 
 	table_set_sortable(G_table);
 	gtk_container_add(GTK_CONTAINER(G_report_window), G_table->widget);
@@ -1075,21 +1068,17 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 	struct table *D_table =
 		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
-			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+			pgettext("table", "Count"), G_TYPE_UINT,
+			_("Note"), G_TYPE_STRING);
 	table_set_column_align(D_table, 0, 1.0);
 	table_set_column_align(D_table, 1, 1.0);
 	gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(D_table->widget), TRUE);
-	table_add_row(D_table, "D1", stats_report->D1,
-			_("Exposure on"));
-	table_add_row(D_table, "D2", stats_report->D2,
-			_("Exposure off"));
-	table_add_row(D_table, "D3", stats_report->D3,
-			_("Flash aperture"));
-	table_add_row(D_table, "", stats_report->D_unknown,
-			_("Undefined D codes"));
-	table_add_row(D_table, "", stats_report->D_error,
-			_("D code Errors"));
+	table_add_row(D_table, "D01", stat->D1, _(gerber_d_code_name(1)));
+	table_add_row(D_table, "D02", stat->D2, _(gerber_d_code_name(2)));
+	table_add_row(D_table, "D03", stat->D3, _(gerber_d_code_name(3)));
+	table_add_row(D_table, "", stat->D_unknown, _("unknown D-codes"));
+	table_add_row(D_table, "", stat->D_error, _("D-code errors"));
 
 	table_set_sortable(D_table);
 	gtk_container_add(GTK_CONTAINER(D_report_window), D_table->widget);
@@ -1101,19 +1090,16 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 	struct table *M_table =
 		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
-			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+			pgettext("table", "Count"), G_TYPE_UINT,
+			_("Note"), G_TYPE_STRING);
 	table_set_column_align(M_table, 0, 1.0);
 	table_set_column_align(M_table, 1, 1.0);
 	gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(M_table->widget), TRUE);
-	table_add_row(M_table, "M0", stats_report->M0,
-			_("Program start"));
-	table_add_row(M_table, "M1", stats_report->M1,
-			_("Program stop"));
-	table_add_row(M_table, "M2", stats_report->M2,
-			_("Program end"));
-	table_add_row(M_table, "", stats_report->M_unknown,
-			_("Unknown M codes"));
+	table_add_row(M_table, "M00", stat->M0, _(gerber_m_code_name(0)));
+	table_add_row(M_table, "M01", stat->M1, _(gerber_m_code_name(1)));
+	table_add_row(M_table, "M02", stat->M2, _(gerber_m_code_name(2)));
+	table_add_row(M_table, "", stat->M_unknown, _("unknown M-codes"));
 
 	table_set_sortable(M_table);
 	gtk_container_add(GTK_CONTAINER(M_report_window), M_table->widget);
@@ -1125,16 +1111,16 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 	struct table *misc_table =
 		table_new_with_columns(2, _("Code"), G_TYPE_STRING,
-				_("Count"), G_TYPE_UINT);
+				pgettext("table", "Count"), G_TYPE_UINT);
 	table_set_column_align(misc_table, 1, 1.0);
 	gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(misc_table->widget), TRUE);
-	table_add_row(misc_table, "X", stats_report->X);
-	table_add_row(misc_table, "Y", stats_report->Y);
-	table_add_row(misc_table, "I", stats_report->I);
-	table_add_row(misc_table, "J", stats_report->J);
-	table_add_row(misc_table, "*", stats_report->star);
-	table_add_row(misc_table, _("Unknown"), stats_report->unknown);
+	table_add_row(misc_table, "X", stat->X);
+	table_add_row(misc_table, "Y", stat->Y);
+	table_add_row(misc_table, "I", stat->I);
+	table_add_row(misc_table, "J", stat->J);
+	table_add_row(misc_table, "*", stat->star);
+	table_add_row(misc_table, _("Unknown"), stat->unknown);
 
 	table_set_sortable(misc_table);
 	gtk_container_add(GTK_CONTAINER(misc_report_window),
@@ -1147,7 +1133,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			GTK_SCROLLED_WINDOW(aperture_def_report_window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-	if (stats_report->aperture_list->number == -1) {
+	if (stat->aperture_list->number == -1) {
 		GtkWidget *aperture_def_label = gtk_label_new(
 			_("No aperture definitions found in active Gerber file(s)!"));
 		gtk_misc_set_alignment(GTK_MISC(aperture_def_label), 0, 0);
@@ -1172,7 +1158,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 				GTK_TREE_VIEW(aperture_def_table->widget), 1);
 
 		GString *gstr = g_string_new(NULL);
-		for (aperture_list = stats_report->aperture_list;
+		for (aperture_list = stat->aperture_list;
 				aperture_list != NULL;
 				aperture_list = aperture_list->next) {
 			g_string_printf(gstr, "D%d", aperture_list->number);
@@ -1200,7 +1186,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 	unsigned int aperture_count = 0;
 
-	if (stats_report->D_code_list->number == -1) {
+	if (stat->D_code_list->number == -1) {
 		GtkWidget *aperture_usage_label = gtk_label_new(
 			_("No apertures used in Gerber file(s)!"));
 		gtk_misc_set_alignment(GTK_MISC(aperture_usage_label), 0, 0);
@@ -1212,14 +1198,14 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	} else {
 		struct table *aperture_usage_table = table_new_with_columns(2,
 				_("Code"), G_TYPE_STRING,
-				_("Count"), G_TYPE_UINT);
+				pgettext("table", "Count"), G_TYPE_UINT);
 		table_set_column_align(aperture_usage_table, 0, 1.0);
 		table_set_column_align(aperture_usage_table, 1, 1.0);
 		gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(aperture_usage_table->widget), TRUE);
 
 		GString *gstr = g_string_new(NULL);
-		for (aperture_list = stats_report->D_code_list;
+		for (aperture_list = stat->D_code_list;
 				aperture_list != NULL;
 				aperture_list = aperture_list->next) {
 			g_string_printf(gstr, "D%d", aperture_list->number);
@@ -1311,7 +1297,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 
 	gtk_widget_show_all(analyze_active_gerbers);
 
-	gerbv_stats_destroy(stats_report);	
+	gerbv_stats_destroy(stat);	
 }
 
 /* --------------------------------------------------------- */
@@ -1325,32 +1311,33 @@ void
 callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 					gpointer user_data)
 {
+	gchar *str;
 	int i;
 
-	gerbv_drill_stats_t *stats_report = generate_drill_analysis();
+	gerbv_drill_stats_t *stat = generate_drill_analysis();
 
 	/* General info report */
 	GString *general_report_str = g_string_new(NULL);
-	if (stats_report->layer_count == 0) {
+	if (stat->layer_count == 0) {
 		g_string_printf(general_report_str,
 				_("No drill layers visible!"));
 	} else {
-		if (stats_report->error_list->error_text == NULL) {
+		if (stat->error_list->error_text == NULL) {
 			g_string_printf(general_report_str,
 				ngettext("No errors found in %d visible "
 					"drill layer.",
 					"No errors found in %d visible "
 					"drill layers.",
-					stats_report->layer_count),
-				stats_report->layer_count);
+					stat->layer_count),
+				stat->layer_count);
 		} else {
 			g_string_printf(general_report_str,
 				ngettext("Found errors found in %d visible "
 					"drill layer.",
 					"Found errors found in %d visible "
 					"drill layers.",
-					stats_report->layer_count),
-				stats_report->layer_count);
+					stat->layer_count),
+				stat->layer_count);
 		}
 	}
 
@@ -1367,28 +1354,39 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 			_("Description"), G_TYPE_STRING);
 	table_set_column_align(general_table, 0, 1.0);
 
-	gerbv_error_list_t *err_list;
-	gerbv_fileinfo_t **files = mainProject->file;
 	for (i = 0; i <= mainProject->last_loaded; i++) {
-		if (files[i] && files[i]->isVisible &&
-				(files[i]->image->layertype ==
-				 GERBV_LAYERTYPE_DRILL)) {
-			table_add_row(general_table, i + 1,
-					_("Excellon file"), files[i]->name);
+		gerbv_fileinfo_t **files = mainProject->file;
 
-			/* Check error report on layer */
-			if (stats_report->layer_count > 0 &&
-				stats_report->error_list->error_text != NULL) {
-				for (err_list = stats_report->error_list;
-						err_list != NULL;
-						err_list = err_list->next) {
-					if (i + 1 != err_list->layer)
-						continue;
-					table_add_row(general_table,
-						err_list->layer,
-						error_type_string(err_list->type),
-						err_list->error_text);
-				}
+		if (!files[i]
+		||  !files[i]->isVisible
+		||   files[i]->image->layertype != GERBV_LAYERTYPE_DRILL)
+			continue;
+
+		table_add_row(general_table, i + 1,
+				_("Excellon file"), files[i]->fullPathname);
+
+		str = g_strdup_printf(_("%g x %g %s"),
+				screen_units(fabs(files[i]->image->info->max_x -
+						files[i]->image->info->min_x)),
+				screen_units(fabs(files[i]->image->info->max_y -
+						files[i]->image->info->min_y)),
+				screen_units_str());
+		table_add_row(general_table, i + 1, _("Bounding size"), str);
+		g_free(str);
+
+		/* Check error report on layer */
+		if (stat->layer_count > 0
+		&&  stat->error_list->error_text != NULL) {
+			for (gerbv_error_list_t *err_list = stat->error_list;
+					err_list != NULL;
+					err_list = err_list->next) {
+
+				if (i != err_list->layer - 1)
+					continue;
+
+				table_add_row(general_table, err_list->layer,
+					error_type_string(err_list->type),
+					err_list->error_text);
 			}
 		}
 	}
@@ -1400,34 +1398,24 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 
 	struct table *G_table =
 		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
-			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+			pgettext("table", "Count"), G_TYPE_UINT,
+			_("Note"), G_TYPE_STRING);
 	table_set_column_align(G_table, 0, 1.0);
 	table_set_column_align(G_table, 1, 1.0);
 	gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(G_table->widget), TRUE);
 
-	table_add_row(G_table, "G00", stats_report->G00,
-			_("Rout mode"));
-	table_add_row(G_table, "G01", stats_report->G01,
-			_("1X linear interpolation"));
-	table_add_row(G_table, "G02", stats_report->G02,
-			_("CW interpolation"));
-	table_add_row(G_table, "G03", stats_report->G03,
-			_("CCW interpolation"));
-	table_add_row(G_table, "G04", stats_report->G04,
-			_("Variable dwell"));
-	table_add_row(G_table, "G05", stats_report->G05,
-			_("Drill mode"));
-	table_add_row(G_table, "G85", stats_report->G85,
-			_("Cut slot (series of holes)"));
-	table_add_row(G_table, "G90", stats_report->G90,
-			_("Absolute units"));
-	table_add_row(G_table, "G91", stats_report->G91,
-			_("Incremental units"));
-	table_add_row(G_table, "G93", stats_report->G93,
-			_("Zero set"));
-	table_add_row(G_table, "", stats_report->G_unknown,
-				_("Unknown G codes"));
+	table_add_row(G_table, "G00", stat->G00, _(drill_g_code_name(0)));
+	table_add_row(G_table, "G01", stat->G01, _(drill_g_code_name(1)));
+	table_add_row(G_table, "G02", stat->G02, _(drill_g_code_name(2)));
+	table_add_row(G_table, "G03", stat->G03, _(drill_g_code_name(3)));
+	table_add_row(G_table, "G04", stat->G04, _(drill_g_code_name(4)));
+	table_add_row(G_table, "G05", stat->G05, _(drill_g_code_name(5)));
+	table_add_row(G_table, "G85", stat->G85, _(drill_g_code_name(85)));
+	table_add_row(G_table, "G90", stat->G90, _(drill_g_code_name(90)));
+	table_add_row(G_table, "G91", stat->G91, _(drill_g_code_name(91)));
+	table_add_row(G_table, "G93", stat->G93, _(drill_g_code_name(93)));
+	table_add_row(G_table, "", stat->G_unknown, _("unknown G-codes"));
 
 	table_set_sortable(G_table);
 	gtk_container_add(GTK_CONTAINER(G_report_window), G_table->widget);
@@ -1439,39 +1427,26 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 
 	struct table *M_table =
 		table_new_with_columns(3, _("Code"), G_TYPE_STRING,
-			_("Count"), G_TYPE_UINT, _("Note"), G_TYPE_STRING);
+			pgettext("table", "Count"), G_TYPE_UINT,
+			_("Note"), G_TYPE_STRING);
 	table_set_column_align(M_table, 0, 1.0);
 	table_set_column_align(M_table, 1, 1.0);
 	gtk_tree_view_set_headers_clickable(
 			GTK_TREE_VIEW(M_table->widget), TRUE);
-	table_add_row(M_table, "M00", stats_report->M00,
-				_(drill_m_code_name(0)));
-	table_add_row(M_table, "M01", stats_report->M01,
-				_(drill_m_code_name(1)));
-	table_add_row(M_table, "M18", stats_report->M18,
-				_(drill_m_code_name(18)));
-	table_add_row(M_table, "M25", stats_report->M25,
-				_(drill_m_code_name(25)));
-	table_add_row(M_table, "M30", stats_report->M30,
-				_(drill_m_code_name(30)));
-	table_add_row(M_table, "M45", stats_report->M45,
-				_(drill_m_code_name(45)));
-	table_add_row(M_table, "M47", stats_report->M47,
-				_(drill_m_code_name(47)));
-	table_add_row(M_table, "M48", stats_report->M48,
-				_(drill_m_code_name(48)));
-	table_add_row(M_table, "M71", stats_report->M71,
-				_(drill_m_code_name(71)));
-	table_add_row(M_table, "M72", stats_report->M72,
-				_(drill_m_code_name(72)));
-	table_add_row(M_table, "M95", stats_report->M95,
-				_(drill_m_code_name(95)));
-	table_add_row(M_table, "M97", stats_report->M97,
-				_(drill_m_code_name(97)));
-	table_add_row(M_table, "M98", stats_report->M98,
-				_(drill_m_code_name(98)));
-	table_add_row(M_table, "", stats_report->M_unknown,
-				_("Unknown M codes"));
+	table_add_row(M_table, "M00", stat->M00, _(drill_m_code_name(0)));
+	table_add_row(M_table, "M01", stat->M01, _(drill_m_code_name(1)));
+	table_add_row(M_table, "M18", stat->M18, _(drill_m_code_name(18)));
+	table_add_row(M_table, "M25", stat->M25, _(drill_m_code_name(25)));
+	table_add_row(M_table, "M30", stat->M30, _(drill_m_code_name(30)));
+	table_add_row(M_table, "M45", stat->M45, _(drill_m_code_name(45)));
+	table_add_row(M_table, "M47", stat->M47, _(drill_m_code_name(47)));
+	table_add_row(M_table, "M48", stat->M48, _(drill_m_code_name(48)));
+	table_add_row(M_table, "M71", stat->M71, _(drill_m_code_name(71)));
+	table_add_row(M_table, "M72", stat->M72, _(drill_m_code_name(72)));
+	table_add_row(M_table, "M95", stat->M95, _(drill_m_code_name(95)));
+	table_add_row(M_table, "M97", stat->M97, _(drill_m_code_name(97)));
+	table_add_row(M_table, "M98", stat->M98, _(drill_m_code_name(98)));
+	table_add_row(M_table, "", stat->M_unknown, _("unknown M-codes"));
 
 	table_set_sortable(M_table);
 	gtk_container_add(GTK_CONTAINER(M_report_window), M_table->widget);
@@ -1484,21 +1459,20 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	struct table *misc_table =
 		table_new_with_columns(2,
 				/* Count is string for value hide. */
-				_("Count"), G_TYPE_STRING,
+				pgettext("table", "Count"), G_TYPE_STRING,
 				_("Code"), G_TYPE_STRING);
 	table_set_column_align(misc_table, 0, 1.0);
-	gchar *str;
-	str = g_strdup_printf("%d", stats_report->comment);
+	str = g_strdup_printf("%d", stat->comment);
 	table_add_row(misc_table, str,_("Comments"));
 	g_free(str);
-	str = g_strdup_printf("%d", stats_report->unknown);
+	str = g_strdup_printf("%d", stat->unknown);
 	table_add_row(misc_table, str, _("Unknown codes"));
 	g_free(str);
-	str = g_strdup_printf("%d", stats_report->R);
+	str = g_strdup_printf("%d", stat->R);
 	table_add_row(misc_table, str, _("Repeat hole (R)"));
 	g_free(str);
-	if (stats_report->detect != NULL ) {
-		table_add_row(misc_table, "", stats_report->detect);
+	if (stat->detect != NULL ) {
+		table_add_row(misc_table, "", stat->detect);
 	}
 
 	table_set_sortable(misc_table);
@@ -1516,7 +1490,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 			_("Drill no."), G_TYPE_UINT,
 			_("Dia."), G_TYPE_DOUBLE,
 			_("Units"), G_TYPE_STRING,
-			_("Count"), G_TYPE_UINT);
+			pgettext("table", "Count"), G_TYPE_UINT);
 
 	table_set_column_align(drill_usage_table, 0, 1.0);
 	table_set_column_align(drill_usage_table, 3, 1.0);
@@ -1524,7 +1498,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 		GTK_TREE_VIEW(drill_usage_table->widget), TRUE);
 
 	gerbv_drill_list_t *drill_list;
-	for (drill_list = stats_report->drill_list;
+	for (drill_list = stat->drill_list;
 			drill_list != NULL; drill_list = drill_list->next) {
 		if (drill_list->drill_num == -1)
 			break;	/* No drill list */
@@ -1607,7 +1581,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 
 	gtk_widget_show_all(analyze_active_drill);
 
-	gerbv_drill_stats_destroy(stats_report);
+	gerbv_drill_stats_destroy(stat);
 }
 
 /* --------------------------------------------------------- */

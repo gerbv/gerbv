@@ -85,36 +85,6 @@ gdouble knockoutLimitXmin, knockoutLimitYmin,
 gerbv_layer_t *knockoutLayer = NULL;
 cairo_matrix_t currentMatrix;
 
-/** Return Gerber format G code name by code number. */
-const char *gerber_g_code_name(int g_code_num)
-{
-	const char *str;
-
-	switch (g_code_num) {
-	case  0: str = N_("Move"); break;
-	case  1: str = N_("1X linear interpolation"); break;
-	case  2: str = N_("CW interpolation"); break;
-	case  3: str = N_("CCW interpolation"); break;
-	case  4: str = N_("Comment/ignore block"); break;
-	case 10: str = N_("10X linear interpolation"); break;
-	case 11: str = N_("0.1X linear interpolation"); break;
-	case 12: str = N_("0.01X linear interpolation"); break;
-	case 36: str = N_("Poly fill on"); break;
-	case 37: str = N_("Poly fill off"); break;
-	case 54: str = N_("Tool prepare"); break;
-	case 55: str = N_("Flash prepare"); break;
-	case 70: str = N_("Units = inches"); break;
-	case 71: str = N_("Units = mm"); break;
-	case 74: str = N_("Disable 360 circ. interpolation"); break;
-	case 75: str = N_("Enable 360 circ. interpolation"); break;
-	case 90: str = N_("Absolute units"); break;
-	case 91: str = N_("Incremental units"); break;
-	default: str = N_("Unknown G code");
-	}
-
-	return str;
-}
-
 /* --------------------------------------------------------- */
 gerbv_net_t *
 gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_netstate_t *state){
@@ -178,7 +148,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			boundingBox = boundingBoxNew;
     gerbv_error_list_t *error_list = stats->error_list;
     ssize_t line_num = 1;
-    
+
     while ((read = gerb_fgetc(fd)) != EOF) {
         /* figure out the scale, since we need to normalize 
 	   all dimensions to inches */
@@ -2659,3 +2629,51 @@ add_trailing_zeros_if_omitted(int *coord, int omitted_num,
 
 	return FALSE;
 } /* add_trailing_zeros_if_omitted() */
+
+/** Return Gerber D-code name by code number. */
+const char *gerber_d_code_name(int d_code)
+{
+	switch (d_code) {
+	case 1:  return N_("exposure on");
+	case 2:  return N_("exposure off");
+	case 3:  return N_("flash aperture");
+	default: return N_("unknown D-code");
+	}
+} /* gerber_d_code_name() */
+
+/** Return Gerber G-code name by code number. */
+const char *gerber_g_code_name(int g_code)
+{
+	switch (g_code) {
+	case  0: return  N_("move");
+	case  1: return  N_("1X linear interpolation");
+	case  2: return  N_("CW interpolation");
+	case  3: return  N_("CCW interpolation");
+	case  4: return  N_("comment/ignore block");
+	case 10: return  N_("10X linear interpolation");
+	case 11: return  N_("0.1X linear interpolation");
+	case 12: return  N_("0.01X linear interpolation");
+	case 36: return  N_("poly fill on");
+	case 37: return  N_("poly fill off");
+	case 54: return  N_("tool prepare");
+	case 55: return  N_("flash prepare");
+	case 70: return  N_("units = inches");
+	case 71: return  N_("units = mm");
+	case 74: return  N_("disable 360 circ. interpolation");
+	case 75: return  N_("enable 360 circ. interpolation");
+	case 90: return  N_("absolute units");
+	case 91: return  N_("incremental units");
+	default: return  N_("unknown G-code");
+	}
+} /* gerber_g_code_name() */
+
+/** Return Gerber M-code name by code number. */
+const char *gerber_m_code_name(int m_code)
+{
+	switch (m_code) {
+	case 0:  return N_("program stop (obsolete)");
+	case 1:  return N_("optional stop (obsolete)");
+	case 2:  return N_("end of file");
+	default: return N_("unknown M-code");
+	}
+} /* gerber_m_code_name() */

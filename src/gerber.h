@@ -76,7 +76,9 @@ void gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
 			  gdouble x, gdouble y, gdouble apertureSizeX1,
 			  gdouble apertureSizeX2,gdouble apertureSizeY1,
 			  gdouble apertureSizeY2);
-const char *gerber_g_code_name(int g_code_num);
+const char *gerber_d_code_name(int d_code);
+const char *gerber_g_code_name(int g_code);
+const char *gerber_m_code_name(int m_code);
 #ifdef __cplusplus
 }
 #endif
