@@ -472,8 +472,10 @@ main(int argc, char *argv[])
 
     const gchar *settings_schema_env = "GSETTINGS_SCHEMA_DIR";
 #ifdef WIN32
-    /* On Windows executable is not in bin/ dir */
-    const gchar *settings_schema_fallback_dir = "share\\glib-2.0\\schemas";
+    /* On Windows executable can be not in bin/ dir */
+    const gchar *settings_schema_fallback_dir =
+	    "share/glib-2.0/schemas" G_SEARCHPATH_SEPARATOR_S
+	    "../share/glib-2.0/schemas";
 #else
     const gchar *settings_schema_fallback_dir = "../share/glib-2.0/schemas";
 #endif
