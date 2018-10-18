@@ -22,11 +22,19 @@
 
 #define HAVE_ENCDEC 0
 #define HAVE_STRDUP 1
-#define HAVE_STRNLEN 0
+
+#ifndef HAVE_STRNLEN
+# define HAVE_STRNLEN 0
+#endif
+
 #define HAVE_EXPAT 0
 #define HAVE_MBSTATE 0
 #define HAVE_WCWIDTH 0
-#define HAVE_SNPRINTF 0
+
+#ifndef HAVE_SNPRINTF
+# define HAVE_SNPRINTF 0
+#endif
+
 #define HAVE_VSNPRINTF 0
 #define HAVE_VARMACRO 0
 #define HAVE_LANGINFO 0
