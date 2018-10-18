@@ -183,8 +183,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	case 'X':
 	    stats->X++;
 	    coord = gerb_fgetint(fd, &len);
-
-	    add_trailing_zeros_if_omitted(&coord,
+	    if (image->format)
+		    add_trailing_zeros_if_omitted(&coord,
 			    image->format->x_int + image->format->x_dec - len,
 			    image->format);
 	    dprintf("... Found X code %d at line %ld\n", coord, line_num);
@@ -200,7 +200,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	case 'Y':
 	    stats->Y++;
 	    coord = gerb_fgetint(fd, &len);
-	    add_trailing_zeros_if_omitted(&coord,
+	    if (image->format)
+		    add_trailing_zeros_if_omitted(&coord,
 			    image->format->y_int + image->format->y_dec - len,
 			    image->format);
 	    dprintf("... Found Y code %d at line %ld\n", coord, line_num);
@@ -216,7 +217,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	case 'I':
 	    stats->I++;
 	    coord = gerb_fgetint(fd, &len);
-	    add_trailing_zeros_if_omitted(&coord,
+	    if (image->format)
+		    add_trailing_zeros_if_omitted(&coord,
 			    image->format->x_int + image->format->x_dec - len,
 			    image->format);
 	    dprintf("... Found I code %d at line %ld\n", coord, line_num);
@@ -227,7 +229,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	case 'J':
 	    stats->J++;
 	    coord = gerb_fgetint(fd, &len);
-	    add_trailing_zeros_if_omitted(&coord,
+	    if (image->format)
+		    add_trailing_zeros_if_omitted(&coord,
 			    image->format->y_int + image->format->y_dec - len,
 			    image->format);
 	    dprintf("... Found J code %d at line %ld\n", coord, line_num);
