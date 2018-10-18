@@ -50,19 +50,19 @@
 
 /* Local function prototypes */
 static void parse_G_code(gerb_file_t *fd, gerb_state_t *state, 
-			 gerbv_image_t *image, ssize_t *line_num_p);
+			 gerbv_image_t *image, long int *line_num_p);
 static void parse_D_code(gerb_file_t *fd, gerb_state_t *state, 
-			 gerbv_image_t *image, ssize_t *line_num_p);
+			 gerbv_image_t *image, long int *line_num_p);
 static int parse_M_code(gerb_file_t *fd, gerbv_image_t *image,
-			ssize_t *line_num_p);
+			long int *line_num_p);
 static void parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, 
 			 gerbv_image_t *image, gerb_state_t *state, 
 			 gerbv_net_t *curr_net, gerbv_stats_t *stats, 
-			 gchar *directoryPath, ssize_t *line_num_p);
+			 gchar *directoryPath, long int *line_num_p);
 static int parse_aperture_definition(gerb_file_t *fd, 
 				     gerbv_aperture_t *aperture,
 				     gerbv_image_t *image, gdouble scale,
-				     ssize_t *line_num_p);
+				     long int *line_num_p);
 static void calc_cirseg_sq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_mq(struct gerbv_net *net, int cw, 
@@ -147,7 +147,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
     gerbv_render_size_t boundingBoxNew = {HUGE_VAL,-HUGE_VAL,HUGE_VAL,-HUGE_VAL},
 			boundingBox = boundingBoxNew;
     gerbv_error_list_t *error_list = stats->error_list;
-    ssize_t line_num = 1;
+    long int line_num = 1;
 
     while ((read = gerb_fgetc(fd)) != EOF) {
         /* figure out the scale, since we need to normalize 
@@ -158,15 +158,15 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
             scale = 1.0;
 	switch ((char)(read & 0xff)) {
 	case 'G':
-	    dprintf("... Found G code at line %zd\n", line_num);
+	    dprintf("... Found G code at line %ld\n", line_num);
 	    parse_G_code(fd, state, image, &line_num);
 	    break;
 	case 'D':
-	    dprintf("... Found D code at line %zd\n", line_num);
+	    dprintf("... Found D code at line %ld\n", line_num);
 	    parse_D_code(fd, state, image, &line_num);
 	    break;
 	case 'M':
-	    dprintf("... Found M code at line %zd\n", line_num);
+	    dprintf("... Found M code at line %ld\n", line_num);
 
 	    switch(parse_M_code(fd, image, &line_num)) {
 	    case 1 :
@@ -176,7 +176,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		break;
 	    default:
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-			_("Unknown M code found at line %zd in file \"%s\""),
+			_("Unknown M code found at line %ld in file \"%s\""),
 			line_num, fd->filename);
 	    } /* switch(parse_M_code) */
 	    break;
@@ -187,7 +187,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    add_trailing_zeros_if_omitted(&coord,
 			    image->format->x_int + image->format->x_dec - len,
 			    image->format);
-	    dprintf("... Found X code %d at line %zd\n", coord, line_num);
+	    dprintf("... Found X code %d at line %ld\n", coord, line_num);
 	    if (image->format
 	    &&  image->format->coordinate==GERBV_COORDINATE_INCREMENTAL)
 	        state->curr_x += coord;
@@ -203,7 +203,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    add_trailing_zeros_if_omitted(&coord,
 			    image->format->y_int + image->format->y_dec - len,
 			    image->format);
-	    dprintf("... Found Y code %d at line %zd\n", coord, line_num);
+	    dprintf("... Found Y code %d at line %ld\n", coord, line_num);
 	    if (image->format
 	    &&  image->format->coordinate==GERBV_COORDINATE_INCREMENTAL)
 	        state->curr_y += coord;
@@ -219,7 +219,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    add_trailing_zeros_if_omitted(&coord,
 			    image->format->x_int + image->format->x_dec - len,
 			    image->format);
-	    dprintf("... Found I code %d at line %zd\n", coord, line_num);
+	    dprintf("... Found I code %d at line %ld\n", coord, line_num);
 	    state->delta_cp_x = coord;
 	    state->changed = 1;
 	    break;
@@ -230,13 +230,13 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    add_trailing_zeros_if_omitted(&coord,
 			    image->format->y_int + image->format->y_dec - len,
 			    image->format);
-	    dprintf("... Found J code %d at line %zd\n", coord, line_num);
+	    dprintf("... Found J code %d at line %ld\n", coord, line_num);
 	    state->delta_cp_y = coord;
 	    state->changed = 1;
 	    break;
 
 	case '%':
-	    dprintf("... Found %% code at line %zd\n", line_num);
+	    dprintf("... Found %% code at line %ld\n", line_num);
 	    while (1) {
 	    	parse_rs274x(levelOfRecursion, fd, image, state, curr_net,
 				stats, directoryPath, &line_num);
@@ -284,7 +284,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    }
 	    break;
 	case '*':  
-	    dprintf("... Found * code at line %zd\n", line_num);
+	    dprintf("... Found * code at line %ld\n", line_num);
 	    stats->star++;
 	    if (state->changed == 0) break;
 	    state->changed = 0;
@@ -336,7 +336,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 				GERBV_MESSAGE_ERROR, -1, 
 				_("Signed incremental distance IxJy "
 				    "in single quadrant %s circular "
-				    "interpolation %s at line %zd "
+				    "interpolation %s at line %ld "
 				    "in file \"%s\""),
 				cw? _("CW"): _("CCW"), cw? "G02": "G03",
 				line_num, fd->filename);
@@ -361,7 +361,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		} else {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			    _("End of polygon without start "
-				"at line %zd in file \"%s\""),
+				"at line %ld in file \"%s\""),
 			    line_num, fd->filename);
 		}
 
@@ -474,7 +474,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			    gerbv_stats_printf(error_list,
 				    GERBV_MESSAGE_ERROR, -1,
 				    _("Found undefined D code D%02d "
-					"at line %zd in file \"%s\""),
+					"at line %ld in file \"%s\""),
 				    curr_net->aperture, line_num, fd->filename);
 			    stats->D_unknown++;
 			}
@@ -702,7 +702,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    stats->unknown++;
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Found unknown character '%s' (0x%x) "
-			"at line %zd in file \"%s\""),
+			"at line %ld in file \"%s\""),
 		    gerbv_escape_char(read), read,
 		    line_num, fd->filename);
 	}  /* switch((char) (read & 0xff)) */
@@ -966,7 +966,7 @@ gerber_is_rs274d_p(gerb_file_t *fd)
  */
 static void 
 parse_G_code(gerb_file_t *fd, gerb_state_t *state,
-		gerbv_image_t *image, ssize_t *line_num_p)
+		gerbv_image_t *image, long int *line_num_p)
 {
     int  op_int;
     gerbv_format_t *format = image->format;
@@ -977,7 +977,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
     op_int=gerb_fgetint(fd, NULL);
 
     /* Emphasize text with new line '\n' in the beginning */
-    dprintf("\n     Found G%02d at line %zd (%s)\n",
+    dprintf("\n     Found G%02d at line %ld (%s)\n",
 		    op_int, *line_num_p, gerber_g_code_name(op_int));
     
     switch(op_int) {
@@ -1040,13 +1040,13 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 	    } else { 
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1, 
 			_("Found aperture D%02d out of bounds while parsing "
-			    "G code at line %zd in file \"%s\""),
+			    "G code at line %ld in file \"%s\""),
 			a, *line_num_p, fd->filename);
 	    }
 	} else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Found unexpected code after G54 "
-			"at line %zd in file \"%s\""),
+			"at line %ld in file \"%s\""),
 		    *line_num_p, fd->filename);
 /* TODO: insert error count here */
 	}
@@ -1084,7 +1084,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
     default:
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		_("Encountered unknown G code G%02d "
-		    "at line %zd in file \"%s\""),
+		    "at line %ld in file \"%s\""),
 		op_int, *line_num_p, fd->filename);
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
 		_("Ignorning unknown G code G%02d"), op_int);
@@ -1104,19 +1104,19 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
  */
 static void 
 parse_D_code(gerb_file_t *fd, gerb_state_t *state,
-		gerbv_image_t *image, ssize_t *line_num_p)
+		gerbv_image_t *image, long int *line_num_p)
 {
     int a;
     gerbv_stats_t *stats = image->gerbv_stats;
     gerbv_error_list_t *error_list = stats->error_list;
 
     a = gerb_fgetint(fd, NULL);
-    dprintf("     Found D%02d code at line %zd\n", a, *line_num_p);
+    dprintf("     Found D%02d code at line %ld\n", a, *line_num_p);
 
     switch(a) {
     case 0 : /* Invalid code */
         gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		_("Found invalid D00 code at line %zd in file \"%s\""),
+		_("Found invalid D00 code at line %ld in file \"%s\""),
 		*line_num_p, fd->filename);
         stats->D_error++;
 	break;
@@ -1142,7 +1142,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state,
 	} else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Found out of bounds aperture D%02d "
-			"at line %zd in file \"%s\""),
+			"at line %ld in file \"%s\""),
 		    a, *line_num_p, fd->filename);
 	    stats->D_error++;
 	}
@@ -1156,7 +1156,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state,
 
 /* ------------------------------------------------------------------ */
 static int
-parse_M_code(gerb_file_t *fd, gerbv_image_t *image, ssize_t *line_num_p)
+parse_M_code(gerb_file_t *fd, gerbv_image_t *image, long int *line_num_p)
 {
     int op_int;
     gerbv_stats_t *stats = image->gerbv_stats;
@@ -1175,7 +1175,7 @@ parse_M_code(gerb_file_t *fd, gerbv_image_t *image, ssize_t *line_num_p)
 	return 3;
     default:
 	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
-		_("Encountered unknown M%02d code at line %zd in file \"%s\""),
+		_("Encountered unknown M%02d code at line %ld in file \"%s\""),
 		op_int, *line_num_p, fd->filename);
 	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
 		_("Ignorning unknown M%02d code"), op_int);
@@ -1188,7 +1188,7 @@ parse_M_code(gerb_file_t *fd, gerbv_image_t *image, ssize_t *line_num_p)
 static void 
 parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image, 
 	     gerb_state_t *state, gerbv_net_t *curr_net, gerbv_stats_t *stats, 
-	     gchar *directoryPath, ssize_t *line_num_p)
+	     gchar *directoryPath, long int *line_num_p)
 {
     int op[2];
     char str[3];
@@ -1261,7 +1261,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("EagleCad bug detected: Undefined handling of zeros "
-			"in format code at line %zd in file \"%s\""),
+			"in format code at line %ld in file \"%s\""),
 		    *line_num_p, fd->filename);
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
 		    _("Defaulting to omitting leading zeros"));
@@ -1279,7 +1279,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Invalid coordinate type defined in format code "
-			"at line %zd in file \"%s\""),
+			"at line %ld in file \"%s\""),
 		    *line_num_p, fd->filename);
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
 		    _("Defaulting to absolute coordinates"));
@@ -1309,7 +1309,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		if ((op[0] < '0') || (op[0] > '6')) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			    _("Illegal format size '%s' "
-				"at line %zd in file \"%s\""),
+				"at line %ld in file \"%s\""),
 			    gerbv_escape_char(op[0]),
 			    *line_num_p, fd->filename);
 		}
@@ -1318,7 +1318,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		if ((op[0] < '0') || (op[0] > '6')) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			    _("Illegal format size '%s' "
-				"at line %zd in file \"%s\""),
+				"at line %ld in file \"%s\""),
 			    gerbv_escape_char(op[0]),
 			    *line_num_p, fd->filename);
 		}
@@ -1329,7 +1329,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		if ((op[0] < '0') || (op[0] > '6')) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			    _("Illegal format size '%s' "
-				"at line %zd in file \"%s\""),
+				"at line %ld in file \"%s\""),
 			    gerbv_escape_char(op[0]),
 			    *line_num_p, fd->filename);
 		}
@@ -1338,7 +1338,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		if ((op[0] < '0') || (op[0] > '6')) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			    _("Illegal format size '%s' "
-			       "at line %zd in file \"%s\""),
+			       "at line %ld in file \"%s\""),
 			    gerbv_escape_char(op[0]),
 			    *line_num_p, fd->filename);
 		}
@@ -1347,7 +1347,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Illegal format statement '%s' "
-			   "at line %zd in file \"%s\""),
+			   "at line %ld in file \"%s\""),
 			gerbv_escape_char(op[0]),
 			*line_num_p, fd->filename);
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
@@ -1384,7 +1384,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Wrong character '%s' in mirror "
-			    "at line %zd in file \"%s\""),
+			    "at line %ld in file \"%s\""),
 			gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
@@ -1409,7 +1409,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    break;
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		    _("Illegal unit '%s%s' at line %zd in file \"%s\""),
+		    _("Illegal unit '%s%s' at line %ld in file \"%s\""),
 		    gerbv_escape_char(op[0]), gerbv_escape_char(op[1]),
 		    *line_num_p, fd->filename);
 	}
@@ -1428,7 +1428,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Wrong character '%s' in offset "
-			    "at line %zd in file \"%s\""),
+			    "at line %ld in file \"%s\""),
 			gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
@@ -1455,7 +1455,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    } else {
 			gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 				_("Included file \"%s\" cannot be found "
-				    "at line %zd in file \"%s\""),
+				    "at line %ld in file \"%s\""),
 				fullPath, *line_num_p, fd->filename);
 		    }
 		    g_free (fullPath);
@@ -1483,7 +1483,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Wrong character '%s' in image offset "
-			    "at line %zd in file \"%s\""),
+			    "at line %ld in file \"%s\""),
 			gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
@@ -1532,7 +1532,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Unknown input code (IC) '%s%s' "
-			"at line %zd in file \"%s\""),
+			"at line %ld in file \"%s\""),
 		    gerbv_escape_char(op[0]), gerbv_escape_char(op[1]),
 		    *line_num_p, fd->filename);
 	}
@@ -1572,7 +1572,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    default :
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Wrong character '%s' in image justify "
-			    "at line %zd in file \"%s\""),
+			    "at line %ld in file \"%s\""),
 			gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
@@ -1600,7 +1600,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Unknown polarity '%s%s%s' "
-			"at line %zd in file \"%s\""),
+			"at line %ld in file \"%s\""),
 		    gerbv_escape_char(str[0]), gerbv_escape_char(str[1]),
 		    gerbv_escape_char(str[2]), *line_num_p, fd->filename);
 	}
@@ -1618,7 +1618,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Image rotation must be 0, 90, 180 or 270 "
-			"(is actually %d) at line %zd in file \"%s\""),
+			"(is actually %d) at line %ld in file \"%s\""),
 		    tmp, *line_num_p, fd->filename);
 	}
 	break;
@@ -1648,13 +1648,13 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    if (ano < APERTURE_MIN) {
 		    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			    _("Aperture number out of bounds %d "
-				"at line %zd in file \"%s\""),
+				"at line %ld in file \"%s\""),
 			    ano, *line_num_p, fd->filename);
 	    }
 	} else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Aperture number out of bounds %d "
-		       "at line %zd in file \"%s\""),
+		       "at line %ld in file \"%s\""),
 		    ano, *line_num_p, fd->filename);
 	}
 	/* Add aperture info to stats->aperture_list here */
@@ -1671,7 +1671,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	} else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Failed to parse aperture macro "
-		       "at line %zd in file \"%s\""),
+		       "at line %ld in file \"%s\""),
 		    *line_num_p, fd->filename);
 	}
 	// return, since we want to skip the later back-up loop
@@ -1693,7 +1693,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Unknown layer polarity '%s' "
-		       "at line %zd in file \"%s\""),
+		       "at line %ld in file \"%s\""),
 		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	}
 	break;
@@ -1713,7 +1713,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	} else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Knockout must supply a polarity (C, D, or *) "
-			"at line %zd in file \"%s\""),
+			"at line %ld in file \"%s\""),
 		    *line_num_p, fd->filename);
 	}
 	state->layer->knockout.lowerLeftX = 0.0;
@@ -1756,7 +1756,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    default:
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Unknown variable in knockout "
-			    "at line %zd in file \"%s\""),
+			    "at line %ld in file \"%s\""),
 			*line_num_p, fd->filename);
 	    }
 	    op[0] = gerb_fgetc(fd);
@@ -1790,7 +1790,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	    default:
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Step-and-repeat parameter error "
-			   "at line %zd in file \"%s\""),
+			   "at line %ld in file \"%s\""),
 			*line_num_p, fd->filename);
 	    }
 	    
@@ -1816,14 +1816,14 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	if (op[0] != '*') {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Error in layer rotation command "
-		       "at line %zd in file \"%s\""),
+		       "at line %ld in file \"%s\""),
 		    *line_num_p, fd->filename);
 	}
 	break;
     default:
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		_("Unknown RS-274X extension found %%%s%s%% "
-		    "at line %zd in file \"%s\""),
+		    "at line %ld in file \"%s\""),
 		gerbv_escape_char(op[0]), gerbv_escape_char(op[1]),
 		*line_num_p, fd->filename);
     }
@@ -2157,7 +2157,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 static int 
 parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
 			  gerbv_image_t *image, gdouble scale,
-			  ssize_t *line_num_p)
+			  long int *line_num_p)
 {
     int ano, i;
     char *ad;
@@ -2170,7 +2170,7 @@ parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
     if (gerb_fgetc(fd) != 'D') {
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		_("Found AD code with no following 'D' "
-		    "at line %zd in file \"%s\""),
+		    "at line %ld in file \"%s\""),
 		*line_num_p, fd->filename);
 	return -1;
     }
@@ -2189,7 +2189,7 @@ parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
     if (token == NULL) {
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		_("Invalid aperture definition "
-		    "at line %zd in file \"%s\""),
+		    "at line %ld in file \"%s\""),
 		*line_num_p, fd->filename);
 	return -1;
     }
@@ -2234,7 +2234,7 @@ parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
 	if (i == APERTURE_PARAMETERS_MAX) {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Maximum number of allowed parameters exceeded "
-			"in aperture %d at line %zd in file \"%s\""),
+			"in aperture %d at line %ld in file \"%s\""),
 		    ano, *line_num_p, fd->filename);
 	    break;
 	}
@@ -2252,7 +2252,7 @@ parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
 	if (errno) {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
 		    _("Failed to read all parameters exceeded in "
-			"aperture %d at line %zd in file \"%s\""),
+			"aperture %d at line %ld in file \"%s\""),
 		    ano, *line_num_p, fd->filename);
             aperture->parameter[i] = 0.0;
         }
