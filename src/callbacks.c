@@ -1646,15 +1646,11 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
       var = g_variant_new_fixed_array (G_VARIANT_TYPE_INT32, xy, 2,
 		      sizeof (xy[0]));
       g_settings_set_value (screen.settings, "window-size", var);
-      g_variant_ref_sink (var);
-      g_variant_unref (var);
 
       gtk_window_get_position (win, (gint *)xy, (gint *)(xy+1));
       var = g_variant_new_fixed_array (G_VARIANT_TYPE_INT32, xy, 2,
 		      sizeof (xy[0]));
       g_settings_set_value (screen.settings, "window-position", var);
-      g_variant_ref_sink (var);
-      g_variant_unref (var);
     }
   }
 
@@ -4457,14 +4453,10 @@ analyze_window_size_store(GtkWidget *win, gpointer user_data)
 	var = g_variant_new_fixed_array (G_VARIANT_TYPE_INT32,
 			xy, 2, sizeof (xy[0]));
 	g_settings_set_value (screen.settings, "analyze-window-size", var);
-	g_variant_ref_sink (var);
-	g_variant_unref (var);
 
 	gtk_window_get_position (GTK_WINDOW (win),
 			(gint *)xy, (gint *)(xy+1));
 	var = g_variant_new_fixed_array (G_VARIANT_TYPE_INT32,
 			xy, 2, sizeof (xy[0]));
 	g_settings_set_value (screen.settings, "analyze-window-position", var);
-	g_variant_ref_sink (var);
-	g_variant_unref (var);
 }
