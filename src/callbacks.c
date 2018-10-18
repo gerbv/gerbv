@@ -3010,14 +3010,12 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	/* set this up if cairo is compiled, since we may need to switch over to
 	   using the surface at any time */
 	int x_off=0, y_off=0;
-	GdkVisual *visual;
 	
 	if (GDK_IS_WINDOW(widget->window)) {
 	      /* query the window's backbuffer if it has one */
 		GdkWindow *window = GDK_WINDOW(widget->window);
 	      gdk_window_get_internal_paint_info (window, &drawable, &x_off, &y_off);
 	}
-	visual = gdk_drawable_get_visual (drawable);
 	if (screen.windowSurface)
 		cairo_surface_destroy ((cairo_surface_t *)
 			screen.windowSurface);
@@ -3031,6 +3029,7 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 	screen.windowSurface = cairo_surface_reference (screen.windowSurface);
 	cairo_destroy (cairoTarget);
 #else
+	GdkVisual *visual = gdk_drawable_get_visual (drawable);
 	screen.windowSurface = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
                                           GDK_DRAWABLE_XID (drawable),
                                           GDK_VISUAL_XVISUAL (visual),
@@ -3115,7 +3114,6 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	int width, height;
 	int x_off=0, y_off=0;
 	GdkDrawable *drawable = widget->window;
-	GdkVisual *visual;
 
 	if (GDK_IS_WINDOW(widget->window)) {
 	      /* query the window's backbuffer if it has one */
@@ -3123,7 +3121,6 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	      gdk_window_get_internal_paint_info (window,
 	                                          &drawable, &x_off, &y_off);
 	}
-	visual = gdk_drawable_get_visual (drawable);
 	gdk_drawable_get_size (drawable, &width, &height);
 
 #if defined(WIN32) || defined(QUARTZ)
@@ -3132,6 +3129,7 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 #else      
 	cairo_surface_t *buffert;
 	
+	GdkVisual *visual = gdk_drawable_get_visual (drawable);
 	buffert = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
 	                                          GDK_DRAWABLE_XID (drawable),
 	                                          GDK_VISUAL_XVISUAL (visual),
