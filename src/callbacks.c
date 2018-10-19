@@ -489,13 +489,56 @@ err:
 }
 
 /* --------------------------------------------------------- */
+int
+visible_file_name(gchar **file_name, gchar **dir_name,
+		gerbv_layertype_t layer_type, /* -1 for all types */
+		const gchar *file_extension,
+		const gchar *untitled_file_extension)
+{
+	unsigned int count = 0;
+	gerbv_fileinfo_t *first_vis_file = NULL;
+
+	for (int i = 0; i < mainProject->max_files; ++i) {
+		if (mainProject->file[i]
+		&&  mainProject->file[i]->isVisible
+		&&  (layer_type == -1 || layer_type ==
+				mainProject->file[i]->image->layertype)) {
+
+			if (first_vis_file == NULL) {
+				first_vis_file = mainProject->file[i];
+				/* Always directory of first visible file */
+				if (dir_name)
+					*dir_name = g_path_get_dirname (
+						first_vis_file->fullPathname);
+			}
+
+			if (++count == 2 && file_name) {
+				*file_name = g_strdup_printf("%s%s",
+						pgettext("file name",
+							"untitled"),
+						untitled_file_extension);
+			}
+		}
+	}
+
+	if (count == 1 && file_name)
+		*file_name = g_strdup_printf("%s%s",
+			first_vis_file->name, file_extension);
+
+	return count;
+}
+
+/* --------------------------------------------------------- */
 void
 callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 				 gpointer         user_data)
 {
 	gchar *new_file_name = NULL;
+	gchar *file_name = NULL;
+	gchar *dir_name = NULL;
+	gboolean error_visible_layers = FALSE;
 	gchar *windowTitle = NULL;
-	gerbv_fileinfo_t *saved_file;
+	gerbv_fileinfo_t *act_file;
 	gint file_index;
 	gint processType = GPOINTER_TO_INT (user_data);
 	GtkFileFilter *filter;
@@ -507,14 +550,14 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	
 	file_index = callbacks_get_selected_row_index ();
 	if (file_index < 0) {
-		interface_show_alert_dialog (_("No layer is currently selected"),
+		interface_show_alert_dialog (_("No layer is currently active"),
 			_("Please select a layer and try again."),
 			FALSE,
 			NULL);
 		return;
 	}
 
-	saved_file = mainProject->file[file_index];
+	act_file = mainProject->file[file_index];
 
 	screen.win.gerber = gtk_file_chooser_dialog_new ("", NULL,
 			GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL, NULL);
@@ -530,22 +573,78 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	gtk_box_pack_end (GTK_BOX(hbox), label, 0, 0, 5);
 	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
 			hbox, 0, 0, 2);
-	
+
 	switch (processType) {
 	case CALLBACKS_SAVE_PROJECT_AS:
 		windowTitle = g_strdup (_("Save project as..."));
+		if (mainProject->project) {
+			file_name = g_path_get_basename (mainProject->project);
+
+			dir_name = g_path_get_dirname (mainProject->project);
+		} else {
+			file_name = g_strdup_printf("%s%s",
+					pgettext("file name", "untitled"),
+					GERBV_PROJECT_FILE_EXT);
+			dir_name= g_path_get_dirname (act_file->fullPathname);
+		}
+
+		filter = gtk_file_filter_new ();
+		gtk_file_filter_set_name (filter, _(gerbv_project_file_name));
+		gtk_file_filter_add_pattern (filter, gerbv_project_file_pat);
+		gtk_file_chooser_add_filter (file_chooser_p, filter);
+
+		filter = gtk_file_filter_new ();
+		gtk_file_filter_set_name (filter, _("All"));
+		gtk_file_filter_add_pattern (filter, "*");
+		gtk_file_chooser_add_filter (file_chooser_p, filter);
+
 		break;
 	case CALLBACKS_SAVE_FILE_PS:
-		windowTitle = g_strdup (_("Export PS file as..."));
+		windowTitle = g_strdup_printf (
+				_("Export visible layers to %s file as..."),
+				_("PS"));
+		if (0 == visible_file_name(&file_name, &dir_name, -1,
+							".ps", ".ps")) {
+			error_visible_layers = TRUE;
+			break;
+		}
+
+
 		break;
 	case CALLBACKS_SAVE_FILE_PDF:
-		windowTitle = g_strdup (_("Export PDF file as..."));
+		windowTitle = g_strdup_printf (
+				_("Export visible layers to %s file as..."),
+				_("PDF"));
+		if (0 == visible_file_name(&file_name, &dir_name, -1,
+							".pdf", ".pdf")) {
+			error_visible_layers = TRUE;
+			break;
+		}
+
+
 		break;
 	case CALLBACKS_SAVE_FILE_SVG:
-		windowTitle = g_strdup (_("Export SVG file as..."));
+		windowTitle = g_strdup_printf (
+				_("Export visible layers to %s file as..."),
+				_("SVG"));
+		if (0 == visible_file_name(&file_name, &dir_name, -1,
+							".svg", ".svg")) {
+			error_visible_layers = TRUE;
+			break;
+		}
+
+
 		break;
 	case CALLBACKS_SAVE_FILE_PNG:
-		windowTitle = g_strdup (_("Export PNG file as..."));
+		windowTitle = g_strdup_printf (
+				_("Export visible layers to %s file as..."),
+				_("PNG"));
+		if (0 == visible_file_name(&file_name, &dir_name, -1,
+							".png", ".png")) {
+			error_visible_layers = TRUE;
+			break;
+		}
+
 		gtk_label_set_text (GTK_LABEL(label), _("DPI:"));
 		gtk_spin_button_set_range (spin_but, 0, 6000);
 		gtk_spin_button_set_increments (spin_but, 10, 100);
@@ -559,31 +658,69 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		break;
 	case CALLBACKS_SAVE_FILE_RS274X:
 		windowTitle = g_strdup_printf(
-			_("Export \"%s\" layer #%d to RS-274X file as..."),
-			saved_file->name, file_index+1);
+			_("Export active \"%s\" layer #%d to "
+				"RS-274X file as..."),
+			act_file->name, file_index+1);
+
+		if (GERBV_LAYERTYPE_RS274X != act_file->image->layertype)
+			file_name = g_strconcat (act_file->name, ".gbr", NULL);
+		else
+			file_name = g_strdup (act_file->name);
+
+		dir_name =  g_path_get_dirname (act_file->fullPathname);
 		break;
 	case CALLBACKS_SAVE_FILE_RS274XM:
-		windowTitle = g_strdup (
-			_("Export merged visible RS-274X files as..."));
-		break;
+		windowTitle = g_strdup (_("Export merged visible layers to "
+					"RS-274X file as..."));
+		if (2 > visible_file_name(&file_name, &dir_name,
+					GERBV_LAYERTYPE_RS274X, "", ".gbr")) {
+			error_visible_layers = TRUE;
+			break;
+		}
 	case CALLBACKS_SAVE_FILE_DRILL:
 		windowTitle = g_strdup_printf(
-			_("Export \"%s\" layer #%d to Excellon drill file as..."),
-			saved_file->name, file_index+1);
+			_("Export active \"%s\" layer #%d to "
+				"Excellon drill file as..."),
+			act_file->name, file_index+1);
+
+		if (GERBV_LAYERTYPE_DRILL != act_file->image->layertype)
+			file_name = g_strconcat (act_file->name, ".drl", NULL);
+		else
+			file_name = g_strdup (act_file->name);
+
+		dir_name =  g_path_get_dirname (act_file->fullPathname);
 		break;
 	case CALLBACKS_SAVE_FILE_DRILLM:
-		windowTitle = g_strdup (
-			_("Export merged visible Excellon drill files as..."));
+		windowTitle = g_strdup (_("Export merged visible layers to "
+					"Excellon drill file as..."));
+		if (2 > visible_file_name(&file_name, &dir_name,
+				GERBV_LAYERTYPE_DRILL, "", ".drl")) {
+			error_visible_layers = TRUE;
+		}
 		break;
 	case CALLBACKS_SAVE_FILE_IDRILL:
 		windowTitle = g_strdup_printf(
 			_("Export \"%s\" layer #%d to ISEL NCP drill file as..."),
-			saved_file->name, file_index+1);
+			act_file->name, file_index+1);
+		file_name = g_strconcat (act_file->name, ".ncp", NULL);
+		dir_name =  g_path_get_dirname (act_file->fullPathname);
+
 		break;
 	case CALLBACKS_SAVE_LAYER_AS:
 		windowTitle = g_strdup_printf (_("Save \"%s\" layer #%d as..."),
-				saved_file->name, file_index+1);
+				act_file->name, file_index+1);
+		file_name = g_strdup (act_file->name);
+		dir_name =  g_path_get_dirname (act_file->fullPathname);
 		break;
+	}
+
+	if (file_name != NULL) {
+		gtk_file_chooser_set_current_name (file_chooser_p, file_name);
+		g_free (file_name);
+	}
+	if (dir_name != NULL) {
+		gtk_file_chooser_set_current_folder (file_chooser_p, dir_name);
+		g_free (dir_name);
 	}
 
 	gtk_dialog_add_buttons (GTK_DIALOG(screen.win.gerber),
@@ -593,26 +730,34 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 
 	gtk_window_set_title (GTK_WINDOW(screen.win.gerber), windowTitle);
 	g_free (windowTitle);
-	
-	if (processType != CALLBACKS_SAVE_PROJECT_AS) {
-		/* If we're saving or exporting a layer, start off in the
-		 * location of the loaded file */
-		gchar *dirName = g_path_get_dirname (saved_file->fullPathname);
-		gtk_file_chooser_set_current_folder (file_chooser_p, dirName);
-		g_free (dirName);
-	} else {
-		filter = gtk_file_filter_new ();
-		gtk_file_filter_set_name (filter, _(gerbv_project_file_name));
-		gtk_file_filter_add_pattern (filter, gerbv_project_file_pat);
-		gtk_file_chooser_add_filter (file_chooser_p, filter);
 
-		filter = gtk_file_filter_new ();
-		gtk_file_filter_set_name (filter, _("All"));
-		gtk_file_filter_add_pattern (filter, "*");
-		gtk_file_chooser_add_filter (file_chooser_p, filter);
+	if (error_visible_layers) {
+		switch (processType) {
+		case CALLBACKS_SAVE_FILE_RS274XM:
+			interface_get_alert_dialog_response (
+				_("Not enough Gerber layers are visible"),
+				_("Two or more Gerber layers must be visible "
+				"for export with merge."),
+				FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+			break;
+		case CALLBACKS_SAVE_FILE_DRILLM:
+			interface_get_alert_dialog_response (
+				_("Not enough Excellon layers are visible"),
+				_("Two or more Excellon layers must be visible "
+				"for export with merge."),
+				FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+			break;
+		default:
+			interface_get_alert_dialog_response (
+				_("No layers are visible"), _("One or more "
+				"layers must be visible for export."),
+				FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+		}
 
-		gtk_file_chooser_set_current_name (file_chooser_p,
-				"untitled" GERBV_PROJECT_FILE_EXT);
+		gtk_widget_destroy (screen.win.gerber);
+		callbacks_update_layer_tree ();
+
+		return;
 	}
 
 	gtk_widget_show (screen.win.gerber);
@@ -676,38 +821,38 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 
 		/* Rename the file path in the index, so future saves will
 		 * reference the new file path */
-		g_free (saved_file->fullPathname);
-		saved_file->fullPathname = g_strdup (new_file_name);
-		g_free (saved_file->name);
-		saved_file->name = g_path_get_basename (new_file_name);
+		g_free (act_file->fullPathname);
+		act_file->fullPathname = g_strdup (new_file_name);
+		g_free (act_file->name);
+		act_file->name = g_path_get_basename (new_file_name);
 
 		break;
 	case CALLBACKS_SAVE_FILE_RS274X:
 		if (gerbv_export_rs274x_file_from_image (new_file_name,
-					saved_file->image,
-					&saved_file->transform)) {
+					act_file->image,
+					&act_file->transform)) {
 			GERB_MESSAGE (
 				_("\"%s\" layer #%d saved as Gerber in \"%s\""),
-				saved_file->name, file_index + 1,
+				act_file->name, file_index + 1,
 				new_file_name);
 		}
 		break;
 	case CALLBACKS_SAVE_FILE_DRILL:
 		if (gerbv_export_drill_file_from_image (new_file_name,
-					saved_file->image,
-					&saved_file->transform)) {
+					act_file->image,
+					&act_file->transform)) {
 			GERB_MESSAGE (
 				_("\"%s\" layer #%d saved as drill in \"%s\""),
-				saved_file->name, file_index + 1,
+				act_file->name, file_index + 1,
 				new_file_name);
 		}
 		break;
 	case CALLBACKS_SAVE_FILE_IDRILL:
 		if (gerbv_export_isel_drill_file_from_image (new_file_name,
-				saved_file->image, &saved_file->transform)) {
+				act_file->image, &act_file->transform)) {
 			GERB_MESSAGE (
 				_("\"%s\" layer #%d saved as ISEL NCP drill "
-				"in \"%s\""), saved_file->name, file_index + 1,
+				"in \"%s\""), act_file->name, file_index + 1,
 				new_file_name);
 		}
 		break;
@@ -2900,7 +3045,7 @@ callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
 	if (!interface_get_alert_dialog_response(_("Performance benchmark"),
 			_("Application will be unresponsive for 1 minute! "
 			"Run performance benchmark?"),
-			FALSE, FALSE, GTK_STOCK_OK, GTK_STOCK_CANCEL))
+			FALSE, NULL, GTK_STOCK_OK, GTK_STOCK_CANCEL))
 		return;
 
 	// autoscale the image for now...maybe we don't want to do this in order to

@@ -1877,17 +1877,21 @@ interface_get_alert_dialog_response (const gchar *primaryText,
   dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
   gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
 
-  false_button = gtk_button_new_from_stock (false_button_label);
-  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1),
-		false_button, GTK_RESPONSE_CANCEL);
-  GTK_WIDGET_SET_FLAGS (false_button, GTK_CAN_DEFAULT);
-  gtk_widget_grab_default (false_button);
-  gtk_widget_grab_focus (false_button);
+  if (false_button_label) {
+    false_button = gtk_button_new_from_stock (false_button_label);
+    gtk_dialog_add_action_widget (GTK_DIALOG (dialog1),
+	false_button, GTK_RESPONSE_CANCEL);
+    GTK_WIDGET_SET_FLAGS (false_button, GTK_CAN_DEFAULT);
+    gtk_widget_grab_default (false_button);
+    gtk_widget_grab_focus (false_button);
+  }
 
-  true_button = gtk_button_new_from_stock (true_button_label);
-  gtk_dialog_add_action_widget (GTK_DIALOG (dialog1),
-		true_button, GTK_RESPONSE_OK);
-  GTK_WIDGET_SET_FLAGS (true_button, GTK_CAN_DEFAULT);
+  if (true_button_label) {
+    true_button = gtk_button_new_from_stock (true_button_label);
+    gtk_dialog_add_action_widget (GTK_DIALOG (dialog1),
+		  true_button, GTK_RESPONSE_OK);
+    GTK_WIDGET_SET_FLAGS (true_button, GTK_CAN_DEFAULT);
+  }
 
   gtk_widget_show_all (dialog1);
 
