@@ -103,6 +103,8 @@ typedef struct {
     gerbv_tool_t tool;
     gerbv_gui_unit_t unit;
     gboolean unit_is_from_cmdline;
+    gboolean background_is_from_cmdline;
+    gboolean background_is_from_project;
     GSettings *settings;
 
     gint last_x;

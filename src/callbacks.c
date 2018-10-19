@@ -1628,7 +1628,15 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
     return TRUE; // stop propagation of the delete_event.
 	// this would destroy the gui but not return from the gtk event loop.
   }
-  gerbv_unload_all_layers (mainProject);
+
+  /* Save background color */
+  if (screen.settings && !screen.background_is_from_project) {
+    guint clr;
+    GdkColor *bg = &mainProject->background;
+
+    clr = bg->red/257<<16 | bg->green/257<<8 | bg->blue/257;
+    g_settings_set_uint (screen.settings, "background-color", clr);
+  }
 
   /* Save main window size and postion */
   if (screen.settings) {
@@ -1654,6 +1662,7 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
     }
   }
 
+  gerbv_unload_all_layers (mainProject);
   gtk_main_quit();
 
   return FALSE;
@@ -2510,10 +2519,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 
 	    results = (gerbv_HID_Attr_Val *) malloc (n * sizeof (gerbv_HID_Attr_Val));
 	    if (results == NULL)
-		{
-		    fprintf (stderr, "%s() — malloc failed\n", __FUNCTION__);
-		    exit (1);
-		}
+		GERB_FATAL_ERROR(_("%s(): malloc failed"), __FUNCTION__);
       
 	    /* non-zero means cancel was picked */
 	    if (attribute_interface_dialog (attr, n, results, 

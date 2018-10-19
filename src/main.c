@@ -224,6 +224,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 			GdkColor colorTemplate = {0,
 				plist->rgb[0], plist->rgb[1], plist->rgb[2]};
 			if (i == -1) {
+				screen.background_is_from_project= TRUE;
 				gerbvProject->background = colorTemplate;
 				plist = plist->next;
 				continue;
@@ -677,23 +678,29 @@ main(int argc, char *argv[])
 	    break;
     	case 'b' :	// Set background to this color
 	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give an background color in the hex-format <#RRGGBB>.\n"));
+		fprintf(stderr, _("You must give an background color "
+					"in the hex-format <#RRGGBB>.\n"));
 		exit(1);
 	    }
 	    if ((strlen (optarg) != 7)||(optarg[0]!='#')) {
-		fprintf(stderr, _("Specified color format is not recognized.\n"));
+		fprintf(stderr, _("Specified color format "
+					"is not recognized.\n"));
 		exit(1);
 	    }
     	    r=g=b=-1;
 	    sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
 	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)) {
 
-		fprintf(stderr, _("Specified color values should be between 00 and FF.\n"));
+		fprintf(stderr, _("Specified color values should be "
+					"between 00 and FF.\n"));
 		exit(1);
 	    }
+
+	    screen.background_is_from_cmdline = TRUE;
 	    mainProject->background.red = r*257;
     	    mainProject->background.green = g*257;
     	    mainProject->background.blue = b*257;
+
 	    break;
 	case 'f' :	// Set layer colors to this color (foreground color)
 	    if (optarg == NULL) {

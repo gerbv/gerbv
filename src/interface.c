@@ -670,11 +670,25 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu),
 			gtk_separator_menu_item_new ());
 	
-	backgroundColor = gtk_image_menu_item_new_with_mnemonic (_("Change background color"));
+	backgroundColor = gtk_image_menu_item_new_with_mnemonic (_("Background color"));
 	gtk_tooltips_set_tip (tooltips, backgroundColor, _("Change the background color"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (backgroundColor), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), backgroundColor);
+
+	/* Restore saved background color */
+	if (screen.settings
+	&& !screen.background_is_from_cmdline
+	&& !screen.background_is_from_project) {
+		guint clr;
+
+		clr = g_settings_get_uint (screen.settings, "background-color");
+		mainProject->background.blue = (clr & 0xff)*257;
+		clr >>= 8;
+		mainProject->background.green = (clr & 0xff)*257;
+		clr >>= 8;
+		mainProject->background.red = (clr & 0xff)*257;
+	}
 
 	{	// rendering submenu
 		menuitem_view_render = gtk_menu_item_new_with_mnemonic (_("_Rendering"));
@@ -705,7 +719,7 @@ interface_create_gui (int req_width, int req_height)
 
 		screen.win.menu_view_render_group = malloc(4*sizeof(GtkWidget *));
 		if(screen.win.menu_view_render_group == NULL)
-			GERB_FATAL_ERROR(_("malloc for rendering type synchronization failed.\n"));
+			GERB_FATAL_ERROR(_("malloc for rendering type synchronization failed"));
 
 		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_GDK] = GTK_CHECK_MENU_ITEM(render_fast);
 		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_GDK_XOR] = GTK_CHECK_MENU_ITEM(render_fast_xor);
