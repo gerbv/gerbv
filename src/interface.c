@@ -383,7 +383,8 @@ interface_create_gui (int req_width, int req_height)
 
 	menuitem_file_export = gtk_menu_item_new_with_mnemonic (_("_Export"));
 	screen.win.curFileMenuItem[3] = menuitem_file_export;
-	gtk_tooltips_set_tip (tooltips, menuitem_file_export, _("Export all visible layers to a new format"), NULL);
+	gtk_tooltips_set_tip (tooltips, menuitem_file_export,
+			_("Export to a new format"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), menuitem_file_export);
 
 	menuitem_file_export_menu = gtk_menu_new ();
@@ -412,9 +413,10 @@ interface_create_gui (int req_width, int req_height)
 
 	rs274x = gtk_menu_item_new_with_mnemonic (_("RS-274X (_Gerber)..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), rs274x);
-	gtk_tooltips_set_tip (tooltips, rs274x, _("Export layer to a RS-274X (Gerber) file"), NULL);
+	gtk_tooltips_set_tip (tooltips, rs274x,
+		_("Export active layer to a RS-274X (Gerber) file"), NULL);
 
-	rs274xm = gtk_menu_item_new_with_mnemonic (_("RS-274X Merge (Gerber)..."));
+	rs274xm = gtk_menu_item_new_with_mnemonic (_("RS-274X merge (Gerber)..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), rs274xm);
 	gtk_tooltips_set_tip (tooltips, rs274xm,
 			_("Export merged visible Gerber layers to "
@@ -425,9 +427,10 @@ interface_create_gui (int req_width, int req_height)
 	
 	drill = gtk_menu_item_new_with_mnemonic (_("_Excellon drill..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), drill);
-	gtk_tooltips_set_tip (tooltips, drill, _("Export layer to an Excellon drill file"), NULL);
+	gtk_tooltips_set_tip (tooltips, drill,
+		_("Export active layer to an Excellon drill file"), NULL);
 
-	drillm = gtk_menu_item_new_with_mnemonic (_("Excellon drill Merge..."));
+	drillm = gtk_menu_item_new_with_mnemonic (_("Excellon drill merge..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), drillm);
 	gtk_tooltips_set_tip (tooltips, drillm,
 			_("Export merged visible drill layers to "
@@ -438,7 +441,9 @@ interface_create_gui (int req_width, int req_height)
 
 	idrill = gtk_menu_item_new_with_mnemonic (_("_ISEL NCP drill..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), idrill);
-	gtk_tooltips_set_tip (tooltips, idrill, _("Export layer to an ISEL Automation NCP drill file"), NULL);
+	gtk_tooltips_set_tip (tooltips, idrill,
+		_("Export active layer to an ISEL Automation NCP drill file"),
+		NULL);
 
 	/* File menu items dealing with a gerbv project. */
 
@@ -771,7 +776,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_layer), menuitem_layer_menu);
 
 	layer_visibility = gtk_menu_item_new_with_mnemonic (_("Toggle _visibility"));
-	gtk_tooltips_set_tip (tooltips, layer_visibility, _("Toggles the visibility of the layer currently selected in the sidepane"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_visibility,
+			_("Toggles the visibility of the active layer"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility);
 
 	layer_visibility_all_on = gtk_image_menu_item_new_with_mnemonic (_("All o_n"));
@@ -787,12 +793,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility_all_off);
 
 	layer_invert = gtk_menu_item_new_with_mnemonic (_("_Invert color"));
-	gtk_tooltips_set_tip (tooltips, layer_invert, _("Invert the display polarity of the layer currently selected in the sidepane"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_invert,
+		_("Invert the display polarity of the active layer"), NULL);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_invert);
 
 	layer_color = gtk_image_menu_item_new_with_mnemonic (_("_Change color"));
 	SET_ACCELS (layer_color, ACCEL_LAYER_COLOR);
-	gtk_tooltips_set_tip (tooltips, layer_color, _("Change the display color of the layer currently selected in the sidepane"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_color,
+		_("Change the display color of the active layer"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_color), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_color);
@@ -801,19 +809,23 @@ interface_create_gui (int req_width, int req_height)
 			gtk_separator_menu_item_new ());
 
 	layer_reload = gtk_image_menu_item_new_with_mnemonic (_("_Reload layer"));
-	gtk_tooltips_set_tip (tooltips, layer_reload, _("Reload the layer from disk"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_reload,
+			_("Reload the active layer from disk"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_REVERT_TO_SAVED, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_reload), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_reload);
 
 	layer_edit = gtk_image_menu_item_new_with_mnemonic (_("_Edit layer"));
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_edit);
-	gtk_tooltips_set_tip (tooltips, layer_edit, _("Translate, scale, rotate, or mirror the layer currently selected in the sidepane"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_edit,
+		_("Translate, scale, rotate or mirror the active layer"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_edit), tempImage);
 
 	layer_format = gtk_image_menu_item_new_with_mnemonic (_("Edit file _format"));
-	gtk_tooltips_set_tip (tooltips, layer_format, _("View and edit the numerical format used to parse this layer currently selected in the sidepane"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_format,
+		_("View and edit the numerical format used to parse "
+			"the active layer"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_format), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_format);
@@ -822,14 +834,16 @@ interface_create_gui (int req_width, int req_height)
 			gtk_separator_menu_item_new ());
 
 	layer_up = gtk_image_menu_item_new_with_mnemonic (_("Move u_p"));
-	gtk_tooltips_set_tip (tooltips, layer_up, _("Move the layer currently selected in the sidepane one step up"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_up,
+		_("Move the active layer one step up"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_GO_UP, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_up), tempImage);
 	SET_ACCELS (layer_up, ACCEL_LAYER_UP);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_up);
 
 	layer_down = gtk_image_menu_item_new_with_mnemonic (_("Move dow_n"));
-	gtk_tooltips_set_tip (tooltips, layer_down, _("Move the layer currently selected in the sidepane one step down"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_down,
+		_("Move the active layer one step down"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_down), tempImage);
 	SET_ACCELS (layer_down, ACCEL_LAYER_DOWN);
@@ -837,7 +851,8 @@ interface_create_gui (int req_width, int req_height)
 
 	layer_remove = gtk_image_menu_item_new_with_mnemonic (_("_Delete"));
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_remove);
-	gtk_tooltips_set_tip (tooltips, layer_remove, _("Remove the layer currently selected in the sidepane"), NULL);
+	gtk_tooltips_set_tip (tooltips, layer_remove,
+		_("Remove the active layer"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_remove), tempImage);
 
@@ -1125,21 +1140,24 @@ interface_create_gui (int req_width, int req_height)
 
 	image9 = gtk_image_new_from_stock (GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button5), image9);
-	gtk_tooltips_set_tip (tooltips, button5, _("Move the layer currently selected in the sidepane one step down"), NULL);
+	gtk_tooltips_set_tip (tooltips, button5,
+			_("Move the active layer one step down"), NULL);
 
 	button6 = gtk_button_new ();
 	gtk_box_pack_start (GTK_BOX (hbox1), button6, FALSE, TRUE, 0);
 
 	image10 = gtk_image_new_from_stock (GTK_STOCK_GO_UP, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button6), image10);
-	gtk_tooltips_set_tip (tooltips, button6, _("Move the layer currently selected in the sidepane one step up"), NULL);
+	gtk_tooltips_set_tip (tooltips, button6,
+			_("Move the active layer one step up"), NULL);
 
 	button7 = gtk_button_new ();
 	gtk_box_pack_start (GTK_BOX (hbox1), button7, FALSE, TRUE, 0);
 
 	image11 = gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button7), image11);
-	gtk_tooltips_set_tip (tooltips, button7, _("Remove the layer currently selected in the sidepane"), NULL);
+	gtk_tooltips_set_tip (tooltips, button7,
+			_("Remove the active layer"), NULL);
 
 	Layer_label = gtk_label_new (_("Layers"));
 	gtk_notebook_set_tab_label (GTK_NOTEBOOK (sidepane_notebook), 
@@ -2246,7 +2264,7 @@ gerbv_user_transformation_t startTransform = trans;
 	dialog = gtk_dialog_new_with_buttons (_("Edit layer"),
 				GTK_WINDOW (screen.win.topLevelWindow),
 				GTK_DIALOG_DESTROY_WITH_PARENT,
-				_("Apply to _selected"), GTK_RESPONSE_APPLY,
+				_("Apply to _active"), GTK_RESPONSE_APPLY,
 				/* Yes -- apply to all visible */
 				_("Apply to _visible"), GTK_RESPONSE_YES,
 				GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,

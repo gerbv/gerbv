@@ -2097,7 +2097,8 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 			screen.tool = POINTER;
 			screen.state = NORMAL;
 			utf8_strncpy(screen.statusbar.diststr,
-				_("Click to select objects in the current layer. Middle click and drag to pan."),
+				_("Click to select objects in the active layer. "
+					"Middle click and drag to pan."),
 				MAX_DISTLEN);
 			break;
 		case PAN:
@@ -3220,7 +3221,7 @@ update_selected_object_message (gboolean userTriedToSelect)
 		} else {
 			utf8_strncpy(screen.statusbar.diststr,
 					_("Click to select objects in the "
-					"current layer. Middle click and drag "
+					"active layer. Middle click and drag "
 					"to pan."),
 					MAX_DISTLEN);
 		}
