@@ -4465,12 +4465,6 @@ static void parea_report (gerbv_net_t *net,
 			&& n->interpolation != GERBV_INTERPOLATION_PAREA_END;
 			n = n->next) {
 
-		if (n->aperture_state != GERBV_APERTURE_STATE_ON)
-			g_message("not on");
-#if 0
-			continue;
-#endif
-
 		switch (n->interpolation) {
 
 		case GERBV_INTERPOLATION_LINEARx1:
