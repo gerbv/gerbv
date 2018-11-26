@@ -41,6 +41,9 @@
 
 #define dprintf if(DEBUG) printf
 
+static gboolean draw_do_vector_export_fix(cairo_t *cairoTarget,
+		double *bg_red, double *bg_green, double *bg_blue);
+
 /** Draw Cairo line from current coordinates.
   @param x	End of line x coordinate.
   @param y	End of line y coordinate.
@@ -333,7 +336,7 @@ gerbv_draw_aperture_hole(cairo_t *cairoTarget,
 	return;
 }
 
-gboolean
+static void
 draw_update_macro_exposure (cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_operator_t darkOperator, gdouble exposureSetting){
 
@@ -350,22 +353,25 @@ draw_update_macro_exposure (cairo_t *cairoTarget, cairo_operator_t clearOperator
 			cairo_set_operator (cairoTarget, clearOperator);
 		}
 	}
-
-	return TRUE;
 }
 
 
-int
+static int
 gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	cairo_operator_t darkOperator, gerbv_simplified_amacro_t *s,
-	gint usesClearPrimative, gdouble pixelWidth, enum draw_mode drawMode,
+	gint usesClearPrimitive, gdouble pixelWidth, enum draw_mode drawMode,
 	gerbv_selection_info_t *selectionInfo,
 	gerbv_image_t *image, struct gerbv_net *net)
 {
-	int handled = 1;
 	gerbv_simplified_amacro_t *ls = s;
+	gboolean doVectorExportFix;
+	double bg_r, bg_g, bg_b; /* Background color */
+	int ret = 1;
 
 	dprintf("Drawing simplified aperture macros:\n");
+
+	doVectorExportFix =
+		draw_do_vector_export_fix (cairoTarget, &bg_r, &bg_g, &bg_b);
 
 	switch (cairo_surface_get_type (cairo_get_target (cairoTarget))) {
 
@@ -382,7 +388,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		break;
 	}
 
-	if (usesClearPrimative)
+	if (usesClearPrimitive)
 		cairo_push_group (cairoTarget);
 
 	while (ls != NULL) {
@@ -393,197 +399,368 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		 */
 		cairo_save (cairoTarget);
 		cairo_new_path(cairoTarget);
-		cairo_operator_t oldOperator = cairo_get_operator (cairoTarget);
+
+		dprintf("\t%s(): drawing %s\n", __FUNCTION__,
+				gerbv_aperture_type_name(ls->type));
 
 		switch (ls->type) {
+
 		case GERBV_APTYPE_MACRO_CIRCLE:
-			if (draw_update_macro_exposure (cairoTarget, clearOperator,
-						darkOperator, ls->parameter[CIRCLE_EXPOSURE])) {
-				cairo_translate (cairoTarget, ls->parameter[CIRCLE_CENTER_X],
-						ls->parameter[CIRCLE_CENTER_Y]);
+			draw_update_macro_exposure (cairoTarget,
+					clearOperator, darkOperator,
+					ls->parameter[CIRCLE_EXPOSURE]);
+			cairo_translate (cairoTarget,
+					ls->parameter[CIRCLE_CENTER_X],
+					ls->parameter[CIRCLE_CENTER_Y]);
+			gerbv_draw_circle (cairoTarget,
+					ls->parameter[CIRCLE_DIAMETER]);
 
-				gerbv_draw_circle (cairoTarget, ls->parameter[CIRCLE_DIAMETER]);
-				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_save (cairoTarget);
+				cairo_set_source_rgba (cairoTarget,
+						bg_r, bg_g, bg_b, 1.0);
+				cairo_set_operator (cairoTarget,
+						CAIRO_OPERATOR_OVER);
+
+				draw_fill (cairoTarget, drawMode,
+						selectionInfo, image, net);
+
+				cairo_restore (cairoTarget);
+
+				break;
 			}
+
+			draw_fill (cairoTarget, drawMode,
+					selectionInfo, image, net);
 			break;
+
 		case GERBV_APTYPE_MACRO_OUTLINE: {
-			int pointCounter,numberOfPoints;
-			/* Number of points parameter seems to not include the start point,
-			 * so we add one to include the start point.
-			 */
-			numberOfPoints = (int) ls->parameter[OUTLINE_NUMBER_OF_POINTS] + 1;
+			int numberOfPoints;
+			/* Number of points parameter seems to not include the
+			 * start point, so we add one to include the start
+			 * point. */
+			numberOfPoints =
+				(int) ls->parameter[OUTLINE_NUMBER_OF_POINTS]+1;
 
-			if (draw_update_macro_exposure (cairoTarget, clearOperator,
-					darkOperator, ls->parameter[OUTLINE_EXPOSURE])) {
-				cairo_rotate (cairoTarget,
-						DEG2RAD(ls->parameter[2*(numberOfPoints - 1) + OUTLINE_ROTATION]));
-				cairo_move_to (cairoTarget, ls->parameter[OUTLINE_FIRST_X],
-						ls->parameter[OUTLINE_FIRST_Y]);
+			draw_update_macro_exposure (cairoTarget,
+					clearOperator, darkOperator,
+					ls->parameter[OUTLINE_EXPOSURE]);
+			cairo_rotate (cairoTarget, DEG2RAD(ls->parameter[
+						2*(numberOfPoints - 1) +
+							OUTLINE_ROTATION]));
+			cairo_move_to (cairoTarget,
+					ls->parameter[OUTLINE_FIRST_X],
+					ls->parameter[OUTLINE_FIRST_Y]);
 
-				for (pointCounter=0; pointCounter < numberOfPoints; pointCounter++) {
-					cairo_line_to (cairoTarget,
-						ls->parameter[pointCounter * 2 + OUTLINE_FIRST_X],
-						ls->parameter[pointCounter * 2 + OUTLINE_FIRST_Y]);
-				}
-
-				/* although the gerber specs allow for an open outline,
-				   I interpret it to mean the outline should be closed by the
-				   rendering softare automatically, since there is no dimension
-				   for line thickness.
-				*/
-				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
+			for (int point = 0; point < numberOfPoints; point++) {
+				cairo_line_to (cairoTarget,
+						OUTLINE_X_IDX_OF_POINT(point),
+						OUTLINE_Y_IDX_OF_POINT(point));
 			}
+
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_save (cairoTarget);
+				cairo_set_source_rgba (cairoTarget,
+						bg_r, bg_g, bg_b, 1.0);
+				cairo_set_operator (cairoTarget,
+						CAIRO_OPERATOR_OVER);
+
+				draw_fill (cairoTarget, drawMode,
+						selectionInfo, image, net);
+
+				cairo_restore (cairoTarget);
+
+				break;
+			}
+
+			/* Although the gerber specs allow for an open outline,
+			 * I interpret it to mean the outline should be closed
+			 * by the rendering softare automatically, since there
+			 * is no dimension for line thickness. */
+			draw_fill (cairoTarget, drawMode,
+					selectionInfo, image, net);
 			break;
 		}
 		case GERBV_APTYPE_MACRO_POLYGON:
-			if (draw_update_macro_exposure (cairoTarget, clearOperator,
-						darkOperator, ls->parameter[POLYGON_EXPOSURE])) {
-				cairo_translate (cairoTarget, ls->parameter[POLYGON_CENTER_X],
-						ls->parameter[POLYGON_CENTER_Y]);
-				gerbv_draw_polygon(cairoTarget, ls->parameter[POLYGON_DIAMETER],
-						ls->parameter[POLYGON_NUMBER_OF_POINTS],
-						ls->parameter[POLYGON_ROTATION]);
-				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
-			}
-			break;
-		case GERBV_APTYPE_MACRO_MOIRE: {
-			gdouble diameter, diameterDifference;
-			int circleIndex;
+			draw_update_macro_exposure (cairoTarget,
+					clearOperator, darkOperator,
+					ls->parameter[POLYGON_EXPOSURE]);
+			cairo_translate (cairoTarget,
+					ls->parameter[POLYGON_CENTER_X],
+					ls->parameter[POLYGON_CENTER_Y]);
+			gerbv_draw_polygon(cairoTarget,
+					ls->parameter[POLYGON_DIAMETER],
+					ls->parameter[POLYGON_NUMBER_OF_POINTS],
+					ls->parameter[POLYGON_ROTATION]);
 
-			cairo_translate (cairoTarget, ls->parameter[MOIRE_CENTER_X],
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_save (cairoTarget);
+				cairo_set_source_rgba (cairoTarget,
+						bg_r, bg_g, bg_b, 1.0);
+				cairo_set_operator (cairoTarget,
+						CAIRO_OPERATOR_OVER);
+
+				draw_fill (cairoTarget, drawMode,
+						selectionInfo, image, net);
+
+				cairo_restore (cairoTarget);
+
+				break;
+			}
+
+			draw_fill (cairoTarget, drawMode,
+					selectionInfo, image, net);
+			break;
+
+		case GERBV_APTYPE_MACRO_MOIRE: {
+			gdouble diameter, diameterDifference, crosshairRadius;
+
+			cairo_translate (cairoTarget,
+					ls->parameter[MOIRE_CENTER_X],
 					ls->parameter[MOIRE_CENTER_Y]);
 			cairo_rotate (cairoTarget,
 					DEG2RAD(ls->parameter[MOIRE_ROTATION]));
 			diameter = ls->parameter[MOIRE_OUTSIDE_DIAMETER]
 				 - ls->parameter[MOIRE_CIRCLE_THICKNESS];
 			diameterDifference = 2*(ls->parameter[MOIRE_GAP_WIDTH]
-						+ ls->parameter[MOIRE_CIRCLE_THICKNESS]);
-			cairo_set_line_width (cairoTarget, ls->parameter[MOIRE_CIRCLE_THICKNESS]);
+				+ ls->parameter[MOIRE_CIRCLE_THICKNESS]);
+			cairo_set_line_width (cairoTarget,
+					ls->parameter[MOIRE_CIRCLE_THICKNESS]);
 
-			for (circleIndex = 0;
-					circleIndex < (int)ls->parameter[MOIRE_NUMBER_OF_CIRCLES];
-					circleIndex++) {
-				gdouble currentDiameter = diameter - diameterDifference * (float) circleIndex;
-
-				if (currentDiameter >= 0) {
-					gerbv_draw_circle (cairoTarget, currentDiameter);
-					draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
-				}
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_save (cairoTarget);
+				cairo_set_source_rgba (cairoTarget,
+						bg_r, bg_g, bg_b, 1.0);
+				cairo_set_operator (cairoTarget,
+						CAIRO_OPERATOR_OVER);
 			}
 
-			gdouble crosshairRadius = ls->parameter[MOIRE_CROSSHAIR_LENGTH] / 2.0;
+			for (int circle = 0; circle < (int)ls->parameter[
+					MOIRE_NUMBER_OF_CIRCLES]; circle++) {
+				gdouble dia =
+					diameter - diameterDifference * circle;
 
-			cairo_set_line_width (cairoTarget, ls->parameter[MOIRE_CROSSHAIR_THICKNESS]);
+				if (dia <= 0) {
+					GERB_COMPILE_WARNING (_("Ignoring %s "
+						"with non positive diameter"),
+						gerbv_aperture_type_name (
+								ls->type));
+					continue;
+				}
+
+				gerbv_draw_circle (cairoTarget, dia);
+				draw_stroke (cairoTarget, drawMode,
+						selectionInfo, image, net);
+			}
+
+
+			cairo_set_line_width (cairoTarget,
+				ls->parameter[MOIRE_CROSSHAIR_THICKNESS]);
+			crosshairRadius =
+				ls->parameter[MOIRE_CROSSHAIR_LENGTH] / 2.0;
 			cairo_move_to (cairoTarget, -crosshairRadius, 0);
 			cairo_line_to (cairoTarget, crosshairRadius, 0);
 			cairo_move_to (cairoTarget, 0, -crosshairRadius);
 			cairo_line_to (cairoTarget, 0, crosshairRadius);
-			draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
+
+			draw_stroke (cairoTarget, drawMode,
+					selectionInfo, image, net);
+
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_restore (cairoTarget);
+			}
+
 			break;
 		}
 		case GERBV_APTYPE_MACRO_THERMAL: {
-			gint i;
 			gdouble startAngle1, startAngle2, endAngle1, endAngle2;
 
-			cairo_translate (cairoTarget, ls->parameter[THERMAL_CENTER_X],
+			cairo_translate (cairoTarget,
+					ls->parameter[THERMAL_CENTER_X],
 					ls->parameter[THERMAL_CENTER_Y]);
 			cairo_rotate (cairoTarget,
 				DEG2RAD(ls->parameter[THERMAL_ROTATION]));
-			startAngle1 = asin (ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/ls->parameter[THERMAL_INSIDE_DIAMETER]);
+			startAngle1 = asin (
+				ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/
+				ls->parameter[THERMAL_INSIDE_DIAMETER]);
 			endAngle1 = M_PI_2 - startAngle1;
-			endAngle2 = asin (ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/ls->parameter[THERMAL_OUTSIDE_DIAMETER]);
+			endAngle2 = asin (
+				ls->parameter[THERMAL_CROSSHAIR_THICKNESS]/
+				ls->parameter[THERMAL_OUTSIDE_DIAMETER]);
 			startAngle2 = M_PI_2 - endAngle2;
 
-			for (i = 0; i < 4; i++) {
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_save (cairoTarget);
+				cairo_set_source_rgba (cairoTarget,
+						bg_r, bg_g, bg_b, 1.0);
+				cairo_set_operator (cairoTarget,
+						CAIRO_OPERATOR_OVER);
+
+				/* */
+
+				cairo_restore (cairoTarget);
+
+				break;
+			}
+
+			for (gint i = 0; i < 4; i++) {
 				cairo_arc (cairoTarget, 0, 0,
-						ls->parameter[THERMAL_INSIDE_DIAMETER]/2.0,
+						ls->parameter[
+						THERMAL_INSIDE_DIAMETER]/2.0,
 						startAngle1, endAngle1);
 				cairo_arc_negative (cairoTarget, 0, 0,
-						ls->parameter[THERMAL_OUTSIDE_DIAMETER]/2.0,
+						ls->parameter[
+						THERMAL_OUTSIDE_DIAMETER]/2.0,
 						startAngle2, endAngle2);
-				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
+				draw_fill (cairoTarget,
+						drawMode, selectionInfo,
+						image, net);
 				cairo_rotate (cairoTarget, M_PI_2);
 			}
+
 			break;
 		}
 		case GERBV_APTYPE_MACRO_LINE20:
-			if (draw_update_macro_exposure (cairoTarget, clearOperator,
-						darkOperator, ls->parameter[LINE20_EXPOSURE])) {
-				gdouble cParameter = ls->parameter[LINE20_LINE_WIDTH];
-				if (cParameter < pixelWidth)
-					cParameter = pixelWidth;
+			draw_update_macro_exposure (cairoTarget,
+					clearOperator, darkOperator,
+					ls->parameter[LINE20_EXPOSURE]);
+			cairo_set_line_width (cairoTarget,
+					MAX(ls->parameter[LINE20_LINE_WIDTH],
+						pixelWidth));
+			cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
+			cairo_rotate (cairoTarget, DEG2RAD(
+					ls->parameter[LINE20_ROTATION]));
+			cairo_move_to (cairoTarget,
+					ls->parameter[LINE20_START_X],
+					ls->parameter[LINE20_START_Y]);
+			cairo_line_to (cairoTarget,
+					ls->parameter[LINE20_END_X],
+					ls->parameter[LINE20_END_Y]);
 
-				cairo_set_line_width (cairoTarget, cParameter);
-				cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_BUTT);
-				cairo_rotate (cairoTarget,
-						DEG2RAD(ls->parameter[LINE20_ROTATION]));
-				cairo_move_to (cairoTarget, ls->parameter[LINE20_START_X],
-						ls->parameter[LINE20_START_Y]);
-				cairo_line_to (cairoTarget, ls->parameter[LINE20_END_X],
-						ls->parameter[LINE20_END_Y]);
-				draw_stroke (cairoTarget, drawMode, selectionInfo, image, net);
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_save (cairoTarget);
+				cairo_set_source_rgba (cairoTarget,
+						bg_r, bg_g, bg_b, 1.0);
+				cairo_set_operator (cairoTarget,
+						CAIRO_OPERATOR_OVER);
+
+				draw_stroke (cairoTarget, drawMode,
+						selectionInfo, image, net);
+
+				cairo_restore (cairoTarget);
+
+				break;
 			}
-			break;
-		case GERBV_APTYPE_MACRO_LINE21: {
-			gdouble halfWidth, halfHeight; 
 
-			if (draw_update_macro_exposure (cairoTarget, clearOperator,
-						darkOperator, ls->parameter[LINE21_EXPOSURE])) {
-				halfWidth = ls->parameter[LINE21_WIDTH] / 2.0;
-				halfHeight = ls->parameter[LINE21_HEIGHT] / 2.0;
-				if (halfWidth < pixelWidth)
-					halfWidth = pixelWidth;
-				if (halfHeight < pixelWidth)
-					halfHeight = pixelWidth;
-				cairo_rotate (cairoTarget,
-						DEG2RAD(ls->parameter[LINE21_ROTATION]));
-				cairo_translate (cairoTarget, ls->parameter[LINE21_CENTER_X],
-						ls->parameter[LINE21_CENTER_Y]);
-				cairo_rectangle (cairoTarget, -halfWidth, -halfHeight,
-						ls->parameter[LINE21_WIDTH], ls->parameter[LINE21_HEIGHT]);
-				draw_fill (cairoTarget, drawMode, selectionInfo, image, net);
-			}
+			draw_stroke (cairoTarget, drawMode,
+					selectionInfo, image, net);
 			break;
-		}
-		case GERBV_APTYPE_MACRO_LINE22: {
-			gdouble halfWidth, halfHeight;
 
-			if (draw_update_macro_exposure (cairoTarget, clearOperator,
-						darkOperator, ls->parameter[LINE22_EXPOSURE])) {
-				halfWidth = ls->parameter[LINE22_WIDTH] / 2.0;
-				halfHeight = ls->parameter[LINE22_HEIGHT] / 2.0;
-				if (halfWidth < pixelWidth)
-					halfWidth = pixelWidth;
-				if (halfHeight < pixelWidth)
-					halfHeight = pixelWidth;
-				cairo_rotate (cairoTarget,
-						DEG2RAD(ls->parameter[LINE22_ROTATION]));
-				cairo_translate (cairoTarget,
-						ls->parameter[LINE22_LOWER_LEFT_X],
-						ls->parameter[LINE22_LOWER_LEFT_Y]);
-				cairo_rectangle (cairoTarget, 0, 0,
-						ls->parameter[LINE22_WIDTH],
-						ls->parameter[LINE22_HEIGHT]);
+		case GERBV_APTYPE_MACRO_LINE21:
+			draw_update_macro_exposure (cairoTarget,
+					clearOperator, darkOperator,
+					ls->parameter[LINE21_EXPOSURE]);
+			cairo_rotate (cairoTarget, DEG2RAD(
+					ls->parameter[LINE21_ROTATION]));
+			cairo_translate (cairoTarget,
+					ls->parameter[LINE21_CENTER_X],
+					ls->parameter[LINE21_CENTER_Y]);
+			cairo_rectangle (cairoTarget,
+					-MAX(ls->parameter[LINE21_WIDTH]/2.0,
+						pixelWidth),
+					-MAX(ls->parameter[LINE21_HEIGHT]/2.0,
+						pixelWidth),
+					MAX(ls->parameter[LINE21_WIDTH],
+						pixelWidth),
+					MAX(ls->parameter[LINE21_HEIGHT],
+						pixelWidth));
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_save (cairoTarget);
+				cairo_set_source_rgba (cairoTarget,
+						bg_r, bg_g, bg_b, 1.0);
+				cairo_set_operator (cairoTarget,
+						CAIRO_OPERATOR_OVER);
+
 				draw_fill (cairoTarget, drawMode,
 						selectionInfo, image, net);
+
+				cairo_restore (cairoTarget);
+
+				break;
 			}
+
+			draw_fill (cairoTarget, drawMode,
+					selectionInfo, image, net);
 			break;
-		}
+
+		case GERBV_APTYPE_MACRO_LINE22:
+			draw_update_macro_exposure (cairoTarget,
+					clearOperator, darkOperator,
+					ls->parameter[LINE22_EXPOSURE]);
+			cairo_rotate (cairoTarget, DEG2RAD(
+					ls->parameter[LINE22_ROTATION]));
+			cairo_translate (cairoTarget,
+					ls->parameter[LINE22_LOWER_LEFT_X],
+					ls->parameter[LINE22_LOWER_LEFT_Y]);
+			cairo_rectangle (cairoTarget, 0, 0,
+					MAX(ls->parameter[LINE22_WIDTH],
+						pixelWidth),
+					MAX(ls->parameter[LINE22_HEIGHT],
+						pixelWidth));
+
+			if (doVectorExportFix
+			&& CAIRO_OPERATOR_CLEAR ==
+					cairo_get_operator (cairoTarget)) {
+				cairo_save (cairoTarget);
+				cairo_set_source_rgba (cairoTarget,
+						bg_r, bg_g, bg_b, 1.0);
+				cairo_set_operator (cairoTarget,
+						CAIRO_OPERATOR_OVER);
+
+				draw_fill (cairoTarget, drawMode,
+						selectionInfo, image, net);
+
+				cairo_restore (cairoTarget);
+
+				break;
+			}
+
+			draw_fill (cairoTarget, drawMode,
+					selectionInfo, image, net);
+			break;
+
 		default:
-			handled = 0;
+			GERB_COMPILE_WARNING(_("Unknown macro type: %s"),
+					gerbv_aperture_type_name(ls->type));
+			ret = 0;
 		}
 
-		cairo_set_operator (cairoTarget, oldOperator);
 		cairo_restore (cairoTarget);
 		ls = ls->next;
 	}
 
-	if (usesClearPrimative) {
+	if (usesClearPrimitive) {
 		cairo_pop_group_to_source (cairoTarget);
 		cairo_paint (cairoTarget);
 	}
 
-	return handled;
+	return ret;
 }
 
 void
@@ -718,45 +895,11 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	gdouble scaleY = transform.scaleY;
 	gboolean limitLineWidth = TRUE;
 	gboolean displayPixel = TRUE;
-	gboolean doVectorExportFix = FALSE;
-	double bg_r = 1.0, bg_g = 1.0, bg_b = 1.0; /* Background color */
+	gboolean doVectorExportFix;
+	double bg_r, bg_g, bg_b; /* Background color */
 
-	/* Cairo library produce _raster_ output if polygon is cleared by
-	 * negative aperture or other polygon. A workaround is to draw over
-	 * with background color instead of clearing. Drawback is: there won't
-	 * be any see thru negative opening if two layers printed one on the
-	 * another. */
-
-	switch (cairo_surface_get_type (cairo_get_target (cairoTarget))) {
-
-	case CAIRO_SURFACE_TYPE_PDF:
-	case CAIRO_SURFACE_TYPE_PS:
-	case CAIRO_SURFACE_TYPE_SVG: {
-		double *p0, *p1, *p2;
-
-		doVectorExportFix = TRUE;
-
-		/* Get background color from cairo user data to emulate clear
-		 * operator */
-		p0 = cairo_get_user_data (cairoTarget,
-				(cairo_user_data_key_t *)0);
-		p1 = cairo_get_user_data (cairoTarget,
-				(cairo_user_data_key_t *)1);
-		p2 = cairo_get_user_data (cairoTarget,
-				(cairo_user_data_key_t *)2);
-
-		if (p0 != NULL && p1 != NULL && p2 != NULL) {
-			bg_r = *p0;
-			bg_g = *p1;
-			bg_b = *p2;
-		}
-
-		break; 
-	}
-
-	default:
-		break;
-	}
+	doVectorExportFix =
+		draw_do_vector_export_fix (cairoTarget, &bg_r, &bg_g, &bg_b);
 
 	/* If we are scaling the image at all, ignore the line width checks
 	 * since scaled up lines can still be visible */
@@ -1229,6 +1372,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 						gerbv_draw_aperture_hole (cairoTarget, p[3], p[4], pixelOutput);
 						break;
 					case GERBV_APTYPE_MACRO :
+/* TODO: to do it properly for vector export (doVectorExportFix) draw all
+ * macros with some vector library with logical operators */
 						gerbv_draw_amacro(cairoTarget, drawOperatorClear, drawOperatorDark,
 							image->aperture[net->aperture]->simplified,
 							(gint)p[0], pixelWidth,
@@ -1276,3 +1421,48 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	return 1;
 }
 
+/* Check if Cairo target require the vector export fix to be done and if so try
+ * to retrieve background color. */
+static gboolean
+draw_do_vector_export_fix(cairo_t *cairoTarget,
+		double *bg_red, double *bg_green, double *bg_blue)
+{
+	/* Cairo library produce _raster_ output if polygon is cleared by
+	 * negative aperture or other polygon. A workaround is to draw over
+	 * with background color instead of clearing. Drawback is: there won't
+	 * be any see thru negative opening if two layers printed one on the
+	 * another. */
+
+	switch (cairo_surface_get_type (cairo_get_target (cairoTarget))) {
+
+	case CAIRO_SURFACE_TYPE_PDF:
+	case CAIRO_SURFACE_TYPE_PS:
+	case CAIRO_SURFACE_TYPE_SVG: {
+		double *p0, *p1, *p2;
+
+		/* Get background color from cairo user data to emulate clear
+		 * operator */
+		p0 = cairo_get_user_data (cairoTarget,
+				(cairo_user_data_key_t *)0);
+		p1 = cairo_get_user_data (cairoTarget,
+				(cairo_user_data_key_t *)1);
+		p2 = cairo_get_user_data (cairoTarget,
+				(cairo_user_data_key_t *)2);
+
+		if (p0 != NULL && p1 != NULL && p2 != NULL) {
+			*bg_red =   *p0;
+			*bg_green = *p1;
+			*bg_blue =  *p2;
+		} else {
+			*bg_red = *bg_green = *bg_blue = 1.0;
+		}
+
+		break;
+	}
+
+	default:
+		return FALSE;
+	}
+
+	return TRUE;
+}
