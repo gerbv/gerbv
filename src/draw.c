@@ -436,28 +436,25 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 					selectionInfo, image, net);
 			break;
 
-		case GERBV_APTYPE_MACRO_OUTLINE: {
-			int numberOfPoints;
-			/* Number of points parameter seems to not include the
-			 * start point, so we add one to include the start
-			 * point. */
-			numberOfPoints =
-				(int) ls->parameter[OUTLINE_NUMBER_OF_POINTS]+1;
-
+		case GERBV_APTYPE_MACRO_OUTLINE:
 			draw_update_macro_exposure (cairoTarget,
 					clearOperator, darkOperator,
 					ls->parameter[OUTLINE_EXPOSURE]);
 			cairo_rotate (cairoTarget, DEG2RAD(ls->parameter[
-						2*(numberOfPoints - 1) +
-							OUTLINE_ROTATION]));
+					OUTLINE_ROTATION_IDX(ls->parameter)]));
 			cairo_move_to (cairoTarget,
 					ls->parameter[OUTLINE_FIRST_X],
 					ls->parameter[OUTLINE_FIRST_Y]);
 
-			for (int point = 0; point < numberOfPoints; point++) {
+			for (int point = 1; point < 
+					1 + (int)ls->parameter[
+						OUTLINE_NUMBER_OF_POINTS];
+								point++) {
 				cairo_line_to (cairoTarget,
-						OUTLINE_X_IDX_OF_POINT(point),
-						OUTLINE_Y_IDX_OF_POINT(point));
+					ls->parameter[OUTLINE_X_IDX_OF_POINT(
+								point)],
+					ls->parameter[OUTLINE_Y_IDX_OF_POINT(
+								point)]);
 			}
 
 			if (doVectorExportFix
@@ -484,7 +481,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			draw_fill (cairoTarget, drawMode,
 					selectionInfo, image, net);
 			break;
-		}
+
 		case GERBV_APTYPE_MACRO_POLYGON:
 			draw_update_macro_exposure (cairoTarget,
 					clearOperator, darkOperator,

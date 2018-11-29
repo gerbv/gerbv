@@ -190,7 +190,8 @@ typedef enum {
 #define OUTLINE_X_IDX_OF_POINT(number) (2*(number) + OUTLINE_FIRST_X)
 #define OUTLINE_Y_IDX_OF_POINT(number) (2*(number) + OUTLINE_FIRST_Y)
 #define	OUTLINE_ROTATION_IDX(param_array) \
-			((int)param_array[OUTLINE_NUMBER_OF_POINTS]*2 + 4)
+			((int)param_array[OUTLINE_NUMBER_OF_POINTS]*2 + \
+			OUTLINE_ROTATION)
 
 typedef enum {
 		POLYGON_EXPOSURE,
