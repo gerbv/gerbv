@@ -871,6 +871,45 @@ draw_cairo_cross (cairo_t *cairoTarget, gdouble xc, gdouble yc, gdouble r)
 	cairo_stroke (cairoTarget);
 }
 
+static int
+draw_calc_pnp_mark_coords(struct gerbv_net *start_net,
+		double *label_x, double *label_y)
+{
+	double x, y;
+	struct gerbv_net *net = start_net;
+	const char *label = NULL;
+	
+	if (net && net->label)
+		label = net->label->str;
+
+	if (label == NULL)
+		return 0;
+
+	x = HUGE_VAL; y = -HUGE_VAL;
+	do {
+		if (!net->label
+		||  0 != g_strcmp0 (net->label->str, label))
+			break;
+
+		/* Search top left corner */
+		if (net->boundingBox.top != HUGE_VAL) {
+			/* Bounding box not calculated */
+			x = MIN(x, net->boundingBox.left);
+			y = MAX(y, net->boundingBox.top);
+		} else {
+			x = MIN(x, net->stop_x);
+			y = MAX(y, net->stop_y + 0.01/2);
+						/* 0.01 default line width */
+		}
+	} while (NULL !=
+			(net = gerbv_image_return_next_renderable_object(net)));
+
+	*label_x = x;
+	*label_y = y;
+
+	return 1;
+}
+
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		gdouble pixelWidth, enum draw_mode drawMode,
@@ -890,6 +929,8 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	gdouble criticalRadius;
 	gdouble scaleX = transform.scaleX;
 	gdouble scaleY = transform.scaleY;
+					/* Keep PNP label not mirrored */
+	gdouble pnp_label_scale_x = 1, pnp_label_scale_y= -1;
 	gboolean limitLineWidth = TRUE;
 	gboolean displayPixel = TRUE;
 	gboolean doVectorExportFix;
@@ -904,10 +945,15 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		limitLineWidth = FALSE;
 	}
 
-	if (transform.mirrorAroundX)
+	if (transform.mirrorAroundX) {
 		scaleY *= -1;
-	if (transform.mirrorAroundY)
+		pnp_label_scale_y = 1;
+	}
+
+	if (transform.mirrorAroundY) {
 		scaleX *= -1;
+		pnp_label_scale_x= -1;
+	}
 
 	cairo_translate (cairoTarget, transform.translateX, transform.translateY);
 	cairo_scale (cairoTarget, scaleX, scaleY);
@@ -1064,6 +1110,34 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			}
 		}
 
+		/* Render any labels attached to this net */
+		/* NOTE: this is currently only used on PNP files, so we may
+		   make some assumptions here... */
+		if (drawMode != DRAW_SELECTIONS &&  net->label
+		&& (image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_TOP
+		 || image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_BOT)
+		&&  g_strcmp0 (net->label->str, pnp_net_label_str_prev)) {
+
+			double mark_x, mark_y;
+
+			/* Add PNP text label only one time per
+			 * net and if it is not selected. */
+			pnp_net_label_str_prev =
+				net->label->str; 
+
+			if (draw_calc_pnp_mark_coords(net, &mark_x, &mark_y)) {
+				cairo_save (cairoTarget);
+
+				cairo_set_font_size (cairoTarget, 0.05);
+				cairo_move_to (cairoTarget, mark_x, mark_y);
+				cairo_scale (cairoTarget, pnp_label_scale_x,
+							pnp_label_scale_y);
+				cairo_show_text (cairoTarget, net->label->str);
+
+				cairo_restore (cairoTarget);
+			}
+		}
+
 		/* step and repeat */
 		gerbv_step_and_repeat_t *sr = &net->layer->stepAndRepeat;
 		int ix, iy;
@@ -1089,34 +1163,6 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 				if (net->cirseg) {
 					cp_x = net->cirseg->cp_x + sr_x;
 					cp_y = net->cirseg->cp_y + sr_y;
-				}
-
-				/* render any labels attached to this net */
-				/* NOTE: this is currently only used on PNP files, so we may
-				   make some assumptions here... */
-				if (drawMode != DRAW_SELECTIONS
-				&&  net->label
-				&& (image->layertype ==
-					GERBV_LAYERTYPE_PICKANDPLACE_TOP
-				 || image->layertype ==
-					GERBV_LAYERTYPE_PICKANDPLACE_BOT)
-				&&  g_strcmp0 (net->label->str,
-					pnp_net_label_str_prev)) {
-
-					/* Add PNP text label only one time per
-					 * net and if it is not selected. */
-					pnp_net_label_str_prev =
-						net->label->str; 
-
-					cairo_save (cairoTarget);
-
-					cairo_set_font_size (cairoTarget, 0.05);
-					cairo_move_to (cairoTarget, x1, y1);
-					cairo_scale (cairoTarget, 1, -1);
-					cairo_show_text (cairoTarget,
-							net->label->str);
-
-					cairo_restore (cairoTarget);
 				}
 
 				/* Polygon area fill routines */
