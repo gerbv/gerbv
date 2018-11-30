@@ -127,19 +127,41 @@ static double
 pick_and_place_get_float_unit(const char *str, const char *def_unit)
 {
     double x = 0.0;
-    char unit[41] = {0,};
+    char unit_str[41] = {0,};
+    const char *unit = unit_str;
 
     /* float, optional space, optional unit mm,cm,in,mil */
-    sscanf(str, "%lf %40s", &x, unit);
-    if (unit[0] == '\0') strncpy(unit, def_unit, sizeof(unit) - 1);
-    if(strstr(unit,"in")) {
-	;
-    } else if(strstr(unit, "cm")) {
-	x /= 2.54;
-    } else if(strstr(unit, "mm")) {
+    sscanf(str, "%lf %40s", &x, unit_str);
+
+    if (unit_str[0] == '\0')
+	unit = def_unit;
+
+    /* NOTE: in order of comparability,
+     * i.e. "mm" before "m", as "m" will match "mm" */
+    if (strstr(unit, "mm")) {
 	x /= 25.4;
-    } else { /* default to mils */
-	x /= 1000;
+    } else if (strstr(unit, "in")) {
+	/* NOTE: "in" is without scaling. */
+    } else if (strstr(unit, "cmil")) {
+	x /= 1e5;
+    } else if (strstr(unit, "dmil")) {
+	x /= 1e4;
+    } else if (strstr(unit, "mil")) {
+	x /= 1e3;
+    } else if (strstr(unit, "km")) {
+	x /= 25.4/1e6;
+    } else if (strstr(unit, "dm")) {
+	x /= 25.4/100;
+    } else if (strstr(unit, "cm")) {
+	x /= 25.4/10;
+    } else if (strstr(unit, "um")) {
+	x /= 25.4*1e3;
+    } else if (strstr(unit, "nm")) {
+	x /= 25.4*1e6;
+    } else if (strstr(unit,  "m")) {
+	x /= 25.4/1e3;
+    } else { /* default to "mil" */
+	x /= 1e3;
     }
 
     return x;
