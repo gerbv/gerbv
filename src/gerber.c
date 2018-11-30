@@ -2569,16 +2569,17 @@ gerber_calculate_final_justify_effects(gerbv_image_t *image)
 } /* gerber_calculate_final_justify_effects */
 
 
-void gerber_update_image_min_max (gerbv_render_size_t *boundingBox, double repeat_off_X,
-		double repeat_off_Y, gerbv_image_t* image) {
-	if (boundingBox->left < image->info->min_x)
-		image->info->min_x = boundingBox->left;
-	if (boundingBox->right+repeat_off_X > image->info->max_x)
-		image->info->max_x = boundingBox->right+repeat_off_X;
-	if (boundingBox->bottom < image->info->min_y)
-		image->info->min_y = boundingBox->bottom;
-	if (boundingBox->top+repeat_off_Y > image->info->max_y)
-		image->info->max_y = boundingBox->top+repeat_off_Y;
+void
+gerber_update_image_min_max (gerbv_render_size_t *boundingBox,
+		double repeat_off_X, double repeat_off_Y,
+		gerbv_image_t* image)
+{
+	image->info->min_x = MIN(image->info->min_x, boundingBox->left);
+	image->info->min_y = MIN(image->info->min_y, boundingBox->bottom);
+	image->info->max_x = MAX(image->info->max_x,
+			boundingBox->right + repeat_off_X);
+	image->info->max_y = MAX(image->info->max_y,
+			boundingBox->top + repeat_off_Y);
 }
 
 void
@@ -2599,22 +2600,15 @@ gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
 
     /* check both points against the min/max, since depending on the rotation,
        mirroring, etc, either point could possibly be a min or max */
-    if(boundingBox->left > ourX1)
-	boundingBox->left = ourX1;
-    if(boundingBox->left > ourX2)
-	boundingBox->left = ourX2;
-    if(boundingBox->right < ourX1)
-	boundingBox->right = ourX1;
-    if(boundingBox->right < ourX2)
-	boundingBox->right = ourX2;
-    if(boundingBox->bottom > ourY1)
-	boundingBox->bottom = ourY1;
-    if(boundingBox->bottom > ourY2)
-	boundingBox->bottom = ourY2;
-    if(boundingBox->top < ourY1)
-	boundingBox->top = ourY1;
-    if(boundingBox->top < ourY2)
-	boundingBox->top = ourY2;
+
+    boundingBox->left =   MIN(boundingBox->left,   ourX1);
+    boundingBox->left =   MIN(boundingBox->left,   ourX2);
+    boundingBox->right =  MAX(boundingBox->right,  ourX1);
+    boundingBox->right =  MAX(boundingBox->right,  ourX2);
+    boundingBox->bottom = MIN(boundingBox->bottom, ourY1);
+    boundingBox->bottom = MIN(boundingBox->bottom, ourY2);
+    boundingBox->top =    MAX(boundingBox->top,    ourY1);
+    boundingBox->top =    MAX(boundingBox->top,    ourY2);
 } /* gerber_update_min_and_max */
 
 static gboolean
