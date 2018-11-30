@@ -37,6 +37,8 @@
 #include "csv.h"
 #include "pick-and-place.h"
 
+static gerbv_net_t *pnp_new_net(gerbv_net_t *net); 
+
 void gerb_transf_free(gerbv_transf_t *transf)
 {
     g_free(transf);
@@ -538,7 +540,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     gerbv_transf_t *tr_rot = gerb_transf_new();
     gerbv_drill_stats_t *stats;  /* Eventually replace with pick_place_stats */
     gboolean foundElement = FALSE;
-    
+    const double draw_width = 0.01;
+
     /* step through and make sure we have an element on the layer before
        we actually create a new image for it and fill it */
     for (i = 0; i < parsedPickAndPlaceData->len; i++) {
@@ -589,19 +592,17 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     assert(image->aperture[0] != NULL);
     image->aperture[0]->type = GERBV_APTYPE_CIRCLE;
     image->aperture[0]->amacro = NULL;
-    image->aperture[0]->parameter[0] = 0.01;
+    image->aperture[0]->parameter[0] = draw_width;
     image->aperture[0]->nuf_parameters = 1;
 
     for (i = 0; i < parsedPickAndPlaceData->len; i++) {
 	PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
 	float radius,labelOffset;  
 
-	curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-	curr_net = curr_net->next;
-	assert(curr_net != NULL);
-
+	curr_net = pnp_new_net(curr_net);
 	curr_net->layer = image->layers;
 	curr_net->state = image->states;
+
 	if ((partData.rotation > 89) && (partData.rotation < 91))
 		labelOffset = fabs(partData.length/2);
 	else if ((partData.rotation > 179) && (partData.rotation < 181))
@@ -628,7 +629,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	      left location to line up above the element */
 
 	curr_net->start_x = curr_net->stop_x = partData.mid_x;
-	curr_net->start_y = curr_net->stop_y = partData.mid_y + labelOffset + 0.01;   
+	curr_net->start_y = curr_net->stop_y =
+		partData.mid_y + labelOffset + draw_width;   
 	curr_net->aperture = 0;
 	curr_net->aperture_state = GERBV_APERTURE_STATE_OFF;
 	curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
@@ -644,9 +646,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    (partData.shape == PART_SHAPE_STD)) {
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
 
-	    curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-	    curr_net = curr_net->next;
-	    assert(curr_net != NULL);
+	    curr_net = pnp_new_net(curr_net);
 
 	    gerb_transf_apply(partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
@@ -664,9 +664,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->state = image->states;
 	    pick_and_place_reset_bounding_box (curr_net);
 	    
-	    curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-	    curr_net = curr_net->next;
-	    assert(curr_net != NULL);
+	    curr_net = pnp_new_net(curr_net);
 
 	    gerb_transf_apply(-partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
@@ -683,9 +681,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->state = image->states;
 	    pick_and_place_reset_bounding_box (curr_net);
 
-	    curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-	    curr_net = curr_net->next;
-	    assert(curr_net != NULL);
+	    curr_net = pnp_new_net(curr_net);
 
 	    gerb_transf_apply(-partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
@@ -702,10 +698,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->state = image->states;
 	    pick_and_place_reset_bounding_box (curr_net);
 	    
-	    curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-	    curr_net = curr_net->next;
-	    assert(curr_net != NULL);
-	    
+	    curr_net = pnp_new_net(curr_net);
+
 	    gerb_transf_apply(partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
 	    gerb_transf_apply(partData.length/2, partData.width/2, tr_rot, 
@@ -721,9 +715,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->state = image->states;
 	    pick_and_place_reset_bounding_box (curr_net);
 
-	    curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-	    curr_net = curr_net->next;
-	    assert(curr_net != NULL);
+	    curr_net = pnp_new_net(curr_net);
 
 	    if (partData.shape == PART_SHAPE_RECTANGLE) {
 		gerb_transf_apply(partData.length/4, -partData.width/2, tr_rot, 
@@ -746,9 +738,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 		curr_net->state = image->states;
 		pick_and_place_reset_bounding_box (curr_net);
 
-		curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-		curr_net = curr_net->next;
-		assert(curr_net != NULL);
+		curr_net = pnp_new_net(curr_net);
 
 		gerb_transf_apply(partData.length/2, partData.width/4, tr_rot, 
 				  &curr_net->start_x, &curr_net->start_y);
@@ -788,9 +778,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->layer = image->layers;
 	    curr_net->state = image->states;
 	    
-	    curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
-	    curr_net = curr_net->next;
-	    assert(curr_net != NULL);
+	    curr_net = pnp_new_net(curr_net);
 	    
 	    curr_net->start_x = partData.mid_x;
 	    curr_net->start_y = partData.mid_y;
@@ -812,8 +800,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->cirseg->angle2 = 360.0;
 	    curr_net->cirseg->cp_x = partData.mid_x;
 	    curr_net->cirseg->cp_y = partData.mid_y;
-	    radius = sqrt((partData.pad_x-partData.mid_x)*(partData.pad_x-partData.mid_x) +
-			  (partData.pad_y-partData.mid_y)*(partData.pad_y-partData.mid_y));
+	    radius = hypot(partData.pad_x - partData.mid_x,
+			    partData.pad_y-partData.mid_y);
 	    if (radius < 0.001)
 	    	radius = 0.1;
 	    curr_net->cirseg->width = 2*radius; /* fabs(pad_x-mid_x) */
@@ -864,3 +852,14 @@ pick_and_place_parse_file_to_images(gerb_file_t *fd, gerbv_image_t **topImage,
 	}
 } /* pick_and_place_parse_file_to_images */
 
+static gerbv_net_t *
+pnp_new_net(gerbv_net_t *net)
+{
+	gerbv_net_t *n;
+	net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
+	n = net->next;
+	assert(n != NULL);
+	pick_and_place_reset_bounding_box (n);
+
+	return n;
+}
