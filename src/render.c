@@ -332,10 +332,11 @@ render_toggle_measure_line(void)
 	gdouble start_x, start_y, last_x, last_y;
 	memset(&values, 0, sizeof(values));
 	values.function = GDK_XOR;
+	values.line_width = 6;
 	if (!screen.zoom_outline_color.pixel)
 	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
 	values.foreground = screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
+	values_mask = GDK_GC_FUNCTION | GDK_GC_LINE_WIDTH | GDK_GC_FOREGROUND;
 	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
 				values_mask);
 	render_board2screen(&start_x, &start_y,
