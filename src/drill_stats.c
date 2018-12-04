@@ -51,12 +51,9 @@ gerbv_drill_stats_new(void) {
     gerbv_error_list_t *error_list;
 
     /* Malloc space for new stats struct.  Return NULL if error. */
-    if ((stats = (gerbv_drill_stats_t *)g_malloc(sizeof(gerbv_drill_stats_t))) == NULL) {
+    if (NULL == (stats = g_new0(gerbv_drill_stats_t, 1))) {
         return NULL;
     }
-
-    /* Set new stats struct to zero */
-    memset((void *)stats, 0, sizeof(gerbv_drill_stats_t));
 
     /* Initialize drill list */
     drill_list = gerbv_drill_stats_new_drill_list();
@@ -244,7 +241,7 @@ gerbv_drill_stats_new_drill_list() {
     gerbv_drill_list_t *drill_list;
 
     /* Malloc space for new drill_list struct.  Return NULL if error. */
-    if ((drill_list = (gerbv_drill_list_t *)g_malloc(sizeof(gerbv_drill_list_t))) == NULL) {
+    if (NULL == (drill_list = g_new(gerbv_drill_list_t, 1))) {
         return NULL;
     }
 
@@ -299,8 +296,7 @@ drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
     }
 
     /* Now malloc space for new drill list element */
-    drill_list_new = (gerbv_drill_list_t *) g_malloc(sizeof(gerbv_drill_list_t));
-    if (drill_list_new == NULL) {
+    if (NULL == (drill_list_new = g_new(gerbv_drill_list_t, 1))) {
 	GERB_FATAL_ERROR(_("malloc format failed"));
     }
 
@@ -393,7 +389,7 @@ gerbv_drill_stats_new_error_list() {
     gerbv_error_list_t *error_list;
 
     /* Malloc space for new error_list struct.  Return NULL if error. */
-    if ((error_list = (gerbv_error_list_t *)g_malloc(sizeof(gerbv_error_list_t))) == NULL) {
+    if (NULL == (error_list = g_new(gerbv_error_list_t, 1))) {
         return NULL;
     }
 

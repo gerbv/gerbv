@@ -148,7 +148,7 @@ gerbv_gdk_draw_prim4(GdkPixmap *pixmap, GdkGC *gc, double *p,
 
     /* Include start point */
     nuf_points = (int)p[nuf_points_idx] + 1;
-    points = (GdkPoint *)g_malloc(sizeof(GdkPoint) * nuf_points);
+    points = g_new(GdkPoint, nuf_points);
     if (!points) {
 	g_free(points);
 	return;
@@ -207,7 +207,7 @@ gerbv_gdk_draw_prim5(GdkPixmap *pixmap, GdkGC *gc, double *p,
     GdkColor color;
 
     nuf_vertices = (int)p[nuf_vertices_idx];
-    points = (GdkPoint *)g_malloc(sizeof(GdkPoint) * nuf_vertices);
+    points = g_new(GdkPoint, nuf_vertices);
     if (!points) {
 	g_free(points);
 	return;

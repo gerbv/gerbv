@@ -60,12 +60,10 @@ void gerb_transf_reset(gerbv_transf_t* transf)
 gerbv_transf_t* gerb_transf_new(void)
 {
     gerbv_transf_t *transf;
-    
-    transf = g_malloc(sizeof(gerbv_transf_t));
+
+    transf = g_new(gerbv_transf_t, 1);
     gerb_transf_reset(transf);
     return transf;
-    
-
 } /* gerb_transf_new */
 
 
@@ -562,7 +560,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	GERB_FATAL_ERROR(_("malloc image failed"));
     }
 
-    image->format = (gerbv_format_t *)g_malloc0(sizeof(gerbv_format_t));
+    image->format = g_new0(gerbv_format_t, 1);
     if (image->format == NULL) {
 	GERB_FATAL_ERROR(_("malloc format failed"));
     }
@@ -588,7 +586,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     image->info->max_x = -HUGE_VAL;
     image->info->max_y = -HUGE_VAL;
 
-    image->aperture[0] = (gerbv_aperture_t *)g_malloc0(sizeof(gerbv_aperture_t));
+    image->aperture[0] = g_new0(gerbv_aperture_t, 1);
     assert(image->aperture[0] != NULL);
     image->aperture[0]->type = GERBV_APTYPE_CIRCLE;
     image->aperture[0]->amacro = NULL;
@@ -856,7 +854,7 @@ static gerbv_net_t *
 pnp_new_net(gerbv_net_t *net)
 {
 	gerbv_net_t *n;
-	net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
+	net->next = g_new0(gerbv_net_t, 1);
 	n = net->next;
 	assert(n != NULL);
 	pick_and_place_reset_bounding_box (n);

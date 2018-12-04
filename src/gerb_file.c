@@ -60,7 +60,7 @@ gerb_fopen(char const * filename)
     
     dprintf("---> Entering gerb_fopen, filename = %s\n", filename);
 #ifdef HAVE_SYS_MMAN_H
-    fd = (gerb_file_t *)g_malloc(sizeof(gerb_file_t));
+    fd = g_new(gerb_file_t, 1);
     if (fd == NULL) {
 	return NULL;
     }
@@ -108,7 +108,7 @@ gerb_fopen(char const * filename)
     }
 #else
     /* all systems without mmap, not only MINGW32 */
-    fd = (gerb_file_t *)g_malloc(sizeof(gerb_file_t));
+    fd = g_new(gerb_file_t);
     if (fd == NULL) {
 	return NULL;
     }

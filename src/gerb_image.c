@@ -48,26 +48,23 @@ gerbv_create_image(gerbv_image_t *image, const gchar *type)
     gerbv_destroy_image(image);
     
     /* Malloc space for image */
-    if ((image = (gerbv_image_t *)g_malloc(sizeof(gerbv_image_t))) == NULL) {
+    if (NULL == (image = g_new0(gerbv_image_t, 1))) {
 	return NULL;
     }
-    memset((void *)image, 0, sizeof(gerbv_image_t));
-    
+
     /* Malloc space for image->netlist */
-    if ((image->netlist = (gerbv_net_t *)g_malloc(sizeof(gerbv_net_t))) == NULL) {
+    if (NULL == (image->netlist = g_new0(gerbv_net_t, 1))) {
 	g_free(image);
 	return NULL;
     }
-    memset((void *)image->netlist, 0, sizeof(gerbv_net_t));
-    
+
     /* Malloc space for image->info */
-    if ((image->info = (gerbv_image_info_t *)g_malloc(sizeof(gerbv_image_info_t))) == NULL) {
+    if (NULL == (image->info = g_new0(gerbv_image_info_t, 1))) {
 	g_free(image->netlist);
 	g_free(image);
 	return NULL;
     }
-    memset((void *)image->info, 0, sizeof(gerbv_image_info_t));
-    
+
     /* Set aside position for stats struct */
     image->gerbv_stats = NULL;
     image->drill_stats = NULL;

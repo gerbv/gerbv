@@ -233,7 +233,7 @@ drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state,
     drill_stats_increment_drill_counter(image->drill_stats->drill_list,
 	    state->current_tool);
 
-    curr_net->next = (gerbv_net_t *)g_malloc0(sizeof(gerbv_net_t));
+    curr_net->next = g_new0(gerbv_net_t, 1);
     if (curr_net->next == NULL)
 	GERB_FATAL_ERROR(_("malloc curr_net->next failed"));
 
@@ -336,7 +336,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     if (state == NULL)
 	GERB_FATAL_ERROR(_("malloc state failed"));
 
-    image->format = (gerbv_format_t *)g_malloc0(sizeof(gerbv_format_t));
+    image->format = g_new0(gerbv_format_t, 1);
     if (image->format == NULL)
 	GERB_FATAL_ERROR(_("malloc format failed"));
 
@@ -1117,8 +1117,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
 			g_free(string);
 		    }
 		} else {
-		    image->aperture[tool_num] =
-			(gerbv_aperture_t *)g_malloc0(sizeof(gerbv_aperture_t));
+		    image->aperture[tool_num] = g_new0(gerbv_aperture_t, 1);
 		    if (image->aperture[tool_num] == NULL)
 			GERB_FATAL_ERROR(_("malloc tool failed"));
 
@@ -1170,8 +1169,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state, gerbv_image_t *image)
     if(image->aperture[tool_num] == NULL) {
         double dia;
 
-	image->aperture[tool_num] =
-	    (gerbv_aperture_t *)g_malloc0(sizeof(gerbv_aperture_t));
+	image->aperture[tool_num] = g_new0(gerbv_aperture_t, 1);
 	if (image->aperture[tool_num] == NULL)
 	    GERB_FATAL_ERROR(_("malloc tool failed"));
 
@@ -1519,7 +1517,7 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 static drill_state_t *
 new_state(drill_state_t *state)
 {
-    state = (drill_state_t *)g_malloc0(sizeof(drill_state_t));
+    state = g_new0(drill_state_t, 1);
     if (state != NULL) {
 	/* Init structure */
 	state->curr_section = DRILL_NONE;

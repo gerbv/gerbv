@@ -619,8 +619,7 @@ define_layer(scheme *sc, pointer args)
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);
     
-    plist = (project_list_t *)g_malloc(sizeof(project_list_t));
-    memset(plist, 0, sizeof(project_list_t));
+    plist = g_new0(project_list_t, 1);
     plist->next = project_list_top;
     project_list_top = plist;
     plist->layerno = layerno;
