@@ -38,6 +38,11 @@
 #include "pick-and-place.h"
 
 static gerbv_net_t *pnp_new_net(gerbv_net_t *net); 
+static void pnp_reset_bbox (gerbv_net_t *net);
+static void pnp_init_net(gerbv_net_t *net, gerbv_image_t *image,
+		const char *label,
+		gerbv_aperture_state_t apert_state,
+		gerbv_interpolation_t interpol);
 
 void gerb_transf_free(gerbv_transf_t *transf)
 {
@@ -63,6 +68,7 @@ gerbv_transf_t* gerb_transf_new(void)
 
     transf = g_new(gerbv_transf_t, 1);
     gerb_transf_reset(transf);
+
     return transf;
 } /* gerb_transf_new */
 
@@ -580,7 +586,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     curr_net = image->netlist;
     curr_net->layer = image->layers;
     curr_net->state = image->states;
-    pick_and_place_reset_bounding_box (curr_net);	
+    pnp_reset_bbox (curr_net);	
     image->info->min_x = HUGE_VAL;
     image->info->min_y = HUGE_VAL;
     image->info->max_x = -HUGE_VAL;
@@ -623,18 +629,16 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	if ((boardSide == 1) && !((partData.layer[0]=='t') || (partData.layer[0]=='T')))
 		continue;
 
-	/* this first net is just a label holder, so calculate the lower
-	      left location to line up above the element */
+	curr_net = pnp_new_net(curr_net);
+	pnp_init_net(curr_net, image, partData.designator,
+			GERBV_APERTURE_STATE_OFF,
+			GERBV_INTERPOLATION_LINEARx1);
 
+	/* First net of PNP is just a label holder, so calculate the lower left
+	 * location to line up above the element */
 	curr_net->start_x = curr_net->stop_x = partData.mid_x;
 	curr_net->start_y = curr_net->stop_y =
 		partData.mid_y + labelOffset + draw_width;   
-	curr_net->aperture = 0;
-	curr_net->aperture_state = GERBV_APERTURE_STATE_OFF;
-	curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-	curr_net->layer = image->layers;
-	curr_net->state = image->states;
-	pick_and_place_reset_bounding_box (curr_net);
 
 	gerb_transf_reset(tr_rot);
 	gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
@@ -645,6 +649,9 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    // TODO: draw rectangle length x width taking into account rotation or pad x,y
 
 	    curr_net = pnp_new_net(curr_net);
+	    pnp_init_net(curr_net, image, partData.designator,
+			    GERBV_APERTURE_STATE_ON,
+			    GERBV_INTERPOLATION_LINEARx1);
 
 	    gerb_transf_apply(partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
@@ -652,68 +659,41 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 			      &curr_net->stop_x, &curr_net->stop_y);
 	    
 /* TODO: write unifying function */
-	    if (strlen (partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
-	    curr_net->aperture = 0;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    pick_and_place_reset_bounding_box (curr_net);
-	    
+
 	    curr_net = pnp_new_net(curr_net);
+	    pnp_init_net(curr_net, image, partData.designator,
+			    GERBV_APERTURE_STATE_ON,
+			    GERBV_INTERPOLATION_LINEARx1);
 
 	    gerb_transf_apply(-partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
 	    gerb_transf_apply(-partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->stop_x, &curr_net->stop_y);
-	    
-	    if (strlen (partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
-	    curr_net->aperture = 0;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    pick_and_place_reset_bounding_box (curr_net);
 
 	    curr_net = pnp_new_net(curr_net);
+	    pnp_init_net(curr_net, image, partData.designator,
+			    GERBV_APERTURE_STATE_ON,
+			    GERBV_INTERPOLATION_LINEARx1);
 
 	    gerb_transf_apply(-partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
 	    gerb_transf_apply(partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->stop_x, &curr_net->stop_y);
-	    
-	    if (strlen (partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
-	    curr_net->aperture = 0;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    pick_and_place_reset_bounding_box (curr_net);
-	    
+
 	    curr_net = pnp_new_net(curr_net);
+	    pnp_init_net(curr_net, image, partData.designator,
+			    GERBV_APERTURE_STATE_ON,
+			    GERBV_INTERPOLATION_LINEARx1);
 
 	    gerb_transf_apply(partData.length/2, -partData.width/2, tr_rot, 
 			      &curr_net->start_x, &curr_net->start_y);
 	    gerb_transf_apply(partData.length/2, partData.width/2, tr_rot, 
 			      &curr_net->stop_x, &curr_net->stop_y);
-	    
-	    if (strlen (partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
-	    curr_net->aperture = 0;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    pick_and_place_reset_bounding_box (curr_net);
 
 	    curr_net = pnp_new_net(curr_net);
+	    pnp_init_net(curr_net, image, partData.designator,
+			    GERBV_APERTURE_STATE_ON,
+			    GERBV_INTERPOLATION_LINEARx1);
 
 	    if (partData.shape == PART_SHAPE_RECTANGLE) {
 		gerb_transf_apply(partData.length/4, -partData.width/2, tr_rot, 
@@ -725,18 +705,11 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 				  &curr_net->start_x, &curr_net->start_y);
 		gerb_transf_apply(partData.length/4, partData.width/4, tr_rot, 
 				  &curr_net->stop_x, &curr_net->stop_y);
-		
-		if (strlen (partData.designator) > 0) {
-		    curr_net->label = g_string_new (partData.designator);
-		}
-		curr_net->aperture = 0;
-		curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-		curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-		curr_net->layer = image->layers;
-		curr_net->state = image->states;
-		pick_and_place_reset_bounding_box (curr_net);
 
 		curr_net = pnp_new_net(curr_net);
+		pnp_init_net(curr_net, image, partData.designator,
+				GERBV_APERTURE_STATE_ON,
+				GERBV_INTERPOLATION_LINEARx1);
 
 		gerb_transf_apply(partData.length/2, partData.width/4, tr_rot, 
 				  &curr_net->start_x, &curr_net->start_y);
@@ -744,21 +717,15 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 				  &curr_net->stop_x, &curr_net->stop_y);     
 	    }
 
-	    if (strlen (partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
-	    curr_net->aperture = 0;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    pick_and_place_reset_bounding_box (curr_net);
-	    
 	    /* calculate a rough radius for the min/max screen calcs later */
 	    radius = MAX(partData.length/2, partData.width/2);
 	} else {
 	    gdouble tmp_x,tmp_y;
-	    
+
+	    pnp_init_net(curr_net, image, partData.designator,
+			    GERBV_APERTURE_STATE_ON,
+			    GERBV_INTERPOLATION_LINEARx1);
+
 	    curr_net->start_x = partData.mid_x;
 	    curr_net->start_y = partData.mid_y;
 	    gerb_transf_apply( partData.pad_x -  partData.mid_x, 
@@ -767,33 +734,18 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 	    curr_net->stop_x = tmp_x;
 	    curr_net->stop_y = tmp_y;
 
-	    if (strlen (partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
-	    curr_net->aperture = 0;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-	    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
-	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    
+
 	    curr_net = pnp_new_net(curr_net);
-	    
+	    pnp_init_net(curr_net, image, partData.designator,
+			    GERBV_APERTURE_STATE_ON,
+			    GERBV_INTERPOLATION_CW_CIRCULAR);
+
 	    curr_net->start_x = partData.mid_x;
 	    curr_net->start_y = partData.mid_y;
 	    curr_net->stop_x = partData.pad_x;
 	    curr_net->stop_y = partData.pad_y;
-	    
-	    if (strlen(partData.designator) > 0) {
-		curr_net->label = g_string_new (partData.designator);
-	    }
-	    curr_net->aperture = 0;
-	    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
-	    curr_net->interpolation = GERBV_INTERPOLATION_CW_CIRCULAR;
-	    curr_net->layer = image->layers;
-	    curr_net->state = image->states;
-	    pick_and_place_reset_bounding_box (curr_net);
-	    
-	    curr_net->cirseg = g_new0 (gerbv_cirseg_t,1);
+
+	    curr_net->cirseg = g_new0 (gerbv_cirseg_t, 1);
 	    curr_net->cirseg->angle1 = 0.0;
 	    curr_net->cirseg->angle2 = 360.0;
 	    curr_net->cirseg->cp_x = partData.mid_x;
@@ -857,7 +809,33 @@ pnp_new_net(gerbv_net_t *net)
 	net->next = g_new0(gerbv_net_t, 1);
 	n = net->next;
 	assert(n != NULL);
-	pick_and_place_reset_bounding_box (n);
+
+	pnp_reset_bbox (n);
 
 	return n;
+}
+
+static void
+pnp_reset_bbox (gerbv_net_t *net)
+{
+	net->boundingBox.left = -HUGE_VAL;
+	net->boundingBox.right = HUGE_VAL;
+	net->boundingBox.bottom = -HUGE_VAL;
+	net->boundingBox.top = HUGE_VAL;
+}
+
+static void
+pnp_init_net(gerbv_net_t *net, gerbv_image_t *image, const char *label,
+		gerbv_aperture_state_t apert_state,
+		gerbv_interpolation_t interpol)
+{
+	net->aperture = 0;
+	net->aperture_state = apert_state;
+	net->interpolation = interpol;
+	net->layer = image->layers;
+	net->state = image->states;
+
+	if (strlen(label) > 0) {
+		net->label = g_string_new (label);
+	}
 }
