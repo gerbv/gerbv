@@ -149,6 +149,9 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_LAYER_DOWN_PATH			ACCEL_LAYER "/Move down"
 #define ACCEL_LAYER_DOWN_KEY			GDK_Down
 #define ACCEL_LAYER_DOWN_MOD			(GdkModifierType) GDK_CONTROL_MASK
+#define ACCEL_LAYER_DELETE_PATH			ACCEL_LAYER "/Delete"
+#define ACCEL_LAYER_DELETE_KEY			GDK_Delete
+#define ACCEL_LAYER_DELETE_MOD			(GdkModifierType) GDK_CONTROL_MASK
 
 #define ACCEL_ANAL				ACCEL_ROOT "analyze"
 

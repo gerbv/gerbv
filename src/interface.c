@@ -371,6 +371,8 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), save_as_layer);
 
 	revert = gtk_image_menu_item_new_from_stock (GTK_STOCK_REVERT_TO_SAVED, NULL);
+	/* Change stock  label */
+	gtk_menu_item_set_label (GTK_MENU_ITEM (revert), _("_Revert all"));
 	screen.win.curFileMenuItem[2] = revert;
 	SET_ACCELS_FROM_STOCK (revert, GTK_STOCK_REVERT_TO_SAVED, ACCEL_FILE_REVERT);
 	gtk_tooltips_set_tip (tooltips, revert, _("Reload all layers"), NULL);
@@ -850,11 +852,12 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_down);
 
 	layer_remove = gtk_image_menu_item_new_with_mnemonic (_("_Delete"));
-	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_remove);
 	gtk_tooltips_set_tip (tooltips, layer_remove,
 		_("Remove the active layer"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_remove), tempImage);
+	SET_ACCELS (layer_remove, ACCEL_LAYER_DELETE);
+	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_remove);
 
 	/* The callbacks need this reference to grey the layer menu out, if there are none loaded. */
 	screen.win.curLayerMenuItem = menuitem_layer;
