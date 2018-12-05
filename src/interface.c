@@ -606,11 +606,15 @@ interface_create_gui (int req_width, int req_height)
 			_("Show cross on drill holes"), NULL);
 	SET_ACCELS (show_cross_on_drill_holes, ACCEL_VIEW_CROSS_ON_DRILL_HOLES);
 	gtk_container_add (GTK_CONTAINER (menuitem_view_menu), show_cross_on_drill_holes);
-	if (screen.settings)
+	if (screen.settings) {
 		g_settings_bind (screen.settings, "cross-on-drill-holes",
 				show_cross_on_drill_holes, "active",
 				G_SETTINGS_BIND_DEFAULT);
-	
+		screenRenderInfo.show_cross_on_drill_holes =
+			gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (
+						show_cross_on_drill_holes));
+	}
+
 	layer_visibility_menu = gtk_menu_new ();
 	gtk_menu_set_accel_group (GTK_MENU(layer_visibility_menu), accel_group);
 	gtk_menu_set_accel_path (GTK_MENU(layer_visibility_menu), ACCEL_VIEW_VIS);
