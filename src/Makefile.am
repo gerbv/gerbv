@@ -97,6 +97,10 @@ gerbv_SOURCES = \
 		table.c table.h \
 		lrealpath.c lrealpath.h
 
+if DXF
+gerbv_SOURCES += export-dxf.cpp
+endif
+
 gerbv_LDADD = libgerbv.la
 gerbv_DEPENDENCIES = libgerbv.la
 

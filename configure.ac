@@ -161,6 +161,7 @@ AM_SANITY_CHECK
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CC_C99
+AC_PROG_CXX
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
@@ -263,6 +264,50 @@ GTK_VER=`$PKG_CONFIG gtk+-2.0 --modversion`
 #
 ############################################################
 
+############################################################
+#
+# dxflib
+with_dxf=no
+AC_MSG_CHECKING([if dxf should be enabled])
+AC_ARG_ENABLE([dxf],
+[  --enable-dxf            Enable DXF via dxflib [[default=no]]],
+[
+if test "X$enable_dxf " != "Xno" ; then
+	AC_MSG_RESULT([yes])
+	AC_CHECK_LIB(dxflib,main,,
+		AC_MSG_ERROR([You have requested DXF support but -ldxflib could not be found]))
+	with_dxf=yes
+
+	AC_MSG_CHECKING([dxflib version])
+	AC_LANG([C++])
+	AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+#include <string.h>
+#include <dxflib/dl_dxf.h>
+#ifndef DL_VERSION
+# define DL_VERSION "undefined"
+#endif
+	]], [[
+if (!strncmp("2.2.",  DL_VERSION, 4)
+ || !strncmp("2.5.",  DL_VERSION, 4)
+ || !strncmp("3.12.", DL_VERSION, 5))
+	return 0;
+
+return 1;
+	]])],
+	AC_MSG_RESULT([yes]),
+	AC_MSG_ERROR([untested dxflib version]))
+else
+	AC_MSG_RESULT([no])
+fi
+],
+[
+AC_MSG_RESULT([no])
+])
+AM_CONDITIONAL(DXF, test x$with_dxf = xyes)
+
+#
+#
+############################################################
 
 ############################################################
 #
@@ -340,6 +385,7 @@ libiberty_NEED_DECLARATION(canonicalize_file_name)
 CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS"
 LIBS="$LIBS $GDK_PIXBUF_LIBS $GTK_LIBS $CAIRO_LIBS"
 
+CPPFLAGS+="$GTK_CFLAGS"
 
 ############################################################
 #
@@ -452,6 +498,8 @@ AC_MSG_RESULT([
 
    GTK Version:              $GTK_VER
    Cairo Version:            $CAIRO_VER
+
+   DXF via dxflib:           $with_dxf
 
    Electric Fence Debugging: $with_efence
 

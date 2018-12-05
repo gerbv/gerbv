@@ -973,6 +973,14 @@ gerbv_export_svg_file_from_project (
 		gchar const* filename /*!< the filename for the exported   file */
 );
 
+//! Export an image to a new file in DXF format
+//! \return TRUE if successful, or FALSE if not
+gboolean
+gerbv_export_dxf_file_from_image (const gchar *filename, /*!< the filename for the new file */
+		gerbv_image_t *image, /*!< the image to export */
+		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
+);
+
 //! Parse a RS274X file and return the parsed image
 //! \return the new gerbv_image_t, or NULL if not successful
 gerbv_image_t *

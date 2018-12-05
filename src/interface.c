@@ -147,11 +147,11 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *save_as_layer;
 	GtkWidget *menuitem_file_export;
 	GtkWidget *menuitem_file_export_menu;
-	GtkWidget *png;
-	GtkWidget *pdf;
-	GtkWidget *svg;
-	GtkWidget *postscript;
-	GtkWidget *rs274x,*drill,*rs274xm,*drillm,*idrill;
+	GtkWidget *png, *pdf, *svg, *postscript;
+	GtkWidget *rs274x, *drill, *idrill, *rs274xm, *drillm;
+#if HAVE_LIBDXFLIB
+	GtkWidget *dxf;
+#endif
 	
 #if GTK_CHECK_VERSION(2,10,0)
 	GtkWidget *print;
@@ -410,6 +410,13 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), postscript);
 	gtk_tooltips_set_tip (tooltips, postscript, _("Export visible layers to a PostScript file"), NULL);
 
+#if HAVE_LIBDXFLIB
+	dxf = gtk_menu_item_new_with_mnemonic (_("D_XF..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), dxf);
+	gtk_tooltips_set_tip (tooltips, dxf,
+			_("Export active layer to a DXF file"), NULL);
+#endif
+
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu),
 			gtk_separator_menu_item_new ());
 
@@ -437,9 +444,6 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, drillm,
 			_("Export merged visible drill layers to "
 				"an Excellon drill file"), NULL);	
-
-	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu),
-			gtk_separator_menu_item_new ());
 
 	idrill = gtk_menu_item_new_with_mnemonic (_("_ISEL NCP drill..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), idrill);
@@ -1323,6 +1327,11 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) postscript, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_PS);
+#if HAVE_LIBDXFLIB
+	g_signal_connect ((gpointer) dxf, "activate",
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_DXF);
+#endif
 	g_signal_connect ((gpointer) rs274x, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_RS274X);
