@@ -42,6 +42,7 @@ libgerbv_la_SOURCES= \
 		drill.c drill.h \
 		drill_stats.c drill_stats.h \
 		export-drill.c \
+		export-geda-pcb.c \
 		export-image.c \
 		export-isel-drill.c \
 		export-rs274x.c \

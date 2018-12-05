@@ -716,6 +716,13 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		dir_name =  g_path_get_dirname (act_file->fullPathname);
 
 		break;
+	case CALLBACKS_SAVE_FILE_GEDA_PCB:
+		windowTitle = g_strdup_printf (
+			_("Export \"%s\" layer #%d to gEDA PCB file as..."),
+			act_file->name, file_index + 1);
+		file_name = g_strconcat (act_file->name, ".pcb", NULL);
+		dir_name =  g_path_get_dirname (act_file->fullPathname);
+		break;
 	case CALLBACKS_SAVE_LAYER_AS:
 		windowTitle = g_strdup_printf (_("Save \"%s\" layer #%d as..."),
 				act_file->name, file_index+1);
@@ -873,6 +880,15 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 				act_file->image, &act_file->transform)) {
 			GERB_MESSAGE (
 				_("\"%s\" layer #%d saved as ISEL NCP drill "
+				"in \"%s\""), act_file->name, file_index + 1,
+				new_file_name);
+		}
+		break;
+	case CALLBACKS_SAVE_FILE_GEDA_PCB:
+		if (gerbv_export_geda_pcb_file_from_image(new_file_name,
+				act_file->image, &act_file->transform)) {
+			GERB_MESSAGE (
+				_("\"%s\" layer #%d saved as gEDA PCB "
 				"in \"%s\""), act_file->name, file_index + 1,
 				new_file_name);
 		}

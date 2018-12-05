@@ -147,7 +147,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *save_as_layer;
 	GtkWidget *menuitem_file_export;
 	GtkWidget *menuitem_file_export_menu;
-	GtkWidget *png, *pdf, *svg, *postscript;
+	GtkWidget *png, *pdf, *svg, *postscript, *geda_pcb;
 	GtkWidget *rs274x, *drill, *idrill, *rs274xm, *drillm;
 #if HAVE_LIBDXFLIB
 	GtkWidget *dxf;
@@ -450,6 +450,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_tooltips_set_tip (tooltips, idrill,
 		_("Export active layer to an ISEL Automation NCP drill file"),
 		NULL);
+
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu),
+			gtk_separator_menu_item_new ());
+
+	geda_pcb = gtk_menu_item_new_with_mnemonic (_("gEDA P_CB..."));
+	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), geda_pcb);
+	gtk_tooltips_set_tip (tooltips, geda_pcb,
+			_("Export active layer to a gEDA PCB file"), NULL);
 
 	/* File menu items dealing with a gerbv project. */
 
@@ -1327,6 +1335,9 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) postscript, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_PS);
+	g_signal_connect ((gpointer) geda_pcb, "activate",
+	                  G_CALLBACK (callbacks_generic_save_activate),
+	                  (gpointer) CALLBACKS_SAVE_FILE_GEDA_PCB);
 #if HAVE_LIBDXFLIB
 	g_signal_connect ((gpointer) dxf, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
