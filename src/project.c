@@ -56,7 +56,6 @@
 #endif
 
 #include <errno.h>
-#include <locale.h>
 #include <math.h>
 
 #include "common.h"

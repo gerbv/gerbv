@@ -38,6 +38,7 @@
 #define __FUNCTION__ __FUNCTION2(__FILE__,__LINE__)
 #endif
 
+#include "locale.h"
 #include "gettext.h"
 #define _(str) gettext(str)
 #ifdef ENABLE_NLS

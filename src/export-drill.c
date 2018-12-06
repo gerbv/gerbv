@@ -29,7 +29,6 @@
 #include "gerbv.h"
 
 #include <math.h>
-#include <locale.h>
 #include <glib/gstdio.h>
 
 #include "common.h"

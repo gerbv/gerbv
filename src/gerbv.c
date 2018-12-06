@@ -52,7 +52,6 @@
 #endif
 
 #include <pango/pango.h>
-#include <locale.h>
 
 #include "common.h"
 #include "gerber.h"

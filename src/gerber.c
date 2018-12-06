@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>  /* pow() */
-#include <locale.h>
 #include <errno.h>
 #include <ctype.h>
 

@@ -50,8 +50,6 @@
 # include <getopt.h>
 #endif
 
-#include <locale.h>
-
 #include "common.h"
 #include "main.h"
 #include "callbacks.h"

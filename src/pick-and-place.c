@@ -30,7 +30,6 @@
 #include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
-#include <locale.h>
 
 #include "gerber.h"
 #include "common.h"

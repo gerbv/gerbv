@@ -35,7 +35,6 @@
 #include "gerbv.h"
 
 #include <stdlib.h>
-#include <locale.h>
 
 #ifdef HAVE_STRING_H
 #include <string.h>
