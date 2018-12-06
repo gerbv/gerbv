@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-/** \file export-dxf.cpp
+/** \file export-geda-pcb.c
     \brief Functions for exporting Gerbv images to gEDA PCB files
     \ingroup libgerbv
 */
