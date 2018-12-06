@@ -57,6 +57,10 @@ libgerbv_la_SOURCES= \
 		selection.c selection.h \
 		tooltable.c
 
+if DXF
+libgerbv_la_SOURCES += export-dxf.cpp
+endif
+
 # libgerbv shared library version.  A fairly strict rule should
 # be followed for when this version is updated.  Those rules,
 # taken from the libtool manual, are as follows
@@ -97,10 +101,6 @@ gerbv_SOURCES = \
 		scheme-private.h scheme.c scheme.h \
 		table.c table.h \
 		lrealpath.c lrealpath.h
-
-if DXF
-gerbv_SOURCES += export-dxf.cpp
-endif
 
 gerbv_LDADD = libgerbv.la
 gerbv_DEPENDENCIES = libgerbv.la
