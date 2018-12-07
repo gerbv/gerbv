@@ -161,7 +161,9 @@ AM_SANITY_CHECK
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CC_C99
+if test "x$enable_dxf " != "xno" ; then
 AC_PROG_CXX
+fi
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
