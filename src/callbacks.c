@@ -4079,6 +4079,9 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 	gtk_text_buffer_insert(textbuffer, &iter, message, -1);
 	gtk_text_buffer_insert(textbuffer, &iter, "\n", -1);
 
+	/* Scroll view to inserted text */
+	g_signal_emit_by_name(textbuffer, "paste-done", NULL);
+
 	gtk_text_buffer_get_end_iter(textbuffer, &iter);
 
 	StopMark = gtk_text_buffer_create_mark(textbuffer,
