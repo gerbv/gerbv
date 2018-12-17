@@ -26,12 +26,13 @@ man_MANS = gerbv.1
 
 all:
 	@ echo
-	@ echo "WARNING: missing po4a or sp (nsgmls). Rerun configure and" \
-		"check for 'checking for po4a-*' and 'checking for nsgmls'"
+	@ echo "WARNING: missing po4a or osp/sp (onsgmls/nsgmls). Rerun \
+configure and check for 'checking for po4a-*' and 'checking for onsgmls'/ \
+'checking for nsgmls'"
 	@ echo
 endif
 
-EXTRA_DIST=	gerbv.1.in
+EXTRA_DIST = gerbv.1.in
 
 PO_FILES = gerbv.ru.1.in.po
 

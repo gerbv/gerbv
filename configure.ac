@@ -51,17 +51,25 @@ else
 	have_po4a=yes
 fi
 
-dnl po4a depend on nsgmls
+dnl po4a depend on onsgmls (opensp) or nsgmls (sp)
+AC_PATH_PROG([onsgmls],[onsgmls])
+if test -n "$onsgmls" ; then
+	have_onsgmls=yes
+fi
+
 AC_PATH_PROG([nsgmls],[nsgmls])
-if test -z "$nsgmls" ; then
-	AC_MSG_WARN([nsgmls was not found. If you want to change and compile \
-internationalized documentation, please install sp])
-else
+if test -n "$nsgmls" ; then
 	have_nsgmls=yes
 fi
 
+if test "x$have_nsgmls" = "x" -a "x$have_onsgmls" = "x"; then
+	AC_MSG_WARN([no onsgmls nor nsgmls was found. If you want to change \
+and compile internationalized documentation, please install opensp or sp])
+fi
+
 AM_CONDITIONAL(HAVE_PO4A,
-		test "x$have_po4a" = "xyes" -a "x$have_nsgmls" = "xyes")
+		test "x$have_po4a" = "xyes" -a "x$have_onsgmls" = "xyes" -o \
+		     "x$have_po4a" = "xyes" -a  "x$have_nsgmls" = "xyes")
 
 ############################################################
 #
