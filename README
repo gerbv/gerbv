@@ -3,78 +3,58 @@ Gerbv -- a Gerber file viewer
 Gerbv is part of the gEDA Project
 ------------------------------------------------------------------------------
 
--- About gerbv
+-- About Gerbv
 
   *  Gerbv is a viewer for Gerber RS-274X files, Excellon drill files, and CSV
      pick-and-place files.  (Note:  RS-274D files are not supported.)
-  *  Gerbv is a native Linux application, and it runs on many common unix
+  *  Gerbv is a native Linux application, and it runs on many common Unix
      platforms.
-  *  Gerbv is free/ open-source software.
-  *  The core functionality of gerbv is located in a separate library
+  *  Gerbv is free/open-source software.
+  *  The core functionality of Gerbv is located in a separate library
      (libgerbv), allowing developers to include Gerber
      parsing/editing/exporting/rendering into other programs.
   *  Gerbv is one of the utilities affiliated with the gEDA project, an
      umbrella organization dedicated to producing free software tools for
      electronic design. 
 
--- Building gerbv by downloading a release tarball
+-- Building Gerbv by downloading a release tarball
 
-   1. Download source tarballs from http://gerbv.sourceforge.net.
+   1. Download source tarballs from http://gerbv.sourceforge.net
    2. Expand source by running gzip -dc <filename> | tar xf -
    3. Change to newly expanded directory
-   4. Type ./configure <switches>.
-      The following (gerbv) switches are available to configure:
+   4. Type './configure <switches>'.
+      The following (Gerbv) switches are available to configure:
           * --help: Lists all configure options.
           * --enable-debug: Program will output lots of debug 
               spew while running. (default = no -> no debug output 
               by default.)
           * --enable-unit-mm: Set default unit for coordinates in 
-              status bar to mm (default = no -> units = inches 
+          4   status bar to mm (default = no -> units = inches 
               by default.)
           * --enable-efence: Link with ElectricFence for malloc 
               debugging (default = no -> efence off by default.)
           * --disable-update-desktop-database: Update desktop icon 
               database after installation (default = no -> desktop 
               icon installed by default.)
-   5. Type make
-   6. Type make install. Please note that if you want to install 
+   5. Type 'make'
+   6. Type 'make install'. Please note that if you want to install 
       it in a system directory you have to su first.
-   7. Test by typing gerbv 
+   7. Test by typing 'gerbv'
 
--- Building gerbv by downloading from anonymous CVS
+-- Building Gerbv by downloading from git
 
-   1. Login to anonymous CVS (only needed the first time):
-      cvs -d:pserver:anonymous@gerbv.cvs.sourceforge.net:/cvsroot/gerbv login .
-      Press Enter when CVS asks for a password.
-   2. Check out the source tree:
-      cvs -z3 -d:pserver:anonymous@gerbv.cvs.sourceforge.net:/cvsroot/gerbv co gerbv
-   3. Recreate all build system files:
-      sh autogen.sh
-   4. Type ./configure <switches>.
-      The following (gerbv) switches are available to configure:
-          * --help: Lists all configure options.
-          * --enable-debug: Program will output lots of debug 
-              spew while running. (default = no -> no debug output 
-              by default.)
-          * --enable-unit-mm: Set default unit for coordinates in 
-              status bar to mm (default = no -> units = inches 
-              by default.)
-          * --enable-efence: Link with ElectricFence for malloc 
-              debugging (default = no -> efence off by default.)
-          * --disable-update-desktop-database: Update desktop icon 
-              database after installation (default = no -> desktop 
-              icon installed by default.)
-   5. Type make
-   6. Type make install. Please note that if you want to install 
-      it in a system directory you have to su first.
-   7. Test by typing gerbv 
-   8. Run cvs update in the checked out gerbv directory to get 
+   1. Pull the source tree:
+      'git pull ssh://git@geda-project.org:65/gerbv'
+   2. Recreate all build system files in pulled directory:
+      'sh autogen.sh'
+   3. Follow steps 4-7 from "Building Gerbv by downloading a release tarball"
+   4. Run 'git pull' in the checked out Gerbv directory to get 
       the latest changes. 
 
 --  Supported platforms
 Gerbv has been built and tested on
 
-    * Linux (2.2/2.4/2.6)
+    * Linux (from 2.2)
     * NetBSD/i386 (1.4.1)
     * NetBSD/Alpha (1.5.1)
     * Solaris (5.7 and 5.8) 
@@ -88,7 +68,7 @@ is here, as well as many example programs using libgerbv.
 
 -- License  
 
-  gerbv and all associated files is placed under the GNU Public 
+  Gerbv and all associated files is placed under the GNU Public 
   License (GPL) version 2.0.  See the toplevel COPYING file for 
   more information.
 
@@ -98,18 +78,20 @@ is here, as well as many example programs using libgerbv.
 
 -- Contact information  
 
-Bugs:  Please submit bug reports to the 
-SourceForge bug tracker:
-http://sourceforge.net/tracker/?group_id=33921&atid=409538
+Please submit bug reports to the SourceForge bug tracker:
 
-Feature requests:  Please submit feature requests to the 
-SourceForge feature request tracker:
-http://sourceforge.net/tracker/?group_id=33921&atid=409541
+	https://sourceforge.net/p/gerbv/bugs/
 
-Patches:  Please submit patches to the 
-SourceForge patch submission tracker:
-http://sourceforge.net/tracker/?group_id=33921&atid=409540
+Please submit feature requests to the SourceForge feature request tracker:
 
-To communicate with a gerbv developer:  Please post your 
-query on the geda-dev mailing list:
-geda-user@delorie.com
+	https://sourceforge.net/p/gerbv/feature-requests/
+
+Please submit patches to the SourceForge patch submission tracker:
+
+	https://sourceforge.net/p/gerbv/patches/
+
+To communicate with a Gerbv developer, please post your query on the following
+mailing list:
+	gerbv-devel@lists.sourceforge.net
+	  geda-user@delorie.com
+
