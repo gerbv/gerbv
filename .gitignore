@@ -7,6 +7,7 @@ Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache/
+compile
 config.guess
 config.h
 config.h.in
@@ -15,11 +16,11 @@ config.rpath
 config.status
 config.sub
 configure
+depcomp
 doc/html/*.css
 doc/html/*.html
 doc/html/*.js
 doc/html/*.png
-depcomp
 install-sh
 intl/
 libtool
@@ -38,6 +39,7 @@ po/en@quot.header
 po/insert-header.sin
 po/quot.sed
 po/remove-potcdate.sin
+share/glib-2.0/schemas/org.geda-user.gerbv.gschema.valid
 src/.deps
 src/.libs
 src/authors.c
@@ -48,5 +50,6 @@ src/libgerbv.la
 src/libgerbv.pc
 src/run_gerbv
 stamp-h1
+test-driver
 test/mismatch/
 test/outputs/
