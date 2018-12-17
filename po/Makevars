@@ -7,6 +7,10 @@ DOMAIN = $(PACKAGE)
 subdir = po
 top_builddir = ..
 
+# Prevent .po files accidentally update.
+# To update .po files call 'make update-po' manually.
+PO_DEPENDS_ON_POT = no
+
 # These options get passed to xgettext.
 XGETTEXT_OPTIONS = --keyword=_ --keyword=N_ \
 	--from-code=UTF-8
