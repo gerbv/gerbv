@@ -105,11 +105,25 @@ interface_load_accels (void)
 void
 interface_save_accels (void)
 {
-	gchar *accel_map_filename = g_build_filename (g_get_home_dir(), GERBV_ACCELS_RELPATH, NULL);
-	if (accel_map_filename) {
-		gtk_accel_map_save (accel_map_filename);
-		g_free (accel_map_filename);
-	}
+	gchar *accel_map_dirname, *accel_map_filename;
+
+	accel_map_filename =
+		g_build_filename (g_get_home_dir(), GERBV_ACCELS_RELPATH, NULL);
+
+	if (!accel_map_filename)
+		return;
+
+	/* Create directory if it is not present */
+	accel_map_dirname =  g_path_get_dirname (accel_map_filename);
+	g_mkdir_with_parents (accel_map_dirname,
+				S_IRUSR | S_IXUSR | S_IWUSR |
+				S_IRGRP | S_IXGRP |
+				S_IROTH | S_IXOTH);
+
+	gtk_accel_map_save (accel_map_filename);
+
+	g_free (accel_map_dirname);
+	g_free (accel_map_filename);
 }
 
 static void
@@ -799,12 +813,14 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility);
 
 	layer_visibility_all_on = gtk_image_menu_item_new_with_mnemonic (_("All o_n"));
+	SET_ACCELS (layer_visibility_all_on, ACCEL_LAYER_ALL_ON);
 	gtk_tooltips_set_tip (tooltips, layer_visibility_all_on, _("Turn on visibility of all layers"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_YES, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_visibility_all_on), tempImage);
 	gtk_container_add (GTK_CONTAINER (menuitem_layer_menu), layer_visibility_all_on);
 
 	layer_visibility_all_off = gtk_image_menu_item_new_with_mnemonic (_("All _off"));
+	SET_ACCELS (layer_visibility_all_off, ACCEL_LAYER_ALL_OFF);
 	gtk_tooltips_set_tip (tooltips, layer_visibility_all_off, _("Turn off visibility of all layers"), NULL);
 	tempImage = gtk_image_new_from_stock (GTK_STOCK_NO, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (layer_visibility_all_off), tempImage);

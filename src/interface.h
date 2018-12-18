@@ -46,7 +46,7 @@ else\
 
 /* If stock items/IDs are used the ACCEL_*_PATH macros have to match the labels of the stock items.
 Otherwise the (persistent) accelerators are broken. One workaround would be to look the labels up. */
-#define GERBV_ACCELS_RELPATH ".gnome2/accels/gerbv"
+#define GERBV_ACCELS_RELPATH ".gEDA/gerbv/accels"
 #define ACCEL_ROOT				"<main>/"
 #define ACCEL_FILE				ACCEL_ROOT "file"
 #define ACCEL_FILE_NEW_PATH			ACCEL_FILE "/New"
@@ -140,6 +140,12 @@ Otherwise the (persistent) accelerators are broken. One workaround would be to l
 #define ACCEL_VIEW_UNITS			ACCEL_VIEW "/Units"
 
 #define ACCEL_LAYER				ACCEL_ROOT "layer"
+#define ACCEL_LAYER_ALL_ON_PATH			ACCEL_LAYER "/All on"
+#define ACCEL_LAYER_ALL_ON_KEY			GDK_KP_Multiply
+#define ACCEL_LAYER_ALL_ON_MOD			(GdkModifierType) 0
+#define ACCEL_LAYER_ALL_OFF_PATH		ACCEL_LAYER "/All off"
+#define ACCEL_LAYER_ALL_OFF_KEY			GDK_KP_Divide
+#define ACCEL_LAYER_ALL_OFF_MOD			(GdkModifierType) 0
 #define ACCEL_LAYER_COLOR_PATH			ACCEL_LAYER "/Change color"
 #define ACCEL_LAYER_COLOR_KEY			GDK_F6
 #define ACCEL_LAYER_COLOR_MOD			(GdkModifierType) 0
