@@ -6,28 +6,30 @@
 # Lines starting with a '#' are considered comment lines.
 # Blank lines are allowed.
 
+Anders Eriksson: GTK+/X hacker and constructive ideas.
+
 Andreas Andersson aka Pitch: Drill file support hacker and constructive ideas.
 
-Trevor Blackwell
-
-Stuart Brorson: Layer statistics, release engineer, UI improvements
+Dan McMahill: Build system, portability and bug fixes, misc. features
 
 David Carr
 
-Anders Eriksson: GTK+/X hacker and constructive ideas.
+Joerg Wunsch
+
+Joost Witteveen
 
 Juergen Haas
 
 Julian Lamb: Cairo conversion.  Many user interface and rs274-x improvements
 
-Dan McMahill: Build system, portability and bug fixes, misc. features
-
-Tomasz Motylewski
+Sergey Alyoshin
 
 Stefan Petersen: Project founder, and main developer for many years
 
-Joost Witteveen
+Stuart Brorson: Layer statistics, release engineer, UI improvements
 
-Joerg Wunsch
+Tomasz Motylewski
+
+Trevor Blackwell
 
 ... and many others.
