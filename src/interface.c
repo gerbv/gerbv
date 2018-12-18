@@ -468,7 +468,7 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu),
 			gtk_separator_menu_item_new ());
 
-	geda_pcb = gtk_menu_item_new_with_mnemonic (_("gEDA P_CB..."));
+	geda_pcb = gtk_menu_item_new_with_mnemonic (_("gEDA P_CB (beta)..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), geda_pcb);
 	gtk_tooltips_set_tip (tooltips, geda_pcb,
 			_("Export active layer to a gEDA PCB file"), NULL);
