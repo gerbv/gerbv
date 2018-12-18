@@ -42,7 +42,7 @@ Read Excellon tools from the file \fI<filename>\fP.
 .TP
 .BI -p\ <project\ filename>|--project=<project\ filename>
 Load a stored project. Please note that the project file must be stored in
-the same directory as the gerber files.
+the same directory as the Gerber files.
 
 .SS gerbv Export-specific options:
 The following commands can be used in combination with the -x flag:
@@ -134,7 +134,6 @@ file, change color, etc).
 If you hold the mouse button over one the rightmost button a tooltips will
 show you the name of the file loaded on that layer.
 
-
 .SH ACTIVATION AND DEACTIVATION OF LAYERS
 You can load several files at one time. You can then turn displaying of the
 layers on and off by clicking on one of check boxes near the layer names.
@@ -142,6 +141,10 @@ layers on and off by clicking on one of check boxes near the layer names.
 You can also control this from the keyboard. Press Ctrl, enter the number
 on the layer you want activate/deactivate on the numerical keypad and then
 release the Ctrl key.
+
+.SH ALIGNING OF LAYERS
+You can align two layers by selected elements. Select one element on each of
+two layers and click Align layers from context menu.
 
 .SH ZOOMING
 Zooming can be handled by either menu choices, keypressing or mouse scroll
@@ -165,10 +168,12 @@ You can do measurement on the image displayed. Select Measure Tool, the cursor
 changes to a plus. By using left mouse button you can draw the lines that you
 want to measure. The result of the last measurement is also displayed on the
 statusbar. All measurements are in the drawing until you select other Tool.
+To measure distance between elements select two of them and switch to Measure
+Tool.
 
 The statusbar shows the current mouse position on the layer in the same 
 coordinates as in the file. I.e. if you have (0,0) in the middle of the image
-in the gerber files, the statusbar will show (0,0) at the same place.
+in the Gerber files, the statusbar will show (0,0) at the same place.
 
 .SH SUPERIMPOSING
 When you load several Gerber files, you can display them "on top of each other",
@@ -190,7 +195,7 @@ You load a project either from the menu bar or by using the commandline
 switches -p or --project.
 
 Currently there is a limit in that the project file must be in the same
-directory as the gerber files to be loaded.
+directory as the Gerber files to be loaded.
 
 .SH SCHEME
 The project files are simple Scheme programs that is interpreted by a
