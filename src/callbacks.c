@@ -4374,7 +4374,7 @@ aperture_report(gerbv_aperture_t *apertures[], int aperture_num,
 			g_message (_("    Start: (%g, %g) %s"),
 				screen_units(x), screen_units(y),
 				screen_units_str());
-			g_message (_("    Rotation (deg): %g"),
+			g_message (_("    Rotation: %g deg"),
 				simpars[OUTLINE_ROTATION_IDX(simpars)]);
 			break;
 
@@ -4390,7 +4390,7 @@ aperture_report(gerbv_aperture_t *apertures[], int aperture_num,
 			g_message (_("    Center: (%g, %g) %s"),
 				screen_units(x), screen_units(y),
 				screen_units_str());
-			g_message (_("    Rotation (deg): %g"),
+			g_message (_("    Rotation: %g deg"),
 				simpars[POLYGON_ROTATION]);
 			break;
 
@@ -4398,13 +4398,13 @@ aperture_report(gerbv_aperture_t *apertures[], int aperture_num,
 			g_message (_("    Outside diameter: %g %s"),
 				screen_units(simpars[MOIRE_OUTSIDE_DIAMETER]),
 				screen_units_str());
-			g_message (_("    Circle thickness: %g %s"),
+			g_message (_("    Ring thickness: %g %s"),
 				screen_units(simpars[MOIRE_CIRCLE_THICKNESS]),
 				screen_units_str());
 			g_message (_("    Gap width: %g %s"),
 				screen_units(simpars[MOIRE_GAP_WIDTH]),
 				screen_units_str());
-			g_message (_("    Number of circles: %g"),
+			g_message (_("    Number of rings: %g"),
 				simpars[MOIRE_NUMBER_OF_CIRCLES]);
 			g_message (_("    Crosshair thickness: %g %s"),
 				screen_units(
@@ -4419,7 +4419,7 @@ aperture_report(gerbv_aperture_t *apertures[], int aperture_num,
 			g_message (_("    Center: (%g, %g) %s"),
 				screen_units(x), screen_units(y),
 				screen_units_str());
-			g_message (_("    Rotation (deg): %g"),
+			g_message (_("    Rotation: %g deg"),
 				simpars[MOIRE_ROTATION]);
 			break;
 
