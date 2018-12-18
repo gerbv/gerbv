@@ -668,7 +668,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		break;
 	case CALLBACKS_SAVE_FILE_RS274X:
 		windowTitle = g_strdup_printf(
-			_("Export active \"%s\" layer #%d to "
+			_("Export \"%s\" layer #%d to "
 				"RS-274X file as..."),
 			act_file->name, file_index+1);
 
@@ -689,7 +689,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		}
 	case CALLBACKS_SAVE_FILE_DRILL:
 		windowTitle = g_strdup_printf(
-			_("Export active \"%s\" layer #%d to "
+			_("Export \"%s\" layer #%d to "
 				"Excellon drill file as..."),
 			act_file->name, file_index+1);
 
