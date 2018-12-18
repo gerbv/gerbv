@@ -58,13 +58,13 @@ gerbv_drill_stats_new(void) {
     /* Initialize drill list */
     drill_list = gerbv_drill_stats_new_drill_list();
     if (drill_list == NULL)
-        GERB_FATAL_ERROR(_("malloc drill_list failed"));
+        GERB_FATAL_ERROR("malloc drill_list failed in %s()", __FUNCTION__);
     stats->drill_list = (gerbv_drill_list_t *) drill_list;
 
     /* Initialize error list */
     error_list = gerbv_drill_stats_new_error_list();
     if (error_list == NULL)
-        GERB_FATAL_ERROR(_("malloc error_list failed"));
+        GERB_FATAL_ERROR("malloc error_list failed in %s()", __FUNCTION__);
     stats->error_list = (gerbv_error_list_t *) error_list;
 
     stats->detect = NULL;
@@ -297,7 +297,7 @@ drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
 
     /* Now malloc space for new drill list element */
     if (NULL == (drill_list_new = g_new(gerbv_drill_list_t, 1))) {
-	GERB_FATAL_ERROR(_("malloc format failed"));
+	GERB_FATAL_ERROR("malloc format failed in %s()", __FUNCTION__);
     }
 
     /* Now set various parameters based upon calling args */

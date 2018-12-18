@@ -238,7 +238,7 @@ drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state,
 
     curr_net->next = g_new0(gerbv_net_t, 1);
     if (curr_net->next == NULL)
-	GERB_FATAL_ERROR(_("malloc curr_net->next failed in %s()"),
+	GERB_FATAL_ERROR("malloc curr_net->next failed in %s()",
 			__FUNCTION__);
 
     curr_net = curr_net->next;
@@ -305,7 +305,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
     image = gerbv_create_image(image, "Excellon Drill File");
     if (image == NULL)
-	GERB_FATAL_ERROR(_("malloc image failed in %s()"), __FUNCTION__);
+	GERB_FATAL_ERROR("malloc image failed in %s()", __FUNCTION__);
 
     if (reload && attr_list != NULL) {
       /* FIXME there should probably just be a function to copy an
@@ -333,17 +333,17 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     image->layertype = GERBV_LAYERTYPE_DRILL;
     stats = gerbv_drill_stats_new();
     if (stats == NULL)
-	GERB_FATAL_ERROR(_("malloc stats failed in %s()"), __FUNCTION__);
+	GERB_FATAL_ERROR("malloc stats failed in %s()", __FUNCTION__);
     image->drill_stats = stats;
 
     /* Create local state variable to track photoplotter state */
     state = new_state(state);
     if (state == NULL)
-	GERB_FATAL_ERROR(_("malloc state failed in %s()"), __FUNCTION__);
+	GERB_FATAL_ERROR("malloc state failed in %s()", __FUNCTION__);
 
     image->format = g_new0(gerbv_format_t, 1);
     if (image->format == NULL)
-	GERB_FATAL_ERROR(_("malloc format failed in %s()"), __FUNCTION__);
+	GERB_FATAL_ERROR("malloc format failed in %s()", __FUNCTION__);
 
     image->format->omit_zeros = GERBV_OMIT_ZEROS_UNSPECIFIED;
 
@@ -944,7 +944,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     tbuf = g_malloc(MAXL);
     if (tbuf == NULL) 
 	GERB_FATAL_ERROR(
-		_("malloc buf failed while checking for drill file in %s()"),
+		"malloc buf failed while checking for drill file in %s()",
 		__FUNCTION__);
 
     while (fgets(tbuf, MAXL, fd->fd) != NULL) {
@@ -1176,7 +1176,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 		    apert = image->aperture[tool_num] =
 						g_new0(gerbv_aperture_t, 1);
 		    if (apert == NULL)
-			GERB_FATAL_ERROR(_("malloc tool failed in %s()"),
+			GERB_FATAL_ERROR("malloc tool failed in %s()",
 					__FUNCTION__);
 
 		    /* There's really no way of knowing what unit the tools
@@ -1233,7 +1233,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 
 	apert = image->aperture[tool_num] = g_new0(gerbv_aperture_t, 1);
 	if (apert == NULL)
-	    GERB_FATAL_ERROR(_("malloc tool failed in %s()"), __FUNCTION__);
+	    GERB_FATAL_ERROR("malloc tool failed in %s()", __FUNCTION__);
 
         /* See if we have the tool table */
         dia = gerbv_get_tool_diameter(tool_num);

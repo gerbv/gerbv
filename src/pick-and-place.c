@@ -428,7 +428,7 @@ pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary)
 
     buf = malloc(MAXL);
     if (buf == NULL)
-	GERB_FATAL_ERROR(_("malloc buf failed while checking for pick-place file."));
+	GERB_FATAL_ERROR("malloc buf failed in %s()", __FUNCTION__);
 
     while (fgets(buf, MAXL, fd->fd) != NULL) {
 	len = strlen(buf);
@@ -562,12 +562,12 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 
     image = gerbv_create_image(image, "Pick and Place (X-Y) File");
     if (image == NULL) {
-	GERB_FATAL_ERROR(_("malloc image failed"));
+	GERB_FATAL_ERROR("malloc image failed in %s()", __FUNCTION__);
     }
 
     image->format = g_new0(gerbv_format_t, 1);
     if (image->format == NULL) {
-	GERB_FATAL_ERROR(_("malloc format failed"));
+	GERB_FATAL_ERROR("malloc format failed in %s()", __FUNCTION__);
     }
 
     /* Separate top/bot layer type is needed for reload purpose */
@@ -578,7 +578,8 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 
     stats = gerbv_drill_stats_new();
     if (stats == NULL)
-        GERB_FATAL_ERROR(_("malloc pick_place_stats failed"));
+        GERB_FATAL_ERROR("malloc pick_place_stats failed in %s()",
+			__FUNCTION__);
     image->drill_stats = stats;
 
 

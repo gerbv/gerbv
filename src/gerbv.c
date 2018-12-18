@@ -1030,7 +1030,7 @@ gerbv_attribute_dup (gerbv_HID_Attribute *attributeList, int n_attr)
 
   nl = (gerbv_HID_Attribute *) malloc (n_attr * sizeof (gerbv_HID_Attribute));
   if (nl == NULL) {
-    fprintf (stderr, _("%s(): malloc failed\n"), __FUNCTION__);
+    fprintf (stderr, "malloc failed in %s()\n", __FUNCTION__);
     exit (1);
   }
 

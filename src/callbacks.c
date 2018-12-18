@@ -2715,7 +2715,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 
 	    results = (gerbv_HID_Attr_Val *) malloc (n * sizeof (gerbv_HID_Attr_Val));
 	    if (results == NULL)
-		GERB_FATAL_ERROR(_("%s(): malloc failed"), __FUNCTION__);
+		GERB_FATAL_ERROR("%s(): malloc failed", __FUNCTION__);
       
 	    /* non-zero means cancel was picked */
 	    if (attribute_interface_dialog (attr, n, results, 

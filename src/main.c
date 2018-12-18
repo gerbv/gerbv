@@ -281,7 +281,8 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	}
 	gerbvProject->project = g_strdup(filename);
 	if (gerbvProject->project == NULL)
-		GERB_FATAL_ERROR(_("malloc gerbvProject->project failed"));
+		GERB_FATAL_ERROR("malloc gerbvProject->project failed in %s()",
+				__FUNCTION__);
 } /* gerbv_open_project_from_filename */
 
 /* ------------------------------------------------------------------ */
@@ -357,7 +358,8 @@ main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filenam
     }
     gerbvProject->project = g_strdup(filename);
     if (gerbvProject->project == NULL)
-	GERB_FATAL_ERROR(_("malloc gerbvProject->project failed"));
+	GERB_FATAL_ERROR("malloc gerbvProject->project failed in %s()",
+			__FUNCTION__);
     main_save_project_from_filename (gerbvProject, filename);
 } /* gerbv_save_as_project_from_filename */
 

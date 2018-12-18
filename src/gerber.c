@@ -746,12 +746,12 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
      */
     image = gerbv_create_image(image, "RS274-X (Gerber) File");
     if (image == NULL)
-	GERB_FATAL_ERROR(_("malloc image failed"));
+	GERB_FATAL_ERROR("malloc image failed in %s()", __FUNCTION__);
     curr_net = image->netlist;
     image->layertype = GERBV_LAYERTYPE_RS274X;
     image->gerbv_stats = gerbv_stats_new();
     if (image->gerbv_stats == NULL)
-	GERB_FATAL_ERROR(_("malloc gerbv_stats failed"));
+	GERB_FATAL_ERROR("malloc gerbv_stats failed in %s()", __FUNCTION__);
 
     stats = image->gerbv_stats;
 
@@ -807,7 +807,8 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 		    __func__, fd, returnFoundBinary, fd->fd); 
     buf = (char *) g_malloc(MAXL);
     if (buf == NULL) 
-	GERB_FATAL_ERROR(_("malloc buf failed while checking for rs274x"));
+	GERB_FATAL_ERROR("malloc buf failed while checking for rs274x in %s()",
+			__FUNCTION__);
     
     while (fgets(buf, MAXL, fd->fd) != NULL) {
         dprintf ("buf = \"%s\"\n", buf);
@@ -901,7 +902,8 @@ gerber_is_rs274d_p(gerb_file_t *fd)
     
     buf = malloc(MAXL);
     if (buf == NULL) 
-	GERB_FATAL_ERROR(_("malloc buf failed while checking for rs274d"));
+	GERB_FATAL_ERROR("malloc buf failed while checking for rs274d in %s()",
+			__FUNCTION__);
 
     while (fgets(buf, MAXL, fd->fd) != NULL) {
 	len = strlen(buf);
@@ -1919,7 +1921,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
     /* Allocate stack for VM */
     s = new_stack(aperture->amacro->nuf_push + extra_stack_size);
     if (s == NULL) 
-	GERB_FATAL_ERROR(_("malloc stack failed"));
+	GERB_FATAL_ERROR("malloc stack failed in %s()", __FUNCTION__);
 
     /* Make a copy of the parameter list that we can rewrite if necessary */
     lp = g_new (double,APERTURE_PARAMETERS_MAX);

@@ -756,7 +756,7 @@ interface_create_gui (int req_width, int req_height)
 
 		screen.win.menu_view_render_group = malloc(4*sizeof(GtkWidget *));
 		if(screen.win.menu_view_render_group == NULL)
-			GERB_FATAL_ERROR(_("malloc for rendering type synchronization failed"));
+			GERB_FATAL_ERROR("malloc for rendering type synchronization failed in %s()", __FUNCTION__);
 
 		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_GDK] = GTK_CHECK_MENU_ITEM(render_fast);
 		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_GDK_XOR] = GTK_CHECK_MENU_ITEM(render_fast_xor);
@@ -791,7 +791,7 @@ interface_create_gui (int req_width, int req_height)
 		
 		screen.win.menu_view_unit_group = malloc(3*sizeof(GtkWidget *));
 		if(screen.win.menu_view_unit_group == NULL)
-			GERB_FATAL_ERROR(_("malloc for display unit synchronization failed.\n"));
+			GERB_FATAL_ERROR("malloc for display unit synchronization failed in %s()", __FUNCTION__);
 
 		screen.win.menu_view_unit_group[GERBV_MILS] = GTK_CHECK_MENU_ITEM(unit_mil);
 		screen.win.menu_view_unit_group[GERBV_MMS] = GTK_CHECK_MENU_ITEM(unit_mm);

@@ -475,7 +475,7 @@ init_paths (char *argv0)
 	      dprintf ("Looking for %s in %s\n", argv0, p);
               if ( (tmps = malloc ( (strlen (argv0) + strlen (p) + 2) * sizeof (char))) == NULL )
                 {
-                  fprintf (stderr, _("%s():  malloc failed\n"), __FUNCTION__);
+                  fprintf (stderr, "malloc failed in %s()\n", __FUNCTION__);
                   exit (1);
                 }
               sprintf (tmps, "%s%s%s", p, GERBV_DIR_SEPARATOR_S, argv0);
@@ -524,7 +524,7 @@ init_paths (char *argv0)
   l = strlen (bindir) + 1 + strlen (BINDIR_TO_EXECPREFIX) + 1;
   if ( (exec_prefix = (char *) malloc (l * sizeof (char) )) == NULL )
     {
-      fprintf (stderr, _("%s():  malloc failed\n"), __FUNCTION__);
+      fprintf (stderr, "malloc failed in %s()\n", __FUNCTION__);
       exit (1);
     }
   sprintf (exec_prefix, "%s%s%s", bindir, GERBV_DIR_SEPARATOR_S,
@@ -534,7 +534,7 @@ init_paths (char *argv0)
   l = strlen (bindir) + 1 + strlen (BINDIR_TO_PKGDATADIR) + 1;
   if ( (pkgdatadir = (char *) malloc (l * sizeof (char) )) == NULL )
     {
-      fprintf (stderr, _("%s():  malloc failed\n"), __FUNCTION__);
+      fprintf (stderr, "malloc failed in %s()\n", __FUNCTION__);
       exit (1);
     }
   sprintf (pkgdatadir, "%s%s%s", bindir, GERBV_DIR_SEPARATOR_S,
@@ -914,8 +914,8 @@ project_is_gerbv_project(const char *filename, gboolean *ret)
 
 	buf = (char *) g_malloc(buf_size);
 	if (buf == NULL)
-		GERB_FATAL_ERROR(_("malloc buf failed while checking for "
-					"Gerbv project"));
+		GERB_FATAL_ERROR("malloc buf failed while checking for "
+				"Gerbv project in %s()", __FUNCTION__);
 
 	if (fgets(buf, buf_size, fd) != NULL)
 		*ret = (g_strrstr(buf, "gerbv-file-version") != NULL);

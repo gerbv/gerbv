@@ -302,7 +302,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 
   all_widgets = (GtkWidget **) malloc (n_widgets * sizeof(GtkWidget *));
   if (all_widgets == NULL) {
-    fprintf (stderr, _("%s():  malloc failed for an array of size %d\n"), __FUNCTION__, n_widgets);
+    fprintf (stderr, "%s():  malloc failed for an array of size %d\n", __FUNCTION__, n_widgets);
     exit (1);
   }
 
