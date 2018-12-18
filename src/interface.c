@@ -1168,7 +1168,8 @@ interface_create_gui (int req_width, int req_height)
 	image8 = gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add (GTK_CONTAINER (button4), image8);
 	gtk_tooltips_set_tip (tooltips, button4,
-			_("Open Gerber, drill, or pick&place file(s)"), NULL);
+			_("Open Gerbv project, Gerber, drill, "
+				"or pick&place files"), NULL);
 
 	button5 = gtk_button_new ();
 	gtk_box_pack_start (GTK_BOX (hbox1), button5, FALSE, TRUE, 0);
