@@ -247,6 +247,23 @@ will preconfigure the tools by deriving the diameter of the drill bit
 from the tool number. This is probably not what you want, and you
 will see warnings printed on the console.
 
+.SH PICK&PLACE FILE
+Supported comma separated file (CSV) with fixed order of data:
+
+.nf
+	# X,Y in mils.
+	Designator,"Description","Value",X,Y,"Rotation (deg)",top/bottom
+
+	or
+
+	Designator,"Footprint","Mid X","Mid Y","Ref X","Ref Y",
+			"Pad X","Pad Y",T/B,"Rotation","Comment"
+.fi
+
+Units can be specified in format "# X,Y in mils." or as suffix for
+X/Y-coordinates, i.e ",10mil,". Supported units: in, mil, cmil, dmil, km, m,
+dm, cm, mm, um, nm.
+
 .SH "ENVIRONMENT"
 .IP GERBV_SCHEMEINIT
 Defines where the init.scm file is stored. Used by scheme interpreter, which 
