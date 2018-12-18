@@ -1864,30 +1864,39 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 	/* TRANSLATORS: Replace this string with your names, one name per line. */
 	gchar *translators = _("translator-credits");
 
-	gchar *string = g_strdup_printf(_("gerbv — a Gerber (RS-274/X) viewer.\n\n"
-					  "This is gerbv version %s\n"
-					  "Compiled on %s at %s\n"
-					  "\n"
-					  "gerbv is part of the gEDA Project.\n"
-					  "\n"
-					  "For more information see:\n"
-					  "  gEDA homepage: http://geda-project.org/\n"
-					  "  gEDA Wiki: http://wiki.geda-project.org/"),
-					  VERSION, __DATE__, __TIME__);
+	gchar *string = g_strdup_printf(_(
+		"Gerbv — a Gerber (RS-274/X) viewer\n"
+		"\n"
+		"Version %s\n"
+		"Compiled on %s at %s\n"
+		"\n"
+		"Gerbv is part of the gEDA Project.\n"
+		"\n"
+		"For more information see:\n"
+		"  gEDA homepage: http://geda-project.org/\n"
+		"  gEDA Wiki: http://wiki.geda-project.org/"),
+		VERSION, __DATE__, __TIME__);
+
 #if GTK_CHECK_VERSION(2,6,0)
-	gchar *license = g_strdup_printf(_("gerbv — a Gerber (RS-274/X) viewer.\n\n"
-					 "Copyright (C) 2000—2007 Stefan Petersen\n\n"
-					 "This program is free software: you can redistribute it and/or modify\n"
-					 "it under the terms of the GNU General Public License as published by\n"
-					 "the Free Software Foundation, either version 2 of the License, or\n"
-					 "(at your option) any later version.\n\n"
-					 "This program is distributed in the hope that it will be useful,\n"
-					 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-					 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-					 "GNU General Public License for more details.\n\n"
-					 "You should have received a copy of the GNU General Public License\n"
-					 "along with this program.  If not, see <http://www.gnu.org/licenses/>."));
+	gchar *license = g_strdup_printf(_(
+		"Gerbv — a Gerber (RS-274/X) viewer\n"
+		"\n"
+		"Copyright (C) 2000—2007 Stefan Petersen\n"
+		"\n"
+		"This program is free software: you can redistribute it and/or modify\n"
+		"it under the terms of the GNU General Public License as published by\n"
+		"the Free Software Foundation, either version 2 of the License, or\n"
+		"(at your option) any later version.\n"
+		"\n"
+		"This program is distributed in the hope that it will be useful,\n"
+		"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+		"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+		"GNU General Public License for more details.\n\n"
+		"You should have received a copy of the GNU General Public License\n"
+		"along with this program.  If not, see <http://www.gnu.org/licenses/>."));
+
 	#include "authors.c"
+
 	int a_size, i;
 	gchar **a;
 
@@ -1950,7 +1959,7 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
     #include "bugs.c"
 
     /* Create the top level dialog widget with an OK button */
-    GtkWidget *bugs_dialog = gtk_dialog_new_with_buttons(_("Known bugs in gerbv"),
+    GtkWidget *bugs_dialog = gtk_dialog_new_with_buttons(_("Known bugs in Gerbv"),
 							 NULL,
 							 GTK_DIALOG_DESTROY_WITH_PARENT,
 							 GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
