@@ -15,7 +15,7 @@ Gerbv is part of the gEDA Project
      parsing/editing/exporting/rendering into other programs.
   *  Gerbv is one of the utilities affiliated with the gEDA project, an
      umbrella organization dedicated to producing free software tools for
-     electronic design. 
+     electronic design.
 
 -- Building Gerbv by downloading a release tarball
 
@@ -25,31 +25,30 @@ Gerbv is part of the gEDA Project
    4. Type './configure <switches>'.
       The following (Gerbv) switches are available to configure:
           * --help: Lists all configure options.
-          * --enable-debug: Program will output lots of debug 
-              spew while running. (default = no -> no debug output 
+          * --enable-debug: Program will output lots of debug
+              spew while running. (default = no -> no debug output
               by default.)
-          * --enable-unit-mm: Set default unit for coordinates in 
-          4   status bar to mm (default = no -> units = inches 
+          * --enable-unit-mm: Set default unit for coordinates in
+          4   status bar to mm (default = no -> units = inches
               by default.)
-          * --enable-efence: Link with ElectricFence for malloc 
+          * --enable-efence: Link with ElectricFence for malloc
               debugging (default = no -> efence off by default.)
-          * --disable-update-desktop-database: Update desktop icon 
-              database after installation (default = no -> desktop 
+          * --disable-update-desktop-database: Update desktop icon
+              database after installation (default = no -> desktop
               icon installed by default.)
    5. Type 'make'
-   6. Type 'make install'. Please note that if you want to install 
-      it in a system directory you have to su first.
+   6. Type 'make install'. Please note that if you want to install
+      it in a system directory you have to 'su' first.
    7. Test by typing 'gerbv'
 
 -- Building Gerbv by downloading from git
 
    1. Pull the source tree:
-      'git pull ssh://git@geda-project.org:65/gerbv'
+	'git clone ssh://git@geda-project.org:65/gerbv'
    2. Recreate all build system files in pulled directory:
-      'sh autogen.sh'
-   3. Follow steps 4-7 from "Building Gerbv by downloading a release tarball"
-   4. Run 'git pull' in the checked out Gerbv directory to get 
-      the latest changes. 
+	'sh autogen.sh'
+   3. Follow steps 4-7 from "Building Gerbv by downloading a release tarball".
+   4. Run 'git pull' in the cloned Gerbv directory to get the latest changes
 
 --  Supported platforms
 Gerbv has been built and tested on
@@ -57,26 +56,26 @@ Gerbv has been built and tested on
     * Linux (from 2.2)
     * NetBSD/i386 (1.4.1)
     * NetBSD/Alpha (1.5.1)
-    * Solaris (5.7 and 5.8) 
+    * Solaris (5.7 and 5.8)
 
 -- Information for developers
 
 Gerbv is split into a core functional library and a GUI portion. Developers
 wishing to incorporate Gerber parsing/editing/exporting/rendering into other
 programs are welcome to use libgerbv. Complete API documentation for libgerbv
-is here, as well as many example programs using libgerbv. 
+is here, as well as many example programs using libgerbv.
 
--- License  
+-- License
 
-  Gerbv and all associated files is placed under the GNU Public 
-  License (GPL) version 2.0.  See the toplevel COPYING file for 
+  Gerbv and all associated files is placed under the GNU Public
+  License (GPL) version 2.0.  See the toplevel COPYING file for
   more information.
 
-  Programs and associated files are: 
+  Programs and associated files are:
   Copyright 2001, 2002 by Stefan Petersen and the respective
   original authors (which are listed on the respective files)
 
--- Contact information  
+-- Contact information
 
 Please submit bug reports to the SourceForge bug tracker:
 
