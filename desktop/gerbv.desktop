@@ -10,5 +10,5 @@ Type=Application
 Exec=gerbv %F
 Icon=gerbv
 MimeType=application/x-gerber;application/x-excellon;
-Categories=Engineering;Electronics;
+Categories=Development;Engineering;Electronics;
 Keywords=Gerber;PCB
