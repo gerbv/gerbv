@@ -2037,8 +2037,8 @@ interface_reopen_question_add_filename_checkboxes (
       /* Layer is modified */
       if (cnt > 1)
 	g_string_printf (g_str, ngettext(
-	      _("<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layer)"),
-	      _("<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)"), cnt),
+	      "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layer)",
+	      "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)", cnt),
 			lay_num, bn, cnt);
       else 
 	g_string_printf (g_str, _("<b>%d</b>  *<i>%s</i> (<b>changed</b>)"),
@@ -2047,8 +2047,8 @@ interface_reopen_question_add_filename_checkboxes (
       /* Layer is not modified */
       if (cnt > 1)
 	g_string_printf (g_str, ngettext(
-	      _("<b>%d</b>  %s (%d layer)"),
-	      _("<b>%d</b>  %s (%d layers)"), cnt), lay_num, bn, cnt);
+	      "<b>%d</b>  %s (%d layer)",
+	      "<b>%d</b>  %s (%d layers)", cnt), lay_num, bn, cnt);
       else 
 	g_string_printf (g_str, _("<b>%d</b>  %s"), lay_num, bn);
     }
