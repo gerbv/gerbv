@@ -935,7 +935,7 @@ main(int argc, char *argv[])
 		"                          for the lower left corner.\n"
 		"  -V                      Print version of gerbv.\n"
 		"  -a                      Use antialiasing for generated bitmap output.\n"
-		"  -b<hexcolor>	           Use background color <hexcolor> (like #RRGGBB).\n"
+		"  -b<hexcolor>            Use background color <hexcolor> (like #RRGGBB).\n"
 		"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
 		"                          #RRGGBBAA for setting the alpha).\n"
 		"                          Use multiple -f flags to set the color for\n"
@@ -946,7 +946,7 @@ main(int argc, char *argv[])
 		"  -l<logfile>             Send error messages to <logfile>.\n"
 		"  -o<filename>            Export to <filename>.\n"
 		"  -p<prjfile>             Load project file <prjfile>.\n"
-		"  -u<inch|mm|mil>         Use given unit for coordinates.\n",
+		"  -u<inch|mm|mil>         Use given unit for coordinates.\n"
 		"                          Default to inch.\n"
 		"  -W<WxH>                 Window size in inches <WxH> for the\n"
 		"                          exported image.\n"

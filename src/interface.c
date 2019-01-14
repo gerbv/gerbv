@@ -365,7 +365,7 @@ interface_create_gui (int req_width, int req_height)
 	
 	/* File menu items dealing individual layers. */
 
-	open = gtk_menu_item_new_with_mnemonic (_("Open"));
+	open = gtk_menu_item_new_with_mnemonic (_("_Open"));
 	SET_ACCELS (open, ACCEL_FILE_OPEN_LAYER);
 	gtk_container_add (GTK_CONTAINER (menuitem_file_menu), open);
 	gtk_tooltips_set_tip (tooltips, open,

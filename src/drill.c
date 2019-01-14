@@ -2006,7 +2006,7 @@ const char *drill_g_code_name(drill_g_code_t g_code)
     case DRILL_G_CWMOVE:
 	return N_("circular CW mode");
     case DRILL_G_CCWMOVE:
-	return N_("circles CCW mode");
+	return N_("circular CCW mode");
     case DRILL_G_VARIABLEDWELL:
 	return N_("variable dwell");
     case DRILL_G_DRILL:
