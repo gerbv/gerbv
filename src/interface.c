@@ -2110,12 +2110,13 @@ interface_reopen_question (GSList *fns, GSList *fns_is_mod,
   vbox_main = gtk_vbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (hbox), vbox_main, TRUE, TRUE, 0);
 
-  g_string_printf (g_str, ngettext(
-	"<span size=\"larger\">%u layer file "
-	"is already loaded from directory</span>\n\"%s\"",
-	"<span size=\"larger\">%u layer files "
-	"are already loaded from directory</span>\n\"%s\"", fns_len), fns_len,
-      g_path_get_dirname (fns->data));
+  g_string_printf (g_str, "<span size=\"larger\">");
+  g_string_append_printf (g_str, ngettext(
+			  "%u file is already loaded from directory",
+			  "%u files are already loaded from directory",
+			  fns_len), fns_len);
+  g_string_append_printf (g_str, "</span>\n\"%s\"",
+		  g_path_get_dirname (fns->data));
 
   /* Add title */
   label = gtk_label_new (g_str->str);
