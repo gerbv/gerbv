@@ -570,7 +570,7 @@ main(int argc, char *argv[])
 	    switch (longopt_val) {
 	    case 0: /* default value if nothing is set */
 		GERB_COMPILE_WARNING(
-			_("Not handled option \"%s\" in command line\n"),
+			_("Not handled option \"%s\" in command line"),
 			longopts[longopt_idx].name);
 		break;
 	    case 1: /* geometry */
