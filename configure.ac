@@ -395,7 +395,7 @@ libiberty_NEED_DECLARATION(canonicalize_file_name)
 CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS"
 LIBS="$LIBS $GDK_PIXBUF_LIBS $GTK_LIBS $CAIRO_LIBS"
 
-CPPFLAGS+=" $GTK_CFLAGS"
+CPPFLAGS="$CPPFLAGS $GTK_CFLAGS"
 
 ############################################################
 #
