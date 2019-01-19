@@ -66,6 +66,9 @@
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 
+static void
+gerbv_print_help(void);
+
 static int
 getopt_configured(int argc, char * const argv[], const char *optstring,
 		const struct option *longopts, int *longindex);
@@ -881,91 +884,8 @@ main(int argc, char *argv[])
 	    break;
 	case '?':
 	case 'h':
-#ifdef HAVE_GETOPT_LONG
-	    printf(_("Usage: gerbv [OPTIONS...] [FILE...]\n\n"
-		"Available options:\n"
-		"  -B, --border=<b>                Border around the image in percent of the\n"
-		"                                  width/height. Defaults to %d%%.\n"
-		"  -D, --dpi=<XxY>or<R>            Resolution (Dots per inch) for the output\n"
-		"                                  bitmap. With the format <XxY>, different\n"
-		"                                  resolutions for X- and Y-direction are used.\n"
-		"                                  With the format <R>, both are the same.\n"
-		"  -O, --origin=<XxY>              Use the specified coordinates (in inches).\n"
-		"                                  for the lower left corner.\n"
-		"  -V, --version                   Print version of gerbv.\n"
-		"  -a, --antialias                 Use antialiasing for generated bitmap output.\n"
-		"  -b, --background=<hex>          Use background color <hex> (like #RRGGBB).\n"
-		"  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB or\n"
-		"                                  #RRGGBBAA for setting the alpha).\n"
-		"                                  Use multiple -f flags to set the color for\n"
-		"                                  multiple layers.\n"
-		"  -r, --rotate=<degree>           Set initial orientation for all layers.\n"
-		"  -m, --mirror=<axis>             Set initial mirroring axis (X or Y).\n"
-		"  -h, --help                      Print this help message.\n"
-		"  -l, --log=<logfile>             Send error messages to <logfile>.\n"
-		"  -o, --output=<filename>         Export to <filename>.\n"
-		"  -p, --project=<prjfile>         Load project file <prjfile>.\n"
-		"  -u, --units=<inch|mm|mil>       Use given unit for coordinates.\n"
-		"                                  Default to inch.\n"
-		"  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n"
-		"                                  exported image.\n"
-		"  -w, --window=<WxH>              Window size in pixels <WxH> for the\n"
-		"                                  exported image. Autoscales to fit\n"
-		"                                  if no resolution is specified. If a\n"
-		"                                  resolution is specified, it will clip.\n"
-		"  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n"
-		"  -T, --translate=<XxYrR>         Translate image by X and Y and rotate by\n"
-		"                                  R degree. Useful for arranging panels.\n"
-		"                                  Use multiple -T flags for multiple layers.\n"
-		"                                  Only evaluated when exporting (-x ...).\n"
-		"  -x, --export=<png|pdf|ps|svg|   Export a rendered picture to a file with\n"
-		"                rs274x|drill|     the specified format.\n"
-		"                idrill>\n"),
-			(int)(GERBV_DEFAULT_BORDER_COEFF * 100));
-#else
-	    printf(_("Usage: gerbv [OPTIONS...] [FILE...]\n\n"
-		"Available options:\n"
-		"  -B<b>                   Border around the image in percent of the\n"
-		"                          width/height. Defaults to %d%%.\n"
-		"  -D<XxY>or<R>            Resolution (Dots per inch) for the output\n"
-		"                          bitmap. With the format <XxY>, different\n"
-		"                          resolutions for X- and Y-direction are used.\n"
-		"                          With the format <R>, both are the same.\n"
-		"  -O<XxY>                 Use the specified coordinates (in inches)\n"
-		"                          for the lower left corner.\n"
-		"  -V                      Print version of gerbv.\n"
-		"  -a                      Use antialiasing for generated bitmap output.\n"
-		"  -b<hexcolor>            Use background color <hexcolor> (like #RRGGBB).\n"
-		"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
-		"                          #RRGGBBAA for setting the alpha).\n"
-		"                          Use multiple -f flags to set the color for\n"
-		"                          multiple layers.\n"
-		"  -r<degree>              Set initial orientation for all layers.\n"
-		"  -m<axis>                Set initial mirroring axis (X or Y).\n"
-		"  -h                      Print this help message.\n"
-		"  -l<logfile>             Send error messages to <logfile>.\n"
-		"  -o<filename>            Export to <filename>.\n"
-		"  -p<prjfile>             Load project file <prjfile>.\n"
-		"  -u<inch|mm|mil>         Use given unit for coordinates.\n"
-		"                          Default to inch.\n"
-		"  -W<WxH>                 Window size in inches <WxH> for the\n"
-		"                          exported image.\n"
-		"  -w<WxH>                 Window size in pixels <WxH> for the\n"
-		"                          exported image. Autoscales to fit\n"
-		"                          if no resolution is specified. If a\n"
-		"                          resolution is specified, it will clip.\n"
-		"                          exported image.\n"
-		"  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
-		"  -T<XxYrR>               Translate image by X and Y and rotate by R degree.\n"
-		"                          Useful for arranging panels.\n"
-		"                          Use multiple -T flags for multiple files.\n"
-		"                          Only evaluated when exporting (-x ...).\n"
-		"  -x <png|pdf|ps|svg|     Export a rendered picture to a file with\n"
-		"      rs274x|drill|       the specified format.\n"
-		"      idrill>\n"),
-			(int)(GERBV_DEFAULT_BORDER_COEFF * 100));
+	    gerbv_print_help();
 
-#endif /* HAVE_GETOPT_LONG */
 	    exit(1);
 	    break;
 	default :
@@ -1223,4 +1143,203 @@ getopt_lengh_unit(const char *optarg, double *input_div, gerbv_screen_t *screen)
 	}
 
 	return 1;
+}
+
+static void
+gerbv_print_help(void)
+{
+	printf(_(
+"Usage: gerbv [OPTIONS...] [FILE...]\n"
+"\n"
+"Available options:\n"));
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -B, --border=<b>        Border around the image in percent of the\n"
+"                          width/height. Defaults to %d%%.\n"),
+			(int)(100*GERBV_DEFAULT_BORDER_COEFF));
+#else
+	printf(_(
+"  -B<b>                   Border around the image in percent of the\n"
+"                          width/height. Defaults to %d%%.\n"),
+			(int)(100*GERBV_DEFAULT_BORDER_COEFF));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -D, --dpi=<XxY|R>       Resolution (Dots per inch) for the output\n"
+"                          bitmap. With the format <XxY>, different\n"
+"                          resolutions for X- and Y-direction are used.\n"
+"                          With the format <R>, both are the same.\n"));
+#else
+	printf(_(
+"  -D<XxY|R>               Resolution (Dots per inch) for the output\n"
+"                          bitmap. With the format <XxY>, different\n"
+"                          resolutions for X- and Y-direction are used.\n"
+"                          With the format <R>, both are the same.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -O, --origin=<XxY>      Use the specified coordinates (in inches)\n"
+"                          for the lower left corner.\n"));
+#else
+	printf(_(
+"  -O<XxY>                 Use the specified coordinates (in inches)\n"
+"                          for the lower left corner.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -V, --version           Print version of Gerbv.\n"));
+#else
+	printf(_(
+"  -V                      Print version of Gerbv.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -a, --antialias         Use antialiasing for generated bitmap output.\n"));
+#else
+	printf(_(
+"  -a                      Use antialiasing for generated bitmap output.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -b, --background=<hex>  Use background color <hex> (like #RRGGBB).\n"));
+#else
+	printf(_(
+"  -b<hexcolor>            Use background color <hexcolor> (like #RRGGBB).\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -f, --foreground=<hex>  Use foreground color <hex> (like #RRGGBB or\n"
+"                          #RRGGBBAA for setting the alpha).\n"
+"                          Use multiple -f flags to set the color for\n"
+"                          multiple layers.\n"));
+#else
+	printf(_(
+"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
+"                          #RRGGBBAA for setting the alpha).\n"
+"                          Use multiple -f flags to set the color for\n"
+"                          multiple layers.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -r, --rotate=<degree>   Set initial orientation for all layers.\n"));
+#else
+	printf(_(
+"  -r<degree>              Set initial orientation for all layers.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -m, --mirror=<axis>     Set initial mirroring axis (X or Y).\n"));
+#else
+	printf(_(
+"  -m<axis>                Set initial mirroring axis (X or Y).\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -h, --help              Print this help message.\n"));
+#else
+	printf(_(
+"  -h                      Print this help message.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -l, --log=<logfile>     Send error messages to <logfile>.\n"));
+#else
+	printf(_(
+"  -l<logfile>             Send error messages to <logfile>.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -o, --output=<filename> Export to <filename>.\n"));
+#else
+	printf(_(
+"  -o<filename>            Export to <filename>.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -p, --project=<prjfile> Load project file <prjfile>.\n"));
+#else
+	printf(_(
+"  -p<prjfile>             Load project file <prjfile>.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -u, --units=<inch|mm|mil>\n"
+"                          Use given unit for coordinates.\n"
+"                          Default to inch.\n"));
+#else
+	printf(_(
+"  -u<inch|mm|mil>         Use given unit for coordinates.\n"
+"                          Default to inch.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -W, --window_inch=<WxH> Window size in inches <WxH> for the exported image.\n"));
+#else
+	printf(_(
+"  -W<WxH>                 Window size in inches <WxH> for the exported image.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -w, --window=<WxH>      Window size in pixels <WxH> for the exported image.\n"
+"                          Autoscales to fit if no resolution is specified.\n"
+"                          If a resolution is specified, it will clip\n"
+"                          exported image.\n"));
+#else
+	printf(_(
+"  -w<WxH>                 Window size in pixels <WxH> for the exported image.\n"
+"                          Autoscales to fit if no resolution is specified.\n"
+"                          If a resolution is specified, it will clip\n"
+"                          exported image.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -t, --tools=<toolfile>  Read Excellon tools from file <toolfile>.\n"));
+#else
+	printf(_(
+"  -t<toolfile>            Read Excellon tools from file <toolfile>\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -T, --translate=<XxYrR> Translate image by X and Y and rotate by R degree.\n"
+"                          Useful for arranging panels.\n"
+"                          Use multiple -T flags for multiple layers.\n"
+"                          Only evaluated when exporting (-x ...).\n"));
+#else
+	printf(_(
+"  -T<XxYrR>               Translate image by X and Y and rotate by R degree.\n"
+"                          Useful for arranging panels.\n"
+"                          Use multiple -T flags for multiple files.\n"
+"                          Only evaluated when exporting (-x ...).\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill>\n"
+"                          Export a rendered picture to a file with\n"
+"                          the specified format.\n"));
+#else
+	printf(_(
+"  -x <png|pdf|ps|svg|     Export a rendered picture to a file with\n"
+"      rs274x|drill|       the specified format.\n"
+"      idrill>\n"));
+#endif
+
 }
