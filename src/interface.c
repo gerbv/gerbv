@@ -70,8 +70,14 @@ rename_main_window(char const* filename, GtkWidget *main_win)
 
 	g_assert(win != NULL);
 
-	g_string_printf (win_title, _("%s version %s: %s"), _(gerbv_win_title),
-			VERSION, filename);
+	if (filename && filename[0] != '\0') {
+		gchar *basename = g_path_get_basename(filename);
+		g_string_printf(win_title, "%s — Gerbv", basename);
+		g_free(basename);
+	} else {
+		g_string_printf(win_title, _(gerbv_win_title));
+	}
+
 	gtk_window_set_title(GTK_WINDOW(win), win_title->str);
 	g_string_free(win_title, TRUE);
 }
@@ -341,7 +347,6 @@ interface_create_gui (int req_width, int req_height)
 
 	mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	screen.win.topLevelWindow = mainWindow;
-	gtk_window_set_title (GTK_WINDOW (mainWindow), _(gerbv_win_title));
 
 	vbox1 = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (mainWindow), vbox1);
