@@ -1,9 +1,5 @@
-#!/bin/sh
-#
-#
-
-This documents what is done to create a gerbv release.  The releases now
-are done by branching the sources, fixing up the release version number
+This documents what is done to create a Gerbv release.  The releases now
+are done fixing up the release version number
 in the branch and then tagging the release branch sources.  The motivation
 for a branch rather than a tag is to make it easier to deal with setting
 the release version number in the documentation, distfile, and the
