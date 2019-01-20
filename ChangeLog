@@ -1,3 +1,1864 @@
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Don't show program version in window title
+
+2017-02-06   Dan McMahill * dan AT mcmahill dot net *
+
+	* NEWS: Add brief news item for 2.6.2
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am: Update library version
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* tags.txt: Remove tags.txt
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* cvs-tag.sh, files2tag.txt: Remove cvs-tag.sh and files2tag.txt
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* README-release.txt: Remove shell script header from
+	README-release.txt
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/gerbv.ru.1.in.po: Update Russian man translation
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/Makefile.am: Update man .po only by 'make update-po'
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/gerbv.1.in: Update man
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update Russian translation
+
+2019-01-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Update messages
+
+2019-01-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Reorganize --help output This is done to simplify translation and translation maintaining.
+
+2019-01-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac: Avoid using += operator in autoconf file
+
+2019-01-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Simplify message for translation
+
+2019-01-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Don't use _() in ngettext()
+
+2019-01-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Remove '\n' in message
+
+2019-01-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c, src/interface.c, src/main.c: Fix typos in string and
+	add accelerator
+
+2018-12-30   nikor * nikorpoulsen AT gmail dot com *
+
+	* configure.ac: Put space between flags in configure On Arch Linux the default build flags is
+	CPPFLAGS="-D_FORTIFY_SOURCE=2".  The patch makes that work.
+
+2018-12-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Partially update ru.po
+
+2018-12-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/attribute.c, src/callbacks.c, src/drill.c, src/drill_stats.c,
+	src/gerb_stats.c, src/gerber.c, src/gerbv.c, src/interface.c,
+	src/main.c, src/pick-and-place.c, src/project.c: Don't translate
+	malloc() error messages
+
+2018-12-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Modify element report messages
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Remove obvious "active" word in Save window title
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Replace gerbv with Gerbv in About dialog
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* AUTHORS: Add myself to authors
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Update button tooltip
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/gerbv.1.in: Describe supported PNP format in man
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/gerbv.1.in: Update man Briefly describe Layer alignment and two element measurement.
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Mark export to gEDA PCB as beta
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c, src/interface.h: * Add "All on/off" accelerators * Create accelerators files
+	directory ~/.gEDA/gerbv
+
+2018-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* README: Fix 'git clone' command and remove spaces
+
+2018-12-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* README: Update README
+
+2018-12-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* README-cvs.txt => README-git.txt: Update README-cvs.txt to
+	README-git.txt
+
+2018-12-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac, man/Makefile.am: Check for onsgmls or nsgmls for
+	po4a
+
+2018-12-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* .gitignore: Update .gitignore
+
+2018-12-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/Makevars: Prevent .po files accidentally update
+
+2018-12-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Autoscroll Messages tab
+
+2018-12-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Rework drill parsing and add line number report
+
+2018-12-07   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Report benchmark start in messages tab
+
+2018-12-07   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac: Request CXX in configure.ac only for DXF
+
+2018-12-06   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am: Conditionally place export-dxf.cpp to libgerbv
+
+2018-12-06   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/common.h, src/drill.c, src/export-drill.c,
+	src/export-isel-drill.c, src/export-rs274x.c, src/gerber.c,
+	src/gerbv.c, src/main.c, src/pick-and-place.c, src/project.c:
+	Include locale.h in common.h
+
+2018-12-06   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-geda-pcb.c: Fix file name in comment
+
+2018-12-05   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am, src/callbacks.c, src/callbacks.h,
+	src/export-geda-pcb.c, src/gerbv.h, src/interface.c: Initial gEDA
+	PCB export support
+
+2018-12-05   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac, src/Makefile.am, src/callbacks.c, src/callbacks.h,
+	src/export-dxf.cpp, src/gerbv.h, src/interface.c: Initial DXF export
+	support
+
+2018-12-05   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Fix cross on drills saved settings retrieve
+
+2018-12-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: Reduce pick-and-place.c size with functions
+
+2018-12-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c, src/drill.c, src/drill_stats.c, src/gerb_file.c,
+	src/gerb_image.c, src/gerb_stats.c, src/pick-and-place.c,
+	src/project.c: Using g_new() instead of g_malloc()
+
+2018-12-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c, src/interface.h: * Set as active layer before deleted one * Add Ctrl+Delete hotkey
+	for delete layer action * Change stock label to "Revert all"
+
+2018-12-01   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: Using hypot() and pnp_new_net()
+
+2018-12-01   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Using MIN() and MAX()
+
+2018-12-01   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Draw pick and place labels on top of symbol
+
+2018-11-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/render.c: Increase measure line width
+
+2018-11-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: Support more units in pick and place file
+
+2016-03-09   chrysn * chrysn AT fsfe dot org *
+
+	* src/pick-and-place.c: .xy files: Support both mm and mil units pcb can export .xy files both in mil and mm, and explains the units
+	in the header. This patch scans for the unit declaration, and stores
+	it as default unit for the following unit-less numbers.
+
+2018-11-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c, src/gerbv.h: Fix outline macro aperture Cairo
+	rendering Broken in 581b52533f9c490a667598a2bd89c69649017699
+
+2018-11-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Report macro aperture in screen coordinates
+
+2018-11-27   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Workaround to prevent rasterization at vector export Workaround for macro aperture types. It is not good enough to
+	produce vector files for photo plotting.
+
+2018-11-27   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Remove forgotten debug code
+
+2018-10-20   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c: Set default file name for export
+	and save as dialogs
+
+2018-10-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c: Change tooltips
+
+2018-10-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* share/glib-2.0/schemas/org.geda-user.gerbv.gschema.xml,
+	src/callbacks.c, src/interface.c, src/main.c, src/main.h: Save
+	background color
+
+2018-10-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Don't call g_variant_unref() after
+	g_variant_new_fixed_array()
+
+2018-10-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Change GSETTINGS_SCHEMA_DIR env value for Windows
+
+2018-10-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Move gdk_drawable_get_visual() To prevent non use warning on Windows
+
+2018-10-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/csv_defines.h: Don't redefine some HAVE_* in csv_defines for
+	Win
+
+2018-10-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Revert check if image->format is not NULL
+
+2018-10-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c, src/tooltable.c: Replace ssize_t with long int for
+	MinGW
+
+2018-10-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/drill.c, src/drill.h, src/gerber.c,
+	src/gerber.h: * Report layer bounding size in analyze dialog * Add name functions for drill and Gerber D, G, M-codes
+
+2018-10-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* share/glib-2.0/schemas/org.geda-user.gerbv.gschema.xml,
+	src/callbacks.c, src/interface.c: Save main and analyze windows size
+	and position
+
+2018-10-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/main.h, src/render.c: Rename lastMeasuredX, Y
+
+2018-10-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: Replace #warning with TODO comment
+
+2018-10-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c: Ask before benchmarking
+
+2018-10-11   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Use gerbv_escape_char() in gerber.c
+
+2018-10-11   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_stats.c, src/gerb_stats.h: Change gerbv_escape_char() to
+	macro Macro use C "compound literals" to convert int from
+	gerbv_escape_char_return_int() to char*. With this approach
+	gerbv_escape_char() can be used more than one time in other function
+	arguments.
+
+2018-10-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_stats.c, src/gerb_stats.h: Add gerbv_escape_char()
+
+2018-10-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_file.h: Remove extern path_separator declaration
+
+2018-10-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_stats.h: Add printf style warning for
+	gerbv_stats_printf()
+
+2018-10-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill_stats.c: Use gerbv_stats_printf() instead of
+	drill_stats_add_error()
+
+2018-10-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c, src/main.c: Use GSettings Save and retrieve settings for visual unit, view rendering type,
+	cross on drills.  GSettings schema file can stored in default system directory.
+	Fallback schema directory is set as relative to Gerbv executable
+	file: For Unix: "../share/glib-2.0/schemas" For Windows:
+	"share\glib-2.0\schemas"
+
+2018-10-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c, src/main.h: Parse length unit cmdline option before
+	others If several length unit option specified in cmdlie, then parse them
+	sequentially, as before.
+
+2018-10-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac: Fix typo in configure.ac Typo introduced in previous commit.
+
+2018-10-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* Makefile.am, configure.ac, share/glib-2.0/schemas/Makefile.am,
+	share/glib-2.0/schemas/org.geda-user.gerbv.gschema.xml: Add
+	GSettings support GSettings will be used for user settings (units, renderer, windows
+	size...)
+
+2018-10-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/tooltable.c: Replace fprintf() with GERB_COMPILE_*() in
+	tooltable.c Also report file name and line number in message.
+
+2018-10-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po, src/interface.c: Fix typo in tooltip
+
+2018-10-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po, src/callbacks.c, src/interface.c: Replace "mms" with
+	"mm"
+
+2018-10-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/export-drill.c, src/export-isel-drill.c,
+	src/export-rs274x.c, src/gerbv.c: Save action improvements * Show file name and layer number in file choose dialog window title * Report success in Messages tab
+
+2018-10-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Export menu changes * Rearrange items * Add menu separators * Update tooltips
+
+2018-10-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Add static add_trailing_zeros_if_omitted()
+
+2018-10-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c, src/main.c: Report file opening problem as error and
+	warning
+
+2018-10-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/draw-gdk.c, src/draw.c, src/export-rs274x.c,
+	src/gerb_image.c, src/gerber.c, src/gerbv.h: Rename
+	GERBV_INTERPOLATION_x10 Renamed in style with other linear interpolation enums.
+
+2018-10-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Report unknown Gerber elements as warning in Cairo
+	rendering
+
+2018-10-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Change file name position in analyze tables
+
+2018-10-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Additional check in string name functions
+
+2018-10-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: * Report polygon area segments parameters * Move aperture state report to separate function
+
+2018-10-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/draw-gdk.c, src/draw.c, src/gerb_image.c,
+	src/gerbv.c, src/gerbv.h: Add functions to return string names
+
+2018-10-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Emphasize dprintf() output for G code
+
+2018-10-01   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Polygon area interpolation Don't change back from current start to previous end polygon area
+	interpolation.
+
+2018-10-01   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Minor cosmetic changes
+
+2018-10-01   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Add line number from Gerber file in error message
+
+2018-10-01   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerber.c, src/gerber.h: Add
+	gerber_g_code_name() function
+
+2018-10-01   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_stats.c, src/gerb_stats.h: Add gerbv_stats_printf()
+	function
+
+2018-09-26   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update Russian translation
+
+2018-09-26   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Clarity G85 as cut slot with series of holes
+
+2018-09-26   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c: Unify "skipped/unknown interpolation type" message
+
+2018-09-20   Miklos Marton * martonmiklosqdev AT gmail dot com *
+
+	* src/callbacks.c: Unescape drag&droped file path
+
+2018-09-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-isel-drill.c: Use COORD2MMS instead of constant
+
+2018-09-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-isel-drill.c: Warn if element is skipped in ISEL drill
+	export
+
+2018-09-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac: Update required gettext version Version is updated to fix autogen.sh warning: The 'AM_PROG_MKDIR_P'
+	macro is deprecated
+
+2018-09-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/POTFILES.in, src/Makefile.am, src/{exportimage.c =>
+	export-image.c}: Rename exportimage.c to export-image.c
+
+2018-09-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/inputs/test-drill-slot-drilled-g85.exc, test/tests.list: Add
+	drilled slot G85 test file
+
+2018-09-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Report drilled slot length
+
+2018-09-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/common.h, src/drill.c, src/gerber.c, src/gerbv.c,
+	src/gerbv.h, src/main.c, src/pick-and-place.c, src/render.c: Using
+	enhanced MIN and MAX macros
+
+2018-09-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Limit max scale factor in zoom to fit
+
+2018-09-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Update bounding box and image info min/max for
+	drilled slot
+
+2018-09-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Report drill not as apertures
+
+2018-09-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Add units to element report
+
+2018-09-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac: Configure with C99 compiler
+
+2018-09-12   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/Makevars, src/callbacks.c, src/drill.c, src/interface.c,
+	src/main.c: Using long dash "вЂ”" instead of "--"
+
+2018-09-12   Miklos Marton * martonmiklosqdev AT gmail dot com *
+
+	* po/ru.po, src/callbacks.c, src/callbacks.h, src/interface.c,
+	src/interface.h, src/project.c, src/project.h: - Merge file and project open menu items - Drop file support - Popup dialog on reload  Co-authored-by: Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+2018-08-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Remove Rendering label widget
+
+2018-08-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Fix missed console output on Windows For Windows -mwindows build flag is used, which is prevent output to
+	stdout/stderr. Solve this by reopening output streams.  Closes-bug: SF #219, SF #221, SF #233
+
+2018-08-07   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c, src/gerbv.c: Workaround to prevent rasterization at
+	vector export Cairo library produce _raster_ output if polygon is cleared by
+	negative aperture or other polygon. A workaround is to draw over
+	with background color instead of clearing. Drawback is: there won't
+	be any see thru negative opening if two layers printed one on the
+	another.
+
+2018-08-07   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Report filename in RS-274D warning
+
+2018-08-06   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Don't limit minimum width at vector export Closes-bug: SF #207
+
+2018-08-06   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Show text label only one time for PNP graphics Closes-bug: SF #203
+
+2018-05-13   Kliment Yanev * kliment dot yanev AT gmail dot com *
+
+	* src/gerbv.c: Fix memory leaks reported by valgrind
+
+2018-05-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/draw-gdk.c, src/draw.c, src/export-rs274x.c,
+	src/gerber.c, src/project.c: Using GERBV_PRECISION_*
+
+2018-05-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* : Add golden test images
+
+2018-05-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/inputs/{test-circular-interpolation-zero-error.gbr =>
+	test-circular-interpolation-zero-error.gbx}: Rename test file
+
+2018-05-08   Joerg Wunsch * j AT uriah dot heep dot sax dot de *
+
+	* src/gerb_image.c, src/gerbv.h: Change rotation precision check Rotated layer cannot be handled correctly in Gerber output when
+	reading in a project file as the project file limits the precision
+	of the rotation so it's not recognized as being 90/180/270 degrees.
+
+2018-04-22   Dan Sheadel * tekdemo AT users dot sourceforge dot net *
+
+	* src/export-rs274x.c: Increase precision of exported RS274X files Current PCB tools generally export gerbers in higher precision than
+	GerbV exports RS274X files in. In rare circumstances, the start and
+	end coordinates of an arc can be close enough that this loss of
+	precision causes GerbV to round them to the same coordinate. This
+	makes the arclength 0, and the arc is then treated as a full circle.  If this occurs near traces or ground planes, then it generally
+	results in the gerbers having a short, resulting in fabrication of
+	the board to be incorrect.  Saving the 3.6 formatted gerbv with
+	standard GerbV will result in the short occurring.  This patch simply adjusts the export output to 3:6 format, which is
+	equal to or higher than most tools output. This avoids the precision
+	loss, and thus the arc rounding bug.  Closes-bug: SF #62
+
+2018-04-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/inputs/test-circular-interpolation-zero-error.gbr,
+	test/tests.list: Add test Gerber file File from bug report SF #68 by Dan Sheadel.
+
+2018-04-22   Dan Sheadel * tekdemo AT users dot sourceforge dot net *
+
+	* src/gerber.c: Fix render bug for CW X-Y0 circles The issue is that calculated floating point values should be zero,
+	but are actually very small with opposite signs. When put into
+	atan2, that arc returns alfa and beta of -pi and pi. The subsequent
+	angle processing then manipulates this into an incorrect,
+	zero-length arc (pi to pi), instead of a (pi,3pi) arc as would be
+	expected.  This patch resolves the value by simply checking the values, and
+	forcibly declaring values below epsilon to be zero. The subsequent
+	math then works correctly, and the arc is handled correctly.  Impact of this bug: This bug seems to only impact the rendering, and does not corrupt or
+	mangle files. So using GerbV with this bug will not result in
+	production of a failed board. It will, however, be very misleading,
+	and potentially result in confusion. Several design tools, notably
+	Ultiboard, default to this arc pattern for full circles, so it is a
+	fairly common pattern to see in the wild.  Closes-bug: SF #68
+
+2018-04-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Report arc angle and polygon number of vertices
+
+2018-04-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c: Cleanup draw_gdk_render_polygon_object()
+
+2018-04-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c: Fix negative width and height in GDK rendering Take absolute value for width and height variables as
+	cairo_matrix_transform_point() can produce negative results.
+
+2018-04-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Report signed incremental distance in SQ arc In single quadrant circular interpolation Ix and Jy incremental
+	distance must be unsigned.
+
+2018-04-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Debug print Found X,Y,J,I code with coordinate
+
+2018-04-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Output G code with two digits in G codes report
+
+2017-02-19   Uwe Bonnes * bon AT elektron dot ikp dot physik dot tu-darmstadt dot de *
+
+	* src/main.c: Handle IDRILL export like DRILL/RS274x export
+
+2017-02-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* : Update golden test files
+
+2017-02-19   Uwe Bonnes * bon AT elektron dot ikp dot physik dot tu-darmstadt dot de *
+
+	* man/gerbv.1.in, src/main.c: Allow to specify rotation from cmdline
+	when exporting
+
+2017-02-19   Uwe Bonnes * bon AT elektron dot ikp dot physik dot tu-darmstadt dot de *
+
+	* man/gerbv.1.in, src/main.c: For Translate, use 'x' as delimiter as
+	for other coordinate input.  Handle the case "0xn", where sscanf see a hex number.
+
+2017-02-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerbv.h: Report aperture macro parameters
+
+2017-02-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Cleanup gerber_parse_file_segment()
+
+2017-02-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Fix macro line21 and line22 bounding box calculation
+
+2017-02-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerber.c: Replace sqrt(a*a + b*b) with
+	hypot(a, b)
+
+2017-02-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Fix parameter[LINE22_HEIGHT/2] typo
+
+2017-02-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.h: Remove unused gerbv_bbox_t structure typedef
+
+2017-02-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/inputs/test-aperture-macro-line21-rotation.gbx,
+	test/tests.list: Add test: aperture macro line21 with rotation
+
+2017-02-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_image.c: Fix 190 (180) degrees typo and remove useless
+	comment
+
+2017-02-08   Uwe Bonnes * bon AT elektron dot ikp dot physik dot tu-darmstadt dot de *
+
+	* man/gerbv.1.in, src/main.c: Allow to change input units.
+
+2017-02-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-rs274x.c: Fix exported image rotation (IR) angle Error was in commit 664648e553d88c664d25fc95bbb0665f3317c523
+
+2017-02-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Add background to exported vector file formats For backward culpability only non white and black background is
+	added.  Closes-bug: SF #217
+
+2016-10-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c: Report skipped type/state number for GDK renderer
+
+2016-10-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c: Fix circular interpolation drawing with GDK
+	renderer Circular interpolation on rotated layer was drew wrongly.
+
+2016-09-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c, src/interface.h: Specific button
+	labels for alert window
+
+2016-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Fix wrongly increased rectangular apertures bug This bug is produced by git commit
+	3cb133aca082a7c2ef09061ea5304e272eb8026a Closes-bug: SF #208
+
+2016-07-07   Sergey Alyoshin * alyoshinsv AT omg dot transneft dot ru *
+
+	* src/gerber.c: Rework circular segment bounding box calculation
+
+2016-07-06   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Replace non ASCII char in message
+
+2016-06-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/amacro.c: Fix memset() size argument Reported by dcb314 on sf.net
+
+2016-07-05   Sergey Alyoshin * alyoshinsv AT omg dot transneft dot ru *
+
+	* src/gerber.c: Convert rad to deg to output in warning
+
+2016-07-05   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Multiquadrant circle interpolation is not shown on
+	32-bit systems Calculated start and stop angles in degrees are not quite equal, and
+	full circle is transformed in very small arc. To fix this
+	calculation is done in radians and only results are converted in
+	degrees.  Closes-bug: SF #210
+
+2016-07-05   Sergey Alyoshin * alyoshinsv AT omg dot transneft dot ru *
+
+	* test/inputs/test-circular-interpolation-mq-ccw.gbx,
+	test/tests.list: Add circular multiquadrant CCW interpolation test
+
+2016-05-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-rs274x.c: Remove new line before points in outline
+	macro This allow to open exported Gerber file in Flatcam.  Closes-bug: SF #202
+
+2016-02-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Use M_PI+M_PI_2 instead of 3*M_PI
+
+2016-02-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c: Use M_PI+M_PI_2 instead of 3*M_PI
+
+2016-02-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-rs274x.c, src/gerber.c, src/main.c,
+	src/pick-and-place.c: Use DEG2RAD
+
+2016-02-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update Russian translation
+
+2016-02-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: drill.c: Remove '\n' in messages strings
+
+2016-02-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_image.c, src/gerbv.c: Check if file is not mirrored or
+	inverted before overwriting file Drill files can be mirrored.
+
+2016-02-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Don't change left pane width on window resize
+
+2016-02-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-rs274x.c: Don't save all arcs only as counter clockwise Closes-bug: SF #201
+
+2016-01-23   Stephan Bцttcher * geda AT psjt dot org *
+
+	* src/export-rs274x.c: Declare identityTransform as static In gerbv_export_rs274x_file_from_image() a pointer to
+	identityTransform is passed out of the {block} where it lives.
+	identityTransform must be declared static to convince the compiler
+	to keep it in place after control leaves the {block}.
+
+2015-12-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* : Update some golden test files
+
+2015-12-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/golden/Makefile.am, test/inputs/Makefile.am,
+	test/inputs/test-aperture-polygon-1.gbx, test/tests.list: Remove
+	test/inputs/test-aperture-polygon-1.gbx It is exactly as test-aperture-obround-1.gbx
+
+2015-12-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Add doxygen function descriptions.
+
+2015-12-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Remove unneeded x1, y1 variables
+
+2015-12-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Fix Cairo selection rendering
+
+2015-12-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/inputs/test-aperture-circle-full.gbx, test/tests.list: Add
+	test for full multiquadrant circular interpolation Gerber file is from Takahide HIGUCHI SF #200 bug report.
+
+2015-09-25   Takahide HIGUCHI * takahide AT debian7 *
+
+	* src/gerber.c: bugfix: clockwise arc from 0 to 360 degree is not
+	drawn  Reviewed-by: Sergey Alyoshin * alyoshin dot s AT gmail dot com * Closes-bug: SF #200
+
+2015-09-28   Sergey Stepanov * no dot such dot process AT gmail dot com *
+
+	* src/selection.c: fix build error: "undefined reference to
+	`selection_add_item'", etc.  functions, being declared inside .c source as inline, are thrown
+	away by compiler, thus producing multiple linkage problems:
+	render.c:517: undefined reference to `selection_clear'
+	./.libs/libgerbv.so: undefined reference to `selection_add_item' and
+	so on
+
+2015-09-01   Michael VoЕ™Г­ЕЎek * mvorisek AT mvorisek dot cz *
+
+	* src/draw.c: Bug fix SF #188: Thermal draw for Cairo renderer
+
+2015-08-23   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c: Rewrite gerbv_gdk_draw_amacro() with array of
+	function pointers
+
+2015-08-23   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/attribute.c, src/callbacks.c, src/draw-gdk.c, src/draw.c,
+	src/main.c: Remove dprintf() messages from localization
+
+2015-08-23   Florian Hirschberg * fhirschberg AT fhelectronic dot de *
+
+	* src/Makefile.am, src/callbacks.c, src/callbacks.h,
+	src/export-isel-drill.c, src/gerbv.h, src/interface.c, src/main.c:
+	Added an export option for creating ISEL NCP files with drill
+	commands for automatic drilling
+
+2012-03-07   Ralf Fuest * ralf-fuest AT gmx dot de *
+
+	* src/draw-gdk.c, src/draw.c: Fix rendering of primitives 5, 21 and
+	22
+
+2015-08-23   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Do selection_new_array() more early for Cairo
+	rendering
+
+2015-08-23   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/selection.c: Prevent assertion at file reloading in
+	selection_clear() Output at assertion: GLib-CRITICAL **: g_array_remove_range:
+	assertion `index_ < array->len' failed
+
+2015-08-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Use pointers instead of copy of values for parameters
+
+2015-08-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/draw.c, src/gerbv.c, src/gerbv.h: Move
+	aperture_names[] to gerbv.c
+
+2015-08-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* BUGS, src/draw-gdk.c: Correctly rotate rect and oval apertures in
+	GDK view mode
+
+2015-08-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c, src/gerbv.h: Use M_PI_2 and M_1_PI
+
+2015-07-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c,
+	src/interface.h: Move layer items above project items in File menu Novice users frequently try to open layer file with project menu
+	item instead of layer menu item.
+
+2015-06-29   Sergey Alyoshin * alyoshinsv AT omg dot transneft dot ru *
+
+	* src/callbacks.c, src/interface.c, src/interface.h: Add Apply to
+	all visible layers functionality in Edit layer dialog Cancel button is not implemented.
+
+2015-06-15   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Fix crash at Analyze/Benchmark start Check if selectionInfo is not NULL in
+	gerbv_render_to_pixmap_using_gdk()
+
+2015-06-15   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Fix typo in function name
+
+2015-06-07   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerbv.h: Report macro type if macro is
+	selected
+
+2015-06-07   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_image.c: Exporting rotated and scaled Gerbers Add line22 and polygon, moire, thermal macros support.
+
+2015-05-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_image.c, src/gerbv.h: Exporting rotated and scaled
+	Gerbers Add line20 and outline support.
+
+2015-05-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerber.c, src/gerber.h: Report circular
+	interpolation center, angle and direction Forgotten changes.
+
+2015-05-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_image.c, src/gerbv.h: Report circular interpolation
+	center, angle and direction
+
+2015-05-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-rs274x.c: Export only counter CW multiquadrant arcs This fix result of example/amacro-ref/1.grb export.
+
+2015-05-25   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_image.c, src/gerbv.c, src/gerbv.h: Exporting rotated and
+	scaled Gerbers Work in progress: not all macro processed, not well tested.
+
+2015-05-24   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.h, src/draw.c, src/export-rs274x.c, src/gerber.c,
+	src/gerbv.h, src/interface.c, src/render.c: Move macro aperture
+	enums from draw-gdk.h to gerbv.h
+
+2015-05-24   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/table.c: g_type_init() is deprecated in glib-2.36
+
+2015-05-24   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c, src/draw.c, src/gerber.c, src/gerbv.h,
+	src/interface.c: Add and use DEG2RAD() and RAD2DEG()
+
+2015-05-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Emphasis "visible" word in deletion warning
+	dialog
+
+2015-05-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Replace sprintf() by g_strdup_printf()
+
+2015-05-04   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c, src/main.h: Add
+	layer align functionality Two layers can be aligned by center of two selected apertures or
+	lines.
+
+2015-04-26   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c, src/gerbv.h: Add gerbv_transform_coord()
+
+2015-04-26   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c, src/main.h: Reformat and
+	simplify code
+
+2015-04-26   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am, src/callbacks.c, src/callbacks.h, src/draw.c,
+	src/gerb_image.c, src/gerbv.c, src/gerbv.h, src/interface.c,
+	src/render.c, src/render.h, src/selection.c, src/selection.h: Add
+	separated selection functions
+
+2015-04-21   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerbv.c, src/gerbv.h: Report coords with
+	transformation
+
+2015-04-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Reformat draw.c
+
+2015-04-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Reduce code by using pointers
+
+2015-03-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c, src/interface.c: Show cross on drill holes for
+	Normal render
+
+2015-02-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/draw.c, src/gerbv.h,
+	src/interface.c, src/interface.h: Show cross on drill holes for
+	Cairo render Menu item View/"Show cross on drill holes" was added
+
+2015-02-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/render.c: Simplify render_draw_measure_distance()
+
+2015-02-07   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerbv.c, src/gerbv.h: Consider transformation
+	for measured distance line Show measured distance line between two selected apertures with user
+	transformation.
+
+2015-02-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Allow zero value in min/max margins of bounding box Otherwise if one of margin is zero then zoom to fit will fail.  Reported by Spacefalcon the Outlaw on geda-user mail list.
+
+2014-11-12   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update Russian translation
+
+2014-11-11   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Show distance between two apertures If two apertures are selected and measure tool is clicked show
+	distance between apertures.
+
+2014-11-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/icons.h: Replace ruler icon
+
+2014-11-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c: Layer visibility check box now
+	can be pressed with Ctrl key
+
+2014-11-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/draw-gdk.c, src/draw-gdk.h, src/draw.c,
+	src/draw.h, src/gerbv.h, src/render.c, src/render.h: Selected items
+	can now be deselected with pressed Ctrl and mouse
+
+2014-11-02   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/render.c: Highlight selected items on several layers with
+	normal rendering
+
+2014-10-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/gerbv.c, src/gerbv.h,
+	src/interface.c, src/interface.h: Add "View/Show all selection" menu
+	item
+
+2014-10-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerbv.c: Show selected items on invisible
+	layers Don't clear selection if layer visibility is changed.
+
+2014-10-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c, src/gerbv.c: Highlight selected items on several
+	layers with fast rendering
+
+2014-10-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Fix reported file-name of selected item on non
+	selected layer Also g_strdup() is not needed.
+
+2014-10-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/inputs/test-merge-a.gbx, test/inputs/test-merge-b.gbx,
+	test/tests.list: Add merging two files test Two files with clean polarity apertures.
+
+2014-10-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/run_tests.sh: run_tests.sh: execute gerbv with args If args is started with !, only execute gerbv.
+
+2014-10-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_image.c: Fix SF bug #192 SF but #192: Export Gerber merge does not work for silkscreen layers The problem is: if files contain clean polarity apertures, then
+	elements of second in merging order file will all have clean
+	polarity.
+
+2014-10-12   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/inputs/test-drill-trailing-zero-suppression.gvp: Use
+	zero_suppression in project file in tests Using zero_suppression instead of zero_supression from commit
+	82f6d4cfdcfddffd92ae2b5e20f0bc27512e99c9
+
+2014-10-12   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-drill.c, src/export-rs274x.c, src/gerbv.h, src/main.c:
+	Rework cmdline export invocation
+
+2014-10-12   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Set error text style for merge error messages
+
+2014-09-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/project.c: Notify user if string in project file is not
+	recognized
+
+2014-09-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Notify user, if drill file attribute is skipped As zero_supression was changed to zero_suppression in project file,
+	users will need notification if previous zero_supression attribute
+	is not recognized.
+
+2014-09-19   Mitch Davis * mjd AT sourceforge dot net *
+
+	* ChangeLog, po/ru.po, src/drill.c: Suppression has two Ps, fix it
+
+2014-08-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c: Set max
+	possible width to coords label in status bar
+
+2014-08-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c, src/render.c: Cleanup render_zoom_display() And sightly change gerbv_render_zoom_to_fit_display()
+
+2014-08-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/exportimage.c, src/interface.c, src/main.c,
+	src/render.c, src/render.h: Cleanup extern declarations
+
+2014-08-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Add va_end() after va_start()
+
+2014-08-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/interface.c: Replace #define's, use pointer
+	to struct element and reformat
+
+2014-08-10   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* doc/sources.txt, src/gerbv.h, win32/Readme.txt: Update homepage to
+	gerbv.geda-project.org Also capitalize first letter in Gerbv name and reformat.
+
+2014-08-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* doc/Doxyfile.nopreprocessing: Change version to 2.6A for doxygen
+
+2014-08-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update ru.po
+
+2014-08-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.h, src/drill.h, src/gerbv.h, src/project.c,
+	src/project.h, src/table.c, src/table.h: Add and update doxygen
+	notes
+
+2014-08-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am: Add doxygen notes to generated authors.c and
+	bugs.c files
+
+2014-08-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* AUTHORS: Remove space before ':' Such space result in end space at strings in authors.c
+
+2014-08-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* .gitignore: Add doxygen generated files to .gitignore
+
+2014-08-09   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* Makefile.am: Add doxygen rule
+
+2014-07-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: Replace g_malloc() and memzset(0) pair with
+	g_malloc0()
+
+2014-07-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Reduce parenthesis
+
+2014-07-31   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c, src/gerbv.h, src/pick-and-place.c: Fix crash if
+	bottom PNP layer is reloaded
+
+2014-07-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Fix SF bug #170 SF bug #170: Display Properties of circular pick place objects ->
+	CRASH! This crash is actually not for circular object, but only for line in
+	circular object, as only this line element net->label was specified.
+
+2014-07-28   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Code cleanup
+
+2014-07-28   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Remove excessive parenthesesвЂЉ
+
+2014-07-06   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/table.c, src/table.h: Allow codes report
+	tables to be sorted  Based on patch by Nicholas Vinen * nicholas dot vinen AT gmail dot
+	com *
+
+2014-04-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/draw.c, src/drill.c, src/drill_stats.c,
+	src/export-drill.c, src/export-rs274x.c, src/gerb_image.c,
+	src/gerb_stats.c, src/gerber.c, src/gerbv.c, src/gerbv.h,
+	src/main.c, src/pick-and-place.c, src/pick-and-place.h,
+	src/render.c: Cleanup #include sections
+
+2014-04-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-drill.c: Add cut slot support for Excellon drill file
+	export
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Remove commented code and slightly reformat
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Remove unused defines
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Use g_free() instead of free() for g_malloc()
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Use g_malloc0() Use g_malloc0() instead of g_malloc() and memset(0) pair.
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Use enums instead of defines
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Use #typedef for enums, and use this instead of int typedef for enums is used as it is already used for structs.
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Remove duplicate #include and unused #define
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.h: Update changed structure name in comment
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/drill.c, src/drill_stats.c, src/gerbv.h: Add
+	support for cut slot in drill file
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Remove unused function
+	callbacks_generate_alert_dialog()
+
+2014-04-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Try to show dialog box with fatal error message
+
+2014-03-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/tests.list: Update format description in tests.list and add
+	new test
+
+2014-03-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/run_tests.sh: Add arguments from run_test.sh to default
+	options If preceded with +, then optional arguments will be added to default
+	set of options.
+
+2014-03-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* test/inputs/test-drill-trailing-zero-suppression.exc,
+	test/inputs/test-drill-trailing-zero-suppression.gvp: Add test files
+	for drill with zero suppression
+
+2014-03-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am: Use absolute path for SRCDIR Overwise can't open project file from test/run_tests.sh
+
+2014-03-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Add tooltip to Clear button
+
+2014-03-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerbv.h: Add and use COORD2INS macro
+
+2014-03-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update Russian translation
+
+2014-03-15   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/draw-gdk.c, src/draw.c, src/drill.c,
+	src/drill_stats.c, src/export-drill.c, src/export-rs274x.c,
+	src/exportimage.c, src/gerbv.c, src/main.c, src/pick-and-place.c,
+	src/project.c, src/render.c: Remove now unneeded new lines in
+	messages
+
+2014-03-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update Russian translation
+
+2014-03-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Use ngettext() for layer number in report table
+
+2014-03-08   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c, src/project.c: Style fix in messages
+
+2014-02-09   Dan McMahill * dan AT mcmahill dot net *
+
+	* configure.ac: In the configuration summary, indicate if
+	ImageMagick was found for the testsuite.
+
+2014-02-09   Dan McMahill * dan AT mcmahill dot net *
+
+	* src/Makefile.am: Go ahead and distribute authors.c and bugs.c
+	because otherwise we sometimes see problems with updating po files
+	during 'make distcheck' where authors.c and bugs.c aren't built yet.
+
+2014-02-09   Dan McMahill * dan AT mcmahill dot net *
+
+	* man/Makefile.am: Add missing gerbv.1.in to EXTRA_DIST.  This part
+	of the build system probably needs some cleanup with respect to what
+	tools are needed for creating distfiles versus what are needed for
+	building from a tarball
+
+2014-02-09   Dan McMahill * dan AT mcmahill dot net *
+
+	* src/Makefile.am: Add gettext.h that has been added in this
+	directory to the _SOURCES so that it actually makes it into the
+	distfile and gets the dependency.  Also add a missing header to
+	gerbv_SOURCES for correct dependencies.
+
+2014-02-09   Dan McMahill * dan AT mcmahill dot net *
+
+	* configure.ac: Fix the version on the master branch per the
+	instructions in REEADME-release.txt.  We should only get version
+	2.6.1 if building from the gerbv-2-6-1-RELEASE tag (which should
+	have been gerbv-2-6-PATCH001 per the release instructions.
+
+2014-02-09   Dan McMahill * dan AT mcmahill dot net *
+
+	* src/interface.c: Add missing header for malloc().
+
+2013-12-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am, src/callbacks.c, src/table.c, src/table.h: Report
+	Gerber and drill layers in table view
+
+2013-12-21   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Remove now unneeded new lines in report messages
+
+2013-12-21   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c,
+	src/interface.h: Change menu item Modify orientation to Edit layer
+
+2013-12-21   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c, src/project.c, src/project.h: Rework save and load
+	project file Alpha, translate, rotation, scale, mirror is now supported. Using
+	new line in project file.  Compatible with previous project file format.  Based on m.land changes.
+
+2013-12-19   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Change style in messages
+
+2013-12-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: locale.h is needed for setlocale()
+
+2013-12-15   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Replace default border value in help In help show actual border define value, not just string.
+
+2013-12-07   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerb_stats.c, src/gerber.c: Remove new line
+	char in some error strings Gerber error will be shown in table view in Analyze menu, so new
+	line is excess.
+
+2013-11-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* : Update some golden test files
+
+2013-11-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* : Update some golden test files
+
+2013-11-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/common.h, src/drill.c, src/pick-and-place.c: Move repeated
+	min() and max() macros to common.h
+
+2013-11-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: pnp: remove unused headers and define
+
+2013-11-16   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: pnp: can't use screen units Pratially undo commit bb318fbf3a1242eada61af47cec8744823e0645c
+
+2013-09-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c, src/main.c, src/main.h: Fix Messages log tab
+	missed messages If file is opened not from gerbv GUI but form command line or from
+	file manager, then not all messages shown in Messages log tab. This
+	log tab is not ready, when such messages appears.  This patch put such messages to temporary buffer and output it when
+	log tab is ready.
+
+2013-09-26   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac: Fix calling install-sh not from build dir Spotted with automake 1.14 and autoconf 2.69
+
+2013-09-22   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* : Update some golden test files
+
+2013-09-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* autogen.sh, configure.ac: Specify m4 macro dir This fix file copying to / by autopoint
+
+2013-09-15   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Ask confirmation on file overwriting
+
+2013-09-15   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Remember entry widget focus in Modify layer
+	orientation window
+
+2013-08-25   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Explicitly set textdomain codeset for win32
+
+2013-08-25   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update ru.po
+
+2013-08-25   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_file.c: Add header for g_fopen()
+
+2013-08-25   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.h: Fix GERB_ g_log() macros
+
+2013-08-25   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* BUGS: Add known bug
+
+2013-08-18   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac, src/callbacks.c, src/main.c: Add DPI setting for PNG
+	exporting GUI
+
+2013-08-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/exportimage.c, src/main.c: Replace render
+	type numbers with enum
+
+2013-08-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* .gitignore, po/POTFILES: Remove autogenerated po/POTFILES
+
+2013-08-17   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/POTFILES.in, src/exportimage.c: Report PNG exporting error
+
+2013-08-11   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Update ru.po
+
+2013-08-11   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c, src/main.c: Add new line at the end of some messages
+
+2013-08-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/gerbv.ru.1.in.po: man: Russian translation
+
+2013-08-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/gerbv.1.in: man: wrong uppercase in parameter
+
+2013-08-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/.gitignore: Add man/.gitignore
+
+2013-08-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* .cvsignore, doc/.cvsignore, doc/PNG-print/.cvsignore,
+	example/.cvsignore, example/Mentor-BoardStation/.cvsignore,
+	example/am-test/.cvsignore, example/cslk/.cvsignore,
+	example/dan/.cvsignore, example/eaglecad1/.cvsignore,
+	example/ekf2/.cvsignore, example/jj/.cvsignore,
+	example/nollezappare/.cvsignore, example/numpres/.cvsignore,
+	example/orcad/.cvsignore, man/.cvsignore, scheme/.cvsignore,
+	src/.cvsignore: Remove all .cvsignore files
+
+2013-08-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac, man/Makefile.am: Check if po4a is accessible at
+	configuration If it is accessible, them compile internationalized man-pages.
+
+2013-08-03   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac: Update gtk+-2.0 version to 2.18.0 gtk_widget_set_visible() require version 2.18.0
+
+2013-07-30   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* autogen.sh: Unify autogen.sh indentation
+
+2013-07-28   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/ru.po: Add Russian translation
+
+2013-07-28   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Update DPI help string
+
+2013-07-28   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_file.c: Fix crash on windows if dir or filename contains
+	non ascii
+
+2013-07-21   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* configure.ac: Update gerbv version to 2.6.1
+
+2013-07-21   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Replace index() with strchr() strchr() already used and there is no index() on windows
+
+2013-07-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Report aperture parameters not only for flash
+	type
+
+2013-07-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/gerbv.h, src/interface.c, src/main.h: Report
+	arc length and length sum in Messages tab
+
+2013-07-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/.gitignore: Add po/.gitignore
+
+2013-07-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* README: Update mail-list
+
+2013-07-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Add images to some menu items and two menu
+	separators
+
+2013-07-14   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/export-rs274x.c: Fix Web-site links
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/Makefile.am: Add update-po rule for man
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/Makefile.am: Using po4a to help man-page localization
+
+2013-07-13   Ralf Fuest * mail AT ralf-fuest dot de *
+
+	* src/drill.c: Fix parsing of NC drill files with suppressed
+	trailing zeros Fix situation, when with trailing zeroes suppression and with 4
+	digits '003' is interpreted as '003', but must be interpreted as
+	'0030.'
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: fix #ifdef(DEBUG) DEBUG defined as 0 for no debug.
+
+2013-07-13   Berni Joss * bernij AT users dot sf dot net *
+
+	* src/main.c: Add command line options for initial layer rotate and
+	mirror Specify the initial rotation and mirroring for all layers at once.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: .pnp import: import in screen units by
+	default If units as suffix is not specified in .pnp file, use not mils, but
+	screen units. Also add mm units.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* man/gerbv.1.in: Eng man page update Update measurement and zoom operation description, fix PCB project
+	web-page, some minor changes.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Show aperture dimensions Show circle aperture diameter and oval/rectangle dimensions.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Display line length in object properties If object type is line, calculate and display its length.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Display object properties in screen units Object properties was displayed in inch units. Now properties will
+	be displayed in selected screen units.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c, src/callbacks.h, src/interface.c: Toggle all
+	layers on/off functionality All layers can be turned on or off via context menu or main Layer
+	menu.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: Fix functions name comments in
+	pick-and-place.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Fix hint string for DPI setting Separate DPI for X and Y can't be set in <DPI_X,DPI_Y> format, only
+	in <DPI_XxDPI_Y> format.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/LINGUAS, po/POTFILES: Add po/POTFILES and po/LINGUAS
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* desktop/gerbv.desktop: Add Russian translation to .desktop file
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c, src/interface.h: Set accel paths for localized
+	menu items
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Add Help/About/Translators
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.h: Increase status bar message buffer length Localized UTF-8 messages are truncated since UTF char have larger
+	size.
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Add messages to translation from gerber.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_stats.c: Add messages to translation from gerb_stats.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_image.c: Add messages to translation from gerb_image.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/project.c: Add messages to translation from project.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerb_file.c: Add messages to translation from file.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-rs274x.c: Add messages to translation from
+	export-rs274x.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/export-drill.c: Add messages to translation from
+	export-drill.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill_stats.c: Add messages to translation from drill_stats.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/dynload.c: Add messages to translation from dynload.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Join sequential printf()
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: Add messages to translation from main.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/render.c: Add messages to translation from render.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/tooltable.c: Add messages to translation to tooltable.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw-gdk.c: Add messages to translation draw-gdk.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerbv.c: Add messages to translation from gerbv.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/draw.c: Add messages to translation form draw.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/csv.c: Add messages to translation from csv.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/drill.c: Add messages to translation from drill.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/attribute.c: Add messages to translation from attribute.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/pick-and-place.c: Add messages to translation from
+	pick-and-place.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Add tooltips for layer buttons
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/interface.c: Add messages to translation from interface.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Use ngettext() for showning number of object
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Replace snprintf() with UTF-8 aware functions
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/callbacks.c: Add messages to translation from callbacks.c
+
+2013-07-13   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am: Add authors and bugs lists to translation gettext() should not be called on empty strings. So prevent
+	generation of N_("") in bugs.c and authors.c
+
+2013-06-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/Makefile.am, src/common.h, src/gettext.h, src/main.c: Add
+	gettext basis Add src/gettext.h, short macros for gettext functions, LOCALEDIR
+	definition and textdomain binding.
+
+2013-06-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* .gitignore: Update .gitignore
+
+2013-06-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/POTFILES.in: Add po/POTFILES.in Add po/POTFILES.in for internationalization support.
+
+2013-06-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* po/Makevars: Add po/Makevars Add po/Makevars for internationalizaton support.
+
+2013-06-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* Makefile.am, autogen.sh, configure.ac: Add autopoint Add autopoint for internationalization support.
+
+2013-06-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/gerber.c: Fix crash if Gerber file has more than 102 apterture Now gerbv is able to _partially_ load gerbers with aperture
+	parameters more than 102, report it and _not_ crash.
+
+2013-06-29   Sergey Alyoshin * alyoshin dot s AT gmail dot com *
+
+	* src/main.c: gerbv -h does not require an argument
+
+2012-11-25   Peter Clifton * peter AT clifton-electronics dot co dot uk *
+
+	* src/Makefile.am: src/Makefile.am: Change pkginclude_DATA to
+	pkginclude_HEADERS Automake is being picky about not installing "data" files into a
+	path defined for headers.
+
+2012-02-02   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* src/gerber.c: don't update min/max bounding box when drawing with
+	CLEAR polarity fixes bug 3483097 where image justify was skewing the
+	drawing due to bad min/max calcs
+
+2012-01-12   Julian Lamb * thepurlieu AT gmail dot com *
+
+	* example/am-test/am-test.gbx, src/draw-gdk.c, src/draw.c: fix
+	rendering algorithm for MOIRE macro (reported by Matthias on mailing
+	list) additionally, update the am-test file to actually show a
+	proper moire with 2 circles
+
+2011-12-25   Dan McMahill * dan AT mcmahill dot net *
+
+	* configure.ac: Welcome to 2.6A
+
+2011-12-25   Dan McMahill * dan AT mcmahill dot net *
+
+	* autogen.sh: Quit complaining about libtool-2.4 not having been
+	tested.  It has.
+
+2011-12-25   Dan McMahill * dan AT mcmahill dot net *
+
+	* ChangeLog, NEWS: Update for the 2.6.0 release.
+
 2011-12-25   Dan McMahill * dan AT mcmahill dot net *
 
 	* src/Makefile.am: Set shared lib version number in prep for 2.6.0
