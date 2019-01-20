@@ -657,7 +657,8 @@ main(int argc, char *argv[])
 	    break;
     	case 'O' :
 	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give an origin in the format <lower_left_X x lower_left_Y>.\n"));
+		fprintf(stderr, _("You must give an origin in the format "
+					"<XxY> or <X;Y>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 20) {
@@ -806,7 +807,8 @@ main(int argc, char *argv[])
 	    break;
 	case 'T' :	// Translate the layer
 	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give a translation in the format <XxY>.\n"));
+		fprintf(stderr, _("You must give a translation in the format "
+					"<XxY> or <X;Y>.\n"));
 		exit(1);
 	    }
 	    if (strlen (optarg) > 30) {
@@ -1181,11 +1183,11 @@ gerbv_print_help(void)
 
 #ifdef HAVE_GETOPT_LONG
 	printf(_(
-"  -O, --origin=<XxY>      Use the specified coordinates (in inches)\n"
+"  -O, --origin=<XxY|X;Y>  Use the specified coordinates (in inches)\n"
 "                          for the lower left corner.\n"));
 #else
 	printf(_(
-"  -O<XxY>                 Use the specified coordinates (in inches)\n"
+"  -O<XxY|X;Y>             Use the specified coordinates (in inches)\n"
 "                          for the lower left corner.\n"));
 #endif
 
@@ -1318,16 +1320,16 @@ gerbv_print_help(void)
 
 #ifdef HAVE_GETOPT_LONG
 	printf(_(
-"  -T, --translate=<XxYrR> Translate image by X and Y and rotate by R degree.\n"
-"                          Useful for arranging panels.\n"
+"  -T, --translate=<XxYrR| Translate image by X and Y and rotate by R degree.\n"
+"                   X;YrR> Useful for arranging panels.\n"
 "                          Use multiple -T flags for multiple layers.\n"
-"                          Only evaluated when exporting (-x ...).\n"));
+"                          Only evaluated when exporting as RS274X or drill.\n"));
 #else
 	printf(_(
-"  -T<XxYrR>               Translate image by X and Y and rotate by R degree.\n"
+"  -T<XxYrR|X;YrR>         Translate image by X and Y and rotate by R degree.\n"
 "                          Useful for arranging panels.\n"
 "                          Use multiple -T flags for multiple files.\n"
-"                          Only evaluated when exporting (-x ...).\n"));
+"                          Only evaluated when exporting as RS274X or drill.\n"));
 #endif
 
 #ifdef HAVE_GETOPT_LONG
@@ -1337,9 +1339,9 @@ gerbv_print_help(void)
 "                          the specified format.\n"));
 #else
 	printf(_(
-"  -x <png|pdf|ps|svg|     Export a rendered picture to a file with\n"
-"      rs274x|drill|       the specified format.\n"
-"      idrill>\n"));
+"  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
+"     rs274x|drill|        the specified format.\n"
+"     idrill>\n"));
 #endif
 
 }
