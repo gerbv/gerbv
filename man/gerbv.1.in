@@ -57,12 +57,12 @@ resolutions for the width and height (only when compiled with Cairo as
 render engine). Use <R> to have the same resolution in both directions.
 Defaults to 72 DPI in both directions.
 .TP
-.BI -T<XxYrR>|--translate=<XxYrR>
+.BI -T<XxYrR|X;YrR>|--translate=<XxYrR|X;YrR>
 Translate image by X and Y and rotate by R degree. Use multiple -T flags to
 translate multiple files. Distance defaults to inches but may be changed with
---units.  Only evaluated when exporting (-x ...).
+--units.  Only evaluated when exporting as RS274X or drill.
 .TP
-.BI -O<XxY>|--origin=<XxY>
+.BI -O<XxY|X;Y>|--origin=<XxY|X;Y>
 Set the lower left corner of the exported image to coordinate <XxY>.
 Coordinates defaults to inches but may be changed with --units.
 .TP
