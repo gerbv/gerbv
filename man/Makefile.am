@@ -19,6 +19,8 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
+LANGUAGES = ru
+
 if HAVE_PO4A
 man_MANS = gerbv.1 gerbv.ru.1
 else
@@ -33,8 +35,6 @@ configure and check for 'checking for po4a-*' and 'checking for onsgmls'/ \
 endif
 
 EXTRA_DIST = gerbv.1.in
-
-PO_FILES = gerbv.ru.1.in.po
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~  *.pot $(man_MANS)
@@ -51,14 +51,16 @@ SUFFIXES = .1 .1.in .in .in.po
 .in.po.in:
 	$(po4a_translate) -k 70 -M UTF-8 -f man -m gerbv.1.in -p $< -l $@
 
-$(PO_FILES): gerbv.1.in.pot
-	$(MSGMERGE) --width=76 $@ $< -o $@.new
-	mv $@.new $@
-
 gerbv.1.in.pot: gerbv.1.in
 	$(po4a_gettextize) -M UTF-8 -f man -m $< -p $@
 
+.PHONY: $(LANGUAGES)
 
-update-po:
-	@ touch -c gerbv.1.in.pot
-	$(MAKE) $(PO_FILES)
+update-po: $(LANGUAGES)
+
+# Without dependency to manually update .po files
+$(LANGUAGES):
+	$(MAKE) gerbv.1.in.pot
+	$(MSGMERGE) -v --width=76 gerbv.$@.1.in.po gerbv.1.in.pot \
+		-o gerbv.$@.1.in.po.new
+	mv gerbv.$@.1.in.po.new gerbv.$@.1.in.po
