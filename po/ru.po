@@ -2,14 +2,14 @@
 # Copyright (C) 2012 gEDA Developers
 # This file is distributed under the same license as the Gerbv package.
 #
-# Sergey Alyoshin <alyoshin.s@gmail.com>, 2012-2016
+# Sergey Alyoshin <alyoshin.s@gmail.com>, 2012-2019
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gerbv 2.6A ru\n"
+"Project-Id-Version: gerbv 2.7 ru\n"
 "Report-Msgid-Bugs-To: gerbv-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2018-12-19 00:36+0300\n"
-"PO-Revision-Date: 2016-02-22 14:17+0300\n"
+"POT-Creation-Date: 2019-01-20 15:44+0300\n"
+"PO-Revision-Date: 2019-01-20 15:51+0300\n"
 "Last-Translator: Sergey Alyoshin <alyoshin.s@gmail.com>\n"
 "Language-Team: gEDA user <geda-user@delorie.com>\n"
 "Language: ru\n"
@@ -62,7 +62,7 @@ msgstr "Julian Lamb"
 
 #: src/authors.c:15
 msgid "Sergey Alyoshin"
-msgstr ""
+msgstr "Сергей Алёшин"
 
 #: src/authors.c:16
 msgid "Stefan Petersen"
@@ -254,7 +254,7 @@ msgstr "Экспортировать слой «%s» №%d в файл свер�
 #: src/callbacks.c:721
 #, c-format
 msgid "Export \"%s\" layer #%d to gEDA PCB file as..."
-msgstr ""
+msgstr "Экспортировать слой «%s» №%d в файл gEDA PCB как..."
 
 #: src/callbacks.c:727
 #, c-format
@@ -365,11 +365,11 @@ msgstr "Слой"
 
 #: src/callbacks.c:1168 src/callbacks.c:1535
 msgid "Type"
-msgstr ""
+msgstr "Тип"
 
 #: src/callbacks.c:1169 src/callbacks.c:1536
 msgid "Description"
-msgstr ""
+msgstr "Описание"
 
 #: src/callbacks.c:1181
 msgid "RS-274X file"
@@ -548,7 +548,7 @@ msgstr "Выход из программы приведёт к потере вс
 #. TRANSLATORS: Replace this string with your names, one name per line.
 #: src/callbacks.c:1865
 msgid "translator-credits"
-msgstr "Сергей Алёшин <alyoshin.s@gmail.com>, 2012—2014"
+msgstr "Сергей Алёшин <alyoshin.s@gmail.com>, 2012—2019"
 
 #: src/callbacks.c:1868
 #, c-format
@@ -887,11 +887,11 @@ msgstr "    Направление: %s"
 
 #: src/callbacks.c:4267 src/callbacks.c:4608 src/gerber.c:343
 msgid "CW"
-msgstr "ЧС"
+msgstr "по часовой"
 
 #: src/callbacks.c:4267 src/callbacks.c:4608 src/gerber.c:343
 msgid "CCW"
-msgstr "ПЧС"
+msgstr "против часовой"
 
 #: src/callbacks.c:4281
 #, c-format
@@ -1109,9 +1109,9 @@ msgid "Unknown aperture state %d"
 msgstr "Неизвестное состояние апертуры %d"
 
 #: src/draw.c:549
-#, fuzzy, c-format
+#, c-format
 msgid "Ignoring %s with non positive diameter"
-msgstr "Пропуск «%s» в файле проекта"
+msgstr "Пропуск %s с не положительным диаметром"
 
 #: src/draw.c:746
 #, c-format
@@ -1133,7 +1133,7 @@ msgstr "Неизвестный тип интерполяции: %s"
 msgid "Unknown aperture state: %s"
 msgstr "Неизвестное состояние апертуры: %s"
 
-#: src/drill.c:146 src/interface.c:2398
+#: src/drill.c:146 src/interface.c:2399
 msgid "None"
 msgstr "Нет"
 
@@ -1187,19 +1187,19 @@ msgstr ""
 "после, при отбрасывании спереди."
 
 #: src/drill.c:386
-#, fuzzy, c-format
+#, c-format
 msgid "Comment \"%s\" at line %ld in file \"%s\""
-msgstr "Недопустимый размер формата %c в файле «%s»"
+msgstr "Комментарий «%s» на строке %ld файла «%s»"
 
 #: src/drill.c:415 src/drill.c:447 src/drill.c:845
 #, c-format
 msgid "Unrecognised string \"%s\" in header at line %ld in file \"%s\""
-msgstr ""
+msgstr "Нераспознанная строка «%s» в заголовке на строке %ld файла «%s»"
 
 #: src/drill.c:435
-#, fuzzy, c-format
+#, c-format
 msgid "File in unsupported format 1 at line %ld in file \"%s\""
-msgstr "Недопустимый размер формата %c в файле «%s»"
+msgstr "Недопустимый формат 1 файла на строке %ld файла «%s»"
 
 #: src/drill.c:472 src/drill.c:515 src/gerber.c:1214 src/gerber.c:1228
 #: src/gerber.c:1242 src/gerber.c:1403 src/gerber.c:1518
@@ -1208,141 +1208,142 @@ msgid "Unexpected EOF found in file \"%s\""
 msgstr "Неожиданный код конца файла в «%s»"
 
 #: src/drill.c:530 src/drill.c:561 src/drill.c:691
-#, fuzzy, c-format
+#, c-format
 msgid "Unrecognized string \"%s\" found at line %ld in file \"%s\""
-msgstr "Превышающая границы апертура D%d в файле «%s»"
+msgstr "Не распознано «%s» на строке %ld файла «%s»"
 
 #: src/drill.c:539
-#, fuzzy, c-format
+#, c-format
 msgid "Unsupported G%02d (%s) code at line %ld in file \"%s\""
-msgstr "Неизвестный код после G54 в файле «%s»"
+msgstr "Неподдерживаемый код G%02d (%s) на строке %ld файла «%s»"
 
 #: src/drill.c:589
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "End of Excellon header reached but no leading/trailing zero handling "
 "specified at line %ld in file \"%s\""
-msgstr "В заголовке файла Excellon не указана обработка ведущих/младших нулей."
+msgstr ""
+"Достигнут конец заголовка Excellon, но не была указана обработка нулей "
+"спереди/сзади на строке %ld файла «%s»"
 
 #: src/drill.c:596
-#, fuzzy, c-format
+#, c-format
 msgid "Assuming leading zeros in file \"%s\""
-msgstr "Предполагаются ведущие нули."
+msgstr "Предполагаются ведущие нули в файле «%s»"
 
 #: src/drill.c:608
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "M71 code found but no METRIC specification in header at line %ld in file \"%s"
 "\""
-msgstr "Найден код M71, но в заголовке не указано METRIC."
+msgstr ""
+"Найден код M71, но в заголовке не указано METRIC на строке %ld файла «%s»"
 
 #: src/drill.c:614
-#, fuzzy, c-format
+#, c-format
 msgid "Assuming all tool sizes are MM in file \"%s\""
-msgstr "Предполагается размер всех инструментов в мм."
+msgstr "Предполагается размер всех инструментов в мм в файле «%s»"
 
 #: src/drill.c:655
 #, c-format
 msgid "Canned text \"%s\" at line %ld in drill file \"%s\""
-msgstr ""
+msgstr "Высверленный текст «%s» на строке %ld файла «%s»"
 
 #: src/drill.c:664
-#, fuzzy, c-format
+#, c-format
 msgid "Message \"%s\" embedded at line %ld in drill file \"%s\""
-msgstr "Текст встроенный в файл сверловки: «%s»"
+msgstr "Встроенный в файл сверловки текст «%s» на строке %ld файла «%s»"
 
 #: src/drill.c:701
 #, c-format
 msgid "Unsupported M%02d (%s) code found at line %ld in file \"%s\""
-msgstr ""
+msgstr "Неподдерживаемый код M%02d (%s) на строке %ld файла «%s»"
 
 #: src/drill.c:715
 #, c-format
 msgid "Not allowed 'R' code in the header at line %ld in file \"%s\""
-msgstr ""
+msgstr "Недопустимый в заголовке код 'R' на строке %ld файла «%s»"
 
 #: src/drill.c:775
 #, c-format
 msgid "Ignoring setting spindle speed at line %ld in drill file \"%s\""
-msgstr ""
+msgstr "Пропуск установки скорости шпинделя на строке %ld файла сверловки «%s»"
 
 #: src/drill.c:789
 #, c-format
 msgid "Undefined string \"%s\" in header at line %ld in file \"%s\""
-msgstr ""
+msgstr "Неопределённая строка «%s» в заголовке на строке %ld файла «%s»"
 
 #: src/drill.c:836
-#, fuzzy, c-format
+#, c-format
 msgid "Undefined code '%s' (0x%x) found in header at line %ld in file \"%s\""
-msgstr "Неопределённые коды в заголовке."
+msgstr "Неопределённый код '%s' (0x%x) в заголовке на строке %ld файла «%s»"
 
 #: src/drill.c:851
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Ignoring undefined character '%s' (0x%x) found inside data at line %ld in "
 "file \"%s\""
-msgstr "Пропуск неопределённого символа ‘%c’ [0x%02x] в данных."
+msgstr ""
+"Пропуск неопределённого символа ‘%s’ (0x%x) в данных на строке %ld файла «%s»"
 
 #: src/drill.c:859
-#, fuzzy, c-format
+#, c-format
 msgid "No EOF found in drill file \"%s\""
-msgstr "В файле сверловки отсутствует код конца файла."
+msgstr "Отсутствует код конца файла В файле сверловки «%s»"
 
 #: src/drill.c:1078
-#, fuzzy, c-format
+#, c-format
 msgid "Tool change stop switch found \"%s\" at line %ld in file \"%s\""
-msgstr "Смена инструмента: %s"
+msgstr "Остановка для смены инструмента «%s» на строке %ld файла «%s»"
 
 #: src/drill.c:1093
-#, fuzzy
 msgid "OrCAD bug: Junk text found in place of tool definition"
-msgstr "Ошибка OrCAD: ненужный текст вместо определения инструмента."
+msgstr "Ошибка OrCAD: ненужный текст вместо определения инструмента"
 
 #: src/drill.c:1096
-#, fuzzy, c-format
+#, c-format
 msgid "Junk text \"%s\" at line %ld in file \"%s\""
-msgstr "Превышающая границы апертура D%d в файле «%s»"
+msgstr "Ненужный текст «%s» на строке %ld файла «%s»"
 
 #: src/drill.c:1101
-#, fuzzy
 msgid "Ignoring junk text"
-msgstr "Пропуск ненужного текста."
+msgstr "Пропуск ненужного текста"
 
 #: src/drill.c:1115
-#, fuzzy, c-format
+#, c-format
 msgid "Out of bounds drill number %d at line %ld in file \"%s\""
-msgstr "Превышающая границы апертура D%d в файле «%s»"
+msgstr "Превышающий границы инструмент %d на строке %ld файла «%s»"
 
 #: src/drill.c:1144
-#, fuzzy, c-format
+#, c-format
 msgid "Read a drill of diameter %g inches at line %ld in file \"%s\""
-msgstr "Прочитано отверстие диаметром %g дюймов."
+msgstr "Прочитано отверстие диаметром %g дюймов на строке %ld файла «%s»"
 
 #: src/drill.c:1148
-#, fuzzy
 msgid "Assuming units are mils"
-msgstr "Предполагаются единицы измерения мил."
+msgstr "Предполагаются единицы измерения мил"
 
 #: src/drill.c:1154
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Unreasonable drill size %g found for drill %d at line %ld in file \"%s\""
-msgstr "Бессмысленный размер отверстия %d: %g"
+msgstr "Бессмысленный размер %g для отверстия %d на строке %ld файла «%s»"
 
 #: src/drill.c:1171
-#, fuzzy, c-format
+#, c-format
 msgid "Found redefinition of drill %d at line %ld in file \"%s\""
-msgstr "Переопределение отверстия %d."
+msgstr "Переопределение отверстия %d на строке %ld файла «%s»"
 
 #: src/drill.c:1220
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected EOF encountered in header of drill file \"%s\""
-msgstr "Неожиданный код конца файла в заголовке файла сверловки."
+msgstr "Неожиданный код конца файла в заголовке файла сверловки «%s»"
 
 #: src/drill.c:1253
-#, fuzzy, c-format
+#, c-format
 msgid "Tool %02d used without being defined at line %ld in file \"%s\""
-msgstr "Инструмент %02d используется без определения."
+msgstr "Инструмент %02d используется без определения на строке %ld файла «%s»"
 
 #: src/drill.c:1257
 #, c-format
@@ -1350,29 +1351,29 @@ msgid "Setting a default size of %g\""
 msgstr "Установка размера по умолчанию %g\""
 
 #: src/drill.c:1304
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected EOF found while parsing M-code in file \"%s\""
-msgstr "Неожиданный код конца файла при разборе M-кода."
+msgstr "Неожиданный код конца файла при разборе M-кода в файле «%s»"
 
 #: src/drill.c:1396 src/drill.c:1536 src/drill.c:1606 src/drill.c:1618
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected EOF found while parsing \"%s\" string in file \"%s\""
-msgstr "Неожиданный код конца файла при разборе M-кода."
+msgstr "Неожиданный код конца файла при разборе «%s» в файле «%s»"
 
 #: src/drill.c:1508
-#, fuzzy, c-format
+#, c-format
 msgid "Found junk after METRIC command at line %ld in file \"%s\""
-msgstr "Ненужный текст после команды METRIC."
+msgstr "Найден ненужный текст после команды METRIC на строке %ld файла «%s»"
 
 #: src/drill.c:1573 src/drill.c:1583
-#, fuzzy, c-format
+#, c-format
 msgid "Found junk '%s' after INCH command at line %ld in file \"%s\""
-msgstr "Неопределённый D-код D%d в файле «%s»"
+msgstr "Найден ненужный текст «%s» после команды INCH на строке %ld файла «%s»"
 
 #: src/drill.c:1647
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected EOF found while parsing G-code in file \"%s\""
-msgstr "Неожиданный код конца файла при разборе G-кода."
+msgstr "Неожиданный код конца файла при разборе G-кода в файле «%s»"
 
 #: src/drill.c:1737
 #, c-format
@@ -1380,6 +1381,7 @@ msgid ""
 "Coordinate mode is not absolute and not incremental at line %ld in file \"%s"
 "\""
 msgstr ""
+"Режим координат не абсолютный и не инкрементальный на строке %ld файла «%s»"
 
 #: src/drill.c:1842
 #, c-format
@@ -1388,7 +1390,7 @@ msgid ""
 "This should never have happened\n"
 msgstr ""
 "%s():  omit_zeros == GERBV_OMIT_ZEROS_TRAILING но fmt = %d.\n"
-"Этого никогда не должно случиться\n"
+"Этого никогда не должно происходить\n"
 
 #: src/drill.c:1857
 #, c-format
@@ -1401,278 +1403,260 @@ msgid "%s(): Unhandled fmt ` %d\n"
 msgstr "%s(): формат %d не обработан\n"
 
 #: src/drill.c:2003
-#, fuzzy
 msgid "rout mode"
-msgstr "Холостой ход"
+msgstr "режим траектории"
 
 #: src/drill.c:2005
-#, fuzzy
 msgid "linear mode"
-msgstr "линейная×1"
+msgstr "режим линии"
 
 #: src/drill.c:2007
 msgid "circular CW mode"
-msgstr ""
+msgstr "режим окружности по часовой"
 
 #: src/drill.c:2009
-#, fuzzy
-msgid "circles CCW mode"
-msgstr "макрокруг"
+msgid "circular CCW mode"
+msgstr "режим окружности против часовой"
 
 #: src/drill.c:2011
-#, fuzzy
 msgid "variable dwell"
-msgstr "Переменная задержка"
+msgstr "переменная задержка"
 
 #: src/drill.c:2013
-#, fuzzy
 msgid "drill mode"
-msgstr "Режим сверловки"
+msgstr "режим сверловки"
 
 #: src/drill.c:2015
 msgid "override tool feed or speed"
-msgstr ""
+msgstr "переназначение подачи или скорости инструмента"
 
 #: src/drill.c:2017
 msgid "routed CW circle"
-msgstr ""
+msgstr "траектория окружности по часовой"
 
 #: src/drill.c:2019
-#, fuzzy
 msgid "routed CCW circle"
-msgstr "круговая против часовой"
+msgstr "траектория окружности против часовой"
 
 #: src/drill.c:2021
 msgid "select vision tool"
-msgstr ""
+msgstr "выбор видеоинструмента"
 
 #: src/drill.c:2023
 msgid "single point vision offset"
-msgstr ""
+msgstr "смещение по точке с видео"
 
 #: src/drill.c:2025
 msgid "multipoint vision translation"
-msgstr ""
+msgstr "сдвиг по точкам с видео"
 
 #: src/drill.c:2027
 msgid "cancel vision translation or offset"
-msgstr ""
+msgstr "отмена сдвига или смещения видео"
 
 #: src/drill.c:2029
 msgid "vision corrected single hole drilling"
-msgstr ""
+msgstr "сверление отверстия с видеокоррекцией"
 
 #: src/drill.c:2031
 msgid "vision system autocalibration"
-msgstr ""
+msgstr "автокалибровка видеосистемы"
 
 #: src/drill.c:2033
 msgid "cutter compensation off"
-msgstr ""
+msgstr "откл. компенсацию резака"
 
 #: src/drill.c:2035
 msgid "cutter compensation left"
-msgstr ""
+msgstr "компенсация резака слева"
 
 #: src/drill.c:2037
 msgid "cutter compensation right"
-msgstr ""
+msgstr "компенсация резака справа"
 
 #: src/drill.c:2039
 msgid "single point vision relative offset"
-msgstr ""
+msgstr "относительное смещение по точке с видео"
 
 #: src/drill.c:2041
 msgid "multipoint vision relative translation"
-msgstr ""
+msgstr "относительный сдвиг по точкам с видео"
 
 #: src/drill.c:2043
 msgid "cancel vision relative translation or offset"
-msgstr ""
+msgstr "отмена относительного сдвига или смещения видео"
 
 #: src/drill.c:2045
 msgid "vision corrected single hole relative drilling"
-msgstr ""
+msgstr "относительное сверление отверстия с видеокоррекцией"
 
 #: src/drill.c:2047 src/drill.c:2049
 msgid "dual in line package"
-msgstr ""
+msgstr "DIP-корпус"
 
 #: src/drill.c:2051
 msgid "eight pin L package"
-msgstr ""
+msgstr "8-ми выводной L-корпус"
 
 #: src/drill.c:2053
-#, fuzzy
 msgid "canned circle"
-msgstr "круг"
+msgstr "высверленный круг"
 
 #: src/drill.c:2055
-#, fuzzy
 msgid "canned slot"
-msgstr "Высверленный текст"
+msgstr "высверленный паз"
 
 #: src/drill.c:2057
 msgid "routed step slot"
-msgstr ""
+msgstr "паз траекторией по глубине"
 
 #: src/drill.c:2059
-#, fuzzy
 msgid "absolute input mode"
-msgstr "Абсолютные единицы"
+msgstr "режим абсолютных единиц"
 
 #: src/drill.c:2061
-#, fuzzy
 msgid "incremental input mode"
-msgstr "Инкрементальные единицы"
+msgstr "режим инкрементальных единиц"
 
 #: src/drill.c:2063
-#, fuzzy
 msgid "zero set"
-msgstr "Установка нуля"
+msgstr "установка нуля"
 
 #: src/drill.c:2067 src/gerber.c:2664
-#, fuzzy
 msgid "unknown G-code"
-msgstr "Неизвестные G-коды"
+msgstr "неизвестный G-код"
 
 #: src/drill.c:2077
-#, fuzzy
 msgid "end of program"
-msgstr "Конец программы"
+msgstr "конец программы"
 
 #: src/drill.c:2079
 msgid "pattern end"
-msgstr ""
+msgstr "конец шаблона"
 
 #: src/drill.c:2081
 msgid "repeat pattern offset"
-msgstr ""
+msgstr "повтор смещения шаблона"
 
 #: src/drill.c:2083
 msgid "stop optional"
-msgstr ""
+msgstr "опциональный останов"
 
 #: src/drill.c:2085
 msgid "step and repeat end"
-msgstr ""
+msgstr "конец шага и повтора"
 
 #: src/drill.c:2087
 msgid "stop for inspection"
-msgstr ""
+msgstr "останов для проверки"
 
 #: src/drill.c:2089
 msgid "Z-axis rout position with depth control"
-msgstr ""
+msgstr "положение оси Z траектории с контролем глубины"
 
 #: src/drill.c:2091
 msgid "Z-axis rout position"
-msgstr ""
+msgstr "положение оси Z траектории"
 
 #: src/drill.c:2093
 msgid "retract with clamping"
-msgstr ""
+msgstr "отведение с прижиманием"
 
 #: src/drill.c:2095
 msgid "retract without clamping"
-msgstr ""
+msgstr "отведение без прижимания"
 
 #: src/drill.c:2097
-#, fuzzy
 msgid "tool tip check"
-msgstr "Проверка инструмента"
+msgstr "проверка инструмента"
 
 #: src/drill.c:2099
 msgid "pattern start"
-msgstr ""
+msgstr "начало шаблона"
 
 #: src/drill.c:2101
-#, fuzzy
 msgid "end of program with rewind"
-msgstr "Конец программы со сбросом"
+msgstr "конец программы со сбросом"
 
 #: src/drill.c:2103
-#, fuzzy
 msgid "long operator message"
-msgstr "Сообщение оператора"
+msgstr "длинное сообщение оператора"
 
 #: src/drill.c:2105
-#, fuzzy
 msgid "operator message"
-msgstr "Сообщение оператора"
+msgstr "сообщение оператора"
 
 #: src/drill.c:2107
 msgid "header start"
-msgstr ""
+msgstr "начало заголовка"
 
 #: src/drill.c:2109
 msgid "vision step and repeat pattern start"
-msgstr ""
+msgstr "начало шаблона с шагом и повтором с видео"
 
 #: src/drill.c:2111
 msgid "vision step and repeat rewind"
-msgstr ""
+msgstr "возврат видеокоррекции для шага и повтора"
 
 #: src/drill.c:2113
 msgid "vision step and repeat offset counter control"
-msgstr ""
+msgstr "управление счётчиком смещения шага и повтора c видео"
 
 #: src/drill.c:2115
 msgid "reference scaling on"
-msgstr ""
+msgstr "вкл. опорный масштаб"
 
 #: src/drill.c:2117
 msgid "reference scaling off"
-msgstr ""
+msgstr "откл. опорный масштаб"
 
 #: src/drill.c:2119
 msgid "peck drilling on"
-msgstr ""
+msgstr "вкл. многозаходное сверление"
 
 #: src/drill.c:2121
 msgid "peck drilling off"
-msgstr ""
+msgstr "откл. многозаходное сверление"
 
 #: src/drill.c:2123
 msgid "swap axes"
-msgstr ""
+msgstr "перемена осей"
 
 #: src/drill.c:2125
 msgid "metric measuring mode"
-msgstr ""
+msgstr "режим метрических измерений"
 
 #: src/drill.c:2127
 msgid "inch measuring mode"
-msgstr ""
+msgstr "режим дюймовый измерений"
 
 #: src/drill.c:2129
 msgid "mirror image X-axis"
-msgstr ""
+msgstr "отразить по оси X"
 
 #: src/drill.c:2131
 msgid "mirror image Y-axis"
-msgstr ""
+msgstr "отразить по оси Y"
 
 #: src/drill.c:2133
 msgid "header end"
-msgstr ""
+msgstr "конец заголовка"
 
 #: src/drill.c:2135
 msgid "canned text along X-axis"
-msgstr ""
+msgstr "высверленный текст вдоль оси X"
 
 #: src/drill.c:2137
 msgid "canned text along Y-axis"
-msgstr ""
+msgstr "высверленный текст вдоль оси Y"
 
 #: src/drill.c:2139
 msgid "user defined stored pattern"
-msgstr ""
+msgstr "пользовательский шаблон"
 
 #: src/drill.c:2143 src/gerber.c:2675
-#, fuzzy
 msgid "unknown M-code"
-msgstr "Неизвестные M-коды"
+msgstr "неизвестный M-код"
 
 #: src/drill_stats.c:188
 #, c-format
@@ -1707,7 +1691,7 @@ msgstr "Ошибка экспорта в файл «%s»"
 #: src/export-isel-drill.c:148
 #, c-format
 msgid "Skipped to export of unsupported state %d interpolation \"%s\""
-msgstr ""
+msgstr "Пропуск экспорта неподдерживаемого состояния %d интерполяции «%s»"
 
 #: src/gerb_file.c:182
 msgid "Failed to read integer"
@@ -1872,9 +1856,9 @@ msgid "Undefined aperture number called out in D code"
 msgstr "В D-коде указан неизвестный номер апертуры"
 
 #: src/gerber.c:178
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown M code found at line %ld in file \"%s\""
-msgstr "Неизвестная полярность слоя %c в файле «%s»"
+msgstr "Неизвестный M-код на строке %ld файла «%s»"
 
 #: src/gerber.c:339
 #, c-format
@@ -1882,21 +1866,23 @@ msgid ""
 "Signed incremental distance IxJy in single quadrant %s circular "
 "interpolation %s at line %ld in file \"%s\""
 msgstr ""
+"Инкрементальное расстояние со знаком IxJy в круговой интерполяции %s одного "
+"квадранта %s на строке  %ld файла «%s»"
 
 #: src/gerber.c:365
-#, fuzzy, c-format
+#, c-format
 msgid "End of polygon without start at line %ld in file \"%s\""
-msgstr "Превышающая границы апертура D%d в файле «%s»"
+msgstr "Конец полигона без начала на строке %ld файла «%s»"
 
 #: src/gerber.c:478
-#, fuzzy, c-format
+#, c-format
 msgid "Found undefined D code D%02d at line %ld in file \"%s\""
-msgstr "Неопределённый D-код D%d в файле «%s»"
+msgstr "Неопределённый D-код D%02d на строке %ld файла «%s»"
 
 #: src/gerber.c:706
-#, fuzzy, c-format
+#, c-format
 msgid "Found unknown character '%s' (0x%x) at line %ld in file \"%s\""
-msgstr "Неизвестный G-код G%d в файле «%s»"
+msgstr "Неизвестный символ '%s' (0x%x) на строке %ld файла «%s»"
 
 #: src/gerber.c:773
 #, c-format
@@ -1904,101 +1890,104 @@ msgid "Missing Gerber EOF code in file \"%s\""
 msgstr "Файл «%s» не содержит код конца Gerber-файла"
 
 #: src/gerber.c:1046
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Found aperture D%02d out of bounds while parsing G code at line %ld in file "
 "\"%s\""
-msgstr "Апертура D%d превышает границы при разборе G-кода в файле «%s»"
+msgstr ""
+"Апертура D%02d превышает границы при разборе G-кода на строке %ld файла «%s»"
 
 #: src/gerber.c:1052
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected code after G54 at line %ld in file \"%s\""
-msgstr "Неизвестный код после G54 в файле «%s»"
+msgstr "Неизвестный код после G54 на строке %ld в файла «%s»"
 
 #: src/gerber.c:1090
-#, fuzzy, c-format
+#, c-format
 msgid "Encountered unknown G code G%02d at line %ld in file \"%s\""
-msgstr "Неизвестный G-код G%d в файле «%s»"
+msgstr "Неизвестный G-код G%02d на строке %ld файла «%s»"
 
 #: src/gerber.c:1094
-#, fuzzy, c-format
+#, c-format
 msgid "Ignorning unknown G code G%02d"
-msgstr "Пропуск неизвестного G-кода G%d"
+msgstr "Пропуск неизвестного G-кода G%02d"
 
 #: src/gerber.c:1123
-#, fuzzy, c-format
+#, c-format
 msgid "Found invalid D00 code at line %ld in file \"%s\""
-msgstr "Недопустимый код D00 в файле «%s»"
+msgstr "Недопустимый код D00 на строке %ld файла «%s»"
 
 #: src/gerber.c:1148
-#, fuzzy, c-format
+#, c-format
 msgid "Found out of bounds aperture D%02d at line %ld in file \"%s\""
-msgstr "Превышающая границы апертура D%d в файле «%s»"
+msgstr "Превышающая границы апертура D%02d на строке %ld файла «%s»"
 
 #: src/gerber.c:1182
-#, fuzzy, c-format
+#, c-format
 msgid "Encountered unknown M%02d code at line %ld in file \"%s\""
-msgstr "Неизвестный M-код M%d в файле «%s»"
+msgstr "Неизвестный код M%02d на строке %ld файла «%s»"
 
 #: src/gerber.c:1185
-#, fuzzy, c-format
+#, c-format
 msgid "Ignorning unknown M%02d code"
-msgstr "Пропуск неизвестного M-кода M%d"
+msgstr "Пропуск неизвестного кода M%02d"
 
 #: src/gerber.c:1267
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "EagleCad bug detected: Undefined handling of zeros in format code at line "
 "%ld in file \"%s\""
-msgstr "Ошибка EagleCad: формат не определяет обработку нулей в файле «%s»"
+msgstr ""
+"Ошибка EagleCad: формат не определяет обработку нулей на строке %ld файла "
+"«%s»"
 
 #: src/gerber.c:1271
 msgid "Defaulting to omitting leading zeros"
 msgstr "Пропуск ведущих нулей, по умолчанию"
 
 #: src/gerber.c:1285
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Invalid coordinate type defined in format code at line %ld in file \"%s\""
-msgstr "Недопустимый тип координат в коде формата файла «%s»"
+msgstr "Недопустимый тип координат в коде формата на строке %ld файла «%s»"
 
 #: src/gerber.c:1289
 msgid "Defaulting to absolute coordinates"
 msgstr "Установка по умолчанию абсолютных координат"
 
 #: src/gerber.c:1315 src/gerber.c:1324 src/gerber.c:1335 src/gerber.c:1344
-#, fuzzy, c-format
+#, c-format
 msgid "Illegal format size '%s' at line %ld in file \"%s\""
-msgstr "Недопустимый размер формата %c в файле «%s»"
+msgstr "Недопустимый размер формата '%s' на строке %ld файла «%s»"
 
 #: src/gerber.c:1353
-#, fuzzy, c-format
+#, c-format
 msgid "Illegal format statement '%s' at line %ld in file \"%s\""
-msgstr "Недопустимое выражение формата [%c] в файле «%s»"
+msgstr "Недопустимое выражение формата '%s' на строке %ld файла «%s»"
 
 #: src/gerber.c:1358
 msgid "Ignoring invalid format statement"
 msgstr "Пропуск недопустимого выражения формата"
 
 #: src/gerber.c:1390
-#, fuzzy, c-format
+#, c-format
 msgid "Wrong character '%s' in mirror at line %ld in file \"%s\""
-msgstr "Недопустимый символ в смещении %c в файле «%s»"
+msgstr "Недопустимый символ в отражении '%s' на строке %ld файла «%s»"
 
 #: src/gerber.c:1416
-#, fuzzy, c-format
+#, c-format
 msgid "Illegal unit '%s%s' at line %ld in file \"%s\""
-msgstr "Недопустимый размер формата %c в файле «%s»"
+msgstr "Недопустимая единица измерения '%s%s' на строке %ld файла «%s»"
 
 #: src/gerber.c:1434
-#, fuzzy, c-format
+#, c-format
 msgid "Wrong character '%s' in offset at line %ld in file \"%s\""
-msgstr "Недопустимый символ в смещении %c в файле «%s»"
+msgstr "Недопустимый символ '%s' в смещении на строке %ld файла «%s»"
 
 #: src/gerber.c:1461
-#, fuzzy, c-format
+#, c-format
 msgid "Included file \"%s\" cannot be found at line %ld in file \"%s\""
-msgstr "В файле «%s» не может быть найден включённый файл «%s»"
+msgstr "Невозможно найти включённый файл «%s» на строке %ld файла «%s»"
 
 #: src/gerber.c:1468
 msgid ""
@@ -2009,19 +1998,21 @@ msgstr ""
 "RS-274X"
 
 #: src/gerber.c:1489
-#, fuzzy, c-format
+#, c-format
 msgid "Wrong character '%s' in image offset at line %ld in file \"%s\""
-msgstr "Недопустимый символ в смещении %c в файле «%s»"
+msgstr ""
+"Недопустимый символ '%s' в смещении изображения на строке %ld файла «%s»"
 
 #: src/gerber.c:1538
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown input code (IC) '%s%s' at line %ld in file \"%s\""
-msgstr "Неизвестный входной код (IC) %c%c в файле «%s»"
+msgstr "Неизвестный входной код (IC) '%s%s' на строке %ld файла «%s»"
 
 #: src/gerber.c:1578
-#, fuzzy, c-format
+#, c-format
 msgid "Wrong character '%s' in image justify at line %ld in file \"%s\""
-msgstr "Недопустимый символ выравнивания изображения %c в файле «%s»"
+msgstr ""
+"Недопустимый символ '%s' выравнивания изображения на строке %ld файла «%s»"
 
 #: src/gerber.c:1594
 #, c-format
@@ -2031,59 +2022,61 @@ msgstr ""
 "«%s»"
 
 #: src/gerber.c:1606
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown polarity '%s%s%s' at line %ld in file \"%s\""
-msgstr "Неизвестная полярность слоя %c в файле «%s»"
+msgstr "Неизвестная полярность слоя '%s%s%s' на строке %ld файла «%s»"
 
 #: src/gerber.c:1624
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Image rotation must be 0, 90, 180 or 270 (is actually %d) at line %ld in "
 "file \"%s\""
 msgstr ""
-"Изображение должно быть повёрнуто на 0°, 90°, 180° или 270° (указано %d°)"
+"Изображение должно быть повёрнуто на 0°, 90°, 180° или 270° (указано %d°) на "
+"строке %ld файла «%s»"
 
 #: src/gerber.c:1654 src/gerber.c:1660
-#, fuzzy, c-format
+#, c-format
 msgid "Aperture number out of bounds %d at line %ld in file \"%s\""
-msgstr "Номер апертуры выходит за границы %d в файле «%s»"
+msgstr "Номер апертуры выходит за границы %d на строке %ld файла «%s»"
 
 #: src/gerber.c:1677
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to parse aperture macro at line %ld in file \"%s\""
-msgstr "Ошибка разбора макроса апертуры в файле «%s»"
+msgstr "Ошибка разбора макроса апертуры на строке %ld файла «%s»"
 
 #: src/gerber.c:1699
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown layer polarity '%s' at line %ld in file \"%s\""
-msgstr "Неизвестная полярность слоя %c в файле «%s»"
+msgstr "Неизвестная полярность слоя '%s' на строке %ld файла «%s»"
 
 #: src/gerber.c:1719
-#, fuzzy, c-format
+#, c-format
 msgid "Knockout must supply a polarity (C, D, or *) at line %ld in file \"%s\""
-msgstr "Врезка должна содержать полярность (C, D или *) в файле «%s»"
+msgstr ""
+"Врезка должна содержать полярность (C, D или *) на строке %ld файла «%s»"
 
 #: src/gerber.c:1762
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown variable in knockout at line %ld in file \"%s\""
-msgstr "Неизвестная переменная врезки в файле «%s»"
+msgstr "Неизвестная переменная врезки на строке %ld файла «%s»"
 
 #: src/gerber.c:1796
-#, fuzzy, c-format
+#, c-format
 msgid "Step-and-repeat parameter error at line %ld in file \"%s\""
 msgstr ""
-"Ошибка параметра многократного экспонирования с шаговым перемещением в файле "
-"«%s»"
+"Ошибка параметра многократного экспонирования с шаговым перемещением на "
+"строке %ld файла «%s»"
 
 #: src/gerber.c:1822
-#, fuzzy, c-format
+#, c-format
 msgid "Error in layer rotation command at line %ld in file \"%s\""
-msgstr "Ошибка в команде поворота слоя в файле «%s»"
+msgstr "Ошибка в команде поворота слоя на строке %ld файла «%s»"
 
 #: src/gerber.c:1829
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown RS-274X extension found %%%s%s%% at line %ld in file \"%s\""
-msgstr "Неизвестное расширение RS-274X %%%c%c%% в файле «%s»"
+msgstr "Неизвестное расширение RS-274X %%%s%s%% на строке %ld файла «%s»"
 
 #: src/gerber.c:1916
 msgid "aperture NULL in simplify aperture macro"
@@ -2108,29 +2101,31 @@ msgstr ""
 "Количество параметров макроса апертуры (%d) больше чем допускает Gerbv (%d)"
 
 #: src/gerber.c:2176
-#, fuzzy, c-format
+#, c-format
 msgid "Found AD code with no following 'D' at line %ld in file \"%s\""
-msgstr "AD-код без последующего ‘D’ в файле «%s»"
+msgstr "AD-код без последующего ‘D’ на строке %ld файла «%s»"
 
 #: src/gerber.c:2195
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid aperture definition at line %ld in file \"%s\""
-msgstr "Недопустимое определение апертуры в файле «%s»"
+msgstr "Недопустимое определение апертуры на строке %ld файла «%s»"
 
 #: src/gerber.c:2240
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Maximum number of allowed parameters exceeded in aperture %d at line %ld in "
 "file \"%s\""
 msgstr ""
-"Превышено максимальное количество параметров для апертуры %d в файле «%s»"
+"Превышено максимальное количество параметров для апертуры %d на строке %ld в "
+"файле «%s»"
 
 #: src/gerber.c:2258
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to read all parameters exceeded in aperture %d at line %ld in file "
 "\"%s\""
-msgstr "Не удалось прочитать все параметры апертуры %d"
+msgstr ""
+"Не удалось прочитать все параметры апертуры %d на строке %ld файла «%s»"
 
 #: src/gerber.c:2330
 msgid "Unknow quadrant value while converting to cw"
@@ -2152,28 +2147,24 @@ msgid "Negative height [%f] in quadrant %d [%f][%f]"
 msgstr "Отрицательная высота (%f) в квадранте %d [%f][%f]"
 
 #: src/gerber.c:2635
-#, fuzzy
 msgid "exposure on"
-msgstr "Вкл. экспозиции"
+msgstr "вкл. экспозиции"
 
 #: src/gerber.c:2636
-#, fuzzy
 msgid "exposure off"
-msgstr "Откл. экспозиции"
+msgstr "откл. экспозиции"
 
 #: src/gerber.c:2637
-#, fuzzy
 msgid "flash aperture"
-msgstr "Апертура экспозиции"
+msgstr "апертура экспозиции"
 
 #: src/gerber.c:2638
-#, fuzzy
 msgid "unknown D-code"
-msgstr "Неизвестные коды"
+msgstr "неизвестный D-код"
 
 #: src/gerber.c:2646
 msgid "move"
-msgstr ""
+msgstr "перемещение"
 
 #: src/gerber.c:2647
 msgid "1X linear interpolation"
@@ -2181,16 +2172,15 @@ msgstr "1× линейная интерполяция"
 
 #: src/gerber.c:2648
 msgid "CW interpolation"
-msgstr "Интерполяция по часовой стрелки"
+msgstr "интерполяция по часовой"
 
 #: src/gerber.c:2649
 msgid "CCW interpolation"
-msgstr "Интерполяция против часовой стрелки"
+msgstr "интерполяция против часовой "
 
 #: src/gerber.c:2650
-#, fuzzy
 msgid "comment/ignore block"
-msgstr "Блок комментария"
+msgstr "блок комментария"
 
 #: src/gerber.c:2651
 msgid "10X linear interpolation"
@@ -2205,67 +2195,56 @@ msgid "0.01X linear interpolation"
 msgstr "0.01× линейная интерполяция"
 
 #: src/gerber.c:2654
-#, fuzzy
 msgid "poly fill on"
-msgstr "Заполнение полигона"
+msgstr "заполнение полигона"
 
 #: src/gerber.c:2655
-#, fuzzy
 msgid "poly fill off"
-msgstr "Завершение заполнения полигона"
+msgstr "завершение заполнения полигона"
 
 #: src/gerber.c:2656
-#, fuzzy
 msgid "tool prepare"
-msgstr "Подготовка инструмента"
+msgstr "подготовка инструмента"
 
 #: src/gerber.c:2657
-#, fuzzy
 msgid "flash prepare"
-msgstr "Подготовка экспозиции"
+msgstr "подготовка экспозиции"
 
 #: src/gerber.c:2658
-#, fuzzy
 msgid "units = inches"
-msgstr "Единицы изменения: дюймы"
+msgstr "единицы изменения: дюймы"
 
 #: src/gerber.c:2659
-#, fuzzy
 msgid "units = mm"
-msgstr "Единицы измерения: мм"
+msgstr "единицы измерения: мм"
 
 #: src/gerber.c:2660
-#, fuzzy
 msgid "disable 360 circ. interpolation"
-msgstr "Откл. 360° интерполяции"
+msgstr "откл. 360° интерполяции"
 
 #: src/gerber.c:2661
-#, fuzzy
 msgid "enable 360 circ. interpolation"
-msgstr "Вкл. 360° интерполяции"
+msgstr "вкл. 360° интерполяции"
 
 #: src/gerber.c:2662
-#, fuzzy
 msgid "absolute units"
-msgstr "Абсолютные единицы"
+msgstr "абсолютные единицы"
 
 #: src/gerber.c:2663
-#, fuzzy
 msgid "incremental units"
-msgstr "Инкрементальные единицы"
+msgstr "инкрементальные единицы"
 
 #: src/gerber.c:2672
-#, fuzzy
 msgid "program stop (obsolete)"
-msgstr "Останов программы"
+msgstr "останов программы (устарел)"
 
 #: src/gerber.c:2673
 msgid "optional stop (obsolete)"
-msgstr ""
+msgstr "опциональный останов (устарел)"
 
 #: src/gerber.c:2674
 msgid "end of file"
-msgstr ""
+msgstr "конец файла"
 
 #: src/gerbv.c:75
 msgid "none"
@@ -2305,27 +2284,23 @@ msgstr "макролиния22"
 
 #: src/gerbv.c:94 src/gerbv.c:117
 msgid "<undefined>"
-msgstr ""
+msgstr "<неопределено>"
 
 #: src/gerbv.c:103
-#, fuzzy
 msgid "1X linear"
-msgstr "линейная×1"
+msgstr "линейная 1×"
 
 #: src/gerbv.c:104
-#, fuzzy
 msgid "10X linear"
-msgstr "линейная×1"
+msgstr "линейная 10×"
 
 #: src/gerbv.c:105
-#, fuzzy
 msgid "0.1X linear"
-msgstr "линейная×1"
+msgstr "линейная 0.1×"
 
 #: src/gerbv.c:106
-#, fuzzy
 msgid "0.01X linear"
-msgstr "0.01× линейная интерполяция"
+msgstr "линейная 0.01×"
 
 #: src/gerbv.c:107
 msgid "CW circular"
@@ -2336,24 +2311,21 @@ msgid "CCW circular"
 msgstr "круговая против часовой"
 
 #: src/gerbv.c:109
-#, fuzzy
 msgid "poly area start"
 msgstr "начало полигональной области"
 
 #: src/gerbv.c:110
-#, fuzzy
 msgid "poly area stop"
-msgstr "начало полигональной области"
+msgstr "конец полигональной области"
 
 #: src/gerbv.c:111
-#, fuzzy
 msgid "deleted"
-msgstr "_Удалить"
+msgstr "удалена"
 
-#: src/gerbv.c:231 src/gerbv.c:250 src/main.c:197
-#, fuzzy, c-format
+#: src/gerbv.c:231 src/gerbv.c:250 src/main.c:200
+#, c-format
 msgid "Could not read \"%s\" (loaded %d)"
-msgstr "Невозможно прочитать «%s»[%d]"
+msgstr "Невозможно прочитать «%s» (загружено %d)"
 
 #: src/gerbv.c:406
 msgid "Missing netlist - aborting file read"
@@ -2372,7 +2344,7 @@ msgid "Missing info...trying to load anyways\n"
 msgstr "Информация отсутствует, загрузка продолжена\n"
 
 #: src/gerbv.c:505 src/gerbv.c:625
-#, fuzzy, c-format
+#, c-format
 msgid "Trying to open \"%s\": %s"
 msgstr "Открытие «%s»: %s"
 
@@ -2382,9 +2354,9 @@ msgid "%s: unknown pick-and-place board side to reload"
 msgstr "%s: неизвестна сторона платы для загрузки расположения"
 
 #: src/gerbv.c:561
-#, fuzzy, c-format
+#, c-format
 msgid "Most likely found a RS-274D file \"%s\" ... trying to open anyways\n"
-msgstr "Вероятно, файл RS-274D... открытие\n"
+msgstr "Вероятно «%s» является файлом RS-274D... попытка открытия\n"
 
 #: src/gerbv.c:577
 #, c-format
@@ -2400,7 +2372,6 @@ msgid " (bottom)"
 msgstr " (низ)"
 
 #: src/interface.c:56
-#, fuzzy
 msgid "Gerbv — gEDA's Gerber Viewer"
 msgstr "Gerbv — gEDA просмотр Gerber-файлов"
 
@@ -2414,8 +2385,8 @@ msgid "_File"
 msgstr "_Файл"
 
 #: src/interface.c:368
-msgid "Open"
-msgstr ""
+msgid "_Open"
+msgstr "_Открыть"
 
 #: src/interface.c:375
 msgid "_Save active layer"
@@ -2435,7 +2406,7 @@ msgstr "Сохранить активный слой в указанный фа�
 
 #: src/interface.c:389
 msgid "_Revert all"
-msgstr ""
+msgstr "_Перезагрузить все"
 
 #: src/interface.c:392
 msgid "Reload all layers"
@@ -2486,69 +2457,59 @@ msgid "D_XF..."
 msgstr "D_XF..."
 
 #: src/interface.c:431
-#, fuzzy
 msgid "Export active layer to a DXF file"
-msgstr "Сохранить активный слой в указанный файл"
+msgstr "Экспортировать активный слой в формат DXF"
 
 #: src/interface.c:437
 msgid "RS-274X (_Gerber)..."
 msgstr "RS-274X (_Gerber)..."
 
 #: src/interface.c:440
-#, fuzzy
 msgid "Export active layer to a RS-274X (Gerber) file"
-msgstr "Экспортировать проект в формат RS-274X (Gerber)"
+msgstr "Экспортировать активный слой в формат RS-274X (Gerber)"
 
 #: src/interface.c:442
-#, fuzzy
 msgid "RS-274X merge (Gerber)..."
 msgstr "Объединить в RS-274X (Gerber)..."
 
 #: src/interface.c:445
-#, fuzzy
 msgid "Export merged visible Gerber layers to a RS-274X (Gerber) file"
 msgstr ""
-"Экспортировать проект в формат RS-274X (Gerber), объединив видимые слои "
-"Gerber"
+"Экспортировать объединённые видимые слои Gerber в формат RS-274X (Gerber)"
 
 #: src/interface.c:451
 msgid "_Excellon drill..."
 msgstr "Сверловка _Excellon... "
 
 #: src/interface.c:454
-#, fuzzy
 msgid "Export active layer to an Excellon drill file"
-msgstr "Экспортировать слой в формат сверловки Excellon"
+msgstr "Экспортировать активный слой в формат сверловки Excellon"
 
 #: src/interface.c:456
-#, fuzzy
 msgid "Excellon drill merge..."
 msgstr "Объединить в сверловку Excellon..."
 
 #: src/interface.c:459
-#, fuzzy
 msgid "Export merged visible drill layers to an Excellon drill file"
 msgstr ""
-"Экспортировать проект в формат сверловки Excellon, объединив видимые слои "
-"сверловки"
+"Экспортировать объединённые видимые слои сверловки в формат Excellon "
+"(сверловка)"
 
 #: src/interface.c:462
 msgid "_ISEL NCP drill..."
 msgstr "Сверловка _ISEL NCP..."
 
 #: src/interface.c:465
-#, fuzzy
 msgid "Export active layer to an ISEL Automation NCP drill file"
-msgstr "Экспортировать слой в формат сверловки ISEL Automation NCP"
+msgstr "Экспортировать активный слой в формат сверловки ISEL Automation NCP"
 
 #: src/interface.c:471
 msgid "gEDA P_CB (beta)..."
-msgstr ""
+msgstr "gEDA P_CB (тестовый)..."
 
 #: src/interface.c:474
-#, fuzzy
 msgid "Export active layer to a gEDA PCB file"
-msgstr "Сохранить активный слой в указанный файл"
+msgstr "Экспортировать активный слой в формат gEDA PCB"
 
 #: src/interface.c:481
 msgid "_New project"
@@ -2736,9 +2697,8 @@ msgid "Zoom to fit all visible layers in the window"
 msgstr "Масштабировать для отображения видимых слоёв на всё окно"
 
 #: src/interface.c:710
-#, fuzzy
 msgid "Background color"
-msgstr "Изменить цвет фона"
+msgstr "Цвет фона"
 
 #: src/interface.c:711
 msgid "Change the background color"
@@ -2789,9 +2749,8 @@ msgid "Toggle _visibility"
 msgstr "Изменить ви_димость"
 
 #: src/interface.c:812
-#, fuzzy
 msgid "Toggles the visibility of the active layer"
-msgstr "Показать панель инструментов"
+msgstr "Изменить видимость активного слоя"
 
 #: src/interface.c:815
 msgid "All o_n"
@@ -2814,9 +2773,8 @@ msgid "_Invert color"
 msgstr "_Инвертировать"
 
 #: src/interface.c:831
-#, fuzzy
 msgid "Invert the display polarity of the active layer"
-msgstr "Инвертировать полярность выделенного слоя"
+msgstr "Инвертировать полярность активного слоя"
 
 #: src/interface.c:834
 msgid "_Change color"
@@ -2847,11 +2805,8 @@ msgid "Edit file _format"
 msgstr "Изменить _формат"
 
 #: src/interface.c:861
-#, fuzzy
 msgid "View and edit the numerical format used to parse the active layer"
-msgstr ""
-"Просмотр и изменение формата используемого для слоя выделенного в боковой "
-"панели"
+msgstr "Просмотр и изменение формата активного слоя"
 
 #: src/interface.c:870
 msgid "Move u_p"
@@ -3006,171 +2961,162 @@ msgstr "Журнал"
 msgid "Gerbv Alert"
 msgstr "Предупреждение Gerbv"
 
-#: src/interface.c:1914 src/interface.c:2253
+#: src/interface.c:1914 src/interface.c:2254
 msgid "Do not show this dialog again."
 msgstr "Больше не показывать этот диалог."
 
 #: src/interface.c:2040
 #, c-format
 msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layer)"
-msgstr ""
-
-#: src/interface.c:2041
-#, c-format
-msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)"
-msgstr ""
+msgid_plural "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)"
+msgstr[0] "<b>%d</b>  *<i>%s</i> (<b>изменён</b>, %d слой)"
+msgstr[1] "<b>%d</b>  *<i>%s</i> (<b>изменён</b>, %d слоя)"
+msgstr[2] "<b>%d</b>  *<i>%s</i> (<b>изменён</b>, %d слоёв)"
 
 #: src/interface.c:2044
 #, c-format
 msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>)"
-msgstr ""
+msgstr "<b>%d</b>  *<i>%s</i> (<b>изменён</b>)"
 
 #: src/interface.c:2050
 #, c-format
 msgid "<b>%d</b>  %s (%d layer)"
-msgstr ""
-
-#: src/interface.c:2051
-#, c-format
-msgid "<b>%d</b>  %s (%d layers)"
-msgstr ""
+msgid_plural "<b>%d</b>  %s (%d layers)"
+msgstr[0] "<b>%d</b>  %s (%d слой)"
+msgstr[1] "<b>%d</b>  %s (%d слоя)"
+msgstr[2] "<b>%d</b>  %s (%d слоёв)"
 
 #: src/interface.c:2053
 #, c-format
 msgid "<b>%d</b>  %s"
-msgstr ""
+msgstr "<b>%d</b>  %s"
 
 #: src/interface.c:2096
 msgid "Gerbv — Reload Files"
-msgstr ""
+msgstr "Gerbv — перезагрузить файлы"
 
-#: src/interface.c:2114
+#: src/interface.c:2115
 #, c-format
-msgid ""
-"<span size=\"larger\">%u layer file is already loaded from directory</span>\n"
-"\"%s\""
-msgid_plural ""
-"<span size=\"larger\">%u layer files are already loaded from directory</"
-"span>\n"
-"\"%s\""
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgid "%u file is already loaded from directory"
+msgid_plural "%u files are already loaded from directory"
+msgstr[0] "%u файл уже загружен из каталога"
+msgstr[1] "%u файла уже загружено из каталога"
+msgstr[2] "%u файлов уже загружено из каталога"
 
-#: src/interface.c:2136
+#: src/interface.c:2137
 msgid "Select _all"
 msgstr "Выбрать _все"
 
-#: src/interface.c:2168
+#: src/interface.c:2169
 msgid "_Reload"
 msgstr "_Перезагрузить"
 
-#: src/interface.c:2170
+#: src/interface.c:2171
 msgid "Reload layers with selected files"
 msgstr "Перезагрузить слои Выбранными файлами"
 
-#: src/interface.c:2174
+#: src/interface.c:2175
 msgid "Add as _new"
 msgstr "Добавить _новые"
 
-#: src/interface.c:2176
+#: src/interface.c:2177
 msgid "Add selected files as new layers"
 msgstr "Добавить выбранные файлы как новые слои"
 
-#: src/interface.c:2312
+#: src/interface.c:2313
 msgid "Edit layer"
 msgstr "Изменить слой"
 
-#: src/interface.c:2315
+#: src/interface.c:2316
 msgid "Apply to _active"
 msgstr "Применить к _активному"
 
-#: src/interface.c:2317
+#: src/interface.c:2318
 msgid "Apply to _visible"
 msgstr "Применить к _видимым"
 
-#: src/interface.c:2330
+#: src/interface.c:2331
 msgid "<span weight=\"bold\">Translation</span>"
 msgstr "<span weight=\"bold\">Перемещение</span>"
 
-#: src/interface.c:2339
+#: src/interface.c:2340
 msgid "X (mils):"
 msgstr "X, мил:"
 
-#: src/interface.c:2340
+#: src/interface.c:2341
 msgid "Y (mils):"
 msgstr "Y, мил:"
 
-#: src/interface.c:2345
+#: src/interface.c:2346
 msgid "X (mm):"
 msgstr "X, мм:"
 
-#: src/interface.c:2346
+#: src/interface.c:2347
 msgid "Y (mm):"
 msgstr "Y, мм:"
 
-#: src/interface.c:2351
+#: src/interface.c:2352
 msgid "X (inches):"
 msgstr "X, дюймы:"
 
-#: src/interface.c:2352
+#: src/interface.c:2353
 msgid "Y (inches):"
 msgstr "Y, дюймы:"
 
-#: src/interface.c:2370
+#: src/interface.c:2371
 msgid "<span weight=\"bold\">Scale</span>"
 msgstr "<span weight=\"bold\">Масштаб</span>"
 
-#: src/interface.c:2374
+#: src/interface.c:2375
 msgid "X direction:"
 msgstr "X-направление:"
 
-#: src/interface.c:2377
+#: src/interface.c:2378
 msgid "Y direction:"
 msgstr "Y-направление:"
 
-#: src/interface.c:2390
+#: src/interface.c:2391
 msgid "<span weight=\"bold\">Rotation</span>"
 msgstr "<span weight=\"bold\">Поворот</span>"
 
-#: src/interface.c:2394
+#: src/interface.c:2395
 msgid "Rotation (degrees):"
 msgstr "Поворот, градусы:"
 
-#: src/interface.c:2399
+#: src/interface.c:2400
 msgid "90 deg CCW"
 msgstr "90°"
 
-#: src/interface.c:2400
+#: src/interface.c:2401
 msgid "180 deg CCW"
 msgstr "180°"
 
-#: src/interface.c:2401
+#: src/interface.c:2402
 msgid "270 deg CCW"
 msgstr "270°"
 
-#: src/interface.c:2421
+#: src/interface.c:2422
 msgid "<span weight=\"bold\">Mirroring</span>"
 msgstr "<span weight=\"bold\">Отражение</span>"
 
-#: src/interface.c:2425
+#: src/interface.c:2426
 msgid "About X axis:"
 msgstr "Вокруг оси X:"
 
-#: src/interface.c:2432
+#: src/interface.c:2433
 msgid "About Y axis:"
 msgstr "Вокруг оси Y:"
 
-#: src/main.c:248
+#: src/main.c:251
 #, c-format
 msgid "could not read file: %s"
 msgstr "Невозможно прочитать файл «%s»"
 
-#: src/main.c:341
+#: src/main.c:344
 msgid "Failed to write project"
 msgstr "Ошибка при сохранении проекта"
 
-#: src/main.c:390
+#: src/main.c:393
 #, c-format
 msgid ""
 "\n"
@@ -3179,79 +3125,77 @@ msgstr ""
 "\n"
 "*** Нажмите Enter для продолжение ***"
 
-#: src/main.c:554 src/main.c:836
+#: src/main.c:557 src/main.c:842
 #, c-format
 msgid "Unrecognized length unit \"%s\" in command line"
-msgstr ""
+msgstr "Не распознаны единицы измерения «%s» в командной строки"
 
-#: src/main.c:573
+#: src/main.c:576
 #, c-format
-msgid "Not handled option \"%s\" in command line\n"
-msgstr "Необработанный параметр «%s» командной строки\n"
+msgid "Not handled option \"%s\" in command line"
+msgstr "Необработанный параметр «%s» командной строки"
 
-#: src/main.c:580
+#: src/main.c:583
 msgid "Width"
 msgstr "Ширина"
 
-#: src/main.c:584
+#: src/main.c:587
 #, c-format
 msgid "Split X and Y parameters with an x\n"
 msgstr "Параметры X и Y должны быть разделены символом x\n"
 
-#: src/main.c:591
+#: src/main.c:594
 msgid "Height"
 msgstr "Высота"
 
-#: src/main.c:620
+#: src/main.c:623
 #, c-format
 msgid "You must specify the border in the format <alpha>.\n"
 msgstr "Для границы должно быть указано значение.\n"
 
-#: src/main.c:624
+#: src/main.c:627
 #, c-format
 msgid "Specified border is not recognized.\n"
 msgstr "Указанное значение границы не распознано.\n"
 
-#: src/main.c:629
+#: src/main.c:632
 #, c-format
 msgid "Specified border is smaller than zero!\n"
 msgstr "Указанное значение границы меньше нуля!\n"
 
-#: src/main.c:636
+#: src/main.c:639
 #, c-format
 msgid ""
 "You must give an resolution in the format <DPI_XxDPI_Y> or <DPI_X_and_Y>.\n"
 msgstr ""
 "Разрешение должно быть указано в формате <DPI_XxDPI_Y> или <DPI_по_X_и_Y>.\n"
 
-#: src/main.c:640
+#: src/main.c:643
 #, c-format
 msgid "Specified resolution is not recognized.\n"
 msgstr "Указанное значение разрешения не распознано.\n"
 
-#: src/main.c:650
+#: src/main.c:653
 #, c-format
 msgid "Specified resolution should be greater than 0.\n"
 msgstr "Указанное значение разрешения должно быть больше нуля.\n"
 
-#: src/main.c:657
+#: src/main.c:660
 #, c-format
-msgid "You must give an origin in the format <lower_left_X x lower_left_Y>.\n"
-msgstr ""
-"Начало координат должно быть указано в формате <X x Y> координаты левой "
-"нижней точки.\n"
+msgid "You must give an origin in the format <XxY> or <X;Y>.\n"
+msgstr "Начало координат должно быть указано в формате <XxY> или <X;Y>.\n"
 
-#: src/main.c:661
+#: src/main.c:665
 #, c-format
 msgid "Specified origin is not recognized.\n"
 msgstr "Указанное значение начала координат не распознано.\n"
 
-#: src/main.c:672
+#: src/main.c:676
 #, c-format
 msgid "gerbv version %s\n"
 msgstr "Gerbv версии %s\n"
 
-#: src/main.c:673
+#: src/main.c:677
 #, c-format
 msgid ""
 "Copyright (C) 2001—2008 by Stefan Petersen\n"
@@ -3260,22 +3204,22 @@ msgstr ""
 "Copyright © 2001—2008 Stefan Petersen\n"
 "и соответствующие оригинальные авторы, указанные в файлах исходных кодов.\n"
 
-#: src/main.c:681
+#: src/main.c:685
 #, c-format
 msgid "You must give an background color in the hex-format <#RRGGBB>.\n"
 msgstr "Цвет фона должен быть указан в шестнадцатеричном формате <#RRGGBB>.\n"
 
-#: src/main.c:686 src/main.c:711
+#: src/main.c:690 src/main.c:715
 #, c-format
 msgid "Specified color format is not recognized.\n"
 msgstr "Указанный формат значения цвета не распознан.\n"
 
-#: src/main.c:694
+#: src/main.c:698
 #, c-format
 msgid "Specified color values should be between 00 and FF.\n"
 msgstr "Указанные значение цветов должны быть от 00 до FF.\n"
 
-#: src/main.c:707
+#: src/main.c:711
 #, c-format
 msgid ""
 "You must give an foreground color in the hex-format <#RRGGBB> or "
@@ -3284,61 +3228,61 @@ msgstr ""
 "Цвет элементов должен быть указан в шестнадцатеричном формате <#RRGGBB> или "
 "<#RRGGBBAA>.\n"
 
-#: src/main.c:725
+#: src/main.c:729
 #, c-format
 msgid "Specified color values should be between 0x00 (0) and 0xFF (255).\n"
 msgstr "Указанное значение цвета должно быть от 0x00 (0) до 0xFF (255).\n"
 
-#: src/main.c:739
+#: src/main.c:743
 #, c-format
 msgid "You must give the initial rotation angle\n"
 msgstr "Должен быть указан угол начального поворота\n"
 
-#: src/main.c:745
+#: src/main.c:749
 msgid "Rotate"
 msgstr "Поворот"
 
-#: src/main.c:749
+#: src/main.c:753
 #, c-format
 msgid "Failed parsing rotate value\n"
 msgstr "Невозможно разобрать значение поворота\n"
 
-#: src/main.c:755
+#: src/main.c:759
 #, c-format
 msgid "You must give the axis to mirror about\n"
 msgstr "Должна быть указана ось для отражения\n"
 
-#: src/main.c:765
+#: src/main.c:769
 #, c-format
 msgid "Failed parsing mirror axis\n"
 msgstr "Невозможно разобрать ось для отражения\n"
 
-#: src/main.c:771
+#: src/main.c:775
 #, c-format
 msgid "You must give a filename to send log to\n"
 msgstr "Должно быть указано имя файла для журнала\n"
 
-#: src/main.c:779
+#: src/main.c:783
 #, c-format
 msgid "You must give a filename to export to.\n"
 msgstr "Должно быть указано имя файла для экспорта.\n"
 
-#: src/main.c:786
+#: src/main.c:790
 #, c-format
 msgid "You must give a project filename\n"
 msgstr "Должно быть указано имя файла проекта.\n"
 
-#: src/main.c:793
+#: src/main.c:797
 #, c-format
 msgid "You must give a filename to read the tools from.\n"
 msgstr "Должно быть указано имя файла инструментов.\n"
 
-#: src/main.c:797
+#: src/main.c:801
 #, c-format
 msgid "*** ERROR processing tools file \"%s\".\n"
 msgstr "*** ОШИБКА обработки файла инструментов «%s».\n"
 
-#: src/main.c:798
+#: src/main.c:802
 #, c-format
 msgid ""
 "Make sure all lines of the file are formatted like this:\n"
@@ -3355,238 +3299,395 @@ msgstr ""
 "...\n"
 "*** ВЫХОД для предотвращения ошибочного отображения.\n"
 
-#: src/main.c:806
+#: src/main.c:811
 #, c-format
-msgid "You must give a translation in the format <XxY>.\n"
-msgstr "Сдвиг должен быть задан в формате <XxY>.\n"
+msgid "You must give a translation in the format <XxY> or <X;Y>.\n"
+msgstr "Сдвиг должен быть задан в формате <XxY> или <X;Y>.\n"
 
-#: src/main.c:810
+#: src/main.c:816
 #, c-format
 msgid "The translation format is not recognized.\n"
 msgstr "Указанный формат сдвига не распознан.\n"
 
-#: src/main.c:845
+#: src/main.c:851
 #, c-format
 msgid "You must give a window size in the format <width x height>.\n"
 msgstr "Размер окна должен быть указан в формате <ширина x высота>.\n"
 
-#: src/main.c:849
+#: src/main.c:855
 #, c-format
 msgid "Specified window size is not recognized.\n"
 msgstr "Указанный формат значения размера окна не распознан.\n"
 
-#: src/main.c:855
+#: src/main.c:861
 #, c-format
 msgid "Specified window size is out of bounds.\n"
 msgstr "Указанный размер окна вне допустимых границ.\n"
 
-#: src/main.c:862
+#: src/main.c:868
 #, c-format
 msgid "You must supply an export type.\n"
 msgstr "Должен быть указан тип формата для экспорта.\n"
 
-#: src/main.c:874
+#: src/main.c:880
 #, c-format
 msgid "Unrecognized \"%s\" export type.\n"
 msgstr "Не распознан тип экспорта «%s».\n"
 
-#: src/main.c:885
-#, fuzzy, c-format
-msgid ""
-"Usage: gerbv [OPTIONS...] [FILE...]\n"
-"\n"
-"Available options:\n"
-"  -B, --border=<b>                Border around the image in percent of the\n"
-"                                  width/height. Defaults to %d%%.\n"
-"  -D, --dpi=<XxY>or<R>            Resolution (Dots per inch) for the output\n"
-"                                  bitmap. With the format <XxY>, different\n"
-"                                  resolutions for X- and Y-direction are "
-"used.\n"
-"                                  With the format <R>, both are the same.\n"
-"  -O, --origin=<XxY>              Use the specified coordinates (in "
-"inches).\n"
-"                                  for the lower left corner.\n"
-"  -V, --version                   Print version of gerbv.\n"
-"  -a, --antialias                 Use antialiasing for generated bitmap "
-"output.\n"
-"  -b, --background=<hex>          Use background color <hex> (like "
-"#RRGGBB).\n"
-"  -f, --foreground=<hex>          Use foreground color <hex> (like #RRGGBB "
-"or\n"
-"                                  #RRGGBBAA for setting the alpha).\n"
-"                                  Use multiple -f flags to set the color "
-"for\n"
-"                                  multiple layers.\n"
-"  -r, --rotate=<degree>           Set initial orientation for all layers.\n"
-"  -m, --mirror=<axis>             Set initial mirroring axis (X or Y).\n"
-"  -h, --help                      Print this help message.\n"
-"  -l, --log=<logfile>             Send error messages to <logfile>.\n"
-"  -o, --output=<filename>         Export to <filename>.\n"
-"  -p, --project=<prjfile>         Load project file <prjfile>.\n"
-"  -u, --units=<inch|mm|mil>       Use given unit for coordinates.\n"
-"                                  Default to inch.\n"
-"  -W, --window_inch=<WxH>         Window size in inches <WxH> for the\n"
-"                                  exported image.\n"
-"  -w, --window=<WxH>              Window size in pixels <WxH> for the\n"
-"                                  exported image. Autoscales to fit\n"
-"                                  if no resolution is specified. If a\n"
-"                                  resolution is specified, it will clip.\n"
-"  -t, --tools=<toolfile>          Read Excellon tools from file <toolfile>.\n"
-"  -T, --translate=<XxYrR>         Translate image by X and Y and rotate by\n"
-"                                  R degree. Useful for arranging panels.\n"
-"                                  Use multiple -T flags for multiple "
-"layers.\n"
-"                                  Only evaluated when exporting (-x ...).\n"
-"  -x, --export=<png|pdf|ps|svg|   Export a rendered picture to a file with\n"
-"                rs274x|drill|     the specified format.\n"
-"                idrill>\n"
-msgstr ""
-"Использование: gerbv [ПАРАМЕТРЫ...] [ФАЙЛ...]\n"
-"\n"
-"Допустимые параметры:\n"
-"  -B, --border=<b>           Граница вокруг изображения в процентах от "
-"ширины\n"
-"                             или высоты, по умолчанию %d%%.\n"
-"  -D, --dpi=<XxY>или<R>      Разрешение (в точках на дюйм) выводимого\n"
-"                             изображения. Различные разрешения по X- и\n"
-"                             Y-направлению задаются в формате <XxY>.\n"
-"                             Для задания одинакового разрешения "
-"используется\n"
-"                             формат <R>.\n"
-"  -O, --origin=<XxY>         Использовать указанные координаты (в дюймах) "
-"для\n"
-"                             начала координат (левый нижний угол).\n"
-"  -V, --version              Отобразить версию Gerbv.\n"
-"  -a, --antialias            Использовать сглаживание для выводимых "
-"изображений.\n"
-"  -b, --background=<hex>     Цвет фона в шестнадцатеричном виде в формате\n"
-"                             #RRGGBB.\n"
-"  -f, --foreground=<hex>     Цвет элементов в шестнадцатеричном виде в "
-"формате\n"
-"                             #RRGGBB. Используйте повторно для задания "
-"цвета\n"
-"                             каждого следующего слоя.\n"
-"  -r, --rotate=<градусы>     Задать начальный поворот для всех слоёв.\n"
-"  -m, --mirror=<оси>         Задать начальное отражение по осям X или Y.\n"
-"  -h, --help                 Отобразить эту справку.\n"
-"  -l, --log=<лог-файл>       Отправлять сообщения об ошибках в файл <лог-"
-"файл>.\n"
-"  -o, --output=<имя-файла>   Экспортировать в файл <имя-файла>.\n"
-"  -p, --project=<файл-проекта> Открыть проект из фала <файл-проекта>.\n"
-"  -W, --window_inch=<ШxВ>    Размер окна в дюймах <ШxВ> для экспортируемого\n"
-"                             изображения.\n"
-"  -w, --window=<ШxВ>         Размер окна в пикселях <ШxВ> для "
-"экспортируемого\n"
-"                             изображения. Если разрешение не указано, то\n"
-"                             выполняется масштабирование, иначе, "
-"изображение\n"
-"                             обрезается.\n"
-"  -t, --tools=<файл-инструментов> Использовать <файл-инструментов> для "
-"задания\n"
-"                             инструментов Excellon.\n"
-"  -T, --translate=<X,Y>      Переместить изображение на <X,Y> (для "
-"выравнивания\n"
-"                             слоёв панели друг с другом). Используйте "
-"повторно\n"
-"                             для каждого следующего слоя.\n"
-"  -x, --export=<png|pdf|ps|  Экспортировать изображение в файл указанного\n"
-"          svg|rs274x|drill|  формата.\n"
-"          idrill>\n"
-
-#: src/main.c:926
-#, fuzzy, c-format
-msgid ""
-"Usage: gerbv [OPTIONS...] [FILE...]\n"
-"\n"
-"Available options:\n"
-"  -B<b>                   Border around the image in percent of the\n"
-"                          width/height. Defaults to %d%%.\n"
-"  -D<XxY>or<R>            Resolution (Dots per inch) for the output\n"
-"                          bitmap. With the format <XxY>, different\n"
-"                          resolutions for X- and Y-direction are used.\n"
-"                          With the format <R>, both are the same.\n"
-"  -O<XxY>                 Use the specified coordinates (in inches)\n"
-"                          for the lower left corner.\n"
-"  -V                      Print version of gerbv.\n"
-"  -a                      Use antialiasing for generated bitmap output.\n"
-"  -b<hexcolor>\t           Use background color <hexcolor> (like #RRGGBB).\n"
-"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
-"                          #RRGGBBAA for setting the alpha).\n"
-"                          Use multiple -f flags to set the color for\n"
-"                          multiple layers.\n"
-"  -r<degree>              Set initial orientation for all layers.\n"
-"  -m<axis>                Set initial mirroring axis (X or Y).\n"
-"  -h                      Print this help message.\n"
-"  -l<logfile>             Send error messages to <logfile>.\n"
-"  -o<filename>            Export to <filename>.\n"
-"  -p<prjfile>             Load project file <prjfile>.\n"
-"  -u<inch|mm|mil>         Use given unit for coordinates.\n"
-msgstr ""
-"Использование: gerbv [ПАРАМЕТРЫ...] [ФАЙЛ...]\n"
-"\n"
-"Допустимые параметры:\n"
-"  -B<b>                      Граница вокруг изображения в процентах от "
-"ширины\n"
-"                             или высоты, по умолчанию %d%%.\n"
-"  -D<XxY>или<R>              Разрешение (в точках на дюйм) выводимого\n"
-"                             изображения. Различные разрешения по X- и\n"
-"                             Y-направлению задаются в формате <XxY>.\n"
-"                             Для задания одинакового разрешения "
-"используется\n"
-"                             формат <R>.\n"
-"  -O<XxY>                    Использовать указанные координаты (в дюймах) "
-"для\n"
-"                             начала координат (левый нижний угол).\n"
-"  -V                         Отобразить версию Gerbv.\n"
-"  -a                         Использовать сглаживание для выводимых "
-"изображений.\n"
-"  -b<hex>                    Цвет фона в шестнадцатеричном виде в формате\n"
-"                             #RRGGBB.\n"
-"  -f<hex>                    Цвет элементов в шестнадцатеричном виде в "
-"формате\n"
-"                             #RRGGBB. Используйте повторно для задания "
-"цвета\n"
-"                             каждого следующего слоя.\n"
-"  -r<градусы>                Задать начальный поворот для всех слоёв.\n"
-"  -m<оси>                    Задать начальное отражение по осям X или Y.\n"
-"  -h                         Отобразить эту справку.\n"
-"  -l<лог-файл>               Отправлять сообщения об ошибках в файл <лог-"
-"файл>.\n"
-"  -o<имя-файла>              Экспортировать в файл <имя-файла>.\n"
-"  -p<файл-проекта>           Открыть проект из фала <файл-проекта>.\n"
-"  -W<ШxВ>                    Размер окна в дюймах <ШxВ> для экспортируемого\n"
-"                             изображения.\n"
-"  -w<ШxВ>                    Размер окна в пикселях <ШxВ> для "
-"экспортируемого\n"
-"                             изображения. Если разрешение не указано, то\n"
-"                             выполняется масштабирование, иначе, "
-"изображение\n"
-"                             обрезается.\n"
-"  -t<файл-инструментов>      Использовать <файл-инструментов> для задания\n"
-"                             инструментов Excellon.\n"
-"  -T<X,Y>                    Переместить изображение на <X,Y> (для "
-"выравнивания\n"
-"                             слоёв панели друг с другом). Используйте "
-"повторно\n"
-"                             для каждого следующего слоя.\n"
-"  -x<png|pdf|ps|             Экспортировать изображение в файл указанного\n"
-"     svg|rs274x|drill|       формата.\n"
-"     idrill>\n"
-
-#: src/main.c:973
+#: src/main.c:896
 #, c-format
 msgid "Not handled option '%c' in command line"
 msgstr "Необработанный параметр '%c' в командной строке"
 
-#: src/main.c:986
+#: src/main.c:909
 #, c-format
 msgid "Loading project %s...\n"
 msgstr "Открывается проект %s...\n"
 
-#: src/main.c:1144 src/main.c:1179
+#: src/main.c:1067 src/main.c:1102
 #, c-format
 msgid "A valid file was not loaded.\n"
 msgstr "Не был загружен допустимый файл.\n"
+
+#: src/main.c:1155
+#, c-format
+msgid ""
+"Usage: gerbv [OPTIONS...] [FILE...]\n"
+"\n"
+"Available options:\n"
+msgstr ""
+"Использование: gerbv [ПАРАМЕТРЫ...] [ФАЙЛ...]\n"
+"\n"
+"Допустимые параметры:\n"
+
+#: src/main.c:1161
+#, c-format
+msgid ""
+"  -B, --border=<b>        Border around the image in percent of the\n"
+"                          width/height. Defaults to %d%%.\n"
+msgstr ""
+"  -B, --border=<проц>     Граница вокруг изображения в процентах от ширины\n"
+"                          или высоты, по умолчанию %d%%.\n"
+
+#: src/main.c:1166
+#, c-format
+msgid ""
+"  -B<b>                   Border around the image in percent of the\n"
+"                          width/height. Defaults to %d%%.\n"
+msgstr ""
+"  -B<проц>                Граница вокруг изображения в процентах от ширины\n"
+"                          или высоты, по умолчанию %d%%.\n"
+
+#: src/main.c:1173
+#, c-format
+msgid ""
+"  -D, --dpi=<XxY|R>       Resolution (Dots per inch) for the output\n"
+"                          bitmap. With the format <XxY>, different\n"
+"                          resolutions for X- and Y-direction are used.\n"
+"                          With the format <R>, both are the same.\n"
+msgstr ""
+"  -D, --dpi=<XxY|R>       Разрешение (в точках на дюйм) выводимого\n"
+"                          изображения. Различные разрешения по X- и\n"
+"                          Y-направлению задаются в формате <XxY>.\n"
+"                          Для задания одинакового разрешения используется\n"
+"                          формат <R>.\n"
+
+#: src/main.c:1179
+#, c-format
+msgid ""
+"  -D<XxY|R>               Resolution (Dots per inch) for the output\n"
+"                          bitmap. With the format <XxY>, different\n"
+"                          resolutions for X- and Y-direction are used.\n"
+"                          With the format <R>, both are the same.\n"
+msgstr ""
+"  -D<XxY|R>               Разрешение (в точках на дюйм) выводимого\n"
+"                          изображения. Различные разрешения по X- и\n"
+"                          Y-направлению задаются в формате <XxY>.\n"
+"                          Для задания одинакового разрешения используется\n"
+"                          формат <R>.\n"
+
+#: src/main.c:1187
+#, c-format
+msgid ""
+"  -O, --origin=<XxY|X;Y>  Use the specified coordinates (in inches)\n"
+"                          for the lower left corner.\n"
+msgstr ""
+"  -O, --origin=<XxY|X;Y>  Использовать указанные координаты (в дюймах) для\n"
+"                          начала координат (левый нижний угол).\n"
+
+#: src/main.c:1191
+#, c-format
+msgid ""
+"  -O<XxY|X;Y>             Use the specified coordinates (in inches)\n"
+"                          for the lower left corner.\n"
+msgstr ""
+"  -O<XxY|X;Y>             Использовать указанные координаты (в дюймах) для\n"
+"                          начала координат (левый нижний угол).\n"
+
+#: src/main.c:1197
+#, c-format
+msgid "  -V, --version           Print version of Gerbv.\n"
+msgstr "  -V, --version           Отобразить версию Gerbv.\n"
+
+#: src/main.c:1200
+#, c-format
+msgid "  -V                      Print version of Gerbv.\n"
+msgstr "  -V                      Отобразить версию Gerbv.\n"
+
+#: src/main.c:1205
+#, c-format
+msgid ""
+"  -a, --antialias         Use antialiasing for generated bitmap output.\n"
+msgstr ""
+"  -a, --antialias         Использовать сглаживание для выводимых "
+"изображений.\n"
+
+#: src/main.c:1208
+#, c-format
+msgid ""
+"  -a                      Use antialiasing for generated bitmap output.\n"
+msgstr ""
+"  -a                      Использовать сглаживание для выводимых "
+"изображений.\n"
+
+#: src/main.c:1213
+#, c-format
+msgid "  -b, --background=<hex>  Use background color <hex> (like #RRGGBB).\n"
+msgstr ""
+"  -b, --background=<hex>  Цвет фона в шестнадцатеричном виде в формате\n"
+"                          #RRGGBB.\n"
+
+#: src/main.c:1216
+#, c-format
+msgid ""
+"  -b<hexcolor>            Use background color <hexcolor> (like #RRGGBB).\n"
+msgstr ""
+"  -b<hex>                 Цвет фона в шестнадцатеричном виде в формате\n"
+"                          #RRGGBB.\n"
+
+#: src/main.c:1221
+#, c-format
+msgid ""
+"  -f, --foreground=<hex>  Use foreground color <hex> (like #RRGGBB or\n"
+"                          #RRGGBBAA for setting the alpha).\n"
+"                          Use multiple -f flags to set the color for\n"
+"                          multiple layers.\n"
+msgstr ""
+"  -f, --foreground=<hex>  Цвет элементов в шестнадцатеричном виде в формате\n"
+"                          #RRGGBB. Используйте повторно для задания цвета\n"
+"                          каждого следующего слоя.\n"
+
+#: src/main.c:1227
+#, c-format
+msgid ""
+"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
+"                          #RRGGBBAA for setting the alpha).\n"
+"                          Use multiple -f flags to set the color for\n"
+"                          multiple layers.\n"
+msgstr ""
+"  -f=<hex>                Цвет элементов в шестнадцатеричном виде в формате\n"
+"                          #RRGGBB. Используйте повторно для задания цвета\n"
+"                          каждого следующего слоя.\n"
+
+#: src/main.c:1235
+#, c-format
+msgid "  -r, --rotate=<degree>   Set initial orientation for all layers.\n"
+msgstr "  -r, --rotate=<градусы>  Задать начальный поворот для всех слоёв.\n"
+
+#: src/main.c:1238
+#, c-format
+msgid "  -r<degree>              Set initial orientation for all layers.\n"
+msgstr "  -r<градусы>             Задать начальный поворот для всех слоёв.\n"
+
+#: src/main.c:1243
+#, c-format
+msgid "  -m, --mirror=<axis>     Set initial mirroring axis (X or Y).\n"
+msgstr "  -m, --mirror=<оси>      Задать начальное отражение по оси X или Y.\n"
+
+#: src/main.c:1246
+#, c-format
+msgid "  -m<axis>                Set initial mirroring axis (X or Y).\n"
+msgstr "  -m<оси>                 Задать начальное отражение по оси X или Y.\n"
+
+#: src/main.c:1251
+#, c-format
+msgid "  -h, --help              Print this help message.\n"
+msgstr "  -h, --help              Отобразить эту справку.\n"
+
+#: src/main.c:1254
+#, c-format
+msgid "  -h                      Print this help message.\n"
+msgstr "  -h                      Отобразить эту справку.\n"
+
+#: src/main.c:1259
+#, c-format
+msgid "  -l, --log=<logfile>     Send error messages to <logfile>.\n"
+msgstr ""
+"  -l, --log=<лог-файл>    Отправлять сообщения об ошибках в <лог-файл>.\n"
+
+#: src/main.c:1262
+#, c-format
+msgid "  -l<logfile>             Send error messages to <logfile>.\n"
+msgstr ""
+"  -l<лог-файл>            Отправлять сообщения об ошибках в <лог-файл>.\n"
+
+#: src/main.c:1267
+#, c-format
+msgid "  -o, --output=<filename> Export to <filename>.\n"
+msgstr "  -o, --output=<файл>     Экспортировать в <файл>.\n"
+
+#: src/main.c:1270
+#, c-format
+msgid "  -o<filename>            Export to <filename>.\n"
+msgstr "  -o<файл>                Экспортировать в <файл>.\n"
+
+#: src/main.c:1275
+#, c-format
+msgid "  -p, --project=<prjfile> Load project file <prjfile>.\n"
+msgstr "  -p, --project=<файл-проекта> Открыть проект из <файла-проекта>.\n"
+
+#: src/main.c:1278
+#, c-format
+msgid "  -p<prjfile>             Load project file <prjfile>.\n"
+msgstr "  -p<файл-проекта>        Открыть проект из <файла-проекта>.\n"
+
+#: src/main.c:1283
+#, c-format
+msgid ""
+"  -u, --units=<inch|mm|mil>\n"
+"                          Use given unit for coordinates.\n"
+"                          Default to inch.\n"
+msgstr ""
+"  -u, --units=<inch|mm|mil>\n"
+"                          Использовать указанные единицы измерения.\n"
+"                          По умолчанию дюймы.\n"
+
+#: src/main.c:1288
+#, c-format
+msgid ""
+"  -u<inch|mm|mil>         Use given unit for coordinates.\n"
+"                          Default to inch.\n"
+msgstr ""
+"  -u<inch|mm|mil>         Использовать указанные единицы измерения.\n"
+"                          По умолчанию дюймы.\n"
+
+#: src/main.c:1294
+#, c-format
+msgid ""
+"  -W, --window_inch=<WxH> Window size in inches <WxH> for the exported "
+"image.\n"
+msgstr ""
+"  -W, --window_inch=<ШxВ> Размер окна в дюймах <ШxВ> для экспортируемого\n"
+"                          изображения.\n"
+
+#: src/main.c:1297
+#, c-format
+msgid ""
+"  -W<WxH>                 Window size in inches <WxH> for the exported "
+"image.\n"
+msgstr ""
+"  -W<ШxВ>                 Размер окна в дюймах <ШxВ> для экспортируемого\n"
+"                          изображения.\n"
+
+#: src/main.c:1302
+#, c-format
+msgid ""
+"  -w, --window=<WxH>      Window size in pixels <WxH> for the exported "
+"image.\n"
+"                          Autoscales to fit if no resolution is specified.\n"
+"                          If a resolution is specified, it will clip\n"
+"                          exported image.\n"
+msgstr ""
+"  -w, --window=<ШxВ>      Размер окна в пикселях <ШxВ> для экспортируемого\n"
+"                          изображения. Если разрешение не указано, то\n"
+"                          выполняется масштабирование, иначе, изображение\n"
+"                          обрезается.\n"
+
+#: src/main.c:1308
+#, c-format
+msgid ""
+"  -w<WxH>                 Window size in pixels <WxH> for the exported "
+"image.\n"
+"                          Autoscales to fit if no resolution is specified.\n"
+"                          If a resolution is specified, it will clip\n"
+"                          exported image.\n"
+msgstr ""
+"  -w<ШxВ>                 Размер окна в пикселях <ШxВ> для экспортируемого\n"
+"                          изображения. Если разрешение не указано, то\n"
+"                          выполняется масштабирование, иначе, изображение\n"
+"                          обрезается.\n"
+
+#: src/main.c:1316
+#, c-format
+msgid "  -t, --tools=<toolfile>  Read Excellon tools from file <toolfile>.\n"
+msgstr ""
+"  -t, --tools=<файл-инструментов>\n"
+"                          Использовать <файл-инструментов> для задания\n"
+"                          инструментов Excellon.\n"
+
+#: src/main.c:1319
+#, c-format
+msgid "  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
+msgstr ""
+"  -t<файл-инструментов>   Использовать <файл-инструментов> для задания\n"
+"                          инструментов Excellon.\n"
+
+#: src/main.c:1324
+#, c-format
+msgid ""
+"  -T, --translate=<XxYrR| Translate image by X and Y and rotate by R "
+"degree.\n"
+"                   X;YrR> Useful for arranging panels.\n"
+"                          Use multiple -T flags for multiple layers.\n"
+"                          Only evaluated when exporting as RS274X or drill.\n"
+msgstr ""
+"  -T, --translate=<XxYrR| Переместить изображение на <X> <Y> и повернуть\n"
+"                   X;YrR> на <R> (для выравнивания слоёв панели друг с "
+"другом).\n"
+"                          Используйте -T повторно для каждого следующего "
+"слоя.\n"
+"                          Работает только при экспорте в RS274X и в "
+"сверловку.\n"
+
+#: src/main.c:1330
+#, c-format
+msgid ""
+"  -T<XxYrR|X;YrR>         Translate image by X and Y and rotate by R "
+"degree.\n"
+"                          Useful for arranging panels.\n"
+"                          Use multiple -T flags for multiple files.\n"
+"                          Only evaluated when exporting as RS274X or drill.\n"
+msgstr ""
+"  -T<XxYrR|X;YrR>         Переместить изображение на <X> <Y> и повернуть\n"
+"                          на <R> (для выравнивания слоёв панели друг с "
+"другом).\n"
+"                          Используйте -T повторно для каждого следующего "
+"слоя.\n"
+"                          Работает только при экспорте в RS274X и в "
+"сверловку.\n"
+
+#: src/main.c:1338
+#, c-format
+msgid ""
+"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill>\n"
+"                          Export a rendered picture to a file with\n"
+"                          the specified format.\n"
+msgstr ""
+"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill>\n"
+"                          Экспортировать изображение в файл указанного "
+"формата.\n"
+
+#: src/main.c:1343
+#, c-format
+msgid ""
+"  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
+"     rs274x|drill|        the specified format.\n"
+"     idrill>\n"
+msgstr ""
+"  -x<png|pdf|ps|svg|      Экспортировать изображение в файл указанного "
+"формата.\n"
+"     rs274x|\n"
+"     drill|idrill>\n"
 
 #: src/project.c:256
 #, c-format
@@ -3793,3 +3894,4 @@ msgstr "Выход, так как любой изготовитель плат �
 #, c-format
 msgid "Failed to open \"%s\" for reading"
 msgstr "Невозможно открыть «%s» для чтения"
+
