@@ -1,9 +1,53 @@
 ========================================================================
+Release Notes for gerbv-2.7.0
+========================================================================
+-gerbv:     User interface settings are saved with GSettings (units,
+            rendering type, background color, windows size and position...).
+-gerbv:     Merge file and project open menu items to File/Open.
+-gerbv:     File drag&drop support (only to Gerbv).
+-gerbv:     Popup dialog on reload.
+-gerbv:     Add Apply to all visible layers functionality in Edit layer dialog.
+-gerbv:     Two layers can be aligned by center of two selected apertures or
+            lines.
+-gerbv:     Add View/Show cross on drill holes.
+-gerbv:     Show distance between apertures if two apertures are selected and
+            measure tool is clicked.
+-gerbv:     Deselect elements with Ctrl+LMB click.
+-gerbv:     Add View/Show all selection to show selected items on invisible
+            layers.
+-gerbv:     Report layer bounding size in analyze dialog.
+-gerbv:     Report more properties for elements.
+-gerbv:     Default file name in export and save as dialogs.
+-gerbv:     Show data in tables in Gerber and drill codes report.
+-gerbv:     Support alpha, translate, rotation, scale, mirror in Gerbv project
+            file.
+-gerbv:     Ask confirmation on file overwriting.
+-gerbv:     Add DPI setting for PNG exporting dialog.
+-gerbv:     Updated localization.
+-gerbv:     Fix missed console output on Windows.
+-gerbv:     Fix various bugs.
+-libgerbv:  Export to DXF (initial support).
+-libgerbv:  Export to gEDA PCB (initial support).
+-libgerbv:  Export drill as ISEL NCP.
+-libgerbv:  Support drilled slot (but not routed yet).
+-libgerbv:  Report file line number in RS274X and Excellon import error.
+-libgerbv:  Prevent rasterization at vector export.
+-libgerbv:  Fix various bugs.
+
+========================================================================
 Release Notes for gerbv-2.6.2
 ========================================================================
 This is a minor patch release on top of gerbv-2.6.1.  The change
 is to property create the tarball with the build framework so that
 the automake/autoconf/etc generated files are included.
+
+========================================================================
+Release Notes for gerbv-2.6.1
+========================================================================
+-gerbv:     Report aperture parameters.
+-gerbv:     Toggle all layers on/off.
+-gerbv:     Using po4a to help man-page localization.
+-gerbv:     Fix various bugs.
 
 ========================================================================
 Release Notes for gerbv-2.6.0
