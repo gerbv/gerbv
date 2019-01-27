@@ -30,11 +30,12 @@ SUBDIRS = \
 	test \
 	win32
 
-EXTRA_DIST = BUGS CONTRIBUTORS HACKING AUTHORS ChangeLog COPYING INSTALL \
-	NEWS README \
-	TODO \
-	autogen.sh  README-cvs.txt README-release.txt \
-	README-win32.txt icon-theme-installer BUGS
+EXTRA_DIST = \
+	autogen.sh icon-theme-installer \
+	INSTALL \
+	AUTHORS CONTRIBUTORS COPYING \
+	HACKING ChangeLog NEWS BUGS TODO \
+	README README-git.txt README-release.txt README-win32.txt \
 
 DISTCHECK_CONFIGURE_FLAGS = \
 	--disable-update-desktop-database GTK_UPDATE_ICON_THEME_BIN=true
