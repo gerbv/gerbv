@@ -59,14 +59,15 @@ gerb_fopen(char const * filename)
     struct stat statinfo;
     
     dprintf("---> Entering gerb_fopen, filename = %s\n", filename);
-#ifdef HAVE_SYS_MMAN_H
+
     fd = g_new(gerb_file_t, 1);
     if (fd == NULL) {
 	return NULL;
     }
 
     dprintf("     Doing fopen\n");
-    fd->fd = fopen(filename, "r");
+    /* fopen() can't open files with non ASCII filenames on windows */
+    fd->fd = g_fopen(filename, "rb");
     if (fd->fd == NULL) {
 	g_free(fd);
 	return NULL;
@@ -97,6 +98,8 @@ gerb_fopen(char const * filename)
 	return NULL;
     }
 
+#ifdef HAVE_SYS_MMAN_H
+
     dprintf("     Doing mmap\n");
     fd->datalen = (int)statinfo.st_size;
     fd->data = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, 
@@ -106,38 +109,11 @@ gerb_fopen(char const * filename)
 	g_free(fd);
 	fd = NULL;
     }
+
 #else
     /* all systems without mmap, not only MINGW32 */
-    fd = g_new(gerb_file_t);
-    if (fd == NULL) {
-	return NULL;
-    }
 
-    /* fopen() can't open files with non ASCII filenames on windows */
-    fd->fd = g_fopen(filename, "rb");
-    if (fd->fd == NULL) {
-	g_free(fd);
-	return NULL;
-    }
-    fd->ptr = 0;
-    fd->fileno = fileno(fd->fd);
-    if (fstat(fd->fileno, &statinfo) < 0) {
-	fclose(fd->fd);
-	g_free(fd);
-	return NULL;
-    }	
-    if (!S_ISREG(statinfo.st_mode)) {
-	fclose(fd->fd);
-	g_free(fd);
-	errno = EISDIR;
-	return NULL;
-    }
-    if ((int)statinfo.st_size == 0) {
-	fclose(fd->fd);
-	g_free(fd);
-	errno = EIO; /* More compatible with the world outside Linux */
-	return NULL;
-    }
+    dprintf("     Doing calloc\n");
     fd->datalen = (int)statinfo.st_size;
     fd->data = calloc(1, statinfo.st_size + 1);
     if (fd->data == NULL) {
@@ -152,6 +128,7 @@ gerb_fopen(char const * filename)
 	return NULL;
     }
     rewind (fd->fd);
+
 #endif
 
     dprintf("<--- Leaving gerb_fopen\n");
