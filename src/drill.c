@@ -168,22 +168,22 @@ enum {
 static gerbv_HID_Attribute drill_attribute_list[] = {
     /* This should be first */
   {N_("autodetect"), N_("Try to autodetect the file format"),
-   HID_Boolean, 0, 0, {1, 0, 0}, 0, 0},
+   HID_Boolean, 0, 0, {1, 0, 0}, 0, 0, 0},
 
   {N_("zero_suppression"), N_("Zero suppression"),
-   HID_Enum, 0, 0, {0, 0, 0}, suppression_list, 0},
+   HID_Enum, 0, 0, {0, 0, 0}, suppression_list, 0, 0},
 
   {N_("units"), N_("Length units"),
-   HID_Enum, 0, 0, {0, 0, 0}, units_list, 0},
+   HID_Enum, 0, 0, {0, 0, 0}, units_list, 0, 0},
 
   {N_("digits"), N_("Number of digits.  For trailing zero suppression,"
    " this is the number of digits before the decimal point.  "
    "Otherwise this is the number of digits after the decimal point."),
-   HID_Integer, 0, 20, {5, 0, 0}, 0, 0},
+   HID_Integer, 0, 20, {5, 0, 0}, 0, 0, 0},
 
 #if 0
   {"tool_units", "Tool size units",
-   HID_Enum, 0, 0, {0, 0, 0}, units_list, 0},
+   HID_Enum, 0, 0, {0, 0, 0}, units_list, 0, 0},
 #endif
 };
 
