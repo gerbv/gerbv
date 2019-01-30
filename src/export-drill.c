@@ -62,11 +62,10 @@ gerbv_export_drill_file_from_image (const gchar *filename, gerbv_image_t *inputI
 
 	/* define all apertures */
 	gerbv_aperture_t *aperture;
-	gint i;
 
 	/* the image should already have been cleaned by a duplicate_image call, so we can safely
 	   assume the aperture range is correct */
-	for (i = APERTURE_MIN; i < APERTURE_MAX; i++) {
+	for (int i = APERTURE_MIN; i < APERTURE_MAX; i++) {
 		aperture = image->aperture[i];
 		
 		if (!aperture)
@@ -86,7 +85,7 @@ gerbv_export_drill_file_from_image (const gchar *filename, gerbv_image_t *inputI
 	fprintf(fd, "%%\n");
 	/* write rest of image */
 	
-	for (i = 0; i < apertureTable->len; i++) {
+	for (guint i = 0; i < apertureTable->len; i++) {
 		int aperture_idx = g_array_index(apertureTable, int, i);
 		
 		/* write tool change */

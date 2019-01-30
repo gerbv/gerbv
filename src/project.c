@@ -427,7 +427,6 @@ static void
 init_paths (char *argv0)
 {
   size_t l;
-  int i;
   int haspath;
   char *t1, *t2;
   int found_bindir = 0;
@@ -444,7 +443,7 @@ init_paths (char *argv0)
    */
   
   haspath = 0;
-  for (i = 0; i < strlen (argv0) ; i++)
+  for (unsigned int i = 0; i < strlen (argv0) ; i++)
     {
       if (argv0[i] == GERBV_DIR_SEPARATOR_C) 
         haspath = 1;

@@ -568,7 +568,7 @@ static int alloc_cellseg(scheme *sc, int n) {
      char *cp;
      long i;
      int k;
-     int adj=ADJ;
+     unsigned int adj=ADJ;
 
      if(adj<sizeof(struct cell)) {
        adj=sizeof(struct cell);

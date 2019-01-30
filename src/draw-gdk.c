@@ -993,11 +993,10 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		}
 
 		if (drawMode == DRAW_SELECTIONS) {
-			int i;
 			gboolean foundNet = FALSE;
 			gerbv_selection_item_t sItem;
 			
-			for (i=0; i<selectionInfo->selectedNodeArray->len; i++){
+			for (guint i = 0; i < selectionInfo->selectedNodeArray->len; i++) {
 				sItem = g_array_index (selectionInfo->selectedNodeArray,
 						gerbv_selection_item_t, i);
 				if (sItem.net == net) {

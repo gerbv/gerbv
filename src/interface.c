@@ -1801,9 +1801,8 @@ interface_create_gui (int req_width, int req_height)
 	/* Output temporary stored log messages */
 	extern GArray *log_array_tmp;
 	struct log_struct log_item;
-	int i;
 
-	for (i = 0; i < log_array_tmp->len; i++) {
+	for (guint i = 0; i < log_array_tmp->len; i++) {
 		log_item = g_array_index (log_array_tmp, struct log_struct, i);
 		callbacks_handle_log_messages (log_item.domain, log_item.level,
 				log_item.message, NULL);

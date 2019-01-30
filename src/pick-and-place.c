@@ -539,7 +539,6 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 {
     gerbv_image_t *image = NULL;
     gerbv_net_t *curr_net = NULL;
-    int i;
     gerbv_transf_t *tr_rot = gerb_transf_new();
     gerbv_drill_stats_t *stats;  /* Eventually replace with pick_place_stats */
     gboolean foundElement = FALSE;
@@ -547,7 +546,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
 
     /* step through and make sure we have an element on the layer before
        we actually create a new image for it and fill it */
-    for (i = 0; i < parsedPickAndPlaceData->len; i++) {
+    for (guint i = 0; i < parsedPickAndPlaceData->len; i++) {
 	PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
 	
 	if ((boardSide == 0) && !((partData.layer[0]=='b') || (partData.layer[0]=='B')))
@@ -599,7 +598,7 @@ pick_and_place_convert_pnp_data_to_image(GArray *parsedPickAndPlaceData, gint bo
     image->aperture[0]->parameter[0] = draw_width;
     image->aperture[0]->nuf_parameters = 1;
 
-    for (i = 0; i < parsedPickAndPlaceData->len; i++) {
+    for (guint i = 0; i < parsedPickAndPlaceData->len; i++) {
 	PnpPartData partData = g_array_index(parsedPickAndPlaceData, PnpPartData, i);
 	float radius,labelOffset;  
 

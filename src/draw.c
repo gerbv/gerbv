@@ -120,9 +120,8 @@ draw_net_is_in_selection_buffer_remove (gerbv_net_t *net,
 		gerbv_selection_info_t *selectionInfo, gboolean remove)
 {
 	gerbv_selection_item_t sItem;
-	gint i;
 
-	for (i = 0; i < selection_length (selectionInfo); i++) {
+	for (guint i = 0; i < selection_length (selectionInfo); i++) {
 		sItem = selection_get_item_by_index (selectionInfo, i);
 		if (sItem.net == net) {
 			if (remove)

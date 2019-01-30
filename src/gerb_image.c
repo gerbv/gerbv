@@ -402,7 +402,6 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		err_unknown_macro_aperture = 0,
 		err_rotate_oval = 0,
 		err_rotate_rect = 0;
-	guint i;
 
 	if (trans && (trans->mirrorAroundX || trans->mirrorAroundY)) {
 		if (sourceImage->layertype != GERBV_LAYERTYPE_DRILL) {
@@ -429,7 +428,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 
 		trans_apers = g_new (int, aper_last_id + 1);
 		/* Initialize trans_apers array */
-		for (i = 0; i < aper_last_id + 1; i++)
+		for (int i = 0; i < aper_last_id + 1; i++)
 			trans_apers[i] = -1;
 	}
 
@@ -476,7 +475,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 
 		/* Check if we need to translate the aperture number */
 		if (translationTable) {
-			for (i = 0; i < translationTable->len; i++) {
+			for (guint i = 0; i < translationTable->len; i++) {
 				gerb_translation_entry_t translationEntry;
 
 				translationEntry =
@@ -704,7 +703,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 					break;
 
 				case GERBV_APTYPE_MACRO_OUTLINE:
-					for (i = 0; i < 1 + sam->parameter[
+					for (int i = 0; i < 1 + sam->parameter[
 							OUTLINE_NUMBER_OF_POINTS]; i++) {
 						sam->parameter[OUTLINE_X_IDX_OF_POINT(i)] *=
 								trans->scaleX;
@@ -1215,10 +1214,9 @@ gerbv_image_create_window_pane_objects (gerbv_image_t *image, gdouble lowerLeftX
 gboolean
 gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 		gdouble areaReduction, gint paneRows, gint paneColumns, gdouble paneSeparation){
-	int i;
 	gdouble minX,minY,maxX,maxY;
 	
-	for (i=0; i<selectionArray->len; i++) {
+	for (guint i=0; i<selectionArray->len; i++) {
 		gerbv_selection_item_t sItem = g_array_index (selectionArray,gerbv_selection_item_t, i);
 		gerbv_image_t *image = sItem.image;
 		gerbv_net_t *currentNet = sItem.net;
@@ -1311,10 +1309,9 @@ gerbv_image_reduce_area_of_selected_objects (GArray *selectionArray,
 
 gboolean
 gerbv_image_move_selected_objects (GArray *selectionArray, gdouble translationX,
-		gdouble translationY) {
-	int i;
-	
-	for (i=0; i<selectionArray->len; i++) {
+		gdouble translationY)
+{
+	for (guint i=0; i<selectionArray->len; i++) {
 		gerbv_selection_item_t sItem = g_array_index (selectionArray,gerbv_selection_item_t, i);
 		gerbv_net_t *currentNet = sItem.net;
 

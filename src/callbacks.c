@@ -439,6 +439,7 @@ gerbv_image_t *merge_images (int type)
 {
 	gint i, filecount, img;
 	gerbv_image_t *out;
+	gerbv_layertype_t layertype;
 	struct l_image_info {
 		gerbv_image_t *image;
 		gerbv_user_transformation_t *transform;
@@ -446,21 +447,21 @@ gerbv_image_t *merge_images (int type)
 	
 	images=(struct l_image_info *)g_new0(struct l_image_info,1);
 	out = NULL;
-	switch(type){
-		case CALLBACKS_SAVE_FILE_DRILLM:
-			type=GERBV_LAYERTYPE_DRILL;
-			break;
-		case CALLBACKS_SAVE_FILE_RS274XM:
-			type=GERBV_LAYERTYPE_RS274X;
-			break;
-		default:
-			GERB_COMPILE_ERROR(_("Unknown Layer type for merge"));
-			goto err;
+	switch(type) {
+	case CALLBACKS_SAVE_FILE_DRILLM:
+		layertype = GERBV_LAYERTYPE_DRILL;
+		break;
+	case CALLBACKS_SAVE_FILE_RS274XM:
+		layertype = GERBV_LAYERTYPE_RS274X;
+		break;
+	default:
+		GERB_COMPILE_ERROR(_("Unknown Layer type for merge"));
+		goto err;
 	}
 	dprintf("Looking for matching files\n");
 	for (i = img = filecount = 0; i < mainProject->max_files; ++i) {
 		if (mainProject->file[i] &&  mainProject->file[i]->isVisible &&
-		(mainProject->file[i]->image->layertype == type)) {
+		(mainProject->file[i]->image->layertype == layertype)) {
 			++filecount;
 			dprintf("Adding '%s'\n", mainProject->file[i]->name);
 			images[img].image=mainProject->file[i]->image;
@@ -502,9 +503,8 @@ visible_file_name(gchar **file_name, gchar **dir_name,
 	for (int i = 0; i < mainProject->max_files; ++i) {
 		if (mainProject->file[i]
 		&&  mainProject->file[i]->isVisible
-		&&  (layer_type == -1 || layer_type ==
-				mainProject->file[i]->image->layertype)) {
-
+		&&  (layer_type == (gerbv_layertype_t)-1
+		  || layer_type == mainProject->file[i]->image->layertype)) {
 			if (first_vis_file == NULL) {
 				first_vis_file = mainProject->file[i];
 				/* Always directory of first visible file */
@@ -2860,7 +2860,6 @@ callbacks_update_layer_tree (void)
 	GtkTreeIter iter;
 	GtkTreeSelection *selection;
 	gint oldSelectedRow;
-	int i;
 
 	if (screen.win.treeIsUpdating)
 		return;
@@ -2982,8 +2981,8 @@ callbacks_update_layer_tree (void)
 	gtk_widget_set_sensitive (screen.win.curLayerMenuItem, showItems);
 	gtk_widget_set_sensitive (screen.win.curAnalyzeMenuItem, showItems);
 	gtk_widget_set_sensitive (screen.win.curEditMenuItem, showItems);
-	for (i = 0; i < sizeof(screen.win.curFileMenuItem)/
-			sizeof(screen.win.curFileMenuItem[0]); i++) {
+	for (unsigned int i = 0;
+			i < G_N_ELEMENTS(screen.win.curFileMenuItem); i++) {
 		gtk_widget_set_sensitive (screen.win.curFileMenuItem[i], showItems);
 	}
 	screen.win.treeIsUpdating = FALSE;
@@ -3907,7 +3906,7 @@ callbacks_update_statusbar_measured_distance (gdouble dx, gdouble dy){
 /* --------------------------------------------------------- */
 void
 callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
-	int type = gtk_combo_box_get_active (widget);
+	gerbv_render_types_t type = gtk_combo_box_get_active (widget);
 	
 	dprintf ("%s():  type = %d\n", __FUNCTION__, type);
 
@@ -3921,7 +3920,7 @@ callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer 
 /* --------------------------------------------------------- */
 void
 callbacks_viewmenu_rendertype_changed (GtkCheckMenuItem *widget, gpointer user_data) {
-	gint type = GPOINTER_TO_INT(user_data);
+	gerbv_render_types_t type = GPOINTER_TO_INT(user_data);
 
 	if (type == screenRenderInfo.renderType)
 		return;
@@ -3935,7 +3934,7 @@ callbacks_viewmenu_rendertype_changed (GtkCheckMenuItem *widget, gpointer user_d
 /* --------------------------------------------------------- */
 void
 callbacks_viewmenu_units_changed (GtkCheckMenuItem *widget, gpointer user_data) {
-	gint unit = GPOINTER_TO_INT(user_data);
+	gerbv_gui_unit_t unit = GPOINTER_TO_INT(user_data);
 
 	if (unit < 0 || unit == screen.unit)
 		return;
@@ -3948,7 +3947,7 @@ callbacks_viewmenu_units_changed (GtkCheckMenuItem *widget, gpointer user_data) 
 /* --------------------------------------------------------- */
 void
 callbacks_statusbar_unit_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
-	int unit = gtk_combo_box_get_active (widget);
+	gerbv_gui_unit_t unit = gtk_combo_box_get_active (widget);
 	int force_change = GPOINTER_TO_INT (user_data);
 
 	if (!force_change && (unit < 0 || unit == screen.unit))

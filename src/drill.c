@@ -1773,7 +1773,7 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
 {
     int read;
     char temp[DRILL_READ_DOUBLE_SIZE];
-    int i = 0, ndigits = 0;
+    unsigned int i = 0, ndigits = 0;
     double result;
     gboolean decimal_point = FALSE;
     gboolean sign_prepend = FALSE;
@@ -1807,7 +1807,7 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
     if (decimal_point) {
 	result = strtod(temp, NULL);
     } else {
-	int wantdigits;
+	unsigned int wantdigits;
 	double scale;
 	char tmp2[DRILL_READ_DOUBLE_SIZE];
 
