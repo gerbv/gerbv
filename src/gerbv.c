@@ -560,8 +560,8 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
     } else if (gerber_is_rs274d_p(fd)) {
 	gchar *str = g_strdup_printf(_("Most likely found a RS-274D file "
 			"\"%s\" ... trying to open anyways\n"), filename);
-	dprintf(str);
-	g_warning(str);
+	dprintf("%s", str);
+	g_warning("%s", str);
 	g_free (str);
 
 	if (!foundBinary || forceLoadFile) {

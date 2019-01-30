@@ -178,7 +178,7 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     for (error = input_stats->error_list; error != NULL; error = error->next) {
 	if (error->error_text != NULL)
 	    gerbv_stats_printf(accum_stats->error_list, error->type,
-		    this_layer, error->error_text);
+		    this_layer, "%s", error->error_text);
     }
 
     /* ==== Now deal with the misc header stuff ==== */
@@ -210,7 +210,7 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
 	 error = error->next) {
 	if (error->error_text != NULL) {
 	    gerbv_stats_printf(accum_stats->error_list, error->type,
-			    this_layer, error->error_text);
+			    this_layer, "%s", error->error_text);
 	}
     }
 

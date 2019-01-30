@@ -75,7 +75,7 @@ rename_main_window(char const* filename, GtkWidget *main_win)
 		g_string_printf(win_title, "%s — Gerbv", basename);
 		g_free(basename);
 	} else {
-		g_string_printf(win_title, _(gerbv_win_title));
+		g_string_printf(win_title, "%s", _(gerbv_win_title));
 	}
 
 	gtk_window_set_title(GTK_WINDOW(win), win_title->str);

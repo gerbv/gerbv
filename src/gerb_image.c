@@ -295,7 +295,7 @@ gerbv_image_dump(gerbv_image_t const* image)
     while (net){
 	printf(_("(%f,%f)->(%f,%f) with %d ("), net->start_x, net->start_y,
 	       net->stop_x, net->stop_y, net->aperture);
-	printf(_(gerbv_interpolation_name(net->interpolation)));
+	printf("%s", _(gerbv_interpolation_name(net->interpolation)));
 	gerbv_image_aperture_state(net->aperture_state);
 	printf(")\n");
 	net = net->next;
