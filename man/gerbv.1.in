@@ -229,7 +229,7 @@ Then you put these tools into the file and rerun the CAM processor.
 You load a tool file by using the commandline switches \-t or \-\-tools.
 The file can have any name you wish, but Eagle expects the file type to
 be ".drl", so it makes sense to keep it this way. Some board houses are
-still using CAM software from DOS era, so you may want to excercise caution
+still using CAM software from DOS era, so you may want to exercise caution
 before going beyond the 8.3 naming convention.
 
 When \fIgerbv\fP reads the Tools file it also checks that there are no
