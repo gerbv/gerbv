@@ -35,7 +35,7 @@ EXTRA_DIST = \
 	INSTALL \
 	AUTHORS CONTRIBUTORS COPYING \
 	HACKING ChangeLog NEWS BUGS TODO \
-	README README-git.txt README-release.txt README-win32.txt \
+	README README-git.txt README-release.txt README-win32.txt
 
 DISTCHECK_CONFIGURE_FLAGS = \
 	--disable-update-desktop-database GTK_UPDATE_ICON_THEME_BIN=true
