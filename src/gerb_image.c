@@ -173,6 +173,7 @@ gerbv_destroy_image(gerbv_image_t *image)
     	gerbv_layer_t *tempLayer = layer;
     	
     	layer = layer->next;
+    	g_free (tempLayer->name);
     	g_free (tempLayer);
     }
     for (state = image->states; state != NULL; ) {
@@ -312,6 +313,7 @@ gerbv_image_return_new_layer (gerbv_layer_t *previousLayer)
     previousLayer->next = newLayer;
     /* clear this boolean so we only draw the knockout once */
     newLayer->knockout.firstInstance = FALSE;
+    newLayer->name = NULL;
     newLayer->next = NULL;
     
     return newLayer;
