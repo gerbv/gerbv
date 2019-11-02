@@ -1119,6 +1119,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 
     /* Set the current tool to the correct one */
     state->current_tool = tool_num;
+    apert = image->aperture[tool_num];
 
     /* Check for a size definition */
     temp = gerb_fgetc(fd);
@@ -1155,7 +1156,6 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 			    "at line %ld in file \"%s\""),
 			    size, tool_num, file_line, fd->filename);
 	    } else {
-		apert = image->aperture[tool_num];
 		if (apert != NULL) {
 		    /* allow a redefine of a tool only if the new definition is exactly the same.
 		     * This avoid lots of spurious complaints with the output of some cad
