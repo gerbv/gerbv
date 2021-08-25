@@ -1,0 +1,20 @@
+---
+base: ubuntu:20.04
+install:
+ - gcc
+ - make
+
+ # Build dependencies
+ - autoconf
+ - autopoint
+ - libtool
+ - pkg-config
+
+ # Runtime dependencies
+ - libdxflib-dev
+ - libgtk2.0-dev
+ - libcairo2-dev
+
+ # Test dependencies
+ - imagemagick
+---

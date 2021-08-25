@@ -299,7 +299,8 @@ if test "X$enable_dxf " != "Xno" ; then
 	]], [[
 if (!strncmp("2.2.",  DL_VERSION, 4)
  || !strncmp("2.5.",  DL_VERSION, 4)
- || !strncmp("3.12.", DL_VERSION, 5))
+ || !strncmp("3.12.", DL_VERSION, 5)
+ || !strncmp("3.17.", DL_VERSION, 5))
 	return 0;
 
 return 1;
