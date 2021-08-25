@@ -17,6 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Rebuild
+    - name: Rebuild Fedora 34
+      run: npx --package mini-cross@0.15.2 mc --no-tty fedora:34 .mc/rebuild.sh
+
+    - name: Rebuild Ubuntu 20.04
       run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu:20.04 .mc/rebuild.sh
 

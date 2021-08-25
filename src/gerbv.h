@@ -65,10 +65,6 @@ For help with using the standalone Gerbv software, please refer to the man page
 #ifndef __GERBV_H__
 #define __GERBV_H__
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -80,6 +76,10 @@ extern "C" {
 
 #ifndef RENDER_USING_GDK
 # include <cairo.h>
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 #define APERTURE_MIN 10

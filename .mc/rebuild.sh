@@ -5,6 +5,8 @@
 #
 #     mc fedora:34 .mc/rebuild.sh
 #     mc ubuntu:20.04 .mc/rebuild.sh
+set -e
+
 sh autogen.sh
 
 ./configure					\
