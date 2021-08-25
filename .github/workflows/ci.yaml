@@ -1,0 +1,22 @@
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull
+# request events but only for the main branch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+  ci:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Rebuild
+      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu:20.04 .mc/rebuild.sh
+
