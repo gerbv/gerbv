@@ -32,8 +32,8 @@
           <h2 id="project_tagline">A Free/Open Source Gerber Viewer</h2>
 
           <section id="downloads">
-            <a class="zip_download_link" href="https://github.com/pages-themes/slate/zipball/master">Download this project as a .zip file</a>
-            <a class="tar_download_link" href="https://github.com/pages-themes/slate/tarball/master">Download this project as a tar.gz file</a>
+            <a class="zip_download_link" href="https://github.com/gerbv/gerbv/zipball/main">Download this project as a .zip file</a>
+            <a class="tar_download_link" href="https://github.com/gerbv/gerbv/tarball/main">Download this project as a tar.gz file</a>
           </section>
 
         </header>
