@@ -26,3 +26,6 @@ jobs:
     - name: Rebuild Windows amd64
       run: npx --package mini-cross@0.15.2 mc --no-tty windows:amd64 .mc/rebuild.sh
 
+    - name: Rebuild gerbv.github.io
+      run: npx --package mini-cross@0.15.2 mc --no-tty website make -C gerbv.github.io
+

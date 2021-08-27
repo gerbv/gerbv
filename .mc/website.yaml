@@ -1,0 +1,7 @@
+---
+base: ubuntu:20.04
+install:
+ - m4
+ - make
+---
+
