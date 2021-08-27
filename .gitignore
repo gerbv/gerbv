@@ -45,7 +45,9 @@ src/.libs
 src/authors.c
 src/bugs.c
 src/gerbv
+src/gerbv.exe
 src/gerbv.orig
+src/gerbv_icon.ico
 src/libgerbv.la
 src/libgerbv.pc
 src/run_gerbv
@@ -53,3 +55,5 @@ stamp-h1
 test-driver
 test/mismatch/
 test/outputs/
+win32/BUGS.txt
+win32/COPYING.txt
