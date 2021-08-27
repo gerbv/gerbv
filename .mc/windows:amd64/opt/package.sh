@@ -1,15 +1,12 @@
 #!/bin/bash
 #
-# Builds an archive containing a gerbv binary distribution for Linux based
-# systems
-#
-# @param $1 System name e.g. 'Fedora 34'
+# Builds an archive containing a gerbv binary distribution for Windows systems
 #
 # @warning Expects working directory to be set to project root
 
 
 # Validate arguments
-RELEASE_OS="${1}"
+RELEASE_OS="Windows amd64"
 
 if [ "${RELEASE_OS}" == "" ]; then
 	(>&2 echo "Usage: package-linux.sh <release-os>")
@@ -18,25 +15,12 @@ fi
 
 
 # Validate environment
-CAT=`command -v cat`
-CHMOD=`command -v chmod`
 CP=`command -v cp`
 DATE=`command -v date`
 FIND=`command -v find`
 GIT=`command -v git`
-GZIP=`command -v gzip`
 MKTEMP=`command -v mktemp`
-TAR=`command -v tar`
-
-if [ ! -x "${CAT}" ]; then
-	(>&2 echo "\`cat' missing")
-	exit 1
-fi
-
-if [ ! -x "${CHMOD}" ]; then
-	(>&2 echo "\`chmod' missing")
-	exit 1
-fi
+ZIP=`command -v zip`
 
 if [ ! -x "${CP}" ]; then
 	(>&2 echo "\`cp' missing")
@@ -58,18 +42,13 @@ if [ ! -x "${GIT}" ]; then
 	exit 1
 fi
 
-if [ ! -x "${GZIP}" ]; then
-	(>&2 echo "\`gzip' missing")
-	exit 1
-fi
-
 if [ ! -x "${MKTEMP}" ]; then
 	(>&2 echo "\`mktemp' missing")
 	exit 1
 fi
 
-if [ ! -x "${TAR}" ]; then
-	(>&2 echo "\`tar' missing")
+if [ ! -x "${ZIP}" ]; then
+	(>&2 echo "\`zip' missing")
 	exit 1
 fi
 
@@ -87,23 +66,21 @@ WEBSITE_DIRECTORY='gerbv.github.io/ci'
 TEMPORARY_DIRECTORY=`"${MKTEMP}" --directory`
 
 "${CP}" 'COPYING' "${TEMPORARY_DIRECTORY}"
-"${CP}" 'src/.libs/gerbv' "${TEMPORARY_DIRECTORY}"
-"${FIND}" 'src/.libs' -name 'libgerbv.so*' -exec "${CP}" {} "${TEMPORARY_DIRECTORY}" \;
+"${CP}" 'src/.libs/gerbv.exe' "${TEMPORARY_DIRECTORY}"
+"${FIND}" 'src/.libs' -name 'libgerbv-*.dll' -exec "${CP}" {} "${TEMPORARY_DIRECTORY}" \;
 
-"${CAT}" <<EOT >> "${TEMPORARY_DIRECTORY}/gerbv.sh"
-#!/bin/bash
+# @warning While this might copy more libraries than strictly necessary, it
+#     won't be many more, since the development environment contains only the
+#     required mingw dependencies
+MINGW_LIBRARY_DIRECTORY='/usr/x86_64-w64-mingw32/sys-root/mingw/bin'
 
-DIRECTORY=\`dirname "\$0"\`
-LD_LIBRARY_PATH="\${LD_LIBRARY_PATH}:\${DIRECTORY}" "\${DIRECTORY}/gerbv"
-EOT
-
-"${CHMOD}" +x "${TEMPORARY_DIRECTORY}/gerbv.sh"
+"${FIND}" "${MINGW_LIBRARY_DIRECTORY}" -type f -name '*.dll' -exec "${CP}" {} "${TEMPORARY_DIRECTORY}" \;
 
 
 # Create archive and auxiliary files
-RELEASE_FILENAME="gerbv_${RELEASE_DATE}_${RELEASE_COMMIT:0:6}_(${RELEASE_OS}).tar.gz"
+RELEASE_FILENAME="gerbv_${RELEASE_DATE}_${RELEASE_COMMIT:0:6}_(${RELEASE_OS}).zip"
 
-"${TAR}" --directory="${TEMPORARY_DIRECTORY}" -czf "${WEBSITE_DIRECTORY}/${RELEASE_FILENAME}" '.'
+"${FIND}" "${TEMPORARY_DIRECTORY}" -type f -exec "${ZIP}" --junk-paths "${WEBSITE_DIRECTORY}/${RELEASE_FILENAME}" {} \;
 
 echo "${RELEASE_COMMIT}"	> "${WEBSITE_DIRECTORY}/${RELEASE_OS}.RELEASE_COMMIT"
 echo "${RELEASE_DATE}"		> "${WEBSITE_DIRECTORY}/${RELEASE_OS}.RELEASE_DATE"

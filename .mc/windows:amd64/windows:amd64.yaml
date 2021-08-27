@@ -21,5 +21,9 @@ install:
 
  # Test dependencies
  - ImageMagick
+
+  # Packaging dependencies
+ - git
+ - zip
 ---
 
