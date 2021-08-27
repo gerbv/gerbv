@@ -8,12 +8,7 @@
 set -e
 
 sh autogen.sh
-
-./configure					\
-	--disable-debug				\
-	--enable-dxf				\
-	--disable-update-desktop-database	\
-
+/opt/configure
 make clean
 make
 

@@ -1,21 +1,24 @@
 ---
 base: fedora:34
 install:
- - gcc
- - gcc-c++
  - make
+ - mingw64-gcc
+ - mingw64-gcc-c++
 
  # Buildsystem dependencies
  - autoconf
  - coreutils
  - gettext-devel
  - libtool
- - pkgconf
 
  # Runtime dependencies
- - cairo-devel
+ #
+ # @warning gtk2-devel should not be required, but needed to provide
+ #     {@code /usr/share/aclocal/gsettings.m4} since autoconf does not seem to
+ #     pick up on {@code /usr/x86_64-w64-mingw32/sys-root/mingw/share/aclocal/gsettings.m4}
  - gtk2-devel
- - libdxflib-devel
+ - mingw64-cairo-static
+ - mingw64-gtk2-static
 
  # Test dependencies
  - ImageMagick
@@ -27,9 +30,8 @@ sudo tee -a '/opt/configure' > /dev/null <<EOT
 
 set -e
 
-./configure					\
+mingw64-configure				\
 	--disable-debug				\
-	--enable-dxf				\
 	--disable-update-desktop-database	\
 
 EOT
