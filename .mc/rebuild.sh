@@ -11,4 +11,5 @@ sh autogen.sh
 /opt/configure.sh
 make clean
 make
+/opt/package.sh
 

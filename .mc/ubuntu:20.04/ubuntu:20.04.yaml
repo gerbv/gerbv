@@ -17,5 +17,8 @@ install:
 
  # Test dependencies
  - imagemagick
+
+  # Packaging dependencies
+ - git
 ---
 
