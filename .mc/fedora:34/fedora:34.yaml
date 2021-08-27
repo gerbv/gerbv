@@ -7,7 +7,6 @@ install:
 
  # Buildsystem dependencies
  - autoconf
- - coreutils
  - gettext-devel
  - libtool
  - pkgconf
@@ -20,19 +19,4 @@ install:
  # Test dependencies
  - ImageMagick
 ---
-#!/bin/bash
-
-sudo tee -a '/opt/configure' > /dev/null <<EOT
-#!/bin/bash
-
-set -e
-
-./configure					\
-	--disable-debug				\
-	--enable-dxf				\
-	--disable-update-desktop-database	\
-
-EOT
-
-sudo chmod +x '/opt/configure'
 

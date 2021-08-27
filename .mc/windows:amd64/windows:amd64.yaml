@@ -7,7 +7,6 @@ install:
 
  # Buildsystem dependencies
  - autoconf
- - coreutils
  - gettext-devel
  - libtool
 
@@ -23,18 +22,4 @@ install:
  # Test dependencies
  - ImageMagick
 ---
-#!/bin/bash
-
-sudo tee -a '/opt/configure' > /dev/null <<EOT
-#!/bin/bash
-
-set -e
-
-mingw64-configure				\
-	--disable-debug				\
-	--disable-update-desktop-database	\
-
-EOT
-
-sudo chmod +x '/opt/configure'
 

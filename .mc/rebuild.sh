@@ -8,7 +8,7 @@
 set -e
 
 sh autogen.sh
-/opt/configure
+/opt/configure.sh
 make clean
 make
 
