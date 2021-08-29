@@ -41,5 +41,8 @@ jobs:
         git-config-name: gerbv-buildbot
         git-config-email: violetland+gerbv@mail.ru
         single-commit: true
-      if: ${{ success() && github.event_name == 'push' }}
+      # @see https://github.community/t/how-can-i-test-if-secrets-are-available-in-an-action/17911/10
+      env:
+        GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
+      if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT }}
 
