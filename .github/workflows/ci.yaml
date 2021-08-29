@@ -37,5 +37,5 @@ jobs:
         folder: gerbv.github.io
         token: ${{ secrets.GERBV_BUILDBOT_PAT }}
         single-commit: true
-      if: ${{ success() && github.github.event_name == 'push' }}
+      if: ${{ success() && github.event_name == 'push' }}
 
