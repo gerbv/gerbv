@@ -33,7 +33,7 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@4.1.4
       with:
         repository-name: gerbv/gerbv.github.io
-        branch: main
+        branch: gh-pages
         folder: gerbv.github.io
         token: ${{ secrets.GERBV_BUILDBOT_PAT }}
         single-commit: true
