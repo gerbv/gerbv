@@ -564,6 +564,8 @@ get_value_string(scheme *sc, pointer value)
 static char *
 convert_path_separators(char* path, int conv_flag)
 {
+    if (path == NULL) return NULL;
+
 #if defined (__MINGW32__)        
     char     *hit_in_path;
 
