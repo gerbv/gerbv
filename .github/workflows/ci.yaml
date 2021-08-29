@@ -38,6 +38,8 @@ jobs:
         branch: gh-pages
         folder: gerbv.github.io
         token: ${{ secrets.GERBV_BUILDBOT_PAT }}
+        git-config-name: gerbv-buildbot
+        git-config-email: violetland+gerbv@mail.ru
         single-commit: true
       if: ${{ success() && github.event_name == 'push' }}
 
