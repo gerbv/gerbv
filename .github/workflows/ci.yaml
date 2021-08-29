@@ -29,3 +29,13 @@ jobs:
     - name: Rebuild gerbv.github.io
       run: npx --package mini-cross@0.15.2 mc --no-tty website make -C gerbv.github.io
 
+    - name: Deploy gerbv.github.io
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      with:
+        repository-name: gerbv/gerbv.github.io
+        branch: main
+        folder: gerbv.github.io
+        token: ${{ secrets.GERBV_BUILDBOT_PAT }}
+        single-commit: true
+      if: ${{ success() && github.github.event_name == 'push' }}
+
