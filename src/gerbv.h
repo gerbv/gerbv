@@ -58,7 +58,7 @@ the doc/example-code/ directory in CVS).
 
 For help with using the standalone Gerbv software, please refer to the man page
 (using the command "man gerbv") or go to the Gerbv homepage for documentation
-(http://gerbv.geda-project.org).
+(https://gerbv.github.io/).
 
 */
 

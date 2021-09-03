@@ -42,4 +42,4 @@ DISTCHECK_CONFIGURE_FLAGS = \
 
 .PHONY: doxygen
 doxygen:
-	doxygen doc/Doxyfile.nopreprocessing
+	PROJECT_NUMBER=@VERSION@ doxygen doc/Doxyfile.nopreprocessing

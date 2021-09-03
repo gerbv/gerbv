@@ -1,6 +1,7 @@
 ---
 base: ubuntu:20.04
 install:
+ - doxygen
  - m4
  - make
 ---
