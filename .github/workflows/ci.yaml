@@ -17,6 +17,23 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Get number of jobs for compiling
+      run: echo "NUM_BUILD_JOBS=$((`nproc --all` * 4))" >> $GITHUB_ENV
+
+    - name: Get requirements for configure and build
+      run: |
+        sudo apt-get install autopoint libgtkmm-2.4-dev desktop-file-utils
+
+    - name: Configure and build
+      run: |
+        sh autogen.sh
+        ./configure
+        make -j ${NUM_BUILD_JOBS}
+
+    - name: Run unit tests
+      run: |
+        make check || (cat test/test-suite.log && false)
+
     - name: Rebuild Fedora 34
       run: npx --package mini-cross@0.15.2 mc --no-tty fedora:34 .mc/rebuild.sh
 
