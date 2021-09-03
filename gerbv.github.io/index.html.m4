@@ -49,7 +49,7 @@
          <li>Gerbv is a viewer for Gerber RS-274X files, Excellon drill files, and CSV pick-and-place files.</li>
          <li>Gerbv is a native Linux application, and it runs on many common UNIX platforms. A Windows version is also available.</li>
          <li>Gerbv is <a href="http://www.gnu.org/philosophy/free-sw.html">free</a> / <a href="http://www.opensource.org/docs/osd">open-source</a> software.</li>
-         <li>The core functionality of gerbv is located in a separate library (libgerbv), allowing developers to include Gerber parsing/editing/exporting/rendering into other programs</li>
+         <li>The core functionality of gerbv is located in a separate library (<a href="doc">libgerbv</a>), allowing developers to include Gerber parsing/editing/exporting/rendering into other programs</li>
          <li>Gerbv was originally developed as one of the utilities affiliated with the <a href="http://www.geda-project.org/">gEDA project</a>, an umbrella organization dedicated to producing free software tools for electronic design.</li>
        </ul>
 
