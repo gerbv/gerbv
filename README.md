@@ -37,7 +37,7 @@ This is a friendly fork and I'm willing to invite other people to join the Gerbv
 GitHub organization.
 
 
-# Applied patches from SourceForge
+## Applied patches from SourceForge
 
 * [Patch #83: Crash may occur on opening/saveing files](https://sourceforge.net/p/gerbv/patches/83/),
   applied in [PR#8](https://github.com/gerbv/gerbv/pull/8) as
