@@ -199,7 +199,7 @@ void open_project(char *project_filename)
 
 	/* Update the last folder */
 	g_free (mainProject->path);
-	mainProject->path = project_filename;
+	mainProject->path = g_strdup(project_filename);
 
 	gerbv_unload_all_layers (mainProject);
 	main_open_project_from_filename (mainProject, project_filename);
@@ -2768,7 +2768,7 @@ callbacks_file_drop_event(GtkWidget *widget, GdkDragContext *dc,
 	}
 
 	open_files(fns);
-	g_slist_free(fns);
+	g_slist_free_full(fns, g_free);
 	g_strfreev(uris);
 
 	return TRUE;
