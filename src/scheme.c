@@ -568,7 +568,7 @@ static int alloc_cellseg(scheme *sc, int n) {
      char *cp;
      long i;
      int k;
-     uintptr_t adj=ADJ;
+     unsigned int adj=ADJ;
 
      if(adj<sizeof(struct cell)) {
        adj=sizeof(struct cell);
@@ -583,8 +583,8 @@ static int alloc_cellseg(scheme *sc, int n) {
 	  i = ++sc->last_cell_seg ;
 	  sc->alloc_seg[i] = cp;
 	  /* adjust in TYPE_BITS-bit boundary */
-	  if((uintptr_t)cp%adj!=0) {
-	    cp=(char*)(adj*((uintptr_t)cp/adj+1));
+	  if((unsigned long)cp%adj!=0) {
+	    cp=(char*)(adj*((unsigned long)cp/adj+1));
 	  }
         /* insert new segment in address order */
 	  newp=(pointer)cp;
