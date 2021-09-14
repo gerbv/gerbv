@@ -38,6 +38,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h> /* access() on Linux */
 #endif
+#include <stddef.h>
 
 #if USE_STRCASECMP
 #include <strings.h>
@@ -568,7 +569,7 @@ static int alloc_cellseg(scheme *sc, int n) {
      char *cp;
      long i;
      int k;
-     unsigned int adj=ADJ;
+     size_t adj=ADJ;
 
      if(adj<sizeof(struct cell)) {
        adj=sizeof(struct cell);
@@ -583,8 +584,8 @@ static int alloc_cellseg(scheme *sc, int n) {
 	  i = ++sc->last_cell_seg ;
 	  sc->alloc_seg[i] = cp;
 	  /* adjust in TYPE_BITS-bit boundary */
-	  if((unsigned long)cp%adj!=0) {
-	    cp=(char*)(adj*((unsigned long)cp/adj+1));
+	  if((size_t)cp%adj!=0) {
+	    cp=(char*)(adj*((size_t)cp/adj+1));
 	  }
         /* insert new segment in address order */
 	  newp=(pointer)cp;
