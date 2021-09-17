@@ -17,6 +17,8 @@
     \ingroup gerbv
 */
 
+#include <assert.h>
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -584,6 +586,9 @@ static int alloc_cellseg(scheme *sc, int n) {
 	  i = ++sc->last_cell_seg ;
 	  sc->alloc_seg[i] = cp;
 	  /* adjust in TYPE_BITS-bit boundary */
+	  /* Check that the casting below is safe. */
+	  static_assert(sizeof(size_t) == sizeof(cp),
+	                "Can't cast pointer to size_t.");
 	  if((size_t)cp%adj!=0) {
 	    cp=(char*)(adj*((size_t)cp/adj+1));
 	  }
