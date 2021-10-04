@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of Gerbv.
+ * gerbv.h -- This file is a part of Gerbv
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2003-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -21,6 +23,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
+/** \file gerbv.h
+    \brief The main header file for the libgerbv library
+    \ingroup libgerbv
+*/
+
 //! \example example1.c
 //! \example example2.c
 //! \example example3.c
@@ -33,11 +40,6 @@
 
 //! \defgroup libgerbv libgerbv
 //! @{ Gerber library @}
-
-/** \file gerbv.h
-    \brief The main header file for the libgerbv library
-    \ingroup libgerbv
-*/
 
 /**
 \mainpage Gerbv/libgerbv Index Page
@@ -62,8 +64,8 @@ For help with using the standalone Gerbv software, please refer to the man page
 
 */
 
-#ifndef __GERBV_H__
-#define __GERBV_H__
+#ifndef GERBV_GERBV_H
+#define GERBV_GERBV_H
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -78,7 +80,7 @@ For help with using the standalone Gerbv software, please refer to the man page
 # include <cairo.h>
 #endif
 
-#if defined(__cplusplus)
+#ifdef __cplusplus // here and not after include guards to avoid github CI fail on export-dxf.cpp
 extern "C" {
 #endif
 
@@ -1126,8 +1128,8 @@ gerbv_rotate_coord(double *x, double *y, double rad);
 		(void) (&_x == &_y);    \
 		_x > _y ? _x : _y; })
 
-#if defined(__cplusplus)
+#ifdef __cplusplus
 }
 #endif
 
-#endif /* __GERBV_H__ */
+#endif /* GERBV_GERBV_H */

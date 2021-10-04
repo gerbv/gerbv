@@ -1,8 +1,12 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This files is a part of gerbv.
+ * pick-and-place.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2002-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
+ *
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +28,12 @@
     \ingroup libgerbv
 */
 
-#ifndef GERBV_LAYERTYPE_PICKANDPLACE_H
-#define GERBV_LAYERTYPE_PICKANDPLACE_H
+#ifndef GERBV_PICKANDPLACE_H
+#define GERBV_PICKANDPLACE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define MAXL 200
 
@@ -70,4 +78,8 @@ pick_and_place_parse_file_to_images (gerb_file_t *fd, gerbv_image_t **topImage,
 gboolean
 pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary);
 
-#endif /* GERBV_LAYERTYPE_PICKANDPLACE_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_PICKANDPLACE_H */

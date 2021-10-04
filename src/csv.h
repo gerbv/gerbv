@@ -35,15 +35,15 @@
     \ingroup libgerbv
 */
 
-#ifndef CSV_H
-#define CSV_H
-
-/* csv - read write comma separated value format
- */
+#ifndef GERBV_CSV_H
+#define GERBV_CSV_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* csv - read write comma separated value format
+ */
 
 # define LIBMBA_API extern
 
@@ -67,4 +67,4 @@ LIBMBA_API int csv_row_fread(FILE *in, char *buf, size_t bn, char *row[], int nu
 }
 #endif
 
-#endif /* CSV_H */
+#endif /* GERBV_CSV_H */

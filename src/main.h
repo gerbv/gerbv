@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * main.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2003-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -26,8 +28,8 @@
     \ingroup gerbv
 */
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef GERBV_MAIN_H
+#define GERBV_MAIN_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,5 +147,9 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
 
 void
 main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
-#endif /* GERBV_H */
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_GERBV_H */

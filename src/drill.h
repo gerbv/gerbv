@@ -1,7 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * drill.h
+ * drill.h -- This file is a part of gerbv
+ *
  * Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2002-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -25,8 +28,8 @@
     \ingroup libgerbv
 */
 
-#ifndef DRILL_H
-#define DRILL_H
+#ifndef GERBV_DRILL_H
+#define GERBV_DRILL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -146,4 +149,4 @@ const char *drill_m_code_name(drill_m_code_t m_code);
 }
 #endif
 
-#endif /* DRILL_H */
+#endif /* GERBV_DRILL_H */

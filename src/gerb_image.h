@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This files is a part of gerbv.
+ * gerb_image.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2001 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2002-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -26,15 +28,15 @@
     \ingroup libgerbv
 */
 
-#ifndef GERB_IMAGE_H
-#define GERB_IMAGE_H
-
-#include "gerb_stats.h"
-#include "drill_stats.h"
+#ifndef GERBV_GERB_IMAGE_H
+#define GERBV_GERB_IMAGE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "gerb_stats.h"
+#include "drill_stats.h"
 
 /*
  * Function prototypes
@@ -69,9 +71,8 @@ gerbv_image_return_new_layer (gerbv_layer_t *previousLayer);
 gerbv_netstate_t *
 gerbv_image_return_new_netstate (gerbv_netstate_t *previousState);
 
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* GERB_IMAGE_H */
+#endif /* GERBV_GERB_IMAGE_H */

@@ -1,9 +1,41 @@
-/* XPM */
+/*
+ * gEDA - GNU Electronic Design Automation
+ * gerbv_icon.h -- This file is a part of gerbv
+ *
+ * Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2002-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
+ *
+ * $Id$
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+ */
 
 /** \file gerbv_icon.h
     \brief Contains the xpm data for the gerbv application icon
     \ingroup gerbv
 */
+
+/* XPM */
+
+#ifndef GERBV_GERBV_ICON_H
+#define GERBV_GERBV_ICON_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define USE_NEW_ICON
 
@@ -466,3 +498,9 @@ static char * gerbv_icon_xpm[] = {
 "                                                                                                "};
 
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_GERBV_ICON_H */

@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * draw-gdk.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2002-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -26,8 +28,12 @@
     \ingroup libgerbv
 */
 
-#ifndef DRAW_GDK_H
-#define DRAW_GDK_H
+#ifndef GERBV_DRAW_GDK_H
+#define GERBV_DRAW_GDK_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <gdk/gdk.h>
 
@@ -44,5 +50,8 @@ int draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		gerbv_render_info_t *renderInfo,
 		gerbv_user_transformation_t transform);
 
-#endif /* DRAW_GDK_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* GERBV_DRAW_GDK_H */

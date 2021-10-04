@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * gerb_stats.h -- a part of gerbv.
+ * gerb_stats.h -- this file is part of gerbv
  *
- *   Copyright (C) 2007 Stuart Brorson (sdb@cloud9.net)
+ * Copyright (C) 2007 Stuart Brorson (sdb@cloud9.net)
+ * Copyright (C) 2007-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -26,8 +28,12 @@
     \ingroup libgerbv
 */
 
-#ifndef DRILL_STATS_H
-#define DRILL_STATS_H
+#ifndef GERBV_DRILL_STATS_H
+#define GERBV_DRILL_STATS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <gdk/gdk.h>      /* This imports gboolean type */
 
@@ -52,4 +58,8 @@ void drill_stats_add_error(gerbv_error_list_t *error_list_in,
 			   int layer, const char *error_text, 
 			   gerbv_message_type_t type);
 
-#endif /* DRILL_STATS_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_DRILL_STATS_H */
