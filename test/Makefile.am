@@ -11,7 +11,7 @@ TESTS_ENVIRONMENT=	\
 	IM_DISPLAY=${IM_DISPLAY} \
 	IM_MONTAGE=${IM_MONTAGE}
 
-RUN_TESTS=	run_tests.sh
+RUN_TESTS=	run_tests.sh run_valgrind_tests.sh
 
 check_SCRIPTS=		${RUN_TESTS}
 

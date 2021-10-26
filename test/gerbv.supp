@@ -1,0 +1,9 @@
+{
+   ignore bash memory leaks
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:xmalloc
+   fun:set_default_locale
+   fun:main
+}
