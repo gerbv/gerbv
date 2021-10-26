@@ -910,11 +910,13 @@ main(int argc, char *argv[])
 	   used a relative path */
 	g_free (mainProject->path);
 	if (!g_path_is_absolute(project_filename)) {
-	    gchar *fullName = g_build_filename (g_get_current_dir (),
+	    gchar *currentDir = g_get_current_dir ();
+	    gchar *fullName = g_build_filename (currentDir,
 						project_filename, NULL);
 	    main_open_project_from_filename (mainProject, fullName);
 	    mainProject->path = g_path_get_dirname (fullName);
 	    g_free (fullName);
+	    g_free (currentDir);
 	} else {
 	    main_open_project_from_filename (mainProject, project_filename);
 	    mainProject->path = g_path_get_dirname (project_filename);
@@ -924,7 +926,8 @@ main(int argc, char *argv[])
 	for(i = optind ; i < argc; i++) {
 	    g_free (mainProject->path);
 	    if (!g_path_is_absolute(argv[i])) {
-		gchar *fullName = g_build_filename (g_get_current_dir (),
+		gchar *currentDir = g_get_current_dir ();
+		gchar *fullName = g_build_filename (currentDir,
 						    argv[i], NULL);
 		gerbv_open_layer_from_filename_with_color (mainProject, fullName,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
@@ -933,6 +936,7 @@ main(int argc, char *argv[])
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
 		mainProject->path = g_path_get_dirname (fullName);
 		g_free (fullName);
+		g_free (currentDir);
 	    } else {
 		gerbv_open_layer_from_filename_with_color (mainProject, argv[i],
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
