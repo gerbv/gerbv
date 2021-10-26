@@ -20,15 +20,30 @@ jobs:
     - name: Get number of jobs for compiling
       run: echo "NUM_BUILD_JOBS=$((`nproc --all` * 4))" >> $GITHUB_ENV
 
+    - name: Set a local install path
+      run: echo "LOCAL_INSTALL_PATH=${HOME}/.local" >> $GITHUB_ENV
+
     - name: Get requirements for configure and build
       run: |
-        sudo apt-get install autopoint libgtkmm-2.4-dev desktop-file-utils
+        sudo apt-get install autopoint libgtkmm-2.4-dev desktop-file-utils libc6-dbg
 
     - name: Configure and build
       run: |
         sh autogen.sh
         ./configure
         make -j ${NUM_BUILD_JOBS}
+
+    - name: Install valgrind
+      run: |
+        pushd ~
+        git clone --depth=1 --branch=master https://github.com/eyal0/valgrind.git
+        pushd valgrind
+        sh autogen.sh
+        ./configure --prefix=${LOCAL_INSTALL_PATH}
+        make -j ${NUM_BUILD_JOBS}
+        make install
+        popd
+        popd
 
     - name: Run unit tests
       run: |
