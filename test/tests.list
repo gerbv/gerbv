@@ -194,3 +194,6 @@ test-drill-trailing-zero-suppression | test-drill-trailing-zero-suppression.exc 
 
 # Test "G85" drilled slot
 test-drill-slot-drilled-g85 | test-drill-slot-drilled-g85.exc
+
+# Out of bounds drill tool
+out-of-bounds-drill-tool | test-out-of-bounds-drill-tool.exc
