@@ -1116,6 +1116,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 		_("Out of bounds drill number %d "
 		    "at line %ld in file \"%s\""),
 		tool_num, file_line, fd->filename);
+	return -1;
     }
 
     /* Set the current tool to the correct one */
