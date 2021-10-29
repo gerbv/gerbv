@@ -1,14 +1,17 @@
 /*
- * $Id$
- *
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * common.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2007 Dan McMahill
+ * Copyright (C) 2007 Dan McMahill
+ * Copyright (C) 2007-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
+ *
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,8 +28,12 @@
     \ingroup libgerbv
 */
 
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef GERBV_COMMON_H
+#define GERBV_COMMON_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -51,5 +58,8 @@
 # define N_(str) (str)
 #endif
 
-#endif /* __COMMON_H__ */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* GERBV_COMMON_H */

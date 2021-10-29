@@ -1,11 +1,12 @@
 /*
  * gEDA - GNU Electronic Design Automation
+ * render.h -- this file is a part of gerbv
  *
- * render.h -- this file is a part of gerbv.
+ * Copyright (C) 2007 Stuart Brorson (SDB@cloud9.net)
+ * Copyright (C) 2007-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
- *
- *   Copyright (C) 2007 Stuart Brorson (SDB@cloud9.net)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +27,13 @@
     \brief Header info for the rendering support functions for gerbv
     \ingroup gerbv
 */
+
+#ifndef GERBV_RENDER_H
+#define GERBV_RENDER_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "gerber.h"
 
@@ -53,7 +61,6 @@ render_toggle_measure_line(void);
 void
 render_draw_measure_distance(void);
 
-
 void render_refresh_rendered_image_on_screen (void);
 
 void
@@ -78,3 +85,8 @@ void render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 
 extern gerbv_render_info_t screenRenderInfo;
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_RENDER_H */

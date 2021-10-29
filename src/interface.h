@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * interface.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2003-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -25,6 +27,13 @@
     \brief Header info for the GUI building functions for Gerber Viewer
     \ingroup gerbv
 */
+
+#ifndef GERBV_INTERFACE_H
+#define GERBV_INTERFACE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** Sets the key acceleration of a menu item.
 First tries to lookup the given STOCK_ID with gtk_stock_lookup.
@@ -213,3 +222,9 @@ interface_show_alert_dialog (gchar *primaryText,
 void
 interface_show_layer_edit_dialog (gerbv_user_transformation_t *transforms[],
 				  gerbv_unit_t screenUnit);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_INTERFACE_H */

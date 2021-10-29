@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * gerb_file.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2002-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -26,8 +28,12 @@
     \ingroup libgerbv
 */
 
-#ifndef GERB_FILE_H
-#define GERB_FILE_H
+#ifndef GERBV_GERB_FILE_H
+#define GERBV_GERB_FILE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdio.h>
 
@@ -57,4 +63,8 @@ void gerb_fclose(gerb_file_t *fd);
  */
 char *gerb_find_file(char const * filename, char **paths);
 
-#endif /* GERB_FILE_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_GERB_FILE_H */

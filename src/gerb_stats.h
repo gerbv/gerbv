@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * gerbv_stats.h -- a part of gerbv.
+ * gerbv_stats.h -- this file is part of gerbv
  *
- *   Copyright (C) 2007 Stuart Brorson (sdb@cloud9.net)
+ * Copyright (C) 2007 Stuart Brorson (sdb@cloud9.net)
+ * Copyright (C) 2007-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -26,10 +28,12 @@
     \ingroup libgerbv
 */
 
-#ifndef gerb_stats_H
-#define gerb_stats_H
+#ifndef GERBV_GERB_STATS_H
+#define GERBV_GERB_STATS_H
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* ===================  Prototypes ================ */
 gerbv_error_list_t *gerbv_stats_new_error_list(void);
@@ -54,4 +58,8 @@ int gerbv_stats_increment_D_list_count(gerbv_aperture_list_t *D_list_in,
 				       int count,
 				       gerbv_error_list_t *error); 
 
-#endif /* gerb_stats_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_GERB_STATS_H */

@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This files is a part of gerbv.
+ * gerber.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2002 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2002-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -26,8 +28,8 @@
     \ingroup libgerbv
 */
 
-#ifndef GERBER_H
-#define GERBER_H
+#ifndef GERBV_GERBER_H
+#define GERBV_GERBER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,8 +81,9 @@ void gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
 const char *gerber_d_code_name(int d_code);
 const char *gerber_g_code_name(int g_code);
 const char *gerber_m_code_name(int m_code);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* GERBER_H */
+#endif /* GERBV_GERBER_H */

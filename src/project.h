@@ -1,9 +1,11 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * project.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
- *   Copyright (C) 2008 Dan McMahill
+ * Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2008 Dan McMahill
+ * Copyright (C) 2008-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -27,8 +29,12 @@
     \ingroup gerbv
  */ 
 
-#ifndef PROJECT_H
-#define PROJECT_H
+#ifndef GERBV_PROJECT_H
+#define GERBV_PROJECT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct project_list_t {
     int layerno;
@@ -70,4 +76,9 @@ int write_project_file(gerbv_project_t *gerbvProject, char const* filename, proj
 
 void
 project_destroy_project_list (project_list_t *projectList);
-#endif /* PROJECT_H */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_PROJECT_H */

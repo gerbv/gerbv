@@ -1,8 +1,10 @@
 /*
  * gEDA - GNU Electronic Design Automation
- * This file is a part of gerbv.
+ * callbacks.h -- This file is a part of gerbv
  *
- *   Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2000-2003 Stefan Petersen (spe@stacken.kth.se)
+ * Copyright (C) 2003-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
  * $Id$
  *
@@ -25,6 +27,13 @@
     \brief Header info for the GUI callback functions
     \ingroup gerbv
 */
+
+#ifndef GERBV_CALLBACKS_H
+#define GERBV_CALLBACKS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum {
 	CALLBACKS_SAVE_PROJECT_AS,
@@ -303,3 +312,8 @@ callbacks_create_window_surface (GtkWidget *widget);
 
 void utf8_snprintf(gchar *dst, gsize byte_len, const gchar *fmt, ...);
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_CALLBACKS_H */

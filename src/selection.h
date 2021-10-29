@@ -1,9 +1,12 @@
 /*
  * gEDA - GNU Electronic Design Automation
+ * selection.h -- this file is a part of gerbv
  *
- * selection.h -- this file is a part of gerbv.
+ * Copyright (C) 2014 Sergey Alyoshin <alyoshin.s@gmail.com>
+ * Copyright (C) 2014-2020 sourceforge contributors
+ * Copyright (C) 2020-2021 github contributors
  *
- *   Copyright (C) 2014 Sergey Alyoshin <alyoshin.s@gmail.com>
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -25,6 +28,13 @@
     \ingroup libgerbv
 */
 
+#ifndef GERBV_SELECTION_H
+#define GERBV_SELECTION_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 GArray *selection_new_array (void);
 guint selection_length (gerbv_selection_info_t *sel_info);
 void selection_add_item (gerbv_selection_info_t *sel_info,
@@ -35,3 +45,8 @@ void selection_clear_item_by_index (
 				gerbv_selection_info_t *sel_info, guint idx);
 void selection_clear (gerbv_selection_info_t *sel_info);
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GERBV_SELECTION_H */
