@@ -62,6 +62,18 @@ programs are welcome to use libgerbv. Complete API documentation for libgerbv
 is here, as well as many example programs using libgerbv.
 
 
+## Security
+
+The current focus of gerbv is to provide a utility to view and manipulate
+trusted gerber files. When using gerbv, you should not view files from untrusted
+sources without extra precautions.
+
+Nevertheless, we acknowledge that libgerbv will be used to handle untrusted
+input, maybe even provided over the network. In those cases we strongly advise
+to treat libgerbv as any codec and isolate its operations from the rest of your
+application.
+
+
 ## License
 
 Gerbv and all associated files is placed under the GNU Public License (GPL)
