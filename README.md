@@ -39,6 +39,9 @@ GitHub organization.
 
 ## Applied patches from SourceForge
 
+* [Patch #81: Fix casting pointer to different size integer](https://sourceforge.net/p/gerbv/patches/81/),
+  applied in [PR#23](https://github.com/gerbv/gerbv/pull/23) as
+  [Commit `e4b344`](https://github.com/gerbv/gerbv/commit/e4b344e182191296d48b392f56f3bdd48900e1fc)
 * [Patch #83: Crash may occur on opening/saveing files](https://sourceforge.net/p/gerbv/patches/83/),
   applied in [PR#8](https://github.com/gerbv/gerbv/pull/8) as
   [Commit `242dda`](https://github.com/gerbv/gerbv/commit/242dda66b81e88f17f4ef99840cfeff727753b19)
