@@ -39,6 +39,9 @@ GitHub organization.
 
 ## Applied patches from SourceForge
 
+* [Patch #77: Fix double-freeing memory](https://sourceforge.net/p/gerbv/patches/77/),
+  applied in [PR#24](https://github.com/gerbv/gerbv/pull/24) as
+  [Commit `a96b46`](https://github.com/gerbv/gerbv/commit/a96b46c7249e97e950d860790b84bcdba2368f57)
 * [Patch #81: Fix casting pointer to different size integer](https://sourceforge.net/p/gerbv/patches/81/),
   applied in [PR#23](https://github.com/gerbv/gerbv/pull/23) as
   [Commit `e4b344`](https://github.com/gerbv/gerbv/commit/e4b344e182191296d48b392f56f3bdd48900e1fc)
