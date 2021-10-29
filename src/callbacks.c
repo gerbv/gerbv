@@ -1870,11 +1870,12 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 		"Version %s\n"
 		"Compiled on %s at %s\n"
 		"\n"
-		"Gerbv is part of the gEDA Project.\n"
+		"Gerbv was originally developed as part of the gEDA Project "
+		"but is now seperatly maintained.\n"
 		"\n"
 		"For more information see:\n"
-		"  gEDA homepage: http://geda-project.org/\n"
-		"  gEDA Wiki: http://wiki.geda-project.org/"),
+		"  gerbv homepage: https://gerbv.github.io/\n"
+		"  gerbv repository: https://github.com/gerbv/gerbv"),
 		VERSION, __DATE__, __TIME__);
 
 #if GTK_CHECK_VERSION(2,6,0)
@@ -1916,7 +1917,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 		a[i] = _(authors_string_array[i]);
 
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG (aboutdialog1), (const gchar **)a);
-	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG (aboutdialog1), "http://gerbv.geda-project.org/");
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG (aboutdialog1), "https://gerbv.github.io/");
 	g_free(a);
 
 	g_signal_connect (G_OBJECT(aboutdialog1),"response",
