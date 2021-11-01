@@ -349,7 +349,7 @@ interface_create_gui (int req_width, int req_height)
 		screen.settings = g_settings_new(settings_id);
 	}
 
-	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
+	pointerpixbuf = pixbuf_from_icon(&pointer);
 	movepixbuf = pixbuf_from_icon(&move);
 	zoompixbuf = pixbuf_from_icon(&lzoom);
 	measurepixbuf = gdk_pixbuf_new_from_inline(-1, ruler, FALSE, NULL);
