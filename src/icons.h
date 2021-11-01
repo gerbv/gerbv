@@ -311,28 +311,8 @@ static const icon move = {
 /* -------------------  Pointer tool icon  -------------------------- */
 /* GdkPixbuf RGBA C-Source image dump */
 
-#ifdef __SUNPRO_C
-#pragma align 4 (pointer)
-#endif
-#ifdef __GNUC__
-static const guint8 pointer[] __attribute__ ((__aligned__ (4))) = 
-#else
-static const guint8 pointer[] = 
-#endif
+static const guchar pointer_data[] =
 { ""
-  /* Pixbuf magic (0x47646b50) */
-  "GdkP"
-  /* length: header (24) + pixel_data (2304) */
-  "\0\0\11\30"
-  /* pixdata_type (0x1010002) */
-  "\1\1\0\2"
-  /* rowstride (96) */
-  "\0\0\0`"
-  /* width (24) */
-  "\0\0\0\30"
-  /* height (24) */
-  "\0\0\0\30"
-  /* pixel_data: */
   "\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377"
   "\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377"
   "\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377"
@@ -447,4 +427,12 @@ static const guint8 pointer[] =
   "\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377"
   "\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0"};
 
-
+static const icon pointer = {
+  .colorspace = GDK_COLORSPACE_RGB,
+  .has_alpha = 1,
+  .bits_per_sample = 8,
+  .width = 24,
+  .height = 24,
+  .rowstride = 96,
+  .data = pointer_data,
+};
