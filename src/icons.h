@@ -1,32 +1,17 @@
-/** \file icons.h
-    \brief XPM info for the toolbar button icons
-    \ingroup gerbv
-*/
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
-/* -------------------  Zoom tool icon  -------------------------- */
-/* GdkPixbuf RGBA C-Source image dump */
-#ifdef __SUNPRO_C
-#pragma align 4 (lzoom)
-#endif
-#ifdef __GNUC__
-static const guint8 lzoom[] __attribute__ ((__aligned__ (4))) = 
-#else
-static const guint8 lzoom[] = 
-#endif
+typedef struct icon {
+  GdkColorspace colorspace;
+  gboolean has_alpha;
+  int bits_per_sample;
+  int width;
+  int height;
+  int rowstride;
+  const guchar *data;
+} icon;
+
+static const guchar lzoom_data[] =
 { ""
-  /* Pixbuf magic (0x47646b50) */
-  "GdkP"
-  /* length: header (24) + pixel_data (2304) */
-  "\0\0\11\30"
-  /* pixdata_type (0x1010002) */
-  "\1\1\0\2"
-  /* rowstride (96) */
-  "\0\0\0`"
-  /* width (24) */
-  "\0\0\0\30"
-  /* height (24) */
-  "\0\0\0\30"
-  /* pixel_data: */
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0IIIN444\243---\335))"
   ")\373&&&\373&&&\335&&&\243555N\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -120,6 +105,15 @@ static const guint8 lzoom[] =
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"};
 
+static const icon lzoom = {
+  .colorspace = GDK_COLORSPACE_RGB,
+  .has_alpha = 1,
+  .bits_per_sample = 8,
+  .width = 24,
+  .height = 24,
+  .rowstride = 96,
+  .data = lzoom_data,
+};
 
 /* -------------------  Measure tool icon  ------------------- */
 /* GdkPixbuf RGBA C-Source image dump 1-byte-run-length-encoded */
