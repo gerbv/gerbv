@@ -314,13 +314,13 @@ gerb_find_file(char const * filename, char **paths)
 	  /*
 	   * Build complete path (inc. filename) and check if file exists.
 	   */
-	  complete_path = (char *)g_malloc(strlen(curr_path) + strlen(filename) + 2);
+          size_t curr_path_len = strlen(curr_path);
+	  complete_path = (char *)g_malloc(curr_path_len + strlen(filename) + 2);
 	  if (complete_path == NULL)
 	    return NULL;
 	  strcpy(complete_path, curr_path);
-	  complete_path[strlen(curr_path)] = G_DIR_SEPARATOR;
-	  complete_path[strlen(curr_path) + 1] = '\0';
-	  strncat(complete_path, filename, strlen(filename));
+	  complete_path[curr_path_len] = G_DIR_SEPARATOR;
+	  strcpy(complete_path + curr_path_len + 1, filename);
 	  
 	  if (paths[i][0] == '$') {
 	    g_free(curr_path);
