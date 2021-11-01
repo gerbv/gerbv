@@ -229,28 +229,8 @@ static const guint8 ruler[] =
 /* -------------------  Move tool icon  -------------------------- */
 /* GdkPixbuf RGBA C-Source image dump */
 
-#ifdef __SUNPRO_C
-#pragma align 4 (move)
-#endif
-#ifdef __GNUC__
-static const guint8 move[] __attribute__ ((__aligned__ (4))) = 
-#else
-static const guint8 move[] = 
-#endif
+static const guchar move_data[] =
 { ""
-  /* Pixbuf magic (0x47646b50) */
-  "GdkP"
-  /* length: header (24) + pixel_data (1936) */
-  "\0\0\7\250"
-  /* pixdata_type (0x1010002) */
-  "\1\1\0\2"
-  /* rowstride (88) */
-  "\0\0\0X"
-  /* width (22) */
-  "\0\0\0\26"
-  /* height (22) */
-  "\0\0\0\26"
-  /* pixel_data: */
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\40J\207\31\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -318,6 +298,15 @@ static const guint8 move[] =
   "\0\0\0\2\0\0\0\2\0\0\0\3\0\0\0\3\0\0\0\2\0\0\0\2\0\0\0\1\0\0\0\1\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"};
 
+static const icon move = {
+  .colorspace = GDK_COLORSPACE_RGB,
+  .has_alpha = 1,
+  .bits_per_sample = 8,
+  .width = 22,
+  .height = 22,
+  .rowstride = 88,
+  .data = move_data,
+};
 
 /* -------------------  Pointer tool icon  -------------------------- */
 /* GdkPixbuf RGBA C-Source image dump */
