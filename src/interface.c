@@ -350,7 +350,7 @@ interface_create_gui (int req_width, int req_height)
 	}
 
 	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
-	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
+	movepixbuf = pixbuf_from_icon(&move);
 	zoompixbuf = pixbuf_from_icon(&lzoom);
 	measurepixbuf = gdk_pixbuf_new_from_inline(-1, ruler, FALSE, NULL);
 
