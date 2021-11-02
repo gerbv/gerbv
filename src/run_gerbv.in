@@ -116,7 +116,10 @@ if test $do_valgrind = yes ; then
 	VALGRIND="valgrind --trace-children=yes --suppressions=gerbv.supp --error-exitcode=127 --errors-for-leak-kinds=definite --leak-check=full -s --exit-on-first-error=yes --expensive-definedness-checks=yes -- "
 fi
 
-
+if [ ! -f "${GERBV}" ]; then
+    echo "${GERBV} not found"
+    exit 1
+fi
 mv -f ${GERBV} ${GERBV}.orig 
 sed \
 	-e 's;LD_LIBRARY_PATH="/;LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/;g' \
