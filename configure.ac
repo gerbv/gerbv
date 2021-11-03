@@ -397,7 +397,9 @@ AC_SUBST([GTK_CFLAGS_ISYSTEM], ['$(subst -I/usr/include/gtk-2.0,-isystem /usr/in
 CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $GTK_CFLAGS_ISYSTEM $CAIRO_CFLAGS"
 LIBS="$LIBS $GDK_PIXBUF_LIBS $GTK_LIBS $CAIRO_LIBS -lm"
 
-CPPFLAGS="$CPPFLAGS $GTK_CFLAGS_ISYSTEM"
+AC_ARG_VAR([CPPFLAGS_EXTRA], [Additional flags when compiling])
+
+CPPFLAGS="$CPPFLAGS $GTK_CFLAGS_ISYSTEM $CPPFLAGS_EXTRA"
 
 ############################################################
 #

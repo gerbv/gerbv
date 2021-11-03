@@ -30,7 +30,7 @@ jobs:
     - name: Configure and build
       run: |
         sh autogen.sh
-        ./configure
+        ./configure CPPFLAGS_EXTRA=-Werror
         make -j ${NUM_BUILD_JOBS}
 
     - name: Install valgrind
