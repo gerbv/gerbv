@@ -1,4 +1,25 @@
 ========================================================================
+Release Notes for gerbv-2.8.0-rc.1
+========================================================================
+gerbv maintenance has moved from SourceForge to GitHub in order to revitalize
+the project. Multiple patches from the mailing list have been reintegrated and
+build warnings have been trimmed down.
+
+-CVE-2021-40391: Gerbv drill format T-code tool number out-of-bounds write vulnerability
+
+-Patch #77: Fix double-freeing memory
+-Patch #81: Fix casting pointer to different size integer
+-Patch #83: Crash may occur on opening/saveing files
+
+
+========================================================================
+Release Notes for gerbv-2.7.1
+========================================================================
+This is a minor patch release on top of gerbv-2.7.0 in order to fix the security
+vulnerability TALOS-2021-1402 discovered by the Cisco Talos team.
+
+
+========================================================================
 Release Notes for gerbv-2.7.0
 ========================================================================
 -gerbv:     User interface settings are saved with GSettings (units,
