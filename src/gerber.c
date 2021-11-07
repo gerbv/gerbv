@@ -1091,7 +1091,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 		    "at line %ld in file \"%s\""),
 		op_int, *line_num_p, fd->filename);
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
-		_("Ignorning unknown G code G%02d"), op_int);
+		_("Ignoring unknown G code G%02d"), op_int);
 	stats->G_unknown++;
 /* TODO: insert error count here */
 
@@ -1182,7 +1182,7 @@ parse_M_code(gerb_file_t *fd, gerbv_image_t *image, long int *line_num_p)
 		_("Encountered unknown M%02d code at line %ld in file \"%s\""),
 		op_int, *line_num_p, fd->filename);
 	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
-		_("Ignorning unknown M%02d code"), op_int);
+		_("Ignoring unknown M%02d code"), op_int);
 	stats->M_unknown++;
     }
     return 0;
