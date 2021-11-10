@@ -19,6 +19,16 @@ Gerbv was originally developed as part of the
   electronic design.
 
 
+## Download
+
+Official releases are published on [GitHub Releases][download-official].
+Moreover, CI generated binaries are published on [gerbv.github.io][download-ci].
+Be aware however that they are not manually verified!
+
+[download-official]: https://github.com/gerbv/gerbv/releases
+[download-ci]: https://gerbv.github.io/#download
+
+
 ## About this fork
 
 While Gerbv is great software, the development on Source Force has stalled since
