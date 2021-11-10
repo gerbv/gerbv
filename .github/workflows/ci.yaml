@@ -49,8 +49,8 @@ jobs:
       run: |
         make check || (cat test/test-suite.log && false)
 
-    - name: Rebuild Fedora 34
-      run: npx --package mini-cross@0.15.2 mc --no-tty fedora:34 .mc/rebuild.sh
+    - name: Rebuild Fedora 35
+      run: npx --package mini-cross@0.15.2 mc --no-tty fedora:35 .mc/rebuild.sh
 
     - name: Rebuild Ubuntu 20.04
       run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu:20.04 .mc/rebuild.sh

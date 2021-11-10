@@ -3,7 +3,7 @@
 # Builds an archive containing a gerbv binary distribution for Linux based
 # systems
 #
-# @param $1 System name e.g. 'Fedora 34'
+# @param $1 System name e.g. 'Fedora 35'
 #
 # @warning Expects working directory to be set to project root
 
