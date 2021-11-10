@@ -43,7 +43,7 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
 
-        <h2>Overview</h2>
+        <h2 id="overview">Overview</h2>
 
        <ul>
          <li>Gerbv is a viewer for Gerber RS-274X files, Excellon drill files, and CSV pick-and-place files.</li>
@@ -54,9 +54,9 @@
        </ul>
 
 
-       <h2>Download</h2>
+       <h2 id="download">Download</h2>
 
-       <p>No official releases have been published yet, however you can download the latest binaries for various platforms here. Be aware however that they are not manually verified!</p>
+       <p>Official releases are published on <a href="https://github.com/gerbv/gerbv/releases">GitHub Releases</a>. Nevertheless, you can download the latest binaries for various platforms here. Be aware however that they are not manually verified!</p>
 
        <table style="width: 100%">
          <tr>
