@@ -1871,7 +1871,7 @@ callbacks_about_activate                     (GtkMenuItem     *menuitem,
 		"Compiled on %s at %s\n"
 		"\n"
 		"Gerbv was originally developed as part of the gEDA Project "
-		"but is now seperatly maintained.\n"
+		"but is now separately maintained.\n"
 		"\n"
 		"For more information see:\n"
 		"  gerbv homepage: https://gerbv.github.io/\n"

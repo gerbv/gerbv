@@ -1,7 +1,7 @@
 # Gerbv – a Gerber file viewer
 
 Gerbv was originally developed as part of the
-[gEDA Project](https://www.geda-project.org/) but is now seperatly maintained.
+[gEDA Project](https://www.geda-project.org/) but is now separately maintained.
 
 
 ## About Gerbv
