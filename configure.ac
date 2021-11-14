@@ -24,20 +24,21 @@ dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
 AC_INIT([gerbv], [m4_esyscmd(utils/git-version-gen.sh 2.8.1-dev)])
 AC_CONFIG_SRCDIR([src/gerbv.c])
-AC_PREREQ([2.59])
+AC_PREREQ([2.69])
 AM_INIT_AUTOMAKE([1.9])
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Create a configuration header 
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
 
 dnl Internationalisation
+dnl https://www.gnu.org/software/gettext/manual/html_node/AM_005fGNU_005fGETTEXT.html
 AM_NLS
-AM_GNU_GETTEXT
+AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.19])
 #AX_DESKTOP_I18N
 
@@ -168,13 +169,12 @@ AM_SANITY_CHECK
 
 dnl Checks for programs.
 AC_PROG_CC
-AC_PROG_CC_C99
 if test "x$enable_dxf " != "xno" ; then
 AC_PROG_CXX
 fi
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL
+LT_INIT
 
 if test "x$WIN32" = "xyes" ; then
 	AC_CHECK_TOOL(WINDRES, windres, no)
@@ -367,8 +367,7 @@ fi
 AC_SUBST(XDGDATADIR)
 
 AC_ARG_ENABLE(update-desktop-database,
-	AC_HELP_STRING([--disable-update-desktop-database],
-	[do not update desktop database after installation]),,
+	AS_HELP_STRING([--disable-update-desktop-database],[do not update desktop database after installation]),,
 	enable_update_desktop_database=yes)
 
 AM_CONDITIONAL(ENABLE_UPDATE_DESKTOP_DATABASE, test x$enable_update_desktop_database = xyes)
@@ -455,7 +454,7 @@ AC_DEFINE_UNQUOTED(BINDIR_TO_EXECPREFIX, "$bindir_to_execprefix", [Relative path
 #
 ############################################################
 
-AC_OUTPUT(	Makefile \
+AC_CONFIG_FILES([Makefile \
 		src/Makefile \
 		src/libgerbv.pc \
 		scheme/Makefile \
@@ -470,7 +469,6 @@ AC_OUTPUT(	Makefile \
 		doc/Makefile \
 		man/Makefile \
 		\
-		intl/Makefile \
 		po/Makefile.in \
 		\
 		example/eaglecad1/Makefile \
@@ -495,7 +493,8 @@ AC_OUTPUT(	Makefile \
 		test/inputs/Makefile \
 		\
 		win32/Makefile \
-		)
+		])
+AC_OUTPUT
         
 expandedXDGDATADIR=`eval "echo $XDGDATADIR"`
 

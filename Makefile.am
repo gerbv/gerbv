@@ -25,7 +25,7 @@ SUBDIRS = \
 	share/glib-2.0/schemas \
 	desktop \
 	doc man \
-	intl po \
+	po \
 	example \
 	test \
 	win32
