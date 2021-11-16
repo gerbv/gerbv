@@ -3123,7 +3123,12 @@ callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
 void
 callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_data){
 }
-
+/* --------------------------------------------------------------------------- */
+void
+callbacks_live_edit_with_spinbutton (GtkWidget *button, gpointer user_data){
+	GtkDialog *toplevel = GTK_DIALOG(gtk_widget_get_toplevel (button));
+	gtk_dialog_response(toplevel, GTK_RESPONSE_APPLY);
+}
 /* --------------------------------------------------------------------------- */
 void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data){
