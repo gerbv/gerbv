@@ -2453,6 +2453,11 @@ gerbv_user_transformation_t startTransform = trans;
 			G_CALLBACK (focus_in_event_callback), (gpointer)(focus_nums + i));
 	}
 
+	g_signal_connect(GTK_OBJECT(spin1), "value_changed", 
+                     GTK_SIGNAL_FUNC(callbacks_live_edit_with_spinbutton), spin1);
+	g_signal_connect(GTK_OBJECT(spin2), "value_changed", 
+                     GTK_SIGNAL_FUNC(callbacks_live_edit_with_spinbutton), spin2);
+
 	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 14, 8);
 	gtk_widget_show_all (dialog);
 	gint result = GTK_RESPONSE_APPLY;
