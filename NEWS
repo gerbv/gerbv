@@ -1,8 +1,16 @@
 ========================================================================
+Release Notes for gerbv-2.7.2-rc.1
+========================================================================
+This is a minor patch release on top of gerbv-2.7.1 in order to fix the security
+vulnerability CVE-2021-40394 / TALOS-2021-1405 discovered by the Cisco Talos
+team.
+
+========================================================================
 Release Notes for gerbv-2.7.1
 ========================================================================
 This is a minor patch release on top of gerbv-2.7.0 in order to fix the security
-vulnerability TALOS-2021-1402 discovered by the Cisco Talos team.
+vulnerability CVE-2021-40391 / TALOS-2021-1402 discovered by the Cisco Talos
+team.
 
 ========================================================================
 Release Notes for gerbv-2.7.0
