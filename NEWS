@@ -1,6 +1,9 @@
 ========================================================================
 Release Notes for gerbv-2.8.1-dev
 ========================================================================
+-CVE-2021-40394: Gerbv RS-274X aperture macro outline primitive integer overflow
+                 vulnerability
+
 -gerbv:     Various spelling and desktop integration fixes (PR#69 by @tijuca)
 -gerbv:     Live update of viewer via x&y translation spinbuttons on layer edit
             window (PR#70 by @Rix)
