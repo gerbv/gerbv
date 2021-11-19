@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.8.1-dev
+Release Notes for gerbv-2.8.1-rc.1
 ========================================================================
 -CVE-2021-40394: Gerbv RS-274X aperture macro outline primitive integer overflow
                  vulnerability
