@@ -1,7 +1,17 @@
-# Gerbv – a Gerber file viewer
+# Gerbv – a Gerber file viewer ![Build Status](https://github.com/gerbv/gerbv/actions/workflows/ci.yaml/badge.svg)
 
 Gerbv was originally developed as part of the
 [gEDA Project](https://www.geda-project.org/) but is now separately maintained.
+
+
+## Download
+
+Official releases are published on [GitHub Releases][download-official].
+Moreover, CI generated binaries are published on [gerbv.github.io][download-ci].
+Be aware however that they are not manually verified!
+
+[download-official]: https://github.com/gerbv/gerbv/releases
+[download-ci]: https://gerbv.github.io/#download
 
 
 ## About Gerbv
@@ -17,16 +27,6 @@ Gerbv was originally developed as part of the
 * Gerbv is one of the utilities originally affiliated with the gEDA project, an
   umbrella organization dedicated to producing free software tools for
   electronic design.
-
-
-## Download
-
-Official releases are published on [GitHub Releases][download-official].
-Moreover, CI generated binaries are published on [gerbv.github.io][download-ci].
-Be aware however that they are not manually verified!
-
-[download-official]: https://github.com/gerbv/gerbv/releases
-[download-ci]: https://gerbv.github.io/#download
 
 
 ## About this fork
