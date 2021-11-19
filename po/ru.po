@@ -1909,7 +1909,7 @@ msgstr "Неизвестный G-код G%02d на строке %ld файла �
 
 #: src/gerber.c:1094
 #, c-format
-msgid "Ignorning unknown G code G%02d"
+msgid "Ignoring unknown G code G%02d"
 msgstr "Пропуск неизвестного G-кода G%02d"
 
 #: src/gerber.c:1123
@@ -1929,7 +1929,7 @@ msgstr "Неизвестный код M%02d на строке %ld файла «%
 
 #: src/gerber.c:1185
 #, c-format
-msgid "Ignorning unknown M%02d code"
+msgid "Ignoring unknown M%02d code"
 msgstr "Пропуск неизвестного кода M%02d"
 
 #: src/gerber.c:1267

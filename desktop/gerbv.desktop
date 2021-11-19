@@ -1,6 +1,5 @@
 [Desktop Entry]
 Version=1.0
-Encoding=UTF-8
 Name=Gerbv Gerber File Viewer
 Name[ru]= Gerbv — просмотр Gerber-файлов
 GenericName=Gerber File Viewer
@@ -11,4 +10,5 @@ Type=Application
 Exec=gerbv %F
 Icon=gerbv
 MimeType=application/x-gerber;application/x-excellon;
-Categories=Engineering;Electronics;
+Categories=Development;Engineering;Electronics;
+Keywords=Gerber;PCB

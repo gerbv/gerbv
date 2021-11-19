@@ -26,7 +26,7 @@
     \ingroup gerbv
 */
 
-enum {
+typedef enum {
 	CALLBACKS_SAVE_PROJECT_AS,
 	CALLBACKS_SAVE_FILE_PS,
 	CALLBACKS_SAVE_FILE_PDF,
@@ -43,7 +43,7 @@ enum {
 	
 } CALLBACKS_SAVE_FILE_TYPE;
 
-enum {
+typedef enum {
 	LAYER_SELECTED =	-1,
 	LAYER_ALL_ON =		-2,
 	LAYER_ALL_OFF =		-3,

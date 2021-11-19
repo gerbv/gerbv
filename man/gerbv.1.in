@@ -32,7 +32,7 @@ e.g. #FF0000 for Red.
 Use foreground color <hex>. <hex> is specified as an html-color code, 
 e.g. #00FF00 for Green. If a user also wants to set the alpha (rendering 
 with Cairo) it can be specified as an #RRGGBBAA code. Use multiple 
--f flags to set the color for multiple layers.
+\-f flags to set the color for multiple layers.
 .TP
 .BI -l\ <filename>|--log=<filename>
 All error messages etc are stored in a file with filename \fI<filename>\fP.
@@ -45,7 +45,7 @@ Load a stored project. Please note that the project file must be stored in
 the same directory as the Gerber files.
 
 .SS gerbv Export-specific options:
-The following commands can be used in combination with the -x flag:
+The following commands can be used in combination with the \-x flag:
 .TP
 .BI -B<b>|--border=<b>
 Set the border around the image <b> percent of the width and height. 
@@ -58,9 +58,9 @@ render engine). Use <R> to have the same resolution in both directions.
 Defaults to 72 DPI in both directions.
 .TP
 .BI -T<XxYrR|X;YrR>|--translate=<XxYrR|X;YrR>
-Translate image by X and Y and rotate by R degree. Use multiple -T flags to
+Translate image by X and Y and rotate by R degree. Use multiple \-T flags to
 translate multiple files. Distance defaults to inches but may be changed with
---units.  Only evaluated when exporting as RS274X or drill.
+\-\-units.  Only evaluated when exporting as RS274X or drill.
 .TP
 .BI -O<XxY|X;Y>|--origin=<XxY|X;Y>
 Set the lower left corner of the exported image to coordinate <XxY>.
@@ -192,7 +192,7 @@ way to create a project is to load all files you want into the layer
 you want, set all the colors etc and do a "Save Project As...".
 
 You load a project either from the menu bar or by using the commandline 
-switches -p or --project.
+switches \-p or \-\-project.
 
 Currently there is a limit in that the project file must be in the same
 directory as the Gerber files to be loaded.
@@ -226,10 +226,10 @@ A standard practice with Eagle is to create an empty Tools file, run the
 CAM processor, and the error report tells you which tools you "forgot".
 Then you put these tools into the file and rerun the CAM processor.
 
-You load a tool file by using the commandline switches -t or --tools.
+You load a tool file by using the commandline switches \-t or \-\-tools.
 The file can have any name you wish, but Eagle expects the file type to
 be ".drl", so it makes sense to keep it this way. Some board houses are
-still using CAM software from DOS era, so you may want to excercise caution
+still using CAM software from DOS era, so you may want to exercise caution
 before going beyond the 8.3 naming convention.
 
 When \fIgerbv\fP reads the Tools file it also checks that there are no

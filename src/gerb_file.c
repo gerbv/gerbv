@@ -314,13 +314,9 @@ gerb_find_file(char const * filename, char **paths)
 	  /*
 	   * Build complete path (inc. filename) and check if file exists.
 	   */
-	  complete_path = (char *)g_malloc(strlen(curr_path) + strlen(filename) + 2);
+	  complete_path = g_build_filename(curr_path, filename, NULL);
 	  if (complete_path == NULL)
 	    return NULL;
-	  strcpy(complete_path, curr_path);
-	  complete_path[strlen(curr_path)] = G_DIR_SEPARATOR;
-	  complete_path[strlen(curr_path) + 1] = '\0';
-	  strncat(complete_path, filename, strlen(filename));
 	  
 	  if (paths[i][0] == '$') {
 	    g_free(curr_path);

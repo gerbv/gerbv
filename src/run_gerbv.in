@@ -22,6 +22,8 @@ Options:
 
   -gdb       - runs gerbv in the GDB debugger
 
+  -valgrind  - runs gerbv with the Valgrind memory checker
+
   -h|--help  - displays this message and exits
 
   --         - halts all further option processing all additional options
@@ -38,10 +40,16 @@ EOF
 }
 
 do_gdb=no
+do_valgrind=no
 while test $# -gt 0 ; do
 	case $1 in
 		-gdb)
 			do_gdb=yes
+			shift
+			;;
+
+		-valgrind)
+			do_valgrind=yes
 			shift
 			;;
 
@@ -102,7 +110,16 @@ export LD_PRELOAD
 echo "Set LD_PRELOAD to ${LD_PRELOAD}"
 
 GERBV=@BUILDDIR@/gerbv
+VALGRIND=""
 
+if test $do_valgrind = yes ; then
+	VALGRIND="valgrind --trace-children=yes --suppressions=gerbv.supp --error-exitcode=127 --errors-for-leak-kinds=definite --leak-check=full -s --exit-on-first-error=yes --expensive-definedness-checks=yes -- "
+fi
+
+if [ ! -f "${GERBV}" ]; then
+    echo "${GERBV} not found"
+    exit 1
+fi
 mv -f ${GERBV} ${GERBV}.orig 
 sed \
 	-e 's;LD_LIBRARY_PATH="/;LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/;g' \
@@ -135,6 +152,6 @@ if test $do_gdb = yes ; then
 else
 	GERBV_SCHEMEINIT="@SRCDIR@"
 	export GERBV_SCHEMEINIT
-	exec ${GERBV} "$@"
+	exec ${VALGRIND} ${GERBV} "$@"
 fi
 

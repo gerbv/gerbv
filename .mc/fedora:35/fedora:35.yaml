@@ -1,0 +1,25 @@
+---
+base: fedora:35
+install:
+ - gcc
+ - gcc-c++
+ - make
+
+ # Buildsystem dependencies
+ - autoconf
+ - gettext-devel
+ - libtool
+ - pkgconf
+
+ # Runtime dependencies
+ - cairo-devel
+ - gtk2-devel
+ - libdxflib-devel
+
+ # Test dependencies
+ - ImageMagick
+
+ # Packaging dependencies
+ - git
+---
+

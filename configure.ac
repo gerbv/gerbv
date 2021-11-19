@@ -22,7 +22,7 @@ dnl  along with this program; if not, write to the Free Software
 dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
 
-AC_INIT([gerbv], [2.7A])
+AC_INIT([gerbv], [m4_esyscmd(utils/git-version-gen.sh 2.8.1-rc.1)])
 AC_CONFIG_SRCDIR([src/gerbv.c])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.9])
@@ -221,8 +221,8 @@ fi
 AM_CONDITIONAL(HAVE_MAGICK, test x$have_magick = xyes)
 
 # Check for pkg-config
-AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-if test "$PKG_CONFIG" = "no"; then
+PKG_PROG_PKG_CONFIG
+if test "x$PKG_CONFIG" = "x"; then
 	AC_MSG_ERROR([Cannot find pkg-config, make sure it is installed and in your PATH])
 fi
 
@@ -299,7 +299,8 @@ if test "X$enable_dxf " != "Xno" ; then
 	]], [[
 if (!strncmp("2.2.",  DL_VERSION, 4)
  || !strncmp("2.5.",  DL_VERSION, 4)
- || !strncmp("3.12.", DL_VERSION, 5))
+ || !strncmp("3.12.", DL_VERSION, 5)
+ || !strncmp("3.17.", DL_VERSION, 5))
 	return 0;
 
 return 1;
@@ -391,11 +392,14 @@ AC_CHECK_FUNCS(strlwr)
 AC_CHECK_FUNCS(realpath canonicalize_file_name)
 libiberty_NEED_DECLARATION(canonicalize_file_name)
 
+AC_SUBST([GTK_CFLAGS_ISYSTEM], ['$(subst -I/usr/include/gtk-2.0,-isystem /usr/include/gtk-2.0,$(GTK_CFLAGS))'])
 
-CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $GTK_CFLAGS $CAIRO_CFLAGS"
-LIBS="$LIBS $GDK_PIXBUF_LIBS $GTK_LIBS $CAIRO_LIBS"
+CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $GTK_CFLAGS_ISYSTEM $CAIRO_CFLAGS"
+LIBS="$LIBS $GDK_PIXBUF_LIBS $GTK_LIBS $CAIRO_LIBS -lm"
 
-CPPFLAGS="$CPPFLAGS $GTK_CFLAGS"
+AC_ARG_VAR([CPPFLAGS_EXTRA], [Additional flags when compiling])
+
+CPPFLAGS="$CPPFLAGS $GTK_CFLAGS_ISYSTEM $CPPFLAGS_EXTRA"
 
 ############################################################
 #

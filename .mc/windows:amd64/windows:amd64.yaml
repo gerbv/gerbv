@@ -1,0 +1,29 @@
+---
+base: fedora:35
+install:
+ - make
+ - mingw64-gcc
+ - mingw64-gcc-c++
+
+ # Buildsystem dependencies
+ - autoconf
+ - gettext-devel
+ - libtool
+
+ # Runtime dependencies
+ #
+ # @warning gtk2-devel should not be required, but needed to provide
+ #     {@code /usr/share/aclocal/gsettings.m4} since autoconf does not seem to
+ #     pick up on {@code /usr/x86_64-w64-mingw32/sys-root/mingw/share/aclocal/gsettings.m4}
+ - gtk2-devel
+ - mingw64-cairo-static
+ - mingw64-gtk2-static
+
+ # Test dependencies
+ - ImageMagick
+
+  # Packaging dependencies
+ - git
+ - zip
+---
+

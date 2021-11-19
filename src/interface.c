@@ -146,6 +146,18 @@ request_label_max_size_by_text (GtkWidget *label, const gchar *str)
 	gtk_label_set_text (GTK_LABEL (label), "");
 }
 
+GdkPixbuf *pixbuf_from_icon(const icon *icon)
+{
+  return gdk_pixbuf_new_from_data(icon->data,
+                                  icon->colorspace,
+                                  icon->has_alpha,
+                                  icon->bits_per_sample,
+                                  icon->width,
+                                  icon->height,
+                                  icon->rowstride,
+                                  NULL, NULL);
+}
+
 /* ---------------------------------------------- */
 void
 interface_create_gui (int req_width, int req_height)
@@ -337,10 +349,10 @@ interface_create_gui (int req_width, int req_height)
 		screen.settings = g_settings_new(settings_id);
 	}
 
-	pointerpixbuf = gdk_pixbuf_new_from_inline(-1, pointer, FALSE, NULL);
-	movepixbuf = gdk_pixbuf_new_from_inline(-1, move, FALSE, NULL);
-	zoompixbuf = gdk_pixbuf_new_from_inline(-1, lzoom, FALSE, NULL);
-	measurepixbuf = gdk_pixbuf_new_from_inline(-1, ruler, FALSE, NULL);
+	pointerpixbuf = pixbuf_from_icon(&pointer);
+	movepixbuf = pixbuf_from_icon(&move);
+	zoompixbuf = pixbuf_from_icon(&lzoom);
+	measurepixbuf = pixbuf_from_icon(&ruler);
 
 	tooltips = gtk_tooltips_new();
 	accel_group = gtk_accel_group_new ();

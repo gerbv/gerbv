@@ -22,6 +22,8 @@
 # latex-mk testsuite.  The original code was covered by a BSD license
 # but the copyright holder is releasing the version for gerbv under the GPL.
 
+set -e
+
 magic_test_skip=${GERBV_MAGIC_TEST_SKIP:-no}
 
 if test "x${magic_test_skip}" = "xyes" ; then
@@ -74,7 +76,9 @@ parser is common, verification via PNG files is fairly accurate.
 OPTIONS
 
 -g | --golden <dir>    :  Specifies that <dir> should be used for the
-                          reference files. 
+                          reference files.
+
+-v | --valgrind        :  Specifies that valgrind should check gerbv.
 
 LIMITATIONS
 
@@ -113,7 +117,12 @@ while test -n "$1"
 	  regen=yes
 	  shift
 	  ;;
-      
+
+      -v|--valgrind)
+	  valgrind=yes
+	  shift
+	  ;;
+
       -*)
 	  echo "unknown option: $1"
 	  exit 1
@@ -129,7 +138,11 @@ done
 all_tests="$*"
 
 # The gerbv executible 
-GERBV=${GERBV:-../src/run_gerbv --}
+if test "X$valgrind" = "Xyes" ; then
+    GERBV=${GERBV:-../src/run_gerbv -valgrind --}
+else
+    GERBV=${GERBV:-../src/run_gerbv --}
+fi
 GERBV_DEFAULT_FLAGS=${GERBV_DEFAULT_FLAGS:---export=png --window=640x480}
 
 # Source directory

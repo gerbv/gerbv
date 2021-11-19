@@ -480,6 +480,12 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		curr_net->stop_x = state->curr_x;
 		curr_net->stop_y = state->curr_y;
 
+		if (state->unit == GERBV_UNIT_MM) {
+		    /* Convert to inches -- internal units */
+		    curr_net->stop_x /= 25.4;
+		    curr_net->stop_y /= 25.4;
+		}
+
 		r = image->aperture[state->current_tool]->parameter[0]/2;
 
 		/* Update boundingBox with drilled slot stop_x,y coords */
@@ -490,11 +496,6 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 		drill_update_image_info_min_max_from_bbox(image->info, bbox);
 
-		if (state->unit == GERBV_UNIT_MM) {
-		    /* Convert to inches -- internal units */
-		    curr_net->stop_x /= 25.4;
-		    curr_net->stop_y /= 25.4;
-		}
 		curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 
 		break;
@@ -764,7 +765,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	      for (c = 1 ; c <= rcnt ; c++) {
 		state->curr_x = start_x + c*step_x;
 		state->curr_y = start_y + c*step_y;
-		dprintf ("    Repeat #%d — new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
+		dprintf ("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
 		curr_net = drill_add_drill_hole (image, state, stats, curr_net);
 	      }
 	      
@@ -1115,10 +1116,12 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 		_("Out of bounds drill number %d "
 		    "at line %ld in file \"%s\""),
 		tool_num, file_line, fd->filename);
+	return -1;
     }
 
     /* Set the current tool to the correct one */
     state->current_tool = tool_num;
+    apert = image->aperture[tool_num];
 
     /* Check for a size definition */
     temp = gerb_fgetc(fd);
@@ -1155,7 +1158,6 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 			    "at line %ld in file \"%s\""),
 			    size, tool_num, file_line, fd->filename);
 	    } else {
-		apert = image->aperture[tool_num];
 		if (apert != NULL) {
 		    /* allow a redefine of a tool only if the new definition is exactly the same.
 		     * This avoid lots of spurious complaints with the output of some cad

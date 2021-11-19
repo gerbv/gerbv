@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <math.h>  /* pow() */
 #include <errno.h>
 #include <ctype.h>
@@ -1091,7 +1092,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 		    "at line %ld in file \"%s\""),
 		op_int, *line_num_p, fd->filename);
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
-		_("Ignorning unknown G code G%02d"), op_int);
+		_("Ignoring unknown G code G%02d"), op_int);
 	stats->G_unknown++;
 /* TODO: insert error count here */
 
@@ -1182,7 +1183,7 @@ parse_M_code(gerb_file_t *fd, gerbv_image_t *image, long int *line_num_p)
 		_("Encountered unknown M%02d code at line %ld in file \"%s\""),
 		op_int, *line_num_p, fd->filename);
 	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
-		_("Ignorning unknown M%02d code"), op_int);
+		_("Ignoring unknown M%02d code"), op_int);
 	stats->M_unknown++;
     }
     return 0;
@@ -1993,8 +1994,22 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 		 * - number of points defined in entry 1 of the stack + 
 		 *   start point. Times two since it is both X and Y.
 		 * - Then three more; exposure,  nuf points and rotation.
+		 *
+		 * @warning Calculation must be guarded against signed integer
+		 *     overflow
+		 *
+		 * @see CVE-2021-40394
 		 */
-		nuf_parameters = ((int)s->stack[1] + 1) * 2 + 3;
+		int const sstack = (int)s->stack[1];
+		if ((sstack < 0) || (sstack >= INT_MAX / 4)) {
+			GERB_COMPILE_ERROR(_("Possible signed integer overflow "
+					"in calculating number of parameters "
+					"to aperture macro, will clamp to "
+					"(%d)"), APERTURE_PARAMETERS_MAX);
+			nuf_parameters = APERTURE_PARAMETERS_MAX;
+		} else {
+			nuf_parameters = (sstack + 1) * 2 + 3;
+		}
 		break;
 	    case 5 :
 		dprintf("  Aperture macro polygon [5] (");
