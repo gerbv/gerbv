@@ -1,4 +1,11 @@
 ========================================================================
+Release Notes for gerbv-2.8.1-dev
+========================================================================
+-gerbv:     Live update of viewer via x&y translation spinbuttons on layer edit
+            window (PR#70 by @Rix)
+
+
+========================================================================
 Release Notes for gerbv-2.8.0
 ========================================================================
 gerbv maintenance has moved from SourceForge to GitHub in order to revitalize
