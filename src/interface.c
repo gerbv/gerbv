@@ -58,8 +58,8 @@ static const gchar *gerbv_win_title = N_("Gerbv — gEDA's Gerber Viewer");
 /* Declared in callbacks.c */
 extern const char *gerbv_coords_pattern_mils_str;
 
-/* ---------------------------------------------- */
-void
+	/* ---------------------------------------------- */
+void 
 rename_main_window(char const* filename, GtkWidget *main_win)
 {
 	GString *win_title = g_string_new(NULL);
@@ -2310,7 +2310,7 @@ void
 interface_show_layer_edit_dialog (gerbv_user_transformation_t *transforms[],
 		gerbv_unit_t screenUnit) {
 	GtkWidget *dialog;
-	GtkWidget *check1,*check2,*tempWidget,*tempWidget2,*tableWidget;
+	GtkWidget *check1,*check2,*check3,*tempWidget,*tempWidget2,*tableWidget;
 	GtkWidget *spin1,*spin2,*spin3,*spin4,*spin5;
 	GtkAdjustment *adj;
 	/* NOTE: transforms[0] is selected layer, other in array is visible. */
@@ -2401,16 +2401,20 @@ gerbv_user_transformation_t startTransform = trans;
 	spin4 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
 	gtk_table_attach ((GtkTable *) tableWidget, spin4,2,3,6,7,GTK_FILL,0,0,0);
 
-	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 7, 8);
+    check3 = gtk_check_button_new_with_label("Maintain aspect ratio");
+    gtk_toggle_button_set_active((GtkToggleButton *) check3, TRUE);
+    gtk_table_attach((GtkTable *)tableWidget, check3, 2, 3, 7, 8, GTK_FILL, 0, 0, 0);
+
+	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 8, 8);
 
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Rotation</span>"));
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,8,9,GTK_EXPAND|GTK_FILL,0,0,5);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,9,10,GTK_EXPAND|GTK_FILL,0,0,5);
 
 	tempWidget = gtk_label_new (_("Rotation (degrees):"));
 	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,9,10,GTK_FILL,0,5,0);
+	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,10,11,GTK_FILL,0,5,0);
 	spin5 = gtk_combo_box_new_text();
 	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("None"));
 	gtk_combo_box_append_text (GTK_COMBO_BOX(spin5), _("90 deg CCW"));
@@ -2431,7 +2435,7 @@ gerbv_user_transformation_t startTransform = trans;
 	spin5 = (GtkWidget *) gtk_spin_button_new (adj, 0, 3);
 #endif
 
-	gtk_table_attach ((GtkTable *) tableWidget, spin5,2,3,9,10,GTK_FILL,0,0,0);
+	gtk_table_attach ((GtkTable *) tableWidget, spin5,2,3,10,11,GTK_FILL,0,0,0);
 
 	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 10, 8);
 	tempWidget = gtk_label_new (NULL);
@@ -2466,9 +2470,19 @@ gerbv_user_transformation_t startTransform = trans;
 	}
 
 	g_signal_connect(GTK_OBJECT(spin1), "value_changed", 
-                     GTK_SIGNAL_FUNC(callbacks_live_edit_with_spinbutton), spin1);
+                     GTK_SIGNAL_FUNC(callbacks_live_edit), spin1);
 	g_signal_connect(GTK_OBJECT(spin2), "value_changed", 
-                     GTK_SIGNAL_FUNC(callbacks_live_edit_with_spinbutton), spin2);
+                     GTK_SIGNAL_FUNC(callbacks_live_edit), spin2);
+	g_signal_connect(GTK_OBJECT(spin3), "value_changed",
+					 GTK_SIGNAL_FUNC(callbacks_live_edit), spin3);
+	g_signal_connect(GTK_OBJECT(spin4), "value_changed",
+					 GTK_SIGNAL_FUNC(callbacks_live_edit), spin4);
+	g_signal_connect(GTK_OBJECT(spin5), "changed",
+					 GTK_SIGNAL_FUNC(callbacks_live_edit), spin5);
+	g_signal_connect(GTK_OBJECT(check1), "toggled",
+					 GTK_SIGNAL_FUNC(callbacks_live_edit), check1);
+	g_signal_connect(GTK_OBJECT(check2), "toggled",
+					 GTK_SIGNAL_FUNC(callbacks_live_edit), check2);
 
 	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 14, 8);
 	gtk_widget_show_all (dialog);
@@ -2493,6 +2507,19 @@ gerbv_user_transformation_t startTransform = trans;
 			} else {
 				trans->translateX = gtk_spin_button_get_value ((GtkSpinButton *) spin1);
 				trans->translateY = gtk_spin_button_get_value ((GtkSpinButton *) spin2);
+			}
+
+            /* Maintain Aspect Ratio? */
+            if (gtk_toggle_button_get_active((GtkToggleButton *) check3)){
+                if (trans->scaleX != gtk_spin_button_get_value ((GtkSpinButton *)spin3)){
+                    gtk_spin_button_set_value((GtkSpinButton *)spin4,
+                                              gtk_spin_button_get_value ((GtkSpinButton *)spin3));
+				}
+				
+				if (trans->scaleY != gtk_spin_button_get_value ((GtkSpinButton *)spin4)){
+					gtk_spin_button_set_value((GtkSpinButton *)spin3,
+											  gtk_spin_button_get_value ((GtkSpinButton *)spin4));
+				}
 			}
 
 			trans->scaleX = gtk_spin_button_get_value ((GtkSpinButton *)spin3);

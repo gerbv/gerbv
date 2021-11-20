@@ -254,7 +254,7 @@ void
 callbacks_edit_object_properties_clicked (GtkButton *button, gpointer   user_data);
 
 void
-callbacks_live_edit_with_spinbutton (GtkWidget *button, gpointer user_data);
+callbacks_live_edit (GtkWidget *button, gpointer user_data);
 
 void
 callbacks_move_objects_clicked (GtkButton *button, gpointer   user_data);
