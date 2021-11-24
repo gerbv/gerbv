@@ -1,4 +1,11 @@
 ========================================================================
+Release Notes for gerbv-2.8.2-dev
+========================================================================
+-CVE-2021-40393: RS-274X format aperture macro variables out-of-bounds write
+                 vulnerability
+
+
+========================================================================
 Release Notes for gerbv-2.8.1
 ========================================================================
 -CVE-2021-40394: Gerbv RS-274X aperture macro outline primitive integer overflow
