@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.8.2-dev
+Release Notes for gerbv-2.8.2-rc.1
 ========================================================================
 -CVE-2021-40393: RS-274X format aperture macro variables out-of-bounds write
                  vulnerability
