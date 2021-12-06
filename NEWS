@@ -3,6 +3,9 @@ Release Notes for gerbv-2.8.2-dev
 ========================================================================
 -CVE-2021-40393: RS-274X format aperture macro variables out-of-bounds write
                  vulnerability
+                 
+-gerbv:     Adjust autotool related files due warnings by autoconf (PR#74 by
+            @tijuca)
 
 
 ========================================================================
