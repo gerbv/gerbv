@@ -2212,12 +2212,20 @@ parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
      * Read in the whole aperture defintion and tokenize it
      */
     ad = gerb_fgetstring(fd, '*');
+
+    if (ad == NULL) {
+	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
+		_("Invalid aperture definition at line %ld in file \"%s\", "
+		    "cannot find '*'"),
+		*line_num_p, fd->filename);
+	return -1;
+    }
+
     token = strtok(ad, ",");
     
     if (token == NULL) {
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
-		_("Invalid aperture definition "
-		    "at line %ld in file \"%s\""),
+		_("Invalid aperture definition at line %ld in file \"%s\""),
 		*line_num_p, fd->filename);
 	return -1;
     }
