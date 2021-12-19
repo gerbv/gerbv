@@ -22,7 +22,7 @@ dnl  along with this program; if not, write to the Free Software
 dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
 
-AC_INIT([gerbv], [m4_esyscmd(utils/git-version-gen.sh 2.8.2-rc.1)])
+AC_INIT([gerbv], [m4_esyscmd(utils/git-version-gen.sh 2.8.2)])
 AC_CONFIG_SRCDIR([src/gerbv.c])
 AC_PREREQ([2.69])
 AM_INIT_AUTOMAKE([1.9])

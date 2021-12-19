@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.8.2-rc.1
+Release Notes for gerbv-2.8.2
 ========================================================================
 -CVE-2021-40393: RS-274X format aperture macro variables out-of-bounds write
                  vulnerability
@@ -36,6 +36,14 @@ build warnings have been trimmed down.
 -Patch #77: Fix double-freeing memory
 -Patch #81: Fix casting pointer to different size integer
 -Patch #83: Crash may occur on opening/saveing files
+
+
+========================================================================
+Release Notes for gerbv-2.7.3
+========================================================================
+This is a minor patch release on top of gerbv-2.7.2 in order to fix the security
+vulnerability CVE-2021-40393 / TALOS-2021-1404 discovered by the Cisco Talos
+team.
 
 
 ========================================================================
