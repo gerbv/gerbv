@@ -30,6 +30,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "gerber.h"
 #include "common.h"
@@ -226,6 +227,7 @@ GArray *
 pick_and_place_parse_file(gerb_file_t *fd)
 {
     PnpPartData   pnpPartData;
+    memset(&pnpPartData, 0, sizeof(PnpPartData));
     int           lineCounter = 0, parsedLines = 0;
     int           ret;
     char          *row[12];
@@ -330,8 +332,16 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    pnpPartData.pad_y = pick_and_place_get_float_unit(row[7], def_unit);
 	    /* This line causes segfault if we accidently starts parsing 
 	     * a gerber file. It is crap crap crap */
-	    if (row[9])
-		sscanf(row[9], "%lf", &pnpPartData.rotation); // no units, always deg
+	    if (row[9]) {
+		int const rc = sscanf(row[9], "%lf", &pnpPartData.rotation); // no units, always deg
+
+		/* CVE-2021-40403
+		 */
+		if (1 != rc) {
+			g_array_free (pnpParseDataArray, TRUE);
+			return NULL;  
+		}
+	    }
 	}
 	/* for now, default back to PCB program format
 	 * TODO: implement better checking for format
@@ -344,13 +354,21 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    pnpPartData.mid_y = pick_and_place_get_float_unit(row[4], def_unit);
 	    pnpPartData.pad_x = pnpPartData.mid_x + 0.03;
 	    pnpPartData.pad_y = pnpPartData.mid_y + 0.03;
+
 	    /* check for coordinate sanity, and abort if it fails
 	     * Note: this is mainly to catch comment lines that get parsed
 	     */
 	    if ((fabs(pnpPartData.mid_x) < 0.001)&&(fabs(pnpPartData.mid_y) < 0.001)) {
 		continue;			
 	    }
-	    sscanf(row[5], "%lf", &pnpPartData.rotation); // no units, always deg
+
+	    /* CVE-2021-40403
+	     */
+	    int const rc = sscanf(row[5], "%lf", &pnpPartData.rotation); // no units, always deg
+	    if (1 != rc) {
+		g_array_free (pnpParseDataArray, TRUE);
+		return NULL;  
+	    }
 	} else {
 	    continue;
 	}
