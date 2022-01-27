@@ -1,4 +1,11 @@
 ========================================================================
+Release Notes for gerbv-2.8.3-dev
+========================================================================
+-TALOS-2021-1415: Gerbv RS-274X aperture definition tokenization use-after-free
+                  vulnerability
+
+
+========================================================================
 Release Notes for gerbv-2.8.2
 ========================================================================
 -CVE-2021-40393: RS-274X format aperture macro variables out-of-bounds write
