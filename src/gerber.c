@@ -1005,10 +1005,15 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 	break;
     case 4:  /* Ignore Data Block */
 	/* Don't do anything, just read 'til * */
-        /* SDB asks:  Should we look for other codes while reading G04 in case
-	 * user forgot to put * at end of comment block? */
 	do {
 	    c = gerb_fgetc(fd);
+            if (c == '\r' || c == '\n') {
+                gerbv_stats_printf(error_list, GERBV_MESSAGE_WARNING, -1,
+                                   _("Found newline while parsing "
+                                     "G04 code at line %ld in file \"%s\", "
+                                     "maybe you forgot a \"*\"?"),
+                                   *line_num_p, fd->filename);
+            }
 	}
 	while (c != EOF && c != '*');
 
