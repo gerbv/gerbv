@@ -1998,6 +1998,11 @@ get_line(gerb_file_t *fd)
 } /* get_line */
 
 /* -------------------------------------------------------------- */
+/* Look for str in the file fd.  If found, return 1.  If not, return
+ * 0.  If EOF is reached while searching, return -1. If the find
+ * fails, rewinds the file descriptor.  Otherwise, it doesn't and the
+ * string is consumed.
+ */
 static int
 file_check_str(gerb_file_t *fd, const char *str)
 {
