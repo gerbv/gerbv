@@ -128,6 +128,7 @@ static drill_state_t *new_state(drill_state_t *state);
 static double read_double(gerb_file_t *fd, number_fmt_t fmt,
 				gerbv_omit_zeros_t omit_zeros, int decimals);
 static void eat_line(gerb_file_t *fd);
+static void eat_whitespace(gerb_file_t *fd);
 static char *get_line(gerb_file_t *fd);
 static int file_check_str(gerb_file_t *fd, const char *str);
 
@@ -1709,38 +1710,48 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 		       gerbv_image_t *image, drill_state_t *state,
 		       ssize_t file_line)
 {
-    int read;
     gerbv_drill_stats_t *stats = image->drill_stats;
 
-    if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
-	if (firstchar == 'X') {
-	    state->curr_x = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
-	    if ((read = (char)gerb_fgetc(fd)) == 'Y') {
-		state->curr_y = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
-	    } else {
-		gerb_ungetc(fd);
-	    }
-	} else if (firstchar == 'Y') {
-	    state->curr_y = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
-	}
-    } else if(state->coordinate_mode == DRILL_MODE_INCREMENTAL) {
-	if (firstchar == 'X') {
-	    state->curr_x += read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
-	    if((read = (char)gerb_fgetc(fd)) == 'Y') {
-		state->curr_y += read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
-	    } else {
-		gerb_ungetc(fd);
-	    }
-	} else if (firstchar == 'Y') {
-	    state->curr_y += read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
-	}
-    } else {
-	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
-		_("Coordinate mode is not absolute and not incremental "
-		    "at line %ld in file \"%s\""),
-		file_line, fd->filename);
-    }
+    double x = 0;
+    gboolean found_x = FALSE;
+    double y = 0;
+    gboolean found_y = FALSE;
 
+
+    while (TRUE) {
+      if (firstchar == 'X') {
+        x = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+        found_x = TRUE;
+      } else if (firstchar == 'Y') {
+        y = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+        found_y = TRUE;
+      } else {
+        gerb_ungetc(fd);
+        break;
+      }
+      eat_whitespace(fd);
+      firstchar = gerb_fgetc(fd);
+    }
+    if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
+      if (found_x) {
+        state->curr_x = x;
+      }
+      if (found_y) {
+        state->curr_y = y;
+      }
+    } else if(state->coordinate_mode == DRILL_MODE_INCREMENTAL) {
+      if (found_x) {
+        state->curr_x += x;
+      }
+      if (found_y) {
+        state->curr_y += y;
+      }
+    } else {
+      gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+                         _("Coordinate mode is not absolute and not incremental "
+                           "at line %ld in file \"%s\""),
+                         file_line, fd->filename);
+    }
 } /* drill_parse_coordinate */
 
 
@@ -1926,7 +1937,7 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
 } /* read_double */
 
 /* -------------------------------------------------------------- */
-/* Eats all characters up to and including 
+/* Eats all characters up to and including
    the first one of CR or LF */
 static void
 eat_line(gerb_file_t *fd)
@@ -1941,6 +1952,22 @@ eat_line(gerb_file_t *fd)
     if (read != EOF)
 	gerb_ungetc(fd);
 } /* eat_line */
+
+/* -------------------------------------------------------------- */
+/* Eats all tabs and spaces. */
+static void
+eat_whitespace(gerb_file_t *fd)
+{
+    int read;
+
+    do {
+	read = gerb_fgetc(fd);
+    } while ((read == ' ' || read == '\t') && read != EOF);
+
+    /* Restore the non-whitespace character for processing */
+    if (read != EOF)
+	gerb_ungetc(fd);
+} /* eat_whitespace */
 
 /* -------------------------------------------------------------- */
 static char *
