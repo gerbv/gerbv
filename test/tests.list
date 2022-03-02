@@ -200,3 +200,6 @@ test-drill-spaces | test-drill-spaces.exc
 
 # Out of bounds drill tool
 out-of-bounds-drill-tool | test-out-of-bounds-drill-tool.exc
+
+# Altium-style FILE_FORMAT specifier
+LimeSDR-QPCIe_1v2-RoundHoles | LimeSDR-QPCIe_1v2-RoundHoles.drl
