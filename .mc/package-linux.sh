@@ -94,7 +94,7 @@ TEMPORARY_DIRECTORY=`"${MKTEMP}" --directory`
 #!/bin/bash
 
 DIRECTORY=\`dirname "\$0"\`
-LD_LIBRARY_PATH="\${LD_LIBRARY_PATH}:\${DIRECTORY}" "\${DIRECTORY}/gerbv"
+LD_LIBRARY_PATH="\${LD_LIBRARY_PATH}:\${DIRECTORY}" "\${DIRECTORY}/gerbv" "\$@"
 EOT
 
 "${CHMOD}" +x "${TEMPORARY_DIRECTORY}/gerbv.sh"
