@@ -25,6 +25,7 @@ jobs:
 
     - name: Get requirements for configure and build
       run: |
+        sudo apt-get update
         sudo apt-get install autopoint libgtkmm-2.4-dev desktop-file-utils libc6-dbg
 
     - name: Configure and build
