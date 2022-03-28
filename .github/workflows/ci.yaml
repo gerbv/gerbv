@@ -13,6 +13,13 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        coverage: ["-coverage", ""] # Coverage build and a regular one
+        include:
+          - coverage: "-coverage"
+            code_coverage: "--enable-code-coverage" # Only coverage build has this defined.
+    name: ci${{ matrix.coverage }} # Coverage build has "-coverage" added to the name.
 
     steps:
     - uses: actions/checkout@v2
@@ -28,13 +35,19 @@ jobs:
         sudo apt-get update
         sudo apt-get install autopoint libgtkmm-2.4-dev desktop-file-utils libc6-dbg
 
-    - name: Configure and build
+    - name: Install coverage specific programs
+      if: matrix.code_coverage
       run: |
-        sh autogen.sh
-        ./configure CPPFLAGS_EXTRA=-Werror
-        make -j ${NUM_BUILD_JOBS}
+        sudo apt-get install libperlio-gzip-perl libjson-perl
+        pushd ~
+        git clone --depth=1 https://github.com/linux-test-project/lcov.git
+        pushd lcov
+        make PREFIX=${LOCAL_INSTALL_PATH} install
+        hash -r
+        lcov --version
 
     - name: Install valgrind
+      if: "!matrix.code_coverage"
       run: |
         pushd ~
         git clone --depth=1 --branch=master https://github.com/eyal0/valgrind.git
@@ -46,20 +59,56 @@ jobs:
         popd
         popd
 
+    - name: Configure
+      run: |
+        sh autogen.sh
+        ./configure CPPFLAGS_EXTRA=-Werror ${{ matrix.code_coverage }}
+
+    - name: Remove debug and optimization and valgrind from coverage builds
+      if: matrix.code_coverage
+      run: |
+        find . -name Makefile | xargs sed -i 's/-O[0-9]/-O0/g' # No optimizations
+        find . -name Makefile | xargs sed -i 's/-g /-g0 /g' # No debugging
+        : > test/run_valgrind_tests.sh # No valgrind tests.
+
+    - name: Build
+      run: make -j ${NUM_BUILD_JOBS}
+
+    - name: Reset coverage
+      if: matrix.code_coverage
+      continue-on-error: true
+      run: lcov --directory . -z
+
     - name: Run unit tests
       run: |
         make check || (cat test/test-suite.log && false)
 
+    - name: Gather coverage
+      if: matrix.code_coverage
+      run: |
+        lcov --rc lcov_branch_coverage=1 -rc lcov_function_coverage=1 --directory . --capture --no-external --output-file "gerbv-lcov.info"
+
+    - name: Upload coverage to coveralls
+      if: matrix.code_coverage
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: gerbv-lcov.info
+
     - name: Rebuild Fedora 35
+      if: "!matrix.code_coverage"
       run: npx --package mini-cross@0.15.2 mc --no-tty fedora:35 .mc/rebuild.sh
 
     - name: Rebuild Ubuntu 20.04
+      if: "!matrix.code_coverage"
       run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu:20.04 .mc/rebuild.sh
 
     - name: Rebuild Windows amd64
+      if: "!matrix.code_coverage"
       run: npx --package mini-cross@0.15.2 mc --no-tty windows:amd64 .mc/rebuild.sh
 
     - name: Rebuild gerbv.github.io
+      if: "!matrix.code_coverage"
       run: |
         npx --package mini-cross@0.15.2 mc --no-tty website make -C gerbv.github.io
         find gerbv.github.io -type f -name '.gitignore' -exec rm {} \;
@@ -77,5 +126,4 @@ jobs:
       # @see https://github.community/t/how-can-i-test-if-secrets-are-available-in-an-action/17911/10
       env:
         GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
-      if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT }}
-
+      if: ${{ success() && github.event_name == 'push' && env.GERBV_BUILDBOT_PAT  && !matrix.code_coverage }}

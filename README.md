@@ -1,4 +1,4 @@
-# Gerbv – a Gerber file viewer ![Build Status](https://github.com/gerbv/gerbv/actions/workflows/ci.yaml/badge.svg)
+# Gerbv – a Gerber file viewer ![Build Status](https://github.com/gerbv/gerbv/actions/workflows/ci.yaml/badge.svg)[![Coverage Status](https://coveralls.io/repos/github/gerbv/gerbv/badge.svg?branch=main)](https://coveralls.io/github/gerbv/gerbv?branch=main)
 
 Gerbv was originally developed as part of the
 [gEDA Project](https://www.geda-project.org/) but is now separately maintained.

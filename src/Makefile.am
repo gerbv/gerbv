@@ -85,7 +85,7 @@ endif
 # 6. If any interfaces have been removed since the last public release, then
 #    set age to 0.
 #
-libgerbv_la_LDFLAGS = -version-info 1:9:0 -no-undefined
+libgerbv_la_LDFLAGS = -version-info 1:9:0 -no-undefined $(CODE_COVERAGE_LIBS)
 
 gerbv_SOURCES = \
 		attribute.c attribute.h \
@@ -161,7 +161,8 @@ SCMSUBDIR = scheme
 scmdatadir = $(pkgdatadir)/${SCMSUBDIR}/
 dist_scmdata_DATA = init.scm
 
-AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"' -DSCMSUBDIR='"$(SCMSUBDIR)"'
+AM_CFLAGS= -DBACKEND_DIR='"$(scmdatadir)"' -DSCMSUBDIR='"$(SCMSUBDIR)"' $(CODE_COVERAGE_CFLAGS)
+AM_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS)
 
 all-local: run_gerbv
 # create wrapper script that lets you test gerbv prior to installation
