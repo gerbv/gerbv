@@ -25,7 +25,8 @@ install-sh
 intl/
 libtool
 ltmain.sh
-m4/
+m4/*
+!m4/ax_code_coverage.m4
 man/gerbv.1
 missing
 mkinstalldirs
@@ -51,6 +52,12 @@ src/gerbv_icon.ico
 src/libgerbv.la
 src/libgerbv.pc
 src/run_gerbv
+
+# Coverage related files
+src/*.gcno
+src/*.gcda
+gerbv-lcov.info
+
 stamp-h1
 test-driver
 test/mismatch/

@@ -418,6 +418,8 @@ AC_DEFINE([USE_INTERFACE],[1],[Use extension interface of Scheme interpreter])
 #
 ############################################################
 
+AX_CODE_COVERAGE
+
 ############################################################
 #
 # Figure out relative paths
