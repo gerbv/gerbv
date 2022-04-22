@@ -1,8 +1,17 @@
 ========================================================================
-Release Notes for gerbv-2.8.3-dev
+Release Notes for gerbv-2.9.0-dev
 ========================================================================
 -CVE-2021-40401: Gerbv RS-274X aperture definition tokenization use-after-free
                  vulnerability
+
+-gerbv:     Emit warning when G04 includes a CR or LF (PR#92 by @eyal0)
+-gerbv:     Support spaces in excellon XY drill lines (PR#99 by @eyal0)
+-gerbv:     Add support for Altium-style FILE_FORMAT comments (PR#101 by @eyal0)
+-gerbv:     Pass command line arguments from gerbv.sh (PR#102 by @eyal0 and
+            @PetteriAimonen)
+
+-ci:        Run apt-get update before install (PR#103 by @eyal0)
+-ci:        Coveralls support (PR#104 by @eyal0)
 
 
 ========================================================================
