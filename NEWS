@@ -9,6 +9,7 @@ Release Notes for gerbv-2.9.0-dev
 -gerbv:     Add support for Altium-style FILE_FORMAT comments (PR#101 by @eyal0)
 -gerbv:     Pass command line arguments from gerbv.sh (PR#102 by @eyal0 and
             @PetteriAimonen)
+-gerbv:     Include init.scm in releases (PR#112 by @Dromantor and @ooxi)
 
 -ci:        Run apt-get update before install (PR#103 by @eyal0)
 -ci:        Coveralls support (PR#104 by @eyal0)
