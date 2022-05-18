@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.9.0-rc.1
+Release Notes for gerbv-2.9.0
 ========================================================================
 -CVE-2021-40401: Gerbv RS-274X aperture definition tokenization use-after-free
                  vulnerability
