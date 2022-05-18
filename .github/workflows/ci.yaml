@@ -99,9 +99,9 @@ jobs:
       if: "!matrix.code_coverage"
       run: npx --package mini-cross@0.15.2 mc --no-tty fedora:35 .mc/rebuild.sh
 
-    - name: Rebuild Ubuntu 20.04
+    - name: Rebuild Ubuntu 22.04
       if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu:20.04 .mc/rebuild.sh
+      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu:22.04 .mc/rebuild.sh
 
     - name: Rebuild Windows amd64
       if: "!matrix.code_coverage"

@@ -4,7 +4,7 @@
 # executed like this from the main directory:
 #
 #     mc fedora:35 .mc/rebuild.sh
-#     mc ubuntu:20.04 .mc/rebuild.sh
+#     mc ubuntu:22.04 .mc/rebuild.sh
 set -e
 
 sh autogen.sh
