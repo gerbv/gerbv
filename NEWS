@@ -3,7 +3,7 @@ Release Notes for gerbv-2.9.1-rc.1
 ========================================================================
 -CVE-2021-40403: Gerbv pick-and-place rotation parsing use of uninitialized
                  variable vulnerability, discovered by @CiscoTalos team in
-                 issue #2, fixed by @ooxi in PR#85
+                 issue #82, fixed by @ooxi in PR#85
 
 -ci:        Use latest Ubuntu LTS for website generation (PR#118 by @ooxi)
 -ci:        Use latest Fedora release for Windows cross compilation (PR#117 by
