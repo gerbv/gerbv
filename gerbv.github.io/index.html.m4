@@ -66,10 +66,10 @@
            <th>Download</th>
          </tr>
          <tr>
-           <td style="vertical-align: middle"><img src="assets/Fedora_icon_(2021).svg" alt="Fedora 35" title="Fedora 35" style="height: 100px; box-shadow: none; border: none" /></td>
-           <td style="vertical-align: middle">include(ci/Fedora 35.RELEASE_DATE)</td>
-           <td style="vertical-align: middle"><code><a href="https://github.com/gerbv/gerbv/tree/include(ci/Fedora 35.RELEASE_COMMIT)">include(ci/Fedora 35.RELEASE_COMMIT_SHORT)</a></code></td>
-           <td style="vertical-align: middle"><a class="tar_download_link" href="ci/include(ci/Fedora 35.RELEASE_FILENAME)">Download Fedora 35 binaries</a></td>
+           <td style="vertical-align: middle"><img src="assets/Fedora_icon_(2021).svg" alt="Fedora 36" title="Fedora 36" style="height: 100px; box-shadow: none; border: none" /></td>
+           <td style="vertical-align: middle">include(ci/Fedora 36.RELEASE_DATE)</td>
+           <td style="vertical-align: middle"><code><a href="https://github.com/gerbv/gerbv/tree/include(ci/Fedora 36.RELEASE_COMMIT)">include(ci/Fedora 36.RELEASE_COMMIT_SHORT)</a></code></td>
+           <td style="vertical-align: middle"><a class="tar_download_link" href="ci/include(ci/Fedora 36.RELEASE_FILENAME)">Download Fedora 36 binaries</a></td>
          </tr>
          <tr>
            <td style="vertical-align: middle"><img src="assets/cof_orange_hex.png" alt="Ubuntu 22.04" title="Ubuntu 22.04" style="height: 100px; box-shadow: none; border: none" /></td>
