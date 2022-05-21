@@ -1,5 +1,5 @@
 ---
-base: fedora:35
+base: fedora:36
 install:
  - gcc
  - gcc-c++
