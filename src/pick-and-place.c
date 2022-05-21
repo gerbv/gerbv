@@ -344,13 +344,13 @@ pick_and_place_parse_file(gerb_file_t *fd)
 	    pnpPartData.mid_y = pick_and_place_get_float_unit(row[4], def_unit);
 	    pnpPartData.pad_x = pnpPartData.mid_x + 0.03;
 	    pnpPartData.pad_y = pnpPartData.mid_y + 0.03;
-	    sscanf(row[5], "%lf", &pnpPartData.rotation); // no units, always deg
 	    /* check for coordinate sanity, and abort if it fails
 	     * Note: this is mainly to catch comment lines that get parsed
 	     */
 	    if ((fabs(pnpPartData.mid_x) < 0.001)&&(fabs(pnpPartData.mid_y) < 0.001)) {
 		continue;			
 	    }
+	    sscanf(row[5], "%lf", &pnpPartData.rotation); // no units, always deg
 	} else {
 	    continue;
 	}
