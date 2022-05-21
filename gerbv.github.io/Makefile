@@ -4,7 +4,7 @@ all: clean build
 
 .PHONY: clean
 clean:
-	if [ -f 'doc' ]; then		\
+	if [ -d 'doc' ]; then		\
 		rm -rf 'doc';		\
 	fi
 

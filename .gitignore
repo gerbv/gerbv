@@ -21,6 +21,7 @@ doc/html/*.css
 doc/html/*.html
 doc/html/*.js
 doc/html/*.png
+doc/html/*.svg
 install-sh
 intl/
 libtool
