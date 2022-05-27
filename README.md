@@ -75,27 +75,54 @@ Gerbv has been built and tested on
 Gerbv is split into a core functional library and a GUI portion. Developers
 wishing to incorporate Gerber parsing/editing/exporting/rendering into other
 programs are welcome to use libgerbv. Complete API documentation for libgerbv
-is [here](http://gerbv.geda-project.org/doxygen/index.html), as well as many example programs using libgerbv.
+is [here](https://gerbv.github.io/doc/), as well as many example programs using libgerbv.
 
-1. Description: Loads example1-input.gbx into a project, and then exports the layer back to another RS274X file
-  - [example-1](http://gerbv.geda-project.org/doxygen/example1_8c-example.html) 
-2. Description: Loads example2-input.gbx, duplicates it and offsets it to the right by the width of the layer, merges the two images, and exports the merged image back to another RS274X file. Note: this example code uses the gerbv_image 
-  - [example-2](http://gerbv.geda-project.org/doxygen/example2_8c-example.html)
-3. Description: Loads example3-input.gbx, duplicates it and offsets it to the
-              right by the width of the layer, changed the rendered color of the
-              second image, then exports a PNG rendering of the overlaid images.
-  - [example-3](http://gerbv.geda-project.org/doxygen/example3_8c-example.html)
-4. Description: Loads example4-input.gbx, searches through the file and
-              removes any entities with a width less than 60mils, and re-exports
-              the modified image to a new RS274X file.
-  - [example-4](http://gerbv.geda-project.org/doxygen/example4_8c-example.html)
-5. Description: Demonstrate the basic drawing functions available in libgerbv
-              by drawing a smiley face and exporting the layer to a new RS274X file.
-  - [example-5](http://gerbv.geda-project.org/doxygen/example5_8c-example.html)
-6.  Description: Demonstrate how to embed a libgerbv render window into a new
-              application to create a custom viewer
-  - [example-6](http://gerbv.geda-project.org/doxygen/example6_8c-example.html)
+<details>
+  <summary>Click for Example 1</summary>
+   <p>Description: Loads example1-input.gbx into a project, and then exports the layer back to another RS274X file 
+   </p>
+   <p><a href="https://gerbv.github.io/doc/example1_8c-example.html">code example</a></p>
+</details>
+
+<details>
+  <summary>Click for Example 2</summary>
+   <p>Description: Loads example2-input.gbx, duplicates it and offsets it to the right by the width of the layer, merges the two images, and exports the merged image
+    back to another RS274X file. Note: this example code uses the gerbv_image 
+     </p>
+   <p><a href="https://gerbv.github.io/doc/example2_8c-example.html" >code example </a></p>  
+</details>
+ 
+<details>
+  <summary>Click for Example 3</summary>
+    <p>Description: Loads example3-input.gbx, duplicates it and offsets it to the right by the width of the layer, changed the rendered color of the 
+      second image, then exports a PNG rendering of the overlaid images. 
+    </p>
+    <p><a href="https://gerbv.github.io/doc/example3_8c-example.html" >code example </a></p>
+</details>
   
+<details>
+  <summary>Click for Example 4</summary>
+    <p>Description: Loads example4-input.gbx, searches through the file and removes any entities with a width less than 60mils, and re-exports 
+    the modified image to a new RS274X file. 
+    </p>
+    <p><a href="https://gerbv.github.io/doc/example4_8c-example.html">code example</a></p>
+</details>
+    
+<details>
+  <summary>Click for Example 5</summary>
+    <p>Description: Demonstrate the basic drawing functions available in libgerbv 
+    by drawing a smiley face and exporting the layer to a new RS274X file. 
+    </p>
+    <p><a href="https://gerbv.github.io/doc/example5_8c-example.html" >code example</a></p>
+</details>
+      
+<details>
+  <summary>Click for Example 6</summary>
+  <p>Description: Demonstrate how to embed a libgerbv render window into a new 
+    application to create a custom viewer 
+    </p>
+  <p><a href="https://gerbv.github.io/doc/example6_8c-example.html">code example</a></p>
+</details>
 
 
 ## Security
