@@ -5,6 +5,8 @@ Release Notes for gerbv-2.9.1-rc.1
                  variable vulnerability, discovered by @CiscoTalos team in
                  issue #82, fixed by @ooxi in PR#85
 
+-libgerbv:  Improve information for developers (PR#120 by @jesusdoza)
+
 -ci:        Use latest Ubuntu LTS for website generation (PR#118 by @ooxi)
 -ci:        Use latest Fedora release for Windows cross compilation (PR#117 by
             @ooxi)
