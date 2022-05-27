@@ -78,8 +78,8 @@ programs are welcome to use libgerbv. Complete API documentation for libgerbv
 is [here](https://gerbv.github.io/doc/), as well as many example programs using libgerbv.
 
 
-<details>
-  <summary>Click for Example 1</summary>
+  <details>
+   <summary>Click for Example 1</summary>
    <p>Description: Loads example1-input.gbx into a project, and then exports the layer back to another RS274X file 
    </p>
    <p><a href="https://gerbv.github.io/doc/example1_8c-example.html">code example</a></p>
@@ -88,18 +88,17 @@ is [here](https://gerbv.github.io/doc/), as well as many example programs using 
 
   
   <details>
-  <summary>Click for Example 2</summary>
+   <summary>Click for Example 2</summary>
    <p>Description: Loads example2-input.gbx, duplicates it and offsets it to the right by the width of the layer, merges the two images, and exports the merged image
     back to another RS274X file. Note: this example code uses the gerbv_image 
-     </p>
+   </p>
    <p><a href="https://gerbv.github.io/doc/example2_8c-example.html" >code example </a></p>
-  
   </details>
   
 
    
   <details>
-  <summary>Click for Example 3</summary>
+    <summary>Click for Example 3</summary>
     <p>Description: Loads example3-input.gbx, duplicates it and offsets it to the right by the width of the layer, changed the rendered color of the 
       second image, then exports a PNG rendering of the overlaid images. 
     </p>
@@ -107,16 +106,16 @@ is [here](https://gerbv.github.io/doc/), as well as many example programs using 
   </details>
   
   <details>
-  <summary>Click for Example 4</summary>
+    <summary>Click for Example 4</summary>
     <p>Description: Loads example4-input.gbx, searches through the file and removes any entities with a width less than 60mils, and re-exports 
-    the modified image to a new RS274X file. 
+      the modified image to a new RS274X file. 
     </p>
     <p><a href="https://gerbv.github.io/doc/example4_8c-example.html">code example</a></p>
   </details>
   
   
   <details>
-  <summary>Click for Example 5</summary>
+    <summary>Click for Example 5</summary>
     <p>Description: Demonstrate the basic drawing functions available in libgerbv 
     by drawing a smiley face and exporting the layer to a new RS274X file. 
     </p>
@@ -124,11 +123,11 @@ is [here](https://gerbv.github.io/doc/), as well as many example programs using 
   </details>
       
   <details>
-  <summary>Click for Example 6</summary>
-  <p>Description: Demonstrate how to embed a libgerbv render window into a new 
-    application to create a custom viewer 
-    </p>
-  <p><a href="https://gerbv.github.io/doc/example6_8c-example.html">code example</a></p>
+     <summary>Click for Example 6</summary>
+     <p>Description: Demonstrate how to embed a libgerbv render window into a new
+       application to create a custom viewer 
+     </p>
+     <p><a href="https://gerbv.github.io/doc/example6_8c-example.html">code example</a></p>
   </details>
 
   
