@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.9.1-rc.1
+Release Notes for gerbv-2.9.1
 ========================================================================
 -CVE-2021-40403: Gerbv pick-and-place rotation parsing use of uninitialized
                  variable vulnerability, discovered by @CiscoTalos team in
