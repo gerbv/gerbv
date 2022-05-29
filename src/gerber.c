@@ -1856,18 +1856,20 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
  */
 typedef struct {
     double *stack;
-    int sp;
+    size_t sp;
+    size_t capacity;
 } macro_stack_t;
 
 
 static macro_stack_t *
-new_stack(unsigned int stack_size)
+new_stack(size_t stack_size)
 {
     macro_stack_t *s;
 
     s = (macro_stack_t *) g_new0 (macro_stack_t,1);
     s->stack = (double *) g_new0 (double, stack_size);
     s->sp = 0;
+    s->capacity = stack_size;
     return s;
 } /* new_stack */
 
@@ -1888,6 +1890,10 @@ free_stack(macro_stack_t *s)
 static void
 push(macro_stack_t *s, double val)
 {
+    if (s->sp >= s->capacity) {
+        GERB_FATAL_ERROR(_("push will overflow stack capacity"));
+        return;
+    }
     s->stack[s->sp++] = val;
     return;
 } /* push */
@@ -2063,8 +2069,8 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 	    if (type != GERBV_APTYPE_NONE) { 
 		if (nuf_parameters > APERTURE_PARAMETERS_MAX) {
 			GERB_COMPILE_ERROR(_("Number of parameters to aperture macro (%d) "
-							"are more than gerbv is able to store (%d)"),
-							nuf_parameters, APERTURE_PARAMETERS_MAX);
+					"are more than gerbv is able to store (%d)"),
+					nuf_parameters, APERTURE_PARAMETERS_MAX);
 			nuf_parameters = APERTURE_PARAMETERS_MAX;
 		}
 
@@ -2077,6 +2083,15 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 		sam->next = NULL;
 		memset(sam->parameter, 0, 
 		       sizeof(double) * APERTURE_PARAMETERS_MAX);
+
+		/* CVE-2021-40400
+		 */
+		if (nuf_parameters > s->capacity) {
+			GERB_COMPILE_ERROR(_("Number of parameters to aperture macro (%d) "
+					"capped to stack capacity (%zu)"),
+					nuf_parameters, s->capacity);
+			nuf_parameters = s->capacity;
+		}
 		memcpy(sam->parameter, s->stack, 
 		       sizeof(double) *  nuf_parameters);
 		
