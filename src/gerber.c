@@ -39,6 +39,7 @@
 #include "common.h"
 #include "gerb_image.h"
 #include "gerber.h"
+#include "gerb_safety.h"
 #include "gerb_stats.h"
 #include "amacro.h"
 
@@ -1925,6 +1926,8 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
     gerbv_aperture_type_t type = GERBV_APTYPE_NONE;
     gerbv_simplified_amacro_t *sam;
 
+    #define SAM_PARAMETER(idx) gerbv_simplified_amacro_parameter(sam, (idx))
+
     if (aperture == NULL)
 	GERB_FATAL_ERROR(_("aperture NULL in simplify aperture macro"));
 
@@ -2098,59 +2101,59 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 		/* convert any mm values to inches */
 		switch (type) {
 		    case GERBV_APTYPE_MACRO_CIRCLE:
-			if (fabs(sam->parameter[0]) < 0.001)
+			if (fabs(SAM_PARAMETER(0)) < 0.001)
 			    clearOperatorUsed = TRUE;
-			sam->parameter[1]/=scale;
-			sam->parameter[2]/=scale;
-			sam->parameter[3]/=scale;
+			SAM_PARAMETER(1)/=scale;
+			SAM_PARAMETER(2)/=scale;
+			SAM_PARAMETER(3)/=scale;
 			break;
 		    case GERBV_APTYPE_MACRO_OUTLINE:
-			if (fabs(sam->parameter[0]) < 0.001)
+			if (fabs(SAM_PARAMETER(0)) < 0.001)
 			    clearOperatorUsed = TRUE;
 			for (j=2; j<nuf_parameters-1; j++){
-			    sam->parameter[j]/=scale;
+			    SAM_PARAMETER(j)/=scale;
 			}
 			break;
 		    case GERBV_APTYPE_MACRO_POLYGON:
-			if (fabs(sam->parameter[0]) < 0.001)
+			if (fabs(SAM_PARAMETER(0)) < 0.001)
 			    clearOperatorUsed = TRUE;
-			sam->parameter[2]/=scale;
-			sam->parameter[3]/=scale;
-			sam->parameter[4]/=scale;
+			SAM_PARAMETER(2)/=scale;
+			SAM_PARAMETER(3)/=scale;
+			SAM_PARAMETER(4)/=scale;
 			break;
 		    case GERBV_APTYPE_MACRO_MOIRE:
-			sam->parameter[0]/=scale;
-			sam->parameter[1]/=scale;
-			sam->parameter[2]/=scale;
-			sam->parameter[3]/=scale;
-			sam->parameter[4]/=scale;
-			sam->parameter[6]/=scale;
-			sam->parameter[7]/=scale;
+			SAM_PARAMETER(0)/=scale;
+			SAM_PARAMETER(1)/=scale;
+			SAM_PARAMETER(2)/=scale;
+			SAM_PARAMETER(3)/=scale;
+			SAM_PARAMETER(4)/=scale;
+			SAM_PARAMETER(6)/=scale;
+			SAM_PARAMETER(7)/=scale;
 			break;
 		    case GERBV_APTYPE_MACRO_THERMAL:
-			sam->parameter[0]/=scale;
-			sam->parameter[1]/=scale;
-			sam->parameter[2]/=scale;
-			sam->parameter[3]/=scale;
-			sam->parameter[4]/=scale;
+			SAM_PARAMETER(0)/=scale;
+			SAM_PARAMETER(1)/=scale;
+			SAM_PARAMETER(2)/=scale;
+			SAM_PARAMETER(3)/=scale;
+			SAM_PARAMETER(4)/=scale;
 			break;
 		    case GERBV_APTYPE_MACRO_LINE20:
-			if (fabs(sam->parameter[0]) < 0.001)
+			if (fabs(SAM_PARAMETER(0)) < 0.001)
 			    clearOperatorUsed = TRUE;
-			sam->parameter[1]/=scale;
-			sam->parameter[2]/=scale;
-			sam->parameter[3]/=scale;
-			sam->parameter[4]/=scale;
-			sam->parameter[5]/=scale;
+			SAM_PARAMETER(1)/=scale;
+			SAM_PARAMETER(2)/=scale;
+			SAM_PARAMETER(3)/=scale;
+			SAM_PARAMETER(4)/=scale;
+			SAM_PARAMETER(5)/=scale;
 			break;
 		    case GERBV_APTYPE_MACRO_LINE21:
 		    case GERBV_APTYPE_MACRO_LINE22:
-			if (fabs(sam->parameter[0]) < 0.001)
+			if (fabs(SAM_PARAMETER(0)) < 0.001)
 			    clearOperatorUsed = TRUE;
-			sam->parameter[1]/=scale;
-			sam->parameter[2]/=scale;
-			sam->parameter[3]/=scale;
-			sam->parameter[4]/=scale;
+			SAM_PARAMETER(1)/=scale;
+			SAM_PARAMETER(2)/=scale;
+			SAM_PARAMETER(3)/=scale;
+			SAM_PARAMETER(4)/=scale;
 			break;
 		    default: 
 			break;			
@@ -2198,6 +2201,8 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
        primatives */
     aperture->parameter[0]= (gdouble) clearOperatorUsed;
     return handled;
+
+    #undef SAM_PARAMETER
 } /* simplify_aperture_macro */
 
 
