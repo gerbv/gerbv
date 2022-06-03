@@ -5,6 +5,8 @@ Release Notes for gerbv-2.9.2-dev
                  read vulnerability, discovered by @CiscoTalos team in
                  issue #79, fixed by @ooxi in PR#124
 
+-libgerbv:  Improve const correctness (PR#125 by @ooxi)
+
 
 ========================================================================
 Release Notes for gerbv-2.9.1
