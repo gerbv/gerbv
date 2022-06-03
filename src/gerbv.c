@@ -222,14 +222,14 @@ gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo){
 
 /* ------------------------------------------------------------------ */
 void 
-gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
+gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar const* filename)
 {
   gint idx_loaded;
-  dprintf("Opening filename = %s\n", (gchar *) filename);
+  dprintf("Opening filename = %s\n", filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
     GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
-		    (gchar *) filename, gerbvProject->last_loaded);
+		    filename, gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
     idx_loaded = gerbvProject->last_loaded;
@@ -240,15 +240,15 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 
 /* ------------------------------------------------------------------ */
 void 
-gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *filename,
+gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar const* filename,
 		guint16 red, guint16 green, guint16 blue, guint16 alpha)
 {
   gint idx_loaded;
-  dprintf("Opening filename = %s\n", (gchar *) filename);
+  dprintf("Opening filename = %s\n", filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
     GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
-		    (gchar *) filename, gerbvProject->last_loaded);
+		    filename, gerbvProject->last_loaded);
     gerbvProject->last_loaded--;
   } else {
     idx_loaded = gerbvProject->last_loaded;
@@ -394,7 +394,7 @@ gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint n
 /* ------------------------------------------------------------------ */
 gint
 gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t *parsed_image,
-			gchar *filename, gchar *baseName, int idx, int reload){
+			gchar const* filename, gchar const* baseName, int idx, int reload){
     gerb_verify_error_t error = GERB_IMAGE_OK;
     int r, g, b; 
     
@@ -461,7 +461,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
 
 /* ------------------------------------------------------------------ */
 int
-gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int reload,
+gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, int reload,
 		gerbv_HID_Attribute *fattr, int n_fattr, gboolean forceLoadFile)
 {
     gerb_file_t *fd;
@@ -616,7 +616,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 } /* open_image */
 
 gerbv_image_t *
-gerbv_create_rs274x_image_from_filename (gchar *filename){
+gerbv_create_rs274x_image_from_filename (gchar const* filename){
 	gerbv_image_t *returnImage;
 	gerb_file_t *fd;
 	

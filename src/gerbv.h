@@ -820,13 +820,13 @@ gerbv_destroy_project (gerbv_project_t *gerbvProject /*!< the project to destroy
 void 
 gerbv_open_layer_from_filename (
 	gerbv_project_t *gerbvProject, /*!< the existing project to add the new layer to */
-	gchar *filename /*!< the full pathname of the file to be parsed */
+	gchar const* filename /*!< the full pathname of the file to be parsed */
 );
 
 //! Open a file, parse the contents, and add a new layer to an existing project while setting the color of the layer
 void 
 gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, /*!< the existing project to add the new layer to */
-	gchar *filename, /*!< the full pathname of the file to be parsed */
+	gchar const* filename, /*!< the full pathname of the file to be parsed */
 	guint16 red, /*!< the value for the red color component */
 	guint16 green, /*!< the value for the green color component */
 	guint16 blue, /*!< the value for the blue color component */
@@ -858,9 +858,9 @@ gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint n
 
 gint
 gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t *parsed_image,
-			gchar *filename, gchar *baseName, int idx, int reload);
+			gchar const* filename, gchar const* baseName, int idx, int reload);
 int
-gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int reload,
+gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, int reload,
 		gerbv_HID_Attribute *fattr, int n_fattr, gboolean forceLoadFile);
 		
 void
@@ -984,7 +984,7 @@ gerbv_export_dxf_file_from_image (const gchar *filename, /*!< the filename for t
 //! Parse a RS274X file and return the parsed image
 //! \return the new gerbv_image_t, or NULL if not successful
 gerbv_image_t *
-gerbv_create_rs274x_image_from_filename (gchar *filename /*!< the filename of the file to be parsed*/
+gerbv_create_rs274x_image_from_filename (const gchar *filename /*!< the filename of the file to be parsed*/
 );
 
 //! Export an image to a new file in RS274X format
