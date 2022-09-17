@@ -25,9 +25,14 @@ GIT=`command -v git`
 
 if [ ! -x "${GIT}" ]; then
 	(>&2 echo "\`git' missing")
-	exit 1
+	echo -n "${PREFIX}"
+	exit 0
 fi
 
+if ! ${GIT} rev-parse --is-inside-work-tree >& /dev/null ; then
+	echo -n "${PREFIX}"
+	exit 0
+fi
 
 # Get commit short id
 RELEASE_COMMIT=`"${GIT}" rev-parse HEAD`
