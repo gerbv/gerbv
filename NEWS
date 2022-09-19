@@ -2,6 +2,8 @@
 Release Notes for gerbv-2.9.3-dev
 ========================================================================
 
+-libgerbv:  Check for git before making the version (PR#131 by @eyal0)
+
 
 ========================================================================
 Release Notes for gerbv-2.9.2
