@@ -254,7 +254,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	     */
 	    if (!found_primitive && (primitive == 0)) {
 		/* Comment continues 'til next *, just throw it away */
-		gerb_fgetstring(fd, '*');
+		free(gerb_fgetstring(fd, '*'));
 		c = gerb_fgetc(fd); /* Read the '*' */
 		break;
 	    }
