@@ -5,6 +5,7 @@ G04 Handcoded by Stefan Petersen *
 %OFA0.0000B0.0000*%
 G90*
 %AMCIRCLE*
+0 I am a comment in an aperture macro*
 1,1,$1,0,0*
 %
 %AMVECTOR*
