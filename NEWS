@@ -1,7 +1,9 @@
 ========================================================================
-Release Notes for gerbv-2.9.3-rc.1
+Release Notes for gerbv-2.9.3-rc.2
 ========================================================================
 
+-libgerbv:  Free the memory allocated in aperture macro comments (PR#133 by
+            @eyal0)
 -libgerbv:  Check for git before making the version (PR#131 by @eyal0)
 -libgerbv:  Remove local alias to parameter array (PR#128 by @ooxi)
 -libgerbv:  Avoid direct access on array of unknown size (PR#127 by @ooxi)
