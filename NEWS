@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.9.3-rc.2
+Release Notes for gerbv-2.9.3
 ========================================================================
 
 -libgerbv:  Free the memory allocated in aperture macro comments (PR#133 by
