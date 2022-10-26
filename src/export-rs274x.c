@@ -248,7 +248,7 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 	if ((image->info->imageRotation != 0.0)
 	     ||  (thisTransform->rotation != 0.0))
 		fprintf(fd, "%%IR%d*%%\n",
-		        (int)RAD2DEG(image->info->imageRotation)%360);
+		        (int)round(RAD2DEG(image->info->imageRotation))%360);
 
 	if ((image->info->imageJustifyTypeA != GERBV_JUSTIFY_NOJUSTIFY)
 	||  (image->info->imageJustifyTypeB != GERBV_JUSTIFY_NOJUSTIFY)) {
