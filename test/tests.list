@@ -151,7 +151,7 @@ test-image-justify-1  |  test-image-justify-1.gbx
 test-image-justify-2  |  test-image-justify-2.gbx
 test-image-offset-1  |  test-image-offset-1.gbx
 test-image-rotation-1  |  test-image-rotation-1.gbx
-test-image-rotation-1-rotated  |  test-image-rotation-1.gbx | ! --export=rs274x --output=inputs/test-image-rotation-1-rotated.gbx
+test-image-rotation-1-rotated  |  test-image-rotation-1.gbx | ! -r 90 --export=rs274x --output=inputs/test-image-rotation-1-rotated.gbx
 test-image-rotation-2 | test-image-rotation-1-rotated.gbx
 test-image-polarity-1  |  test-image-polarity-1.gbx
 test-image-offset-2  |  test-image-offset-2.gbx
