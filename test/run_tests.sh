@@ -357,6 +357,7 @@ echo "Passed $pass, failed $fail, skipped $skip out of $tot tests."
 rc=0
 if test $pass -ne $tot -a "X$regen" != "Xyes" ; then
     rc=1
+    echo "To regenerate the correct outputs run: ./run_tests.sh --regen"
 fi
 
 exit $rc
