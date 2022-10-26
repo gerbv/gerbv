@@ -355,7 +355,7 @@ show_sep
 echo "Passed $pass, failed $fail, skipped $skip out of $tot tests."
 
 rc=0
-if test $pass -ne $tot ; then
+if test $pass -ne $tot -a "X$regen" != "Xyes" ; then
     rc=1
 fi
 
