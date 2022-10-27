@@ -107,6 +107,14 @@ jobs:
       if: "!matrix.code_coverage"
       run: npx --package mini-cross@0.15.2 mc --no-tty windows:amd64 .mc/rebuild.sh
 
+    - name: Upload executable artifacts
+      if: "!matrix.code_coverage"
+      uses: actions/upload-artifact@v3
+      with:
+        name: gerbv
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
+
     - name: Rebuild gerbv.github.io
       if: "!matrix.code_coverage"
       run: |
