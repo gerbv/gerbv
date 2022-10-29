@@ -66,6 +66,7 @@ WEBSITE_DIRECTORY='gerbv.github.io/ci'
 TEMPORARY_DIRECTORY=`"${MKTEMP}" --directory`
 
 "${CP}" 'COPYING' "${TEMPORARY_DIRECTORY}"
+"${CP}" 'NEWS' "${TEMPORARY_DIRECTORY}"
 "${CP}" 'src/init.scm' "${TEMPORARY_DIRECTORY}"
 "${CP}" 'src/.libs/gerbv.exe' "${TEMPORARY_DIRECTORY}"
 "${FIND}" 'src/.libs' -name 'libgerbv-*.dll' -exec "${CP}" {} "${TEMPORARY_DIRECTORY}" \;
