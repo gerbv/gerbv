@@ -4,6 +4,7 @@ Release Notes for gerbv-2.9.4-dev
 
 -gerbv:     Fix rotation (PR#135 by @eyal0)
 
+-ci:        Include NEWS in CI builds (PR#139 by @ooxi)
 -ci:        Upload gerbv executables as artifacts (PR#137 by @eyal0)
 -ci:        Improve run_tests.sh --regen (PR#136 by @eyal0)
 
