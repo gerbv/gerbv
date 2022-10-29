@@ -2,6 +2,11 @@
 Release Notes for gerbv-2.9.4-dev
 ========================================================================
 
+-gerbv:     Fix rotation (PR#135 by @eyal0)
+
+-ci:        Upload gerbv executables as artifacts (PR#137 by @eyal0)
+-ci:        Improve run_tests.sh --regen (PR#136 by @eyal0)
+
 
 ========================================================================
 Release Notes for gerbv-2.9.3
