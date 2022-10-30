@@ -2,7 +2,8 @@
 Release Notes for gerbv-2.9.4-dev
 ========================================================================
 
--gerbv:     Fix rotation (PR#135 by @eyal0)
+-gerbv:     Fix rotation (PR#135 by @eyal0, supported by @mikhailmihalkov and
+            @ilya301444)
 
 -ci:        Include NEWS in CI builds (PR#139 by @ooxi)
 -ci:        Upload gerbv executables as artifacts (PR#137 by @eyal0)
