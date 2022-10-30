@@ -36,9 +36,6 @@
 #include <cairo-svg.h>
 #include <cairo-pdf.h>
 
-#endif /* DRAW_H */
-
-
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
@@ -49,3 +46,4 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		gerbv_render_info_t *renderInfo, gboolean allowOptimization,
 		gerbv_user_transformation_t transform, gboolean pixelOutput);
 
+#endif /* DRAW_H */
