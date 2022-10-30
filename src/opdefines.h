@@ -3,6 +3,9 @@
     \ingroup gerbv
 */
 
+#ifndef GERBV_OPDEFINES_H
+#define GERBV_OPDEFINES_H
+
     _OP_DEF(opexe_0, "load",                           1,  1,       TST_STRING,                      OP_LOAD             )
     _OP_DEF(opexe_0, 0,                                0,  0,       0,                               OP_T0LVL            )
     _OP_DEF(opexe_0, 0,                                0,  0,       0,                               OP_T1LVL            )
@@ -194,3 +197,5 @@
     _OP_DEF(opexe_6, "closure?",                       1,  1,       TST_NONE,                        OP_CLOSUREP         )
     _OP_DEF(opexe_6, "macro?",                         1,  1,       TST_NONE,                        OP_MACROP           )
 #undef _OP_DEF
+
+#endif /* GERBV_OPDEFINES_H */

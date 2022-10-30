@@ -25,8 +25,8 @@
     \ingroup libgerbv
 */
 
-#ifndef DRILL_H
-#define DRILL_H
+#ifndef GERBV_DRILL_H
+#define GERBV_DRILL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -146,4 +146,4 @@ const char *drill_m_code_name(drill_m_code_t m_code);
 }
 #endif
 
-#endif /* DRILL_H */
+#endif /* GERBV_DRILL_H */

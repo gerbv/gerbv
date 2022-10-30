@@ -28,8 +28,8 @@
     \ingroup gerbv
 */
 
-#ifndef ATTRIBUTE_H
-#define ATTRIBUTE_H
+#ifndef GERBV_ATTRIBUTE_H
+#define GERBV_ATTRIBUTE_H
 
 #include "gerbv.h"
 #ifdef __cplusplus
@@ -47,4 +47,4 @@ attribute_merge (gerbv_HID_Attribute *, int, gerbv_HID_Attribute *, int);
 }
 #endif
 
-#endif /*  ATTRIBUTE_H */
+#endif /* GERBV_ATTRIBUTE_H */

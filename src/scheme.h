@@ -5,8 +5,8 @@
     \ingroup gerbv
 */
 
-#ifndef _SCHEME_H
-#define _SCHEME_H
+#ifndef GERBV_SCHEME_H
+#define GERBV_SCHEME_H
 
 #include <stdio.h>
 
@@ -225,5 +225,5 @@ struct scheme_interface {
 };
 #endif
 
-#endif
+#endif /* GERBV_SCHEME_H */
 

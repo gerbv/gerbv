@@ -5,8 +5,8 @@
     \ingroup gerbv
 */
 
-#ifndef _SCHEME_PRIVATE_H
-#define _SCHEME_PRIVATE_H
+#ifndef GERBV_SCHEME_PRIVATE_H
+#define GERBV_SCHEME_PRIVATE_H
 
 #include "scheme.h"
 
@@ -186,4 +186,4 @@ int is_environment(pointer p);
 int is_immutable(pointer p);
 void setimmutable(pointer p);
 
-#endif
+#endif /* GERBV_SCHEME_PRIVATE_H */

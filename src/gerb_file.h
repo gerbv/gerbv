@@ -26,8 +26,8 @@
     \ingroup libgerbv
 */
 
-#ifndef GERB_FILE_H
-#define GERB_FILE_H
+#ifndef GERBV_GERB_FILE_H
+#define GERBV_GERB_FILE_H
 
 #include <stdio.h>
 
@@ -57,4 +57,4 @@ void gerb_fclose(gerb_file_t *fd);
  */
 char *gerb_find_file(char const * filename, char **paths);
 
-#endif /* GERB_FILE_H */
+#endif /* GERBV_GERB_FILE_H */

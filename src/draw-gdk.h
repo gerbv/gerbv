@@ -26,8 +26,8 @@
     \ingroup libgerbv
 */
 
-#ifndef DRAW_GDK_H
-#define DRAW_GDK_H
+#ifndef GERBV_DRAW_GDK_H
+#define GERBV_DRAW_GDK_H
 
 #include <gdk/gdk.h>
 
@@ -44,5 +44,5 @@ int draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		gerbv_render_info_t *renderInfo,
 		gerbv_user_transformation_t transform);
 
-#endif /* DRAW_GDK_H */
+#endif /* GERBV_DRAW_GDK_H */
 

@@ -26,8 +26,8 @@
     \ingroup libgerbv
 */
 
-#ifndef GERB_IMAGE_H
-#define GERB_IMAGE_H
+#ifndef GERBV_GERB_IMAGE_H
+#define GERBV_GERB_IMAGE_H
 
 #include "gerb_stats.h"
 #include "drill_stats.h"
@@ -74,4 +74,4 @@ gerbv_image_return_new_netstate (gerbv_netstate_t *previousState);
 }
 #endif
 
-#endif /* GERB_IMAGE_H */
+#endif /* GERBV_GERB_IMAGE_H */

@@ -26,8 +26,8 @@
     \ingroup libgerbv
 */
 
-#ifndef DRILL_STATS_H
-#define DRILL_STATS_H
+#ifndef GERBV_DRILL_STATS_H
+#define GERBV_DRILL_STATS_H
 
 #include <gdk/gdk.h>      /* This imports gboolean type */
 
@@ -52,4 +52,4 @@ void drill_stats_add_error(gerbv_error_list_t *error_list_in,
 			   int layer, const char *error_text, 
 			   gerbv_message_type_t type);
 
-#endif /* DRILL_STATS_H */
+#endif /* GERBV_DRILL_STATS_H */

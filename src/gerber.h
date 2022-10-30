@@ -26,8 +26,8 @@
     \ingroup libgerbv
 */
 
-#ifndef GERBER_H
-#define GERBER_H
+#ifndef GERBV_GERBER_H
+#define GERBV_GERBER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -83,4 +83,4 @@ const char *gerber_m_code_name(int m_code);
 }
 #endif
 
-#endif /* GERBER_H */
+#endif /* GERBV_GERBER_H */

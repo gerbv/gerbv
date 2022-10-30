@@ -26,6 +26,9 @@
     \ingroup gerbv
 */
 
+#ifndef GERBV_CALLBACKS_H
+#define GERBV_CALLBACKS_H
+
 typedef enum {
 	CALLBACKS_SAVE_PROJECT_AS,
 	CALLBACKS_SAVE_FILE_PS,
@@ -306,3 +309,4 @@ callbacks_create_window_surface (GtkWidget *widget);
 
 void utf8_snprintf(gchar *dst, gsize byte_len, const gchar *fmt, ...);
 
+#endif /*  GERBV_CALLBACKS_H */

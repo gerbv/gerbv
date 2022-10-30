@@ -62,8 +62,8 @@ For help with using the standalone Gerbv software, please refer to the man page
 
 */
 
-#ifndef __GERBV_H__
-#define __GERBV_H__
+#ifndef GERBV_GERBV_H
+#define GERBV_GERBV_H
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -1130,4 +1130,4 @@ gerbv_rotate_coord(double *x, double *y, double rad);
 }
 #endif
 
-#endif /* __GERBV_H__ */
+#endif /* GERBV_GERBV_H */

@@ -27,8 +27,8 @@
     \ingroup gerbv
 */
 
-#ifndef DRAW_H
-#define DRAW_H
+#ifndef GERBV_DRAW_H
+#define GERBV_DRAW_H
 
 #include <gdk/gdk.h>
 #include <cairo.h>
@@ -46,4 +46,4 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		gerbv_render_info_t *renderInfo, gboolean allowOptimization,
 		gerbv_user_transformation_t transform, gboolean pixelOutput);
 
-#endif /* DRAW_H */
+#endif /* GERBV_DRAW_H */

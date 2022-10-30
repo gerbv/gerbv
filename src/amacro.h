@@ -26,8 +26,8 @@
     \ingroup libgerbv
 */
 
-#ifndef AMACRO_H
-#define AMACRO_H
+#ifndef GERBV_AMACRO_H
+#define GERBV_AMACRO_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,4 +53,4 @@ void print_program(gerbv_amacro_t *amacro);
 }
 #endif
 
-#endif /* AMACRO_H */
+#endif /* GERBV_AMACRO_H */

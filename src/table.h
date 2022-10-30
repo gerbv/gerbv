@@ -3,8 +3,8 @@
     \ingroup gerbv
  */ 
 
-#ifndef TABLE_H
-#define TABLE_H
+#ifndef GERBV_TABLE_H
+#define GERBV_TABLE_H
 
 struct table {
 	GtkWidget	*widget;	/* All table */
@@ -20,4 +20,4 @@ void table_set_sortable(struct table *table);
 void table_set_column_align(struct table *table, gint column_num, gfloat align);
 int table_add_row(struct table *table, ...);
 
-#endif	/* TABLE_H */
+#endif	/* GERBV_TABLE_H */

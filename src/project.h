@@ -27,8 +27,8 @@
     \ingroup gerbv
  */ 
 
-#ifndef PROJECT_H
-#define PROJECT_H
+#ifndef GERBV_PROJECT_H
+#define GERBV_PROJECT_H
 
 typedef struct project_list_t {
     int layerno;
@@ -70,4 +70,5 @@ int write_project_file(gerbv_project_t *gerbvProject, char const* filename, proj
 
 void
 project_destroy_project_list (project_list_t *projectList);
-#endif /* PROJECT_H */
+
+#endif /* GERBV_PROJECT_H */

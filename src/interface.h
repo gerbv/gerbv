@@ -26,6 +26,9 @@
     \ingroup gerbv
 */
 
+#ifndef GERBV_INTERFACE_H
+#define GERBV_INTERFACE_H
+
 /** Sets the key acceleration of a menu item.
 First tries to lookup the given STOCK_ID with gtk_stock_lookup.
 If this succeeds and the retrieved GtkStockItem has an accelerator defined this accelerator is used.
@@ -213,3 +216,5 @@ interface_show_alert_dialog (gchar *primaryText,
 void
 interface_show_layer_edit_dialog (gerbv_user_transformation_t *transforms[],
 				  gerbv_unit_t screenUnit);
+
+#endif /* GERBV_INTERFACE_H */

@@ -25,8 +25,8 @@
     \ingroup libgerbv
 */
 
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef GERBV_COMMON_H
+#define GERBV_COMMON_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -51,5 +51,5 @@
 # define N_(str) (str)
 #endif
 
-#endif /* __COMMON_H__ */
+#endif /* GERBV_COMMON_H */
 

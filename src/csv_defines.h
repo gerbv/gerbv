@@ -1,5 +1,5 @@
-#ifndef DEFINES_H
-#define DEFINES_H
+#ifndef GERBV_CSV_DEFINES_H
+#define GERBV_CSV_DEFINES_H
 /** 	\file csv_defines.h
 	\brief Sets up internal definitions for handling csv-style files
 	\ingroup libgerbv
@@ -60,4 +60,4 @@
 #define UNUSED
 #endif
 
-#endif /* DEFINES_H */
+#endif /* GERBV_CSV_DEFINES_H */

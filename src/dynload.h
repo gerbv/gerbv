@@ -7,11 +7,11 @@
     \ingroup gerbv
 */
 
-#ifndef DYNLOAD_H
-#define DYNLOAD_H
+#ifndef GERBV_DYNLOAD_H
+#define GERBV_DYNLOAD_H
 
 #include "scheme-private.h"
 
 SCHEME_EXPORT pointer scm_load_ext(scheme *sc, pointer arglist);
 
-#endif
+#endif /* GERBV_DYNLOAD_H */

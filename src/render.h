@@ -27,6 +27,9 @@
     \ingroup gerbv
 */
 
+#ifndef GERBV_RENDER_H
+#define GERBV_RENDER_H
+
 #include "gerber.h"
 
 gerbv_stats_t *generate_gerber_analysis(void);
@@ -78,3 +81,4 @@ void render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 
 extern gerbv_render_info_t screenRenderInfo;
 
+#endif /* GERBV_RENDER_H */

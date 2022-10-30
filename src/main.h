@@ -26,8 +26,8 @@
     \ingroup gerbv
 */
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef GERBV_MAIN_H
+#define GERBV_MAIN_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,5 +145,5 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
 
 void
 main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename);
-#endif /* GERBV_H */
 
+#endif /* GERBV_MAIN_H */

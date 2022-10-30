@@ -25,6 +25,9 @@
     \ingroup libgerbv
 */
 
+#ifndef GERBV_SELECTION_H
+#define GERBV_SELECTION_H
+
 GArray *selection_new_array (void);
 guint selection_length (gerbv_selection_info_t *sel_info);
 void selection_add_item (gerbv_selection_info_t *sel_info,
@@ -35,3 +38,4 @@ void selection_clear_item_by_index (
 				gerbv_selection_info_t *sel_info, guint idx);
 void selection_clear (gerbv_selection_info_t *sel_info);
 
+#endif /* GERBV_SELECTION_H */
