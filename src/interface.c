@@ -334,15 +334,18 @@ interface_create_gui (int req_width, int req_height)
 		{ "text/uri-list", 0, 1 },
 	};
 
-	GSettingsSchema *settings_schema;
+	GSettingsSchema *settings_schema = NULL;
 	const gchar *settings_id = "org.geda-user.gerbv";
 	screen.settings = NULL;
 
 	/* Try to find settings schema, GSETTINGS_SCHEMA_DIR env. variable was
 	 * updated with fallback schema directory */
-	settings_schema = g_settings_schema_source_lookup(
-			g_settings_schema_source_get_default(),
-			settings_id, TRUE);
+	GSettingsSchemaSource *settings_source = g_settings_schema_source_get_default();
+	if (NULL != settings_source) {
+		settings_schema = g_settings_schema_source_lookup(
+		    settings_source,
+		    settings_id, TRUE);
+	}
 
 	if (NULL != settings_schema) {
 		g_settings_schema_unref(settings_schema);
