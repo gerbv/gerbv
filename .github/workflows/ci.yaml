@@ -22,7 +22,7 @@ jobs:
     name: ci${{ matrix.coverage }} # Coverage build has "-coverage" added to the name.
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Get number of jobs for compiling
       run: echo "NUM_BUILD_JOBS=$((`nproc --all` * 4))" >> $GITHUB_ENV
