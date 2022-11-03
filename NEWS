@@ -2,6 +2,9 @@
 Release Notes for gerbv-2.9.5-dev
 ========================================================================
 
+-gerbv:     Check for NULL schema source default (PR#143 by @eyal0, reported by
+            @mrx23dot)
+
 -ci:        Upgrade checkout to v3 (PR#146 by @eyal0)
 
 
