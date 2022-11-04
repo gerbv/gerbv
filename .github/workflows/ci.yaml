@@ -122,7 +122,7 @@ jobs:
         find gerbv.github.io -type f -name '.gitignore' -exec rm {} \;
 
     - name: Deploy gerbv.github.io
-      uses: JamesIves/github-pages-deploy-action@v4.3.3
+      uses: JamesIves/github-pages-deploy-action@v4.4.1
       with:
         repository-name: gerbv/gerbv.github.io
         branch: gh-pages
