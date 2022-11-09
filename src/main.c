@@ -674,7 +674,7 @@ main(int argc, char *argv[])
 	    break;
     	case 'V' :
 	    printf(_("gerbv version %s\n"), VERSION);
-	    printf(_("Copyright (C) 2001—2008 by Stefan Petersen\n"
+	    printf(_("Copyright (C) 2001-2008 by Stefan Petersen\n"
 		"and the respective original authors listed in the source files.\n"));
 	    exit(0);	
 	case 'a' :
