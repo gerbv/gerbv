@@ -2,9 +2,13 @@
 Release Notes for gerbv-2.9.5-dev
 ========================================================================
 
+-gerbv:     Replaced — with - to fix charset issue in gerbv --version on wine
+            (PR#150 by @EricJarosch)
 -gerbv:     Check for NULL schema source default (PR#143 by @eyal0, reported by
             @mrx23dot)
 
+-libgerbv:  Changed TinySCHEME version notice from 1.34 to 1.35 (PR#151 by
+            @EricJarosch)
 -libgerbv:  Fix `draw.h' include guard (PR#141 by @ooxi)
 
 -ci:        Update github-pages-deploy-action to 4.4.1 (PR#148 by @ooxi)
