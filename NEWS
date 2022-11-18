@@ -11,6 +11,8 @@ Release Notes for gerbv-2.9.5-rc.1
             @EricJarosch)
 -libgerbv:  Fix `draw.h' include guard (PR#141 by @ooxi)
 
+-ci:        Checkout specific lcov release to increase CI robustness (PR#153 by
+            @ooxi)
 -ci:        Update github-pages-deploy-action to 4.4.1 (PR#148 by @ooxi)
 -ci:        Upgrade checkout to v3 (PR#146 by @eyal0)
 
