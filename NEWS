@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.9.5-rc.1
+Release Notes for gerbv-2.9.5
 ========================================================================
 
 -gerbv:     Replaced — with - to fix charset issue in gerbv --version on wine
