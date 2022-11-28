@@ -1598,6 +1598,7 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
   }
   state->header_number_format = state->number_format = FMT_USER;
   state->decimals = digits_after;
+  state->autod = 0;
   return 1;
 } /* drill_parse_header_is_metric_comment() */
 
