@@ -432,6 +432,7 @@ typedef struct gerbv_aperture {
     double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     gerbv_unit_t unit;
+    struct x2attr_state * attrs; /* Aperture attributes from %TA...*% */
 } gerbv_aperture_t;
 
 /* the gerb_aperture_list is used to keep track of 
@@ -652,6 +653,7 @@ typedef struct gerbv_net {
     GString *label; /*!< a label string for this net */
     gerbv_layer_t *layer; /*!< the RS274X layer this net belongs to */
     gerbv_netstate_t *state; /*!< the RS274X state this net belongs to */
+    struct x2attr_state * attrs; /*!< Object attributes from %TO...*% and possibly %TA...*% if this is a region */
 } gerbv_net_t;
 
 /*! Struct holding info about interpreting the Gerber files read
@@ -714,6 +716,7 @@ typedef struct {
   gerbv_net_t *netlist; /*!< an array of all geometric entities in the layer */
   gerbv_stats_t *gerbv_stats; /*!< RS274X statistics for the layer */
   gerbv_drill_stats_t *drill_stats;  /*!< Excellon drill statistics for the layer */
+  struct x2attr_state * attrs; /*!< File attributes from %TF...*% */
 } gerbv_image_t;
 
 /*!  Holds information related to an individual layer that is part of a project */
@@ -993,6 +996,17 @@ gboolean
 gerbv_export_rs274x_file_from_image (const gchar *filename, /*!< the filename for the new file */
 		gerbv_image_t *image, /*!< the image to export */
 		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
+);
+
+//! Export an image to a new file in RS274X2 format.  Includes any defined attributes.
+//! \return TRUE if successful, or FALSE if not
+gboolean
+gerbv_export_rs274x2_file_from_image (const gchar *filename /*!< the filename for the new file */
+		, gerbv_image_t *image /*!< the image to export */
+		, gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
+		, int decimals /*!< the number of decimals after the decimal point */
+		, int digits /*!< the number of decimal digits total, greater than decimals */
+		, gboolean metric /*!< whether to use mm instead of inch units */
 );
 
 //! Export an image to a new file in Excellon drill format

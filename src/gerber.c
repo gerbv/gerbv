@@ -41,6 +41,7 @@
 #include "gerber.h"
 #include "gerb_stats.h"
 #include "amacro.h"
+#include "x2attr.h"
 
 #undef AMACRO_DEBUG
 #define dprintf if(DEBUG) printf
@@ -102,6 +103,28 @@ gerber_create_new_net (gerbv_net_t *currentNet, gerbv_layer_t *layer, gerbv_nets
 		newNet->state = currentNet->state;
 	return newNet;
 }
+
+
+static gerbv_net_t *
+gerber_create_new_net_from_state (gerbv_net_t *currentNet, gerb_state_t *state)
+{
+        // Called strictly from parsing.
+        gerbv_net_t * net = gerber_create_new_net(currentNet, state->layer, state->state);
+        
+        /*
+         * Capture the state of the object attribute dictionary.  
+         * May be NULL if no X2 attribs.
+         * If this happens to be a G36/37 region, then also the current
+         * aperture attributes will be added as a chained table.
+         */
+        if (state->in_parea_fill)
+                // All created inside region alias back to the start node.
+                net->attrs = state->parea_start_node->attrs;
+        else
+                net->attrs = _x2attr_new_from_dict(state->object_attrs);
+        return net;
+}
+
 
 /* --------------------------------------------------------- */
 gboolean
@@ -302,7 +325,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		state->prev_y = state->curr_y;
 		break;
 	    }
-	    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);
+	    curr_net = gerber_create_new_net_from_state (curr_net, state);
 	    /*
 	     * Scale to given coordinate format
 	     * XXX only "omit leading zeros".
@@ -352,8 +375,10 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    case GERBV_INTERPOLATION_PAREA_START :
 		/* 
 		 * To be able to get back and fill in number of polygon corners
+		 * Regions also get any aperture attributes on top of their object attributes.
 		 */
 		state->parea_start_node = curr_net;
+		curr_net->attrs = _x2attr_chain_from_dict(curr_net->attrs, state->aperture_attrs);
 		state->in_parea_fill = 1;
 		polygonPoints = 0;
 		boundingBox = boundingBoxNew;
@@ -396,12 +421,12 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		&&  state->interpolation  != GERBV_INTERPOLATION_PAREA_START
 		&&  polygonPoints > 0) {
 		    curr_net->interpolation = GERBV_INTERPOLATION_PAREA_END;
-		    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);
+		    curr_net = gerber_create_new_net_from_state (curr_net, state);
 		    curr_net->interpolation = GERBV_INTERPOLATION_PAREA_START;
 		    state->parea_start_node->boundingBox = boundingBox;
 		    state->parea_start_node = curr_net;
 		    polygonPoints = 0;
-		    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);		    
+		    curr_net = gerber_create_new_net_from_state (curr_net, state);		    
 		    curr_net->start_x = (double)state->prev_x / x_scale;
 		    curr_net->start_y = (double)state->prev_y / y_scale;
 		    curr_net->stop_x = (double)state->curr_x / x_scale;
@@ -774,12 +799,20 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
 	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
 		_("Missing Gerber EOF code in file \"%s\""), fd->filename);
     }
+
+    /*
+     * Capture the state of the file attribute dictionary.  
+     * May be NULL if no X2 attribs.
+     */
+    image->attrs = _x2attr_new_from_dict(state->file_attrs);
+
+    _x2attr_destroy_dicts(state);
     g_free(state);
     
     dprintf("               ... done parsing Gerber file\n");
     gerber_update_any_running_knockout_measurements (image);
     gerber_calculate_final_justify_effects(image);
-
+    
     return image;
 } /* parse_gerb */
 
@@ -811,6 +844,11 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     if (buf == NULL) 
 	GERB_FATAL_ERROR("malloc buf failed while checking for rs274x in %s()",
 			__FUNCTION__);
+			
+    /*TODO: SJH - do we really need to read the whole file?
+      How about break out of the following loop as soon as end logical expression is true
+      and a certain minimum number of lines are read?
+    */
     
     while (fgets(buf, MAXL, fd->fd) != NULL) {
         dprintf ("buf = \"%s\"\n", buf);
@@ -1640,6 +1678,13 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	/* Aperture parameters */
     case A2I('A','D'): /* Aperture Description */
 	a = (gerbv_aperture_t *) g_new0 (gerbv_aperture_t,1);
+	
+        /*
+         * Capture the state of the aperture attribute dictionary.  
+         * May be NULL if no X2 attribs.
+         *TODO: 'AB' command also should do this, but we don't implement AB.
+         */
+        a->attrs = _x2attr_new_from_dict(state->aperture_attrs);
 
 	ano = parse_aperture_definition(fd, a, image, scale, line_num_p);
 	if (ano == -1) {
@@ -1829,6 +1874,34 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    _("Error in layer rotation command "
 		       "at line %ld in file \"%s\""),
 		    *line_num_p, fd->filename);
+	}
+	break;
+    case A2I('T','F'): /* File attribute */
+        {
+	gchar * cmd = gerb_fgetstring(fd, '*');
+	_x2attr_handle_T(state, image, X2ATTR_FILE, cmd, error_list, *line_num_p, fd->filename);
+	g_free(cmd);
+	}
+	break;
+    case A2I('T','A'): /* Aperture attribute */
+        {
+	gchar * cmd = gerb_fgetstring(fd, '*');
+	_x2attr_handle_T(state, image, X2ATTR_APERTURE, cmd, error_list, *line_num_p, fd->filename);
+	g_free(cmd);
+	}
+	break;
+    case A2I('T','O'): /* Net (object) attribute */
+        {
+	gchar * cmd = gerb_fgetstring(fd, '*');
+	_x2attr_handle_T(state, image, X2ATTR_OBJECT, cmd, error_list, *line_num_p, fd->filename);
+	g_free(cmd);
+	}
+	break;
+    case A2I('T','D'): /* Delete attribute */
+        {
+	gchar * cmd = gerb_fgetstring(fd, '*');
+	_x2attr_handle_T(state, image, X2ATTR_DELETE, cmd, error_list, *line_num_p, fd->filename);
+	g_free(cmd);
 	}
 	break;
     default:

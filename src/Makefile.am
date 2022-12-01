@@ -55,7 +55,8 @@ libgerbv_la_SOURCES= \
 		gettext.h \
 		pick-and-place.c pick-and-place.h \
 		selection.c selection.h \
-		tooltable.c
+		tooltable.c \
+		x2attr.c x2attr.h
 
 if DXF
 libgerbv_la_SOURCES += export-dxf.cpp
