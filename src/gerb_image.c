@@ -36,6 +36,7 @@
 #include "gerb_image.h"
 #include "gerber.h"
 #include "amacro.h"
+#include "x2attr.h"
 
 typedef struct {
     int oldAperture;
@@ -110,6 +111,7 @@ gerbv_destroy_image(gerbv_image_t *image)
     gerbv_layer_t *layer;
     gerbv_netstate_t *state;
     gerbv_simplified_amacro_t *sam,*sam2;
+    struct x2attr_state * last_net_attrs = NULL;
 
     if(image==NULL)
         return;
@@ -124,6 +126,7 @@ gerbv_destroy_image(gerbv_image_t *image)
 	    	g_free (sam);
 	    	sam = sam2;
 	    }
+	    _x2attr_destroy(image->aperture[i]->attrs);
 
 	    g_free(image->aperture[i]);
 	    image->aperture[i] = NULL;
@@ -155,6 +158,9 @@ gerbv_destroy_image(gerbv_image_t *image)
     
     /*
      * Free netlist
+     * Since attrs may be alias pointer to first node of a region, need to be careful, but it's
+     * easy to do since the aliases all point to the first node of the region, hence track the
+     * pointer and only free when it differes from the previous node's.
      */
     for (net = image->netlist; net != NULL; ) {
 	tmp = net; 
@@ -165,6 +171,10 @@ gerbv_destroy_image(gerbv_image_t *image)
 	}
 	if (tmp->label) {
 		g_string_free (tmp->label, TRUE);
+	}
+	if (tmp->attrs && last_net_attrs != tmp->attrs) {
+	        _x2attr_destroy(tmp->attrs);
+	        last_net_attrs = tmp->attrs;
 	}
 	g_free(tmp);
 	tmp = NULL;
@@ -184,6 +194,8 @@ gerbv_destroy_image(gerbv_image_t *image)
     }
     gerbv_stats_destroy(image->gerbv_stats);
     gerbv_drill_stats_destroy(image->drill_stats);
+    
+    _x2attr_destroy(image->attrs);
 
     /*
      * Free and reset the final image
@@ -376,6 +388,10 @@ gerbv_image_duplicate_aperture (gerbv_aperture_t *oldAperture)
 	  newAperture->simplified = newSimplified;
 	tempSimplified = newSimplified;
     }
+    
+    // Copy aperture attributes
+    newAperture->attrs = _x2attr_duplicate(oldAperture->attrs);
+    
     return newAperture;
 }
 
@@ -389,7 +405,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 	/* NOTE: destImage already contains apertures and data,
 	 * latest data is: lastLayer, lastState, lastNet. */
 
-	gerbv_net_t *currentNet, *newNet;
+	gerbv_net_t *currentNet, *newNet, *first_in_region;
 	gerbv_aperture_type_t aper_type;
 	gerbv_aperture_t *aper;
 	gerbv_simplified_amacro_t *sam;
@@ -404,6 +420,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		err_unknown_macro_aperture = 0,
 		err_rotate_oval = 0,
 		err_rotate_rect = 0;
+        gboolean in_region = FALSE;
 
 	if (trans && (trans->mirrorAroundX || trans->mirrorAroundY)) {
 		if (sourceImage->layertype != GERBV_LAYERTYPE_DRILL) {
@@ -454,6 +471,24 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		/* Create and copy the actual net over */
 		newNet = g_new (gerbv_net_t, 1);
 		*newNet = *currentNet;
+		
+		/*
+		 * Copy object attributes.  Since all except first node of a region
+		 * are aliases of the first node, make sure to alias to the new copy
+		 * instead of duplicating every time.
+		 */
+		if (!in_region)
+                        newNet->attrs = _x2attr_duplicate(currentNet->attrs);
+                else
+                        newNet->attrs = first_in_region->attrs;
+                        
+                if (!in_region && currentNet->interpolation == GERBV_INTERPOLATION_PAREA_START) {
+                        in_region = TRUE;
+                        first_in_region = newNet;
+                }
+                else if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_END)
+                        in_region = FALSE;
+
 
 		if (currentNet->cirseg) {
 			newNet->cirseg = g_new (gerbv_cirseg_t, 1);
@@ -918,6 +953,7 @@ gerbv_image_duplicate_image (gerbv_image_t *sourceImage, gerbv_user_transformati
     newImage->info->plotterFilm = g_strdup (sourceImage->info->plotterFilm);
     newImage->info->attr_list = gerbv_attribute_dup (sourceImage->info->attr_list,
     		 sourceImage->info->n_attr);
+    newImage->attrs = _x2attr_duplicate(sourceImage->attrs);
     
     /* copy apertures over, compressing all the numbers down for a cleaner output, and
        moving and apertures less than 10 up to the correct range */
