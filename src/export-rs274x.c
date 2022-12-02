@@ -47,10 +47,10 @@ typedef struct export_user_data
         int std_version;                // RS274-Xn standard (currently, 1 or 2)
         FILE *fd;                       // File to which we are writing
         x2attr_type_t type;             // Attribute type ('F','A' or 'O')
-        struct x2attr_dict * tracker;   // Dictionary used to maintain current value of all attribs output.
-                                        // This is so we don't dumbly repeat the same key,value pairs.
-                                        // A single table suffices for all types, since the standard mandates
-                                        // unique keys regardless of type.
+        struct x2attr_dict * atracker;  // Dictionaries used to maintain current value of all attribs output.
+        struct x2attr_dict * otracker;  // This is so we don't dumbly repeat the same key,value pairs.
+                                        // Only required for aperture and object attrs.  Separate tables,
+                                        // so that deletions work properly.
         int decimals;                   // Number of fractional decimal places
         int digits;                     // Total decimal digits (max)
         gboolean lzc;                   // Whether to do leading zero compression
@@ -65,6 +65,7 @@ _dump_attribs(unsigned index, const char * key, const char * value, gpointer use
 {
         export_user_data_t * xud = (export_user_data_t *)user_data;
         const char * newval;
+        struct x2attr_dict * tracker;
         
         // Keys and values are assumed to be valid for direct output.  This will be the case if
         // they are unchanged after being imported from the original file.  If there are any
@@ -82,7 +83,21 @@ _dump_attribs(unsigned index, const char * key, const char * value, gpointer use
         //TODO: make use of GChecksum.
         if (!strcmp(key, ".MD5"))
                 return;
-        newval = _x2attr_value_changed(xud->tracker, key, value);
+        switch (xud->type) {
+        case X2ATTR_APERTURE:
+                tracker = xud->atracker;
+                break;
+        case X2ATTR_OBJECT:
+                tracker = index ? xud->atracker : xud->otracker;
+                break;
+        default:
+                tracker = NULL;
+                break;
+        }
+        if (tracker)
+                newval = _x2attr_value_changed(tracker, key, value);
+        else
+                newval = value;
         if (newval) {
                 char type = (char)xud->type;
                 if (xud->type == X2ATTR_OBJECT && index==1)
@@ -92,6 +107,16 @@ _dump_attribs(unsigned index, const char * key, const char * value, gpointer use
                 fprintf(xud->fd, "%%T%c%s%s%s*%%\n", type, key, *newval ? "," : "", newval);
         }
 }
+
+static void
+_dump_deletions(unsigned index, const char * key, const char * value, gpointer user_data)
+{
+        export_user_data_t * xud = (export_user_data_t *)user_data;
+        
+        fprintf(xud->fd, "%%TD%s*%%\n", key);
+        
+}
+
 
 static char *
 _format_pair(export_user_data_t * xud, gdouble x, gdouble y, gboolean ij)
@@ -210,6 +235,7 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image, gdouble tounits, 
 
                 if (xud->std_version > 1) {
 	                xud->type = X2ATTR_APERTURE;
+	                _x2attr_foreach_attr_missing_from_dicts(currentAperture->attrs, xud->atracker, NULL, _dump_deletions, &xud);
 	                x2attr_foreach_aperture_attr(currentAperture, _dump_attribs, xud);
 	        }
 		
@@ -340,7 +366,8 @@ _export(int std_version
 	}
 	
 	xud.fd = fd;
-	xud.tracker = _x2attr_new_dict();
+	xud.atracker = _x2attr_new_dict();
+	xud.otracker = _x2attr_new_dict();
 	xud.decimals = decimals;
 	xud.digits = digits;
 	xud.multiplier = decimal_coeff;
@@ -451,8 +478,13 @@ _export(int std_version
 		oldLayer = currentNet->layer;
 		oldState = currentNet->state;
 
-	        if (x2 && !insidePolygon)
+	        if (x2 && !insidePolygon) {
+	                _x2attr_foreach_attr_missing_from_dicts(currentNet->attrs, 
+	                                        xud.otracker, 
+	                                        currentNet->interpolation==GERBV_INTERPOLATION_PAREA_START ? xud.atracker : NULL, 
+	                                        _dump_deletions, &xud);
 	                x2attr_foreach_net_attr(currentNet, _dump_attribs, &xud);
+	        }
 		
 		switch (currentNet->interpolation) {
 			case GERBV_INTERPOLATION_LINEARx1 :
@@ -519,7 +551,8 @@ _export(int std_version
 	
 	fprintf(fd, "M02*\n");
 	
-	_x2attr_destroy_dict(xud.tracker);
+	_x2attr_destroy_dict(xud.otracker);
+	_x2attr_destroy_dict(xud.atracker);
 	gerbv_destroy_image (image);
 	fclose(fd);
 	

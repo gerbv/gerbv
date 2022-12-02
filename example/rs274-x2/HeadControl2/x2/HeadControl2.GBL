@@ -784,6 +784,9 @@ X9431Y9652D01*
 X9350Y9663D01*
 D02*
 G37*
+G04 Delete attrs.  Check export consistent with this.*
+%TDMyRegionType*%
+%TDMyObjectType*%
 G36*
 X1150Y9578D02*
 X1052Y9565D01*
@@ -1790,6 +1793,8 @@ X12820Y11980D02*
 X18870D01*
 X12745Y11800D02*
 X13526D01*
+G04 Delete the object attr.  Check TD appears in export.*
+%TDMyObjectType*%
 X13576Y11750D01*
 X12150Y12650D02*
 X12820Y11980D01*

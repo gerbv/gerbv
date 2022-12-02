@@ -86,6 +86,12 @@ typedef void (*x2attr_enumeration_callback_t)(
     gpointer user_data //!< data passed from the foreach function call.
     );
 
+// Internal function used for emitting deletions (%TD) when attributes in tracking dictionary (or alternate)
+// but not in the given attribute state.  The callback is invoked for these keys, then removed from the dict.
+void _x2attr_foreach_attr_missing_from_dicts(struct x2attr_state * attrs, 
+                    struct x2attr_dict * d1, struct x2attr_dict * d2, 
+                    x2attr_enumeration_callback_t callback, gpointer user_data);
+
 //! Callback specified function for each key+value file attribute pair.
 void x2attr_foreach_image_attr(gerbv_image_t * image, x2attr_enumeration_callback_t callback, gpointer user_data);
 
