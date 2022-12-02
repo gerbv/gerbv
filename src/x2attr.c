@@ -525,6 +525,82 @@ _x2attr_destroy_dict(x2attr_dict_t * d)
 }
 
 
+typedef struct ghr_data
+{
+    x2attr_enumeration_callback_t callback;
+    gpointer user_data;
+    unsigned index;
+    struct x2attr_state * attrs;
+} ghr_data_t;
+
+static gboolean
+_remove_callback(gpointer key, gpointer value, gpointer user_data)
+{
+    ghr_data_t * data = (ghr_data_t *)user_data;
+    
+    // Return TRUE to delete from hashtable
+    if (!_find_chained_value(data->attrs, (const char *)key)) {
+        data->callback(data->index, (const char *)key, (const char *)value, data->user_data);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void 
+_x2attr_foreach_attr_missing_from_dicts(struct x2attr_state * attrs, 
+                    struct x2attr_dict * d1, struct x2attr_dict * d2, 
+                    x2attr_enumeration_callback_t callback, gpointer user_data)
+{
+    // Scan d1 and d2 (if not NULL) and for each key in the dict, where the key is missing from
+    // the attrs chain, invoke the callback then delete from the dict.
+    // This is mainly used when emitting RS274-X2 so that %TD...*% are output.  We could ignore this,
+    // but then the output file would not have exactly the correct semantics since objects would have
+    // attributes that were not present in the input file.
+    // We don't generate "global" deletions (%TD*%) but if that appears in the input file it is replaced
+    // with as many individual deletions which would achieve the same result.
+    #if 0
+    // Unfortunately, the following only works in libglib2.14, but we want to support 2.0.  So do it the
+    // hard way instead :-(
+    struct GHashTableIter iter;
+    gpointer key, value;
+    unsigned index;
+    
+    if (!attrs)
+        return;
+        
+    for (index = 0; index <= 1; ++index) {
+        x2attr_dict_t * d = index ? d2 : d1;
+        if (d && d->hashtable) {
+            g_hash_table_iter_init (&iter, d->hashtable);
+            while (g_hash_table_iter_next (&iter, &key, &value)) {
+                if (!_find_chained_value(attrs, (const char *)key)) {
+                    callback(index, (const char *)key, (const char *)value, user_data);
+                    g_hash_table_iter_remove(&iter);
+                }
+            }
+        }
+    }
+    #else
+    // Need to wrap given callback into data for the glib remove callback.
+    ghr_data_t data;
+    unsigned index;
+    
+    data.callback = callback;
+    data.user_data = user_data;
+    data.attrs = attrs;
+    
+    if (!attrs)
+        return;
+        
+    for (index = 0; index <= 1; ++index) {
+        data.index = index;
+        x2attr_dict_t * d = index ? d2 : d1;
+        if (d && d->hashtable)
+            g_hash_table_foreach_remove(d->hashtable, _remove_callback, &data);
+    }
+    
+    #endif
+}
 
 /******************
   Library API
