@@ -235,7 +235,7 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image, gdouble tounits, 
 
                 if (xud->std_version > 1) {
 	                xud->type = X2ATTR_APERTURE;
-	                _x2attr_foreach_attr_missing_from_dicts(currentAperture->attrs, xud->atracker, NULL, _dump_deletions, &xud);
+	                _x2attr_foreach_attr_missing_from_dicts(currentAperture->attrs, xud->atracker, NULL, _dump_deletions, xud);
 	                x2attr_foreach_aperture_attr(currentAperture, _dump_attribs, xud);
 	        }
 		
