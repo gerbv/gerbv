@@ -748,6 +748,7 @@ typedef struct {
   gchar *execpath;    /*!< the path to executed version of Gerbv */
   gchar *execname;    /*!< the path plus executible name for Gerbv */
   gchar *project;     /*!< the default name for the private project file */
+  struct x2attr_state * attrs; /*!< Project attributes (flags) from command line etc. */
 } gerbv_project_t;
 
 /*! Color of layer */

@@ -75,9 +75,34 @@ int ipcd356a_likely_line(const char * line,         //!< Current line of file, t
                          file_sniffer_t * fsdata    //!< State data
                          ); 
 
-//! Parse IPC-D-356A and construct an image with attributes.  This image can be displayed like a gerber or component layer,
-//! and may also be used to set RS274-X2 attributes on a set of conductor layers.
-gerbv_image_t * ipcd356a_parse(gerb_file_t *fd);
+/*! Parse IPC-D-356A and construct image(s) with attributes.  This image can be displayed like a gerber or component layer,
+and may also be used to set RS274-X2 attributes on a set of conductor or drill layers read from actual Gerber files.
+
+The returned image is displayable in the same way as normal RS274-X, however the details are limited by the
+available information in this file format, which is designed for testing equipment.  For example, thru-hole pads
+often have only their drill size and position defined, so will display as narrow annular rings.
+
+THe 'layers' parameter is a bitmap indicating which layers of the board are of interest.  IPC-D-356A files number
+layers in physical order, from layer 1 (top) to layer n (bottom).  For example, to process only the top layer
+pass layers=0x02 (i.e. bit 1 set).  Bit 0, for "layer 0", means features which are unrelated to any copper layer,
+such as board outline and scoring lines.  So passing layers=0x03 will return board outline and top pads.
+
+IPC uses "layer 0" (really, access 00) to mean "access both sides".  Since it is not clear which layer number
+is the bottom layer, such A00 features are included only if the top layer is wanted (layers bit 1 is set).  
+
+Drill data is included if the drill hit passes through any of the specified layers.  Drill hits are annotated
+via apertures with a hole size parameter.
+
+Processing multiple layers is OK, but the image will only be useful for annotation (netnames, components etc.) since
+all layers are generated in the one image, making the actual layers visually identical.  Source layer data is
+still available via attribute IPCLayer which will have the layer number, or 0 for "both sides top and bottom".
+
+\return a new gerbv_image_t *, or NULL on failure.  The caller owns the image.
+*/
+gerbv_image_t * ipcd356a_parse(gerb_file_t *fd,         //!< File to read (already opened and rewound)
+                               unsigned long layers,    //!< Bitmap of layers to process.  See description.
+                               gboolean include_tracks  //<! Include conductor (track) data if available.
+                               );
 
 
 #ifdef __cplusplus
