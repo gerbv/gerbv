@@ -60,7 +60,7 @@ struct x2attr_state * _x2attr_chain_from_dict(struct x2attr_state * curr, struct
 
 struct x2attr_state * _x2attr_duplicate(struct x2attr_state * from);
 
-void _x2attr_destroy(struct x2attr_state * s);
+void x2attr_destroy(struct x2attr_state * s);
 
 void _x2attr_handle_T(struct gerb_state * gs, gerbv_image_t * image, x2attr_type_t type, const char * cmd, 
                         gerbv_error_list_t *error_list, long int linenum, const char * filename); 
@@ -122,6 +122,21 @@ const char * x2attr_get_net_attr(const gerbv_net_t * net, const char * key);
 const char * x2attr_get_net_attr_or_default(const gerbv_net_t * net, 
                 const char * key, const char * dflt);
                 
+//! Return project attribute value for given name, or NULL if not found.
+const char * x2attr_get_project_attr(const gerbv_project_t * project, const char * key);
+
+//! Return project attribute value for given name, or given default if not found.
+const char * x2attr_get_project_attr_or_default(const gerbv_project_t * project, 
+                const char * key, const char * dflt);
+
+
+/*! Return new string which is the specified field in the given string value.
+Fields are delimited by commas.  field_num is zero-based.  If not that many fields,
+return the last or only field in the value.  If field_num negative, returns NULL.
+
+Caller owns returned string and must g_free() it.
+*/
+char * x2attr_get_field_or_last(int field_num, const char * value);
 
 /*! Add or delete a file attribute.
 
@@ -180,6 +195,18 @@ attributes.
 */
 const char * x2attr_set_net_attr(gerbv_net_t * net, //!< Net whose file attribute table is to be modified
                                    const char * key,    //!< Net attribute name
+                                   const char * value   //!< Value string, or NULL to delete
+                                   );
+
+/*! Add or delete project attribute.
+
+This is not part of the RS274-X2 standard, but is a convenient way to pass arbitrary
+file processing options from the command line.  See also x2attr_get_project_attr().
+
+\return the interned string of the key.
+*/
+const char * x2attr_set_project_attr(gerbv_project_t * project, //!< Project whose table is to be modified
+                                   const char * key,    //!< Attribute name
                                    const char * value   //!< Value string, or NULL to delete
                                    );
 

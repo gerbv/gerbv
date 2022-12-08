@@ -126,7 +126,7 @@ gerbv_destroy_image(gerbv_image_t *image)
 	    	g_free (sam);
 	    	sam = sam2;
 	    }
-	    _x2attr_destroy(image->aperture[i]->attrs);
+	    x2attr_destroy(image->aperture[i]->attrs);
 
 	    g_free(image->aperture[i]);
 	    image->aperture[i] = NULL;
@@ -173,7 +173,7 @@ gerbv_destroy_image(gerbv_image_t *image)
 		g_string_free (tmp->label, TRUE);
 	}
 	if (tmp->attrs && last_net_attrs != tmp->attrs) {
-	        _x2attr_destroy(tmp->attrs);
+	        x2attr_destroy(tmp->attrs);
 	        last_net_attrs = tmp->attrs;
 	}
 	g_free(tmp);
@@ -195,7 +195,7 @@ gerbv_destroy_image(gerbv_image_t *image)
     gerbv_stats_destroy(image->gerbv_stats);
     gerbv_drill_stats_destroy(image->drill_stats);
     
-    _x2attr_destroy(image->attrs);
+    x2attr_destroy(image->attrs);
 
     /*
      * Free and reset the final image

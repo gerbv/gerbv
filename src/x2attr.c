@@ -324,7 +324,7 @@ _x2attr_duplicate(x2attr_state_t * from)
 }
 
 void 
-_x2attr_destroy(struct x2attr_state * s)
+x2attr_destroy(struct x2attr_state * s)
 {
     _destroy(s);
 }
@@ -679,6 +679,40 @@ x2attr_get_net_attr_or_default(const gerbv_net_t * net,
 }
 
 const char * 
+x2attr_get_project_attr(const gerbv_project_t * project, const char * key)
+{
+    return _find_chained_value(project->attrs, g_intern_string(key));
+}
+
+const char * 
+x2attr_get_project_attr_or_default(const gerbv_project_t * project, 
+                const char * key, const char * dflt)
+{
+    const char * v = _find_chained_value(project->attrs, g_intern_string(key));
+    return v ? v : dflt;
+}
+
+
+char * 
+x2attr_get_field_or_last(int field_num, const char * value)
+{
+    const char * p;
+    if (field_num < 0)
+        return NULL;
+    while (field_num--) {
+        p = strchr(value, ',');
+        if (p)
+            value = p+1;
+        else
+            break;
+    }
+    p = strchr(value, ',');
+    
+    return g_strndup(value, p ? p-value : strlen(value));
+}
+
+
+const char * 
 x2attr_set_image_attr(gerbv_image_t * image,
                        const char * key,
                        const char * value
@@ -722,4 +756,20 @@ x2attr_set_net_attr(gerbv_net_t * net,
     net->attrs = s;   // in case it got realloc'd or created
     return key;
 }
+
+const char * 
+x2attr_set_project_attr(gerbv_project_t * project,
+                       const char * key,
+                       const char * value
+                       )
+{
+    if (!value)
+        return _delete(project->attrs, g_intern_string(key));
+    x2attr_state_t * s = _insert(project->attrs, g_intern_string(key), g_intern_string(value), TRUE);
+    if (!s)
+        return NULL;
+    project->attrs = s;   // in case it got realloc'd or created
+    return key;
+}
+
 

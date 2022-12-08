@@ -56,6 +56,7 @@
 #include "interface.h"
 #include "render.h"
 #include "project.h"
+#include "x2attr.h"
 
 #if (DEBUG)
 # define dprintf printf("%s():  ", __FUNCTION__); printf
@@ -146,6 +147,9 @@ const struct option longopts[] = {
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
     {"geometry",        required_argument,  &longopt_val, 1},
+    // Val=3 to add to project attributes.  If no arg, then set value 'yes' if given else 'no'.
+    {"ipcd356a-layers",        required_argument,  &longopt_val, 3},
+    {"ipcd356a-tracks",        required_argument,  &longopt_val, 3},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",      required_argument,  &longopt_val, 2},
     {"g-fatal-warnings",no_argument,	    &longopt_val, 2},
@@ -613,6 +617,10 @@ main(int argc, char *argv[])
 		}
 		*/
 		break;
+	    case 3: /* Save in project attributes */
+	        x2attr_set_project_attr(mainProject, longopts[longopt_idx].name, 
+	                        longopts[longopt_idx].has_arg ? optarg : "");
+	        break;
 	    default:
 		break;
 	    }
@@ -1346,6 +1354,26 @@ gerbv_print_help(void)
 "  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
 "     rs274x|drill|        the specified format.\n"
 "     idrill>\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  --ipcd356a-layers=<l...>\n"
+"                          When reading IPC-D-356A file, only create image\n"
+"                          data for the specified layer(s).  Arg is a sequence\n"
+"                          of one or more digits 0..9.  Default '01' reads\n"
+"                          board outline (0) and top copper (1).  '14' would\n"
+"                          read top and bottom layers of 4 layer board.\n"
+                ));
+	printf(_(
+"  --ipcd356a-tracks=<y|n>\n"
+"                          When reading IPC-D-356A file, also read conductor data.\n"
+                ));
+	printf(_(
+"      Note: if opening multiple instances of same IPC-D-356A file, specify\n"
+"             options for each one using comma delimiters e.g.\n"
+"             --ipcd356a-layers=0,1,2 --ipcd356a-tracks=y,y,n\n"
+                ));
 #endif
 
 }

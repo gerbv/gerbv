@@ -199,7 +199,9 @@ generated for each distinct set of such attributes.
 typedef struct ipcd356a_state
 {
     // State for parsing etc.
-    gerbv_image_t * image;
+    unsigned long layers;       // Layer bitmap (bit 0 for non-copper, else 1,2,...).
+    gboolean include_tracks;    // Whether to parse 378 records for conductors.
+    gerbv_image_t * image;      // Image being constructed
     char * line;    // Current line, stripped and null term.
     char * p;       // Pointer (into same buffer as above) of next field to process.
     char * errmsg;  // Pointer to 1k buffer.  If not empty, will break from parsing.
@@ -595,6 +597,9 @@ _parse_test_point(ipcd356a_state_t * ist, gboolean smd)
     ist->access = 0;
     if (ist->line[39-1] == 'A')
         ist->access = _fixed_int(ist, 40-1, 2);
+    if (!(ist->layers & 1uL<<(ist->access ? ist->access : 1)))
+        // Not looking for this layer
+        return;
     ist->locx = ist->toinch * _signed_fixed_int(ist, 43-1, 7);
     ist->locy = ist->toinch * _signed_fixed_int(ist, 51-1, 7);
     // Altium 14 (at least) generates sizex=0 for thru hole, so only holediam shows up.
@@ -660,6 +665,8 @@ _parse_test_point(ipcd356a_state_t * ist, gboolean smd)
     Drill diameter, access etc. is obtained from the aperture, since a unique aperture is
     generated for each distinct set of such attributes.
     */
+    sprintf(buf, "%d", ist->access);
+    x2attr_set_net_attr(net, "IPCLayer", buf);
     if (netname && *netname && strcmp(netname, "N/C"))
         x2attr_set_net_attr(net, ".N", netname);
     if (ist->refdes[0] && strcmp(ist->refdes, "NOREF") && strcmp(ist->refdes, "VIA")) {
@@ -720,6 +727,7 @@ static gboolean
 _parse_conductor_path(ipcd356a_state_t * ist, int rectype, const char * netname)
 {
 	gerbv_net_t * net;
+	char buf[100];
 
     while (isspace(*ist->p)) ++ist->p;
         
@@ -778,6 +786,10 @@ _parse_conductor_path(ipcd356a_state_t * ist, int rectype, const char * netname)
             net->boundingBox.top = MAX(ist->locy, ist->drawy) + ist->sizey*0.5;
             gerber_update_image_min_max(&net->boundingBox, 0., 0., ist->image);
             
+            if (ist->access) {
+                sprintf(buf, "%d", ist->access);
+                x2attr_set_net_attr(net, "IPCLayer", buf);
+            }
             if (netname && *netname && strcmp(netname, "N/C"))
                 x2attr_set_net_attr(net, ".N", netname);
 
@@ -812,8 +824,8 @@ _parse_conductor(ipcd356a_state_t * ist, gboolean start)
         if (ist->line[19-1] == 'L')
             ist->access = _fixed_int(ist, 20-1, 2);
             
-        //if (ist->access != 1)
-        //    return FALSE;   // For debugging, isolate top layer only
+        if (!(ist->layers & 1uL << ist->access))
+            return FALSE;   // Not asking for this layer
 
         ist->drawstate = DS_SIZE;
         ist->rot = 0;   // no aperture rotations
@@ -852,7 +864,7 @@ _parse_outline(ipcd356a_state_t * ist, gboolean start)
 
 
 gerbv_image_t *
-ipcd356a_parse(gerb_file_t *fd)
+ipcd356a_parse(gerb_file_t *fd, unsigned long layers, gboolean include_tracks)
 {
     gerbv_image_t *image = NULL;
     char buf[MAXL];
@@ -874,6 +886,8 @@ ipcd356a_parse(gerb_file_t *fd)
         GERB_FATAL_ERROR("malloc image failed in %s()", __FUNCTION__);
     image->layertype = GERBV_LAYERTYPE_IPCD356A;
     image->format = g_new0 (gerbv_format_t, 1); // just to avoid complaints
+    ist->layers = layers;
+    ist->include_tracks = include_tracks;
     ist->image = image;
     ist->net = image->netlist;
 
@@ -939,9 +953,9 @@ ipcd356a_parse(gerb_file_t *fd)
             _parse_thru_hole(ist);
         else if ((!strncmp(ist->line, "327", 3) || !strncmp(ist->line, "027", 3)) && ist->linelen >= 74)
             _parse_surface_mount(ist);
-        else if (!strncmp(ist->line, "389", 3))
+        else if (ist->layers & 1uL && !strncmp(ist->line, "389", 3))
             accum_389 = _parse_outline(ist, TRUE);
-        else if (!strncmp(ist->line, "378", 3))
+        else if (ist->include_tracks && !strncmp(ist->line, "378", 3))
             accum_378 = _parse_conductor(ist, TRUE);
     }
     

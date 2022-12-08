@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <errno.h>
+#include <ctype.h>
 
 #ifdef HAVE_LIBGEN_H
 # include <libgen.h> /* dirname */
@@ -63,6 +64,7 @@
 
 #include "pick-and-place.h"
 #include "ipcd356a.h"
+#include "x2attr.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -199,6 +201,7 @@ gerbv_destroy_project (gerbv_project_t *gerbvProject)
 			g_free(gerbvProject->file[i]);
 		}
 	}
+	x2attr_destroy(gerbvProject->attrs);
 	/* destroy strings */
 	g_free (gerbvProject->path);
 	g_free (gerbvProject->execname);
@@ -535,8 +538,28 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
        if user opens the layer from the menu...if from the command line, we go
        ahead and try to load it anyways) */
     if (ftype == FILE_TYPE_IPCD356A) {
-	dprintf("Found IPC-D-356A file\n");
-        parsed_image = ipcd356a_parse(fd);
+        // Default to getting the non-copper (0) and top (1) layers.  Default to not getting tracks.
+        char * layers, * lp;
+        char * tracks;
+        unsigned long L = 0;
+        int instance = 0, i;
+        // Count how many of this type already loaded.
+        for (i = 0; i <= gerbvProject->last_loaded; ++i)
+                if (gerbvProject->file[i] && gerbvProject->file[i]->image &&
+                    gerbvProject->file[i]->image->layertype == GERBV_LAYERTYPE_IPCD356A)
+                    ++instance;
+        layers = x2attr_get_field_or_last(instance, x2attr_get_project_attr_or_default(gerbvProject, "ipcd356a-layers", "01"));
+        tracks = x2attr_get_field_or_last(instance, x2attr_get_project_attr_or_default(gerbvProject, "ipcd356a-tracks", "no"));
+        lp = layers;
+        while (*layers) {
+                L |= 1uL<<(*layers - '0');
+                ++layers;
+        }
+	printf("Found IPC-D-356A file, instance %d.  Layers=0x%lX, tracks=%s\n", instance, L, tracks);
+	
+        parsed_image = ipcd356a_parse(fd, L, tracks[0]=='y');
+        g_free(tracks);
+        g_free(lp);
         
     }
     else if (gerber_is_rs274x_p(fd, &foundBinary)) {
