@@ -314,6 +314,7 @@ typedef enum {
 		GERBV_LAYERTYPE_DRILL, /*!< the file is an Excellon drill file */
 		GERBV_LAYERTYPE_PICKANDPLACE_TOP, /*!< the file is a CSV pick and place file, top side */
 		GERBV_LAYERTYPE_PICKANDPLACE_BOT, /*!< the file is a CSV pick and place file, bottom side */
+		GERBV_LAYERTYPE_IPCD356A, /*!< the file is an IPC-D-356A test data report */
 } gerbv_layertype_t;
 
 typedef enum {GERBV_KNOCKOUT_TYPE_NOKNOCKOUT,

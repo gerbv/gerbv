@@ -62,6 +62,7 @@
 #include "draw.h"
 
 #include "pick-and-place.h"
+#include "ipcd356a.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -268,6 +269,10 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
 	gerbv_user_transformation_t *trans = &file->transform;
 
 	switch (file->image->layertype) {
+	// IPC is parsed and converted to an RS274-X2 equivalent, thus we can export as normal.
+	// The user should probably select a GRB extension etc.  It will be read back in as
+	// an RS274-X2 with the standard file attribute .FileFunction set to "Other,IPC-D-356A".
+	case GERBV_LAYERTYPE_IPCD356A:
 	case GERBV_LAYERTYPE_RS274X:
 		if (trans) {
 			/* NOTE: mirrored file is not yet supported */
@@ -470,6 +475,10 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     gboolean isPnpFile = FALSE, foundBinary;
     gerbv_HID_Attribute *attr_list = NULL;
     int n_attr = 0;
+    file_type_t ftype, ftype_best;
+    file_type_t ftypes[] = { FILE_TYPE_IPCD356A };
+    file_sniffer_likely_line_t sniffers[] = { ipcd356a_likely_line };
+    
     /* If we're reloading, we'll pass in our file format attribute list
      * since this is our hook for letting the user override the fileformat.
      */
@@ -497,6 +506,13 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	gerbvProject->file[gerbvProject->max_files+1] = NULL;
 	gerbvProject->max_files += 2;
     }
+
+    // For now, use the generalized file sniffer just for IPC-D-356A.
+    //TODO: implement sniffer funcs for other types, to unify handling.
+    ftype = file_sniffer_guess_file_type(filename, sizeof(ftypes)/sizeof(ftypes[0]),
+                        ftypes, sniffers, &ftype_best);    
+    if (ftype == FILE_TYPE_CANNOT_OPEN)
+        return -1;      // Error already posted.
     
     dprintf("In open_image, about to try opening filename = %s\n", filename);
     
@@ -511,13 +527,19 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     fd->filename = g_strdup(filename);
     
     dprintf("In open_image, successfully opened file.  Now check its type....\n");
+    
+    
     /* Here's where we decide what file type we have */
     /* Note: if the file has some invalid characters in it but still appears to
        be a valid file, we check with the user if he wants to continue (only
        if user opens the layer from the menu...if from the command line, we go
        ahead and try to load it anyways) */
-
-    if (gerber_is_rs274x_p(fd, &foundBinary)) {
+    if (ftype == FILE_TYPE_IPCD356A) {
+	dprintf("Found IPC-D-356A file\n");
+        parsed_image = ipcd356a_parse(fd);
+        
+    }
+    else if (gerber_is_rs274x_p(fd, &foundBinary)) {
 	dprintf("Found RS-274X file\n");
 	if (!foundBinary || forceLoadFile) {
 		/* figure out the directory path in case parse_gerb needs to
