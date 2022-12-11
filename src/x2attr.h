@@ -24,6 +24,65 @@
 /** \file x2attr.h
     \brief Header info for the RS274-X2 attribute management functions
     \ingroup libgerbv
+    
+    Attributes are essentially a key string and associated value string.
+    There are 3 types defined in the standard: File, Aperture and Object,
+    however all types share the same key space.
+    
+    Keys are limited length strings (1-127 ascii characters).  They must be
+    alphanumeric plus the characters '.', '$' or '_'.  First character
+    must not be a digit.  If you write a key that begins with a non-standard
+    character, the key will remain "private" and not written on export.
+    For such private keys, you can basically ignore the following escape/
+    unescape convention, and just store arbitrary C strings in the value,
+    since then there is no need for standard compatibility.  Most of the time,
+    you can process the values in native file format, since escapes
+    are rarely used.  This has the advantage of much greater efficiency,
+    which is why this library does not automatically translate when files
+    are read and written.  For the rare cases where you need to be
+    concerned, see the following.
+    
+    Values are arbitrary unicode, encoded using UTF-8 in the gerber file.
+    To support such arbitrariness, when saved in the Gerber file,
+    the characters '%', '*' and '\' (plus control characters) must
+    be escaped using \uXXXX.
+    
+    Values may be divided into fields.  Fields are delimited by commas
+    when written to the Gerber file.  Thus, if a field contains a comma
+    character, each such must be escaped using \u002C to avoid confusing it
+    with multiple fields when read back.
+    
+    When using this API, the internal structures (gerbv_image_t,
+    gerbv_aperture_t, gerbv_net_t etc.) which store attributes store them
+    in external file representation form.
+    
+    When using attributes programmatically, convert the values into normal
+    C strings (and arrays of strings) using the x2attr_file_to_utf8_array()
+    and related functions.
+    
+    Similarly, when setting attribute values to be written out to an exported
+    Gerber file, first escape the C strings properly using
+    x2attr_utf8_array_to_file() and related functions.
+    
+    The following is an example of how to obtain a file attribute, modify
+    the value, then write it back ready for export.
+    
+    ~~~~~~~~~~~~~~~{.c}
+    gerbv_image_t * image = ...;
+    
+    const char * val = x2attr_get_image_attr(image, "MyKey");
+    char * cval = x2attr_file_to_utf8(val, 0);
+    char * newcval = g_strconcat(cval, "\nfoo,bar", NULL); 
+    char * newval = x2attr_utf8_to_file(newcval);
+    x2attr_set_image_attr(image, "MyKey", newval);
+    g_free(newval);
+    g_free(newcval);
+    g_free(cval);
+    ~~~~~~~~~~~~~~~
+    
+    In the above, the attribute would be written to the gerber file like
+    
+    <pre>%TFMyKey,OldVal\u000Afoo\u002Cbar*%</pre>
 */
 
 #ifndef X2ATTR_H
@@ -132,6 +191,14 @@ const char * x2attr_get_project_attr_or_default(const gerbv_project_t * project,
 
 /*! Return new string which is the specified field in the given string value.
 Fields are delimited by commas.  field_num is zero-based.  If not that many fields,
+return the specified default value.  If field_num negative, returns NULL.
+
+Caller owns returned string and must g_free() it.
+*/
+char * x2attr_get_field_or_default(int field_num, const char * value, const char * dflt);
+
+/*! Return new string which is the specified field in the given string value.
+Fields are delimited by commas.  field_num is zero-based.  If not that many fields,
 return the last or only field in the value.  If field_num negative, returns NULL.
 
 Caller owns returned string and must g_free() it.
@@ -209,6 +276,27 @@ const char * x2attr_set_project_attr(gerbv_project_t * project, //!< Project who
                                    const char * key,    //!< Attribute name
                                    const char * value   //!< Value string, or NULL to delete
                                    );
+
+
+//! Convert arbitrary UTF-8 encoded C string to RS274-X2 attribute value encoding.
+char * x2attr_utf8_to_file(const char * utf8);
+
+//! Convert array of arbitrary UTF-8 encoded C string to RS274-X2 attribute value encoding.
+char * x2attr_utf8_array_to_file(const GArray * utf8_array);
+
+//! Convert RS274-X2 attribute value encoding (e.g. as returned by x2attr_get_net_attr())
+//! to a UTF-8 encoded C string.
+char * x2attr_file_to_utf8(const char * attrstr, int index);
+
+//! Convert comma delimited RS274-X2 attribute value encoding (e.g. as returned by x2attr_get_net_attr())
+//! to an array of UTF-8 encoded C strings.  Return value should be feed using x2attr_destroy_utf8_array().
+GArray * x2attr_file_to_utf8_array(const char * attrstr);
+
+//! Return the number of (comma delimited) fields in an RS274-X2 attribute value.
+int x2attr_get_num_fields(const char * attrstr);
+
+//! Destroy the array returned by x2attr_file_to_utf8_array().
+void x2attr_destroy_utf8_array(GArray * utf8_array);
 
 #ifdef __cplusplus
 }
