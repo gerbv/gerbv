@@ -201,6 +201,7 @@ typedef struct ipcd356a_state
     // State for parsing etc.
     unsigned long layers;       // Layer bitmap (bit 0 for non-copper, else 1,2,...).
     gboolean include_tracks;    // Whether to parse 378 records for conductors.
+    const char * label_format;  // 'd' for refdes, 'dp' for refdes-pin, 'N' for netname, else none.
     gerbv_image_t * image;      // Image being constructed
     char * line;    // Current line, stripped and null term.
     char * p;       // Pointer (into same buffer as above) of next field to process.
@@ -356,7 +357,9 @@ _parse_header(ipcd356a_state_t * ist)
         k = g_intern_string(d); // key will be interned "NNAME1", "NNAME2" etc.
         g_free(d);
         _advance_p(ist);
-        v = g_intern_string(ist->p); // value will be interned real net name e.g. "FOO BAR"
+        d = x2attr_utf8_to_file(ist->p); // Escape string at this point, since who knows what chars are used.
+        v = g_intern_string(d); // value will be interned real net name e.g. "FOO BAR" or "FOO\u002CBAR" if there was a comma.
+        g_free(d);
         g_hash_table_insert(ist->netnames, (void *)k, (void *)v);
         //printf("IPC: inserted net name alias %s -> %s\n", k, v);
     }
@@ -376,7 +379,9 @@ _register_netname(ipcd356a_state_t * ist)
     // For now, treat "N/C" and blank the same, by returning an empty string.
     if (!strcmp(alias, "N/C") || !alias[0])
         return "";
-    k = g_intern_string(alias);
+    q = x2attr_utf8_to_file(alias); // May have odd chars, so escape now.
+    k = g_intern_string(q);
+    g_free(q);
     n = (const char *)g_hash_table_lookup(ist->netnames, k);
     if (n)
         return n;
@@ -553,7 +558,7 @@ _register_aperture(ipcd356a_state_t * ist, int * aindex)
                         ist->aperkey[0]=='2' ? "SMDPad" :
                         ist->aperkey[1]=='V' ? "ViaPad" :
                         ist->aperkey[0]=='8' ? 
-                            (ist->aperkey[1]=='B' ? "Profile" :
+                            (ist->aperkey[1]=='B' ? "Profile,NP" :
                              ist->aperkey[1]=='P' ? "Other,PanelEdge" :
                              ist->aperkey[1]=='S' ? "Other,ScoringLine" :
                                                     "Other,OtherFab"
@@ -578,10 +583,12 @@ _parse_test_point(ipcd356a_state_t * ist, gboolean smd)
     const char * netname = _register_netname(ist);  // The real netname (interned)
     int aindex = 0;
 	gerbv_net_t * net;
-	char buf[100];
+	char buf[200];
+	char label[400];
     //gerbv_render_size_t boundingBoxNew = {HUGE_VAL,-HUGE_VAL,HUGE_VAL,-HUGE_VAL};   // no size
     //gerbv_render_size_t boundingBoxNew = {-HUGE_VAL,HUGE_VAL,-HUGE_VAL,HUGE_VAL};   // infinite size
     
+    label[0] = 0;   // Object label string for e.g. display.
     // -1 is to adjust from column numbers in the doc, to 0-based C arrays.
     strncpy(ist->refdes, ist->line + 21-1, sizeof(ist->refdes)-1);
     strncpy(ist->pin, ist->line + 28-1, sizeof(ist->pin)-1);
@@ -667,14 +674,39 @@ _parse_test_point(ipcd356a_state_t * ist, gboolean smd)
     */
     sprintf(buf, "%d", ist->access);
     x2attr_set_net_attr(net, "IPCLayer", buf);
-    if (netname && *netname && strcmp(netname, "N/C"))
-        x2attr_set_net_attr(net, ".N", netname);
     if (ist->refdes[0] && strcmp(ist->refdes, "NOREF") && strcmp(ist->refdes, "VIA")) {
-        x2attr_set_net_attr(net, ".C", ist->refdes);
+        char * refdes_escaped = x2attr_utf8_to_file(ist->refdes);
+        x2attr_set_net_attr(net, ".C", refdes_escaped);
         if (ist->pin[0] && strcmp(ist->pin, "NPIN")) {
-            sprintf(buf, "%s,%s", ist->refdes, ist->pin);
+            char * pin_escaped = x2attr_utf8_to_file(ist->pin);
+            if (!strcmp(ist->label_format, "d"))
+                sprintf(label, "%s", ist->refdes);
+            else if (!strcmp(ist->label_format, "dp"))
+                sprintf(label, "%s-%s", ist->refdes, ist->pin);
+            sprintf(buf, "%s,%s", refdes_escaped, pin_escaped);
             x2attr_set_net_attr(net, ".P", buf);
+            g_free(pin_escaped);
         }
+        else if (ist->label_format[0] == 'd')
+            strcpy(label, ist->refdes);
+        g_free(refdes_escaped);
+    }
+    if (netname && *netname && strcmp(netname, "N/C")) {
+        // netname already escaped
+        x2attr_set_net_attr(net, ".N", netname);
+        if (ist->label_format[0] == 'N') {
+            char * nn;
+            if (label[0])
+                strcat(label, ":");
+            // unescape so looks pretty in label
+            nn = x2attr_file_to_utf8(netname, 0);
+            strcat(label, nn);
+            g_free(nn);
+        }
+    }
+
+    if (label[0]) {
+        net->label = g_string_new (label);
     }
 }
 
@@ -772,7 +804,7 @@ _parse_conductor_path(ipcd356a_state_t * ist, int rectype, const char * netname)
             net->layer = ist->layer;    // Nothing apart from the default layer state.
             net->state = ist->netstate;
             
-            // Fill it in.  All flashes, so start==stop.
+            // Fill it in.
             net->start_x = ist->locx;
             net->start_y = ist->locy;
             net->stop_x = ist->drawx;
@@ -864,7 +896,7 @@ _parse_outline(ipcd356a_state_t * ist, gboolean start)
 
 
 gerbv_image_t *
-ipcd356a_parse(gerb_file_t *fd, unsigned long layers, gboolean include_tracks)
+ipcd356a_parse(gerb_file_t *fd, unsigned long layers, gboolean include_tracks, const char * label_format)
 {
     gerbv_image_t *image = NULL;
     char buf[MAXL];
@@ -873,6 +905,7 @@ ipcd356a_parse(gerb_file_t *fd, unsigned long layers, gboolean include_tracks)
     char errmsg[1025];
     gboolean accum_389 = FALSE;
     gboolean accum_378 = FALSE;
+    char * field;
     
     ist = g_new0(ipcd356a_state_t, 1);
     if (ist == NULL)
@@ -888,6 +921,7 @@ ipcd356a_parse(gerb_file_t *fd, unsigned long layers, gboolean include_tracks)
     image->format = g_new0 (gerbv_format_t, 1); // just to avoid complaints
     ist->layers = layers;
     ist->include_tracks = include_tracks;
+    ist->label_format = label_format;
     ist->image = image;
     ist->net = image->netlist;
 
@@ -959,6 +993,28 @@ ipcd356a_parse(gerb_file_t *fd, unsigned long layers, gboolean include_tracks)
             accum_378 = _parse_conductor(ist, TRUE);
     }
     
+    // Save these as (currently non-standard) attributes.
+    if (ist->job) {
+        field = x2attr_utf8_to_file(ist->job);
+        x2attr_set_image_attr(image, "IPCJob", field);
+        g_free(field);
+    }
+    if (ist->title) {
+        field = x2attr_utf8_to_file(ist->title);
+        x2attr_set_image_attr(image, "IPCTitle", field);
+        g_free(field);
+    }
+    if (ist->num) {
+        field = x2attr_utf8_to_file(ist->num);
+        x2attr_set_image_attr(image, "IPCNum", field);
+        g_free(field);
+    }
+    if (ist->rev) {
+        field = x2attr_utf8_to_file(ist->rev);
+        x2attr_set_image_attr(image, "IPCRev", field);
+        g_free(field);
+    }
+
     g_free(ist->job);
     g_free(ist->title);
     g_free(ist->num);
