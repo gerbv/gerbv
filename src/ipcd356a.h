@@ -97,11 +97,14 @@ Processing multiple layers is OK, but the image will only be useful for annotati
 all layers are generated in the one image, making the actual layers visually identical.  Source layer data is
 still available via attribute IPCLayer which will have the layer number, or 0 for "both sides top and bottom".
 
+label_format may be "n" for none, "d" for component refdes, or "dp" for refdes-pin.
+
 \return a new gerbv_image_t *, or NULL on failure.  The caller owns the image.
 */
 gerbv_image_t * ipcd356a_parse(gerb_file_t *fd,         //!< File to read (already opened and rewound)
                                unsigned long layers,    //!< Bitmap of layers to process.  See description.
-                               gboolean include_tracks  //<! Include conductor (track) data if available.
+                               gboolean include_tracks, //!< Include conductor (track) data if available.
+                               const char * label_format    //!< What gerbv_net_t label string to generate.
                                );
 
 

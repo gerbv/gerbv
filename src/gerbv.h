@@ -92,7 +92,7 @@ extern "C" {
  */
 #define APERTURE_PARAMETERS_MAX 102
 #define GERBV_SCALE_MIN 10
-#define GERBV_SCALE_MAX 3000
+#define GERBV_SCALE_MAX 6000
 #define MAX_ERRMSGLEN 25
 #define MAX_COORDLEN 28
 #define MAX_DISTLEN 180
@@ -769,6 +769,8 @@ typedef struct {
 	gint displayWidth; /*!< the width of the scene (in pixels, or points depending on the surface type) */
 	gint displayHeight; /*!< the height of the scene (in pixels, or points depending on the surface type) */
 	gboolean show_cross_on_drill_holes; /*!< TRUE to show cross on drill holes */
+	gfloat textSizeInch; /*! Target text em square size in user units (inch). */
+        GdkColor textColor; /*!< Text color */
 } gerbv_render_info_t;
 
 //! Allocate a new gerbv_image structure
@@ -889,6 +891,10 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 void
 gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerbvProject,
 		cairo_t *cr, gerbv_render_info_t *renderInfo);
+
+void
+gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject, gerbv_fileinfo_t *fileInfo, 
+                gerbv_render_info_t *renderInfo);
 
 void
 gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t *cr,
@@ -1128,6 +1134,26 @@ gerbv_transform_coord(double *x, double *y,
 /*! Rotate coordinate x and y buy angle in radians */
 void
 gerbv_rotate_coord(double *x, double *y, double rad);
+
+/*! Parse a color from the command line etc., to gerbv_layer_color.  Returns 0 if ok, -1 if error
+in which case a message is printed to stderr.
+*/
+int 
+gerbv_parse_color(gerbv_layer_color * color,    //!< Color struct to be filled in
+                   const char * color_str,      //!< String to parse, like "#aa0088"
+                   gboolean allow_alpha,        //!< Whether to support alpha channel
+                   const char * context);       //!< Indicate context e.g. "background" - goes in messages.
+
+/*! Parse a color from the command line etc., to GdkColor.  Returns 0 if ok, -1 if error
+in which case a message is printed to stderr.
+*/
+int 
+gerbv_parse_gdk_color(GdkColor * color,         //!< Color struct to be filled in
+                   const char * color_str,      //!< String to parse, like "#aa0088"
+                   gboolean allow_alpha,        //!< Whether to support alpha channel - currently must be FALSE.
+                   const char * context);       //!< Indicate context e.g. "background" - goes in messages.
+
+
 
 #undef MIN
 #undef MAX

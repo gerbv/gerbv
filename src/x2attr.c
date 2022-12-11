@@ -694,6 +694,27 @@ x2attr_get_project_attr_or_default(const gerbv_project_t * project,
 
 
 char * 
+x2attr_get_field_or_default(int field_num, const char * value, const char * dflt)
+{
+    const char * p;
+    if (field_num < 0)
+        return NULL;
+    while (field_num--) {
+        p = strchr(value, ',');
+        if (p)
+            value = p+1;
+        else
+            break;
+    }
+    if (field_num >= 0)
+        return g_strdup(dflt);
+        
+    p = strchr(value, ',');
+    
+    return g_strndup(value, p ? p-value : strlen(value));
+}
+
+char * 
 x2attr_get_field_or_last(int field_num, const char * value)
 {
     const char * p;
@@ -772,4 +793,272 @@ x2attr_set_project_attr(gerbv_project_t * project,
     return key;
 }
 
+
+
+#define _init_ua(ua, index, val) (((char **)(ua->data))[index] = (val))
+
+static unsigned
+_getxdigits(char ** pp, unsigned n)
+{
+    unsigned x = 0;
+    while (n-- && isxdigit(*++*pp)) {
+        unsigned c = **pp;
+        if (isdigit(c))
+            x = x*16u + (c - '0');
+        else if (islower(c))
+            x = x*16u + (c - 'a' + 10u);
+        else
+            x = x*16u + (c - 'A' + 10u);
+    }
+    if ((int)n < 0) 
+        ++*pp;
+    return x;
+}
+
+static char *
+_file_to_utf8_inplace(char * s)
+{
+    // Do the unescaping work.  s is assumed to be an attribute field value.  Returns s.
+    // Unescaping always results in length reduction, so do it in-place in the existing buffer.
+    // The RS274-X2 standard does not completely describe the use of backslash as an escape character.
+    // Here, we implement the following:
+    //  \uXXXX  - 16 bit unicode, convert to UTF-8
+    //  \UXXXXXXXX - 32 bit unicode, convert to UTF-8
+    //  \\ - literal backslash
+    //  \r, \n, \t - C escapes for basic whitespace
+    //  \xXX - C escape for hex encoded.  Treated equivalently to \u00XX.
+    //  \<other> - Probably an error, but seems harmless enough to leave them untranslated e.g. \i will remain as "\i".
+    // For codes that would result in a byte ordinal value of 0x00 (null), this is permissible but leaves
+    // the string truncated at that point.  It's really an error by whoever generated the file.
+    // If s has UTF-8 errors, they will remain in the return.
+    // We're forgiving about the number of hex digits following \u, \U, or \x: if ends before finding enough hex digits,
+    // then pad on left with zeros.  If this results in a nul, then so be it.
+    
+    // q looks for next backslash.  r is move dest, p is move source.
+    char * q, * r = s, * p = s;
+    unsigned hex;
+    int l;
+    
+    do {
+        q = strchr(p, '\\');
+        if (!q) {
+            if (r != p)
+                memmove(r, p, strlen(p)+1);
+            break;
+        }
+        l = q - p;
+        if (l && r != p)
+            memmove(r, p, l);
+        r += l;
+        p += l;
+        // Now, p and q point to a backslash; decide how to fill *r.
+        ++q;
+        switch (*q) {
+        default:
+            // Not recognized escape, copy the backslash and continue
+            *r++ = *p++;
+            break;
+        case 'u':
+            hex = _getxdigits(&q, 4);
+            goto _common_hex;
+        case 'U':
+            hex = _getxdigits(&q, 8);
+            goto _common_hex;
+        case 'X':
+        case 'x':
+            hex = _getxdigits(&q, 2);
+        _common_hex:
+            if (!hex) {
+                *r = 0;
+                // Early return since null terminated now.
+                return s;
+            }
+            l = g_unichar_to_utf8(hex, r);
+            r += l;
+            p = q;
+            break;
+        case 'r': *r++ = '\r'; p = q+1; break;
+        case 'n': *r++ = '\n'; p = q+1; break;
+        case 't': *r++ = '\t'; p = q+1; break;
+        }
+    } while (TRUE);
+                
+    
+    return s;
+}
+
+static unsigned
+_utf8_to_file(const char * utf8, char * outbuf)
+{
+    // Implementation note: since escaping the string can expand it by up to 6 times (e.g. 3 escape chars would
+    // expand to \u001B\u001B\u001B), and since 99.99% of strings should be quite short, it makes sense to 
+    // first count how many bytes are required before allocating the string.  Counting is much faster than
+    // (re)allocating, until the string gets quite long.  Of course, you can avoid even this overhead and
+    // just pass a buffer that is almost always 6 times bigger than needed.
+    // Note that UTF-8 is output unchanged, so we don't need to worry about chars >= 0x80.  We only need
+    // to escape control chars, and a few ascii chars.
+    //
+    // If this function called with outbuf NULL, return the computed buffer length required to hold the result.
+    // Otherwise, outbuf assumed to be large enough for the result (plus a null term) and it is filled.
+    unsigned l = 0;
+    
+    while (*utf8) {
+        if (*utf8 < ' ' || *utf8 == 0x7F || 
+            *utf8 == '%' || *utf8 == '*' || *utf8 == ',' || *utf8 == '\\') {
+            l += 6;
+            if (outbuf) {
+                sprintf(outbuf, "\\u%04X", (unsigned)*utf8);
+                outbuf += 6;
+            }
+        }
+        else {
+            ++l;
+            if (outbuf)
+                *outbuf++ = *utf8;
+        }
+        ++utf8;
+    }
+    if (outbuf)
+        *outbuf = 0;
+    return l;
+}
+
+
+char * 
+x2attr_utf8_to_file(const char * utf8)
+{
+    // Return new string with arbitrary characters in 'utf8' escaped using \uXXXX convention for control chars,
+    // percent, comma, backslash or asterisk.  This is so the attribute is safe to write to an RS274-X2
+    // file.  Returns new string owned by caller, who is responsible for freeing it.
+    // Note that Unicode chars above \u0080 are encoded with all bytes 0x80 and above, so do not need to
+    // be escaped.
+    unsigned l;
+    char * s;
+    g_assert(utf8);
+    
+    l = _utf8_to_file(utf8, NULL);
+    s = (char *)g_malloc(l+1);
+    _utf8_to_file(utf8, s);
+    return s;
+}
+
+char *
+x2attr_utf8_array_to_file(const GArray * utf8_array)
+{
+    // Return new string suitable for use as an RS274-X2 attribute value.  Each of the UTF-8 strings in the
+    // array parameter is encoded using x2attr_utf8_to_file(), and they are concatenated with ',' (comma)
+    // delimiters.  Other than memory constraints, there is no limit to the output string length.
+    // [Technically, RS274-X files do not need any CR/LF line endings, however that would probably break
+    // the existing reader.  Attributes will not have any CRLF or other control characters directly, but
+    // they may be encoded using \uXXXX escapes.]
+    // Note that "raw" attribute values, as returned by x2attr_get_net_attr() etc., are stored in this
+    // file format, not as arrays or general C-style strings.
+    // If the array has zero size, an empty string is returned.
+    unsigned l, i;
+    char * s, * p;
+    g_assert(utf8_array);
+    
+    if (!utf8_array->len)
+        return g_strdup("");
+    
+    for (i = 0; i < utf8_array->len; ++i)
+        l += _utf8_to_file(((char **)utf8_array->data)[i], NULL);
+    l += utf8_array->len;   // for the commas and null term
+    s = (char *)g_malloc(l);
+    p = s;
+    for (i = 0; i < utf8_array->len; ++i) {
+        l = _utf8_to_file(((char **)utf8_array->data)[i], p);
+        p += l;
+        *p++ = i+i < utf8_array->len ? ',' : 0;
+    }
+    
+    return s;
+}
+
+char *
+x2attr_file_to_utf8(const char * attrstr, int index)
+{
+    // Return new string with any \uXXXX escape sequences converted to UTF-8.  This is used to convert
+    // attributes, as stored in RS274-X2 files, into human readable strings.  Since attribute value
+    // strings may be a comma-delimited list, the index parameter selects that field of the string.
+    // Returns new string owned by caller, who is responsible for freeing it, or NULL if attrstr is NULL
+    // or index is negative.  If index is positive, but does not reference a field, then the empty
+    // string (not NULL) is returned.
+    const char * q, * p = attrstr;
+    
+    if (!p || index < 0)
+        return NULL;
+        
+    while (index-- && (q = strchr(p, ',')))
+        p = q + 1;
+    
+    if (index < 0) {
+        // Found the indexed entry first, so extract and unescape up to next comma.
+        q = strchr(p, ',');
+        if (!q)
+            q = p + strlen(p);
+        return _file_to_utf8_inplace(g_strndup(p, q-p));
+    }
+    
+    // Reached end of fields, return empty string.
+    return g_strdup("");
+}
+
+GArray *
+x2attr_file_to_utf8_array(const char * attrstr)
+{
+    // Return new array, populated by extracting all fields from attrstr, as per x2attr_file_to_utf8().
+    // The string data in the array is also owned by the caller.  For convenience, the array and its
+    // data may be freed using x2attr_destroy_utf8_array().
+    // There will be 0 elements in the array if attrstr is NULL.  Otherwise, the array size will always 
+    // equal the number of commas in attrstr, plus 1.  Hence, if attrstr is empty, then one empty
+    // string is returned in the array.  If attrstr ends wil a comma, the last element in array will
+    // be an empty string.
+    int i, nf = x2attr_get_num_fields(attrstr);
+    const char * q, * p = attrstr;
+    GArray * a = g_array_sized_new(FALSE, FALSE, sizeof(char *), nf);
+    g_assert(a);
+    
+    a->len = nf;
+    for (i = 0; i < nf; ++i) {
+        q = strchr(p, ',');
+        if (!q) {
+            _init_ua(a, i, g_strdup(""));
+            break;
+        }
+        _init_ua(a, i, _file_to_utf8_inplace(g_strndup(p, q-p)));
+        p = q+1;
+    }
+    return a;
+}
+
+int
+x2attr_get_num_fields(const char * attrstr)
+{
+    // Return the number of elements that would be returned by x2attr_file_to_utf8_array().
+    // In other words, return the number of commas in attrstr, plus 1, or return 0 if
+    // attrstr is NULL.
+    int nf = 1;
+    const char * p = attrstr;
+    
+    if (!p)
+        return 0;
+    while ((p = strchr(p, ',')))
+        ++nf, ++p;
+    return nf;
+}
+
+void
+x2attr_destroy_utf8_array(GArray * utf8_array)
+{
+    // Free the given array and all its string contents.  It is assumed to be an array returned by
+    // x2attr_file_to_utf8_array().
+    unsigned i;
+    
+    if (!utf8_array)
+        return;
+    for (i = 0; i < utf8_array->len; ++i)
+        g_free(((char **)utf8_array->data)[i]);
+    g_array_free(utf8_array, TRUE);
+}
 

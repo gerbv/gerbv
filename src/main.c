@@ -122,6 +122,45 @@ static gerbv_user_transformation_t mainDefaultTransformations[NUMBER_OF_DEFAULT_
 };
 
 #ifdef HAVE_GETOPT_LONG
+
+/* 
+NOTE:
+
+New args should use val=3 to automatically add to project X2 attributes,
+assuming the project is best place for them.  Then code can access the
+value string using e.g.
+
+  argval = x2attr_get_project_attr_or_default(gerbvProject, 
+                  "argname", "default-value");
+
+For being able to assign possibly different options per file:
+
+getopt() is currently set up to process all args before running through the
+input file list.
+
+Rather than counting arg repeats and storing them in an array, permit the option
+value to be a comma-delimited list.  There are then some functions for parsing
+the list.  This will be less verbose for the user.  Once the arg value
+is obtained, the nth item can be extracted using e.g.
+
+   arg_field_n = x2attr_get_field_or_default(n, argval, "default-value");
+   
+for CDM or
+
+   arg_field_n = x2attr_get_field_or_last(n, argval);
+   
+for CDMPL.
+
+Ability to support comma delimited list should be marked as 'CDM' in the comment.
+'CDMPL' adds "propagate last" so that extra files get assigned the last setting,
+otherwise extra files get a default.
+
+CDM args are assigned in the order of file reading e.g.
+   gerbv --layers=t,2,3,b  top.grb gnd.grb vcc.grb bot.grb silk.grb
+assigns "top copper", "inner copper 2", "inner copper 3", "bottom copper" to the
+named files, in succession, except silk.grb gets no option since it is the 5th file.
+*/
+
 int longopt_val = 0;
 int longopt_idx = 0;
 const struct option longopts[] = {
@@ -147,9 +186,15 @@ const struct option longopts[] = {
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
     {"geometry",        required_argument,  &longopt_val, 1},
-    // Val=3 to add to project attributes.  If no arg, then set value 'yes' if given else 'no'.
-    {"ipcd356a-layers",        required_argument,  &longopt_val, 3},
-    {"ipcd356a-tracks",        required_argument,  &longopt_val, 3},
+    // Val=3 to add to project attributes.  If no arg, will create empty attr.
+    {"ipcd356a-layers", required_argument,  &longopt_val, 3}, // CDMPL, ipc files only
+    {"ipcd356a-tracks", required_argument,  &longopt_val, 3}, // CDMPL, ipc files only
+    {"ipcd356a-labels", required_argument,  &longopt_val, 3}, // CDMPL, ipc files only
+    {"text-min",        required_argument,  &longopt_val, 3},
+    {"text-max",        required_argument,  &longopt_val, 3},
+    {"text-mils",       required_argument,  &longopt_val, 3},
+    {"text-color",      required_argument,  &longopt_val, 3},
+    {"layers",          required_argument,  &longopt_val, 3}, // CDM, Gerber only
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",      required_argument,  &longopt_val, 2},
     {"g-fatal-warnings",no_argument,	    &longopt_val, 2},
@@ -425,7 +470,7 @@ int
 main(int argc, char *argv[])
 {
     int       read_opt;
-    int       i,r,g,b,a;
+    int       i;
     int       req_width = -1, req_height = -1;
 #ifdef HAVE_GETOPT_LONG
     char      *rest;
@@ -689,58 +734,21 @@ main(int argc, char *argv[])
 	    userSuppliedAntiAlias = TRUE;
 	    break;
     	case 'b' :	// Set background to this color
-	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give an background color "
-					"in the hex-format <#RRGGBB>.\n"));
-		exit(1);
-	    }
-	    if ((strlen (optarg) != 7)||(optarg[0]!='#')) {
-		fprintf(stderr, _("Specified color format "
-					"is not recognized.\n"));
-		exit(1);
-	    }
-    	    r=g=b=-1;
-	    sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
-	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)) {
-
-		fprintf(stderr, _("Specified color values should be "
-					"between 00 and FF.\n"));
-		exit(1);
-	    }
-
+    	    if (gerbv_parse_gdk_color(&mainProject->background,
+    	                          optarg,
+    	                          FALSE,
+    	                          "background"))
+    	        exit(1);
+    	        
 	    screen.background_is_from_cmdline = TRUE;
-	    mainProject->background.red = r*257;
-    	    mainProject->background.green = g*257;
-    	    mainProject->background.blue = b*257;
 
 	    break;
 	case 'f' :	// Set layer colors to this color (foreground color)
-	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give an foreground color in the hex-format <#RRGGBB> or <#RRGGBBAA>.\n"));
-		exit(1);
-	    }
-	    if (((strlen (optarg) != 7)&&(strlen (optarg) != 9))||(optarg[0]!='#')) {
-		fprintf(stderr, _("Specified color format is not recognized.\n"));
-		exit(1);
-	    }
-	    r=g=b=a=-1;
-	    if(strlen(optarg)==7){
-		sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
-		a=177;
-	    }
-	    else{
-		sscanf (optarg,"#%2x%2x%2x%2x",&r,&g,&b,&a);
-	    }
-
-	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)||(a<0)||(a>255) ) {
-
-		fprintf(stderr, _("Specified color values should be between 0x00 (0) and 0xFF (255).\n"));
-		exit(1);
-	    }
-	    mainDefaultColors[layerctr].red   = r;
-	    mainDefaultColors[layerctr].green = g;
-	    mainDefaultColors[layerctr].blue  = b;
-	    mainDefaultColors[layerctr].alpha = a;
+    	    if (gerbv_parse_color(mainDefaultColors + layerctr,
+    	                          optarg,
+    	                          TRUE,
+    	                          "foreground"))
+    	        exit(1);
 	    layerctr++;
 	    /* just reset the counter back to 0 if we read too many */
 	    if (layerctr == NUMBER_OF_DEFAULT_COLORS)
@@ -1363,16 +1371,31 @@ gerbv_print_help(void)
 "                          data for the specified layer(s).  Arg is a sequence\n"
 "                          of one or more digits 0..9.  Default '01' reads\n"
 "                          board outline (0) and top copper (1).  '14' would\n"
-"                          read top and bottom layers of 4 layer board.\n"
+"                          read top and bottom copper of 4 layer board.\n"
                 ));
 	printf(_(
 "  --ipcd356a-tracks=<y|n>\n"
 "                          When reading IPC-D-356A file, also read conductor data.\n"
                 ));
 	printf(_(
+"  --ipcd356a-labels=<d|dp|N|n>\n"
+"                          When reading IPC-D-356A file, add refdes, refdes+pin,\n"
+"                          netname (N) or no labels.  May be shown when rendering\n"
+"                          normal or high quality mode.  Default n.\n"
+                ));
+	printf(_(
 "      Note: if opening multiple instances of same IPC-D-356A file, specify\n"
 "             options for each one using comma delimiters e.g.\n"
 "             --ipcd356a-layers=0,1,2 --ipcd356a-tracks=y,y,n\n"
+                ));
+	printf(_(
+"  --text-min=<pts>        Minimum visible text size in points.  Default 6.\n"
+"  --text-max=<pts>        Maximum visible text size in points.  Default 12.\n"
+"  --text-mils=<mils>      Target text size in mils.  Text will be rendered at\n"
+"                          this mils size, but if it would be visibly smaller than\n"
+"                          text-min, then it will not be rendered, and if larger\n"
+"                          than text-max then it will be scaled down.  Default 40.\n"
+"  --text-color=<hex>      Override text color, enter as #rrggbb hex.\n"
                 ));
 #endif
 
