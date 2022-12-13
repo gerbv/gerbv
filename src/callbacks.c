@@ -64,6 +64,8 @@
 #include "draw-gdk.h"
 
 #include "draw.h"
+#include "search.h"
+#include "x2attr.h"
 #ifdef WIN32
 # include <cairo-win32.h>
 #elif QUARTZ
@@ -3400,11 +3402,67 @@ callbacks_update_statusbar_coordinates (gint x, gint y)
 	callbacks_update_statusbar();
 }
 
+static void 
+get_net_summary(gchar * s, int len, gerbv_net_t * net, gboolean mouseptr)
+{
+        /*
+        Return string based on available attributes:
+        x2attr                  rendering (example)
+        ---------------         ------------
+        .P,refdes,pin           U5,1
+        .C,refdes               U5
+        .N,netname              append {NETNAME}
+        
+        IPC-D-356A parser will assign these attributes if it can.
+        The user can then use the --ipcd356a-labels option to
+        generate label strings which will be displayed via draw.c.
+        
+        It's also possible for the application to assign a label
+        string.  We'll only try to use that if there are no
+        standard attributes.
+        */
+        const char * netname = x2attr_get_net_attr(net, ".N");
+        const char * refdes = x2attr_get_net_attr(net, ".C");
+        const char * refdespin = x2attr_get_net_attr(net, ".P");
+        
+        if (!netname && !refdes && !refdespin) {
+                if (net->label && net->label->str && net->label->str[0])
+	                utf8_snprintf(s, len, "%s%s%s", 
+	                        mouseptr ? " @ptr <i>" : "<b>",
+	                        net->label->str,
+	                        mouseptr ? "</i>" : "</b>"
+	                        ); 
+        }
+        else {
+                // Have at least one standard attribute.
+	        utf8_snprintf(s, len, "%s%s%s%s%s%s", 
+	                mouseptr ? " @ptr <i>" : "<b>",
+	                refdespin ? refdespin :
+	                   refdes ? refdes :
+	                            "",
+	                netname ? "{" : "",
+	                netname ? netname : "",
+	                netname ? "}" : "",
+	                mouseptr ? "</i>" : "</b>"
+	                ); 
+        }
+}
+
 static void
 update_selected_object_message (gboolean userTriedToSelect)
 {
+	gchar ptrinfo[MAX_DISTLEN];
+	gchar selinfo[MAX_DISTLEN];
+
 	if (screen.tool != POINTER)
 		return;
+
+	ptrinfo[0] = 0;	
+	selinfo[0] = 0;	
+	if (screen.pointerItem.net) {
+	        // There is a mouse proximity object.  Create a short info string.
+	        get_net_summary(ptrinfo, MAX_DISTLEN, screen.pointerItem.net, TRUE);
+	}
 
 	gint selectionLength = selection_length (&screen.selectionInfo);
 
@@ -3422,17 +3480,28 @@ update_selected_object_message (gboolean userTriedToSelect)
 					"<b>%s</b>", str);
 			g_free(str);
 		} else {
-			utf8_strncpy(screen.statusbar.diststr,
+		        if (ptrinfo[0])
+			        utf8_strncpy(screen.statusbar.diststr,
+					ptrinfo,
+					MAX_DISTLEN);
+		        else
+			        utf8_strncpy(screen.statusbar.diststr,
 					_("Click to select objects in the "
 					"active layer. Middle click and drag "
 					"to pan."),
 					MAX_DISTLEN);
 		}
 	} else {
+                get_net_summary(selinfo, MAX_DISTLEN, 
+                        selection_get_item_by_index (&screen.selectionInfo, 0).net, FALSE);
+
 		utf8_snprintf(screen.statusbar.diststr, MAX_DISTLEN,
-				ngettext("%d object are currently selected",
-					"%d objects are currently selected",
-					selectionLength), selectionLength);
+				ngettext("%d object selected: %s  %s",
+					"%d objects selected: %s  %s", selectionLength), 
+				selectionLength,
+				selinfo,
+				ptrinfo
+				);
 	}
 
 	callbacks_update_statusbar();
@@ -3501,8 +3570,48 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 			screen.last_y = y;
 			break;
 	}
+
+        {
+        // Demonstrate search facility: always find an object corresponding to mouse position,
+        // on the selected layer only, but could easily extend to n layers.
+                gerbv_net_t * prevnet = screen.pointerItem.net;
+                screen.pointerItem.net = NULL;
+		gint index = callbacks_get_selected_row_index();
+		if ((index >= 0) && 
+		    (index <= mainProject->last_loaded) &&
+		    (mainProject->file[index]->isVisible)) {
+		        gdouble boardx, boardy;
+		        //gerbv_selection_item_t sItem;
+		        search_result_t *sr;
+		    
+                        screen.pointerItem.image = mainProject->file[index]->image;
+			callbacks_screen2board(&boardx, &boardy, x, y);
+			// Find 1 closest object.  Ignore anything farther than pointer_reach, so
+			// need to get close to the visible edge of the object to choose it.  
+		        GArray * a = search_image_for_closest_to_border(
+		            mainProject->file[index]->image, boardx, boardy, 1, screen.pointer_reach);
+		        if (a->len) {
+		                sr = (search_result_t *)a->data;
+		                //printf("search: dist = %.4f n=%u\n", sr->dist, a->len);
+		                // Don't count it if it is the first of the current selection.
+		                if ((selection_length (&screen.selectionInfo) > 0) 
+		                    && (selection_get_item_by_index (&screen.selectionInfo, 0).net == sr->net)) {
+		                        sr = NULL;
+		                }
+		                if (sr)
+		        	        // Found a mouse-over object, not already first selection.
+	                                screen.pointerItem.net = sr->net;
+		        }
+        		g_array_free(a, TRUE);
+		}
+		if (prevnet != screen.pointerItem.net)
+			update_selected_object_message (FALSE);
+
+        }
+
 	callbacks_update_statusbar_coordinates (x, y);
 	callbacks_update_ruler_pointers ();
+	
 	return TRUE;
 } /* motion_notify_event */
 
