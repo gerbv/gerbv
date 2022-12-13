@@ -186,6 +186,7 @@ const struct option longopts[] = {
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
     {"geometry",        required_argument,  &longopt_val, 1},
+    {"reach-mils",      required_argument,  &longopt_val, 10},
     // Val=3 to add to project attributes.  If no arg, will create empty attr.
     {"ipcd356a-layers", required_argument,  &longopt_val, 3}, // CDMPL, ipc files only
     {"ipcd356a-tracks", required_argument,  &longopt_val, 3}, // CDMPL, ipc files only
@@ -582,6 +583,8 @@ main(int argc, char *argv[])
 #else
     screenRenderInfo.renderType = GERBV_RENDER_TYPE_GDK;
 #endif
+    
+    screen.pointer_reach = 0.02;        // Default 20 mils.
 
     logToFileOption = FALSE;
     logToFileFilename = NULL;
@@ -625,6 +628,20 @@ main(int argc, char *argv[])
 			_("Not handled option \"%s\" in command line"),
 			longopts[longopt_idx].name);
 		break;
+	    case 10: /* reach-mils */
+		errno = 0;
+		screen.pointer_reach = MAX(0., (gdouble)strtol(optarg, &rest, 10));
+		if (errno) {
+		    perror(_("reach-mils"));
+		    break;
+		}
+		if (rest[0]) {
+		    fprintf(stderr, _("reach-mils not a number\n"));
+		    break;
+		}
+		screen.pointer_reach *= 0.001;
+		printf("pointer reach=%g\n", screen.pointer_reach);
+	        break;
 	    case 1: /* geometry */
 		errno = 0;
 		req_width = (int)strtol(optarg, &rest, 10);
