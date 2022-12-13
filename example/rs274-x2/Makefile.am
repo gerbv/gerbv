@@ -19,7 +19,6 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-SUBDIRS = am-test cslk dan eaglecad1 ekf2 exposure jj Mentor-BoardStation nollezappare \
-	 numpres orcad pick-and-place polarity rs274-x2 thermal trailing
+SUBDIRS = DriverBoard HeadControl2 HeadPower
 
 MOSTLYCLEANFILES = *~

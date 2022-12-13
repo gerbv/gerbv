@@ -19,7 +19,7 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-SUBDIRS = am-test cslk dan eaglecad1 ekf2 exposure jj Mentor-BoardStation nollezappare \
-	 numpres orcad pick-and-place polarity rs274-x2 thermal trailing
+EXTRA_DIST=HeadPower.csv  HeadPower.GBO  HeadPower.GBS  HeadPower.GTO  HeadPower.GTS  \
+    HeadPower.TXT HeadPower.GBL  HeadPower.GBP  HeadPower.GD1  HeadPower.GTL  HeadPower.GTP  HeadPower.ipc
 
 MOSTLYCLEANFILES = *~
