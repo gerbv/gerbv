@@ -19,7 +19,7 @@
 ##  along with this program; if not, write to the Free Software
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
-SUBDIRS = am-test cslk dan eaglecad1 ekf2 exposure jj Mentor-BoardStation nollezappare \
-	 numpres orcad pick-and-place polarity rs274-x2 thermal trailing
+EXTRA_DIST=DriverBoard.csv  DriverBoard.GBO  DriverBoard.GBS  DriverBoard.GTL  DriverBoard.GTP  DriverBoard.ipc \
+    DriverBoard.GBL  DriverBoard.GBP  DriverBoard.GD1  DriverBoard.GTO  DriverBoard.GTS  DriverBoard.TXT
 
 MOSTLYCLEANFILES = *~
