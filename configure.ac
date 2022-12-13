@@ -489,6 +489,10 @@ AC_CONFIG_FILES([Makefile \
 		example/polarity/Makefile \
 		example/thermal/Makefile \
 		example/trailing/Makefile \
+		example/rs274-x2/Makefile \
+		example/rs274-x2/DriverBoard/Makefile \
+		example/rs274-x2/HeadControl2/Makefile \
+		example/rs274-x2/HeadPower/Makefile \
 		example/Makefile \
 		\
 		test/Makefile \
