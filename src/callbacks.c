@@ -3420,6 +3420,8 @@ get_net_summary(gchar * s, int len, gerbv_net_t * net, gboolean mouseptr)
         It's also possible for the application to assign a label
         string.  We'll only try to use that if there are no
         standard attributes.
+        
+        As a final fallback, print whether it's a pad, track or "pour".
         */
         const char * netname = x2attr_get_net_attr(net, ".N");
         const char * refdes = x2attr_get_net_attr(net, ".C");
@@ -3445,6 +3447,18 @@ get_net_summary(gchar * s, int len, gerbv_net_t * net, gboolean mouseptr)
 	                netname ? "}" : "",
 	                mouseptr ? "</i>" : "</b>"
 	                ); 
+        }
+        if (!*s) {
+                // None of the above.  
+                utf8_snprintf(s, len, "%s%s%s", 
+                        mouseptr ? " @ptr <i>" : "<b>",
+                        net->interpolation == GERBV_INTERPOLATION_PAREA_START ?    "POUR" :
+                        net->aperture_state == GERBV_APERTURE_STATE_FLASH ?        "PAD" :
+                        net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR ||
+                          net->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR ? "ARC" :
+                                                                                   "TRACK",
+                        mouseptr ? "</i>" : "</b>"
+                        ); 
         }
 }
 
