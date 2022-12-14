@@ -1153,11 +1153,29 @@ gerbv_parse_gdk_color(GdkColor * color,         //!< Color struct to be filled i
                    gboolean allow_alpha,        //!< Whether to support alpha channel - currently must be FALSE.
                    const char * context);       //!< Indicate context e.g. "background" - goes in messages.
 
+
+
+/*! Annotate a Gerber layer with IPC-D-356A data.
+
+Any .N (netname), .C (component designator), or .P (component pin) attributes are copied from
+the IPC data to objects in the rs274x image that have matching board coordinates.  Usually,
+both files are created from the same EDA software, so should have exactly matching coordinates,
+however this function accepts objects that strictly enclose the IPC coordinate.
+
+Note that ipcd356a does not have to actually come from an IPC-D-356A file, but will accept
+any image that may or may not contain object attributes.  If attributes are available, this
+is a means of transferring connectivity information from one image to another.  Note that
+the commandline option --annotate only uses real IPC data as a source.
+
+Any image which is annotated will be exported as RS274-X2 format.  This means that the attributes
+will be preserved and a repeat of the annotation step will not be necessary.
+*/
 void
-gerbv_annotate_rs274x_from_ipcd356a(int layernum, 
-                                gerbv_fileinfo_t * rs274x, 
-                                gerbv_fileinfo_t * ipcd356a,
-                                gboolean overwrite);
+gerbv_annotate_rs274x_from_ipcd356a(int layernum,               //!< Copper layer being annotated
+                                int maxlayer,                   //!< ...out of this many layers
+                                gerbv_fileinfo_t * rs274x,      //!< image to annotate
+                                gerbv_fileinfo_t * ipcd356a,    //!< IPC data from which to annotate
+                                gboolean overwrite);            //!< Whether to overwrite existing attributes
 
 
 #undef MIN
