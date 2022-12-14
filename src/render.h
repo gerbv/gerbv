@@ -51,6 +51,9 @@ void
 render_toggle_measure_line(void);
 
 void
+render_toggle_netname_lines(gerbv_net_t ** nets, guint n, gboolean as_points);
+
+void
 render_draw_measure_distance(void);
 
 

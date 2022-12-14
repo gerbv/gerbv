@@ -351,6 +351,105 @@ render_toggle_measure_line(void)
 } /* toggle_measure_line */
 
 /* ------------------------------------------------------ */
+/** Draws/erases lines or points
+ *  Pass an array of n net objects, or end with a NULL at end.
+ *  For cleaner drawing, order nets that join so that
+ *  stop of one is same point as start of the next.
+ *  Ignore flash apertures when line drawing, since they are 0 size.
+ *  "as_points" draws dots instead of connecting lines, and only of
+ *  the stop coordinates.  Includes (is expected to be) flash aper.
+ *  Since gdk_draw_points() literally draws single pixels, it is
+ *  too subtle.  So instead, we draw X's.
+ */
+void
+render_toggle_netname_lines(gerbv_net_t ** nets, guint n, gboolean as_points)
+{
+
+	GdkGC *gc;
+	GdkGCValues values;
+	GdkGCValuesMask values_mask;
+	GArray * points;
+        GdkPoint p;
+        GdkPoint prevp;
+        gerbv_net_t * net;
+	gdouble start_x, start_y, last_x, last_y;
+	
+	if (!nets || !n || !*nets)
+	        return;
+	memset(&values, 0, sizeof(values));
+	values.function = GDK_XOR;
+	values.line_width = as_points ? 3 : 5;
+	if (!screen.zoom_outline_color.pixel)
+	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
+	values.foreground = screen.zoom_outline_color;
+	values.cap_style = GDK_CAP_ROUND;
+	values.join_style = GDK_JOIN_ROUND;
+	values_mask = GDK_GC_FUNCTION | GDK_GC_LINE_WIDTH | GDK_GC_CAP_STYLE | GDK_GC_JOIN_STYLE | GDK_GC_FOREGROUND;
+	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
+				values_mask);
+        points = g_array_sized_new(FALSE, FALSE, sizeof(GdkPoint), 128);
+        prevp.x = prevp.y = 1<<15;
+	while (n-- && (net = *nets++)) {
+	        render_board2screen(&last_x, &last_y,
+				        net->stop_x, net->stop_y);
+	        if (as_points) {
+	                if (last_x < 0. || last_x > (1<<15)-1
+	                    || last_y < 0. || last_y > (1<<15)-1)
+	                        continue;
+
+	                //p.x = last_x;
+	                //p.y = last_y;
+	                //g_array_append_vals(points, &p, 1);
+	                
+	                // Draw crosses.  These points are taken in pairs, cast to GdkSegment.
+	                #define XLEN    4
+	                p.x = last_x - XLEN;
+	                p.y = last_y - XLEN;
+	                g_array_append_vals(points, &p, 1);
+	                p.x = last_x + XLEN;
+	                p.y = last_y + XLEN;
+	                g_array_append_vals(points, &p, 1);
+	                p.x = last_x - XLEN;
+	                p.y = last_y + XLEN;
+	                g_array_append_vals(points, &p, 1);
+	                p.x = last_x + XLEN;
+	                p.y = last_y - XLEN;
+	                g_array_append_vals(points, &p, 1);
+	                continue;
+	        }
+	        
+	        if (net->aperture_state == GERBV_APERTURE_STATE_FLASH)
+	                continue;
+
+	        render_board2screen(&start_x, &start_y,
+				        net->start_x, net->start_y);
+	        render_trim_point(&start_x, &start_y, last_x, last_y);
+	        render_trim_point(&last_x, &last_y, start_x, start_y);
+                p.x = start_x;
+                p.y = start_y;
+	        if (p.x != prevp.x || p.y != prevp.y) {
+	                if (points->len > 1)
+                                gdk_draw_lines(screen.drawing_area->window, gc, (GdkPoint *)points->data, points->len);
+                        g_array_set_size(points, 0);
+	                g_array_append_vals(points, &p, 1);
+	        }
+                p.x = last_x;
+                p.y = last_y;
+                g_array_append_vals(points, &p, 1);
+                prevp = p;
+                        
+        }
+        if (as_points && points->len)
+                // Invisible on a 4k display!
+                // gdk_draw_points(screen.drawing_area->window, gc, (GdkPoint *)points->data, points->len);
+                gdk_draw_segments(screen.drawing_area->window, gc, (GdkSegment *)points->data, points->len/2);
+        else if (points->len > 1)
+                gdk_draw_lines(screen.drawing_area->window, gc, (GdkPoint *)points->data, points->len);
+        g_array_free(points, TRUE);
+	gdk_gc_unref(gc);
+} /* toggle_measure_line */
+
+/* ------------------------------------------------------ */
 /** Displays a measured distance graphically on screen and in statusbar. */
 void
 render_draw_measure_distance(void)
