@@ -1153,6 +1153,11 @@ gerbv_parse_gdk_color(GdkColor * color,         //!< Color struct to be filled i
                    gboolean allow_alpha,        //!< Whether to support alpha channel - currently must be FALSE.
                    const char * context);       //!< Indicate context e.g. "background" - goes in messages.
 
+void
+gerbv_annotate_rs274x_from_ipcd356a(int layernum, 
+                                gerbv_fileinfo_t * rs274x, 
+                                gerbv_fileinfo_t * ipcd356a,
+                                gboolean overwrite);
 
 
 #undef MIN
