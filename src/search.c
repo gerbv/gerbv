@@ -110,6 +110,15 @@ _rectangle(search_state_t *ss, gdouble w, gdouble h)
 }
 
 static void
+_obround(search_state_t *ss, gdouble x, gdouble hlw)
+{
+        // Geometry same as track (below) but different code since this is a flash.
+        ss->dx = x;
+        ss->hlw = hlw;
+        ss->callback(ss, SEARCH_OBROUND);
+}
+
+static void
 _track(search_state_t *ss, gdouble x, gdouble hlw)
 {
         // Stroked track with rounded ends.  Left center at (0,0)
@@ -541,12 +550,12 @@ _run (search_state_t *ss)
 			        // Treat it like a short "track" with rounded ends.
 			        if (p0 >= p1) {
 			                _translate(ss, (p1-p0)*0.5, 0.);
-			                _track(ss, p0-p1, p1*0.5);
+			                _obround(ss, p0-p1, p1*0.5);
 			        }
 			        else {
-			                _translate(ss, 0, (p0-p1)*0.5);
+			                _translate(ss, 0, (p1-p0)*0.5);
 			                _rotate(ss, -90.);
-			                _track(ss, p1-p0, p0*0.5);
+			                _obround(ss, p1-p0, p0*0.5);
 			        }
 				break;
 			case GERBV_APTYPE_POLYGON :
@@ -692,8 +701,8 @@ _distance_to_closed_polygon(const vertex_t * testpoint, const vertex_t * V, unsi
         return r;
 }
 
-static gdouble
-_distance_to_border(search_state_t * ss, search_context_t ctx, const vertex_t * vtx)
+gdouble
+search_distance_to_border(search_state_t * ss, search_context_t ctx, const vertex_t * vtx)
 {
         // This is the meat of the distance to border callback(s).  Return signed distance
         // from vtx to the closest point on the border of the current object described
@@ -723,6 +732,7 @@ _distance_to_border(search_state_t * ss, search_context_t ctx, const vertex_t * 
                 if (rx > 0. && ry > 0.)
                         return hypot(rx, ry);
                 return MAX(rx, ry);
+        case SEARCH_OBROUND:
         case SEARCH_TRACK:
                 if (x >= 0. && x <= ss->dx)
                         return MAX(y - ss->hlw, -ss->hlw - y);
@@ -752,6 +762,58 @@ _distance_to_border(search_state_t * ss, search_context_t ctx, const vertex_t * 
         }
 }
 
+gdouble
+search_distance_to_border_no_transform(search_state_t * ss, search_context_t ctx, gdouble x, gdouble y)
+{
+        // Same as above, but for when transform already done on x,y coordinates.
+        gdouble r, rx, ry;
+        gboolean inside;
+        vertex_t v;
+        
+        switch (ctx) {
+        case SEARCH_CIRCLE:
+                r = hypot(x, y);
+                return r - ss->dx;
+        case SEARCH_RING:
+                r = hypot(x, y);
+                return MAX(r - ss->dx, ss->dy - r);
+        case SEARCH_RECTANGLE:
+                rx = MAX(x - ss->dx, -x);
+                ry = MAX(y - ss->dy, -y);
+                if (rx > 0. && ry > 0.)
+                        return hypot(rx, ry);
+                return MAX(rx, ry);
+        case SEARCH_OBROUND:
+        case SEARCH_TRACK:
+                if (x >= 0. && x <= ss->dx)
+                        return MAX(y - ss->hlw, -ss->hlw - y);
+                if (x < 0.)
+                        return hypot(x, y) - ss->hlw;
+                return hypot(x - ss->dx, y) - ss->hlw;
+        
+        // In both cases, first compute min. distance to centerline, disregarding linewidth.
+        // Then, for polygon, find whether inside or outside: if inside, return -ve dist, else +ve.
+        // For poly track, take abs value of dist then subtract hlw.
+        // To compute CL distance, iterate all segments (plus an implicit close for polygon).
+        // For each seg, update matrix (and inverse) to canonical X aligned form and recurse
+        // as for rectangle, with dy=0 (thin line).
+        case SEARCH_POLYGON:
+                v.x = x;
+                v.y = y;
+                inside = _point_in_polygon(&v, ss->poly, ss->len);
+                r = _distance_to_closed_polygon(&v, ss->poly, ss->len);
+                return inside ? -r : r;
+        case SEARCH_POLY_TRACK:
+                v.x = x;
+                v.y = y;
+                r = _distance_to_open_polygon(&v, ss->poly, ss->len) - ss->hlw;
+                return r;
+        default:
+                return HUGE_VAL;
+        }
+}
+
+
 /* User data used by _dist_from_border() callback
 
         The inclusion criteria are that the point is either within the object,
@@ -776,7 +838,7 @@ static void
 _dist_from_border(search_state_t * ss, search_context_t ctx)
 {
         dfb_t * d = (dfb_t *)ss->user_data;
-        gdouble dist = _distance_to_border(ss, ctx, &d->board);
+        gdouble dist = search_distance_to_border(ss, ctx, &d->board);
         // dist is -ve if we are inside it, so will always include enclosing objects.
         if (dist <= d->not_over) {
                 search_result_t * sr = (search_result_t *)d->nets->data + d->nets->len;
@@ -791,10 +853,14 @@ _dist_from_border_compare(gconstpointer a, gconstpointer b, gpointer user_data)
 {
         const search_result_t * ra = (const search_result_t *)a;
         const search_result_t * rb = (const search_result_t *)b;
+        // Penalize tracks w.r.t. flashes, since normally want to focus on the pad not the track
+        // leading up to it.  Use a 20 mil penalty.
+        int track_penalty_a = ra->net->aperture_state == GERBV_APERTURE_STATE_FLASH ? 0 : 200;
+        int track_penalty_b = rb->net->aperture_state == GERBV_APERTURE_STATE_FLASH ? 0 : 200;
         // Need to multiply the result up so it's an integer.  Use 10k so as to resolve to 0.1 mil.
         // Compare on absolute distances from the border, otherwise would always pick the
         // largest object we were most inside of, which is not useful. 
-        return (gint)((fabs(ra->dist) - fabs(rb->dist))*10000.);
+        return (gint)((fabs(ra->dist) - fabs(rb->dist))*10000.) + (track_penalty_a - track_penalty_b);
 }
 
 /******************

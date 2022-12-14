@@ -94,6 +94,7 @@ typedef enum {
     SEARCH_CIRCLE,          //!< Filled circle (disk) centered at (0,0) with given radius dx.
     SEARCH_RING,            //!< Ring (disk with hole) centered at (0,0) with given inner and outer radius dy,dx.
     SEARCH_RECTANGLE,       //!< Rectangle with lower left at 0,0, and given width and height in dx,dy.
+    SEARCH_OBROUND,         //!< Oblong round flash - params as for track, since looks like short track.
     SEARCH_POLYGON,         //!< Arbitrary filled area assuming even/odd winding rule.
     SEARCH_TRACK,           /*!< Stroked straight track with rounded ends.  One end at (0,0),
                                  the other at (dx,0) with half width hlw. */
@@ -154,6 +155,8 @@ typedef struct search_result
 
 /**
 */
+gdouble search_distance_to_border(search_state_t * ss, search_context_t ctx, const vertex_t * vtx);
+gdouble search_distance_to_border_no_transform(search_state_t * ss, search_context_t ctx, gdouble x, gdouble y);
 search_state_t * search_create_search_state_for_image(gerbv_image_t * image);
 void search_destroy_search_state(search_state_t * ss);
 search_state_t * search_init_search_state_for_image(search_state_t * ss, gerbv_image_t * image);
