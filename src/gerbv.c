@@ -1581,6 +1581,7 @@ typedef struct anno_data
 {
         GArray *        ipcs;   // Array of the above key_point_t, for this layer.
         int             layernum;
+        int             maxlayer;
         gboolean        overwrite;
         
 } anno_data_t;
@@ -1588,23 +1589,29 @@ typedef struct anno_data
 static void
 _get_key_points_cb(search_state_t * ss, search_context_t ctx)
 {
+        /*
+        This is the callback for when scanning the IPC (source) image.
+        
+        Although true IPC data will have only generated round and rectangular
+        flashes, and straight tracks, we should support general Gerber images,
+        so the only context not supported is for polygon regions.
+        */
         anno_data_t * d = (anno_data_t *)ss->user_data;
         const char * ipclayer_str;
         int ipclayer;
 
-        // Populate ipcs array with key point data.
-        // Currently, select only flashes that have netnames and/or component/pin.
-        if (ss->net->aperture_state != GERBV_APERTURE_STATE_FLASH)
-                return;
-        // Not polygons or tracks, only circle, ring, rectangle or obround.
-        if (ctx > SEARCH_OBROUND)
+        // Populate ipcs array with key point data.  No pours, but want macro polygons
+        // since these are probably pads.
+        if (ctx == SEARCH_POLYGON && !ss->amacro)
                 return;
                 
-        // IPC layer must be 0 (access both sides) or equal to the target layer.
-        //FIXME: layer 0 should not match inner layers, but pass for now.
+        // IPC layer must be 00 (access both sides) or equal to the target layer.
         ipclayer_str = x2attr_get_net_attr_or_default(ss->net, "IPCLayer", "0");
         sscanf(ipclayer_str, "%d", &ipclayer);
         if (ipclayer && ipclayer != d->layernum)
+                return;
+        if (!ipclayer && d->layernum != 1 && d->layernum != d->maxlayer)
+                // IPC access (~layer) 00 refers to top and bottom only.
                 return;
         if (x2attr_get_net_attr(ss->net, ".N")
             || x2attr_get_net_attr(ss->net, ".P")
@@ -1614,6 +1621,12 @@ _get_key_points_cb(search_state_t * ss, search_context_t ctx)
                 kp.v.y = ss->net->stop_y;
                 kp.ipc = ss->net;
                 g_array_append_vals(d->ipcs, &kp, 1);
+                if (ss->net->aperture_state != GERBV_APERTURE_STATE_FLASH) {
+                        // Assume it's a track, so add both ends.
+                        kp.v.x = ss->net->start_x;
+                        kp.v.y = ss->net->start_y;
+                        g_array_append_vals(d->ipcs, &kp, 1);
+                }
         }
 }
 
@@ -1628,9 +1641,10 @@ _anno_cb(search_state_t * ss, search_context_t ctx)
         // See if the current object (from the image we are annotating) strictly encloses
         // any of the objects in d->ipcs.  The first one which is found causes its attributes
         // to be assigned to this.
-        // Currently, we're ony matching on pads (flashes).
-        if (ss->net->aperture_state != GERBV_APERTURE_STATE_FLASH)
+        // Currently, we're not processing pours, unless from an aperture macro.
+        if (ctx == SEARCH_POLYGON && !ss->amacro)
                 return;
+                
         m = ss->transform[ss->stack];
         if (cairo_matrix_invert(&m) == CAIRO_STATUS_INVALID_MATRIX)
                 return;
@@ -1645,6 +1659,19 @@ _anno_cb(search_state_t * ss, search_context_t ctx)
                         const char * netname = x2attr_get_net_attr(kp->ipc, ".N");
                         const char * pin = x2attr_get_net_attr(kp->ipc, ".P");
                         const char * cmp = x2attr_get_net_attr(kp->ipc, ".C");
+                        // If source is a track, but this is a flash, or vice versa,
+                        // (i.e. aperture state mismatch) then keep looking.
+                        if (ss->net->aperture_state != kp->ipc->aperture_state)
+                                continue;
+                        // Don't insert if already exists, unless overwrite.
+                        if (!d->overwrite) {
+                                if (x2attr_get_net_attr(ss->net, ".N"))
+                                        netname = NULL;
+                                if (x2attr_get_net_attr(ss->net, ".P"))
+                                        pin = NULL;
+                                if (x2attr_get_net_attr(ss->net, ".C"))
+                                        cmp = NULL;
+                        }
                         if (netname)
                                 x2attr_set_net_attr(ss->net, ".N", netname);
                         if (pin)
@@ -1658,7 +1685,7 @@ _anno_cb(search_state_t * ss, search_context_t ctx)
 
 
 void
-gerbv_annotate_rs274x_from_ipcd356a(int layernum, 
+gerbv_annotate_rs274x_from_ipcd356a(int layernum, int maxlayer, 
                                 gerbv_fileinfo_t * rs274x, 
                                 gerbv_fileinfo_t * ipcd356a,
                                 gboolean overwrite)
@@ -1679,6 +1706,7 @@ gerbv_annotate_rs274x_from_ipcd356a(int layernum,
         d.ipcs = g_array_sized_new(FALSE, FALSE, sizeof(key_point_t), 1024);
         d.overwrite = overwrite;
         d.layernum = layernum;
+        d.maxlayer = maxlayer;
         
         // First scan the IPC data to fill in key points for this layer
         ss = search_image(NULL, ipcd356a->image, _get_key_points_cb, &d);

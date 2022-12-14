@@ -1022,6 +1022,15 @@ main(int argc, char *argv[])
         // All loaded IPC files will specify layer numbers 1..n as appropriate.  The corresponding
         // Gerber file for each layer must have been identified using the --layers option.
         // All such matching layer pairs are annotated.
+        // Valid layer numbers are 1..63.  If an image's LayerNum attribute specifies that
+        // it is over 63, it will be ignored.  In practice, we currently only support up to
+        // 9 layers in IPC.  If you need more than that, open a change request!
+        // Only "signal" (i.e. copper) layers are supported, which are not defined as
+        // "plane only" layers.  This is from the LayerIsSignal image attribute.
+        // maxlayer (the bottom layer) is assumed to be at least 2 - true single layer
+        // boards will not be affected since this is only for the purpose of matching IPC
+        // data with "top" and "bottom" semantics.
+        int maxlayer = 2;
         gboolean overwrite = !strcasecmp(attrarg, "y!");
         gerbv_fileinfo_t * rs274x_files_by_layer[64];
         gerbv_fileinfo_t * ipcd356a_files_by_layer[64];
@@ -1029,7 +1038,7 @@ main(int argc, char *argv[])
         memset(ipcd356a_files_by_layer, 0, sizeof(ipcd356a_files_by_layer));
         for (i = 0; i <= mainProject->last_loaded; ++i) {
                 gerbv_fileinfo_t * f = mainProject->file[i];
-                int layernum;
+                int layernum, ml;
                 unsigned long layer_bitmap;
 
                 if (!f || !f->image) 
@@ -1038,6 +1047,9 @@ main(int argc, char *argv[])
                 if (f->image->layertype == GERBV_LAYERTYPE_RS274X) {
                         sscanf(x2attr_get_image_attr_or_default(f->image, "LayerNum", "0"),
                                 "%d", &layernum);
+                        sscanf(x2attr_get_image_attr_or_default(f->image, "LayerMax", "0"),
+                                "%d", &ml);
+                        maxlayer = MIN(MAX(maxlayer, ml), 63);
                         if (layernum > 0 && layernum < 64
                             && x2attr_get_image_attr(f->image, "LayerIsSignal"))
                                 rs274x_files_by_layer[layernum] = f;
@@ -1052,9 +1064,9 @@ main(int argc, char *argv[])
                 }
         }
         // Annotate rs274x layers with matching IPC data
-        for (i = 0; i < 63; ++i)
+        for (i = 1; i <= maxlayer; ++i)
                 if (ipcd356a_files_by_layer[i] && rs274x_files_by_layer[i])
-                        gerbv_annotate_rs274x_from_ipcd356a(i, 
+                        gerbv_annotate_rs274x_from_ipcd356a(i, maxlayer,
                                                         rs274x_files_by_layer[i], 
                                                         ipcd356a_files_by_layer[i],
                                                         overwrite);

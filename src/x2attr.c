@@ -37,8 +37,7 @@
 #include "x2attr.h"
 
 
-//#define dprintf if(DEBUG) printf
-#define dprintf if(1) printf
+#define dprintf if(DEBUG) printf
 
 
 /* Dynamic attribute dictionary state while parsing RS274-X2. 

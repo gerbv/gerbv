@@ -95,7 +95,7 @@ typedef enum {
     SEARCH_RING,            //!< Ring (disk with hole) centered at (0,0) with given inner and outer radius dy,dx.
     SEARCH_RECTANGLE,       //!< Rectangle with lower left at 0,0, and given width and height in dx,dy.
     SEARCH_OBROUND,         //!< Oblong round flash - params as for track, since looks like short track.
-    SEARCH_POLYGON,         //!< Arbitrary filled area assuming even/odd winding rule.
+    SEARCH_POLYGON,         //!< Arbitrary filled area assuming non-zero winding rule.
     SEARCH_TRACK,           /*!< Stroked straight track with rounded ends.  One end at (0,0),
                                  the other at (dx,0) with half width hlw. */
     SEARCH_POLY_TRACK,      //!< Stroked arbitrary polygonal path, with half width hlw and assumed round ends.  Not closed.
@@ -124,6 +124,7 @@ typedef struct search_state
     gpointer            user_data;  //!< Current user data
     gerbv_image_t *     image;      //!< The image being searched
     gerbv_aperture_t *  aperture;   //!< The current aperture
+    gboolean            amacro;     //!< Aperture is a macro
     gerbv_net_t *       net;        //!< The current object.  For regions, is the first object in region.
     int                 stack;      //!< Current transform stack index.
     gboolean            clear[SEARCH_MAX_XFORM];      
