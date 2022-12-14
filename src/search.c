@@ -208,6 +208,8 @@ _amacro(search_state_t *ss, gerbv_simplified_amacro_t *s)
 
 	// Push the current state.
 	_push(ss);
+	
+	ss->amacro = TRUE;
 
 	while (ls != NULL) {
 
@@ -303,6 +305,8 @@ _amacro(search_state_t *ss, gerbv_simplified_amacro_t *s)
                 
 		ls = ls->next;
 	}
+	
+	ss->amacro = FALSE;
 	
 	_pop(ss);
 }
