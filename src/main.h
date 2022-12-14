@@ -100,6 +100,10 @@ typedef struct {
     int selected_layer;		/* Selected layer by Alt+keypad */
     gerbv_selection_info_t selectionInfo;
     gerbv_selection_item_t pointerItem;  /* Mouse nearest */
+    GArray * pointerSameNets;  /* Array of gerbv_net_t, indicating objects with matching netnames as pointerItem. */
+    gboolean sameNetsDrawn; /* True if above highlighted with XORed lines */
+    GArray * pointerSameRefdes;  /* Array of gerbv_net_t, indicating objects with matching refdes as pointerItem. */
+    gboolean sameRefdesDrawn; /* True if above highlighted with XORed points */
     gdouble pointer_reach; /* Board inches radius for "mouse nearest" selection */
     gerbv_state_t state;
     gerbv_tool_t tool;

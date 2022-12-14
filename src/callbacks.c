@@ -3254,6 +3254,86 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 }
 
 /* --------------------------------------------------------- */
+
+static void
+_matching_attrs_not_drawn()
+{
+        // Called after screen rendered, we know it's not drawn.
+        screen.sameNetsDrawn = FALSE;
+        screen.sameRefdesDrawn = FALSE;
+}
+
+static void
+_undraw_matching_attrs()
+{
+        if (screen.sameNetsDrawn) {
+                render_toggle_netname_lines(
+                        (gerbv_net_t **)screen.pointerSameNets->data, 
+                        screen.pointerSameNets->len, 
+                        FALSE);
+                screen.sameNetsDrawn = FALSE;
+        }
+        if (screen.sameRefdesDrawn) {
+                render_toggle_netname_lines(
+                        (gerbv_net_t **)screen.pointerSameRefdes->data, 
+                        screen.pointerSameRefdes->len, 
+                        TRUE);
+                screen.sameRefdesDrawn = FALSE;
+        }
+}
+
+static void
+_find_matching_attrs()
+{
+        const char * netname;
+        const char * refdes;
+        gerbv_net_t * net = (gerbv_net_t *)screen.pointerItem.net;
+        gerbv_image_t * image = (gerbv_image_t *)screen.pointerItem.image;
+        gerbv_net_t * n;
+        if (!screen.pointerSameNets)
+                screen.pointerSameNets = g_array_sized_new(FALSE, FALSE, sizeof(gerbv_net_t *), 512);
+        if (!screen.pointerSameRefdes)
+                screen.pointerSameRefdes = g_array_sized_new(FALSE, FALSE, sizeof(gerbv_net_t *), 128);
+        g_array_set_size(screen.pointerSameNets, 0);
+        g_array_set_size(screen.pointerSameRefdes, 0);
+        if (!net || !image)
+                return;
+        netname = x2attr_get_net_attr(net, ".N");
+        refdes = x2attr_get_net_attr(net, ".C");
+        if (!netname && !refdes)
+                return;
+        // Scan all nets of image and add matching to arrays.  We can use pointer equality since
+        // attr strings are always interned.
+        // We include the selected object as well, since if it's a track or pad we want to highlight that.
+	for (n = image->netlist->next; n;
+			n = gerbv_image_return_next_renderable_object(n)) {
+	        if (netname && netname == x2attr_get_net_attr(n, ".N"))
+	                g_array_append_vals(screen.pointerSameNets, &n, 1);
+	        if (refdes && refdes == x2attr_get_net_attr(n, ".C"))
+	                g_array_append_vals(screen.pointerSameRefdes, &n, 1);
+	}
+}
+
+static void
+_draw_matching_attrs()
+{
+        if (!screen.sameNetsDrawn && screen.pointerSameNets) {
+                render_toggle_netname_lines(
+                        (gerbv_net_t **)screen.pointerSameNets->data, 
+                        screen.pointerSameNets->len, 
+                        FALSE);
+                screen.sameNetsDrawn = TRUE;
+        }
+        if (!screen.sameRefdesDrawn && screen.pointerSameRefdes) {
+                render_toggle_netname_lines(
+                        (gerbv_net_t **)screen.pointerSameRefdes->data, 
+                        screen.pointerSameRefdes->len, 
+                        TRUE);
+                screen.sameRefdesDrawn = TRUE;
+        }
+}
+
+/* --------------------------------------------------------- */
 gboolean
 callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -3314,7 +3394,9 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 		if (screen.tool == MEASURE && screen.state != IN_MEASURE) {
 			render_toggle_measure_line();
 		}
- 
+                _matching_attrs_not_drawn();
+		_draw_matching_attrs();
+
 		return FALSE;
 	}
 
@@ -3353,6 +3435,8 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 
 	if (screen.tool == MEASURE)
 		render_toggle_measure_line();
+        _matching_attrs_not_drawn();
+	_draw_matching_attrs();
 	return FALSE;
 }
 
@@ -3520,6 +3604,7 @@ update_selected_object_message (gboolean userTriedToSelect)
 
 	callbacks_update_statusbar();
 }
+
 			
 /* --------------------------------------------------------- */
 gboolean
@@ -3618,8 +3703,14 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		        }
         		g_array_free(a, TRUE);
 		}
-		if (prevnet != screen.pointerItem.net)
+		if (prevnet != screen.pointerItem.net) {
 			update_selected_object_message (FALSE);
+			
+			// Just for kicks, highlight objects with matching netname and/or refdes.
+			_undraw_matching_attrs();
+			_find_matching_attrs();
+			_draw_matching_attrs();
+	        }
 
         }
 
