@@ -196,6 +196,7 @@ const struct option longopts[] = {
     {"text-mils",       required_argument,  &longopt_val, 3},
     {"text-color",      required_argument,  &longopt_val, 3},
     {"layers",          required_argument,  &longopt_val, 3}, // CDM, Gerber only
+    {"annotate",        required_argument,  &longopt_val, 3},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",      required_argument,  &longopt_val, 2},
     {"g-fatal-warnings",no_argument,	    &longopt_val, 2},
@@ -491,6 +492,7 @@ main(int argc, char *argv[])
 	   userSuppliedBorder = GERBV_DEFAULT_BORDER_COEFF;
 
     gerbv_image_t *exportImage;
+    const char * attrarg;
 
     enum exp_type {
 	EXP_TYPE_NONE = -1,
@@ -640,7 +642,6 @@ main(int argc, char *argv[])
 		    break;
 		}
 		screen.pointer_reach *= 0.001;
-		printf("pointer reach=%g\n", screen.pointer_reach);
 	        break;
 	    case 1: /* geometry */
 		errno = 0;
@@ -1011,6 +1012,54 @@ main(int argc, char *argv[])
 	    }
 	}
     }
+    
+    attrarg = x2attr_get_project_attr_or_default(mainProject, "annotate", "y");
+    if (!strcasecmp(attrarg, "y") || !strcasecmp(attrarg, "y!")) {
+        dprintf("Annotating from IPC-D-356A data...\n");
+        // Annotation uses data from IPC files to set component and netname attributes on
+        // otherwise unadorned Gerber images.  This is a search function, since it relies on
+        // matching coordinates.
+        // All loaded IPC files will specify layer numbers 1..n as appropriate.  The corresponding
+        // Gerber file for each layer must have been identified using the --layers option.
+        // All such matching layer pairs are annotated.
+        gboolean overwrite = !strcasecmp(attrarg, "y!");
+        gerbv_fileinfo_t * rs274x_files_by_layer[64];
+        gerbv_fileinfo_t * ipcd356a_files_by_layer[64];
+        memset(rs274x_files_by_layer, 0, sizeof(rs274x_files_by_layer));
+        memset(ipcd356a_files_by_layer, 0, sizeof(ipcd356a_files_by_layer));
+        for (i = 0; i <= mainProject->last_loaded; ++i) {
+                gerbv_fileinfo_t * f = mainProject->file[i];
+                int layernum;
+                unsigned long layer_bitmap;
+
+                if (!f || !f->image) 
+                        continue;
+                        
+                if (f->image->layertype == GERBV_LAYERTYPE_RS274X) {
+                        sscanf(x2attr_get_image_attr_or_default(f->image, "LayerNum", "0"),
+                                "%d", &layernum);
+                        if (layernum > 0 && layernum < 64
+                            && x2attr_get_image_attr(f->image, "LayerIsSignal"))
+                                rs274x_files_by_layer[layernum] = f;
+                }
+                else if (f->image->layertype == GERBV_LAYERTYPE_IPCD356A) {
+                        layer_bitmap = strtoul(
+                                x2attr_get_image_attr_or_default(f->image, "LayerSet", "0"), 
+                                NULL, 0);
+                        for (layernum = 1; layernum < 64; ++layernum)
+                                if (1uL<<layernum & layer_bitmap)
+                                        ipcd356a_files_by_layer[layernum] = f;
+                }
+        }
+        // Annotate rs274x layers with matching IPC data
+        for (i = 0; i < 63; ++i)
+                if (ipcd356a_files_by_layer[i] && rs274x_files_by_layer[i])
+                        gerbv_annotate_rs274x_from_ipcd356a(i, 
+                                                        rs274x_files_by_layer[i], 
+                                                        ipcd356a_files_by_layer[i],
+                                                        overwrite);
+    }
+
 
     if (exportType != EXP_TYPE_NONE) {
 	/* load the info struct with the default values */
@@ -1413,6 +1462,20 @@ gerbv_print_help(void)
 "                          text-min, then it will not be rendered, and if larger\n"
 "                          than text-max then it will be scaled down.  Default 40.\n"
 "  --text-color=<hex>      Override text color, enter as #rrggbb hex.\n"
+                ));
+	printf(_(
+"  --annotate=<y!|y|n>     Annotate Gerber files with data from IPC-D-356A data.\n"
+"                          y! = overwrite any existing attributes.  y = don't\n"
+"                          overwrite existing.  n = no annotation.  Default y.\n"
+"                          Use this with --layers and --ipcd356a-layers options.\n"
+"                          Currently only works with signal layers t, b, 2, 3 etc.\n"
+                ));
+	printf(_(
+"  --layers=<spec>,<spec>,...\n"
+"                          Specify file function for each RS274-D or X file.\n"
+"                          See doc.  Examples: --layers=tl,tm,t,b,bm sets first five\n"
+"                          Gerber files as top legend, top soldermask, top copper,\n"
+"                          bottom copper, bottom soldermask.\n"
                 ));
 #endif
 

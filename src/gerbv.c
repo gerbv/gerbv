@@ -65,6 +65,7 @@
 #include "pick-and-place.h"
 #include "ipcd356a.h"
 #include "x2attr.h"
+#include "search.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -478,7 +479,9 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     gboolean isPnpFile = FALSE, foundBinary;
     gerbv_HID_Attribute *attr_list = NULL;
     int n_attr = 0;
-    int instance = 0, i, maxlayer, thislayer;
+    int instance = 0, i, maxlayer = 0, thislayer = 0;
+    gboolean is_signal = FALSE;
+    unsigned long layer_bitmap = 0;
     const char * file_functions;
     char * ff = NULL, * ffp, * polarity = NULL, * plane = NULL, * other = NULL;
     char attrbuf[100];
@@ -773,6 +776,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
         }
         if (thislayer && !attrbuf[0]) {
                 // Must be a copper layer.
+                is_signal = !plane || *plane!='=';
                 snprintf(attrbuf, sizeof(attrbuf), "Copper,L%d,%s%s",
                                 thislayer,
                                 thislayer == 1 ? "Top" :
@@ -794,18 +798,17 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
         char * layers, * lp;
         char * tracks;
         char * label;
-        unsigned long L = 0;
         layers = x2attr_get_field_or_last(instance, x2attr_get_project_attr_or_default(gerbvProject, "ipcd356a-layers", "01"));
         tracks = x2attr_get_field_or_last(instance, x2attr_get_project_attr_or_default(gerbvProject, "ipcd356a-tracks", "no"));
         label = x2attr_get_field_or_last(instance, x2attr_get_project_attr_or_default(gerbvProject, "ipcd356a-labels", "n"));
         lp = layers;
         while (*layers) {
-                L |= 1uL<<(*layers - '0');
+                layer_bitmap |= 1uL<<(*layers - '0');
                 ++layers;
         }
-	printf("Found IPC-D-356A file, instance %d.  Layers=0x%lX, tracks=%s, label=%s\n", instance, L, tracks, label);
+	printf("Found IPC-D-356A file, instance %d.  Layers=0x%lX, tracks=%s, label=%s\n", instance, layer_bitmap, tracks, label);
 	
-        parsed_image = ipcd356a_parse(fd, L, tracks[0]=='y', label);
+        parsed_image = ipcd356a_parse(fd, layer_bitmap, tracks[0]=='y', label);
         g_free(label);
         g_free(tracks);
         g_free(lp);
@@ -875,10 +878,27 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     
     if (parsed_image) {
         // Assign image (file) attributes if applicable
+        // Standard attributes...
         if (attrbuf[0])
                 x2attr_set_image_attr(parsed_image, ".FileFunction", attrbuf);
         if (polarity)
                 x2attr_set_image_attr(parsed_image, ".FilePolarity", *polarity == '-' ? "Negative" : "Positive");
+        // Non-standard, for our convenience...
+        if (ftype == FILE_TYPE_IPCD356A) {
+                sprintf(attrbuf, "0x%lX", layer_bitmap);
+                x2attr_set_image_attr(parsed_image, "LayerSet", attrbuf);
+        }
+        else if (ftype == FILE_TYPE_RS274X || ftype == FILE_TYPE_RS274D) {
+                sprintf(attrbuf, "%d", thislayer);
+                x2attr_set_image_attr(parsed_image, "LayerNum", attrbuf);
+                if (maxlayer > 0) {
+                        sprintf(attrbuf, "%d", maxlayer);
+                        x2attr_set_image_attr(parsed_image, "LayerMax", attrbuf);
+                }
+                if (is_signal)
+                        x2attr_set_image_attr(parsed_image, "LayerIsSignal", "");
+        }
+        
     }
     
     g_free(ff);
@@ -901,6 +921,10 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     	g_free (baseName);
     	g_free (displayedName);
 
+        // Automatically make the IPC file invisible if annotation being requested.
+        if (ftype == FILE_TYPE_IPCD356A
+            && tolower(x2attr_get_project_attr_or_default(gerbvProject, "annotate", "y")[0]) == 'y')
+                gerbvProject->file[idx]->isVisible = FALSE;
     }
 
     /* Set layer_dirty flag to FALSE */
@@ -1552,5 +1576,124 @@ gerbv_parse_gdk_color(GdkColor * color,
         color->green = k.green * 257;
         color->blue  = k.blue * 257;
         return 0;
+}
+
+typedef struct key_point
+{
+        vertex_t        v;      // The key coordinate of the IPC feature
+        gerbv_net_t *   ipc;    // IPC object that has netname or component attributes of intereest.
+} key_point_t;
+
+typedef struct anno_data
+{
+        GArray *        ipcs;   // Array of the above key_point_t, for this layer.
+        int             layernum;
+        gboolean        overwrite;
+        
+} anno_data_t;
+
+static void
+_get_key_points_cb(search_state_t * ss, search_context_t ctx)
+{
+        anno_data_t * d = (anno_data_t *)ss->user_data;
+        const char * ipclayer_str;
+        int ipclayer;
+
+        // Populate ipcs array with key point data.
+        // Currently, select only flashes that have netnames and/or component/pin.
+        if (ss->net->aperture_state != GERBV_APERTURE_STATE_FLASH)
+                return;
+        // Not polygons or tracks, only circle, ring, rectangle or obround.
+        if (ctx > SEARCH_OBROUND)
+                return;
+                
+        // IPC layer must be 0 (access both sides) or equal to the target layer.
+        //FIXME: layer 0 should not match inner layers, but pass for now.
+        ipclayer_str = x2attr_get_net_attr_or_default(ss->net, "IPCLayer", "0");
+        sscanf(ipclayer_str, "%d", &ipclayer);
+        if (ipclayer && ipclayer != d->layernum)
+                return;
+        if (x2attr_get_net_attr(ss->net, ".N")
+            || x2attr_get_net_attr(ss->net, ".P")
+            || x2attr_get_net_attr(ss->net, ".C")) {
+                key_point_t kp;
+                kp.v.x = ss->net->stop_x;
+                kp.v.y = ss->net->stop_y;
+                kp.ipc = ss->net;
+                g_array_append_vals(d->ipcs, &kp, 1);
+        }
+}
+
+static void
+_anno_cb(search_state_t * ss, search_context_t ctx)
+{
+        anno_data_t * d = (anno_data_t *)ss->user_data;
+        gdouble dist;
+        guint i;
+        cairo_matrix_t m;
+        
+        // See if the current object (from the image we are annotating) strictly encloses
+        // any of the objects in d->ipcs.  The first one which is found causes its attributes
+        // to be assigned to this.
+        // Currently, we're ony matching on pads (flashes).
+        if (ss->net->aperture_state != GERBV_APERTURE_STATE_FLASH)
+                return;
+        m = ss->transform[ss->stack];
+        if (cairo_matrix_invert(&m) == CAIRO_STATUS_INVALID_MATRIX)
+                return;
+        for (i = 0; i < d->ipcs->len; ++i) {
+                key_point_t * kp = (key_point_t *)d->ipcs->data + i;
+                gdouble x = kp->v.x;
+                gdouble y = kp->v.y;
+                
+                cairo_matrix_transform_point(&m, &x, &y);       
+                dist = search_distance_to_border_no_transform(ss, ctx, x, y);
+                if (dist < 0.) {
+                        const char * netname = x2attr_get_net_attr(kp->ipc, ".N");
+                        const char * pin = x2attr_get_net_attr(kp->ipc, ".P");
+                        const char * cmp = x2attr_get_net_attr(kp->ipc, ".C");
+                        if (netname)
+                                x2attr_set_net_attr(ss->net, ".N", netname);
+                        if (pin)
+                                x2attr_set_net_attr(ss->net, ".P", pin);
+                        if (cmp)
+                                x2attr_set_net_attr(ss->net, ".C", cmp);
+                        break;  
+                }
+        }
+}
+
+
+void
+gerbv_annotate_rs274x_from_ipcd356a(int layernum, 
+                                gerbv_fileinfo_t * rs274x, 
+                                gerbv_fileinfo_t * ipcd356a,
+                                gboolean overwrite)
+{
+        /* Use data for given layer in ipc data to annotate rs274x (on same layer).
+        
+           First, collate an array of known coordinates that have netname and/or component pins,
+           gleaned from the ipc file.
+           
+           Then, search the rs274x layer iterating through each object and, if the object definitely
+           contains one of the ipc points, assign appropriate object attributes.
+        */
+        anno_data_t d;
+        search_state_t * ss;
+
+        printf("Annotating layer %d%s\n", layernum, overwrite ? ", overwrite" : "");
+        
+        d.ipcs = g_array_sized_new(FALSE, FALSE, sizeof(key_point_t), 1024);
+        d.overwrite = overwrite;
+        d.layernum = layernum;
+        
+        // First scan the IPC data to fill in key points for this layer
+        ss = search_image(NULL, ipcd356a->image, _get_key_points_cb, &d);
+        search_destroy_search_state(ss);
+
+        // Now to the actual annotation.
+        ss = search_image(NULL, rs274x->image, _anno_cb, &d);
+        search_destroy_search_state(ss);
+        g_array_free(d.ipcs, TRUE);
 }
 

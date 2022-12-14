@@ -1023,7 +1023,7 @@ ipcd356a_parse(gerb_file_t *fd, unsigned long layers, gboolean include_tracks, c
     g_hash_table_destroy(ist->aperture_map);
     g_hash_table_destroy(ist->netnames);
     
-    if (ist->errmsg)
+    if (ist->errmsg && *ist->errmsg)
         GERB_COMPILE_ERROR("%s", ist->errmsg);
     
     
