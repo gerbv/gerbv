@@ -635,11 +635,14 @@ double
 _point_to_line_parameter(const vertex_t * pt, const vertex_t * p0, const vertex_t * p1)
 {
     // Return parameter relative to line segment p0->p1 for point on that line closest to pt.
+    // If segment smaller than 1e-4, then take distance to midpoint to avoid numerical instability.
     vertex_t d, e;
     gdouble len2;
     d.x = p1->x - p0->x;
     d.y = p1->y - p0->y;
     len2 = d.x*d.x + d.y*d.y;
+    if (len2 < 1.e-8)
+        return 0.5;
     e.x = pt->x - p0->x;
     e.y = pt->y - p0->y;
     return (e.x*d.x + e.y*d.y)/len2;
@@ -702,6 +705,7 @@ _distance_to_border(search_state_t * ss, search_context_t ctx, const vertex_t * 
         gdouble y = vtx->y;
         gdouble r, rx, ry;
         gboolean inside;
+        vertex_t v;
         
         if (cairo_matrix_invert(&m) == CAIRO_STATUS_INVALID_MATRIX)
                 return HUGE_VAL;
@@ -733,11 +737,15 @@ _distance_to_border(search_state_t * ss, search_context_t ctx, const vertex_t * 
         // For each seg, update matrix (and inverse) to canonical X aligned form and recurse
         // as for rectangle, with dy=0 (thin line).
         case SEARCH_POLYGON:
-                inside = _point_in_polygon(vtx, ss->poly, ss->len);
-                r = _distance_to_closed_polygon(vtx, ss->poly, ss->len);
+                v.x = x;
+                v.y = y;
+                inside = _point_in_polygon(&v, ss->poly, ss->len);
+                r = _distance_to_closed_polygon(&v, ss->poly, ss->len);
                 return inside ? -r : r;
         case SEARCH_POLY_TRACK:
-                r = _distance_to_open_polygon(vtx, ss->poly, ss->len) - ss->hlw;
+                v.x = x;
+                v.y = y;
+                r = _distance_to_open_polygon(&v, ss->poly, ss->len) - ss->hlw;
                 return r;
         default:
                 return HUGE_VAL;
