@@ -331,13 +331,13 @@ for t in $all_tests ; do
 		${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png
 		${IM_COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png
 		${IM_CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png
-cat > ${errdir}/animate.sh << EOF
+        cat > ${errdir}/animate.sh << EOF
 #!/bin/sh
 ${IM_CONVERT} -label "%f" ${refpng} ${outpng} miff:- | \
 ${IM_MONTAGE} - -geometry +0+0 -tile 1x1 miff:- | \
 ${IM_ANIMATE} -delay 0.5 -loop 0 -
 EOF
-		chmod a+x ${errdir}/animate.sh
+		chmod +x ${errdir}/animate.sh
 		fail=`expr $fail + 1`
 	    fi
 	else

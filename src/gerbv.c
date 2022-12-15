@@ -1223,7 +1223,6 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 	GdkColor *bg = &gerbvProject->background;
 	int i;
 	double r, g, b;
-        printf("RALCTVO\n");
         
 	gerbv_render_cairo_set_scale_and_translation (cr, renderInfo);
 
@@ -1257,7 +1256,9 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 /* ------------------------------------------------------------------ */
 
 void
-gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo)
+gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject, 
+                                   gerbv_fileinfo_t *fileInfo, 
+                                   gerbv_render_info_t *renderInfo)
 {
         char * text_min;
         char * text_max;
@@ -1291,11 +1292,14 @@ gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject, gerbv_fileinfo
 	// Compute pts = visible size of text at nominal board inch size.
 	pts = renderInfo->scaleFactorX/96. * renderInfo->textSizeInch*72.;
 	// Now clamp the text size appropriately.  Setting to 0 disables text.
-	if (pts > tmax)
-	        renderInfo->textSizeInch *= tmax/pts;
-	else if (pts < tmin)
-	        renderInfo->textSizeInch = 0.;
-
+	// Clamping is disabled when exporting to file image formats (PNG, PDF etc.)
+	if (renderInfo->clampTextSize) {
+	        if (pts > tmax)
+	                renderInfo->textSizeInch *= tmax/pts;
+	        else if (pts < tmin)
+	                renderInfo->textSizeInch = 0.;
+        }
+        
         //printf("SROF: text=%g,%g,%g;  pts=%g, scaleFactorX=%g, textSizeInch=%g\n", 
         //        tmin, tmax, tmils, pts, renderInfo->scaleFactorX, renderInfo->textSizeInch);
 
@@ -1334,8 +1338,7 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 			cairo_push_group (cr);
 
 		        gerbv_set_render_options_for_file (gerbvProject, fileInfo, renderInfo);
-			gerbv_render_layer_to_cairo_target (cr,
-					fileInfo, renderInfo);
+			gerbv_render_layer_to_cairo_target (cr, fileInfo, renderInfo);
 			cairo_pop_group_to_source (cr);
 			cairo_paint_with_alpha (cr, (double)
 					fileInfo->alpha/G_MAXUINT16);
