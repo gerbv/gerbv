@@ -49,8 +49,8 @@
 #include "file_type.h"
 
 
-//#define dprintf if(DEBUG) printf
-#define dprintf if(1) printf
+#define dprintf if(DEBUG) printf
+//#define dprintf if(1) printf
 
 
 /*************************************************************

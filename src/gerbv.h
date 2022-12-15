@@ -771,6 +771,7 @@ typedef struct {
 	gboolean show_cross_on_drill_holes; /*!< TRUE to show cross on drill holes */
 	gfloat textSizeInch; /*! Target text em square size in user units (inch). */
         GdkColor textColor; /*!< Text color */
+        gboolean clampTextSize; /*!< Whether to clamp min and max text size */
 } gerbv_render_info_t;
 
 //! Allocate a new gerbv_image structure

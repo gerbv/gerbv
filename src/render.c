@@ -558,6 +558,7 @@ void render_refresh_rendered_image_on_screen (void) {
 			CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
 			screenRenderInfo.displayHeight);
 		    cr= cairo_create(mainProject->file[i]->privateRenderData );
+		    screenRenderInfo.clampTextSize = TRUE;
 		    gerbv_set_render_options_for_file (mainProject, mainProject->file[i], &screenRenderInfo);
 		    gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &screenRenderInfo);
 		    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
