@@ -10,6 +10,9 @@ RS274-X files are generated from different PCB CAD programs and are
 used in the printed circuit board manufacturing process.
 \fIgerbv\fP also supports Excellon/NC drill files as well as XY (centroid)
 files produced by the program PCB (http://pcb.geda-project.org/).
+\fIgerbv\fP is able to read IPC-D-356A files, which can be produced by
+most modern EDA software, and provide netlist, reference designator and
+pin information.
 
 .SH OPTIONS
 
@@ -120,6 +123,44 @@ Program name as used by the window manager
 .TP
 .BI --class= CLASS
 Program class as used by the window manager
+
+.SS Text rendering options
+.TP
+.BI --text-mils=<mils>
+Target physical size of text labels, in 1/1000 inch units.  Default 40.
+.TP
+.BI --text-min=<min-pts>
+Minimum text point size on screen, in points.  At small zoom scale, if the
+text would be less than this size on screen, it is not rendered.
+The screen is assumed to be 96dpi resolution.  This is ignored
+when rendering to files.  Default 6.
+.TP
+.BI --text-max=<max-pts>
+Maximum text point size on screen, in points.  At large zoom scale, if the
+text would be greater than this size on screen, it is rendered smaller.
+The screen is assumed to be 96dpi resolution.  This is ignored
+when rendering to files.  Default 12.
+.TP
+.BI --text-color=<hex>
+Text color.  Defaults to same as layer color.
+
+.SS Advanced options
+.TP
+.BI --layers=<spec>[,<spec>]...
+Assign layer types to Gerber files.
+.TP
+.BI --annotate={n|y|y!}
+Gerber layer annotation.  Default y.
+.TP
+.BI --ipcd356a-layers=<nn>[,<nn>]...
+IPC-D-356A layer/access selection.  Default 01.
+.TP
+.BI --ipcd356a-tracks=<n|y>[,<n|y>]...
+Read IPC-D-356A conductor records.  Default n.
+.TP
+.BI --ipcd356a-labels=<n|d|dp|N>[,<n|d|dp|N>]...
+Generate text from IPC-D-356A designators, pins or Netnames.  Default n (none).
+
 
 .SH GENERAL
 When you start gerbv you can give the files to be loaded on the command line,
@@ -264,10 +305,203 @@ Units can be specified in format "# X,Y in mils." or as suffix for
 X/Y-coordinates, i.e ",10mil,". Supported units: in, mil, cmil, dmil, km, m,
 dm, cm, mm, um, nm.
 
+.SH IPC-D-356A FILES
+If your EDA software generates an IPC-D-356A test record file (shortened to
+IPC file in the following) then it may be included in the list of files to
+open on the command line.  With no other Gerber files, or with \-\-annotate=n,
+the IPC data will by default be used to generate pad flashes.  With
+\-\-ipcd356a-tracks=y, it will also read conductor records and generate tracks.
+
+IPC files contain data for all board layers, which are numbered 1 (top) through
+to the layer number of the bottom (usually 2 or 4).  There is also a 0 (zero)
+layer which is used to hold non-copper layer information, such as board outline,
+or in some contexts means "top and bottom sides".
+
+The --ipcd356a-layers option allows specification of the layer(s) to process
+from the IPC file.  The option is a string of digits in the range 0..9.  For
+example, 01 (the default) reads layers 0 and 1 (top).  1234 would read all
+copper layers for a 4-layer board.  If reading more than one copper layer,
+the tracks and pads will be overlapped which may look confusing.  In this case,
+the IPC file may be read in multiple passes, assigning a different \fIgerbv\fP
+image each time.  To do this, mention the same input file more than once
+on the command line, then use a comma delimited list of layers:
+
+.nf
+    gerbv --annotate=n  --ipcd356a-layers=1,2  foo.ipc  foo.ipc
+.fi
+
+The comma delimited option value is used to assign different option settings 
+to successive input files, of the appropriate type.  Note that an option
+value of 12 is distinct from 1,2.  12 combines layers 1 and 2 in a single
+image, whereas 1,2 assigns single layers to two instances of the same file.
+
+Normally, the corresponding Gerber files will be available.  In this case,
+rendering of the IPC data may not be required.  The default behavior is
+\-\-annotate=y which will instruct \fIgerbv\fP to apply all available data
+to the appropriate Gerber layers.  For this to work, it is necessary to
+assign layer numbers to all relevant Gerber files which are read, so that the
+correct IPC layers may be matched up.  This requires the use of the \-\-layers
+option:
+
+.nf
+    gerbv --ipcd356a-layers=12  foo.ipc --layers=t,b  top.grb  bot.grb
+.fi
+
+This time, with \-\-annotate=y (the default), we load in a single image from the IPC
+data, containing top and bottom layers, then we read in two Gerber files,
+explicitly assigning them the roles of t (top) and b (bottom).
+
+When the application window opens, the top and bottom Gerbers will be shown as
+normal, but the IPC file will be hidden automatically.  It can be set visible,
+but this would normally be visually confusing.  In the background, however,
+netlist, reference designator, and component pin information has been attached
+to the Gerber images.
+
+You will immediately notice that moving the mouse over any pad will highlight
+some of the display, such as all other component pins if a component pad is
+under the mouse pointer.  With the example above, only pad (flash) information
+was extracted from the IPC file.  Use the \-\-ipcd356a-tracks option to also
+load netlist data for tracks:
+ 
+.nf
+    gerbv --ipcd356a-layers=12 --ipcd356a-tracks=y foo.ipc --layers=t,b  top.grb  bot.grb
+.fi
+
+The additional option provides sufficient information (if available in the IPC file)
+to highlight all tracks on the selected layer which belong to the same electrical net.
+
+The \-\-ipcd356a-labels option permits text display of Netnames, refDes, or refDes,Pin
+on the screen.  To show refdes,pin (for example U3,2) next to each pad, try this:
+
+.nf
+    gerbv --ipcd356a-layers=12 --ipcd356a-labels=dp  foo.ipc --layers=t,b  top.grb  bot.grb
+.fi
+
+and select the IPC layer for display, since the labels are generated and attached to the
+IPC image, not the annotated Gerbers.  Also, move the IPC layer to the top of the list,
+and possibly use \-\-text-color=#ffffff to make the text more visible.
+
+When an IPC file is read in, it is stored with the same internal structure as a Gerber file,
+and may be exported as RS274-X or as a PNG image etc.  This will lose some of the information
+in the original IPC file, since \fIgerbv\fP does not process or use all the available 
+information.
+
+.SH GERBER FILE ANNOTATION
+
+Internally, \fIgerbv\fP maintains additional information on each image, known as
+RS274-X2 attributes.  Attributes may be attached to the file as a whole, to apertures,
+or to visible elements such as flashes, lines and arcs.  The advantage of this
+is that it allows Gerber files to be more self-contained and improves experience 
+with the board house.  RS274-X is basically a photoplotter format, and carries no
+information about the electrical design or component placement etc.  This means that
+the board house basically has to reverse engineer the image to determine expected
+connectivity (for testing purposes).  The existence of IPC-D-356A files helps with
+this, but the RS274-X2 standard helps reduce the possibility for errors when handling
+multiple files.
+
+Annotation makes no difference to the image output.  It only provides information
+beyond the mere graphics, such as which layer of the stackup that the image
+defines, which holes are vias, which pads are for SMD and so on.
+
+\fIgerbv\fP supports the attachment of attributes via some command line options,
+and IPC-D-356A files.  The most important command line option is \-\-layers.
+This specifies a comma delimited list of file function attributes.  The command line
+args are a short-cut syntax for defining standard .FileFunction attributes.
+
+Each file function uses the following syntax, with the copper layer number 
+always the first char: digit(s) 1..99, or t or b.  (Others are not copper).
+No spaces allowed.  Case insensitive (e.g. b is same as B):
+
+.TP           
+.BI <ff>[,<ff>]...   
+file functions, assigned 1:1 to each RS274-X file listed on command line.
+where <ff> is
+.TP           
+.BI <layer><process><qualifier>
+<layer> is one of
+.nf
+             t          top
+             1          top
+             2..99      inner or possibly bottom layer
+             b          bottom
+               (following types cannot have process or qualifier except for polarity)
+             o          board outline/profile
+             f          fabrication drawing
+             a          array/panel drawing
+             d          drillmap
+             x<type>    "other" of type <type>
+.fi
+<process> is
+.nf
+             <empty>    copper layer or not applicable
+               (following process must be on top or bottom else no file function assigned)
+             m          soldermask
+             l          legend/silk
+             p          paste
+             g          glue
+             a          assembly drawing
+.fi
+<qualifier> is
+.nf
+             <empty>    no qualifier
+             =          plane layer
+             .          signal layer
+             =.         mixed plane+signal
+             -          negative polarity
+             +          positive polarity
+.fi         
+.P           
+Note regarding bottom layer number:
+.nf
+           - minimum layer number for b is 2.
+           - if 'b' (without process) does not appear, then it is assumed to be the greatest layer number
+             that was seen.
+           - if 'b' (without process) appears, then it is assigned the greatest layer number seen
+             elsewhere, plus 1.
+           For example:
+             t,b        - b=2.
+             t,bm       - b=2.  No bottom copper, but the soldermask is for layer 2.
+             1,2        - b=2.
+             1,2,b      - b=3.
+             t          - b=2.  But it's not used.
+             1,3,b,2    - b=4.  Ordering doesn't matter.
+             t,2,3,bm   - b=3.  bm (soldermask) is a process (m) hence b=3 not 4.
+.fi  
+           
+Typical commandline examples:
+.nf
+    . 2-layer board:
+        gerbv --layers=tl,tm,t,b,bm,bl  tsilk.grb tmask.grb tcopper.grb bcopper.grb bmask.grb bsilk.grb
+    . 4-layer board:
+        gerbv --layers=1.,2-=,3-=,4.  tcopper.grb power.grb ground.grb bcopper.grb
+.fi
+
+Top and bottom layers are "signal" (.), inner layers are "plane" (=) and in negative polarity (-).
+
+The file function is important to assign at least stackup layer numbers for matching with
+IPC data.  IPC data adds a lot of other data, including netnames, refdes and pin numbers.
+These are also stored as attributes.
+
+When a Gerber file is assigned any attributes, it automatically becomes an RS274-X2 file.
+If exported that way, it will save all the attribute data as well, and thus becomes
+independent of the IPC data, and there is no need to use command line options to assign
+file function, since it will be preserved in the "upgraded" format.
+
 .SH "ENVIRONMENT"
 .IP GERBV_SCHEMEINIT
 Defines where the init.scm file is stored. Used by scheme interpreter, which 
 is used by the project reader.
+
+.SH "BUGS"
+RS274-X layer number assigned using \-\-layers ranges from 1 to 99, however only the first 63
+layers may be annotated.
+
+IPC-D-356A data is only processed for layers 0 through 9, because of the syntax of the 
+\-\-ipcd356a-layers option.  This puts an upper limit of layer 9 for the bottom layer 
+which may be annotated with IPC data.
+
+Command line cannot be used to import and annotate a Gerber file using IPC data, and
+export it.  Re-export of annotated files currently requires use of the GUI.
 
 .SH "AUTHOR"
 .nf
