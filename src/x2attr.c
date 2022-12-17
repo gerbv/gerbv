@@ -691,7 +691,6 @@ x2attr_get_project_attr_or_default(const gerbv_project_t * project,
     return v ? v : dflt;
 }
 
-
 char * 
 x2attr_get_field_or_default(int field_num, const char * value, const char * dflt)
 {
@@ -791,8 +790,6 @@ x2attr_set_project_attr(gerbv_project_t * project,
     project->attrs = s;   // in case it got realloc'd or created
     return key;
 }
-
-
 
 #define _init_ua(ua, index, val) (((char **)(ua->data))[index] = (val))
 
@@ -960,6 +957,7 @@ x2attr_utf8_array_to_file(const GArray * utf8_array)
     if (!utf8_array->len)
         return g_strdup("");
     
+    l = 0;
     for (i = 0; i < utf8_array->len; ++i)
         l += _utf8_to_file(((char **)utf8_array->data)[i], NULL);
     l += utf8_array->len;   // for the commas and null term

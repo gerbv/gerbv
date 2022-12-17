@@ -479,7 +479,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     gboolean isPnpFile = FALSE, foundBinary;
     gerbv_HID_Attribute *attr_list = NULL;
     int n_attr = 0;
-    int instance = 0, i, maxlayer = 0, thislayer;
+    int instance = 0, i, maxlayer = 0, thislayer = 0;
     gboolean is_signal = FALSE;
     unsigned long layer_bitmap = 0;
     const char * file_functions;
@@ -539,12 +539,12 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     
     dprintf("In open_image, successfully opened file.  Now check its type....\n");
     
+    
     /* Here's where we decide what file type we have */
     /* Note: if the file has some invalid characters in it but still appears to
        be a valid file, we check with the user if he wants to continue (only
        if user opens the layer from the menu...if from the command line, we go
        ahead and try to load it anyways) */
-
     // Get the filetype and (target) layertype.
     if (ftype == FILE_TYPE_IPCD356A) {
         layertype = GERBV_LAYERTYPE_IPCD356A;
@@ -565,6 +565,10 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     else if (gerber_is_rs274d_p(fd)) {
         ftype = FILE_TYPE_RS274D;
         layertype = GERBV_LAYERTYPE_RS274X;
+    } else {
+        GERB_COMPILE_ERROR(_("Unrecognized layertype in file \"%s\": %s"),
+                           filename, strerror(errno));
+        return -1;
     }
         
     
@@ -587,6 +591,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     // layer.  It also indicates how many layers to expect.  E.g. if --layers=1,2,3,4 then we know it's a 4-layer
     // board and the bottom layer is #4.
     
+    attrbuf[0] = 0;
     if (layertype == GERBV_LAYERTYPE_RS274X) {
         /* Get *all* layers defined, so can map 'b' to max (bottom) layer.  't' is always 1.
            Copper layer number is always first char: digit(2) 1..9 or t or b.  (Others are not copper).
@@ -684,7 +689,6 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
         g_free(ff);
         // Now that we know what 'b' layer means, go ahead and parse this instance.
         ff = x2attr_get_field_or_default(instance, file_functions, "");
-        attrbuf[0] = 0;
         ffp = ff;
         switch (tolower(*ffp++)) {
         case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
@@ -788,7 +792,6 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
         // polarity may point to '+' or '-',
         // These are added to image (file) attributes after reading in.
     }
-    
     if (ftype == FILE_TYPE_IPCD356A) {
         // Default to getting the non-copper (0) and top (1) layers.  Default to not getting tracks.
         char * layers, * lp;
@@ -871,7 +874,6 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	parsed_image = NULL;
     }
     
-    
     if (parsed_image) {
         // Assign image (file) attributes if applicable
         // Standard attributes...
@@ -898,7 +900,6 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     }
     
     g_free(ff);
-    
     g_free(fd->filename);
     gerb_fclose(fd);
     if (parsed_image == NULL) {
@@ -916,7 +917,6 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     	retv = gerbv_add_parsed_image_to_project (gerbvProject, parsed_image, filename, displayedName, idx, reload);
     	g_free (baseName);
     	g_free (displayedName);
-
         // Automatically make the IPC file invisible if annotation being requested.
         if (ftype == FILE_TYPE_IPCD356A
             && tolower(x2attr_get_project_attr_or_default(gerbvProject, "annotate", "y")[0]) == 'y')
@@ -1219,7 +1219,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 	GdkColor *bg = &gerbvProject->background;
 	int i;
 	double r, g, b;
-        
+
 	gerbv_render_cairo_set_scale_and_translation (cr, renderInfo);
 
 	/* Fill the background with the appropriate not white and not black
@@ -1250,16 +1250,15 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 }
 
 /* ------------------------------------------------------------------ */
-
 void
 gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject, 
                                    gerbv_fileinfo_t *fileInfo, 
                                    gerbv_render_info_t *renderInfo)
 {
-        const char * text_min;
-        const char * text_max;
-        const char * text_mils;
-        const char * text_color;
+        char * text_min;
+        char * text_max;
+        char * text_mils;
+        char * text_color;
         gfloat tmin, tmax, tmils, pts;
 
         text_min = x2attr_get_field_or_last(0, 
@@ -1275,6 +1274,9 @@ gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject,
         sscanf(text_min, "%g", &tmin);
         sscanf(text_max, "%g", &tmax);
         sscanf(text_mils, "%g", &tmils);
+        g_free(text_min);
+        g_free(text_max);
+        g_free(text_mils);
         
 	// Set the target text size (em square) in inches.
 	renderInfo->textSizeInch = 0.001 * tmils;
@@ -1306,18 +1308,15 @@ gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject,
     	                          text_color,
     	                          FALSE,
     	                          "text");
-	
+        g_free(text_color);
 }
-
-
 void
 gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 		cairo_t *cr, gerbv_render_info_t *renderInfo)
 {
 	int i;
-        
+
         gerbv_fileinfo_t *fileInfo;
-        
 	/* Fill the background with the appropriate color. */
 	cairo_set_source_rgba (cr,
 			(double) gerbvProject->background.red/G_MAXUINT16,
@@ -1329,7 +1328,6 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 	        fileInfo = gerbvProject->file[i];
 		if (gerbvProject->file[i] && fileInfo->isVisible) {
 			cairo_push_group (cr);
-
 		        gerbv_set_render_options_for_file (gerbvProject, fileInfo, renderInfo);
 			gerbv_render_layer_to_cairo_target (cr, fileInfo, renderInfo);
 			cairo_pop_group_to_source (cr);
