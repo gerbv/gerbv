@@ -352,6 +352,7 @@ gerbv_image_duplicate_layer (gerbv_layer_t *oldLayer) {
     
     *newLayer = *oldLayer;
     newLayer->name = g_strdup (oldLayer->name);
+	newLayer->next = NULL;  // SJH fix potential double free
     return newLayer;
 }
 
@@ -361,6 +362,7 @@ gerbv_image_duplicate_state (gerbv_netstate_t *oldState)
 	gerbv_netstate_t *newState = g_new (gerbv_netstate_t, 1);
 
 	*newState = *oldState;
+	newState->next = NULL;  // SJH fix potential double free
 	return newState;
 }
 
@@ -403,7 +405,16 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		GArray *translationTable)
 {
 	/* NOTE: destImage already contains apertures and data,
-	 * latest data is: lastLayer, lastState, lastNet. */
+	 * latest data is: lastLayer, lastState, lastNet. 
+	 *
+	 * On entry, destImage already has its first layer and netstate allocated,
+	 * so copy first.
+	 *
+	 * lastLayer, lastState already point to those entries.
+	 *
+	 * When iterating through source nets, allocate a new layer or state
+	 * whenever the corresponding source pointer changes.
+	 */
 
 	gerbv_net_t *currentNet, *newNet, *first_in_region;
 	gerbv_aperture_type_t aper_type;
@@ -421,6 +432,33 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 		err_rotate_oval = 0,
 		err_rotate_rect = 0;
         gboolean in_region = FALSE;
+        gerbv_layer_t *srcLayer = NULL;
+        gerbv_netstate_t *srcState = NULL;
+        
+        g_assert(destImage->layers);    // These should be created already.
+        g_assert(destImage->states);
+        
+        
+        lastLayer->next = NULL;
+        lastState->next = NULL;
+
+        if(DEBUG) {
+	        int n, nl, ns;
+	        gerbv_layer_t *l;
+	        gerbv_netstate_t *s;
+	        /* Some test code to make sure we're not creating too many copies */
+        	for (currentNet = sourceImage->netlist, n = 0; currentNet != NULL;
+			currentNet = currentNet->next, ++n);
+                for (l = sourceImage->layers, nl = 0; l; l = ((gerbv_layer_t *)l)->next, ++nl); 
+                for (s = sourceImage->states, ns = 0; s; s = ((gerbv_netstate_t *)s)->next, ++ns); 
+		printf("Entry:\n");
+		printf("  Number of source nets, layers, states: %9d %9d %9d\n", n, nl, ns);
+        	for (currentNet = destImage->netlist, n = 0; currentNet != NULL;
+			currentNet = currentNet->next, ++n);
+                for (l = destImage->layers, nl = 0; l; l = ((gerbv_layer_t *)l)->next, ++nl); 
+                for (s = destImage->states, ns = 0; s; s = ((gerbv_netstate_t *)s)->next, ++ns); 
+		printf("  Number of dest nets, layers, states:   %9d %9d %9d\n", n, nl, ns);
+	}
 
 	if (trans && (trans->mirrorAroundX || trans->mirrorAroundY)) {
 		if (sourceImage->layertype != GERBV_LAYERTYPE_DRILL) {
@@ -455,17 +493,19 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 			currentNet = currentNet->next) {
 
 		/* Check for any new layers and duplicate them if needed */
-		if (currentNet->layer != lastLayer) {
+		if (currentNet->layer != srcLayer) {
 			lastLayer->next =
 				gerbv_image_duplicate_layer (currentNet->layer);
 			lastLayer = lastLayer->next;
+			srcLayer = currentNet->layer;
 		}
 
 		/* Check for any new states and duplicate them if needed */
-		if (currentNet->state != lastState) {
+		if (currentNet->state != srcState) {
 			lastState->next =
 				gerbv_image_duplicate_state (currentNet->state);
 			lastState = lastState->next;
+			srcState = currentNet->state;
 		}
 
 		/* Create and copy the actual net over */
@@ -900,6 +940,18 @@ selection_add_item (&screen.selectionInfo, &sItem);
 				err_unknown_macro_aperture);
 
 	g_free (trans_apers);
+	
+        if(DEBUG) {
+	        int n, nl, ns;
+	        gerbv_layer_t *l;
+	        gerbv_netstate_t *s;
+	        /* Some test code to make sure we're not creating too many copies */
+        	for (currentNet = destImage->netlist, n = 0; currentNet != NULL;
+			currentNet = currentNet->next, ++n);
+                for (l = destImage->layers, nl = 0; l; l = ((gerbv_layer_t *)l)->next, ++nl); 
+                for (s = destImage->states, ns = 0; s; s = ((gerbv_netstate_t *)s)->next, ++ns); 
+		printf("                                     ==> %9d %9d %9d\n\n", n, nl, ns);
+	}
 }
 
 gint

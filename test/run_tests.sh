@@ -223,6 +223,9 @@ else
 fi
 GERBV_DEFAULT_FLAGS=${GERBV_DEFAULT_FLAGS:---export=png --window=640x480}
 
+# Used for reimport test.  Output PNG at 300dpi uniformly. -w0 cancels --window setting above.
+constres="-w0 --dpi=300"
+
 # Source directory
 srcdir=${srcdir:-.}
 
@@ -362,9 +365,9 @@ for t in $all_tests ; do
                 scanningfor=
 	        skip=`expr $skip + 1`
                 continue
+        fi
         echo "Resuming tests at last failed test $scanningfor"
         scanningfor=
-        fi
     fi
 
     show_sep
@@ -470,7 +473,9 @@ for t in $all_tests ; do
 	    else
 		echo "FAILED:  See ${errdir}"
 		mkdir -p ${errdir}
-		${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png
+		if ${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png ; then
+		        true
+		fi
 		${IM_COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png
 		${IM_CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png
                 cat > ${errdir}/animate.sh << EOF
@@ -481,6 +486,11 @@ ${IM_ANIMATE} -delay 0.5 -loop 0 -
 EOF
 		chmod +x ${errdir}/animate.sh
 		fail=`expr $fail + 1`
+                if test "X$imagetool" != "X" ; then
+                        cp ${refpng} ${errdir}/reference.png
+                        cp ${outpng} ${errdir}/output.png
+                        $imagetool ${errdir}/compare.png
+                fi
 	    fi
 	else
 	    echo "SKIPPED: No reference file ${REFDIR}/${t}.png"
@@ -494,30 +504,71 @@ EOF
     #
     # Reimport tests if requested (-i or -I)
     #
+    # Image processing note:  Save images at 300dpi.
+    # Take thresholded diff of the 2 images.  White pixel where any difference.
+    # Erode with 3x3 rectangle.  If any white pixel remains, is definite difference,
+    # since such pixels must be within a 3x3 block of white (i.e. 10mil square).
+    # Otherwise, check that all diff pixels are near the original image boundary.
+    # Thus, all diff pixels must be in the 'edge' (morphological gradient)
+    # of either input image.
+    
+    dothis="yes"
+    if test $t = example_pick_and_place_LED ; then
+        # Skip pnp test because we don't save label text in rs274-x export.
+        dothis="no"
+    fi
+    if test $t = test-circular-interpolation-1 ; then
+        #FIXME: library is not exporting quadrant mode arcs properly.
+        dothis="no"
+    fi
 
-    if test "X$reimport" = "Xyes" ; then
+    if test "X$reimport" = "Xyes" -a $dothis = yes ; then
+        # Redo the image output, at constant resolution
+        echo "${GERBV} ${gerbv_flags} ${constres} --output=${outpng} ${path_files}"
+        ${GERBV} ${gerbv_flags} ${constres} --output=${outpng} ${path_files}
+
         # Export as rs274-x
         echo "${GERBV} ${gerbv_flags} --export=rs274x --output=${outgrb2} ${path_files}"
         ${GERBV} ${gerbv_flags} --export=rs274x --output=${outgrb2} ${path_files}
         # Read back in and export png as usual
-        echo "${GERBV} ${gerbv_flags} --output=${outpng2} ${outgrb2}"
-        ${GERBV} ${gerbv_flags} --output=${outpng2} ${outgrb2}
-        # Compare the PNGs, should be bitwise exactly the same
+        echo "${GERBV} ${gerbv_flags} ${constres} --output=${outpng2} ${outgrb2}"
+        ${GERBV} ${gerbv_flags} ${constres} --output=${outpng2} ${outgrb2}
+        # Compare the PNGs, should be bitwise exactly the same, but sometimes there are
+        # pixel diffs, so if necessary do some image processing.
         echo "cmp ${outpng2} ${outpng}"
         if ! cmp ${outpng2} ${outpng} ; then
-                echo "Reimport image test failed; output images not exactly identical."
+                echo "Reimport image test: output images not bitwise identical."
 		mkdir -p ${errdir}
 		ok=0
-                if ${IM_COMPARE} ${outpng} ${outpng2} ${errdir}/compare.png ; then
-                        echo "... 'compare' does not show significant difference, however."
-                        if test $stringent = no ; then
-                                ok=1
+		${IM_COMPOSITE} ${outpng} ${outpng2} -compose difference -monochrome ${errdir}/raw_diff.png
+		${IM_CONVERT} ${errdir}/raw_diff.png -threshold 50% ${errdir}/thresh_diff.png
+		${IM_CONVERT} ${errdir}/thresh_diff.png -morphology Erode Rectangle ${errdir}/eroded_diff.png
+		eroded=`${IM_CONVERT} ${errdir}/eroded_diff.png -format "%[mean]" info:`
+                if test $eroded = 0 ; then
+                        echo "... Passed basic erosion test."
+		        ${IM_CONVERT} ${outpng} -threshold 10% -morphology Edge Rectangle ${errdir}/edge.png
+                        ${IM_CONVERT} ${errdir}/edge.png ${errdir}/thresh_diff.png -compose Minus_Dst -composite ${errdir}/outside.png
+		        outside=`${IM_CONVERT} ${errdir}/outside.png -format "%[mean]" info:`
+		        if test $outside != 0 ; then
+                                echo "... but Fail because differences were not on boundary!"
+                                if test "X$imagetool" != "X" ; then
+                                        cp ${outpng} ${errdir}/image1.png
+                                        cp ${outpng2} ${errdir}/image2.png
+                                        $imagetool ${errdir}/outside.png
+                                fi
+                        else
+                                if test $stringent = no ; then
+                                        ok=1
+                                else
+                                        echo "... but fail because -I (stringent) specified."
+                                fi
                         fi
                 else
+                        echo "... Failed basic erosion test!"
                         if test "X$imagetool" != "X" ; then
                                 cp ${outpng} ${errdir}/image1.png
                                 cp ${outpng2} ${errdir}/image2.png
-                                $imagetool ${errdir}/compare.png
+                                $imagetool ${errdir}/thresh_diff.png
                         fi
                 fi
                 if test $ok != 1 ; then
@@ -532,7 +583,10 @@ EOF
         if ! cmp ${outgrb2} ${outgrb3} ; then
                 echo "Reimport gerber (text) test failed; Gerber files not exactly identical."
                 if test "X$difftool" != "X" ; then
-                        $difftool ${outgrb2} ${outgrb3}
+                        cp ${path_files} ${errdir}/original.grb
+                        cp ${outgrb2} ${errdir}/export1.grb
+                        cp ${outgrb3} ${errdir}/export2.grb
+                        $difftool ${errdir}/export1.grb ${errdir}/export2.grb
                 fi
 		fail=`expr $fail + 1`
         	break

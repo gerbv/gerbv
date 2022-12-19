@@ -888,6 +888,12 @@ main(int argc, char *argv[])
 		fprintf(stderr, _("Specified window size is not recognized.\n"));
 		exit(1);
 	    }
+	    if (!strcmp(optarg, "0")) {
+	        // Special case: -w0 or --window=0 resets this option, e.g. for multiple outputs.
+	        userSuppliedWindow = FALSE;
+	        userSuppliedWindowInPixels = FALSE;
+	        break;
+	    }
 	    sscanf (optarg, "%fx%f", &userSuppliedWidth, &userSuppliedHeight);
 	    if (((userSuppliedWidth < 0.001) || (userSuppliedHeight < 0.001)) ||
 		((userSuppliedWidth > 2000) || (userSuppliedHeight > 2000))) {

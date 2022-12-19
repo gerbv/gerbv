@@ -481,6 +481,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     int n_attr = 0;
     int instance = 0, i, maxlayer = 0, thislayer = 0;
     gboolean is_signal = FALSE;
+    gboolean layer_specified = FALSE;
     unsigned long layer_bitmap = 0;
     const char * file_functions;
     char * ff = NULL, * ffp, * polarity = NULL, * plane = NULL, * other = NULL;
@@ -653,6 +654,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
         gboolean haveb = FALSE;
         gboolean havebprocess = FALSE;
         file_functions = x2attr_get_project_attr_or_default(gerbvProject, "layers", "");
+        layer_specified = *file_functions;
         maxlayer = 1;
         for (i = 0; ; ++i) {
                 g_free(ff);
@@ -874,19 +876,21 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	parsed_image = NULL;
     }
     
-    if (parsed_image) {
-        // Assign image (file) attributes if applicable
-        // Standard attributes...
+    // Assign image (file) attributes if applicable
+    // If the layer_specified is false
+    // (meaning nothing was assigned in --layer) then do not change it.
+    if (parsed_image && layer_specified) {
         if (attrbuf[0])
                 x2attr_set_image_attr(parsed_image, ".FileFunction", attrbuf);
         if (polarity)
                 x2attr_set_image_attr(parsed_image, ".FilePolarity", *polarity == '-' ? "Negative" : "Positive");
         // Non-standard, for our convenience...
-        if (ftype == FILE_TYPE_IPCD356A) {
-                sprintf(attrbuf, "0x%lX", layer_bitmap);
-                x2attr_set_image_attr(parsed_image, "LayerSet", attrbuf);
-        }
-        else if (ftype == FILE_TYPE_RS274X || ftype == FILE_TYPE_RS274D) {
+        if ((ftype == FILE_TYPE_RS274X || ftype == FILE_TYPE_RS274D)
+                 && x2attr_get_image_attr(parsed_image, ".FileFunction")) {
+                // If we could figure out a proper .FileFunction, then add some (non-std) attributes
+                // so we can easily get the layer number.  If no .FileFunction, then don't add anything
+                // since we don't want to mark it as X2 by adding any attributes.  This happens for drill
+                // data etc. that was exported previously as RS274-X.
                 sprintf(attrbuf, "%d", thislayer);
                 x2attr_set_image_attr(parsed_image, "LayerNum", attrbuf);
                 if (maxlayer > 0) {
@@ -896,7 +900,11 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
                 if (is_signal)
                         x2attr_set_image_attr(parsed_image, "LayerIsSignal", "");
         }
-        
+    }
+    
+    if (parsed_image && ftype == FILE_TYPE_IPCD356A) {
+        sprintf(attrbuf, "0x%lX", layer_bitmap);
+        x2attr_set_image_attr(parsed_image, "LayerSet", attrbuf);
     }
     
     g_free(ff);

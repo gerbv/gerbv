@@ -58,6 +58,7 @@ typedef struct export_user_data
                                         // 10**decimals, and an additional factor of 25.4 for mm output.
         char xystr[128];                // Work area for string output
         char ijstr[128];                // Work area for string output
+        GArray * delkeys;               // Attribute keys being deleted
 } export_user_data_t;
 
 static void 
@@ -109,11 +110,36 @@ _dump_attribs(unsigned index, const char * key, const char * value, gpointer use
 }
 
 static void
+_clear_deletions(export_user_data_t * xud)
+{
+        g_array_set_size(xud->delkeys, 0);
+        
+}
+
+static void
 _dump_deletions(unsigned index, const char * key, const char * value, gpointer user_data)
 {
         export_user_data_t * xud = (export_user_data_t *)user_data;
         
-        fprintf(xud->fd, "%%TD%s*%%\n", key);
+        // Unfortunately, we get called in random order of keys (owing to unpredictable ordering
+        // of interned strings) so instead of emitting immediately, store the keys to delete in
+        // delkeys.
+        g_array_append_vals(xud->delkeys, &key, 1);
+}
+
+static int
+_compare_keys_descending(gconstpointer a, gconstpointer b)
+{
+    return *(const char **)b - *(const char **)a;
+}
+
+static void
+_emit_deletions(export_user_data_t * xud)
+{
+        guint i;
+        g_array_sort(xud->delkeys, _compare_keys_descending);
+        for (i = 0; i < xud->delkeys->len; ++i)
+            fprintf(xud->fd, "%%TD%s*%%\n", ((const char **)xud->delkeys->data)[i]);
         
 }
 
@@ -235,7 +261,10 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image, gdouble tounits, 
 
                 if (xud->std_version > 1) {
 	                xud->type = X2ATTR_APERTURE;
+	                // 2-stage dump + emit required to ensure canonical output ordering.
+	                _clear_deletions(xud);
 	                _x2attr_foreach_attr_missing_from_dicts(currentAperture->attrs, xud->atracker, NULL, _dump_deletions, xud);
+	                _emit_deletions(xud);
 	                x2attr_foreach_aperture_attr(currentAperture, _dump_attribs, xud);
 	        }
 		
@@ -290,7 +319,7 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image, gdouble tounits, 
 }
 
 static void
-export_rs274x_write_layer_change (gerbv_layer_t *oldLayer, gerbv_layer_t *newLayer, FILE *fd) {
+export_rs274x_write_layer_change (gerbv_layer_t *oldLayer, gerbv_layer_t *newLayer, FILE *fd, gdouble tounits) {
 	if (oldLayer->polarity != newLayer->polarity) {
 		/* polarity changed */
 		if ((newLayer->polarity == GERBV_POLARITY_CLEAR))
@@ -298,12 +327,45 @@ export_rs274x_write_layer_change (gerbv_layer_t *oldLayer, gerbv_layer_t *newLay
 		else
 			fprintf(fd, "%%LPD*%%\n");
 	}
+	if (memcmp(&oldLayer->knockout, &newLayer->knockout, sizeof(oldLayer->knockout))) {
+	    if (newLayer->knockout.type == GERBV_KNOCKOUT_TYPE_NOKNOCKOUT)
+	        fprintf(fd, "%%KO*%%\n");
+	    else {
+	        // Border type (%KO?K...*%) is canonicalized to emitting the equivalent rectangle.
+	        fprintf(fd, "%%KO%cX%.4fY%.4fI%.4fJ%.4f*%%\n",
+	            newLayer->knockout.polarity == GERBV_POLARITY_DARK ? 'D' : 'C',
+	            newLayer->knockout.lowerLeftX * tounits,
+	            newLayer->knockout.lowerLeftY * tounits,
+	            newLayer->knockout.width * tounits,
+	            newLayer->knockout.height * tounits
+	            );
+	    }
+	}
+	if (oldLayer->rotation != newLayer->rotation)
+	    fprintf(fd, "%%RO%.2f*%%\n", RAD2DEG(newLayer->rotation));
+	if (memcmp(&oldLayer->stepAndRepeat, &newLayer->stepAndRepeat, sizeof(oldLayer->stepAndRepeat))) {
+	    fprintf(fd, "%%SRX%dY%dI%.4fJ%.4f*%%\n",
+	        newLayer->stepAndRepeat.X,
+	        newLayer->stepAndRepeat.Y,
+	        newLayer->stepAndRepeat.dist_X,
+	        newLayer->stepAndRepeat.dist_Y);
+	}
+	
 }
 
 static void
 export_rs274x_write_state_change (gerbv_netstate_t *oldState, gerbv_netstate_t *newState, FILE *fd) {
-
-
+    if (oldState->axisSelect != newState->axisSelect)
+        fprintf(fd, "%%AS%s*%%\n", newState->axisSelect == GERBV_AXIS_SELECT_SWAPAB ? "AYBX" : "AXBY");
+    if (oldState->mirrorState != newState->mirrorState)
+        fprintf(fd, "%%MI%s*%%\n", 
+            newState->mirrorState == GERBV_MIRROR_STATE_NOMIRROR ? "A0B0" : 
+            newState->mirrorState == GERBV_MIRROR_STATE_FLIPA ?    "A1B0" : 
+            newState->mirrorState == GERBV_MIRROR_STATE_FLIPB ?    "A0B1" : 
+                                                                   "A1B1");
+     if (oldState->scaleA != newState->scaleA || oldState->scaleB != newState->scaleB)
+        fprintf(fd, "%%SFA%.4fB%.4f*%%\n", newState->scaleA, newState->scaleB);
+   
 }
 
 
@@ -372,6 +434,7 @@ _export(int std_version
 	xud.digits = digits;
 	xud.multiplier = decimal_coeff;
 	xud.std_version = std_version;
+	xud.delkeys = g_array_sized_new(FALSE, FALSE, sizeof(gpointer), 20);
 	
 	/* duplicate the image, cleaning it in the process */
 	gerbv_image_t *image = gerbv_image_duplicate_image (inputImage, thisTransform);
@@ -400,7 +463,7 @@ _export(int std_version
 	if ((image->info->offsetA > 0.0) || (image->info->offsetB > 0.0))
 		fprintf(fd, "%%IOA%fB%f*%%\n",image->info->offsetA*tounits,image->info->offsetB*tounits);
 	/* image polarity */
-	if (image->info->polarity == GERBV_POLARITY_CLEAR)
+	if (image->info->polarity == GERBV_POLARITY_NEGATIVE)
 		fprintf(fd, "%%IPNEG*%%\n");
 	else
 		fprintf(fd, "%%IPPOS*%%\n");
@@ -458,7 +521,7 @@ _export(int std_version
 	for (currentNet = image->netlist->next; currentNet; currentNet = currentNet->next){
 		/* check for "layer" changes (RS274X commands) */
 		if (currentNet->layer != oldLayer)
-			export_rs274x_write_layer_change (oldLayer, currentNet->layer, fd);
+			export_rs274x_write_layer_change (oldLayer, currentNet->layer, fd, tounits);
 		
 		/* check for new "netstate" (more RS274X commands) */
 		if (currentNet->state != oldState)
@@ -479,10 +542,13 @@ _export(int std_version
 		oldState = currentNet->state;
 
 	        if (x2 && !insidePolygon) {
+	                // 2-stage dump + emit required to ensure canonical output ordering.
+	                _clear_deletions(&xud);
 	                _x2attr_foreach_attr_missing_from_dicts(currentNet->attrs, 
 	                                        xud.otracker, 
 	                                        currentNet->interpolation==GERBV_INTERPOLATION_PAREA_START ? xud.atracker : NULL, 
 	                                        _dump_deletions, &xud);
+	                _emit_deletions(&xud);
 	                x2attr_foreach_net_attr(currentNet, _dump_attribs, &xud);
 	        }
 		
@@ -551,6 +617,7 @@ _export(int std_version
 	
 	fprintf(fd, "M02*\n");
 	
+	g_array_free(xud.delkeys, TRUE);
 	_x2attr_destroy_dict(xud.otracker);
 	_x2attr_destroy_dict(xud.atracker);
 	gerbv_destroy_image (image);
