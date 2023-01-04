@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.9.6-rc.1
+Release Notes for gerbv-2.9.6
 ========================================================================
 
 -gerbv:     Turn off autodetect after FILE_FORMAT (PR#156 by @eyal0 fixing issue
