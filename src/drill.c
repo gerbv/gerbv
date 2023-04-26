@@ -1041,7 +1041,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     if ( ((found_X || found_Y) && found_T) && 
 	 (found_M48 || (found_percent && found_M30)) ) 
 	return TRUE;
-    else if (found_M48 && found_T && found_percent && found_M30)
+    else if (found_M48 && found_percent && found_M30)
 	/* Pathological case of drill file with valid header 
 	   and EOF but no drill XY locations. */
 	return TRUE;
