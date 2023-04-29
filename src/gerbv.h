@@ -86,11 +86,12 @@ extern "C" {
 #define APERTURE_MAX 9999
 
 /*
- * Maximum number of aperture parameters is set by the outline aperture
- * macro. There (p. 28) is defined up to 50 points in polygon.
- * So 50 points with x and y plus two for holding extra data gives...
+ * Maximum number of aperture parameters is set by the outline aperture macro.
+ * There (p. 62) is defined up to 5000 points in outline. So 5000 points with x
+ * and y plus outline shape code, exposure, # of vertices, and duplication of
+ * start/end point gives
  */
-#define APERTURE_PARAMETERS_MAX 102
+#define APERTURE_PARAMETERS_MAX 10006
 #define GERBV_SCALE_MIN 10
 #define GERBV_SCALE_MAX 3000
 #define MAX_ERRMSGLEN 25
