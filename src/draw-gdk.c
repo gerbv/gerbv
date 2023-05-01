@@ -706,11 +706,11 @@ gerbv_gdk_draw_oval(GdkPixmap *pixmap, GdkGC *gc,
 static void
 gerbv_gdk_draw_arc(GdkPixmap *pixmap, GdkGC *gc,
 	       int x, int y,
-	       int width, int height,
+	       gdouble width, gdouble height,
 	       double angle1, double angle2)
 {
-    gint real_x = x - width / 2;
-    gint real_y = y - height / 2;
+    gint real_x = round(x - width / 2);
+    gint real_y = round(y - height / 2);
 
     gdk_draw_arc(pixmap, gc, FALSE, real_x, real_y, width, height,
 		round(64*fmod(angle1, 360)), round(64*(angle2 - angle1)));
@@ -874,7 +874,7 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	gint x1, y1, x2, y2;
 	glong xlong1, ylong1, xlong2, ylong2;
 	int p1, p2;
-	int cir_width = 0, cir_height = 0;
+	double cir_width = 0, cir_height = 0;
 	int cp_x = 0, cp_y = 0;
 	GdkColor transparent, opaque;
 	gerbv_polarity_t polarity;
@@ -1031,8 +1031,8 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 		    /* Variables can be negative after transformation */
 		    tempX = fabs(tempX);
 		    tempY = fabs(tempY);
-		    cir_width =  (int)round(tempX);
-		    cir_height = (int)round(tempY);
+		    cir_width =  tempX;
+		    cir_height = tempY;
 		    
 		    tempX = net->cirseg->cp_x;
 		    tempY = net->cirseg->cp_y;
