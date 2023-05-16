@@ -69,12 +69,9 @@ typedef enum {
     DRILL_MODE_ABSOLUTE, DRILL_MODE_INCREMENTAL
 } drill_coordinate_mode_t;
 
-typedef enum {
-    FMT_00_0000	/* INCH */,
-    FMT_000_000	/* METRIC 6-digit, 1 um */,
-    FMT_000_00	/* METRIC 5-digit, 10 um */,
-    FMT_0000_00	/* METRIC 6-digit, 10 um */,
-    FMT_USER	/* User defined format */
+typedef struct {
+  int digits_before_decimal_point; /* How many digits before the decimal point. */
+  int digits_after_decimal_point; /* How many digits after the decimal point. */
 } number_fmt_t;
 
 typedef struct drill_state {
@@ -354,7 +351,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
     if (!hid_attrs[HA_auto].default_val.int_value) {
 	state->autod = 0;
-	state->number_format = FMT_USER;
+        state->number_format.digits_before_decimal_point = hid_attrs[HA_digits].default_val.int_value;
+        state->number_format.digits_after_decimal_point = 0;
 	state->decimals = hid_attrs[HA_digits].default_val.int_value;
 
 	if (GERBV_UNIT_MM == hid_attrs[HA_xy_units].default_val.int_value)
@@ -646,12 +644,14 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    case DRILL_M_IMPERIAL :
 		if (state->autod) {
-		    if (state->number_format != FMT_00_0000)
-			/* save metric format definition for later */
-			state->backup_number_format = state->number_format;
-		    state->number_format = FMT_00_0000;
-		    state->decimals = 4;
-		    state->unit = GERBV_UNIT_INCH;
+                  if (state->number_format.digits_before_decimal_point != 2 ||
+                      state->number_format.digits_after_decimal_point != 4) {
+                    /* save metric format definition for later */
+                    state->backup_number_format = state->number_format;
+                  }
+                  state->number_format.digits_before_decimal_point = 2;
+                  state->number_format.digits_after_decimal_point = 4;
+                  state->unit = GERBV_UNIT_INCH;
 		}
 
 		break;
@@ -880,28 +880,13 @@ drill_parse_end:
 	break;
     }
 
-    switch (state->number_format) {
-    case FMT_000_00:
-    case FMT_0000_00:
-	hid_attrs[HA_digits].default_val.int_value = 2;
-	break;
-
-    case FMT_000_000:
-	hid_attrs[HA_digits].default_val.int_value = 3;
-	break;
-	
-    case FMT_00_0000:
-	hid_attrs[HA_digits].default_val.int_value = 4;
-	break;
-	
-    case FMT_USER:
-	dprintf ("%s():  Keeping user specified number of decimal places (%d)\n",
-		 __FUNCTION__,
-		 hid_attrs[HA_digits].default_val.int_value);
-	break;
-	
-    default:
-	break;
+    if (state->number_format.digits_after_decimal_point != 0) {
+      hid_attrs[HA_digits].default_val.int_value =
+          state->number_format.digits_after_decimal_point;
+    } else {
+      dprintf ("%s():  Keeping user specified number of decimal places (%d)\n",
+               __FUNCTION__,
+               hid_attrs[HA_digits].default_val.int_value);
     }
 
     switch (image->format->omit_zeros) {
