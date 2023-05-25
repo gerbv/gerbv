@@ -1,8 +1,13 @@
 ========================================================================
+Release Notes for gerbv-2.9.8-dev
+========================================================================
+
+
+========================================================================
 Release Notes for gerbv-2.9.7
 ========================================================================
 
--gerbv:     The BUGS file not references GitHub instead of listing the known
+-gerbv:     The BUGS file now references GitHub instead of listing the known
             issues for reach release (PR#132 by @ooxi)
 
 
