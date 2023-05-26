@@ -2,8 +2,10 @@
 Release Notes for gerbv-2.9.8-dev
 ========================================================================
 
--gerbv:     Using floating point math for arcs (PR#173 by @173 fixing issue #167
-            reported by @jaseg)
+-gerbv:     Using floating point math for arcs (PR#173 by @eyal0 fixing issue
+            #167 reported by @jaseg)
+-gerbv:     Bump `APERTURE_PARAMETERS_MAX` to 10006 in order to comply with
+            Gerber specification revision 2021.02 (PR#172 by @jaseg)
 
 
 ========================================================================
