@@ -9,6 +9,8 @@ Release Notes for gerbv-2.9.8-dev
 -gerbv:     Recognize empty drill files (PR#170 by @eyal0 fixing issue #168
             reported by @jaseg)
 
+-ci:        Update CI to Fedora 38 (PR#177 by @ooxi)
+
 
 ========================================================================
 Release Notes for gerbv-2.9.7
