@@ -2,5 +2,5 @@
 
 set -e
 
-.mc/package-linux.sh 'Fedora 36'
+.mc/package-linux.sh 'Fedora 38'
 
