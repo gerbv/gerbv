@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.9.8-dev
+Release Notes for gerbv-2.9.8-rc.1
 ========================================================================
 
 -gerbv:     Using floating point math for arcs (PR#173 by @eyal0 fixing issue
