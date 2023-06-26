@@ -93,7 +93,7 @@ extern "C" {
  */
 #define APERTURE_PARAMETERS_MAX 10006
 #define GERBV_SCALE_MIN 10
-#define GERBV_SCALE_MAX 3000
+#define GERBV_SCALE_MAX 6000
 #define MAX_ERRMSGLEN 25
 #define MAX_COORDLEN 28
 #define MAX_DISTLEN 180
@@ -315,6 +315,7 @@ typedef enum {
 		GERBV_LAYERTYPE_DRILL, /*!< the file is an Excellon drill file */
 		GERBV_LAYERTYPE_PICKANDPLACE_TOP, /*!< the file is a CSV pick and place file, top side */
 		GERBV_LAYERTYPE_PICKANDPLACE_BOT, /*!< the file is a CSV pick and place file, bottom side */
+		GERBV_LAYERTYPE_IPCD356A, /*!< the file is an IPC-D-356A test data report */
 } gerbv_layertype_t;
 
 typedef enum {GERBV_KNOCKOUT_TYPE_NOKNOCKOUT,
@@ -433,6 +434,7 @@ typedef struct gerbv_aperture {
     double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     gerbv_unit_t unit;
+    struct x2attr_state * attrs; /* Aperture attributes from %TA...*% */
 } gerbv_aperture_t;
 
 /* the gerb_aperture_list is used to keep track of 
@@ -653,6 +655,7 @@ typedef struct gerbv_net {
     GString *label; /*!< a label string for this net */
     gerbv_layer_t *layer; /*!< the RS274X layer this net belongs to */
     gerbv_netstate_t *state; /*!< the RS274X state this net belongs to */
+    struct x2attr_state * attrs; /*!< Object attributes from %TO...*% and possibly %TA...*% if this is a region */
 } gerbv_net_t;
 
 /*! Struct holding info about interpreting the Gerber files read
@@ -715,6 +718,7 @@ typedef struct {
   gerbv_net_t *netlist; /*!< an array of all geometric entities in the layer */
   gerbv_stats_t *gerbv_stats; /*!< RS274X statistics for the layer */
   gerbv_drill_stats_t *drill_stats;  /*!< Excellon drill statistics for the layer */
+  struct x2attr_state * attrs; /*!< File attributes from %TF...*% */
 } gerbv_image_t;
 
 /*!  Holds information related to an individual layer that is part of a project */
@@ -745,6 +749,7 @@ typedef struct {
   gchar *execpath;    /*!< the path to executed version of Gerbv */
   gchar *execname;    /*!< the path plus executible name for Gerbv */
   gchar *project;     /*!< the default name for the private project file */
+  struct x2attr_state * attrs; /*!< Project attributes (flags) from command line etc. */
 } gerbv_project_t;
 
 /*! Color of layer */
@@ -765,6 +770,9 @@ typedef struct {
 	gint displayWidth; /*!< the width of the scene (in pixels, or points depending on the surface type) */
 	gint displayHeight; /*!< the height of the scene (in pixels, or points depending on the surface type) */
 	gboolean show_cross_on_drill_holes; /*!< TRUE to show cross on drill holes */
+	gfloat textSizeInch; /*! Target text em square size in user units (inch). */
+        GdkColor textColor; /*!< Text color */
+        gboolean clampTextSize; /*!< Whether to clamp min and max text size */
 } gerbv_render_info_t;
 
 //! Allocate a new gerbv_image structure
@@ -887,6 +895,10 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerb
 		cairo_t *cr, gerbv_render_info_t *renderInfo);
 
 void
+gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject, gerbv_fileinfo_t *fileInfo, 
+                gerbv_render_info_t *renderInfo);
+
+void
 gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t *cr,
 			gerbv_render_info_t *renderInfo);
 
@@ -994,6 +1006,17 @@ gboolean
 gerbv_export_rs274x_file_from_image (const gchar *filename, /*!< the filename for the new file */
 		gerbv_image_t *image, /*!< the image to export */
 		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
+);
+
+//! Export an image to a new file in RS274X2 format.  Includes any defined attributes.
+//! \return TRUE if successful, or FALSE if not
+gboolean
+gerbv_export_rs274x2_file_from_image (const gchar *filename /*!< the filename for the new file */
+		, gerbv_image_t *image /*!< the image to export */
+		, gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
+		, int decimals /*!< the number of decimals after the decimal point */
+		, int digits /*!< the number of decimal digits total, greater than decimals */
+		, gboolean metric /*!< whether to use mm instead of inch units */
 );
 
 //! Export an image to a new file in Excellon drill format
@@ -1113,6 +1136,49 @@ gerbv_transform_coord(double *x, double *y,
 /*! Rotate coordinate x and y buy angle in radians */
 void
 gerbv_rotate_coord(double *x, double *y, double rad);
+
+/*! Parse a color from the command line etc., to gerbv_layer_color.  Returns 0 if ok, -1 if error
+in which case a message is printed to stderr.
+*/
+int 
+gerbv_parse_color(gerbv_layer_color * color,    //!< Color struct to be filled in
+                   const char * color_str,      //!< String to parse, like "#aa0088"
+                   gboolean allow_alpha,        //!< Whether to support alpha channel
+                   const char * context);       //!< Indicate context e.g. "background" - goes in messages.
+
+/*! Parse a color from the command line etc., to GdkColor.  Returns 0 if ok, -1 if error
+in which case a message is printed to stderr.
+*/
+int 
+gerbv_parse_gdk_color(GdkColor * color,         //!< Color struct to be filled in
+                   const char * color_str,      //!< String to parse, like "#aa0088"
+                   gboolean allow_alpha,        //!< Whether to support alpha channel - currently must be FALSE.
+                   const char * context);       //!< Indicate context e.g. "background" - goes in messages.
+
+
+
+/*! Annotate a Gerber layer with IPC-D-356A data.
+
+Any .N (netname), .C (component designator), or .P (component pin) attributes are copied from
+the IPC data to objects in the rs274x image that have matching board coordinates.  Usually,
+both files are created from the same EDA software, so should have exactly matching coordinates,
+however this function accepts objects that strictly enclose the IPC coordinate.
+
+Note that ipcd356a does not have to actually come from an IPC-D-356A file, but will accept
+any image that may or may not contain object attributes.  If attributes are available, this
+is a means of transferring connectivity information from one image to another.  Note that
+the commandline option --annotate only uses real IPC data as a source.
+
+Any image which is annotated will be exported as RS274-X2 format.  This means that the attributes
+will be preserved and a repeat of the annotation step will not be necessary.
+*/
+void
+gerbv_annotate_rs274x_from_ipcd356a(int layernum,               //!< Copper layer being annotated
+                                int maxlayer,                   //!< ...out of this many layers
+                                gerbv_fileinfo_t * rs274x,      //!< image to annotate
+                                gerbv_fileinfo_t * ipcd356a,    //!< IPC data from which to annotate
+                                gboolean overwrite);            //!< Whether to overwrite existing attributes
+
 
 #undef MIN
 #undef MAX

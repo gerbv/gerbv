@@ -20,6 +20,6 @@
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 
 SUBDIRS = am-test cslk dan eaglecad1 ekf2 exposure jj Mentor-BoardStation nollezappare \
-	 numpres orcad pick-and-place polarity thermal trailing
+	 numpres orcad pick-and-place polarity rs274-x2 thermal trailing
 
 MOSTLYCLEANFILES = *~

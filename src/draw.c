@@ -325,6 +325,7 @@ gerbv_draw_aperture_hole(cairo_t *cairoTarget,
 		gdouble dimensionX, gdouble dimensionY, gboolean pixelOutput)
 {
 	if (dimensionX) {
+	        cairo_new_sub_path(cairoTarget); // SJH - added to clean up annular ring drawing
 		if (dimensionY)
 			gerbv_draw_rectangle (cairoTarget,
 					dimensionX, dimensionY, pixelOutput);
@@ -872,7 +873,7 @@ draw_cairo_cross (cairo_t *cairoTarget, gdouble xc, gdouble yc, gdouble r)
 
 static int
 draw_calc_pnp_mark_coords(struct gerbv_net *start_net,
-		double *label_x, double *label_y)
+		double *label_x, double *label_y, gboolean bbox_same_label)
 {
 	double x, y;
 	struct gerbv_net *net = start_net;
@@ -900,8 +901,8 @@ draw_calc_pnp_mark_coords(struct gerbv_net *start_net,
 			y = MAX(y, net->stop_y + 0.01/2);
 						/* 0.01 default line width */
 		}
-	} while (NULL !=
-			(net = gerbv_image_return_next_renderable_object(net)));
+	} while (bbox_same_label 
+	         && NULL != (net = gerbv_image_return_next_renderable_object(net)));
 
 	*label_x = x;
 	*label_y = y;
@@ -929,10 +930,12 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	gdouble scaleX = transform.scaleX;
 	gdouble scaleY = transform.scaleY;
 					/* Keep PNP label not mirrored */
-	gdouble pnp_label_scale_x = 1, pnp_label_scale_y= -1;
+	gdouble pnp_label_scale_x = 1;
+	gdouble pnp_label_scale_y= -1;
 	gboolean limitLineWidth = TRUE;
 	gboolean displayPixel = TRUE;
 	gboolean doVectorExportFix;
+	gboolean isIPC = image->layertype == GERBV_LAYERTYPE_IPCD356A;
 	double bg_r, bg_g, bg_b; /* Background color */
 
 	doVectorExportFix =
@@ -1112,23 +1115,37 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		/* Render any labels attached to this net */
 		/* NOTE: this is currently only used on PNP files, so we may
 		   make some assumptions here... */
-		if (drawMode != DRAW_SELECTIONS &&  net->label
-		&& (image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_TOP
-		 || image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_BOT)
-		&&  g_strcmp0 (net->label->str, pnp_net_label_str_prev)) {
+		if (drawMode != DRAW_SELECTIONS 
+		    && net->label
+		    && renderInfo->textSizeInch > 0.
+		    && (image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_TOP
+		        || image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_BOT
+		        || isIPC)
+		    && (isIPC 
+		        || g_strcmp0 (net->label->str, pnp_net_label_str_prev))
+		   ) {
 
 			double mark_x, mark_y;
 
 			/* Add PNP text label only one time per
-			 * net and if it is not selected. */
-			pnp_net_label_str_prev =
-				net->label->str; 
+			 * net and if it is not selected, except
+			 * ipc files print all instances. */
+			if (!isIPC)
+			        pnp_net_label_str_prev = net->label->str; 
 
-			if (draw_calc_pnp_mark_coords(net, &mark_x, &mark_y)) {
+			if (draw_calc_pnp_mark_coords(net, &mark_x, &mark_y, 
+			                !isIPC)) {
 				cairo_save (cairoTarget);
 
-				cairo_set_font_size (cairoTarget, 0.05);
-				cairo_move_to (cairoTarget, mark_x, mark_y);
+				cairo_set_source_rgba (cairoTarget,
+			                (double)renderInfo->textColor.red/G_MAXUINT16,
+			                (double)renderInfo->textColor.green/G_MAXUINT16,
+			                (double)renderInfo->textColor.blue/G_MAXUINT16, 
+			                1 /*(double)renderInfo->textColor.alpha/G_MAXUINT16*/ );
+
+                                // em square size in user units.
+				cairo_set_font_size (cairoTarget, renderInfo->textSizeInch);
+				cairo_move_to (cairoTarget, mark_x, mark_y + renderInfo->textSizeInch*0.2);
 				cairo_scale (cairoTarget, pnp_label_scale_x,
 							pnp_label_scale_y);
 				cairo_show_text (cairoTarget, net->label->str);

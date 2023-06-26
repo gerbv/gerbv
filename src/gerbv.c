@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <errno.h>
+#include <ctype.h>
 
 #ifdef HAVE_LIBGEN_H
 # include <libgen.h> /* dirname */
@@ -62,6 +63,9 @@
 #include "draw.h"
 
 #include "pick-and-place.h"
+#include "ipcd356a.h"
+#include "x2attr.h"
+#include "search.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -198,6 +202,7 @@ gerbv_destroy_project (gerbv_project_t *gerbvProject)
 			g_free(gerbvProject->file[i]);
 		}
 	}
+	x2attr_destroy(gerbvProject->attrs);
 	/* destroy strings */
 	g_free (gerbvProject->path);
 	g_free (gerbvProject->execname);
@@ -268,6 +273,10 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
 	gerbv_user_transformation_t *trans = &file->transform;
 
 	switch (file->image->layertype) {
+	// IPC is parsed and converted to an RS274-X2 equivalent, thus we can export as normal.
+	// The user should probably select a GRB extension etc.  It will be read back in as
+	// an RS274-X2 with the standard file attribute .FileFunction set to "Other,IPC-D-356A".
+	case GERBV_LAYERTYPE_IPCD356A:
 	case GERBV_LAYERTYPE_RS274X:
 		if (trans) {
 			/* NOTE: mirrored file is not yet supported */
@@ -470,6 +479,17 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     gboolean isPnpFile = FALSE, foundBinary;
     gerbv_HID_Attribute *attr_list = NULL;
     int n_attr = 0;
+    int instance = 0, i, maxlayer = 0, thislayer = 0;
+    gboolean is_signal = FALSE;
+    unsigned long layer_bitmap = 0;
+    const char * file_functions;
+    char * ff = NULL, * ffp, * polarity = NULL, * plane = NULL, * other = NULL;
+    char attrbuf[100];
+    gerbv_layertype_t layertype;
+    file_type_t ftype, ftype_best;
+    file_type_t ftypes[] = { FILE_TYPE_IPCD356A };
+    file_sniffer_likely_line_t sniffers[] = { ipcd356a_likely_line };
+    
     /* If we're reloading, we'll pass in our file format attribute list
      * since this is our hook for letting the user override the fileformat.
      */
@@ -497,6 +517,13 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	gerbvProject->file[gerbvProject->max_files+1] = NULL;
 	gerbvProject->max_files += 2;
     }
+
+    // For now, use the generalized file sniffer just for IPC-D-356A.
+    //TODO: implement sniffer funcs for other types, to unify handling.
+    ftype = file_sniffer_guess_file_type(filename, sizeof(ftypes)/sizeof(ftypes[0]),
+                        ftypes, sniffers, &ftype_best);    
+    if (ftype == FILE_TYPE_CANNOT_OPEN)
+        return -1;      // Error already posted.
     
     dprintf("In open_image, about to try opening filename = %s\n", filename);
     
@@ -511,13 +538,283 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     fd->filename = g_strdup(filename);
     
     dprintf("In open_image, successfully opened file.  Now check its type....\n");
+    
     /* Here's where we decide what file type we have */
     /* Note: if the file has some invalid characters in it but still appears to
        be a valid file, we check with the user if he wants to continue (only
        if user opens the layer from the menu...if from the command line, we go
        ahead and try to load it anyways) */
 
-    if (gerber_is_rs274x_p(fd, &foundBinary)) {
+    // Get the filetype and (target) layertype.
+    if (ftype == FILE_TYPE_IPCD356A) {
+        layertype = GERBV_LAYERTYPE_IPCD356A;
+    }
+    else if (gerber_is_rs274x_p(fd, &foundBinary)) {
+        ftype = FILE_TYPE_RS274X;
+        layertype = GERBV_LAYERTYPE_RS274X;
+    }
+    else if (drill_file_p(fd, &foundBinary)) {
+        ftype = FILE_TYPE_EXCELLON;
+        layertype = GERBV_LAYERTYPE_DRILL;
+    }
+    else if (pick_and_place_check_file_type(fd, &foundBinary)) {
+        ftype = FILE_TYPE_CSV;
+        //TODO: inappropriate use of layertype to distinguish PnP sides.
+        layertype = GERBV_LAYERTYPE_PICKANDPLACE_TOP;
+    }
+    else if (gerber_is_rs274d_p(fd)) {
+        ftype = FILE_TYPE_RS274D;
+        layertype = GERBV_LAYERTYPE_RS274X;
+    } else {
+        GERB_COMPILE_ERROR(_("Unrecognized layertype in file \"%s\": %s"),
+                           filename, strerror(errno));
+        return -1;
+    }
+        
+    
+    // Count how many of this type already loaded.  Used to index CDL args that apply to 
+    // this target layertype.  'instance' will be 0-based instance for the new file.
+    for (i = 0; i <= gerbvProject->last_loaded; ++i) {
+        gerbv_fileinfo_t * f = gerbvProject->file[i];
+        
+        if (f 
+            && f->image
+            && (f->image->layertype == layertype
+                || (ftype == FILE_TYPE_CSV && f->image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_BOT)
+               )
+            )
+            ++instance;
+    }
+    
+    // If target layertype is RS274-X, then parse any relevant project options that assign X2 attributes
+    // etc.  The "layers" arg attribute is particularly useful for assigning a function to each
+    // layer.  It also indicates how many layers to expect.  E.g. if --layers=1,2,3,4 then we know it's a 4-layer
+    // board and the bottom layer is #4.
+    
+    attrbuf[0] = 0;
+    if (layertype == GERBV_LAYERTYPE_RS274X) {
+        /* Get *all* layers defined, so can map 'b' to max (bottom) layer.  't' is always 1.
+           Copper layer number is always first char: digit(2) 1..9 or t or b.  (Others are not copper).
+           
+           Syntax is (no spaces, case insensitive):
+             <ff>[,<ff>]...   file functions, assigned 1:1 to each RS274-X/D file listed on command line.
+           where <ff> is
+             <layer><process><qualifier>
+           where <layer> is
+             t          top
+             1          top
+             2..99      inner or possibly bottom layer
+             b          bottom
+               (following types cannot have process or qualifier except for polarity)
+             o          board outline/profile
+             f          fabrication drawing
+             a          array/panel drawing
+             d          drillmap
+             x<type>    "other" of type <type>
+           <process> is
+             <empty>    copper layer or not applicable
+               (following process must be on top or bottom else no file function assigned)
+             m          soldermask
+             l          legend/silk
+             p          paste
+             g          glue
+             a          assembly drawing
+           <qualifier> is
+             <empty>    no qualifier
+             =          plane layer
+             .          signal layer
+             =.         mixed plane+signal
+             -          negative polarity
+             +          positive polarity
+           
+           Note regarding bottom layer number:
+           - minimum layer number for b is 2.
+           - if 'b' (without process) does not appear, then it is assumed to be the greatest layer number
+             that was seen.
+           - if 'b' (without process) appears, then it is assigned the greatest layer number seen
+             elsewhere, plus 1.
+           For example:
+             t,b        - b=2.
+             t,bm       - b=2.  No bottom copper, but the soldermask is for layer 2.
+             1,2        - b=2.
+             1,2,b      - b=3.
+             t          - b=2.  But it's not used.
+             1,3,b,2    - b=4.  Ordering doesn't matter.
+             t,2,3,bm   - b=3.  bm (soldermask) is a process (m) hence b=3 not 4.
+             
+           Typical commandline examples:
+           . 2-layer board:
+           gerbv --layers=tl,tm,t,b,bm,bl  tsilk.grb tmask.grb tcopper.grb bcopper.grb bmask.grb bsilk.grb
+           . 4-layer board:
+           gerbv --layers=1.,2-=,3-=,4.  tcopper.grb power.grb ground.grb bcopper.grb
+              Top and bottom layers are "signal" (.), inner layers are "plane" (=) and in negative polarity (-).
+           
+        */ 
+        gboolean haveb = FALSE;
+        gboolean havebprocess = FALSE;
+        file_functions = x2attr_get_project_attr_or_default(gerbvProject, "layers", "");
+        maxlayer = 1;
+        for (i = 0; ; ++i) {
+                g_free(ff);
+                ff = x2attr_get_field_or_default(i, file_functions, "!");
+                if (!strcmp(ff, "!"))
+                        break;
+                ffp = ff;
+                switch (tolower(*ffp)) {
+                case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                        thislayer = *ffp-'0';
+                        while (isdigit(*++ffp))
+                                thislayer = thislayer*10 + (*ffp - '0');
+                        maxlayer = MAX(thislayer, maxlayer);
+                        break;
+                case 'b':
+                        if (strlen(ffp) == 1 || !isalpha(*ffp))
+                                haveb = TRUE;
+                        else
+                                havebprocess = TRUE;
+                        break;
+                default:
+                        break;
+                }
+        }  
+        if (haveb)
+                // Got a 'b' by itself, so e.g. if only t,b then maxlayer will be 2.
+                // If 2,3,t,b then maxlayer=4.  But 'bm' etc. do not count.
+                ++maxlayer;
+        else if (havebprocess && maxlayer==1)
+                // Got e.g. bm but everything with explicit layer was top layer.
+                // Let's assume then that it's actually 2 layers, so that t and
+                // b are distinct!
+                maxlayer = 2;
+        g_free(ff);
+        // Now that we know what 'b' layer means, go ahead and parse this instance.
+        ff = x2attr_get_field_or_default(instance, file_functions, "");
+        ffp = ff;
+        switch (tolower(*ffp++)) {
+        case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                thislayer = ffp[-1]-'0';
+                while (isdigit(*ffp))
+                        thislayer = thislayer*10 + (*ffp++ - '0');
+                break;
+        case 'b':
+                thislayer = maxlayer;
+                break;
+        case 't':
+                thislayer = 1;
+                break;
+        default:
+                thislayer = 0;
+                other = ffp-1;
+                break;
+        }
+        while (thislayer && *ffp) {
+                switch (tolower(*ffp++)) {
+                case 'm':
+                        if (thislayer == 1)
+                                strcpy(attrbuf,"Soldermask,Top");
+                        else if (thislayer == maxlayer)
+                                strcpy(attrbuf,"Soldermask,Bot");
+                        break;
+                case 'l':
+                        if (thislayer == 1)
+                                strcpy(attrbuf,"Legend,Top");
+                        else if (thislayer == maxlayer)
+                                strcpy(attrbuf,"Legend,Bot");
+                        break;
+                case 'p':
+                        if (thislayer == 1)
+                                strcpy(attrbuf,"Paste,Top");
+                        else if (thislayer == maxlayer)
+                                strcpy(attrbuf,"Paste,Bot");
+                        break;
+                case 'g':
+                        if (thislayer == 1)
+                                strcpy(attrbuf,"Glue,Top");
+                        else if (thislayer == maxlayer)
+                                strcpy(attrbuf,"Glue,Bot");
+                        break;
+                case 'a':
+                        if (thislayer == 1)
+                                strcpy(attrbuf,"AssemblyDrawing,Top");
+                        else if (thislayer == maxlayer)
+                                strcpy(attrbuf,"AssemblyDrawing,Bot");
+                        break;
+                case '-': case '+':
+                        polarity = ffp-1;
+                        break;
+                case '=': case '.':     // plane or signal (=. or .= means mixed)
+                        if (plane && *plane != ffp[-1])
+                                plane = "m";
+                        else
+                                plane = ffp-1;
+                        break;
+                default:
+                        break;
+                }
+        }
+        if (other) {
+                // Not a layer-specific file function.  Set something appropriate:
+                switch (tolower(*other)) {
+                case 'o':
+                        strcpy(attrbuf, "Profile,NP");   // board outline, non-plated presumably.
+                        break;
+                case 'f':
+                        strcpy(attrbuf, "FabricationDrawing");
+                        break;
+                case 'a':
+                        strcpy(attrbuf, "ArrayDrawing");
+                        break;
+                case 'd':
+                        strcpy(attrbuf, "Drillmap");
+                        break;
+                case 'x':
+                        snprintf(attrbuf, sizeof(attrbuf), "Other,%s", other+1);
+                        break;
+                default:
+                        break;
+                }
+        }
+        if (thislayer && !attrbuf[0]) {
+                // Must be a copper layer.
+                is_signal = !plane || *plane!='=';
+                snprintf(attrbuf, sizeof(attrbuf), "Copper,L%d,%s%s",
+                                thislayer,
+                                thislayer == 1 ? "Top" :
+                                thislayer == maxlayer ? "Bot" :
+                                "Inr",
+                                plane && *plane=='=' ? ",Plane" : 
+                                plane && *plane=='.' ? ",Signal" : 
+                                plane && *plane=='m' ? ",Mixed" : 
+                                ""
+                                );
+        }
+        // Now attrbuf may have a file function,
+        // polarity may point to '+' or '-',
+        // These are added to image (file) attributes after reading in.
+    }
+    
+    if (ftype == FILE_TYPE_IPCD356A) {
+        // Default to getting the non-copper (0) and top (1) layers.  Default to not getting tracks.
+        char * layers, * lp;
+        char * tracks;
+        char * label;
+        layers = x2attr_get_field_or_last(instance, x2attr_get_project_attr_or_default(gerbvProject, "ipcd356a-layers", "01"));
+        tracks = x2attr_get_field_or_last(instance, x2attr_get_project_attr_or_default(gerbvProject, "ipcd356a-tracks", "no"));
+        label = x2attr_get_field_or_last(instance, x2attr_get_project_attr_or_default(gerbvProject, "ipcd356a-labels", "n"));
+        lp = layers;
+        while (*layers) {
+                layer_bitmap |= 1uL<<(*layers - '0');
+                ++layers;
+        }
+	printf("Found IPC-D-356A file, instance %d.  Layers=0x%lX, tracks=%s, label=%s\n", instance, layer_bitmap, tracks, label);
+	
+        parsed_image = ipcd356a_parse(fd, layer_bitmap, tracks[0]=='y', label);
+        g_free(label);
+        g_free(tracks);
+        g_free(lp);
+        
+    }
+    else if (ftype == FILE_TYPE_RS274X) {
 	dprintf("Found RS-274X file\n");
 	if (!foundBinary || forceLoadFile) {
 		/* figure out the directory path in case parse_gerb needs to
@@ -526,12 +823,12 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 		parsed_image = parse_gerb(fd, currentLoadDirectory);
 		g_free (currentLoadDirectory);
 	}
-    } else if(drill_file_p(fd, &foundBinary)) {
+    } else if (ftype == FILE_TYPE_EXCELLON) {
 	dprintf("Found drill file\n");
 	if (!foundBinary || forceLoadFile)
 	    parsed_image = parse_drillfile(fd, attr_list, n_attr, reload);
 	
-    } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
+    } else if (ftype == FILE_TYPE_CSV) {
 	dprintf("Found pick-n-place file\n");
 	if (!foundBinary || forceLoadFile) {
 		if (!reload) {
@@ -557,7 +854,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 			
 		isPnpFile = TRUE;
 	}
-    } else if (gerber_is_rs274d_p(fd)) {
+    } else if (ftype == FILE_TYPE_RS274D) {
 	gchar *str = g_strdup_printf(_("Most likely found a RS-274D file "
 			"\"%s\" ... trying to open anyways\n"), filename);
 	dprintf("%s", str);
@@ -578,6 +875,34 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	parsed_image = NULL;
     }
     
+    
+    if (parsed_image) {
+        // Assign image (file) attributes if applicable
+        // Standard attributes...
+        if (attrbuf[0])
+                x2attr_set_image_attr(parsed_image, ".FileFunction", attrbuf);
+        if (polarity)
+                x2attr_set_image_attr(parsed_image, ".FilePolarity", *polarity == '-' ? "Negative" : "Positive");
+        // Non-standard, for our convenience...
+        if (ftype == FILE_TYPE_IPCD356A) {
+                sprintf(attrbuf, "0x%lX", layer_bitmap);
+                x2attr_set_image_attr(parsed_image, "LayerSet", attrbuf);
+        }
+        else if (ftype == FILE_TYPE_RS274X || ftype == FILE_TYPE_RS274D) {
+                sprintf(attrbuf, "%d", thislayer);
+                x2attr_set_image_attr(parsed_image, "LayerNum", attrbuf);
+                if (maxlayer > 0) {
+                        sprintf(attrbuf, "%d", maxlayer);
+                        x2attr_set_image_attr(parsed_image, "LayerMax", attrbuf);
+                }
+                if (is_signal)
+                        x2attr_set_image_attr(parsed_image, "LayerIsSignal", "");
+        }
+        
+    }
+    
+    g_free(ff);
+    
     g_free(fd->filename);
     gerb_fclose(fd);
     if (parsed_image == NULL) {
@@ -595,6 +920,11 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     	retv = gerbv_add_parsed_image_to_project (gerbvProject, parsed_image, filename, displayedName, idx, reload);
     	g_free (baseName);
     	g_free (displayedName);
+
+        // Automatically make the IPC file invisible if annotation being requested.
+        if (ftype == FILE_TYPE_IPCD356A
+            && tolower(x2attr_get_project_attr_or_default(gerbvProject, "annotate", "y")[0]) == 'y')
+                gerbvProject->file[idx]->isVisible = FALSE;
     }
 
     /* Set layer_dirty flag to FALSE */
@@ -893,7 +1223,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 	GdkColor *bg = &gerbvProject->background;
 	int i;
 	double r, g, b;
-
+        
 	gerbv_render_cairo_set_scale_and_translation (cr, renderInfo);
 
 	/* Fill the background with the appropriate not white and not black
@@ -915,6 +1245,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 
 	for (i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
+		        gerbv_set_render_options_for_file (gerbvProject, gerbvProject->file[i], renderInfo);
 			gerbv_render_layer_to_cairo_target_without_transforming(
 					cr, gerbvProject->file[i],
 					renderInfo, FALSE);
@@ -923,12 +1254,77 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 }
 
 /* ------------------------------------------------------------------ */
+
+void
+gerbv_set_render_options_for_file (gerbv_project_t *gerbvProject, 
+                                   gerbv_fileinfo_t *fileInfo, 
+                                   gerbv_render_info_t *renderInfo)
+{
+        char * text_min;
+        char * text_max;
+        char * text_mils;
+        char * text_color;
+        gfloat tmin, tmax, tmils, pts;
+
+        text_min = x2attr_get_field_or_last(0, 
+                                x2attr_get_project_attr_or_default(gerbvProject, "text-min", "6"));
+        text_max = x2attr_get_field_or_last(0, 
+                                x2attr_get_project_attr_or_default(gerbvProject, "text-max", "12"));
+        text_mils = x2attr_get_field_or_last(0, 
+                                x2attr_get_project_attr_or_default(gerbvProject, "text-mils", "40"));
+        
+        tmin = 6.;
+        tmax = 12.;
+        tmils = 40.;
+        sscanf(text_min, "%g", &tmin);
+        sscanf(text_max, "%g", &tmax);
+        sscanf(text_mils, "%g", &tmils);
+        g_free(text_min);
+        g_free(text_max);
+        g_free(text_mils);
+        
+	// Set the target text size (em square) in inches.
+	renderInfo->textSizeInch = 0.001 * tmils;
+	
+	// scale factor is (display) pixels per (board) inch.  We'll assume that the monitor is 96dpi physical -
+	// if it isn't, user can adjust point size args.  So the magnification from 1:1 board:display is
+	// scaleFactorX/96.  1 point = 1/72".
+	// Compute pts = visible size of text at nominal board inch size.
+	pts = renderInfo->scaleFactorX/96. * renderInfo->textSizeInch*72.;
+	// Now clamp the text size appropriately.  Setting to 0 disables text.
+	// Clamping is disabled when exporting to file image formats (PNG, PDF etc.)
+	if (renderInfo->clampTextSize) {
+	        if (pts > tmax)
+	                renderInfo->textSizeInch *= tmax/pts;
+	        else if (pts < tmin)
+	                renderInfo->textSizeInch = 0.;
+        }
+        
+        //printf("SROF: text=%g,%g,%g;  pts=%g, scaleFactorX=%g, textSizeInch=%g\n", 
+        //        tmin, tmax, tmils, pts, renderInfo->scaleFactorX, renderInfo->textSizeInch);
+
+        // default to file color
+        renderInfo->textColor = fileInfo->color;
+        text_color = x2attr_get_field_or_last(0, 
+                x2attr_get_project_attr_or_default(gerbvProject, "text-color", ""));
+        if (*text_color)
+            // If format error, will not change color from default.
+    	    gerbv_parse_gdk_color(&renderInfo->textColor,
+    	                          text_color,
+    	                          FALSE,
+    	                          "text");
+        g_free(text_color);
+}
+
+
 void
 gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 		cairo_t *cr, gerbv_render_info_t *renderInfo)
 {
 	int i;
-
+        
+        gerbv_fileinfo_t *fileInfo;
+        
 	/* Fill the background with the appropriate color. */
 	cairo_set_source_rgba (cr,
 			(double) gerbvProject->background.red/G_MAXUINT16,
@@ -937,13 +1333,15 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 	cairo_paint (cr);
 
 	for (i = gerbvProject->last_loaded; i >= 0; i--) {
-		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
+	        fileInfo = gerbvProject->file[i];
+		if (gerbvProject->file[i] && fileInfo->isVisible) {
 			cairo_push_group (cr);
-			gerbv_render_layer_to_cairo_target (cr,
-					gerbvProject->file[i], renderInfo);
+
+		        gerbv_set_render_options_for_file (gerbvProject, fileInfo, renderInfo);
+			gerbv_render_layer_to_cairo_target (cr, fileInfo, renderInfo);
 			cairo_pop_group_to_source (cr);
 			cairo_paint_with_alpha (cr, (double)
-					gerbvProject->file[i]->alpha/G_MAXUINT16);
+					fileInfo->alpha/G_MAXUINT16);
 		}
 	}
 }
@@ -1112,5 +1510,221 @@ gerbv_transform_coord_for_image(double *x, double *y,
 	gerbv_transform_coord(x, y, &fileinfo->transform);
 
 	return 0;
+}
+
+int 
+gerbv_parse_color(gerbv_layer_color * color,
+                   const char * color_str,
+                   gboolean allow_alpha,
+                   const char * context)
+{
+        int r, g, b, a;
+        
+        // Code moved from 'main' so can use it throughout library, and maybe one day
+        // support words like "copper".
+        if (!color_str) {
+                fprintf(stderr, 
+                        allow_alpha ?
+                                _("You must give a %s color in the hex-format <#RRGGBB> or <#RRGGBBAA>.\n")
+                             :
+                                _("You must give a %s color in the hex-format <#RRGGBB>.\n"),
+                        context
+                        );
+                return -1;
+        }
+        if (((strlen (color_str) != 7) && (!allow_alpha || strlen (color_str) != 9))
+            || (color_str[0] != '#')) {
+                fprintf(stderr, 
+                        _("Specified %s color format is not recognized.\n"),
+                        context
+                        );
+                return -1;
+        }
+        r=g=b=a=-1;
+        if(strlen(color_str)==7){
+                sscanf (color_str,"#%2x%2x%2x",&r,&g,&b);
+                a=177;
+        }
+        else{
+                sscanf (color_str,"#%2x%2x%2x%2x",&r,&g,&b,&a);
+        }
+
+        if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)||(a<0)||(a>255) ) {
+
+                fprintf(stderr, 
+                        _("Specified %s color values should be between 0x00 (0) and 0xFF (255).\n"),
+                        context
+                        );
+                return -1;
+        }
+        color->red   = r;
+        color->green = g;
+        color->blue  = b;
+        color->alpha = a;
+        return 0;
+}
+
+int 
+gerbv_parse_gdk_color(GdkColor * color,
+                   const char * color_str,
+                   gboolean allow_alpha,
+                   const char * context)
+{
+        //TODO: GdKColor is deprecated.  Should be using RGBA.
+        // "allow_alpha" must currently be false since GdkColor does not support transparency.
+        gerbv_layer_color k;
+        if (gerbv_parse_color(&k, color_str, allow_alpha, context))
+                return -1;
+        color->red   = k.red * 257;
+        color->green = k.green * 257;
+        color->blue  = k.blue * 257;
+        return 0;
+}
+
+typedef struct key_point
+{
+        vertex_t        v;      // The key coordinate of the IPC feature
+        gerbv_net_t *   ipc;    // IPC object that has netname or component attributes of intereest.
+} key_point_t;
+
+typedef struct anno_data
+{
+        GArray *        ipcs;   // Array of the above key_point_t, for this layer.
+        int             layernum;
+        int             maxlayer;
+        gboolean        overwrite;
+        
+} anno_data_t;
+
+static void
+_get_key_points_cb(search_state_t * ss, search_context_t ctx)
+{
+        /*
+        This is the callback for when scanning the IPC (source) image.
+        
+        Although true IPC data will have only generated round and rectangular
+        flashes, and straight tracks, we should support general Gerber images,
+        so the only context not supported is for polygon regions.
+        */
+        anno_data_t * d = (anno_data_t *)ss->user_data;
+        const char * ipclayer_str;
+        int ipclayer;
+
+        // Populate ipcs array with key point data.  No pours, but want macro polygons
+        // since these are probably pads.
+        if (ctx == SEARCH_POLYGON && !ss->amacro)
+                return;
+                
+        // IPC layer must be 00 (access both sides) or equal to the target layer.
+        ipclayer_str = x2attr_get_net_attr_or_default(ss->net, "IPCLayer", "0");
+        sscanf(ipclayer_str, "%d", &ipclayer);
+        if (ipclayer && ipclayer != d->layernum)
+                return;
+        if (!ipclayer && d->layernum != 1 && d->layernum != d->maxlayer)
+                // IPC access (~layer) 00 refers to top and bottom only.
+                return;
+        if (x2attr_get_net_attr(ss->net, ".N")
+            || x2attr_get_net_attr(ss->net, ".P")
+            || x2attr_get_net_attr(ss->net, ".C")) {
+                key_point_t kp;
+                kp.v.x = ss->net->stop_x;
+                kp.v.y = ss->net->stop_y;
+                kp.ipc = ss->net;
+                g_array_append_vals(d->ipcs, &kp, 1);
+                if (ss->net->aperture_state != GERBV_APERTURE_STATE_FLASH) {
+                        // Assume it's a track, so add both ends.
+                        kp.v.x = ss->net->start_x;
+                        kp.v.y = ss->net->start_y;
+                        g_array_append_vals(d->ipcs, &kp, 1);
+                }
+        }
+}
+
+static void
+_anno_cb(search_state_t * ss, search_context_t ctx)
+{
+        anno_data_t * d = (anno_data_t *)ss->user_data;
+        gdouble dist;
+        guint i;
+        cairo_matrix_t m;
+        
+        // See if the current object (from the image we are annotating) strictly encloses
+        // any of the objects in d->ipcs.  The first one which is found causes its attributes
+        // to be assigned to this.
+        // Currently, we're not processing pours, unless from an aperture macro.
+        if (ctx == SEARCH_POLYGON && !ss->amacro)
+                return;
+                
+        m = ss->transform[ss->stack];
+        if (cairo_matrix_invert(&m) == CAIRO_STATUS_INVALID_MATRIX)
+                return;
+        for (i = 0; i < d->ipcs->len; ++i) {
+                key_point_t * kp = (key_point_t *)d->ipcs->data + i;
+                gdouble x = kp->v.x;
+                gdouble y = kp->v.y;
+                
+                cairo_matrix_transform_point(&m, &x, &y);       
+                dist = search_distance_to_border_no_transform(ss, ctx, x, y);
+                if (dist < 0.) {
+                        const char * netname = x2attr_get_net_attr(kp->ipc, ".N");
+                        const char * pin = x2attr_get_net_attr(kp->ipc, ".P");
+                        const char * cmp = x2attr_get_net_attr(kp->ipc, ".C");
+                        // If source is a track, but this is a flash, or vice versa,
+                        // (i.e. aperture state mismatch) then keep looking.
+                        if (ss->net->aperture_state != kp->ipc->aperture_state)
+                                continue;
+                        // Don't insert if already exists, unless overwrite.
+                        if (!d->overwrite) {
+                                if (x2attr_get_net_attr(ss->net, ".N"))
+                                        netname = NULL;
+                                if (x2attr_get_net_attr(ss->net, ".P"))
+                                        pin = NULL;
+                                if (x2attr_get_net_attr(ss->net, ".C"))
+                                        cmp = NULL;
+                        }
+                        if (netname)
+                                x2attr_set_net_attr(ss->net, ".N", netname);
+                        if (pin)
+                                x2attr_set_net_attr(ss->net, ".P", pin);
+                        if (cmp)
+                                x2attr_set_net_attr(ss->net, ".C", cmp);
+                        break;  
+                }
+        }
+}
+
+
+void
+gerbv_annotate_rs274x_from_ipcd356a(int layernum, int maxlayer, 
+                                gerbv_fileinfo_t * rs274x, 
+                                gerbv_fileinfo_t * ipcd356a,
+                                gboolean overwrite)
+{
+        /* Use data for given layer in ipc data to annotate rs274x (on same layer).
+        
+           First, collate an array of known coordinates that have netname and/or component pins,
+           gleaned from the ipc file.
+           
+           Then, search the rs274x layer iterating through each object and, if the object definitely
+           contains one of the ipc points, assign appropriate object attributes.
+        */
+        anno_data_t d;
+        search_state_t * ss;
+
+        printf("Annotating layer %d%s\n", layernum, overwrite ? ", overwrite" : "");
+        
+        d.ipcs = g_array_sized_new(FALSE, FALSE, sizeof(key_point_t), 1024);
+        d.overwrite = overwrite;
+        d.layernum = layernum;
+        d.maxlayer = maxlayer;
+        
+        // First scan the IPC data to fill in key points for this layer
+        ss = search_image(NULL, ipcd356a->image, _get_key_points_cb, &d);
+        search_destroy_search_state(ss);
+
+        // Now to the actual annotation.
+        ss = search_image(NULL, rs274x->image, _anno_cb, &d);
+        search_destroy_search_state(ss);
+        g_array_free(d.ipcs, TRUE);
 }
 

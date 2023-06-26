@@ -56,6 +56,7 @@
 #include "interface.h"
 #include "render.h"
 #include "project.h"
+#include "x2attr.h"
 
 #if (DEBUG)
 # define dprintf printf("%s():  ", __FUNCTION__); printf
@@ -121,6 +122,45 @@ static gerbv_user_transformation_t mainDefaultTransformations[NUMBER_OF_DEFAULT_
 };
 
 #ifdef HAVE_GETOPT_LONG
+
+/* 
+NOTE:
+
+New args should use val=3 to automatically add to project X2 attributes,
+assuming the project is best place for them.  Then code can access the
+value string using e.g.
+
+  argval = x2attr_get_project_attr_or_default(gerbvProject, 
+                  "argname", "default-value");
+
+For being able to assign possibly different options per file:
+
+getopt() is currently set up to process all args before running through the
+input file list.
+
+Rather than counting arg repeats and storing them in an array, permit the option
+value to be a comma-delimited list.  There are then some functions for parsing
+the list.  This will be less verbose for the user.  Once the arg value
+is obtained, the nth item can be extracted using e.g.
+
+   arg_field_n = x2attr_get_field_or_default(n, argval, "default-value");
+   
+for CDM or
+
+   arg_field_n = x2attr_get_field_or_last(n, argval);
+   
+for CDMPL.
+
+Ability to support comma delimited list should be marked as 'CDM' in the comment.
+'CDMPL' adds "propagate last" so that extra files get assigned the last setting,
+otherwise extra files get a default.
+
+CDM args are assigned in the order of file reading e.g.
+   gerbv --layers=t,2,3,b  top.grb gnd.grb vcc.grb bot.grb silk.grb
+assigns "top copper", "inner copper 2", "inner copper 3", "bottom copper" to the
+named files, in succession, except silk.grb gets no option since it is the 5th file.
+*/
+
 int longopt_val = 0;
 int longopt_idx = 0;
 const struct option longopts[] = {
@@ -146,6 +186,17 @@ const struct option longopts[] = {
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
     {"geometry",        required_argument,  &longopt_val, 1},
+    {"reach-mils",      required_argument,  &longopt_val, 10},
+    // Val=3 to add to project attributes.  If no arg, will create empty attr.
+    {"ipcd356a-layers", required_argument,  &longopt_val, 3}, // CDMPL, ipc files only
+    {"ipcd356a-tracks", required_argument,  &longopt_val, 3}, // CDMPL, ipc files only
+    {"ipcd356a-labels", required_argument,  &longopt_val, 3}, // CDMPL, ipc files only
+    {"text-min",        required_argument,  &longopt_val, 3},
+    {"text-max",        required_argument,  &longopt_val, 3},
+    {"text-mils",       required_argument,  &longopt_val, 3},
+    {"text-color",      required_argument,  &longopt_val, 3},
+    {"layers",          required_argument,  &longopt_val, 3}, // CDM, Gerber only
+    {"annotate",        required_argument,  &longopt_val, 3},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",      required_argument,  &longopt_val, 2},
     {"g-fatal-warnings",no_argument,	    &longopt_val, 2},
@@ -421,7 +472,7 @@ int
 main(int argc, char *argv[])
 {
     int       read_opt;
-    int       i,r,g,b,a;
+    int       i;
     int       req_width = -1, req_height = -1;
 #ifdef HAVE_GETOPT_LONG
     char      *rest;
@@ -441,6 +492,7 @@ main(int argc, char *argv[])
 	   userSuppliedBorder = GERBV_DEFAULT_BORDER_COEFF;
 
     gerbv_image_t *exportImage;
+    const char * attrarg;
 
     enum exp_type {
 	EXP_TYPE_NONE = -1,
@@ -533,6 +585,8 @@ main(int argc, char *argv[])
 #else
     screenRenderInfo.renderType = GERBV_RENDER_TYPE_GDK;
 #endif
+    
+    screen.pointer_reach = 0.02;        // Default 20 mils.
 
     logToFileOption = FALSE;
     logToFileFilename = NULL;
@@ -576,6 +630,19 @@ main(int argc, char *argv[])
 			_("Not handled option \"%s\" in command line"),
 			longopts[longopt_idx].name);
 		break;
+	    case 10: /* reach-mils */
+		errno = 0;
+		screen.pointer_reach = MAX(0., (gdouble)strtol(optarg, &rest, 10));
+		if (errno) {
+		    perror(_("reach-mils"));
+		    break;
+		}
+		if (rest[0]) {
+		    fprintf(stderr, _("reach-mils not a number\n"));
+		    break;
+		}
+		screen.pointer_reach *= 0.001;
+	        break;
 	    case 1: /* geometry */
 		errno = 0;
 		req_width = (int)strtol(optarg, &rest, 10);
@@ -613,6 +680,10 @@ main(int argc, char *argv[])
 		}
 		*/
 		break;
+	    case 3: /* Save in project attributes */
+	        x2attr_set_project_attr(mainProject, longopts[longopt_idx].name, 
+	                        longopts[longopt_idx].has_arg ? optarg : "");
+	        break;
 	    default:
 		break;
 	    }
@@ -681,58 +752,21 @@ main(int argc, char *argv[])
 	    userSuppliedAntiAlias = TRUE;
 	    break;
     	case 'b' :	// Set background to this color
-	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give an background color "
-					"in the hex-format <#RRGGBB>.\n"));
-		exit(1);
-	    }
-	    if ((strlen (optarg) != 7)||(optarg[0]!='#')) {
-		fprintf(stderr, _("Specified color format "
-					"is not recognized.\n"));
-		exit(1);
-	    }
-    	    r=g=b=-1;
-	    sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
-	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)) {
-
-		fprintf(stderr, _("Specified color values should be "
-					"between 00 and FF.\n"));
-		exit(1);
-	    }
-
+    	    if (gerbv_parse_gdk_color(&mainProject->background,
+    	                          optarg,
+    	                          FALSE,
+    	                          "background"))
+    	        exit(1);
+    	        
 	    screen.background_is_from_cmdline = TRUE;
-	    mainProject->background.red = r*257;
-    	    mainProject->background.green = g*257;
-    	    mainProject->background.blue = b*257;
 
 	    break;
 	case 'f' :	// Set layer colors to this color (foreground color)
-	    if (optarg == NULL) {
-		fprintf(stderr, _("You must give an foreground color in the hex-format <#RRGGBB> or <#RRGGBBAA>.\n"));
-		exit(1);
-	    }
-	    if (((strlen (optarg) != 7)&&(strlen (optarg) != 9))||(optarg[0]!='#')) {
-		fprintf(stderr, _("Specified color format is not recognized.\n"));
-		exit(1);
-	    }
-	    r=g=b=a=-1;
-	    if(strlen(optarg)==7){
-		sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
-		a=177;
-	    }
-	    else{
-		sscanf (optarg,"#%2x%2x%2x%2x",&r,&g,&b,&a);
-	    }
-
-	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)||(a<0)||(a>255) ) {
-
-		fprintf(stderr, _("Specified color values should be between 0x00 (0) and 0xFF (255).\n"));
-		exit(1);
-	    }
-	    mainDefaultColors[layerctr].red   = r;
-	    mainDefaultColors[layerctr].green = g;
-	    mainDefaultColors[layerctr].blue  = b;
-	    mainDefaultColors[layerctr].alpha = a;
+    	    if (gerbv_parse_color(mainDefaultColors + layerctr,
+    	                          optarg,
+    	                          TRUE,
+    	                          "foreground"))
+    	        exit(1);
 	    layerctr++;
 	    /* just reset the counter back to 0 if we read too many */
 	    if (layerctr == NUMBER_OF_DEFAULT_COLORS)
@@ -978,6 +1012,66 @@ main(int argc, char *argv[])
 	    }
 	}
     }
+    
+    attrarg = x2attr_get_project_attr_or_default(mainProject, "annotate", "y");
+    if (!strcasecmp(attrarg, "y") || !strcasecmp(attrarg, "y!")) {
+        dprintf("Annotating from IPC-D-356A data...\n");
+        // Annotation uses data from IPC files to set component and netname attributes on
+        // otherwise unadorned Gerber images.  This is a search function, since it relies on
+        // matching coordinates.
+        // All loaded IPC files will specify layer numbers 1..n as appropriate.  The corresponding
+        // Gerber file for each layer must have been identified using the --layers option.
+        // All such matching layer pairs are annotated.
+        // Valid layer numbers are 1..63.  If an image's LayerNum attribute specifies that
+        // it is over 63, it will be ignored.  In practice, we currently only support up to
+        // 9 layers in IPC.  If you need more than that, open a change request!
+        // Only "signal" (i.e. copper) layers are supported, which are not defined as
+        // "plane only" layers.  This is from the LayerIsSignal image attribute.
+        // maxlayer (the bottom layer) is assumed to be at least 2 - true single layer
+        // boards will not be affected since this is only for the purpose of matching IPC
+        // data with "top" and "bottom" semantics.
+        int maxlayer = 2;
+        gboolean overwrite = !strcasecmp(attrarg, "y!");
+        gerbv_fileinfo_t * rs274x_files_by_layer[64];
+        gerbv_fileinfo_t * ipcd356a_files_by_layer[64];
+        memset(rs274x_files_by_layer, 0, sizeof(rs274x_files_by_layer));
+        memset(ipcd356a_files_by_layer, 0, sizeof(ipcd356a_files_by_layer));
+        for (i = 0; i <= mainProject->last_loaded; ++i) {
+                gerbv_fileinfo_t * f = mainProject->file[i];
+                int layernum, ml;
+                unsigned long layer_bitmap;
+
+                if (!f || !f->image) 
+                        continue;
+                        
+                if (f->image->layertype == GERBV_LAYERTYPE_RS274X) {
+                        sscanf(x2attr_get_image_attr_or_default(f->image, "LayerNum", "0"),
+                                "%d", &layernum);
+                        sscanf(x2attr_get_image_attr_or_default(f->image, "LayerMax", "0"),
+                                "%d", &ml);
+                        maxlayer = MIN(MAX(maxlayer, ml), 63);
+                        if (layernum > 0 && layernum < 64
+                            && x2attr_get_image_attr(f->image, "LayerIsSignal"))
+                                rs274x_files_by_layer[layernum] = f;
+                }
+                else if (f->image->layertype == GERBV_LAYERTYPE_IPCD356A) {
+                        layer_bitmap = strtoul(
+                                x2attr_get_image_attr_or_default(f->image, "LayerSet", "0"), 
+                                NULL, 0);
+                        for (layernum = 1; layernum < 64; ++layernum)
+                                if (1uL<<layernum & layer_bitmap)
+                                        ipcd356a_files_by_layer[layernum] = f;
+                }
+        }
+        // Annotate rs274x layers with matching IPC data
+        for (i = 1; i <= maxlayer; ++i)
+                if (ipcd356a_files_by_layer[i] && rs274x_files_by_layer[i])
+                        gerbv_annotate_rs274x_from_ipcd356a(i, maxlayer,
+                                                        rs274x_files_by_layer[i], 
+                                                        ipcd356a_files_by_layer[i],
+                                                        overwrite);
+    }
+
 
     if (exportType != EXP_TYPE_NONE) {
 	/* load the info struct with the default values */
@@ -1346,6 +1440,55 @@ gerbv_print_help(void)
 "  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
 "     rs274x|drill|        the specified format.\n"
 "     idrill>\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  --ipcd356a-layers=<l...>\n"
+"                          When reading IPC-D-356A file, only create image\n"
+"                          data for the specified layer(s).  Arg is a sequence\n"
+"                          of one or more digits 0..9.  Default '01' reads\n"
+"                          board outline (0) and top copper (1).  '14' would\n"
+"                          read top and bottom copper of 4 layer board.\n"
+                ));
+	printf(_(
+"  --ipcd356a-tracks=<y|n>\n"
+"                          When reading IPC-D-356A file, also read conductor data.\n"
+                ));
+	printf(_(
+"  --ipcd356a-labels=<d|dp|N|n>\n"
+"                          When reading IPC-D-356A file, add refdes, refdes+pin,\n"
+"                          netname (N) or no labels.  May be shown when rendering\n"
+"                          normal or high quality mode.  Default n.\n"
+                ));
+	printf(_(
+"      Note: if opening multiple instances of same IPC-D-356A file, specify\n"
+"             options for each one using comma delimiters e.g.\n"
+"             --ipcd356a-layers=0,1,2 --ipcd356a-tracks=y,y,n\n"
+                ));
+	printf(_(
+"  --text-min=<pts>        Minimum visible text size in points.  Default 6.\n"
+"  --text-max=<pts>        Maximum visible text size in points.  Default 12.\n"
+"  --text-mils=<mils>      Target text size in mils.  Text will be rendered at\n"
+"                          this mils size, but if it would be visibly smaller than\n"
+"                          text-min, then it will not be rendered, and if larger\n"
+"                          than text-max then it will be scaled down.  Default 40.\n"
+"  --text-color=<hex>      Override text color, enter as #rrggbb hex.\n"
+                ));
+	printf(_(
+"  --annotate=<y!|y|n>     Annotate Gerber files with data from IPC-D-356A data.\n"
+"                          y! = overwrite any existing attributes.  y = don't\n"
+"                          overwrite existing.  n = no annotation.  Default y.\n"
+"                          Use this with --layers and --ipcd356a-layers options.\n"
+"                          Currently only works with signal layers t, b, 2, 3 etc.\n"
+                ));
+	printf(_(
+"  --layers=<spec>,<spec>,...\n"
+"                          Specify file function for each RS274-D or X file.\n"
+"                          See doc.  Examples: --layers=tl,tm,t,b,bm sets first five\n"
+"                          Gerber files as top legend, top soldermask, top copper,\n"
+"                          bottom copper, bottom soldermask.\n"
+                ));
 #endif
 
 }
