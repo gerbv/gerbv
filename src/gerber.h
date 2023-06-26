@@ -55,6 +55,9 @@ typedef struct gerb_state {
     gerbv_netstate_t *state;
     int in_parea_fill;
     int mq_on;		/* Is multiquadrant circular iterpolation */
+    struct x2attr_dict * file_attrs;
+    struct x2attr_dict * aperture_attrs;
+    struct x2attr_dict * object_attrs;
 } gerb_state_t;
 
 /*

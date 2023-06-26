@@ -140,7 +140,11 @@ example_thermal_dsp  | ../../example/thermal/dsp.GP1
 example_trailing_cd1r2.1_sieb0  | ../../example/trailing/cd1r2.1_sieb0.off
 example_trailing_cd1r2.1_sieb1  | ../../example/trailing/cd1r2.1_sieb1.off
 #
-#
+# --anno=n in following ensures it draws something, since default is to annotate other file then hide.
+example_x2attr_db_ipcd356a | ../../example/rs274-x2/DriverBoard/DriverBoard.ipc | --export=png --window=1600x1200 --anno=n
+example_x2attr_db12_ipcd356a | ../../example/rs274-x2/DriverBoard/DriverBoard.ipc | --export=png --window=1600x1200 --anno=n --ipcd356a-layers=12 --ipcd356a-tracks=y
+example_x2attr_hc_ipcd356a | ../../example/rs274-x2/HeadControl2/HeadControl2.ipc | --export=png --window=1600x1200 --anno=n
+example_x2attr_hp_ipcd356a | ../../example/rs274-x2/HeadPower/HeadPower.ipc | --export=png --window=1600x1200 --anno=n
 ######################################################################
 # ---------------------------------------------
 # Layouts designed for the testsuite

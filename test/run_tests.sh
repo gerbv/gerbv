@@ -44,6 +44,12 @@ EOF
 fi
 
 regen=no
+reimport=no
+stringent=yes
+fromlast=no
+kontinue=no
+difftool=
+imagetool=
 
 usage() {
 cat <<EOF
@@ -58,7 +64,7 @@ reports until this message is gone
 $0 -- Run gerbv regression tests
 
 $0 -h|--help
-$0 [-g | --golden dir] [-r|--regen] [testname1 [testname2[ ...]]]
+$0 [-g] [-r] [-i|-I] [-f] [-c] [-v] [-d <cmd>] [-e <cmd>] [testname1 [testname2[ ...]]]
 
 OVERVIEW
 
@@ -78,7 +84,48 @@ OPTIONS
 -g | --golden <dir>    :  Specifies that <dir> should be used for the
                           reference files.
 
+-r | --regen           :  Generate reference output.
+
+-i | --reimport        :  Extra export rs274-x, then reimport and check.
+-I | --Reimport        :  As above, but fail if images not *identical*
+
+-f | --from-last-err   :  Run from test previously reporting error.
+                          If no test failed previously, run from start.
+
+-c | --continue        :  Run from after test previously reporting error.
+                          If no test failed previously, exit with message.
+
 -v | --valgrind        :  Specifies that valgrind should check gerbv.
+
+-d | --difftool <cmd>  :  Specifies text file diff command.  Will be run as
+                            cmd <reference> <output>
+                            
+-e | --imagetool <cmd> :  Specified image (.png) viewer.  Run as
+                            cmd <image>
+
+REIMPORT
+
+This adds several steps to test integrity of export/reimport:
+1. Do initial image comparison to "golden" reference image.
+2. Export as RS274-X
+3. Import from step (2), and write as image.
+4. Compare image from (1) to image in (3) - should be exact match.
+5. Import from step (2), write as RS274-X.
+6. Text diff output from step (2) and step (5) - should be exact match
+   since after first export, the Gerber file should be in a canonical
+   form.
+
+The -e option will pop up a viewer for the image difference if
+step (4) fails.  The -d option will pop up a diff tool if (6) fails.
+Most systems should support
+ -e eog -d meld
+ 
+The -I form of reimport test will fail if step (4) is not an *exact*
+match.  The default is to permit slight differences as determined by
+the ImageMagick 'compare' utility.  Ideally, use -I, however there
+may be some slight rounding errors when exporting RS-274X, which may
+case pixel errors when reimport is rendered.  Until this is resolved,
+you may need to use -i to get through the tests.
 
 LIMITATIONS
 
@@ -111,6 +158,27 @@ while test -n "$1"
 	  shift 2
 	  ;;
       
+      -i|--reimport)
+	  reimport=yes
+	  stringent=no
+	  shift
+	  ;;
+
+      -I|--Reimport)
+	  reimport=yes
+	  shift
+	  ;;
+
+      -f|--from-last-err)
+	  fromlast=yes
+	  shift
+	  ;;
+
+      -c|--continue)
+	  kontinue=yes
+	  shift
+	  ;;
+
       -r|--regen)
 	# regenerate the 'golden' output files.  Use this with caution.
 	# In particular, all differences should be noted and understood.
@@ -121,6 +189,16 @@ while test -n "$1"
       -v|--valgrind)
 	  valgrind=yes
 	  shift
+	  ;;
+
+      -d|--difftool)
+	  difftool="$2"
+	  shift 2
+	  ;;
+
+      -e|--imagetool)
+	  imagetool="$2"
+	  shift 2
 	  ;;
 
       -*)
@@ -145,6 +223,9 @@ else
 fi
 GERBV_DEFAULT_FLAGS=${GERBV_DEFAULT_FLAGS:---export=png --window=640x480}
 
+# Used for reimport test.  Output PNG at 300dpi uniformly. -w0 cancels --window setting above.
+constres="-w0 --dpi=300"
+
 # Source directory
 srcdir=${srcdir:-.}
 
@@ -159,8 +240,10 @@ IM_MONTAGE=${IM_MONTAGE:-montage}
 # golden directories
 INDIR=${INDIR:-${srcdir}/inputs}
 OUTDIR=outputs
+OUTDIR2=outputs2
 REFDIR=${REFDIR:-${srcdir}/golden}
 ERRDIR=mismatch
+LASTFAILFILE=.lastfail
 
 # some system tools
 AWK=${AWK:-awk}
@@ -170,6 +253,17 @@ TESTLIST=${srcdir}/tests.list
 
 if test "X$regen" = "Xyes" ; then
     OUTDIR="${REFDIR}"
+    reimport=no
+fi
+
+if test "X$reimport" = "Xyes" ; then
+  if test ! -d $OUTDIR2 ; then
+    mkdir -p $OUTDIR2
+    if test $? -ne 0 ; then
+	echo "Failed to create output2 directory ${OUTDIR2}"
+	exit 1
+    fi
+  fi
 fi
 
 # create output directory
@@ -187,6 +281,10 @@ if test -z "$all_tests" ; then
 	exit 1
     fi
     all_tests=`${AWK} 'BEGIN{FS="|"} /^#/{next} {print $1}' ${TESTLIST} | sed 's; ;;g'`
+else
+        # test specified, ignore continuation options.
+        fromlast=no
+        kontinue=no
 fi
 
 if test -z "${all_tests}" ; then
@@ -194,6 +292,28 @@ if test -z "${all_tests}" ; then
     exit 0
 fi
 
+scanningfor=
+if test "X$fromlast" = "Xyes" ; then
+        kontinue=no
+        if test -f $LASTFAILFILE ; then
+                scanningfor=`cat $LASTFAILFILE`
+        fi
+        if test "X$scanningfor" = "X" ; then
+                echo "All tests completed previously, or never attempted."
+                echo "Running all tests from start."
+        fi
+fi
+if test "X$kontinue" = "Xyes" ; then
+        if test -f $LASTFAILFILE ; then
+                scanningfor=`cat $LASTFAILFILE`
+        fi
+        if test "X$scanningfor" = "X" ; then
+                echo "All tests completed previously, or never attempted."
+                echo "Run again without the -c|--continue option."
+                exit 0
+        fi
+fi
+rm -f $LASTFAILFILE
 
 # fail/pass/total counts
 fail=0
@@ -205,6 +325,9 @@ cat << EOF
 
 srcdir                ${srcdir}
 top_srcdir            ${top_srcdir}
+fromlast              ${fromlast}
+kontinue              ${kontinue}
+scanningfor           ${scanningfor}
 
 AWK                   ${AWK}
 ERRDIR                ${ERRDIR}
@@ -212,6 +335,7 @@ GERBV                 ${GERBV}
 GERBV_DEFAULT_FLAGS   ${GERBV_DEFAULT_FLAGS}
 INDIR                 ${INDIR}
 OUTDIR                ${OUTDIR}
+OUTDIR2               ${OUTDIR2}
 REFDIR                ${REFDIR}
 TESTLIST              ${TESTLIST}
 
@@ -227,10 +351,27 @@ IM_MONTAGE               ${IM_MONTAGE}
 EOF
 
 for t in $all_tests ; do
-    show_sep
-    echo "Test:  $t"
 
     tot=`expr $tot + 1`
+
+    if test "X$scanningfor" != "X" ; then
+        if test "X$scanningfor" != "X$t" ; then
+	        skip=`expr $skip + 1`
+                continue
+        fi
+        # found what we're looking for
+        if test $kontinue = yes ; then
+                echo "Resuming tests after last failed test $scanningfor"
+                scanningfor=
+	        skip=`expr $skip + 1`
+                continue
+        fi
+        echo "Resuming tests at last failed test $scanningfor"
+        scanningfor=
+    fi
+
+    show_sep
+    echo "Test:  $t"
 
     ######################################################################
     #
@@ -239,6 +380,9 @@ for t in $all_tests ; do
 
     refpng="${REFDIR}/${t}.png"
     outpng="${OUTDIR}/${t}.png"
+    outpng2="${OUTDIR2}/${t}.png"
+    outgrb2="${OUTDIR2}/${t}.grb"
+    outgrb3="${OUTDIR2}/${t}.grb-again"
     errdir="${ERRDIR}/${t}"
 
     # test_name | layout file(s) | [optional arguments to gerbv] | [mismatch]
@@ -310,6 +454,7 @@ for t in $all_tests ; do
     # export the layout to PNG
     #
 
+    echo $t >$LASTFAILFILE
     echo "${GERBV} ${gerbv_flags} --output=${outpng} ${path_files}"
     ${GERBV} ${gerbv_flags} --output=${outpng} ${path_files}
 
@@ -328,17 +473,24 @@ for t in $all_tests ; do
 	    else
 		echo "FAILED:  See ${errdir}"
 		mkdir -p ${errdir}
-		${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png
+		if ${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png ; then
+		        true
+		fi
 		${IM_COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png
 		${IM_CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png
-cat > ${errdir}/animate.sh << EOF
+                cat > ${errdir}/animate.sh << EOF
 #!/bin/sh
 ${IM_CONVERT} -label "%f" ${refpng} ${outpng} miff:- | \
 ${IM_MONTAGE} - -geometry +0+0 -tile 1x1 miff:- | \
 ${IM_ANIMATE} -delay 0.5 -loop 0 -
 EOF
-		chmod a+x ${errdir}/animate.sh
+		chmod +x ${errdir}/animate.sh
 		fail=`expr $fail + 1`
+                if test "X$imagetool" != "X" ; then
+                        cp ${refpng} ${errdir}/reference.png
+                        cp ${outpng} ${errdir}/output.png
+                        $imagetool ${errdir}/compare.png
+                fi
 	    fi
 	else
 	    echo "SKIPPED: No reference file ${REFDIR}/${t}.png"
@@ -348,7 +500,100 @@ EOF
 	echo "Regenerated"
     fi
 
+    ######################################################################
+    #
+    # Reimport tests if requested (-i or -I)
+    #
+    # Image processing note:  Save images at 300dpi.
+    # Take thresholded diff of the 2 images.  White pixel where any difference.
+    # Erode with 3x3 rectangle.  If any white pixel remains, is definite difference,
+    # since such pixels must be within a 3x3 block of white (i.e. 10mil square).
+    # Otherwise, check that all diff pixels are near the original image boundary.
+    # Thus, all diff pixels must be in the 'edge' (morphological gradient)
+    # of either input image.
     
+    dothis="yes"
+    if test $t = example_pick_and_place_LED ; then
+        # Skip pnp test because we don't save label text in rs274-x export.
+        dothis="no"
+    fi
+    if test $t = test-circular-interpolation-1 ; then
+        #FIXME: library is not exporting quadrant mode arcs properly.
+        dothis="no"
+    fi
+
+    if test "X$reimport" = "Xyes" -a $dothis = yes ; then
+        # Redo the image output, at constant resolution
+        echo "${GERBV} ${gerbv_flags} ${constres} --output=${outpng} ${path_files}"
+        ${GERBV} ${gerbv_flags} ${constres} --output=${outpng} ${path_files}
+
+        # Export as rs274-x
+        echo "${GERBV} ${gerbv_flags} --export=rs274x --output=${outgrb2} ${path_files}"
+        ${GERBV} ${gerbv_flags} --export=rs274x --output=${outgrb2} ${path_files}
+        # Read back in and export png as usual
+        echo "${GERBV} ${gerbv_flags} ${constres} --output=${outpng2} ${outgrb2}"
+        ${GERBV} ${gerbv_flags} ${constres} --output=${outpng2} ${outgrb2}
+        # Compare the PNGs, should be bitwise exactly the same, but sometimes there are
+        # pixel diffs, so if necessary do some image processing.
+        echo "cmp ${outpng2} ${outpng}"
+        if ! cmp ${outpng2} ${outpng} ; then
+                echo "Reimport image test: output images not bitwise identical."
+		mkdir -p ${errdir}
+		ok=0
+		${IM_COMPOSITE} ${outpng} ${outpng2} -compose difference -monochrome ${errdir}/raw_diff.png
+		${IM_CONVERT} ${errdir}/raw_diff.png -threshold 50% ${errdir}/thresh_diff.png
+		${IM_CONVERT} ${errdir}/thresh_diff.png -morphology Erode Rectangle ${errdir}/eroded_diff.png
+		eroded=`${IM_CONVERT} ${errdir}/eroded_diff.png -format "%[mean]" info:`
+                if test $eroded = 0 ; then
+                        echo "... Passed basic erosion test."
+		        ${IM_CONVERT} ${outpng} -threshold 10% -morphology Edge Rectangle ${errdir}/edge.png
+                        ${IM_CONVERT} ${errdir}/edge.png ${errdir}/thresh_diff.png -compose Minus_Dst -composite ${errdir}/outside.png
+		        outside=`${IM_CONVERT} ${errdir}/outside.png -format "%[mean]" info:`
+		        if test $outside != 0 ; then
+                                echo "... but Fail because differences were not on boundary!"
+                                if test "X$imagetool" != "X" ; then
+                                        cp ${outpng} ${errdir}/image1.png
+                                        cp ${outpng2} ${errdir}/image2.png
+                                        $imagetool ${errdir}/outside.png
+                                fi
+                        else
+                                if test $stringent = no ; then
+                                        ok=1
+                                else
+                                        echo "... but fail because -I (stringent) specified."
+                                fi
+                        fi
+                else
+                        echo "... Failed basic erosion test!"
+                        if test "X$imagetool" != "X" ; then
+                                cp ${outpng} ${errdir}/image1.png
+                                cp ${outpng2} ${errdir}/image2.png
+                                $imagetool ${errdir}/thresh_diff.png
+                        fi
+                fi
+                if test $ok != 1 ; then
+        		fail=`expr $fail + 1`
+	        	break
+	        fi
+        fi
+        # Re-export the above as a second Gerber file, and check for exact match.
+        echo "${GERBV} ${gerbv_flags} --export=rs274x --output=${outgrb3} ${outgrb2}"
+        ${GERBV} ${gerbv_flags} --export=rs274x --output=${outgrb3} ${outgrb2}
+        echo "cmp ${outgrb2} ${outgrb3}"
+        if ! cmp ${outgrb2} ${outgrb3} ; then
+                echo "Reimport gerber (text) test failed; Gerber files not exactly identical."
+                if test "X$difftool" != "X" ; then
+                        cp ${path_files} ${errdir}/original.grb
+                        cp ${outgrb2} ${errdir}/export1.grb
+                        cp ${outgrb3} ${errdir}/export2.grb
+                        $difftool ${errdir}/export1.grb ${errdir}/export2.grb
+                fi
+		fail=`expr $fail + 1`
+        	break
+        fi        
+    fi
+    # Got through, remove last fail marker.
+    rm -f $LASTFAILFILE
 done
 
 show_sep
