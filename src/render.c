@@ -183,19 +183,11 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 
 /* ------------------------------------------------------ */
 void
-render_draw_selection_box_outline(void) {
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
+render_draw_selection_box_outline(cairo_t *cr) {
 	gint x1, y1, x2, y2, dx, dy;
 
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	if (!screen.zoom_outline_color.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
-	values.foreground = screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
+	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+	gdk_cairo_set_source_color(cr, &screen.zoom_outline_color);
 	
 	x1 = MIN(screen.start_x, screen.last_x);
 	y1 = MIN(screen.start_y, screen.last_y);
@@ -204,26 +196,18 @@ render_draw_selection_box_outline(void) {
 	dx = x2-x1;
 	dy = y2-y1;
 
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
-	gdk_gc_unref(gc);
+	cairo_rectangle(cr, x1, y1, dx, dy);
+	cairo_stroke(cr);
 }
 
 /* --------------------------------------------------------- */
 void
-render_draw_zoom_outline(gboolean centered)
+render_draw_zoom_outline(cairo_t *cr, gboolean centered)
 {
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
 	gint x1, y1, x2, y2, dx, dy;
 
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	if (!screen.zoom_outline_color.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
-	values.foreground = screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
+	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+	gdk_cairo_set_source_color(cr, &screen.zoom_outline_color);
 	
 	x1 = MIN(screen.start_x, screen.last_x);
 	y1 = MIN(screen.start_y, screen.last_y);
@@ -242,17 +226,12 @@ render_draw_zoom_outline(gboolean centered)
 		y2 = y1+dy;
 	}
 
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
-	gdk_gc_unref(gc);
+	cairo_rectangle(cr, x1, y1, dx, dy);
+	cairo_stroke(cr);
 
 	/* Draw actual zoom area in dashed lines */
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.foreground = screen.zoom_outline_color;
-	values.line_style = GDK_LINE_ON_OFF_DASH;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND | GDK_GC_LINE_STYLE;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				values_mask);
+	const double on_off[] = {5, 5};
+	cairo_set_dash(cr, on_off, 2, 0);
 	
 	if ((dy == 0) || ((double)dx/dy > (double)screen.drawing_area->allocation.width/
 				screen.drawing_area->allocation.height)) {
@@ -264,10 +243,8 @@ render_draw_zoom_outline(gboolean centered)
 			screen.drawing_area->allocation.height;
 	}
 
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, (x1+x2-dx)/2,
-		(y1+y2-dy)/2, dx, dy);
-
-	gdk_gc_unref(gc);
+	cairo_rectangle(cr, (x1+x2-dx)/2, (y1+y2-dy)/2, dx, dy);
+	cairo_stroke(cr);
 }
 
 /* ------------------------------------------------------ */
@@ -323,37 +300,30 @@ render_trim_point(gdouble *start_x, gdouble *start_y, gdouble last_x, gdouble la
 /** Draws/erases measure line
  */
 void
-render_toggle_measure_line(void)
+render_toggle_measure_line(cairo_t *cr)
 {
-
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
 	gdouble start_x, start_y, last_x, last_y;
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.line_width = 6;
-	if (!screen.zoom_outline_color.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
-	values.foreground = screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_LINE_WIDTH | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				values_mask);
+
+	cairo_set_line_width(cr, 6);
+	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+	gdk_cairo_set_source_color(cr, &screen.zoom_outline_color);
+
 	render_board2screen(&start_x, &start_y,
 				screen.measure_start_x, screen.measure_start_y);
 	render_board2screen(&last_x, &last_y,
 				screen.measure_stop_x, screen.measure_stop_y);
 	render_trim_point(&start_x, &start_y, last_x, last_y);
 	render_trim_point(&last_x, &last_y, start_x, start_y);
-	gdk_draw_line(screen.drawing_area->window, gc, start_x,
-		  start_y, last_x, last_y);
-	gdk_gc_unref(gc);
+
+	cairo_move_to(cr, start_x, start_y);
+	cairo_line_to(cr, last_x, last_y);
+	cairo_stroke(cr);
 } /* toggle_measure_line */
 
 /* ------------------------------------------------------ */
 /** Displays a measured distance graphically on screen and in statusbar. */
 void
-render_draw_measure_distance(void)
+update_statusbar_measure_distance(void)
 {
 	gdouble dx, dy;
 
@@ -363,7 +333,6 @@ render_draw_measure_distance(void)
 	screen.measure_last_x = dx;
 	screen.measure_last_y = dy;
 	callbacks_update_statusbar_measured_distance (dx, dy);
-	render_toggle_measure_line();
 }
 
 /* ------------------------------------------------------ */
@@ -605,13 +574,11 @@ void render_recreate_composite_surface ()
 /* ------------------------------------------------------ */
 void render_project_to_cairo_target (cairo_t *cr) {
 	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) mainProject->background.red/G_MAXUINT16,
-		(double) mainProject->background.green/G_MAXUINT16,
-		(double) mainProject->background.blue/G_MAXUINT16, 1);
+	gdk_cairo_set_source_color (cr, &mainProject->background);
 	cairo_paint (cr);
 
 	cairo_set_source_surface (cr, (cairo_surface_t *) screen.bufferSurface, 0 , 0);
-                                                   
+
 	cairo_paint (cr);
 }
 

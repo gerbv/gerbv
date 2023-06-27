@@ -2346,7 +2346,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 							item[1].image,
 							mainProject);
 
-					render_draw_measure_distance();
+					update_statusbar_measure_distance();
 				}
 			}
 			break;
@@ -3216,33 +3216,32 @@ callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	if (GDK_IS_WINDOW(widget->window)) {
 	      /* query the window's backbuffer if it has one */
 		GdkWindow *window = GDK_WINDOW(widget->window);
-	      gdk_window_get_internal_paint_info (window,
+		gdk_window_get_internal_paint_info (window,
 	                                          &drawable, &x_off, &y_off);
 	}
 	gdk_drawable_get_size (drawable, &width, &height);
 
-#if defined(WIN32) || defined(QUARTZ)
-	/* FIXME */
 	cr = gdk_cairo_create (GDK_WINDOW(widget->window));
-#else      
-	cairo_surface_t *buffert;
-	
-	GdkVisual *visual = gdk_drawable_get_visual (drawable);
-	buffert = (gpointer) cairo_xlib_surface_create (GDK_DRAWABLE_XDISPLAY (drawable),
-	                                          GDK_DRAWABLE_XID (drawable),
-	                                          GDK_VISUAL_XVISUAL (visual),
-	                                          event->area.width, event->area.height);
-	cr = cairo_create (buffert);
-#endif
-	cairo_translate (cr, -event->area.x + screen.off_x, -event->area.y + screen.off_y);
-	render_project_to_cairo_target (cr);
-	cairo_destroy (cr);
-#if !defined(WIN32) && !defined(QUARTZ)
-	cairo_surface_destroy (buffert);
-#endif
 
-	if (screen.tool == MEASURE)
-		render_toggle_measure_line();
+	cairo_translate(cr, -event->area.x + screen.off_x, -event->area.y + screen.off_y);
+	render_project_to_cairo_target (cr);
+
+	switch (screen.state) {
+		case IN_MEASURE:
+			render_toggle_measure_line(cr);
+			break;
+		case IN_SELECTION_DRAG:
+			render_draw_selection_box_outline(cr);
+			break;
+		case IN_ZOOM_OUTLINE:
+			render_draw_zoom_outline(cr, screen.centered_outline_zoom);
+			break;
+		default:
+			break;
+	}
+
+	cairo_destroy (cr);
+
 	return FALSE;
 }
 
@@ -3361,31 +3360,27 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		    break;
 		}
 		case IN_ZOOM_OUTLINE: {
-			if (screen.last_x || screen.last_y)
-				render_draw_zoom_outline(screen.centered_outline_zoom);
 			screen.last_x = x;
 			screen.last_y = y;
-			render_draw_zoom_outline(screen.centered_outline_zoom);
+			callbacks_force_expose_event_for_screen ();
 			break;
 		}
 		case IN_MEASURE: {
 			/* clear the previous drawn line by drawing over it */
-			render_toggle_measure_line();
 			callbacks_screen2board(&(screen.measure_stop_x),
 			    &(screen.measure_stop_y), x, y);
 			/* screen.last_[xy] are updated to move the ruler pointers */
 			screen.last_x = x;
 			screen.last_y = y;
 			/* draw the new line and write the new distance */
-			render_draw_measure_distance();
+			update_statusbar_measure_distance();
+			callbacks_force_expose_event_for_screen ();
 			break;
 		}
 		case IN_SELECTION_DRAG: {
-			if (screen.last_x || screen.last_y)
-				render_draw_selection_box_outline();
 			screen.last_x = x;
 			screen.last_y = y;
-			render_draw_selection_box_outline();
+			callbacks_force_expose_event_for_screen ();
 			break;
 		}
 		default:

@@ -158,6 +158,20 @@ GdkPixbuf *pixbuf_from_icon(const icon *icon)
                                   NULL, NULL);
 }
 
+void rgba_from_rgb(GdkColor *c, uint16_t r, uint16_t g, uint16_t b)
+{
+#if 0
+	c->r = (double)r / G_MAXUINT16;
+	c->g = (double)g / G_MAXUINT16;
+	c->b = (double)b / G_MAXUINT16;
+	c->a = 1.0;
+#else
+	c->red = r;
+	c->green = g;
+	c->blue = b;
+#endif
+}
+
 /* ---------------------------------------------- */
 void
 interface_create_gui (int req_width, int req_height)
@@ -1702,9 +1716,7 @@ interface_create_gui (int req_width, int req_height)
 	 * Setup some GTK+ defaults.
 	 * These should really be somewhere else.
 	 */
-	GdkColor zoom_outline_color = {0, 50000, 50000, 50000};
-	
-	screen.zoom_outline_color = zoom_outline_color;
+	rgba_from_rgb(&screen.zoom_outline_color, 50000, 50000, 50000);
 
 	screen.length_sum = 0;
 
