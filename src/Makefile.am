@@ -52,6 +52,9 @@ libgerbv_la_SOURCES= \
 		gerbv.c gerbv.h \
 		gerbv_icon.h \
 		gettext.h \
+		gtkruler.c gtkruler.h \
+		gtkvruler.c gtkvruler.h \
+		gtkhruler.c gtkhruler.h \
 		pick-and-place.c pick-and-place.h \
 		selection.c selection.h \
 		tooltable.c

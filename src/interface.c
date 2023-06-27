@@ -39,6 +39,9 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include "gtkhruler.h"
+#include "gtkvruler.h"
+
 #include "common.h"
 #include "main.h"
 #include "callbacks.h"
