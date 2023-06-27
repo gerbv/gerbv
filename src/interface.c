@@ -218,7 +218,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *backgroundColor;
 	GtkWidget *menuitem_view_render, *menuitem_view_render_menu;
 	GSList *menu_view_render_group;
-	GtkWidget *render_fast, *render_fast_xor, *render_normal, *render_hq;
+	GtkWidget *render_normal, *render_hq;
 	GtkWidget *menuitem_view_unit, *menuitem_view_unit_menu;
 	GSList *menu_view_unit_group;
 	GtkWidget *unit_mil, *unit_mm, *unit_in;
@@ -758,14 +758,6 @@ interface_create_gui (int req_width, int req_height)
 
 		menu_view_render_group = NULL;
 
-		render_fast = gtk_radio_menu_item_new_with_mnemonic (menu_view_render_group, _("_Fast"));
-		menu_view_render_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (render_fast));
-		gtk_container_add (GTK_CONTAINER (menuitem_view_render_menu), render_fast);
-
-		render_fast_xor = gtk_radio_menu_item_new_with_mnemonic (menu_view_render_group, _("Fast (_XOR)"));
-		menu_view_render_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (render_fast_xor));
-		gtk_container_add (GTK_CONTAINER (menuitem_view_render_menu), render_fast_xor);
-
 		render_normal = gtk_radio_menu_item_new_with_mnemonic (menu_view_render_group, _("_Normal"));
 		menu_view_render_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (render_normal));
 		gtk_container_add (GTK_CONTAINER (menuitem_view_render_menu), render_normal);
@@ -778,14 +770,12 @@ interface_create_gui (int req_width, int req_height)
 		if(screen.win.menu_view_render_group == NULL)
 			GERB_FATAL_ERROR("malloc for rendering type synchronization failed in %s()", __FUNCTION__);
 
-		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_GDK] = GTK_CHECK_MENU_ITEM(render_fast);
-		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_GDK_XOR] = GTK_CHECK_MENU_ITEM(render_fast_xor);
 		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_CAIRO_NORMAL] = GTK_CHECK_MENU_ITEM(render_normal);
 		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY] = GTK_CHECK_MENU_ITEM(render_hq);
 	}
 
 	{	// units submenu
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (render_fast), TRUE);
+		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (render_normal), TRUE);
 
 		menuitem_view_unit = gtk_menu_item_new_with_mnemonic (_("U_nits"));
 		gtk_container_add (GTK_CONTAINER (menuitem_view_menu), menuitem_view_unit);
@@ -1828,12 +1818,6 @@ interface_create_gui (int req_width, int req_height)
 
 	/* connect this signals as late as possible to avoid triggering them before
 	   the gui is drawn */
-	g_signal_connect ((gpointer) render_fast, "activate",
-	                  G_CALLBACK (callbacks_viewmenu_rendertype_changed),
-	                  GINT_TO_POINTER(GERBV_RENDER_TYPE_GDK));
-	g_signal_connect ((gpointer) render_fast_xor, "activate",
-	                  G_CALLBACK (callbacks_viewmenu_rendertype_changed),
-	                  GINT_TO_POINTER(GERBV_RENDER_TYPE_GDK_XOR));
 	g_signal_connect ((gpointer) render_normal, "activate",
 	                  G_CALLBACK (callbacks_viewmenu_rendertype_changed),
 	                  GINT_TO_POINTER(GERBV_RENDER_TYPE_CAIRO_NORMAL));

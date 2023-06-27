@@ -74,9 +74,7 @@ For help with using the standalone Gerbv software, please refer to the man page
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
-#ifndef RENDER_USING_GDK
-# include <cairo.h>
-#endif
+#include <cairo.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -350,8 +348,7 @@ enum draw_mode {
 };
 
 /*! The different rendering modes available to libgerbv */
-typedef enum {GERBV_RENDER_TYPE_GDK, /*!< render using normal GDK drawing functions */
-		GERBV_RENDER_TYPE_GDK_XOR, /*!< use the GDK_XOR mask to draw a pseudo-transparent scene */
+typedef enum {
 		GERBV_RENDER_TYPE_CAIRO_NORMAL, /*!< use the cairo library */
 		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, /*!< use the cairo library with the smoothest edges */
 		GERBV_RENDER_TYPE_MAX /*!< End-of-enum indicator */
@@ -877,12 +874,6 @@ void
 gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo);
 
 void
-gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixmap,
-		gerbv_render_info_t *renderInfo, gerbv_selection_info_t *selectionInfo,
-		GdkColor *selectionColor);
-
-#ifndef RENDER_USING_GDK
-void
 gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerbvProject,
 		cairo_t *cr, gerbv_render_info_t *renderInfo);
 
@@ -902,7 +893,6 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 
 void
 gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean pixelOutput );
-#endif
 
 double
 gerbv_get_tool_diameter(int toolNumber

@@ -61,8 +61,6 @@
 #include "selection.h"
 #include "table.h"
 
-#include "draw-gdk.h"
-
 #include "draw.h"
 #ifdef WIN32
 # include <cairo-win32.h>
@@ -1063,12 +1061,8 @@ callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user
 
 	callbacks_update_layer_tree ();
 
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-		render_refresh_rendered_image_on_screen ();
-	} else {
-		render_recreate_composite_surface (screen.drawing_area);
-		callbacks_force_expose_event_for_screen ();
-	}
+	render_recreate_composite_surface (screen.drawing_area);
+	callbacks_force_expose_event_for_screen ();
 }
 
 /* --------------------------------------------------------- */
@@ -2182,12 +2176,8 @@ callbacks_layer_tree_visibility_toggled (gint index)
 		!mainProject->file[index]->isVisible;
 
 	callbacks_update_layer_tree ();
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-		render_refresh_rendered_image_on_screen ();
-	} else {
-		render_recreate_composite_surface (screen.drawing_area);
-		callbacks_force_expose_event_for_screen ();
-	}
+	render_recreate_composite_surface (screen.drawing_area);
+	callbacks_force_expose_event_for_screen ();
 }
 
 /* --------------------------------------------------------- */
@@ -2434,12 +2424,8 @@ callbacks_remove_layer_button_clicked (GtkButton *button, gpointer user_data)
 		index = MAX(0, index - 1);
 		callbacks_select_layer_row (index);
 
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-			render_refresh_rendered_image_on_screen ();
-		} else {
-			render_recreate_composite_surface (screen.drawing_area);
-			callbacks_force_expose_event_for_screen ();
-		}
+		render_recreate_composite_surface (screen.drawing_area);
+		callbacks_force_expose_event_for_screen ();
 	}
 }
 
@@ -2464,13 +2450,8 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 		callbacks_update_layer_tree ();
 		callbacks_select_layer_row (index + 1);
 
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-			render_refresh_rendered_image_on_screen ();
-		}
-		else {
-			render_recreate_composite_surface (screen.drawing_area);
-			callbacks_force_expose_event_for_screen ();
-		}
+		render_recreate_composite_surface (screen.drawing_area);
+		callbacks_force_expose_event_for_screen ();
 	}
 }
 
@@ -2493,13 +2474,8 @@ callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data
 		gerbv_change_layer_order (mainProject, index, index - 1);
 		callbacks_update_layer_tree ();
 		callbacks_select_layer_row (index - 1);
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-			render_refresh_rendered_image_on_screen();
-		}
-		else {
-			render_recreate_composite_surface (screen.drawing_area);
-			callbacks_force_expose_event_for_screen ();
-		}
+		render_recreate_composite_surface (screen.drawing_area);
+		callbacks_force_expose_event_for_screen ();
 	}
 }
 
@@ -2521,13 +2497,8 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 				oldPosition--;
 			gerbv_change_layer_order (mainProject, oldPosition, newPosition);
 
-			if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-				render_refresh_rendered_image_on_screen();
-			}
-			else {
-				render_recreate_composite_surface (screen.drawing_area);
-				callbacks_force_expose_event_for_screen ();
-			}
+			render_recreate_composite_surface (screen.drawing_area);
+			callbacks_force_expose_event_for_screen ();
 			/* select the new line */
 			GtkTreeSelection *selection;
 			GtkTreeIter iter;
@@ -3044,24 +3015,6 @@ void
 callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	int i;
 	time_t start, now;
-	GdkPixmap *renderedPixmap = gdk_pixmap_new (NULL, renderInfo->displayWidth,
-								renderInfo->displayHeight, 24);
-								
-	// start by running the GDK (fast) rendering test
-	i = 0;
-	start = time(NULL);
-	now = start;
-	while( now - 30 < start) {
-		i++;
-		dprintf("Benchmark():  Starting redraw #%d\n", i);
-		gerbv_render_to_pixmap_using_gdk (mainProject, renderedPixmap, renderInfo, NULL, NULL);
-		now = time(NULL);
-		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
-	}
-	g_message(_("FAST (=GDK) mode benchmark: %d redraws "
-				"in %ld seconds (%g redraws/second)"),
-		      i, (long int) (now - start), (double) i / (double)(now - start));
-	gdk_pixmap_unref(renderedPixmap);
 	
 	// run the cairo (normal) render mode
 	i = 0;
@@ -3091,7 +3044,7 @@ callbacks_benchmark_clicked (GtkButton *button, gpointer   user_data)
 {
 	// prepare render size and options (canvas size width and height are last 2 variables)
 	gerbv_render_info_t renderInfo = {1.0, 1.0, 0, 0,
-					GERBV_RENDER_TYPE_GDK, 640, 480};
+					GERBV_RENDER_TYPE_CAIRO_NORMAL, 640, 480};
 
 	if (!interface_get_alert_dialog_response(_("Performance benchmark"),
 			_("Application will be unresponsive for 1 minute! "
@@ -3255,67 +3208,6 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 gboolean
 callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-		GdkPixmap *new_pixmap;
-		GdkGC *gc = gdk_gc_new(widget->window);
-
-		/*
-		* Create a pixmap with default background
-		*/
-		new_pixmap = gdk_pixmap_new(widget->window,
-					widget->allocation.width,
-					widget->allocation.height,
-					-1);
-
-		gdk_gc_set_foreground(gc, &mainProject->background);
-
-		gdk_draw_rectangle(new_pixmap, gc, TRUE, 
-			       event->area.x, event->area.y,
-			       event->area.width, event->area.height);
-
-		/*
-		* Copy gerber pixmap onto background if we have one to copy.
-		* Do translation at the same time.
-		*/
-		if (screen.pixmap != NULL) {
-		gdk_draw_pixmap(new_pixmap,
-				widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-				screen.pixmap, 
-				event->area.x - screen.off_x, 
-				event->area.y - screen.off_y, 
-				event->area.x, event->area.y,
-				event->area.width, event->area.height);
-		}
-
-		/*
-		* Draw the whole thing onto screen
-		*/
-		gdk_draw_pixmap(widget->window,
-			    widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-			    new_pixmap,
-			    event->area.x, event->area.y,
-			    event->area.x, event->area.y,
-			    event->area.width, event->area.height);
-
-		gdk_pixmap_unref(new_pixmap);
-		gdk_gc_unref(gc);
-
-		/*
-		* Draw Zooming outline if we are in that mode
-		*/
-		if (screen.state == IN_ZOOM_OUTLINE) {
-			render_draw_zoom_outline(screen.centered_outline_zoom);
-		}
-		else if (screen.state == IN_MEASURE) {
-			render_draw_measure_distance();
-		}
-		if (screen.tool == MEASURE && screen.state != IN_MEASURE) {
-			render_toggle_measure_line();
-		}
- 
-		return FALSE;
-	}
-
 	cairo_t *cr;
 	int width, height;
 	int x_off=0, y_off=0;

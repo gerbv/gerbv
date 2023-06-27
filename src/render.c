@@ -427,46 +427,35 @@ static void render_selection (void)
 /* ------------------------------------------------------ */
 void render_refresh_rendered_image_on_screen (void) {
 	GdkCursor *cursor;
-	
+
 	dprintf("----> Entering redraw_pixmap...\n");
 	cursor = gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
 	gdk_cursor_destroy(cursor);
 
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR){
-	    if (screen.pixmap) 
-		gdk_pixmap_unref(screen.pixmap);
-	    screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
-	    screenRenderInfo.displayHeight, -1);
-	    gerbv_render_to_pixmap_using_gdk (mainProject, screen.pixmap, &screenRenderInfo, &screen.selectionInfo,
-	    		&screen.selection_color);	
-	    dprintf("<---- leaving redraw_pixmap.\n");
-	}
-	else{
-	    int i;
-	    dprintf("    .... Now try rendering the drawing using cairo .... \n");
-	    /* 
-	     * This now allows drawing several layers on top of each other.
-	     * Higher layer numbers have higher priority in the Z-order.
-	     */
-	    for(i = mainProject->last_loaded; i >= 0; i--) {
+	int i;
+	dprintf("    .... Now try rendering the drawing using cairo .... \n");
+	/*
+	 * This now allows drawing several layers on top of each other.
+	 * Higher layer numbers have higher priority in the Z-order.
+	 */
+	for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i]) {
-		    cairo_t *cr;
-		    if (mainProject->file[i]->privateRenderData) 
-			cairo_surface_destroy ((cairo_surface_t *) mainProject->file[i]->privateRenderData);
-		    mainProject->file[i]->privateRenderData = 
-			(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-			CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
-			screenRenderInfo.displayHeight);
-		    cr= cairo_create(mainProject->file[i]->privateRenderData );
-		    gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &screenRenderInfo);
-		    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
-		    cairo_destroy (cr);
+			cairo_t *cr;
+			if (mainProject->file[i]->privateRenderData) 
+				cairo_surface_destroy ((cairo_surface_t *) mainProject->file[i]->privateRenderData);
+			mainProject->file[i]->privateRenderData = 
+					(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+							CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
+							screenRenderInfo.displayHeight);
+			cr= cairo_create(mainProject->file[i]->privateRenderData );
+			gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &screenRenderInfo);
+			dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
+			cairo_destroy (cr);
 		}
-	    }
-	    
-	    render_recreate_composite_surface ();
 	}
+
+	render_recreate_composite_surface ();
 	/* remove watch cursor and switch back to normal cursor */
 	callbacks_switch_to_correct_cursor ();
 	callbacks_force_expose_event_for_screen();
@@ -539,12 +528,8 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex,
 	cairo_destroy (cr);
 
 	/* re-render the selection buffer layer */
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-		render_refresh_rendered_image_on_screen ();
-	} else {
-		render_recreate_composite_surface ();
-		callbacks_force_expose_event_for_screen ();
-	}
+	render_recreate_composite_surface ();
+	callbacks_force_expose_event_for_screen ();
 }
 
 /* ------------------------------------------------------ */
@@ -598,7 +583,7 @@ void render_recreate_composite_surface ()
 			cairo_set_source_surface (cr, (cairo_surface_t *) mainProject->file[i]->privateRenderData,
 			                              0, 0);
 			/* ignore alpha if we are in high-speed render mode */
-			if (((double) mainProject->file[i]->alpha < 65535)&&(screenRenderInfo.renderType != GERBV_RENDER_TYPE_GDK_XOR)) {
+			if ((double) mainProject->file[i]->alpha < 65535) {
 				cairo_paint_with_alpha(cr,(double) mainProject->file[i]->alpha/G_MAXUINT16);
 			}
 			else {
