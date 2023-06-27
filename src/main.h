@@ -43,8 +43,6 @@ typedef struct {
     GtkWidget *drawing_area;
     GdkPixmap *pixmap;
     GdkColor  zoom_outline_color;
-    GdkColor  dist_measure_color;
-    GdkColor  selection_color;
 
     struct {
 	GtkWidget *log;
