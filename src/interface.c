@@ -2303,10 +2303,11 @@ interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText,
 
 static int focused_widget_num = 0;
 
-void
+int
 focus_in_event_callback (int *widget_num)
 {
 	focused_widget_num = *widget_num;
+	return 0;
 }
 
 void
