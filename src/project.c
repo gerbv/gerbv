@@ -725,6 +725,7 @@ define_layer(scheme *sc, pointer args)
 
 		type = sc->vptr->symname (attr_type);
 
+		plist->attr_list[p].default_val.str_value = NULL;
 		if (strcmp (type, "label") == 0) {
 		    dprintf ("%s", sc->vptr->string_value (attr_value));
 		    plist->attr_list[p].type = HID_Label;
