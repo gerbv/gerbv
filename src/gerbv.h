@@ -1105,6 +1105,10 @@ int
 gerbv_transform_coord_for_image(double *x, double *y,
 		const gerbv_image_t *image, const gerbv_project_t *project);
 
+/*! See if 'path' ends with the filename extension 'ext' */
+gboolean
+gerbv_endswith(const char *path, const char *ext);
+
 /*! Transform coordinate x and y */
 void
 gerbv_transform_coord(double *x, double *y,
