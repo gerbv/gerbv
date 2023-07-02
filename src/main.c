@@ -896,6 +896,15 @@ main(int argc, char *argv[])
 			    read_opt);
 	}
     }
+
+    /*
+     * If no project_filename and only file ends in .gvp, use as project file. -erco 02/20/2020
+     */
+    if ( !project_filename &&                       // project not set?
+         optind == (argc-1) &&                      // only one file specified?
+         gerbv_endswith(argv[optind], ".gvp") ) {   // only file ends in .gvp?
+        project_filename = argv[optind];
+    }
     
     /*
      * If project is given, load that one and use it for files and colors.

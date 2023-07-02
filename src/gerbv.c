@@ -1114,3 +1114,11 @@ gerbv_transform_coord_for_image(double *x, double *y,
 	return 0;
 }
 
+gboolean
+gerbv_endswith(const char *path, const char *ext) {
+    int plen = strlen(path);
+    int elen = strlen(ext);
+    if ( plen < elen ) return FALSE;                    // false if string too short to check
+    return (strcmp(path+plen-elen, ext) == 0) ? TRUE    // true if last chars match extension
+                                              : FALSE;
+}
