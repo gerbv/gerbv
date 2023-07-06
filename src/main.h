@@ -41,7 +41,6 @@ typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
 
 typedef struct {
     GtkWidget *drawing_area;
-    GdkPixmap *pixmap;
     GdkColor  zoom_outline_color;
 
     struct {
@@ -84,7 +83,6 @@ typedef struct {
     gpointer bufferSurface;
     gpointer selectionRenderData;
 
-    GtkTooltips *tooltips;
     GtkWidget *popup_menu;
     struct {
 	GtkWidget *msg;

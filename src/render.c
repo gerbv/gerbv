@@ -205,6 +205,7 @@ void
 render_draw_zoom_outline(cairo_t *cr, gboolean centered)
 {
 	gint x1, y1, x2, y2, dx, dy;
+	GtkAllocation allocation;
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
 	gdk_cairo_set_source_color(cr, &screen.zoom_outline_color);
@@ -232,15 +233,14 @@ render_draw_zoom_outline(cairo_t *cr, gboolean centered)
 	/* Draw actual zoom area in dashed lines */
 	const double on_off[] = {5, 5};
 	cairo_set_dash(cr, on_off, 2, 0);
+
+	gtk_widget_get_allocation(screen.drawing_area, &allocation);
 	
-	if ((dy == 0) || ((double)dx/dy > (double)screen.drawing_area->allocation.width/
-				screen.drawing_area->allocation.height)) {
-		dy = dx * (double)screen.drawing_area->allocation.height/
-			screen.drawing_area->allocation.width;
+	if ((dy == 0) || ((double)dx/dy > (double)allocation.width / allocation.height)) {
+		dy = dx * (double)allocation.height / allocation.width;
 	} 
 	else {
-		dx = dy * (double)screen.drawing_area->allocation.width/
-			screen.drawing_area->allocation.height;
+		dx = dy * (double)allocation.width / allocation.height;
 	}
 
 	cairo_rectangle(cr, (x1+x2-dx)/2, (y1+y2-dy)/2, dx, dy);
@@ -396,11 +396,12 @@ static void render_selection (void)
 /* ------------------------------------------------------ */
 void render_refresh_rendered_image_on_screen (void) {
 	GdkCursor *cursor;
+	GdkWindow *window = gtk_widget_get_window(screen.drawing_area);
 
 	dprintf("----> Entering redraw_pixmap...\n");
 	cursor = gdk_cursor_new(GDK_WATCH);
-	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
-	gdk_cursor_destroy(cursor);
+	gdk_window_set_cursor(GDK_WINDOW(window), cursor);
+	gdk_cursor_unref(cursor);
 
 	int i;
 	dprintf("    .... Now try rendering the drawing using cairo .... \n");
@@ -593,8 +594,6 @@ render_free_screen_resources (void) {
 	if (screen.windowSurface)
 		cairo_surface_destroy ((cairo_surface_t *)
 			screen.windowSurface);
-	if (screen.pixmap) 
-		gdk_pixmap_unref(screen.pixmap);
 }
 
 

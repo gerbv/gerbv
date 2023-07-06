@@ -74,6 +74,8 @@ For help with using the standalone Gerbv software, please refer to the man page
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
+#include "gimpruler.h"
+
 #include <cairo.h>
 
 #if defined(__cplusplus)

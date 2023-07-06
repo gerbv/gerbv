@@ -171,7 +171,7 @@ gboolean
 callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event);
 
 gboolean
-callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event);
+callbacks_drawingarea_draw_event (GtkWidget *widget, cairo_t *cr, gpointer data);
 
 void
 callbacks_handle_log_messages(const gchar *log_domain,

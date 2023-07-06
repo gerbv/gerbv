@@ -155,7 +155,7 @@ ghid_category_vbox (GtkWidget * box, const gchar * category_header,
   GtkWidget *vbox, *vbox1, *hbox, *label;
   gchar *s;
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   if (pack_start)
     gtk_box_pack_start (GTK_BOX (box), vbox, FALSE, FALSE, 0);
   else
@@ -167,16 +167,16 @@ ghid_category_vbox (GtkWidget * box, const gchar * category_header,
       s = g_strconcat ("<span weight=\"bold\">", category_header,
 		       "</span>", NULL);
       gtk_label_set_markup (GTK_LABEL (label), s);
-      gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+      gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
       gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, header_pad);
       g_free (s);
     }
 
-  hbox = gtk_hbox_new (FALSE, 0);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
   label = gtk_label_new ("     ");
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-  vbox1 = gtk_vbox_new (FALSE, box_pad);
+  vbox1 = gtk_box_new (GTK_ORIENTATION_VERTICAL, box_pad);
   gtk_box_pack_start (GTK_BOX (hbox), vbox1, TRUE, TRUE, 0);
 
   if (bottom_pad)
@@ -202,7 +202,7 @@ ghid_spin_button (GtkWidget * box, GtkWidget ** spin_button, gfloat value,
 
   if (string && box)
     {
-      hbox = gtk_hbox_new (FALSE, 0);
+      hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start (GTK_BOX (box), hbox, FALSE, FALSE, 2);
       box = hbox;
     }
@@ -225,14 +225,16 @@ ghid_spin_button (GtkWidget * box, GtkWidget ** spin_button, gfloat value,
       if (right_align && string)
 	{
 	  label = gtk_label_new (string);
-	  gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+	  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+	  gtk_widget_set_halign (label, GTK_ALIGN_END);
 	  gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 2);
 	}
       gtk_box_pack_start (GTK_BOX (box), spin_but, FALSE, FALSE, 2);
       if (!right_align && string)
 	{
 	  label = gtk_label_new (string);
-	  gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
+	  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
+	  gtk_widget_set_halign (label, GTK_ALIGN_START);
 	  gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 2);
 	}
     }
@@ -263,8 +265,7 @@ ghid_check_button_connected (GtkWidget * box,
     gtk_box_pack_end (GTK_BOX (box), b, expand, fill, pad);
 
   if (cb_func)
-    gtk_signal_connect (GTK_OBJECT (b), "clicked",
-			GTK_SIGNAL_FUNC (cb_func), data);
+    g_signal_connect (G_OBJECT (b), "clicked", G_CALLBACK (cb_func), data);
   if (button)
     *button = b;
 }
@@ -287,7 +288,6 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
   GtkWidget *combo;
   GtkWidget *widget;
   int i, j;
-  GtkTooltips *tips;
   int rc = 0;
   int set_auto_uncheck = 0;
   int sen = TRUE;
@@ -312,19 +312,16 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
   auto_uncheck_widget = NULL;
   auto_uncheck_attr = NULL;
 
-  tips = gtk_tooltips_new ();
-
   dialog = gtk_dialog_new_with_buttons (title,
 					GTK_WINDOW (screen.win.topLevelWindow),
 					GTK_DIALOG_MODAL
 					| GTK_DIALOG_DESTROY_WITH_PARENT,
-					GTK_STOCK_CANCEL, GTK_RESPONSE_NONE,
-					GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
-  gtk_window_set_wmclass (GTK_WINDOW (dialog), "gerbv_attribute_editor", _("gerbv"));
+					_("_Cancel"), GTK_RESPONSE_NONE,
+					_("OK"), GTK_RESPONSE_OK, NULL);
 
-  main_vbox = gtk_vbox_new (FALSE, 6);
+  main_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
   gtk_container_set_border_width (GTK_CONTAINER (main_vbox), 6);
-  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), main_vbox);
+  gtk_container_add (GTK_CONTAINER (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), main_vbox);
 
   vbox = ghid_category_vbox (main_vbox, descr != NULL ? descr : "",
 			     4, 2, TRUE, TRUE);
@@ -344,11 +341,11 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 	      case HID_Label:
 		  widget = gtk_label_new (_(attrs[j].name));
 		  gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
-		  gtk_tooltips_set_tip (tips, widget, _(attrs[j].help_text), NULL);
+		  gtk_widget_set_tooltip_text (widget, _(attrs[j].help_text));
 		  break;
 		  
 	      case HID_Integer:
-		  hbox = gtk_hbox_new (FALSE, 4);
+		  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 		  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 		  
 		  /* 
@@ -361,7 +358,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 				    intspinner_changed_cb,
 				    &(attrs[j].default_val.int_value), FALSE, NULL);
 		  
-		  gtk_tooltips_set_tip (tips, widget, _(attrs[j].help_text), NULL);
+		  gtk_widget_set_tooltip_text (widget, _(attrs[j].help_text));
 		  all_widgets[j] = widget;
 		  
 		  widget = gtk_label_new (_(attrs[j].name));
@@ -369,7 +366,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		  break;
 		  
 	      case HID_Real:
-		  hbox = gtk_hbox_new (FALSE, 4);
+		  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 		  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 		  
 		  /* 
@@ -383,7 +380,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 				    dblspinner_changed_cb,
 				    &(attrs[j].default_val.real_value), FALSE, NULL);
 		  
-		  gtk_tooltips_set_tip (tips, widget, _(attrs[j].help_text), NULL);
+		  gtk_widget_set_tooltip_text (widget, _(attrs[j].help_text));
 		  all_widgets[j] = widget;
 
 		  widget = gtk_label_new (_(attrs[j].name));
@@ -391,14 +388,14 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		  break;
 		  
 	      case HID_String:
-		  hbox = gtk_hbox_new (FALSE, 4);
+		  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 		  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 		  
 		  entry = gtk_entry_new ();
 		  gtk_box_pack_start (GTK_BOX (hbox), entry, FALSE, FALSE, 0);
 		  gtk_entry_set_text (GTK_ENTRY (entry),
 				      attrs[j].default_val.str_value);
-		  gtk_tooltips_set_tip (tips, entry, _(attrs[j].help_text), NULL);
+		  gtk_widget_set_tooltip_text (entry, _(attrs[j].help_text));
 		  g_signal_connect (G_OBJECT (entry), "changed",
 				    G_CALLBACK (entry_changed_cb),
 				    &(attrs[j].default_val.str_value));
@@ -415,7 +412,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 					       TRUE, FALSE, FALSE, 0, set_flag_cb,
 					       &(attrs[j].default_val.int_value),
 					       _(attrs[j].name));
-		  gtk_tooltips_set_tip (tips, widget, _(attrs[j].help_text), NULL);
+		  gtk_widget_set_tooltip_text (widget, _(attrs[j].help_text));
 
 		  /* 
 		   * This is an ugly ugly ugly hack....  If this is
@@ -448,7 +445,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		  break;
 		  
 	      case HID_Enum:
-		  hbox = gtk_hbox_new (FALSE, 4);
+		  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 		  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 		  
 		  /* 
@@ -456,10 +453,10 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		   * order for tooltips to work.
 		   */
 		  widget = gtk_event_box_new ();
-		  gtk_tooltips_set_tip (tips, widget, _(attrs[j].help_text), NULL);
+		  gtk_widget_set_tooltip_text (widget, _(attrs[j].help_text));
 		  gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 		  
-		  combo = gtk_combo_box_new_text ();
+		  combo = gtk_combo_box_text_new ();
 		  gtk_container_add (GTK_CONTAINER (widget), combo);
 		  g_signal_connect (G_OBJECT (combo), "changed",
 				    G_CALLBACK (enum_changed_cb),
@@ -473,7 +470,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		  i = 0;
 		  while (attrs[j].enumerations[i])
 		      {
-			  gtk_combo_box_append_text (GTK_COMBO_BOX (combo),
+			  gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo),
 						     _(attrs[j].enumerations[i]));
 			  i++;
 		      }
@@ -499,7 +496,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 				    G_CALLBACK (entry_changed_cb),
 				    &(attrs[j].default_val.str_value));
 
-		  gtk_tooltips_set_tip (tips, entry, _(attrs[j].help_text), NULL);
+		  gtk_widget_set_tooltip_text (entry, _(attrs[j].help_text));
 		  all_widgets[j] = entry;
 		  break;
 
