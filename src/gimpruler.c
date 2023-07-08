@@ -103,26 +103,6 @@ static const RulerMetric ruler_metric_inches =
   { 1, 2, 4, 8, 16 }
 };
 
-static const RulerMetric ruler_metric_feet =
-{
-  /* 3 feet = 1 yard; 6 feet = 1 fathom */
-  { 1, 3, 6, 12, 36, 72, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000 },
-
-  /* 1 foot = 12 inches, so let's divide up to 12, */
-  { 1, 3, 6, 12,
-  /* then divide the inch by 2. */
-    24 }
-};
-
-static const RulerMetric ruler_metric_yards =
-{
-  /* 1 fathom = 2 yards. Should we go back to base-10 digits? */
-  { 1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000 },
-
-  /* 1 yard = 3 feet = 36 inches. */
-  { 1, 3, 6, 12, 36 }
-};
-
 
 static void          gimp_ruler_dispose               (GObject        *object);
 static void          gimp_ruler_set_property          (GObject        *object,
@@ -199,12 +179,12 @@ gimp_ruler_class_init (GimpRulerClass *klass)
                                                       GTK_ORIENTATION_HORIZONTAL,
                                                       G_PARAM_READWRITE);
 
-  object_props[PROP_UNIT] = g_param_spec_int     ("unit",
-                                                  "Unit",
-                                                  "Unit of ruler",
-                                                  GIMP_UNIT_PIXEL, GIMP_UNIT_END,
-                                                  GIMP_UNIT_INCH,
-                                                  G_PARAM_READWRITE);
+  object_props[PROP_UNIT] = g_param_spec_int ("unit",
+                                              "Unit",
+                                              "Unit of ruler",
+                                              GIMP_UNIT_PIXEL, GIMP_UNIT_END,
+                                              GIMP_UNIT_INCH,
+                                              G_PARAM_READWRITE);
 
   object_props[PROP_LOWER] = g_param_spec_double ("lower",
                                                   "Lower",
@@ -1408,21 +1388,6 @@ gimp_ruler_get_metric (RulerUnit unit)
     {
       return  &ruler_metric_inches;
     }
-  /* XXX: recognizing feet or yard unit this way definitely sucks.
-   * Actually the subdvision and rule scale rules should probably become
-   * settable values in unitrc instead of hardcoded rules.
-   * This way, people would be able to set how they want a unit to be
-   * shown (we could definitely imagine someone wanting to see inches
-   * with base-10 divisions).
-   */
-  // else if (FACTOR_EQUAL (unit, 0.083333))
-  //   {
-  //     return  &ruler_metric_feet;
-  //   }
-  // else if (FACTOR_EQUAL (unit, 0.027778))
-  //   {
-  //     return  &ruler_metric_yards;
-  //   }
 
   return &ruler_metric_decimal;
 }
