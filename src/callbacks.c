@@ -1323,8 +1323,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		gtk_widget_set_margin_bottom(aperture_def_label, 7);
 		gtk_widget_set_margin_top(aperture_def_label, 7);
 		gtk_label_set_selectable(GTK_LABEL(aperture_def_label), TRUE);
-		gtk_scrolled_window_add_with_viewport(
-				GTK_SCROLLED_WINDOW(aperture_def_report_window),
+		gtk_container_add(GTK_CONTAINER(aperture_def_report_window),
 				aperture_def_label);
 	} else {
 		struct table *aperture_def_table = table_new_with_columns(6,
@@ -1379,9 +1378,8 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		gtk_widget_set_margin_bottom(aperture_usage_label, 7);
 		gtk_widget_set_margin_top(aperture_usage_label, 7);
 		gtk_label_set_selectable(GTK_LABEL(aperture_usage_label), TRUE);
-		gtk_scrolled_window_add_with_viewport(
-			GTK_SCROLLED_WINDOW(aperture_usage_report_window),
-			aperture_usage_label);
+		gtk_container_add(GTK_CONTAINER(aperture_usage_report_window),
+				aperture_usage_label);
 	} else {
 		struct table *aperture_usage_table = table_new_with_columns(2,
 				_("Code"), G_TYPE_STRING,
@@ -1404,7 +1402,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 		g_string_free(gstr, TRUE);
 		table_add_row(aperture_usage_table, _("Total"), aperture_count);
 		table_set_sortable(aperture_usage_table);
-		gtk_container_add( GTK_CONTAINER(aperture_usage_report_window),
+		gtk_container_add(GTK_CONTAINER(aperture_usage_report_window),
 				aperture_usage_table->widget);
 	}
 
@@ -1433,8 +1431,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 	GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), general_label, 0, 0, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), general_table->widget, 0, 0, 0);
-	gtk_scrolled_window_add_with_viewport(
-			GTK_SCROLLED_WINDOW(general_report_window), vbox);
+	gtk_container_add(GTK_CONTAINER(general_report_window), vbox);
 
 	/* Create tabbed notebook widget and add report widgets. */
 	GtkWidget *notebook = gtk_notebook_new();
@@ -1468,8 +1465,7 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			gtk_label_new(_("Aperture usage")));
 
 	/* Now put notebook into dialog window and show the whole thing */
-	gtk_container_add(
-			GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(analyze_active_gerbers))),
+	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(analyze_active_gerbers))),
 			GTK_WIDGET(notebook));
 
 	if (screen.settings) {
@@ -1729,8 +1725,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), general_label, 0, 0, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), general_table->widget, 0, 0, 0);
-	gtk_scrolled_window_add_with_viewport(
-			GTK_SCROLLED_WINDOW(general_report_window), vbox);
+	gtk_container_add(GTK_CONTAINER(general_report_window), vbox);
 
 	/* Create tabbed notebook widget and add report widgets. */
 	GtkWidget *notebook = gtk_notebook_new();
@@ -1998,8 +1993,7 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
     
     /* Put text into scrolled window */
     GtkWidget *bugs_window = gtk_scrolled_window_new (NULL, NULL);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(bugs_window),
-                                          GTK_WIDGET(bugs_label));
+    gtk_container_add(GTK_CONTAINER(bugs_window), GTK_WIDGET(bugs_label));
     gtk_widget_set_size_request(bugs_window, 600, 300);
     gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(bugs_dialog))),
                       GTK_WIDGET(bugs_window));

@@ -2016,7 +2016,7 @@ interface_reopen_question_add_filename_checkboxes (
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
-  gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrl_win), vbox);
+  gtk_container_add (GTK_CONTAINER (scrl_win), vbox);
 
   for (unsigned int i = 0; i < g_slist_length (fns); i++) { 
     GtkWidget *cb;
