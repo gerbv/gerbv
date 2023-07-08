@@ -2830,6 +2830,35 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 }
 
 /* --------------------------------------------------------------------------- */
+static GdkPixbuf *
+create_layer_color_legend(GdkRGBA *color)
+{
+	cairo_surface_t *s;
+	cairo_t *cr;
+	GdkPixbuf *pixbuf;
+
+	s = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 20, 15);
+	cr = cairo_create (s);
+
+	/* Colored rectangle */
+	gdk_cairo_set_source_rgba (cr, color);
+	cairo_rectangle (cr, 0, 0, 20, 15);
+	cairo_fill (cr);
+	cairo_set_source_rgba (cr, 0, 0, 0, 1);
+	/* Black outline */
+	cairo_rectangle (cr, 0, 0, 20, 15);
+	cairo_set_line_width (cr, 1);
+	cairo_stroke (cr);
+
+	cairo_destroy (cr);
+
+	pixbuf = gdk_pixbuf_get_from_surface (s, 0, 0, 20, 15);
+
+	cairo_surface_destroy (s);
+
+	return pixbuf;
+}
+
 void
 callbacks_update_layer_tree (void)
 {
@@ -2852,9 +2881,7 @@ callbacks_update_layer_tree (void)
 	gtk_list_store_clear (list_store);
 
 	for (idx = 0; idx <= mainProject->last_loaded; idx++) {
-		GdkPixbuf *pixbuf, *blackPixbuf;
-		unsigned char red, green, blue, alpha;
-		guint32 color;
+		GdkPixbuf *colorLegendPixbuf;
 		gchar *layerName;
 		gerbv_fileinfo_t *file;
 		
@@ -2862,22 +2889,7 @@ callbacks_update_layer_tree (void)
 		if (!file)
 			continue;
 
-		red =   (unsigned char) (file->color.red * 255);
-		green = (unsigned char) (file->color.green * 255);
-		blue =  (unsigned char) (file->color.blue * 255);
-		alpha = (unsigned char) (file->color.alpha * 255);
-
-		color = red*(256*256*256) + green*(256*256) + blue*256 + alpha;
-		pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);
-		gdk_pixbuf_fill (pixbuf, color);
-
-		blackPixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);
-		color = 100*(256*256*256) + 100*(256*256) + 100*256 + 150;
-		gdk_pixbuf_fill (blackPixbuf, color);
-
-		/* copy the color area into the black pixbuf */
-		gdk_pixbuf_copy_area  (pixbuf, 1, 1, 18, 13, blackPixbuf, 1, 1);
-		g_object_unref(pixbuf);
+		colorLegendPixbuf = create_layer_color_legend(&file->color);
 
 		gtk_list_store_append (list_store, &iter);
 
@@ -2935,14 +2947,14 @@ callbacks_update_layer_tree (void)
 
 		gtk_list_store_set (list_store, &iter,
 				    0, file->isVisible,
-				    1, blackPixbuf,
+				    1, colorLegendPixbuf,
 				    2, layerName,
 				    3, modifiedCode,
 				    -1);
 		g_free (layerName);
 		g_free (modifiedCode);
 		/* pixbuf has a refcount of 2 now, as the list store has added its own reference */
-		g_object_unref(blackPixbuf);
+		g_object_unref(colorLegendPixbuf);
 	}
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(screen.win.layerTree));
