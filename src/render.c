@@ -187,7 +187,7 @@ render_draw_selection_box_outline(cairo_t *cr) {
 	gint x1, y1, x2, y2, dx, dy;
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
-	gdk_cairo_set_source_color(cr, &screen.zoom_outline_color);
+	gdk_cairo_set_source_rgba(cr, &screen.zoom_outline_color);
 	
 	x1 = MIN(screen.start_x, screen.last_x);
 	y1 = MIN(screen.start_y, screen.last_y);
@@ -208,7 +208,7 @@ render_draw_zoom_outline(cairo_t *cr, gboolean centered)
 	GtkAllocation allocation;
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
-	gdk_cairo_set_source_color(cr, &screen.zoom_outline_color);
+	gdk_cairo_set_source_rgba(cr, &screen.zoom_outline_color);
 	
 	x1 = MIN(screen.start_x, screen.last_x);
 	y1 = MIN(screen.start_y, screen.last_y);
@@ -306,7 +306,7 @@ render_toggle_measure_line(cairo_t *cr)
 
 	cairo_set_line_width(cr, 6);
 	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
-	gdk_cairo_set_source_color(cr, &screen.zoom_outline_color);
+	gdk_cairo_set_source_rgba(cr, &screen.zoom_outline_color);
 
 	render_board2screen(&start_x, &start_y,
 				screen.measure_start_x, screen.measure_start_y);
@@ -541,24 +541,16 @@ void render_recreate_composite_surface ()
 	if (!render_create_cairo_buffer_surface())
 		return;
 
-	cairo_t *cr= cairo_create(screen.bufferSurface);
+	cairo_t *cr = cairo_create(screen.bufferSurface);
 	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) mainProject->background.red/G_MAXUINT16,
-		(double) mainProject->background.green/G_MAXUINT16,
-		(double) mainProject->background.blue/G_MAXUINT16, 1);
+	gdk_cairo_set_source_rgba (cr, &mainProject->background);
 	cairo_paint (cr);
 	
 	for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i] && mainProject->file[i]->isVisible) {
 			cairo_set_source_surface (cr, (cairo_surface_t *) mainProject->file[i]->privateRenderData,
 			                              0, 0);
-			/* ignore alpha if we are in high-speed render mode */
-			if ((double) mainProject->file[i]->alpha < 65535) {
-				cairo_paint_with_alpha(cr,(double) mainProject->file[i]->alpha/G_MAXUINT16);
-			}
-			else {
-				cairo_paint (cr);
-			}
+			cairo_paint_with_alpha (cr, mainProject->file[i]->color.alpha);
 		}
 	}
 
@@ -567,7 +559,7 @@ void render_recreate_composite_surface ()
 		render_selection ();
 		cairo_set_source_surface (cr, (cairo_surface_t *) screen.selectionRenderData,
 			                              0, 0);
-		cairo_paint_with_alpha (cr,1.0);
+		cairo_paint_with_alpha (cr, 1.0);
 	}
 	cairo_destroy (cr);
 }
@@ -575,7 +567,7 @@ void render_recreate_composite_surface ()
 /* ------------------------------------------------------ */
 void render_project_to_cairo_target (cairo_t *cr) {
 	/* fill the background with the appropriate color */
-	gdk_cairo_set_source_color (cr, &mainProject->background);
+	gdk_cairo_set_source_rgba (cr, &mainProject->background);
 	cairo_paint (cr);
 
 	cairo_set_source_surface (cr, screen.bufferSurface, 0 , 0);

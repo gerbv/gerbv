@@ -719,8 +719,7 @@ typedef struct {
 /*!  Holds information related to an individual layer that is part of a project */
 typedef struct {
   gerbv_image_t *image; /*!< the image holding all the geometry of the layer */
-  GdkColor color; /*!< the color to render this layer with */
-  guint16 alpha; /*!< the transparency to render this layer with */
+  GdkRGBA color; /*!< the color to render this layer with */
   gboolean isVisible; /*!< TRUE if this layer should be rendered with the project */
   gpointer privateRenderData; /*!< private data holder for the rendering backend */
   gchar *fullPathname; /*!< this full pathname to the file */
@@ -732,7 +731,7 @@ typedef struct {
 /*!  The top-level structure used in libgerbv.  A gerbv_project_t groups together
 any number of layers, while keeping track of other basic paramters needed for rendering */
 typedef struct {
-  GdkColor  background; /*!< the background color used for rendering */
+  GdkRGBA  background; /*!< the background color used for rendering */
   int max_files; /*!< the current number of fileinfos in the file array */
   gerbv_fileinfo_t **file; /*!< the array for holding the child fileinfos */
   int curr_index; /*!< the index of the currently active fileinfo */

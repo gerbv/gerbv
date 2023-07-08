@@ -152,20 +152,6 @@ GdkPixbuf *pixbuf_from_icon(const icon *icon)
                                   NULL, NULL);
 }
 
-void rgba_from_rgb(GdkColor *c, uint16_t r, uint16_t g, uint16_t b)
-{
-#if 0
-	c->r = (double)r / G_MAXUINT16;
-	c->g = (double)g / G_MAXUINT16;
-	c->b = (double)b / G_MAXUINT16;
-	c->a = 1.0;
-#else
-	c->red = r;
-	c->green = g;
-	c->blue = b;
-#endif
-}
-
 /* ---------------------------------------------- */
 void
 interface_create_gui (int req_width, int req_height)
@@ -741,14 +727,11 @@ interface_create_gui (int req_width, int req_height)
 	if (screen.settings
 	&& !screen.background_is_from_cmdline
 	&& !screen.background_is_from_project) {
-		guint clr;
-
-		clr = g_settings_get_uint (screen.settings, "background-color");
-		mainProject->background.blue = (clr & 0xff)*257;
-		clr >>= 8;
-		mainProject->background.green = (clr & 0xff)*257;
-		clr >>= 8;
-		mainProject->background.red = (clr & 0xff)*257;
+		char *color_str;
+		color_str = g_settings_get_string (screen.settings, "background-color");
+		if (!gdk_rgba_parse(&mainProject->background, color_str))
+			(void)gdk_rgba_parse(&mainProject->background, "#000");
+		g_free(color_str);
 	}
 
 	{	// rendering submenu
@@ -1701,7 +1684,10 @@ interface_create_gui (int req_width, int req_height)
 	 * Setup some GTK+ defaults.
 	 * These should really be somewhere else.
 	 */
-	rgba_from_rgb(&screen.zoom_outline_color, 50000, 50000, 50000);
+	screen.zoom_outline_color.red = 0.76;
+	screen.zoom_outline_color.green = 0.76;
+	screen.zoom_outline_color.blue = 0.76;
+	screen.zoom_outline_color.alpha = 1.0;
 
 	screen.length_sum = 0;
 

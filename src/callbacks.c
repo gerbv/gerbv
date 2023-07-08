@@ -1816,11 +1816,9 @@ callbacks_quit_activate                       (GtkMenuItem     *menuitem,
 
   /* Save background color */
   if (screen.settings && !screen.background_is_from_project) {
-    guint clr;
-    GdkColor *bg = &mainProject->background;
-
-    clr = bg->red/257<<16 | bg->green/257<<8 | bg->blue/257;
-    g_settings_set_uint (screen.settings, "background-color", clr);
+    char *color_str = gdk_rgba_to_string(&mainProject->background);
+    g_settings_set_string (screen.settings, "background-color", color_str);
+    g_free(color_str);
   }
 
   /* Save main window size and postion */
@@ -2538,25 +2536,21 @@ callbacks_show_color_picker_dialog (gint index) {
 	screen.win.colorSelectionDialog = (GtkWidget *) cs;
 	screen.win.colorSelectionIndex = index;
 	if (index >= 0)
-		gtk_color_selection_set_current_color (colorsel, &mainProject->file[index]->color);
+		gtk_color_selection_set_current_rgba (colorsel, &mainProject->file[index]->color);
 	else
-		gtk_color_selection_set_current_color (colorsel, &mainProject->background);
-	if ((screenRenderInfo.renderType >= GERBV_RENDER_TYPE_CAIRO_NORMAL)&&(index >= 0)) {
-		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
-		gtk_color_selection_set_current_alpha (colorsel, mainProject->file[index]->alpha);
-	}
+		gtk_color_selection_set_current_rgba (colorsel, &mainProject->background);
+	gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
 	gtk_widget_show_all((GtkWidget *)cs);
 	if (gtk_dialog_run ((GtkDialog*)cs) == GTK_RESPONSE_OK) {
 		gint rowIndex = screen.win.colorSelectionIndex;
 		
 		if (index >= 0) {
-			gtk_color_selection_get_current_color (colorsel, &mainProject->file[rowIndex]->color);
+			gtk_color_selection_get_current_rgba (colorsel, &mainProject->file[rowIndex]->color);
 		}
 		else {
-			gtk_color_selection_get_current_color (colorsel, &mainProject->background);
-		}
-		if ((screenRenderInfo.renderType >= GERBV_RENDER_TYPE_CAIRO_NORMAL)&&(index >= 0)) {
-			mainProject->file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
+			gtk_color_selection_get_current_rgba (colorsel, &mainProject->background);
+			/* Make the background color opaque */
+			mainProject->background.alpha = 1.0;
 		}
 		
 		callbacks_update_layer_tree ();
@@ -2868,10 +2862,10 @@ callbacks_update_layer_tree (void)
 		if (!file)
 			continue;
 
-		red =   (unsigned char) (file->color.red * 255 / G_MAXUINT16);
-		green = (unsigned char) (file->color.green * 255 / G_MAXUINT16);
-		blue =  (unsigned char) (file->color.blue *255 / G_MAXUINT16);
-		alpha = (unsigned char) (file->alpha * 255 / G_MAXUINT16);
+		red =   (unsigned char) (file->color.red * 255);
+		green = (unsigned char) (file->color.green * 255);
+		blue =  (unsigned char) (file->color.blue * 255);
+		alpha = (unsigned char) (file->color.alpha * 255);
 
 		color = red*(256*256*256) + green*(256*256) + blue*256 + alpha;
 		pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 20, 15);

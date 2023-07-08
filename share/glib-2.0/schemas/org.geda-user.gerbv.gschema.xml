@@ -15,9 +15,9 @@
       <summary>Visual unit of length</summary>
       <description></description>
     </key>
-    <key name="background-color" type="u">
-      <default>0</default>
-      <summary>Background color in 0xRRGGBB format</summary>
+    <key name="background-color" type="s">
+      <default>"black"</default>
+      <summary>Background color</summary>
       <description></description>
     </key>
     <key name="window-size" type="ai">

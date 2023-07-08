@@ -41,7 +41,7 @@ typedef enum {POINTER, PAN, ZOOM, MEASURE} gerbv_tool_t;
 
 typedef struct {
     GtkWidget *drawing_area;
-    GdkColor  zoom_outline_color;
+    GdkRGBA  zoom_outline_color;
 
     struct {
 	GtkWidget *log;
