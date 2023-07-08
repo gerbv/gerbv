@@ -3179,24 +3179,22 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer user_data)
 gboolean
 callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event)
 {
-	GdkWindow *window = GDK_WINDOW(gtk_widget_get_window(widget));
+	GtkAllocation allocation;
 
-	screenRenderInfo.displayWidth = gdk_window_get_width(window);
-	screenRenderInfo.displayHeight = gdk_window_get_height(window);
+	gtk_widget_get_allocation (widget, &allocation);
 
-	/* set this up if cairo is compiled, since we may need to switch over to
-	   using the surface at any time */
+	screenRenderInfo.displayWidth = allocation.width;
+	screenRenderInfo.displayHeight = allocation.height;
+
 	if (screen.windowSurface)
-		cairo_surface_destroy ((cairo_surface_t *) screen.windowSurface);
+		cairo_surface_destroy (screen.windowSurface);
 
-	cairo_t *cairoTarget = gdk_cairo_create (window);
+	screen.windowSurface =
+			gdk_window_create_similar_surface (gtk_widget_get_window (widget),
+					CAIRO_CONTENT_COLOR_ALPHA,
+					allocation.width,
+					allocation.height);
 	
-	screen.windowSurface = cairo_get_target (cairoTarget);
-	/* increase surface reference by one so it isn't freed when the cairo_t
-	   is destroyed next */
-	screen.windowSurface = cairo_surface_reference (screen.windowSurface);
-	cairo_destroy (cairoTarget);
-
 	/* if this is the first time, go ahead and call autoscale even if we don't
 	   have a model loaded */
 	if ((screenRenderInfo.scaleFactorX < 0.001)||(screenRenderInfo.scaleFactorY < 0.001)) {
