@@ -353,6 +353,7 @@ enum draw_mode {
 typedef enum {
 		GERBV_RENDER_TYPE_CAIRO_NORMAL, /*!< use the cairo library */
 		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, /*!< use the cairo library with the smoothest edges */
+		GERBV_RENDER_TYPE_CAIRO_XOR, /*!< use the cairo library with the smoothest edges */
 		GERBV_RENDER_TYPE_MAX /*!< End-of-enum indicator */
 } gerbv_render_types_t;
 

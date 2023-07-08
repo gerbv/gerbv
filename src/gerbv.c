@@ -837,13 +837,11 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactorX);
 	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactorY);
 	
-	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
-	   this far */
-	if (renderInfo->renderType == GERBV_RENDER_TYPE_CAIRO_NORMAL) {
+	if (renderInfo->renderType != GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY) {
 		cairo_set_tolerance (cr, 1.0);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
 	}
-	else if (renderInfo->renderType == GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY) {
+	else {
 		cairo_set_tolerance (cr, 0.1);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
 	}

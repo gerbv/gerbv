@@ -212,7 +212,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *backgroundColor;
 	GtkWidget *menuitem_view_render, *menuitem_view_render_menu;
 	GSList *menu_view_render_group;
-	GtkWidget *render_normal, *render_hq;
+	GtkWidget *render_normal, *render_hq, *render_xor;
 	GtkWidget *menuitem_view_unit, *menuitem_view_unit_menu;
 	GSList *menu_view_unit_group;
 	GtkWidget *unit_mil, *unit_mm, *unit_in;
@@ -753,12 +753,17 @@ interface_create_gui (int req_width, int req_height)
 		menu_view_render_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (render_hq));
 		gtk_container_add (GTK_CONTAINER (menuitem_view_render_menu), render_hq);
 
+		render_xor = gtk_radio_menu_item_new_with_mnemonic (menu_view_render_group, _("_XOR"));
+		menu_view_render_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (render_xor));
+		gtk_container_add (GTK_CONTAINER (menuitem_view_render_menu), render_xor);
+
 		screen.win.menu_view_render_group = malloc(4*sizeof(GtkWidget *));
 		if(screen.win.menu_view_render_group == NULL)
 			GERB_FATAL_ERROR("malloc for rendering type synchronization failed in %s()", __FUNCTION__);
 
 		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_CAIRO_NORMAL] = GTK_CHECK_MENU_ITEM(render_normal);
 		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY] = GTK_CHECK_MENU_ITEM(render_hq);
+		screen.win.menu_view_render_group[GERBV_RENDER_TYPE_CAIRO_XOR] = GTK_CHECK_MENU_ITEM(render_xor);
 	}
 
 	{	// units submenu
@@ -1121,6 +1126,7 @@ interface_create_gui (int req_width, int req_height)
 
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (render_combobox), _("Normal"));
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (render_combobox), _("High quality"));
+	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (render_combobox), _("XOR"));
 
 	if (screen.settings) {
 		g_settings_bind (screen.settings, "visual-rendering-type",
@@ -1797,6 +1803,9 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) render_hq, "activate",
 	                  G_CALLBACK (callbacks_viewmenu_rendertype_changed),
 	                  GINT_TO_POINTER(GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY));
+	g_signal_connect ((gpointer) render_xor, "activate",
+	                  G_CALLBACK (callbacks_viewmenu_rendertype_changed),
+	                  GINT_TO_POINTER(GERBV_RENDER_TYPE_CAIRO_XOR));
 	g_signal_connect ((gpointer) render_combobox, "changed",
 	                  G_CALLBACK (callbacks_sidepane_render_type_combo_box_changed),
 	                  NULL);

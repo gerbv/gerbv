@@ -545,10 +545,13 @@ void render_recreate_composite_surface ()
 	/* fill the background with the appropriate color */
 	gdk_cairo_set_source_rgba (cr, &mainProject->background);
 	cairo_paint (cr);
+
+	if (screenRenderInfo.renderType == GERBV_RENDER_TYPE_CAIRO_XOR)
+		cairo_set_operator (cr, CAIRO_OPERATOR_DIFFERENCE);
 	
 	for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i] && mainProject->file[i]->isVisible) {
-			cairo_set_source_surface (cr, (cairo_surface_t *) mainProject->file[i]->privateRenderData,
+			cairo_set_source_surface (cr,(cairo_surface_t *) mainProject->file[i]->privateRenderData,
 			                              0, 0);
 			cairo_paint_with_alpha (cr, mainProject->file[i]->color.alpha);
 		}
