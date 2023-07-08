@@ -2820,9 +2820,7 @@ callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
 	}
 	/* don't pop up the menu if we don't have any loaded files */
 	else if ((event->button == 3)&&(mainProject->last_loaded >= 0)) {
-		gtk_menu_popup (GTK_MENU (screen.win.layerTreePopupMenu),
-				NULL, NULL, NULL, NULL, 
-				event->button, event->time);
+		gtk_menu_popup_at_pointer (GTK_MENU (screen.win.layerTreePopupMenu), NULL);
 	}
 
 	/* always allow the click to propagate and make sure the line is activated */
@@ -3449,8 +3447,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				/* only show the popup if we actually have something selected now */
 				if (selection_length (&screen.selectionInfo) != 0) {
 					update_selected_object_message (TRUE);
-					gtk_menu_popup(GTK_MENU(screen.win.drawWindowPopupMenu), NULL, NULL, NULL, NULL, 
-							event->button, event->time);
+					gtk_menu_popup_at_pointer (GTK_MENU(screen.win.drawWindowPopupMenu), NULL);
 				}
 
 			} else {
