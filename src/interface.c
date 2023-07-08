@@ -1221,38 +1221,34 @@ interface_create_gui (int req_width, int req_height)
 	gtk_paned_pack2 (GTK_PANED (hpaned1), vbox2, TRUE, FALSE);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox2), 4);
 	
-	main_view_table = gtk_table_new (3, 3, FALSE);
+	main_view_table = gtk_grid_new ();
 	gtk_box_pack_start (GTK_BOX (vbox2), main_view_table, TRUE, TRUE, 0);
 
 	hRuler = gimp_ruler_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_table_attach (GTK_TABLE (main_view_table), hRuler, 1, 2, 0, 1,
-	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_grid_attach (GTK_GRID (main_view_table), hRuler, 1, 0, 2 - 1, 1 - 0);
 	gimp_ruler_set_range (GIMP_RULER (hRuler), 0, 100, 1000);
 
 	vRuler = gimp_ruler_new (GTK_ORIENTATION_VERTICAL);
-	gtk_table_attach (GTK_TABLE (main_view_table), vRuler, 0, 1, 1, 2,
-	                  (GtkAttachOptions) (GTK_FILL),
-	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+	gtk_grid_attach (GTK_GRID (main_view_table), vRuler, 0, 1, 1 - 0, 2 - 1);
 	gimp_ruler_set_range (GIMP_RULER (vRuler), 0, 100, 1000);
 
 	drawingarea = gtk_drawing_area_new();
-	gtk_table_attach (GTK_TABLE (main_view_table), drawingarea, 1, 2, 1, 2,
-	                  (GtkAttachOptions) (GTK_FILL),
-	                  (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+	gtk_grid_attach (GTK_GRID (main_view_table), drawingarea, 1, 1, 2 - 1, 2 - 1);
+
+	/* Set the drawing area and the parent GtkGrid to fill all the space */
+	gtk_widget_set_hexpand (drawingarea, TRUE);
+	gtk_widget_set_halign (drawingarea, GTK_ALIGN_FILL);
+	gtk_widget_set_vexpand (drawingarea, TRUE);
+	gtk_widget_set_valign (drawingarea, GTK_ALIGN_FILL);
 	
 	hAdjustment = (GtkWidget *) gtk_adjustment_new (0.0, -1000.0, 1000.0, 1000.0, 1000.0, 500.0);
 	vAdjustment = (GtkWidget *) gtk_adjustment_new (0.0, -1000.0, 1000.0, 1000.0, 1000.0, 500.0);
 	
 	hScrollbar = gtk_scrollbar_new (GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT (hAdjustment));
-	gtk_table_attach (GTK_TABLE (main_view_table), hScrollbar, 1, 2, 2, 3,
-	                  (GtkAttachOptions) (GTK_FILL),
-	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_grid_attach (GTK_GRID (main_view_table), hScrollbar, 1, 2, 2 - 1, 3 - 2);
 	                  
 	vScrollbar = gtk_scrollbar_new (GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT (vAdjustment));
-	gtk_table_attach (GTK_TABLE (main_view_table), vScrollbar, 2, 3, 1, 2,
-	                  (GtkAttachOptions) (GTK_FILL),
-	                  (GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_grid_attach (GTK_GRID (main_view_table), vScrollbar, 2, 1, 3 - 2, 2 - 1);
 	
 	hbox5 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
 	gtk_box_pack_start (GTK_BOX (vbox2), hbox5, FALSE, FALSE, 0);
@@ -2304,17 +2300,17 @@ gerbv_user_transformation_t startTransform = trans;
 	gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 	gtk_window_set_type_hint (GTK_WINDOW (dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
-	tableWidget = gtk_table_new (16,3,FALSE);
+	tableWidget = gtk_grid_new ();
 	gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), tableWidget, FALSE, FALSE, 0);
 
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Translation</span>"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,0,1,GTK_EXPAND|GTK_FILL,0,0,5);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 0, 0, 2, 1);
 
 	tempWidget = gtk_label_new ("");
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,1,1,2,GTK_EXPAND|GTK_FILL,0,0,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 0, 1, 1, 2 - 1);
 	gdouble translateX, translateY;
 	
 	if (screenUnit == (gerbv_unit_t) GERBV_MILS) {
@@ -2338,55 +2334,55 @@ gerbv_user_transformation_t startTransform = trans;
 
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,1,2,GTK_FILL,0,5,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 1, 1, 2 - 1, 2 - 1);
 	gtk_widget_set_halign (tempWidget2, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget2, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget2,1,2,2,3,GTK_FILL,0,5,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget2, 1, 2, 2 - 1, 3 - 2);
 	adj = (GtkAdjustment *) gtk_adjustment_new (translateX, -1000000, 1000000, 1, 10, 0.0);
 	spin1 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
-	gtk_table_attach ((GtkTable *) tableWidget, spin1,2,3,1,2,GTK_FILL,0,0,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), spin1, 2, 1, 3 - 2, 2 - 1);
 	adj = (GtkAdjustment *) gtk_adjustment_new (translateY, -1000000, 1000000, 1, 10, 0.0);
 	spin2 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
-	gtk_table_attach ((GtkTable *) tableWidget, spin2,2,3,2,3,GTK_FILL,0,0,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), spin2, 2, 2, 3 - 2, 3 - 2);
 
-	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 3, 8);
+	// gtk_table_set_row_spacing (GTK_TABLE (tableWidget), 3, 8);
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Scale</span>"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,4,5,GTK_EXPAND|GTK_FILL,0,0,5);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 0, 4, 2 - 0, 5 - 4);
 
 	tempWidget = gtk_label_new (_("X direction:"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,5,6,GTK_FILL,0,5,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 1, 5, 2 - 1, 6 - 5);
 	tempWidget = gtk_label_new (_("Y direction:"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,6,7,GTK_FILL,0,5,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 1, 6, 2 - 1, 7 - 6);
 	adj = (GtkAdjustment *) gtk_adjustment_new (trans->scaleX, -1000000, 1000000, 1, 10, 0.0);
 	spin3 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
-	gtk_table_attach ((GtkTable *) tableWidget, spin3,2,3,5,6,GTK_FILL,0,0,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), spin3, 2, 5, 3 - 2, 6 - 5);
 	adj = (GtkAdjustment *) gtk_adjustment_new (trans->scaleY, -1000000, 1000000, 1, 10, 0.0);
 	spin4 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
-	gtk_table_attach ((GtkTable *) tableWidget, spin4,2,3,6,7,GTK_FILL,0,0,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), spin4, 2, 6, 3 - 2, 7 - 6);
 
-    check3 = gtk_check_button_new_with_label("Maintain aspect ratio");
-    gtk_toggle_button_set_active((GtkToggleButton *) check3, TRUE);
-    gtk_table_attach((GtkTable *)tableWidget, check3, 2, 3, 7, 8, GTK_FILL, 0, 0, 0);
+	check3 = gtk_check_button_new_with_label("Maintain aspect ratio");
+	gtk_toggle_button_set_active((GtkToggleButton *) check3, TRUE);
+	gtk_grid_attach(GTK_GRID (tableWidget), check3, 2, 7, 3 - 2, 8 - 7);
 
-	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 8, 8);
+	// gtk_grid_set_row_spacing (GTK_TABLE (tableWidget), 8, 8);
 
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Rotation</span>"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,9,10,GTK_EXPAND|GTK_FILL,0,0,5);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 0, 9, 2 - 0, 10 - 9);
 
 	tempWidget = gtk_label_new (_("Rotation (degrees):"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,10,11,GTK_FILL,0,5,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 1, 10, 2 - 1, 11 - 10);
 	spin5 = gtk_combo_box_text_new();
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (spin5), _("None"));
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (spin5), _("90 deg CCW"));
@@ -2407,30 +2403,30 @@ gerbv_user_transformation_t startTransform = trans;
 	spin5 = (GtkWidget *) gtk_spin_button_new (adj, 0, 3);
 #endif
 
-	gtk_table_attach ((GtkTable *) tableWidget, spin5,2,3,10,11,GTK_FILL,0,0,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), spin5, 2, 10, 3 - 2, 11 - 10);
 
-	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 10, 8);
+	// gtk_table_set_row_spacing (GTK_TABLE (tableWidget), 10, 8);
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Mirroring</span>"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,11,12,GTK_EXPAND|GTK_FILL,0,0,5);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 0, 11, 2 - 0, 12 - 11);
 
 	tempWidget = gtk_label_new (_("About X axis:"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_END);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,12,13,GTK_FILL,0,5,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 1, 12, 2 - 1, 13 - 12);
 	check1 = (GtkWidget *) gtk_check_button_new ();
 	gtk_toggle_button_set_active ((GtkToggleButton *) check1, trans->mirrorAroundX);
-	gtk_table_attach ((GtkTable *) tableWidget, check1,2,3,12,13,0,0,0,2);
+	gtk_grid_attach (GTK_GRID (tableWidget), check1, 2, 12, 3 - 2, 13 - 12);
 
 	tempWidget = gtk_label_new (_("About Y axis:"));
 	gtk_widget_set_halign (tempWidget, GTK_ALIGN_END);
 	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
-	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,13,14,GTK_FILL,0,5,0);
+	gtk_grid_attach (GTK_GRID (tableWidget), tempWidget, 1, 13, 2 - 1, 14 - 13);
 	check2 = (GtkWidget *) gtk_check_button_new ();
 	gtk_toggle_button_set_active ((GtkToggleButton *) check2, trans->mirrorAroundY);
-	gtk_table_attach ((GtkTable *) tableWidget, check2,2,3,13,14,0,0,0,2);
+	gtk_grid_attach (GTK_GRID (tableWidget), check2, 2, 13, 3 - 2, 14 - 13);
 
 	for (i = 0; focus_widgets[i] != NULL; i++) {
 		/* Set stored focus */
@@ -2459,7 +2455,7 @@ gerbv_user_transformation_t startTransform = trans;
 	g_signal_connect(G_OBJECT(check2), "toggled",
 					 G_CALLBACK(callbacks_live_edit), check2);
 
-	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 14, 8);
+	// gtk_grid_set_row_spacing (GTK_TABLE (tableWidget), 14, 8);
 	gtk_widget_show_all (dialog);
 	gint result = GTK_RESPONSE_APPLY;
 
