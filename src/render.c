@@ -401,7 +401,7 @@ void render_refresh_rendered_image_on_screen (void) {
 	dprintf("----> Entering redraw_pixmap...\n");
 	cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_WATCH);
 	gdk_window_set_cursor(GDK_WINDOW(window), cursor);
-	gdk_cursor_unref(cursor);
+	g_object_unref(cursor);
 
 	int i;
 	dprintf("    .... Now try rendering the drawing using cairo .... \n");
