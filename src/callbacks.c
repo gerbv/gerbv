@@ -1465,8 +1465,8 @@ callbacks_analyze_active_gerbers_activate(GtkMenuItem *menuitem,
 			gtk_label_new(_("Aperture usage")));
 
 	/* Now put notebook into dialog window and show the whole thing */
-	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(analyze_active_gerbers))),
-			GTK_WIDGET(notebook));
+	gtk_box_pack_end (GTK_BOX(gtk_dialog_get_content_area (GTK_DIALOG(analyze_active_gerbers))),
+			notebook, TRUE, TRUE, 2);
 
 	if (screen.settings) {
 		analyze_window_size_restore(analyze_active_gerbers);
@@ -1751,8 +1751,8 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 			gtk_label_new(_("Drill usage")));
 
 	/* Now put notebook into dialog window and show the whole thing */
-	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(analyze_active_drill))),
-			GTK_WIDGET(notebook));
+	gtk_box_pack_end (GTK_BOX(gtk_dialog_get_content_area (GTK_DIALOG(analyze_active_drill))),
+			notebook, TRUE, TRUE, 2);
 
 	if (screen.settings) {
 		analyze_window_size_restore(analyze_active_drill);
