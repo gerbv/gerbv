@@ -135,7 +135,7 @@ request_label_max_size_by_text (GtkWidget *label, const gchar *str)
 
 	/* Reset previous size request */
 	gtk_widget_set_size_request (label, -1, -1);
-	gtk_widget_size_request (label, &req);
+	gtk_widget_get_preferred_size (label, NULL, &req);
 	gtk_widget_set_size_request (label, req.width, req.height);
 	gtk_label_set_text (GTK_LABEL (label), "");
 }
