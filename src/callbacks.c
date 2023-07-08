@@ -2535,11 +2535,16 @@ callbacks_show_color_picker_dialog (gint index) {
 	
 	screen.win.colorSelectionDialog = (GtkWidget *) cs;
 	screen.win.colorSelectionIndex = index;
-	if (index >= 0)
+
+	if (index >= 0) {
 		gtk_color_selection_set_current_rgba (colorsel, &mainProject->file[index]->color);
-	else
+		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
+	}
+	else {
 		gtk_color_selection_set_current_rgba (colorsel, &mainProject->background);
-	gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
+		gtk_color_selection_set_has_opacity_control (colorsel, FALSE);
+	}
+
 	gtk_widget_show_all((GtkWidget *)cs);
 	if (gtk_dialog_run ((GtkDialog*)cs) == GTK_RESPONSE_OK) {
 		gint rowIndex = screen.win.colorSelectionIndex;
@@ -2549,8 +2554,6 @@ callbacks_show_color_picker_dialog (gint index) {
 		}
 		else {
 			gtk_color_selection_get_current_rgba (colorsel, &mainProject->background);
-			/* Make the background color opaque */
-			mainProject->background.alpha = 1.0;
 		}
 		
 		callbacks_update_layer_tree ();

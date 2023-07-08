@@ -543,7 +543,8 @@ void render_recreate_composite_surface ()
 
 	cairo_t *cr = cairo_create(screen.bufferSurface);
 	/* fill the background with the appropriate color */
-	gdk_cairo_set_source_rgba (cr, &mainProject->background);
+	cairo_set_source_rgb (cr, mainProject->background.red,
+			mainProject->background.green, mainProject->background.blue);
 	cairo_paint (cr);
 
 	if (screenRenderInfo.renderType == GERBV_RENDER_TYPE_CAIRO_XOR)
@@ -570,7 +571,8 @@ void render_recreate_composite_surface ()
 /* ------------------------------------------------------ */
 void render_project_to_cairo_target (cairo_t *cr) {
 	/* fill the background with the appropriate color */
-	gdk_cairo_set_source_rgba (cr, &mainProject->background);
+	cairo_set_source_rgb (cr, mainProject->background.red,
+			mainProject->background.green, mainProject->background.blue);
 	cairo_paint (cr);
 
 	cairo_set_source_surface (cr, screen.bufferSurface, 0 , 0);
