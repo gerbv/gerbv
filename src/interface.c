@@ -1303,7 +1303,8 @@ interface_create_gui (int req_width, int req_height)
 	statusbar_label_right = gtk_label_new ("");
 	gtk_box_pack_start (GTK_BOX (hbox5), statusbar_label_right, TRUE, TRUE, 0);
 	gtk_label_set_ellipsize (GTK_LABEL (statusbar_label_right), PANGO_ELLIPSIZE_END);
-	gtk_misc_set_alignment (GTK_MISC (statusbar_label_right), 0, 0.5);
+	gtk_widget_set_halign (statusbar_label_right, GTK_ALIGN_START);
+	gtk_widget_set_valign (statusbar_label_right, GTK_ALIGN_CENTER);
 
     /*
      *  Connect signals to widgets
@@ -1871,7 +1872,8 @@ interface_get_alert_dialog_response (const gchar *primaryText,
 
   image1 = gtk_image_new_from_icon_name (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
   gtk_box_pack_start (GTK_BOX (hbox1), image1, TRUE, TRUE, 0);
-  gtk_misc_set_alignment (GTK_MISC (image1), 0.5, 0);
+  gtk_widget_set_halign (image1, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (image1, GTK_ALIGN_START);
 
   gchar *labelMessage = g_strconcat ("<span weight=\"bold\" size=\"larger\">", _(primaryText),
   		"</span>\n<span/>\n", _(secondaryText), NULL);
@@ -2082,7 +2084,8 @@ interface_reopen_question (GSList *fns, GSList *fns_is_mod,
   image = gtk_image_new_from_icon_name (GTK_STOCK_DIALOG_WARNING,
 		  GTK_ICON_SIZE_DIALOG);
   gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
-  gtk_misc_set_alignment (GTK_MISC (image), 0, 0);
+  gtk_widget_set_halign (image, GTK_ALIGN_START);
+  gtk_widget_set_valign (image, GTK_ALIGN_START);
 
   vbox_main = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start (GTK_BOX (hbox), vbox_main, TRUE, TRUE, 0);
@@ -2099,7 +2102,8 @@ interface_reopen_question (GSList *fns, GSList *fns_is_mod,
   label = gtk_label_new (g_str->str);
   gtk_box_pack_start (GTK_BOX (vbox_main), label, FALSE, FALSE, 0);
   gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label), 0, 0);
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_START);
   gtk_label_set_line_wrap  (GTK_LABEL (label), TRUE);
   gtk_label_set_selectable (GTK_LABEL (label), TRUE);
   g_string_free (g_str, TRUE);
@@ -2210,7 +2214,8 @@ interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText,
 
   image1 = gtk_image_new_from_icon_name (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
   gtk_box_pack_start (GTK_BOX (hbox1), image1, TRUE, TRUE, 0);
-  gtk_misc_set_alignment (GTK_MISC (image1), 0.5, 0);
+  gtk_widget_set_halign (image1, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (image1, GTK_ALIGN_START);
 
   gchar *labelMessage = g_strconcat ("<span weight=\"bold\" size=\"larger\">", _(primaryText),
   		"</span>\n<span/>\n", _(secondaryText), NULL);
@@ -2304,7 +2309,8 @@ gerbv_user_transformation_t startTransform = trans;
 
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Translation</span>"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,0,1,GTK_EXPAND|GTK_FILL,0,0,5);
 
 	tempWidget = gtk_label_new ("");
@@ -2330,9 +2336,11 @@ gerbv_user_transformation_t startTransform = trans;
 		translateY = trans->translateY;
 	}
 
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,1,2,GTK_FILL,0,5,0);
-	gtk_misc_set_alignment (GTK_MISC (tempWidget2), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget2, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget2, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget2,1,2,2,3,GTK_FILL,0,5,0);
 	adj = (GtkAdjustment *) gtk_adjustment_new (translateX, -1000000, 1000000, 1, 10, 0.0);
 	spin1 = (GtkWidget *) gtk_spin_button_new (adj, 0.1, 4);
@@ -2344,14 +2352,17 @@ gerbv_user_transformation_t startTransform = trans;
 	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 3, 8);
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Scale</span>"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,4,5,GTK_EXPAND|GTK_FILL,0,0,5);
 
 	tempWidget = gtk_label_new (_("X direction:"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,5,6,GTK_FILL,0,5,0);
 	tempWidget = gtk_label_new (_("Y direction:"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,6,7,GTK_FILL,0,5,0);
 	adj = (GtkAdjustment *) gtk_adjustment_new (trans->scaleX, -1000000, 1000000, 1, 10, 0.0);
 	spin3 = (GtkWidget *) gtk_spin_button_new (adj, 1, 3);
@@ -2368,11 +2379,13 @@ gerbv_user_transformation_t startTransform = trans;
 
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Rotation</span>"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,9,10,GTK_EXPAND|GTK_FILL,0,0,5);
 
 	tempWidget = gtk_label_new (_("Rotation (degrees):"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,10,11,GTK_FILL,0,5,0);
 	spin5 = gtk_combo_box_text_new();
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (spin5), _("None"));
@@ -2399,18 +2412,21 @@ gerbv_user_transformation_t startTransform = trans;
 	gtk_table_set_row_spacing ((GtkTable *) tableWidget, 10, 8);
 	tempWidget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (tempWidget), _("<span weight=\"bold\">Mirroring</span>"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 0.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_START);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,0,2,11,12,GTK_EXPAND|GTK_FILL,0,0,5);
 
 	tempWidget = gtk_label_new (_("About X axis:"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 1.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_END);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,12,13,GTK_FILL,0,5,0);
 	check1 = (GtkWidget *) gtk_check_button_new ();
 	gtk_toggle_button_set_active ((GtkToggleButton *) check1, trans->mirrorAroundX);
 	gtk_table_attach ((GtkTable *) tableWidget, check1,2,3,12,13,0,0,0,2);
 
 	tempWidget = gtk_label_new (_("About Y axis:"));
-	gtk_misc_set_alignment (GTK_MISC (tempWidget), 1.0, 0.5);
+	gtk_widget_set_halign (tempWidget, GTK_ALIGN_END);
+	gtk_widget_set_valign (tempWidget, GTK_ALIGN_CENTER);
 	gtk_table_attach ((GtkTable *) tableWidget, tempWidget,1,2,13,14,GTK_FILL,0,5,0);
 	check2 = (GtkWidget *) gtk_check_button_new ();
 	gtk_toggle_button_set_active ((GtkToggleButton *) check2, trans->mirrorAroundY);
