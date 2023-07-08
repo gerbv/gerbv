@@ -3321,7 +3321,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 	GdkModifierType state;
 
 	if (event->is_hint)
-		gdk_window_get_pointer (event->window, &x, &y, &state);
+		gdk_window_get_device_position (event->window, event->device, &x, &y, &state);
 	else {
 		x = event->x;
 		y = event->y;
