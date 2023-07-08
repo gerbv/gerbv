@@ -459,9 +459,9 @@ render_create_cairo_buffer_surface () {
 	if (!screen.windowSurface)
 		return 0;
 
-	screen.bufferSurface= cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-	                                    CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
-	                                    screenRenderInfo.displayHeight);
+	screen.bufferSurface = cairo_surface_create_similar (screen.windowSurface,
+			CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
+			screenRenderInfo.displayHeight);
 	return 1;
 }
 
@@ -578,7 +578,7 @@ void render_project_to_cairo_target (cairo_t *cr) {
 	gdk_cairo_set_source_color (cr, &mainProject->background);
 	cairo_paint (cr);
 
-	cairo_set_source_surface (cr, (cairo_surface_t *) screen.bufferSurface, 0 , 0);
+	cairo_set_source_surface (cr, screen.bufferSurface, 0 , 0);
 
 	cairo_paint (cr);
 }
@@ -586,14 +586,11 @@ void render_project_to_cairo_target (cairo_t *cr) {
 void
 render_free_screen_resources (void) {
 	if (screen.selectionRenderData) 
-		cairo_surface_destroy ((cairo_surface_t *)
-			screen.selectionRenderData);
+		cairo_surface_destroy (screen.selectionRenderData);
 	if (screen.bufferSurface)
-		cairo_surface_destroy ((cairo_surface_t *)
-			screen.bufferSurface);
+		cairo_surface_destroy (screen.bufferSurface);
 	if (screen.windowSurface)
-		cairo_surface_destroy ((cairo_surface_t *)
-			screen.windowSurface);
+		cairo_surface_destroy (screen.windowSurface);
 }
 
 

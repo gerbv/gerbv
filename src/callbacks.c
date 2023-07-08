@@ -3212,9 +3212,6 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 gboolean
 callbacks_drawingarea_draw_event (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-	// cr = gdk_cairo_create (GDK_WINDOW(gtk_widget_get_window(widget)));
-
-	// cairo_translate(cr, -event->area.x + screen.off_x, -event->area.y + screen.off_y);
 	render_project_to_cairo_target (cr);
 
 	switch (screen.state) {
@@ -3230,8 +3227,6 @@ callbacks_drawingarea_draw_event (GtkWidget *widget, cairo_t *cr, gpointer data)
 		default:
 			break;
 	}
-
-	// cairo_destroy (cr);
 
 	return FALSE;
 }

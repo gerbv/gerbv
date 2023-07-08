@@ -79,9 +79,9 @@ typedef struct {
 	GtkWidget *curFileMenuItem[7];
     } win;
 
-    gpointer windowSurface;
-    gpointer bufferSurface;
-    gpointer selectionRenderData;
+    cairo_surface_t *windowSurface;
+    cairo_surface_t *bufferSurface;
+    cairo_surface_t *selectionRenderData;
 
     GtkWidget *popup_menu;
     struct {
