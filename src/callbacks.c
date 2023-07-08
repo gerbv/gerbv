@@ -2235,17 +2235,17 @@ callbacks_switch_to_normal_tool_cursor (gint toolNumber)
 		gdk_window_set_cursor(drawing_area_window, GERBV_DEF_CURSOR);
 		break;
 	case PAN:
-		cursor = gdk_cursor_new(GDK_FLEUR);
+		cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_FLEUR);
 		gdk_window_set_cursor(drawing_area_window, cursor);
 		g_object_unref(cursor);
 		break;
 	case ZOOM:
-		cursor = gdk_cursor_new(GDK_SIZING);
+		cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SIZING);
 		gdk_window_set_cursor(drawing_area_window, cursor);
 		g_object_unref(cursor);
 		break;
 	case MEASURE:
-		cursor = gdk_cursor_new(GDK_CROSSHAIR);
+		cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);
 		gdk_window_set_cursor(drawing_area_window, cursor);
 		g_object_unref(cursor);
 		break;
@@ -2262,13 +2262,13 @@ callbacks_switch_to_correct_cursor (void)
 	GdkCursor *cursor;
 
 	if (screen.state == IN_MOVE) {
-		cursor = gdk_cursor_new(GDK_FLEUR);
+		cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_FLEUR);
 		gdk_window_set_cursor(drawing_area_window, cursor);
 		g_object_unref(cursor);
 		return;
 	}
 	else if (screen.state == IN_ZOOM_OUTLINE) {
-		cursor = gdk_cursor_new(GDK_SIZING);
+		cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SIZING);
 		gdk_window_set_cursor(drawing_area_window, cursor);
 		g_object_unref(cursor);
 		return;
@@ -3417,7 +3417,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 			screen.state = IN_MOVE;
 			screen.last_x = event->x;
 			screen.last_y = event->y;
-			cursor = gdk_cursor_new(GDK_FLEUR);
+			cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_FLEUR);
 			gdk_window_set_cursor(drawing_area_window, cursor);
 			g_object_unref(cursor);
 			break;
@@ -3453,7 +3453,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				screen.start_x = event->x;
 				screen.start_y = event->y;
 				screen.centered_outline_zoom = event->state & GDK_SHIFT_MASK;
-				cursor = gdk_cursor_new(GDK_SIZING);
+				cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SIZING);
 				gdk_window_set_cursor(drawing_area_window, cursor);
 				g_object_unref(cursor);
 			}
