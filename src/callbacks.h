@@ -293,7 +293,7 @@ void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment,
 void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
 			gpointer user_data);
 
-void callbacks_force_expose_event_for_screen (void);
+void callbacks_queue_redraw (void);
 
 void
 callbacks_change_tool  (GtkButton *button, gpointer   user_data);

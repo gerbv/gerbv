@@ -428,7 +428,7 @@ void render_refresh_rendered_image_on_screen (void) {
 	render_recreate_composite_surface ();
 	/* remove watch cursor and switch back to normal cursor */
 	callbacks_switch_to_correct_cursor ();
-	callbacks_force_expose_event_for_screen();
+	callbacks_queue_redraw();
 }
 
 /* ------------------------------------------------------ */
@@ -499,7 +499,7 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex,
 
 	/* re-render the selection buffer layer */
 	render_recreate_composite_surface ();
-	callbacks_force_expose_event_for_screen ();
+	callbacks_queue_redraw ();
 }
 
 /* ------------------------------------------------------ */

@@ -1064,7 +1064,7 @@ callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user
 	callbacks_update_layer_tree ();
 
 	render_recreate_composite_surface (screen.drawing_area);
-	callbacks_force_expose_event_for_screen ();
+	callbacks_queue_redraw ();
 }
 
 /* --------------------------------------------------------- */
@@ -2189,7 +2189,7 @@ callbacks_layer_tree_visibility_toggled (gint index)
 
 	callbacks_update_layer_tree ();
 	render_recreate_composite_surface (screen.drawing_area);
-	callbacks_force_expose_event_for_screen ();
+	callbacks_queue_redraw ();
 }
 
 /* --------------------------------------------------------- */
@@ -2371,7 +2371,7 @@ callbacks_change_tool (GtkButton *button, gpointer   user_data) {
 	callbacks_switch_to_normal_tool_cursor (toolNumber);
 	callbacks_update_statusbar();
 	screen.win.updatingTools = FALSE;
-	callbacks_force_expose_event_for_screen();
+	callbacks_queue_redraw();
 }
 
 /* --------------------------------------------------------- */
@@ -2439,7 +2439,7 @@ callbacks_remove_layer_button_clicked (GtkButton *button, gpointer user_data)
 		callbacks_select_layer_row (index);
 
 		render_recreate_composite_surface (screen.drawing_area);
-		callbacks_force_expose_event_for_screen ();
+		callbacks_queue_redraw ();
 	}
 }
 
@@ -2465,7 +2465,7 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 		callbacks_select_layer_row (index + 1);
 
 		render_recreate_composite_surface (screen.drawing_area);
-		callbacks_force_expose_event_for_screen ();
+		callbacks_queue_redraw ();
 	}
 }
 
@@ -2489,7 +2489,7 @@ callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data
 		callbacks_update_layer_tree ();
 		callbacks_select_layer_row (index - 1);
 		render_recreate_composite_surface (screen.drawing_area);
-		callbacks_force_expose_event_for_screen ();
+		callbacks_queue_redraw ();
 	}
 }
 
@@ -2512,7 +2512,7 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 			gerbv_change_layer_order (mainProject, oldPosition, newPosition);
 
 			render_recreate_composite_surface (screen.drawing_area);
-			callbacks_force_expose_event_for_screen ();
+			callbacks_queue_redraw ();
 			/* select the new line */
 			GtkTreeSelection *selection;
 			GtkTreeIter iter;
@@ -3338,7 +3338,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		    }
     		    screenRenderInfo.lowerLeftX -= ((x - screen.last_x) / screenRenderInfo.scaleFactorX);
 		    screenRenderInfo.lowerLeftY += ((y - screen.last_y) / screenRenderInfo.scaleFactorY);
-		    callbacks_force_expose_event_for_screen ();
+		    callbacks_queue_redraw ();
 		    callbacks_update_scrollbar_positions ();
 			screen.last_x = x;
 			screen.last_y = y;
@@ -3347,7 +3347,7 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 		case IN_ZOOM_OUTLINE: {
 			screen.last_x = x;
 			screen.last_y = y;
-			callbacks_force_expose_event_for_screen ();
+			callbacks_queue_redraw ();
 			break;
 		}
 		case IN_MEASURE: {
@@ -3359,13 +3359,13 @@ callbacks_drawingarea_motion_notify_event (GtkWidget *widget, GdkEventMotion *ev
 			screen.last_y = y;
 			/* draw the new line and write the new distance */
 			update_statusbar_measure_distance();
-			callbacks_force_expose_event_for_screen ();
+			callbacks_queue_redraw ();
 			break;
 		}
 		case IN_SELECTION_DRAG: {
 			screen.last_x = x;
 			screen.last_y = y;
-			callbacks_force_expose_event_for_screen ();
+			callbacks_queue_redraw ();
 			break;
 		}
 		default:
@@ -3389,8 +3389,6 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 		case 1 :
 			if (screen.tool == POINTER) {
 				/* select */
-				/* selection will only work with cairo, so do nothing if it's
-				   not compiled */
 				screen.state = IN_SELECTION_DRAG;
 				screen.start_x = event->x;
 				screen.start_y = event->y;
@@ -3415,7 +3413,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				screen.measure_stop_x = screen.measure_start_x;
 				screen.measure_stop_y = screen.measure_start_y;
 				/* force an expose event to clear any previous measure lines */
-				callbacks_force_expose_event_for_screen ();
+				callbacks_queue_redraw ();
 			}
 			break;
 		case 2 :
@@ -3979,17 +3977,9 @@ callbacks_handle_log_messages(const gchar *log_domain, GLogLevelFlags log_level,
 }
 
 /* --------------------------------------------------------- */
-void callbacks_force_expose_event_for_screen (void)
+void callbacks_queue_redraw (void)
 {
-	GdkRectangle update_rect;
-	
-	update_rect.x = 0;
-	update_rect.y = 0;
-	update_rect.width = screenRenderInfo.displayWidth;
-	update_rect.height = screenRenderInfo.displayHeight;
-
-	/* Calls expose_event */
-	gdk_window_invalidate_rect (gtk_widget_get_window(screen.drawing_area), &update_rect, FALSE);
+	gtk_widget_queue_draw (screen.drawing_area);
 	
 	/* update other gui things that could have changed */
 	callbacks_update_ruler_scales ();
