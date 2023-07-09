@@ -537,6 +537,8 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 void render_recreate_composite_surface ()
 {
 	gint i;
+	const gboolean xor_mode =
+			screenRenderInfo.renderType == GERBV_RENDER_TYPE_CAIRO_XOR;
 	
 	if (!render_create_cairo_buffer_surface())
 		return;
@@ -547,14 +549,18 @@ void render_recreate_composite_surface ()
 			mainProject->background.green, mainProject->background.blue);
 	cairo_paint (cr);
 
-	if (screenRenderInfo.renderType == GERBV_RENDER_TYPE_CAIRO_XOR)
+	if (xor_mode)
 		cairo_set_operator (cr, CAIRO_OPERATOR_DIFFERENCE);
 	
 	for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i] && mainProject->file[i]->isVisible) {
 			cairo_set_source_surface (cr,(cairo_surface_t *) mainProject->file[i]->privateRenderData,
 			                              0, 0);
-			cairo_paint_with_alpha (cr, mainProject->file[i]->color.alpha);
+			/* In xor mode we want the layer's colors to be fully opaque */
+			if (xor_mode)
+				cairo_paint (cr);
+			else
+				cairo_paint_with_alpha (cr, mainProject->file[i]->color.alpha);
 		}
 	}
 
@@ -563,7 +569,7 @@ void render_recreate_composite_surface ()
 		render_selection ();
 		cairo_set_source_surface (cr, (cairo_surface_t *) screen.selectionRenderData,
 			                              0, 0);
-		cairo_paint_with_alpha (cr, 1.0);
+		cairo_paint (cr);
 	}
 	cairo_destroy (cr);
 }
