@@ -97,15 +97,15 @@ jobs:
 
     - name: Rebuild Fedora 38
       if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty fedora:38 .mc/rebuild.sh
+      run: npx --package mini-cross@0.15.2 mc --no-tty fedora_38 .mc/rebuild.sh
 
     - name: Rebuild Ubuntu 22.04
       if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu:22.04 .mc/rebuild.sh
+      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu_22.04 .mc/rebuild.sh
 
     - name: Rebuild Windows amd64
       if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty windows:amd64 .mc/rebuild.sh
+      run: npx --package mini-cross@0.15.2 mc --no-tty windows_amd64 .mc/rebuild.sh
 
     - name: Upload executable artifacts
       if: "!matrix.code_coverage"
