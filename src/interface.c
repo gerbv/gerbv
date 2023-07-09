@@ -1662,12 +1662,12 @@ interface_create_gui (int req_width, int req_height)
 		       G_CALLBACK(callbacks_drawingarea_button_press_event), NULL);
 	g_signal_connect(G_OBJECT(drawingarea), "button_release_event",
 		       G_CALLBACK(callbacks_drawingarea_button_release_event), NULL);
+	g_signal_connect_after(G_OBJECT(drawingarea), "scroll_event",
+		       G_CALLBACK(callbacks_drawingarea_scroll_event), NULL);
 	g_signal_connect_after(G_OBJECT(mainWindow), "key_press_event",
 		       G_CALLBACK(callbacks_window_key_press_event), NULL);
 	g_signal_connect_after(G_OBJECT(mainWindow), "key_release_event",
 		       G_CALLBACK(callbacks_window_key_release_event), NULL);
-	g_signal_connect_after(G_OBJECT(mainWindow), "scroll_event",
-		       G_CALLBACK(callbacks_window_scroll_event), NULL);
 	g_signal_connect_after(G_OBJECT(mainWindow), "delete_event",
 		       G_CALLBACK(callbacks_quit_activate), NULL);
 	
@@ -1681,6 +1681,7 @@ interface_create_gui (int req_width, int req_height)
 			  | GDK_POINTER_MOTION_MASK
 			  | GDK_POINTER_MOTION_HINT_MASK
 			  | GDK_SCROLL_MASK
+			  | GDK_SMOOTH_SCROLL_MASK
 			  );
 
 	/*

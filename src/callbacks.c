@@ -3717,9 +3717,22 @@ callbacks_window_key_release_event (GtkWidget *widget, GdkEventKey *event)
 /* --------------------------------------------------------- */
 /* Scroll wheel */
 gboolean
-callbacks_window_scroll_event(GtkWidget *widget, GdkEventScroll *event)
+callbacks_drawingarea_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 {
-	switch (event->direction) {
+	GdkScrollDirection event_direction;
+
+	if (event->direction == GDK_SCROLL_SMOOTH) {
+		gdouble dx, dy;
+		if (!gdk_event_get_scroll_deltas((GdkEvent *)event, &dx, &dy)) {
+			return TRUE;
+		}
+		event_direction = dy > 0 ? GDK_SCROLL_DOWN : GDK_SCROLL_UP;
+	}
+	else {
+		event_direction = event->direction;
+	}
+
+	switch (event_direction) {
 		case GDK_SCROLL_UP:
 			render_zoom_display (ZOOM_IN_CMOUSE, 0, event->x, event->y);
 			break;

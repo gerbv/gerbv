@@ -144,7 +144,7 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
 			 gpointer         user_data);
 
 gboolean
-callbacks_window_scroll_event(GtkWidget *widget, GdkEventScroll *event);
+callbacks_drawingarea_scroll_event(GtkWidget *widget, GdkEventScroll *event);
 
 gboolean
 callbacks_window_key_release_event (GtkWidget *widget, GdkEventKey *event);
