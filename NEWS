@@ -6,8 +6,6 @@ Release Notes for gerbv-2.9.8
             #167 reported by @jaseg)
 -gerbv:     Bump `APERTURE_PARAMETERS_MAX` to 10006 in order to comply with
             Gerber specification revision 2021.02 (PR#172 by @jaseg)
--gerbv:     Recognize empty drill files (PR#170 by @eyal0 fixing issue #168
-            reported by @jaseg)
 
 
 ========================================================================
