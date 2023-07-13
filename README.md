@@ -65,7 +65,7 @@ GitHub organization.
 Gerbv has been built and tested on
 
 * Debian 10 (amd64)
-* Fedora 38 (amd64)
+* Fedora 36 (amd64)
 * Ubuntu 22.04 (amd64)
 * Windows 10 (amd64 cross compiled from Fedora as well as native x86/amd64 using MSYS2)
 
