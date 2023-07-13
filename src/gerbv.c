@@ -507,9 +507,6 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	return -1;
     }
 
-    /* Store filename info fd for further use */
-    fd->filename = g_strdup(filename);
-    
     dprintf("In open_image, successfully opened file.  Now check its type....\n");
     /* Here's where we decide what file type we have */
     /* Note: if the file has some invalid characters in it but still appears to
@@ -578,7 +575,6 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	parsed_image = NULL;
     }
     
-    g_free(fd->filename);
     gerb_fclose(fd);
     if (parsed_image == NULL) {
 	return -1;
