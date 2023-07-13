@@ -136,6 +136,10 @@ input, maybe even provided over the network. In those cases we strongly advise
 to treat libgerbv as any codec and isolate its operations from the rest of your
 application.
 
+If you are aware of a security issue, we recommend full public disclosure as a
+GitHub issue. This way our users are warned and can act accordingly while we
+work on providing a mitigation.
+
 
 ## License
 
