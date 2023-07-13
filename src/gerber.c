@@ -1476,7 +1476,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 				"include file recursion which is not allowed "
 				"by the RS-274X spec"));
 		}
-		
+		g_free (includeFilename);
 	    }
 	}
 	break;

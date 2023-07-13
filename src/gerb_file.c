@@ -131,6 +131,9 @@ gerb_fopen(char const * filename)
 
 #endif
 
+    dprintf("     Setting filename\n");
+    fd->filename = g_strdup(filename);
+
     dprintf("<--- Leaving gerb_fopen\n");
     return fd;
 } /* gerb_fopen */
@@ -238,6 +241,8 @@ void
 gerb_fclose(gerb_file_t *fd)
 {
     if (fd) {
+        g_free(fd->filename);
+
 #ifdef HAVE_SYS_MMAN_H
 	if (munmap(fd->data, fd->datalen) < 0)
 	    GERB_FATAL_ERROR("munmap: %s", strerror(errno));

@@ -1,0 +1,11 @@
+%FSLAX25Y25*%
+%MOIN*%
+
+%ADD20C,BBBB*%
+
+%IFparse_aperture_strtok.2.poc*%
+
+D21*
+X400000Y400000D03*
+
+M02*

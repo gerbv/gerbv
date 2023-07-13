@@ -182,6 +182,8 @@ test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-erro
 test-merge-a+b_temporary | test-merge-a.gbx test-merge-b.gbx | ! --export=rs274x --output=inputs/test-merge-a+b_temporary.gbx
 test-merge-a+b | test-merge-a+b_temporary.gbx
 
+parse_aperture_strtok | parse_aperture_strtok.1.poc
+
 # ---------------------------------------------
 # Excellon drill tests
 # ---------------------------------------------
