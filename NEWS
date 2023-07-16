@@ -1,4 +1,27 @@
 ========================================================================
+Release Notes for gerbv-2.10.0-dev (the @kitanokitsune release)
+========================================================================
+
+-security:  Out-of-bounds memory access of filename (PR#192 by @eyal0 fixing
+            issue #191 reported by @iosifache)
+
+-gerbv:     Japanese Language File (PR#183 by @kitanokitsune)
+-gerbv:     Fix crash Edit-file-format dialog (PR#181 by @kitanokitsune)
+-gerbv:     Allow 'gerbv foo.gvp' to act like 'gerbv -p foo.gvp' was specified
+            (PR#184 by @kitanokitsune fixing issue #107 reported by @Dromantor)
+-gerbv:     Fix Translation and Scale are not editable in Edit-layer dialog
+            (PR#182 by @kitanokitsune)
+-gerbv:     Increase maximum zooming level (PR#186 by @ooxi fixing issue #185
+            reported by @StephaneIFO)
+-gerbv:     Recommend a way of reporting security issues (PR#193 fixing issue
+            #190 reported by @iosifache)
+
+-ci:        Windows does not support colons in filenames (PR#188 by @ooxi fixing
+            issue #180 reported by @kitanokitsune)
+
+
+
+========================================================================
 Release Notes for gerbv-2.9.8
 ========================================================================
 
