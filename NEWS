@@ -1,5 +1,5 @@
 ========================================================================
-Release Notes for gerbv-2.10.0-dev (the @kitanokitsune release)
+Release Notes for gerbv-2.10.0-rc.1 (the @kitanokitsune release)
 ========================================================================
 
 -security:  Out-of-bounds memory access of filename (PR#192 by @eyal0 fixing
