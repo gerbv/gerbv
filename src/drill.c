@@ -56,7 +56,19 @@
 #include "drill_stats.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+/* BUGBUG -- DANGEROUS macro ... can introduce changes to code flow!
+ * Consider alternative that uses dual-parentheses to avoid this.
+ */
 #define dprintf if(DEBUG) printf
+
+#ifndef DEBUG
+    #define DEBUG 0 //
+#endif
+#if DEBUG
+    #define DPRINTF(x) do { printf x } while (false)
+#else
+    #define DPRINTF(x)
+#endif
 
 #define MAXL 200
 #define DRILL_READ_DOUBLE_SIZE 32
@@ -95,7 +107,8 @@ typedef struct drill_state {
        codes within the header.  It is fixed to FMT_00_0000 for INCH
        measures, and FMT_000_000 (1 um resolution) for metric
        measures. */
-    number_fmt_t number_format, header_number_format;
+    number_fmt_t number_format;
+    number_fmt_t header_number_format;
     /* Used as a backup when temporarily switching to INCH. */
     number_fmt_t backup_number_format;
 
@@ -309,7 +322,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     setlocale(LC_NUMERIC, "C");
 
     /* Create new image for this layer */
-    dprintf("In parse_drillfile, about to create image for this layer\n");
+    DPRINTF(("In parse_drillfile, about to create image for this layer\n"));
 
     image = gerbv_create_image(image, "Excellon Drill File");
     if (image == NULL) {
@@ -383,8 +396,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
         }
     }
 
-    dprintf("%s():  Starting parsing of drill file \"%s\"\n",
-            __FUNCTION__, fd->filename);
+    DPRINTF(("%s():  Starting parsing of drill file \"%s\"\n",
+             __FUNCTION__, fd->filename));
 
     while ((read = gerb_fgetc(fd)) != EOF) {
 
@@ -400,8 +413,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
             gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                _("Comment \"%s\" at line %ld in file \"%s\""),
                                commentLine, file_line, fd->filename);
-            dprintf("    Comment with ';' \"%s\" at line %ld\n",
-                    commentLine, file_line);
+            DPRINTF(("    Comment with ';' \"%s\" at line %ld\n",
+                     commentLine, file_line));
             g_free(commentLine);
             break;
         }
@@ -776,7 +789,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                     rcnt = 10 * rcnt + (c - '0');
                     c = gerb_fgetc(fd);
                 }
-                dprintf("working on R code (repeat) with a number of reps equal to %d\n", rcnt);
+                DPRINTF(("working on R code (repeat) with a number of reps equal to %d\n", rcnt));
 
                 step_x = 0.0;
                 if (c == 'X') {
@@ -791,13 +804,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                     gerb_ungetc(fd);
                 }
 
-                dprintf("Getting ready to repeat the drill %d times with delta_x = %g, delta_y = %g\n", rcnt, step_x, step_y);
+                DPRINTF(("Getting ready to repeat the drill %d times with delta_x = %g, delta_y = %g\n", rcnt, step_x, step_y));
 
                 /* spit out the drills */
                 for (c = 1; c <= rcnt; c++) {
                     state->curr_x = start_x + c * step_x;
                     state->curr_y = start_y + c * step_y;
-                    dprintf("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
+                    DPRINTF(("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y));
                     curr_net = drill_add_drill_hole(image, state, stats, curr_net);
                 }
             // BUGBUG #174 -- Is there intentionally fall-through to case 'S' here?
@@ -903,7 +916,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                        _("No EOF found in drill file \"%s\""), fd->filename);
 
 drill_parse_end:
-    dprintf("%s():  Populating file attributes\n", __FUNCTION__);
+    DPRINTF(("%s():  Populating file attributes\n", __FUNCTION__));
 
     hid_attrs = image->info->attr_list;
 
@@ -928,9 +941,9 @@ drill_parse_end:
         hid_attrs[HA_digits].default_val.int_value = 4;
         break;
     case FMT_USER:
-        dprintf("%s():  Keeping user specified number of decimal places (%d)\n",
-                __FUNCTION__,
-                hid_attrs[HA_digits].default_val.int_value);
+        DPRINTF(("%s():  Keeping user specified number of decimal places (%d)\n",
+                 __FUNCTION__,
+                 hid_attrs[HA_digits].default_val.int_value));
         break;
     default:
         break;
@@ -1129,13 +1142,13 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
     gerbv_drill_stats_t *stats = image->drill_stats;
     gerbv_aperture_t *apert;
 
-    dprintf("---> entering %s()...\n", __FUNCTION__);
+    DPRINTF(("---> entering %s()...\n", __FUNCTION__));
 
     /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
        broken headers from Orcad, which is crap */
     temp = gerb_fgetc(fd);
-    dprintf("  Found a char '%s' (0x%02x) after the T\n",
-            gerbv_escape_char(temp), temp);
+    DPRINTF(("  Found a char '%s' (0x%02x) after the T\n",
+             gerbv_escape_char(temp), temp));
 
     /* might be a tool tool change stop switch on/off*/
     if ((temp == 'C') && ((fd->ptr + 2) < fd->datalen)) {
@@ -1176,7 +1189,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
     gerb_ungetc(fd);
 
     tool_num = (int)gerb_fgetint(fd, NULL);
-    dprintf("  Handling tool T%d at line %ld\n", tool_num, file_line);
+    DPRINTF(("  Handling tool T%d at line %ld\n", tool_num, file_line));
 
     if (tool_num == 0) {
         return tool_num; /* T00 is a command to unload the drill */
@@ -1203,7 +1216,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
         switch ((char)temp) {
         case 'C':
             size = read_double(fd, state->header_number_format, GERBV_OMIT_ZEROS_TRAILING, state->decimals);
-            dprintf("  Read a size of %g\n", size);
+            DPRINTF(("  Read a size of %g\n", size));
 
             if (state->unit == GERBV_UNIT_MM) {
                 size /= 25.4;
@@ -1358,7 +1371,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
         }
     } /* if(image->aperture[tool_num] == NULL) */
 
-    dprintf("<----  ...leaving %s()\n", __FUNCTION__);
+    DPRINTF(("<----  ...leaving %s()\n", __FUNCTION__));
 
     return tool_num;
 } /* drill_parse_T_code() */
@@ -1372,7 +1385,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     drill_m_code_t m_code;
     char op[3];
 
-    dprintf("---> entering %s() ...\n", __FUNCTION__);
+    DPRINTF(("---> entering %s() ...\n", __FUNCTION__));
 
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
@@ -1385,7 +1398,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
         return DRILL_M_UNKNOWN;
     }
 
-    dprintf("  Compare M-code \"%s\" at line %ld\n", op, file_line);
+    DPRINTF(("  Compare M-code \"%s\" at line %ld\n", op, file_line));
 
     switch (m_code = atoi(op)) {
     case 0:
@@ -1442,7 +1455,7 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
         break;
     }
 
-    dprintf("<----  ...leaving %s()\n", __FUNCTION__);
+    DPRINTF(("<----  ...leaving %s()\n", __FUNCTION__));
 
     return m_code;
 } /* drill_parse_M_code() */
@@ -1455,7 +1468,7 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
     gerbv_drill_stats_t *stats = image->drill_stats;
     char c, op[3];
 
-    dprintf("    %s(): entering\n", __FUNCTION__);
+    DPRINTF(("    %s(): entering\n", __FUNCTION__));
 
     /* METRIC is not an actual M code but a command that is only
      * acceptable within the header.
@@ -1498,16 +1511,16 @@ header_again:
             }
 
             if (c == 'L') {
-                dprintf("    %s(): Detected a file that probably has "
-                        "trailing zero suppression\n",
-                        __FUNCTION__);
+                DPRINTF(("    %s(): Detected a file that probably has "
+                         "trailing zero suppression\n",
+                         __FUNCTION__));
                 if (state->autod) {
                     image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
                 }
             } else {
-                dprintf("    %s(): Detected a file that probably has "
-                        "leading zero suppression\n",
-                        __FUNCTION__);
+                DPRINTF(("    %s(): Detected a file that probably has "
+                         "leading zero suppression\n",
+                         __FUNCTION__));
                 if (state->autod) {
                     image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
                 }
@@ -1621,7 +1634,7 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
 {
     gerbv_drill_stats_t *stats = image->drill_stats;
 
-    dprintf("    %s(): entering\n", __FUNCTION__);
+    DPRINTF(("    %s(): entering\n", __FUNCTION__));
     /* The leading semicolon is already gone. */
     if (DRILL_HEADER != state->curr_section) {
         return 0;
@@ -1699,7 +1712,7 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
     gerbv_drill_stats_t *stats = image->drill_stats;
     char c;
 
-    dprintf("    %s(): entering\n", __FUNCTION__);
+    DPRINTF(("    %s(): entering\n", __FUNCTION__));
 
     if (DRILL_HEADER != state->curr_section) {
         return 0;
@@ -1810,7 +1823,7 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, ssize_t file_line)
     drill_g_code_t g_code;
     gerbv_drill_stats_t *stats = image->drill_stats;
 
-    dprintf("---> entering %s()...\n", __FUNCTION__);
+    DPRINTF(("---> entering %s()...\n", __FUNCTION__));
 
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
@@ -1823,7 +1836,7 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, ssize_t file_line)
         return DRILL_G_UNKNOWN;
     }
 
-    dprintf("  Compare G-code \"%s\" at line %ld\n", op, file_line);
+    DPRINTF(("  Compare G-code \"%s\" at line %ld\n", op, file_line));
 
     switch (g_code = atoi(op)) {
     case 0:
@@ -1867,7 +1880,7 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, ssize_t file_line)
         break;
     }
 
-    dprintf("<----  ...leaving %s()\n", __FUNCTION__);
+    DPRINTF(("<----  ...leaving %s()\n", __FUNCTION__));
 
     return g_code;
 } /* drill_parse_G_code() */
@@ -2055,8 +2068,8 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
              * preceeding the decimal point, insert a decimal point
              * and append the rest of the digits.
              */
-            dprintf("%s():  wantdigits = %d, strlen(\"%s\") = %ld\n",
-                    __FUNCTION__, wantdigits, temp, (long)strlen(temp));
+            DPRINTF(("%s():  wantdigits = %d, strlen(\"%s\") = %ld\n",
+                     __FUNCTION__, wantdigits, temp, (long)strlen(temp)));
             for (i = 0; i < wantdigits && i < strlen(temp); i++) {
                 tmp2[i] = temp[i];
             }
@@ -2067,7 +2080,7 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
             for (; i <= strlen(temp); i++) {
                 tmp2[i] = temp[i - 1];
             }
-            dprintf("%s():  After dealing with trailing zero suppression, convert \"%s\"\n", __FUNCTION__, tmp2);
+            DPRINTF(("%s():  After dealing with trailing zero suppression, convert \"%s\"\n", __FUNCTION__, tmp2));
             scale = 1.0;
 
             for (i = 0; i <= strlen(tmp2) && i < sizeof(temp); i++) {
@@ -2109,8 +2122,8 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
         result = strtod(temp, NULL) * scale;
     }
 
-    dprintf("    %s()=%f: fmt=%d, omit_zeros=%d, decimals=%d \n",
-            __FUNCTION__, result, fmt, omit_zeros, decimals);
+    DPRINTF(("    %s()=%f: fmt=%d, omit_zeros=%d, decimals=%d \n",
+             __FUNCTION__, result, fmt, omit_zeros, decimals));
 
     return result;
 } /* read_double */
