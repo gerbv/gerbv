@@ -299,7 +299,6 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     gerbv_HID_Attribute *hid_attrs;
     int read;
     gerbv_drill_stats_t *stats;
-    gchar *tmps;
     ssize_t file_line = 1;
 
     /*
@@ -391,65 +390,69 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
         switch ((char)read) {
 
-        case ';':
+        case ';': {
             /* Comment found. allow drill file to check contents */
             if (drill_parse_header_is_metric_comment(fd, state, image, file_line)) {
                 break;
             }
             /* Else, eat the rest of the line */
-            tmps = get_line(fd);
+            gchar* commentLine = get_line(fd);
             gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                _("Comment \"%s\" at line %ld in file \"%s\""),
-                               tmps, file_line, fd->filename);
+                               commentLine, file_line, fd->filename);
             dprintf("    Comment with ';' \"%s\" at line %ld\n",
-                    tmps, file_line);
-            g_free(tmps);
+                    commentLine, file_line);
+            g_free(commentLine);
             break;
+        }
 
-        case 'D':
+        case 'D': {
+            gchar* dline;
             gerb_ungetc(fd);
-            tmps = get_line(fd);
-            if (strcmp(tmps, "DETECT,ON") == 0 ||
-                strcmp(tmps, "DETECT,OFF") == 0) {
+            dline = get_line(fd);
+            if (strcmp(dline, "DETECT,ON") == 0 ||
+                strcmp(dline, "DETECT,OFF") == 0) {
 
-                gchar *tmps2;
-                gchar *tmps3;
-                if (strcmp(tmps, "DETECT,ON") == 0) {
-                    tmps3 = "ON";
+                gchar *detect_option;
+                if (strcmp(dline, "DETECT,ON") == 0) {
+                    detect_option = "ON";
                 } else {
-                    tmps3 = "OFF";
+                    detect_option = "OFF";
                 }
 
                 /* broken tool detect on/off.  Silently ignored. */
                 if (stats->detect) {
                     /* sets tmps2 to old value appended with newline and new ON/OFF value */
-                    tmps2 = g_strdup_printf("%s\n%s", stats->detect, tmps3);
+                    gchar* new_detect_stat = g_strdup_printf("%s\n%s", stats->detect, detect_option);
                     g_free(stats->detect);
+                    stats->detect = new_detect_stat;
                 } else {
-                    tmps2 = g_strdup_printf("%s", tmps3);
+                    gchar* new_detect_stat = = g_strdup_printf("%s", detect_option);
+                    stats->detect = new_detect_stat;
                 }
-                stats->detect = tmps2;
 
             } else {
                 gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
                                    _("Unrecognised string \"%s\" in header "
                                      "at line %ld in file \"%s\""),
-                                   tmps, file_line, fd->filename);
+                                   dline, file_line, fd->filename);
             }
-            g_free(tmps);
+            g_free(dline);
             break;
+        }
 
-        case 'F':
+        case 'F': {
+            gchar* fline;
             gerb_ungetc(fd);
-            tmps = get_line(fd);
+            fline = get_line(fd);
 
             /* Silently ignore FMAT,2.  Not sure what others are allowed */
-            if (0 == strcmp(tmps, "FMAT,2")) {
-                g_free(tmps);
+            if (0 == strcmp(fline, "FMAT,2")) {
+                g_free(fline);
                 break;
             }
 
-            if (0 == strcmp(tmps, "FMAT,1")) {
+            if (0 == strcmp(fline, "FMAT,1")) {
                 gerbv_stats_printf(stats->error_list,
                                    GERBV_MESSAGE_ERROR, -1,
                                    _("File in unsupported format 1 "
@@ -457,7 +460,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                                    file_line, fd->filename);
 
                 gerbv_destroy_image(image);
-                g_free(tmps);
+                g_free(fline);
                 return NULL;
             }
 
@@ -465,13 +468,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                                GERBV_MESSAGE_ERROR, -1,
                                _("Unrecognised string \"%s\" in header "
                                  "at line %ld in file \"%s\""),
-                               tmps, file_line, fd->filename);
+                               fline, file_line, fd->filename);
 
-            g_free(tmps);
+            g_free(fline);
             break;
+        }
 
-        case 'G':
-        {
+        case 'G': {
             /* Most G codes aren't used, for now */
             drill_g_code_t g_code;
 
@@ -546,13 +549,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                 break;
 
             case DRILL_G_UNKNOWN:
-                tmps = get_line(fd);
+                gchar* unknown_g_drill = get_line(fd);
                 gerbv_stats_printf(stats->error_list,
                                    GERBV_MESSAGE_ERROR, -1,
                                    _("Unrecognized string \"%s\" found "
                                      "at line %ld in file \"%s\""),
-                                   tmps, file_line, fd->filename);
-                g_free(tmps);
+                                   unknown_g_drill, file_line, fd->filename);
+                g_free(unknown_g_drill);
                 break;
 
             default:
@@ -568,7 +571,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
             break;
         }
 
-        case 'I':
+        case 'I': {
+            gchar* iline;
             gerb_ungetc(fd); /* To compare full string in function or
                     report full string  */
             if (drill_parse_header_is_inch(fd, state, image, file_line)) {
@@ -579,15 +583,16 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                 break;
             }
 
-            tmps = get_line(fd);
+            iline = get_line(fd);
             gerbv_stats_printf(stats->error_list,
                                GERBV_MESSAGE_ERROR, -1,
                                _("Unrecognized string \"%s\" found "
                                  "at line %ld in file \"%s\""),
-                               tmps, file_line, fd->filename);
-            g_free(tmps);
+                               iline, file_line, fd->filename);
+            g_free(iline);
 
             break;
+        }
 
         case 'M': {
             int m_code;
@@ -676,21 +681,21 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                 break;
             case DRILL_M_CANNEDTEXTX:
             case DRILL_M_CANNEDTEXTY:
-                tmps = get_line(fd);
+                gchar* canned_text_line = get_line(fd);
                 gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                    _("Canned text \"%s\" "
                                      "at line %ld in drill file \"%s\""),
-                                   tmps, file_line, fd->filename);
-                g_free(tmps);
+                                   canned_text_line, file_line, fd->filename);
+                g_free(canned_text_line);
                 break;
             case DRILL_M_MESSAGELONG:
             case DRILL_M_MESSAGE:
-                tmps = get_line(fd);
+                gchar* message_line = get_line(fd);
                 gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                    _("Message \"%s\" embedded "
                                      "at line %ld in drill file \"%s\""),
-                                   tmps, file_line, fd->filename);
-                g_free(tmps);
+                                   message_line, file_line, fd->filename);
+                g_free(message_line);
                 break;
             case DRILL_M_PATTERNEND:
             case DRILL_M_TOOLTIPCHECK:
@@ -705,6 +710,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                 break;
 
             case DRILL_M_UNKNOWN:
+                gchar* unknown_drill_line;
                 gerb_ungetc(fd); /* To compare full string in function or
                             report full string  */
                 if (drill_parse_header_is_metric(fd, state, image, file_line)) {
@@ -712,13 +718,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                 }
 
                 stats->M_unknown++;
-                tmps = get_line(fd);
+                unknown_drill_line = get_line(fd);
                 gerbv_stats_printf(stats->error_list,
                                    GERBV_MESSAGE_ERROR, -1,
                                    _("Unrecognized string \"%s\" found "
                                      "at line %ld in file \"%s\""),
-                                   tmps, file_line, fd->filename);
-                g_free(tmps);
+                                   unknown_drill_line, file_line, fd->filename);
+                g_free(unknown_drill_line);
 
                 break;
 
@@ -794,45 +800,52 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                     dprintf("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
                     curr_net = drill_add_drill_hole(image, state, stats, curr_net);
                 }
+            // BUGBUG #174 -- Is there intentionally fall-through to case 'S' here?
             }
 
-        case 'S':
+        case 'S': {
             gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                _("Ignoring setting spindle speed "
                                  "at line %ld in drill file \"%s\""),
                                file_line, fd->filename);
             eat_line(fd);
             break;
-        case 'T':
+        }
+        case 'T': {
             drill_parse_T_code(fd, state, image, file_line);
             break;
-        case 'V':
+        }
+        case 'V': {
+            gchar* v_line;
             gerb_ungetc(fd);
-            tmps = get_line(fd);
+            v_line = get_line(fd);
             /* Silently ignore VER,1.  Not sure what others are allowed */
             if (0 != strcmp(tmps, "VER,1")) {
                 gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                    _("Undefined string \"%s\" in header "
                                      "at line %ld in file \"%s\""),
-                                   tmps, file_line, fd->filename);
+                                   v_line, file_line, fd->filename);
             }
-            g_free(tmps);
+            g_free(v_line);
             break;
+        }
 
         case 'X':
-        case 'Y':
+        case 'Y': {
             /* Hole coordinate found. Do some parsing */
             drill_parse_coordinate(fd, read, image, state, file_line);
 
             /* add the new drill hole */
             curr_net = drill_add_drill_hole(image, state, stats, curr_net);
             break;
+        }
 
-        case '%':
+        case '%': {
             state->curr_section = DRILL_DATA;
             break;
+        }
 
-        case '\n':
+        case '\n': {
             file_line++;
 
             /* Get <CR> char, if any, from <LF><CR> pair */
@@ -841,8 +854,9 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                 gerb_ungetc(fd);
             }
             break;
+        }
 
-        case '\r':
+        case '\r': {
             file_line++;
 
             /* Get <LF> char, if any, from <CR><LF> pair */
@@ -850,12 +864,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
             if (read != '\n' && read != EOF)
                 gerb_ungetc(fd);
             break;
+        }
 
         case ' ': /* White space */
         case '\t':
             break;
 
-        default:
+        default: {
             stats->unknown++;
 
             if (DRILL_HEADER == state->curr_section) {
@@ -879,6 +894,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
                                      "found inside data at line %ld in file \"%s\""),
                                    gerbv_escape_char(read), read, file_line, fd->filename);
             }
+            break;
+        }
         }
     }
 
@@ -920,6 +937,7 @@ drill_parse_end:
     }
 
     switch (image->format->omit_zeros) {
+    // BUGBUG #174 -- how to save user format with both leading and trailing digit counts specified?
     case GERBV_OMIT_ZEROS_LEADING:
         hid_attrs[HA_suppression].default_val.int_value = SUP_LEAD;
         break;
@@ -951,14 +969,20 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary) {
     int zero = 48; /* ascii 0 */
     int nine = 57; /* ascii 9 */
     int i = 0;
-    gboolean found_binary = FALSE;
-    gboolean found_M48 = FALSE;
-    gboolean found_M30 = FALSE;
-    gboolean found_percent = FALSE;
-    gboolean found_T = FALSE;
-    gboolean found_X = FALSE;
-    gboolean found_Y = FALSE;
-    gboolean end_comments = FALSE;
+    /* these booleans allow checking relative ordering within the drill file.
+     * e.g., binary is not allowed
+     * e.g., comments only allowed in one contiguous section
+     * e.g., 'M48' must come before 'M30'
+     * e.g., '%'   must come before 'M30'
+     */
+    gboolean found_binary = FALSE;   /* if true, non-ASCII data was found  */
+    gboolean found_M48 = FALSE;      /* if true, found line starting 'M48' */
+    gboolean found_percent = FALSE;  /* if true, found line containing only '%' */
+    gboolean found_M30 = FALSE;      /* if true, found line starting 'M30' after found_percent */
+    gboolean found_X = FALSE;        /* if true, found line starting 'X' followed by digit */
+    gboolean found_Y = FALSE;        /* if true, found line starting 'Y' followed by digit */
+    gboolean found_T = FALSE;        /* if true, found likely tool switch after found_X or found_Y */
+    gboolean end_comments = FALSE;   /* if true, ... actually, seems broken??? */
 
     tbuf = g_malloc(MAXL);
     if (tbuf == NULL) {
@@ -968,17 +992,33 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary) {
     }
 
     /* Parse one line at a time ... fgets() ensures result is null-terminated */
+    /* BUGBUG #174 - fgets() does NOT ensure full line is read ...
+     *               no newline included before NULL in that case
+     *               but will need to try to read next line to ensure it's not just the end of the file.
+     */
     while (fgets(tbuf, MAXL, fd->fd) != NULL) {
-        len = strlen(tbuf);
+        /* BUGBUG #174 - is there any check that tbuf is null-terminated here? */
         buf = tbuf;
-        /* check for comments at top of file */
+        len = strlen(buf);
+        /* allow a single contiguous comment area */
         if (!end_comments) {
+            /* Are there *ANY* further occurrences of comments in the line? */
             if (g_strstr_len(buf, len, ";") != NULL) {
+                /* at least one more semicolon character exists _somewhere_ in the line */
                 for (i = 0; i < len - 1; ++i) {
-                    if (buf[i    ] == '\n'
-                    &&  buf[i + 1] != ';'
-                    &&  buf[i + 1] != '\r'
-                    &&  buf[i + 1] != '\n') {
+                    /* BUGBUG #174 - ??? Was this written when not parsing one line at a time ???
+                     * Does not make sense what this is doing here, as fgets() reads only one line at a time.
+                     * This is checking for one of the following three conditions, ANYWHERE on the line:
+                     * 1) "\n;"
+                     * 2) "\n\r"
+                     * 3) "\n\n"
+                     * However, since fgets() stops at newline character,
+                     * HOW COULD ANY OF THESE CONDITIONS EVER BE TRUE?
+                     */
+                    if (buf[i    ] == '\n' &&
+                        buf[i + 1] != ';'  &&
+                        buf[i + 1] != '\r' &&
+                        buf[i + 1] != '\n' ) {
 
                         end_comments = TRUE;
                         /* Set rest of parser to end of
@@ -1026,9 +1066,16 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary) {
 
         /* Check for T<number> */
         if ((letter = g_strstr_len(buf, len, "T")) != NULL) {
+            /* If haven't seen T, but found either X or Y line ... */
             if (!found_T && (found_X || found_Y)) {
+                /* BUGBUG #174 -- This appears to do nothing, because
+                 * the if() statement ensures found_T is false already?
+                 */
                 found_T = FALSE; /* Found first T after X or Y */
             } else {
+                /* if found at least one line starting with either X<n> or Y<n>
+                 * and the current line is of the form T<n>, set this flag true
+                 */
                 if (isdigit((int)letter[1])) { /* verify next char is digit */
                     found_T = TRUE;
                 }
@@ -1081,8 +1128,6 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
     double size;
     gerbv_drill_stats_t *stats = image->drill_stats;
     gerbv_aperture_t *apert;
-    gchar *tmps;
-    gchar *string;
 
     dprintf("---> entering %s()...\n", __FUNCTION__);
 
@@ -1096,13 +1141,14 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
     if ((temp == 'C') && ((fd->ptr + 2) < fd->datalen)) {
         if (gerb_fgetc(fd) == 'S') {
             if (gerb_fgetc(fd) == 'T') {
+                gchar* tcst_line;
                 fd->ptr -= 4;
-                tmps = get_line(fd++);
+                tcst_line = get_line(fd++);
                 gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                    _("Tool change stop switch found \"%s\" "
                                      "at line %ld in file \"%s\""),
-                                   tmps, file_line, fd->filename);
-                g_free(tmps);
+                                   tcst_line, file_line, fd->filename);
+                g_free(tcst_line);
 
                 return -1;
             }
@@ -1113,14 +1159,15 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
 
     if (!(isdigit(temp) != 0 || temp == '+' || temp == '-')) {
         if (temp != EOF) {
+            gchar* invalid_tline;
             gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
                                _("OrCAD bug: Junk text found in place of tool definition"));
-            tmps = get_line(fd);
+            invalid_tline = get_line(fd);
             gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
                                _("Junk text \"%s\" "
                                  "at line %ld in file \"%s\""),
-                               tmps, file_line, fd->filename);
-            g_free(tmps);
+                               invalid_tline, file_line, fd->filename);
+            g_free(invalid_tline);
             gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
                                _("Ignoring junk text"));
         }
@@ -1161,6 +1208,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
             if (state->unit == GERBV_UNIT_MM) {
                 size /= 25.4;
             } else if (size >= 4.0) {
+                /* HACKHACK -- this workaround should have user-settable option to disable */
                 /* If the drill size is >= 4 inches, assume that this
                    must be wrong and that the units are mils.
                    The limit being 4 inches is because the smallest drill
@@ -1219,12 +1267,14 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
             /* Add the tool whose definition we just found into the list
              * of tools for this layer used to generate statistics. */
             stats = image->drill_stats;
-            string = g_strdup_printf("%s", (state->unit == GERBV_UNIT_MM ? _("mm") : _("inch")));
-            drill_stats_add_to_drill_list(stats->drill_list,
-                                          tool_num,
-                                          state->unit == GERBV_UNIT_MM ? size * 25.4 : size,
-                                          string);
-            g_free(string);
+            do {
+                gchar* unit_string = g_strdup_printf("%s", (state->unit == GERBV_UNIT_MM ? _("mm") : _("inch")));
+                drill_stats_add_to_drill_list(stats->drill_list,
+                                              tool_num,
+                                              state->unit == GERBV_UNIT_MM ? size * 25.4 : size,
+                                              unit_string);
+                g_free(unit_string);
+            while (false);
             break;
 
         case 'F':
@@ -1295,16 +1345,16 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
         /* Add the tool whose definition we just found into the list
          * of tools for this layer used to generate statistics. */
         if (tool_num != 0) {
+            gchar* new_tool_string;
             /* Only add non-zero tool nums.
              * Zero = unload command. */
             stats = image->drill_stats;
-            string = g_strdup_printf("%s",
-                            (state->unit == GERBV_UNIT_MM ? _("mm") : _("inch")));
+            new_tool_string = g_strdup_printf("%s", (state->unit == GERBV_UNIT_MM ? _("mm") : _("inch")));
             drill_stats_add_to_drill_list(stats->drill_list,
                                           tool_num,
                                           state->unit == GERBV_UNIT_MM ? dia * 25.4 : dia,
-                                          string);
-            g_free(string);
+                                          new_tool_string);
+            g_free(new_tool_string);
         }
     } /* if(image->aperture[tool_num] == NULL) */
 
@@ -1413,6 +1463,7 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
      * The syntax is
      * METRIC[,{TZ|LZ}][,{000.000|000.00|0000.00}]
      */
+    /* BUGBUG #174 -- format is overwritten by later comment line: ';FILE_FORMAT=2:4' */
 
     if (DRILL_HEADER != state->curr_section) {
         return 0;
@@ -1911,8 +1962,9 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
     memset(temp, 0, sizeof(temp));
 
     read = gerb_fgetc(fd);
-    while (read != EOF && i < (DRILL_READ_DOUBLE_SIZE - 1) &&
-           (isdigit(read) || read == '.' || read == ',' || read == '+' || read == '-')) {
+    while (read != EOF
+    &&     i < (DRILL_READ_DOUBLE_SIZE - 1)
+    &&     (isdigit(read) || read == '.' || read == ',' || read == '+' || read == '-')) {
         
         if (read == ',' || read == '.') {
             decimal_point = TRUE;
@@ -1953,6 +2005,7 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
         /* Nothing to take care for when leading zeros are
            omitted. */
         if (omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
+            /* BUGBUG #174 -- updated to handle both leading AND trailing counts... */
             switch (fmt) {
             case FMT_00_0000:
                 wantdigits = 2;
@@ -2026,6 +2079,7 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
              * figure out the scale factor when we are not suppressing
              * trailing zeros.
              */
+            /* BUGBUG #174 -- this needs to be updated to handle both leading AND trailing counts... */
             switch (fmt)
             {
             case FMT_00_0000:
@@ -2101,19 +2155,23 @@ static char *
 get_line(gerb_file_t *fd)
 {
     int read;
-    gchar *retstring;
-    gchar *tmps = g_strdup("");
+    gchar *current_result = g_strdup("");
+
+    /* BUGBUG - This appears to allocate N times, where N is
+     *          the number of characters in the line, and copies
+     *          characters O(n^2) times.  This is terribly inefficient.
+     */
 
     read = gerb_fgetc(fd);
     while (read != '\n' && read != '\r' && read != EOF) {
-        retstring = g_strdup_printf("%s%c", tmps, read);
+        gchar* t = g_strdup_printf("%s%c", current_result, read);
 
         /* since g_strdup_printf allocates memory, we need to free it */
-        if (tmps) {
-            g_free(tmps);
-            tmps = NULL;
+        if (current_result) {
+            g_free(current_result);
+            current_result = NULL;
         }
-        tmps = retstring;
+        current_result = t;
         read = gerb_fgetc(fd);
     }
 
