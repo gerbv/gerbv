@@ -38,9 +38,7 @@ gerbv_project_t *mainProject;
 GtkWidget *drawingarea;
 
 void
-example_render_project_to_screen (GdkDrawable *drawable) {
-	cairo_t *cr = gdk_cairo_create (drawable);
-	
+example_render_project_to_screen (cairo_t *cr) {
 	/* this is by far the simplest method of rendering everything */
 	gerbv_render_all_layers_to_cairo_target (mainProject, cr, &screenRenderInfo);
 
@@ -60,19 +58,21 @@ example_render_project_to_screen (GdkDrawable *drawable) {
 			cairo_pop_group_to_source (cr);
 			cairo_paint_with_alpha (cr, 0.70);
 		}
-	} */
-	cairo_destroy (cr);
+	}
+	*/
 }
 	
 /* this is called when the window size changes, and also during startup */    
 gboolean
 example_callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event)
 {
-	GdkDrawable *drawable = widget->window;
+	GtkAllocation allocation;
 	
 	/* figure out how large the window is, and then fit the rendered images inside
 	   the specified window */
-	gdk_drawable_get_size (drawable, &screenRenderInfo.displayWidth, &screenRenderInfo.displayHeight);
+	gtk_widget_get_allocation(widget, &allocation);
+	screenRenderInfo.displayWidth = allocation.width;
+	screenRenderInfo.displayHeight = allocation.height;
 	gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 
 	/* GTK should now automatically expose the window, so no need to do it manually */
@@ -82,10 +82,10 @@ example_callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfig
 /* this is called any time the window needs to redraw (another window moved in front of
     it, the window was un-minimized, etc) */
 gboolean
-example_callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
+example_callbacks_drawingarea_draw_event (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
 	/* render all the layers */
-	example_render_project_to_screen(widget->window);
+	example_render_project_to_screen(cr);
 	return TRUE;
 }
 
@@ -94,27 +94,27 @@ gboolean
 example_callbacks_drawingarea_key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
 	switch(event->keyval) {
-		case GDK_Up:
+		case GDK_KEY_Up:
 			/* cairo renders positive Y as down, so keep the sign in mind */
 			screenRenderInfo.lowerLeftY -= 0.1;
 			break;
-		case GDK_Down:
+		case GDK_KEY_Down:
 			screenRenderInfo.lowerLeftY += 0.1;
 			break;
-		case GDK_Left:
+		case GDK_KEY_Left:
 			screenRenderInfo.lowerLeftX += 0.1;
 			break;
-		case GDK_Right:
+		case GDK_KEY_Right:
 			screenRenderInfo.lowerLeftX -= 0.1;
 			break;
-		case GDK_z:
+		case GDK_KEY_z:
 			/* notice the lower left corner doesn't move with this method...
 			   to do a "true" zoom in, refer to render.c and see how Gerber Viewer
 			   does it */
 			screenRenderInfo.scaleFactorX += screenRenderInfo.scaleFactorX/3;
 			screenRenderInfo.scaleFactorY += screenRenderInfo.scaleFactorY/3;
 			break;
-		case GDK_Z:
+		case GDK_KEY_Z:
 			screenRenderInfo.scaleFactorX -= screenRenderInfo.scaleFactorX/3;
 			screenRenderInfo.scaleFactorY -= screenRenderInfo.scaleFactorY/3;
 			break;
@@ -122,15 +122,7 @@ example_callbacks_drawingarea_key_press_event (GtkWidget *widget, GdkEventKey *e
 			break;
 	}
 	/* render everything again by forcing an expose event */
-	GdkRectangle update_rect;
-	
-	update_rect.x = 0;
-	update_rect.y = 0;
-	update_rect.width = screenRenderInfo.displayWidth;
-	update_rect.height = screenRenderInfo.displayHeight;
-
-	/* force the drawing area to have an expose_event, thus redrawing the window */
-	gdk_window_invalidate_rect (drawingarea->window, &update_rect, FALSE);
+	gtk_widget_queue_draw (drawingarea);
 	return TRUE;
 }
 
@@ -148,14 +140,14 @@ example_create_GUI (void){
 	gtk_container_add (GTK_CONTAINER (mainWindow), drawingarea);
 
 	/* hook up the signals we need to connect to */
-	gtk_signal_connect(GTK_OBJECT(drawingarea), "expose_event",
-		       GTK_SIGNAL_FUNC(example_callbacks_drawingarea_expose_event), NULL);
-	gtk_signal_connect(GTK_OBJECT(drawingarea),"configure_event",
-		       GTK_SIGNAL_FUNC(example_callbacks_drawingarea_configure_event), NULL);
-	gtk_signal_connect(GTK_OBJECT(mainWindow), "key_press_event",
-		       GTK_SIGNAL_FUNC(example_callbacks_drawingarea_key_press_event), NULL);
-	gtk_signal_connect_after(GTK_OBJECT(mainWindow), "delete_event",
-		       GTK_SIGNAL_FUNC(gtk_main_quit), NULL);
+	g_signal_connect(G_OBJECT(drawingarea), "draw",
+			G_CALLBACK(example_callbacks_drawingarea_draw_event), NULL);
+	g_signal_connect(G_OBJECT(drawingarea),"configure_event",
+		       G_CALLBACK(example_callbacks_drawingarea_configure_event), NULL);
+	g_signal_connect(G_OBJECT(mainWindow), "key_press_event",
+		       G_CALLBACK(example_callbacks_drawingarea_key_press_event), NULL);
+	g_signal_connect_after(G_OBJECT(mainWindow), "delete_event",
+		       G_CALLBACK(gtk_main_quit), NULL);
 
 	gtk_widget_show_all (mainWindow);
 }

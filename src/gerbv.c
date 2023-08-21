@@ -58,7 +58,6 @@
 #include "drill.h"
 #include "selection.h"
 
-#include "draw-gdk.h"
 #include "draw.h"
 
 #include "pick-and-place.h"
@@ -253,9 +252,13 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar c
   } else {
     idx_loaded = gerbvProject->last_loaded;
     gerbvProject->file[idx_loaded]->layer_dirty = FALSE;
-    GdkColor colorTemplate = {0, red, green, blue};
+    GdkRGBA colorTemplate = {
+	red / 65535.0,
+	green / 65535.0,
+	blue / 65535.0,
+	alpha / 65535.0
+    };
     gerbvProject->file[idx_loaded]->color = colorTemplate;
-    gerbvProject->file[idx_loaded]->alpha = alpha;
     dprintf("     Successfully opened file!\n");	
   }
 } /* gerbv_open_layer_from_filename_with_color */  
@@ -396,7 +399,7 @@ gint
 gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t *parsed_image,
 			gchar const* filename, gchar const* baseName, int idx, int reload){
     gerb_verify_error_t error = GERB_IMAGE_OK;
-    int r, g, b; 
+    double r, g, b, a;
     
     dprintf("In open_image, now error check file....\n");
     error = gerbv_image_verify(parsed_image);
@@ -442,13 +445,13 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
     gerbvProject->file[idx]->name = g_strdup (baseName);
     
     
-    r = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].red*257;
-    g = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].green*257;
-    b = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].blue*257;
+    r = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].red / 255.0;
+    g = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].green / 255.0;
+    b = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].blue / 255.0;
+    a = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].alpha / 255.0;
 
-    GdkColor colorTemplate = {0, r, g, b};
+    GdkRGBA colorTemplate = {r, g, b, a};
     gerbvProject->file[idx]->color = colorTemplate;
-    gerbvProject->file[idx]->alpha = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257;
     gerbvProject->file[idx]->isVisible = TRUE;
     gerbvProject->file[idx]->transform = defaultTransformations[defaultColorIndex % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
     /* update the number of files if we need to */
@@ -760,153 +763,27 @@ gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_rend
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixmap,
-		gerbv_render_info_t *renderInfo, gerbv_selection_info_t *selectionInfo,
-		GdkColor *selectionColor){
-	GdkGC *gc = gdk_gc_new(pixmap);
-	GdkPixmap *colorStamp, *clipmask;
-	int i;
-	
-	/* 
-	 * Remove old pixmap, allocate a new one, draw the background.
-	 */
-	if (!gerbvProject->background.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &gerbvProject->background, FALSE, TRUE);
-	gdk_gc_set_foreground(gc, &gerbvProject->background);
-	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, -1, -1);
-
-	/*
-	 * Allocate the pixmap and the clipmask (a one pixel pixmap)
-	 */
-	colorStamp = gdk_pixmap_new(pixmap, renderInfo->displayWidth,
-						renderInfo->displayHeight, -1);
-	clipmask = gdk_pixmap_new(NULL, renderInfo->displayWidth,
-						renderInfo->displayHeight, 1);
-							
-	/* 
-	* This now allows drawing several layers on top of each other.
-	* Higher layer numbers have higher priority in the Z-order. 
-	*/
-	for(i = gerbvProject->last_loaded; i >= 0; i--) {
-		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
-			/*
-			* Fill up image with all the foreground color. Excess pixels
-			* will be removed by clipmask.
-			*/
-			if (!gerbvProject->file[i]->color.pixel)
-	 			gdk_colormap_alloc_color(gdk_colormap_get_system(), &gerbvProject->file[i]->color, FALSE, TRUE);
-			gdk_gc_set_foreground(gc, &gerbvProject->file[i]->color);
-			
-			/* switch back to regular draw function for the initial
-			   bitmap clear */
-			gdk_gc_set_function(gc, GDK_COPY);
-			gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
-			
-			if (renderInfo->renderType == GERBV_RENDER_TYPE_GDK) {
-				gdk_gc_set_function(gc, GDK_COPY);
-			}
-			else if (renderInfo->renderType == GERBV_RENDER_TYPE_GDK_XOR) {
-				gdk_gc_set_function(gc, GDK_XOR);
-			}
-			/*
-			* Translation is to get it inside the allocated pixmap,
-			* which is not always centered perfectly for GTK/X.
-			*/
-			dprintf("  .... calling image2pixmap on image %d...\n", i);
-			// Dirty scaling solution when using GDK; simply use scaling factor for x-axis, ignore y-axis
-			draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[i]->image,
-				renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
-				(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-				DRAW_IMAGE, NULL, renderInfo, gerbvProject->file[i]->transform);
-
-			/* 
-			* Set clipmask and draw the clipped out image onto the
-			* screen pixmap. Afterwards we remove the clipmask, else
-			* it will screw things up when run this loop again.
-			*/
-			gdk_gc_set_clip_mask(gc, clipmask);
-			gdk_gc_set_clip_origin(gc, 0, 0);
-			gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
-			gdk_gc_set_clip_mask(gc, NULL);
-		}
-	}
-
-	/* Render the selection group to the top of the output */
-	if (selectionInfo && selectionInfo->selectedNodeArray
-	&& (selection_length (selectionInfo) != 0)) {
-		if (!selectionColor->pixel)
-	 		gdk_colormap_alloc_color(gdk_colormap_get_system(), selectionColor, FALSE, TRUE);
-
-		gdk_gc_set_foreground(gc, selectionColor);
-		gdk_gc_set_function(gc, GDK_COPY);
-		gdk_draw_rectangle(colorStamp, gc, TRUE, 0, 0, -1, -1);
-
-		gerbv_selection_item_t sItem;
-		gerbv_fileinfo_t *file;
-		int j;
-		guint k;
-
-		for (j = gerbvProject->last_loaded; j >= 0; j--) {
-			file = gerbvProject->file[j]; 
-			if (!file || (!gerbvProject->show_invisible_selection && !file->isVisible))
-				continue;
-
-			for (k = 0; k < selection_length (selectionInfo); k++) {
-				sItem = selection_get_item_by_index (selectionInfo, k);
-
-				if (file->image != sItem.image)
-					continue;
-
-				/* Have selected image(s) on this layer, draw it */
-				draw_gdk_image_to_pixmap(&clipmask, file->image,
-					renderInfo->scaleFactorX,
-					-(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
-					(renderInfo->lowerLeftY * renderInfo->scaleFactorY) + renderInfo->displayHeight,
-					DRAW_SELECTIONS, selectionInfo,
-					renderInfo, file->transform);
-
-				gdk_gc_set_clip_mask(gc, clipmask);
-				gdk_gc_set_clip_origin(gc, 0, 0);
-				gdk_draw_drawable(pixmap, gc, colorStamp, 0, 0, 0, 0, -1, -1);
-				gdk_gc_set_clip_mask(gc, NULL);
-
-				break;
-			}
-		}
-	}
-
-	gdk_pixmap_unref(colorStamp);
-	gdk_pixmap_unref(clipmask);
-	gdk_gc_unref(gc);
-}
-
-/* ------------------------------------------------------------------ */
-void
 gerbv_render_all_layers_to_cairo_target_for_vector_output (
 		gerbv_project_t *gerbvProject, cairo_t *cr,
 		gerbv_render_info_t *renderInfo)
 {
-	GdkColor *bg = &gerbvProject->background;
+	GdkRGBA *bg = &gerbvProject->background;
 	int i;
-	double r, g, b;
 
 	gerbv_render_cairo_set_scale_and_translation (cr, renderInfo);
 
 	/* Fill the background with the appropriate not white and not black
 	 * color for backward culpability. */ 
-	if ((bg->red != 0xffff || bg->green != 0xffff || bg->blue != 0xffff)
-	 && (bg->red != 0x0000 || bg->green != 0x0000 || bg->blue != 0x0000)) {
-		r = (double) bg->red/G_MAXUINT16;
-		g = (double) bg->green/G_MAXUINT16;
-		b = (double) bg->blue/G_MAXUINT16;
-		cairo_set_source_rgba (cr, r, g, b, 1);
+	if ((bg->red != 1.0 || bg->green != 1.0 || bg->blue != 1.0)
+	 && (bg->red != 0.0 || bg->green != 0.0 || bg->blue != 0.0)) {
+		gdk_cairo_set_source_rgba (cr, bg);
 		cairo_paint (cr);
 
 		/* Set cairo user data with background color information, to be
 		 * used for clear color. */
-		cairo_set_user_data (cr, (cairo_user_data_key_t *)0, &r, NULL);
-		cairo_set_user_data (cr, (cairo_user_data_key_t *)1, &g, NULL);
-		cairo_set_user_data (cr, (cairo_user_data_key_t *)2, &b, NULL);
+		cairo_set_user_data (cr, (cairo_user_data_key_t *)0, &bg->red, NULL);
+		cairo_set_user_data (cr, (cairo_user_data_key_t *)1, &bg->green, NULL);
+		cairo_set_user_data (cr, (cairo_user_data_key_t *)2, &bg->blue, NULL);
 	}
 
 	for (i = gerbvProject->last_loaded; i >= 0; i--) {
@@ -926,10 +803,7 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 	int i;
 
 	/* Fill the background with the appropriate color. */
-	cairo_set_source_rgba (cr,
-			(double) gerbvProject->background.red/G_MAXUINT16,
-			(double) gerbvProject->background.green/G_MAXUINT16,
-			(double) gerbvProject->background.blue/G_MAXUINT16, 1);
+	gdk_cairo_set_source_rgba (cr, &gerbvProject->background);
 	cairo_paint (cr);
 
 	for (i = gerbvProject->last_loaded; i >= 0; i--) {
@@ -938,8 +812,7 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 			gerbv_render_layer_to_cairo_target (cr,
 					gerbvProject->file[i], renderInfo);
 			cairo_pop_group_to_source (cr);
-			cairo_paint_with_alpha (cr, (double)
-					gerbvProject->file[i]->alpha/G_MAXUINT16);
+			cairo_paint_with_alpha (cr, gerbvProject->file[i]->color.alpha);
 		}
 	}
 }
@@ -960,13 +833,11 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactorX);
 	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactorY);
 	
-	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
-	   this far */
-	if (renderInfo->renderType == GERBV_RENDER_TYPE_CAIRO_NORMAL) {
+	if (renderInfo->renderType != GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY) {
 		cairo_set_tolerance (cr, 1.0);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
 	}
-	else if (renderInfo->renderType == GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY) {
+	else {
 		cairo_set_tolerance (cr, 0.1);
 		cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
 	}
@@ -983,9 +854,8 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 /* ------------------------------------------------------------------ */
 void
 gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean pixelOutput) {
-	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
-		(double) fileInfo->color.green/G_MAXUINT16,
-		(double) fileInfo->color.blue/G_MAXUINT16, 1);
+	cairo_set_source_rgba (cr, fileInfo->color.red, fileInfo->color.green,
+		fileInfo->color.blue, 1.0);
 	
 	/* translate, rotate, and modify the image based on the layer-specific transformation struct */
 	cairo_save (cr);

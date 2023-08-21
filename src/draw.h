@@ -36,6 +36,8 @@
 #include <cairo-svg.h>
 #include <cairo-pdf.h>
 
+#define GERBV_DEF_CURSOR	NULL
+
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */

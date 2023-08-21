@@ -183,19 +183,11 @@ render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event)
 
 /* ------------------------------------------------------ */
 void
-render_draw_selection_box_outline(void) {
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
+render_draw_selection_box_outline(cairo_t *cr) {
 	gint x1, y1, x2, y2, dx, dy;
 
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	if (!screen.zoom_outline_color.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
-	values.foreground = screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
+	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+	gdk_cairo_set_source_rgba(cr, &screen.zoom_outline_color);
 	
 	x1 = MIN(screen.start_x, screen.last_x);
 	y1 = MIN(screen.start_y, screen.last_y);
@@ -204,26 +196,19 @@ render_draw_selection_box_outline(void) {
 	dx = x2-x1;
 	dy = y2-y1;
 
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
-	gdk_gc_unref(gc);
+	cairo_rectangle(cr, x1, y1, dx, dy);
+	cairo_stroke(cr);
 }
 
 /* --------------------------------------------------------- */
 void
-render_draw_zoom_outline(gboolean centered)
+render_draw_zoom_outline(cairo_t *cr, gboolean centered)
 {
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
 	gint x1, y1, x2, y2, dx, dy;
+	GtkAllocation allocation;
 
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	if (!screen.zoom_outline_color.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
-	values.foreground = screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values, values_mask);
+	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+	gdk_cairo_set_source_rgba(cr, &screen.zoom_outline_color);
 	
 	x1 = MIN(screen.start_x, screen.last_x);
 	y1 = MIN(screen.start_y, screen.last_y);
@@ -242,32 +227,24 @@ render_draw_zoom_outline(gboolean centered)
 		y2 = y1+dy;
 	}
 
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, x1, y1, dx, dy);
-	gdk_gc_unref(gc);
+	cairo_rectangle(cr, x1, y1, dx, dy);
+	cairo_stroke(cr);
 
 	/* Draw actual zoom area in dashed lines */
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.foreground = screen.zoom_outline_color;
-	values.line_style = GDK_LINE_ON_OFF_DASH;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_FOREGROUND | GDK_GC_LINE_STYLE;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				values_mask);
+	const double on_off[] = {5, 5};
+	cairo_set_dash(cr, on_off, 2, 0);
+
+	gtk_widget_get_allocation(screen.drawing_area, &allocation);
 	
-	if ((dy == 0) || ((double)dx/dy > (double)screen.drawing_area->allocation.width/
-				screen.drawing_area->allocation.height)) {
-		dy = dx * (double)screen.drawing_area->allocation.height/
-			screen.drawing_area->allocation.width;
+	if ((dy == 0) || ((double)dx/dy > (double)allocation.width / allocation.height)) {
+		dy = dx * (double)allocation.height / allocation.width;
 	} 
 	else {
-		dx = dy * (double)screen.drawing_area->allocation.width/
-			screen.drawing_area->allocation.height;
+		dx = dy * (double)allocation.width / allocation.height;
 	}
 
-	gdk_draw_rectangle(screen.drawing_area->window, gc, FALSE, (x1+x2-dx)/2,
-		(y1+y2-dy)/2, dx, dy);
-
-	gdk_gc_unref(gc);
+	cairo_rectangle(cr, (x1+x2-dx)/2, (y1+y2-dy)/2, dx, dy);
+	cairo_stroke(cr);
 }
 
 /* ------------------------------------------------------ */
@@ -323,37 +300,30 @@ render_trim_point(gdouble *start_x, gdouble *start_y, gdouble last_x, gdouble la
 /** Draws/erases measure line
  */
 void
-render_toggle_measure_line(void)
+render_toggle_measure_line(cairo_t *cr)
 {
-
-	GdkGC *gc;
-	GdkGCValues values;
-	GdkGCValuesMask values_mask;
 	gdouble start_x, start_y, last_x, last_y;
-	memset(&values, 0, sizeof(values));
-	values.function = GDK_XOR;
-	values.line_width = 6;
-	if (!screen.zoom_outline_color.pixel)
-	 	gdk_colormap_alloc_color(gdk_colormap_get_system(), &screen.zoom_outline_color, FALSE, TRUE);
-	values.foreground = screen.zoom_outline_color;
-	values_mask = GDK_GC_FUNCTION | GDK_GC_LINE_WIDTH | GDK_GC_FOREGROUND;
-	gc = gdk_gc_new_with_values(screen.drawing_area->window, &values,
-				values_mask);
+
+	cairo_set_line_width(cr, 6);
+	cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+	gdk_cairo_set_source_rgba(cr, &screen.zoom_outline_color);
+
 	render_board2screen(&start_x, &start_y,
 				screen.measure_start_x, screen.measure_start_y);
 	render_board2screen(&last_x, &last_y,
 				screen.measure_stop_x, screen.measure_stop_y);
 	render_trim_point(&start_x, &start_y, last_x, last_y);
 	render_trim_point(&last_x, &last_y, start_x, start_y);
-	gdk_draw_line(screen.drawing_area->window, gc, start_x,
-		  start_y, last_x, last_y);
-	gdk_gc_unref(gc);
+
+	cairo_move_to(cr, start_x, start_y);
+	cairo_line_to(cr, last_x, last_y);
+	cairo_stroke(cr);
 } /* toggle_measure_line */
 
 /* ------------------------------------------------------ */
 /** Displays a measured distance graphically on screen and in statusbar. */
 void
-render_draw_measure_distance(void)
+update_statusbar_measure_distance(void)
 {
 	gdouble dx, dy;
 
@@ -363,7 +333,6 @@ render_draw_measure_distance(void)
 	screen.measure_last_x = dx;
 	screen.measure_last_y = dy;
 	callbacks_update_statusbar_measured_distance (dx, dy);
-	render_toggle_measure_line();
 }
 
 /* ------------------------------------------------------ */
@@ -427,49 +396,39 @@ static void render_selection (void)
 /* ------------------------------------------------------ */
 void render_refresh_rendered_image_on_screen (void) {
 	GdkCursor *cursor;
-	
-	dprintf("----> Entering redraw_pixmap...\n");
-	cursor = gdk_cursor_new(GDK_WATCH);
-	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
-	gdk_cursor_destroy(cursor);
+	GdkWindow *window = gtk_widget_get_window(screen.drawing_area);
 
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR){
-	    if (screen.pixmap) 
-		gdk_pixmap_unref(screen.pixmap);
-	    screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
-	    screenRenderInfo.displayHeight, -1);
-	    gerbv_render_to_pixmap_using_gdk (mainProject, screen.pixmap, &screenRenderInfo, &screen.selectionInfo,
-	    		&screen.selection_color);	
-	    dprintf("<---- leaving redraw_pixmap.\n");
-	}
-	else{
-	    int i;
-	    dprintf("    .... Now try rendering the drawing using cairo .... \n");
-	    /* 
-	     * This now allows drawing several layers on top of each other.
-	     * Higher layer numbers have higher priority in the Z-order.
-	     */
-	    for(i = mainProject->last_loaded; i >= 0; i--) {
+	dprintf("----> Entering redraw_pixmap...\n");
+	cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_WATCH);
+	gdk_window_set_cursor(GDK_WINDOW(window), cursor);
+	g_object_unref(cursor);
+
+	int i;
+	dprintf("    .... Now try rendering the drawing using cairo .... \n");
+	/*
+	 * This now allows drawing several layers on top of each other.
+	 * Higher layer numbers have higher priority in the Z-order.
+	 */
+	for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i]) {
-		    cairo_t *cr;
-		    if (mainProject->file[i]->privateRenderData) 
-			cairo_surface_destroy ((cairo_surface_t *) mainProject->file[i]->privateRenderData);
-		    mainProject->file[i]->privateRenderData = 
-			(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-			CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
-			screenRenderInfo.displayHeight);
-		    cr= cairo_create(mainProject->file[i]->privateRenderData );
-		    gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &screenRenderInfo);
-		    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
-		    cairo_destroy (cr);
+			cairo_t *cr;
+			if (mainProject->file[i]->privateRenderData) 
+				cairo_surface_destroy ((cairo_surface_t *) mainProject->file[i]->privateRenderData);
+			mainProject->file[i]->privateRenderData = 
+					(gpointer) cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
+							CAIRO_CONTENT_COLOR_ALPHA, screenRenderInfo.displayWidth,
+							screenRenderInfo.displayHeight);
+			cr= cairo_create(mainProject->file[i]->privateRenderData );
+			gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &screenRenderInfo);
+			dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
+			cairo_destroy (cr);
 		}
-	    }
-	    
-	    render_recreate_composite_surface ();
 	}
+
+	render_recreate_composite_surface ();
 	/* remove watch cursor and switch back to normal cursor */
 	callbacks_switch_to_correct_cursor ();
-	callbacks_force_expose_event_for_screen();
+	callbacks_queue_redraw();
 }
 
 /* ------------------------------------------------------ */
@@ -500,9 +459,9 @@ render_create_cairo_buffer_surface () {
 	if (!screen.windowSurface)
 		return 0;
 
-	screen.bufferSurface= cairo_surface_create_similar ((cairo_surface_t *)screen.windowSurface,
-	                                    CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
-	                                    screenRenderInfo.displayHeight);
+	screen.bufferSurface = cairo_surface_create_similar (screen.windowSurface,
+			CAIRO_CONTENT_COLOR, screenRenderInfo.displayWidth,
+			screenRenderInfo.displayHeight);
 	return 1;
 }
 
@@ -539,12 +498,8 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex,
 	cairo_destroy (cr);
 
 	/* re-render the selection buffer layer */
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-		render_refresh_rendered_image_on_screen ();
-	} else {
-		render_recreate_composite_surface ();
-		callbacks_force_expose_event_for_screen ();
-	}
+	render_recreate_composite_surface ();
+	callbacks_queue_redraw ();
 }
 
 /* ------------------------------------------------------ */
@@ -582,28 +537,30 @@ render_fill_selection_buffer_from_mouse_drag (gint corner1X, gint corner1Y,
 void render_recreate_composite_surface ()
 {
 	gint i;
+	const gboolean xor_mode =
+			screenRenderInfo.renderType == GERBV_RENDER_TYPE_CAIRO_XOR;
 	
 	if (!render_create_cairo_buffer_surface())
 		return;
 
-	cairo_t *cr= cairo_create(screen.bufferSurface);
+	cairo_t *cr = cairo_create(screen.bufferSurface);
 	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) mainProject->background.red/G_MAXUINT16,
-		(double) mainProject->background.green/G_MAXUINT16,
-		(double) mainProject->background.blue/G_MAXUINT16, 1);
+	cairo_set_source_rgb (cr, mainProject->background.red,
+			mainProject->background.green, mainProject->background.blue);
 	cairo_paint (cr);
+
+	if (xor_mode)
+		cairo_set_operator (cr, CAIRO_OPERATOR_DIFFERENCE);
 	
 	for(i = mainProject->last_loaded; i >= 0; i--) {
 		if (mainProject->file[i] && mainProject->file[i]->isVisible) {
-			cairo_set_source_surface (cr, (cairo_surface_t *) mainProject->file[i]->privateRenderData,
+			cairo_set_source_surface (cr,(cairo_surface_t *) mainProject->file[i]->privateRenderData,
 			                              0, 0);
-			/* ignore alpha if we are in high-speed render mode */
-			if (((double) mainProject->file[i]->alpha < 65535)&&(screenRenderInfo.renderType != GERBV_RENDER_TYPE_GDK_XOR)) {
-				cairo_paint_with_alpha(cr,(double) mainProject->file[i]->alpha/G_MAXUINT16);
-			}
-			else {
+			/* In xor mode we want the layer's colors to be fully opaque */
+			if (xor_mode)
 				cairo_paint (cr);
-			}
+			else
+				cairo_paint_with_alpha (cr, mainProject->file[i]->color.alpha);
 		}
 	}
 
@@ -612,7 +569,7 @@ void render_recreate_composite_surface ()
 		render_selection ();
 		cairo_set_source_surface (cr, (cairo_surface_t *) screen.selectionRenderData,
 			                              0, 0);
-		cairo_paint_with_alpha (cr,1.0);
+		cairo_paint (cr);
 	}
 	cairo_destroy (cr);
 }
@@ -620,29 +577,23 @@ void render_recreate_composite_surface ()
 /* ------------------------------------------------------ */
 void render_project_to_cairo_target (cairo_t *cr) {
 	/* fill the background with the appropriate color */
-	cairo_set_source_rgba (cr, (double) mainProject->background.red/G_MAXUINT16,
-		(double) mainProject->background.green/G_MAXUINT16,
-		(double) mainProject->background.blue/G_MAXUINT16, 1);
+	cairo_set_source_rgb (cr, mainProject->background.red,
+			mainProject->background.green, mainProject->background.blue);
 	cairo_paint (cr);
 
-	cairo_set_source_surface (cr, (cairo_surface_t *) screen.bufferSurface, 0 , 0);
-                                                   
+	cairo_set_source_surface (cr, screen.bufferSurface, 0 , 0);
+
 	cairo_paint (cr);
 }
 
 void
 render_free_screen_resources (void) {
 	if (screen.selectionRenderData) 
-		cairo_surface_destroy ((cairo_surface_t *)
-			screen.selectionRenderData);
+		cairo_surface_destroy (screen.selectionRenderData);
 	if (screen.bufferSurface)
-		cairo_surface_destroy ((cairo_surface_t *)
-			screen.bufferSurface);
+		cairo_surface_destroy (screen.bufferSurface);
 	if (screen.windowSurface)
-		cairo_surface_destroy ((cairo_surface_t *)
-			screen.windowSurface);
-	if (screen.pixmap) 
-		gdk_pixmap_unref(screen.pixmap);
+		cairo_surface_destroy (screen.windowSurface);
 }
 
 

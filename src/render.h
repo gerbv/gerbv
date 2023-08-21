@@ -42,16 +42,16 @@ void
 render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event);
 
 void
-render_draw_selection_box_outline(void);
+render_draw_selection_box_outline(cairo_t *cr);
 
 void
-render_draw_zoom_outline(gboolean centered);
+render_draw_zoom_outline(cairo_t *cr, gboolean centered);
 
 void
-render_toggle_measure_line(void);
+render_toggle_measure_line(cairo_t *cr);
 
 void
-render_draw_measure_distance(void);
+update_statusbar_measure_distance(void);
 
 
 void render_refresh_rendered_image_on_screen (void);

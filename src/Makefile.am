@@ -37,7 +37,6 @@ libgerbv_la_SOURCES= \
 		amacro.c amacro.h \
 		common.h \
 		csv.c csv.h csv_defines.h \
-		draw-gdk.c draw-gdk.h \
 		draw.c draw.h \
 		drill.c drill.h \
 		drill_stats.c drill_stats.h \
@@ -53,6 +52,7 @@ libgerbv_la_SOURCES= \
 		gerbv.c gerbv.h \
 		gerbv_icon.h \
 		gettext.h \
+		gimpruler.c gimpruler.h \
 		pick-and-place.c pick-and-place.h \
 		selection.c selection.h \
 		tooltable.c

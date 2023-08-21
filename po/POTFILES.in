@@ -4,7 +4,6 @@ src/authors.c
 src/bugs.c
 src/callbacks.c
 src/csv.c
-src/draw-gdk.c
 src/draw.c
 src/drill.c
 src/drill_stats.c

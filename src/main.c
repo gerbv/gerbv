@@ -222,11 +222,17 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 				continue;
 			}
 
-			GdkColor colorTemplate = {0,
-				plist->rgb[0], plist->rgb[1], plist->rgb[2]};
+			GdkRGBA colorTemplate = {
+			    plist->rgb[0] / 65535.0,
+			    plist->rgb[1] / 65535.0,
+			    plist->rgb[2] / 65535.0,
+			    plist->alpha / 65535.0,
+			};
 			if (i == -1) {
-				screen.background_is_from_project= TRUE;
+				screen.background_is_from_project = TRUE;
 				gerbvProject->background = colorTemplate;
+				/* Make the background color opaque */
+				gerbvProject->background.alpha = 1.0;
 				plist = plist->next;
 				continue;
 			}
@@ -260,7 +266,6 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 			/* Change color from default to from the project list */
 			file_info = gerbvProject->file[fileIndex];
 			file_info->color = colorTemplate;
-			file_info->alpha = plist->alpha;
 			file_info->transform.inverted =	plist->inverted;
 			file_info->transform.translateX = plist->translate_x;
 			file_info->transform.translateY = plist->translate_y;
@@ -323,10 +328,10 @@ main_save_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 		plist->filename = g_strdup(gerbvProject->file[idx]->fullPathname);
 	    }
 	    file_info = gerbvProject->file[idx];
-	    plist->rgb[0] =		file_info->color.red;
-	    plist->rgb[1] =		file_info->color.green;
-	    plist->rgb[2] =		file_info->color.blue;
-	    plist->alpha =		file_info->alpha;
+	    plist->rgb[0] =		file_info->color.red * 65535.0;
+	    plist->rgb[1] =		file_info->color.green * 65535.0;
+	    plist->rgb[2] =		file_info->color.blue * 65535.0;
+	    plist->alpha =		file_info->color.alpha * 65535.0;
 	    plist->inverted =		file_info->transform.inverted;
 	    plist->visible =		file_info->isVisible;
 	    plist->translate_x =	file_info->transform.translateX;
@@ -527,12 +532,7 @@ main(int argc, char *argv[])
     g_free(env_val);
     
     /* set default rendering mode */
-#ifdef WIN32
-    /* Cairo seems to render faster on Windows, so use it for default */
     screenRenderInfo.renderType = GERBV_RENDER_TYPE_CAIRO_NORMAL;
-#else
-    screenRenderInfo.renderType = GERBV_RENDER_TYPE_GDK;
-#endif
 
     logToFileOption = FALSE;
     logToFileFilename = NULL;
@@ -691,19 +691,13 @@ main(int argc, char *argv[])
 					"is not recognized.\n"));
 		exit(1);
 	    }
-    	    r=g=b=-1;
-	    sscanf (optarg,"#%2x%2x%2x",&r,&g,&b);
-	    if ( (r<0)||(r>255)||(g<0)||(g>255)||(b<0)||(b>255)) {
 
-		fprintf(stderr, _("Specified color values should be "
-					"between 00 and FF.\n"));
+	    if (!gdk_rgba_parse(&mainProject->background, optarg)) {
+		fprintf(stderr, _("Invalid background color\n"));
 		exit(1);
 	    }
 
 	    screen.background_is_from_cmdline = TRUE;
-	    mainProject->background.red = r*257;
-    	    mainProject->background.green = g*257;
-    	    mainProject->background.blue = b*257;
 
 	    break;
 	case 'f' :	// Set layer colors to this color (foreground color)

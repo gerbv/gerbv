@@ -144,7 +144,7 @@ callbacks_bugs_activate (GtkMenuItem     *menuitem,
 			 gpointer         user_data);
 
 gboolean
-callbacks_window_scroll_event(GtkWidget *widget, GdkEventScroll *event);
+callbacks_drawingarea_scroll_event(GtkWidget *widget, GdkEventScroll *event);
 
 gboolean
 callbacks_window_key_release_event (GtkWidget *widget, GdkEventKey *event);
@@ -171,7 +171,7 @@ gboolean
 callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *event);
 
 gboolean
-callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event);
+callbacks_drawingarea_draw_event (GtkWidget *widget, cairo_t *cr, gpointer data);
 
 void
 callbacks_handle_log_messages(const gchar *log_domain,
@@ -293,7 +293,7 @@ void callbacks_hadjustment_value_changed (GtkAdjustment *adjustment,
 void callbacks_vadjustment_value_changed (GtkAdjustment *adjustment,
 			gpointer user_data);
 
-void callbacks_force_expose_event_for_screen (void);
+void callbacks_queue_redraw (void);
 
 void
 callbacks_change_tool  (GtkButton *button, gpointer   user_data);
