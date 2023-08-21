@@ -1,5 +1,5 @@
 ---
-base: fedora:38
+base: fedora:36
 install:
  - make
  - mingw64-gcc
