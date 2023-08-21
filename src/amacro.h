@@ -36,18 +36,17 @@ extern "C" {
 /*
  * Parses the definition of an aperture macro
  */
-gerbv_amacro_t *parse_aperture_macro(gerb_file_t *fd);
+gerbv_amacro_t* parse_aperture_macro(gerb_file_t* fd);
 
 /*
  * Frees amacro struct completly
  */
-void free_amacro(gerbv_amacro_t *amacro);
+void free_amacro(gerbv_amacro_t* amacro);
 
 /*
  * Print out parsed aperture macro. For debugging purpose.
  */
-void print_program(gerbv_amacro_t *amacro);
-
+void print_program(gerbv_amacro_t* amacro);
 
 #ifdef __cplusplus
 }

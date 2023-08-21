@@ -37,18 +37,19 @@
 #include "drill_stats.h"
 #include "gerb_stats.h"
 
-#define dprintf if(DEBUG) printf
-
+#define dprintf \
+    if (DEBUG)  \
+    printf
 
 /* ------------------------------------------------------- */
 /** Allocates a new drill_stats structure
    @return drill_stats pointer on success, NULL on ERROR */
-gerbv_drill_stats_t *
+gerbv_drill_stats_t*
 gerbv_drill_stats_new(void) {
 
-    gerbv_drill_stats_t *stats;
-    gerbv_drill_list_t *drill_list;
-    gerbv_error_list_t *error_list;
+    gerbv_drill_stats_t* stats;
+    gerbv_drill_list_t*  drill_list;
+    gerbv_error_list_t*  error_list;
 
     /* Malloc space for new stats struct.  Return NULL if error. */
     if (NULL == (stats = g_new0(gerbv_drill_stats_t, 1))) {
@@ -59,13 +60,13 @@ gerbv_drill_stats_new(void) {
     drill_list = gerbv_drill_stats_new_drill_list();
     if (drill_list == NULL)
         GERB_FATAL_ERROR("malloc drill_list failed in %s()", __FUNCTION__);
-    stats->drill_list = (gerbv_drill_list_t *) drill_list;
+    stats->drill_list = (gerbv_drill_list_t*)drill_list;
 
     /* Initialize error list */
     error_list = gerbv_drill_stats_new_error_list();
     if (error_list == NULL)
         GERB_FATAL_ERROR("malloc error_list failed in %s()", __FUNCTION__);
-    stats->error_list = (gerbv_error_list_t *) error_list;
+    stats->error_list = (gerbv_error_list_t*)error_list;
 
     stats->detect = NULL;
 
@@ -73,47 +74,45 @@ gerbv_drill_stats_new(void) {
 }
 
 void
-gerbv_drill_destroy_error_list (gerbv_error_list_t *errorList) {
-	gerbv_error_list_t *nextError=errorList,*tempError;
-	
-	while (nextError) {
-		tempError = nextError->next;
-		g_free (nextError->error_text);
-		g_free (nextError);
-		nextError = tempError;
-	}
+gerbv_drill_destroy_error_list(gerbv_error_list_t* errorList) {
+    gerbv_error_list_t *nextError = errorList, *tempError;
+
+    while (nextError) {
+        tempError = nextError->next;
+        g_free(nextError->error_text);
+        g_free(nextError);
+        nextError = tempError;
+    }
 }
 
 void
-gerbv_drill_destroy_drill_list (gerbv_drill_list_t *apertureList) {
-	gerbv_drill_list_t *nextAperture=apertureList,*tempAperture;
-	
-	while (nextAperture) {
-		tempAperture = nextAperture->next;
-		g_free(nextAperture->drill_unit);
-		g_free (nextAperture);
-		nextAperture = tempAperture;
-	}
+gerbv_drill_destroy_drill_list(gerbv_drill_list_t* apertureList) {
+    gerbv_drill_list_t *nextAperture = apertureList, *tempAperture;
+
+    while (nextAperture) {
+        tempAperture = nextAperture->next;
+        g_free(nextAperture->drill_unit);
+        g_free(nextAperture);
+        nextAperture = tempAperture;
+    }
 }
 
 void
-gerbv_drill_stats_destroy(gerbv_drill_stats_t *stats) {
-	if (stats == NULL)
-		return;
-	gerbv_drill_destroy_error_list (stats->error_list);
-	gerbv_drill_destroy_drill_list (stats->drill_list);
-	g_free (stats);
-}	
-	
+gerbv_drill_stats_destroy(gerbv_drill_stats_t* stats) {
+    if (stats == NULL)
+        return;
+    gerbv_drill_destroy_error_list(stats->error_list);
+    gerbv_drill_destroy_drill_list(stats->drill_list);
+    g_free(stats);
+}
+
 /* ------------------------------------------------------- */
 void
-gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats, 
-		      gerbv_drill_stats_t *input_stats,
-		      int this_layer) {
+gerbv_drill_stats_add_layer(gerbv_drill_stats_t* accum_stats, gerbv_drill_stats_t* input_stats, int this_layer) {
 
-    gerbv_drill_list_t *drill;
-    gerbv_error_list_t *error;
-    char *tmps, *tmps2;
+    gerbv_drill_list_t* drill;
+    gerbv_error_list_t* error;
+    char *              tmps, *tmps2;
 
     dprintf("--->  Entering gerbv_drill_stats_add_layer ..... \n");
 
@@ -153,92 +152,75 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     accum_stats->R += input_stats->R;
 
     /* ==== Now deal with the drill list ==== */
-    for (drill = input_stats->drill_list;
-         drill != NULL;
-	 drill = drill->next) {
-	dprintf("   In gerbv_drill_stats_add_layer, adding drill_num = %d to list\n",
-		drill->drill_num);
-	/* First add this input drill to the accumulated list.
-	 * Drills already in accum list will not be added. */
-	drill_stats_add_to_drill_list(accum_stats->drill_list,
-		 		      drill->drill_num, 
-				      drill->drill_size,
-				      drill->drill_unit);
+    for (drill = input_stats->drill_list; drill != NULL; drill = drill->next) {
+        dprintf("   In gerbv_drill_stats_add_layer, adding drill_num = %d to list\n", drill->drill_num);
+        /* First add this input drill to the accumulated list.
+         * Drills already in accum list will not be added. */
+        drill_stats_add_to_drill_list(accum_stats->drill_list, drill->drill_num, drill->drill_size, drill->drill_unit);
 
-	/* Now add count of input drill to accum list */
-	dprintf("   adding count %d of drills for drill %d\n", 
-		drill->drill_count, drill->drill_num);
-	drill_stats_add_to_drill_counter(accum_stats->drill_list,
-					 drill->drill_num,
-					 drill->drill_count);
-	accum_stats->total_count += drill->drill_count;
+        /* Now add count of input drill to accum list */
+        dprintf("   adding count %d of drills for drill %d\n", drill->drill_count, drill->drill_num);
+        drill_stats_add_to_drill_counter(accum_stats->drill_list, drill->drill_num, drill->drill_count);
+        accum_stats->total_count += drill->drill_count;
     }
 
     /* ==== Now deal with the error list ==== */
     for (error = input_stats->error_list; error != NULL; error = error->next) {
-	if (error->error_text != NULL)
-	    gerbv_stats_printf(accum_stats->error_list, error->type,
-		    this_layer, "%s", error->error_text);
+        if (error->error_text != NULL)
+            gerbv_stats_printf(accum_stats->error_list, error->type, this_layer, "%s", error->error_text);
     }
 
     /* ==== Now deal with the misc header stuff ==== */
-    tmps = NULL;
+    tmps  = NULL;
     tmps2 = NULL;
     if (input_stats->detect) {
-	tmps2 = g_strdup_printf (_("Broken tool detect %s (layer %d)"), input_stats->detect, this_layer);
-    }    
+        tmps2 = g_strdup_printf(_("Broken tool detect %s (layer %d)"), input_stats->detect, this_layer);
+    }
     if (accum_stats->detect) {
-	if (tmps2) {
-	    tmps = g_strdup_printf ("%s\n%s", accum_stats->detect, tmps2);
-	    g_free (accum_stats->detect);
-	    accum_stats->detect = NULL;
-	}
+        if (tmps2) {
+            tmps = g_strdup_printf("%s\n%s", accum_stats->detect, tmps2);
+            g_free(accum_stats->detect);
+            accum_stats->detect = NULL;
+        }
     } else {
-	if (tmps2) {
-	    tmps = g_strdup_printf ("%s", tmps2);
-	}
+        if (tmps2) {
+            tmps = g_strdup_printf("%s", tmps2);
+        }
     }
     if (tmps2) {
-	g_free (tmps2);
+        g_free(tmps2);
     }
     if (tmps != NULL) {
-	accum_stats->detect = tmps;
+        accum_stats->detect = tmps;
     }
 
-    for (error = input_stats->error_list;
-         error != NULL;
-	 error = error->next) {
-	if (error->error_text != NULL) {
-	    gerbv_stats_printf(accum_stats->error_list, error->type,
-			    this_layer, "%s", error->error_text);
-	}
+    for (error = input_stats->error_list; error != NULL; error = error->next) {
+        if (error->error_text != NULL) {
+            gerbv_stats_printf(accum_stats->error_list, error->type, this_layer, "%s", error->error_text);
+        }
     }
-
 
     dprintf("<---  .... Leaving gerbv_drill_stats_add_layer.\n");
-	    
+
     return;
 }
 
-
 /* ------------------------------------------------------- */
 gboolean
-drill_stats_in_drill_list(gerbv_drill_list_t *drill_list_in,
-			  int drill_num_in) {
-    gerbv_drill_list_t *drill;
-    for(drill = drill_list_in; drill != NULL; drill = drill->next) {
-	if (drill_num_in == drill->drill_num) {
-	    return TRUE;
-	}
+drill_stats_in_drill_list(gerbv_drill_list_t* drill_list_in, int drill_num_in) {
+    gerbv_drill_list_t* drill;
+    for (drill = drill_list_in; drill != NULL; drill = drill->next) {
+        if (drill_num_in == drill->drill_num) {
+            return TRUE;
+        }
     }
     return FALSE;
-
 }
 
 /* ------------------------------------------------------- */
-gerbv_drill_list_t *
+gerbv_drill_list_t*
 gerbv_drill_stats_new_drill_list() {
-    gerbv_drill_list_t *drill_list;
+    gerbv_drill_list_t* drill_list;
 
     /* Malloc space for new drill_list struct.  Return NULL if error. */
     if (NULL == (drill_list = g_new(gerbv_drill_list_t, 1))) {
@@ -246,69 +228,62 @@ gerbv_drill_stats_new_drill_list() {
     }
 
     drill_list->drill_count = 0;
-    drill_list->drill_num = -1; /* default val */
-    drill_list->drill_size = 0.0;
-    drill_list->drill_unit = NULL;
-    drill_list->next = NULL;
+    drill_list->drill_num   = -1; /* default val */
+    drill_list->drill_size  = 0.0;
+    drill_list->drill_unit  = NULL;
+    drill_list->next        = NULL;
     return drill_list;
-} 
-
+}
 
 /* ------------------------------------------------------- */
 void
-drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in, 
-			      int drill_num_in, double drill_size_in,
-			      char *drill_unit_in) {
+drill_stats_add_to_drill_list(
+    gerbv_drill_list_t* drill_list_in, int drill_num_in, double drill_size_in, char* drill_unit_in
+) {
 
-    gerbv_drill_list_t *drill_list_new;
-    gerbv_drill_list_t *drill;
-    gerbv_drill_list_t *drill_last = NULL;
+    gerbv_drill_list_t* drill_list_new;
+    gerbv_drill_list_t* drill;
+    gerbv_drill_list_t* drill_last = NULL;
 
-    dprintf ("%s(%p, %d, %g, \"%s\")\n", __FUNCTION__, drill_list_in, drill_num_in,
-	     drill_size_in, drill_unit_in);
+    dprintf("%s(%p, %d, %g, \"%s\")\n", __FUNCTION__, drill_list_in, drill_num_in, drill_size_in, drill_unit_in);
 
-    dprintf("   ---> Entering drill_stats_add_to_drill_list, first drill_num in list = %d ...\n", 
-	    drill_list_in->drill_num);
+    dprintf(
+        "   ---> Entering drill_stats_add_to_drill_list, first drill_num in list = %d ...\n", drill_list_in->drill_num
+    );
 
     /* First check for empty list.  If empty, then just add this drill */
     if (drill_list_in->drill_num == -1) {
-	dprintf("    .... In drill_stats_add_to_drill_list, adding first drill, no %d\n", 
-		drill_num_in);
-	drill_list_in->drill_num = drill_num_in;
-	drill_list_in->drill_size = drill_size_in;
-	drill_list_in->drill_count = 0;
-	drill_list_in->drill_unit = g_strdup_printf("%s", drill_unit_in);
-	drill_list_in->next = NULL;
-	return;
+        dprintf("    .... In drill_stats_add_to_drill_list, adding first drill, no %d\n", drill_num_in);
+        drill_list_in->drill_num   = drill_num_in;
+        drill_list_in->drill_size  = drill_size_in;
+        drill_list_in->drill_count = 0;
+        drill_list_in->drill_unit  = g_strdup_printf("%s", drill_unit_in);
+        drill_list_in->next        = NULL;
+        return;
     }
     /* Else check to see if this drill is already in the list */
-    for(drill = drill_list_in; 
-	drill != NULL; 
-	drill = (gerbv_drill_list_t *) drill->next) {
-	dprintf("checking this drill_num %d against that in list %d.\n", 
-		drill_num_in, drill->drill_num);
-	if (drill_num_in == drill->drill_num) {
-	    dprintf("   .... In drill_stats_add_to_drill_list, drill no %d already in list\n", 
-		    drill_num_in);
-	    return;  /* Found it in list, so return */
-	}
-	drill_last = drill;
+    for (drill = drill_list_in; drill != NULL; drill = (gerbv_drill_list_t*)drill->next) {
+        dprintf("checking this drill_num %d against that in list %d.\n", drill_num_in, drill->drill_num);
+        if (drill_num_in == drill->drill_num) {
+            dprintf("   .... In drill_stats_add_to_drill_list, drill no %d already in list\n", drill_num_in);
+            return; /* Found it in list, so return */
+        }
+        drill_last = drill;
     }
 
     /* Now malloc space for new drill list element */
     if (NULL == (drill_list_new = g_new(gerbv_drill_list_t, 1))) {
-	GERB_FATAL_ERROR("malloc format failed in %s()", __FUNCTION__);
+        GERB_FATAL_ERROR("malloc format failed in %s()", __FUNCTION__);
     }
 
     /* Now set various parameters based upon calling args */
-    dprintf("    .... In drill_stats_add_to_drill_list, adding new drill, no %d\n", 
-	    drill_num_in);
-    drill_list_new->drill_num = drill_num_in;
-    drill_list_new->drill_size = drill_size_in;
+    dprintf("    .... In drill_stats_add_to_drill_list, adding new drill, no %d\n", drill_num_in);
+    drill_list_new->drill_num   = drill_num_in;
+    drill_list_new->drill_size  = drill_size_in;
     drill_list_new->drill_count = 0;
-    drill_list_new->drill_unit = g_strdup_printf("%s", drill_unit_in);
-    drill_list_new->next = NULL;
-    drill_last->next = drill_list_new;
+    drill_list_new->drill_unit  = g_strdup_printf("%s", drill_unit_in);
+    drill_list_new->next        = NULL;
+    drill_last->next            = drill_list_new;
 
     dprintf("   <---- ... leaving drill_stats_add_to_drill_list.\n");
     return;
@@ -316,30 +291,28 @@ drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
 
 /* ------------------------------------------------------- */
 void
-drill_stats_modify_drill_list(gerbv_drill_list_t *drill_list_in, 
-			      int drill_num_in, double drill_size_in,
-			      char *drill_unit_in) {
+drill_stats_modify_drill_list(
+    gerbv_drill_list_t* drill_list_in, int drill_num_in, double drill_size_in, char* drill_unit_in
+) {
 
-    gerbv_drill_list_t *drill;
+    gerbv_drill_list_t* drill;
 
-    dprintf("   ---> Entering drill_stats_modify_drill_list, first drill_num in list = %d ...\n", 
-	    drill_list_in->drill_num);
+    dprintf(
+        "   ---> Entering drill_stats_modify_drill_list, first drill_num in list = %d ...\n", drill_list_in->drill_num
+    );
 
     /* Look for this drill num in list */
-    for(drill = drill_list_in; 
-	drill != NULL; 
-	drill = (gerbv_drill_list_t *) drill->next) {
-	dprintf("checking this drill_num %d against that in list %d.\n", 
-		drill_num_in, drill->drill_num);
-	if (drill_num_in == drill->drill_num) {
-	    dprintf("   .... Found it, now update it ....\n");
-	    drill->drill_size = drill_size_in;
-	    if (drill->drill_unit) 
-		g_free(drill->drill_unit);
-	    drill->drill_unit = g_strdup_printf("%s", drill_unit_in);
-	    dprintf("   <---- ... Modified drill.  leaving drill_stats_modify_drill_list.\n");
-	    return;
-	}
+    for (drill = drill_list_in; drill != NULL; drill = (gerbv_drill_list_t*)drill->next) {
+        dprintf("checking this drill_num %d against that in list %d.\n", drill_num_in, drill->drill_num);
+        if (drill_num_in == drill->drill_num) {
+            dprintf("   .... Found it, now update it ....\n");
+            drill->drill_size = drill_size_in;
+            if (drill->drill_unit)
+                g_free(drill->drill_unit);
+            drill->drill_unit = g_strdup_printf("%s", drill_unit_in);
+            dprintf("   <---- ... Modified drill.  leaving drill_stats_modify_drill_list.\n");
+            return;
+        }
     }
     dprintf("   <---- ... Did not find drill.  leaving drill_stats_modify_drill_list.\n");
     return;
@@ -347,65 +320,59 @@ drill_stats_modify_drill_list(gerbv_drill_list_t *drill_list_in,
 
 /* ------------------------------------------------------- */
 void
-drill_stats_increment_drill_counter(gerbv_drill_list_t *drill_list_in, 
-				    int drill_num_in) {
+drill_stats_increment_drill_counter(gerbv_drill_list_t* drill_list_in, int drill_num_in) {
 
     dprintf("   ----> Entering drill_stats_increment_drill_counter......\n");
     /* First check to see if this drill is already in the list */
-    gerbv_drill_list_t *drill;
-    for(drill = drill_list_in; drill != NULL; drill = drill->next) {
-	if (drill_num_in == drill->drill_num) {
-	    drill->drill_count++;
-	    dprintf("         .... incrementing drill count.  drill_num = %d, drill_count = %d.\n",
-		    drill_list_in->drill_num, drill->drill_count);
-	    dprintf("   <---- .... Leaving drill_stats_increment_drill_counter after incrementing counter.\n");
-	    return;
-	}
+    gerbv_drill_list_t* drill;
+    for (drill = drill_list_in; drill != NULL; drill = drill->next) {
+        if (drill_num_in == drill->drill_num) {
+            drill->drill_count++;
+            dprintf(
+                "         .... incrementing drill count.  drill_num = %d, drill_count = %d.\n",
+                drill_list_in->drill_num, drill->drill_count
+            );
+            dprintf("   <---- .... Leaving drill_stats_increment_drill_counter after incrementing counter.\n");
+            return;
+        }
     }
     dprintf("   <---- .... Leaving drill_stats_increment_drill_counter without incrementing any counter.\n");
-
 }
 
 /* ------------------------------------------------------- */
 void
-drill_stats_add_to_drill_counter(gerbv_drill_list_t *drill_list_in, 
-				 int drill_num_in, 
-				 int increment) {
+drill_stats_add_to_drill_counter(gerbv_drill_list_t* drill_list_in, int drill_num_in, int increment) {
 
-    gerbv_drill_list_t *drill;
-    for(drill = drill_list_in; drill != NULL; drill = drill->next) {
-	if (drill_num_in == drill->drill_num) {
-	    dprintf("    In drill_stats_add_to_drill_counter, adding increment = %d drills to drill list\n", increment);
-	    drill->drill_count += increment;
-	    return;
-	}
+    gerbv_drill_list_t* drill;
+    for (drill = drill_list_in; drill != NULL; drill = drill->next) {
+        if (drill_num_in == drill->drill_num) {
+            dprintf("    In drill_stats_add_to_drill_counter, adding increment = %d drills to drill list\n", increment);
+            drill->drill_count += increment;
+            return;
+        }
     }
 }
 
-
 /* ------------------------------------------------------- */
-gerbv_error_list_t *
+gerbv_error_list_t*
 gerbv_drill_stats_new_error_list() {
-    gerbv_error_list_t *error_list;
+    gerbv_error_list_t* error_list;
 
     /* Malloc space for new error_list struct.  Return NULL if error. */
     if (NULL == (error_list = g_new(gerbv_error_list_t, 1))) {
         return NULL;
     }
 
-    error_list->layer = -1;
+    error_list->layer      = -1;
     error_list->error_text = NULL;
-    error_list->next = NULL;
+    error_list->next       = NULL;
     return error_list;
-} 
+}
 
 /* ------------------------------------------------------- */
 /** Add statistic message for drill layer.
  * It is recommend to use gerbv_stats_printf() instead of this function. */
 void
-drill_stats_add_error(gerbv_error_list_t *error_list_in, 
-		      int layer, const char *error_text,
-		      gerbv_message_type_t type)
-{
+drill_stats_add_error(gerbv_error_list_t* error_list_in, int layer, const char* error_text, gerbv_message_type_t type) {
     gerbv_stats_add_error(error_list_in, layer, error_text, type);
 }

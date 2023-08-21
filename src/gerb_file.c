@@ -50,64 +50,64 @@
 #include "gerb_file.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
-#define dprintf if(DEBUG) printf
+#define dprintf \
+    if (DEBUG)  \
+    printf
 
-gerb_file_t *
-gerb_fopen(char const * filename)
-{
-    gerb_file_t *fd;
-    struct stat statinfo;
-    
+gerb_file_t*
+gerb_fopen(const char* filename) {
+    gerb_file_t* fd;
+    struct stat  statinfo;
+
     dprintf("---> Entering gerb_fopen, filename = %s\n", filename);
 
     fd = g_new(gerb_file_t, 1);
     if (fd == NULL) {
-	return NULL;
+        return NULL;
     }
 
     dprintf("     Doing fopen\n");
     /* fopen() can't open files with non ASCII filenames on windows */
     fd->fd = g_fopen(filename, "rb");
     if (fd->fd == NULL) {
-	g_free(fd);
-	return NULL;
+        g_free(fd);
+        return NULL;
     }
 
     dprintf("     Doing fstat\n");
-    fd->ptr = 0;
+    fd->ptr    = 0;
     fd->fileno = fileno(fd->fd);
     if (fstat(fd->fileno, &statinfo) < 0) {
-	fclose(fd->fd);
-	g_free(fd);
-	return NULL;
+        fclose(fd->fd);
+        g_free(fd);
+        return NULL;
     }
 
     dprintf("     Checking S_ISREG\n");
     if (!S_ISREG(statinfo.st_mode)) {
-	fclose(fd->fd);
-	g_free(fd);
-	errno = EISDIR;
-	return NULL;
+        fclose(fd->fd);
+        g_free(fd);
+        errno = EISDIR;
+        return NULL;
     }
 
     dprintf("     Checking statinfo.st_size\n");
     if ((int)statinfo.st_size == 0) {
-	fclose(fd->fd);
-	g_free(fd);
-	errno = EIO; /* More compatible with the world outside Linux */
-	return NULL;
+        fclose(fd->fd);
+        g_free(fd);
+        errno = EIO; /* More compatible with the world outside Linux */
+        return NULL;
     }
 
 #ifdef HAVE_SYS_MMAN_H
 
     dprintf("     Doing mmap\n");
     fd->datalen = (int)statinfo.st_size;
-    fd->data = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, 
-			    fd->fileno, 0);
-    if(fd->data == MAP_FAILED) {
-	fclose(fd->fd);
-	g_free(fd);
-	fd = NULL;
+    fd->data    = (char*)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, fd->fileno, 0);
+    if (fd->data == MAP_FAILED) {
+        fclose(fd->fd);
+        g_free(fd);
+        fd = NULL;
     }
 
 #else
@@ -115,7 +115,7 @@ gerb_fopen(char const * filename)
 
     dprintf("     Doing calloc\n");
     fd->datalen = (int)statinfo.st_size;
-    fd->data = calloc(1, statinfo.st_size + 1);
+    fd->data    = calloc(1, statinfo.st_size + 1);
     if (fd->data == NULL) {
         fclose(fd->fd);
         g_free(fd);
@@ -123,11 +123,11 @@ gerb_fopen(char const * filename)
     }
     if (fread((void*)fd->data, 1, statinfo.st_size, fd->fd) != statinfo.st_size) {
         fclose(fd->fd);
-	g_free(fd->data);
+        g_free(fd->data);
         g_free(fd);
-	return NULL;
+        return NULL;
     }
-    rewind (fd->fd);
+    rewind(fd->fd);
 
 #endif
 
@@ -138,55 +138,49 @@ gerb_fopen(char const * filename)
     return fd;
 } /* gerb_fopen */
 
-
 int
-gerb_fgetc(gerb_file_t *fd)
-{
+gerb_fgetc(gerb_file_t* fd) {
 
     if (fd->ptr >= fd->datalen)
-	return EOF;
+        return EOF;
 
-    return (int) fd->data[fd->ptr++];
+    return (int)fd->data[fd->ptr++];
 } /* gerb_fgetc */
 
-
 int
-gerb_fgetint(gerb_file_t *fd, int *len)
-{
+gerb_fgetint(gerb_file_t* fd, int* len) {
     long int result;
-    char *end;
-    
-    errno = 0;
+    char*    end;
+
+    errno  = 0;
     result = strtol(fd->data + fd->ptr, &end, 10);
     if (errno) {
-	GERB_COMPILE_ERROR(_("Failed to read integer"));
-	return 0;
+        GERB_COMPILE_ERROR(_("Failed to read integer"));
+        return 0;
     }
 
     if (len) {
-	*len = end - (fd->data + fd->ptr);
+        *len = end - (fd->data + fd->ptr);
     }
 
     fd->ptr = end - fd->data;
 
     if (len && (result < 0))
-	*len -= 1;
+        *len -= 1;
 
     return (int)result;
 } /* gerb_fgetint */
 
-
 double
-gerb_fgetdouble(gerb_file_t *fd)
-{
+gerb_fgetdouble(gerb_file_t* fd) {
     double result;
-    char *end;
+    char*  end;
 
-    errno = 0;    
+    errno  = 0;
     result = strtod(fd->data + fd->ptr, &end);
     if (errno) {
-	GERB_COMPILE_ERROR(_("Failed to read double"));
-	return 0.0;
+        GERB_COMPILE_ERROR(_("Failed to read double"));
+        return 0.0;
     }
 
     fd->ptr = end - fd->data;
@@ -194,31 +188,29 @@ gerb_fgetdouble(gerb_file_t *fd)
     return result;
 } /* gerb_fgetdouble */
 
-
-char *
-gerb_fgetstring(gerb_file_t *fd, char term)
-{
-    char *strend = NULL;
-    char *newstr;
+char*
+gerb_fgetstring(gerb_file_t* fd, char term) {
+    char* strend = NULL;
+    char* newstr;
     char *i, *iend;
-    int len;
+    int   len;
 
     iend = fd->data + fd->datalen;
     for (i = fd->data + fd->ptr; i < iend; i++) {
-	if (*i == term) {
-	    strend = i;
-	    break;
-	}
+        if (*i == term) {
+            strend = i;
+            break;
+        }
     }
 
     if (strend == NULL)
-	return NULL;
+        return NULL;
 
     len = strend - (fd->data + fd->ptr);
 
-    newstr = (char *)g_malloc(len + 1);
+    newstr = (char*)g_malloc(len + 1);
     if (newstr == NULL)
-	return NULL;
+        return NULL;
     strncpy(newstr, fd->data + fd->ptr, len);
     newstr[len] = '\0';
     fd->ptr += len;
@@ -226,47 +218,41 @@ gerb_fgetstring(gerb_file_t *fd, char term)
     return newstr;
 } /* gerb_fgetstring */
 
-
-void 
-gerb_ungetc(gerb_file_t *fd)
-{
+void
+gerb_ungetc(gerb_file_t* fd) {
     if (fd->ptr)
-	fd->ptr--;
+        fd->ptr--;
 
     return;
 } /* gerb_ungetc */
 
-
 void
-gerb_fclose(gerb_file_t *fd)
-{
+gerb_fclose(gerb_file_t* fd) {
     if (fd) {
         g_free(fd->filename);
 
 #ifdef HAVE_SYS_MMAN_H
-	if (munmap(fd->data, fd->datalen) < 0)
-	    GERB_FATAL_ERROR("munmap: %s", strerror(errno));
+        if (munmap(fd->data, fd->datalen) < 0)
+            GERB_FATAL_ERROR("munmap: %s", strerror(errno));
 #else
-	g_free(fd->data);
-#endif   
-	if (fclose(fd->fd) == EOF)
-	    GERB_FATAL_ERROR("fclose: %s", strerror(errno));
-	g_free(fd);
+        g_free(fd->data);
+#endif
+        if (fclose(fd->fd) == EOF)
+            GERB_FATAL_ERROR("fclose: %s", strerror(errno));
+        g_free(fd);
     }
 
     return;
 } /* gerb_fclose */
 
-
-char *
-gerb_find_file(char const * filename, char **paths)
-{
-    char *curr_path = NULL;
-    char *complete_path = NULL;
-    int	 i;
+char*
+gerb_find_file(const char* filename, char** paths) {
+    char* curr_path     = NULL;
+    char* complete_path = NULL;
+    int   i;
 
 #ifdef DEBUG
-    if( DEBUG > 0 ) {
+    if (DEBUG > 0) {
         for (i = 0; paths[i] != NULL; i++) {
             printf("%s():  paths[%d] = \"%s\"\n", __FUNCTION__, i, paths[i]);
         }
@@ -276,74 +262,75 @@ gerb_find_file(char const * filename, char **paths)
     for (i = 0; paths[i] != NULL; i++) {
         dprintf("%s():  Try paths[%d] = \"%s\"\n", __FUNCTION__, i, paths[i]);
 
-	/*
-	 * Environment variables start with a $ sign 
-	 */
-	if (paths[i][0] == '$') {
-	    char *env_name, *env_value, *tmp;
-	    int len;
+        /*
+         * Environment variables start with a $ sign
+         */
+        if (paths[i][0] == '$') {
+            char *env_name, *env_value, *tmp;
+            int   len;
 
-	    /* Extract environment name. Remember we start with a $ */
-        
-   	    tmp = strchr(paths[i], G_DIR_SEPARATOR);
-	    if (tmp == NULL) 
-		len = strlen(paths[i]) - 1;
-	    else
-		len = tmp - paths[i] - 1;
-	    env_name = (char *)g_malloc(len + 1);
-	    if (env_name == NULL)
-		return NULL;
-	    strncpy(env_name, (char *)(paths[i] + 1), len);
-	    env_name[len] = '\0';
+            /* Extract environment name. Remember we start with a $ */
 
-	    env_value = getenv(env_name);
-            dprintf("%s():  Trying \"%s\" = \"%s\" from the environment\n",
-                __FUNCTION__, env_name,
-                env_value == NULL ? "(null)" : env_value);
+            tmp = strchr(paths[i], G_DIR_SEPARATOR);
+            if (tmp == NULL)
+                len = strlen(paths[i]) - 1;
+            else
+                len = tmp - paths[i] - 1;
+            env_name = (char*)g_malloc(len + 1);
+            if (env_name == NULL)
+                return NULL;
+            strncpy(env_name, (char*)(paths[i] + 1), len);
+            env_name[len] = '\0';
 
-	    if (env_value == NULL) {
-	      curr_path = NULL;
-	    } else {
-	      curr_path = (char *)g_malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
-	      if (curr_path == NULL)
-		return NULL;
-	      strcpy(curr_path, env_value);
-	      strcat(curr_path, &paths[i][len + 1]);
-	      g_free(env_name);
-	    }
-	} else {
-	    curr_path = paths[i];
-	}
+            env_value = getenv(env_name);
+            dprintf(
+                "%s():  Trying \"%s\" = \"%s\" from the environment\n", __FUNCTION__, env_name,
+                env_value == NULL ? "(null)" : env_value
+            );
 
-	if (curr_path != NULL) {
-	  /*
-	   * Build complete path (inc. filename) and check if file exists.
-	   */
-	  complete_path = g_build_filename(curr_path, filename, NULL);
-	  if (complete_path == NULL)
-	    return NULL;
-	  
-	  if (paths[i][0] == '$') {
-	    g_free(curr_path);
-	    curr_path = NULL;
-	  }
-	  
-	  dprintf("%s():  Tring to access \"%s\"\n", __FUNCTION__,
-		  complete_path);
-	  
-	  if (access(complete_path, R_OK) != -1)
-	    break;
-	  
-	  g_free(complete_path);
-	  complete_path = NULL;
-	}
+            if (env_value == NULL) {
+                curr_path = NULL;
+            } else {
+                curr_path = (char*)g_malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
+                if (curr_path == NULL)
+                    return NULL;
+                strcpy(curr_path, env_value);
+                strcat(curr_path, &paths[i][len + 1]);
+                g_free(env_name);
+            }
+        } else {
+            curr_path = paths[i];
+        }
+
+        if (curr_path != NULL) {
+            /*
+             * Build complete path (inc. filename) and check if file exists.
+             */
+            complete_path = g_build_filename(curr_path, filename, NULL);
+            if (complete_path == NULL)
+                return NULL;
+
+            if (paths[i][0] == '$') {
+                g_free(curr_path);
+                curr_path = NULL;
+            }
+
+            dprintf("%s():  Tring to access \"%s\"\n", __FUNCTION__, complete_path);
+
+            if (access(complete_path, R_OK) != -1)
+                break;
+
+            g_free(complete_path);
+            complete_path = NULL;
+        }
     }
-	
+
     if (complete_path == NULL)
-      errno = ENOENT;
-    
-    dprintf("%s():  returning complete_path = \"%s\"\n", __FUNCTION__,
-	    complete_path == NULL ? "(null)" : complete_path);
-    
+        errno = ENOENT;
+
+    dprintf(
+        "%s():  returning complete_path = \"%s\"\n", __FUNCTION__, complete_path == NULL ? "(null)" : complete_path
+    );
+
     return complete_path;
 } /* gerb_find_file */

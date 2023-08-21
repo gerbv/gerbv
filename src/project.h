@@ -21,53 +21,50 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
- 
+
 /** \file project.h
     \brief Header info for loading and saving project files.
     \ingroup gerbv
- */ 
+ */
 
 #ifndef PROJECT_H
 #define PROJECT_H
 
 typedef struct project_list_t {
-    int layerno;
-    char *filename;
-    int rgb[3];
-    int alpha;
-    char inverted;
-    double translate_x;
-    double translate_y;
-    double rotation;
-    double scale_x;
-    double scale_y;
-    char mirror_x;
-    char mirror_y;
-    char is_pnp;
-    char visible;
-    gerbv_HID_Attribute *attr_list;
-    int n_attr;
-    struct project_list_t *next;
+    int                    layerno;
+    char*                  filename;
+    int                    rgb[3];
+    int                    alpha;
+    char                   inverted;
+    double                 translate_x;
+    double                 translate_y;
+    double                 rotation;
+    double                 scale_x;
+    double                 scale_y;
+    char                   mirror_x;
+    char                   mirror_y;
+    char                   is_pnp;
+    char                   visible;
+    gerbv_HID_Attribute*   attr_list;
+    int                    n_attr;
+    struct project_list_t* next;
 } project_list_t;
-
 
 enum conv_type {
     MINGW_UNIX = 0,
     UNIX_MINGW = 1
 };
 
-int project_is_gerbv_project(const char *filename, gboolean *ret);
+int project_is_gerbv_project(const char* filename, gboolean* ret);
 
 /*
  * Reads a project from a file and returns a linked list describing the project
  */
-project_list_t *read_project_file(char const* filename);
-
+project_list_t* read_project_file(const char* filename);
 
 /* Writes a description of a project to a file
  * that can be parsed by read_project above */
-int write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_list_t *project);
+int write_project_file(gerbv_project_t* gerbvProject, const char* filename, project_list_t* project);
 
-void
-project_destroy_project_list (project_list_t *projectList);
+void project_destroy_project_list(project_list_t* projectList);
 #endif /* PROJECT_H */

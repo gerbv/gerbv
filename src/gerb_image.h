@@ -50,25 +50,22 @@ extern "C" {
  * 8: Missing info
  * It could be any of above or'ed together
  */
-typedef enum { 
-    GERB_IMAGE_OK = 0,
-    GERB_IMAGE_MISSING_NETLIST = 1,
-    GERB_IMAGE_MISSING_FORMAT = 2, 
+typedef enum {
+    GERB_IMAGE_OK                = 0,
+    GERB_IMAGE_MISSING_NETLIST   = 1,
+    GERB_IMAGE_MISSING_FORMAT    = 2,
     GERB_IMAGE_MISSING_APERTURES = 4,
-    GERB_IMAGE_MISSING_INFO = 8,
+    GERB_IMAGE_MISSING_INFO      = 8,
 } gerb_verify_error_t;
 
-gerb_verify_error_t gerbv_image_verify(gerbv_image_t const* image);
+gerb_verify_error_t gerbv_image_verify(const gerbv_image_t* image);
 
 /* Dumps a written version of image to stdout */
-void gerbv_image_dump(gerbv_image_t const* image);
+void gerbv_image_dump(const gerbv_image_t* image);
 
-gerbv_layer_t *
-gerbv_image_return_new_layer (gerbv_layer_t *previousLayer);
+gerbv_layer_t* gerbv_image_return_new_layer(gerbv_layer_t* previousLayer);
 
-gerbv_netstate_t *
-gerbv_image_return_new_netstate (gerbv_netstate_t *previousState);
-
+gerbv_netstate_t* gerbv_image_return_new_netstate(gerbv_netstate_t* previousState);
 
 #ifdef __cplusplus
 }
