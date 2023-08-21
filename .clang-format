@@ -1,0 +1,221 @@
+---
+AccessModifierOffset: -2
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments: Consecutive
+#AlignConsecutiveAssignments:
+#  Enabled: true
+#  AcrossEmptyLines: false
+#  AcrossComments: false
+#  AlignCompound: true     # Really want to enable this...
+#  PadOperators: true      # Really want to enable this...
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveMacros: Consecutive
+AlignEscapedNewlines: Left
+AlignOperands:   AlignAfterOperator
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: false
+# AllowAllConstructorInitializersOnNextLine: true # deprecated in v14 ... see PackConstructorInitializers::NextLine
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterReturnType: AllDefinitions
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: Yes
+AttributeMacros:
+  - __capability
+  - __attribute__
+
+# BasedOnStyle:    ''
+BinPackArguments: true
+BinPackParameters: true
+BitFieldColonSpacing: Both
+BraceWrapping: # applies only when BreakBeforeBraces := Custom
+  AfterCaseLabel:        false
+  AfterClass:            false
+  AfterControlStatement: Never
+  AfterEnum:             false
+  AfterFunction:         false
+  AfterNamespace:        false
+  AfterObjCDeclaration:  true
+  AfterStruct:           false
+  AfterUnion:            false
+  AfterExternBlock:      false
+  BeforeCatch:           true
+  BeforeElse:            false
+  BeforeLambdaBody:      false
+  BeforeWhile:           false
+  IndentBraces:          false
+  SplitEmptyFunction:    true
+  SplitEmptyRecord:      true
+  SplitEmptyNamespace:   true
+# BreakAfterJavaFieldAnnotations: false
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Custom
+BreakBeforeConceptDeclarations: true
+# BreakBeforeInheritanceComma: false
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: AfterColon
+BreakConstructorInitializersBeforeComma: false
+BreakInheritanceList: AfterColon
+BreakStringLiterals: true
+
+ColumnLimit:     120
+CommentPragmas:  '^ IWYU pragma:'
+CompactNamespaces: false
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: false
+
+DeriveLineEnding: true # deprecated in v16 ... see LineEnding::DeriveLF / LineEnding::DeriveCRLF
+DerivePointerAlignment: false
+DisableFormat:   false
+
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: Always
+# ExperimentalAutoDetectBinPacking: false # experimental ... do not use
+
+FixNamespaceComments: true
+ForEachMacros:
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+
+IfMacros:
+  - KJ_IF_MAYBE
+IncludeBlocks:   Preserve
+IncludeCategories:
+  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
+    Priority:        2
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
+    Priority:        3
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '.*'
+    Priority:        1
+    SortPriority:    0
+    CaseSensitive:   false
+IncludeIsMainRegex: '(Test)?$'
+IncludeIsMainSourceRegex: ''
+IndentAccessModifiers: false
+IndentCaseBlocks: true
+IndentCaseLabels: true
+IndentExternBlock: NoIndent
+IndentGotoLabels: false
+IndentPPDirectives: None
+# IndentRequires:  false
+IndentWidth:     4
+IndentWrappedFunctionNames: false
+# InsertBraces: true       # requires clang-format v15
+# InsertNewlineAtEOF: true # requires clang-format v16
+InsertTrailingCommas: None
+
+# JavaImportGroups: [ 'com.example', 'com', 'org' ]
+JavaScriptQuotes: Leave
+JavaScriptWrapImports: true
+
+KeepEmptyLinesAtTheStartOfBlocks: true
+
+LambdaBodyIndentation: Signature
+Language: Cpp
+
+MacroBlockBegin: ''
+MacroBlockEnd:   ''
+# Macros: # don't define unless needed
+MaxEmptyLinesToKeep: 1
+
+NamespaceIndentation: None
+
+ObjCBinPackProtocolList: Auto
+ObjCBlockIndentWidth: 4
+ObjCBreakBeforeNestedBlockParam: true
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: true
+
+PPIndentWidth: -1
+# Google, Chromium set to NextLine ... check what this does?
+PackConstructorInitializers: CurrentLine
+PenaltyBreakAssignment: 2
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakOpenParenthesis: 0
+PenaltyBreakString: 1000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000
+PenaltyIndentedWhitespace: 0
+PenaltyReturnTypeOnItsOwnLine: 60
+PointerAlignment: Left
+
+QualifierAlignment: Left
+
+# RawStringFormats: # don't define unless needed
+ReferenceAlignment: Pointer
+ReflowComments:  true
+RemoveBracesLLVM: false
+
+SeparateDefinitionBlocks: Always
+ShortNamespaceLines: 1
+SortIncludes:    Never # WARNING -- This project's headers have technical debt ... do NOT sort them!
+SortJavaStaticImport: Before
+SortUsingDeclarations: true
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: Custom
+
+SpaceBeforeParensOptions:
+  AfterControlStatements:       true
+  AfterForeachMacros:           false
+  AfterFunctionDefinitionName:  false
+  AfterFunctionDeclarationName: false
+  AfterIfMacros:                false
+  AfterOverloadedOperator:      false
+  BeforeNonEmptyParentheses:    false
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false       # deprecated in v17 ... see SpaceInParensOptions::InEmptyParenthesis
+SpacesBeforeTrailingComments: 2
+SpacesInAngles:  Never
+SpacesInCStyleCastParentheses: false # deprecated in v17 ... see SpacesInParensOptions::InCStyleCasts
+SpacesInConditionalStatement: false  # deprecated in v17 ... see SpacesInParensOptions::InConditionalStatements
+SpacesInContainerLiterals: true
+SpacesInLineCommentPrefix:
+  Minimum:         1
+  Maximum:         -1
+SpacesInParentheses: false           # deprecated in v17 ... see SpacesInParens := Custom, and SpacesInParensOptions
+SpacesInSquareBrackets: false
+Standard:        c++03
+StatementAttributeLikeMacros:
+  - Q_EMIT
+StatementMacros:
+  - Q_UNUSED
+  - QT_REQUIRE_VERSION
+
+TabWidth:        4
+# TypenameMacros: [ 'STACK_OF', 'LIST'] # don't define unless needed
+UseCRLF:         false               # deprecated in v16 ... see LineEnding::LF and LineEnding::CRLF
+UseTab:          Never
+WhitespaceSensitiveMacros:
+  - STRINGIZE
+  - PP_STRINGIZE
+  - BOOST_PP_STRINGIZE
+  - NS_SWIFT_NAME
+  - CF_SWIFT_NAME
+...
+
