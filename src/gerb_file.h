@@ -32,29 +32,28 @@
 #include <stdio.h>
 
 typedef struct file {
-    FILE *fd;     /* File descriptor */
-    int   fileno; /* The integer version of fd */
-    char *data;   /* Pointer to data mmaped in. May not be changed, use ptr */
-    int   datalen;/* Length of mmaped data ie file length */
-    int   ptr;    /* Index in data where we are reading */
-    char *filename;  /* File name */
+    FILE* fd;       /* File descriptor */
+    int   fileno;   /* The integer version of fd */
+    char* data;     /* Pointer to data mmaped in. May not be changed, use ptr */
+    int   datalen;  /* Length of mmaped data ie file length */
+    int   ptr;      /* Index in data where we are reading */
+    char* filename; /* File name */
 } gerb_file_t;
 
-
-gerb_file_t *gerb_fopen(char const* filename);
-int gerb_fgetc(gerb_file_t *fd);
-int gerb_fgetint(gerb_file_t *fd, int *len); /* If len != NULL, returns number
-						of chars parsed in len */
-double gerb_fgetdouble(gerb_file_t *fd);
-char *gerb_fgetstring(gerb_file_t *fd, char term);
-void gerb_ungetc(gerb_file_t *fd);
-void gerb_fclose(gerb_file_t *fd);
+gerb_file_t* gerb_fopen(const char* filename);
+int          gerb_fgetc(gerb_file_t* fd);
+int          gerb_fgetint(gerb_file_t* fd, int* len); /* If len != NULL, returns number
+                                 of chars parsed in len */
+double gerb_fgetdouble(gerb_file_t* fd);
+char*  gerb_fgetstring(gerb_file_t* fd, char term);
+void   gerb_ungetc(gerb_file_t* fd);
+void   gerb_fclose(gerb_file_t* fd);
 
 /** Search for files in directories pointed out by paths, a NULL terminated
  * list of directories to search. If a string in paths starts with a $, then
  * characters to / (or string end if no /) is interpreted as a environment
  * variable.
  */
-char *gerb_find_file(char const * filename, char **paths);
+char* gerb_find_file(const char* filename, char** paths);
 
 #endif /* GERB_FILE_H */

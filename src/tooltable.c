@@ -32,58 +32,63 @@
 #include "common.h"
 #include "gerbv.h"
 
-#define MIN_TOOL_NUMBER         1       /* T01 */
-#define MAX_TOOL_NUMBER         99      /* T99 */
+#define MIN_TOOL_NUMBER 1  /* T01 */
+#define MAX_TOOL_NUMBER 99 /* T99 */
 
-static int have_tools_file = 0;
-static double tools[1+MAX_TOOL_NUMBER];
+static int    have_tools_file = 0;
+static double tools[1 + MAX_TOOL_NUMBER];
 
-static void 
-ProcessToolLine(const char *cp, const char *file_name, long int file_line)
-{
-    const char *cp0 = cp;
-    int toolNumber;
-    double toolDia;
-    
+static void
+ProcessToolLine(const char* cp, const char* file_name, long int file_line) {
+    const char* cp0 = cp;
+    int         toolNumber;
+    double      toolDia;
+
     if (cp == NULL)
         return;
-    
+
     /* Skip leading spaces if there are some */
-    while (isspace((int) *cp)) {
+    while (isspace((int)*cp)) {
         if (*(++cp) == '\0')
             return;
     }
-    
+
     if (*cp != 'T') {
-        GERB_COMPILE_WARNING(_("Ignored strange tool \"%s\" "
-				"at line %ld in file \"%s\""),
-			cp0, file_line, file_name);
+        GERB_COMPILE_WARNING(
+            _("Ignored strange tool \"%s\" "
+              "at line %ld in file \"%s\""),
+            cp0, file_line, file_name
+        );
         return;
     }
-    if ((!isdigit((int) cp[1])) || (!isdigit((int) cp[2]))) {
-        GERB_COMPILE_WARNING(_("No tool number in \"%s\" "
-				"at line %ld in file \"%s\""),
-			cp0, file_line, file_name);
+    if ((!isdigit((int)cp[1])) || (!isdigit((int)cp[2]))) {
+        GERB_COMPILE_WARNING(
+            _("No tool number in \"%s\" "
+              "at line %ld in file \"%s\""),
+            cp0, file_line, file_name
+        );
         return;
     }
     do {
         char tnb[3];
-        tnb[0] = cp[1];
-        tnb[1] = cp[2];
-        tnb[2] = '\0';
+        tnb[0]     = cp[1];
+        tnb[1]     = cp[2];
+        tnb[2]     = '\0';
         toolNumber = atoi(tnb);
         if ((toolNumber < MIN_TOOL_NUMBER) || (toolNumber > MAX_TOOL_NUMBER)) {
-            GERB_COMPILE_WARNING(_("Can't parse tool number in \"%s\" "
-				    "at line %ld in file \"%s\""),
-			    cp0, file_line, file_name);
+            GERB_COMPILE_WARNING(
+                _("Can't parse tool number in \"%s\" "
+                  "at line %ld in file \"%s\""),
+                cp0, file_line, file_name
+            );
             return;
         }
     } while (0);
-    
+
     cp += 3; /* Skip Tnn */
 
     /* Skip following spaces if there are some */
-    while (isspace((int) *cp)) {
+    while (isspace((int)*cp)) {
         if (*(++cp) == '\0')
             return;
     }
@@ -92,44 +97,50 @@ ProcessToolLine(const char *cp, const char *file_name, long int file_line)
     toolDia = atof(cp);
 
     if (toolDia <= 0) {
-        GERB_COMPILE_ERROR(_("Tool T%02d diameter is impossible "
-				"at line %ld in file \"%s\""),
-			toolNumber, file_line, file_name);
+        GERB_COMPILE_ERROR(
+            _("Tool T%02d diameter is impossible "
+              "at line %ld in file \"%s\""),
+            toolNumber, file_line, file_name
+        );
         return;
     }
     if (toolDia < 0.001) {
-        GERB_COMPILE_WARNING(_("Tool T%02d diameter is very small "
-				"at line %ld in file \"%s\""),
-			toolNumber, file_line, file_name);
+        GERB_COMPILE_WARNING(
+            _("Tool T%02d diameter is very small "
+              "at line %ld in file \"%s\""),
+            toolNumber, file_line, file_name
+        );
     }
-    
+
     if (tools[toolNumber] != 0) {
-        GERB_COMPILE_ERROR(_("Tool T%02d is already defined, occurred "
-				"at line %ld in file \"%s\""),
-			toolNumber, file_line, file_name);
-        GERB_FATAL_ERROR(_("Exiting because this is a HOLD error "
-				"at any board house."));
+        GERB_COMPILE_ERROR(
+            _("Tool T%02d is already defined, occurred "
+              "at line %ld in file \"%s\""),
+            toolNumber, file_line, file_name
+        );
+        GERB_FATAL_ERROR(
+            _("Exiting because this is a HOLD error "
+              "at any board house.")
+        );
         exit(1);
         return;
     }
-    
+
     tools[toolNumber] = toolDia;
 } /* ProcessToolLine */
 
-
-int 
-gerbv_process_tools_file(const char *tf)
-{
-    FILE *f;
-    char buf[80];
+int
+gerbv_process_tools_file(const char* tf) {
+    FILE*    f;
+    char     buf[80];
     long int file_line = 0;
-    
+
     have_tools_file = 0;
     memset(tools, 0, sizeof(tools));
-    
+
     if (tf == NULL)
         return 0;
-    
+
     f = fopen(tf, "r");
     if (f == NULL) {
         GERB_COMPILE_ERROR(_("Failed to open \"%s\" for reading"), tf);
@@ -137,10 +148,10 @@ gerbv_process_tools_file(const char *tf)
     }
     while (!feof(f)) {
         memset(buf, 0, sizeof(buf));
-        if (NULL == fgets(buf, sizeof(buf)-1, f))
+        if (NULL == fgets(buf, sizeof(buf) - 1, f))
             break;
 
-	file_line++;
+        file_line++;
         ProcessToolLine(buf, tf, file_line);
     }
     fclose(f);
@@ -148,10 +159,8 @@ gerbv_process_tools_file(const char *tf)
     return 1;
 } /* gerbv_process_tools_file */
 
-
-double 
-gerbv_get_tool_diameter(int toolNumber)
-{
+double
+gerbv_get_tool_diameter(int toolNumber) {
     if (!have_tools_file)
         return 0;
     if ((toolNumber < MIN_TOOL_NUMBER) || (toolNumber > MAX_TOOL_NUMBER))

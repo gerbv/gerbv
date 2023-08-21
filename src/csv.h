@@ -2,17 +2,17 @@
  * Copyright (c) 2003 Michael B. Allen <mba2000 ioplex.com>
  *
  * The MIT License
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -45,7 +45,7 @@
 extern "C" {
 #endif
 
-# define LIBMBA_API extern
+#define LIBMBA_API extern
 
 #include <stdio.h>
 /*#include "text.h"*/
@@ -59,9 +59,11 @@ extern "C" {
 #define CSV_TRIM   0x01
 #define CSV_QUOTES 0x02
 
-LIBMBA_API int csv_row_parse_str(const char *src, size_t sn, char *buf, size_t bn, char *row[], int rn, int sep, int flags);
-LIBMBA_API int csv_row_parse_wcs(const wchar_t *src, size_t sn, wchar_t *buf, size_t bn, wchar_t *row[], int rn, int sep, int flags);
-LIBMBA_API int csv_row_fread(FILE *in, char *buf, size_t bn, char *row[], int numcols, int sep, int flags);
+LIBMBA_API int
+csv_row_parse_str(const char* src, size_t sn, char* buf, size_t bn, char* row[], int rn, int sep, int flags);
+LIBMBA_API int
+csv_row_parse_wcs(const wchar_t* src, size_t sn, wchar_t* buf, size_t bn, wchar_t* row[], int rn, int sep, int flags);
+LIBMBA_API int csv_row_fread(FILE* in, char* buf, size_t bn, char* row[], int numcols, int sep, int flags);
 
 #ifdef __cplusplus
 }

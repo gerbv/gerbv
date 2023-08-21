@@ -33,23 +33,22 @@
 #endif
 
 #ifndef __GNUC__
-#define __FUNCTION1(a,b) a ":" #b
-#define __FUNCTION2(a,b) __FUNCTION1(a,b)
-#define __FUNCTION__ __FUNCTION2(__FILE__,__LINE__)
+#define __FUNCTION1(a, b) a ":" #b
+#define __FUNCTION2(a, b) __FUNCTION1(a, b)
+#define __FUNCTION__ __FUNCTION2(__FILE__, __LINE__)
 #endif
 
 #include "locale.h"
 #include "gettext.h"
 #define _(str) gettext(str)
 #ifdef ENABLE_NLS
-# ifdef gettext_noop
-#  define N_(str) gettext_noop(str)
-# else
-#  define N_(str) (str)
-# endif
+#ifdef gettext_noop
+#define N_(str) gettext_noop(str)
 #else
-# define N_(str) (str)
+#define N_(str) (str)
+#endif
+#else
+#define N_(str) (str)
 #endif
 
 #endif /* __COMMON_H__ */
-

@@ -36,12 +36,9 @@
 extern "C" {
 #endif
 
-int
-attribute_interface_dialog (gerbv_HID_Attribute *, int, gerbv_HID_Attr_Val *, 
-			    const char *,const char *);
+int attribute_interface_dialog(gerbv_HID_Attribute*, int, gerbv_HID_Attr_Val*, const char*, const char*);
 
-void
-attribute_merge (gerbv_HID_Attribute *, int, gerbv_HID_Attribute *, int);
+void attribute_merge(gerbv_HID_Attribute*, int, gerbv_HID_Attribute*, int);
 
 #ifdef __cplusplus
 }

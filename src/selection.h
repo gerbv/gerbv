@@ -25,13 +25,9 @@
     \ingroup libgerbv
 */
 
-GArray *selection_new_array (void);
-guint selection_length (gerbv_selection_info_t *sel_info);
-void selection_add_item (gerbv_selection_info_t *sel_info,
-					gerbv_selection_item_t *item);
-gerbv_selection_item_t selection_get_item_by_index (
-				gerbv_selection_info_t *sel_info, guint idx);
-void selection_clear_item_by_index (
-				gerbv_selection_info_t *sel_info, guint idx);
-void selection_clear (gerbv_selection_info_t *sel_info);
-
+GArray*                selection_new_array(void);
+guint                  selection_length(gerbv_selection_info_t* sel_info);
+void                   selection_add_item(gerbv_selection_info_t* sel_info, gerbv_selection_item_t* item);
+gerbv_selection_item_t selection_get_item_by_index(gerbv_selection_info_t* sel_info, guint idx);
+void                   selection_clear_item_by_index(gerbv_selection_info_t* sel_info, guint idx);
+void                   selection_clear(gerbv_selection_info_t* sel_info);

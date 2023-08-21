@@ -36,38 +36,35 @@ typedef struct gerb_transf {
 } gerbv_transf_t;
 
 enum e_footprint {
-    PART_SHAPE_UNKNOWN = 0, /* drawn as circle with line*/
+    PART_SHAPE_UNKNOWN   = 0, /* drawn as circle with line*/
     PART_SHAPE_RECTANGLE = 1, /* rectangle with one side marked*/
-    PART_SHAPE_STD = 2 /* rectangle with one corner marked*/
+    PART_SHAPE_STD       = 2  /* rectangle with one corner marked*/
 };
 
 typedef struct {
-    char     designator[MAXL];
-    char     footprint[MAXL];
-    double   mid_x;
-    double   mid_y;
-    double   ref_x;
-    double   ref_y;
-    double   pad_x;
-    double   pad_y;
-    char     layer[MAXL]; /*T is top B is bottom*/
-    double   rotation;
-    char     comment[MAXL];    
-    int      shape;
-    double   width;
-    double   length;
-    unsigned int nuf_push;  /* Nuf pushes to estimate stack size */
+    char         designator[MAXL];
+    char         footprint[MAXL];
+    double       mid_x;
+    double       mid_y;
+    double       ref_x;
+    double       ref_y;
+    double       pad_x;
+    double       pad_y;
+    char         layer[MAXL]; /*T is top B is bottom*/
+    double       rotation;
+    char         comment[MAXL];
+    int          shape;
+    double       width;
+    double       length;
+    unsigned int nuf_push; /* Nuf pushes to estimate stack size */
 } PnpPartData;
 
-GArray *pick_and_place_parse_file (gerb_file_t *fd);
+GArray* pick_and_place_parse_file(gerb_file_t* fd);
 
-gerbv_image_t *pick_and_place_parse_file_to_image (gerb_file_t *fd);
+gerbv_image_t* pick_and_place_parse_file_to_image(gerb_file_t* fd);
 
-void
-pick_and_place_parse_file_to_images (gerb_file_t *fd, gerbv_image_t **topImage,
-			gerbv_image_t **bottomImage);
+void pick_and_place_parse_file_to_images(gerb_file_t* fd, gerbv_image_t** topImage, gerbv_image_t** bottomImage);
 
-gboolean
-pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary);
+gboolean pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary);
 
 #endif /* GERBV_LAYERTYPE_PICKANDPLACE_H */
