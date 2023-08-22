@@ -982,6 +982,12 @@ gerbv_export_dxf_file_from_image (const gchar *filename, /*!< the filename for t
 		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
 );
 
+//! Parse a Excellon drill file and return the parsed image
+//! \return the new gerbv_image_t, or NULL if not successful
+gerbv_image_t *
+gerbv_create_excellon_image_from_filename (gchar *filename /*!< the filename of the file to be parsed*/
+);
+
 //! Parse a RS274X file and return the parsed image
 //! \return the new gerbv_image_t, or NULL if not successful
 gerbv_image_t *

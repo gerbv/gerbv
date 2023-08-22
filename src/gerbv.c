@@ -611,6 +611,24 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     return retv;
 } /* open_image */
 
+/* ------------------------------------------------------------------ */
+gerbv_image_t *
+gerbv_create_excellon_image_from_filename (gchar *filename){
+   gerbv_image_t *returnImage;
+   gerb_file_t *fd;
+
+   fd = gerb_fopen(filename);
+   if (fd == NULL) {
+       GERB_MESSAGE("Trying to open %s: %s\n", filename, strerror(errno));
+       return NULL;
+   }
+   gchar *currentLoadDirectory = g_path_get_dirname (filename);
+   returnImage = parse_drillfile(fd, (gerbv_HID_Attribute*)currentLoadDirectory, 0, 0);
+   g_free (currentLoadDirectory);
+   gerb_fclose(fd);
+   return returnImage;
+} /* gerbv_create_excellon_image_from_filename */
+
 gerbv_image_t *
 gerbv_create_rs274x_image_from_filename (gchar const* filename){
 	gerbv_image_t *returnImage;
