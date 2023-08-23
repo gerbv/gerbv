@@ -5,6 +5,13 @@ Release Notes for gerbv-2.10.1-dev
 -gerbv:     Clang format (PR#199 by @henrygab)
 
 -ci:        Enable manual workflow initiation (PR#197 by @henrygab)
+-ci:        Run clang-format (PR#201 by @eyal0)
+
+Do to source code reformatting, this release will cause a huge diff when blaming
+changes. See comment 1685593695 in issue #199 for strategies on how to deal with
+this.
+
+https://github.com/gerbv/gerbv/pull/199#issuecomment-1685593695
 
 
 ========================================================================
