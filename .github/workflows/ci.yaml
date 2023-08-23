@@ -30,9 +30,27 @@ jobs:
     - name: Set a local install path
       run: echo "LOCAL_INSTALL_PATH=${HOME}/.local" >> $GITHUB_ENV
 
+    - name: Update apt sources
+      # We must install a newer clang-format than the default of Ubuntu 20.04.
+      run: |
+        pushd /etc/apt/trusted.gpg.d/
+        sudo wget -q -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee llvm-snapshot.gpg.key.asc
+        popd
+        pushd /etc/apt/sources.list.d
+        echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main' | sudo tee -a llvm-toolchain-focal-14.list
+        echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main' | sudo tee -a llvm-toolchain-focal-14.list
+        popd
+        sudo apt-get update
+
+    - name: Check code formatting
+      if: matrix.code_coverage
+      run: |
+        sudo apt-get install clang-format-14
+        clang-format-14 --version
+        clang-format-14 -n -Werror src/*.h src/*.c src/*.cpp
+
     - name: Get requirements for configure and build
       run: |
-        sudo apt-get update
         sudo apt-get install autopoint libgtkmm-2.4-dev desktop-file-utils libc6-dbg
 
     - name: Install coverage specific programs
