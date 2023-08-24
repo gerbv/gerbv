@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# @see https://github.com/gerbv/gerbv/pull/203
+# @author eyal0
+
+
+# @see https://stackoverflow.com/a/246128
+DIRECTORY_OF_SCRIPT=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+mkdir -p "${DIRECTORY_OF_SCRIPT}/../.git/hooks"
+ln -s "${DIRECTORY_OF_SCRIPT}/clang-format-cache.py" "${DIRECTORY_OF_SCRIPT}/../.git/hooks/pre-commit"
+
