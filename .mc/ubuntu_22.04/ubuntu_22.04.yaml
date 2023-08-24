@@ -10,6 +10,10 @@ install:
  - libtool
  - pkg-config
 
+ # clang-format
+ - clang-format
+ - python3
+
  # Runtime dependencies
  - libdxflib-dev
  - libgtk2.0-dev

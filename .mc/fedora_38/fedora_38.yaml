@@ -11,6 +11,11 @@ install:
  - libtool
  - pkgconf
 
+ # clang-format
+ - clang-tools-extra
+ - patch
+ - python3
+
  # Runtime dependencies
  - cairo-devel
  - gtk2-devel
