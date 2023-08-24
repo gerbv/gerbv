@@ -1,4 +1,0 @@
-#!/bin/bash
-
-mkdir -p .git/hooks
-ln -s ../../clang-format-cache.py ./.git/hooks/pre-commit

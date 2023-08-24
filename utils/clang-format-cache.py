@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-'''clang format the files in the index (aka the staged files).'''
+'''clang format the files in the index (aka the staged files).
+
+@see https://github.com/gerbv/gerbv/pull/203
+@author eyal0
+'''
 
 import os
 import re
