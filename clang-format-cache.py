@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''clang format the files in the index (aka the staged files).'''
 
