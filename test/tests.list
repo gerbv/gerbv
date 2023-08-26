@@ -25,22 +25,30 @@
 #
 # test_name | layout file(s) | [optional arguments to gerbv] | [mismatch]
 #
-# test_name - a single string with no spaces, tabs, *, +, ? (i.e. any "special"
-# characters) that identifies the test.
+# test_name
+#     String using only character [-_A-Za-z0-9] to identify the test.
 #
-# layout file(s) - a list of layout files.  Files listed are relative to
-# the $(top_srcdir)/tests/inputs directory.
+# layout file(s)
+#     a layout file (or space-separated list of layout files).
+#     (relative to $(top_srcdir)/tests/inputs)
 #
-# [optional arguments to gerbv] If specified, this last field will be used as
-# the gerbv export command line.  Otherwise a default set of options will be
-# used. If preceded with +, then optional arguments will be added to default
-# set of options. If preceded with !, then gerbv will be only executed with
-# optional arguments (can be used for merging Gerber files).
+# [optional arguments to gerbv]
+#     May be empty.
+#     If first non-whitespace character is '!':
+#         the listed arguments are the only ones
+#         provided to gerbv.
+#         (e.g., for merging Gerber files)
+#     If first non-whitespace character is '+':
+#         the listed arguments are appended to
+#         the default set of options.
+#     Otherwise:
+#         this listed arguments are used as
+#         the gerbv export command line.
 #
-# [mismatch] If specified as "mismatch" (no quotes), then the given layout
-# should *not* match the reference layout.  This can be thought of as a test
-# on the testsuite to make sure we can properly detect when two PNG files
-# do not match.
+# [mismatch]
+#     If specified as "mismatch" (no quotes):
+#         The given layout should *not* match the reference layout.
+#         Ensures testsuite can detect PNG mismatches.
 #
 #
 ######################################################################
