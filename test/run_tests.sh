@@ -75,10 +75,21 @@ parser is common, verification via PNG files is fairly accurate.
 
 OPTIONS
 
+-h | --help 	       :  Prints this help message.
+
 -g | --golden <dir>    :  Specifies that <dir> should be used for the
                           reference files.
 
 -v | --valgrind        :  Specifies that valgrind should check gerbv.
+
+-r | --regen 	       :  Regenerate the reference files.  Use this
+			  with caution.  In particular, all differences
+			  should be noted and understood.
+
+-f | --testfile <file> :  Specifies a file containing a list of tests
+			  to run.  The file is relative to the
+			  directory containing this script.  The
+			  default is tests.list.
 
 LIMITATIONS
 
@@ -94,7 +105,10 @@ show_sep() {
     echo "----------------------------------------------------------------------"
 }
 
+# Set defaults that are overridden by command line options
+TESTLIST_FILE=tests.list
 all_tests=""
+
 while test -n "$1"
   do
   case "$1"
@@ -105,6 +119,13 @@ while test -n "$1"
 	  exit 0
 	  ;;
       
+      -f|--testfile)
+	# specify a file containing a list of tests to run
+	# file location is relative to this script
+	  TESTLIST_FILE="$2"
+	  shift 2
+	  ;;
+
       -g|--golden)
 	# set the 'golden' directory.
 	  REFDIR="$2"
@@ -166,7 +187,8 @@ ERRDIR=mismatch
 AWK=${AWK:-awk}
 
 # the list of tests to run
-TESTLIST=${srcdir}/tests.list
+TESTLIST=${srcdir}/${TESTLIST_FILE}
+echo "Using tests listed in: '${TESTLIST}'"
 
 if test "X$regen" = "Xyes" ; then
     OUTDIR="${REFDIR}"
@@ -193,7 +215,6 @@ if test -z "${all_tests}" ; then
     echo "$0:  No tests specified"
     exit 0
 fi
-
 
 # fail/pass/total counts
 fail=0
