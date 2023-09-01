@@ -1096,6 +1096,7 @@ void gerbv_rotate_coord(double* x, double* y, double rad);
 
 #if defined(__cplusplus)
 
+
 #undef MIN
 #undef MAX
 #define MIN(x, y)           \
