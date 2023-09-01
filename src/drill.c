@@ -26,10 +26,16 @@
 */
 
 /*
- * 21 Feb 2007 patch for metric drill files:
+ * 2007-02-21 patch for metric drill files:
  * 1) METRIC/INCH commands (partly) parsed to define units of the header
  * 2) units of the header and the program body are independent
  * 3) ICI command parsed in the header
+ *
+ */
+/* 2023-09-01 notes:
+ *
+ * Link to archive'd format specification:
+ * https://web.archive.org/web/20071030075236/http://www.excellon.com/manuals/program.htm
  */
 
 #include "gerbv.h"
@@ -40,7 +46,8 @@
 #include <string.h>
 #endif
 
-#include <math.h> /* pow() */
+#include <assert.h>
+#include <math.h> /* pow(), fpclassify() */
 #include <ctype.h>
 
 #include <sys/types.h>
@@ -54,6 +61,12 @@
 #include "common.h"
 #include "drill.h"
 #include "drill_stats.h"
+
+//#define DEBUG_DRILL 1
+#if defined(DEBUG_DRILL) && DEBUG_DRILL
+#undef DEBUG
+#define DEBUG 1
+#endif
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf \
@@ -75,11 +88,11 @@ typedef enum {
 } drill_coordinate_mode_t;
 
 typedef enum {
-    FMT_00_0000 /* INCH */,
-    FMT_000_000 /* METRIC 6-digit, 1 um */,
-    FMT_000_00 /* METRIC 5-digit, 10 um */,
-    FMT_0000_00 /* METRIC 6-digit, 10 um */,
-    FMT_USER /* User defined format */
+    FMT_00_0000, /* INCH                  */
+    FMT_000_000, /* METRIC 6-digit, 1 um  */
+    FMT_000_00,  /* METRIC 5-digit, 10 um */
+    FMT_0000_00, /* METRIC 6-digit, 10 um */
+    FMT_USER,    /* METRIC User defined format   */
 } number_fmt_t;
 
 typedef struct drill_state {
@@ -88,21 +101,42 @@ typedef struct drill_state {
     int                     current_tool;
     drill_file_section_t    curr_section;
     drill_coordinate_mode_t coordinate_mode;
-    double                  origin_x;
-    double                  origin_y;
-    gerbv_unit_t            unit;
-    /* number_format is used throughout the file itself.
+    double                  origin_x;  // NOTE: This is ALWAYS in inches, regardless of number format units
+    double                  origin_y;  // NOTE: This is ALWAYS in inches, regardless of number format units
+    gerbv_unit_t            unit;      // NOTE: Affects number_format, but not header_number_format
 
-       header_number_format is used to parse the tool definition C
-       codes within the header.  It is fixed to FMT_00_0000 for INCH
-       measures, and FMT_000_000 (1 um resolution) for metric
-       measures. */
-    number_fmt_t number_format, header_number_format;
+    /* header_number_format is valid only within the drill file header section,
+     * where it is only used to parse tool definition "TxxC..." codes.
+     * The header_number_format may only have one of two values:
+     *      FMT_000_000 (1 um resolution) for metric measures; and
+     *      FMT_00_0000 for INCH measures
+     *
+     * Note, however, that the stored measurements of tools in the
+     * internal data structures is always in INCHES, regardless of
+     * the header_number_format or units settings.
+     */
+    number_fmt_t header_number_format;
+
+    /* number_format is used throughout the file itself. */
+    number_fmt_t number_format;
+
     /* Used as a backup when temporarily switching to INCH. */
     number_fmt_t backup_number_format;
 
-    /* 0 means we don't try to autodetect any of the other values */
-    int autod;
+    /* TRUE / !0 means to autodetect number formats, LZ/TZ, etc.
+     * FALSE / 0 means to use attributes provided in HID_attributes,
+     *           or that a valid `;FILE_FORMAT=` line in header was found.
+     *
+     *
+     * Default: true at allocation
+     *
+     * Set to false in only two locations:
+     * 1. If incoming hid_attrs list says to NOT auto-detect the file format
+     * 2. If `drill_parse_header_is_metric_comment()` returns TRUE
+     *
+     * BUGBUG -- ??? `drill_parse_header_is_inch()` does NOT set this to FALSE ???
+     */
+    bool autodetect_file_format;
 
     /* in FMT_USER this specifies the number of digits before the
      * decimal point when doing trailing zero suppression.  Otherwise
@@ -114,33 +148,37 @@ typedef struct drill_state {
 } drill_state_t;
 
 /* Local function prototypes */
-static drill_g_code_t drill_parse_G_code(gerb_file_t* fd, gerbv_image_t* image, ssize_t file_line);
-static drill_m_code_t
-           drill_parse_M_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
-static int drill_parse_T_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
-static int drill_parse_header_is_metric(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
-static int
-drill_parse_header_is_metric_comment(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
-static int drill_parse_header_is_inch(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
-static int drill_parse_header_is_ici(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
-static void
-drill_parse_coordinate(gerb_file_t* fd, char firstchar, gerbv_image_t* image, drill_state_t* state, ssize_t file_line);
-static drill_state_t* new_state(drill_state_t* state);
-static double         read_double(gerb_file_t* fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, int decimals);
-static void           eat_line(gerb_file_t* fd);
-static void           eat_whitespace(gerb_file_t* fd);
-static char*          get_line(gerb_file_t* fd);
-static int            file_check_str(gerb_file_t* fd, const char* str);
+// clang-format off
+static drill_state_t* new_state(                             drill_state_t* state);
+static drill_g_code_t drill_parse_G_code(                    gerb_file_t* fd, gerbv_image_t* image, ssize_t file_line);
+static drill_m_code_t drill_parse_M_code(                    gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
+static int            drill_parse_T_code(                    gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
+static int            drill_parse_header_is_metric(          gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
+static int            drill_parse_header_is_metric_comment(  gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
+static int            drill_parse_header_is_inch(            gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
+static int            drill_parse_header_is_ici(             gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
+static void           drill_parse_coordinate(                gerb_file_t* fd, char firstchar, gerbv_image_t* image, drill_state_t* state, ssize_t file_line);
+static void           eat_line(                              gerb_file_t* fd);
+static void           eat_whitespace(                        gerb_file_t* fd);
+static char*          get_line(                              gerb_file_t* fd);
+static int            file_check_str(                        gerb_file_t* fd, const char* str);
+static double         read_double(                           gerb_file_t* fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, int decimals);
+
+// clang-format on
 
 /* -------------------------------------------------------------- */
 /* This is the list of specific attributes a drill file may have from
  * the point of view of parsing it.
  */
 
+// WARNING -- These values (which are exposed via HID_Attribute)
+//            do NOT match the values in `gerbv_omit_zeros_t`.
+//            Therefore, have to individually convert them at
+//            program entry and exit.
 enum {
     SUP_NONE = 0,
     SUP_LEAD,
-    SUP_TRAIL
+    SUP_TRAIL,
 };
 
 static const char* suppression_list[] = { N_("None"), N_("Leading"), N_("Trailing"), 0 };
@@ -158,26 +196,16 @@ enum {
 };
 
 static gerbv_HID_Attribute drill_attribute_list[] = {
-  /* This should be first */
-    {      N_("autodetect"),N_("Try to autodetect the file format"),HID_Boolean, 0,0, { 1, 0, 0 },0, 0,0                                                                                                                                 },
-
-    {N_("zero_suppression"),                         N_("Zero suppression"),    HID_Enum, 0, 0, { 0, 0, 0 }, suppression_list, 0, 0},
-
-    {           N_("units"),                             N_("Length units"),    HID_Enum, 0, 0, { 0, 0, 0 },       units_list, 0, 0},
-
-    {          N_("digits"),
-     N_("Number of digits.  For trailing zero suppression,"
-     " this is the number of digits before the decimal point.  "
-     "Otherwise this is the number of digits after the decimal point."),
-     HID_Integer, 0,
-     20, { 5, 0, 0 },
-     0, 0,
-     0                                                                                                                             },
-
+  /* Order defined by enum above */
+  // clang-format off
+    {      N_("autodetect"), N_("Try to autodetect the file format"), HID_Boolean, 0,  0, { 1, NULL, 0 },             NULL, NULL, 0 },
+    {N_("zero_suppression"),                  N_("Zero suppression"),    HID_Enum, 0,  0, { 0, NULL, 0 }, suppression_list, NULL, 0 },
+    {           N_("units"),                      N_("Length units"),    HID_Enum, 0,  0, { 0, NULL, 0 },       units_list, NULL, 0 },
+    {          N_("digits"),        N_("Number of digits. (broken)"), HID_Integer, 0, 20, { 5, NULL, 0 },             NULL, NULL, 0 },
 #if 0
-  {"tool_units", "Tool size units",
-   HID_Enum, 0, 0, {0, 0, 0}, units_list, 0, 0},
+    {       N("tool_units"),                   N_("Tool size units"),    HID_Enum, 0,  0, { 0, NULL, 0 },       units_list, NULL, 0 },
 #endif
+  // clang-format on
 };
 
 void
@@ -286,7 +314,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
     setlocale(LC_NUMERIC, "C");
 
     /* Create new image for this layer */
-    dprintf("In parse_drillfile, about to create image for this layer\n");
+    dprintf("In parse_drillfile, about to create image for this layer, %s\n", fd->filename);
 
     image = gerbv_create_image(image, "Excellon Drill File");
     if (image == NULL)
@@ -294,7 +322,8 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
 
     if (reload && attr_list != NULL) {
         /* FIXME there should probably just be a function to copy an
-       attribute list including using strdup as needed */
+         * attribute list including using strdup as needed
+         */
 
         image->info->n_attr    = n_attr;
         image->info->attr_list = gerbv_attribute_dup(attr_list, n_attr);
@@ -334,20 +363,24 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
     hid_attrs = image->info->attr_list;
 
     if (!hid_attrs[HA_auto].default_val.int_value) {
-        state->autod         = 0;
-        state->number_format = FMT_USER;
-        state->decimals      = hid_attrs[HA_digits].default_val.int_value;
+        // incoming hid_attrs list says to NOT auto-detect the file format
+        // therefore, have to apply the settings provided to this function
+        // in the hid_attrs list.
+        state->autodetect_file_format = false;
+        state->number_format          = FMT_USER;
+        state->decimals               = hid_attrs[HA_digits].default_val.int_value;
 
-        if (GERBV_UNIT_MM == hid_attrs[HA_xy_units].default_val.int_value)
+        if (GERBV_UNIT_MM == hid_attrs[HA_xy_units].default_val.int_value) {
             state->unit = GERBV_UNIT_MM;
-
-        switch (hid_attrs[HA_suppression].default_val.int_value) {
-            case SUP_LEAD: image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING; break;
-
-            case SUP_TRAIL: image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING; break;
-
-            default: image->format->omit_zeros = GERBV_OMIT_ZEROS_EXPLICIT; break;
         }
+
+        // clang-format off
+        switch (hid_attrs[HA_suppression].default_val.int_value) {
+            case SUP_LEAD:  image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;  break;
+            case SUP_TRAIL: image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING; break;
+            default:        image->format->omit_zeros = GERBV_OMIT_ZEROS_EXPLICIT; break;
+        }
+        // clang-format on
     }
 
     dprintf("%s():  Starting parsing of drill file \"%s\"\n", __FUNCTION__, fd->filename);
@@ -612,16 +645,17 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                                     }
                                 }
                             }
-                            if (state->autod) {
+                            if (state->autodetect_file_format) {
                                 state->number_format = state->backup_number_format;
                                 state->unit          = GERBV_UNIT_MM;
                             }
                             break;
                         case DRILL_M_IMPERIAL:
-                            if (state->autod) {
-                                if (state->number_format != FMT_00_0000)
+                            if (state->autodetect_file_format) {
+                                if (state->number_format != FMT_00_0000) {
                                     /* save metric format definition for later */
                                     state->backup_number_format = state->number_format;
+                                }
                                 state->number_format = FMT_00_0000;
                                 state->decimals      = 4;
                                 state->unit          = GERBV_UNIT_INCH;
@@ -855,20 +889,27 @@ drill_parse_end:
 
     hid_attrs = image->info->attr_list;
 
+    // update the stored attributes ... allow drill state to be restored to same point
+    // Note that HA_auto (state->autodetect_file_format) does not get updated,
+    // which means that autodetection will be re-enabled in later drill files.
+    // BUGBUG -- Verify this is the intended behavior.
+    //           The alternative is to set HA_auto to 0 here, which would
+    //           ensure that a later drill file must use the same format and units?
     switch (state->unit) {
-        case GERBV_UNIT_MM: hid_attrs[HA_xy_units].default_val.int_value = GERBV_UNIT_MM; break;
-
-        default: hid_attrs[HA_xy_units].default_val.int_value = GERBV_UNIT_INCH; break;
+        // clang-format off
+        case GERBV_UNIT_INCH: hid_attrs[HA_xy_units].default_val.int_value = GERBV_UNIT_INCH; break;
+        case GERBV_UNIT_MM:   hid_attrs[HA_xy_units].default_val.int_value = GERBV_UNIT_MM;   break;
+        default:              hid_attrs[HA_xy_units].default_val.int_value = GERBV_UNIT_INCH; break;
+            // clang-format on
     }
 
     switch (state->number_format) {
-        case FMT_000_00:
-        case FMT_0000_00: hid_attrs[HA_digits].default_val.int_value = 2; break;
-
-        case FMT_000_000: hid_attrs[HA_digits].default_val.int_value = 3; break;
-
+        // clang-format off
         case FMT_00_0000: hid_attrs[HA_digits].default_val.int_value = 4; break;
-
+        case FMT_000_000: hid_attrs[HA_digits].default_val.int_value = 3; break;
+        case FMT_000_00:  hid_attrs[HA_digits].default_val.int_value = 2; break;
+        case FMT_0000_00: hid_attrs[HA_digits].default_val.int_value = 2; break;
+        // clang-format on
         case FMT_USER:
             dprintf(
                 "%s():  Keeping user specified number of decimal places (%d)\n", __FUNCTION__,
@@ -879,13 +920,15 @@ drill_parse_end:
         default: break;
     }
 
+    // clang-format off
     switch (image->format->omit_zeros) {
-        case GERBV_OMIT_ZEROS_LEADING: hid_attrs[HA_suppression].default_val.int_value = SUP_LEAD; break;
-
-        case GERBV_OMIT_ZEROS_TRAILING: hid_attrs[HA_suppression].default_val.int_value = SUP_TRAIL; break;
-
-        default: hid_attrs[HA_suppression].default_val.int_value = SUP_NONE; break;
+        case GERBV_OMIT_ZEROS_LEADING:     hid_attrs[HA_suppression].default_val.int_value = SUP_LEAD;  break;
+        case GERBV_OMIT_ZEROS_TRAILING:    hid_attrs[HA_suppression].default_val.int_value = SUP_TRAIL; break;
+        case GERBV_OMIT_ZEROS_EXPLICIT:    hid_attrs[HA_suppression].default_val.int_value = SUP_NONE;  break;
+        case GERBV_OMIT_ZEROS_UNSPECIFIED: hid_attrs[HA_suppression].default_val.int_value = SUP_NONE;  break;
+        default:                           hid_attrs[HA_suppression].default_val.int_value = SUP_NONE;  break;
     }
+    // clang-format on
 
     g_free(state);
 
@@ -1367,7 +1410,7 @@ header_again:
                         "trailing zero suppression\n",
                         __FUNCTION__
                     );
-                    if (state->autod)
+                    if (state->autodetect_file_format)
                         image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
                 } else {
                     dprintf(
@@ -1375,11 +1418,11 @@ header_again:
                         "leading zero suppression\n",
                         __FUNCTION__
                     );
-                    if (state->autod)
+                    if (state->autodetect_file_format)
                         image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
                 }
 
-                if (state->autod && state->number_format != FMT_USER) {
+                if (state->autodetect_file_format && state->number_format != FMT_USER) {
                     /* Default metric number format is 6-digit, 1 um
                      * resolution.  The header number format (for T#C#
                      * definitions) is fixed to that, while the number
@@ -1420,7 +1463,7 @@ header_again:
 
                     eat_line(fd);
 
-                    if (state->autod) {
+                    if (state->autodetect_file_format) {
                         state->number_format = FMT_0000_00;
                         state->decimals      = 2;
                     }
@@ -1435,13 +1478,13 @@ header_again:
                 if ('0' != gerb_fgetc(fd))
                     goto header_junk;
 
-                if ('0' == gerb_fgetc(fd) && state->autod) {
+                if ('0' == gerb_fgetc(fd) && state->autodetect_file_format) {
                     state->number_format = FMT_000_000;
                     state->decimals      = 3;
                 } else {
                     gerb_ungetc(fd);
 
-                    if (state->autod) {
+                    if (state->autodetect_file_format) {
                         state->number_format = FMT_000_00;
                         state->decimals      = 2;
                     }
@@ -1496,8 +1539,8 @@ drill_parse_header_is_metric_comment(gerb_file_t* fd, drill_state_t* state, gerb
             return 0;
         case 0: return 0;
     }
-
     eat_whitespace(fd);
+
     if (file_check_str(fd, "=") != 1) {
         gerbv_stats_printf(
             stats->error_list, GERBV_MESSAGE_ERROR, -1,
@@ -1508,9 +1551,10 @@ drill_parse_header_is_metric_comment(gerb_file_t* fd, drill_state_t* state, gerb
         return 0;
     }
     eat_whitespace(fd);
-    int len = -1;
-    gerb_fgetint(fd, &len);
-    if (len < 1) {
+
+    int detect_error_leading = -1;
+    int digits_before        = gerb_fgetint(fd, &detect_error_leading);
+    if (detect_error_leading < 1) {
         /* We've failed to read a number. */
         gerbv_stats_printf(
             stats->error_list, GERBV_MESSAGE_ERROR, -1,
@@ -1521,6 +1565,7 @@ drill_parse_header_is_metric_comment(gerb_file_t* fd, drill_state_t* state, gerb
         return 0;
     }
     eat_whitespace(fd);
+
     if (file_check_str(fd, ":") != 1) {
         gerbv_stats_printf(
             stats->error_list, GERBV_MESSAGE_ERROR, -1,
@@ -1531,9 +1576,10 @@ drill_parse_header_is_metric_comment(gerb_file_t* fd, drill_state_t* state, gerb
         return 0;
     }
     eat_whitespace(fd);
-    len              = -1;
-    int digits_after = gerb_fgetint(fd, &len);
-    if (len < 1) {
+
+    int detect_error_trailing = -1;
+    int digits_after          = gerb_fgetint(fd, &detect_error_trailing);
+    if (detect_error_trailing < 1) {
         gerbv_stats_printf(
             stats->error_list, GERBV_MESSAGE_ERROR, -1,
             _("Expected integer after ':' while parsing \"%s\" string "
@@ -1543,9 +1589,25 @@ drill_parse_header_is_metric_comment(gerb_file_t* fd, drill_state_t* state, gerb
         /* We've failed to read a number. */
         return 0;
     }
-    state->header_number_format = state->number_format = FMT_USER;
-    state->decimals                                    = digits_after;
-    state->autod                                       = 0;
+
+    // BUGBUG -- Function name may be misleading (and unnecessarily long).
+    //           Function isn't checking for a metric comment.
+    //           Function is checking for a FILE_FORMAT comment.
+    //           This does ***NOT*** mean that the file is metric.
+
+    // BUGBUG -- header_number_format should only be one of two values:
+    //           FMT_00_0000 when units is inches
+    //           FMT_000_000 when units is metric
+    // if (state->unit == GERBV_UNIT_INCH) {
+    //     state->header_number_format = FMT_00_0000;
+    // } else {
+    //     state->header_number_format = FMT_000_000;
+    // }
+    state->header_number_format   = FMT_USER;
+    state->number_format          = FMT_USER;
+    state->decimals               = digits_after;
+    state->autodetect_file_format = false;
+    (void)digits_before;  // NOTE: unused variable, warning suppression
     return 1;
 } /* drill_parse_header_is_metric_comment() */
 
@@ -1582,18 +1644,26 @@ drill_parse_header_is_inch(gerb_file_t* fd, drill_state_t* state, gerbv_image_t*
         if (c != EOF && 'Z' == gerb_fgetc(fd)) {
             switch (c) {
                 case 'L':
-                    if (state->autod) {
+                    if (state->autodetect_file_format) {
+                        // NOTE: `LZ` means _include_ the leading zeros; thus, `LZ` means to _omit_ trailing zeros.
+                        //       Would have been preferable to directly mirror file format logic, by tracking
+                        //       whether leading zeros or trailing zeros are KEPT.  Que cera cera.
                         image->format->omit_zeros   = GERBV_OMIT_ZEROS_TRAILING;
-                        state->header_number_format = state->number_format = FMT_00_0000;
-                        state->decimals                                    = 4;
+                        state->header_number_format = FMT_00_0000;
+                        state->number_format        = FMT_00_0000;
+                        state->decimals             = 4;
                     }
                     break;
 
                 case 'T':
-                    if (state->autod) {
+                    if (state->autodetect_file_format) {
+                        // NOTE: `TZ` means _include_ the trailing zeros; thus, `TZ` means to _omit_ leading zeros.
+                        //       Would have been preferable to directly mirror file format logic, by tracking
+                        //       whether leading zeros or trailing zeros are KEPT.  Que cera cera.
                         image->format->omit_zeros   = GERBV_OMIT_ZEROS_LEADING;
-                        state->header_number_format = state->number_format = FMT_00_0000;
-                        state->decimals                                    = 4;
+                        state->header_number_format = FMT_00_0000;
+                        state->number_format        = FMT_00_0000;
+                        state->decimals             = 4;
                     }
                     break;
 
@@ -1616,7 +1686,9 @@ drill_parse_header_is_inch(gerb_file_t* fd, drill_state_t* state, gerbv_image_t*
             );
         }
     }
-
+    // NOTE: This routine only sets the number format when
+    //       also detected leading or trailing zero suppression.
+    //       In such cases, the number_format is set to FMT_00_0000.
     state->unit = GERBV_UNIT_INCH;
 
     return 1;
@@ -1766,15 +1838,16 @@ new_state(drill_state_t* state) {
     state = g_new0(drill_state_t, 1);
     if (state != NULL) {
         /* Init structure */
-        state->curr_section         = DRILL_NONE;
-        state->coordinate_mode      = DRILL_MODE_ABSOLUTE;
-        state->origin_x             = 0.0;
-        state->origin_y             = 0.0;
-        state->unit                 = GERBV_UNIT_UNSPECIFIED;
-        state->backup_number_format = FMT_000_000;                        /* only used for METRIC */
-        state->header_number_format = state->number_format = FMT_00_0000; /* i. e. INCH */
-        state->autod                                       = 1;
-        state->decimals                                    = 4;
+        state->curr_section           = DRILL_NONE;
+        state->coordinate_mode        = DRILL_MODE_ABSOLUTE;
+        state->origin_x               = 0.0;
+        state->origin_y               = 0.0;
+        state->unit                   = GERBV_UNIT_UNSPECIFIED;
+        state->header_number_format   = FMT_00_0000; /* i. e. INCH */
+        state->number_format          = FMT_00_0000; /* i. e. INCH */
+        state->backup_number_format   = FMT_000_000; /* only used for METRIC */
+        state->autodetect_file_format = true;
+        state->decimals               = 4;
     }
 
     return state;
