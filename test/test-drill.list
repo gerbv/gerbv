@@ -1,0 +1,53 @@
+# Format:
+# test_name | layout file(s) | [optional arguments to gerbv] | [mismatch]
+#
+# test_name
+#     String using only character [-_A-Za-z0-9] to identify the test.
+#
+# layout file(s)
+#     a layout file (or space-separated list of layout files).
+#     (relative to $(top_srcdir)/tests/inputs)
+#
+# [optional arguments to gerbv]
+#     May be empty.
+#     If first non-whitespace character is '!':
+#         the listed arguments are the only ones
+#         provided to gerbv.
+#         (e.g., for merging Gerber files)
+#     If first non-whitespace character is '+':
+#         the listed arguments are appended to
+#         the default set of options.
+#     Otherwise:
+#         this listed arguments are used as
+#         the gerbv export command line.
+#
+# [mismatch]
+#     If specified as "mismatch" (no quotes):
+#         The given layout should *not* match the reference layout.
+#         Ensures testsuite can detect PNG mismatches.
+#
+######################################################################
+# ---------------------------------------------
+# Exercises paths in drill.c parse_drillfile()
+# ---------------------------------------------
+######################################################################
+example_ekf2_drill0                               | ../../example/ekf2/drill0.exc
+example_ekf2_drill1                               | ../../example/ekf2/drill1.exc
+example_ekf2_drill20                              | ../../example/ekf2/drill20.exc
+example_ekf2_drill30                              | ../../example/ekf2/drill30.exc
+example_nollezappare_ThruHolePlated               | ../../example/nollezappare/ThruHolePlated.ncd
+example_numpres_numpres.pcb.output_plated-drill   | ../../example/numpres/numpres.pcb.output_plated-drill.grb
+example_numpres_numpres.pcb.output_unplated-drill | ../../example/numpres/numpres.pcb.output_unplated-drill.grb
+example_orcad_thruhole_tap                        | ../../example/orcad/thruhole.tap
+test-drill-trailing-zero-1                        | test-drill-trailing-zero-1.exc
+test-drill-leading-zero-1                         | test-drill-leading-zero-1.exc
+test-drill-195-without-comments                   | test-drill-195-without-comments.exc
+test-drill-repeat-1                               | test-drill-repeat-1.exc
+test-drill-trailing-zero-suppression              | test-drill-trailing-zero-suppression.exc | + -p inputs/test-drill-trailing-zero-suppression.gvp
+test-drill-slot-drilled-g85                       | test-drill-slot-drilled-g85.exc
+test-drill-spaces                                 | test-drill-spaces.exc
+out-of-bounds-drill-tool                          | test-out-of-bounds-drill-tool.exc
+LimeSDR-QPCIe_1v2-RoundHoles                      | LimeSDR-QPCIe_1v2-RoundHoles.drl
+Altium_inch_file_format                           | Altium_inch_file_format.drl
+Altium_file_format_inch                           | Altium_file_format_inch.drl
+empty_xnc                                         | empty.xnc

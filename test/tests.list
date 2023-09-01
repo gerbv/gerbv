@@ -198,6 +198,11 @@ parse_aperture_strtok | parse_aperture_strtok.1.poc
 test-drill-trailing-zero-1 | test-drill-trailing-zero-1.exc
 test-drill-leading-zero-1 | test-drill-leading-zero-1.exc
 
+# Test header comments specifying `;FILE_FORMAT=2:4` after
+# both `M48` and `INCH,LZ` lines
+test-drill-195-without-comments | test-drill-195-without-comments.exc
+# test-drill-195-with-comments    | test-drill-195-with-comments.exc
+
 # Test the "R" command which repeats a drill hole a given
 # number of times with the given x and y step size
 test-drill-repeat-1 | test-drill-repeat-1.exc
