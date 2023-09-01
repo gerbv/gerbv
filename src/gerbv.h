@@ -69,6 +69,7 @@ For help with using the standalone Gerbv software, please refer to the man page
 #include "config.h"
 #endif
 
+#include <stdbool.h>
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -385,13 +386,13 @@ typedef enum {
 */
 typedef struct {
     int    int_value;
-    char*  str_value;
+    char*  str_value;  // NOTE: memory here is released via `free()` (thus cannot be `const char*`)
     double real_value;
 } gerbv_HID_Attr_Val;
 
 typedef struct {
-    char* name;
-    char* help_text;
+    const char* name;       // Allow 'const' variables (e.g., stored in read-only pages)
+    const char* help_text;  // Allow 'const' variables (e.g., stored in read-only pages)
 
     enum {
         HID_Label,
