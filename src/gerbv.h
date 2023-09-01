@@ -1093,6 +1093,8 @@ void gerbv_transform_coord(double* x, double* y, const gerbv_user_transformation
 /*! Rotate coordinate x and y buy angle in radians */
 void gerbv_rotate_coord(double* x, double* y, double rad);
 
+#if defined(__cplusplus)
+
 #undef MIN
 #undef MAX
 #define MIN(x, y)           \
@@ -1109,8 +1111,6 @@ void gerbv_rotate_coord(double* x, double* y, double rad);
         (void)(&_x == &_y); \
         _x > _y ? _x : _y;  \
     })
-
-#if defined(__cplusplus)
 }
 #endif
 
