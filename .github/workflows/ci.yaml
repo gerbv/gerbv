@@ -47,7 +47,7 @@ jobs:
       run: |
         sudo apt-get install clang-format-14
         clang-format-14 --version
-        clang-format-14 -n -Werror src/*.h src/*.c src/*.cpp
+        clang-format-14 --dry-run -style=file  -Werror src/*.h src/*.c src/*.cpp
 
     - name: Get requirements for configure and build
       run: |
