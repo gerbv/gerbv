@@ -297,7 +297,7 @@ drill_update_image_info_min_max_from_bbox(gerbv_image_info_t* info, const gerbv_
  * Adds the actual drill hole to the drawing
  */
 static gerbv_net_t*
-drill_add_drill_hole(gerbv_image_t* image, drill_state_t* state, gerbv_drill_stats_t* stats, gerbv_net_t* curr_net) {
+drill_add_drill_hole(gerbv_image_t* image, drill_state_t* state, gerbv_net_t* curr_net) {
     gerbv_render_size_t* bbox;
     double               r;
 
@@ -840,7 +840,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                         state->curr_x = start_x + c * step_x;
                         state->curr_y = start_y + c * step_y;
                         dprintf("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
-                        curr_net = drill_add_drill_hole(image, state, stats, curr_net);
+                        curr_net = drill_add_drill_hole(image, state, curr_net);
                     }
                 }
 
@@ -875,7 +875,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                 drill_parse_coordinate(fd, read, image, state, file_line);
 
                 /* add the new drill hole */
-                curr_net = drill_add_drill_hole(image, state, stats, curr_net);
+                curr_net = drill_add_drill_hole(image, state, curr_net);
                 break;
 
             case '%': state->curr_section = DRILL_DATA; break;
