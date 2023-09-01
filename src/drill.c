@@ -1521,7 +1521,15 @@ header_again:
                  * All three valid formats start with `000`,
                  * so check for those next two zeros....
                  */
-                if ('0' != gerb_fgetc(fd) || '0' != gerb_fgetc(fd)) {
+                if ('0' != gerb_fgetc(fd)) {
+                    // read one extra character that didn't match
+                    gerb_ungetc(fd);
+                    goto header_junk;
+                }
+                if ('0' != gerb_fgetc(fd)) {
+                    // read two extra characters that didn't match
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
                     goto header_junk;
                 }
 
@@ -1532,7 +1540,19 @@ header_again:
                 op[0] = gerb_fgetc(fd);
                 op[1] = gerb_fgetc(fd);
                 op[2] = '\0';
-                if (EOF == op[0] || EOF == op[1]) {
+                if (EOF == op[0]) {
+                    // read three extra characters that didn't match (EOF doesn't move ptr)
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    goto header_junk;
+                }
+                if (EOF == op[1]) {
+                    // read four extra characters that didn't match (EOF doesn't move ptr)
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
                     goto header_junk;
                 }
 
@@ -1547,6 +1567,11 @@ header_again:
                      *                   which corresponds to: 0000.00
                      */
                     if ('0' != gerb_fgetc(fd) || '0' != gerb_fgetc(fd)) {
+                        // read four extra characters that didn't match (EOF doesn't move ptr)
+                        gerb_ungetc(fd);
+                        gerb_ungetc(fd);
+                        gerb_ungetc(fd);
+                        gerb_ungetc(fd);
                         goto header_junk;
                     }
                     /* No further options are allowed after matching the number format */
@@ -1565,6 +1590,11 @@ header_again:
                  * Thus, exit if the first two characters in `op[]` are not ".0".
                  */
                 if (0 != strcmp(op, ".0")) {
+                    // read four extra characters that didn't match (EOF doesn't move ptr)
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
                     goto header_junk;
                 }
 
@@ -1574,6 +1604,12 @@ header_again:
                  * Thus, exit if the next character in the file is not "0".
                  */
                 if ('0' != gerb_fgetc(fd)) {
+                    // read five characters, so undo five of them.
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
+                    gerb_ungetc(fd);
                     goto header_junk;
                 }
 
@@ -1582,27 +1618,36 @@ header_again:
                  *                   which corresponds to: 000.000 | 000.00
                  * The result is thus either FMT_000_000 or FMT_000_00,
                  * depending on if there is another 0.
+                 *
+                 * No longer will rewind to beginning, as either option
+                 * results in an accepted value.
                  */
-
-                if ('0' == gerb_fgetc(fd) && state->autodetect_file_format) {
-                    state->number_format = FMT_000_000;
-                    state->decimals      = 3;
+                int last_char = gerb_fgetc(fd);
+                if (last_char == '0') {
+                    if (state->autodetect_file_format) {
+                        state->number_format = FMT_000_000;
+                        state->decimals      = 3;
+                    }
                 } else {
-                    gerb_ungetc(fd);
+                    // un-read the character...
+                    if (last_char != EOF) {
+                        gerb_ungetc(fd);
+                    }
                     if (state->autodetect_file_format) {
                         state->number_format = FMT_000_00;
                         state->decimals      = 2;
                     }
                 }
 
-                // BUGBUG -- There is not notification of junk following the number_format.
+                // BUGBUG -- Should report / warn if there is additional junk here.
                 eat_line(fd);
                 break;
 
             default:
 header_junk:
-                // fd->ptr should point to the junk line + one character
+                // fd->ptr should point to the junk + one character
                 gerb_ungetc(fd);
+                // now fd->ptr points to the start of the junk section
 
                 gerbv_stats_printf(
                     stats->error_list, GERBV_MESSAGE_WARNING, -1,
