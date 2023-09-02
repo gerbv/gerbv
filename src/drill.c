@@ -79,7 +79,7 @@
 typedef enum {
     DRILL_NONE,
     DRILL_HEADER,
-    DRILL_DATA
+    DRILL_DATA,
 } drill_file_section_t;
 
 static const char* drill_file_section_list[] = { "NONE", "HEADER", "DATA", NULL };
@@ -94,7 +94,7 @@ drill_file_section_to_string(drill_file_section_t section) {
 
 typedef enum {
     DRILL_MODE_ABSOLUTE,
-    DRILL_MODE_INCREMENTAL
+    DRILL_MODE_INCREMENTAL,
 } drill_coordinate_mode_t;
 
 typedef enum {
@@ -263,7 +263,8 @@ static gerbv_HID_Attribute drill_attribute_list[] = {
 
 void
 drill_attribute_merge(gerbv_HID_Attribute* dest, int ndest, gerbv_HID_Attribute* src, int nsrc) {
-    int i, j;
+    int i;
+    int j;
 
     /* Here is a brain dead merge algorithm which should make anyone cringe.
      * Still, it is simple and we won't merge many attributes and not
@@ -799,8 +800,10 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                         file_line, fd->filename
                     );
                 } else {
-                    double start_x, start_y;
-                    double step_x, step_y;
+                    double start_x;
+                    double start_y;
+                    double step_x;
+                    double step_y;
                     int    c;
                     int    rcnt;
                     /*
@@ -1439,7 +1442,8 @@ drill_parse_M_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
 static int
 drill_parse_header_is_metric(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line) {
     gerbv_drill_stats_t* stats = image->drill_stats;
-    char                 c, op[3];
+    char                 c;
+    char                 op[3];
 
     dprintf("    %s(): entering\n", __FUNCTION__);
 
@@ -2038,10 +2042,11 @@ static double
 read_double(gerb_file_t* fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, int decimals) {
     int          read;
     char         temp[DRILL_READ_DOUBLE_SIZE];
-    unsigned int i = 0, ndigits = 0;
-    double       result;
+    unsigned int i             = 0;
+    unsigned int ndigits       = 0;
     gboolean     decimal_point = FALSE;
     gboolean     sign_prepend  = FALSE;
+    double       result;
 
     memset(temp, 0, sizeof(temp));
 
