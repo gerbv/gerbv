@@ -1120,67 +1120,103 @@ drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
     }
 } /* drill_file_p */
 
+static bool
+drill_parse_T_is_TCST(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line) {
+
+    // called with file pointer pointing just after the initial 'T'
+    (void)state; /* unused parameter ... keeps stack the same */
+
+    int ch2 = gerb_fgetc(fd);
+    if (ch2 == 'C') {
+        int ch3 = gerb_fgetc(fd);
+        if (ch3 == 'S') {
+            int ch4 = gerb_fgetc(fd);
+            if (ch4 == 'T') {
+                // rewind four characters, then get the whole line
+                // for storing in the statistics' error list
+                fd->ptr -= 4;
+                gchar* tcst_line = get_line(fd++);
+                gerbv_stats_printf(
+                    image->drill_stats->error_list, GERBV_MESSAGE_NOTE, -1,
+                    _("Tool change stop switch found \"%s\" "
+                      "at line %ld in file \"%s\""),
+                    tcst_line, file_line, fd->filename
+                );
+                g_free(tcst_line);
+                return true;
+            }
+            if (ch4 != EOF) {
+                gerb_ungetc(fd);
+            }
+        }
+        if (ch3 != EOF) {
+            gerb_ungetc(fd);
+        }
+    }
+    if (ch2 != EOF) {
+        gerb_ungetc(fd);
+    }
+    // and the file pointer is back to where it was when this function was called
+    return false;
+}
+
+static bool
+drill_parse_T_needs_Orcad_Hack_or_EOF(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line) {
+    // this will always leave the file pointer at the same location as it was when this function was called
+    int temp = gerb_fgetc(fd);
+
+    if (temp == EOF) {
+        return true;
+    }
+
+    // Orcad has a bug where it will put junk text in place of a tool definition
+    // Make sure the next character is a digit or a sign
+    if (!(isdigit(temp) != 0 || temp == '+' || temp == '-')) {
+        gerbv_stats_printf(
+            image->drill_stats->error_list, GERBV_MESSAGE_ERROR, -1,
+            _("OrCAD bug: Junk text found in place of tool definition")
+        );
+        gchar* orcad_junk_text = get_line(fd);
+        gerbv_stats_printf(
+            image->drill_stats->error_list, GERBV_MESSAGE_WARNING, -1, _("Junk text \"%s\" at line %ld in file \"%s\""),
+            orcad_junk_text, file_line, fd->filename
+        );
+        g_free(orcad_junk_text);
+        gerbv_stats_printf(image->drill_stats->error_list, GERBV_MESSAGE_WARNING, -1, _("Ignoring junk text"));
+        return true;
+    }
+    // return the file pointer to where it was when this function was called
+    if (temp != EOF) {
+        // yes, the above if statement isn't needed this time.
+        // Keeping as it's a good habit for gerb_file_t manipulation.
+        gerb_ungetc(fd);
+    }
+    return false;
+}
+
 /* -------------------------------------------------------------- */
 /* Parse tool definition. This can get a bit tricky since it can
    appear in the header and/or data section.
    Returns tool number on success, -1 on error */
 static int
 drill_parse_T_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line) {
+
+    if (drill_parse_T_is_TCST(fd, state, image, file_line)) {
+        return -1;
+    }
+    if (drill_parse_T_needs_Orcad_Hack_or_EOF(fd, state, image, file_line)) {
+        return -1;
+    }
+
     int                  tool_num;
     gboolean             done = FALSE;
     int                  temp;
     double               size;
     gerbv_drill_stats_t* stats = image->drill_stats;
     gerbv_aperture_t*    apert;
-    gchar*               tmps;
     gchar*               string;
 
     dprintf("---> entering %s()...\n", __FUNCTION__);
-
-    /* Sneak a peek at what's hiding after the 'T'. Ugly fix for
-       broken headers from Orcad, which is crap */
-    temp = gerb_fgetc(fd);
-    dprintf("  Found a char '%s' (0x%02x) after the T\n", gerbv_escape_char(temp), temp);
-
-    /* might be a tool tool change stop switch on/off*/
-    if ((temp == 'C') && ((fd->ptr + 2) < fd->datalen)) {
-        if (gerb_fgetc(fd) == 'S') {
-            if (gerb_fgetc(fd) == 'T') {
-                fd->ptr -= 4;
-                tmps = get_line(fd++);
-                gerbv_stats_printf(
-                    stats->error_list, GERBV_MESSAGE_NOTE, -1,
-                    _("Tool change stop switch found \"%s\" "
-                      "at line %ld in file \"%s\""),
-                    tmps, file_line, fd->filename
-                );
-                g_free(tmps);
-
-                return -1;
-            }
-            gerb_ungetc(fd);
-        }
-        gerb_ungetc(fd);
-    }
-
-    if (!(isdigit(temp) != 0 || temp == '+' || temp == '-')) {
-        if (temp != EOF) {
-            gerbv_stats_printf(
-                stats->error_list, GERBV_MESSAGE_ERROR, -1, _("OrCAD bug: Junk text found in place of tool definition")
-            );
-            tmps = get_line(fd);
-            gerbv_stats_printf(
-                stats->error_list, GERBV_MESSAGE_WARNING, -1,
-                _("Junk text \"%s\" "
-                  "at line %ld in file \"%s\""),
-                tmps, file_line, fd->filename
-            );
-            g_free(tmps);
-            gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1, _("Ignoring junk text"));
-        }
-        return -1;
-    }
-    gerb_ungetc(fd);
 
     tool_num = (int)gerb_fgetint(fd, NULL);
     dprintf("  Handling tool T%d at line %ld\n", tool_num, file_line);
@@ -1210,6 +1246,12 @@ drill_parse_T_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
      * of form TxxC, TxxF, TxxS.  */
     while (!done) {
         switch ((char)temp) {
+            case 'F':
+            case 'S':
+                /* Silently ignored. They're not important. */
+                gerb_fgetint(fd, NULL);
+                break;
+
             case 'C':
                 size = read_double(fd, state->header_number_format, GERBV_OMIT_ZEROS_TRAILING, state->decimals);
                 dprintf("  Read a size of %g\n", size);
@@ -1280,12 +1322,6 @@ drill_parse_T_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
                     stats->drill_list, tool_num, state->unit == GERBV_UNIT_MM ? size * 25.4 : size, string
                 );
                 g_free(string);
-                break;
-
-            case 'F':
-            case 'S':
-                /* Silently ignored. They're not important. */
-                gerb_fgetint(fd, NULL);
                 break;
 
             default:
