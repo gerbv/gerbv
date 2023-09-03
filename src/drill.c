@@ -300,8 +300,6 @@ drill_update_image_info_min_max_from_bbox(gerbv_image_info_t* info, const gerbv_
  */
 static gerbv_net_t*
 drill_add_drill_hole(gerbv_image_t* image, drill_state_t* state, gerbv_net_t* curr_net) {
-    gerbv_render_size_t* bbox;
-    double               r;
 
     /* Add one to drill stats  for the current tool */
     drill_stats_increment_drill_counter(image->drill_stats->drill_list, state->current_tool);
@@ -337,8 +335,8 @@ drill_add_drill_hole(gerbv_image_t* image, drill_state_t* state, gerbv_net_t* cu
         return curr_net;
     }
 
-    bbox = &curr_net->boundingBox;
-    r    = image->aperture[state->current_tool]->parameter[0] / 2;
+    double               r    = image->aperture[state->current_tool]->parameter[0] / 2;
+    gerbv_render_size_t* bbox = &curr_net->boundingBox;
 
     /* Set boundingBox */
     bbox->left   = curr_net->start_x - r;
@@ -354,15 +352,6 @@ drill_add_drill_hole(gerbv_image_t* image, drill_state_t* state, gerbv_net_t* cu
 /* -------------------------------------------------------------- */
 gerbv_image_t*
 parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int reload) {
-    drill_state_t*       state    = NULL;
-    gerbv_image_t*       image    = NULL;
-    gerbv_net_t*         curr_net = NULL;
-    gerbv_HID_Attribute* hid_attrs;
-    int                  read;
-    gerbv_drill_stats_t* stats;
-    gchar*               tmps;
-    ssize_t              file_line = 1;
-
     /*
      * many locales redefine "." as "," and so on, so sscanf and strtod
      * has problems when reading files using %f format.
@@ -373,7 +362,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
     /* Create new image for this layer */
     dprintf("In parse_drillfile, about to create image for this layer, %s\n", fd->filename);
 
-    image = gerbv_create_image(image, "Excellon Drill File");
+    gerbv_image_t* image = gerbv_create_image(NULL, "Excellon Drill File");
     if (image == NULL) {
         GERB_FATAL_ERROR("malloc image failed in %s()", __FUNCTION__);
     }
@@ -398,18 +387,19 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
         drill_attribute_merge(image->info->attr_list, image->info->n_attr, attr_list, n_attr);
     }
 
-    curr_net         = image->netlist;
-    curr_net->layer  = image->layers;
-    curr_net->state  = image->states;
-    image->layertype = GERBV_LAYERTYPE_DRILL;
-    stats            = gerbv_drill_stats_new();
+    gerbv_net_t* curr_net = image->netlist;
+    curr_net->layer       = image->layers;
+    curr_net->state       = image->states;
+    image->layertype      = GERBV_LAYERTYPE_DRILL;
+
+    gerbv_drill_stats_t* stats = gerbv_drill_stats_new();
     if (stats == NULL) {
         GERB_FATAL_ERROR("malloc stats failed in %s()", __FUNCTION__);
     }
     image->drill_stats = stats;
 
     /* Create local state variable to track photoplotter state */
-    state = new_state(state);
+    drill_state_t* state = new_state(NULL);
     if (state == NULL) {
         GERB_FATAL_ERROR("malloc state failed in %s()", __FUNCTION__);
     }
@@ -418,11 +408,9 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
     if (image->format == NULL) {
         GERB_FATAL_ERROR("malloc format failed in %s()", __FUNCTION__);
     }
-
     image->format->omit_zeros = GERBV_OMIT_ZEROS_UNSPECIFIED;
 
-    hid_attrs = image->info->attr_list;
-
+    gerbv_HID_Attribute* hid_attrs = image->info->attr_list;
     if (!hid_attrs[HA_auto].default_val.int_value) {
         // incoming hid_attrs list says to NOT auto-detect the file format
         // therefore, have to apply the settings provided to this function
@@ -446,6 +434,8 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
 
     dprintf("%s():  Starting parsing of drill file \"%s\"\n", __FUNCTION__, fd->filename);
 
+    int     read      = EOF;
+    ssize_t file_line = 1;
     while ((read = gerb_fgetc(fd)) != EOF) {
 
         switch ((char)read) {
@@ -455,57 +445,58 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                 if (drill_parse_header_is_metric_comment(fd, state, image, file_line)) {
                     break;
                 }
-                tmps = get_line(fd);
+                gerb_ungetc(fd);
+                gchar* tmps_semicolon = get_line(fd);
                 gerbv_stats_printf(
-                    stats->error_list, GERBV_MESSAGE_NOTE, -1, _("Comment \"%s\" at line %ld in file \"%s\""), tmps,
-                    file_line, fd->filename
+                    stats->error_list, GERBV_MESSAGE_NOTE, -1, _("Comment \"%s\" at line %ld in file \"%s\""),
+                    tmps_semicolon, file_line, fd->filename
                 );
-                dprintf("    Comment with ';' \"%s\" at line %ld\n", tmps, file_line);
-                g_free(tmps);
+                dprintf("    Comment with ';' \"%s\" at line %ld\n", tmps_semicolon, file_line);
+                g_free(tmps_semicolon);
                 break;
 
             case 'D':
                 gerb_ungetc(fd);
-                tmps = get_line(fd);
-                if (strcmp(tmps, "DETECT,ON") == 0 || strcmp(tmps, "DETECT,OFF") == 0) {
-                    gchar* tmps2;
-                    gchar* tmps3;
-                    if (strcmp(tmps, "DETECT,ON") == 0) {
-                        tmps3 = "ON";
+                gchar* tmps_D = get_line(fd);
+                if (strcmp(tmps_D, "DETECT,ON") == 0 || strcmp(tmps_D, "DETECT,OFF") == 0) {
+                    gchar* new_addition;
+                    if (strcmp(tmps_D, "DETECT,ON") == 0) {
+                        new_addition = "ON";
                     } else {
-                        tmps3 = "OFF";
+                        new_addition = "OFF";
                     }
 
                     /* broken tool detect on/off.  Silently ignored. */
+                    gchar* appended_to_prior_stats;
                     if (stats->detect) {
-                        tmps2 = g_strdup_printf("%s\n%s", stats->detect, tmps3);
+                        appended_to_prior_stats = g_strdup_printf("%s\n%s", stats->detect, new_addition);
                         g_free(stats->detect);
                     } else {
-                        tmps2 = g_strdup_printf("%s", tmps3);
+                        appended_to_prior_stats = g_strdup_printf("%s", new_addition);
                     }
-                    stats->detect = tmps2;
+                    stats->detect = appended_to_prior_stats;
                 } else {
                     gerbv_stats_printf(
                         stats->error_list, GERBV_MESSAGE_ERROR, -1,
                         _("Unrecognised string \"%s\" in header "
                           "at line %ld in file \"%s\""),
-                        tmps, file_line, fd->filename
+                        tmps_D, file_line, fd->filename
                     );
                 }
-                g_free(tmps);
+                g_free(tmps_D);
                 break;
 
             case 'F':
                 gerb_ungetc(fd);
-                tmps = get_line(fd);
+                gchar* tmps_F = get_line(fd);
 
                 /* Silently ignore FMAT,2.  Not sure what others are allowed */
-                if (0 == strcmp(tmps, "FMAT,2")) {
-                    g_free(tmps);
+                if (0 == strcmp(tmps_F, "FMAT,2")) {
+                    g_free(tmps_F);
                     break;
                 }
 
-                if (0 == strcmp(tmps, "FMAT,1")) {
+                if (0 == strcmp(tmps_F, "FMAT,1")) {
                     gerbv_stats_printf(
                         stats->error_list, GERBV_MESSAGE_ERROR, -1,
                         _("File in unsupported format 1 "
@@ -513,8 +504,9 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                         file_line, fd->filename
                     );
 
+                    // Interesting ... don't see this exit condition often
                     gerbv_destroy_image(image);
-                    g_free(tmps);
+                    g_free(tmps_F);
 
                     return NULL;
                 }
@@ -523,10 +515,10 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                     stats->error_list, GERBV_MESSAGE_ERROR, -1,
                     _("Unrecognised string \"%s\" in header "
                       "at line %ld in file \"%s\""),
-                    tmps, file_line, fd->filename
+                    tmps_F, file_line, fd->filename
                 );
 
-                g_free(tmps);
+                g_free(tmps_F);
                 break;
 
             case 'G':
@@ -534,6 +526,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                     /* Most G codes aren't used, for now */
                     drill_g_code_t g_code;
 
+                    // TODO: Document position that file should be at when this returns a valid code
                     switch (g_code = drill_parse_G_code(fd, image, file_line)) {
 
                         case DRILL_G_DRILL:
@@ -542,11 +535,14 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
 
                         case DRILL_G_SLOT:
                             {
+                                // Command format: X#Y#G85X#Y#
+                                // TODO -- does drill_parse_G_code() update curr_x and curr_y?
+                                //
                                 /* Parse drilled slot end coords */
-                                gerbv_render_size_t* bbox = &curr_net->boundingBox;
-                                double               r;
 
-                                if (EOF == (read = gerb_fgetc(fd))) {
+                                // TODO -- hand-validate this code path
+                                int read_after_G85_code_parsed = gerb_fgetc(fd);
+                                if (EOF == read_after_G85_code_parsed) {
                                     gerbv_stats_printf(
                                         stats->error_list, GERBV_MESSAGE_ERROR, -1,
                                         _("Unexpected EOF found in file \"%s\""), fd->filename
@@ -554,7 +550,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                                     break;
                                 }
 
-                                drill_parse_coordinate(fd, read, image, state, file_line);
+                                drill_parse_coordinate(fd, read_after_G85_code_parsed, image, state, file_line);
 
                                 /* Modify last curr_net as drilled slot */
                                 curr_net->stop_x = state->curr_x;
@@ -566,13 +562,13 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                                     curr_net->stop_y /= 25.4;
                                 }
 
-                                r = image->aperture[state->current_tool]->parameter[0] / 2;
-
                                 /* Update boundingBox with drilled slot stop_x,y coords */
-                                bbox->left   = MIN(bbox->left, curr_net->stop_x - r);
-                                bbox->right  = MAX(bbox->right, curr_net->stop_x + r);
-                                bbox->bottom = MIN(bbox->bottom, curr_net->stop_y - r);
-                                bbox->top    = MAX(bbox->top, curr_net->stop_y + r);
+                                double               r    = image->aperture[state->current_tool]->parameter[0] / 2;
+                                gerbv_render_size_t* bbox = &curr_net->boundingBox;
+                                bbox->left                = MIN(bbox->left, curr_net->stop_x - r);
+                                bbox->right               = MAX(bbox->right, curr_net->stop_x + r);
+                                bbox->bottom              = MIN(bbox->bottom, curr_net->stop_y - r);
+                                bbox->top                 = MAX(bbox->top, curr_net->stop_y + r);
 
                                 drill_update_image_info_min_max_from_bbox(image->info, bbox);
 
@@ -585,8 +581,10 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
 
                         case DRILL_G_INCREMENTAL: state->coordinate_mode = DRILL_MODE_INCREMENTAL; break;
 
-                        case DRILL_G_ZEROSET:
-                            if (EOF == (read = gerb_fgetc(fd))) {
+                        case DRILL_G_ZEROSET:  // G93X#Y#
+                            ;                  // label must be part of a statement, so use empty statement.
+                            int read_after_G85_code_parsed = gerb_fgetc(fd);
+                            if (EOF == read_after_G85_code_parsed) {
                                 gerbv_stats_printf(
                                     stats->error_list, GERBV_MESSAGE_ERROR, -1,
                                     _("Unexpected EOF found in file \"%s\""), fd->filename
@@ -594,20 +592,21 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                                 break;
                             }
 
-                            drill_parse_coordinate(fd, (char)read, image, state, file_line);
+                            drill_parse_coordinate(fd, (char)read_after_G85_code_parsed, image, state, file_line);
                             state->origin_x = state->curr_x;
                             state->origin_y = state->curr_y;
                             break;
 
-                        case DRILL_G_UNKNOWN:
-                            tmps = get_line(fd);
+                        case DRILL_G_UNKNOWN:  // not a real G-code
+                            ;                  // label must be part of a statement, so use empty statement.
+                            gchar* tmps_G_unknown = get_line(fd);
                             gerbv_stats_printf(
                                 stats->error_list, GERBV_MESSAGE_ERROR, -1,
                                 _("Unrecognized string \"%s\" found "
                                   "at line %ld in file \"%s\""),
-                                tmps, file_line, fd->filename
+                                tmps_G_unknown, file_line, fd->filename
                             );
-                            g_free(tmps);
+                            g_free(tmps_G_unknown);
                             break;
 
                         default:
@@ -635,22 +634,23 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                     break;
                 }
 
-                tmps = get_line(fd);
+                gchar* tmps_I = get_line(fd);
                 gerbv_stats_printf(
                     stats->error_list, GERBV_MESSAGE_ERROR, -1,
                     _("Unrecognized string \"%s\" found "
                       "at line %ld in file \"%s\""),
-                    tmps, file_line, fd->filename
+                    tmps_I, file_line, fd->filename
                 );
-                g_free(tmps);
+                g_free(tmps_I);
 
                 break;
 
             case 'M':
                 {
-                    int m_code;
+                    // TODO - document expectations of file pointer location after calling `drill_parse_M_code()`
+                    int m_code = drill_parse_M_code(fd, state, image, file_line);
 
-                    switch (m_code = drill_parse_M_code(fd, state, image, file_line)) {
+                    switch (m_code) {
                         case DRILL_M_HEADER: state->curr_section = DRILL_HEADER; break;
                         case DRILL_M_HEADEREND:
                             state->curr_section = DRILL_DATA;
@@ -681,7 +681,6 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                             break;
                         case DRILL_M_METRIC:
                             if (state->unit == GERBV_UNIT_UNSPECIFIED && state->curr_section != DRILL_HEADER) {
-                                double size;
 
                                 gerbv_stats_printf(
                                     stats->error_list, GERBV_MESSAGE_WARNING, -1,
@@ -700,7 +699,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                                     if (image->aperture && image->aperture[tool_num]) {
                                         /* First update stats.   Do this before changing drill dias.
                                          * Maybe also put error into stats? */
-                                        size = image->aperture[tool_num]->parameter[0];
+                                        double size = image->aperture[tool_num]->parameter[0];
                                         drill_stats_modify_drill_list(stats->drill_list, tool_num, size, "MM");
                                         /* Now go back and update all tool dias, since
                                          * tools are displayed in inch units
@@ -726,27 +725,29 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                             }
 
                             break;
-                        case DRILL_M_CANNEDTEXTX:
-                        case DRILL_M_CANNEDTEXTY:
-                            tmps = get_line(fd);
+                        case DRILL_M_CANNEDTEXTX:  // M97
+                        case DRILL_M_CANNEDTEXTY:  // M98
+                            ;                      // label must be part of a statement, so use empty statement.
+                            gchar* tmps_M97_M98 = get_line(fd);
                             gerbv_stats_printf(
                                 stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                 _("Canned text \"%s\" "
                                   "at line %ld in drill file \"%s\""),
-                                tmps, file_line, fd->filename
+                                tmps_M97_M98, file_line, fd->filename
                             );
-                            g_free(tmps);
+                            g_free(tmps_M97_M98);
                             break;
-                        case DRILL_M_MESSAGELONG:
-                        case DRILL_M_MESSAGE:
-                            tmps = get_line(fd);
+                        case DRILL_M_MESSAGELONG:  // M45
+                        case DRILL_M_MESSAGE:      // M47
+                            ;                      // label must be part of a statement, so use empty statement.
+                            gchar* tmps_M45_M47 = get_line(fd);
                             gerbv_stats_printf(
                                 stats->error_list, GERBV_MESSAGE_NOTE, -1,
                                 _("Message \"%s\" embedded "
                                   "at line %ld in drill file \"%s\""),
-                                tmps, file_line, fd->filename
+                                tmps_M45_M47, file_line, fd->filename
                             );
-                            g_free(tmps);
+                            g_free(tmps_M45_M47);
                             break;
                         case DRILL_M_PATTERNEND:
                         case DRILL_M_TOOLTIPCHECK: break;
@@ -758,21 +759,21 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                         case DRILL_M_ENDREWIND: goto drill_parse_end; break;
 
                         case DRILL_M_UNKNOWN:
-                            gerb_ungetc(fd); /* To compare full string in function or
-                                        report full string  */
+                            gerb_ungetc(fd);
+                            /* To compare full string in function or report full string  */
                             if (drill_parse_header_is_metric(fd, state, image, file_line)) {
                                 break;
                             }
 
                             stats->M_unknown++;
-                            tmps = get_line(fd);
+                            gchar* tmps_M_UNKNOWN = get_line(fd);
                             gerbv_stats_printf(
                                 stats->error_list, GERBV_MESSAGE_ERROR, -1,
                                 _("Unrecognized string \"%s\" found "
                                   "at line %ld in file \"%s\""),
-                                tmps, file_line, fd->filename
+                                tmps_M_UNKNOWN, file_line, fd->filename
                             );
-                            g_free(tmps);
+                            g_free(tmps_M_UNKNOWN);
 
                             break;
 
@@ -800,12 +801,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                         file_line, fd->filename
                     );
                 } else {
-                    double start_x;
-                    double start_y;
-                    double step_x;
-                    double step_y;
-                    int    c;
-                    int    rcnt;
+
                     /*
                      * This is the "Repeat hole" command.  Format is:
                      * R##[X##][Y##]
@@ -819,37 +815,35 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                      */
                     stats->R++;
 
-                    start_x = state->curr_x;
-                    start_y = state->curr_y;
-
                     /* figure out how many repeats there are */
-                    c    = gerb_fgetc(fd);
-                    rcnt = 0;
+                    int c    = gerb_fgetc(fd);
+                    int rcnt = 0;
                     while ('0' <= c && c <= '9') {
                         rcnt = 10 * rcnt + (c - '0');
                         c    = gerb_fgetc(fd);
                     }
                     dprintf("working on R code (repeat) with a number of reps equal to %d\n", rcnt);
 
-                    step_x = 0.0;
+                    // read optional X and Y values
+                    double step_x = 0.0;
+                    double step_y = 0.0;
                     if (c == 'X') {
                         step_x = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
                         c      = gerb_fgetc(fd);
                     }
-
-                    step_y = 0.0;
                     if (c == 'Y') {
                         step_y = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
                     } else {
                         gerb_ungetc(fd);
                     }
-
                     dprintf(
                         "Getting ready to repeat the drill %d times with delta_x = %g, delta_y = %g\n", rcnt, step_x,
                         step_y
                     );
 
                     /* spit out the drills */
+                    double start_x = state->curr_x;
+                    double start_y = state->curr_y;
                     for (c = 1; c <= rcnt; c++) {
                         state->curr_x = start_x + c * step_x;
                         state->curr_y = start_y + c * step_y;
@@ -870,17 +864,18 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
             case 'T': drill_parse_T_code(fd, state, image, file_line); break;
             case 'V':
                 gerb_ungetc(fd);
-                tmps = get_line(fd);
+
+                gchar* tmps_V = get_line(fd);
                 /* Silently ignore VER,1.  Not sure what others are allowed */
-                if (0 != strcmp(tmps, "VER,1")) {
+                if (0 != strcmp(tmps_V, "VER,1")) {
                     gerbv_stats_printf(
                         stats->error_list, GERBV_MESSAGE_NOTE, -1,
                         _("Undefined string \"%s\" in header "
                           "at line %ld in file \"%s\""),
-                        tmps, file_line, fd->filename
+                        tmps_V, file_line, fd->filename
                     );
                 }
-                g_free(tmps);
+                g_free(tmps_V);
                 break;
 
             case 'X':
@@ -898,8 +893,8 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                 file_line++;
 
                 /* Get <CR> char, if any, from <LF><CR> pair */
-                read = gerb_fgetc(fd);
-                if (read != '\r' && read != EOF) {
+                int possible_LF = gerb_fgetc(fd);
+                if (possible_LF != '\r' && possible_LF != EOF) {
                     gerb_ungetc(fd);
                 }
                 break;
@@ -908,8 +903,8 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                 file_line++;
 
                 /* Get <LF> char, if any, from <CR><LF> pair */
-                read = gerb_fgetc(fd);
-                if (read != '\n' && read != EOF) {
+                int possible_ret = gerb_fgetc(fd);
+                if (possible_ret != '\n' && possible_ret != EOF) {
                     gerb_ungetc(fd);
                 }
                 break;
@@ -930,14 +925,14 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                     gerb_ungetc(fd);
 
                     /* Unrecognised crap in the header is thrown away */
-                    tmps = get_line(fd);
+                    gchar* tmps_unknown_header_line = get_line(fd);
                     gerbv_stats_printf(
                         stats->error_list, GERBV_MESSAGE_WARNING, -1,
                         _("Unrecognised string \"%s\" in header "
                           "at line %ld in file \"%s\""),
-                        tmps, file_line, fd->filename
+                        tmps_unknown_header_line, file_line, fd->filename
                     );
-                    g_free(tmps);
+                    g_free(tmps_unknown_header_line);
                 } else {
                     gerbv_stats_printf(
                         stats->error_list, GERBV_MESSAGE_ERROR, -1,
