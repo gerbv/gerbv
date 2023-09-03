@@ -42,6 +42,7 @@ example_orcad_thruhole_tap                        | ../../example/orcad/thruhole
 test-drill-trailing-zero-1                        | test-drill-trailing-zero-1.exc
 test-drill-leading-zero-1                         | test-drill-leading-zero-1.exc
 test-drill-195-without-comments                   | test-drill-195-without-comments.exc
+test-drill-195-with-comments                      | test-drill-195-without-comments.exc
 test-drill-repeat-1                               | test-drill-repeat-1.exc
 test-drill-trailing-zero-suppression              | test-drill-trailing-zero-suppression.exc | + -p inputs/test-drill-trailing-zero-suppression.gvp
 test-drill-slot-drilled-g85                       | test-drill-slot-drilled-g85.exc
