@@ -80,7 +80,6 @@
         printf x;  \
     }
 
-#define MAXL                   200
 #define DRILL_READ_DOUBLE_SIZE 32
 
 typedef enum {
@@ -1308,10 +1307,13 @@ drill_parse_end:
 /*
  * Checks for signs that this is a drill file
  * Returns TRUE if it is, FALSE if not.
+ *
+ * Upon exit, fully rewinds the file pointer.
  */
 gboolean
 drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
-    char *   buf = NULL, *tbuf;
+    static const int MAXIMUM_LINE_LENGTH = 200;
+
     int      len = 0;
     char*    letter;
     int      ascii;
@@ -1327,15 +1329,43 @@ drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
     gboolean found_Y       = FALSE;
     gboolean end_comments  = FALSE;
 
-    tbuf = g_malloc(MAXL);
+    char* tbuf = g_malloc(MAXIMUM_LINE_LENGTH);
     if (tbuf == NULL) {
         GERB_FATAL_ERROR("malloc buf failed while checking for drill file in %s()", __FUNCTION__);
     }
 
-    while (fgets(tbuf, MAXL, fd->fd) != NULL) {
+    // fgets() ensures null-termination of the string.
+    // fgets() stops if reading a newline character, in which case the newline is part of the returned string.
+    while (fgets(tbuf, MAXIMUM_LINE_LENGTH, fd->fd) != NULL) {
         len = strlen(tbuf);
-        buf = tbuf;
+
+        // TODO -- reject lines that are longer than MAXIMUM_LINE_LENGTH,
+        //         or alternatively, track if the line was truncated and
+        //         act accordingly when more data is read from the file.
+        //         (including setting file pointer back at least 1 char,
+        //          ... as T# and X# and Y# checks only look one character
+        //          beyond the character being matched for a digit ...)
+
+        /* BUGBUG -- This appears to be older code that presumed read a random section of the file,
+         *           rather than the current code's reading of a line at a time....
+         *           What this might have done long ago:
+         *           - start with end_comments = FALSE (flag indicating end of comments were found)
+         *           - Skip this loop anytime end_comments is true
+         *           - if the ';' character exists anywhere in the buffer....
+         *             - check for the following sequence: "\n;[\r\n]"  (NOTE: never possible using fgets())
+         *             - if the sequence was found:
+         *               - set the buffer to now point to the end of that *next* line
+         *               - set end_comments to TRUE
+         *               - skip remaining processing of while() loop
+         *           - else no ';' character was found in the buffer
+         *             - set end_comments to TRUE ... no more comments will be parse ever again.
+         *           Therefore, it appears to only be intended to have allowed the very first lines
+         *           of the file to have comments, and required comments to end with a line containing
+         *           ONLY a ';' character.
+         */
+        // TODO -- Replace with simple check that skips lines starting with ';'.
         /* check for comments at top of file.  */
+        char* buf = tbuf;
         if (!end_comments) {
             if (g_strstr_len(buf, len, ";") != NULL) { /* comments at top of file  */
                 for (i = 0; i < len - 1; ++i) {
@@ -1354,9 +1384,9 @@ drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
             }
         }
 
-        /* First look through the file for indications of its type */
+        /* First look through the line for indications of its type */
         len = strlen(buf);
-        /* check that file is not binary (non-printing chars) */
+        /* check that line is not binary (non-printing chars) */
         for (i = 0; i < len; i++) {
             ascii = (int)buf[i];
             if ((ascii > 128) || (ascii < 0)) {
@@ -1364,28 +1394,48 @@ drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
             }
         }
 
-        /* Check for M48 = start of drill header */
+        /* BUGBUG -- This appears to be older code that presumed read of a random section of the file,
+         *           rather than the current code's reading of a line at a time....
+         *           Consider replacing with simpler check for M48 at start of a line.
+         */
+        /* Check for M48 ==> start of drill header */
         if (g_strstr_len(buf, len, "M48")) {
             found_M48 = TRUE;
         }
 
-        /* Check for M30 = end of drill program */
+        /* BUGBUG -- This appears to be older code that presumed read of a random section of the file,
+         *           rather than the current code's reading of a line at a time....
+         *           Consider replacing with simpler check for M30 at start of a line.
+         */
+        /* Check for M30 after found end-of-header ('%' by itself) ==> end of drill program */
         if (g_strstr_len(buf, len, "M30")) {
             if (found_percent) {
                 found_M30 = TRUE; /* Found M30 after % = good */
             }
         }
 
-        /* Check for % on its own line at end of header */
+        /* BUGBUG -- This appears to be older code that presumed read of a random section of the file,
+         *           rather than the current code's reading of a line at a time....
+         *           Consider replacing with simpler check for % as the entirety of the line.
+         */
+        /* Check for '%' on its own line at end of header */
         if ((letter = g_strstr_len(buf, len, "%")) != NULL) {
+            // fgets() includes the newline character in the string.
+            // edge case: could be NULL as the next character,
+            //            if the final line was '%' followed by EOF.
             if ((letter[1] == '\r') || (letter[1] == '\n')) {
                 found_percent = TRUE;
             }
         }
 
-        /* Check for T<number> */
+        /* BUGBUG -- This appears to be older code that presumed read of a random section of the file,
+         *           rather than the current code's reading of a line at a time....
+         *           Consider starting with simpler check for T as the first character of the line.
+         */
+        /* Look for T<number> */
         if ((letter = g_strstr_len(buf, len, "T")) != NULL) {
             if (!found_T && (found_X || found_Y)) {
+                // BUGBUG -- This does nothing?  found_T is guaranteed to be FALSE here?
                 found_T = FALSE; /* Found first T after X or Y */
             } else {
                 if (isdigit((int)letter[1])) { /* verify next char is digit */
@@ -1393,14 +1443,14 @@ drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
                 }
             }
         }
-
-        /* look for X<number> or Y<number> */
+        /* look for X<number> ==> found_X */
         if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
             ascii = (int)letter[1]; /* grab char after X */
             if ((ascii >= zero) && (ascii <= nine)) {
                 found_X = TRUE;
             }
         }
+        /* look for Y<number> ==> found_Y */
         if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
             ascii = (int)letter[1]; /* grab char after Y */
             if ((ascii >= zero) && (ascii <= nine)) {
@@ -1414,6 +1464,26 @@ drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
     *returnFoundBinary = found_binary;
 
     /* Now form logical expression determining if this is a drill file */
+    /* Table of possible combinations:
+     *
+     * M30 && % together define that a valid end-of-program was found
+     * M48 defines the start of the header
+     * A properly defined tool requires both finding 'T' and either 'X' or 'Y'
+     *
+     * NOTE: found_M30 is never set to TRUE unless found_percent was also TRUE
+     *       Therefore, can simplify: (found_percent && found_M30) ==> found_M30
+     *
+     * NOTE: Can simplify: (found_X || found_Y) ==> found_X_or_Y
+     *
+        | M48 | M30 | T | (X_or_Y) | Drill file? |
+        |-----+-----+---+----------+-------------|-------------
+        |  1  |  1  | Z |     Z    |     TRUE    | both start header && end program
+        |  1  |  0  | 1 |     1    |     TRUE    | start header &&   ( tool definition && a coordinate )
+        |  1  |  0  | 0 |     Z    |     false   |
+        |  0  |  1  | 1 |     1    |     TRUE    | end program  &&   ( tool definition && a coordinate )
+        |  0  |  1  | 0 |     Z    |     false   |
+        |  0  |  0  | Z |     Z    |     false   |
+     */
     if (((found_X || found_Y) && found_T) && (found_M48 || (found_percent && found_M30))) {
         return TRUE;
     } else if (found_M48 && found_percent && found_M30) {
