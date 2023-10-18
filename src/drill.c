@@ -68,7 +68,7 @@
 #define UNUSED
 #endif
 
-// #define DEBUG_DRILL 1
+//#define DEBUG_DRILL 1
 #if defined(DEBUG_DRILL) && DEBUG_DRILL
 #undef DEBUG
 #define DEBUG 1
@@ -1310,8 +1310,301 @@ drill_parse_end:
  *
  * Upon exit, fully rewinds the file pointer.
  */
+
+typedef struct drill_file_p_state {
+    bool found_binary;
+    bool found_M48_start_of_header;
+    bool found_Rewind_Stop;              // aka '%' on its own line, within the header
+    bool found_M30;                      // implies previously found Rewind Stop
+    bool found_Tn;                       // T followed by a decimal digit
+    bool found_Xn_or_Yn;                 // X or Y followed by a decimal digit
+    bool is_continuation_of_prior_line;  // edge case: when line is too long to fit in MAXIMUM_LINE_LENGTH buffer
+    bool is_continuation_of_comment;     // edge case: when a comment line (or attribute line) is too long
+} drill_file_p_state_t;
+
+void
+check_drill_file_p_state__one_line_output(const drill_file_p_state_t* state, const char* filename, int line_number) {
+    // clang-format off
+    DPRINTF(("Bin: %c   M48 %c   '%%' %c   M30 %c   Tn %c   Xn/Yn %c   is_con %c / %c   @line %d\n",
+        state->found_binary                  ? '1' : '0',
+        state->found_M48_start_of_header     ? '1' : '0',
+        state->found_Rewind_Stop             ? '1' : '0',
+        state->found_M30                     ? '1' : '0',
+        state->found_Tn                      ? '1' : '0',
+        state->found_Xn_or_Yn                ? '1' : '0',
+        state->is_continuation_of_prior_line ? '1' : '0',
+        state->is_continuation_of_comment    ? '1' : '0',
+        line_number > 0 ? line_number : 0
+    ));
+    // clang-format on
+}
+
+void
+check_drill_file_p_state_invariants(const drill_file_p_state_t* state, const char* filename) {
+    if (state->found_M30 && !state->found_Rewind_Stop) {
+        GERB_FATAL_ERROR(
+            "Detection of drill file: M30 should never be true unless found a Rewind Stop; parsing %s", filename
+        );
+    }
+    if (state->is_continuation_of_comment && !state->is_continuation_of_prior_line) {
+        GERB_FATAL_ERROR(
+            "Detection of drill file: continuation of comment should never be true unless also continuation of prior "
+            "line; parsing %s",
+            filename
+        );
+    }
+}
+
 gboolean
-drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
+drill_file_p_new(gerb_file_t* fd, gboolean* returnFoundBinary) {
+    static const int LINE_BUFFER_SIZE = 200;
+
+    drill_file_p_state_t state;
+    memset(&state, 0, sizeof(state));
+    check_drill_file_p_state_invariants(&state, fd->filename);
+
+    // this routine doesn't use the gerb_...() wrappers.
+    // it's possible this could mess with the `gerb_file_t*` implementation.
+    // therefore, save information about the current file pointer to be restored on exit.
+    long original_file_offset = ftell(fd->fd);
+
+    if (fseek(fd->fd, 0L, SEEK_SET)) {
+        GERB_FATAL_ERROR("fseek() failed while checking for drill file in %s()", __FUNCTION__);
+    }
+
+    char* buffer = g_malloc(LINE_BUFFER_SIZE);
+    if (buffer == NULL) {
+        GERB_FATAL_ERROR("malloc buf failed while checking for drill file in %s()", __FUNCTION__);
+    }
+
+    int line_number = 1;
+    // fgets() ensures null-termination of the string.
+    // fgets() stops if reading a newline character, in which case the newline is part of the returned string.
+    while (fgets(buffer, LINE_BUFFER_SIZE, fd->fd) != NULL) {
+
+        check_drill_file_p_state__one_line_output(
+            &state, fd->filename, line_number - 1
+        );  // -1 because before parsing the line
+        check_drill_file_p_state_invariants(&state, fd->filename);
+
+        const char* line = buffer;  // setting to const char* helps catch bugs where code tries to modify the buffer
+        DPRINTF(("parsing line %d: %s", line_number, line));
+
+        int len = strlen(line);
+        // either read fewer than maximum characters, or last read character was a newline
+        //   [N-1] == '\0'
+        //   [N-2] == '\n' or '\r'
+        bool read_to_end_of_line = (len < LINE_BUFFER_SIZE - 1)
+                                || ((line[LINE_BUFFER_SIZE - 2] == '\n') || (line[LINE_BUFFER_SIZE - 2] == '\r'));
+
+        /* BUGBUG: Old code did not detect or reject binary data in attribute lines (start with '%')
+         *         Retaining behavior for compatibility.
+         */
+
+        if (state.is_continuation_of_comment) {
+            DPRINTF(
+                ("    %s(): skipping continuation of long comment in line %d for file %s (%s)", __FUNCTION__,
+                 line_number, fd->filename, line)
+            );
+            // keep skipping comment data until fgets() gets to a newline character
+            if (read_to_end_of_line) {
+                state.is_continuation_of_comment    = false;
+                state.is_continuation_of_prior_line = false;
+            }
+            continue;  // do not increment line_number
+        }
+
+        // check for rewind stop line, or other attribute lines
+
+        // check for comment lines (start with ';') and attributes (start with '%')
+        if ((line[0] == ';') || (line[0] == '%')) {
+
+            if (!read_to_end_of_line) {
+                // regardless of whether this was a continuation before, it is now.
+                DPRINTF(
+                    ("    %s(): Start of long comment at line %d for file %s", __FUNCTION__, line_number, fd->filename)
+                );
+                state.is_continuation_of_comment    = true;
+                state.is_continuation_of_prior_line = true;
+            } else if (state.is_continuation_of_prior_line) {
+                // comments and attributes must start on first column, so ignore this continuation
+                DPRINTF(
+                    ("    %s(): Continuation of long comment at line %d for file %s", __FUNCTION__, line_number,
+                     fd->filename)
+                );
+            } else if (line[0] == '%' && (line[1] == '\n' || line[1] == '\r')) {
+                if (!state.found_Rewind_Stop) {
+                    DPRINTF(
+                        ("    %s(): Comment line was 'Rewind Stop` at line %d for file %s", __FUNCTION__, line_number,
+                         fd->filename)
+                    );
+                    state.found_Rewind_Stop = true;
+                } else {
+                    DPRINTF(
+                        ("    %s(): Ignoring duplicate 'Rewind Stop` at line %d for file %s", __FUNCTION__, line_number,
+                         fd->filename)
+                    );
+                }
+            } else {
+                DPRINTF(
+                    ("    %s(): Ignoring comment/attribute at line %d for file %s", __FUNCTION__, line_number,
+                     fd->filename)
+                );
+            }
+            // don't parse this line any further because it was a comment/attribute
+            if (read_to_end_of_line) {
+                line_number++;
+            }
+            continue;
+        }
+
+        /* BUGBUG: Old code incorrectly failed to detect char(128) as binary character. */
+
+        // check that line is not binary (non-printing chars)
+        for (int i = 0; i < len; i++) {
+            char t = line[i];
+            if ((t < 0) || (t > 127)) {
+                DPRINTF(("    %s(): Found binary data; line %d for file %s", __FUNCTION__, line_number, fd->filename));
+                state.found_binary = true;
+            }
+        }
+
+        // check for start of drill header (M48) at start of line
+        if (strncmp(line, "M48", 3) == 0) {
+            // Only valid when found at the start of a line
+            if (state.is_continuation_of_prior_line) {
+                // ignored because was not actually at start of line
+            } else if (!state.found_M48_start_of_header) {
+                DPRINTF(
+                    ("    %s(): Found M48 (start of header); line %d for file %s", __FUNCTION__, line_number,
+                     fd->filename)
+                );
+                state.found_M48_start_of_header = true;
+            }
+        }
+
+        // check for end-of-program (M30) at start of line AND after found rewind stop line
+        if (strncmp(line, "M30", 3) == 0) {
+            // only valid when found at the start of a line
+            // AND after found a Rewind Stop comment line
+            if (state.is_continuation_of_prior_line) {
+                // ignored because it wasn't at the start of the line
+            } else if (!state.found_Rewind_Stop) {
+                // ignored because did not find earlier Rewind Stop (thus M30 command invalid at this time)
+                DPRINTF(
+                    ("    %s(): M30 being ignored because no prior 'Rewind Stop` found; line %d for file %s",
+                     __FUNCTION__, line_number, fd->filename)
+                );
+            } else if (state.found_M30) {
+                // ignore second and later occurrences
+            } else {
+                DPRINTF(
+                    ("    %s(): M30 found after 'Rewind Stop`; line %d for file %s", __FUNCTION__, line_number,
+                     fd->filename)
+                );
+                state.found_M30 = true;
+            }
+        }
+
+        // Look for T<number> anywhere within the string
+        char* letter_T = g_strstr_len(line, len, "T");
+        if (letter_T != NULL) {
+            // check if next character is a digit
+            if (!isdigit(letter_T[1])) {
+                // ignored because 'T' was not followed by a decimal digit
+            } else if (state.found_Tn) {
+                // ignore second and later occurrences
+            } else {
+                DPRINTF(("    %s(): Found %cn at line %d for file %s", __FUNCTION__, 'T', line_number, fd->filename));
+                state.found_Tn = true;
+            }
+        }
+        // Look for X<number> anywhere within the string
+        char* letter_X = g_strstr_len(line, len, "X");
+        if (letter_X != NULL) {
+            // check if next character is a digit
+            if (!isdigit(letter_X[1])) {
+                // ignored because 'X' was not followed by a decimal digit
+                // BUGBUG -- could miss if all X values start with '.', '+', or '-'
+            } else if (state.found_Xn_or_Yn) {
+                // ignore second and later occurrences
+            } else {
+                DPRINTF(("    %s(): Found %cn at line %d for file %s", __FUNCTION__, 'X', line_number, fd->filename));
+                state.found_Xn_or_Yn = true;
+            }
+        }
+        // Look for Y<number> anywhere within the string
+        char* letter_Y = g_strstr_len(line, len, "Y");
+        if (letter_Y != NULL) {
+            // check if next character is a digit
+            if (!isdigit(letter_Y[1])) {
+                // ignored because 'Y' was not followed by a decimal digit
+                // BUGBUG -- could miss if all Y values start with '.', '+', or '-'
+            } else if (state.found_Xn_or_Yn) {
+                // ignore second and later occurrences
+            } else {
+                DPRINTF(("    %s(): Found %cn at line %d for file %s", __FUNCTION__, 'Y', line_number, fd->filename));
+                state.found_Xn_or_Yn = true;
+            }
+        }
+
+        // HACKHACK -- Rewind N characters if didn't read a full line.
+        // This hack allows find T#, X#, and Y# values on really long lines
+        // that would otherwise split the character and digit across
+        // two buffered lines.
+        if (!read_to_end_of_line) {
+            fseek(fd->fd, -1, SEEK_CUR);
+            state.is_continuation_of_prior_line = true;
+        } else {
+            state.is_continuation_of_prior_line = false;
+            state.is_continuation_of_comment    = false;
+            line_number++;
+        }
+    } /* while (fgets(buf, LINE_BUFFER_SIZE, fd->fd) */
+
+    // a final check of the invariant conditions
+    check_drill_file_p_state__one_line_output(&state, fd->filename, line_number);
+    check_drill_file_p_state_invariants(&state, fd->filename);
+
+    g_free(buffer);
+    // restore the file pointer to its original position
+    fseek(fd->fd, original_file_offset, SEEK_SET);  // clears EOF and error flags
+
+    *returnFoundBinary = !!state.found_binary;
+
+    gboolean result;
+    if (state.found_M48_start_of_header && state.found_M30) {
+        DPRINTF(
+            ("    %s(): Likely a drill file; Found both M30 (after '%%') and M48 and  for file %s", __FUNCTION__,
+             fd->filename)
+        );
+        result = TRUE;
+    } else if ((!state.found_M48_start_of_header) && (!state.found_M30)) {
+        DPRINTF(
+            ("    %s(): Likely NOT a drill file; Found neither M30 (after '%%') nor M48 for file %s", __FUNCTION__,
+             fd->filename)
+        );
+        result = FALSE;
+    } else if (state.found_Tn && state.found_Xn_or_Yn) {
+        DPRINTF(
+            ("    %s(): Likely a drill file; Found either M30 (after '%%') and M48, and found Tn, and found either Xn "
+             "or Yn for file %s",
+             __FUNCTION__, fd->filename)
+        );
+        result = TRUE;
+    } else {
+        DPRINTF(
+            ("    %s(): Likely NOT a drill file; Found either M30 (after '%%') and M48, and found Tn, and found either "
+             "Xn or Yn for file %s",
+             __FUNCTION__, fd->filename)
+        );
+        result = FALSE;
+    }
+    return result;
+}
+
+gboolean
+drill_file_p_old(gerb_file_t* fd, gboolean* returnFoundBinary) {
     static const int MAXIMUM_LINE_LENGTH = 200;
 
     int      len = 0;
@@ -1493,6 +1786,25 @@ drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
     } else {
         return FALSE;
     }
+}
+
+gboolean
+drill_file_p(gerb_file_t* fd, gboolean* returnFoundBinary) {
+
+    gboolean new_found_binary = FALSE;
+    gboolean new_result       = drill_file_p_new(fd, &new_found_binary);
+    gboolean old_found_binary = FALSE;
+    gboolean old_result       = drill_file_p_old(fd, &old_found_binary);
+
+    if (old_result != new_result) {
+        GERB_FATAL_ERROR("drill_file_p() old_result != new_result for file %s", fd->filename);
+    }
+    if (old_found_binary != new_found_binary) {
+        GERB_FATAL_ERROR("drill_file_p() old_found_binary != new_found_binary for file %s", fd->filename);
+    }
+    *returnFoundBinary = new_found_binary;
+    return new_result;
+
 } /* drill_file_p */
 
 static bool
