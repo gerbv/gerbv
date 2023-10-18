@@ -82,6 +82,16 @@ typedef enum {
     DRILL_DATA
 } drill_file_section_t;
 
+static const char* drill_file_section_list[] = { "NONE", "HEADER", "DATA", NULL };
+
+static const char*
+drill_file_section_to_string(drill_file_section_t section) {
+    if (section < 0 || section > DRILL_DATA) {
+        return "Invalid";
+    }
+    return drill_file_section_list[section];
+}
+
 typedef enum {
     DRILL_MODE_ABSOLUTE,
     DRILL_MODE_INCREMENTAL
@@ -94,6 +104,27 @@ typedef enum {
     FMT_0000_00, /* METRIC 6-digit, 10 um */
     FMT_USER,    /* METRIC User defined format   */
 } number_fmt_t;
+
+static const char* number_fmt_list[] = { N_("2:4"), N_("3:3"), N_("3:2"), N_("4:2"), N_("USER"), NULL };
+
+static const char*
+number_fmt_to_string(number_fmt_t fmt) {
+    if (fmt < 0 || fmt > FMT_USER) {
+        return "UNKNOWN";
+    } else {
+        return number_fmt_list[fmt];
+    }
+}
+
+static bool
+number_fmt_implies_imperial(number_fmt_t fmt) {
+    return fmt == FMT_00_0000;  // this is the only format that is in inches
+}
+
+static bool
+number_fmt_implies_metric(number_fmt_t fmt) {
+    return (fmt == FMT_000_000) || (fmt == FMT_000_00) || (fmt == FMT_0000_00) || (fmt == FMT_USER);
+}
 
 typedef struct drill_state {
     double                  curr_x;
@@ -181,9 +212,31 @@ enum {
     SUP_TRAIL,
 };
 
+// This list is used within HID_Attributes
 static const char* suppression_list[] = { N_("None"), N_("Leading"), N_("Trailing"), 0 };
 
+// This list is used with `gerbv_omit_zeros_t`
+static const char* omit_zeros_list[] = { N_("Leading"), N_("Trailing"), N_("Explicit"), N_("Unspecified"), NULL };
+
+static const char*
+omit_zeros_to_string(gerbv_omit_zeros_t omit_zeros) {
+    if (omit_zeros < 0 || omit_zeros > 3) {
+        return "Invalid";
+    } else {
+        return omit_zeros_list[omit_zeros];
+    }
+}
+
 static const char* units_list[] = { N_("inch"), N_("mm"), 0 };
+
+static const char*
+unit_to_string(gerbv_unit_t unit) {
+    if (unit < 0 || unit > 1) {
+        return "Unspecified";
+    } else {
+        return units_list[unit];
+    }
+}
 
 enum {
     HA_auto = 0,
@@ -1401,27 +1454,44 @@ header_again:
         switch (c = gerb_fgetc(fd)) {
             case 'T':
             case 'L':
-                if ('Z' != gerb_fgetc(fd))
+                if ('Z' != gerb_fgetc(fd)) {
                     goto header_junk;
-
-                if (c == 'L') {
-                    dprintf(
-                        "    %s(): Detected a file that probably has "
-                        "trailing zero suppression\n",
-                        __FUNCTION__
-                    );
-                    if (state->autodetect_file_format)
-                        image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
-                } else {
-                    dprintf(
-                        "    %s(): Detected a file that probably has "
-                        "leading zero suppression\n",
-                        __FUNCTION__
-                    );
-                    if (state->autodetect_file_format)
-                        image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
                 }
 
+                if (c == 'L') {
+                    // NOTE: `LZ` means _include_ the leading zeros; thus, `LZ` means to _omit_ trailing zeros.
+                    //       Would have been preferable to directly mirror file format logic, by tracking
+                    //       whether leading zeros or trailing zeros are KEPT.  Que cera cera.
+                    dprintf(
+                        "    %s(): Detected a file with trailing trailing zero suppression / keeping leading zeros "
+                        "(`LZ` found)\n",
+                        __FUNCTION__
+                    );
+                    if (state->autodetect_file_format) {
+                        image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
+                    }
+                } else {
+                    // NOTE: `TZ` means _include_ the trailing zeros; thus, `TZ` means to _omit_ leading zeros.
+                    //       Would have been preferable to directly mirror file format logic, by tracking
+                    //       whether leading zeros or trailing zeros are KEPT.  Que cera cera.
+                    dprintf(
+                        "    %s(): Detected a file with leading zero suppression / keeping trailing zeros (`TZ` "
+                        "found)\n",
+                        __FUNCTION__
+                    );
+                    if (state->autodetect_file_format) {
+                        image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
+                    }
+                }
+
+                // The `METRIC` line was already found.
+                // From prior comments, anytime zero suppression is enabled,
+                // the header's number format should become hard-coded to FMT_000_000.
+                // However, this is **_ONLY_** done when `autodetect_file_format` is true
+                // **_AND_** the number_format was not already set to a user-specified format.
+                // (e.g., via a `;FILE_FORMAT=3:4` line)
+                //
+                // TODO -- determine if this is the intended behavior?
                 if (state->autodetect_file_format && state->number_format != FMT_USER) {
                     /* Default metric number format is 6-digit, 1 um
                      * resolution.  The header number format (for T#C#
@@ -1431,8 +1501,9 @@ header_again:
                      * we have set the number format in another way, maybe
                      * with one of the altium FILE_FORMAT= style comments,
                      * so don't do this default. */
-                    state->header_number_format = state->number_format = FMT_000_000;
-                    state->decimals                                    = 3;
+                    state->header_number_format = FMT_000_000;  // May only be FMT_00_0000 (inches) or FMT_000_000 (mm)
+                    state->number_format        = FMT_000_000;
+                    state->decimals             = 3;
                 }
 
                 if (',' == gerb_fgetc(fd))
@@ -1444,25 +1515,42 @@ header_again:
                 break;
 
             case '0':
-                if ('0' != gerb_fgetc(fd) || '0' != gerb_fgetc(fd))
+                /* METRIC allows optionally specifying the number format:
+                 *     METRIC[,{TZ|LZ}][,{000.000|000.00|0000.00}
+                 *
+                 * All three valid formats start with `000`,
+                 * so check for those next two zeros....
+                 */
+                if ('0' != gerb_fgetc(fd) || '0' != gerb_fgetc(fd)) {
                     goto header_junk;
+                }
 
-                /* We just parsed three 0s, the remainder options
-                   so far are: .000 | .00 | 0.00 */
+                /* We just parsed "000" from the file.
+                 * The remainder valid metric options are:    .000 |    .00 |    0.00
+                 *                   which corresponds to: 000.000 | 000.00 | 0000.00
+                 */
                 op[0] = gerb_fgetc(fd);
                 op[1] = gerb_fgetc(fd);
                 op[2] = '\0';
-                if (EOF == op[0] || EOF == op[1])
+                if (EOF == op[0] || EOF == op[1]) {
                     goto header_junk;
+                }
 
+                /* We just parsed "000" from the file and have two more characters in op[].
+                 * The remainder valid metric options are:    .000 |    .00 |    0.00
+                 *                   which corresponds to: 000.000 | 000.00 | 0000.00
+                 * First, handle the 0000.00 case, as the only one where op[] == "0."
+                 */
                 if (0 == strcmp(op, "0.")) {
-                    /* expecting FMT_0000_00,
-                       two trailing 0s must follow */
-                    if ('0' != gerb_fgetc(fd) || '0' != gerb_fgetc(fd))
+                    /* We just parsed "0000." from the file.
+                     * The remainder valid metric options are:      00
+                     *                   which corresponds to: 0000.00
+                     */
+                    if ('0' != gerb_fgetc(fd) || '0' != gerb_fgetc(fd)) {
                         goto header_junk;
-
+                    }
+                    /* No further options are allowed after matching the number format */
                     eat_line(fd);
-
                     if (state->autodetect_file_format) {
                         state->number_format = FMT_0000_00;
                         state->decimals      = 2;
@@ -1470,33 +1558,51 @@ header_again:
                     break;
                 }
 
-                if (0 != strcmp(op, ".0"))
+                /* We just parsed "000" from the file and have two more characters in op[].
+                 * The possibility of "0000.00" was excluded above.
+                 * The remainder valid metric options are:    .000 |    .00
+                 *                   which corresponds to: 000.000 | 000.00
+                 * Thus, exit if the first two characters in `op[]` are not ".0".
+                 */
+                if (0 != strcmp(op, ".0")) {
                     goto header_junk;
+                }
 
-                /* Must be either FMT_000_000 or FMT_000_00, depending
-                 * on whether one or two 0s are following */
-                if ('0' != gerb_fgetc(fd))
+                /* We just parsed "000.0" from the file.
+                 * The remainder valid metric options are:      00 |      0
+                 *                   which corresponds to: 000.000 | 000.00
+                 * Thus, exit if the next character in the file is not "0".
+                 */
+                if ('0' != gerb_fgetc(fd)) {
                     goto header_junk;
+                }
+
+                /* We just parsed "000.00" from the file.
+                 * The remainder valid metric options are:       0 | (nothing)
+                 *                   which corresponds to: 000.000 | 000.00
+                 * The result is thus either FMT_000_000 or FMT_000_00,
+                 * depending on if there is another 0.
+                 */
 
                 if ('0' == gerb_fgetc(fd) && state->autodetect_file_format) {
                     state->number_format = FMT_000_000;
                     state->decimals      = 3;
                 } else {
                     gerb_ungetc(fd);
-
                     if (state->autodetect_file_format) {
                         state->number_format = FMT_000_00;
                         state->decimals      = 2;
                     }
                 }
 
+                // BUGBUG -- There is not notification of junk following the number_format.
                 eat_line(fd);
                 break;
 
             default:
 header_junk:
+                // fd->ptr should point to the junk line + one character
                 gerb_ungetc(fd);
-                eat_line(fd);
 
                 gerbv_stats_printf(
                     stats->error_list, GERBV_MESSAGE_WARNING, -1,
@@ -1504,10 +1610,14 @@ header_junk:
                       "at line %ld in file \"%s\""),
                     file_line, fd->filename
                 );
+
+                eat_line(fd);
                 break;
         }
     }
 
+    // When the line starts with `METRIC`, even if has junk afterwards,
+    // set the units to metric (even before parsing additional options).
     state->unit = GERBV_UNIT_MM;
 
     return 1;
@@ -1595,15 +1705,13 @@ drill_parse_header_is_metric_comment(gerb_file_t* fd, drill_state_t* state, gerb
     //           Function is checking for a FILE_FORMAT comment.
     //           This does ***NOT*** mean that the file is metric.
 
-    // BUGBUG -- header_number_format should only be one of two values:
-    //           FMT_00_0000 when units is inches
-    //           FMT_000_000 when units is metric
-    // if (state->unit == GERBV_UNIT_INCH) {
-    //     state->header_number_format = FMT_00_0000;
-    // } else {
-    //     state->header_number_format = FMT_000_000;
-    // }
-    state->header_number_format   = FMT_USER;
+    // Per excellon specification, header_number_format must be one of
+    // exactly two values, and which is selected is based on the units.
+    if (state->unit == GERBV_UNIT_INCH) {
+        state->header_number_format = FMT_00_0000;
+    } else {
+        state->header_number_format = FMT_000_000;
+    }
     state->number_format          = FMT_USER;
     state->decimals               = digits_after;
     state->autodetect_file_format = false;
@@ -2171,3 +2279,26 @@ drill_m_code_name(drill_m_code_t m_code) {
         default: return N_("unknown M-code");
     }
 } /* drill_m_code_name() */
+
+/* Well, this is a bit awkward.
+ * __attribute__((unused)) does not appear to suppress `-Wunused-function`.
+ * Therefore, have a dummy function that's never used, and which calls
+ * all the functions that (at least in some configurations) are never used.
+ * Even so, define the attribute that GCC states it would use.
+ * This should automatically suppress this warning if GCC is updated.
+ */
+#ifdef __GNUC__
+#define UNUSED __attribute__((unused))
+#else
+#define UNUSED
+#endif
+void UNUSED
+reduce_unused_function_warnings_as_a_workaround(void) {
+    // wrapped in always-false if statement, should get optimized away
+    if (number_fmt_implies_imperial(FMT_00_0000) && number_fmt_implies_metric(FMT_00_0000)) {
+        number_fmt_to_string(FMT_00_0000);
+        omit_zeros_to_string(GERBV_OMIT_ZEROS_LEADING);
+        unit_to_string(GERBV_UNIT_INCH);
+        drill_file_section_to_string(DRILL_NONE);
+    }
+}
