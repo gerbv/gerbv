@@ -75,9 +75,10 @@
 #endif
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
-#define dprintf \
-    if (DEBUG)  \
-    printf
+#define DPRINTF(x) \
+    if (DEBUG) {   \
+        printf x;  \
+    }
 
 #define MAXL                   200
 #define DRILL_READ_DOUBLE_SIZE 32
@@ -281,16 +282,15 @@ static gerbv_HID_Attribute drill_attribute_list[] = {
   // clang-format on
 };
 
-#define CHK_STATE(state, image, fd, file_line)                                 \
-    do {                                                                       \
-        check_invariants(state, image, fd, file_line, __FUNCTION__, __LINE__); \
+#define CHK_STATE(state, image, fd, file_line)                                         \
+    do {                                                                               \
+        check_invariants((state), (image), (fd), (file_line), __FUNCTION__, __LINE__); \
     } while (false)
 
-#if DEBUG
 #define DUMP_STATE(state, image, fd, file_line)                          \
-    do {                                                                 \
+    if (DEBUG) {                                                         \
         dump_state(state, image, fd, file_line, __FUNCTION__, __LINE__); \
-    } while (false)
+    }
 
 static void UNUSED
 dump_state(
@@ -315,9 +315,6 @@ dump_state(
         //,fd ? fd->filename ? fd->filename : "n/a" : "n/a"
     );
 }
-#else
-#define DUMP_STATE(state, image, fd, file_line)
-#endif
 
 // Calls GERB_FATAL_ERROR() to abort program if invariant is violated
 static void UNUSED
@@ -524,11 +521,11 @@ check_invariants(
                     fd ? fd->filename ? fd->filename : "n/a" : "n/a", file_line
                 );
             }
-            dprintf(  // BUGBUG -- convert to GERB_FATAL_ERROR after fixing empty.xnc test case?
+            DPRINTF((  // BUGBUG -- convert to GERB_FATAL_ERROR after fixing empty.xnc test case?
                 _("%s(): unit is %s but number format %s is not %s in drill file %s line %zd)\n"), function,
                 unit_to_string(state->unit), number_fmt_to_string(state->number_format), "metric",
                 fd ? fd->filename ? fd->filename : "n/a" : "n/a", file_line
-            );
+            ));
         } else if (state->unit == GERBV_UNIT_INCH && !number_fmt_implies_imperial(state->number_format)) {
             if (image->drill_stats && image->drill_stats->error_list) {
                 gerbv_stats_printf(
@@ -650,7 +647,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
     setlocale(LC_NUMERIC, "C");
 
     /* Create new image for this layer */
-    dprintf("In parse_drillfile, about to create image for this layer, %s\n", fd->filename);
+    DPRINTF(("In parse_drillfile, about to create image for this layer, %s\n", fd->filename));
 
     gerbv_image_t* image = gerbv_create_image(NULL, "Excellon Drill File");
     if (image == NULL) {
@@ -726,7 +723,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
     int     read      = EOF;
     ssize_t file_line = 1;
 
-    dprintf("%s():  Starting parsing of drill file \"%s\"\n", __FUNCTION__, fd->filename);
+    DPRINTF(("%s():  Starting parsing of drill file \"%s\"\n", __FUNCTION__, fd->filename));
     DUMP_STATE(state, image, fd, file_line);
     CHK_STATE(state, image, fd, file_line);
 
@@ -747,7 +744,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                     stats->error_list, GERBV_MESSAGE_NOTE, -1, _("Comment \"%s\" at line %ld in file \"%s\""),
                     tmps_semicolon, file_line, fd->filename
                 );
-                dprintf("    Comment with ';' \"%s\" at line %ld\n", tmps_semicolon, file_line);
+                DPRINTF(("    Comment with ';' \"%s\" at line %ld\n", tmps_semicolon, file_line));
                 g_free(tmps_semicolon);
                 break;
 
@@ -1119,7 +1116,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                         rcnt = 10 * rcnt + (c - '0');
                         c    = gerb_fgetc(fd);
                     }
-                    dprintf("working on R code (repeat) with a number of reps equal to %d\n", rcnt);
+                    DPRINTF(("working on R code (repeat) with a number of reps equal to %d\n", rcnt));
 
                     // read optional X and Y values
                     double step_x = 0.0;
@@ -1139,9 +1136,9 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                     } else {
                         gerb_ungetc(fd);
                     }
-                    dprintf(
-                        "Getting ready to repeat the drill %d times with delta_x = %g, delta_y = %g\n", rcnt, step_x,
-                        step_y
+                    DPRINTF(
+                        ("Getting ready to repeat the drill %d times with delta_x = %g, delta_y = %g\n", rcnt, step_x,
+                         step_y)
                     );
 
                     /* spit out the drills */
@@ -1150,7 +1147,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
                     for (c = 1; c <= rcnt; c++) {
                         state->curr_x = start_x + c * step_x;
                         state->curr_y = start_y + c * step_y;
-                        dprintf("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
+                        DPRINTF(("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y));
                         curr_net = drill_add_drill_hole(image, state, curr_net);
                     }
                 }
@@ -1252,7 +1249,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
     );
 
 drill_parse_end:
-    dprintf("%s():  Populating file attributes\n", __FUNCTION__);
+    DPRINTF(("%s():  Populating file attributes\n", __FUNCTION__));
 
     hid_attrs = image->info->attr_list;
 
@@ -1517,10 +1514,10 @@ drill_parse_T_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
     }
     gerbv_error_list_t* error_list = image->drill_stats->error_list;
 
-    dprintf("---> entering %s()...\n", __FUNCTION__);
+    DPRINTF(("---> entering %s()...\n", __FUNCTION__));
 
     int tool_num = (int)gerb_fgetint(fd, NULL);
-    dprintf("  Handling tool T%d at line %ld\n", tool_num, file_line);
+    DPRINTF(("  Handling tool T%d at line %ld\n", tool_num, file_line));
 
     if (tool_num == 0) {
         return tool_num; /* T00 is a command to unload the drill */
@@ -1561,7 +1558,7 @@ drill_parse_T_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
                     fd, state->header_number_format, GERBV_OMIT_ZEROS_TRAILING, state->leading_digits,
                     state->trailing_digits
                 );
-                dprintf("  Read a size of %g\n", size);
+                DPRINTF(("  Read a size of %g\n", size));
 
                 if (state->unit == GERBV_UNIT_MM) {
                     size /= 25.4;
@@ -1703,7 +1700,7 @@ drill_parse_T_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
         g_free(tool_unit_string);
     } /* if(image->aperture[tool_num] == NULL) */
 
-    dprintf("<----  ...leaving %s()\n", __FUNCTION__);
+    DPRINTF(("<----  ...leaving %s()\n", __FUNCTION__));
 
     return tool_num;
 } /* drill_parse_T_code() */
@@ -1715,7 +1712,7 @@ drill_parse_M_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
     drill_m_code_t       m_code;
     char                 op[3];
 
-    dprintf("---> entering %s() ...\n", __FUNCTION__);
+    DPRINTF(("---> entering %s() ...\n", __FUNCTION__));
 
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
@@ -1730,7 +1727,7 @@ drill_parse_M_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
         return DRILL_M_UNKNOWN;
     }
 
-    dprintf("  Compare M-code \"%s\" at line %ld\n", op, file_line);
+    DPRINTF(("  Compare M-code \"%s\" at line %ld\n", op, file_line));
 
     switch (m_code = atoi(op)) {
         case 0:
@@ -1766,7 +1763,7 @@ drill_parse_M_code(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, 
         case DRILL_M_UNKNOWN: break;
     }
 
-    dprintf("<----  ...leaving %s()\n", __FUNCTION__);
+    DPRINTF(("<----  ...leaving %s()\n", __FUNCTION__));
 
     return m_code;
 } /* drill_parse_M_code() */
@@ -1778,7 +1775,7 @@ drill_parse_header_is_metric(gerb_file_t* fd, drill_state_t* state, gerbv_image_
     char                 c;
     char                 op[3];
 
-    dprintf("    %s(): entering\n", __FUNCTION__);
+    DPRINTF(("    %s(): entering\n", __FUNCTION__));
 
     /* METRIC is not an actual M code but a command that is only
      * acceptable within the header.
@@ -1822,10 +1819,10 @@ header_again:
                     // NOTE: `LZ` means _include_ the leading zeros; thus, `LZ` means to _omit_ trailing zeros.
                     //       Would have been preferable to directly mirror file format logic, by tracking
                     //       whether leading zeros or trailing zeros are KEPT.  Que cera cera.
-                    dprintf(
-                        "    %s(): Detected a file with trailing trailing zero suppression / keeping leading zeros "
-                        "(`LZ` found)\n",
-                        __FUNCTION__
+                    DPRINTF(
+                        ("    %s(): Detected a file with trailing trailing zero suppression / keeping leading zeros "
+                         "(`LZ` found)\n",
+                         __FUNCTION__)
                     );
                     if (state->autodetect_file_format) {
                         image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
@@ -1834,10 +1831,10 @@ header_again:
                     // NOTE: `TZ` means _include_ the trailing zeros; thus, `TZ` means to _omit_ leading zeros.
                     //       Would have been preferable to directly mirror file format logic, by tracking
                     //       whether leading zeros or trailing zeros are KEPT.  Que cera cera.
-                    dprintf(
-                        "    %s(): Detected a file with leading zero suppression / keeping trailing zeros (`TZ` "
-                        "found)\n",
-                        __FUNCTION__
+                    DPRINTF(
+                        ("    %s(): Detected a file with leading zero suppression / keeping trailing zeros (`TZ` "
+                         "found)\n",
+                         __FUNCTION__)
                     );
                     if (state->autodetect_file_format) {
                         image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
@@ -2042,7 +2039,7 @@ static int
 drill_parse_header_is_metric_comment(gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line) {
     gerbv_drill_stats_t* stats = image->drill_stats;
 
-    dprintf("    %s(): entering\n", __FUNCTION__);
+    DPRINTF(("    %s(): entering\n", __FUNCTION__));
     /* The leading semicolon is already gone. */
     if (DRILL_HEADER != state->curr_section) {
         return 0;
@@ -2135,7 +2132,7 @@ drill_parse_header_is_inch(gerb_file_t* fd, drill_state_t* state, gerbv_image_t*
     gerbv_drill_stats_t* stats = image->drill_stats;
     char                 c;
 
-    dprintf("    %s(): entering\n", __FUNCTION__);
+    DPRINTF(("    %s(): entering\n", __FUNCTION__));
 
     if (DRILL_HEADER != state->curr_section) {
         return 0;
@@ -2257,7 +2254,7 @@ drill_parse_G_code(gerb_file_t* fd, gerbv_image_t* image, ssize_t file_line) {
     drill_g_code_t       g_code;
     gerbv_drill_stats_t* stats = image->drill_stats;
 
-    dprintf("---> entering %s()...\n", __FUNCTION__);
+    DPRINTF(("---> entering %s()...\n", __FUNCTION__));
 
     op[0] = gerb_fgetc(fd);
     op[1] = gerb_fgetc(fd);
@@ -2271,7 +2268,7 @@ drill_parse_G_code(gerb_file_t* fd, gerbv_image_t* image, ssize_t file_line) {
         return DRILL_G_UNKNOWN;
     }
 
-    dprintf("  Compare G-code \"%s\" at line %ld\n", op, file_line);
+    DPRINTF(("  Compare G-code \"%s\" at line %ld\n", op, file_line));
 
     switch (g_code = atoi(op)) {
         case 0:
@@ -2297,7 +2294,7 @@ drill_parse_G_code(gerb_file_t* fd, gerbv_image_t* image, ssize_t file_line) {
         default: stats->G_unknown++; break;
     }
 
-    dprintf("<----  ...leaving %s()\n", __FUNCTION__);
+    DPRINTF(("<----  ...leaving %s()\n", __FUNCTION__));
 
     return g_code;
 } /* drill_parse_G_code() */
@@ -2478,9 +2475,9 @@ read_double_impl(
     double raw    = strtod(buffer->values, NULL);
     double scale  = pow(10.0, power_of_ten);
     double result = raw * scale;
-    dprintf(
-        "    %s()=%lf: fmt=%s, omit_zeros=%s, leading/trailing=%d/%d \n", __FUNCTION__, result,
-        number_fmt_to_string(fmt), omit_zeros_to_string(omit_zeros), leading_digits, trailing_digits
+    DPRINTF(
+        ("    %s()=%lf: fmt=%s, omit_zeros=%s, leading/trailing=%d/%d \n", __FUNCTION__, result,
+         number_fmt_to_string(fmt), omit_zeros_to_string(omit_zeros), leading_digits, trailing_digits)
     );
     return result;
 } /* read_double */
