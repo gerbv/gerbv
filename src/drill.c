@@ -180,7 +180,7 @@ typedef struct drill_state {
 
 /* Local function prototypes */
 // clang-format off
-static drill_state_t* new_state(                             drill_state_t* state);
+static drill_state_t* new_state();
 static drill_g_code_t drill_parse_G_code(                    gerb_file_t* fd, gerbv_image_t* image, ssize_t file_line);
 static drill_m_code_t drill_parse_M_code(                    gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
 static int            drill_parse_T_code(                    gerb_file_t* fd, drill_state_t* state, gerbv_image_t* image, ssize_t file_line);
@@ -399,7 +399,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
     image->drill_stats = stats;
 
     /* Create local state variable to track photoplotter state */
-    drill_state_t* state = new_state(NULL);
+    drill_state_t* state = new_state();
     if (state == NULL) {
         GERB_FATAL_ERROR("malloc state failed in %s()", __FUNCTION__);
     }
@@ -2038,8 +2038,8 @@ drill_parse_coordinate(gerb_file_t* fd, char firstchar, gerbv_image_t* image, dr
 /* Allocates and returns a new drill_state structure
    Returns state pointer on success, NULL on ERROR */
 static drill_state_t*
-new_state(drill_state_t* state) {
-    state = g_new0(drill_state_t, 1);
+new_state() {
+    drill_state_t* state = g_new0(drill_state_t, 1);
     if (state != NULL) {
         /* Init structure */
         state->curr_section           = DRILL_NONE;
