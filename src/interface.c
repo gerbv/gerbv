@@ -45,6 +45,7 @@
 #include "interface.h"
 #include "render.h"
 #include "selection.h"
+#include "pick-and-place.h"
 
 #include "draw.h"
 
@@ -149,6 +150,143 @@ pixbuf_from_icon(const icon* icon) {
 }
 
 /* ---------------------------------------------- */
+
+struct edit_menu_widgets {
+    GtkWidget* properties_selected;
+    GtkWidget* delete_selected;
+};
+
+static GtkWidget* menuitem_edit_menu(GtkAccelGroup* accel_group, GtkTooltips* tooltips, struct edit_menu_widgets *w)
+{
+	GtkStockItem stock;
+	GtkWidget* menuitem_edit_menu;
+    GtkWidget* properties_selected;
+    GtkWidget* delete_selected;
+    GtkWidget *align, *align_layers;
+    GtkWidget* tempImage;
+
+    GtkWidget* pnp_cal_ref1;
+    GtkWidget* pnp_cal_ref2;
+    GtkWidget* pnp_cal_cancel;
+    GtkWidget* pnp_redraw;
+
+    menuitem_edit_menu = gtk_menu_new();
+    gtk_menu_set_accel_group(GTK_MENU(menuitem_edit_menu), accel_group);
+    gtk_menu_set_accel_path(GTK_MENU(menuitem_edit_menu), ACCEL_EDIT);
+
+    properties_selected = gtk_image_menu_item_new_with_mnemonic(_("Display _properties of selected object(s)"));
+    SET_ACCELS_FROM_STOCK(properties_selected, GTK_STOCK_PROPERTIES, ACCEL_EDIT_PROPERTIES);
+    gtk_tooltips_set_tip(tooltips, properties_selected, _("Examine the properties of the selected object"), NULL);
+    tempImage = gtk_image_new_from_stock(GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(properties_selected), tempImage);
+    gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), properties_selected);
+
+    delete_selected = gtk_image_menu_item_new_with_mnemonic(_("_Delete selected object(s)"));
+    SET_ACCELS_FROM_STOCK(delete_selected, GTK_STOCK_REMOVE, ACCEL_EDIT_DELETE);
+    gtk_tooltips_set_tip(tooltips, delete_selected, _("Delete selected objects"), NULL);
+    tempImage = gtk_image_new_from_stock(GTK_STOCK_DELETE, GTK_ICON_SIZE_MENU);
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(delete_selected), tempImage);
+    gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), delete_selected);
+
+    align                           = gtk_menu_item_new_with_mnemonic(_("_Align layers"));
+    screen.win.curEditAlingMenuItem = align;
+    gtk_tooltips_set_tip(tooltips, align, _("Align two layers by two selected objects"), NULL);
+    gtk_widget_set_sensitive(align, FALSE);
+    gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), align);
+
+    align_layers                   = gtk_menu_new();
+    screen.win.curEditAlingItem[0] = gtk_menu_item_new_with_mnemonic("");
+    screen.win.curEditAlingItem[1] = gtk_menu_item_new_with_mnemonic("");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(align), align_layers);
+    gtk_container_add(GTK_CONTAINER(align_layers), screen.win.curEditAlingItem[0]);
+    gtk_container_add(GTK_CONTAINER(align_layers), screen.win.curEditAlingItem[1]);
+
+#if 0
+	/* Include these after they are coded. */
+	tempMenuItem = gtk_image_menu_item_new_with_label (_("Edit object properties"));
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, _("Edit the properties of the selected object"), NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_edit_object_properties_clicked), NULL);
+
+	tempMenuItem = gtk_image_menu_item_new_with_label (_("Move object(s)"));
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, _("Move the selected object(s)"),NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_move_objects_clicked), NULL);
+
+	tempMenuItem = gtk_image_menu_item_new_with_label (_("Reduce area"));
+	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
+	gtk_tooltips_set_tip (tooltips, tempMenuItem, _("Reduce the area of the object (e.g. to prevent component floating)"),NULL);
+	g_signal_connect ((gpointer) tempMenuItem, "activate",
+	                  G_CALLBACK (callbacks_reduce_object_area_clicked), NULL);
+#endif
+
+
+	pnp_cal_ref1 = gtk_menu_item_new_with_mnemonic(_("Pick-and-place: use as reference point 1"));
+	gtk_tooltips_set_tip(tooltips, pnp_cal_ref1, _("PnP (X Y) -> Board translation. Active if pnp socket is opened (-s) and valid pick-and-place file was loaded"), NULL);
+	gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), pnp_cal_ref1);
+	screen.win.pnp.ref_pnt[0] = pnp_cal_ref1;
+
+	pnp_cal_ref2 = gtk_menu_item_new_with_mnemonic(_("Pick-and-place: use as reference point 2: origin"));
+	gtk_tooltips_set_tip(tooltips, pnp_cal_ref2, _("Origin of coordinate system.\nPnP (X Y) -> Board translation. Active if pnp socket is opened (-s) and valid pick-and-place file was loaded"), NULL);
+	gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), pnp_cal_ref2);
+	screen.win.pnp.ref_pnt[1] = pnp_cal_ref2;
+
+	pnp_cal_cancel = gtk_menu_item_new_with_mnemonic(_("Pick-and-place: clear reference points."));
+	gtk_tooltips_set_tip(tooltips, pnp_cal_cancel, _("Cancels PnP (X Y) -> Board translation.\nActive if pnp socket is opened (-s) and valid pick-and-place file was loaded"), NULL);
+	gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), pnp_cal_cancel);
+	screen.win.pnp.ref_clear = pnp_cal_cancel;
+
+	pnp_redraw = gtk_menu_item_new_with_mnemonic(_("Pick-and-place: redraw"));
+	gtk_tooltips_set_tip(tooltips, pnp_redraw, _("Active if pnp socket is opened (-s) and valid pick-and-place file was loaded"), NULL);
+	gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), pnp_redraw);
+	screen.win.pnp.redraw = pnp_redraw;
+
+	{
+		struct pnp_pub_context *ctx = pick_and_place_mdev2ctx(mainProject->pnp_socket);
+		int enabled = ctx ? (ctx->bot_image || ctx->top_image ? 1 : 0) : 0;
+
+		gtk_widget_set_sensitive(pnp_cal_ref1, enabled);
+		gtk_widget_set_sensitive(pnp_cal_ref2, enabled);
+		gtk_widget_set_sensitive(pnp_cal_cancel, enabled);
+		gtk_widget_set_sensitive(pnp_redraw, enabled);
+	}
+
+	w->delete_selected = delete_selected;
+	w->properties_selected = properties_selected;
+
+	return menuitem_edit_menu;
+}
+
+static void menuitem_edit_menu_signals(struct edit_menu_widgets *w)
+{
+    g_signal_connect((gpointer)w->delete_selected, "activate", G_CALLBACK(callbacks_delete_objects_clicked), NULL);
+    g_signal_connect(
+        (gpointer)w->properties_selected, "activate", G_CALLBACK(callbacks_display_object_properties_clicked), NULL
+    );
+    g_signal_connect(
+        (gpointer)screen.win.curEditAlingItem[0], "activate", G_CALLBACK(callbacks_align_files_from_sel_clicked),
+        GINT_TO_POINTER(0)
+    );
+    g_signal_connect(
+        (gpointer)screen.win.curEditAlingItem[1], "activate", G_CALLBACK(callbacks_align_files_from_sel_clicked),
+        GINT_TO_POINTER(1)
+    );
+
+    g_signal_connect( (gpointer)screen.win.pnp.ref_pnt[0], "activate",
+    		G_CALLBACK(callbacks_pnp_ref_points_clicked), GINT_TO_POINTER(1) );
+
+    g_signal_connect( (gpointer)screen.win.pnp.ref_pnt[1], "activate",
+    		G_CALLBACK(callbacks_pnp_ref_points_clicked), GINT_TO_POINTER(2) );
+
+    g_signal_connect( (gpointer)screen.win.pnp.ref_clear, "activate",
+    		G_CALLBACK(callbacks_pnp_ref_points_clicked), GINT_TO_POINTER(3) );
+    g_signal_connect( (gpointer)screen.win.pnp.redraw, "activate",
+        		G_CALLBACK(callbacks_pnp_ref_points_clicked), GINT_TO_POINTER(4) );
+}
+
+/* ---------------------------------------------- */
 void
 interface_create_gui(int req_width, int req_height) {
     GtkStockItem stock;
@@ -180,10 +318,8 @@ interface_create_gui(int req_width, int req_height) {
     GtkWidget* quit;
 
     GtkWidget* menuitem_edit;
-    GtkWidget* menuitem_edit_menu;
-    GtkWidget* properties_selected;
-    GtkWidget* delete_selected;
-    GtkWidget *align, *align_layers;
+    struct edit_menu_widgets edit_menu;
+
     GtkWidget* menuitem_view;
     GtkWidget* menuitem_view_menu;
     GtkWidget* view_fullscreen;
@@ -339,7 +475,7 @@ interface_create_gui(int req_width, int req_height) {
         screen.settings = g_settings_new(settings_id);
     }
 
-    pointerpixbuf = pixbuf_from_icon(&pointer);
+    pointerpixbuf = pixbuf_from_icon(&__pointer);
     movepixbuf    = pixbuf_from_icon(&move);
     zoompixbuf    = pixbuf_from_icon(&lzoom);
     measurepixbuf = pixbuf_from_icon(&ruler);
@@ -531,61 +667,9 @@ interface_create_gui(int req_width, int req_height) {
     screen.win.curEditMenuItem = menuitem_edit;
     gtk_container_add(GTK_CONTAINER(menubar1), menuitem_edit);
 
-    menuitem_edit_menu = gtk_menu_new();
-    gtk_menu_set_accel_group(GTK_MENU(menuitem_edit_menu), accel_group);
-    gtk_menu_set_accel_path(GTK_MENU(menuitem_edit_menu), ACCEL_EDIT);
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem_edit), menuitem_edit_menu);
-
-    properties_selected = gtk_image_menu_item_new_with_mnemonic(_("Display _properties of selected object(s)"));
-    SET_ACCELS_FROM_STOCK(properties_selected, GTK_STOCK_PROPERTIES, ACCEL_EDIT_PROPERTIES);
-    gtk_tooltips_set_tip(tooltips, properties_selected, _("Examine the properties of the selected object"), NULL);
-    tempImage = gtk_image_new_from_stock(GTK_STOCK_PROPERTIES, GTK_ICON_SIZE_MENU);
-    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(properties_selected), tempImage);
-    gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), properties_selected);
-
-    delete_selected = gtk_image_menu_item_new_with_mnemonic(_("_Delete selected object(s)"));
-    SET_ACCELS_FROM_STOCK(delete_selected, GTK_STOCK_REMOVE, ACCEL_EDIT_DELETE);
-    gtk_tooltips_set_tip(tooltips, delete_selected, _("Delete selected objects"), NULL);
-    tempImage = gtk_image_new_from_stock(GTK_STOCK_DELETE, GTK_ICON_SIZE_MENU);
-    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(delete_selected), tempImage);
-    gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), delete_selected);
-
-    align                           = gtk_menu_item_new_with_mnemonic(_("_Align layers"));
-    screen.win.curEditAlingMenuItem = align;
-    gtk_tooltips_set_tip(tooltips, align, _("Align two layers by two selected objects"), NULL);
-    gtk_widget_set_sensitive(align, FALSE);
-    gtk_container_add(GTK_CONTAINER(menuitem_edit_menu), align);
-
-    align_layers                   = gtk_menu_new();
-    screen.win.curEditAlingItem[0] = gtk_menu_item_new_with_mnemonic("");
-    screen.win.curEditAlingItem[1] = gtk_menu_item_new_with_mnemonic("");
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(align), align_layers);
-    gtk_container_add(GTK_CONTAINER(align_layers), screen.win.curEditAlingItem[0]);
-    gtk_container_add(GTK_CONTAINER(align_layers), screen.win.curEditAlingItem[1]);
-
-#if 0
-	/* Include these after they are coded. */
-	tempMenuItem = gtk_image_menu_item_new_with_label (_("Edit object properties"));
-	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
-	gtk_tooltips_set_tip (tooltips, tempMenuItem, _("Edit the properties of the selected object"), NULL);
-	g_signal_connect ((gpointer) tempMenuItem, "activate",
-	                  G_CALLBACK (callbacks_edit_object_properties_clicked), NULL);
-
-	tempMenuItem = gtk_image_menu_item_new_with_label (_("Move object(s)"));
-	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
-	gtk_tooltips_set_tip (tooltips, tempMenuItem, _("Move the selected object(s)"),NULL);
-	g_signal_connect ((gpointer) tempMenuItem, "activate",
-	                  G_CALLBACK (callbacks_move_objects_clicked), NULL);
-
-	tempMenuItem = gtk_image_menu_item_new_with_label (_("Reduce area"));
-	gtk_menu_shell_append ((GtkMenuShell *)screen.win.drawWindowPopupMenu, tempMenuItem);
-	gtk_tooltips_set_tip (tooltips, tempMenuItem, _("Reduce the area of the object (e.g. to prevent component floating)"),NULL);
-	g_signal_connect ((gpointer) tempMenuItem, "activate",
-	                  G_CALLBACK (callbacks_reduce_object_area_clicked), NULL);
-#endif
-
     /* Use the "Edit" menu as right click popup menu for the drawing area */
-    screen.win.drawWindowPopupMenu = menuitem_edit_menu;
+    screen.win.drawWindowPopupMenu = menuitem_edit_menu(accel_group, tooltips, &edit_menu);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem_edit), screen.win.drawWindowPopupMenu);
 
     /* --- Next menu item (View) --- */
     menuitem_view = gtk_menu_item_new_with_mnemonic(_("_View"));
@@ -1344,18 +1428,7 @@ interface_create_gui(int req_width, int req_height) {
     g_signal_connect((gpointer)quit, "activate", G_CALLBACK(callbacks_quit_activate), NULL);
 
     /* --- Edit menu --- */
-    g_signal_connect((gpointer)delete_selected, "activate", G_CALLBACK(callbacks_delete_objects_clicked), NULL);
-    g_signal_connect(
-        (gpointer)properties_selected, "activate", G_CALLBACK(callbacks_display_object_properties_clicked), NULL
-    );
-    g_signal_connect(
-        (gpointer)screen.win.curEditAlingItem[0], "activate", G_CALLBACK(callbacks_align_files_from_sel_clicked),
-        GINT_TO_POINTER(0)
-    );
-    g_signal_connect(
-        (gpointer)screen.win.curEditAlingItem[1], "activate", G_CALLBACK(callbacks_align_files_from_sel_clicked),
-        GINT_TO_POINTER(1)
-    );
+    menuitem_edit_menu_signals(&edit_menu);
 
     /* --- View menu --- */
     g_signal_connect(

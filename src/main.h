@@ -106,6 +106,12 @@ typedef struct {
         GtkWidget*         curEditMenuItem;
         GtkWidget *        curEditAlingMenuItem, *curEditAlingItem[2];
         GtkWidget*         curFileMenuItem[7];
+
+        struct {
+        	GtkWidget* ref_pnt[2];
+        	GtkWidget* ref_clear;
+        	GtkWidget* redraw;
+        } pnp;
     } win;
 
     gpointer windowSurface;

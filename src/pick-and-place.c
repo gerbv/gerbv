@@ -44,6 +44,9 @@ static void         pnp_init_net(
             gerbv_interpolation_t interpol
         );
 
+static void pnp_enable_ref_points_menu(struct pnp_manual_dev *sk);
+
+
 void
 gerb_transf_free(gerbv_transf_t* transf) {
     g_free(transf);
@@ -209,8 +212,54 @@ pick_and_place_screen_for_delimiter(char* str, int n) {
    @return the initial node of the pnp_state netlist
  */
 
-GArray*
-pick_and_place_parse_file(gerb_file_t* fd) {
+static void guess_footprint_shape(PnpPartData *part)
+{
+    int i_length = 0, i_width = 0;
+    char *f = NULL;
+
+    switch (toupper(part->designator[0])) {
+    case 'R':
+    case 'L':
+    case 'C':
+    case 'D':
+    	f = part->footprint;
+        if (isalpha(*f))
+        	f++;
+    	break;
+    }
+
+    /*
+     * TODO: add sod, sot and maybe some more cases
+     */
+
+    if (f && sscanf(f, "%02d%02d", &i_length, &i_width) == 2) {
+        // parse footprints like 0805 or 1206
+        part->length = 0.01 * i_length;
+        part->width  = 0.01 * i_width;
+        part->shape  = PART_SHAPE_RECTANGLE;
+    } else {
+        double          tmp_x, tmp_y;
+        gerbv_transf_t tr_rot;
+
+    	gerb_transf_reset(&tr_rot);
+        gerb_transf_rotate(&tr_rot, -DEG2RAD(part->rotation)); /* rotate it back to get dimensions */
+        gerb_transf_apply( part->pad_x - part->mid_x, part->pad_y - part->mid_y,
+        		&tr_rot, &tmp_x, &tmp_y);
+
+        if ((fabs(tmp_y) > fabs(tmp_x / 100)) && (fabs(tmp_x) > fabs(tmp_y / 100))) {
+        	part->length = 2 * fabs(tmp_x); /* get dimensions*/
+        	part->width  = 2 * fabs(tmp_y);
+        	part->shape  = PART_SHAPE_STD;
+        } else {
+        	part->length = 0.015;
+        	part->width  = 0.015;
+        	part->shape  = PART_SHAPE_UNKNOWN;
+        }
+    }
+}
+
+static GArray*
+pick_and_place_parse_file_csv(gerb_file_t* fd) {
     PnpPartData pnpPartData;
     memset(&pnpPartData, 0, sizeof(PnpPartData));
     int   lineCounter = 0, parsedLines = 0;
@@ -220,7 +269,6 @@ pick_and_place_parse_file(gerb_file_t* fd) {
     char  def_unit[41] = {
          0,
     };
-    double          tmp_x, tmp_y;
     gerbv_transf_t* tr_rot            = gerb_transf_new();
     GArray*         pnpParseDataArray = g_array_new(FALSE, FALSE, sizeof(PnpPartData));
     gboolean        foundValidDataRow = FALSE;
@@ -235,7 +283,6 @@ pick_and_place_parse_file(gerb_file_t* fd) {
 
     while (fgets(buf, MAXL, fd->fd) != NULL) {
         int len      = strlen(buf) - 1;
-        int i_length = 0, i_width = 0;
 
         lineCounter += 1; /*next line*/
         if (lineCounter < 2) {
@@ -365,27 +412,8 @@ pick_and_place_parse_file(gerb_file_t* fd) {
          * now, try and figure out the actual footprint shape to draw, or just
          * guess something reasonable
          */
-        if (sscanf(pnpPartData.footprint, "%02d%02d", &i_length, &i_width) == 2) {
-            // parse footprints like 0805 or 1206
-            pnpPartData.length = 0.01 * i_length;
-            pnpPartData.width  = 0.01 * i_width;
-            pnpPartData.shape  = PART_SHAPE_RECTANGLE;
-        } else {
-            gerb_transf_reset(tr_rot);
-            gerb_transf_rotate(tr_rot, -DEG2RAD(pnpPartData.rotation)); /* rotate it back to get dimensions */
-            gerb_transf_apply(
-                pnpPartData.pad_x - pnpPartData.mid_x, pnpPartData.pad_y - pnpPartData.mid_y, tr_rot, &tmp_x, &tmp_y
-            );
-            if ((fabs(tmp_y) > fabs(tmp_x / 100)) && (fabs(tmp_x) > fabs(tmp_y / 100))) {
-                pnpPartData.length = 2 * fabs(tmp_x); /* get dimensions*/
-                pnpPartData.width  = 2 * fabs(tmp_y);
-                pnpPartData.shape  = PART_SHAPE_STD;
-            } else {
-                pnpPartData.length = 0.015;
-                pnpPartData.width  = 0.015;
-                pnpPartData.shape  = PART_SHAPE_UNKNOWN;
-            }
-        }
+        guess_footprint_shape(&pnpPartData);
+
         g_array_append_val(pnpParseDataArray, pnpPartData);
         parsedLines += 1;
     }
@@ -400,7 +428,100 @@ pick_and_place_parse_file(gerb_file_t* fd) {
         return NULL;
     }
     return pnpParseDataArray;
-} /* pick_and_place_parse_file */
+} /* pick_and_place_parse_file_csv */
+
+
+
+static GArray*
+pick_and_place_parse_file_eagle(gerb_file_t* fd)
+{
+	PnpPartData pnpPart;
+	GArray *pnpParseDataArray = g_array_new(FALSE, FALSE, sizeof(PnpPartData));
+	int indexes[6] = {0};
+	char buf[MAXL + 2] = {0};
+
+
+    setlocale(LC_NUMERIC, "C");
+    while (fgets(buf, MAXL, fd->fd) != NULL) {
+        int len = strlen(buf) - 1;
+        char *tmp;
+
+        if (len < 20)
+        	continue;
+
+        if ((tmp = g_strstr_len(buf, len, "Part"))) {
+        	indexes[0] = tmp - buf;
+        	if ((tmp = g_strstr_len(buf, len, "Value")))
+        		indexes[1] = tmp - buf;
+
+        	if ((tmp = g_strstr_len(buf, len, "Package")))
+        		indexes[2] = tmp - buf;
+
+        	if ((tmp = g_strstr_len(buf, len, "Library")))
+        		indexes[3] = tmp - buf;
+
+        	if ((tmp = g_strstr_len(buf, len, "Position")))
+        		indexes[4] = tmp - buf;
+
+        	if ((tmp = g_strstr_len(buf, len, "Orientation")))
+        		indexes[5] = tmp - buf;
+
+            if (indexes[1] && indexes[2] && indexes[3] && indexes[4] && indexes[5])
+        		break;
+        }
+    }
+
+    if (indexes[1] && indexes[2] && indexes[3] && indexes[4] && indexes[5]) {
+    	while (fgets(buf, MAXL, fd->fd) != NULL) {
+    		int i = strlen(buf) - 1;
+
+    		if (i < indexes[5])
+    			continue;
+
+    		if (buf[i] == '\n' || buf[i] == '\r')
+    			buf[i--] = 0;
+    		if (buf[i] == '\n' || buf[i] == '\r')
+    			buf[i--] = 0;
+
+    		memset(&pnpPart, 0, sizeof(PnpPartData));
+
+    		for (i = 0; i < 5; i++) {
+    			char *tmp = buf + indexes[i];
+
+    			tmp = strchr(tmp, ' ');
+    			if (i == 4) {
+    				// (x y)
+    				tmp = strchr(tmp + 1, ' ');
+    			}
+
+    			if (tmp)
+    				*tmp = 0;
+    		}
+
+    		strncpy(pnpPart.designator, buf + indexes[0], sizeof(pnpPart.designator) - 1);
+    		strncpy(pnpPart.value, buf + indexes[1], sizeof(pnpPart.value) - 1);
+    		strncpy(pnpPart.footprint, buf + indexes[2], sizeof(pnpPart.footprint) - 1);
+    		strncpy(pnpPart.comment, buf + indexes[3], sizeof(pnpPart.comment) - 1);
+
+
+    		pnpPart.layer[0] = *(buf + indexes[5]) == 'M' ? 'B' : 'T';
+    		sscanf(buf + indexes[5] + (pnpPart.layer[0] == 'B' ? 2 : 1), "%lf", &pnpPart.rotation);
+
+    		sscanf(buf + indexes[4], "(%lf %lf)", &pnpPart.mid_x, &pnpPart.mid_y);
+    		pnpPart.mid_x /= 1000; // [mils]
+    		pnpPart.mid_y /= 1000;
+
+    		pnpPart.pad_x = pnpPart.mid_x + 0.03;
+    		pnpPart.pad_y = pnpPart.mid_y + 0.03;
+
+    		guess_footprint_shape(&pnpPart);
+
+    		g_array_append_val(pnpParseDataArray, pnpPart);
+    	}
+    }
+
+	return pnpParseDataArray;
+}
 
 /*	------------------------------------------------------------------
  *	pick_and_place_check_file_type
@@ -411,7 +532,7 @@ pick_and_place_parse_file(gerb_file_t* fd) {
  *	Notes:
  *	------------------------------------------------------------------
  */
-gboolean
+int
 pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary) {
     char*    buf;
     int      len = 0;
@@ -429,6 +550,14 @@ pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary) {
     gboolean found_C         = FALSE;
     gboolean found_boardside = FALSE;
 
+    struct {
+    	char kw_partlist;
+    	char kw_exported;
+    	char kw_eagle;
+    	unsigned char kw_pvplpo;
+    } eagle = { 0 };
+    char *tmp;
+
     buf = malloc(MAXL);
     if (buf == NULL)
         GERB_FATAL_ERROR("malloc buf failed in %s()", __FUNCTION__);
@@ -445,21 +574,7 @@ pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary) {
             }
         }
 
-        if (g_strstr_len(buf, len, "G54")) {
-            found_G54 = TRUE;
-        }
-        if (g_strstr_len(buf, len, "M00")) {
-            found_M0 = TRUE;
-        }
-        if (g_strstr_len(buf, len, "M02")) {
-            found_M2 = TRUE;
-        }
-        if (g_strstr_len(buf, len, "G02")) {
-            found_G2 = TRUE;
-        }
-        if (g_strstr_len(buf, len, "ADD")) {
-            found_ADD = TRUE;
-        }
+
         if (g_strstr_len(buf, len, ",")) {
             found_comma = TRUE;
         }
@@ -467,6 +582,9 @@ pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary) {
         if (g_strstr_len(buf, len, ";")) {
             found_comma = TRUE;
         }
+
+        if (len < 2)
+        	continue;
 
         /* Look for refdes -- This is dumb, but what else can we do? */
         if ((letter = g_strstr_len(buf, len, "R")) != NULL) {
@@ -484,6 +602,32 @@ pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary) {
                 found_U = TRUE;
             }
         }
+
+        if (len < 3)
+        	continue;
+
+        if ((tmp = g_strstr_len(buf, len, "G54"))) {
+            if (tmp - buf < 2)
+            	found_G54 = TRUE;
+        }
+        if ((tmp = g_strstr_len(buf, len, "M00"))) {
+            if (tmp - buf < 2)
+            	found_M0 = TRUE;
+            //printf("%s:%d [%s]", __FUNCTION__, __LINE__, buf);
+        }
+        if ((tmp = g_strstr_len(buf, len, "M02"))) {
+        	if (tmp - buf < 2)
+        		found_M2 = TRUE;
+        }
+        if (( tmp = g_strstr_len(buf, len, "G02"))) {
+        	if (tmp - buf < 2)
+        		found_G2 = TRUE;
+        }
+        if ((tmp = g_strstr_len(buf, len, "ADD"))) {
+        	if (tmp - buf < 2)
+        		found_ADD = TRUE;
+        }
+
 
         /* Look for board side indicator since this is required
          * by many vendors */
@@ -503,26 +647,42 @@ pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary) {
         if (g_strstr_len(buf, len, "AYER")) {
             found_boardside = TRUE;
         }
+
+        if (g_strstr_len(buf, len, "Partlist"))
+        	eagle.kw_partlist = 1;
+        else if (g_strstr_len(buf, len, "Exported"))
+        	eagle.kw_exported = 1;
+        else if (g_strstr_len(buf, len, "EAGLE Version"))
+        	eagle.kw_eagle = 1;
+        else if (g_strstr_len(buf, len, "Part")) {
+        	eagle.kw_pvplpo |= 1;
+        	if (g_strstr_len(buf, len, "Value"))
+        		eagle.kw_pvplpo |= 2;
+        	if (g_strstr_len(buf, len, "Package"))
+        		eagle.kw_pvplpo |= 4;
+        	if (g_strstr_len(buf, len, "Library"))
+        		eagle.kw_pvplpo |= 8;
+        	if (g_strstr_len(buf, len, "Position"))
+        		eagle.kw_pvplpo |= 1 << 4;
+        	if (g_strstr_len(buf, len, "Orientation"))
+        		eagle.kw_pvplpo |= 1 << 5;
+        }
     }
     rewind(fd->fd);
     free(buf);
 
     /* Now form logical expression determining if this is a pick-place file */
     *returnFoundBinary = found_binary;
-    if (found_G54)
-        return FALSE;
-    if (found_M0)
-        return FALSE;
-    if (found_M2)
-        return FALSE;
-    if (found_G2)
-        return FALSE;
-    if (found_ADD)
-        return FALSE;
-    if (found_comma && (found_R || found_C || found_U) && found_boardside)
-        return TRUE;
+    if (found_G54 || found_M0 || found_M2 || found_G2 || found_ADD)
+        return PNP_FILE_UNKNOWN;
 
-    return FALSE;
+    if (found_comma && (found_R || found_C || found_U) && found_boardside && !eagle.kw_eagle)
+        return PNP_FILE_CSV;
+
+    if (eagle.kw_eagle && eagle.kw_exported && eagle.kw_partlist && eagle.kw_pvplpo == 0x3f)
+    	return PNP_FILE_PARTLIST_EAGLE;
+
+    return PNP_FILE_UNKNOWN;
 
 } /* pick_and_place_check_file_type */
 
@@ -533,14 +693,48 @@ pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary) {
  *	Notes:
  *	------------------------------------------------------------------
  */
-gerbv_image_t*
-pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, gint boardSide) {
+
+static gint
+pnp_sort_by_val(gconstpointer a, gconstpointer b)
+{
+	PnpPartData *item1 = *(PnpPartData **)a;
+	PnpPartData *item2 = *(PnpPartData **)b;
+
+	return strcmp(item1->value, item2->value);
+}
+
+static float
+parts_label_offset(PnpPartData *p)
+{
+	float offset;
+
+    if ((p->rotation > 89) && (p->rotation < 91))
+        offset = p->length;
+    else if ((p->rotation > 179) && (p->rotation < 181))
+        offset = p->width;
+    else if ((p->rotation > 269) && (p->rotation < 271))
+        offset = p->length;
+    else if ((p->rotation > -91) && (p->rotation < -89))
+        offset = p->length;
+    else if ((p->rotation > -181) && (p->rotation < -179))
+        offset = p->width;
+    else if ((p->rotation > -271) && (p->rotation < -269))
+        offset = p->length;
+    else
+        offset = p->width;
+
+    return fabsf(offset) / 2;
+}
+
+static gerbv_image_t*
+pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, struct pnp_pub_context *pl, gint boardSide) {
     gerbv_image_t*       image    = NULL;
     gerbv_net_t*         curr_net = NULL;
     gerbv_transf_t*      tr_rot   = gerb_transf_new();
     gerbv_drill_stats_t* stats; /* Eventually replace with pick_place_stats */
     gboolean             foundElement = FALSE;
-    const double         draw_width   = 0.01;
+    const double         draw_width   = 0.005; // 5 mil, TODO: config. option
+    GPtrArray *pls = NULL; // part list (per) side
 
     /* step through and make sure we have an element on the layer before
        we actually create a new image for it and fill it */
@@ -568,10 +762,15 @@ pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, gint bo
     }
 
     /* Separate top/bot layer type is needed for reload purpose */
-    if (boardSide == 1)
+    if (boardSide == 1) {
         image->layertype = GERBV_LAYERTYPE_PICKANDPLACE_TOP;
-    else
+        if (pl)
+        	pls = pl->top_part_list = g_ptr_array_new();
+    } else {
         image->layertype = GERBV_LAYERTYPE_PICKANDPLACE_BOT;
+        if (pl)
+        	pls = pl->bot_part_list = g_ptr_array_new();
+    }
 
     stats = gerbv_drill_stats_new();
     if (stats == NULL)
@@ -602,28 +801,20 @@ pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, gint bo
         curr_net->layer = image->layers;
         curr_net->state = image->states;
 
-        if ((partData.rotation > 89) && (partData.rotation < 91))
-            labelOffset = fabs(partData.length / 2);
-        else if ((partData.rotation > 179) && (partData.rotation < 181))
-            labelOffset = fabs(partData.width / 2);
-        else if ((partData.rotation > 269) && (partData.rotation < 271))
-            labelOffset = fabs(partData.length / 2);
-        else if ((partData.rotation > -91) && (partData.rotation < -89))
-            labelOffset = fabs(partData.length / 2);
-        else if ((partData.rotation > -181) && (partData.rotation < -179))
-            labelOffset = fabs(partData.width / 2);
-        else if ((partData.rotation > -271) && (partData.rotation < -269))
-            labelOffset = fabs(partData.length / 2);
-        else
-            labelOffset = fabs(partData.width / 2);
+        labelOffset = parts_label_offset(&partData);
 
-        partData.rotation = DEG2RAD(partData.rotation);
+//        partData.rotation = DEG2RAD(partData.rotation);
 
         /* check if the entry is on the specified layer */
         if ((boardSide == 0) && !((partData.layer[0] == 'b') || (partData.layer[0] == 'B')))
             continue;
         if ((boardSide == 1) && !((partData.layer[0] == 't') || (partData.layer[0] == 'T')))
             continue;
+
+        if (pls) {
+        	void *ptr = &g_array_index(parsedPickAndPlaceData, PnpPartData, i);
+        	g_ptr_array_add(pls, ptr);
+        }
 
         curr_net = pnp_new_net(curr_net);
         pnp_init_net(curr_net, image, partData.designator, GERBV_APERTURE_STATE_OFF, GERBV_INTERPOLATION_LINEARx1);
@@ -635,7 +826,10 @@ pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, gint bo
 
         gerb_transf_reset(tr_rot);
         gerb_transf_shift(tr_rot, partData.mid_x, partData.mid_y);
-        gerb_transf_rotate(tr_rot, -partData.rotation);
+        /*
+         * was -DEG2RAD(partData.rotation) but this does not match angle from Eagle partlist
+         */
+        gerb_transf_rotate(tr_rot, DEG2RAD(partData.rotation));
 
         if ((partData.shape == PART_SHAPE_RECTANGLE) || (partData.shape == PART_SHAPE_STD)) {
             // TODO: draw rectangle length x width taking into account rotation or pad x,y
@@ -746,6 +940,13 @@ pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, gint bo
     }
     curr_net->next = NULL;
 
+    if (pls) {
+    	g_ptr_array_sort(pls, pnp_sort_by_val);
+    }
+
+    if (image)
+    	image->pnp_common_ctx = pl;
+
     gerb_transf_free(tr_rot);
     return image;
 } /* pick_and_place_convert_pnp_data_to_image */
@@ -761,18 +962,39 @@ pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, gint bo
  *	------------------------------------------------------------------
  */
 void
-pick_and_place_parse_file_to_images(gerb_file_t* fd, gerbv_image_t** topImage, gerbv_image_t** bottomImage) {
-    GArray* parsedPickAndPlaceData = pick_and_place_parse_file(fd);
+pick_and_place_parse_file_to_images(gerb_file_t* fd, struct pnp_manual_dev *sk, enum pnp_file_type pnp_type,
+		gerbv_image_t** topImage, gerbv_image_t** bottomImage) {
+
+	static GArray* (* const pnp_parsers[PNP_FILES])(gerb_file_t* fd) = {
+			NULL,
+			pick_and_place_parse_file_csv,
+			pick_and_place_parse_file_eagle,
+
+	};
+
+    GArray* parsedPickAndPlaceData = (pnp_type < PNP_FILES && pnp_parsers[pnp_type]) ?
+    		(*pnp_parsers[pnp_type])(fd) : NULL;
 
     if (parsedPickAndPlaceData != NULL) {
+    	struct pnp_pub_context *part_list = pick_and_place_mdev2ctx(sk);
+
         /* Non NULL pointer is used as "not to reload" mark */
         if (*bottomImage == NULL)
-            *bottomImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 0);
+            *bottomImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, part_list, 0);
 
         if (*topImage == NULL)
-            *topImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, 1);
+            *topImage = pick_and_place_convert_pnp_data_to_image(parsedPickAndPlaceData, part_list, 1);
 
-        g_array_free(parsedPickAndPlaceData, TRUE);
+        if (part_list) {
+        	part_list->tb_part_list = parsedPickAndPlaceData;
+        	part_list->top_image = *topImage;
+        	part_list->bot_image = *bottomImage;
+        	part_list->tb_pl_ref_count = (part_list->top_image && part_list->bot_image) ? 2 : 1;
+        } else
+        	g_array_free(parsedPickAndPlaceData, TRUE);
+
+        if (sk)
+        	pnp_enable_ref_points_menu(sk);
     }
 } /* pick_and_place_parse_file_to_images */
 
@@ -811,3 +1033,276 @@ pnp_init_net(
         net->label = g_string_new(label);
     }
 }
+
+
+/*
+ *	api for semi-automatic (manual) PnP tool:
+ *	abstract socket and translation of PnP -> board coordinate systems
+ *
+ *	Krzysztof Blaszkowski <kb@sysmikro.com.pl> Dec 2023
+ */
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
+struct pnp_cal_loc {
+	double board_x, board_y;
+	double pnp_x, pnp_y;
+	int index; // 0, P1, P2
+};
+
+struct pnp_manual_dev {
+	int fd;
+	pnp_remote_event_fn fn_event;
+	void *event_arg;
+	GIOChannel *ch;
+	int bsize;
+	socklen_t src_alen;
+	struct sockaddr src_addr;
+
+	double last_x, last_y;
+
+	int cal_state;
+	union {
+		struct pnp_cal_loc ref_loc[2];
+		struct {
+			double rot_sin, rot_cos;
+			struct {
+				double offs_x, offs_y;
+			} pnp;
+			struct {
+				double offs_x, offs_y;
+			} brd;
+		} cal;
+	};
+
+	struct {
+		double x,y;
+	} loc_filter;
+
+	struct pnp_pub_context all_parts_images;
+
+	char buf[0];
+};
+
+static void pnp_enable_ref_points_menu(struct pnp_manual_dev *sk)
+{
+	if (sk && sk->fn_event) {
+		struct pnp_event_data ev = {
+				.evc = PNP_EV_EN_CAL12_MENU,
+				.args[0] = (sk->all_parts_images.bot_image || sk->all_parts_images.top_image) ? 1 : 0,
+				.mdev = sk,
+		};
+
+		(*sk->fn_event)(sk->event_arg, &ev);
+	}
+}
+
+static void pnp_translate_pnp2brd(struct pnp_manual_dev *sk, struct pnp_event_data *ev)
+{
+	double xp0 = ev->loc.board_x - sk->cal.pnp.offs_x;
+	double yp0 = ev->loc.board_y - sk->cal.pnp.offs_y;
+
+	ev->loc.board_x = xp0 * sk->cal.rot_cos - yp0 * sk->cal.rot_sin + sk->cal.brd.offs_x;
+	ev->loc.board_y = xp0 * sk->cal.rot_sin + yp0 * sk->cal.rot_cos + sk->cal.brd.offs_y;
+}
+
+static gboolean pnp_channel_callback(GIOChannel *ch, GIOCondition cond, gpointer arg)
+{
+	struct pnp_manual_dev *sk = (struct pnp_manual_dev *)arg;
+	int rc;
+
+	sk->src_alen = sizeof(sk->src_addr);
+	rc = recvfrom(sk->fd, sk->buf, sk->bsize - 1, MSG_DONTWAIT, &sk->src_addr, &sk->src_alen);
+
+	if (rc > 0) {
+		struct pnp_event_data ev = {
+				.evc = 0,
+				.mdev = sk,
+		};
+		int o;
+
+		if (sscanf(sk->buf, "BRDLOC(%lf,%lf,%x", &ev.loc.board_x, &ev.loc.board_y, &o) == 3) {
+			ev.evc = PNP_EV_BRDLOC;
+			sk->all_parts_images.stats.rcvd_brdloc++;
+			if (sk->fn_event)
+				(*sk->fn_event)(sk->event_arg, &ev);
+		} else if (sscanf(sk->buf, "PNPLOC(%lf,%lf,%x", &ev.loc.board_x, &ev.loc.board_y, &o) == 3) {
+			sk->all_parts_images.stats.rcvd_pnploc++;
+
+			switch ((o >> 4) & 3) {
+			case 0: // [mm]
+				ev.loc.board_x /= 25.4;
+				ev.loc.board_y /= 25.4;
+				break;
+			case 1: // [mil]
+				ev.loc.board_x /= 1000.0;
+				ev.loc.board_y /= 1000.0;
+				break;
+			}
+
+			if (!sk->cal_state) {
+				sk->last_x = ev.loc.board_x;
+				sk->last_y = ev.loc.board_y;
+			} else {
+				ev.evc = PNP_EV_BRDLOC;
+				pnp_translate_pnp2brd(sk, &ev);
+
+				if (fabs(ev.loc.board_x - sk->loc_filter.x) > 0.002 ||
+						fabs(ev.loc.board_y - sk->loc_filter.y) > 0.002) { // suppress 2mil jitter
+					sk->loc_filter.x = ev.loc.board_x;
+					sk->loc_filter.y = ev.loc.board_y;
+
+					if (sk->fn_event)
+						(*sk->fn_event)(sk->event_arg, &ev);
+				} else {
+					// let filter follow current position by abt 3% every sample received
+					sk->loc_filter.x = (30.0 * sk->loc_filter.x + ev.loc.board_x) / 31.0;
+					sk->loc_filter.y = (30.0 * sk->loc_filter.y + ev.loc.board_y) / 31.0;
+				}
+			}
+		} else
+			sk->all_parts_images.stats.rcvd_invalid++;
+	}
+
+	return TRUE; // false removes ch
+}
+
+struct pnp_manual_dev *pick_and_place_mdev_init(char *domain, pnp_remote_event_fn fn, void *arg)
+{
+	struct pnp_manual_dev *sk = g_malloc0_n(1, sizeof(struct pnp_manual_dev) + 200);
+	int sa_len, rc;
+	struct sockaddr_un addr;
+
+	sk->bsize = 200;
+	sk->fn_event = fn;
+	sk->event_arg = arg;
+	sk->all_parts_images.center_ch_color = 0xABF1A3; // TODO: some config option ?
+
+	sk->fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+
+	addr.sun_family = AF_UNIX;
+	addr.sun_path[0] = '\0';
+	sa_len = sprintf(addr.sun_path + 1, "%s", domain) + 1;
+	sa_len += offsetof(struct sockaddr_un, sun_path);
+	rc = bind(sk->fd, (struct sockaddr *)&addr, sa_len);
+
+	if (!rc) {
+		GIOChannel *ch = g_io_channel_unix_new(sk->fd);
+
+		if (ch) {
+			sk->ch = ch;
+			g_io_channel_set_encoding(ch, NULL, NULL);
+			g_io_add_watch(ch, G_IO_IN, pnp_channel_callback, sk);
+			/*
+			 * test:
+			 * ./run-gerbv -s /gerbv-pnp-socat
+			 * echo "BRDLOC(2.0,1.0,1)" | socat - abstract-sendto:/gerbv-pnp-socat
+			 */
+		}
+	}
+
+
+	return sk;
+}
+
+struct pnp_pub_context *pick_and_place_mdev2ctx(struct pnp_manual_dev *sk)
+{
+	return sk ? &sk->all_parts_images : NULL;
+}
+
+static void pnp_save_loc_and_cal(struct pnp_manual_dev *ctx, double board_x, double board_y, int i)
+{
+	if (ctx->cal_state)
+		return;
+
+	ctx->ref_loc[i].board_x = board_x;
+	ctx->ref_loc[i].board_y = board_y;
+
+	ctx->ref_loc[i].pnp_x = ctx->last_x;
+	ctx->ref_loc[i].pnp_y = ctx->last_y;
+
+	ctx->ref_loc[i].index = i + 1;
+
+	DBG("[0]: pnp(%f,%f) brd(%f,%f) #%u\n",
+			ctx->ref_loc[0].pnp_x, ctx->ref_loc[0].pnp_y,
+			ctx->ref_loc[0].board_x, ctx->ref_loc[0].board_y,
+			ctx->all_parts_images.stats.rcvd_pnploc);
+
+	DBG("[1]: pnp(%f,%f) brd(%f,%f)\n",
+			ctx->ref_loc[1].pnp_x, ctx->ref_loc[1].pnp_y,
+			ctx->ref_loc[1].board_x, ctx->ref_loc[1].board_y);
+
+	if (ctx->ref_loc[0].index == 1 && ctx->ref_loc[1].index == 2) {
+		double a_brd, dx_brd, dy_brd, x0_brd, y0_brd;
+		double a_pnp, dx_pnp, dy_pnp, x0_pnp, y0_pnp;
+
+		x0_brd = ctx->ref_loc[1].board_x;
+		y0_brd = ctx->ref_loc[1].board_y;
+		dx_brd = ctx->ref_loc[0].board_x - ctx->ref_loc[1].board_x;
+		dy_brd = ctx->ref_loc[0].board_y - ctx->ref_loc[1].board_y;
+
+		a_brd = atan(dy_brd/dx_brd);
+
+		x0_pnp = ctx->ref_loc[1].pnp_x;
+		y0_pnp = ctx->ref_loc[1].pnp_y;
+		dx_pnp = ctx->ref_loc[0].pnp_x - ctx->ref_loc[1].pnp_x;
+		dy_pnp = ctx->ref_loc[0].pnp_y - ctx->ref_loc[1].pnp_y;
+
+		a_pnp = atan(dy_pnp/dx_pnp);
+
+		ctx->cal_state = 1;
+		ctx->cal.pnp.offs_x = x0_pnp;
+		ctx->cal.pnp.offs_y = y0_pnp;
+		ctx->cal.rot_cos = cos(-a_pnp + a_brd);
+		ctx->cal.rot_sin = sin(-a_pnp + a_brd);
+
+		ctx->cal.brd.offs_x = x0_brd;
+		ctx->cal.brd.offs_y = y0_brd;
+
+		DBG("cal done. /_ %f, %f [deg]\n", RAD2DEG(a_pnp), RAD2DEG(a_brd));
+	}
+}
+
+int pick_and_place_mdev_ctl(struct pnp_manual_dev *ctx, double board_x, double board_y, int opcode)
+{
+	if (!ctx)
+		return -ENOMEM;
+
+	switch (opcode) {
+	case MDEV_CAL_OFF:
+		DBG("cal is off.\n");
+		ctx->cal_state = 0;
+		ctx->ref_loc[0].index = 0;
+		ctx->ref_loc[1].index = 0;
+		ctx->ref_loc[0].board_x = ctx->ref_loc[0].board_y = 0.0;
+		ctx->ref_loc[1].board_x = ctx->ref_loc[1].board_y = 0.0;
+		ctx->ref_loc[0].pnp_x = ctx->ref_loc[0].pnp_y = 0.0;
+		ctx->ref_loc[1].pnp_x = ctx->ref_loc[1].pnp_y = 0.0;
+		break;
+	case 0:
+		break;
+	case MDEV_CAL_SAV_REFLOC1:
+	case MDEV_CAL_SAV_REFLOC2:
+		// 1 and 2
+		pnp_save_loc_and_cal(ctx, board_x, board_y, opcode - 1);
+		break;
+	case MDEV_REDRAW:
+		// will cause redrawing event once pnp sends tool tip location.
+		ctx->loc_filter.x = 1e9;
+		ctx->loc_filter.y = 1e9;
+		DBG("socket stats: %u, %u %u\n", ctx->all_parts_images.stats.rcvd_pnploc,
+				ctx->all_parts_images.stats.rcvd_brdloc,
+				ctx->all_parts_images.stats.rcvd_invalid);
+		break;
+	}
+
+	return ctx->cal_state;
+}
+
+void pick_and_place_mdev_free(struct pnp_manual_dev **ctx)
+{
+
+}
+

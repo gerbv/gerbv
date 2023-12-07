@@ -56,6 +56,7 @@
 #include "interface.h"
 #include "render.h"
 #include "project.h"
+#include "pick-and-place.h"
 
 #if (DEBUG)
 #define dprintf                      \
@@ -161,7 +162,7 @@ const struct option longopts[]  = {
     {                 0,                 0,            0,   0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char* opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:u:w:x:";
+const char* opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:u:w:x:s:";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in main.h
@@ -847,6 +848,13 @@ main(int argc, char* argv[]) {
                 }
                 break;
             case 'd': screen.dump_parsed_image = 1; break;
+            case 's':
+
+            	if (!mainProject->pnp_socket)
+            		mainProject->pnp_socket = pick_and_place_mdev_init(optarg,
+            				callbacks_pnp_events, NULL);
+            	break;
+
             case '?':
             case 'h':
                 gerbv_print_help();

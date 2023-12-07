@@ -72,6 +72,8 @@
 #include <cairo-xlib.h>
 #endif
 
+#include "pick-and-place.h"
+
 #define dprintf \
     if (DEBUG)  \
     printf
@@ -135,6 +137,79 @@ show_no_layers_warning(void) {
     g_free(str);
 
     callbacks_update_statusbar();
+}
+
+static void screen_center_at_board_xy(gerbv_render_info_t *r, gdouble x, gdouble y)
+{
+	if (r->scaleFactorX > 0.001)
+		r->lowerLeftX = x - (r->displayWidth / 2 / r->scaleFactorX);
+	if (r->scaleFactorY > 0.001)
+		r->lowerLeftY = y - (r->displayHeight / 2 / r->scaleFactorY);
+}
+
+
+void
+callbacks_pnp_events(void *arg, struct pnp_event_data *event)
+{
+	(void) arg;
+
+	switch (event->evc) {
+	case PNP_EV_BRDLOC:
+		screen_center_at_board_xy(&screenRenderInfo, event->loc.board_x, event->loc.board_y);
+		screen.off_x = 0;
+		screen.off_y = 0;
+		render_refresh_rendered_image_on_screen();
+		break;
+	case PNP_EV_EN_CAL12_MENU:
+		gtk_widget_set_sensitive(screen.win.pnp.ref_pnt[0], event->args[0]);
+		gtk_widget_set_sensitive(screen.win.pnp.ref_pnt[1], event->args[0]);
+		gtk_widget_set_sensitive(screen.win.pnp.ref_clear, event->args[0]);
+		gtk_widget_set_sensitive(screen.win.pnp.redraw, event->args[0]);
+		break;
+	default:
+		break;
+	}
+}
+
+
+/** The edit -> pnp ref points menu item was selected.
+ *
+ */
+void
+callbacks_pnp_ref_points_clicked(GtkMenuItem* menu_item, gpointer user_data)
+{
+	int opc = GPOINTER_TO_INT(user_data);
+	int en_cch = screenRenderInfo.center_ch.enabled;
+	/*
+	 * ref.: callbacks_drawingarea_button_press_event()
+	 */
+
+	switch (opc) {
+	case MDEV_CAL_SAV_REFLOC1:
+	case MDEV_CAL_SAV_REFLOC2:
+		if (pick_and_place_mdev_ctl(mainProject->pnp_socket, screen.measure_start_x,
+				screen.measure_start_y, opc))
+			screenRenderInfo.center_ch.enabled = 1;
+		break;
+	case 3:
+		pick_and_place_mdev_ctl(mainProject->pnp_socket, .0, .0, MDEV_CAL_OFF);
+		screenRenderInfo.center_ch.enabled = 0;
+		break;
+	case 4:
+		pick_and_place_mdev_ctl(mainProject->pnp_socket, .0, .0, MDEV_REDRAW);
+		break;
+
+	default:
+		DBGE("unknown opcode %d\n", opc);
+	}
+
+	if (en_cch != screenRenderInfo.center_ch.enabled) {
+		struct pnp_pub_context *ctx = pick_and_place_mdev2ctx(mainProject->pnp_socket);
+
+		if (ctx)
+			screenRenderInfo.center_ch.color = ctx->center_ch_color;
+		render_refresh_rendered_image_on_screen();
+	}
 }
 
 /* --------------------------------------------------------- */
@@ -3253,8 +3328,9 @@ callbacks_drawingarea_button_press_event(GtkWidget* widget, GdkEventButton* even
                 }
 
                 /* only show the popup if we actually have something selected now */
-                if (selection_length(&screen.selectionInfo) != 0) {
+                if (selection_length(&screen.selectionInfo) != 0 || mainProject->pnp_socket) {
                     update_selected_object_message(TRUE);
+                    callbacks_screen2board(&(screen.measure_start_x), &(screen.measure_start_y), event->x, event->y);
                     gtk_menu_popup(
                         GTK_MENU(screen.win.drawWindowPopupMenu), NULL, NULL, NULL, NULL, event->button, event->time
                     );

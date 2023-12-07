@@ -750,6 +750,28 @@ draw_calc_pnp_mark_coords(struct gerbv_net* start_net, double* label_x, double* 
     return 1;
 }
 
+static void draw_center_ch_to_cairo_tgt(cairo_t* cairoTarget, gerbv_render_info_t*renderInfo,
+		gdouble pixelWidth, gdouble lineWidth, gdouble r)
+{
+	cairo_save(cairoTarget);
+	cairo_set_line_width(cairoTarget, pixelWidth * 2.0);
+	cairo_set_line_cap(cairoTarget, CAIRO_LINE_CAP_SQUARE);
+    cairo_set_source_rgba( cairoTarget, (double) (renderInfo->center_ch.color >> 16) / 255.0,
+    		(double) ((renderInfo->center_ch.color >> 8) & 0xff) / 255.0,
+			(double) ((renderInfo->center_ch.color) & 0xff) / 255.0,
+			1.0 );
+
+    cairo_move_to(cairoTarget, renderInfo->center_ch.board_x -r, renderInfo->center_ch.board_y - r);
+    cairo_rel_line_to(cairoTarget, r * 2.0, r * 2.0);
+    cairo_move_to(cairoTarget, renderInfo->center_ch.board_x - r, renderInfo->center_ch.board_y + r);
+    cairo_rel_line_to(cairoTarget, r * 2.0, r * -2.0);
+    cairo_stroke(cairoTarget);
+
+	cairo_set_line_cap(cairoTarget, CAIRO_LINE_CAP_ROUND);
+	cairo_set_line_width(cairoTarget, lineWidth);
+	cairo_restore(cairoTarget);
+}
+
 int
 draw_image_to_cairo_target(
     cairo_t* cairoTarget, gerbv_image_t* image, gdouble pixelWidth, enum draw_mode drawMode,
@@ -1240,6 +1262,12 @@ draw_image_to_cairo_target(
                 }
             }
         }
+
+    }
+    if (renderInfo->center_ch.to_draw) {
+    	draw_center_ch_to_cairo_tgt(cairoTarget, renderInfo,
+    			pixelWidth, lineWidth, 0.03 + hole_cross_inc_px * pixelWidth); // 30mil
+    	renderInfo->center_ch.to_draw = 0;
     }
 
     /* restore the initial two state saves (one for layer, one for netstate)*/
