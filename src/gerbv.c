@@ -328,6 +328,7 @@ gerbv_unload_layer(gerbv_project_t* gerbvProject, int index) {
     gint i;
 
     gerbv_destroy_fileinfo(gerbvProject->file[index]);
+    g_free(gerbvProject->file[index]);
 
     /* slide all later layers down to fill the empty slot */
     for (i = index; i < (gerbvProject->last_loaded); i++) {
@@ -985,6 +986,9 @@ gerbv_attribute_destroy_HID_attribute(gerbv_HID_Attribute* attributeList, int n_
             && attributeList[i].default_val.str_value != NULL) {
             free(attributeList[i].default_val.str_value);
         }
+
+        if (attributeList[i].name)
+        	free((void *)attributeList[i].name); // project.c:686 : plist->attr_list[p].name = strdup()
     }
 
     /* and free the attribute list */
