@@ -1,0 +1,45 @@
+(gerbv-file-version! "2.0A")
+
+#! author: Krzysztof Blaszkowski <kb@sysmikro.com.pl>
+#! ./src/run_gerbv -gdb -s /gerbv-pnp-sock -p example/pick-and-place-2/if2qs-bot.proj
+
+
+(define-layer! 3 (cons 'filename "if2qs-bot.gbs")
+	(cons 'visible #t)
+	(cons 'color #(29555 29555 57054))
+	(cons 'attribs (list
+		(list 'autodetect 'Boolean 0)
+		(list 'zero_suppression 'Enum 2)
+		(list 'units 'Enum 1)
+		(list 'digits 'Integer 3)
+	))
+)
+
+(define-layer! 2 (cons 'filename "if2qs-bot-doc.gbs")
+	(cons 'visible #t)
+	(cons 'color #(39555 19555 47054))
+	(cons 'attribs (list
+		(list 'autodetect 'Boolean 0)
+		(list 'zero_suppression 'Enum 2)
+		(list 'units 'Enum 1)
+		(list 'digits 'Integer 3)
+	))
+)
+
+#! comment
+#! color 0xbf9a38
+#!  byte << 8
+
+#! partlist bot: 3915.6000, -115.9040, mirror Y
+
+(define-layer! 0 (cons 'pick_and_place "if2qs-partlist"))
+
+(define-layer! 1
+    (cons 'translate #(3.916 -0.1159))
+    (cons 'mirror #(#f #t))
+)
+(define-layer! 0 (cons 'visible #f))
+
+
+(set-render-type! 2)
+

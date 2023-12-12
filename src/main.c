@@ -187,7 +187,7 @@ care_for_x_in_cords(char* string) {
 
 /* ------------------------------------------------------------------ */
 
-static void
+static void __attribute((noinline))
 project_create_layer(gerbv_project_t* gerbvProject, project_list_t *plist,
 		GdkColor *colorTemplate, gchar *filename)
 {
@@ -922,8 +922,8 @@ main(int argc, char* argv[]) {
             case 'd': screen.dump_parsed_image = 1; break;
             case 's':
 
-            	if (!mainProject->pnp_socket)
-            		mainProject->pnp_socket = pick_and_place_mdev_init(optarg,
+            	if (!mainProject->pnp_dev)
+            		mainProject->pnp_dev = pick_and_place_mdev_init(optarg,
             				callbacks_pnp_events, NULL);
             	break;
 

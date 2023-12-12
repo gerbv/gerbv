@@ -37,6 +37,17 @@
 #include "csv.h"
 #include "pick-and-place.h"
 
+#   ifndef container_of
+#      define container_of(ptr, type, member) ({ \
+        const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+        (type *)( (char *)__mptr - offsetof(type,member) );})
+
+#      ifndef offsetof
+#         define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#      endif
+#   endif
+
+
 static gerbv_net_t* pnp_new_net(gerbv_net_t* net);
 static void         pnp_reset_bbox(gerbv_net_t* net);
 static void         pnp_init_net(
@@ -251,8 +262,8 @@ static void guess_footprint_shape(PnpPartData *part)
         	part->width  = 2 * fabs(tmp_y);
         	part->shape  = PART_SHAPE_STD;
         } else {
-        	part->length = 0.015;
-        	part->width  = 0.015;
+        	part->length = fabs(part->pad_x - part->mid_x) * 1.9;
+        	part->width  = fabs(part->pad_y - part->mid_y) * 1.9;
         	part->shape  = PART_SHAPE_UNKNOWN;
         }
     }
@@ -699,6 +710,10 @@ pnp_sort_by_val(gconstpointer a, gconstpointer b)
 {
 	PnpPartData *item1 = *(PnpPartData **)a;
 	PnpPartData *item2 = *(PnpPartData **)b;
+	int d = item1->designator[0] - item2->designator[0];
+
+	if (d)
+		return d;
 
 	return strcmp(item1->value, item2->value);
 }
@@ -817,7 +832,8 @@ pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, struct 
         }
 
         curr_net = pnp_new_net(curr_net);
-        pnp_init_net(curr_net, image, partData.designator, GERBV_APERTURE_STATE_OFF, GERBV_INTERPOLATION_LINEARx1);
+        pnp_init_net(curr_net, image, partData.designator, GERBV_APERTURE_STATE_PNP_LABEL2, GERBV_INTERPOLATION_LINEARx1);
+        g_array_index(parsedPickAndPlaceData, PnpPartData, i).label_net = curr_net;
 
         /* First net of PNP is just a label holder, so calculate the lower left
          * location to line up above the element */
@@ -829,7 +845,7 @@ pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, struct 
         /*
          * was -DEG2RAD(partData.rotation) but this does not match angle from Eagle partlist
          */
-        gerb_transf_rotate(tr_rot, DEG2RAD(partData.rotation));
+        gerb_transf_rotate(tr_rot, DEG2RAD(partData.rotation) + M_PI);
 
         if ((partData.shape == PART_SHAPE_RECTANGLE) || (partData.shape == PART_SHAPE_STD)) {
             // TODO: draw rectangle length x width taking into account rotation or pad x,y
@@ -898,6 +914,9 @@ pick_and_place_convert_pnp_data_to_image(GArray* parsedPickAndPlaceData, struct 
         } else {
             gdouble tmp_x, tmp_y;
 
+            gerb_transf_rotate(tr_rot, -M_PI / 2);
+
+            curr_net = pnp_new_net(curr_net);
             pnp_init_net(curr_net, image, partData.designator, GERBV_APERTURE_STATE_ON, GERBV_INTERPOLATION_LINEARx1);
 
             curr_net->start_x = partData.mid_x;
@@ -1057,13 +1076,15 @@ struct pnp_manual_dev {
 	pnp_remote_event_fn fn_event;
 	void *event_arg;
 	GIOChannel *ch;
+	int ev_src_id;
 	int bsize;
 	socklen_t src_alen;
 	struct sockaddr src_addr;
 
 	double last_x, last_y;
 
-	int cal_state;
+	unsigned int pnp_head_state:1;
+	unsigned int cal_state :2;
 	union {
 		struct pnp_cal_loc ref_loc[2];
 		struct {
@@ -1108,28 +1129,78 @@ static void pnp_translate_pnp2brd(struct pnp_manual_dev *sk, struct pnp_event_da
 	ev->loc.board_y = xp0 * sk->cal.rot_sin + yp0 * sk->cal.rot_cos + sk->cal.brd.offs_y;
 }
 
+static int pnp_part_lookup(struct pnp_manual_dev *dev, double x, double y)
+{
+	int j;
+	GPtrArray *parts = dev->all_parts_images.current_layer == GERBV_LAYERTYPE_PICKANDPLACE_TOP ?
+			dev->all_parts_images.top_part_list :
+			(dev->all_parts_images.current_layer == GERBV_LAYERTYPE_PICKANDPLACE_BOT ?
+					dev->all_parts_images.bot_part_list : NULL);
+	gerbv_image_t *image = dev->all_parts_images.current_layer == GERBV_LAYERTYPE_PICKANDPLACE_TOP ?
+			dev->all_parts_images.top_image : dev->all_parts_images.bot_image;
+
+	if (!parts)
+		return -1;
+
+	x -= image->transform->translateX;
+	y -= image->transform->translateY;
+	if (image->transform->mirrorAroundY)
+		x = -x;
+	if (image->transform->mirrorAroundX)
+		y = -y;
+
+	for (j = 0; j < parts->len; j++) {
+		PnpPartData *part = g_ptr_array_index(parts, j);
+		double l2 = part->length / 2;
+		double w2 = part->width / 2;
+
+#if 0
+		if (j < 2)
+			DBG("%f %f, %f %f, %f %f\n", l2, w2, x, y, part->mid_x, part->mid_y);
+#endif
+		if ((part->mid_x - l2 < x && x < part->mid_x + l2) &&
+				(part->mid_y - w2 < y && y < part->mid_y + w2))
+			return j;
+	}
+
+	return -1;
+}
+
+static void pnp_part_placed(struct pnp_manual_dev *dev, struct pnp_event_data *ev, int f)
+{
+	if (!(f & 1) && dev->pnp_head_state) // release of vacuum valve, 1 -> 0
+		ev->loc.part_placed = 1;
+
+	dev->pnp_head_state = f & 1;
+}
+
 static gboolean pnp_channel_callback(GIOChannel *ch, GIOCondition cond, gpointer arg)
 {
-	struct pnp_manual_dev *sk = (struct pnp_manual_dev *)arg;
+	struct pnp_manual_dev *dev = (struct pnp_manual_dev *)arg;
 	int rc;
 
-	sk->src_alen = sizeof(sk->src_addr);
-	rc = recvfrom(sk->fd, sk->buf, sk->bsize - 1, MSG_DONTWAIT, &sk->src_addr, &sk->src_alen);
+	dev->src_alen = sizeof(dev->src_addr);
+	rc = recvfrom(dev->fd, dev->buf, dev->bsize - 1, MSG_DONTWAIT, &dev->src_addr, &dev->src_alen);
 
 	if (rc > 0) {
 		struct pnp_event_data ev = {
 				.evc = 0,
-				.mdev = sk,
+				.mdev = dev,
 		};
 		int o;
 
-		if (sscanf(sk->buf, "BRDLOC(%lf,%lf,%x", &ev.loc.board_x, &ev.loc.board_y, &o) == 3) {
+		if (sscanf(dev->buf, "BRDLOC(%lf,%lf,%x", &ev.loc.board_x, &ev.loc.board_y, &o) == 3) {
 			ev.evc = PNP_EV_BRDLOC;
-			sk->all_parts_images.stats.rcvd_brdloc++;
-			if (sk->fn_event)
-				(*sk->fn_event)(sk->event_arg, &ev);
-		} else if (sscanf(sk->buf, "PNPLOC(%lf,%lf,%x", &ev.loc.board_x, &ev.loc.board_y, &o) == 3) {
-			sk->all_parts_images.stats.rcvd_pnploc++;
+			ev.loc.part_list_index = (o & 2) ? o >> 8 : pnp_part_lookup(dev, ev.loc.board_x, ev.loc.board_y);
+
+			if (ev.loc.part_list_index >= 0)
+				pnp_part_placed(dev, &ev, o);
+
+			dev->all_parts_images.stats.rcvd_brdloc++;
+			if (dev->fn_event)
+				(*dev->fn_event)(dev->event_arg, &ev);
+		} else if (sscanf(dev->buf, "PNPLOC(%lf,%lf,%x", &ev.loc.board_x, &ev.loc.board_y, &o) == 3) {
+			dev->all_parts_images.stats.rcvd_pnploc++;
 
 			switch ((o >> 4) & 3) {
 			case 0: // [mm]
@@ -1142,33 +1213,43 @@ static gboolean pnp_channel_callback(GIOChannel *ch, GIOCondition cond, gpointer
 				break;
 			}
 
-			if (!sk->cal_state) {
-				sk->last_x = ev.loc.board_x;
-				sk->last_y = ev.loc.board_y;
+			if (!dev->cal_state) {
+				dev->last_x = ev.loc.board_x;
+				dev->last_y = ev.loc.board_y;
 			} else {
+//				double x = ev.loc.board_x, y = ev.loc.board_y;
+
 				ev.evc = PNP_EV_BRDLOC;
-				pnp_translate_pnp2brd(sk, &ev);
+				pnp_translate_pnp2brd(dev, &ev);
 
-				if (fabs(ev.loc.board_x - sk->loc_filter.x) > 0.002 ||
-						fabs(ev.loc.board_y - sk->loc_filter.y) > 0.002) { // suppress 2mil jitter
-					sk->loc_filter.x = ev.loc.board_x;
-					sk->loc_filter.y = ev.loc.board_y;
+//				DBG("(%f,%f -> %f,%f)\n", x, y, ev.loc.board_x, ev.loc.board_y);
 
-					if (sk->fn_event)
-						(*sk->fn_event)(sk->event_arg, &ev);
+				ev.loc.part_list_index = pnp_part_lookup(dev, ev.loc.board_x, ev.loc.board_y);
+				if (ev.loc.part_list_index >= 0)
+					pnp_part_placed(dev, &ev, o);
+
+				if (fabs(ev.loc.board_x - dev->loc_filter.x) > 0.002 ||
+						fabs(ev.loc.board_y - dev->loc_filter.y) > 0.002 || // suppress 2mil jitter
+						ev.loc.part_placed) {
+					dev->loc_filter.x = ev.loc.board_x;
+					dev->loc_filter.y = ev.loc.board_y;
+
+					if (dev->fn_event)
+						(*dev->fn_event)(dev->event_arg, &ev);
 				} else {
 					// let filter follow current position by abt 3% every sample received
-					sk->loc_filter.x = (30.0 * sk->loc_filter.x + ev.loc.board_x) / 31.0;
-					sk->loc_filter.y = (30.0 * sk->loc_filter.y + ev.loc.board_y) / 31.0;
+					dev->loc_filter.x = (30.0 * dev->loc_filter.x + ev.loc.board_x) / 31.0;
+					dev->loc_filter.y = (30.0 * dev->loc_filter.y + ev.loc.board_y) / 31.0;
 				}
 			}
 		} else
-			sk->all_parts_images.stats.rcvd_invalid++;
+			dev->all_parts_images.stats.rcvd_invalid++;
 	}
 
 	return TRUE; // false removes ch
 }
 
+#if __linux
 struct pnp_manual_dev *pick_and_place_mdev_init(char *domain, pnp_remote_event_fn fn, void *arg)
 {
 	struct pnp_manual_dev *sk = g_malloc0_n(1, sizeof(struct pnp_manual_dev) + 200);
@@ -1194,7 +1275,7 @@ struct pnp_manual_dev *pick_and_place_mdev_init(char *domain, pnp_remote_event_f
 		if (ch) {
 			sk->ch = ch;
 			g_io_channel_set_encoding(ch, NULL, NULL);
-			g_io_add_watch(ch, G_IO_IN, pnp_channel_callback, sk);
+			sk->ev_src_id = g_io_add_watch(ch, G_IO_IN, pnp_channel_callback, sk);
 			/*
 			 * test:
 			 * ./run-gerbv -s /gerbv-pnp-socat
@@ -1206,6 +1287,12 @@ struct pnp_manual_dev *pick_and_place_mdev_init(char *domain, pnp_remote_event_f
 
 	return sk;
 }
+#else
+struct pnp_manual_dev *pick_and_place_mdev_init(char *domain, pnp_remote_event_fn fn, void *arg)
+{
+	return NULL;
+}
+#endif
 
 struct pnp_pub_context *pick_and_place_mdev2ctx(struct pnp_manual_dev *sk)
 {
@@ -1265,10 +1352,10 @@ static void pnp_save_loc_and_cal(struct pnp_manual_dev *ctx, double board_x, dou
 	}
 }
 
-int pick_and_place_mdev_ctl(struct pnp_manual_dev *ctx, double board_x, double board_y, int opcode)
+void *pick_and_place_mdev_ctl(struct pnp_manual_dev *ctx, double board_x, double board_y, int opcode)
 {
 	if (!ctx)
-		return -ENOMEM;
+		return (void *)(long)-ENOMEM;
 
 	switch (opcode) {
 	case MDEV_CAL_OFF:
@@ -1280,14 +1367,16 @@ int pick_and_place_mdev_ctl(struct pnp_manual_dev *ctx, double board_x, double b
 		ctx->ref_loc[1].board_x = ctx->ref_loc[1].board_y = 0.0;
 		ctx->ref_loc[0].pnp_x = ctx->ref_loc[0].pnp_y = 0.0;
 		ctx->ref_loc[1].pnp_x = ctx->ref_loc[1].pnp_y = 0.0;
-		break;
+		return (void *)(long)ctx->cal_state;
+
 	case 0:
 		break;
 	case MDEV_CAL_SAV_REFLOC1:
 	case MDEV_CAL_SAV_REFLOC2:
 		// 1 and 2
 		pnp_save_loc_and_cal(ctx, board_x, board_y, opcode - 1);
-		break;
+		return (void *)(long)ctx->cal_state;
+
 	case MDEV_REDRAW:
 		// will cause redrawing event once pnp sends tool tip location.
 		ctx->loc_filter.x = 1e9;
@@ -1296,13 +1385,106 @@ int pick_and_place_mdev_ctl(struct pnp_manual_dev *ctx, double board_x, double b
 				ctx->all_parts_images.stats.rcvd_brdloc,
 				ctx->all_parts_images.stats.rcvd_invalid);
 		break;
+	case MDEV_PART_TG:
+	case MDEV_PART_1:
+	case MDEV_PART_0:
+	case MDEV_PART:
+		{
+			int row_index = board_x;
+			GPtrArray *parts = ctx->all_parts_images.current_layer == GERBV_LAYERTYPE_PICKANDPLACE_TOP ?
+					ctx->all_parts_images.top_part_list :
+					(ctx->all_parts_images.current_layer == GERBV_LAYERTYPE_PICKANDPLACE_BOT ?
+							ctx->all_parts_images.bot_part_list : NULL);
+
+			if (row_index < 0 || row_index >= parts->len || !parts)
+				return NULL;
+
+			PnpPartData *part = g_ptr_array_index(parts, row_index);
+			if (opcode == MDEV_PART_TG)
+				part->placed = !part->placed;
+			else if (opcode == MDEV_PART_1)
+				part->placed = 1;
+			else if (opcode == MDEV_PART_0)
+				part->placed = 0;
+
+			part->label_net->aperture_state = part->placed ? GERBV_APERTURE_STATE_PNP_LABEL :
+					GERBV_APERTURE_STATE_PNP_LABEL2;
+			return part;
+		}
+	case MDEV_TOP_PL_SIZE:
+		ctx->all_parts_images.current_layer = GERBV_LAYERTYPE_PICKANDPLACE_TOP;
+		return (void *)(long)(ctx->all_parts_images.top_part_list ? ctx->all_parts_images.top_part_list->len : 0);
+
+	case MDEV_BOT_PL_SIZE:
+		ctx->all_parts_images.current_layer = GERBV_LAYERTYPE_PICKANDPLACE_BOT;
+		return (void *)(long)(ctx->all_parts_images.bot_part_list ? ctx->all_parts_images.bot_part_list->len : 0);
+	case MDEV_V1ST_PL_SIZE:
+		{
+			gerbv_fileinfo_t *info = ctx->all_parts_images.top_image ?
+					container_of(ctx->all_parts_images.top_image->transform, gerbv_fileinfo_t, transform) : NULL;
+
+			if (!info) {
+				//info = container_of(ctx->all_parts_images.bot_image->transform, gerbv_fileinfo_t, transform);
+				ctx->all_parts_images.current_layer = GERBV_LAYERTYPE_PICKANDPLACE_BOT;
+				return (void *)(long)(ctx->all_parts_images.bot_part_list ? ctx->all_parts_images.bot_part_list->len : 0);
+			} else if (info->isVisible) {
+				ctx->all_parts_images.current_layer = GERBV_LAYERTYPE_PICKANDPLACE_TOP;
+				return (void *)(long)(ctx->all_parts_images.top_part_list ? ctx->all_parts_images.top_part_list->len : 0);
+			} else {
+				ctx->all_parts_images.current_layer = GERBV_LAYERTYPE_PICKANDPLACE_BOT;
+				return (void *)(long)(ctx->all_parts_images.bot_part_list ? ctx->all_parts_images.bot_part_list->len : 0);
+			}
+		}
+		break;
+
 	}
 
-	return ctx->cal_state;
+	return NULL;
 }
 
-void pick_and_place_mdev_free(struct pnp_manual_dev **ctx)
+void pick_and_place_mdev_free(struct pnp_manual_dev **_ctx)
 {
+	struct pnp_manual_dev *ctx;
+	GSource *gs;
 
+	if (!_ctx || !*_ctx)
+		return;
+
+	ctx = *_ctx;
+	*_ctx = NULL;
+#if 1
+	gs = g_main_context_find_source_by_id(NULL, ctx->ev_src_id);
+	g_io_channel_shutdown(ctx->ch, FALSE, NULL);
+//	g_source_remove(ctx->ev_src_id);
+	g_source_destroy(gs);
+//	g_source_unref(gs);
+	g_io_channel_unref(ctx->ch);
+	close(ctx->fd);
+	/*
+	 * there are a few memory leaks caused by g_source_attach() called from  g_io_add_watch()
+	 *
+	 * which valgrind reports, example:
+	 *
+	 * 8 bytes:
+	 * ==23920==    at 0x4C346A4: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23920==    by 0x6CE34E8: g_malloc (in /usr/lib64/libglib-2.0.so.0.7000.4)
+==23920==    by 0x6CFC415: g_slice_alloc (in /usr/lib64/libglib-2.0.so.0.7000.4)
+==23920==    by 0x6D2ACB7: ??? (in /usr/lib64/libglib-2.0.so.0.7000.4)
+==23920==    by 0x6CDA5EA: g_main_context_new (in /usr/lib64/libglib-2.0.so.0.7000.4)
+==23920==    by 0x6CDA6C0: g_main_context_default (in /usr/lib64/libglib-2.0.so.0.7000.4)
+==23920==    by 0x6CDBF0C: g_source_attach (in /usr/lib64/libglib-2.0.so.0.7000.4)
+==23920==    by 0x6CCE940: g_io_add_watch_full (in /usr/lib64/libglib-2.0.so.0.7000.4)
+==23920==    by 0x40513F5: pick_and_place_mdev_init (pick-and-place.c:1278)
+
+	and 16, 24, 2x 32, 96, 176 bytes
+	 *
+	 */
+
+	g_array_free(ctx->all_parts_images.tb_part_list, TRUE);
+	g_ptr_array_free(ctx->all_parts_images.top_part_list, TRUE);
+	g_ptr_array_free(ctx->all_parts_images.bot_part_list, TRUE);
+
+	g_free(ctx);
+#endif
 }
 

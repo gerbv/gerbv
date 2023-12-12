@@ -1,0 +1,182 @@
+Partlist
+
+Exported from if2qs-via12mil-fr408-6mil7.brd at 12/2/23 11:01 AM
+
+EAGLE Version 5.12.0 Copyright (c) 1988-2011 CadSoft
+
+Part     Value             Package         Library           Position (mil)        Orientation
+
+C1       10u               C0805           Common-passives   (1081.252 1268.752)   R90
+C2       10u               C0805           Common-passives   (1081.252 1450)       R270
+C3       100n              C0603           Common-passives   (1243.752 1293.752)   R0
+C4       100n              C0603           Common-passives   (1243.752 1231.252)   R0
+C5       100n              C0603           Common-passives   (1231.252 1425)       R0
+C6       100n              C0603           Common-passives   (1231.252 1487.5)     R0
+C7                         C0603           Common-passives   (1412.496 1356.252)   R180
+C8       .11u              C0603X2         Common-passives   (1100.004 1118.752)   R0
+C9       .11u              C0603X2         Common-passives   (1059.646 1635.882)   R0
+C10      1u                C0805           rcl               (2131.252 2137.508)   R270
+C11      .101              C0603X2         Common-passives   (1912.504 1931.256)   R180
+C12                        C0603X2         Common-passives   (2437.504 1668.756)   R270
+C13                        C0603X2         Common-passives   (2175 756.252)        R180
+C14                        C0603X2         Common-passives   (1600.004 1850)       R270
+C15      4.7u              C0805           Common-passives   (2306.26 1912.504)    R270
+C16      4.7u              C0805           Common-passives   (1537.5 1812.504)     MR180
+C17      4.7u              C0805           Common-passives   (1406.252 1918.756)   MR270
+C18                        C0603X2         Common-passives   (1512.504 925.008)    R90
+C19                        C0603X2         Common-passives   (1506.248 1675)       R270
+C20                        C0603X2         Common-passives   (1468.752 1062.508)   R180
+C21                        C0603X2         Common-passives   (1400.004 1743.752)   R90
+C22      470p              C0603           Common-passives   (700.004 956.252)     R90
+C23      470p              C0603           Common-passives   (787.504 1575)        R90
+C24      4.7u              C0805           Common-passives   (662.5 781.252)       R180
+C25      4.7u              C0805           Common-passives   (618.752 1962.504)    R180
+C26                        C0603X2         Common-passives   (662.5 687.5)         R180
+C27                        C0603X2         Common-passives   (612.5 2062.504)      R180
+C28                        C0603X2         Common-passives   (475 1225)            R0
+C29      293D226X96R3A2TE3 C1206           Common-passives   (2068.756 2424.996)   R90
+C30                        C0603X2         Common-passives   (862.5 2325)          R90
+C31      75p               C0603           Common-passives   (835.287 2016.866)    R315
+C32      75p               C0603           Common-passives   (913.315 2088.646)    R315
+C33                        C0603X2         Common-passives   (950 431.252)         R270
+C34      75p               C0603           Common-passives   (916.531 733.134)     R45
+C35      75p               C0603           Common-passives   (990.902 657.689)     R45
+C36      100n              C0603           Common-passives   (556.248 381.248)     R0
+C37      100n              C0603           Common-passives   (556.248 443.752)     R0
+C38      100n              C0603           Common-passives   (500.004 2325.008)    R0
+C39      100n              C0603           Common-passives   (500.004 2387.504)    R0
+C40      293D226X96R3A2TE3 C1206           Common-passives   (2006.244 2587.5)     R0
+C41      293D226X96R3A2TE3 C1206           Common-passives   (493.76 1818.748)     R0
+C42      620p              C0603           Common-passives   (1069.197 1862.055)   R45
+C43      620p              C0603           Common-passives   (1136.429 881.248)    R315
+C44      .11u              C0603X2         Common-passives   (2431.252 1250)       R90
+C45      .101              C0603X2         msa-bb            (2662.492 350)        R90
+C46      10n               C0603           rcl               (2262.504 2481.252)   R90
+C47      293D226X96R3A2TE3 C1206           Common-passives   (2906.252 1718.748)   R0
+C48      .11u              C0603X2         Common-passives   (2800.004 793.756)    R0
+C49      .11u              C0603X2         Common-passives   (2887.504 1631.252)   R180
+C50                        C0603X2         Common-passives   (1862.504 350)        R270
+C51                        C0603X2         Common-passives   (2262.504 306.252)    R270
+C52                        C0603X2         Common-passives   (2300.004 493.752)    R0
+C53      470p              C0603           rcl               (3281.256 2431.256)   R90
+C54                        C0603X2         Common-passives   (1956.252 756.252)    R0
+C55                        C0603X2         Common-passives   (2437.496 1481.252)   R270
+C56                        C0603X2         Common-passives   (1787.504 750.004)    R0
+C57      10n               C0603           rcl               (1600.004 787.5)      R90
+C58      10n               C0603           rcl               (1337.5 2518.744)     R90
+C59      .11u              C0603X2         Common-passives   (1293.752 1912.508)   R270
+C60      .11u              C0603X2         Common-passives   (1343.756 825)        R90
+C61                        C0603X2         Common-passives   (462.5 1687.504)      R270
+C62                        C0603X2         Common-passives   (2162.496 1912.5)     R0
+D1       BAT54J            SOD323-R        Common-silicon    (2968.752 2618.752)   R270
+IC1      LM97593VH         PQFP128L        Common-silicon-iq (1956.252 1343.752)   R270
+IC2      LMH6514           QFN16-NBG16     Common-silicon-iq (681.252 2237.504)    R225
+IC3      LMH6514           QFN16-NBG16     Common-silicon-iq (750 506.252)         R315
+IC4      TS5205CX50        SOT25           v-reg             (575.004 1087.504)    R270
+IC5      TS5205CX50        SOT25           v-reg             (600.004 1650)        R270
+IC6      MIC5207           SOT25           v-reg             (1543.756 2574.996)   R180
+IC7      XC2C32-VQ44       SQFP-S-10X10-44 xilinx-xc3-xc2    (2875 1212.504)       R180
+IC8      MIC5207           SOT25           v-reg             (2381.256 2518.748)   R180
+IC9      SN65LVDS34        D_R-PDSO-G8     Common-silicon-iq (2012.504 412.5)      R0
+IC10     741G132           SOT23-5         74xx-little-us    (2800.004 2431.256)   R90
+IC11     741G132           SOT23-5         74xx-little-us    (3018.756 2431.248)   R90
+IC303    TC1017-1.8VCT     SOT25           v-reg             (2256.248 2150)       R90
+J1       ML14-2MM          ML14            Common-conn       (2837.5 2206.248)     R180
+JP1                        1X04            Common-conn       (3625 2600)           R180
+L1                         WE-KI_0805_B    Common-passives   (2331.248 2024.996)   R180
+L2                         WE-KI_0805_B    Common-passives   (1750 2343.748)       R270
+L3                         WE-KI_0805_B    Common-passives   (1618.748 2343.748)   R270
+L4       LQM18FN100M00D    R0603           Common-passives   (737.508 2087.5)      R180
+L5       LQM18FN100M00D    R0603           Common-passives   (837.5 2181.244)      R90
+L6       LQM18FN100M00D    R0603           Common-passives   (806.252 675.004)     R180
+L7       LQM18FN100M00D    R0603           Common-passives   (918.748 556.256)     R270
+L8       10uH              C0805           Common-passives   (936.618 1897.862)    R315
+L9       10uH              C0805           Common-passives   (1026.075 1987.319)   R315
+L10      1.2uH             C0805           Common-passives   (1122.681 1813.76)    R225
+L11      10uH              C0805           Common-passives   (1105.811 748.673)    R45
+L12      10uH              C0805           Common-passives   (1012.689 848.039)    R45
+L13      1.2uH             C0805           Common-passives   (1189.465 926.961)    R135
+L14      PBY               WE-KI_0805_B    wuerth-elektronik (2662.504 512.5)      R270
+LED1                       CHIPLED_0805    led               (1687.508 2481.248)   R270
+LED2                       CHIPLED_0805    led               (2487.5 2400)         R0
+LED3                       CHIPLED_0805    led               (818.752 1100)        R180
+LED4                       CHIPLED_0805    led               (825 1687.5)          R270
+R1       121               R0603           Common-passives   (1265.039 1774.74)    R225
+R2       121               R0603           Common-passives   (1167.815 1677.516)   R45
+R3       121               R0603           Common-passives   (1310.886 954.992)    R135
+R4       121               R0603           Common-passives   (1221.157 1050.969)   R315
+R5                         R0603           Common-passives   (700.004 1087.5)      R90
+R6                         R0603           Common-passives   (712.504 1643.748)    R90
+R7       0                 R0805           Common-passives   (1306.248 2393.744)   R0
+R8       1k                R0805           rcl               (2650 2425.004)       R270
+R9       330               R0603           Common-passives   (968.756 2650.004)    R0
+R10      0                 R0805           Common-passives   (3124.996 1881.252)   R180
+R11      68                R0603           Common-passives   (450.004 412.504)     R90
+R12      68                R0603           Common-passives   (393.752 2356.256)    R90
+R13      0                 R0603           Common-passives   (406.252 2475.008)    R90
+R14      0                 R0603           Common-passives   (450.004 550.008)     R90
+R15      0 config          R0603           Common-passives   (1362.5 2093.748)     R180
+R16      10k               R0603           Common-passives   (2768.752 2018.752)   R90
+R17      10k               R0603           Common-passives   (2300.004 743.752)    R180
+R18      10k               R0603           Common-passives   (2299.992 662.5)      R180
+R19      10k               R0603           Common-passives   (1731.252 2093.752)   R90
+R20      0 config          R0603           Common-passives   (1756.256 562.5)      R270
+R21      0 config          R0603           Common-passives   (1800 2125.008)       R270
+R22      10k               R0603           Common-passives   (1856.256 2250)       R270
+R23      33                R0603           Common-passives   (2512.5 762.5)        R270
+R24      33                R0603           Common-passives   (2668.752 831.256)    R90
+R25      18k               R0603           Common-passives   (2381.252 2400)       R180
+R26      30k               R0805           rcl               (2181.256 2487.5)     R90
+R27      49.9              R0805           rcl               (2175.004 450)        R270
+R28      130               R0805           rcl               (1775 356.248)        R90
+R29      82                R0805           rcl               (2175.004 306.252)    R270
+R30      33                R0603           Common-passives   (2037.504 2250)       R90
+R31      33                R0603           Common-passives   (1975 2249.996)       R90
+R32      33                R0603           Common-passives   (1918.752 2250.004)   R90
+R33      33                R0603           Common-passives   (3481.252 525.008)    R180
+R34      33                R0603           Common-passives   (3081.248 531.248)    R90
+R35      10k               R0603           Common-passives   (3393.744 2437.5)     R270
+R36      121               R0603           Common-passives   (3481.248 337.5)      R180
+R37      18k               R0603           Common-passives   (3200.008 2431.26)    R270
+R38      1k                R0805           rcl               (2850.004 2612.496)   R90
+R39      33                R0603           Common-passives   (3481.252 1987.504)   R180
+R40      33                R0603           Common-passives   (3481.248 1900)       R180
+R41      33                R0603           Common-passives   (3481.248 1806.252)   R180
+R42      33                R0603           Common-passives   (3468.748 1493.752)   R180
+R43      33                R0603           Common-passives   (3468.748 1375)       R180
+R44      33                R0603           Common-passives   (3468.752 1231.252)   R180
+R45      33                R0603           Common-passives   (3462.5 1081.252)     R180
+R46      33                R0603           Common-passives   (3337.5 2143.752)     R0
+R47      33                R0603           Common-passives   (3331.248 2025.004)   R0
+R48      33                R0603           Common-passives   (3324.996 1868.752)   R0
+R49      33                R0603           Common-passives   (3325.004 1750)       R0
+R50      18k               R0603           Common-passives   (1543.76 2456.252)    R180
+R51      30k               R0805           rcl               (1418.752 2512.492)   R90
+R52      33                R0603           Common-passives   (3324.996 1543.752)   R0
+R53      33                R0603           Common-passives   (3318.748 1406.252)   R0
+R54      33                R0603           Common-passives   (3318.752 1281.252)   R0
+R55      33                R0603           Common-passives   (3318.748 1143.752)   R0
+R56      33                R0603           Common-passives   (3093.748 2025)       R270
+R57      0 config          R0603           Common-passives   (3306.248 668.752)    R0
+R58      0 config          R0603           Common-passives   (3306.248 756.252)    R0
+R59      0 config          R0603           Common-passives   (3306.248 837.508)    R0
+R60      121               R0603           Common-passives   (2487.504 2525.008)   R270
+R61      121               R0603           Common-passives   (1762.508 2549.996)   R0
+R62      330               R0603           Common-passives   (793.752 956.252)     R90
+R63      330               R0603           Common-passives   (862.504 1575)        R90
+R64      33                R0603           Common-passives   (3481.26 437.5)       R180
+R65      1                 R0805           Common-passives   (3725 2493.748)       R0
+R66      1                 R0805           Common-passives   (1043.744 2556.248)   R0
+R67      33                R0603           Common-passives   (2656.256 2012.5)     R90
+R68      33                R0603           Common-passives   (2587.5 2012.5)       R90
+R69      33                R0603           Common-passives   (2518.76 2012.504)    R90
+R70      33                R0603           Common-passives   (1012.504 2337.496)   R180
+R71      33                R0603           Common-passives   (1125.004 525.008)    R180
+R72      0 config          R0603           Common-passives   (1018.752 2231.252)   R180
+R73      0 config          R0603           Common-passives   (1087.5 437.5)        R90
+R74      33                R0603           Common-passives   (3481.248 2100)       R180
+R75      33                R0603           Common-passives   (3012.5 2025)         R270
+R76      33                R0603           Common-passives   (2931.248 2025)       R270
+R77      33                R0603           Common-passives   (2850 2025)           R270
+R78      10k               R0603           Common-passives   (1500.004 600.004)    R0
+SV1                        ML40            con-harting-ml    (3725 1300)           R90

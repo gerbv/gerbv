@@ -108,6 +108,7 @@ static void analyze_window_size_restore(GtkWidget*);
 static void analyze_window_size_store(GtkWidget*, gpointer);
 
 static void update_selected_object_message(gboolean userTriedToSelect);
+static gint callbacks_get_col_num_from_tree_view_col(GtkTreeViewColumn* col);
 
 gchar*
 utf8_strncpy(gchar* dst, const gchar* src, gsize byte_len) {
@@ -155,16 +156,46 @@ callbacks_pnp_events(void *arg, struct pnp_event_data *event)
 
 	switch (event->evc) {
 	case PNP_EV_BRDLOC:
+		if (event->loc.part_list_index >= 0) {
+			GtkTreeIter iter;
+		    GtkListStore *list_store = (GtkListStore*)gtk_tree_view_get_model((GtkTreeView*)screen.win.pnp.partlistTree);
+
+            if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store), &iter, NULL, event->loc.part_list_index)) {
+            	GtkTreeSelection *selection = gtk_tree_view_get_selection((GtkTreeView*)screen.win.pnp.partlistTree);
+            	GtkAdjustment * vsc_adj =
+            			gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(screen.win.pnp.partlist_vscrollbar));
+
+            	if (vsc_adj) {
+            		int n = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(list_store), NULL);
+            		double u = gtk_adjustment_get_upper(vsc_adj);
+            		double l = gtk_adjustment_get_lower(vsc_adj);
+
+            		if (u - l > screenRenderInfo.displayHeight)
+            			gtk_adjustment_set_value(vsc_adj, (u - l) / n * event->loc.part_list_index + l + 1.0);
+            		//DBG("%f - %f\n", u, l);
+            	}
+
+            	gtk_tree_selection_select_iter(selection, &iter);
+
+            	if (event->loc.part_placed) {
+            		PnpPartData *part = pick_and_place_mdev_ctl(mainProject->pnp_dev, event->loc.part_list_index, .0, MDEV_PART_1);
+            		if (part)
+            			gtk_list_store_set(list_store, &iter, 0, part->placed, -1); // 2, part->value, 1, part->designator,
+            	}
+            }
+		}
 		screen_center_at_board_xy(&screenRenderInfo, event->loc.board_x, event->loc.board_y);
 		screen.off_x = 0;
 		screen.off_y = 0;
 		render_refresh_rendered_image_on_screen();
 		break;
 	case PNP_EV_EN_CAL12_MENU:
-		gtk_widget_set_sensitive(screen.win.pnp.ref_pnt[0], event->args[0]);
-		gtk_widget_set_sensitive(screen.win.pnp.ref_pnt[1], event->args[0]);
-		gtk_widget_set_sensitive(screen.win.pnp.ref_clear, event->args[0]);
-		gtk_widget_set_sensitive(screen.win.pnp.redraw, event->args[0]);
+		if (screen.win.pnp.ref_pnt[0] && screen.win.pnp.ref_pnt[1]) {
+			gtk_widget_set_sensitive(screen.win.pnp.ref_pnt[0], event->args[0]);
+			gtk_widget_set_sensitive(screen.win.pnp.ref_pnt[1], event->args[0]);
+			gtk_widget_set_sensitive(screen.win.pnp.ref_clear, event->args[0]);
+			gtk_widget_set_sensitive(screen.win.pnp.redraw, event->args[0]);
+		}
 		break;
 	default:
 		break;
@@ -187,16 +218,16 @@ callbacks_pnp_ref_points_clicked(GtkMenuItem* menu_item, gpointer user_data)
 	switch (opc) {
 	case MDEV_CAL_SAV_REFLOC1:
 	case MDEV_CAL_SAV_REFLOC2:
-		if (pick_and_place_mdev_ctl(mainProject->pnp_socket, screen.measure_start_x,
+		if (pick_and_place_mdev_ctl(mainProject->pnp_dev, screen.measure_start_x,
 				screen.measure_start_y, opc))
 			screenRenderInfo.center_ch.enabled = 1;
 		break;
 	case 3:
-		pick_and_place_mdev_ctl(mainProject->pnp_socket, .0, .0, MDEV_CAL_OFF);
+		pick_and_place_mdev_ctl(mainProject->pnp_dev, .0, .0, MDEV_CAL_OFF);
 		screenRenderInfo.center_ch.enabled = 0;
 		break;
 	case 4:
-		pick_and_place_mdev_ctl(mainProject->pnp_socket, .0, .0, MDEV_REDRAW);
+		pick_and_place_mdev_ctl(mainProject->pnp_dev, .0, .0, MDEV_REDRAW);
 		break;
 
 	default:
@@ -204,12 +235,60 @@ callbacks_pnp_ref_points_clicked(GtkMenuItem* menu_item, gpointer user_data)
 	}
 
 	if (en_cch != screenRenderInfo.center_ch.enabled) {
-		struct pnp_pub_context *ctx = pick_and_place_mdev2ctx(mainProject->pnp_socket);
+		struct pnp_pub_context *ctx = pick_and_place_mdev2ctx(mainProject->pnp_dev);
 
 		if (ctx)
 			screenRenderInfo.center_ch.color = ctx->center_ch_color;
 		render_refresh_rendered_image_on_screen();
 	}
+}
+
+gboolean
+callbacks_parts_tree_button_press(GtkWidget* widget, GdkEventButton* event, gpointer user_data) {
+    GtkTreePath*       path;
+    GtkTreeIter        iter;
+    GtkTreeViewColumn* col;
+    gint               x, y;
+    gint*              indices;
+    GtkTreeSelection* selection;
+
+    GtkListStore* list_store = (GtkListStore*)gtk_tree_view_get_model((GtkTreeView*)screen.win.pnp.partlistTree);
+
+    if (event->button == 1) {
+        if (gtk_tree_view_get_path_at_pos((GtkTreeView*)widget, event->x, event->y, &path, &col, &x, &y)
+            && gtk_tree_model_get_iter((GtkTreeModel*)list_store, &iter, path)) {
+            indices = gtk_tree_path_get_indices(path);
+            if (indices) {
+                int rowIndex = indices[0];
+
+                switch (callbacks_get_col_num_from_tree_view_col(col)) {
+                    case 0:
+                        selection = gtk_tree_view_get_selection((GtkTreeView*)screen.win.pnp.partlistTree);
+
+                        if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store), &iter, NULL, rowIndex)) {
+                            gtk_tree_selection_select_iter(selection, &iter);
+
+                            PnpPartData *part = pick_and_place_mdev_ctl(mainProject->pnp_dev, rowIndex, .0, MDEV_PART_TG);
+                            gtk_list_store_set(list_store, &iter, 0, part->placed, -1); // 2, part->value, 1, part->designator, -1);
+
+                            // refresh nets
+                            render_refresh_rendered_image_on_screen();
+                        }
+                        return TRUE;
+                    case 1:
+                        selection = gtk_tree_view_get_selection((GtkTreeView*)screen.win.pnp.partlistTree);
+
+                        if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store), &iter, NULL, rowIndex)) {
+                            gtk_tree_selection_select_iter(selection, &iter);
+                        }
+                        return TRUE;
+                }
+            }
+        }
+    }
+
+    /* always allow the click to propagate and make sure the line is activated */
+    return FALSE;
 }
 
 /* --------------------------------------------------------- */
@@ -1007,6 +1086,29 @@ callbacks_show_cross_on_drill_holes(GtkMenuItem* menuitem, gpointer user_data) {
     render_refresh_rendered_image_on_screen();
 }
 
+
+static void pnp_populate_partlist(struct pnp_manual_dev *pnp, enum pnp_mdev_opcodes opc)
+{
+	GtkListStore *list_store;
+    GtkTreeIter iter;
+    long parts;
+
+    list_store = (GtkListStore*)gtk_tree_view_get_model((GtkTreeView*)screen.win.pnp.partlistTree);
+
+    parts = (long)pick_and_place_mdev_ctl(mainProject->pnp_dev, 0.0, 0.0, opc);
+    if (parts > 0 && list_store) {
+    	int i;
+
+        gtk_list_store_clear(list_store);
+    	for (i = 0; i < parts; i++) {
+    		PnpPartData *part = pick_and_place_mdev_ctl(mainProject->pnp_dev, i, 0.0, MDEV_PART);
+
+    		gtk_list_store_append(list_store, &iter);
+    		gtk_list_store_set(list_store, &iter, 0, part->placed, 2, part->value, 1, part->designator, -1);
+    	}
+    	DBG("parts %d\n", i);
+    }
+}
 /* --------------------------------------------------------- */
 /** View/"Toggle visibility layer X" or Current layer/"Toggle visibility" menu item was activated.
  * Set the isVisible flag on file X and update the treeview and rendering.
@@ -1022,6 +1124,19 @@ callbacks_toggle_layer_visibility_activate(GtkMenuItem* menuitem, gpointer user_
         default:
             if (0 <= i && i <= mainProject->last_loaded) {
                 mainProject->file[i]->isVisible = !mainProject->file[i]->isVisible;
+                if (mainProject->file[i]->isVisible) {
+                	switch (mainProject->file[i]->image->layertype) {
+                	case GERBV_LAYERTYPE_PICKANDPLACE_TOP:
+                		pnp_populate_partlist(mainProject->pnp_dev, MDEV_TOP_PL_SIZE);
+                		break;
+                	case GERBV_LAYERTYPE_PICKANDPLACE_BOT:
+                		pnp_populate_partlist(mainProject->pnp_dev, MDEV_BOT_PL_SIZE);
+                		break;
+                	default:
+                		break;
+                	}
+                } else
+                	pnp_populate_partlist(mainProject->pnp_dev, MDEV_V1ST_PL_SIZE);
             } else {
                 /* Not in range */
                 return;
@@ -2028,6 +2143,20 @@ callbacks_vadjustment_value_changed(GtkAdjustment* adjustment, gpointer user_dat
 static void
 callbacks_layer_tree_visibility_toggled(gint index) {
     mainProject->file[index]->isVisible = !mainProject->file[index]->isVisible;
+
+    if (mainProject->file[index]->isVisible) {
+    	switch (mainProject->file[index]->image->layertype) {
+    	case GERBV_LAYERTYPE_PICKANDPLACE_TOP:
+    		pnp_populate_partlist(mainProject->pnp_dev, MDEV_TOP_PL_SIZE);
+    		break;
+    	case GERBV_LAYERTYPE_PICKANDPLACE_BOT:
+    		pnp_populate_partlist(mainProject->pnp_dev, MDEV_BOT_PL_SIZE);
+    		break;
+    	default:
+    		break;
+    	}
+    } else
+    	pnp_populate_partlist(mainProject->pnp_dev, MDEV_V1ST_PL_SIZE);
 
     callbacks_update_layer_tree();
     if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
@@ -3328,7 +3457,7 @@ callbacks_drawingarea_button_press_event(GtkWidget* widget, GdkEventButton* even
                 }
 
                 /* only show the popup if we actually have something selected now */
-                if (selection_length(&screen.selectionInfo) != 0 || mainProject->pnp_socket) {
+                if (selection_length(&screen.selectionInfo) != 0 || mainProject->pnp_dev) {
                     update_selected_object_message(TRUE);
                     callbacks_screen2board(&(screen.measure_start_x), &(screen.measure_start_y), event->x, event->y);
                     gtk_menu_popup(
@@ -3879,6 +4008,8 @@ aperture_state_report(gerbv_net_t* net, gerbv_image_t* img, gerbv_project_t* prj
     switch (net->aperture_state) {
 
         case GERBV_APERTURE_STATE_OFF: break;
+        case GERBV_APERTURE_STATE_PNP_LABEL: break;
+        case GERBV_APERTURE_STATE_PNP_LABEL2: break;
 
         case GERBV_APERTURE_STATE_ON:
             switch (net->interpolation) {

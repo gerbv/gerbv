@@ -180,7 +180,9 @@ const char* gerbv_aperture_type_name(gerbv_aperture_type_t type);
 typedef enum {
     GERBV_APERTURE_STATE_OFF,  /*!< tool drawing is off, and nothing will be drawn */
     GERBV_APERTURE_STATE_ON,   /*!< tool drawing is on, and something will be drawn */
-    GERBV_APERTURE_STATE_FLASH /*!< tool is flashing, and will draw a single aperture */
+    GERBV_APERTURE_STATE_FLASH, /*!< tool is flashing, and will draw a single aperture */
+	GERBV_APERTURE_STATE_PNP_LABEL, /*!< virtual aperture used for optimized drawing of PnP labels only*/
+	GERBV_APERTURE_STATE_PNP_LABEL2
 } gerbv_aperture_state_t;
 
 /*! The circle aperture macro parameter indexes */
@@ -750,6 +752,7 @@ typedef struct {
     gerbv_stats_t*       gerbv_stats; /*!< RS274X statistics for the layer */
     gerbv_drill_stats_t* drill_stats; /*!< Excellon drill statistics for the layer */
     struct pnp_pub_context *pnp_common_ctx; /*!< !=NULL if layertype == GERBV_LAYERTYPE_PICKANDPLACE_TOP/BOT and socket enabled*/
+    gerbv_user_transformation_t *transform;
 } gerbv_image_t;
 
 /*!  Holds information related to an individual layer that is part of a project */
@@ -782,7 +785,7 @@ typedef struct {
     gchar*             execname;                 /*!< the path plus executible name for Gerbv */
     gchar*             project;                  /*!< the default name for the private project file */
 
-    struct pnp_manual_dev* pnp_socket;				/*!< used for syncing window with semi-automatic PP tool */
+    struct pnp_manual_dev* pnp_dev;				/*!< used for syncing window with semi-automatic PP tool */
 } gerbv_project_t;
 
 /*! Color of layer */

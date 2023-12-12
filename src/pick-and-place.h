@@ -54,6 +54,7 @@ typedef struct {
     double       length;
     unsigned int nuf_push; /* Nuf pushes to estimate stack size */
     unsigned int placed:1;
+    gerbv_net_t* label_net;
 
     char         value[50];
     char         designator[16];
@@ -81,13 +82,14 @@ int pick_and_place_check_file_type(gerb_file_t* fd, gboolean* returnFoundBinary)
 struct pnp_manual_dev; // defined in pick-and-place.c, private
 
 struct pnp_pub_context {
-	GArray* tb_part_list;  // array of PnpPartData, top & bot common
-	GPtrArray* top_part_list; // list of pointers to PnpPartData + n, sorted by value
-	GPtrArray* bot_part_list; // list of pointers to PnpPartData + n, sorted by value
+	GArray *tb_part_list;  // array of PnpPartData, top & bot common
+	GPtrArray *top_part_list; // list of pointers to PnpPartData + n, sorted by value
+	GPtrArray *bot_part_list; // list of pointers to PnpPartData + n, sorted by value
 
-	gerbv_image_t* top_image;
-	gerbv_image_t* bot_image;
+	gerbv_image_t *top_image;
+	gerbv_image_t *bot_image;
 
+	gerbv_layertype_t current_layer; // GERBV_LAYERTYPE_PICKANDPLACE_TOP or _BOT
 	int tb_pl_ref_count;
 	unsigned int center_ch_color; // rgb 888
 	struct {
@@ -109,6 +111,8 @@ struct pnp_event_data {
 	union {
 		struct { // PNP_EV_BRDLOC
 			double board_x, board_y; // [inches]
+			int part_list_index; // < 0 when location does not match any part
+			int part_placed;
 		} loc;
 
 		int args[3]; // [0]: PNP_EV_EN_CAL12_MENU, ..
@@ -120,13 +124,20 @@ typedef void (*pnp_remote_event_fn)(void *arg, struct pnp_event_data *);
 
 struct pnp_manual_dev *pick_and_place_mdev_init(char *, pnp_remote_event_fn, void *arg);
 enum pnp_mdev_opcodes {
-	MDEV_CAL_OFF = -1,
-	MDEV_CAL_SAV_REFLOC1 = 1,
-	MDEV_CAL_SAV_REFLOC2,
+	MDEV_CAL_OFF = -1, // returns int cal_state
+	MDEV_CAL_SAV_REFLOC1 = 1, // int cal_state
+	MDEV_CAL_SAV_REFLOC2, // int cal_state
 
-	MDEV_REDRAW
+	MDEV_REDRAW,
+	MDEV_PART_0, // returns PnpPartData *
+	MDEV_PART_1, // returns PnpPartData *
+	MDEV_PART_TG, // returns PnpPartData *
+	MDEV_PART, // returns PnpPartData *
+	MDEV_TOP_PL_SIZE, // returns long
+	MDEV_BOT_PL_SIZE,
+	MDEV_V1ST_PL_SIZE,
 };
-int pick_and_place_mdev_ctl(struct pnp_manual_dev *, double board_x, double board_y, enum pnp_mdev_opcodes opcode);
+void *pick_and_place_mdev_ctl(struct pnp_manual_dev *, double board_x, double board_y, enum pnp_mdev_opcodes opcode);
 struct pnp_pub_context *pick_and_place_mdev2ctx(struct pnp_manual_dev *);
 
 void pick_and_place_mdev_free(struct pnp_manual_dev **);

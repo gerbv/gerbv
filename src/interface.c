@@ -52,6 +52,8 @@
 #include "gerbv_icon.h"
 #include "icons.h"
 
+#include "glib.h"
+
 #define dprintf \
     if (DEBUG)  \
     printf
@@ -244,7 +246,7 @@ static GtkWidget* menuitem_edit_menu(GtkAccelGroup* accel_group, GtkTooltips* to
 	screen.win.pnp.redraw = pnp_redraw;
 
 	{
-		struct pnp_pub_context *ctx = pick_and_place_mdev2ctx(mainProject->pnp_socket);
+		struct pnp_pub_context *ctx = pick_and_place_mdev2ctx(mainProject->pnp_dev);
 		int enabled = ctx ? (ctx->bot_image || ctx->top_image ? 1 : 0) : 0;
 
 		gtk_widget_set_sensitive(pnp_cal_ref1, enabled);
@@ -284,6 +286,126 @@ static void menuitem_edit_menu_signals(struct edit_menu_widgets *w)
     		G_CALLBACK(callbacks_pnp_ref_points_clicked), GINT_TO_POINTER(3) );
     g_signal_connect( (gpointer)screen.win.pnp.redraw, "activate",
         		G_CALLBACK(callbacks_pnp_ref_points_clicked), GINT_TO_POINTER(4) );
+}
+
+
+static GtkWidget* gerbv_tree_parts_init(GtkWidget *sidepane_notebook, GtkWidget **vscroll)
+{
+    GtkListStore* list_store;
+	GtkWidget* p_tree;
+    GtkWidget* scroll_bar;
+    GtkCellRenderer* renderer;
+    GtkTreeViewColumn* column;
+    GtkWidget* vbox_partlist;
+
+	GtkWidget *parts_label = gtk_label_new(_("Parts list"));
+
+    vbox_partlist = gtk_vbox_new(FALSE, 3);
+    gtk_widget_set_size_request(vbox_partlist, 82, -1);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox_partlist), 4);
+    gtk_container_add(GTK_CONTAINER(sidepane_notebook), vbox_partlist);
+
+
+    scroll_bar = gtk_scrolled_window_new(NULL, NULL);
+    *vscroll = scroll_bar;
+    gtk_box_pack_start(GTK_BOX(vbox_partlist), scroll_bar, TRUE, TRUE, 0);
+    gtk_container_set_border_width(GTK_CONTAINER(scroll_bar), 2);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_bar), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scroll_bar), GTK_SHADOW_IN);
+
+    list_store = gtk_list_store_new(3, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
+    p_tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_store));
+
+    renderer = gtk_cell_renderer_toggle_new();
+    column   = gtk_tree_view_column_new_with_attributes("Placed", renderer, "active", 0, NULL);
+    gtk_tree_view_column_set_min_width((GtkTreeViewColumn*)column, 25);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(p_tree), column);
+
+    renderer = gtk_cell_renderer_text_new();
+    // "foreground", "red",
+    g_object_set(G_OBJECT(renderer),  "xalign", 0.5, "family", "Times", "size-points", 12.0, NULL);
+    column = gtk_tree_view_column_new_with_attributes("Des.", renderer, "text", 1, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(p_tree), column);
+    gtk_tree_view_column_set_min_width((GtkTreeViewColumn*)column, 20);
+
+    renderer = gtk_cell_renderer_text_new();
+    column   = gtk_tree_view_column_new_with_attributes("Value", renderer, "markup", 2, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(p_tree), column);
+
+    gtk_container_add(GTK_CONTAINER(scroll_bar), p_tree);
+
+    GtkTreeSelection* selection;
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(p_tree));
+    gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
+    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(p_tree), FALSE);
+    gtk_tree_view_set_reorderable(GTK_TREE_VIEW(p_tree), TRUE);
+
+    gtk_notebook_set_tab_label( GTK_NOTEBOOK(sidepane_notebook),
+    		gtk_notebook_get_nth_page(GTK_NOTEBOOK(sidepane_notebook), 2), parts_label);
+
+    gtk_signal_connect(
+        GTK_OBJECT(p_tree), "button-press-event", GTK_SIGNAL_FUNC(callbacks_parts_tree_button_press), NULL
+    );
+
+	return p_tree;
+}
+
+static GtkWidget* gerbv_tree_layers_init(GtkWidget* vbox_layers)
+{
+    GtkWidget* l_tree;
+    GtkListStore* list_store;
+    GtkCellRenderer*   renderer;
+    GtkTreeViewColumn* column;
+    GtkWidget* scrolledwindow1;
+
+    scrolledwindow1 = gtk_scrolled_window_new(NULL, NULL);
+    gtk_box_pack_start(GTK_BOX(vbox_layers), scrolledwindow1, TRUE, TRUE, 0);
+    gtk_container_set_border_width(GTK_CONTAINER(scrolledwindow1), 2);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwindow1), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledwindow1), GTK_SHADOW_IN);
+
+    list_store = gtk_list_store_new(4, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING);
+
+    l_tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_store));
+
+    renderer = gtk_cell_renderer_toggle_new();
+    column   = gtk_tree_view_column_new_with_attributes("Visible", renderer, "active", 0, NULL);
+    gtk_tree_view_column_set_min_width((GtkTreeViewColumn*)column, 25);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(l_tree), column);
+
+    renderer = gtk_cell_renderer_pixbuf_new();
+    column   = gtk_tree_view_column_new_with_attributes("Color", renderer, "pixbuf", 1, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(l_tree), column);
+
+    renderer = gtk_cell_renderer_text_new();
+    g_object_set(G_OBJECT(renderer), "foreground", "red", "xalign", 0.5, "family", "Times", "size-points", 12.0, NULL);
+    column = gtk_tree_view_column_new_with_attributes("Modified", renderer, "text", 3, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(l_tree), column);
+    gtk_tree_view_column_set_min_width((GtkTreeViewColumn*)column, 20);
+
+    renderer = gtk_cell_renderer_text_new();
+    column   = gtk_tree_view_column_new_with_attributes("Name", renderer, "markup", 2, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(l_tree), column);
+
+    gtk_tree_view_set_headers_visible((GtkTreeView*)l_tree, FALSE);
+    gtk_signal_connect(GTK_OBJECT(l_tree), "key-press-event", GTK_SIGNAL_FUNC(callbacks_layer_tree_key_press), NULL);
+    gtk_signal_connect(
+        GTK_OBJECT(l_tree), "button-press-event", GTK_SIGNAL_FUNC(callbacks_layer_tree_button_press), NULL
+    );
+
+    gtk_container_add(GTK_CONTAINER(scrolledwindow1), l_tree);
+
+    GtkTreeSelection* selection;
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(l_tree));
+    gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
+    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(l_tree), FALSE);
+    gtk_tree_view_set_reorderable(GTK_TREE_VIEW(l_tree), TRUE);
+
+    g_signal_connect(G_OBJECT(list_store), "row-inserted", G_CALLBACK(callbacks_layer_tree_row_inserted), NULL);
+    /* steal the focus to the tree to make sure none of the buttons are focused */
+    gtk_widget_grab_focus(l_tree);
+
+    return l_tree;
 }
 
 /* ---------------------------------------------- */
@@ -414,7 +536,7 @@ interface_create_gui(int req_width, int req_height) {
     GtkWidget* vbox10;
     GtkWidget* hbox4;
     GtkWidget* render_combobox;
-    GtkWidget* scrolledwindow1;
+
     GtkWidget* hbox1;
     GtkWidget* button4;
     GtkWidget* image8;
@@ -1211,11 +1333,7 @@ interface_create_gui(int req_width, int req_height) {
         gtk_combo_box_set_active(GTK_COMBO_BOX(render_combobox), screenRenderInfo.renderType);
     }
 
-    scrolledwindow1 = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox10), scrolledwindow1, TRUE, TRUE, 0);
-    gtk_container_set_border_width(GTK_CONTAINER(scrolledwindow1), 2);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwindow1), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledwindow1), GTK_SHADOW_IN);
+    GtkWidget* layers_tree = gerbv_tree_layers_init(vbox10);
 
     hbox1 = gtk_hbox_new(TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox10), hbox1, FALSE, FALSE, 0);
@@ -1282,6 +1400,31 @@ interface_create_gui(int req_width, int req_height) {
     gtk_notebook_set_tab_label(
         GTK_NOTEBOOK(sidepane_notebook), gtk_notebook_get_nth_page(GTK_NOTEBOOK(sidepane_notebook), 1), Message_label
     );
+
+    if (mainProject->pnp_dev) {
+    	GtkListStore *list_store;
+        GtkTreeIter iter;
+        long parts;
+
+        DBG("\n");
+        screen.win.pnp.partlistTree = gerbv_tree_parts_init(sidepane_notebook, &screen.win.pnp.partlist_vscrollbar);
+        list_store = (GtkListStore*)gtk_tree_view_get_model((GtkTreeView*)screen.win.pnp.partlistTree);
+
+        parts = (long)pick_and_place_mdev_ctl(mainProject->pnp_dev, 0.0, 0.0, MDEV_V1ST_PL_SIZE);
+        if (parts > 0) {
+        	int i;
+
+            gtk_list_store_clear(list_store);
+        	for (i = 0; i < parts; i++) {
+        		PnpPartData *part = pick_and_place_mdev_ctl(mainProject->pnp_dev, i, 0.0, MDEV_PART);
+
+        		gtk_list_store_append(list_store, &iter);
+        		gtk_list_store_set(list_store, &iter, 0, part->placed, 2, part->value, 1, part->designator, -1);
+        	}
+        	DBG("parts %d\n", i);
+        }
+    } else
+    	screen.win.pnp.partlistTree = NULL;
 
     vbox2 = gtk_vbox_new(FALSE, 4);
     gtk_paned_pack2(GTK_PANED(hpaned1), vbox2, TRUE, FALSE);
@@ -1592,51 +1735,8 @@ interface_create_gui(int req_width, int req_height) {
 
     gtk_window_add_accel_group(GTK_WINDOW(mainWindow), accel_group);
 
-    GtkListStore* list_store;
+//    GtkWidget* layers_tree = gerbv_tree_layers_init(vbox10);
 
-    list_store = gtk_list_store_new(4, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING);
-
-    GtkWidget* tree;
-
-    tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_store));
-    GtkCellRenderer*   renderer;
-    GtkTreeViewColumn* column;
-
-    renderer = gtk_cell_renderer_toggle_new();
-    column   = gtk_tree_view_column_new_with_attributes("Visible", renderer, "active", 0, NULL);
-    gtk_tree_view_column_set_min_width((GtkTreeViewColumn*)column, 25);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-
-    renderer = gtk_cell_renderer_pixbuf_new();
-    column   = gtk_tree_view_column_new_with_attributes("Color", renderer, "pixbuf", 1, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    g_object_set(G_OBJECT(renderer), "foreground", "red", "xalign", 0.5, "family", "Times", "size-points", 12.0, NULL);
-    column = gtk_tree_view_column_new_with_attributes("Modified", renderer, "text", 3, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-    gtk_tree_view_column_set_min_width((GtkTreeViewColumn*)column, 20);
-
-    renderer = gtk_cell_renderer_text_new();
-    column   = gtk_tree_view_column_new_with_attributes("Name", renderer, "markup", 2, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-
-    gtk_tree_view_set_headers_visible((GtkTreeView*)tree, FALSE);
-    gtk_signal_connect(GTK_OBJECT(tree), "key-press-event", GTK_SIGNAL_FUNC(callbacks_layer_tree_key_press), NULL);
-    gtk_signal_connect(
-        GTK_OBJECT(tree), "button-press-event", GTK_SIGNAL_FUNC(callbacks_layer_tree_button_press), NULL
-    );
-    gtk_container_add(GTK_CONTAINER(scrolledwindow1), tree);
-
-    GtkTreeSelection* selection;
-    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
-    gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
-    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), FALSE);
-    gtk_tree_view_set_reorderable(GTK_TREE_VIEW(tree), TRUE);
-
-    g_signal_connect(G_OBJECT(list_store), "row-inserted", G_CALLBACK(callbacks_layer_tree_row_inserted), NULL);
-    /* steal the focus to the tree to make sure none of the buttons are focused */
-    gtk_widget_grab_focus(tree);
     /*
      * Connect all events on drawing area
      */
@@ -1754,7 +1854,7 @@ interface_create_gui(int req_width, int req_height) {
     screen.win.messageTextView    = message_textview;
     screen.win.statusMessageLeft  = statusbar_label_left;
     screen.win.statusMessageRight = statusbar_label_right;
-    screen.win.layerTree          = tree;
+    screen.win.layerTree          = layers_tree;
     screen.win.treeIsUpdating     = FALSE;
 
     /* Request label largest width: negative mils coords require largest space */

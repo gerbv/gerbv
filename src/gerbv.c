@@ -195,6 +195,8 @@ gerbv_destroy_project(gerbv_project_t* gerbvProject) {
     g_free(gerbvProject->project);
     /* destroy the fileinfo array */
     g_free(gerbvProject->file);
+    if (gerbvProject->pnp_dev)
+    	pick_and_place_mdev_free(&gerbvProject->pnp_dev);
     g_free(gerbvProject);
 }
 
@@ -419,6 +421,7 @@ gerbv_add_parsed_image_to_project(
         gerbvProject->file[idx]->image = parsed_image;
     }
 
+    gerbvProject->file[idx]->image->transform = &gerbvProject->file[idx]->transform;
     /*
      * Store filename for eventual reload
      */
@@ -512,20 +515,20 @@ gerbv_open_image(
         dprintf("Found pick-n-place file\n");
         if (!foundBinary || forceLoadFile) {
             if (!reload) {
-                pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_socket, pnp_type, &parsed_image, &parsed_image2);
+                pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_dev, pnp_type, &parsed_image, &parsed_image2);
             } else {
                 switch (gerbvProject->file[idx]->image->layertype) {
                     case GERBV_LAYERTYPE_PICKANDPLACE_TOP:
                         /* Non NULL pointer is used as "not to reload" mark */
                         parsed_image2 = (void*)!NULL;
-                        pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_socket,
+                        pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_dev,
                         		pnp_type, &parsed_image, &parsed_image2);
                         parsed_image2 = NULL;
                         break;
                     case GERBV_LAYERTYPE_PICKANDPLACE_BOT:
                         /* Non NULL pointer is used as "not to reload" mark */
                         parsed_image2 = (void*)!NULL;
-                        pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_socket,
+                        pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_dev,
                         		pnp_type, &parsed_image2, &parsed_image);
                         parsed_image2 = NULL;
                         break;
