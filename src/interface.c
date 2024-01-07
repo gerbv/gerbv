@@ -1321,7 +1321,7 @@ interface_create_gui(int req_width, int req_height) {
     gtk_combo_box_append_text(GTK_COMBO_BOX(render_combobox), _("Normal"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(render_combobox), _("High quality"));
 
-    if (screen.settings) {
+    if (screen.settings && !screenRenderInfo.render_type_pf_override) {
         g_settings_bind(screen.settings, "visual-rendering-type", render_combobox, "active", G_SETTINGS_BIND_DEFAULT);
 
         /* Sync menu item render type */
@@ -1331,6 +1331,7 @@ interface_create_gui(int req_width, int req_height) {
         }
     } else {
         gtk_combo_box_set_active(GTK_COMBO_BOX(render_combobox), screenRenderInfo.renderType);
+        gtk_check_menu_item_set_active(screen.win.menu_view_render_group[screenRenderInfo.renderType], TRUE);
     }
 
     GtkWidget* layers_tree = gerbv_tree_layers_init(vbox10);
@@ -1921,6 +1922,7 @@ interface_set_render_type(int t) {
         return;
 
     screenRenderInfo.renderType = t;
+    screenRenderInfo.render_type_pf_override = 1;
 
     /* make sure the interface is already up before calling
      * gtk_combo_box_set_active()

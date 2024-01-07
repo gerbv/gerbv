@@ -1276,7 +1276,9 @@ draw_image_to_cairo_target(
                         break;
                     default:
                         GERB_COMPILE_WARNING(
-                            _("Unknown aperture state: %s"), _(gerbv_aperture_type_name(net->aperture_state))
+                            _("Cairo: Unknown aperture state: %d, %s"),
+							net->aperture_state,
+							_(gerbv_aperture_type_name(net->aperture_state)) // this is not correct.
                         );
 
                         return 0;

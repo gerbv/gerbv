@@ -67,7 +67,7 @@
     if (DEBUG)  \
     printf
 
-gerbv_render_info_t screenRenderInfo;
+gerbv_render_info_t screenRenderInfo = { 0 };
 
 /* ------------------------------------------------------ */
 void

@@ -806,6 +806,7 @@ typedef struct {
     gint     displayWidth;           /*!< the width of the scene (in pixels, or points depending on the surface type) */
     gint     displayHeight; /*!< the height of the scene (in pixels, or points depending on the surface type) */
     gboolean show_cross_on_drill_holes; /*!< TRUE to show cross on drill holes */
+    gboolean render_type_pf_override;
     struct {
     	double board_x, board_y;
     	unsigned int color; // rgb 888
