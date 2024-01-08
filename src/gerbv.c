@@ -195,6 +195,8 @@ gerbv_destroy_project(gerbv_project_t* gerbvProject) {
     g_free(gerbvProject->project);
     /* destroy the fileinfo array */
     g_free(gerbvProject->file);
+    if (gerbvProject->pnp_dev)
+    	pick_and_place_mdev_free(&gerbvProject->pnp_dev);
     g_free(gerbvProject);
 }
 
@@ -328,6 +330,7 @@ gerbv_unload_layer(gerbv_project_t* gerbvProject, int index) {
     gint i;
 
     gerbv_destroy_fileinfo(gerbvProject->file[index]);
+    g_free(gerbvProject->file[index]);
 
     /* slide all later layers down to fill the empty slot */
     for (i = index; i < (gerbvProject->last_loaded); i++) {
@@ -418,6 +421,7 @@ gerbv_add_parsed_image_to_project(
         gerbvProject->file[idx]->image = parsed_image;
     }
 
+    gerbvProject->file[idx]->image->transform = &gerbvProject->file[idx]->transform;
     /*
      * Store filename for eventual reload
      */
@@ -453,6 +457,7 @@ gerbv_open_image(
     gboolean             isPnpFile = FALSE, foundBinary;
     gerbv_HID_Attribute* attr_list = NULL;
     int                  n_attr    = 0;
+    int                  pnp_type;
     /* If we're reloading, we'll pass in our file format attribute list
      * since this is our hook for letting the user override the fileformat.
      */
@@ -506,23 +511,25 @@ gerbv_open_image(
         if (!foundBinary || forceLoadFile)
             parsed_image = parse_drillfile(fd, attr_list, n_attr, reload);
 
-    } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
+    } else if ((pnp_type = pick_and_place_check_file_type(fd, &foundBinary))) {
         dprintf("Found pick-n-place file\n");
         if (!foundBinary || forceLoadFile) {
             if (!reload) {
-                pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
+                pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_dev, pnp_type, &parsed_image, &parsed_image2);
             } else {
                 switch (gerbvProject->file[idx]->image->layertype) {
                     case GERBV_LAYERTYPE_PICKANDPLACE_TOP:
                         /* Non NULL pointer is used as "not to reload" mark */
                         parsed_image2 = (void*)!NULL;
-                        pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
+                        pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_dev,
+                        		pnp_type, &parsed_image, &parsed_image2);
                         parsed_image2 = NULL;
                         break;
                     case GERBV_LAYERTYPE_PICKANDPLACE_BOT:
                         /* Non NULL pointer is used as "not to reload" mark */
                         parsed_image2 = (void*)!NULL;
-                        pick_and_place_parse_file_to_images(fd, &parsed_image2, &parsed_image);
+                        pick_and_place_parse_file_to_images(fd, gerbvProject->pnp_dev,
+                        		pnp_type, &parsed_image2, &parsed_image);
                         parsed_image2 = NULL;
                         break;
                     default: GERB_COMPILE_ERROR(_("%s: unknown pick-and-place board side to reload"), filename);
@@ -958,6 +965,13 @@ gerbv_render_layer_to_cairo_target_without_transforming(
     /* translate, rotate, and modify the image based on the layer-specific transformation struct */
     cairo_save(cr);
 
+    if (fileInfo->isVisible && renderInfo->center_ch.to_draw_visible &&
+    		!(fileInfo->image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_TOP ||
+    				fileInfo->image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_BOT )) {
+    	renderInfo->center_ch.to_draw = 1;
+    	renderInfo->center_ch.to_draw_visible = 0;
+    }
+
     draw_image_to_cairo_target(
         cr, fileInfo->image, 1.0 / MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL,
         renderInfo, TRUE, fileInfo->transform, pixelOutput
@@ -975,6 +989,9 @@ gerbv_attribute_destroy_HID_attribute(gerbv_HID_Attribute* attributeList, int n_
             && attributeList[i].default_val.str_value != NULL) {
             free(attributeList[i].default_val.str_value);
         }
+
+        if (attributeList[i].name)
+        	free((void *)attributeList[i].name); // project.c:686 : plist->attr_list[p].name = strdup()
     }
 
     /* and free the attribute list */

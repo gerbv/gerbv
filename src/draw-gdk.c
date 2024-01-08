@@ -1188,7 +1188,7 @@ draw_gdk_image_to_pixmap(
                                 return 0;
                         }
                         break;
-                    default: GERB_MESSAGE(_("Unknown aperture state %d"), net->aperture_state); return 0;
+                    default: GERB_MESSAGE(_("GDK: Unknown aperture state %d"), net->aperture_state); return 0;
                 }
             }
         }
