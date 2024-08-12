@@ -775,6 +775,15 @@ draw_image_to_cairo_target(
     gboolean doVectorExportFix;
     double   bg_r, bg_g, bg_b; /* Background color */
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+    // Fix for cairo 1.17.6 and above which sets to surface unit back to PT (default: UNIT_USER)
+
+    cairo_surface_t* cSurface = cairo_get_target(cairoTarget);
+    if (cairo_surface_get_type(cSurface) == CAIRO_SURFACE_TYPE_SVG) {
+        cairo_svg_surface_set_document_unit(cSurface, CAIRO_SVG_UNIT_PT);
+    }
+#endif
+
     doVectorExportFix = draw_do_vector_export_fix(cairoTarget, &bg_r, &bg_g, &bg_b);
 
     /* If we are scaling the image at all, ignore the line width checks
