@@ -1,0 +1,44 @@
+(gerbv-file-version! "2.0A")
+
+#! author: Krzysztof Blaszkowski <kb@sysmikro.com.pl>
+#! run e.g.: ./src/run_gerbv -gdb -s /gerbv-pnp-sock -p example/pick-and-place-2/if2qs-top.proj
+
+(define-layer! 3 (cons 'filename "if2qs-top.gbs")
+	(cons 'visible #t)
+	(cons 'color #(29555 29555 57054))
+	(cons 'attribs (list
+		(list 'autodetect 'Boolean 0)
+		(list 'zero_suppression 'Enum 2)
+		(list 'units 'Enum 1)
+		(list 'digits 'Integer 3)
+	))
+)
+
+(define-layer! 2 (cons 'filename "if2qs-top-doc.gbs")
+	(cons 'visible #t)
+	(cons 'color #(39555 19555 47054))
+	(cons 'attribs (list
+		(list 'autodetect 'Boolean 0)
+		(list 'zero_suppression 'Enum 2)
+		(list 'units 'Enum 1)
+		(list 'digits 'Integer 3)
+	))
+)
+
+#! comment
+#! color 0xbf9a38
+#!  byte << 8
+
+(define-layer! 0 (cons 'pick_and_place "if2qs-partlist")
+	(cons 'visible #t)
+	(cons 'color #(48896 39424 14336))
+)
+
+#! parsed by define_layer(scheme* sc, pointer args) 
+#! processed by main_open_project_from_filename()
+
+(define-layer! 0 (cons 'translate #(0.010096 -0.113904)))
+(define-layer! 1 (cons 'visible #f))
+
+(set-render-type! 2)
+

@@ -610,16 +610,19 @@ define_layer(scheme* sc, pointer args) {
         str = sc->vptr->symname(name);
         if (strcmp(str, "color") == 0) {
             get_color(sc, value, plist->rgb);
+            plist->keywords |= PLKW_COLOR;
         } else if (strcmp(str, "alpha") == 0) {
             get_alpha(sc, value, &plist->alpha);
         } else if (strcmp(str, "translate") == 0) {
             get_double_pair(sc, value, "translate", &plist->translate_x, &plist->translate_y, 0.0);
+            plist->keywords |= PLKW_TRANSL;
         } else if (strcmp(str, "rotation") == 0) {
             get_double(sc, value, "rotation", &plist->rotation, 0.0);
         } else if (strcmp(str, "scale") == 0) {
             get_double_pair(sc, value, "scale", &plist->scale_x, &plist->scale_y, 1.0);
         } else if (strcmp(str, "mirror") == 0) {
             get_bool_pair(sc, value, "mirror", &plist->mirror_x, &plist->mirror_y, 0);
+            plist->keywords |= PLKW_MIRROR_XY;
         } else if (strcmp(str, "filename") == 0) {
             plist->filename = g_strdup(get_value_string(sc, value));
             plist->filename = convert_path_separators(plist->filename, UNIX_MINGW);
@@ -644,6 +647,7 @@ define_layer(scheme* sc, pointer args) {
             } else {
                 GERB_MESSAGE(_("Argument to visible must be #t or #f"));
             }
+            plist->keywords |= PLKW_VISIBLE;
         } else if (strcmp(str, "attribs") == 0) {
             pointer attr_car_el, attr_cdr_el;
             pointer attr_name, attr_type, attr_value;
@@ -955,8 +959,11 @@ read_project_file(const char* filename) {
     if ((fd = fopen(initfile, "r")) == NULL) {
         scheme_deinit(sc);
         GERB_MESSAGE(_("Couldn't open %s (%s)"), initfile, strerror(errno));
+        g_free(initfile);
         return NULL;
     }
+
+    g_free(initfile);
 
     /* Force gerbv to input decimals as dots */
     setlocale(LC_NUMERIC, "C");
@@ -1006,6 +1013,7 @@ project_destroy_project_list(project_list_t* projectList) {
         g_free(tempP->filename);
         gerbv_attribute_destroy_HID_attribute(tempP->attr_list, tempP->n_attr);
         tempP->attr_list = NULL;
+        g_free(tempP);
         tempP            = tempP2;
     }
 }
