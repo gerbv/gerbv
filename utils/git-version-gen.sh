@@ -21,7 +21,7 @@ fi
 
 
 # Validate environment
-GIT=`command -v git`
+GIT=`command -v git || true`
 
 if [ ! -x "${GIT}" ]; then
 	(>&2 echo "\`git' missing")
@@ -30,6 +30,7 @@ if [ ! -x "${GIT}" ]; then
 fi
 
 if ! ${GIT} rev-parse --is-inside-work-tree >& /dev/null ; then
+	(>&2 echo "Not inside work tree")
 	echo -n "${PREFIX}"
 	exit 0
 fi
