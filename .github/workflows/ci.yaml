@@ -127,7 +127,7 @@ jobs:
 
     - name: Upload executable artifacts
       if: "!matrix.code_coverage"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: gerbv
         path: gerbv.github.io/ci/gerbv*
