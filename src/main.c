@@ -56,6 +56,7 @@
 #include "interface.h"
 #include "render.h"
 #include "project.h"
+#include "pick-and-place.h"
 
 #if (DEBUG)
 #define dprintf                      \
@@ -161,7 +162,7 @@ const struct option longopts[]  = {
     {                 0,                 0,            0,   0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char* opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:u:w:x:";
+const char* opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:u:w:x:s:";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in main.h
@@ -185,11 +186,114 @@ care_for_x_in_cords(char* string) {
 }
 
 /* ------------------------------------------------------------------ */
+
+static void __attribute((noinline))
+project_create_layer(gerbv_project_t* gerbvProject, project_list_t *plist,
+		GdkColor *colorTemplate, gchar *filename)
+{
+    gerbv_fileinfo_t* file_info;
+    gchar* fullName  = NULL;
+    gchar* dirName   = NULL;
+    gint   fileIndex = gerbvProject->last_loaded + 1;
+    int rc;
+
+    if (!g_path_is_absolute(plist->filename)) {
+        /* Build the full pathname to the layer */
+        dirName  = g_path_get_dirname(filename);
+        fullName = g_build_filename(dirName, plist->filename, NULL);
+    } else {
+        fullName = g_strdup(plist->filename);
+    }
+
+    rc = gerbv_open_image(gerbvProject, fullName, fileIndex, FALSE, plist->attr_list, plist->n_attr, TRUE);
+    g_free(dirName);
+    g_free(fullName);
+
+    if (rc == -1) {
+        GERB_MESSAGE(_("could not read file: %s"), fullName);
+        plist = plist->next;
+        return;
+    }
+
+    /* Change color from default to from the project list */
+    file_info                          = gerbvProject->file[fileIndex];
+    file_info->color                   = *colorTemplate;
+    file_info->alpha                   = plist->alpha;
+    file_info->transform.inverted      = plist->inverted;
+    file_info->transform.translateX    = plist->translate_x;
+    file_info->transform.translateY    = plist->translate_y;
+    file_info->transform.rotation      = plist->rotation;
+    file_info->transform.scaleX        = plist->scale_x;
+    file_info->transform.scaleY        = plist->scale_y;
+    file_info->transform.mirrorAroundX = plist->mirror_x;
+    file_info->transform.mirrorAroundY = plist->mirror_y;
+    file_info->isVisible               = plist->visible;
+
+    plist->file_info = file_info;
+    if (gerbvProject->file[fileIndex]->image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_TOP &&
+    		gerbvProject->file[fileIndex + 1] &&
+			gerbvProject->file[fileIndex + 1]->image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_BOT) {
+    	project_list_t *bot = g_new0(project_list_t, 1);
+
+    	bot->next = plist->next;
+    	plist->next = bot;
+
+    	bot->file_info = gerbvProject->file[fileIndex + 1];
+    	bot->layerno = plist->layerno + 1; // ref.: gerbv_open_image()
+    }
+}
+
+static void
+project_update_layer(project_list_t *plist, gerbv_fileinfo_t* file_info)
+{
+	if (!file_info)
+		return;
+
+	if (plist->keywords & PLKW_TRANSL) {
+		file_info->transform.translateX    = plist->translate_x;
+		file_info->transform.translateY    = plist->translate_y;
+	}
+
+	if (plist->keywords & PLKW_VISIBLE) {
+		file_info->isVisible               = plist->visible;
+	}
+
+	if (plist->keywords & PLKW_MIRROR_XY) {
+	    file_info->transform.mirrorAroundX = plist->mirror_x;
+	    file_info->transform.mirrorAroundY = plist->mirror_y;
+	}
+
+	if (plist->keywords & PLKW_COLOR) {
+		GdkColor colorTemplate = { 0, plist->rgb[0], plist->rgb[1], plist->rgb[2] };
+	    file_info->color                   = colorTemplate;
+	}
+}
+
+static void __attribute((noinline))
+project_apply_properties(project_list_t *list)
+{
+	project_list_t *plist = list;
+
+    while (plist) {
+    	if (!plist->filename) {
+    		project_list_t *item = list;
+
+    		while (item) {
+    			if (item->file_info && item->layerno == plist->layerno) {
+    				project_update_layer(plist, item->file_info);
+    				break;
+    			}
+    			item = item->next;
+    		}
+    	}
+        plist = plist->next;
+    }
+}
+
 void
 main_open_project_from_filename(gerbv_project_t* gerbvProject, gchar* filename) {
     project_list_t *  list, *plist;
     gint              i, max_layer_num = -1;
-    gerbv_fileinfo_t* file_info;
 
     dprintf("Opening project = %s\n", (gchar*)filename);
     list = read_project_file(filename);
@@ -227,45 +331,14 @@ main_open_project_from_filename(gerbv_project_t* gerbvProject, gchar* filename) 
                 continue;
             }
 
-            gchar* fullName  = NULL;
-            gchar* dirName   = NULL;
-            gint   fileIndex = gerbvProject->last_loaded + 1;
-
-            if (!g_path_is_absolute(plist->filename)) {
-                /* Build the full pathname to the layer */
-                dirName  = g_path_get_dirname(filename);
-                fullName = g_build_filename(dirName, plist->filename, NULL);
-            } else {
-                fullName = g_strdup(plist->filename);
-            }
-
-            if (gerbv_open_image(gerbvProject, fullName, fileIndex, FALSE, plist->attr_list, plist->n_attr, TRUE)
-                == -1) {
-                GERB_MESSAGE(_("could not read file: %s"), fullName);
-                plist = plist->next;
-                continue;
-            }
-
-            g_free(dirName);
-            g_free(fullName);
-
-            /* Change color from default to from the project list */
-            file_info                          = gerbvProject->file[fileIndex];
-            file_info->color                   = colorTemplate;
-            file_info->alpha                   = plist->alpha;
-            file_info->transform.inverted      = plist->inverted;
-            file_info->transform.translateX    = plist->translate_x;
-            file_info->transform.translateY    = plist->translate_y;
-            file_info->transform.rotation      = plist->rotation;
-            file_info->transform.scaleX        = plist->scale_x;
-            file_info->transform.scaleY        = plist->scale_y;
-            file_info->transform.mirrorAroundX = plist->mirror_x;
-            file_info->transform.mirrorAroundY = plist->mirror_y;
-            file_info->isVisible               = plist->visible;
+            if (plist->filename)
+            	project_create_layer(gerbvProject, plist, &colorTemplate, filename);
 
             plist = plist->next;
         }
     }
+
+    project_apply_properties(list);
 
     project_destroy_project_list(list);
 
@@ -847,6 +920,13 @@ main(int argc, char* argv[]) {
                 }
                 break;
             case 'd': screen.dump_parsed_image = 1; break;
+            case 's':
+
+            	if (!mainProject->pnp_dev)
+            		mainProject->pnp_dev = pick_and_place_mdev_init(optarg,
+            				callbacks_pnp_events, NULL);
+            	break;
+
             case '?':
             case 'h':
                 gerbv_print_help();

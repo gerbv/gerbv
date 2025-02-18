@@ -123,6 +123,16 @@ extern "C" {
 #define GERB_COMPILE_WARNING(...) g_log(NULL, G_LOG_LEVEL_WARNING, __VA_ARGS__)
 #define GERB_MESSAGE(...)         g_log(NULL, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 
+#if DEBUG
+#include <sys/types.h>
+
+#define DBG(fmt, arg...) printf("[%d] %s:%d " fmt, gettid(), __FUNCTION__, __LINE__, ##arg)
+#define DBGE(fmt, arg...) printf("[%d] %s:%d [ERR] " fmt, gettid(), __FUNCTION__, __LINE__, ##arg)
+#else
+#define DBG(fmt, arg...) do {} while(0)
+#define DBGE(fmt, arg...) do {} while(0)
+#endif
+
 /*! The aperture macro commands */
 typedef enum {
     GERBV_OPCODE_NOP,   /*!< no operation */
@@ -170,7 +180,9 @@ const char* gerbv_aperture_type_name(gerbv_aperture_type_t type);
 typedef enum {
     GERBV_APERTURE_STATE_OFF,  /*!< tool drawing is off, and nothing will be drawn */
     GERBV_APERTURE_STATE_ON,   /*!< tool drawing is on, and something will be drawn */
-    GERBV_APERTURE_STATE_FLASH /*!< tool is flashing, and will draw a single aperture */
+    GERBV_APERTURE_STATE_FLASH, /*!< tool is flashing, and will draw a single aperture */
+	GERBV_APERTURE_STATE_PNP_LABEL, /*!< virtual aperture used for optimized drawing of PnP labels only*/
+	GERBV_APERTURE_STATE_PNP_LABEL2
 } gerbv_aperture_state_t;
 
 /*! The circle aperture macro parameter indexes */
@@ -739,6 +751,8 @@ typedef struct {
     gerbv_net_t*         netlist;     /*!< an array of all geometric entities in the layer */
     gerbv_stats_t*       gerbv_stats; /*!< RS274X statistics for the layer */
     gerbv_drill_stats_t* drill_stats; /*!< Excellon drill statistics for the layer */
+    struct pnp_pub_context *pnp_common_ctx; /*!< !=NULL if layertype == GERBV_LAYERTYPE_PICKANDPLACE_TOP/BOT and socket enabled*/
+    gerbv_user_transformation_t *transform;
 } gerbv_image_t;
 
 /*!  Holds information related to an individual layer that is part of a project */
@@ -770,6 +784,8 @@ typedef struct {
     gchar*             execpath;                 /*!< the path to executed version of Gerbv */
     gchar*             execname;                 /*!< the path plus executible name for Gerbv */
     gchar*             project;                  /*!< the default name for the private project file */
+
+    struct pnp_manual_dev* pnp_dev;				/*!< used for syncing window with semi-automatic PP tool */
 } gerbv_project_t;
 
 /*! Color of layer */
@@ -790,6 +806,14 @@ typedef struct {
     gint     displayWidth;           /*!< the width of the scene (in pixels, or points depending on the surface type) */
     gint     displayHeight; /*!< the height of the scene (in pixels, or points depending on the surface type) */
     gboolean show_cross_on_drill_holes; /*!< TRUE to show cross on drill holes */
+    gboolean render_type_pf_override;
+    struct {
+    	double board_x, board_y;
+    	unsigned int color; // rgb 888
+    	unsigned int enabled:1;
+    	unsigned int to_draw_visible:1;
+    	unsigned int to_draw:1;
+    } center_ch;
 } gerbv_render_info_t;
 
 //! Allocate a new gerbv_image structure

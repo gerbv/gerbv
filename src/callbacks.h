@@ -49,6 +49,11 @@ typedef enum {
     LAYER_ALL_OFF  = -3,
 } toggle_layer;
 
+struct pnp_event_data;
+void callbacks_pnp_events(void *arg, struct pnp_event_data *event);
+void callbacks_pnp_ref_points_clicked(GtkMenuItem* menu_item, gpointer user_data);
+gboolean callbacks_parts_tree_button_press(GtkWidget* widget, GdkEventButton* event, gpointer user_data);
+
 void callbacks_new_project_activate(GtkMenuItem* menuitem, gpointer user_data);
 
 void open_project(char* project_filename);

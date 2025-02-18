@@ -750,6 +750,62 @@ draw_calc_pnp_mark_coords(struct gerbv_net* start_net, double* label_x, double* 
     return 1;
 }
 
+static void draw_center_ch_to_cairo_tgt(cairo_t* cairoTarget, gerbv_render_info_t*renderInfo,
+		gdouble pixelWidth, gdouble lineWidth, gdouble r)
+{
+	cairo_save(cairoTarget);
+	cairo_set_line_width(cairoTarget, pixelWidth * 2.0);
+	cairo_set_line_cap(cairoTarget, CAIRO_LINE_CAP_SQUARE);
+    cairo_set_source_rgba( cairoTarget, (double) (renderInfo->center_ch.color >> 16) / 255.0,
+    		(double) ((renderInfo->center_ch.color >> 8) & 0xff) / 255.0,
+			(double) ((renderInfo->center_ch.color) & 0xff) / 255.0,
+			1.0 );
+
+    cairo_move_to(cairoTarget, renderInfo->center_ch.board_x -r, renderInfo->center_ch.board_y - r);
+    cairo_rel_line_to(cairoTarget, r * 2.0, r * 2.0);
+    cairo_move_to(cairoTarget, renderInfo->center_ch.board_x - r, renderInfo->center_ch.board_y + r);
+    cairo_rel_line_to(cairoTarget, r * 2.0, r * -2.0);
+    cairo_stroke(cairoTarget);
+
+	cairo_set_line_cap(cairoTarget, CAIRO_LINE_CAP_ROUND);
+	cairo_set_line_width(cairoTarget, lineWidth);
+	cairo_restore(cairoTarget);
+}
+
+static void draw_pnp_label_cairo_tgt(struct gerbv_net *net, cairo_t *cairoTarget, gerbv_render_info_t*renderInfo,
+		double pnp_label_scale_x, double pnp_label_scale_y)
+{
+
+    double mark_x, mark_y;
+
+    if (draw_calc_pnp_mark_coords(net, &mark_x, &mark_y)) {
+        cairo_save(cairoTarget);
+
+        if (net->aperture_state == GERBV_APERTURE_STATE_PNP_LABEL2 && renderInfo->center_ch.color) {
+#if 0
+            cairo_set_source_rgba( cairoTarget, (double) 0.99,
+            		0.1,
+        			0.1,
+        			1.0 );
+#else
+            cairo_set_source_rgba( cairoTarget, (double) (renderInfo->center_ch.color >> 16) / 255.0,
+            		(double) ((renderInfo->center_ch.color >> 8) & 0xff) / 255.0,
+        			(double) ((renderInfo->center_ch.color) & 0xff) / 255.0,
+        			1.0 );
+#endif
+        }
+
+        cairo_set_font_size(cairoTarget, 0.05);
+        cairo_move_to(cairoTarget, mark_x, mark_y);
+        cairo_scale(cairoTarget, pnp_label_scale_x, pnp_label_scale_y);
+        cairo_show_text(cairoTarget, net->label->str);
+
+        cairo_restore(cairoTarget);
+    }
+}
+
+
+
 int
 draw_image_to_cairo_target(
     cairo_t* cairoTarget, gerbv_image_t* image, gdouble pixelWidth, enum draw_mode drawMode,
@@ -862,7 +918,7 @@ draw_image_to_cairo_target(
     oldLayer = image->layers;
     oldState = image->states;
 
-    const char* pnp_net_label_str_prev = NULL;
+    //const char* pnp_net_label_str_prev = NULL;
 
     for (net = image->netlist->next; net != NULL; net = gerbv_image_return_next_renderable_object(net)) {
 
@@ -950,25 +1006,10 @@ draw_image_to_cairo_target(
         if (drawMode != DRAW_SELECTIONS && net->label
             && (image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_TOP
                 || image->layertype == GERBV_LAYERTYPE_PICKANDPLACE_BOT)
-            && g_strcmp0(net->label->str, pnp_net_label_str_prev)) {
+			&& (net->aperture_state == GERBV_APERTURE_STATE_PNP_LABEL ||
+					net->aperture_state == GERBV_APERTURE_STATE_PNP_LABEL2) )
+        	draw_pnp_label_cairo_tgt(net, cairoTarget, renderInfo, pnp_label_scale_x, pnp_label_scale_y);
 
-            double mark_x, mark_y;
-
-            /* Add PNP text label only one time per
-             * net and if it is not selected. */
-            pnp_net_label_str_prev = net->label->str;
-
-            if (draw_calc_pnp_mark_coords(net, &mark_x, &mark_y)) {
-                cairo_save(cairoTarget);
-
-                cairo_set_font_size(cairoTarget, 0.05);
-                cairo_move_to(cairoTarget, mark_x, mark_y);
-                cairo_scale(cairoTarget, pnp_label_scale_x, pnp_label_scale_y);
-                cairo_show_text(cairoTarget, net->label->str);
-
-                cairo_restore(cairoTarget);
-            }
-        }
 
         /* step and repeat */
         gerbv_step_and_repeat_t* sr = &net->layer->stepAndRepeat;
@@ -1167,6 +1208,8 @@ draw_image_to_cairo_target(
                         }
                         break;
                     case GERBV_APERTURE_STATE_OFF: break;
+                    case GERBV_APERTURE_STATE_PNP_LABEL: break;
+                    case GERBV_APERTURE_STATE_PNP_LABEL2: break;
                     case GERBV_APERTURE_STATE_FLASH:
                         p = image->aperture[net->aperture]->parameter;
 
@@ -1242,13 +1285,21 @@ draw_image_to_cairo_target(
                         break;
                     default:
                         GERB_COMPILE_WARNING(
-                            _("Unknown aperture state: %s"), _(gerbv_aperture_type_name(net->aperture_state))
+                            _("Cairo: Unknown aperture state: %d, %s"),
+							net->aperture_state,
+							_(gerbv_aperture_type_name(net->aperture_state)) // this is not correct.
                         );
 
                         return 0;
                 }
             }
         }
+
+    }
+    if (renderInfo->center_ch.to_draw) {
+    	draw_center_ch_to_cairo_tgt(cairoTarget, renderInfo,
+    			pixelWidth, lineWidth, 0.03 + hole_cross_inc_px * pixelWidth); // 30mil
+    	renderInfo->center_ch.to_draw = 0;
     }
 
     /* restore the initial two state saves (one for layer, one for netstate)*/
