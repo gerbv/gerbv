@@ -70,6 +70,13 @@
 #define NUMBER_OF_DEFAULT_COLORS          18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
 
+#ifndef ENABLE_DXF
+static gboolean gerbv_export_dxf_file_from_image(const gchar* file_name, gerbv_image_t* input_img, gerbv_user_transformation_t* trans) {
+  GERB_FATAL_ERROR("DXF is not enabled. Reconfigure with the --enable-dxf flag and recompile.");
+  return FALSE;
+}
+#endif
+
 static void gerbv_print_help(void);
 
 static int
@@ -435,11 +442,12 @@ main(int argc, char* argv[]) {
         EXP_TYPE_RS274X,
         EXP_TYPE_DRILL,
         EXP_TYPE_IDRILL,
+        EXP_TYPE_DXF,
     };
     enum exp_type exportType              = EXP_TYPE_NONE;
-    const char*   export_type_names[]     = { "png", "pdf", "svg", "ps", "rs274x", "drill", "idrill", NULL };
+    const char*   export_type_names[]     = { "png", "pdf", "svg", "ps", "rs274x", "drill", "idrill", "dxf", NULL };
     const gchar*  export_def_file_names[] = { "output.png", "output.pdf", "output.svg", "output.ps",
-                                              "output.gbx", "output.cnc", "output.ncp", NULL };
+                                              "output.gbx", "output.cnc", "output.ncp", "output.dxf", NULL };
 
     const gchar* settings_schema_env = "GSETTINGS_SCHEMA_DIR";
 #ifdef WIN32
@@ -1028,6 +1036,7 @@ main(int argc, char* argv[]) {
                 break;
             case EXP_TYPE_RS274X:
             case EXP_TYPE_DRILL:
+            case EXP_TYPE_DXF:
             case EXP_TYPE_IDRILL:
                 if (!mainProject->file[0]->image) {
                     fprintf(stderr, _("A valid file was not loaded.\n"));
@@ -1057,6 +1066,11 @@ main(int argc, char* argv[]) {
                         break;
                     case EXP_TYPE_IDRILL:
                         gerbv_export_isel_drill_file_from_image(
+                            exportFilename, exportImage, &mainProject->file[0]->transform
+                        );
+                        break;
+                    case EXP_TYPE_DXF:
+                        gerbv_export_dxf_file_from_image(
                             exportFilename, exportImage, &mainProject->file[0]->transform
                         );
                         break;
@@ -1289,7 +1303,7 @@ gerbv_print_help(void) {
 
 #ifdef HAVE_GETOPT_LONG
     printf(
-        _("  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill>\n"
+        _("  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\n"
           "                          Export a rendered picture to a file with\n"
           "                          the specified format.\n")
     );
@@ -1297,7 +1311,7 @@ gerbv_print_help(void) {
     printf(
         _("  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
           "     rs274x|drill|        the specified format.\n"
-          "     idrill>\n")
+          "     idrill|dxf>\n")
     );
 #endif
 }
