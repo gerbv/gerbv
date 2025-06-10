@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  schedule:
+    # Every Tuesday at 3:04am, selected because it probably a slow
+    # time for the servers.
+    - cron: '4 3 * * 2'
 
 jobs:
   ci:
