@@ -89,7 +89,6 @@ jobs:
     - name: Remove debug and optimization and valgrind from coverage builds
       if: matrix.code_coverage
       run: |
-        find . -name Makefile | xargs sed -i 's/-O[0-9]/-O0/g' # No optimizations
         find . -name Makefile | xargs sed -i 's/-g /-g0 /g' # No debugging
         : > test/run_valgrind_tests.sh # No valgrind tests.
 
