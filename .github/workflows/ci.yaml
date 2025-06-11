@@ -16,7 +16,7 @@ on:
 
 jobs:
   ci:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         coverage: ["-coverage", ""] # Coverage build and a regular one
@@ -55,7 +55,7 @@ jobs:
 
     - name: Get requirements for configure and build
       run: |
-        sudo apt-get install autopoint libgtkmm-2.4-dev desktop-file-utils libc6-dbg
+        sudo apt-get install autopoint libgtkmm-2.4-dev desktop-file-utils libc6-dbg imagemagick bsdiff coreutils
 
     - name: Install coverage specific programs
       if: matrix.code_coverage

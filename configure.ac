@@ -392,7 +392,7 @@ AC_CHECK_FUNCS(strlwr)
 AC_CHECK_FUNCS(realpath canonicalize_file_name)
 libiberty_NEED_DECLARATION(canonicalize_file_name)
 
-AC_SUBST([GTK_CFLAGS_ISYSTEM], ['$(subst -I/usr/include/gtk-2.0,-isystem /usr/include/gtk-2.0,$(GTK_CFLAGS))'])
+AC_SUBST([GTK_CFLAGS_ISYSTEM], ['$(subst -I/usr/include/glib-2.0,-isystem /usr/include/glib-2.0,$(subst -I/usr/include/gtk-2.0,-isystem /usr/include/gtk-2.0,$(GTK_CFLAGS)))'])
 
 CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS $GTK_CFLAGS_ISYSTEM $CAIRO_CFLAGS"
 LIBS="$LIBS $GDK_PIXBUF_LIBS $GTK_LIBS $CAIRO_LIBS -lm"

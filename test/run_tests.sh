@@ -177,6 +177,10 @@ IM_CONVERT=${IM_CONVERT:-convert}
 IM_DISPLAY=${IM_DISPLAY:-display}
 IM_MONTAGE=${IM_MONTAGE:-montage}
 
+#bsdiff
+BSDIFF=${BSDIFF:-bsdiff}
+BASE64=${BASE64:-base64}
+
 # golden directories
 INDIR=${INDIR:-${srcdir}/inputs}
 OUTDIR=outputs
@@ -244,6 +248,9 @@ IM_COMPOSITE             ${IM_COMPOSITE}
 IM_CONVERT               ${IM_CONVERT}
 IM_DISPLAY               ${IM_DISPLAY}
 IM_MONTAGE               ${IM_MONTAGE}
+
+BSDIFF                   ${BSDIFF}
+BASE64                   ${BASE64}
 
 EOF
 
@@ -349,9 +356,13 @@ for t in $all_tests ; do
 	    else
 		echo "FAILED:  See ${errdir}"
 		mkdir -p ${errdir}
-		${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png
+		${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png || true
 		${IM_COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png
 		${IM_CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png
+		${BSDIFF} ${refpng} ${outpng} ${errdir}/diff.bsdiff
+		echo "To fix, type the following lines:\n\n\nbase64 -d >! diff.bsdiff << EOF"
+		${BASE64} ${errdir}/diff.bsdiff
+		echo "EOF\nbspatch ${refpng} new.png diff.bsdiff\nmv -f new.png ${refpng}\n\n"
 cat > ${errdir}/animate.sh << EOF
 #!/bin/sh
 ${IM_CONVERT} -label "%f" ${refpng} ${outpng} miff:- | \
