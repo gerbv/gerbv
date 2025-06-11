@@ -600,7 +600,7 @@ parse_drillfile(gerb_file_t* fd, gerbv_HID_Attribute* attr_list, int n_attr, int
 
                                 stats = image->drill_stats;
                                 for (int tool_num = TOOL_MIN; tool_num < TOOL_MAX; tool_num++) {
-                                    if (image->aperture && image->aperture[tool_num]) {
+                                    if (image->aperture[tool_num]) {
                                         /* First update stats.   Do this before changing drill dias.
                                          * Maybe also put error into stats? */
                                         size = image->aperture[tool_num]->parameter[0];
