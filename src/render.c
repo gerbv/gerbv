@@ -67,7 +67,7 @@
     if (DEBUG)  \
     printf
 
-gerbv_render_info_t screenRenderInfo;
+gerbv_render_info_t screenRenderInfo = { 0 };
 
 /* ------------------------------------------------------ */
 void
@@ -396,6 +396,16 @@ render_selection(void) {
 }
 
 /* ------------------------------------------------------ */
+
+static void render_center_ch_setup(gerbv_render_info_t *i)
+{
+    if ((i->scaleFactorX > 0.001) || (i->scaleFactorY > 0.001)) {
+        i->center_ch.board_x = i->lowerLeftX + (i->displayWidth / 2 / i->scaleFactorX);
+        i->center_ch.board_y = i->lowerLeftY + (i->displayHeight / 2 / i->scaleFactorY);
+        i->center_ch.to_draw_visible = 1;
+    }
+}
+
 void
 render_refresh_rendered_image_on_screen(void) {
     GdkCursor* cursor;
@@ -422,6 +432,9 @@ render_refresh_rendered_image_on_screen(void) {
          * This now allows drawing several layers on top of each other.
          * Higher layer numbers have higher priority in the Z-order.
          */
+        if (screenRenderInfo.center_ch.enabled)
+        	render_center_ch_setup(&screenRenderInfo);
+
         for (i = mainProject->last_loaded; i >= 0; i--) {
             if (mainProject->file[i]) {
                 cairo_t* cr;

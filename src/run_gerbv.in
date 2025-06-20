@@ -63,11 +63,11 @@ while test $# -gt 0 ; do
 			break
 			;;
 
-		-*)
-			echo "$0:  Unknown option $1"
-			echo "See $0 --help for more information."
-			exit 1
-			;;
+#		-*)
+#			echo "$0:  Unknown option $1"
+#			echo "See $0 --help for more information."
+#			exit 1
+#			;;
 
 		*)
 			break

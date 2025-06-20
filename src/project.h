@@ -30,6 +30,13 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+enum project_list_kwords {
+	PLKW_TRANSL = (1 << 0),
+	PLKW_VISIBLE = (1 << 1),
+	PLKW_MIRROR_XY = (1 << 2),
+	PLKW_COLOR = (1 << 3),
+};
+
 typedef struct project_list_t {
     int                    layerno;
     char*                  filename;
@@ -47,6 +54,8 @@ typedef struct project_list_t {
     char                   visible;
     gerbv_HID_Attribute*   attr_list;
     int                    n_attr;
+    unsigned int           keywords;
+    void*                  file_info; // to make update_layer() easier
     struct project_list_t* next;
 } project_list_t;
 

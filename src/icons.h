@@ -457,7 +457,7 @@ static const guchar pointer_data[] = {
     "\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0"
 };
 
-static const icon pointer = {
+static const icon __pointer = {
     .colorspace      = GDK_COLORSPACE_RGB,
     .has_alpha       = 1,
     .bits_per_sample = 8,

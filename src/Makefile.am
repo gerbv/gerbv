@@ -85,7 +85,7 @@ endif
 # 6. If any interfaces have been removed since the last public release, then
 #    set age to 0.
 #
-libgerbv_la_LDFLAGS = -version-info 1:9:0 -no-undefined $(CODE_COVERAGE_LIBS)
+libgerbv_la_LDFLAGS = -version-info 1:10:0 -no-undefined $(CODE_COVERAGE_LIBS)
 
 gerbv_SOURCES = \
 		attribute.c attribute.h \
