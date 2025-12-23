@@ -124,6 +124,12 @@ jobs:
         npx --package mini-cross@0.15.2 mc --no-tty website make -C gerbv.github.io
         find gerbv.github.io -type f -name '.gitignore' -exec rm {} \;
 
+    - name: Test for PAT from gerbv-buildbot
+      env:
+         GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
+      if: env.GERBV_BUILDBOT_PAT != null
+      run: echo "Actions finds a PAT != 0"
+
     - name: Deploy gerbv.github.io
       uses: JamesIves/github-pages-deploy-action@v4
       with:
