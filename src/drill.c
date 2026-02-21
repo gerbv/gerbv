@@ -1425,13 +1425,11 @@ header_again:
 	    if (c == 'L') {
 		dprintf ("    %s(): Detected a file that probably has "
 			"trailing zero suppression\n", __FUNCTION__);
-		if (state->autod)
-		    image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
+		image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
 	    } else {
 		dprintf ("    %s(): Detected a file that probably has "
 			"leading zero suppression\n", __FUNCTION__);
-		if (state->autod)
-		    image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
+		image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
 	    }
 
 	    if (state->autod && state->number_format != FMT_USER) {
@@ -1635,8 +1633,8 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 	if (c != EOF && 'Z' == gerb_fgetc(fd)) {
 	    switch (c) {
 	    case 'L':
+		image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
 		if (state->autod) {
-		    image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
 		    state->header_number_format =
 			state->number_format = FMT_00_0000;
 		    state->decimals = 4;
@@ -1644,8 +1642,8 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 		break;
 
 	    case 'T':
+		image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
 		if (state->autod) {
-		    image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
 		    state->header_number_format =
 			state->number_format = FMT_00_0000;
 		    state->decimals = 4;
