@@ -24,5 +24,14 @@
         }
 
     ],
-    "testPresets": []
+    "testPresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "configuration": "Debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
 }

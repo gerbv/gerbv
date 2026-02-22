@@ -328,9 +328,9 @@ for t in $all_tests ; do
 	    else
 		echo "FAILED:  See ${errdir}"
 		mkdir -p ${errdir}
-		${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png
-		${IM_COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png
-		${IM_CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png
+		${IM_COMPARE} ${refpng} ${outpng} ${errdir}/compare.png || true
+		${IM_COMPOSITE} ${refpng} ${outpng} -compose difference ${errdir}/composite.png || true
+		${IM_CONVERT} ${refpng} ${outpng} -compose difference -composite  -colorspace gray   ${errdir}/gray.png || true
 cat > ${errdir}/animate.sh << EOF
 #!/bin/sh
 ${IM_CONVERT} -label "%f" ${refpng} ${outpng} miff:- | \
