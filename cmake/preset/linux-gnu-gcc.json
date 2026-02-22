@@ -28,7 +28,13 @@
         }
 
     ],
-    "testPresets": [],
+    "testPresets": [
+        {
+            "name": "linux-gnu-gcc",
+            "configurePreset": "linux-gnu-gcc",
+            "inherits": "base"
+        }
+    ],
     "packagePresets": [
         {
             "name": "deb",

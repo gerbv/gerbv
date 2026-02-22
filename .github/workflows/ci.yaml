@@ -34,7 +34,7 @@ jobs:
     - name: Get requirements for configure and build
       run: |
         sudo apt-get update
-        sudo apt-get install cmake libgtkmm-2.4-dev desktop-file-utils libc6-dbg
+        sudo apt-get install cmake libgtkmm-2.4-dev desktop-file-utils libc6-dbg imagemagick
 
     - name: Install coverage specific programs
       if: matrix.code_coverage
@@ -72,6 +72,11 @@ jobs:
 
     - name: Build
       run: cmake --build build -j ${NUM_BUILD_JOBS}
+
+    - name: Run tests
+      if: "!matrix.code_coverage"
+      continue-on-error: true
+      run: ctest --preset linux-gnu-gcc -V
 
     - name: Reset coverage
       if: matrix.code_coverage

@@ -93,5 +93,8 @@ add_subdirectory(desktop)
 install(DIRECTORY example TYPE DOC) # Rename to examples
 install(DIRECTORY share/ TYPE DATA)
 
+enable_testing()
+add_subdirectory(test)
+
 # where to find our CMake modules
 include(Packing)
