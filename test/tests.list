@@ -210,6 +210,7 @@ LimeSDR-QPCIe_1v2-RoundHoles | LimeSDR-QPCIe_1v2-RoundHoles.drl
 Altium_inch_file_format | Altium_inch_file_format.drl
 Altium_file_format_inch | Altium_file_format_inch.drl
 Altium_file_format_inch_lz | Altium_file_format_inch_lz.drl
+Ruthie_V1R0-Plated | Ruthie_V1R0-Plated.drl
 
 # XNC files
 empty_xnc | empty.xnc
