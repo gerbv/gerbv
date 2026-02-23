@@ -101,10 +101,16 @@ typedef struct drill_state {
     
     /* in FMT_USER this specifies the number of digits before the
      * decimal point when doing trailing zero suppression.  Otherwise
-     * it is the number of digits *after* the decimal 
+     * it is the number of digits *after* the decimal
      * place in the file
      */
     int decimals;
+
+    /* When FILE_FORMAT=N:M is parsed, stores N (digits before decimal).
+     * Used to correctly set decimals when trailing zero suppression is
+     * later specified via INCH,LZ or METRIC,LZ, because decimals must be
+     * N (not M) in FMT_USER + trailing suppression mode. */
+    int digits_before;
 
 } drill_state_t;
 
@@ -1432,6 +1438,13 @@ header_again:
 		image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
 	    }
 
+	    if (!state->autod && state->number_format == FMT_USER
+	    &&  state->digits_before > 0 && c == 'L') {
+		/* FILE_FORMAT=N:M was seen; for trailing suppression,
+		 * decimals must be N (digits before decimal point). */
+		state->decimals = state->digits_before;
+	    }
+
 	    if (state->autod && state->number_format != FMT_USER) {
 		/* Default metric number format is 6-digit, 1 um
 		 * resolution.  The header number format (for T#C#
@@ -1564,7 +1577,7 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
   }
   eat_whitespace(fd);
   int len = -1;
-  gerb_fgetint(fd, &len);
+  int digits_before = gerb_fgetint(fd, &len);
   if (len < 1) {
     /* We've failed to read a number. */
     gerbv_stats_printf(
@@ -1596,6 +1609,7 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
   }
   state->header_number_format = state->number_format = FMT_USER;
   state->decimals = digits_after;
+  state->digits_before = digits_before;
   state->autod = 0;
   return 1;
 } /* drill_parse_header_is_metric_comment() */
@@ -1638,6 +1652,11 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 		    state->header_number_format =
 			state->number_format = FMT_00_0000;
 		    state->decimals = 4;
+		} else if (state->number_format == FMT_USER
+			&& state->digits_before > 0) {
+		    /* FILE_FORMAT=N:M was seen; for trailing suppression,
+		     * decimals must be N (digits before decimal point). */
+		    state->decimals = state->digits_before;
 		}
 		break;
 
@@ -1648,6 +1667,8 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 			state->number_format = FMT_00_0000;
 		    state->decimals = 4;
 		}
+		/* For TZ (leading suppression), decimals stays as M (digits
+		 * after decimal, already set by FILE_FORMAT parser). */
 		break;
 
 	    default:
