@@ -50,20 +50,24 @@ exportimage_extract_svg_inner_content (const gchar *svgText) {
 	const gchar *svgOpenEnd;
 	const gchar *svgClose;
 
-	if (svgText == NULL)
+	if (svgText == NULL) {
 		return NULL;
+	}
 
 	svgOpen = strstr (svgText, "<svg");
-	if (svgOpen == NULL)
+	if (svgOpen == NULL) {
 		return NULL;
+	}
 
 	svgOpenEnd = strchr (svgOpen, '>');
-	if (svgOpenEnd == NULL)
+	if (svgOpenEnd == NULL) {
 		return NULL;
+	}
 
 	svgClose = g_strrstr (svgOpenEnd, "</svg>");
-	if (svgClose == NULL || svgClose <= svgOpenEnd)
+	if (svgClose == NULL || svgClose <= svgOpenEnd) {
 		return NULL;
+	}
 
 	return g_strndup (svgOpenEnd + 1, svgClose - (svgOpenEnd + 1));
 }
@@ -72,10 +76,15 @@ static void
 exportimage_append_svg_background (GString *svgOut, gerbv_project_t *gerbvProject) {
 	GdkColor *bg = &gerbvProject->background;
 
-	/* Keep legacy vector-export behavior: skip solid white/black backgrounds. */
+	/*
+	 * Keep background behavior aligned with existing vector export: we only emit
+	 * a background rectangle for non-white/non-black colors, so pure white/black
+	 * stay transparent like the non-layered SVG path.
+	 */
 	if ((bg->red == 0xffff && bg->green == 0xffff && bg->blue == 0xffff)
-	 || (bg->red == 0x0000 && bg->green == 0x0000 && bg->blue == 0x0000))
+	 || (bg->red == 0x0000 && bg->green == 0x0000 && bg->blue == 0x0000)) {
 		return;
+	}
 
 	g_string_append_printf (svgOut,
 		"  <rect x=\"0\" y=\"0\" width=\"100%%\" height=\"100%%\" fill=\"rgb(%u,%u,%u)\" />\n",
@@ -120,8 +129,9 @@ exportimage_render_svg_layers_from_project (gerbv_project_t *gerbvProject,
 		gchar *layerLabelEscaped = NULL;
 		gint tmpFd;
 
-		if (fileInfo == NULL || !fileInfo->isVisible)
+		if (fileInfo == NULL || !fileInfo->isVisible) {
 			continue;
+		}
 
 		tmpFd = g_file_open_tmp ("gerbv-svg-layer-XXXXXX.svg", &tmpSvgName, NULL);
 		if (tmpFd < 0 || tmpSvgName == NULL) {
@@ -164,8 +174,9 @@ exportimage_render_svg_layers_from_project (gerbv_project_t *gerbvProject,
 		g_unlink (tmpSvgName);
 		g_free (tmpSvgName);
 
-		if (hadError)
+		if (hadError) {
 			break;
+		}
 	}
 
 	g_string_append (svgOut, "</svg>\n");
