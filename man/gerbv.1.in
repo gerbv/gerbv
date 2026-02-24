@@ -86,6 +86,13 @@ the image to this size.
 .TP
 .BI -x<png/pdf/ps/svg/rs274x/drill>|--export=<png/pdf/ps/svg/rs274x/drill>   
 Export to a file and set the format for the output file.
+.TP
+.B --svg-layers
+Export visible layers as Inkscape SVG layers. This option is only used with
+.B -x svg
+or
+.B --export=svg
+.
 
 .SS GTK Options
 .BI --gtk-module= MODULE

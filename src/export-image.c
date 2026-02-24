@@ -42,6 +42,140 @@
 #include <cairo-pdf.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>
+#include <glib/gstdio.h>
+
+static gchar *
+exportimage_extract_svg_inner_content (const gchar *svgText) {
+	const gchar *svgOpen;
+	const gchar *svgOpenEnd;
+	const gchar *svgClose;
+
+	if (svgText == NULL)
+		return NULL;
+
+	svgOpen = strstr (svgText, "<svg");
+	if (svgOpen == NULL)
+		return NULL;
+
+	svgOpenEnd = strchr (svgOpen, '>');
+	if (svgOpenEnd == NULL)
+		return NULL;
+
+	svgClose = g_strrstr (svgOpenEnd, "</svg>");
+	if (svgClose == NULL || svgClose <= svgOpenEnd)
+		return NULL;
+
+	return g_strndup (svgOpenEnd + 1, svgClose - (svgOpenEnd + 1));
+}
+
+static void
+exportimage_append_svg_background (GString *svgOut, gerbv_project_t *gerbvProject) {
+	GdkColor *bg = &gerbvProject->background;
+
+	/* Keep legacy vector-export behavior: skip solid white/black backgrounds. */
+	if ((bg->red == 0xffff && bg->green == 0xffff && bg->blue == 0xffff)
+	 || (bg->red == 0x0000 && bg->green == 0x0000 && bg->blue == 0x0000))
+		return;
+
+	g_string_append_printf (svgOut,
+		"  <rect x=\"0\" y=\"0\" width=\"100%%\" height=\"100%%\" fill=\"rgb(%u,%u,%u)\" />\n",
+		bg->red / 257, bg->green / 257, bg->blue / 257);
+}
+
+static void
+exportimage_render_layer_to_svg_file (gerbv_fileinfo_t *fileInfo,
+		gerbv_render_info_t *renderInfo, const gchar *filename) {
+	cairo_surface_t *cSurface = cairo_svg_surface_create (filename,
+		renderInfo->displayWidth, renderInfo->displayHeight);
+	cairo_t *cairoTarget = cairo_create (cSurface);
+
+	gerbv_render_cairo_set_scale_and_translation (cairoTarget, renderInfo);
+	gerbv_render_layer_to_cairo_target_without_transforming (cairoTarget,
+		fileInfo, renderInfo, FALSE);
+
+	cairo_destroy (cairoTarget);
+	cairo_surface_destroy (cSurface);
+}
+
+static void
+exportimage_render_svg_layers_from_project (gerbv_project_t *gerbvProject,
+		gerbv_render_info_t *renderInfo, gchar const *filename) {
+	GString *svgOut = g_string_new (NULL);
+	gboolean hadError = FALSE;
+	int i;
+
+	g_string_append (svgOut, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	g_string_append_printf (svgOut,
+		"<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\" version=\"1.1\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
+		renderInfo->displayWidth, renderInfo->displayHeight,
+		renderInfo->displayWidth, renderInfo->displayHeight);
+
+	exportimage_append_svg_background (svgOut, gerbvProject);
+
+	for (i = gerbvProject->last_loaded; i >= 0; i--) {
+		gerbv_fileinfo_t *fileInfo = gerbvProject->file[i];
+		gchar *tmpSvgName = NULL;
+		gchar *tmpSvgText = NULL;
+		gchar *innerSvg = NULL;
+		gchar *layerLabelEscaped = NULL;
+		gint tmpFd;
+
+		if (fileInfo == NULL || !fileInfo->isVisible)
+			continue;
+
+		tmpFd = g_file_open_tmp ("gerbv-svg-layer-XXXXXX.svg", &tmpSvgName, NULL);
+		if (tmpFd < 0 || tmpSvgName == NULL) {
+			GERB_COMPILE_ERROR (_("Exporting error to file \"%s\""), filename);
+			hadError = TRUE;
+			g_free (tmpSvgName);
+			break;
+		}
+		close (tmpFd);
+
+		exportimage_render_layer_to_svg_file (fileInfo, renderInfo, tmpSvgName);
+
+		if (!g_file_get_contents (tmpSvgName, &tmpSvgText, NULL, NULL)) {
+			GERB_COMPILE_ERROR (_("Exporting error to file \"%s\""), filename);
+			hadError = TRUE;
+			goto cleanup_layer_export;
+		}
+
+		innerSvg = exportimage_extract_svg_inner_content (tmpSvgText);
+		if (innerSvg == NULL) {
+			GERB_COMPILE_ERROR (_("Exporting error to file \"%s\""), filename);
+			hadError = TRUE;
+			goto cleanup_layer_export;
+		}
+
+		layerLabelEscaped = g_markup_escape_text (
+			fileInfo->name ? fileInfo->name : _("Unnamed layer"), -1);
+
+		g_string_append_printf (svgOut,
+			"  <g inkscape:groupmode=\"layer\" inkscape:label=\"%s\">\n",
+			layerLabelEscaped);
+		g_string_append (svgOut, innerSvg);
+		g_string_append (svgOut, "\n");
+		g_string_append (svgOut, "  </g>\n");
+
+	cleanup_layer_export:
+		g_free (layerLabelEscaped);
+		g_free (innerSvg);
+		g_free (tmpSvgText);
+		g_unlink (tmpSvgName);
+		g_free (tmpSvgName);
+
+		if (hadError)
+			break;
+	}
+
+	g_string_append (svgOut, "</svg>\n");
+
+	if (!hadError && !g_file_set_contents (filename, svgOut->str, svgOut->len, NULL)) {
+		GERB_COMPILE_ERROR (_("Exporting error to file \"%s\""), filename);
+	}
+
+	g_string_free (svgOut, TRUE);
+}
 
 void exportimage_render_to_surface_and_destroy (gerbv_project_t *gerbvProject,
 		cairo_surface_t *cSurface, gerbv_render_info_t *renderInfo, gchar const* filename) {
@@ -119,13 +253,30 @@ void gerbv_export_postscript_file_from_project (gerbv_project_t *gerbvProject, g
 
 void gerbv_export_svg_file_from_project_autoscaled (gerbv_project_t *gerbvProject, gchar const* filename) {
 	gerbv_render_info_t renderInfo = gerbv_export_autoscale_project(gerbvProject);
-	gerbv_export_svg_file_from_project (gerbvProject, &renderInfo, filename);
+	gerbv_export_svg_file_from_project_with_options (gerbvProject, &renderInfo, filename, FALSE);
 }
 
 void gerbv_export_svg_file_from_project (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,
 		gchar const* filename) {
+	gerbv_export_svg_file_from_project_with_options (gerbvProject, renderInfo, filename, FALSE);
+}
+
+void gerbv_export_svg_file_from_project_autoscaled_with_options (gerbv_project_t *gerbvProject,
+		gchar const* filename, gboolean exportLayersAsSvgLayers) {
+	gerbv_render_info_t renderInfo = gerbv_export_autoscale_project(gerbvProject);
+	gerbv_export_svg_file_from_project_with_options (gerbvProject, &renderInfo, filename,
+		exportLayersAsSvgLayers);
+}
+
+void gerbv_export_svg_file_from_project_with_options (gerbv_project_t *gerbvProject,
+		gerbv_render_info_t *renderInfo, gchar const* filename,
+		gboolean exportLayersAsSvgLayers) {
+	if (exportLayersAsSvgLayers) {
+		exportimage_render_svg_layers_from_project (gerbvProject, renderInfo, filename);
+		return;
+	}
+
 	cairo_surface_t *cSurface = cairo_svg_surface_create (filename, renderInfo->displayWidth,
 								renderInfo->displayHeight);
       exportimage_render_to_surface_and_destroy (gerbvProject, cSurface, renderInfo, filename);
 }
-
