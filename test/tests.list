@@ -212,5 +212,8 @@ Altium_file_format_inch | Altium_file_format_inch.drl
 Altium_file_format_inch_lz | Altium_file_format_inch_lz.drl
 Ruthie_V1R0-Plated | Ruthie_V1R0-Plated.drl
 
+# Gerber X2 attribute commands (TF, TA, TO, TD) should be silently ignored
+test-gerber-x2-attributes | test-gerber-x2-attributes.gbx
+
 # XNC files
 empty_xnc | empty.xnc
