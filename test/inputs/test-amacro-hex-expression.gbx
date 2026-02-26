@@ -1,0 +1,12 @@
+G04 Test for gerbv issue 253 - hex float ambiguity*
+G04 0X25.4+90 must parse as 0 mult 25.4+90 = 90 degrees*
+%MOIN*%
+%FSLAX34Y34*%
+%IPPOS*%
+%AMMACRO10*
+21,1,0.0500,0.1000,0.0000,0.0000,0X25.4+90*
+%
+%ADD10MACRO10*%
+G54D10*
+G01X0005000Y0005000D03*
+M02*

@@ -179,11 +179,21 @@ gerb_fgetint(gerb_file_t *fd, int *len)
 double
 gerb_fgetdouble(gerb_file_t *fd)
 {
+    char *start = fd->data + fd->ptr;
     double result;
     char *end;
 
-    errno = 0;    
-    result = strtod(fd->data + fd->ptr, &end);
+    /* Prevent strtod from consuming hex float notation (0x.../0X...).
+     * In Gerber aperture macros, x/X is the multiplication operator,
+     * so "0X25.4" must parse as "0" followed by "X25.4", not as a
+     * hexadecimal floating-point literal. */
+    if (start[0] == '0' && (start[1] == 'x' || start[1] == 'X')) {
+	fd->ptr += 1;
+	return 0.0;
+    }
+
+    errno = 0;
+    result = strtod(start, &end);
     if (errno) {
 	GERB_COMPILE_ERROR(_("Failed to read double"));
 	return 0.0;
