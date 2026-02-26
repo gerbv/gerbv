@@ -47,9 +47,10 @@ export_rs274x_write_macro (FILE *fd, gerbv_aperture_t *currentAperture,
 	fprintf(fd, "%%AMMACRO%d*\n",apertureNumber);
 	while (ls != NULL) {
 		if (ls->type == GERBV_APTYPE_MACRO_CIRCLE) {
-			fprintf(fd, "1,%d,%f,%f,%f*\n",(int) ls->parameter[CIRCLE_EXPOSURE],
+			fprintf(fd, "1,%d,%f,%f,%f,%f*\n",(int) ls->parameter[CIRCLE_EXPOSURE],
 				ls->parameter[CIRCLE_DIAMETER],ls->parameter[CIRCLE_CENTER_X],
-				ls->parameter[CIRCLE_CENTER_Y]);
+				ls->parameter[CIRCLE_CENTER_Y],
+				ls->parameter[CIRCLE_ROTATION]);
 		}
 		else if (ls->type == GERBV_APTYPE_MACRO_OUTLINE) {
 			int pointCounter;

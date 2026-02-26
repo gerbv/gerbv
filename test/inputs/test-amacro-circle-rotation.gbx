@@ -1,0 +1,18 @@
+G04 Test for gerbv issue 254 - circle primitive rotation*
+G04 Four off-center circles rotated 0/90/180/270 form a cross*
+%MOIN*%
+%FSLAX34Y34*%
+%IPPOS*%
+G04 Single macro with four circle primitives*
+G04 Each circle: 0.10in dia, center at (0.25,0), rotated*
+G04 Without rotation fix all four render at (0.25,0)*
+%AMCROSS*
+1,1,0.1000,0.2500,0.0000,0*
+1,1,0.1000,0.2500,0.0000,90*
+1,1,0.1000,0.2500,0.0000,180*
+1,1,0.1000,0.2500,0.0000,270*
+%
+%ADD10CROSS*%
+G54D10*
+G01X05000Y05000D03*
+M02*
