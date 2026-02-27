@@ -35,7 +35,11 @@ with Cairo) it can be specified as an #RRGGBBAA code. Use multiple
 \-f flags to set the color for multiple layers.
 .TP
 .BI -l\ <filename>|--log=<filename>
-All error messages etc are stored in a file with filename \fI<filename>\fP.
+Write all messages (with severity prefixes) to \fI<filename>\fP in addition
+to stderr.
+.TP
+.BI -q|--quiet
+Suppress note-level and debug messages on stderr and in the log file.
 .TP
 .BI -t\ <filename>|--tools=<filename>
 Read Excellon tools from the file \fI<filename>\fP.
