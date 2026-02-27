@@ -547,7 +547,9 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	GtkTooltips *tooltips;
 	GtkWidget *label;
 	GtkWidget *hbox;
+	GtkWidget *svg_layers_check;
 	static gint dpi = 0;
+	static gboolean svg_layers = FALSE;
 	
 	file_index = callbacks_get_selected_row_index ();
 	if (file_index < 0) {
@@ -568,10 +570,14 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 
 	hbox = gtk_hbox_new (0, 0);
 	spin_but = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range (0, 0, 1));
+	svg_layers_check = gtk_check_button_new_with_label (_("Export as Inkscape layers"));
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (svg_layers_check), svg_layers);
 	label = gtk_label_new ("");
 	tooltips = gtk_tooltips_new ();
 	gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(spin_but), 0, 0, 1);
 	gtk_box_pack_end (GTK_BOX(hbox), label, 0, 0, 5);
+	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
+			svg_layers_check, 0, 0, 2);
 	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
 			hbox, 0, 0, 2);
 
@@ -633,6 +639,10 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			error_visible_layers = TRUE;
 			break;
 		}
+
+		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(svg_layers_check),
+				_("Create one Inkscape layer per visible gerber layer"), NULL);
+		gtk_widget_show_all (svg_layers_check);
 
 
 		break;
@@ -781,6 +791,8 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	if (gtk_dialog_run (GTK_DIALOG(screen.win.gerber)) == GTK_RESPONSE_ACCEPT) {
 		new_file_name = gtk_file_chooser_get_filename (file_chooser_p);
 		dpi = gtk_spin_button_get_value_as_int (spin_but);
+		svg_layers = gtk_toggle_button_get_active (
+				GTK_TOGGLE_BUTTON (svg_layers_check));
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
@@ -804,8 +816,8 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 				mainProject, new_file_name);
 		break;
 	case CALLBACKS_SAVE_FILE_SVG:
-		gerbv_export_svg_file_from_project_autoscaled (
-				mainProject, new_file_name);
+		gerbv_export_svg_file_from_project_autoscaled_with_options (
+				mainProject, new_file_name, svg_layers);
 		break;
 	case CALLBACKS_SAVE_FILE_DXF:
 #if HAVE_LIBDXFLIB
