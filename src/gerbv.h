@@ -969,12 +969,29 @@ gerbv_export_svg_file_from_project_autoscaled (
 		gchar const* filename  /*!< the filename for the exported   file */
 );
 
+//! Render a project to a SVG file, optionally exporting visible layers as Inkscape layers
+void
+gerbv_export_svg_file_from_project_autoscaled_with_options (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		gchar const* filename, /*!< the filename for the exported file */
+		gboolean exportLayersAsSvgLayers /*!< TRUE to emit Inkscape layer groups */
+);
+
 //! Render a project to a   file using user-specified render info
 void
 gerbv_export_svg_file_from_project (
 		gerbv_project_t *gerbvProject, /*!< the project to render */
 		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
 		gchar const* filename /*!< the filename for the exported   file */
+);
+
+//! Render a project to a SVG file using user-specified render info and export options
+void
+gerbv_export_svg_file_from_project_with_options (
+		gerbv_project_t *gerbvProject, /*!< the project to render */
+		gerbv_render_info_t *renderInfo, /*!< the render settings for the rendered image */
+		gchar const* filename, /*!< the filename for the exported file */
+		gboolean exportLayersAsSvgLayers /*!< TRUE to emit Inkscape layer groups */
 );
 
 //! Export an image to a new file in DXF format

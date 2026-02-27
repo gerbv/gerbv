@@ -1833,6 +1833,17 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    *line_num_p, fd->filename);
 	}
 	break;
+    /* Gerber X2 attribute commands (TF, TA, TO, TD) — metadata only, skip silently */
+    case A2I('T','F'): /* File Attribute */
+    case A2I('T','A'): /* Aperture Attribute */
+    case A2I('T','O'): /* Object Attribute */
+    case A2I('T','D'): /* Delete Attribute */
+	gerbv_stats_printf(error_list, GERBV_MESSAGE_NOTE, -1,
+		_("Ignoring Gerber X2 attribute %%%s%s%% "
+		    "at line %ld in file \"%s\""),
+		gerbv_escape_char(op[0]), gerbv_escape_char(op[1]),
+		*line_num_p, fd->filename);
+	break;
     default:
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		_("Unknown RS-274X extension found %%%s%s%% "

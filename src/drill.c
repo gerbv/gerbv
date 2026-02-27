@@ -112,6 +112,10 @@ typedef struct drill_state {
      * N (not M) in FMT_USER + trailing suppression mode. */
     int digits_before;
 
+    /* Routing mode state (G00/G01 + M15/M16/M17) */
+    drill_g_code_t route_mode;  /* DRILL_G_DRILL (default), DRILL_G_ROUT, or DRILL_G_LINEARMOVE */
+    gboolean       tool_down;   /* TRUE after M15, FALSE after M16/M17 */
+
 } drill_state_t;
 
 /* Local function prototypes */
@@ -133,6 +137,11 @@ static void drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 				gerbv_image_t *image, drill_state_t *state,
 				unsigned int file_line);
 static drill_state_t *new_state(drill_state_t *state);
+static gerbv_net_t *drill_add_route_segment(gerbv_image_t *image,
+				drill_state_t *state,
+				gerbv_drill_stats_t *stats,
+				gerbv_net_t *curr_net,
+				double prev_x, double prev_y);
 static double read_double(gerb_file_t *fd, number_fmt_t fmt,
 				gerbv_omit_zeros_t omit_zeros, int decimals);
 static void eat_line(gerb_file_t *fd);
@@ -283,6 +292,70 @@ drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state,
     bbox->right  = curr_net->start_x + r;
     bbox->bottom = curr_net->start_y - r;
     bbox->top    = curr_net->start_y + r;
+
+    drill_update_image_info_min_max_from_bbox(image->info, bbox);
+
+    return curr_net;
+}
+
+/*
+ * Adds a routed line segment (G00/G01 with tool down) to the drawing.
+ * Similar to drill_add_drill_hole but creates a line (APERTURE_STATE_ON)
+ * instead of a flash, with start and stop coordinates.
+ */
+static gerbv_net_t *
+drill_add_route_segment(gerbv_image_t *image, drill_state_t *state,
+		gerbv_drill_stats_t *stats, gerbv_net_t *curr_net,
+		double prev_x, double prev_y)
+{
+    gerbv_render_size_t *bbox;
+    double r;
+    double start_x, start_y, stop_x, stop_y;
+
+    curr_net->next = g_new0(gerbv_net_t, 1);
+    if (curr_net->next == NULL)
+	GERB_FATAL_ERROR("malloc curr_net->next failed in %s()",
+			__FUNCTION__);
+
+    curr_net = curr_net->next;
+    curr_net->layer = image->layers;
+    curr_net->state = image->states;
+
+    start_x = prev_x;
+    start_y = prev_y;
+    stop_x = state->curr_x;
+    stop_y = state->curr_y;
+
+    if (state->unit == GERBV_UNIT_MM) {
+	/* Convert to inches -- internal units */
+	start_x /= 25.4;
+	start_y /= 25.4;
+	stop_x /= 25.4;
+	stop_y /= 25.4;
+	curr_net->state->unit = GERBV_UNIT_INCH;
+    }
+
+    curr_net->start_x = start_x;
+    curr_net->start_y = start_y;
+    curr_net->stop_x = stop_x;
+    curr_net->stop_y = stop_y;
+    curr_net->aperture = state->current_tool;
+    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+    curr_net->interpolation = GERBV_INTERPOLATION_LINEARx1;
+
+    /* Check if aperture is set. Ignore the below instead of
+       causing SEGV... */
+    if (image->aperture[state->current_tool] == NULL)
+	return curr_net;
+
+    bbox = &curr_net->boundingBox;
+    r = image->aperture[state->current_tool]->parameter[0] / 2;
+
+    /* Set boundingBox covering both endpoints + tool radius */
+    bbox->left   = MIN(start_x, stop_x) - r;
+    bbox->right  = MAX(start_x, stop_x) + r;
+    bbox->bottom = MIN(start_y, stop_y) - r;
+    bbox->top    = MAX(start_y, stop_y) + r;
 
     drill_update_image_info_min_max_from_bbox(image->info, bbox);
 
@@ -470,7 +543,16 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    switch (g_code = drill_parse_G_code(fd, image, file_line)) {
 
 	    case DRILL_G_DRILL :
-		/* Drill mode */
+		/* Drill mode - reset routing state */
+		state->route_mode = DRILL_G_DRILL;
+		state->tool_down = FALSE;
+		break;
+
+	    case DRILL_G_ROUT :         /* G00 - rapid positioning */
+		state->route_mode = DRILL_G_ROUT;
+		break;
+	    case DRILL_G_LINEARMOVE :   /* G01 - linear routing */
+		state->route_mode = DRILL_G_LINEARMOVE;
 		break;
 
 	    case DRILL_G_SLOT : {
@@ -683,6 +765,15 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    case DRILL_M_TOOLTIPCHECK :
 		break;
 
+	    case DRILL_M_ZAXISROUTEPOSITIONDEPTHCTRL: /* M14 */
+	    case DRILL_M_ZAXISROUTEPOSITION:          /* M15 */
+		state->tool_down = TRUE;
+		break;
+	    case DRILL_M_RETRACTCLAMPING:             /* M16 */
+	    case DRILL_M_RETRACTNOCLAMPING:           /* M17 */
+		state->tool_down = FALSE;
+		break;
+
 	    case DRILL_M_END :
 		/* M00 has optional arguments */
 		eat_line(fd);
@@ -792,6 +883,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    break;
 	case 'T':
 	    drill_parse_T_code(fd, state, image, file_line);
+	    state->route_mode = DRILL_G_DRILL;
+	    state->tool_down = FALSE;
 	    break;
 	case 'V' :
 	    gerb_ungetc (fd);
@@ -807,13 +900,30 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    break;
 
 	case 'X':
-	case 'Y':
-	    /* Hole coordinate found. Do some parsing */
+	case 'Y': {
+	    double prev_x = state->curr_x;
+	    double prev_y = state->curr_y;
+
+	    /* Parse the coordinate(s) */
 	    drill_parse_coordinate(fd, read, image, state, file_line);
-	    
-	    /* add the new drill hole */
-	    curr_net = drill_add_drill_hole (image, state, stats, curr_net);
+
+	    if ((state->route_mode == DRILL_G_ROUT ||
+		 state->route_mode == DRILL_G_LINEARMOVE) && !state->tool_down) {
+		/* Routing mode, tool up: reposition only, no geometry */
+		break;
+	    }
+
+	    if ((state->route_mode == DRILL_G_LINEARMOVE ||
+		 state->route_mode == DRILL_G_ROUT) && state->tool_down) {
+		/* Routing mode, tool down: create line segment */
+		curr_net = drill_add_route_segment(image, state, stats,
+			curr_net, prev_x, prev_y);
+	    } else {
+		/* Drill mode (default): create flash hole */
+		curr_net = drill_add_drill_hole(image, state, stats, curr_net);
+	    }
 	    break;
+	}
 
 	case '%':
 	    state->curr_section = DRILL_DATA;
@@ -1337,6 +1447,10 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 1:
 	stats->M01++;
 	break;
+    case 14: break;  /* M14 - Z-axis route position with depth control */
+    case 15: break;  /* M15 - Z-axis route position (tool down) */
+    case 16: break;  /* M16 - Retract with clamping */
+    case 17: break;  /* M17 - Retract without clamping */
     case 18:
 	stats->M18++;
 	break;
@@ -1873,6 +1987,8 @@ new_state(drill_state_t *state)
 	state->header_number_format = state->number_format = FMT_00_0000; /* i. e. INCH */
 	state->autod = 1;
 	state->decimals = 4;
+	state->route_mode = DRILL_G_DRILL;
+	state->tool_down = FALSE;
     }
 
     return state;

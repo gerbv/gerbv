@@ -175,6 +175,7 @@ test-aperture-obround-1  |  test-aperture-obround-1.gbx
 test-aperture-polygon-flash-1  |  test-aperture-polygon-flash-1.gbx
 test-aperture-macro-line21-rotation  |  test-aperture-macro-line21-rotation.gbx
 test-amacro-circle-rotation  |  test-amacro-circle-rotation.gbx
+test-amacro-hex-expression  |  test-amacro-hex-expression.gbx
 test-polygon-fill-1  |  test-polygon-fill-1.gbx
 test-circular-interpolation-1           |  test-circular-interpolation-1.gbx
 test-circular-interpolation-mq-ccw      |  test-circular-interpolation-mq-ccw.gbx
@@ -212,6 +213,12 @@ Altium_inch_file_format | Altium_inch_file_format.drl
 Altium_file_format_inch | Altium_file_format_inch.drl
 Altium_file_format_inch_lz | Altium_file_format_inch_lz.drl
 Ruthie_V1R0-Plated | Ruthie_V1R0-Plated.drl
+
+# Excellon routing/milling (G00/G01 + M15/M16/M17)
+test-drill-route-milling | test-drill-route-milling.exc
+
+# Gerber X2 attribute commands (TF, TA, TO, TD) should be silently ignored
+test-gerber-x2-attributes | test-gerber-x2-attributes.gbx
 
 # XNC files
 empty_xnc | empty.xnc
