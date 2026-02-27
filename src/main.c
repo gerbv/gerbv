@@ -145,6 +145,7 @@ const struct option longopts[] = {
     {"units",           required_argument,  NULL,    'u'},
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
+    {"svg-layers",      no_argument,        &longopt_val, 3},
     {"geometry",        required_argument,  &longopt_val, 1},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",      required_argument,  &longopt_val, 2},
@@ -435,6 +436,7 @@ main(int argc, char *argv[])
     int unit_flag_counter;
     gboolean initial_mirror_x = FALSE;
     gboolean initial_mirror_y = FALSE;
+    gboolean svgLayers = FALSE;
     const gchar *exportFilename = NULL;
     gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
 	   userSuppliedWidth=0, userSuppliedHeight=0,
@@ -612,6 +614,9 @@ main(int argc, char *argv[])
 		    break;
 		}
 		*/
+		break;
+	    case 3: /* svg-layers */
+		svgLayers = TRUE;
 		break;
 	    default:
 		break;
@@ -1065,8 +1070,8 @@ main(int argc, char *argv[])
 			    &renderInfo, exportFilename);
 	    break;
 	case EXP_TYPE_SVG:
-	    gerbv_export_svg_file_from_project(mainProject,
-			    &renderInfo, exportFilename);
+	    gerbv_export_svg_file_from_project_with_options(mainProject,
+			    &renderInfo, exportFilename, svgLayers);
 	    break;
 	case EXP_TYPE_PS:
 	    gerbv_export_postscript_file_from_project(mainProject,
@@ -1350,11 +1355,17 @@ gerbv_print_help(void)
 "  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill>\n"
 "                          Export a rendered picture to a file with\n"
 "                          the specified format.\n"));
+	printf(_(
+"      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
+"                          Only used with --export=svg.\n"));
 #else
 	printf(_(
 "  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
 "     rs274x|drill|        the specified format.\n"
 "     idrill>\n"));
+	printf(_(
+"      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
+"                          Only used with -xsvg.\n"));
 #endif
 
 }
