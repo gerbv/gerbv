@@ -1,0 +1,31 @@
+; Version : LOCAL
+; Job     :
+; User    :
+; Date    : Tue Nov 18 10:00:43 2025
+; Format  : 3.3 / Absolute / MM / Leading
+; Contents: Thru / Mill / Plated
+M48
+METRIC,TZ
+FMAT,2
+ICI,OFF
+T11C0.800
+%
+M71
+G90
+G93X0Y0
+T11
+G00X54000Y2600
+M15
+G01X55650Y4250
+X57300Y2600
+M16
+G00X55950Y3750
+M15
+G01X55350
+M16
+G00X55650Y6800
+M15
+G01Y3846
+M17
+T00
+M30
