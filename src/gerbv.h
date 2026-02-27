@@ -177,6 +177,7 @@ typedef enum {
 		CIRCLE_DIAMETER,
 		CIRCLE_CENTER_X,
 		CIRCLE_CENTER_Y,
+		CIRCLE_ROTATION,
 } gerbv_aptype_macro_circle_index_t;
 
 typedef enum {

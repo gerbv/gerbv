@@ -408,6 +408,8 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 			draw_update_macro_exposure (cairoTarget,
 					clearOperator, darkOperator,
 					ls->parameter[CIRCLE_EXPOSURE]);
+			cairo_rotate (cairoTarget, DEG2RAD(
+					ls->parameter[CIRCLE_ROTATION]));
 			cairo_translate (cairoTarget,
 					ls->parameter[CIRCLE_CENTER_X],
 					ls->parameter[CIRCLE_CENTER_Y]);

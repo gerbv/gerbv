@@ -550,6 +550,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			if (ls->type == GERBV_APTYPE_MACRO_CIRCLE) {
 			    offsetx=ls->parameter[CIRCLE_CENTER_X];
 			    offsety=ls->parameter[CIRCLE_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[CIRCLE_ROTATION]));
 			    widthx=widthy=ls->parameter[CIRCLE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_OUTLINE) {
 			    int pointCounter,numberOfPoints;
@@ -2013,7 +2015,7 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 	    case 1:
 		dprintf("  Aperture macro circle [1] (");
 		type = GERBV_APTYPE_MACRO_CIRCLE;
-		nuf_parameters = 4;
+		nuf_parameters = 5;
 		break;
 	    case 3:
 		break;
@@ -2103,7 +2105,14 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 					nuf_parameters, s->capacity);
 			nuf_parameters = s->capacity;
 		}
-		memcpy(sam->parameter, s->stack, 
+		/* Don't read beyond what was actually pushed for this
+		 * primitive.  The Gerber spec allows trailing optional
+		 * parameters (e.g. circle rotation) to be omitted;
+		 * sam->parameter is already zeroed so omitted values
+		 * default to 0. */
+		if (nuf_parameters > s->sp)
+			nuf_parameters = s->sp;
+		memcpy(sam->parameter, s->stack,
 		       sizeof(double) *  nuf_parameters);
 		
 		/* convert any mm values to inches */

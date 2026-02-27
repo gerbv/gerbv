@@ -591,12 +591,12 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 			for (; sam != NULL; sam = sam->next) {
 				switch (sam->type) {
 				case GERBV_APTYPE_MACRO_CIRCLE:
-
-/* TODO: test circle macro center rotation */
 					sam->parameter[CIRCLE_CENTER_X] *=
 								trans->scaleX;
 					sam->parameter[CIRCLE_CENTER_Y] *=
 								trans->scaleY;
+					sam->parameter[CIRCLE_ROTATION] +=
+						RAD2DEG(trans->rotation);
 					gerbv_rotate_coord(
 						sam->parameter +CIRCLE_CENTER_X,
 						sam->parameter +CIRCLE_CENTER_Y,
