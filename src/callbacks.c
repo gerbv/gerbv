@@ -697,6 +697,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 			error_visible_layers = TRUE;
 			break;
 		}
+		break;
 	case CALLBACKS_SAVE_FILE_DRILL:
 		windowTitle = g_strdup_printf(
 			_("Export \"%s\" layer #%d to "
@@ -1052,7 +1053,7 @@ callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user
 	switch (i) {
 	case LAYER_SELECTED:
 		i = callbacks_get_selected_row_index ();
-		/* No break */
+		[[fallthrough]];
 	default:
 		if (0 <= i && i <= mainProject->last_loaded) {
 			mainProject->file[i]->isVisible = !mainProject->file[i]->isVisible;

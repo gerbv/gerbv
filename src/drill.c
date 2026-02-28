@@ -873,6 +873,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	      }
 	      
 	    }
+	    break;
 
 	case 'S':
 	    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,

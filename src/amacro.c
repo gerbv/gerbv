@@ -258,6 +258,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		c = gerb_fgetc(fd); /* Read the '*' */
 		break;
 	    }
+	    [[fallthrough]];
 	case '1':
 	case '2':
 	case '3':
