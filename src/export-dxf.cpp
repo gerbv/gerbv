@@ -193,11 +193,33 @@ gerbv_export_dxf_file_from_image(const gchar *file_name,
 					GERBV_INTERPOLATION_PAREA_END) {
 				if (net->aperture_state ==
 						GERBV_APERTURE_STATE_ON) {
-					dxf->writeVertex(*dw,
-						DL_VertexData(
-							COORD2INS(net->stop_x),
-							COORD2INS(net->stop_y),
-							0, 0));
+					if ((net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR ||
+					     net->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR) &&
+					    net->cirseg) {
+						double a1 = DEG2RAD(net->cirseg->angle1);
+						double a2 = DEG2RAD(net->cirseg->angle2);
+						double ar = net->cirseg->width / 2.0;
+						double cx = net->cirseg->cp_x;
+						double cy = net->cirseg->cp_y;
+						int steps = (int)(fabs(net->cirseg->angle2 -
+								net->cirseg->angle1) / 2.0) + 1;
+						if (steps < 1)
+							steps = 1;
+						for (int s = 1; s <= steps; s++) {
+							double a = a1 + (a2 - a1) * s / steps;
+							dxf->writeVertex(*dw,
+								DL_VertexData(
+									cx + ar * cos(a),
+									cy + ar * sin(a),
+									0, 0));
+						}
+					} else {
+						dxf->writeVertex(*dw,
+							DL_VertexData(
+								COORD2INS(net->stop_x),
+								COORD2INS(net->stop_y),
+								0, 0));
+					}
 				}
 				net = net->next;
 			}
@@ -290,6 +312,24 @@ gerbv_export_dxf_file_from_image(const gchar *file_name,
 			}
 			break;
 		case GERBV_APERTURE_STATE_ON:
+			if ((net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR ||
+			     net->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR) &&
+			    net->cirseg) {
+				double a1 = net->cirseg->angle1;
+				double a2 = net->cirseg->angle2;
+				if (net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR) {
+					double tmp = a1;
+					a1 = a2;
+					a2 = tmp;
+				}
+				dxf->writeArc(*dw,
+					DL_ArcData(net->cirseg->cp_x,
+						   net->cirseg->cp_y, 0.0,
+						   net->cirseg->width / 2.0,
+						   a1, a2),
+					*attr);
+				break;
+			}
 			/* Line or cut slot in drill file */
 			switch (apert->type) {
 			case GERBV_APTYPE_CIRCLE:
