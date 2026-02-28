@@ -34,7 +34,7 @@ set(SCMSUBDIR "scheme")
 set(BACKEND_DIR "${DATADIR}/${SCMSUBDIR}")
 
 add_library(compilation-flags INTERFACE)
-target_compile_options(compilation-flags INTERFACE -Wall -O3 -Wno-deprecated-declarations)
+target_compile_options(compilation-flags INTERFACE -Wall -Wimplicit-fallthrough -O3 -Wno-deprecated-declarations)
 target_compile_options(compilation-flags INTERFACE $<$<CONFIG:Debug>:-g3>)
 target_link_libraries(compilation-flags INTERFACE PkgConfig::GLIB PkgConfig::GTK m)
 if(DXF_FOUND)

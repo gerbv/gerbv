@@ -859,6 +859,7 @@ main(int argc, char *argv[])
 
 	case 'w':
 	    userSuppliedWindowInPixels = TRUE;
+	    [[fallthrough]];
     	case 'W' :
 	    if (optarg == NULL) {
 		fprintf(stderr, _("You must give a window size in the format <width x height>.\n"));
