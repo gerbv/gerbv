@@ -46,7 +46,9 @@
 #ifdef _WIN32
 #undef M_PI
 #define M_PI   3.14159265358979323846
+#ifdef _MSC_VER
 #pragma warning(disable : 4800)
+#endif
 #endif
 
 #ifndef M_PI
