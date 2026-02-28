@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - develop
+    tags:
+      - 'v*'
   pull_request:
     branches: [ develop ]
   workflow_dispatch:
@@ -143,3 +145,32 @@ jobs:
       env:
         GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
       if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && env.GERBV_BUILDBOT_PAT && !matrix.code_coverage }}
+
+  release:
+    runs-on: ubuntu-22.04
+    needs: ci
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: gerbv
+          path: artifacts/
+
+      - name: Rename artifacts to use version tag
+        run: |
+          cd artifacts
+          for f in gerbv_*; do
+            os_part=$(echo "$f" | sed 's/gerbv_[0-9-]*_[a-f0-9]*_//')
+            mv "$f" "gerbv_${{ github.ref_name }}_${os_part}"
+          done
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
+          draft: true
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
+          generate_release_notes: true
