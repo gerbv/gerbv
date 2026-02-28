@@ -122,6 +122,11 @@ typedef struct drill_state {
     double delta_cp_x;
     double delta_cp_y;
 
+    /* Axis transform state (M70/M80/M90) — toggles */
+    gboolean swap_axis;   /* M70 */
+    gboolean mirror_x;    /* M80 */
+    gboolean mirror_y;    /* M90 */
+
 } drill_state_t;
 
 /* Local function prototypes */
@@ -961,6 +966,16 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		state->tool_down = FALSE;
 		break;
 
+	    case DRILL_M_SWAPAXIS:                    /* M70 */
+		state->swap_axis = !state->swap_axis;
+		break;
+	    case DRILL_M_MIRRORX:                     /* M80 */
+		state->mirror_x = !state->mirror_x;
+		break;
+	    case DRILL_M_MIRRORY:                     /* M90 */
+		state->mirror_y = !state->mirror_y;
+		break;
+
 	    case DRILL_M_END :
 		/* M00 has optional arguments */
 		eat_line(fd);
@@ -1682,6 +1697,9 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 48:
 	stats->M48++;
 	break;
+    case 70:
+	stats->M70++;
+	break;
     case 71:
 	stats->M71++;
 	eat_line(fd);
@@ -1689,6 +1707,12 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 72:
 	stats->M72++;
 	eat_line(fd);
+	break;
+    case 80:
+	stats->M80++;
+	break;
+    case 90:
+	stats->M90++;
 	break;
     case 95:
 	stats->M95++;
@@ -2196,6 +2220,16 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
       eat_whitespace(fd);
       firstchar = gerb_fgetc(fd);
     }
+    /* Apply axis transforms (M70/M80/M90) to raw parsed values */
+    if (state->swap_axis) {
+      double tmp = x;  x = y;  y = tmp;
+      gboolean ftmp = found_x;  found_x = found_y;  found_y = ftmp;
+    }
+    if (state->mirror_x && found_x)
+      x = -x;
+    if (state->mirror_y && found_y)
+      y = -y;
+
     if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
       if (found_x) {
         state->curr_x = x;

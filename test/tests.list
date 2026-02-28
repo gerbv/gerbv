@@ -214,6 +214,9 @@ Altium_file_format_inch | Altium_file_format_inch.drl
 Altium_file_format_inch_lz | Altium_file_format_inch_lz.drl
 Ruthie_V1R0-Plated | Ruthie_V1R0-Plated.drl
 
+# Excellon axis transforms (M70 swap, M80 mirror X, M90 mirror Y)
+test-drill-axis-transforms | test-drill-axis-transforms.exc
+
 # Excellon routing/milling (G00/G01 + M15/M16/M17)
 test-drill-route-milling | test-drill-route-milling.exc
 
