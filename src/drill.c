@@ -40,7 +40,8 @@
 #include <string.h>
 #endif
 
-#include <math.h>  /* pow() */
+#include <math.h>  /* pow(), atan2(), hypot(), cos(), sin(), fabs(), floor() */
+#include <float.h> /* DBL_EPSILON */
 #include <ctype.h>
 
 #include <sys/types.h>
@@ -116,6 +117,10 @@ typedef struct drill_state {
     drill_g_code_t route_mode;  /* DRILL_G_DRILL (default), DRILL_G_ROUT, or DRILL_G_LINEARMOVE */
     gboolean       tool_down;   /* TRUE after M15, FALSE after M16/M17 */
 
+    /* Arc center offsets for G02/G03 (I/J values, relative to start) */
+    double delta_cp_x;
+    double delta_cp_y;
+
 } drill_state_t;
 
 /* Local function prototypes */
@@ -138,6 +143,11 @@ static void drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 				unsigned int file_line);
 static drill_state_t *new_state(drill_state_t *state);
 static gerbv_net_t *drill_add_route_segment(gerbv_image_t *image,
+				drill_state_t *state,
+				gerbv_drill_stats_t *stats,
+				gerbv_net_t *curr_net,
+				double prev_x, double prev_y);
+static gerbv_net_t *drill_add_arc_segment(gerbv_image_t *image,
 				drill_state_t *state,
 				gerbv_drill_stats_t *stats,
 				gerbv_net_t *curr_net,
@@ -362,6 +372,162 @@ drill_add_route_segment(gerbv_image_t *image, drill_state_t *state,
     return curr_net;
 }
 
+/*
+ * Adds a routed arc segment (G02/G03 with tool down) to the drawing.
+ * Uses the same multi-quadrant circular interpolation algorithm as
+ * Gerber's calc_cirseg_mq (gerber.c).
+ */
+static gerbv_net_t *
+drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
+		gerbv_drill_stats_t *stats, gerbv_net_t *curr_net,
+		double prev_x, double prev_y)
+{
+    gerbv_render_size_t *bbox;
+    double r;
+    double start_x, start_y, stop_x, stop_y;
+    double delta_cp_x, delta_cp_y;
+    double d1x, d1y, d2x, d2y;
+    double alfa, beta;
+    int cw;
+
+    curr_net->next = g_new0(gerbv_net_t, 1);
+    if (curr_net->next == NULL)
+	GERB_FATAL_ERROR("malloc curr_net->next failed in %s()",
+			__FUNCTION__);
+
+    curr_net = curr_net->next;
+    curr_net->layer = image->layers;
+    curr_net->state = image->states;
+
+    start_x = prev_x;
+    start_y = prev_y;
+    stop_x = state->curr_x;
+    stop_y = state->curr_y;
+    delta_cp_x = state->delta_cp_x;
+    delta_cp_y = state->delta_cp_y;
+
+    if (state->unit == GERBV_UNIT_MM) {
+	/* Convert to inches -- internal units */
+	start_x /= 25.4;
+	start_y /= 25.4;
+	stop_x /= 25.4;
+	stop_y /= 25.4;
+	delta_cp_x /= 25.4;
+	delta_cp_y /= 25.4;
+	curr_net->state->unit = GERBV_UNIT_INCH;
+    }
+
+    curr_net->start_x = start_x;
+    curr_net->start_y = start_y;
+    curr_net->stop_x = stop_x;
+    curr_net->stop_y = stop_y;
+    curr_net->aperture = state->current_tool;
+    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+
+    cw = (state->route_mode == DRILL_G_CWMOVE);
+    curr_net->interpolation = cw ? GERBV_INTERPOLATION_CW_CIRCULAR
+				 : GERBV_INTERPOLATION_CCW_CIRCULAR;
+
+    /* Allocate and populate cirseg (same algorithm as calc_cirseg_mq) */
+    curr_net->cirseg = g_new0(gerbv_cirseg_t, 1);
+    if (curr_net->cirseg == NULL)
+	GERB_FATAL_ERROR("malloc cirseg failed in %s()", __FUNCTION__);
+
+    curr_net->cirseg->cp_x = start_x + delta_cp_x;
+    curr_net->cirseg->cp_y = start_y + delta_cp_y;
+
+    d1x = -delta_cp_x;
+    d1y = -delta_cp_y;
+    d2x = stop_x - curr_net->cirseg->cp_x;
+    d2y = stop_y - curr_net->cirseg->cp_y;
+
+    /* Clamp near-zero values to avoid signed-zero atan2 issues */
+    if (fabs(d1x) < DBL_EPSILON) d1x = 0;
+    if (fabs(d1y) < DBL_EPSILON) d1y = 0;
+    if (fabs(d2x) < DBL_EPSILON) d2x = 0;
+    if (fabs(d2y) < DBL_EPSILON) d2y = 0;
+
+    curr_net->cirseg->width = hypot(delta_cp_x, delta_cp_y) * 2.0;
+    curr_net->cirseg->height = curr_net->cirseg->width;
+
+    alfa = atan2(d1y, d1x);
+    beta = atan2(d2y, d2x);
+
+    if (alfa < 0.0) {
+	alfa += M_PI + M_PI;
+	beta += M_PI + M_PI;
+    }
+
+    if (beta < 0.0)
+	beta += M_PI + M_PI;
+
+    if (cw) {
+	if (alfa - beta < DBL_EPSILON)
+	    beta -= M_PI + M_PI;
+    } else {
+	if (beta - alfa < DBL_EPSILON)
+	    beta += M_PI + M_PI;
+    }
+
+    curr_net->cirseg->angle1 = RAD2DEG(alfa);
+    curr_net->cirseg->angle2 = RAD2DEG(beta);
+
+    /* Check if aperture is set. Skip bbox computation if not. */
+    if (image->aperture[state->current_tool] == NULL)
+	return curr_net;
+
+    /* Compute bounding box from arc geometry */
+    bbox = &curr_net->boundingBox;
+    r = image->aperture[state->current_tool]->parameter[0] / 2;
+
+    {
+	double ang1, ang2, step_pi_2, x, y;
+
+	ang1 = DEG2RAD(MIN(curr_net->cirseg->angle1,
+			   curr_net->cirseg->angle2));
+	ang2 = DEG2RAD(MAX(curr_net->cirseg->angle1,
+			   curr_net->cirseg->angle2));
+
+	/* Start arc point */
+	x = curr_net->cirseg->cp_x +
+	    curr_net->cirseg->width * cos(ang1) / 2;
+	y = curr_net->cirseg->cp_y +
+	    curr_net->cirseg->width * sin(ang1) / 2;
+	bbox->left   = x - r;
+	bbox->right  = x + r;
+	bbox->bottom = y - r;
+	bbox->top    = y + r;
+
+	/* Middle arc points at each 90-degree axis crossing */
+	for (step_pi_2 = (floor(ang1 / M_PI_2) + 1) * M_PI_2;
+	     step_pi_2 < MIN(ang2, ang1 + 2 * M_PI);
+	     step_pi_2 += M_PI_2) {
+	    x = curr_net->cirseg->cp_x +
+		curr_net->cirseg->width * cos(step_pi_2) / 2;
+	    y = curr_net->cirseg->cp_y +
+		curr_net->cirseg->width * sin(step_pi_2) / 2;
+	    bbox->left   = MIN(bbox->left,   x - r);
+	    bbox->right  = MAX(bbox->right,  x + r);
+	    bbox->bottom = MIN(bbox->bottom, y - r);
+	    bbox->top    = MAX(bbox->top,    y + r);
+	}
+
+	/* Stop arc point */
+	x = curr_net->cirseg->cp_x +
+	    curr_net->cirseg->width * cos(ang2) / 2;
+	y = curr_net->cirseg->cp_y +
+	    curr_net->cirseg->width * sin(ang2) / 2;
+	bbox->left   = MIN(bbox->left,   x - r);
+	bbox->right  = MAX(bbox->right,  x + r);
+	bbox->bottom = MIN(bbox->bottom, y - r);
+	bbox->top    = MAX(bbox->top,    y + r);
+    }
+
+    drill_update_image_info_min_max_from_bbox(image->info, bbox);
+
+    return curr_net;
+}
+
 /* -------------------------------------------------------------- */
 gerbv_image_t *
 parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int reload)
@@ -553,6 +719,12 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    case DRILL_G_LINEARMOVE :   /* G01 - linear routing */
 		state->route_mode = DRILL_G_LINEARMOVE;
+		break;
+	    case DRILL_G_CWMOVE :      /* G02 - CW arc routing */
+		state->route_mode = DRILL_G_CWMOVE;
+		break;
+	    case DRILL_G_CCWMOVE :     /* G03 - CCW arc routing */
+		state->route_mode = DRILL_G_CCWMOVE;
 		break;
 
 	    case DRILL_G_SLOT : {
@@ -908,12 +1080,23 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    drill_parse_coordinate(fd, read, image, state, file_line);
 
 	    if ((state->route_mode == DRILL_G_ROUT ||
-		 state->route_mode == DRILL_G_LINEARMOVE) && !state->tool_down) {
+		 state->route_mode == DRILL_G_LINEARMOVE ||
+		 state->route_mode == DRILL_G_CWMOVE ||
+		 state->route_mode == DRILL_G_CCWMOVE) && !state->tool_down) {
 		/* Routing mode, tool up: reposition only, no geometry */
+		state->delta_cp_x = 0;
+		state->delta_cp_y = 0;
 		break;
 	    }
 
-	    if ((state->route_mode == DRILL_G_LINEARMOVE ||
+	    if ((state->route_mode == DRILL_G_CWMOVE ||
+		 state->route_mode == DRILL_G_CCWMOVE) && state->tool_down) {
+		/* Arc routing mode, tool down: create arc segment */
+		curr_net = drill_add_arc_segment(image, state, stats,
+			curr_net, prev_x, prev_y);
+		state->delta_cp_x = 0;
+		state->delta_cp_y = 0;
+	    } else if ((state->route_mode == DRILL_G_LINEARMOVE ||
 		 state->route_mode == DRILL_G_ROUT) && state->tool_down) {
 		/* Routing mode, tool down: create line segment */
 		curr_net = drill_add_route_segment(image, state, stats,
@@ -1931,6 +2114,10 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
     gboolean found_x = FALSE;
     double y = 0;
     gboolean found_y = FALSE;
+    double i_val = 0;
+    gboolean found_i = FALSE;
+    double j_val = 0;
+    gboolean found_j = FALSE;
 
 
     while (TRUE) {
@@ -1940,6 +2127,12 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
       } else if (firstchar == 'Y') {
         y = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
         found_y = TRUE;
+      } else if (firstchar == 'I') {
+        i_val = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+        found_i = TRUE;
+      } else if (firstchar == 'J') {
+        j_val = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+        found_j = TRUE;
       } else {
         gerb_ungetc(fd);
         break;
@@ -1967,6 +2160,12 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
                            "at line %u in file \"%s\""),
                          file_line, fd->filename);
     }
+
+    /* Store arc center offsets for G02/G03 */
+    if (found_i)
+      state->delta_cp_x = i_val;
+    if (found_j)
+      state->delta_cp_y = j_val;
 } /* drill_parse_coordinate */
 
 
