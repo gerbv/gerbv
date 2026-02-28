@@ -1752,7 +1752,7 @@ interface_create_gui (int req_width, int req_height)
 		nmonitors = gdk_screen_get_n_monitors(screen);
 
 		width = gdk_screen_get_width(screen) * 3/4 / nmonitors;
-		height = gdk_screen_get_height(screen) * 3/4 / nmonitors;
+		height = gdk_screen_get_height(screen) * 3/4;
 	}
 
 	gtk_window_set_default_size(GTK_WINDOW(mainWindow), width, height);
