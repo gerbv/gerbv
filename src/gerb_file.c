@@ -102,12 +102,27 @@ gerb_fopen(char const * filename)
 
     dprintf("     Doing mmap\n");
     fd->datalen = (int)statinfo.st_size;
-    fd->data = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE, 
+    fd->data = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE,
 			    fd->fileno, 0);
     if(fd->data == MAP_FAILED) {
 	fclose(fd->fd);
 	g_free(fd);
 	fd = NULL;
+    } else {
+	/* Copy into a heap buffer with null terminator so strtol/strtod
+	 * have a safe stopping point — mmap does not guarantee '\0'
+	 * after the file content. */
+	char *buf = (char *)g_malloc(fd->datalen + 1);
+	if (buf == NULL) {
+	    munmap(fd->data, fd->datalen);
+	    fclose(fd->fd);
+	    g_free(fd);
+	    return NULL;
+	}
+	memcpy(buf, fd->data, fd->datalen);
+	buf[fd->datalen] = '\0';
+	munmap(fd->data, fd->datalen);
+	fd->data = buf;
     }
 
 #else
@@ -155,7 +170,13 @@ gerb_fgetint(gerb_file_t *fd, int *len)
 {
     long int result;
     char *end;
-    
+
+    if (fd->ptr >= fd->datalen) {
+	if (len)
+	    *len = 0;
+	return 0;
+    }
+
     errno = 0;
     result = strtol(fd->data + fd->ptr, &end, 10);
     if (errno) {
@@ -179,15 +200,23 @@ gerb_fgetint(gerb_file_t *fd, int *len)
 double
 gerb_fgetdouble(gerb_file_t *fd)
 {
-    char *start = fd->data + fd->ptr;
+    char *start;
+    int remaining;
     double result;
     char *end;
+
+    if (fd->ptr >= fd->datalen)
+	return 0.0;
+
+    start = fd->data + fd->ptr;
+    remaining = fd->datalen - fd->ptr;
 
     /* Prevent strtod from consuming hex float notation (0x.../0X...).
      * In Gerber aperture macros, x/X is the multiplication operator,
      * so "0X25.4" must parse as "0" followed by "X25.4", not as a
      * hexadecimal floating-point literal. */
-    if (start[0] == '0' && (start[1] == 'x' || start[1] == 'X')) {
+    if (remaining >= 2
+	    && start[0] == '0' && (start[1] == 'x' || start[1] == 'X')) {
 	fd->ptr += 1;
 	return 0.0;
     }
@@ -253,12 +282,10 @@ gerb_fclose(gerb_file_t *fd)
     if (fd) {
         g_free(fd->filename);
 
-#ifdef HAVE_SYS_MMAN_H
-	if (munmap(fd->data, fd->datalen) < 0)
-	    GERB_FATAL_ERROR("munmap: %s", strerror(errno));
-#else
+	/* fd->data is always heap-allocated: the mmap path now copies
+	 * into a g_malloc'd buffer (for null termination) before
+	 * munmap, and the non-mmap path uses calloc. */
 	g_free(fd->data);
-#endif   
 	if (fclose(fd->fd) == EOF)
 	    GERB_FATAL_ERROR("fclose: %s", strerror(errno));
 	g_free(fd);
