@@ -1,0 +1,14 @@
+changelog:
+  categories:
+    - title: Security fixes
+      labels: [ security ]
+    - title: Bug fixes
+      labels: [ bug, fix, drill ]
+    - title: New features
+      labels: [ enhancement ]
+    - title: Documentation
+      labels: [ documentation ]
+    - title: Platform support
+      labels: [ Windows, GTK3/GTK4 ]
+    - title: Other changes
+      labels: [ "*" ]
