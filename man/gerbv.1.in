@@ -2,7 +2,7 @@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
-.B gerbv [OPTIONS]  [gerberfile[s]]
+.B gerbv [OPTIONS]  [gerberfile[s]|directory]
 .SH DESCRIPTION
 .PP
 \fIgerbv\fP is a viewer for RS274-X, commonly known as Gerber, files.
@@ -10,6 +10,14 @@ RS274-X files are generated from different PCB CAD programs and are
 used in the printed circuit board manufacturing process.
 \fIgerbv\fP also supports Excellon/NC drill files as well as XY (centroid)
 files produced by the program PCB (http://pcb.geda-project.org/).
+.PP
+If a directory is given instead of a file, \fIgerbv\fP scans it for
+loadable files (RS274-X, Excellon drill, pick-and-place, and legacy
+RS274-D). Detection is content-based, not extension-based, so files
+with non-standard extensions or no extension at all (e.g. Altium output)
+are recognized. Non-matching files are silently skipped. Files are
+loaded in alphabetical order. Directories and files may be mixed freely
+on the command line. Scanning is not recursive.
 
 .SH OPTIONS
 
@@ -130,7 +138,11 @@ Program class as used by the window manager
 
 .SH GENERAL
 When you start gerbv you can give the files to be loaded on the command line,
-either as each file separated with a space or by using wildcards.
+either as each file separated with a space or by using wildcards. You can also
+pass a directory path (e.g. \fBgerbv .\fP or \fBgerbv ./gerbers/\fP) to load
+all recognized files from that directory. This works with export mode too:
+\fBgerbv \-\-export=png \-o board.png ./gerbers/\fP composites all layers
+into a single output image.
 
 The user interface is graphical. Simply press and drag middle mouse button
 (scroll wheel) and the image will pan as you move the mouse. To manipulate a
