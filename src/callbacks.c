@@ -548,6 +548,7 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	GtkWidget *label;
 	GtkWidget *hbox;
 	GtkWidget *svg_layers_check;
+	GtkWidget *svg_cairo_check;
 	static gint dpi = 0;
 	static gboolean svg_layers = FALSE;
 	
@@ -572,10 +573,14 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	spin_but = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range (0, 0, 1));
 	svg_layers_check = gtk_check_button_new_with_label (_("Export as Inkscape layers"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (svg_layers_check), svg_layers);
+	svg_cairo_check = gtk_check_button_new_with_label (_("Use Cairo SVG (legacy)"));
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (svg_cairo_check), mainProject->use_cairo_svg);
 	label = gtk_label_new ("");
 	tooltips = gtk_tooltips_new ();
 	gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(spin_but), 0, 0, 1);
 	gtk_box_pack_end (GTK_BOX(hbox), label, 0, 0, 5);
+	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
+			svg_cairo_check, 0, 0, 2);
 	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
 			svg_layers_check, 0, 0, 2);
 	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
@@ -643,6 +648,10 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(svg_layers_check),
 				_("Create one Inkscape layer per visible gerber layer"), NULL);
 		gtk_widget_show_all (svg_layers_check);
+
+		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(svg_cairo_check),
+				_("Use Cairo's SVG surface (larger files, legacy behavior)"), NULL);
+		gtk_widget_show_all (svg_cairo_check);
 
 
 		break;
@@ -794,6 +803,8 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		dpi = gtk_spin_button_get_value_as_int (spin_but);
 		svg_layers = gtk_toggle_button_get_active (
 				GTK_TOGGLE_BUTTON (svg_layers_check));
+		mainProject->use_cairo_svg = gtk_toggle_button_get_active (
+				GTK_TOGGLE_BUTTON (svg_cairo_check));
 	}
 	gtk_widget_destroy (screen.win.gerber);
 
