@@ -14,7 +14,7 @@ on:
 
 
 jobs:
-  ci:
+  ci-ubuntu-22.04:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -22,7 +22,6 @@ jobs:
         include:
           - coverage: ""
             code_coverage: "" # Always empty, so matrix.code_coverage is always false
-    name: ci
 
     steps:
     - uses: actions/checkout@v6
@@ -146,9 +145,48 @@ jobs:
         GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
       if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && env.GERBV_BUILDBOT_PAT && !matrix.code_coverage }}
 
+  ci-macos:
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Get number of jobs for compiling
+      run: echo "NUM_BUILD_JOBS=$(sysctl -n hw.logicalcpu)" >> $GITHUB_ENV
+
+    - name: Install build dependencies
+      run: |
+        brew install cmake ninja pkgconf gettext gtk+ gtkmm libffi zlib bzip2 libpng expat imagemagick
+        echo "PATH=$(brew --prefix gettext)/bin:${PATH}" >> $GITHUB_ENV
+        mkdir -p "${HOME}/.local/lib/pkgconfig"
+        BZIP_PREFIX="$(brew --prefix bzip2)"
+        BZIP_VERSION="$(brew list --versions bzip2 | awk '{print $2}')"
+        printf '%s\n' \
+          "prefix=${BZIP_PREFIX}" \
+          'exec_prefix=${prefix}' \
+          'libdir=${exec_prefix}/lib' \
+          'includedir=${prefix}/include' \
+          '' \
+          'Name: bzip2' \
+          'Description: bzip2 compression library' \
+          "Version: ${BZIP_VERSION}" \
+          'Libs: -L${libdir} -lbz2' \
+          'Cflags: -I${includedir}' \
+          > "${HOME}/.local/lib/pkgconfig/bzip2.pc"
+        echo "PKG_CONFIG_PATH=${HOME}/.local/lib/pkgconfig:$(brew --prefix libffi)/lib/pkgconfig:$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix bzip2)/lib/pkgconfig:$(brew --prefix libpng)/lib/pkgconfig:$(brew --prefix expat)/lib/pkgconfig:$(brew --prefix)/lib/pkgconfig:${PKG_CONFIG_PATH}" >> $GITHUB_ENV
+
+    - name: Configure
+      run: cmake -S . -B build -G Ninja
+
+    - name: Build
+      run: cmake --build build -j ${NUM_BUILD_JOBS}
+
+    - name: Run tests
+      continue-on-error: true
+      run: ctest --test-dir build -V
+
   release:
     runs-on: ubuntu-22.04
-    needs: ci
+    needs: [ci-ubuntu-22.04, ci-macos]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
