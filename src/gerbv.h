@@ -121,6 +121,7 @@ extern "C" {
 #define GERB_COMPILE_ERROR(...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, __VA_ARGS__)
 #define GERB_COMPILE_WARNING(...)  g_log(NULL, G_LOG_LEVEL_WARNING, __VA_ARGS__)
 #define GERB_MESSAGE(...)  g_log(NULL, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
+#define GERB_NOTE(...)  g_log(NULL, G_LOG_LEVEL_INFO, __VA_ARGS__)
 
 /*! The aperture macro commands */  
 typedef enum {GERBV_OPCODE_NOP, /*!< no operation */

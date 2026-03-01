@@ -318,6 +318,7 @@ gerbv_stats_add_error(gerbv_error_list_t *error_list_in,
             GERB_COMPILE_WARNING("%s",error_text);
             break;
         case GERBV_MESSAGE_NOTE:
+            GERB_NOTE("%s", error_text);
             break;
     }
 
