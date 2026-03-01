@@ -1638,6 +1638,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 			GTK_TREE_VIEW(M_table->widget), TRUE);
 	table_add_row(M_table, "M00", stat->M00, _(drill_m_code_name(0)));
 	table_add_row(M_table, "M01", stat->M01, _(drill_m_code_name(1)));
+	table_add_row(M_table, "M02", stat->M02, _(drill_m_code_name(2)));
 	table_add_row(M_table, "M18", stat->M18, _(drill_m_code_name(18)));
 	table_add_row(M_table, "M25", stat->M25, _(drill_m_code_name(25)));
 	table_add_row(M_table, "M30", stat->M30, _(drill_m_code_name(30)));
