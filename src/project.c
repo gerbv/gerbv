@@ -58,6 +58,8 @@
 #include <errno.h>
 #include <math.h>
 
+#include <glib/gstdio.h>
+
 #include "common.h"
 #include "gerbv.h"
 #include "gerb_file.h"
@@ -907,7 +909,7 @@ project_is_gerbv_project(const char *filename, gboolean *ret)
 	char *buf;
 	const gsize buf_size = 200;
 
-	fd = fopen(filename, "rb");
+	fd = g_fopen(filename, "rb");
 	if (fd == NULL) {
 		GERB_MESSAGE(_("Failed to open \"%s\" for reading: %s"),
 				filename, strerror(errno));
@@ -1005,7 +1007,7 @@ read_project_file(char const* filename)
     }
     dprintf("%s():  initfile = \"%s\"\n", __FUNCTION__, initfile);
 
-    if ((fd = fopen(initfile, "r")) == NULL) {
+    if ((fd = g_fopen(initfile, "r")) == NULL) {
 	scheme_deinit(sc);
 	GERB_MESSAGE(_("Couldn't open %s (%s)"), initfile, strerror(errno));
 	return NULL;
@@ -1029,7 +1031,7 @@ read_project_file(char const* filename)
 			    sc->vptr->mk_symbol(sc, "gerbv-file-version!"),
 			    sc->vptr->mk_foreign_func(sc, gerbv_file_version));
 
-    if ((fd = fopen(filename, "r")) == NULL) {
+    if ((fd = g_fopen(filename, "r")) == NULL) {
 	setlocale(LC_NUMERIC, "");	/* Default locale */
 	scheme_deinit(sc);
 	GERB_MESSAGE(_("Couldn't open project file %s (%s)"), filename,
@@ -1078,7 +1080,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
     const float min_val = GERBV_PRECISION_LINEAR_INCH;
     int i;
 
-    if ((fd = fopen(filename, "w")) == NULL) {
+    if ((fd = g_fopen(filename, "w")) == NULL) {
 	    GERB_MESSAGE(_("Couldn't save project %s"), filename);
 	    return -1;
     }
