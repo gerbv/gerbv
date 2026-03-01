@@ -1649,7 +1649,9 @@ header_junk:
 	}
     }
 
-    state->unit = GERBV_UNIT_MM;
+    if (state->autod) {
+        state->unit = GERBV_UNIT_MM;
+    }
 
     return 1;
 } /* drill_parse_header_is_metric() */
@@ -1805,7 +1807,9 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 	}
     }
 
-    state->unit = GERBV_UNIT_INCH;
+    if (state->autod) {
+        state->unit = GERBV_UNIT_INCH;
+    }
 
     return 1;
 } /* drill_parse_header_is_inch() */
