@@ -64,7 +64,12 @@ target_sources(gerbv-app PRIVATE
                 lrealpath.c lrealpath.h)
 # target_compile_definitions(gerbv-app PUBLIC GDK_DISABLE_DEPRECATED GTK_DISABLE_DEPRECATED) # Removes all deprecated functions
 target_compile_definitions(gerbv-app PRIVATE $<$<BOOL:${DEBUG_PRINTOUT}>:DEBUG=1>)
-target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config generated)
+target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config)
+add_dependencies(gerbv-app generated)
+if(APPLE)
+    set_target_properties(gerbv-app PROPERTIES
+                         INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+endif()
 
 install(TARGETS gerbv-app
         PUBLIC_HEADER
