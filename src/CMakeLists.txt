@@ -3,7 +3,7 @@
 # Building the library, installed as libgerbv.
 # The naming convention is to avoid name clashing in targets
 
-add_library(gerbv SHARED)
+add_library(gerbv)
 set_target_properties(gerbv PROPERTIES
                    VERSION 1.9.0
                    SOVERSION 1
