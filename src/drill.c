@@ -628,6 +628,33 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		g_free(tmps);
 		break;
 
+	    case DRILL_G_OVERRIDETOOLSPEED:        /* G07 */
+	    case DRILL_G_VISTOOL:                  /* G34 */
+	    case DRILL_G_VISSINGLEPOINTOFFSET:     /* G35 */
+	    case DRILL_G_VISMULTIPOINTTRANS:       /* G36 */
+	    case DRILL_G_VISCANCEL:                /* G37 */
+	    case DRILL_G_VISCORRHOLEDRILL:         /* G38 */
+	    case DRILL_G_VISAUTOCALIBRATION:       /* G39 */
+	    case DRILL_G_CUTTERCOMPOFF:            /* G40 */
+	    case DRILL_G_CUTTERCOMPLEFT:           /* G41 */
+	    case DRILL_G_CUTTERCOMPRIGHT:          /* G42 */
+	    case DRILL_G_VISSINGLEPOINTOFFSETREL:  /* G45 */
+	    case DRILL_G_VISMULTIPOINTTRANSREL:    /* G46 */
+	    case DRILL_G_VISCANCELREL:             /* G47 */
+	    case DRILL_G_VISCORRHOLEDRILLREL:      /* G48 */
+	    case DRILL_G_PACKDIP2:                 /* G81 */
+	    case DRILL_G_PACKDIP:                  /* G82 */
+	    case DRILL_G_PACK8PINL:                /* G83 */
+	    case DRILL_G_CIRLE:                    /* G84 */
+		eat_line(fd);
+		gerbv_stats_printf(stats->error_list,
+			GERBV_MESSAGE_NOTE, -1,
+			_("Ignoring machine-only G%02d (%s) "
+			    "at line %u in file \"%s\""),
+			g_code, _(drill_g_code_name(g_code)),
+			file_line, fd->filename);
+		break;
+
 	    default:
 		eat_line(fd);
 		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
@@ -797,6 +824,25 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			tmps, file_line, fd->filename);
 		g_free(tmps);
 
+		break;
+
+	    case DRILL_M_STOPOPTIONAL:                    /* M06 */
+	    case DRILL_M_SANDREND:                        /* M08 */
+	    case DRILL_M_STOPINSPECTION:                  /* M09 */
+	    case DRILL_M_VISANDRPATTERN:                  /* M50 */
+	    case DRILL_M_VISANDRPATTERNREWIND:            /* M51 */
+	    case DRILL_M_VISANDRPATTERNOFFSETCOUNTERCTRL: /* M52 */
+	    case DRILL_M_REFSCALING:                      /* M60 */
+	    case DRILL_M_REFSCALINGEND:                   /* M61 */
+	    case DRILL_M_PECKDRILLING:                    /* M62 */
+	    case DRILL_M_PECKDRILLINGEND:                 /* M63 */
+		eat_line(fd);
+		gerbv_stats_printf(stats->error_list,
+			GERBV_MESSAGE_NOTE, -1,
+			_("Ignoring machine-only M%02d (%s) "
+			    "at line %u in file \"%s\""),
+			m_code, _(drill_m_code_name(m_code)),
+			file_line, fd->filename);
 		break;
 
 	    default:
@@ -1487,6 +1533,13 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
 	stats->M98++;
 	break;
 
+    case 6:
+    case 8: case 9:
+    case 50: case 51: case 52:
+    case 60: case 61: case 62: case 63:
+	stats->M_machine_only++;
+	break;
+
     default:
     case DRILL_M_UNKNOWN:
 	break;
@@ -1903,6 +1956,14 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, unsigned int file_line
 	break;
     case 93:
 	stats->G93++;
+	break;
+
+    case 7:
+    case 34: case 35: case 36: case 37: case 38: case 39:
+    case 40: case 41: case 42:
+    case 45: case 46: case 47: case 48:
+    case 81: case 82: case 83: case 84:
+	stats->G_machine_only++;
 	break;
 
     case DRILL_G_UNKNOWN:

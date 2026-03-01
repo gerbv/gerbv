@@ -1609,6 +1609,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	table_add_row(G_table, "G90", stat->G90, _(drill_g_code_name(90)));
 	table_add_row(G_table, "G91", stat->G91, _(drill_g_code_name(91)));
 	table_add_row(G_table, "G93", stat->G93, _(drill_g_code_name(93)));
+	table_add_row(G_table, "", stat->G_machine_only, _("machine-only G-codes (ignored)"));
 	table_add_row(G_table, "", stat->G_unknown, _("unknown G-codes"));
 
 	table_set_sortable(G_table);
@@ -1640,6 +1641,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	table_add_row(M_table, "M95", stat->M95, _(drill_m_code_name(95)));
 	table_add_row(M_table, "M97", stat->M97, _(drill_m_code_name(97)));
 	table_add_row(M_table, "M98", stat->M98, _(drill_m_code_name(98)));
+	table_add_row(M_table, "", stat->M_machine_only, _("machine-only M-codes (ignored)"));
 	table_add_row(M_table, "", stat->M_unknown, _("unknown M-codes"));
 
 	table_set_sortable(M_table);
