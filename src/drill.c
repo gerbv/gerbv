@@ -475,6 +475,27 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    g_free(tmps);
 	    break;
 
+	case 'A' :
+	    /* ATC,ON/OFF — automatic tool change.  Machine-only command
+	     * found in Zuken CR-8000 Excellon output.  Silently ignored,
+	     * similar to DETECT,ON/OFF.  See issue #93. */
+	    gerb_ungetc(fd);
+	    tmps = get_line(fd);
+	    if (strcmp(tmps, "ATC,ON") == 0 ||
+		strcmp(tmps, "ATC,OFF") == 0) {
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
+			_("Ignoring ATC command \"%s\" "
+			    "at line %u in file \"%s\""),
+			tmps, file_line, fd->filename);
+	    } else {
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+			_("Undefined code \"%s\" "
+			    "at line %u in file \"%s\""),
+			tmps, file_line, fd->filename);
+	    }
+	    g_free(tmps);
+	    break;
+
 	case 'D' :
 	    gerb_ungetc (fd);
 	    tmps = get_line (fd);
