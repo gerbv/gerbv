@@ -1,4 +1,4 @@
-.TH gerbv 1 "Jule 13, 2013" Version @VERSION@
+.TH gerbv 1 "March 2026" Version @VERSION@
 .SH NAME
 gerbv - Gerber Viewer
 .SH SYNOPSIS
@@ -9,7 +9,7 @@ gerbv - Gerber Viewer
 RS274-X files are generated from different PCB CAD programs and are
 used in the printed circuit board manufacturing process.
 \fIgerbv\fP also supports Excellon/NC drill files as well as XY (centroid)
-files produced by the program PCB (http://pcb.geda-project.org/).
+pick-and-place files.
 
 .SH OPTIONS
 
@@ -29,10 +29,16 @@ Use background color <hex>. <hex> is specified as an html-color code,
 e.g. #FF0000 for Red.
 .TP
 .BI -f<hex>|--foreground=<hex>
-Use foreground color <hex>. <hex> is specified as an html-color code, 
-e.g. #00FF00 for Green. If a user also wants to set the alpha (rendering 
-with Cairo) it can be specified as an #RRGGBBAA code. Use multiple 
+Use foreground color <hex>. <hex> is specified as an html-color code,
+e.g. #00FF00 for Green. If a user also wants to set the alpha (rendering
+with Cairo) it can be specified as an #RRGGBBAA code. Use multiple
 \-f flags to set the color for multiple layers.
+.TP
+.BI -r<degree>|--rotate=<degree>
+Set initial rotation for all layers, in degrees.
+.TP
+.BI -m<axis>|--mirror=<axis>
+Set initial mirroring axis for all layers. <axis> is either X or Y.
 .TP
 .BI -l\ <filename>|--log=<filename>
 All error messages etc are stored in a file with filename \fI<filename>\fP.
@@ -84,8 +90,10 @@ fit if no resolution is specified (note that the default 72 DPI also
 changes in that case). If a resolution is specified, it will clip 
 the image to this size.
 .TP
-.BI -x<png/pdf/ps/svg/rs274x/drill>|--export=<png/pdf/ps/svg/rs274x/drill>   
-Export to a file and set the format for the output file.
+.BI -x<format>|--export=<format>
+Export to a file and set the format for the output file. Supported
+formats are: png, pdf, ps, svg, rs274x, drill, idrill (ISEL NCP drill).
+If gerbv was compiled with libdxflib support, dxf is also available.
 .TP
 .B --svg-layers
 Export visible layers as Inkscape SVG layers. This option is only used with
@@ -156,11 +164,10 @@ two layers and click Align layers from context menu.
 .SH ZOOMING
 Zooming can be handled by either menu choices, keypressing or mouse scroll
 wheel. If you press z you will zoom in and if you press Shift+z (i.e. Z) you
-will zoom out. Scroll wheel works if you enabled that in your X server and
-mapped it to button 4 and 5. You can make the image fit by pressing f (there is
-also a menu alternative for this). If Pan, Zoom, or Measure Tool is selected
-you can press right mouse button for zoom in, and if you press Shift and right
-mouse button you will zoom out.
+will zoom out. The scroll wheel also zooms in and out. You can make the image
+fit by pressing f (there is also a menu alternative for this). If Pan, Zoom, or
+Measure Tool is selected you can press right mouse button for zoom in, and if
+you press Shift and right mouse button you will zoom out.
 
 You can also do zooming by outline. Select Zoom Tool, press mouse button, draw,
 release. The dashed line shows how the zooming will be dependent on the
@@ -184,13 +191,12 @@ in the Gerber files, the statusbar will show (0,0) at the same place.
 
 .SH SUPERIMPOSING
 When you load several Gerber files, you can display them "on top of each other",
-i.e. superimposing. The general way to display them are that upper layers
-cover the layers beneath, which is called copy (GTK+ terms).
-
-The other ways selectable are and, or, xor and invert. They map directly to
-corresponding functions in GTK. In GTK they are described as:
-"For colored images, only GDK_COPY, GDK_XOR and GDK_INVERT are generally 
-useful. For bitmaps, GDK_AND and GDK_OR are also useful."
+i.e. superimposing. With the default Cairo renderer, each layer is drawn with
+per-layer alpha transparency, producing a natural stacked view.
+.PP
+The legacy GDK renderer also supports compositing modes: copy (default, opaque
+stacking), xor, and invert. These correspond to GDK drawing functions and are
+selectable from the View menu when using the GDK renderer.
 
 .SH PROJECTS
 gerbv can also handle projects. A project consist of bunch of 
