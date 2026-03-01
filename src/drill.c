@@ -2405,6 +2405,10 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
 	result = strtod(temp, NULL) * scale;
     }
 
+    if (!isfinite(result)) {
+	result = 0.0;
+    }
+
     DPRINTF("    %s()=%f: fmt=%d, omit_zeros=%d, decimals=%d \n",
 		    __FUNCTION__, result, fmt, omit_zeros, decimals);
 
