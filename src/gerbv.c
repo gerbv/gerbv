@@ -62,6 +62,7 @@
 #include "draw.h"
 
 #include "pick-and-place.h"
+#include "gerb_stats.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -600,6 +601,25 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     }
     
     if (parsed_image) {
+	/* Warn if the file parsed successfully but contains no geometry */
+	if (parsed_image->netlist != NULL
+	&&  parsed_image->netlist->next == NULL) {
+	    if (parsed_image->layertype == GERBV_LAYERTYPE_DRILL
+	    &&  parsed_image->drill_stats != NULL) {
+		gerbv_stats_printf(
+		    parsed_image->drill_stats->error_list,
+		    GERBV_MESSAGE_WARNING, -1,
+		    _("File \"%s\" contains no drill hits or routes"),
+		    filename);
+	    } else if (parsed_image->gerbv_stats != NULL) {
+		gerbv_stats_printf(
+		    parsed_image->gerbv_stats->error_list,
+		    GERBV_MESSAGE_WARNING, -1,
+		    _("File \"%s\" contains no drawing elements"),
+		    filename);
+	    }
+	}
+
 	/* strip the filename to the base */
 	gchar *baseName = g_path_get_basename (filename);
 	gchar *displayedName;
