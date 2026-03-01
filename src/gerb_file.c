@@ -69,7 +69,9 @@ gerb_fopen(char const * filename)
     /* fopen() can't open files with non ASCII filenames on windows */
     fd->fd = g_fopen(filename, "rb");
     if (fd->fd == NULL) {
+	int saved_errno = errno;
 	g_free(fd);
+	errno = saved_errno;
 	return NULL;
     }
 
@@ -77,8 +79,10 @@ gerb_fopen(char const * filename)
     fd->ptr = 0;
     fd->fileno = fileno(fd->fd);
     if (fstat(fd->fileno, &statinfo) < 0) {
+	int saved_errno = errno;
 	fclose(fd->fd);
 	g_free(fd);
+	errno = saved_errno;
 	return NULL;
     }
 
@@ -105,18 +109,22 @@ gerb_fopen(char const * filename)
     fd->data = (char *)mmap(0, statinfo.st_size, PROT_READ, MAP_PRIVATE,
 			    fd->fileno, 0);
     if(fd->data == MAP_FAILED) {
+	int saved_errno = errno;
 	fclose(fd->fd);
 	g_free(fd);
-	fd = NULL;
+	errno = saved_errno;
+	return NULL;
     } else {
 	/* Copy into a heap buffer with null terminator so strtol/strtod
 	 * have a safe stopping point — mmap does not guarantee '\0'
 	 * after the file content. */
 	char *buf = (char *)g_malloc(fd->datalen + 1);
 	if (buf == NULL) {
+	    int saved_errno = errno;
 	    munmap(fd->data, fd->datalen);
 	    fclose(fd->fd);
 	    g_free(fd);
+	    errno = saved_errno;
 	    return NULL;
 	}
 	memcpy(buf, fd->data, fd->datalen);
@@ -132,14 +140,18 @@ gerb_fopen(char const * filename)
     fd->datalen = (int)statinfo.st_size;
     fd->data = calloc(1, statinfo.st_size + 1);
     if (fd->data == NULL) {
+	int saved_errno = errno;
         fclose(fd->fd);
         g_free(fd);
+	errno = saved_errno;
         return NULL;
     }
     if (fread((void*)fd->data, 1, statinfo.st_size, fd->fd) != statinfo.st_size) {
+	int saved_errno = errno;
         fclose(fd->fd);
 	g_free(fd->data);
         g_free(fd);
+	errno = saved_errno;
 	return NULL;
     }
     rewind (fd->fd);
