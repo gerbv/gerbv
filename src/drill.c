@@ -101,18 +101,15 @@ typedef struct drill_state {
     /* 0 means we don't try to autodetect any of the other values */
     int autod;
     
-    /* in FMT_USER this specifies the number of digits before the
-     * decimal point when doing trailing zero suppression.  Otherwise
-     * it is the number of digits *after* the decimal
-     * place in the file
-     */
-    int decimals;
+    /* Number of digits before the decimal point in the coordinate format.
+     * E.g. for FMT_00_0000 (2:4), leading_digits = 2.
+     * Used when trailing zero suppression is active. */
+    int leading_digits;
 
-    /* When FILE_FORMAT=N:M is parsed, stores N (digits before decimal).
-     * Used to correctly set decimals when trailing zero suppression is
-     * later specified via INCH,LZ or METRIC,LZ, because decimals must be
-     * N (not M) in FMT_USER + trailing suppression mode. */
-    int digits_before;
+    /* Number of digits after the decimal point in the coordinate format.
+     * E.g. for FMT_00_0000 (2:4), trailing_digits = 4.
+     * Used as the scale factor for leading zero suppression. */
+    int trailing_digits;
 
     /* Routing mode state (G00/G01 + M15/M16/M17) */
     drill_g_code_t route_mode;  /* DRILL_G_DRILL (default), DRILL_G_ROUT, or DRILL_G_LINEARMOVE */
@@ -154,7 +151,8 @@ static gerbv_net_t *drill_add_arc_segment(gerbv_image_t *image,
 				gerbv_net_t *curr_net,
 				double prev_x, double prev_y);
 static double read_double(gerb_file_t *fd, number_fmt_t fmt,
-				gerbv_omit_zeros_t omit_zeros, int decimals);
+				gerbv_omit_zeros_t omit_zeros,
+				int leading_digits, int trailing_digits);
 static void eat_line(gerb_file_t *fd);
 static void eat_whitespace(gerb_file_t *fd);
 static char *get_line(gerb_file_t *fd);
@@ -188,7 +186,8 @@ enum {
     HA_auto = 0,
     HA_suppression,
     HA_xy_units,
-    HA_digits,
+    HA_leading_digits,
+    HA_trailing_digits,
 #if 0
     HA_tool_units,
 #endif
@@ -205,10 +204,11 @@ static gerbv_HID_Attribute drill_attribute_list[] = {
   {N_("units"), N_("Length units"),
    HID_Enum, 0, 0, {0, 0, 0}, units_list, 0, 0},
 
-  {N_("digits"), N_("Number of digits.  For trailing zero suppression,"
-   " this is the number of digits before the decimal point.  "
-   "Otherwise this is the number of digits after the decimal point."),
-   HID_Integer, 0, 20, {5, 0, 0}, 0, 0, 0},
+  {N_("leading_digits"), N_("Number of digits before decimal point."),
+   HID_Integer, 0, 6, {2, 0, 0}, 0, 0, 0},
+
+  {N_("trailing_digits"), N_("Number of digits after decimal point."),
+   HID_Integer, 0, 6, {4, 0, 0}, 0, 0, 0},
 
 #if 0
   {"tool_units", "Tool size units",
@@ -610,7 +610,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     if (!hid_attrs[HA_auto].default_val.int_value) {
 	state->autod = 0;
 	state->number_format = FMT_USER;
-	state->decimals = hid_attrs[HA_digits].default_val.int_value;
+	state->leading_digits = hid_attrs[HA_leading_digits].default_val.int_value;
+	state->trailing_digits = hid_attrs[HA_trailing_digits].default_val.int_value;
 
 	if (GERBV_UNIT_MM == hid_attrs[HA_xy_units].default_val.int_value) {
 	    state->unit = GERBV_UNIT_MM;
@@ -925,7 +926,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			state->backup_number_format = state->number_format;
 		    }
 		    state->number_format = FMT_00_0000;
-		    state->decimals = 4;
+		    state->leading_digits = 2;
+		    state->trailing_digits = 4;
 		    state->unit = GERBV_UNIT_INCH;
 		}
 
@@ -1041,13 +1043,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 	      step_x = 0.0;
 	      if (c == 'X') {
-		step_x = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+		step_x = read_double(fd, state->number_format, image->format->omit_zeros, state->leading_digits, state->trailing_digits);
 		c = gerb_fgetc (fd);
 	      }
 
 	      step_y = 0.0;
 	      if( c == 'Y') {
-		  step_y = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+		  step_y = read_double(fd, state->number_format, image->format->omit_zeros, state->leading_digits, state->trailing_digits);
 	      } else {
 		gerb_ungetc (fd);
 	      }
@@ -1202,25 +1204,31 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     }
 
     switch (state->number_format) {
-    case FMT_000_00:
-    case FMT_0000_00:
-	hid_attrs[HA_digits].default_val.int_value = 2;
+    case FMT_00_0000:
+	hid_attrs[HA_leading_digits].default_val.int_value = 2;
+	hid_attrs[HA_trailing_digits].default_val.int_value = 4;
 	break;
 
     case FMT_000_000:
-	hid_attrs[HA_digits].default_val.int_value = 3;
+	hid_attrs[HA_leading_digits].default_val.int_value = 3;
+	hid_attrs[HA_trailing_digits].default_val.int_value = 3;
 	break;
-	
-    case FMT_00_0000:
-	hid_attrs[HA_digits].default_val.int_value = 4;
+
+    case FMT_000_00:
+	hid_attrs[HA_leading_digits].default_val.int_value = 3;
+	hid_attrs[HA_trailing_digits].default_val.int_value = 2;
 	break;
-	
+
+    case FMT_0000_00:
+	hid_attrs[HA_leading_digits].default_val.int_value = 4;
+	hid_attrs[HA_trailing_digits].default_val.int_value = 2;
+	break;
+
     case FMT_USER:
-	DPRINTF("%s():  Keeping user specified number of decimal places (%d)\n",
-		 __FUNCTION__,
-		 hid_attrs[HA_digits].default_val.int_value);
+	hid_attrs[HA_leading_digits].default_val.int_value = state->leading_digits;
+	hid_attrs[HA_trailing_digits].default_val.int_value = state->trailing_digits;
 	break;
-	
+
     default:
 	break;
     }
@@ -1463,7 +1471,7 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
     while (!done) {
 	switch((char)temp) {
 	case 'C':
-	    size = read_double(fd, state->header_number_format, GERBV_OMIT_ZEROS_TRAILING, state->decimals);
+	    size = read_double(fd, state->header_number_format, GERBV_OMIT_ZEROS_TRAILING, state->leading_digits, state->trailing_digits);
 	    DPRINTF("  Read a size of %g\n", size);
 
 	    if (state->unit == GERBV_UNIT_MM) {
@@ -1771,13 +1779,6 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
 		image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
 	    }
 
-	    if (!state->autod && state->number_format == FMT_USER
-	    &&  state->digits_before > 0 && c == 'L') {
-		/* FILE_FORMAT=N:M was seen; for trailing suppression,
-		 * decimals must be N (digits before decimal point). */
-		state->decimals = state->digits_before;
-	    }
-
 	    if (state->autod && state->number_format != FMT_USER) {
 		/* Default metric number format is 6-digit, 1 um
 		 * resolution.  The header number format (for T#C#
@@ -1789,7 +1790,8 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
 		 * so don't do this default. */
 		state->header_number_format =
 		    state->number_format = FMT_000_000;
-		state->decimals = 3;
+		state->leading_digits = 3;
+		state->trailing_digits = 3;
 	    }
 
 	    if (',' == gerb_fgetc(fd)) {
@@ -1831,7 +1833,8 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
 
 		if (state->autod) {
 		    state->number_format = FMT_0000_00;
-		    state->decimals = 2;
+		    state->leading_digits = 4;
+		    state->trailing_digits = 2;
 		}
 		break;
 	    }
@@ -1848,16 +1851,23 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
 		break;
 	    }
 
-	    if ('0' == gerb_fgetc(fd)
-	    &&  state->autod) {
-		state->number_format = FMT_000_000;
-		state->decimals = 3;
-	    } else {
-		gerb_ungetc(fd);
-
-		if (state->autod) {
-		    state->number_format = FMT_000_00;
-		    state->decimals = 2;
+	    {
+		int last_char = gerb_fgetc(fd);
+		if (last_char == '0') {
+		    if (state->autod) {
+			state->number_format = FMT_000_000;
+			state->leading_digits = 3;
+			state->trailing_digits = 3;
+		    }
+		} else {
+		    if (last_char != EOF) {
+			gerb_ungetc(fd);
+		    }
+		    if (state->autod) {
+			state->number_format = FMT_000_00;
+			state->leading_digits = 3;
+			state->trailing_digits = 2;
+		    }
 		}
 	    }
 
@@ -1958,8 +1968,8 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
     return 0;
   }
   state->header_number_format = state->number_format = FMT_USER;
-  state->decimals = digits_after;
-  state->digits_before = digits_before;
+  state->leading_digits = digits_before;
+  state->trailing_digits = digits_after;
   state->autod = 0;
   return 1;
 } /* drill_parse_header_is_metric_comment() */
@@ -2002,12 +2012,8 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 		if (state->autod) {
 		    state->header_number_format =
 			state->number_format = FMT_00_0000;
-		    state->decimals = 4;
-		} else if (state->number_format == FMT_USER
-			&& state->digits_before > 0) {
-		    /* FILE_FORMAT=N:M was seen; for trailing suppression,
-		     * decimals must be N (digits before decimal point). */
-		    state->decimals = state->digits_before;
+		    state->leading_digits = 2;
+		    state->trailing_digits = 4;
 		}
 		break;
 
@@ -2016,10 +2022,9 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 		if (state->autod) {
 		    state->header_number_format =
 			state->number_format = FMT_00_0000;
-		    state->decimals = 4;
+		    state->leading_digits = 2;
+		    state->trailing_digits = 4;
 		}
-		/* For TZ (leading suppression), decimals stays as M (digits
-		 * after decimal, already set by FILE_FORMAT parser). */
 		break;
 
 	    default:
@@ -2178,10 +2183,10 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 
     while (TRUE) {
       if (firstchar == 'X') {
-        x = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+        x = read_double(fd, state->number_format, image->format->omit_zeros, state->leading_digits, state->trailing_digits);
         found_x = TRUE;
       } else if (firstchar == 'Y') {
-        y = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
+        y = read_double(fd, state->number_format, image->format->omit_zeros, state->leading_digits, state->trailing_digits);
         found_y = TRUE;
       } else if (firstchar == 'I') {
         i_val = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
@@ -2241,7 +2246,8 @@ new_state(drill_state_t *state)
 	state->backup_number_format = FMT_000_000; /* only used for METRIC */
 	state->header_number_format = state->number_format = FMT_00_0000; /* i. e. INCH */
 	state->autod = 1;
-	state->decimals = 4;
+	state->leading_digits = 2;
+	state->trailing_digits = 4;
 	state->route_mode = DRILL_G_DRILL;
 	state->tool_down = FALSE;
     }
@@ -2251,162 +2257,114 @@ new_state(drill_state_t *state)
 
 
 /* -------------------------------------------------------------- */
+typedef struct {
+    char values[DRILL_READ_DOUBLE_SIZE];
+    int  ndigits;
+    gboolean decimal_point;
+    gboolean sign_prepend;
+} drill_read_double_buffer_t;
+
+/* Read characters from fd into buffer, tracking digit count,
+   decimal point presence, and sign. */
+static void
+read_double_buffered(gerb_file_t *fd, drill_read_double_buffer_t *buffer)
+{
+    int read;
+    int i = 0;
+
+    memset(buffer, 0, sizeof(drill_read_double_buffer_t));
+
+    read = gerb_fgetc(fd);
+    while (read != EOF && i < (DRILL_READ_DOUBLE_SIZE - 1)) {
+	if (!(isdigit(read) || read == '.' || read == ',' || read == '+' || read == '-')) {
+	    break;
+	}
+
+	if (read == ',' || read == '.') {
+	    buffer->decimal_point = TRUE;
+	}
+
+	/*
+	 * FIXME -- if we are going to do this, don't we need a
+	 * locale-independent strtod()?  I think pcb has one.
+	 */
+	if (read == ',') {
+	    read = '.'; /* adjust for strtod() */
+	}
+
+	if (isdigit(read)) {
+	    buffer->ndigits++;
+	}
+
+	if (read == '-' || read == '+') {
+	    buffer->sign_prepend = TRUE;
+	}
+
+	buffer->values[i++] = (char)read;
+	read = gerb_fgetc(fd);
+    }
+
+    buffer->values[i] = 0;
+    gerb_ungetc(fd);
+}
+
+/* Apply format conversion to the buffered string. */
+static double
+read_double_impl(const drill_read_double_buffer_t *buffer, number_fmt_t fmt,
+		 gerbv_omit_zeros_t omit_zeros,
+		 int leading_digits, int trailing_digits)
+{
+    double power_of_ten;
+
+    if (buffer->decimal_point) {
+	power_of_ten = 0.0;
+    } else if (omit_zeros != GERBV_OMIT_ZEROS_TRAILING) {
+	/* Whether GERBV_OMIT_ZEROS_LEADING or GERBV_OMIT_ZEROS_NONE,
+	 * the number of trailing digits is guaranteed to have been
+	 * provided in the file, so we can derive the scale directly. */
+	switch (fmt) {
+	case FMT_0000_00:
+	case FMT_000_00:
+	    power_of_ten = -2.0;
+	    break;
+	case FMT_00_0000:
+	    power_of_ten = -4.0;
+	    break;
+	case FMT_000_000:
+	    power_of_ten = -3.0;
+	    break;
+	case FMT_USER:
+	    power_of_ten = -trailing_digits;
+	    break;
+	default:
+	    fprintf(stderr, _("%s(): Unhandled fmt %d\n"), __FUNCTION__, fmt);
+	    return 0;
+	}
+    } else {
+	/* Trailing zero suppression: the number of leading digits
+	 * tells us where the decimal point should be inserted. */
+	power_of_ten = leading_digits - buffer->ndigits;
+    }
+
+    double raw    = strtod(buffer->values, NULL);
+    double scale  = pow(10.0, power_of_ten);
+    double result = raw * scale;
+
+    DPRINTF("    %s()=%f: fmt=%d, omit_zeros=%d, leading/trailing=%d/%d\n",
+	    __FUNCTION__, result, fmt, omit_zeros, leading_digits, trailing_digits);
+
+    return result;
+}
+
 /* Reads one double from fd and returns it.
    If a decimal point is found, fmt is not used. */
 static double
-read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, int decimals)
+read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros,
+	    int leading_digits, int trailing_digits)
 {
-    int read;
-    char temp[DRILL_READ_DOUBLE_SIZE];
-    unsigned int i = 0;
-    double result;
-    gboolean decimal_point = FALSE;
-    gboolean sign_prepend = FALSE;
-
-    memset(temp, 0, sizeof(temp));
-
-    read = gerb_fgetc(fd);
-    while(read != EOF && i < (DRILL_READ_DOUBLE_SIZE -1) &&
-	  (isdigit(read) || read == '.' || read == ',' || read == '+' || read == '-')) {
-      if(read == ',' || read == '.') decimal_point = TRUE;
-      
-      /*
-       * FIXME -- if we are going to do this, don't we need a
-       * locale-independent strtod()?  I think pcb has one.
-       */
-      if(read == ',') {
-	    read = '.'; /* adjust for strtod() */
-      }
-
-	if(read == '-' || read == '+') {
-	    sign_prepend = TRUE;
-	}
-
-      temp[i++] = (char)read;
-      read = gerb_fgetc(fd);
-    }
-
-    temp[i] = 0;
-    gerb_ungetc(fd);
-
-    if (decimal_point) {
-	result = strtod(temp, NULL);
-    } else {
-	unsigned int wantdigits;
-	double scale;
-	char tmp2[DRILL_READ_DOUBLE_SIZE];
-
-	memset(tmp2, 0, sizeof(tmp2));
-
-	/* Nothing to take care for when leading zeros are
-	   omitted. */
-	if (omit_zeros == GERBV_OMIT_ZEROS_TRAILING) {
-	    switch (fmt) {
-	    case FMT_00_0000:
-	      wantdigits = 2;
-	      break;
-
-	    case FMT_000_000:
-	      wantdigits = 3;
-	      break;
-
-	    case FMT_0000_00:
-		wantdigits = 4;
-		break;
-
-	    case FMT_000_00:
-		wantdigits = 3;
-		break;
-
-	    case FMT_USER:
-		wantdigits = decimals;
-		break;
-
-	    default:
-	      /* cannot happen, just plugs a compiler warning */
-	      fprintf(stderr, _("%s():  omit_zeros == GERBV_OMIT_ZEROS_TRAILING but fmt = %d.\n"
-		      "This should never have happened\n"), __FUNCTION__, fmt);
-	      return 0;
-	    }
-	    
-	    /* need to add an extra char for '+' or '-' */
-	    if (sign_prepend) {
-	      wantdigits++;
-	    }
-
-
-	    /* 
-	     * we need at least wantdigits + one for the decimal place
-	     * + one for the terminating null character
-	     */
-	    if (wantdigits > sizeof(tmp2) - 2) {
-	      fprintf(stderr, _("%s():  wantdigits = %d which exceeds the maximum allowed size\n"),
-		      __FUNCTION__, wantdigits);
-	      return 0;
-	    }
-
-	    /*
-	     * After we have read the correct number of digits
-	     * preceeding the decimal point, insert a decimal point
-	     * and append the rest of the digits.
-	     */
-	    DPRINTF("%s():  wantdigits = %d, strlen(\"%s\") = %ld\n",
-		    __FUNCTION__, wantdigits, temp, (long) strlen(temp));
-	    for (i = 0 ; i < wantdigits && i < strlen(temp) ; i++) {
-	      tmp2[i] = temp[i];
-	    }
-	    for ( ; i < wantdigits ; i++) {
-	      tmp2[i] = '0';
-	    }
-	    tmp2[i++] = '.';
-	    for ( ; i <= strlen(temp) ; i++) {
-	      tmp2[i] = temp[i-1];
-	    }
-	    DPRINTF("%s():  After dealing with trailing zero suppression, convert \"%s\"\n", __FUNCTION__, tmp2);
-	    scale = 1.0;
-	    
-	    for (i = 0 ; i <= strlen(tmp2) && i < sizeof (temp) ; i++) {
-	      temp[i] = tmp2[i];
-	    }
-
-	} else {
-
-	  /*
-	   * figure out the scale factor when we are not suppressing
-	   * trailing zeros.
-	   */
-	  switch (fmt) {
-	  case FMT_00_0000:
-	    scale = 1E-4;
-	    break;
-	    
-	  case FMT_000_000:
-	    scale = 1E-3;
-	    break;
-	    
-	  case FMT_000_00:
-	  case FMT_0000_00:
-	    scale = 1E-2;
-	    break;
-	    
-	  case FMT_USER:
-	    scale = pow (10.0, -1.0*decimals);
-	    break;
-	    
-	  default:
-	    /* cannot happen, just plugs a compiler warning */
-	    fprintf (stderr, _("%s(): Unhandled fmt ` %d\n"), __FUNCTION__, fmt);
-	    exit (1);
-	  }
-	}
-
-	result = strtod(temp, NULL) * scale;
-    }
-
-    DPRINTF("    %s()=%f: fmt=%d, omit_zeros=%d, decimals=%d \n",
-		    __FUNCTION__, result, fmt, omit_zeros, decimals);
-
-    return result;
+    drill_read_double_buffer_t buffer;
+    read_double_buffered(fd, &buffer);
+    return read_double_impl(&buffer, fmt, omit_zeros, leading_digits, trailing_digits);
 } /* read_double */
 
 /* -------------------------------------------------------------- */
