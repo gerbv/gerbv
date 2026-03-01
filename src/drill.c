@@ -142,10 +142,9 @@ static int drill_parse_header_is_ici(gerb_file_t *fd, drill_state_t *state,
 static void drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 				gerbv_image_t *image, drill_state_t *state,
 				unsigned int file_line);
-static drill_state_t *new_state(drill_state_t *state);
+static drill_state_t *new_state(void);
 static gerbv_net_t *drill_add_route_segment(gerbv_image_t *image,
 				drill_state_t *state,
-				gerbv_drill_stats_t *stats,
 				gerbv_net_t *curr_net,
 				double prev_x, double prev_y);
 static gerbv_net_t *drill_add_arc_segment(gerbv_image_t *image,
@@ -256,7 +255,7 @@ drill_update_image_info_min_max_from_bbox(gerbv_image_info_t *info,
  */
 static gerbv_net_t *
 drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state,
-		gerbv_drill_stats_t *stats, gerbv_net_t *curr_net)
+		gerbv_net_t *curr_net)
 {
     gerbv_render_size_t *bbox;
     double r;
@@ -318,8 +317,7 @@ drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state,
  */
 static gerbv_net_t *
 drill_add_route_segment(gerbv_image_t *image, drill_state_t *state,
-		gerbv_drill_stats_t *stats, gerbv_net_t *curr_net,
-		double prev_x, double prev_y)
+		gerbv_net_t *curr_net, double prev_x, double prev_y)
 {
     gerbv_render_size_t *bbox;
     double r;
@@ -593,7 +591,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     image->drill_stats = stats;
 
     /* Create local state variable to track photoplotter state */
-    state = new_state(state);
+    state = new_state();
     if (state == NULL) {
 	GERB_FATAL_ERROR("malloc state failed in %s()", __FUNCTION__);
     }
@@ -1059,9 +1057,9 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		state->curr_x = start_x + c*step_x;
 		state->curr_y = start_y + c*step_y;
 		DPRINTF("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
-		curr_net = drill_add_drill_hole (image, state, stats, curr_net);
+		curr_net = drill_add_drill_hole (image, state, curr_net);
 	      }
-	      
+
 	    }
 	    break;
 
@@ -1118,11 +1116,11 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    } else if ((state->route_mode == DRILL_G_LINEARMOVE ||
 		 state->route_mode == DRILL_G_ROUT) && state->tool_down) {
 		/* Routing mode, tool down: create line segment */
-		curr_net = drill_add_route_segment(image, state, stats,
+		curr_net = drill_add_route_segment(image, state,
 			curr_net, prev_x, prev_y);
 	    } else {
 		/* Drill mode (default): create flash hole */
-		curr_net = drill_add_drill_hole(image, state, stats, curr_net);
+		curr_net = drill_add_drill_hole(image, state, curr_net);
 	    }
 	    break;
 	}
@@ -2228,9 +2226,9 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 /* Allocates and returns a new drill_state structure
    Returns state pointer on success, NULL on ERROR */
 static drill_state_t *
-new_state(drill_state_t *state)
+new_state(void)
 {
-    state = g_new0(drill_state_t, 1);
+    drill_state_t *state = g_new0(drill_state_t, 1);
     if (state != NULL) {
 	/* Init structure */
 	state->curr_section = DRILL_NONE;
