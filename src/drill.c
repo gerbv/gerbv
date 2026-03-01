@@ -153,6 +153,13 @@ static gerbv_net_t *drill_add_arc_segment(gerbv_image_t *image,
 				gerbv_drill_stats_t *stats,
 				gerbv_net_t *curr_net,
 				double prev_x, double prev_y);
+static gerbv_net_t *drill_add_circle_segment(gerbv_image_t *image,
+				drill_state_t *state,
+				gerbv_drill_stats_t *stats,
+				gerbv_net_t *curr_net,
+				double start_x, double start_y,
+				double center_x, double center_y,
+				gboolean cw);
 static double read_double(gerb_file_t *fd, number_fmt_t fmt,
 				gerbv_omit_zeros_t omit_zeros, int decimals);
 static void eat_line(gerb_file_t *fd);
@@ -534,6 +541,94 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
 }
 
 /* -------------------------------------------------------------- */
+/* Full-circle arc net for G32/G33 canned cycles.
+ * start_x/y is the point on the circle (tool position before G-code),
+ * center_x/y is the circle center. Both in file units. */
+static gerbv_net_t *
+drill_add_circle_segment(gerbv_image_t *image, drill_state_t *state,
+	gerbv_drill_stats_t *stats, gerbv_net_t *curr_net,
+	double start_x, double start_y,
+	double center_x, double center_y, gboolean cw)
+{
+    gerbv_render_size_t *bbox;
+    double r, tool_r;
+    double cx, cy, sx, sy;
+    double start_angle;
+
+    curr_net->next = g_new0(gerbv_net_t, 1);
+    if (curr_net->next == NULL)
+	GERB_FATAL_ERROR("malloc curr_net->next failed in %s()",
+			__FUNCTION__);
+
+    curr_net = curr_net->next;
+    curr_net->layer = image->layers;
+    curr_net->state = image->states;
+
+    sx = start_x;
+    sy = start_y;
+    cx = center_x;
+    cy = center_y;
+
+    if (state->unit == GERBV_UNIT_MM) {
+	sx /= 25.4;
+	sy /= 25.4;
+	cx /= 25.4;
+	cy /= 25.4;
+	curr_net->state->unit = GERBV_UNIT_INCH;
+    }
+
+    /* Full circle: start == stop (returns to same point) */
+    curr_net->start_x = sx;
+    curr_net->start_y = sy;
+    curr_net->stop_x = sx;
+    curr_net->stop_y = sy;
+    curr_net->aperture = state->current_tool;
+    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+    curr_net->interpolation = cw ? GERBV_INTERPOLATION_CW_CIRCULAR
+				 : GERBV_INTERPOLATION_CCW_CIRCULAR;
+
+    /* Populate cirseg for full 360 degree circle */
+    curr_net->cirseg = g_new0(gerbv_cirseg_t, 1);
+    if (curr_net->cirseg == NULL)
+	GERB_FATAL_ERROR("malloc cirseg failed in %s()", __FUNCTION__);
+
+    r = hypot(sx - cx, sy - cy);
+    curr_net->cirseg->cp_x = cx;
+    curr_net->cirseg->cp_y = cy;
+    curr_net->cirseg->width = r * 2.0;
+    curr_net->cirseg->height = r * 2.0;
+
+    /* Angle from center to start point */
+    start_angle = RAD2DEG(atan2(sy - cy, sx - cx));
+    if (start_angle < 0)
+	start_angle += 360.0;
+
+    if (cw) {
+	curr_net->cirseg->angle1 = start_angle;
+	curr_net->cirseg->angle2 = start_angle - 360.0;
+    } else {
+	curr_net->cirseg->angle1 = start_angle;
+	curr_net->cirseg->angle2 = start_angle + 360.0;
+    }
+
+    /* Bounding box: full circle centered at (cx, cy) with tool radius */
+    if (image->aperture[state->current_tool] == NULL)
+	return curr_net;
+
+    bbox = &curr_net->boundingBox;
+    tool_r = image->aperture[state->current_tool]->parameter[0] / 2;
+
+    bbox->left   = cx - r - tool_r;
+    bbox->right  = cx + r + tool_r;
+    bbox->bottom = cy - r - tool_r;
+    bbox->top    = cy + r + tool_r;
+
+    drill_update_image_info_min_max_from_bbox(image->info, bbox);
+
+    return curr_net;
+}
+
+/* -------------------------------------------------------------- */
 gerbv_image_t *
 parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int reload)
 {
@@ -775,6 +870,35 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		drill_update_image_info_min_max_from_bbox(image->info, bbox);
 
 		curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+
+		break;
+	    }
+
+	    case DRILL_G_ROUTCIRCLE:       /* G32 -- routed CW circle */
+	    case DRILL_G_ROUTCIRCLECCW: {  /* G33 -- routed CCW circle */
+		double circ_start_x = state->curr_x;
+		double circ_start_y = state->curr_y;
+
+		if (EOF == (read = gerb_fgetc(fd))) {
+		    gerbv_stats_printf(stats->error_list,
+			    GERBV_MESSAGE_ERROR, -1,
+			    _("Unexpected EOF found in file \"%s\""),
+			    fd->filename);
+		    break;
+		}
+
+		/* Parse center coordinates */
+		drill_parse_coordinate(fd, read, image, state, file_line);
+
+		/* curr_x/y now holds the center; start is on the circle */
+		curr_net = drill_add_circle_segment(image, state, stats,
+			curr_net, circ_start_x, circ_start_y,
+			state->curr_x, state->curr_y,
+			g_code == DRILL_G_ROUTCIRCLE);
+
+		/* Restore position (full circle returns to origin) */
+		state->curr_x = circ_start_x;
+		state->curr_y = circ_start_y;
 
 		break;
 	    }
@@ -2130,6 +2254,12 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, unsigned int file_line
 	break;
     case 5:
 	stats->G05++;
+	break;
+    case 32:
+	stats->G32++;
+	break;
+    case 33:
+	stats->G33++;
 	break;
     case 85:
 	stats->G85++;
