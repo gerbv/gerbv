@@ -8,6 +8,8 @@ changelog:
       labels: [ enhancement ]
     - title: Documentation
       labels: [ documentation ]
+    - title: Buildsystem (CMake/CTest/CPack/etc)
+      labels: [ buildsystem ]
     - title: Platform support
       labels: [ Windows, GTK3/GTK4 ]
     - title: Other changes
