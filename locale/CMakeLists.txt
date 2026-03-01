@@ -3,11 +3,12 @@ set(GETTEXT_DOMAIN "gerbv")
 set(GETTEXT_TARGET "gerbv-translations")
 set(GETTEXT_OUTPUT_DIR "locale")
 set(GETTEXT_LANGUAGES "ja" "ru")
+get_filename_component(GERBV_BINARY_DIR "${CMAKE_BINARY_DIR}" ABSOLUTE)
 
 set(GETTEXT_SOURCES
      "../src/attribute.c"
-     ${CMAKE_BINARY_DIR}/config/authors.c
-     ${CMAKE_BINARY_DIR}/config/bugs.c
+     ${GERBV_BINARY_DIR}/config/authors.c
+     ${GERBV_BINARY_DIR}/config/bugs.c
      ../src/callbacks.c
      ../src/csv.c
      ../src/draw-gdk.c
@@ -65,6 +66,7 @@ configure_gettext(
  BUILD_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${GETTEXT_OUTPUT_DIR}
  ALL
 )
+add_dependencies(${GETTEXT_TARGET} generated)
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${GETTEXT_OUTPUT_DIR}/ TYPE LOCALE)
 

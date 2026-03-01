@@ -89,8 +89,6 @@ add_custom_command(
     DEPENDS ${CMAKE_SOURCE_DIR}/BUGS ${CMAKE_SOURCE_DIR}/AUTHORS
     VERBATIM)
 
-add_library(generated INTERFACE)
-target_sources(generated PRIVATE bugs.c authors.c)
-target_include_directories(generated INTERFACE)
+add_custom_target(generated DEPENDS bugs.c authors.c)
 set_target_properties(generated PROPERTIES
                         ADDITIONAL_CLEAN_FILES "bugs.c;authors.c")
