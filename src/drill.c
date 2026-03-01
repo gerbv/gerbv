@@ -56,6 +56,12 @@
 #include "drill.h"
 #include "drill_stats.h"
 
+#ifdef __GNUC__
+#define UNUSED __attribute__((unused))
+#else
+#define UNUSED
+#endif
+
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
@@ -67,9 +73,33 @@ typedef enum {
     DRILL_NONE, DRILL_HEADER, DRILL_DATA
 } drill_file_section_t;
 
+#if DEBUG
+static const char* drill_file_section_list[] = { "NONE", "HEADER", "DATA", NULL };
+
+static const char*
+drill_file_section_to_string(drill_file_section_t section) {
+    if (section < 0 || section > DRILL_DATA) {
+	return "Invalid";
+    }
+    return drill_file_section_list[section];
+}
+#endif
+
 typedef enum {
     DRILL_MODE_ABSOLUTE, DRILL_MODE_INCREMENTAL
 } drill_coordinate_mode_t;
+
+#if DEBUG
+static const char* drill_coordinate_mode_list[] = { "ABSOLUTE", "INCREMENTAL", NULL };
+
+static const char*
+drill_coordinate_mode_to_string(drill_coordinate_mode_t mode) {
+    if (mode < 0 || mode > 1) {
+	return "Invalid";
+    }
+    return drill_coordinate_mode_list[mode];
+}
+#endif
 
 typedef enum {
     FMT_00_0000	/* INCH */,
@@ -78,6 +108,29 @@ typedef enum {
     FMT_0000_00	/* METRIC 6-digit, 10 um */,
     FMT_USER	/* User defined format */
 } number_fmt_t;
+
+static const char* UNUSED number_fmt_list[] = {
+    N_("2:4"), N_("3:3"), N_("3:2"), N_("4:2"), N_("USER"), NULL
+};
+
+static const char* UNUSED
+number_fmt_to_string(number_fmt_t fmt) {
+    if (fmt < 0 || fmt > FMT_USER) {
+	return "UNKNOWN";
+    }
+    return _(number_fmt_list[fmt]);
+}
+
+static gboolean UNUSED
+number_fmt_implies_imperial(number_fmt_t fmt) {
+    return fmt == FMT_00_0000;
+}
+
+static gboolean UNUSED
+number_fmt_implies_metric(number_fmt_t fmt) {
+    return (fmt == FMT_000_000) || (fmt == FMT_000_00)
+	|| (fmt == FMT_0000_00) || (fmt == FMT_USER);
+}
 
 typedef struct drill_state {
     double curr_x;
@@ -171,6 +224,7 @@ enum {
     SUP_TRAIL
 };
 
+/* HID_Attributes suppression list (does NOT match gerbv_omit_zeros_t values) */
 static const char *suppression_list[] = {
     N_("None"),
     N_("Leading"),
@@ -178,11 +232,34 @@ static const char *suppression_list[] = {
     0
 };
 
+#if DEBUG
+/* gerbv_omit_zeros_t value list */
+static const char* omit_zeros_list[] = {
+    N_("Leading"), N_("Trailing"), N_("Explicit"), N_("Unspecified"), NULL
+};
+
+static const char*
+omit_zeros_to_string(gerbv_omit_zeros_t omit_zeros) {
+    if (omit_zeros < 0 || omit_zeros > 3) {
+	return "Invalid";
+    }
+    return _(omit_zeros_list[omit_zeros]);
+}
+#endif
+
 static const char *units_list[] = {
     N_("inch"),
     N_("mm"),
     0
 };
+
+static const char* UNUSED
+unit_to_string(gerbv_unit_t unit) {
+    if (unit < 0 || unit > 1) {
+	return "Unspecified";
+    }
+    return _(units_list[unit]);
+}
 
 enum {
     HA_auto = 0,
@@ -215,6 +292,251 @@ static gerbv_HID_Attribute drill_attribute_list[] = {
    HID_Enum, 0, 0, {0, 0, 0}, units_list, 0, 0},
 #endif
 };
+
+/* -------------------------------------------------------------- */
+/* Runtime invariant checking */
+
+#define CHK_STATE(state, image, fd, file_line) \
+    do { \
+	check_invariants(state, image, fd, file_line, __FUNCTION__, __LINE__); \
+    } while (0)
+
+#if DEBUG
+#define DUMP_STATE(state, image, fd, file_line) \
+    do { \
+	dump_state(state, image, fd, file_line, __FUNCTION__, __LINE__); \
+    } while (0)
+
+static void UNUSED
+dump_state(const drill_state_t *state, const gerbv_image_t *image,
+	   const gerb_file_t *fd, unsigned int file_line,
+	   const char *function, int code_line)
+{
+    printf("l: %-3u  section: %-6s  coord: %-11s  a: %c unit: %-4s (%d)"
+	   " number_fmts %4s / %4s / %4s omit_%s (%d)"
+	   "  l/t digits %d:%d\n",
+	   file_line,
+	   drill_file_section_to_string(state->curr_section),
+	   drill_coordinate_mode_to_string(state->coordinate_mode),
+	   state->autod ? 'T' : 'F',
+	   unit_to_string(state->unit), state->unit,
+	   number_fmt_to_string(state->header_number_format),
+	   number_fmt_to_string(state->number_format),
+	   number_fmt_to_string(state->backup_number_format),
+	   omit_zeros_to_string(image->format->omit_zeros),
+	   image->format->omit_zeros,
+	   state->leading_digits, state->trailing_digits);
+}
+#else
+#define DUMP_STATE(state, image, fd, file_line)
+#endif
+
+static void UNUSED
+check_floating_point(double value, const char *field_name,
+		     const drill_state_t *state, const gerbv_image_t *image,
+		     const gerb_file_t *fd, unsigned int file_line,
+		     const char *function, int code_line)
+{
+    int classification = fpclassify(value);
+
+    if (classification == FP_NORMAL || classification == FP_ZERO) {
+	return;
+    } else if (classification == FP_NAN) {
+	if (image->drill_stats && image->drill_stats->error_list) {
+	    gerbv_stats_printf(image->drill_stats->error_list,
+		    GERBV_MESSAGE_FATAL, -1,
+		    _("%s(): Floating point number %s is NaN (%lf) "
+			"while parsing drill file %s (drill.c:%d)\n"),
+		    function, field_name, value,
+		    fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+		    code_line);
+	}
+	GERB_FATAL_ERROR(
+	    _("%s(): Floating point number %s is NaN (%lf) "
+		"while parsing drill file %s (drill.c:%d)\n"),
+	    function, field_name, value,
+	    fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+	    code_line);
+    } else if (classification == FP_INFINITE) {
+	if (image->drill_stats && image->drill_stats->error_list) {
+	    gerbv_stats_printf(image->drill_stats->error_list,
+		    GERBV_MESSAGE_FATAL, -1,
+		    _("%s(): Floating point number %s is +/- infinity (%lf) "
+			"while parsing drill file %s (drill.c:%d)\n"),
+		    function, field_name, value,
+		    fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+		    code_line);
+	}
+	GERB_COMPILE_ERROR(
+	    _("%s(): Floating point number %s is +/- infinity (%lf) "
+		"while parsing drill file %s (drill.c:%d)\n"),
+	    function, field_name, value,
+	    fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+	    code_line);
+    } else if (classification == FP_SUBNORMAL) {
+	if (image->drill_stats && image->drill_stats->error_list) {
+	    gerbv_stats_printf(image->drill_stats->error_list,
+		    GERBV_MESSAGE_FATAL, -1,
+		    _("%s(): Floating point number %s is subnormal (%lf) "
+			"while parsing drill file %s (drill.c:%d)\n"),
+		    function, field_name, value,
+		    fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+		    code_line);
+	}
+	GERB_FATAL_ERROR(
+	    _("%s(): Floating point number %s is subnormal (%lf) "
+		"while parsing drill file %s (drill.c:%d)\n"),
+	    function, field_name, value,
+	    fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+	    code_line);
+    }
+    GERB_FATAL_ERROR(
+	_("%s(): Floating point number %s (%lf) has unknown classification %d "
+	    "while parsing drill file %s (drill.c:%d)\n"),
+	function, field_name, value, classification,
+	fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+	code_line);
+}
+
+static void UNUSED
+check_min_max_int_value(int value, const char *field_name,
+			int min_inclusive, int max_inclusive,
+			const drill_state_t *state,
+			const gerbv_image_t *image,
+			const gerb_file_t *fd, unsigned int file_line,
+			const char *function, int code_line)
+{
+    if (value >= min_inclusive && value <= max_inclusive) {
+	return;
+    }
+    if (image->drill_stats && image->drill_stats->error_list) {
+	gerbv_stats_printf(image->drill_stats->error_list,
+		GERBV_MESSAGE_FATAL, -1,
+		_("%s(): Value %d in field %s is outside valid range [%d, %d] "
+		    "while parsing drill file %s (drill.c:%d)\n"),
+		function, value, field_name, min_inclusive, max_inclusive,
+		fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+		code_line);
+    }
+    GERB_FATAL_ERROR(
+	_("%s(): Value %d in field %s is outside valid range [%d, %d] "
+	    "while parsing drill file %s (drill.c:%d)\n"),
+	function, value, field_name, min_inclusive, max_inclusive,
+	fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+	code_line);
+}
+
+static void UNUSED
+check_invariants(const drill_state_t *state, const gerbv_image_t *image,
+		 const gerb_file_t *fd, unsigned int file_line,
+		 const char *function, int code_line)
+{
+    /* Tools have max two decimal digits (T00-T99). */
+    static const int max_valid_tool =
+	(APERTURE_MAX - 1 > 99) ? 99 : APERTURE_MAX - 1;
+
+    static const int max_units = 2;
+    static const int max_zero_suppression = 3;
+    static const int max_file_section = 2;
+    static const int max_coordinate_mode = 1;
+    static const int max_number_format = 4; /* FMT_USER */
+
+    /* Verify floating-point fields are valid numbers */
+    check_floating_point(state->curr_x, "state->curr_x",
+	    state, image, fd, file_line, function, code_line);
+    check_floating_point(state->curr_y, "state->curr_y",
+	    state, image, fd, file_line, function, code_line);
+    check_floating_point(state->origin_x, "state->origin_x",
+	    state, image, fd, file_line, function, code_line);
+    check_floating_point(state->origin_y, "state->origin_y",
+	    state, image, fd, file_line, function, code_line);
+
+    /* current_tool is used as an index into image->aperture[] */
+    check_min_max_int_value(state->current_tool, "state->current_tool",
+	    0, max_valid_tool, state, image, fd, file_line,
+	    function, code_line);
+
+    /* Verify valid range of enums */
+    check_min_max_int_value(state->unit, "state->unit",
+	    0, max_units, state, image, fd, file_line,
+	    function, code_line);
+    check_min_max_int_value(state->curr_section, "state->curr_section",
+	    0, max_file_section, state, image, fd, file_line,
+	    function, code_line);
+    check_min_max_int_value(state->coordinate_mode, "state->coordinate_mode",
+	    0, max_coordinate_mode, state, image, fd, file_line,
+	    function, code_line);
+    check_min_max_int_value(state->number_format, "state->number_format",
+	    0, max_number_format, state, image, fd, file_line,
+	    function, code_line);
+    check_min_max_int_value(state->header_number_format,
+	    "state->header_number_format",
+	    0, max_number_format, state, image, fd, file_line,
+	    function, code_line);
+    check_min_max_int_value(state->backup_number_format,
+	    "state->backup_number_format",
+	    0, max_number_format, state, image, fd, file_line,
+	    function, code_line);
+    check_min_max_int_value(image->format->omit_zeros,
+	    "image->format->omit_zeros",
+	    0, max_zero_suppression, state, image, fd, file_line,
+	    function, code_line);
+
+    /* Once past the header, header_number_format must be one of the
+     * standard formats or FMT_USER (set via ;FILE_FORMAT= comments).
+     * Metric sub-formats (FMT_000_00, FMT_0000_00) are only valid
+     * for number_format, not header_number_format. */
+    if (state->curr_section == DRILL_DATA
+    &&  state->header_number_format != FMT_00_0000
+    &&  state->header_number_format != FMT_000_000
+    &&  state->header_number_format != FMT_USER) {
+	if (image->drill_stats && image->drill_stats->error_list) {
+	    gerbv_stats_printf(image->drill_stats->error_list,
+		    GERBV_MESSAGE_FATAL, -1,
+		    _("%s(): header_number_format is %s (must be "
+			"FMT_00_0000, FMT_000_000, or FMT_USER) "
+			"in drill file %s line %u)\n"),
+		    function,
+		    number_fmt_to_string(state->header_number_format),
+		    fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+		    file_line);
+	}
+	GERB_FATAL_ERROR(
+	    _("%s(): header_number_format is %s (must be "
+		"FMT_00_0000, FMT_000_000, or FMT_USER) "
+		"in drill file %s line %u)\n"),
+	    function,
+	    number_fmt_to_string(state->header_number_format),
+	    fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+	    file_line);
+    }
+
+    /* Once past the header, unit and number_format must be consistent */
+    if (state->curr_section == DRILL_DATA
+    &&  state->number_format != FMT_USER) {
+	if (state->unit == GERBV_UNIT_MM
+	&&  !number_fmt_implies_metric(state->number_format)) {
+	    DPRINTF(
+		_("%s(): unit is %s but number format %s is not metric "
+		    "in drill file %s line %u)\n"),
+		function, unit_to_string(state->unit),
+		number_fmt_to_string(state->number_format),
+		fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+		file_line);
+	} else if (state->unit == GERBV_UNIT_INCH
+	       &&  !number_fmt_implies_imperial(state->number_format)) {
+	    GERB_FATAL_ERROR(
+		_("%s(): unit is inch but number format %s is not imperial "
+		    "in drill file %s line %u\n"),
+		function,
+		number_fmt_to_string(state->number_format),
+		fd ? fd->filename ? fd->filename : "n/a" : "n/a",
+		file_line);
+	}
+    }
+}
+
+/* -------------------------------------------------------------- */
 
 void
 drill_attribute_merge (gerbv_HID_Attribute *dest, int ndest, gerbv_HID_Attribute *src, int nsrc)
@@ -634,7 +956,12 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     DPRINTF("%s():  Starting parsing of drill file \"%s\"\n",
 		    __FUNCTION__, fd->filename);
 
+    CHK_STATE(state, image, fd, file_line);
+
     while (!parsing_done && (read = gerb_fgetc(fd)) != EOF) {
+
+	CHK_STATE(state, image, fd, file_line);
+	DUMP_STATE(state, image, fd, file_line);
 
 	switch ((char) read) {
 
