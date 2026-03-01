@@ -76,6 +76,35 @@ static int
 getopt_lengh_unit(const char *optarg, double *input_div,
 		gerbv_screen_t *screen);
 
+static gint
+compare_strings(gconstpointer a, gconstpointer b)
+{
+    return g_ascii_strcasecmp((const char *)a, (const char *)b);
+}
+
+static GList *
+scan_directory(const char *dirpath)
+{
+    GDir *dir = g_dir_open(dirpath, 0, NULL);
+    if (!dir)
+	return NULL;
+
+    GList *files = NULL;
+    const gchar *entry;
+    while ((entry = g_dir_read_name(dir)) != NULL) {
+	gchar *fullpath = g_build_filename(dirpath, entry, NULL);
+	if (g_file_test(fullpath, G_FILE_TEST_IS_REGULAR)
+	&&  gerbv_is_loadable_file(fullpath)) {
+	    files = g_list_prepend(files, fullpath);
+	} else {
+	    g_free(fullpath);
+	}
+    }
+    g_dir_close(dir);
+
+    return g_list_sort(files, compare_strings);
+}
+
 static gerbv_layer_color mainDefaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{115,115,222,177},
 	{255,127,115,177},
@@ -945,30 +974,48 @@ main(int argc, char *argv[])
 	    mainProject->path = g_path_get_dirname (project_filename);
 	}
     } else {
-    	gint loadedIndex = 0;
+	gint loadedIndex = 0;
 	for(i = optind ; i < argc; i++) {
-	    g_free (mainProject->path);
-	    if (!g_path_is_absolute(argv[i])) {
-		gchar *currentDir = g_get_current_dir ();
-		gchar *fullName = g_build_filename (currentDir,
-						    argv[i], NULL);
-		gerbv_open_layer_from_filename_with_color (mainProject, fullName,
-			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
-			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].green*257,
-			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].blue*257,
-			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
-		mainProject->path = g_path_get_dirname (fullName);
-		g_free (fullName);
-		g_free (currentDir);
+	    gchar *arg = argv[i];
+	    gchar *absArg;
+
+	    if (!g_path_is_absolute(arg)) {
+		gchar *currentDir = g_get_current_dir();
+		absArg = g_build_filename(currentDir, arg, NULL);
+		g_free(currentDir);
 	    } else {
-		gerbv_open_layer_from_filename_with_color (mainProject, argv[i],
+		absArg = g_strdup(arg);
+	    }
+
+	    if (g_file_test(absArg, G_FILE_TEST_IS_DIR)) {
+		GList *files = scan_directory(absArg);
+		if (!files) {
+		    fprintf(stderr,
+			_("No loadable files found in \"%s\"\n"), arg);
+		}
+		for (GList *l = files; l != NULL; l = l->next) {
+		    g_free(mainProject->path);
+		    gerbv_open_layer_from_filename_with_color(mainProject,
+			(gchar *)l->data,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].green*257,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].blue*257,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
-		mainProject->path = g_path_get_dirname (argv[i]);
+		    mainProject->path = g_path_get_dirname((gchar *)l->data);
+		    loadedIndex++;
+		}
+		g_list_free_full(files, g_free);
+	    } else {
+		g_free(mainProject->path);
+		gerbv_open_layer_from_filename_with_color(mainProject, absArg,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].green*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].blue*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
+		mainProject->path = g_path_get_dirname(absArg);
+		loadedIndex++;
 	    }
-	    loadedIndex++;
+	    g_free(absArg);
 	}
     }
 

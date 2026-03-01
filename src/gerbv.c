@@ -630,6 +630,25 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     return retv;
 } /* open_image */
 
+gboolean
+gerbv_is_loadable_file(const char *filename)
+{
+    gerb_file_t *fd;
+    gboolean foundBinary;
+
+    fd = gerb_fopen(filename);
+    if (fd == NULL)
+	return FALSE;
+
+    gboolean loadable = gerber_is_rs274x_p(fd, &foundBinary)
+		     || drill_file_p(fd, &foundBinary)
+		     || pick_and_place_check_file_type(fd, &foundBinary)
+		     || gerber_is_rs274d_p(fd);
+
+    gerb_fclose(fd);
+    return loadable;
+}
+
 gerbv_image_t *
 gerbv_create_rs274x_image_from_filename (gchar const* filename){
 	gerbv_image_t *returnImage;
