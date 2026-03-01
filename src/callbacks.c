@@ -73,7 +73,7 @@
 #endif
 
 
-#define dprintf if(DEBUG) printf
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 /* This default extension should really not be changed, but if it absolutely
  * must change, the ../win32/gerbv.nsi.in *must* be changed to reflect that.
@@ -458,12 +458,12 @@ gerbv_image_t *merge_images (int type)
 		GERB_COMPILE_ERROR(_("Unknown Layer type for merge"));
 		goto err;
 	}
-	dprintf("Looking for matching files\n");
+	DPRINTF("Looking for matching files\n");
 	for (i = img = filecount = 0; i < mainProject->max_files; ++i) {
 		if (mainProject->file[i] &&  mainProject->file[i]->isVisible &&
 		(mainProject->file[i]->image->layertype == layertype)) {
 			++filecount;
-			dprintf("Adding '%s'\n", mainProject->file[i]->name);
+			DPRINTF("Adding '%s'\n", mainProject->file[i]->name);
 			images[img].image=mainProject->file[i]->image;
 			images[img++].transform=&mainProject->file[i]->transform;
 			images = (struct l_image_info *)g_renew(struct l_image_info, images, img+1);
@@ -473,7 +473,7 @@ gerbv_image_t *merge_images (int type)
 		GERB_COMPILE_ERROR(_("Not Enough Files of same type to merge"));
 		goto err;
 	}
-	dprintf("Now merging files\n");
+	DPRINTF("Now merging files\n");
 	for (i = 0; i < img; ++i) {
 		gerbv_user_transformation_t *thisTransform;
 		gerbv_user_transformation_t identityTransform = {0,0,1,1,0,FALSE,FALSE,FALSE};
@@ -2040,7 +2040,7 @@ callbacks_render_type_changed () {
 	isChanging = TRUE;
 	gerbv_render_types_t type = screenRenderInfo.renderType;
 	GtkCheckMenuItem *check_item = screen.win.menu_view_render_group[type];
-	dprintf ("%s():  type = %d, check_item = %p\n", __FUNCTION__, type, check_item);
+	DPRINTF("%s():  type = %d, check_item = %p\n", __FUNCTION__, type, check_item);
 	gtk_check_menu_item_set_active (check_item, TRUE);
 	gtk_combo_box_set_active (screen.win.sidepaneRenderComboBox, type);
 
@@ -2697,7 +2697,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 		show_no_layers_warning ();
 		return;
 	}
-    dprintf ("%s(): index = %d\n", __FUNCTION__, index);
+    DPRINTF("%s(): index = %d\n", __FUNCTION__, index);
     attr = mainProject->file[index]->image->info->attr_list;
     n =  mainProject->file[index]->image->info->n_attr;
     type =  mainProject->file[index]->image->info->type;
@@ -2713,7 +2713,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
 	  return;
 	}
 
-    dprintf ("%s(): n = %d, attr = %p\n", __FUNCTION__, n, attr);
+    DPRINTF("%s(): n = %d, attr = %p\n", __FUNCTION__, n, attr);
     if (n > 0)
 	{
 	    if (mainProject->file[index]->layer_dirty) {
@@ -2741,7 +2741,7 @@ callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
           
     }
 
-    dprintf ("%s(): reloading layer\n", __func__);
+    DPRINTF("%s(): reloading layer\n", __func__);
     gerbv_revert_file (mainProject, index);
 
     for (i = 0; i < n; i++)
@@ -3066,10 +3066,10 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	now = start;
 	while( now - 30 < start) {
 		i++;
-		dprintf("Benchmark():  Starting redraw #%d\n", i);
+		DPRINTF("Benchmark():  Starting redraw #%d\n", i);
 		gerbv_render_to_pixmap_using_gdk (mainProject, renderedPixmap, renderInfo, NULL, NULL);
 		now = time(NULL);
-		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
+		DPRINTF("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
 	g_message(_("FAST (=GDK) mode benchmark: %d redraws "
 				"in %ld seconds (%g redraws/second)"),
@@ -3083,7 +3083,7 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 	renderInfo->renderType = GERBV_RENDER_TYPE_CAIRO_NORMAL;
 	while( now - 30 < start) {
 		i++;
-		dprintf("Benchmark():  Starting redraw #%d\n", i);
+		DPRINTF("Benchmark():  Starting redraw #%d\n", i);
 		cairo_surface_t *cSurface = cairo_image_surface_create  (CAIRO_FORMAT_ARGB32,
 	                              renderInfo->displayWidth, renderInfo->displayHeight);
 		cairo_t *cairoTarget = cairo_create (cSurface);
@@ -3091,7 +3091,7 @@ callbacks_support_benchmark (gerbv_render_info_t *renderInfo) {
 		cairo_destroy (cairoTarget);
 		cairo_surface_destroy (cSurface);
 		now = time(NULL);
-		dprintf("Elapsed time = %ld seconds\n", (long int) (now - start));
+		DPRINTF("Elapsed time = %ld seconds\n", (long int) (now - start));
 	}
 	g_message(_("NORMAL (=Cairo) mode benchmark: %d redraws "
 				"in %ld seconds (%g redraws/second)"),
@@ -3928,7 +3928,7 @@ void
 callbacks_sidepane_render_type_combo_box_changed (GtkComboBox *widget, gpointer user_data) {
 	gerbv_render_types_t type = gtk_combo_box_get_active (widget);
 	
-	dprintf ("%s():  type = %d\n", __FUNCTION__, type);
+	DPRINTF("%s():  type = %d\n", __FUNCTION__, type);
 
 	if (type < 0 || type == screenRenderInfo.renderType)
 		return;
@@ -3945,7 +3945,7 @@ callbacks_viewmenu_rendertype_changed (GtkCheckMenuItem *widget, gpointer user_d
 	if (type == screenRenderInfo.renderType)
 		return;
 
-	dprintf ("%s():  type = %d\n", __FUNCTION__, type);
+	DPRINTF("%s():  type = %d\n", __FUNCTION__, type);
 
 	screenRenderInfo.renderType = type;
 	callbacks_render_type_changed ();
@@ -3959,7 +3959,7 @@ callbacks_viewmenu_units_changed (GtkCheckMenuItem *widget, gpointer user_data) 
 	if (unit < 0 || unit == screen.unit)
 		return;
 
-	dprintf ("%s():  unit = %d, screen.unit = %d\n", __FUNCTION__, unit, screen.unit);
+	DPRINTF("%s():  unit = %d, screen.unit = %d\n", __FUNCTION__, unit, screen.unit);
 
 	callbacks_units_changed (unit);
 }
