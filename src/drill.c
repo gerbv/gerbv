@@ -1776,17 +1776,18 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
 		state->decimals = state->digits_before;
 	    }
 
+	    /* Tool definitions always use standard metric format
+	     * (1 um resolution), regardless of FILE_FORMAT= settings. */
+	    state->header_number_format = FMT_000_000;
+
 	    if (state->autod && state->number_format != FMT_USER) {
 		/* Default metric number format is 6-digit, 1 um
-		 * resolution.  The header number format (for T#C#
-		 * definitions) is fixed to that, while the number
-		 * format within the file can differ.  If the
-		 * number_format is already FMT_USER, that means that
-		 * we have set the number format in another way, maybe
-		 * with one of the altium FILE_FORMAT= style comments,
-		 * so don't do this default. */
-		state->header_number_format =
-		    state->number_format = FMT_000_000;
+		 * resolution.  If the number_format is already
+		 * FMT_USER, that means that we have set the number
+		 * format in another way, maybe with one of the altium
+		 * FILE_FORMAT= style comments, so don't do this
+		 * default. */
+		state->number_format = FMT_000_000;
 		state->decimals = 3;
 	    }
 
@@ -1955,7 +1956,10 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
     /* We've failed to read a number. */
     return 0;
   }
-  state->header_number_format = state->number_format = FMT_USER;
+  state->number_format = FMT_USER;
+  /* header_number_format is intentionally NOT set here — tool definitions
+   * use standard formats (FMT_00_0000 for inch, FMT_000_000 for metric),
+   * never FMT_USER.  See issue #214. */
   state->decimals = digits_after;
   state->digits_before = digits_before;
   state->autod = 0;
@@ -1997,9 +2001,9 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 	    switch (c) {
 	    case 'L':
 		image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
+		state->header_number_format = FMT_00_0000;
 		if (state->autod) {
-		    state->header_number_format =
-			state->number_format = FMT_00_0000;
+		    state->number_format = FMT_00_0000;
 		    state->decimals = 4;
 		} else if (state->number_format == FMT_USER
 			&& state->digits_before > 0) {
@@ -2011,9 +2015,9 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 
 	    case 'T':
 		image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
+		state->header_number_format = FMT_00_0000;
 		if (state->autod) {
-		    state->header_number_format =
-			state->number_format = FMT_00_0000;
+		    state->number_format = FMT_00_0000;
 		    state->decimals = 4;
 		}
 		/* For TZ (leading suppression), decimals stays as M (digits
