@@ -2,6 +2,7 @@
     "version": 8,
     "include": [
         "cmake/preset/linux-gnu-gcc.json",
+        "cmake/preset/macos-clang.json",
         "cmake/preset/mingw-w64-gcc.json"
     ]
 }
