@@ -175,14 +175,14 @@ jobs:
         echo "PKG_CONFIG_PATH=${HOME}/.local/lib/pkgconfig:$(brew --prefix libffi)/lib/pkgconfig:$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix bzip2)/lib/pkgconfig:$(brew --prefix libpng)/lib/pkgconfig:$(brew --prefix expat)/lib/pkgconfig:$(brew --prefix)/lib/pkgconfig:${PKG_CONFIG_PATH}" >> $GITHUB_ENV
 
     - name: Configure
-      run: cmake -S . -B build -G Ninja
+      run: cmake --preset macos-clang
 
     - name: Build
-      run: cmake --build build -j ${NUM_BUILD_JOBS}
+      run: cmake --build --preset macos-clang --parallel ${NUM_BUILD_JOBS}
 
     - name: Run tests
       continue-on-error: true
-      run: ctest --test-dir build -V
+      run: ctest --preset macos-clang -V
 
   release:
     runs-on: ubuntu-22.04
