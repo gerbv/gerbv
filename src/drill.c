@@ -122,6 +122,11 @@ typedef struct drill_state {
     double delta_cp_x;
     double delta_cp_y;
 
+    /* Allegro no-T-command mode: tools defined only via comment Holesize
+     * lines, selected implicitly by M00 (tool change) separators. */
+    gboolean       allegro_noT;       /* TRUE when Holesize seen without T prefix */
+    int            allegro_next_tool;  /* next tool slot to auto-select on M00 */
+
 } drill_state_t;
 
 /* Local function prototypes */
@@ -159,6 +164,8 @@ static void eat_line(gerb_file_t *fd);
 static void eat_whitespace(gerb_file_t *fd);
 static char *get_line(gerb_file_t *fd);
 static int file_check_str(gerb_file_t *fd, const char *str);
+static int drill_parse_allegro_comment_tooldef(const gchar *line,
+    drill_state_t *state, gerbv_image_t *image, unsigned int file_line);
 
 /* -------------------------------------------------------------- */
 /* This is the list of specific attributes a drill file may have from
@@ -644,6 +651,10 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    }
 	    tmps = get_line(fd);
+	    if (drill_parse_allegro_comment_tooldef(tmps, state, image, file_line)) {
+		g_free(tmps);
+		break;
+	    }
 	    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
 		    _("Comment \"%s\" at line %u in file \"%s\""),
 		    tmps, file_line, fd->filename);
@@ -962,8 +973,30 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 
 	    case DRILL_M_END :
-		/* M00 has optional arguments */
+		/* M00: In standard Excellon this means "end of program,
+		 * no rewind".  Allegro repurposes it as a tool change
+		 * separator when "Auto Tool Select" is disabled. */
 		eat_line(fd);
+		if (state->allegro_noT) {
+		    /* Advance to next tool slot */
+		    state->allegro_next_tool++;
+		    if (state->allegro_next_tool >= TOOL_MIN &&
+			state->allegro_next_tool < TOOL_MAX &&
+			image->aperture[state->allegro_next_tool] != NULL) {
+			state->current_tool = state->allegro_next_tool;
+			DPRINTF("    M00: Allegro tool change to T%02d "
+				"at line %u\n",
+				state->current_tool, file_line);
+		    } else {
+			gerbv_stats_printf(stats->error_list,
+				GERBV_MESSAGE_WARNING, -1,
+				_("M00 tool change at line %u but no "
+				  "tool T%02d defined in file \"%s\""),
+				file_line, state->allegro_next_tool,
+				fd->filename);
+		    }
+		    break;
+		}
 		/* M00 ends the program the same way as M30 */
 		[[fallthrough]];
 
@@ -1094,6 +1127,20 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	case 'Y': {
 	    double prev_x = state->curr_x;
 	    double prev_y = state->curr_y;
+
+	    /* Allegro no-T mode: auto-select first tool on first coordinate */
+	    if (state->allegro_noT && state->current_tool == 0) {
+		int t;
+		for (t = TOOL_MIN; t < TOOL_MAX; t++) {
+		    if (image->aperture[t] != NULL) {
+			state->current_tool = t;
+			state->allegro_next_tool = t;
+			DPRINTF("    Allegro auto-select first tool T%02d "
+				"at line %u\n", t, file_line);
+			break;
+		    }
+		}
+	    }
 
 	    /* Parse the coordinate(s) */
 	    drill_parse_coordinate(fd, read, image, state, file_line);
@@ -1267,6 +1314,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     gboolean found_T = FALSE;
     gboolean found_X = FALSE;
     gboolean found_Y = FALSE;
+    gboolean found_holesize = FALSE;
     gboolean end_comments=FALSE;
  
     tbuf = g_malloc(MAXL);
@@ -1282,6 +1330,9 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	/* check for comments at top of file.  */
 	if(!end_comments){
 		if(g_strstr_len(buf, len, ";")!=NULL){/* comments at top of file  */
+			/* Check for Allegro "Holesize" in comments */
+			if (g_strstr_len(buf, len, "Holesize"))
+			    found_holesize = TRUE;
 			for (i = 0; i < len-1; ++i) {
 				if (buf[i] == '\n'
 				&&  buf[i+1] != ';'
@@ -1291,7 +1342,7 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 					/* Set rest of parser to end of
 					 * comments */
 					buf = &tbuf[i+1];
-					
+
 				}
 			}
 			if(!end_comments) {
@@ -1312,9 +1363,13 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	    }
 	}
 
+	/* Check for Allegro "Holesize" in any comment line */
+	if (g_strstr_len(buf, len, "Holesize"))
+	    found_holesize = TRUE;
+
 	/* Check for M48 = start of drill header */
 	if (g_strstr_len(buf, len, "M48")) {
-	    found_M48 = TRUE; 
+	    found_M48 = TRUE;
 	}
 
 	/* Check for M30 = end of drill program */
@@ -1361,8 +1416,10 @@ drill_file_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     g_free(tbuf);
     *returnFoundBinary = found_binary;
     
-    /* Now form logical expression determining if this is a drill file */
-    if ( ((found_X || found_Y) && found_T) &&
+    /* Now form logical expression determining if this is a drill file.
+     * Accept Allegro Holesize comments as a substitute for T commands,
+     * since Allegro can omit T commands entirely. */
+    if ( ((found_X || found_Y) && (found_T || found_holesize)) &&
 	 (found_M48 || (found_percent && found_M30)) ) {
 	return TRUE;
     } else if (found_M48 && found_percent && found_M30) {
@@ -1963,6 +2020,153 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
   state->autod = 0;
   return 1;
 } /* drill_parse_header_is_metric_comment() */
+
+/* -------------------------------------------------------------- */
+/* Parse Allegro-style tool definitions embedded in comment lines.
+ *
+ * Allegro EDA exports Excellon drill files with tool definitions in
+ * comment lines rather than standard T01C0.024 syntax.  Two formats:
+ *
+ * Format 1 (with T prefix):
+ *   ;T01 Holesize 1. = 8.000000 Tolerance = +3.000000/-3.000000 PLATED MILS Quantity = 1873
+ *
+ * Format 2 (without T prefix — tool number inferred from "Holesize N."):
+ *   ;   Holesize 1. = 6.000000 Tolerance = +3.000000/-3.000000 PLATED MILS Quantity = 389
+ *
+ * Format 2 is produced when Allegro's "Enhanced Excellon" and "Auto Tool
+ * Select" options are both disabled.  These files have no T commands at
+ * all; tools are selected implicitly via M00 separators in the body.
+ *
+ * Returns 1 if the comment was successfully parsed as a tool definition,
+ * 0 otherwise (caller should treat it as a normal comment).
+ */
+static int
+drill_parse_allegro_comment_tooldef(const gchar *line,
+    drill_state_t *state, gerbv_image_t *image, unsigned int file_line)
+{
+    gerbv_drill_stats_t *stats = image->drill_stats;
+    const gchar *p = line;
+    gchar *endptr;
+    long tool_num;
+    double size;
+    gerbv_aperture_t *apert;
+    gchar *string;
+
+    /* Only parse in header section.  Allegro files without M48 start
+     * in DRILL_NONE, so accept that as an implicit header too. */
+    if (state->curr_section != DRILL_HEADER &&
+	state->curr_section != DRILL_NONE)
+	return 0;
+
+    /* Skip leading whitespace */
+    while (*p && isspace((unsigned char)*p))
+	p++;
+
+    if (*p == 'T' && isdigit((unsigned char)p[1])) {
+	/* Format 1: ;T01 Holesize ... — explicit tool number prefix */
+	p++;
+	tool_num = strtol(p, &endptr, 10);
+	if (endptr == p)
+	    return 0;
+	p = endptr;
+
+	/* Look for "Holesize" keyword */
+	while (*p && isspace((unsigned char)*p))
+	    p++;
+	if (strncasecmp(p, "Holesize", 8) != 0)
+	    return 0;
+	p += 8;
+    } else if (strncasecmp(p, "Holesize", 8) == 0) {
+	/* Format 2: ;   Holesize N. = ... — no T prefix, tool number
+	 * is derived from the slot index N in "Holesize N." */
+	p += 8;
+
+	/* Skip whitespace before slot number */
+	while (*p && isspace((unsigned char)*p))
+	    p++;
+
+	tool_num = strtol(p, &endptr, 10);
+	if (endptr == p || tool_num <= 0)
+	    return 0;
+	p = endptr;
+
+	/* Mark that this file uses no-T-command Allegro mode */
+	state->allegro_noT = TRUE;
+    } else {
+	return 0;
+    }
+
+    /* Validate tool number range */
+    if (tool_num < TOOL_MIN || tool_num >= TOOL_MAX)
+	return 0;
+
+    /* Find the first '=' sign, which precedes the hole size value */
+    p = strchr(p, '=');
+    if (p == NULL)
+	return 0;
+    p++;  /* skip '=' */
+
+    /* Skip whitespace after '=' */
+    while (*p && isspace((unsigned char)*p))
+	p++;
+
+    /* Parse the size value */
+    size = strtod(p, &endptr);
+    if (endptr == p || size <= 0.0)
+	return 0;
+    p = endptr;
+
+    /* Determine units by scanning for MILS, MM, or INCH keyword.
+     * Convert to inches (gerbv's internal unit for drill apertures). */
+    if (strstr(p, "MILS") != NULL) {
+	size /= 1000.0;
+    } else if (strstr(p, "MM") != NULL) {
+	size /= 25.4;
+    } else if (strstr(p, "INCH") != NULL) {
+	/* already in inches */
+    } else {
+	/* Allegro default is MILS */
+	size /= 1000.0;
+    }
+
+    /* Skip if tool already defined via standard T01C... syntax */
+    if (image->aperture[tool_num] != NULL) {
+	DPRINTF("    %s(): tool %ld already defined, ignoring comment def "
+		"at line %u\n", __FUNCTION__, tool_num, file_line);
+	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
+		_("Comment-style tool definition for T%02ld ignored "
+		  "(already defined) at line %u"),
+		tool_num, file_line);
+	return 1;
+    }
+
+    /* Register the aperture */
+    apert = image->aperture[tool_num] = g_new0(gerbv_aperture_t, 1);
+    if (apert == NULL)
+	GERB_FATAL_ERROR("malloc tool failed in %s()", __FUNCTION__);
+
+    apert->parameter[0] = size;
+    apert->type = GERBV_APTYPE_CIRCLE;
+    apert->nuf_parameters = 1;
+    apert->unit = GERBV_UNIT_INCH;
+
+    /* Add to drill stats list */
+    string = g_strdup_printf("%s", _("inch"));
+    drill_stats_add_to_drill_list(stats->drill_list,
+				  tool_num,
+				  size,
+				  string);
+    g_free(string);
+
+    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
+	    _("Found Allegro comment-style tool definition T%02ld "
+	      "size=%g inch at line %u"),
+	    tool_num, size, file_line);
+    DPRINTF("    %s(): found Allegro tool T%02ld size=%g inch at line %u\n",
+	    __FUNCTION__, tool_num, size, file_line);
+
+    return 1;
+} /* drill_parse_allegro_comment_tooldef() */
 
 /* -------------------------------------------------------------- */
 static int

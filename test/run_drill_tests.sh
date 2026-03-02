@@ -71,5 +71,11 @@ run_test "Altium_inch_file_format" "Altium_inch_file_format.drl"
 run_test "LimeSDR-QPCIe_1v2-RoundHoles" "LimeSDR-QPCIe_1v2-RoundHoles.drl"
 run_test "Altium_file_format_inch_lz" "Altium_file_format_inch_lz.drl"
 
+# Allegro comment-style tool definitions (#96)
+run_test "test-drill-allegro-comment-tools" "test-drill-allegro-comment-tools.exc"
+
+# Allegro no-T-command drill file: Holesize without T prefix, M00 tool change (#331)
+run_test "test-drill-allegro-no-tcommand" "test-drill-allegro-no-tcommand.exc"
+
 echo "----------------------------------------------------------------------"
 echo "Passed $pass, failed $fail out of $tot tests."
