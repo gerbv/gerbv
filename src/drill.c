@@ -148,6 +148,8 @@ static void eat_line(gerb_file_t *fd);
 static void eat_whitespace(gerb_file_t *fd);
 static char *get_line(gerb_file_t *fd);
 static int file_check_str(gerb_file_t *fd, const char *str);
+static int drill_parse_allegro_comment_tooldef(const gchar *line,
+    drill_state_t *state, gerbv_image_t *image, unsigned int file_line);
 
 /* -------------------------------------------------------------- */
 /* This is the list of specific attributes a drill file may have from
@@ -467,6 +469,10 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    }
 	    tmps = get_line(fd);
+	    if (drill_parse_allegro_comment_tooldef(tmps, state, image, file_line)) {
+		g_free(tmps);
+		break;
+	    }
 	    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
 		    _("Comment \"%s\" at line %u in file \"%s\""),
 		    tmps, file_line, fd->filename);
@@ -1730,6 +1736,131 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
   state->autod = 0;
   return 1;
 } /* drill_parse_header_is_metric_comment() */
+
+/* -------------------------------------------------------------- */
+/* Parse Allegro-style tool definitions embedded in comment lines.
+ *
+ * Allegro EDA exports Excellon drill files with tool definitions in
+ * comment lines rather than standard T01C0.024 syntax:
+ *
+ *   ;T01 Holesize 1. = 8.000000 Tolerance = +3.000000/-3.000000 PLATED MILS Quantity = 1873
+ *
+ * Key fields: tool number (T01), hole size (8.000000), unit (MILS/MM).
+ * Only tool number and size are needed for rendering.
+ *
+ * Returns 1 if the comment was successfully parsed as a tool definition,
+ * 0 otherwise (caller should treat it as a normal comment).
+ */
+static int
+drill_parse_allegro_comment_tooldef(const gchar *line,
+    drill_state_t *state, gerbv_image_t *image, unsigned int file_line)
+{
+    gerbv_drill_stats_t *stats = image->drill_stats;
+    const gchar *p = line;
+    gchar *endptr;
+    long tool_num;
+    double size;
+    gerbv_aperture_t *apert;
+    gchar *string;
+
+    /* Only parse in header section */
+    if (state->curr_section != DRILL_HEADER)
+	return 0;
+
+    /* Skip leading whitespace */
+    while (*p && isspace((unsigned char)*p))
+	p++;
+
+    /* Must start with T followed by digits */
+    if (*p != 'T')
+	return 0;
+    p++;
+
+    if (!isdigit((unsigned char)*p))
+	return 0;
+
+    tool_num = strtol(p, &endptr, 10);
+    if (endptr == p)
+	return 0;
+    p = endptr;
+
+    /* Validate tool number range */
+    if (tool_num < TOOL_MIN || tool_num >= TOOL_MAX)
+	return 0;
+
+    /* Look for "Holesize" keyword to confirm this is an Allegro tool def */
+    while (*p && isspace((unsigned char)*p))
+	p++;
+    if (strncasecmp(p, "Holesize", 8) != 0)
+	return 0;
+
+    /* Find the first '=' sign, which precedes the hole size value */
+    p = strchr(p, '=');
+    if (p == NULL)
+	return 0;
+    p++;  /* skip '=' */
+
+    /* Skip whitespace after '=' */
+    while (*p && isspace((unsigned char)*p))
+	p++;
+
+    /* Parse the size value */
+    size = strtod(p, &endptr);
+    if (endptr == p || size <= 0.0)
+	return 0;
+    p = endptr;
+
+    /* Determine units by scanning for MILS, MM, or INCH keyword.
+     * Convert to inches (gerbv's internal unit for drill apertures). */
+    if (strstr(p, "MILS") != NULL) {
+	size /= 1000.0;
+    } else if (strstr(p, "MM") != NULL) {
+	size /= 25.4;
+    } else if (strstr(p, "INCH") != NULL) {
+	/* already in inches */
+    } else {
+	/* Allegro default is MILS */
+	size /= 1000.0;
+    }
+
+    /* Skip if tool already defined via standard T01C... syntax */
+    if (image->aperture[tool_num] != NULL) {
+	dprintf("    %s(): tool %ld already defined, ignoring comment def "
+		"at line %u\n", __FUNCTION__, tool_num, file_line);
+	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
+		_("Comment-style tool definition for T%02ld ignored "
+		  "(already defined) at line %u"),
+		tool_num, file_line);
+	return 1;
+    }
+
+    /* Register the aperture */
+    apert = image->aperture[tool_num] = g_new0(gerbv_aperture_t, 1);
+    if (apert == NULL)
+	GERB_FATAL_ERROR("malloc tool failed in %s()", __FUNCTION__);
+
+    apert->parameter[0] = size;
+    apert->type = GERBV_APTYPE_CIRCLE;
+    apert->nuf_parameters = 1;
+    apert->unit = GERBV_UNIT_INCH;
+
+    /* Add to drill stats list */
+    string = g_strdup_printf("%s", _("inch"));
+    drill_stats_add_to_drill_list(stats->drill_list,
+				  tool_num,
+				  size,
+				  string);
+    g_free(string);
+
+    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
+	    _("Found Allegro comment-style tool definition T%02ld "
+	      "size=%g inch at line %u"),
+	    tool_num, size, file_line);
+    dprintf("    %s(): found Allegro tool T%02ld size=%g inch at line %u\n",
+	    __FUNCTION__, tool_num, size, file_line);
+
+    return 1;
+} /* drill_parse_allegro_comment_tooldef() */
 
 /* -------------------------------------------------------------- */
 static int

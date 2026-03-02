@@ -214,6 +214,9 @@ Altium_file_format_inch | Altium_file_format_inch.drl
 Altium_file_format_inch_lz | Altium_file_format_inch_lz.drl
 Ruthie_V1R0-Plated | Ruthie_V1R0-Plated.drl
 
+# Allegro comment-style tool definitions (#96)
+test-drill-allegro-comment-tools | test-drill-allegro-comment-tools.exc
+
 # Excellon routing/milling (G00/G01 + M15/M16/M17)
 test-drill-route-milling | test-drill-route-milling.exc
 
