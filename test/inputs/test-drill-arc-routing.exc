@@ -1,0 +1,24 @@
+M48
+; Test file for G02/G03 arc routing
+; Exercises CW and CCW arcs with I/J center offsets
+INCH,TZ
+T01C0.0100
+%
+T01
+; CW 90-degree arc: from (1.0, 1.0) to (1.5, 1.5), center at (1.5, 1.0)
+G00X010000Y010000
+M15
+G02X015000Y015000I005000J000000
+M16
+; CCW 180-degree arc: from (2.0, 1.0) to (2.0, 2.0), center at (2.0, 1.5)
+G00X020000Y010000
+M15
+G03X020000Y020000I000000J005000
+M16
+; CW full circle: from (3.0, 1.5) back to (3.0, 1.5), center at (3.5, 1.5)
+G00X030000Y015000
+M15
+G02X030000Y015000I005000J000000
+M16
+G05
+M00
