@@ -352,6 +352,10 @@ work on providing a mitigation.
 Gerbv and all associated files is placed under the GNU Public License (GPL)
 version 2.0.  See the toplevel [COPYING](COPYING) file for more information.
 
+Gerbv bundles [TinyScheme](https://sourceforge.net/projects/tinyscheme/)
+1.35, which is licensed under the BSD 3-Clause License. See
+[COPYING.tinyscheme](COPYING.tinyscheme) for details.
+
 Programs and associated files are:
 Copyright 2001, 2002 by Stefan Petersen and the respective original authors
 (which are listed on the respective files)
