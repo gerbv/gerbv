@@ -2538,7 +2538,7 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
     /*
      * This is a sanity check for angles after the nature of atan2.
      * If cw we must make sure angle1-angle2 are always positive,
-     * If ccw we must make sure angle2-angle1 are always negative.
+     * If ccw we must make sure angle2-angle1 are always positive.
      * We should really return one angle and the difference as GTK
      * uses them. But what the heck, it works for me.
      */
@@ -2576,8 +2576,8 @@ calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 				apert_size_x, apert_size_x,
 				apert_size_y, apert_size_y);
 
-	/* Middle arc points */
-	for (step_pi_2 = (ang1/M_PI_2 + 1)*M_PI_2;
+	/* Middle arc points at each 90-degree axis crossing */
+	for (step_pi_2 = (floor(ang1/M_PI_2) + 1)*M_PI_2;
 				step_pi_2 < MIN(ang2, ang1 + 2*M_PI);
 				step_pi_2 += M_PI_2) {
 		x = cirseg->cp_x + cirseg->width*cos(step_pi_2)/2;
