@@ -55,6 +55,7 @@
 #include "common.h"
 #include "drill.h"
 #include "drill_stats.h"
+#include "gerber.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #define dprintf if(DEBUG) printf
@@ -374,8 +375,6 @@ drill_add_route_segment(gerbv_image_t *image, drill_state_t *state,
 
 /*
  * Adds a routed arc segment (G02/G03 with tool down) to the drawing.
- * Uses the same multi-quadrant circular interpolation algorithm as
- * Gerber's calc_cirseg_mq (gerber.c).
  */
 static gerbv_net_t *
 drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
@@ -386,8 +385,6 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
     double r;
     double start_x, start_y, stop_x, stop_y;
     double delta_cp_x, delta_cp_y;
-    double d1x, d1y, d2x, d2y;
-    double alfa, beta;
     int cw;
 
     curr_net->next = g_new0(gerbv_net_t, 1);
@@ -428,49 +425,11 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
     curr_net->interpolation = cw ? GERBV_INTERPOLATION_CW_CIRCULAR
 				 : GERBV_INTERPOLATION_CCW_CIRCULAR;
 
-    /* Allocate and populate cirseg (same algorithm as calc_cirseg_mq) */
     curr_net->cirseg = g_new0(gerbv_cirseg_t, 1);
     if (curr_net->cirseg == NULL)
 	GERB_FATAL_ERROR("malloc cirseg failed in %s()", __FUNCTION__);
 
-    curr_net->cirseg->cp_x = start_x + delta_cp_x;
-    curr_net->cirseg->cp_y = start_y + delta_cp_y;
-
-    d1x = -delta_cp_x;
-    d1y = -delta_cp_y;
-    d2x = stop_x - curr_net->cirseg->cp_x;
-    d2y = stop_y - curr_net->cirseg->cp_y;
-
-    /* Clamp near-zero values to avoid signed-zero atan2 issues */
-    if (fabs(d1x) < DBL_EPSILON) d1x = 0;
-    if (fabs(d1y) < DBL_EPSILON) d1y = 0;
-    if (fabs(d2x) < DBL_EPSILON) d2x = 0;
-    if (fabs(d2y) < DBL_EPSILON) d2y = 0;
-
-    curr_net->cirseg->width = hypot(delta_cp_x, delta_cp_y) * 2.0;
-    curr_net->cirseg->height = curr_net->cirseg->width;
-
-    alfa = atan2(d1y, d1x);
-    beta = atan2(d2y, d2x);
-
-    if (alfa < 0.0) {
-	alfa += M_PI + M_PI;
-	beta += M_PI + M_PI;
-    }
-
-    if (beta < 0.0)
-	beta += M_PI + M_PI;
-
-    if (cw) {
-	if (alfa - beta < DBL_EPSILON)
-	    beta -= M_PI + M_PI;
-    } else {
-	if (beta - alfa < DBL_EPSILON)
-	    beta += M_PI + M_PI;
-    }
-
-    curr_net->cirseg->angle1 = RAD2DEG(alfa);
-    curr_net->cirseg->angle2 = RAD2DEG(beta);
+    calc_cirseg_mq(curr_net, cw, delta_cp_x, delta_cp_y);
 
     /* Check if aperture is set. Skip bbox computation if not. */
     if (image->aperture[state->current_tool] == NULL)
