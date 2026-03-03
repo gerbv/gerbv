@@ -1058,6 +1058,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    drill_parse_T_code(fd, state, image, file_line);
 	    state->route_mode = DRILL_G_DRILL;
 	    state->tool_down = FALSE;
+	    state->delta_cp_x = 0;
+	    state->delta_cp_y = 0;
 	    break;
 	case 'V' :
 	    gerb_ungetc (fd);
