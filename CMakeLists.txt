@@ -18,7 +18,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 ## Glib-2.0 and GTK-2.0
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-2.0)
-pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
+pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0>=2.6)
 
 ## DXF support library
 pkg_check_modules(DXF IMPORTED_TARGET dxflib)

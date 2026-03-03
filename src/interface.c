@@ -71,7 +71,7 @@ rename_main_window(char const* filename, GtkWidget *main_win)
 	g_assert(win != NULL);
 
 	if (filename && filename[0] != '\0') {
-		gchar *basename = g_path_get_basename(filename);
+		gchar *basename = g_filename_display_basename(filename);
 		g_string_printf(win_title, "%s — Gerbv", basename);
 		g_free(basename);
 	} else {

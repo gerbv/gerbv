@@ -50,6 +50,8 @@
 # include <getopt.h>
 #endif
 
+#include <glib/gstdio.h>
+
 #include "common.h"
 #include "main.h"
 #include "callbacks.h"
@@ -534,6 +536,16 @@ main(int argc, char *argv[])
 #endif
 
     attach_console_for_win();
+
+#ifdef G_OS_WIN32
+    /* Convert argv from system codepage to UTF-8 for GLib functions */
+    for (i = 0; i < argc; i++) {
+        gchar *utf8_arg = g_locale_to_utf8(argv[i], -1, NULL, NULL, NULL);
+        if (utf8_arg) {
+            argv[i] = utf8_arg;
+        }
+    }
+#endif
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
