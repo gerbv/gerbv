@@ -59,11 +59,8 @@
 #include "render.h"
 #include "project.h"
 
-#if (DEBUG)
-# define dprintf printf("%s():  ", __FUNCTION__); printf
-#else
-# define dprintf if(0) printf
-#endif
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
@@ -199,7 +196,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	gint i, max_layer_num = -1;
 	gerbv_fileinfo_t *file_info;
 
-	dprintf("Opening project = %s\n", (gchar *) filename);
+	DPRINTF("Opening project = %s\n", (gchar *) filename);
 	list = read_project_file(filename);
 
 	if (!list) {
@@ -984,7 +981,7 @@ main(int argc, char *argv[])
      */
 
     if (project_filename) {
-	dprintf(_("Loading project %s...\n"), project_filename);
+	DPRINTF(_("Loading project %s...\n"), project_filename);
 	/* calculate the absolute pathname to the project if the user
 	   used a relative path */
 	g_free (mainProject->path);
@@ -1033,7 +1030,7 @@ main(int argc, char *argv[])
 
 	gdouble initial_radians = DEG2RAD(initial_rotation);
 
-	dprintf("Rotating all layers by %.0f degrees\n", (float) initial_rotation);
+	DPRINTF("Rotating all layers by %.0f degrees\n", (float) initial_rotation);
 	for(i = 0; i < mainProject->max_files; i++) {
 	    if (mainProject->file[i])
 		mainProject->file[i]->transform.rotation = initial_radians;
@@ -1044,10 +1041,10 @@ main(int argc, char *argv[])
 	/* Set initial mirroring of all layers */
 
 	if (initial_mirror_x) {
-	    dprintf("Mirroring all layers about x axis\n");
+	    DPRINTF("Mirroring all layers about x axis\n");
 	}
 	if (initial_mirror_y) {
-	    dprintf("Mirroring all layers about y axis\n");
+	    DPRINTF("Mirroring all layers about y axis\n");
 	}
 
 	for (i = 0; i < mainProject->max_files; i++) {

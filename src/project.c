@@ -104,7 +104,7 @@ static const char * known_versions[] = {
 };
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
-#define dprintf if(DEBUG) printf
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static project_list_t *project_list_top = NULL;
 
@@ -130,7 +130,7 @@ version_str_to_int( const char * str)
   if(str == NULL) {
     return -1;
   } else {
-    dprintf("%s(\"%s\")\n", __FUNCTION__, str);
+    DPRINTF("%s(\"%s\")\n", __FUNCTION__, str);
 
 
     /* 
@@ -147,7 +147,7 @@ version_str_to_int( const char * str)
 
     *ptr = '\0';
     r = 10000 * atoi(tmps);
-    dprintf("%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
+    DPRINTF("%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
 
     g_free(tmps);
 
@@ -175,7 +175,7 @@ version_str_to_int( const char * str)
 
     *ptr = '\0';
     r += 100 * atoi(tmps);
-    dprintf("%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
+    DPRINTF("%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
 
     g_free(dup);
 
@@ -195,11 +195,11 @@ version_str_to_int( const char * str)
     }
     tmps = ptr;
 
-    dprintf("%s():  Processing \"%s\"\n", __FUNCTION__, tmps);
+    DPRINTF("%s():  Processing \"%s\"\n", __FUNCTION__, tmps);
 
     if( strlen(tmps) == 1) {
       r += *tmps - 'A' + 1;
-      dprintf( "%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
+      DPRINTF( "%s():  Converted \"%s\" to r = %d\n", __FUNCTION__, tmps, r);
     } else if( strlen(tmps) == 2 ) {
       if( *tmps == 'Z' ) {
 	r += 26;
@@ -451,7 +451,7 @@ init_paths (char *argv0)
         haspath = 1;
     }
   
-  dprintf("%s (%s): haspath = %d\n", __FUNCTION__, argv0, haspath);
+  DPRINTF("%s (%s): haspath = %d\n", __FUNCTION__, argv0, haspath);
   if (haspath)
     {
       bindir = strdup (lrealpath (argv0));
@@ -473,7 +473,7 @@ init_paths (char *argv0)
           for (p = strtok (path, GERBV_PATH_DELIMETER); p && *p;
                p = strtok (NULL, GERBV_PATH_DELIMETER))
             {
-	      dprintf ("Looking for %s in %s\n", argv0, p);
+	      DPRINTF("Looking for %s in %s\n", argv0, p);
               if ( (tmps = malloc ( (strlen (argv0) + strlen (p) + 2) * sizeof (char))) == NULL )
                 {
                   fprintf (stderr, "malloc failed in %s()\n", __FUNCTION__);
@@ -483,7 +483,7 @@ init_paths (char *argv0)
               r = stat (tmps, &sb);
               if (r == 0)
                 {
-		  dprintf ("Found it:  \"%s\"\n", tmps);
+		  DPRINTF("Found it:  \"%s\"\n", tmps);
                   bindir = lrealpath (tmps);
                   found_bindir = 1;
                   free (tmps);
@@ -494,7 +494,7 @@ init_paths (char *argv0)
           free (path);
         }
     }
-  dprintf ("%s():  bindir = \"%s\"\n", __FUNCTION__, bindir);
+  DPRINTF("%s():  bindir = \"%s\"\n", __FUNCTION__, bindir);
   
 
   if (found_bindir)
@@ -509,8 +509,8 @@ init_paths (char *argv0)
         }
       if (t2 != NULL)
         *t2 = '\0';
-      dprintf ("After stripping off the executible name, we found\n");
-      dprintf ("bindir = \"%s\"\n", bindir);
+      DPRINTF("After stripping off the executible name, we found\n");
+      DPRINTF("bindir = \"%s\"\n", bindir);
       
     }
   else
@@ -543,10 +543,10 @@ init_paths (char *argv0)
 
   scmdatadir = g_strdup_printf ("%s%s%s", pkgdatadir, GERBV_DIR_SEPARATOR_S, GERBV_SCMSUBDIR);
 
-  dprintf ("%s():  bindir      = %s\n", __FUNCTION__, bindir);
-  dprintf ("%s():  exec_prefix = %s\n", __FUNCTION__, exec_prefix);
-  dprintf ("%s():  pkgdatadir  = %s\n", __FUNCTION__, pkgdatadir);
-  dprintf ("%s():  scmdatadir  = %s\n", __FUNCTION__, scmdatadir);
+  DPRINTF("%s():  bindir      = %s\n", __FUNCTION__, bindir);
+  DPRINTF("%s():  exec_prefix = %s\n", __FUNCTION__, exec_prefix);
+  DPRINTF("%s():  pkgdatadir  = %s\n", __FUNCTION__, pkgdatadir);
+  DPRINTF("%s():  scmdatadir  = %s\n", __FUNCTION__, scmdatadir);
   
 }
 
@@ -598,7 +598,7 @@ define_layer(scheme *sc, pointer args)
     const char *str;
     int layerno;
 
-    dprintf("--> entering %s: %s\n", __FILE__, __func__);
+    DPRINTF("--> entering %s: %s\n", __FILE__, __func__);
 
     if (!sc->vptr->is_pair(args)) {
 	GERB_MESSAGE(_("%s(): too few arguments"), __func__);
@@ -616,7 +616,7 @@ define_layer(scheme *sc, pointer args)
     }
 
     layerno = sc->vptr->ivalue(car_el);
-    dprintf("    layerno = %d\n", layerno);
+    DPRINTF("    layerno = %d\n", layerno);
     
     car_el = sc->vptr->pair_car(cdr_el);
     cdr_el = sc->vptr->pair_cdr(cdr_el);
@@ -692,7 +692,7 @@ define_layer(scheme *sc, pointer args)
 	    pointer attr_name, attr_type, attr_value;
 	    char *type;
 
-	    dprintf ("Parsing file attributes\n");
+	    DPRINTF("Parsing file attributes\n");
 
 	    attr_car_el = sc->vptr->pair_car (value);
 	    attr_cdr_el = sc->vptr->pair_cdr (value);
@@ -719,7 +719,7 @@ define_layer(scheme *sc, pointer args)
 		attr_value =  sc->vptr->pair_cdr (attr_value);
 		attr_value =  sc->vptr->pair_car (attr_value);
 
-		dprintf ("  attribute %s, type is %s, value is ", 
+		DPRINTF("  attribute %s, type is %s, value is ", 
 			 sc->vptr->symname(attr_name),
 			 sc->vptr->symname(attr_type));
 
@@ -729,37 +729,37 @@ define_layer(scheme *sc, pointer args)
 
 		plist->attr_list[p].default_val.str_value = NULL;
 		if (strcmp (type, "label") == 0) {
-		    dprintf ("%s", sc->vptr->string_value (attr_value));
+		    DPRINTF("%s", sc->vptr->string_value (attr_value));
 		    plist->attr_list[p].type = HID_Label;
 		    plist->attr_list[p].default_val.str_value =
 			strdup (sc->vptr->string_value (attr_value));
 
 		} else if (strcmp (type, "integer") == 0) {
-		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
+		    DPRINTF("%ld", sc->vptr->ivalue (attr_value));
 		    plist->attr_list[p].type = HID_Integer;
 		    plist->attr_list[p].default_val.int_value =
 			sc->vptr->ivalue (attr_value);
 
 		} else if (strcmp (type, "real") == 0) {
-		    dprintf ("%g", sc->vptr->rvalue (attr_value));
+		    DPRINTF("%g", sc->vptr->rvalue (attr_value));
 		    plist->attr_list[p].type = HID_Real;
 		    plist->attr_list[p].default_val.real_value =
 			sc->vptr->rvalue (attr_value);
 
 		} else if (strcmp (type, "string") == 0) {
-		    dprintf ("%s", sc->vptr->string_value (attr_value));
+		    DPRINTF("%s", sc->vptr->string_value (attr_value));
 		    plist->attr_list[p].type = HID_String;
 		    plist->attr_list[p].default_val.str_value =
 			strdup (sc->vptr->string_value (attr_value));
 
 		} else if (strcmp (type, "boolean") == 0) {
-		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
+		    DPRINTF("%ld", sc->vptr->ivalue (attr_value));
 		    plist->attr_list[p].type = HID_Boolean;
 		    plist->attr_list[p].default_val.int_value =
 			sc->vptr->ivalue (attr_value);
 
 		} else if (strcmp (type, "enum") == 0) {
-		    dprintf ("%ld", sc->vptr->ivalue (attr_value));
+		    DPRINTF("%ld", sc->vptr->ivalue (attr_value));
 		    plist->attr_list[p].type = HID_Enum;
 		    plist->attr_list[p].default_val.int_value =
 			sc->vptr->ivalue (attr_value);
@@ -771,7 +771,7 @@ define_layer(scheme *sc, pointer args)
 			     __FUNCTION__);
 
 		} else if (strcmp (type, "path") == 0) {
-		    dprintf ("%s", sc->vptr->string_value (attr_value));
+		    DPRINTF("%s", sc->vptr->string_value (attr_value));
 		    plist->attr_list[p].type = HID_Path;
 		    plist->attr_list[p].default_val.str_value =
 			strdup (sc->vptr->string_value (attr_value));
@@ -779,7 +779,7 @@ define_layer(scheme *sc, pointer args)
 		    fprintf (stderr, _("%s():  Unknown attribute type: \"%s\"\n"),
 			     __FUNCTION__, type);
 		}
-		dprintf ("\n");
+		DPRINTF("\n");
 
 		attr_car_el = sc->vptr->pair_car(attr_cdr_el);
 		attr_cdr_el = sc->vptr->pair_cdr(attr_cdr_el);
@@ -802,7 +802,7 @@ set_render_type(scheme *sc, pointer args)
     pointer car_el;
     int r;
 
-    dprintf("--> entering project.c:%s()\n", __FUNCTION__);
+    DPRINTF("--> entering project.c:%s()\n", __FUNCTION__);
 
     if (!sc->vptr->is_pair(args)){
 	GERB_MESSAGE(_("set-render-type!: Too few arguments"));
@@ -812,7 +812,7 @@ set_render_type(scheme *sc, pointer args)
     car_el = sc->vptr->pair_car(args);
 
     r = sc->vptr->ivalue (car_el);
-    dprintf ("%s():  Setting render type to %d\n", __FUNCTION__, r);
+    DPRINTF("%s():  Setting render type to %d\n", __FUNCTION__, r);
     interface_set_render_type (r);
 
     return sc->NIL;
@@ -826,7 +826,7 @@ gerbv_file_version(scheme *sc, pointer args)
     char *vstr;
     char *tmps;
 
-    dprintf("--> entering project.c:%s()\n", __FUNCTION__);
+    DPRINTF("--> entering project.c:%s()\n", __FUNCTION__);
 
     if (!sc->vptr->is_pair(args)){
 	GERB_MESSAGE(_("gerbv-file-version!: Too few arguments"));
@@ -855,7 +855,7 @@ gerbv_file_version(scheme *sc, pointer args)
       g_free (tmps);
     }
 
-    dprintf ("%s():  Read a project file version of %s (%d)\n", __FUNCTION__, vstr, r);
+    DPRINTF("%s():  Read a project file version of %s (%d)\n", __FUNCTION__, vstr, r);
 
     if ( r > version_str_to_int( GERBV_PROJECT_FILE_VERSION )) {
         /* The project file we're trying to load is too new for this version of gerbv */
@@ -1005,7 +1005,7 @@ read_project_file(char const* filename)
 	GERB_MESSAGE(_("Problem loading init.scm (%s)"), strerror(errno));
 	return NULL;
     }
-    dprintf("%s():  initfile = \"%s\"\n", __FUNCTION__, initfile);
+    DPRINTF("%s():  initfile = \"%s\"\n", __FUNCTION__, initfile);
 
     if ((fd = g_fopen(initfile, "r")) == NULL) {
 	scheme_deinit(sc);
@@ -1176,7 +1176,7 @@ write_project_file(gerbv_project_t *gerbvProject, char const* filename, project_
 		  break;
 
 	      case HID_Mixed:
-		  dprintf ("HID_Mixed\n");
+		  DPRINTF("HID_Mixed\n");
 		  fprintf (stderr, _("%s():  WARNING:  HID_Mixed is not yet supported.\n"),
 			   __FUNCTION__);
 		  break;

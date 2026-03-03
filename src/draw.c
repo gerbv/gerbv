@@ -39,7 +39,7 @@
 #include "common.h"
 #include "selection.h"
 
-#define dprintf if(DEBUG) printf
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static gboolean draw_do_vector_export_fix(cairo_t *cairoTarget,
 		double *bg_red, double *bg_green, double *bg_blue);
@@ -367,7 +367,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	double bg_r, bg_g, bg_b; /* Background color */
 	int ret = 1;
 
-	dprintf("Drawing simplified aperture macros:\n");
+	DPRINTF("Drawing simplified aperture macros:\n");
 
 	doVectorExportFix =
 		draw_do_vector_export_fix (cairoTarget, &bg_r, &bg_g, &bg_b);
@@ -399,7 +399,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_save (cairoTarget);
 		cairo_new_path(cairoTarget);
 
-		dprintf("\t%s(): drawing %s\n", __FUNCTION__,
+		DPRINTF("\t%s(): drawing %s\n", __FUNCTION__,
 				gerbv_aperture_type_name(ls->type));
 
 		switch (ls->type) {
