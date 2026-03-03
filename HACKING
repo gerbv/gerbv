@@ -1,7 +1,5 @@
 =======	CODING STANDARD FOR GERBV =======
 
-$Id$
-
 
 Indentation
 -----------
@@ -16,6 +14,18 @@ My ~/.emacs are:
 
 (add-hook 'c-mode-hook 'my-c-mode-hook)
 
+The above text apparently broke the code "back in the days" and is
+one of the reasons it looks like it does. For the VSCode user the recommended
+`settings.json` is something like
+```
+{
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.dimInactiveRegions": true,
+    "cmake.languageSupport.dotnetPath": "/bin/dotnet",
+    "editor.tabSize": 8,
+    "editor.detectIndentation": false
+}
+```
 
 Curly Braces
 ------------
@@ -46,14 +56,47 @@ default:
 }
 Switch should always have a default case.
 
+New: all `case` which fallthrough should be clearly marked `[[fallthrough]]`.
+`Clang` is stricter for this than `GCC`. Double check the MacOS build in the
+pipeline, which uses `Clang`.
 
-ChangeLog
----------
-Minor changes (cosmetic, minor (up to 4,5 lines) not reported bugs) 
-doesn't need a ChangeLog entry. A ChangeLog entry is needed when a 
-reported bug is fixed (with bug report number) or when a feature is 
-added. I (spe) use ChangeLog when writing release notes.
+GitHub (github.com/gerbv/gerbv)
+-------------------------------
 
+Issues
+------
+When finding a problem you can create an issue in the issue tracker.
+Describe the following:
+* Write a proper headline describing the problem, avoid generic terms
+* What the problem is in as plaintext as possible
+* If it is a parsing or drawing problem, try to provide an example with:
+  * As small Gerber file as possible (full Gerber is OK)
+  * An image of what is generated
+* Try to do some first hand triaging. If you have an idea of what the
+  problem is or where in the code the problem is.
+
+You can use Issues as a way to start a discussion on a feature/problem/bug.
+
+Pull Request (PR)
+-----------------
+If you have a solution you can create a Pull Request. If you haven't
+created an issue, try to use the same method as above to describe the problem.
+Or you can refer to the issue.
+
+Do not use a generic headline, be specific. We prefer one fix per Pull Request.
+Make sure you fill in the description when you are creating the Pull Request,
+even small/simple changes.
+
+If you have an issue in the issue tracker for a potential fix, you can simply
+end the description with `Fix #123` where 123 is the issue number. GitHub will then
+automatically pick this up and close the issue when the PR is merged.
+
+We will put a label on every PR merged. That is to simplify the release work.
+GitHub picks up those labels and creates a template Release Notes.
+
+If you made a PR in error and close it, please make a note on why you are
+closing it and use "Close with Comment". That simplifies things when putting
+labels on the PR.
 
 Functions
 ---------
