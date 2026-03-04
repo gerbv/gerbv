@@ -534,8 +534,13 @@ main(int argc, char *argv[])
 
     attach_console_for_win();
 
-#ifdef G_OS_WIN32
-    /* Convert argv from system codepage to UTF-8 for GLib functions */
+#ifdef WIN32
+    /* Convert argv from system codepage to UTF-8 for GLib functions.
+     * The original argv[i] pointers (owned by the C runtime) are
+     * intentionally overwritten and leaked — the converted strings
+     * must live for the entire process lifetime, and argv is not
+     * freed by the caller.  This block only runs on Windows, so it
+     * will not appear in Linux Valgrind runs. */
     for (i = 0; i < argc; i++) {
         gchar *utf8_arg = g_locale_to_utf8(argv[i], -1, NULL, NULL, NULL);
         if (utf8_arg) {
@@ -956,10 +961,11 @@ main(int argc, char *argv[])
     }
 
     if (logToFileOption) {
-	logFile = fopen(logToFileFilename, "w");
+	logFile = g_fopen(logToFileFilename, "w");
 	if (!logFile) {
-	    fprintf(stderr, "error: cannot open log file '%s'\n",
-		    logToFileFilename);
+	    int saved_errno = errno;
+	    fprintf(stderr, "error: cannot open log file '%s': %s\n",
+		    logToFileFilename, strerror(saved_errno));
 	    exit(1);
 	}
     }
