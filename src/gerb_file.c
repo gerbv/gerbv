@@ -60,10 +60,8 @@ gerb_fopen(char const * filename)
     
     DPRINTF("---> Entering gerb_fopen, filename = %s\n", filename);
 
+    /* g_new() aborts on allocation failure, so no NULL check needed. */
     fd = g_new(gerb_file_t, 1);
-    if (fd == NULL) {
-	return NULL;
-    }
 
     DPRINTF("     Doing fopen\n");
     /* fopen() can't open files with non ASCII filenames on windows */
@@ -117,16 +115,10 @@ gerb_fopen(char const * filename)
     } else {
 	/* Copy into a heap buffer with null terminator so strtol/strtod
 	 * have a safe stopping point — mmap does not guarantee '\0'
-	 * after the file content. */
+	 * after the file content.
+	 * g_malloc() aborts on allocation failure, so no NULL check
+	 * needed. */
 	char *buf = (char *)g_malloc(fd->datalen + 1);
-	if (buf == NULL) {
-	    int saved_errno = errno;
-	    munmap(fd->data, fd->datalen);
-	    fclose(fd->fd);
-	    g_free(fd);
-	    errno = saved_errno;
-	    return NULL;
-	}
 	memcpy(buf, fd->data, fd->datalen);
 	buf[fd->datalen] = '\0';
 	munmap(fd->data, fd->datalen);
@@ -267,9 +259,8 @@ gerb_fgetstring(gerb_file_t *fd, char term)
 
     len = strend - (fd->data + fd->ptr);
 
+    /* g_malloc() aborts on allocation failure, so no NULL check needed. */
     newstr = (char *)g_malloc(len + 1);
-    if (newstr == NULL)
-	return NULL;
     strncpy(newstr, fd->data + fd->ptr, len);
     newstr[len] = '\0';
     fd->ptr += len;
@@ -339,9 +330,9 @@ gerb_find_file(char const * filename, char **paths)
 		len = strlen(paths[i]) - 1;
 	    else
 		len = tmp - paths[i] - 1;
+	    /* g_malloc() aborts on allocation failure, so no NULL check
+	     * needed. */
 	    env_name = (char *)g_malloc(len + 1);
-	    if (env_name == NULL)
-		return NULL;
 	    strncpy(env_name, (char *)(paths[i] + 1), len);
 	    env_name[len] = '\0';
 
@@ -354,8 +345,6 @@ gerb_find_file(char const * filename, char **paths)
 	      curr_path = NULL;
 	    } else {
 	      curr_path = (char *)g_malloc(strlen(env_value) + strlen(&paths[i][len + 1]) + 1);
-	      if (curr_path == NULL)
-		return NULL;
 	      strcpy(curr_path, env_value);
 	      strcat(curr_path, &paths[i][len + 1]);
 	      g_free(env_name);
@@ -368,10 +357,10 @@ gerb_find_file(char const * filename, char **paths)
 	  /*
 	   * Build complete path (inc. filename) and check if file exists.
 	   */
+	  /* g_build_filename() uses g_malloc() internally — aborts on
+	   * allocation failure, so no NULL check needed. */
 	  complete_path = g_build_filename(curr_path, filename, NULL);
-	  if (complete_path == NULL)
-	    return NULL;
-	  
+
 	  if (paths[i][0] == '$') {
 	    g_free(curr_path);
 	    curr_path = NULL;
