@@ -41,6 +41,8 @@ add_library(tinyscheme_bundled STATIC
 set_target_properties(tinyscheme_bundled PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(tinyscheme_bundled PUBLIC
     ${CMAKE_SOURCE_DIR}/thirdparty)
+target_include_directories(tinyscheme_bundled PRIVATE
+    ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(tinyscheme_bundled PRIVATE config)
 
 ## Gettext and intl
