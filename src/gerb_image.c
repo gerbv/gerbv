@@ -597,10 +597,6 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 								trans->scaleY;
 					sam->parameter[CIRCLE_ROTATION] +=
 						RAD2DEG(trans->rotation);
-					gerbv_rotate_coord(
-						sam->parameter +CIRCLE_CENTER_X,
-						sam->parameter +CIRCLE_CENTER_Y,
-						trans->rotation);
 
 					if (trans->scaleX != trans->scaleY) {
 						err_scale_circle++;
@@ -698,10 +694,6 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 
 					sam->parameter[LINE21_ROTATION] +=
 						RAD2DEG(trans->rotation);
-					gerbv_rotate_coord(
-						sam->parameter +LINE21_CENTER_X,
-						sam->parameter +LINE21_CENTER_Y,
-						trans->rotation);
 					break;
 
 				case GERBV_APTYPE_MACRO_OUTLINE:
