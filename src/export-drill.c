@@ -33,6 +33,7 @@
 
 #include "common.h"
 
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 #define round(x) floor(x+0.5)

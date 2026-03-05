@@ -39,6 +39,7 @@
 #include "common.h"
 #include "selection.h"
 
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static gboolean draw_do_vector_export_fix(cairo_t *cairoTarget,

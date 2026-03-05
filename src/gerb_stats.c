@@ -35,6 +35,7 @@
 #include "common.h"
 #include "gerb_stats.h"
 
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 /* ------------------------------------------------------- */

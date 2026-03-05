@@ -63,6 +63,7 @@
 #endif
 #include "draw.h"
 
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 gerbv_render_info_t screenRenderInfo;
