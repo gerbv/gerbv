@@ -51,6 +51,7 @@
 #include "gerbv_icon.h"
 #include "icons.h"
 
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static const gchar *gerbv_win_title = N_("Gerbv — gEDA's Gerber Viewer");

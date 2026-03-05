@@ -64,6 +64,7 @@
 #include "pick-and-place.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 /** Return string name of gerbv_aperture_type_t aperture type. */

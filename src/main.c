@@ -60,6 +60,7 @@
 #include "project.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 #define NUMBER_OF_DEFAULT_COLORS 18

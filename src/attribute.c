@@ -51,6 +51,7 @@
 #include "attribute.h"
 #include "main.h"
 
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static int auto_uncheck_needed = 0;

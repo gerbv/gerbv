@@ -73,6 +73,7 @@
 #endif
 
 
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 /* This default extension should really not be changed, but if it absolutely

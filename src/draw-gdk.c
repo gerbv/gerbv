@@ -46,6 +46,7 @@
 #undef round
 #define round(x) ceil((double)(x))
 
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 /*

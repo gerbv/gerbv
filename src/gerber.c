@@ -43,6 +43,7 @@
 #include "amacro.h"
 
 #undef AMACRO_DEBUG
+#undef DPRINTF
 #define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
