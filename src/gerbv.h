@@ -1136,6 +1136,10 @@ gerbv_transform_coord_for_image(double *x, double *y,
 gboolean
 gerbv_endswith(const char *path, const char *ext);
 
+/*! Check if a file is a loadable gerber, drill, or pick-and-place file */
+gboolean
+gerbv_is_loadable_file(const char *filename);
+
 /*! Transform coordinate x and y */
 void
 gerbv_transform_coord(double *x, double *y,
