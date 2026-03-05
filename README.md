@@ -257,9 +257,9 @@ Gerbv has been built and tested on
 ### Fedora 43 upgrade
 
 There is a build for both Fedora 43 and for Windows using Fedora 43 (previously 38). Both builds
-suffer from missing DXF support libraries. Fedora have another DXF library available, but that
-requires porting work and support for two different DXF libs. Of course neither Debian nor
-Ubuntu have that library available.
+previously suffered from missing DXF support libraries. This has been resolved by bundling
+dxflib as a vendored dependency in `thirdparty/dxflib/`, removing the reliance on
+distribution-packaged DXF libraries.
 
 ### Why not Ubuntu 24.04?
 
@@ -351,6 +351,10 @@ work on providing a mitigation.
 
 Gerbv and all associated files is placed under the GNU Public License (GPL)
 version 2.0.  See the toplevel [COPYING](COPYING) file for more information.
+
+Gerbv bundles [TinyScheme](https://sourceforge.net/projects/tinyscheme/)
+1.35, which is licensed under the BSD 3-Clause License. See
+[COPYING.tinyscheme](COPYING.tinyscheme) for details.
 
 Programs and associated files are:
 Copyright 2001, 2002 by Stefan Petersen and the respective original authors

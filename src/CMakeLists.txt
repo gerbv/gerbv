@@ -3,9 +3,9 @@
 # Building the library, installed as libgerbv.
 # The naming convention is to avoid name clashing in targets
 
-add_library(gerbv SHARED)
+add_library(gerbv)
 set_target_properties(gerbv PROPERTIES
-                   VERSION 1.9.0
+                   VERSION 1.10.0
                    SOVERSION 1
                    PUBLIC_HEADER gerbv.h)
 target_sources(gerbv PRIVATE
@@ -64,7 +64,12 @@ target_sources(gerbv-app PRIVATE
                 lrealpath.c lrealpath.h)
 # target_compile_definitions(gerbv-app PUBLIC GDK_DISABLE_DEPRECATED GTK_DISABLE_DEPRECATED) # Removes all deprecated functions
 target_compile_definitions(gerbv-app PRIVATE $<$<BOOL:${DEBUG_PRINTOUT}>:DEBUG=1>)
-target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config generated)
+target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config)
+add_dependencies(gerbv-app generated)
+if(APPLE)
+    set_target_properties(gerbv-app PROPERTIES
+                         INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+endif()
 
 install(TARGETS gerbv-app
         PUBLIC_HEADER

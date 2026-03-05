@@ -1,0 +1,11 @@
+dxflib 3.26.4.0
+Source: github.com/qcad/qcad (src/3rdparty/dxflib/)
+Commit: f3a3459acd690c16f1b2fa80d46d254956d91a49
+Date:   2026-02-20
+
+Patches applied by gerbv:
+  1. dl_dxf.h: remove unused `ret` variable in DL_Dxf::toReal()
+     (caused -Werror build failures)
+  2. dl_codes.h, dl_dxf.h: guard MSVC-only #pragma warning and
+     strcasecmp macro behind _MSC_VER (MinGW defines _WIN32 but
+     uses GCC, so these caused -Werror failures in cross-compilation)

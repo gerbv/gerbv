@@ -6,13 +6,15 @@ on:
   push:
     branches:
       - develop
+    tags:
+      - 'v*'
   pull_request:
     branches: [ develop ]
   workflow_dispatch:
 
 
 jobs:
-  ci:
+  ci-ubuntu-22-04:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -20,7 +22,6 @@ jobs:
         include:
           - coverage: ""
             code_coverage: "" # Always empty, so matrix.code_coverage is always false
-    name: ci
 
     steps:
     - uses: actions/checkout@v6
@@ -143,3 +144,71 @@ jobs:
       env:
         GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
       if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && env.GERBV_BUILDBOT_PAT && !matrix.code_coverage }}
+
+  ci-macos:
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Get number of jobs for compiling
+      run: echo "NUM_BUILD_JOBS=$(sysctl -n hw.logicalcpu)" >> $GITHUB_ENV
+
+    - name: Install build dependencies
+      run: |
+        brew install cmake ninja pkgconf gettext gtk+ gtkmm libffi zlib bzip2 libpng expat imagemagick
+        echo "PATH=$(brew --prefix gettext)/bin:${PATH}" >> $GITHUB_ENV
+        mkdir -p "${HOME}/.local/lib/pkgconfig"
+        BZIP_PREFIX="$(brew --prefix bzip2)"
+        BZIP_VERSION="$(brew list --versions bzip2 | awk '{print $2}')"
+        printf '%s\n' \
+          "prefix=${BZIP_PREFIX}" \
+          'exec_prefix=${prefix}' \
+          'libdir=${exec_prefix}/lib' \
+          'includedir=${prefix}/include' \
+          '' \
+          'Name: bzip2' \
+          'Description: bzip2 compression library' \
+          "Version: ${BZIP_VERSION}" \
+          'Libs: -L${libdir} -lbz2' \
+          'Cflags: -I${includedir}' \
+          > "${HOME}/.local/lib/pkgconfig/bzip2.pc"
+        echo "PKG_CONFIG_PATH=${HOME}/.local/lib/pkgconfig:$(brew --prefix libffi)/lib/pkgconfig:$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix bzip2)/lib/pkgconfig:$(brew --prefix libpng)/lib/pkgconfig:$(brew --prefix expat)/lib/pkgconfig:$(brew --prefix)/lib/pkgconfig:${PKG_CONFIG_PATH}" >> $GITHUB_ENV
+
+    - name: Configure
+      run: cmake --preset macos-clang
+
+    - name: Build
+      run: cmake --build --preset macos-clang --parallel ${NUM_BUILD_JOBS}
+
+    - name: Run tests
+      continue-on-error: true
+      run: ctest --preset macos-clang -V
+
+  release:
+    runs-on: ubuntu-22.04
+    needs: [ci-ubuntu-22-04, ci-macos]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: gerbv
+          path: artifacts/
+
+      - name: Rename artifacts to use version tag
+        run: |
+          cd artifacts
+          for f in gerbv_*; do
+            os_part=$(echo "$f" | sed 's/gerbv_[0-9-]*_[a-f0-9]*_//')
+            mv "$f" "gerbv_${{ github.ref_name }}_${os_part}"
+          done
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
+          draft: true
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
+          generate_release_notes: true

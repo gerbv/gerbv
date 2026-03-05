@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <glib/gstdio.h>
+
 #include "common.h"
 #include "gerbv.h"
 
@@ -130,7 +132,7 @@ gerbv_process_tools_file(const char *tf)
     if (tf == NULL)
         return 0;
     
-    f = fopen(tf, "r");
+    f = g_fopen(tf, "r");
     if (f == NULL) {
         GERB_COMPILE_ERROR(_("Failed to open \"%s\" for reading"), tf);
         return 0;

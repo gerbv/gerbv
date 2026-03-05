@@ -50,6 +50,8 @@
 # include <getopt.h>
 #endif
 
+#include <glib/gstdio.h>
+
 #include "common.h"
 #include "main.h"
 #include "callbacks.h"
@@ -57,11 +59,8 @@
 #include "render.h"
 #include "project.h"
 
-#if (DEBUG)
-# define dprintf printf("%s():  ", __FUNCTION__); printf
-#else
-# define dprintf if(0) printf
-#endif
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
@@ -166,6 +165,7 @@ const struct option longopts[] = {
     {"rotate",          required_argument,  NULL,    'r'},
     {"mirror",          required_argument,  NULL,    'm'},
     {"help",            no_argument,	    NULL,    'h'},
+    {"quiet",           no_argument,        NULL,    'q'},
     {"log",             required_argument,  NULL,    'l'},
     {"output",          required_argument,  NULL,    'o'},
     {"project",         required_argument,  NULL,    'p'},
@@ -191,7 +191,7 @@ const struct option longopts[] = {
     {0, 0, 0, 0},
 };
 #endif /* HAVE_GETOPT_LONG*/
-const char *opt_options = "VadhB:D:O:W:b:f:r:m:l:o:p:t:T:u:w:x:";
+const char *opt_options = "VadqhB:D:O:W:b:f:r:m:l:o:p:t:T:u:w:x:";
 
 /**Global state variable to keep track of what's happening on the screen.
    Declared extern in main.h
@@ -201,6 +201,8 @@ gerbv_screen_t screen;
 
 gboolean logToFileOption;
 gchar *logToFileFilename;
+static gboolean quietMode = FALSE;
+static FILE *logFile = NULL;
 
 /* Coords like "0x2" parsed by "%fx%f" will result in first number = 2 and
    second number 0. Replace 'x' in coordinate string with ';'*/
@@ -223,7 +225,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	gint i, max_layer_num = -1;
 	gerbv_fileinfo_t *file_info;
 
-	dprintf("Opening project = %s\n", (gchar *) filename);
+	DPRINTF("Opening project = %s\n", (gchar *) filename);
 	list = read_project_file(filename);
 
 	if (!list) {
@@ -399,19 +401,44 @@ main_save_as_project_from_filename(gerbv_project_t *gerbvProject, gchar *filenam
 GArray *log_array_tmp = NULL;
 
 /* Temporary log messages handler. It will store log messages before GUI
- * initialization. */
+ * initialization. In CLI mode this is the only handler, so it also formats
+ * messages for stderr with clean severity prefixes and respects --quiet. */
 void
 callbacks_temporary_handle_log_messages(const gchar *log_domain,
 		GLogLevelFlags log_level,
 		const gchar *message, gpointer user_data) {
     struct log_struct item;
+    GLogLevelFlags level = log_level & G_LOG_LEVEL_MASK;
 
+    /* Store for GUI replay */
     item.domain = g_strdup (log_domain);
     item.level = log_level;
     item.message = g_strdup (message);
     g_array_append_val (log_array_tmp, item);
 
-    g_log_default_handler (log_domain, log_level, message, user_data);
+    /* Print unless suppressed by quiet mode (INFO = note, DEBUG) */
+    if (!(quietMode && (level & (G_LOG_LEVEL_INFO | G_LOG_LEVEL_DEBUG)))) {
+	const gchar *prefix;
+
+	switch (level) {
+	case G_LOG_LEVEL_ERROR:    prefix = "fatal";   break;
+	case G_LOG_LEVEL_CRITICAL: prefix = "error";   break;
+	case G_LOG_LEVEL_WARNING:  prefix = "warning"; break;
+	case G_LOG_LEVEL_MESSAGE:  prefix = "info";    break;
+	case G_LOG_LEVEL_INFO:     prefix = "note";    break;
+	case G_LOG_LEVEL_DEBUG:    prefix = "debug";   break;
+	default:                   prefix = "log";     break;
+	}
+
+	fprintf(stderr, "%s: %s\n", prefix, message);
+
+	if (logFile)
+	    fprintf(logFile, "%s: %s\n", prefix, message);
+    }
+
+    /* GLib expects the default handler to abort on fatal errors */
+    if (log_level & G_LOG_FLAG_FATAL)
+	g_log_default_handler (log_domain, log_level, message, user_data);
 }
 
 #ifdef WIN32
@@ -536,6 +563,16 @@ main(int argc, char *argv[])
 
     attach_console_for_win();
 
+#ifdef G_OS_WIN32
+    /* Convert argv from system codepage to UTF-8 for GLib functions */
+    for (i = 0; i < argc; i++) {
+        gchar *utf8_arg = g_locale_to_utf8(argv[i], -1, NULL, NULL, NULL);
+        if (utf8_arg) {
+            argv[i] = utf8_arg;
+        }
+    }
+#endif
+
     /*
      * Setup the screen info. Must do this before getopt, since getopt
      * eventually will set some variables in screen.
@@ -583,12 +620,15 @@ main(int argc, char *argv[])
 		    callbacks_temporary_handle_log_messages, NULL);
 
 
-    /* 1. Process "length unit" command line flag */
+    /* 1. Process flags needed before main option parsing */
     unit_flag_counter = 0;
     opterr = 0; /* Disable getopt() error messages */
     while (-1 != (read_opt = getopt_configured(argc, argv, opt_options,
 				    longopts, &longopt_idx))) {
 	switch (read_opt) {
+	case 'q':
+	    quietMode = TRUE;
+	    break;
 	case 'u':
 	    unit_flag_counter++;
 
@@ -888,6 +928,7 @@ main(int argc, char *argv[])
 
 	case 'w':
 	    userSuppliedWindowInPixels = TRUE;
+	    [[fallthrough]];
     	case 'W' :
 	    if (optarg == NULL) {
 		fprintf(stderr, _("You must give a window size in the format <width x height>.\n"));
@@ -927,6 +968,9 @@ main(int argc, char *argv[])
 	case 'd':
 	    screen.dump_parsed_image = 1;
 	    break;
+	case 'q':
+	    quietMode = TRUE;
+	    break;
 	case '?':
 	case 'h':
 	    gerbv_print_help();
@@ -937,6 +981,15 @@ main(int argc, char *argv[])
 	    /* This should not be reached */
 	    GERB_COMPILE_WARNING(_("Not handled option '%c' in command line"),
 			    read_opt);
+	}
+    }
+
+    if (logToFileOption) {
+	logFile = fopen(logToFileFilename, "w");
+	if (!logFile) {
+	    fprintf(stderr, "error: cannot open log file '%s'\n",
+		    logToFileFilename);
+	    exit(1);
 	}
     }
 
@@ -957,7 +1010,7 @@ main(int argc, char *argv[])
      */
 
     if (project_filename) {
-	dprintf(_("Loading project %s...\n"), project_filename);
+	DPRINTF(_("Loading project %s...\n"), project_filename);
 	/* calculate the absolute pathname to the project if the user
 	   used a relative path */
 	g_free (mainProject->path);
@@ -1024,7 +1077,7 @@ main(int argc, char *argv[])
 
 	gdouble initial_radians = DEG2RAD(initial_rotation);
 
-	dprintf("Rotating all layers by %.0f degrees\n", (float) initial_rotation);
+	DPRINTF("Rotating all layers by %.0f degrees\n", (float) initial_rotation);
 	for(i = 0; i < mainProject->max_files; i++) {
 	    if (mainProject->file[i])
 		mainProject->file[i]->transform.rotation = initial_radians;
@@ -1035,10 +1088,10 @@ main(int argc, char *argv[])
 	/* Set initial mirroring of all layers */
 
 	if (initial_mirror_x) {
-	    dprintf("Mirroring all layers about x axis\n");
+	    DPRINTF("Mirroring all layers about x axis\n");
 	}
 	if (initial_mirror_y) {
-	    dprintf("Mirroring all layers about y axis\n");
+	    DPRINTF("Mirroring all layers about y axis\n");
 	}
 
 	for (i = 0; i < mainProject->max_files; i++) {
@@ -1141,6 +1194,8 @@ main(int argc, char *argv[])
 #endif
 	    if (!mainProject->file[0]->image) {
 		fprintf(stderr, _("A valid file was not loaded.\n"));
+		if (logFile)
+		    fclose(logFile);
 		exit(1);
 	    }
 
@@ -1182,18 +1237,24 @@ main(int argc, char *argv[])
 	    break;
 	default:
 	    fprintf(stderr, _("A valid file was not loaded.\n"));
+	    if (logFile)
+		fclose(logFile);
 	    exit(1);
 	}
 
 	/* exit now and don't start up gtk if this is a command line export */
+	if (logFile)
+	    fclose(logFile);
 	exit(0);
     }
     gtk_init (&argc, &argv);
     interface_create_gui (req_width, req_height);
-    
+
     /* we've exited the GTK loop, so free all resources */
     render_free_screen_resources();
     gerbv_destroy_project (mainProject);
+    if (logFile)
+	fclose(logFile);
     return 0;
 } /* main */
 
@@ -1342,6 +1403,14 @@ gerbv_print_help(void)
 #else
 	printf(_(
 "  -l<logfile>             Send error messages to <logfile>.\n"));
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+	printf(_(
+"  -q, --quiet             Suppress note-level messages.\n"));
+#else
+	printf(_(
+"  -q                      Suppress note-level messages.\n"));
 #endif
 
 #ifdef HAVE_GETOPT_LONG

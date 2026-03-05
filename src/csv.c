@@ -144,6 +144,7 @@ csv_parse_str(struct sinput *in, char *buf, size_t bn, char *row[], int rn, int 
 					break;
 				}
 				state = ST_COLLECT;
+				[[fallthrough]];
 			case ST_COLLECT:
 				if (inquotes) {
 					if (ch == '"') {
@@ -266,6 +267,7 @@ csv_parse_wcs(struct winput *in, wchar_t *buf, size_t bn, wchar_t *row[], int rn
 					break;
 				}
 				state = ST_COLLECT;
+				[[fallthrough]];
 			case ST_COLLECT:
 				if (inquotes) {
 					if (ch == L'"') {

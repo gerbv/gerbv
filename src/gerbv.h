@@ -121,6 +121,7 @@ extern "C" {
 #define GERB_COMPILE_ERROR(...)  g_log(NULL, G_LOG_LEVEL_CRITICAL, __VA_ARGS__)
 #define GERB_COMPILE_WARNING(...)  g_log(NULL, G_LOG_LEVEL_WARNING, __VA_ARGS__)
 #define GERB_MESSAGE(...)  g_log(NULL, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
+#define GERB_NOTE(...)  g_log(NULL, G_LOG_LEVEL_INFO, __VA_ARGS__)
 
 /*! The aperture macro commands */  
 typedef enum {GERBV_OPCODE_NOP, /*!< no operation */
@@ -1000,6 +1001,12 @@ gboolean
 gerbv_export_dxf_file_from_image (const gchar *filename, /*!< the filename for the new file */
 		gerbv_image_t *image, /*!< the image to export */
 		gerbv_user_transformation_t *transform /*!< the transformation to apply before exporting */
+);
+
+//! Parse an Excellon drill file and return the parsed image
+//! \return the new gerbv_image_t, or NULL if not successful
+gerbv_image_t *
+gerbv_create_excellon_image_from_filename (const gchar *filename /*!< the filename of the file to be parsed*/
 );
 
 //! Parse a RS274X file and return the parsed image

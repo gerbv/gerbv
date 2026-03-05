@@ -51,7 +51,7 @@
 #include "attribute.h"
 #include "main.h"
 
-#define dprintf if(DEBUG) printf
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static int auto_uncheck_needed = 0;
 static GtkWidget * auto_uncheck_widget = NULL;
@@ -306,7 +306,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
     exit (1);
   }
 
-  dprintf ("%s(%p, %d, %p, \"%s\", \"%s\")\n", __FUNCTION__, attrs, n_attrs, results, title, descr);
+  DPRINTF("%s(%p, %d, %p, \"%s\", \"%s\")\n", __FUNCTION__, attrs, n_attrs, results, title, descr);
 
   auto_uncheck_needed = 0;
   auto_uncheck_widget = NULL;
@@ -338,7 +338,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
    */
   for (j = 0; j < n_attrs; j++)
       {
-	  dprintf ("%s(): adding attribute #%d\n", __func__, j);
+	  DPRINTF("%s(): adding attribute #%d\n", __func__, j);
 	  switch (attrs[j].type)
 	      {
 	      case HID_Label:
@@ -486,7 +486,7 @@ attribute_interface_dialog (gerbv_HID_Attribute * attrs,
 		  break;
 
 	      case HID_Mixed:
-		  dprintf ("HID_Mixed\n");
+		  DPRINTF("HID_Mixed\n");
 		  break;
 
 	      case HID_Path:

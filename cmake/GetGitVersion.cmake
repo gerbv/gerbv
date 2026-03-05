@@ -18,6 +18,11 @@ if(__get_git_version)
 endif()
 set(__get_git_version INCLUDED)
 function(get_git_version var)
+  set(FALLBACK_GIT_VERSION "v0.0.0")
+  if(PROJECT_VERSION)
+      set(FALLBACK_GIT_VERSION "v${PROJECT_VERSION}")
+  endif()
+
   if(GIT_EXECUTABLE)
       execute_process(COMMAND ${GIT_EXECUTABLE} describe --tag --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=8
           WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
@@ -25,26 +30,27 @@ function(get_git_version var)
           OUTPUT_VARIABLE GIT_VERSION
           ERROR_QUIET)
       if(${status})
-          set(GIT_VERSION "v0.0.0")
+          set(GIT_VERSION "${FALLBACK_GIT_VERSION}")
       else()
           string(STRIP ${GIT_VERSION} GIT_VERSION)
         #   string(REGEX REPLACE "-[0-9]+-g" "-" GIT_VERSION ${GIT_VERSION})
-      endif()
-      # Work out if the repository is dirty
-      execute_process(COMMAND ${GIT_EXECUTABLE} update-index -q --refresh
-          WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-          OUTPUT_QUIET
-          ERROR_QUIET)
-      execute_process(COMMAND ${GIT_EXECUTABLE} diff-index --name-only HEAD --
-          WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-          OUTPUT_VARIABLE GIT_DIFF_INDEX
-          ERROR_QUIET)
-      string(COMPARE NOTEQUAL "${GIT_DIFF_INDEX}" "" GIT_DIRTY)
-      if (${GIT_DIRTY})
-          set(GIT_VERSION "${GIT_VERSION}-dirty")
+
+          # Work out if the repository is dirty
+          execute_process(COMMAND ${GIT_EXECUTABLE} update-index -q --refresh
+              WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+              OUTPUT_QUIET
+              ERROR_QUIET)
+          execute_process(COMMAND ${GIT_EXECUTABLE} diff-index --name-only HEAD --
+              WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+              OUTPUT_VARIABLE GIT_DIFF_INDEX
+              ERROR_QUIET)
+          string(COMPARE NOTEQUAL "${GIT_DIFF_INDEX}" "" GIT_DIRTY)
+          if (${GIT_DIRTY})
+              set(GIT_VERSION "${GIT_VERSION}-dirty")
+          endif()
       endif()
   else()
-      set(GIT_VERSION "v0.0.0")
+      set(GIT_VERSION "${FALLBACK_GIT_VERSION}")
   endif()
   message("-- git Version: ${GIT_VERSION}")
   set(${var} ${GIT_VERSION} PARENT_SCOPE)

@@ -1,0 +1,35 @@
+{
+    "version": 8,
+    "include": [ "base.json" ],
+    "configurePresets": [
+        {
+            "name": "macos-clang",
+            "inherits": "base",
+            "binaryDir": "build-macos-clang",
+            "cacheVariables": {
+                "CMAKE_COMPILE_WARNING_AS_ERROR": "OFF"
+            },
+            "toolchainFile": "cmake/toolchains/macos-clang.cmake"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "macos-clang",
+            "configurePreset": "macos-clang",
+            "configuration": "Debug"
+        },
+        {
+            "name": "macos-clang-release",
+            "configurePreset": "macos-clang",
+            "configuration": "Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "macos-clang",
+            "configurePreset": "macos-clang",
+            "inherits": "base"
+        }
+    ],
+    "packagePresets": []
+}

@@ -51,7 +51,7 @@
 #include "gerbv_icon.h"
 #include "icons.h"
 
-#define dprintf if(DEBUG) printf
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static const gchar *gerbv_win_title = N_("Gerbv — gEDA's Gerber Viewer");
 
@@ -71,7 +71,7 @@ rename_main_window(char const* filename, GtkWidget *main_win)
 	g_assert(win != NULL);
 
 	if (filename && filename[0] != '\0') {
-		gchar *basename = g_path_get_basename(filename);
+		gchar *basename = g_filename_display_basename(filename);
 		g_string_printf(win_title, "%s — Gerbv", basename);
 		g_free(basename);
 	} else {
@@ -1752,7 +1752,7 @@ interface_create_gui (int req_width, int req_height)
 		nmonitors = gdk_screen_get_n_monitors(screen);
 
 		width = gdk_screen_get_width(screen) * 3/4 / nmonitors;
-		height = gdk_screen_get_height(screen) * 3/4 / nmonitors;
+		height = gdk_screen_get_height(screen) * 3/4;
 	}
 
 	gtk_window_set_default_size(GTK_WINDOW(mainWindow), width, height);
