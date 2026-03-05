@@ -1004,7 +1004,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	case 'R':
 	    if (state->curr_section == DRILL_HEADER) {
 		stats->unknown++;
-		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
 			_("Not allowed 'R' code in the header "
 			    "at line %u in file \"%s\""),
 			file_line, fd->filename);
@@ -1158,7 +1158,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    stats->unknown++;
 
 	    if (DRILL_HEADER == state->curr_section) {
-		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
 			_("Undefined code '%s' (0x%x) found in header "
 			    "at line %u in file \"%s\""),
 			gerbv_escape_char(read), read,
@@ -1167,7 +1167,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 		/* Unrecognised crap in the header is thrown away */
 		tmps = get_line(fd);
-		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
 			_("Unrecognised string \"%s\" in header "
 			    "at line %u in file \"%s\""),
 			tmps, file_line, fd->filename);
@@ -1439,7 +1439,26 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
     DPRINTF("  Handling tool T%d at line %u\n", tool_num, file_line);
 
     if (tool_num == 0) {
-	return tool_num; /* T00 is a command to unload the drill */
+	/* T0 is nominally an unload-tool command, but some CAD tools
+	   (e.g. ekf2) define T0 with a C diameter parameter in the
+	   header.  Consume any trailing parameters so they don't get
+	   mis-parsed as unknown header codes, then return. */
+	temp = gerb_fgetc(fd);
+	while (temp != EOF && temp != '\n' && temp != '\r') {
+	    if (temp == 'C') {
+		read_double(fd, state->header_number_format,
+			    GERBV_OMIT_ZEROS_TRAILING, state->decimals);
+	    } else if (temp == 'F' || temp == 'S') {
+		gerb_fgetint(fd, NULL);
+	    } else {
+		gerb_ungetc(fd);
+		break;
+	    }
+	    temp = gerb_fgetc(fd);
+	}
+	if (temp == '\n' || temp == '\r')
+	    gerb_ungetc(fd);
+	return tool_num;
     }
 
     if (tool_num < TOOL_MIN || tool_num >= TOOL_MAX) {
