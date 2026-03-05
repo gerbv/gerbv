@@ -34,6 +34,10 @@ target_sources(gerbv PRIVATE
                 tooltable.c)
 if(DXF_FOUND)
     target_sources(gerbv PRIVATE export-dxf.cpp)
+    if(DXFLIB_BUNDLED)
+        target_sources(gerbv PRIVATE $<TARGET_OBJECTS:dxflib_bundled>)
+        target_include_directories(gerbv PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty)
+    endif()
 endif()
 target_link_libraries(gerbv PRIVATE compilation-flags config)
 

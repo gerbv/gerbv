@@ -24,12 +24,13 @@ pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0>=2.6)
 pkg_check_modules(DXF IMPORTED_TARGET dxflib)
 if(NOT DXF_FOUND)
     # Bundled dxflib (GPL-2+, RibbonSoft/QCAD)
-    add_library(dxflib_bundled STATIC
+    add_library(dxflib_bundled OBJECT
         thirdparty/dxflib/dl_dxf.cpp
         thirdparty/dxflib/dl_writer_ascii.cpp)
-    set_target_properties(dxflib_bundled PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(dxflib_bundled PUBLIC
-        ${CMAKE_SOURCE_DIR}/thirdparty)
+    set_target_properties(dxflib_bundled PROPERTIES
+        COMPILE_WARNING_AS_ERROR OFF
+        POSITION_INDEPENDENT_CODE ON)
+    target_include_directories(dxflib_bundled PUBLIC thirdparty)
     set(DXF_FOUND TRUE)
     set(DXFLIB_BUNDLED TRUE)
 endif()
@@ -63,9 +64,7 @@ target_compile_options(compilation-flags INTERFACE -Wall -Wimplicit-fallthrough 
 target_compile_options(compilation-flags INTERFACE $<$<CONFIG:Debug>:-g3>)
 target_link_libraries(compilation-flags INTERFACE PkgConfig::GLIB PkgConfig::GTK m)
 if(DXF_FOUND)
-    if(DXFLIB_BUNDLED)
-        target_link_libraries(compilation-flags INTERFACE dxflib_bundled)
-    else()
+    if(NOT DXFLIB_BUNDLED)
         target_link_libraries(compilation-flags INTERFACE PkgConfig::DXF)
     endif()
 endif()
