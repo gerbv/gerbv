@@ -66,6 +66,14 @@ target_sources(gerbv-app PRIVATE
 target_compile_definitions(gerbv-app PRIVATE $<$<BOOL:${DEBUG_PRINTOUT}>:DEBUG=1>)
 target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config)
 add_dependencies(gerbv-app generated)
+if(WIN32)
+    # Embed the application icon via Windows resource file
+    target_sources(gerbv-app PRIVATE gerbv.rc)
+    # Build as a GUI application (no console window).  The existing
+    # attach_console_for_win() in main.c re-attaches to the parent
+    # console when launched from a terminal.
+    target_link_options(gerbv-app PRIVATE -mwindows)
+endif()
 if(APPLE)
     set_target_properties(gerbv-app PROPERTIES
                          INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
