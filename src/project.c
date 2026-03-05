@@ -65,7 +65,7 @@
 #include "gerb_file.h"
 #include "lrealpath.h"
 #include "project.h"
-#include "scheme-private.h"
+#include <tinyscheme/scheme-private.h>
 #include "main.h"
 #include "interface.h"
 #include "render.h"

@@ -1,0 +1,7 @@
+TinyScheme 1.35
+Source: tinyscheme.sourceforge.net
+Author: Dimitrios Souflis (dsouflis@acm.org)
+License: BSD 3-Clause (see COPYING)
+
+Bundled with gerbv for the project file parser (project.c).
+Used as an embedded interpreter — not built standalone.

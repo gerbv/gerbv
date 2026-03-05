@@ -46,34 +46,30 @@ install(TARGETS gerbv
 
 add_executable(gerbv-app)
 set_target_properties(gerbv-app PROPERTIES
-                     OUTPUT_NAME gerbv
-                     PUBLIC_HEADER init.scm)
+                     OUTPUT_NAME gerbv)
 target_sources(gerbv-app PRIVATE
                 attribute.c attribute.h
                 callbacks.c callbacks.h
                 common.h
-                dynload.c dynload.h
                 icons.h
                 interface.c interface.h
                 main.c main.h
-                opdefines.h
                 project.c project.h
                 render.c render.h
-                scheme-private.h scheme.c scheme.h
                 table.c table.h
                 lrealpath.c lrealpath.h)
 # target_compile_definitions(gerbv-app PUBLIC GDK_DISABLE_DEPRECATED GTK_DISABLE_DEPRECATED) # Removes all deprecated functions
 target_compile_definitions(gerbv-app PRIVATE $<$<BOOL:${DEBUG_PRINTOUT}>:DEBUG=1>)
-target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config)
+target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config tinyscheme_bundled)
 add_dependencies(gerbv-app generated)
 if(APPLE)
     set_target_properties(gerbv-app PROPERTIES
                          INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
 endif()
 
-install(TARGETS gerbv-app
-        PUBLIC_HEADER
-            DESTINATION ${BACKEND_DIR})
+install(TARGETS gerbv-app)
+install(FILES ${CMAKE_SOURCE_DIR}/thirdparty/tinyscheme/init.scm
+        DESTINATION ${BACKEND_DIR})
 
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\$\{prefix\}")

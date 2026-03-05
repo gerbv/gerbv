@@ -34,6 +34,15 @@ if(NOT DXF_FOUND)
     set(DXFLIB_BUNDLED TRUE)
 endif()
 
+## Bundled TinyScheme 1.35 (BSD 3-Clause, Dimitrios Souflis)
+add_library(tinyscheme_bundled STATIC
+    thirdparty/tinyscheme/scheme.c
+    thirdparty/tinyscheme/dynload.c)
+set_target_properties(tinyscheme_bundled PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(tinyscheme_bundled PUBLIC
+    ${CMAKE_SOURCE_DIR}/thirdparty)
+target_link_libraries(tinyscheme_bundled PRIVATE config)
+
 ## Gettext and intl
 find_package(Gettext REQUIRED) # https://cmake.org/cmake/help/latest/module/FindGettext.html
 find_package(Intl) # Removed REQUIRED since it will fail on Mingw where it seems to be part of Gettext
