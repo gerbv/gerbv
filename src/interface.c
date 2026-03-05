@@ -1642,7 +1642,7 @@ interface_create_gui (int req_width, int req_height)
 
 	renderer = gtk_cell_renderer_text_new ();
 	g_object_set (G_OBJECT (renderer), "foreground", "red", "xalign", 0.5,
-			"family", "Times", "size-points", 12.0, NULL);
+			"family", "Serif", "size-points", 12.0, NULL);
 	column = gtk_tree_view_column_new_with_attributes ("Modified",
 	                                                renderer,
 	                                                "text", 3,
