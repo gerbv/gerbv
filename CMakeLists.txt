@@ -38,6 +38,20 @@ endif()
 find_package(Gettext REQUIRED) # https://cmake.org/cmake/help/latest/module/FindGettext.html
 find_package(Intl) # Removed REQUIRED since it will fail on Mingw where it seems to be part of Gettext
 
+## Bundled TinyScheme 1.35 (BSD 3-Clause, Dimitrios Souflis)
+add_library(tinyscheme_bundled STATIC
+    thirdparty/tinyscheme/scheme.c
+    thirdparty/tinyscheme/dynload.c)
+set_target_properties(tinyscheme_bundled PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(tinyscheme_bundled PUBLIC
+    ${CMAKE_SOURCE_DIR}/thirdparty)
+target_include_directories(tinyscheme_bundled PRIVATE
+    ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(tinyscheme_bundled PRIVATE config)
+if(Intl_FOUND)
+    target_link_libraries(tinyscheme_bundled PRIVATE Intl::Intl)
+endif()
+
 include(GNUInstallDirs)
 set(DATADIR "${CMAKE_INSTALL_FULL_DATADIR}/${CMAKE_PROJECT_NAME}")
 set(LOCALEDIR "${CMAKE_INSTALL_FULL_LOCALEDIR}")

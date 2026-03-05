@@ -15,7 +15,7 @@ set(GETTEXT_SOURCES
      ../src/draw.c
      ../src/drill.c
      ../src/drill_stats.c
-     ../src/dynload.c
+     ../thirdparty/tinyscheme/dynload.c
      ../src/export-drill.c
      ../src/export-image.c
      ../src/export-isel-drill.c

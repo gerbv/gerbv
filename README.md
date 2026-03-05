@@ -354,7 +354,7 @@ version 2.0.  See the toplevel [COPYING](COPYING) file for more information.
 
 Gerbv bundles [TinyScheme](https://sourceforge.net/projects/tinyscheme/)
 1.35, which is licensed under the BSD 3-Clause License. See
-[COPYING.tinyscheme](COPYING.tinyscheme) for details.
+[thirdparty/tinyscheme/COPYING](thirdparty/tinyscheme/COPYING) for details.
 
 Programs and associated files are:
 Copyright 2001, 2002 by Stefan Petersen and the respective original authors

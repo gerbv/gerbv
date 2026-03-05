@@ -9,7 +9,6 @@
 
 #define _SCHEME_SOURCE
 #include "dynload.h"
-#include "gerb_file.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
