@@ -749,6 +749,7 @@ typedef struct {
   gchar *execpath;    /*!< the path to executed version of Gerbv */
   gchar *execname;    /*!< the path plus executible name for Gerbv */
   gchar *project;     /*!< the default name for the private project file */
+  gboolean use_cairo_svg; /*!< TRUE to use Cairo's SVG surface instead of the optimized writer */
 } gerbv_project_t;
 
 /*! Color of layer */

@@ -175,6 +175,7 @@ const struct option longopts[] = {
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
     {"svg-layers",      no_argument,        &longopt_val, 3},
+    {"svg-cairo",       no_argument,        &longopt_val, 4},
     {"geometry",        required_argument,  &longopt_val, 1},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",      required_argument,  &longopt_val, 2},
@@ -695,6 +696,9 @@ main(int argc, char *argv[])
 		break;
 	    case 3: /* svg-layers */
 		svgLayers = TRUE;
+		break;
+	    case 4: /* svg-cairo */
+		mainProject->use_cairo_svg = TRUE;
 		break;
 	    default:
 		break;
@@ -1496,6 +1500,9 @@ gerbv_print_help(void)
 	printf(_(
 "      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
 "                          Only used with --export=svg.\n"));
+	printf(_(
+"      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
+"                          Only used with --export=svg.\n"));
 #else
 	printf(_(
 "  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
@@ -1508,6 +1515,9 @@ gerbv_print_help(void)
 ));
 	printf(_(
 "      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
+"                          Only used with -xsvg.\n"));
+	printf(_(
+"      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
 "                          Only used with -xsvg.\n"));
 #endif
 

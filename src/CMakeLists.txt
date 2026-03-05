@@ -19,6 +19,7 @@ target_sources(gerbv PRIVATE
                 export-drill.c
                 export-geda-pcb.c
                 export-image.c
+                export-svg.c export-svg.h
                 export-isel-drill.c
                 export-rs274x.c
                 gerb_file.c gerb_file.h

@@ -38,6 +38,7 @@
 #include "render.h"
 
 #include "draw.h"
+#include "export-svg.h"
 #include <cairo.h>
 #include <cairo-pdf.h>
 #include <cairo-ps.h>
@@ -282,6 +283,14 @@ void gerbv_export_svg_file_from_project_autoscaled_with_options (gerbv_project_t
 void gerbv_export_svg_file_from_project_with_options (gerbv_project_t *gerbvProject,
 		gerbv_render_info_t *renderInfo, gchar const* filename,
 		gboolean exportLayersAsSvgLayers) {
+	/* Use the optimized SVG writer unless Cairo SVG is explicitly requested */
+	if (!gerbvProject->use_cairo_svg) {
+		export_svg_render_project (gerbvProject, renderInfo, filename,
+			exportLayersAsSvgLayers);
+		return;
+	}
+
+	/* Legacy Cairo SVG path */
 	if (exportLayersAsSvgLayers) {
 		exportimage_render_svg_layers_from_project (gerbvProject, renderInfo, filename);
 		return;
