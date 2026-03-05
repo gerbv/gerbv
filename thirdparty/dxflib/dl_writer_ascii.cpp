@@ -61,10 +61,10 @@ bool DL_WriterA::openFailed() const {
 void DL_WriterA::dxfReal(int gc, double value) const {
     char str[256];
     if (version==DL_Codes::AC1009_MIN) {
-        sprintf(str, "%.6lf", value);
+        snprintf(str, sizeof(str), "%.6lf", value);
     }
     else {
-        sprintf(str, "%.16lf", value);
+        snprintf(str, sizeof(str), "%.16lf", value);
     }
     
     // fix for german locale:
@@ -112,7 +112,7 @@ void DL_WriterA::dxfInt(int gc, int value) const {
  */
 void DL_WriterA::dxfHex(int gc, int value) const {
     char str[12];
-    sprintf(str, "%0X", value);
+    snprintf(str, sizeof(str), "%0X", value);
     dxfString(gc, str);
 }
 

@@ -9,3 +9,5 @@ Patches applied by gerbv:
   2. dl_codes.h, dl_dxf.h: guard MSVC-only #pragma warning and
      strcasecmp macro behind _MSC_VER (MinGW defines _WIN32 but
      uses GCC, so these caused -Werror failures in cross-compilation)
+  3. dl_writer_ascii.cpp: replace sprintf with snprintf
+     (sprintf is deprecated on macOS, causes -Wdeprecated-declarations)
