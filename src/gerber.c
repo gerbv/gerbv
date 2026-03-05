@@ -556,42 +556,54 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			    widthx=widthy=ls->parameter[CIRCLE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_OUTLINE) {
 			    int pointCounter,numberOfPoints;
+			    gdouble rotation = DEG2RAD(ls->parameter[
+				OUTLINE_ROTATION_IDX(ls->parameter)]);
 			    numberOfPoints = ls->parameter[OUTLINE_NUMBER_OF_POINTS] + 1;
-		
+
 			    for (pointCounter = 0; pointCounter < numberOfPoints; pointCounter++) {
+				gdouble px = ls->parameter[OUTLINE_X_IDX_OF_POINT(pointCounter)];
+				gdouble py = ls->parameter[OUTLINE_Y_IDX_OF_POINT(pointCounter)];
+				gerbv_rotate_coord(&px, &py, rotation);
 				gerber_update_min_and_max (&boundingBox,
-							   curr_net->stop_x +
-							   ls->parameter[OUTLINE_X_IDX_OF_POINT(pointCounter)],
-							   curr_net->stop_y +
-							   ls->parameter[OUTLINE_Y_IDX_OF_POINT(pointCounter)], 
+							   curr_net->stop_x + px,
+							   curr_net->stop_y + py,
 							   0,0,0,0);
 			    }
 			    calculatedAlready = TRUE;
 			} else if (ls->type == GERBV_APTYPE_MACRO_POLYGON) {
 			    offsetx = ls->parameter[POLYGON_CENTER_X];
 			    offsety = ls->parameter[POLYGON_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[POLYGON_ROTATION]));
 			    widthx = widthy = ls->parameter[POLYGON_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_MOIRE) {
 			    offsetx = ls->parameter[MOIRE_CENTER_X];
 			    offsety = ls->parameter[MOIRE_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[MOIRE_ROTATION]));
 			    widthx = widthy = ls->parameter[MOIRE_OUTSIDE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_THERMAL) {
 			    offsetx = ls->parameter[THERMAL_CENTER_X];
 			    offsety = ls->parameter[THERMAL_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[THERMAL_ROTATION]));
 			    widthx = widthy = ls->parameter[THERMAL_OUTSIDE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE20) {
+			    gdouble rotation = DEG2RAD(ls->parameter[LINE20_ROTATION]);
+			    gdouble sx = ls->parameter[LINE20_START_X];
+			    gdouble sy = ls->parameter[LINE20_START_Y];
+			    gdouble ex = ls->parameter[LINE20_END_X];
+			    gdouble ey = ls->parameter[LINE20_END_Y];
+			    gerbv_rotate_coord(&sx, &sy, rotation);
+			    gerbv_rotate_coord(&ex, &ey, rotation);
 			    widthx = widthy = ls->parameter[LINE20_LINE_WIDTH];
 			    gerber_update_min_and_max (&boundingBox,
-						       curr_net->stop_x +
-						       ls->parameter[LINE20_START_X],
-						       curr_net->stop_y +
-						       ls->parameter[LINE20_START_Y], 
+						       curr_net->stop_x + sx,
+						       curr_net->stop_y + sy,
 						       widthx/2,widthx/2,widthy/2,widthy/2);
 			    gerber_update_min_and_max (&boundingBox,
-						       curr_net->stop_x +
-						       ls->parameter[LINE20_END_X],
-						       curr_net->stop_y +
-						       ls->parameter[LINE20_END_Y], 
+						       curr_net->stop_x + ex,
+						       curr_net->stop_y + ey,
 						       widthx/2,widthx/2,widthy/2,widthy/2);
 			    calculatedAlready = TRUE;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE21) {
@@ -599,6 +611,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 							     ls->parameter[LINE21_HEIGHT]);
 			    offsetx = ls->parameter[LINE21_CENTER_X];
 			    offsety = ls->parameter[LINE21_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[LINE21_ROTATION]));
 			    widthx = widthy = largestDimension;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE22) {
 			    gdouble largestDimension = hypot(ls->parameter[LINE22_WIDTH],
@@ -608,6 +622,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	      			ls->parameter[LINE22_WIDTH]/2;
 			    offsety = ls->parameter[LINE22_LOWER_LEFT_Y] +
 	      			ls->parameter[LINE22_HEIGHT]/2;
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[LINE22_ROTATION]));
 			    widthx = widthy=largestDimension;
 			}
 	      	
