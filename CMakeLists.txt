@@ -23,13 +23,11 @@ pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0>=2.6)
 ## DXF support library
 pkg_check_modules(DXF IMPORTED_TARGET dxflib)
 if(NOT DXF_FOUND)
-    # Bundled dxflib (GPL-2+, RibbonSoft/QCAD)
-    add_library(dxflib_bundled STATIC
-        thirdparty/dxflib/dl_dxf.cpp
-        thirdparty/dxflib/dl_writer_ascii.cpp)
-    set_target_properties(dxflib_bundled PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(dxflib_bundled PUBLIC
-        ${CMAKE_SOURCE_DIR}/thirdparty)
+    # Bundled dxflib sources (GPL-2+, RibbonSoft/QCAD) — compiled directly
+    # into libgerbv so symbols are embedded in the static archive.
+    set(DXFLIB_BUNDLED_SOURCES
+        ${CMAKE_SOURCE_DIR}/thirdparty/dxflib/dl_dxf.cpp
+        ${CMAKE_SOURCE_DIR}/thirdparty/dxflib/dl_writer_ascii.cpp)
     set(DXF_FOUND TRUE)
     set(DXFLIB_BUNDLED TRUE)
 endif()
@@ -63,9 +61,7 @@ target_compile_options(compilation-flags INTERFACE -Wall -Wimplicit-fallthrough 
 target_compile_options(compilation-flags INTERFACE $<$<CONFIG:Debug>:-g3>)
 target_link_libraries(compilation-flags INTERFACE PkgConfig::GLIB PkgConfig::GTK m)
 if(DXF_FOUND)
-    if(DXFLIB_BUNDLED)
-        target_link_libraries(compilation-flags INTERFACE dxflib_bundled)
-    else()
+    if(NOT DXFLIB_BUNDLED)
         target_link_libraries(compilation-flags INTERFACE PkgConfig::DXF)
     endif()
 endif()
@@ -77,6 +73,9 @@ if(APPLE)
 endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_compile_definitions(compilation-flags INTERFACE _GNU_SOURCE)
+endif()
+if(MSVC)
+    target_compile_definitions(compilation-flags INTERFACE _USE_MATH_DEFINES)
 endif()
 
 ## This is installation directory settings. These must be solved later by install target

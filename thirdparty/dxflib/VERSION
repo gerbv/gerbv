@@ -11,3 +11,6 @@ Patches applied by gerbv:
      uses GCC, so these caused -Werror failures in cross-compilation)
   3. dl_writer_ascii.cpp: replace sprintf with snprintf
      (sprintf is deprecated on macOS, causes -Wdeprecated-declarations)
+  4. CMake: suppress -Wuninitialized/-Wmaybe-uninitialized on bundled
+     sources (GCC false positive on DL_HatchEdgeData default construction,
+     see #372)
