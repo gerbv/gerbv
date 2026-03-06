@@ -48,6 +48,9 @@ target_include_directories(tinyscheme_bundled PUBLIC
 target_include_directories(tinyscheme_bundled PRIVATE
     ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(tinyscheme_bundled PRIVATE config)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_compile_definitions(tinyscheme_bundled PRIVATE _GNU_SOURCE)
+endif()
 if(Intl_FOUND)
     target_link_libraries(tinyscheme_bundled PRIVATE Intl::Intl)
 endif()
