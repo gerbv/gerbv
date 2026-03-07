@@ -1727,6 +1727,28 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	}
 	break;
+    case A2I('L','M'): /* Load Mirroring */
+	state->state = gerbv_image_return_new_netstate(state->state);
+	op[0] = gerb_fgetc(fd);
+	if (op[0] == 'N') {
+	    state->state->mirrorState = GERBV_MIRROR_STATE_NOMIRROR;
+	} else if (op[0] == 'X') {
+	    op[1] = gerb_fgetc(fd);
+	    if (op[1] == 'Y') {
+		state->state->mirrorState = GERBV_MIRROR_STATE_FLIPAB;
+	    } else {
+		gerb_ungetc(fd);
+		state->state->mirrorState = GERBV_MIRROR_STATE_FLIPA;
+	    }
+	} else if (op[0] == 'Y') {
+	    state->state->mirrorState = GERBV_MIRROR_STATE_FLIPB;
+	} else {
+	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
+		    _("Unknown load mirroring parameter '%s' "
+		       "at line %ld in file \"%s\""),
+		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
+	}
+	break;
     case A2I('K','O'): /* Knock Out */
         state->layer = gerbv_image_return_new_layer (state->layer);
         gerber_update_any_running_knockout_measurements (image);
