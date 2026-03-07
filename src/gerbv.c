@@ -602,10 +602,10 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     
     if (parsed_image) {
 	/* Warn if the file parsed successfully but contains no geometry */
-	if (parsed_image->netlist != NULL
-	&&  parsed_image->netlist->next == NULL) {
-	    if (parsed_image->layertype == GERBV_LAYERTYPE_DRILL
-	    &&  parsed_image->drill_stats != NULL) {
+	if ((parsed_image->netlist != NULL)
+	&&  (parsed_image->netlist->next == NULL)) {
+	    if ((parsed_image->layertype == GERBV_LAYERTYPE_DRILL)
+	    &&  (parsed_image->drill_stats != NULL)) {
 		gerbv_stats_printf(
 		    parsed_image->drill_stats->error_list,
 		    GERBV_MESSAGE_WARNING, -1,
