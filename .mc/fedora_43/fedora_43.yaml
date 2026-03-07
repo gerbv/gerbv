@@ -13,7 +13,6 @@ install:
  # Runtime dependencies
  - cairo-devel
  - gtk2-devel
- # Note: libdxflib removed from Fedora 43, DXF support will be disabled
 
  # Test dependencies
  - ImageMagick

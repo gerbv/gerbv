@@ -266,11 +266,12 @@ INTERFACE INLINE void setimmutable(pointer p) { typeflag(p) |= T_IMMUTABLE; }
 #define cddddr(p)        cdr(cdr(cdr(cdr(p))))
 
 #if USE_CHAR_CLASSIFIERS
-static INLINE int Cisalpha(int c) { return isascii(c) && isalpha(c); }
-static INLINE int Cisdigit(int c) { return isascii(c) && isdigit(c); }
-static INLINE int Cisspace(int c) { return isascii(c) && isspace(c); }
-static INLINE int Cisupper(int c) { return isascii(c) && isupper(c); }
-static INLINE int Cislower(int c) { return isascii(c) && islower(c); }
+static INLINE int isascii_local(int c) { return (c >= 0) && (c < 128); }
+static INLINE int Cisalpha(int c) { return isascii_local(c) && isalpha(c); }
+static INLINE int Cisdigit(int c) { return isascii_local(c) && isdigit(c); }
+static INLINE int Cisspace(int c) { return isascii_local(c) && isspace(c); }
+static INLINE int Cisupper(int c) { return isascii_local(c) && isupper(c); }
+static INLINE int Cislower(int c) { return isascii_local(c) && islower(c); }
 #endif
 
 #if USE_ASCII_NAMES
