@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <dxflib/dl_dxf.h>
+#include <dl_dxf.h>
 
 #include "common.h"
 

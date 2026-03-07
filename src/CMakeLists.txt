@@ -10,7 +10,6 @@ set_target_properties(gerbv PROPERTIES
                    PUBLIC_HEADER gerbv.h)
 target_sources(gerbv PRIVATE
                 amacro.c amacro.h
-                common.h
                 csv.c csv.h csv_defines.h
                 draw-gdk.c draw-gdk.h
                 draw.c draw.h
@@ -28,14 +27,15 @@ target_sources(gerbv PRIVATE
                 gerber.c gerber.h
                 gerbv.c gerbv.h
                 gerbv_icon.h
-                gettext.h
                 pick-and-place.c pick-and-place.h
                 selection.c selection.h
                 tooltable.c)
-if(DXF_FOUND)
-    target_sources(gerbv PRIVATE export-dxf.cpp)
-endif()
-target_link_libraries(gerbv PRIVATE compilation-flags config)
+target_link_libraries(gerbv PRIVATE compilation-flags config gettext_support)
+
+# DXF support, always using the bundled one
+target_sources(gerbv PRIVATE export-dxf.cpp)
+target_link_libraries(gerbv PRIVATE dxflib_bundled)
+
 
 install(TARGETS gerbv
         PUBLIC_HEADER
@@ -51,7 +51,6 @@ set_target_properties(gerbv-app PROPERTIES
 target_sources(gerbv-app PRIVATE
                 attribute.c attribute.h
                 callbacks.c callbacks.h
-                common.h
                 icons.h
                 interface.c interface.h
                 main.c main.h
@@ -61,7 +60,7 @@ target_sources(gerbv-app PRIVATE
                 lrealpath.c lrealpath.h)
 # target_compile_definitions(gerbv-app PUBLIC GDK_DISABLE_DEPRECATED GTK_DISABLE_DEPRECATED) # Removes all deprecated functions
 target_compile_definitions(gerbv-app PRIVATE $<$<BOOL:${DEBUG_PRINTOUT}>:DEBUG=1>)
-target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config tinyscheme_bundled)
+target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config tinyscheme gettext_support)
 add_dependencies(gerbv-app generated)
 if(WIN32)
     # Embed the application icon via Windows resource file
