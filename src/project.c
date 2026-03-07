@@ -1011,8 +1011,10 @@ read_project_file(char const* filename)
     if ((fd = g_fopen(initfile, "r")) == NULL) {
 	scheme_deinit(sc);
 	GERB_MESSAGE(_("Couldn't open %s (%s)"), initfile, strerror(errno));
+	g_free(initfile);
 	return NULL;
     }
+    g_free(initfile);
 
     /* Force gerbv to input decimals as dots */
     setlocale(LC_NUMERIC, "C");
@@ -1059,10 +1061,11 @@ project_destroy_project_list (project_list_t *projectList){
 	
 	for (tempP = projectList; tempP != NULL; ){
 		tempP2 = tempP->next;
-		
+
 		g_free (tempP->filename);
 		gerbv_attribute_destroy_HID_attribute (tempP->attr_list, tempP->n_attr);
 		tempP->attr_list = NULL;
+		g_free (tempP);
 		tempP = tempP2;
 	}
 }
