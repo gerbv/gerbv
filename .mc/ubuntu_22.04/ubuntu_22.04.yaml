@@ -11,7 +11,6 @@ install:
  - gpg
 
  # Runtime dependencies
- - libdxflib-dev
  - libgtk2.0-dev
  - libcairo2-dev
 
