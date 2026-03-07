@@ -356,6 +356,11 @@ Gerbv bundles [TinyScheme](https://sourceforge.net/projects/tinyscheme/)
 1.35, which is licensed under the BSD 3-Clause License. See
 [thirdparty/tinyscheme/COPYING](thirdparty/tinyscheme/COPYING) for details.
 
+Gerbv bundles [dxflib](https://qcad.org/en/90-dxflib), which is licensed
+under the GNU General Public License (GPL) version 2.0 or later. See
+[thirdparty/dxflib/gpl-2.0greater.txt](thirdparty/dxflib/gpl-2.0greater.txt)
+for details.
+
 Programs and associated files are:
 Copyright 2001, 2002 by Stefan Petersen and the respective original authors
 (which are listed on the respective files)
