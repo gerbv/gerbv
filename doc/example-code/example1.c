@@ -27,7 +27,7 @@
 #include "gerbv.h"
 
 int
-main(int argc, char *argv[]) {
+main(void) {
 	/* create a top level libgerbv structure */
 	gerbv_project_t *mainProject = gerbv_create_project();
 
