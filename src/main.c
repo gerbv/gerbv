@@ -511,9 +511,7 @@ main(int argc, char *argv[])
 	EXP_TYPE_RS274X,
 	EXP_TYPE_DRILL,
 	EXP_TYPE_IDRILL,
-#ifdef HAVE_LIBDXFLIB
 	EXP_TYPE_DXF,
-#endif
     };
     enum exp_type exportType = EXP_TYPE_NONE;
     const char *export_type_names[] = {
@@ -524,9 +522,7 @@ main(int argc, char *argv[])
 	"rs274x",
 	"drill",
 	"idrill",
-#ifdef HAVE_LIBDXFLIB
 	"dxf",
-#endif
 	NULL
     };
     const gchar *export_def_file_names[] = {
@@ -537,9 +533,7 @@ main(int argc, char *argv[])
 	"output.gbx",
 	"output.cnc",
 	"output.ncp",
-#ifdef HAVE_LIBDXFLIB
 	"output.dxf",
-#endif
 	NULL
     };
 
@@ -1200,9 +1194,7 @@ main(int argc, char *argv[])
 	case EXP_TYPE_RS274X:
 	case EXP_TYPE_DRILL:
 	case EXP_TYPE_IDRILL:
-#ifdef HAVE_LIBDXFLIB
 	case EXP_TYPE_DXF:
-#endif
 	    if (!mainProject->file[0]->image) {
 		fprintf(stderr, _("A valid file was not loaded.\n"));
 		if (logFile)
@@ -1234,12 +1226,10 @@ main(int argc, char *argv[])
 		gerbv_export_isel_drill_file_from_image (exportFilename,
 			exportImage, &mainProject->file[0]->transform);
 		break;
-#ifdef HAVE_LIBDXFLIB
 	    case EXP_TYPE_DXF:
 		gerbv_export_dxf_file_from_image(exportFilename,
 			exportImage, &mainProject->file[0]->transform);
 		break;
-#endif
 	    default:
 		break;
 	    }
@@ -1497,11 +1487,7 @@ gerbv_print_help(void)
 
 #ifdef HAVE_GETOPT_LONG
 	printf(_(
-#ifdef HAVE_LIBDXFLIB
 "  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\n"
-#else
-"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill>\n"
-#endif
 "                          Export a rendered picture to a file with\n"
 "                          the specified format.\n"));
 	printf(_(
@@ -1514,11 +1500,7 @@ gerbv_print_help(void)
 	printf(_(
 "  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
 "     rs274x|drill|        the specified format.\n"
-#ifdef HAVE_LIBDXFLIB
 "     idrill|dxf>\n"
-#else
-"     idrill>\n"
-#endif
 ));
 	printf(_(
 "      --svg-layers       Export visible layers as Inkscape SVG layers.\n"

@@ -67,6 +67,9 @@ configure_gettext(
  ALL
 )
 add_dependencies(${GETTEXT_TARGET} generated)
+foreach(lang IN LISTS GETTEXT_LANGUAGES)
+    add_dependencies(${GETTEXT_TARGET}-${lang} generated)
+endforeach()
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${GETTEXT_OUTPUT_DIR}/ TYPE LOCALE)
 

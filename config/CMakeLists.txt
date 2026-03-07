@@ -36,8 +36,6 @@ include(CheckLibraryExists)
 check_library_exists(m pow "" HAVE_LIBM)
 check_library_exists(dl dlopen "" HAVE_LIBDL)
 
-set(HAVE_LIBDXFLIB ${DXF_FOUND})
-
 set(PACKAGE_VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
 set(PACKAGE_NAME ${PROJECT_NAME})

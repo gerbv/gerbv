@@ -91,17 +91,22 @@ gerbv_gdk_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, gerbv_simplified_amacro_t *s,
     const int diameter_idx = 1;
     const int x_offset_idx = 2;
     const int y_offset_idx = 3;
+    const int rotation_idx = 4;
     const gint full_circle = 23360;
     GdkGC *local_gc = gdk_gc_new(pixmap);
     gint dia    = round(fabs(s->parameter[diameter_idx] * scale));
     gint real_x = x - dia / 2;
     gint real_y = y - dia / 2;
+    GdkPoint center;
     GdkColor color;
 
     gdk_gc_copy(local_gc, gc);
 
-    real_x += (int)(s->parameter[x_offset_idx] * (double)scale);
-    real_y -= (int)(s->parameter[y_offset_idx] * (double)scale);
+    center.x = (int)(s->parameter[x_offset_idx] * (double)scale);
+    center.y = -(int)(s->parameter[y_offset_idx] * (double)scale);
+    center = rotate_point(center, s->parameter[rotation_idx]);
+    real_x += center.x;
+    real_y += center.y;
 
     /* Exposure */
     if (s->parameter[exposure_idx] == 0.0) {

@@ -657,13 +657,11 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 
 		break;
 	case CALLBACKS_SAVE_FILE_DXF:
-#if HAVE_LIBDXFLIB
 		windowTitle = g_strdup_printf (
 			_("Export \"%s\" layer #%d to DXF file as..."),
 			act_file->name, file_index + 1);
 		file_name = g_strconcat (act_file->name, ".dxf", NULL);
 		dir_name =  g_path_get_dirname (act_file->fullPathname);
-#endif
 		break;
 	case CALLBACKS_SAVE_FILE_PNG:
 		windowTitle = g_strdup_printf (
@@ -833,7 +831,6 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 				mainProject, new_file_name, svg_layers);
 		break;
 	case CALLBACKS_SAVE_FILE_DXF:
-#if HAVE_LIBDXFLIB
 		if (gerbv_export_dxf_file_from_image(new_file_name,
 				act_file->image, &act_file->transform)) {
 			GERB_MESSAGE (
@@ -841,7 +838,6 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 				act_file->name, file_index + 1,
 				new_file_name);
 		}
-#endif
 		break;
 	case CALLBACKS_SAVE_FILE_PNG:
 		if (dpi == 0) {
