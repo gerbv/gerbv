@@ -100,30 +100,6 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: gerbv-lcov.info
 
-    - name: Rebuild Fedora 43
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty fedora_43 .mc/rebuild.sh
-
-    - name: Rebuild Ubuntu 22.04
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu_22.04 .mc/rebuild.sh
-
-    - name: Rebuild Debian 13
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty debian_13 .mc/rebuild.sh
-
-    - name: Rebuild Windows amd64
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty windows_amd64 .mc/rebuild-win.sh
-
-    - name: Upload executable artifacts
-      if: "!matrix.code_coverage"
-      uses: actions/upload-artifact@v6
-      with:
-        name: gerbv
-        path: gerbv.github.io/ci/gerbv*
-        if-no-files-found: error
-
     - name: Rebuild gerbv.github.io
       if: ${{ github.ref == 'refs/heads/develop' && !matrix.code_coverage }}
       run: |
@@ -144,6 +120,66 @@ jobs:
       env:
         GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
       if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && env.GERBV_BUILDBOT_PAT && !matrix.code_coverage }}
+
+  ci-fedora:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Rebuild Fedora 43
+      run: npx --package mini-cross@0.15.2 mc --no-tty fedora_43 .mc/rebuild.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-fedora
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
+
+  ci-ubuntu:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Rebuild Ubuntu 22.04
+      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu_22.04 .mc/rebuild.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-ubuntu
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
+
+  ci-debian:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Rebuild Debian 13
+      run: npx --package mini-cross@0.15.2 mc --no-tty debian_13 .mc/rebuild.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-debian
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
+
+  ci-windows_amd64-cross:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Rebuild Windows amd64 cross compilation
+      run: npx --package mini-cross@0.15.2 mc --no-tty windows_amd64 .mc/rebuild-win.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-windows_amd64
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
 
   ci-macos:
     runs-on: macos-15
@@ -186,7 +222,7 @@ jobs:
 
   release:
     runs-on: ubuntu-22.04
-    needs: [ci-ubuntu-22-04, ci-macos]
+    needs: [ci-ubuntu-22-04, ci-fedora, ci-debian, ci-ubuntu, ci-windows_amd64-cross, ci-macos]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
@@ -194,8 +230,9 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v6
         with:
-          name: gerbv
+          pattern: gerbv-*
           path: artifacts/
+          merge-multiple: true
 
       - name: Rename artifacts to use version tag
         run: |
