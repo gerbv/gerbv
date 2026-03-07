@@ -390,6 +390,8 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 	 * latest data is: lastLayer, lastState, lastNet. */
 
 	gerbv_net_t *currentNet, *newNet;
+	gerbv_layer_t *srcLayer = NULL;
+	gerbv_netstate_t *srcState = NULL;
 	gerbv_aperture_type_t aper_type;
 	gerbv_aperture_t *aper;
 	gerbv_simplified_amacro_t *sam;
@@ -437,15 +439,21 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 	for (currentNet = sourceImage->netlist; currentNet != NULL;
 			currentNet = currentNet->next) {
 
-		/* Check for any new layers and duplicate them if needed */
-		if (currentNet->layer != lastLayer) {
+		/* Check for any new layers and duplicate them if needed.
+		 * Compare against the source pointer, not the duplicated
+		 * pointer, to avoid creating redundant duplicates when
+		 * consecutive nets share the same layer. */
+		if (currentNet->layer != srcLayer) {
+			srcLayer = currentNet->layer;
 			lastLayer->next =
 				gerbv_image_duplicate_layer (currentNet->layer);
 			lastLayer = lastLayer->next;
 		}
 
-		/* Check for any new states and duplicate them if needed */
-		if (currentNet->state != lastState) {
+		/* Check for any new states and duplicate them if needed.
+		 * Same source-pointer tracking as layers above. */
+		if (currentNet->state != srcState) {
+			srcState = currentNet->state;
 			lastState->next =
 				gerbv_image_duplicate_state (currentNet->state);
 			lastState = lastState->next;
