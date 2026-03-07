@@ -69,7 +69,9 @@ if(WIN32)
     # Build as a GUI application (no console window).  The existing
     # attach_console_for_win() in main.c re-attaches to the parent
     # console when launched from a terminal.
-    target_link_options(gerbv-app PRIVATE -mwindows)
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        target_link_options(gerbv-app PRIVATE -mwindows)
+    endif()
 endif()
 if(APPLE)
     set_target_properties(gerbv-app PROPERTIES

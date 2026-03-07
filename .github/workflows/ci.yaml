@@ -184,9 +184,43 @@ jobs:
       continue-on-error: true
       run: ctest --preset macos-clang -V
 
+  ci-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        pacboy: >-
+          toolchain:p
+          cmake:p
+          ninja:p
+          pkgconf:p
+          gtk2:p
+          gtkmm:p
+          gettext-tools:p
+
+    - name: Configure
+      run: cmake --preset msys2-ucrt64-gcc
+
+    - name: Build
+      run: cmake --build --preset msys2-ucrt64-gcc --parallel $(nproc)
+
+    - name: Run tests
+      continue-on-error: true
+      run: ctest --preset msys2-ucrt64-gcc -V
+
   release:
     runs-on: ubuntu-22.04
-    needs: [ci-ubuntu-22-04, ci-macos]
+    needs: [ci-ubuntu-22-04, ci-macos, ci-windows]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
