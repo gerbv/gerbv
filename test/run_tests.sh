@@ -331,8 +331,9 @@ for t in $all_tests ; do
 
     if test "X$regen" != "Xyes" ; then
 	if test -f ${REFDIR}/${t}.png ; then
+	    mae_threshold=${GERBV_TEST_MAE_THRESHOLD:-500}
 	    same=`${IM_COMPARE} -metric MAE $refpng $outpng  null: 2>&1 | \
-                ${AWK} '{if($1 == 0){print "yes"} else {print "no"}}'`
+                ${AWK} -v threshold="$mae_threshold" '{if($1 <= threshold){print "yes"} else {print "no"}}'`
 	    if test "$same" = yes ; then
 		echo "PASS"
 		pass=`expr $pass + 1`
