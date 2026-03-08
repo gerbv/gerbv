@@ -149,19 +149,21 @@ GERBV_DEFAULT_FLAGS=${GERBV_DEFAULT_FLAGS:---export=png --window=640x480}
 srcdir=${srcdir:-.}
 
 # Detect ImageMagick version and set command syntax.
-# IMv7 uses "magick <subcommand>" instead of bare command names.
-# This also avoids the Windows convert.exe collision.
+# IMv7 merged "convert" into "magick" and uses "magick <subcommand>"
+# for all other tools.  This also avoids the Windows convert.exe collision.
 if command -v magick >/dev/null 2>&1; then
     _IM="magick "
+    _IM_CONVERT="magick"
 else
     _IM=""
+    _IM_CONVERT="convert"
 fi
 
 # various ImageMagick tools
 IM_ANIMATE=${IM_ANIMATE:-${_IM}animate}
 IM_COMPARE=${IM_COMPARE:-${_IM}compare}
 IM_COMPOSITE=${IM_COMPOSITE:-${_IM}composite}
-IM_CONVERT=${IM_CONVERT:-${_IM}convert}
+IM_CONVERT=${IM_CONVERT:-${_IM_CONVERT}}
 IM_DISPLAY=${IM_DISPLAY:-${_IM}display}
 IM_MONTAGE=${IM_MONTAGE:-${_IM}montage}
 
