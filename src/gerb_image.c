@@ -1541,7 +1541,7 @@ gerbv_x2_attr_parse(const gchar *content)
      * and the trailing '*'. */
     gchar **parts;
     gerbv_x2_attr_t *attr;
-    int n_parts, i;
+    int n_parts;
 
     if (content == NULL || content[0] == '\0')
         return NULL;

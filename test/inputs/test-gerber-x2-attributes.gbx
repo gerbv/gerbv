@@ -1,17 +1,47 @@
-G04 Test Gerber X2 attributes*
+G04 Test Gerber X2/X3 attribute commands (TF, TA, TO, TD)*
+G04 Exercises file, aperture, and object attributes with*
+G04 multiple values, named delete, and clear-all.*
 %TF.GenerationSoftware,KiCad,Pcbnew,8.0.0*%
 %TF.CreationDate,2024-01-01T00:00:00+00:00*%
-%TA.AperFunction,Profile*%
-%TD*%
-%TO.N,Edge.Cuts*%
+%TF.FileFunction,Copper,L1,Top*%
+%TF.FilePolarity,Positive*%
 %FSLAX46Y46*%
 %MOMM*%
-%ADD10C,0.050000*%
-D10*
-X100000000Y100000000D02*
-X200000000Y100000000D01*
-X200000000Y200000000D01*
-X100000000Y200000000D01*
-X100000000Y100000000D01*
+G04 Aperture with TA attribute (must stay attached through AD)*
+%TA.AperFunction,SMDPad,CuDef*%
+%ADD10R,0.500000X0.300000*%
+G04 Second aperture with different TA attribute*
+%TD.AperFunction*%
+%TA.AperFunction,ComponentPad*%
+%ADD11C,0.200000*%
+G04 Third aperture with no attributes (cleared before AD)*
 %TD*%
+%ADD12C,0.050000*%
+G04 Object attributes on first component*
+%TO.C,R42*%
+%TO.N,VCC*%
+%TO.P,R42,1*%
+D10*
+X100000000Y100000000D03*
+G04 Same component, second pad, different net*
+%TD.N*%
+%TD.P*%
+%TO.N,GND*%
+%TO.P,R42,2*%
+X100500000Y100000000D03*
+G04 New component with different attributes*
+%TD*%
+%TO.C,C1*%
+%TO.N,CLK13*%
+%TO.P,C1,1*%
+D11*
+X101000000Y100000000D03*
+G04 Clear object attrs, draw outline with no attrs*
+%TD*%
+D12*
+X100000000Y100000000D02*
+X102000000Y100000000D01*
+X102000000Y101000000D01*
+X100000000Y101000000D01*
+X100000000Y100000000D01*
 M02*
