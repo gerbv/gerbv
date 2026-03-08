@@ -1727,6 +1727,11 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	}
 	break;
+    case A2I('L','S'): /* Load Scaling */
+	state->state = gerbv_image_return_new_netstate(state->state);
+	state->state->scaleA = gerb_fgetdouble(fd);
+	state->state->scaleB = state->state->scaleA;
+	break;
     case A2I('K','O'): /* Knock Out */
         state->layer = gerbv_image_return_new_layer (state->layer);
         gerber_update_any_running_knockout_measurements (image);
