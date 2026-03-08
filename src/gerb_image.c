@@ -329,6 +329,7 @@ gerbv_image_return_new_netstate (gerbv_netstate_t *previousState)
     previousState->next = newState;
     newState->scaleA = 1.0;
     newState->scaleB = 1.0;
+    newState->rotation = 0.0;
     newState->next = NULL;
     
     return newState;

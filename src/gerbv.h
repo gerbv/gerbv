@@ -639,6 +639,7 @@ typedef struct {
     gdouble offsetB; /*!< the offset along the B axis (usually this is the Y axis) */
     gdouble scaleA; /*!< the scale factor in the A axis (usually this is the X axis) */
     gdouble scaleB; /*!< the scale factor in the B axis (usually this is the Y axis) */
+    gdouble rotation; /*!< per-object rotation in radians (LR command) */
     gpointer next; /*!< the next state group in the array */
 } gerbv_netstate_t;
 

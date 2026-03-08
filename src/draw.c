@@ -783,6 +783,10 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *stat
 	default:
 		break;
 	}
+	/* apply per-object rotation (LR command) */
+	if (state->rotation != 0.0) {
+		cairo_rotate (cairoTarget, state->rotation);
+	}
 	/* finally, apply axis select */
 	if (state->axisSelect == GERBV_AXIS_SELECT_SWAPAB) {
 		/* we do this by rotating 270 (counterclockwise, then mirroring
