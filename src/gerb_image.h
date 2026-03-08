@@ -70,6 +70,13 @@ gerbv_netstate_t *
 gerbv_image_return_new_netstate (gerbv_netstate_t *previousState);
 
 
+/* X2/X3 attribute helpers (used by gerber.c) */
+gerbv_x2_attr_t *
+gerbv_x2_attr_parse(const gchar *content);
+
+void
+gerbv_x2_attr_set(gerbv_x2_attr_t **attr_list, gerbv_x2_attr_t *new_attr);
+
 #ifdef __cplusplus
 }
 #endif

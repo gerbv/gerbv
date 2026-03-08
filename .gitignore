@@ -13,5 +13,8 @@ CMakeUserPresets.json
 # AI
 .claude/
 
+# Analysis docs (local only)
+gerber-spec-gap-analysis.md
+
 # Package building directory
 _packages/

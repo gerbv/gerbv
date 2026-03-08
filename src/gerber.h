@@ -55,6 +55,8 @@ typedef struct gerb_state {
     gerbv_netstate_t *state;
     int in_parea_fill;
     int mq_on;		/* Is multiquadrant circular iterpolation */
+    gerbv_x2_attr_t *pending_aperture_attrs; /* TA attributes for next AD */
+    gerbv_x2_attr_t *current_object_attrs;   /* TO attributes for subsequent nets */
 } gerb_state_t;
 
 /*
