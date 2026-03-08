@@ -159,7 +159,8 @@ typedef enum {
 			GERBV_APTYPE_MACRO_THERMAL, /*!< a RS274X thermal macro */
 			GERBV_APTYPE_MACRO_LINE20, /*!< a RS274X vector line (code 20) macro */
 			GERBV_APTYPE_MACRO_LINE21, /*!< a RS274X centered line (code 21) macro */
-			GERBV_APTYPE_MACRO_LINE22 /*!< a RS274X lower left line (code 22) macro */
+			GERBV_APTYPE_MACRO_LINE22, /*!< a RS274X lower left line (code 22) macro */
+			GERBV_APTYPE_BLOCK /*!< a block aperture (AB command) */
 } gerbv_aperture_type_t;
 
 const char *gerbv_aperture_type_name(gerbv_aperture_type_t type);
@@ -437,6 +438,7 @@ typedef struct gerbv_aperture {
     double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     gerbv_unit_t unit;
+    struct gerbv_net *block_netlist; /*!< net list for block apertures (AB command) */
 } gerbv_aperture_t;
 
 /* the gerb_aperture_list is used to keep track of 

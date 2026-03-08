@@ -88,6 +88,7 @@ const char *gerbv_aperture_type_name(gerbv_aperture_type_t type)
 		N_("line20 macro"),	/* RS274X line (code 20) macro */
 		N_("line21 macro"),	/* RS274X line (code 21) macro */
 		N_("line22 macro"),	/* RS274X line (code 22) macro */
+		N_("block"),		/* block aperture (AB command) */
 	};
 
 	if (type >=0 && type < sizeof(names)/sizeof(names[0]))

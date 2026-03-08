@@ -181,6 +181,9 @@ test-circular-interpolation-1           |  test-circular-interpolation-1.gbx
 test-circular-interpolation-mq-ccw      |  test-circular-interpolation-mq-ccw.gbx
 test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-error.gbx
 
+# Aperture block (Gerber X2)
+test-aperture-block  |  test-aperture-block.gbx
+
 test-merge-a+b_temporary | test-merge-a.gbx test-merge-b.gbx | ! --export=rs274x --output=inputs/test-merge-a+b_temporary.gbx
 test-merge-a+b | test-merge-a+b_temporary.gbx
 

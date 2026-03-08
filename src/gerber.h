@@ -55,6 +55,10 @@ typedef struct gerb_state {
     gerbv_netstate_t *state;
     int in_parea_fill;
     int mq_on;		/* Is multiquadrant circular iterpolation */
+    gboolean in_block;			/* Recording an aperture block */
+    int block_aperture_num;		/* D-code for the block */
+    gerbv_net_t *block_netlist;		/* Block net list head */
+    gerbv_net_t *saved_curr_net;	/* Saved main chain tail */
 } gerb_state_t;
 
 /*

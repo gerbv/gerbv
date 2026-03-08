@@ -246,6 +246,17 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    	parse_rs274x(levelOfRecursion, fd, image, state, curr_net,
 				stats, directoryPath, &line_num);
 
+		/* Handle aperture block open/close transitions */
+		if ((state->in_block) && (state->saved_curr_net == NULL)) {
+		    /* Just entered a block — redirect curr_net */
+		    state->saved_curr_net = curr_net;
+		    curr_net = state->block_netlist;
+		} else if ((!state->in_block) && (state->saved_curr_net != NULL)) {
+		    /* Just closed a block — restore curr_net */
+		    curr_net = state->saved_curr_net;
+		    state->saved_curr_net = NULL;
+		}
+
 	    	/* advance past any whitespace here */
 		int c;
 		while (1) {
@@ -1240,9 +1251,54 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		_("Unexpected EOF found in file \"%s\""), fd->filename);
 
     switch (A2I(op[0], op[1])){
-	
-	/* 
-	 * Directive parameters 
+
+    case A2I('A','B'): /* Aperture Block */
+	op[0] = gerb_fgetc(fd);
+	if (op[0] == 'D') {
+	    /* %ABD<code>*% — open block definition */
+	    int ap_num = 0;
+	    int c;
+	    while (((c = gerb_fgetc(fd)) != EOF) && (c != '*')) {
+		if ((c >= '0') && (c <= '9')) {
+		    ap_num = ap_num * 10 + (c - '0');
+		}
+	    }
+	    if ((ap_num < APERTURE_MIN) || (ap_num >= APERTURE_MAX)) {
+		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
+			_("Aperture block D-code %d out of range "
+			    "at line %ld in file \"%s\""),
+			ap_num, *line_num_p, fd->filename);
+	    } else {
+		state->in_block = TRUE;
+		state->block_aperture_num = ap_num;
+		/* Allocate the aperture and set its type */
+		image->aperture[ap_num] = g_new0(gerbv_aperture_t, 1);
+		image->aperture[ap_num]->type = GERBV_APTYPE_BLOCK;
+		/* Register in stats so D-code usage tracking works */
+		gerbv_stats_add_aperture(stats->aperture_list,
+					-1, ap_num,
+					GERBV_APTYPE_BLOCK,
+					image->aperture[ap_num]->parameter);
+		gerbv_stats_add_to_D_list(stats->D_code_list, ap_num);
+		/* Create head node for the block net list */
+		state->block_netlist = g_new0(gerbv_net_t, 1);
+		state->block_netlist->layer = state->layer;
+		state->block_netlist->state = state->state;
+	    }
+	} else {
+	    /* %AB*% — close block definition */
+	    gerb_ungetc(fd);
+	    if (state->in_block) {
+		image->aperture[state->block_aperture_num]->block_netlist =
+			state->block_netlist;
+		state->in_block = FALSE;
+		state->block_netlist = NULL;
+	    }
+	}
+	break;
+
+	/*
+	 * Directive parameters
 	 */
     case A2I('A','S'): /* Axis Select */
 	op[0] = gerb_fgetc(fd);

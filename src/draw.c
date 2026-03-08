@@ -912,6 +912,172 @@ draw_calc_pnp_mark_coords(struct gerbv_net *start_net,
 	return 1;
 }
 
+/**
+ * Render all nets within a block aperture's net list.
+ *
+ * Handles linear draws, arc strokes, rectangle draw strokes, polygon
+ * regions (PAREA), and flash sub-types (circle, rect, oval, polygon,
+ * macro, and nested blocks via recursion).
+ *
+ * @param cairoTarget        Cairo context to render into.
+ * @param image              The Gerber image (for aperture table lookup).
+ * @param block_netlist      Head of the block's net list (iteration starts at ->next).
+ * @param flash_net          The outer flash net (used by draw_stroke/draw_fill for
+ *                           selection tracking).
+ * @param drawMode           Current draw mode (normal / selections / etc.).
+ * @param selectionInfo      Selection state for highlight rendering.
+ * @param pixelOutput        TRUE when rendering to a pixel surface.
+ * @param pixelWidth         Width of one pixel in user coordinates.
+ * @param lineWidth          Default line width from enclosing scope.
+ * @param drawOperatorClear  Cairo operator for clear polarity primitives.
+ * @param drawOperatorDark   Cairo operator for dark polarity primitives.
+ */
+static void
+draw_render_block_nets (cairo_t *cairoTarget, gerbv_image_t *image,
+		gerbv_net_t *block_netlist, gerbv_net_t *flash_net,
+		enum draw_mode drawMode, gerbv_selection_info_t *selectionInfo,
+		gboolean pixelOutput, gdouble pixelWidth, gdouble lineWidth,
+		cairo_operator_t drawOperatorClear, cairo_operator_t drawOperatorDark)
+{
+	gerbv_net_t *block_net;
+	gdouble bx1, by1, bx2, by2;
+
+	for (block_net = block_netlist->next;
+			block_net != NULL;
+			block_net = block_net->next) {
+
+		/* 1. Polygon regions — must be checked first (aperture_state is OFF) */
+		if (block_net->interpolation == GERBV_INTERPOLATION_PAREA_START) {
+			draw_render_polygon_object (block_net, cairoTarget,
+				0, 0, image, drawMode, selectionInfo, pixelOutput);
+			/* Advance past PAREA_END */
+			while (block_net->next != NULL &&
+					block_net->next->interpolation !=
+					GERBV_INTERPOLATION_PAREA_END)
+				block_net = block_net->next;
+			if (block_net->next != NULL)
+				block_net = block_net->next;
+			continue;
+		}
+
+		bx1 = block_net->start_x;
+		by1 = block_net->start_y;
+		bx2 = block_net->stop_x;
+		by2 = block_net->stop_y;
+
+		if (block_net->aperture_state == GERBV_APERTURE_STATE_ON) {
+			cairo_set_line_width (cairoTarget,
+				image->aperture[block_net->aperture] ?
+				image->aperture[block_net->aperture]->parameter[0] :
+				lineWidth);
+
+			/* 2. Rectangle draw strokes — filled quad */
+			if (image->aperture[block_net->aperture] &&
+					image->aperture[block_net->aperture]->type ==
+					GERBV_APTYPE_RECTANGLE) {
+				gdouble dx = image->aperture[block_net->aperture]->parameter[0] / 2;
+				gdouble dy = image->aperture[block_net->aperture]->parameter[1] / 2;
+				if (bx1 > bx2) dx = -dx;
+				if (by1 > by2) dy = -dy;
+				cairo_new_path (cairoTarget);
+				draw_cairo_move_to (cairoTarget, bx1 - dx, by1 - dy, FALSE, pixelOutput);
+				draw_cairo_line_to (cairoTarget, bx1 - dx, by1 + dy, FALSE, pixelOutput);
+				draw_cairo_line_to (cairoTarget, bx2 - dx, by2 + dy, FALSE, pixelOutput);
+				draw_cairo_line_to (cairoTarget, bx2 + dx, by2 + dy, FALSE, pixelOutput);
+				draw_cairo_line_to (cairoTarget, bx2 + dx, by2 - dy, FALSE, pixelOutput);
+				draw_cairo_line_to (cairoTarget, bx1 + dx, by1 - dy, FALSE, pixelOutput);
+				draw_fill (cairoTarget, drawMode, selectionInfo, image, flash_net);
+			}
+			/* 3. Arc strokes (CW/CCW circular interpolation) */
+			else if (block_net->cirseg != NULL &&
+					(block_net->interpolation == GERBV_INTERPOLATION_CW_CIRCULAR ||
+					 block_net->interpolation == GERBV_INTERPOLATION_CCW_CIRCULAR)) {
+				cairo_new_path (cairoTarget);
+				if (image->aperture[block_net->aperture] &&
+						image->aperture[block_net->aperture]->type ==
+						GERBV_APTYPE_RECTANGLE)
+					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_SQUARE);
+				else
+					cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+				cairo_save (cairoTarget);
+				cairo_translate (cairoTarget,
+					block_net->cirseg->cp_x, block_net->cirseg->cp_y);
+				cairo_scale (cairoTarget,
+					block_net->cirseg->width, block_net->cirseg->height);
+				if (block_net->cirseg->angle2 > block_net->cirseg->angle1)
+					cairo_arc (cairoTarget, 0.0, 0.0, 0.5,
+						DEG2RAD(block_net->cirseg->angle1),
+						DEG2RAD(block_net->cirseg->angle2));
+				else
+					cairo_arc_negative (cairoTarget, 0.0, 0.0, 0.5,
+						DEG2RAD(block_net->cirseg->angle1),
+						DEG2RAD(block_net->cirseg->angle2));
+				cairo_restore (cairoTarget);
+				draw_stroke (cairoTarget, drawMode, selectionInfo, image, flash_net);
+			}
+			/* 4. Linear draw — round cap line */
+			else {
+				cairo_set_line_cap (cairoTarget, CAIRO_LINE_CAP_ROUND);
+				cairo_new_path (cairoTarget);
+				draw_cairo_move_to (cairoTarget, bx1, by1, FALSE, pixelOutput);
+				draw_cairo_line_to (cairoTarget, bx2, by2, FALSE, pixelOutput);
+				draw_stroke (cairoTarget, drawMode, selectionInfo, image, flash_net);
+			}
+		} else if (block_net->aperture_state == GERBV_APERTURE_STATE_FLASH) {
+			if (block_net->aperture >= 0 &&
+					image->aperture[block_net->aperture] != NULL) {
+				cairo_save (cairoTarget);
+				draw_cairo_translate_adjust (cairoTarget,
+					bx2, by2, pixelOutput);
+				switch (image->aperture[block_net->aperture]->type) {
+				case GERBV_APTYPE_CIRCLE:
+					gerbv_draw_circle (cairoTarget,
+						image->aperture[block_net->aperture]->parameter[0]);
+					break;
+				case GERBV_APTYPE_RECTANGLE:
+					gerbv_draw_rectangle (cairoTarget,
+						image->aperture[block_net->aperture]->parameter[0],
+						image->aperture[block_net->aperture]->parameter[1],
+						pixelOutput);
+					break;
+				case GERBV_APTYPE_OVAL:
+					gerbv_draw_oblong (cairoTarget,
+						image->aperture[block_net->aperture]->parameter[0],
+						image->aperture[block_net->aperture]->parameter[1]);
+					break;
+				case GERBV_APTYPE_POLYGON:
+					gerbv_draw_polygon (cairoTarget,
+						image->aperture[block_net->aperture]->parameter[0],
+						image->aperture[block_net->aperture]->parameter[1],
+						image->aperture[block_net->aperture]->parameter[2]);
+					break;
+				case GERBV_APTYPE_MACRO:
+					gerbv_draw_amacro (cairoTarget,
+						drawOperatorClear, drawOperatorDark,
+						image->aperture[block_net->aperture]->simplified,
+						(gint)image->aperture[block_net->aperture]->parameter[0],
+						pixelWidth, drawMode, selectionInfo,
+						image, flash_net);
+					break;
+				case GERBV_APTYPE_BLOCK:
+					/* Recursive: render inner block */
+					draw_render_block_nets (cairoTarget, image,
+						image->aperture[block_net->aperture]->block_netlist,
+						flash_net, drawMode, selectionInfo,
+						pixelOutput, pixelWidth, lineWidth,
+						drawOperatorClear, drawOperatorDark);
+					break;
+				default:
+					break;
+				}
+				draw_fill (cairoTarget, drawMode,
+					selectionInfo, image, flash_net);
+				cairo_restore (cairoTarget);
+			}
+		}
+	}
+}
+
 int
 draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		gdouble pixelWidth, enum draw_mode drawMode,
@@ -1432,6 +1598,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 							image->aperture[net->aperture]->simplified,
 							(gint)p[0], pixelWidth,
 							drawMode, selectionInfo, image, net);
+						break;
+					case GERBV_APTYPE_BLOCK :
+						draw_render_block_nets (cairoTarget, image,
+							image->aperture[net->aperture]->block_netlist,
+							net, drawMode, selectionInfo,
+							pixelOutput, pixelWidth, lineWidth,
+							drawOperatorClear, drawOperatorDark);
 						break;
 					default :
 						GERB_COMPILE_WARNING(
