@@ -220,6 +220,13 @@ jobs:
       continue-on-error: true
       run: ctest --preset macos-clang -V
 
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-macos
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
+
   ci-windows:
     runs-on: windows-latest
     defaults:
@@ -254,6 +261,13 @@ jobs:
     - name: Run tests
       continue-on-error: true
       run: ctest --preset msys2-ucrt64-gcc -V
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-windows-msys2
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
 
   release:
     runs-on: ubuntu-22.04
