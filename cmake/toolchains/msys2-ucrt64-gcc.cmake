@@ -8,6 +8,8 @@ set(CMAKE_C_COMPILER gcc)
 set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_RC_COMPILER windres)
 
+add_compile_definitions(_GNU_SOURCE WIN32)
+
 ################
 # Common Flags #
 ################
