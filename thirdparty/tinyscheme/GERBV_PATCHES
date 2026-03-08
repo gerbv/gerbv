@@ -5,3 +5,6 @@ License: BSD 3-Clause (see COPYING)
 
 Bundled with gerbv for the project file parser (project.c).
 Used as an embedded interpreter — not built standalone.
+
+The following known patches added so far:
+1. The isascii() function in scheme.c replaced by our own local version

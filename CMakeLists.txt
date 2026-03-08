@@ -20,37 +20,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-2.0)
 pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0>=2.6)
 
-## DXF support library
-pkg_check_modules(DXF IMPORTED_TARGET dxflib)
-if(NOT DXF_FOUND)
-    # Bundled dxflib (GPL-2+, RibbonSoft/QCAD)
-    add_library(dxflib_bundled STATIC
-        thirdparty/dxflib/dl_dxf.cpp
-        thirdparty/dxflib/dl_writer_ascii.cpp)
-    set_target_properties(dxflib_bundled PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(dxflib_bundled PUBLIC
-        ${CMAKE_SOURCE_DIR}/thirdparty)
-    set(DXF_FOUND TRUE)
-    set(DXFLIB_BUNDLED TRUE)
-endif()
-
 ## Gettext and intl
 find_package(Gettext REQUIRED) # https://cmake.org/cmake/help/latest/module/FindGettext.html
 find_package(Intl) # Removed REQUIRED since it will fail on Mingw where it seems to be part of Gettext
-
-## Bundled TinyScheme 1.35 (BSD 3-Clause, Dimitrios Souflis)
-add_library(tinyscheme_bundled STATIC
-    thirdparty/tinyscheme/scheme.c
-    thirdparty/tinyscheme/dynload.c)
-set_target_properties(tinyscheme_bundled PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_include_directories(tinyscheme_bundled PUBLIC
-    ${CMAKE_SOURCE_DIR}/thirdparty)
-target_include_directories(tinyscheme_bundled PRIVATE
-    ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(tinyscheme_bundled PRIVATE config)
-if(Intl_FOUND)
-    target_link_libraries(tinyscheme_bundled PRIVATE Intl::Intl)
-endif()
 
 include(GNUInstallDirs)
 set(DATADIR "${CMAKE_INSTALL_FULL_DATADIR}/${CMAKE_PROJECT_NAME}")
@@ -62,21 +34,8 @@ add_library(compilation-flags INTERFACE)
 target_compile_options(compilation-flags INTERFACE -Wall -Wimplicit-fallthrough -O3 -Wno-deprecated-declarations)
 target_compile_options(compilation-flags INTERFACE $<$<CONFIG:Debug>:-g3>)
 target_link_libraries(compilation-flags INTERFACE PkgConfig::GLIB PkgConfig::GTK m)
-if(DXF_FOUND)
-    if(DXFLIB_BUNDLED)
-        target_link_libraries(compilation-flags INTERFACE dxflib_bundled)
-    else()
-        target_link_libraries(compilation-flags INTERFACE PkgConfig::DXF)
-    endif()
-endif()
 if(Intl_FOUND)
     target_link_libraries(compilation-flags INTERFACE Intl::Intl)
-endif()
-if(APPLE)
-    target_compile_definitions(compilation-flags INTERFACE QUARTZ)
-endif()
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_compile_definitions(compilation-flags INTERFACE _GNU_SOURCE)
 endif()
 
 ## This is installation directory settings. These must be solved later by install target
@@ -124,6 +83,7 @@ add_subdirectory(config)
 add_subdirectory(src)
 add_subdirectory(man)
 add_subdirectory(desktop)
+add_subdirectory(thirdparty)
 
 install(DIRECTORY example TYPE DOC) # Rename to examples
 install(DIRECTORY share/ TYPE DATA)
