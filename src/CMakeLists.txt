@@ -5,7 +5,7 @@
 
 add_library(gerbv)
 set_target_properties(gerbv PROPERTIES
-                   VERSION 1.10.0
+                   VERSION 1.11.0
                    SOVERSION 1
                    PUBLIC_HEADER gerbv.h)
 target_sources(gerbv PRIVATE
