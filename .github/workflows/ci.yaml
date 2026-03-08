@@ -185,6 +185,8 @@ jobs:
     runs-on: macos-15
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Get number of jobs for compiling
       run: echo "NUM_BUILD_JOBS=$(sysctl -n hw.logicalcpu)" >> $GITHUB_ENV
@@ -220,6 +222,16 @@ jobs:
       continue-on-error: true
       run: ctest --preset macos-clang -V
 
+    - name: Package
+      run: bash .mc/package-macos.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-macos
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
+
   ci-windows:
     runs-on: windows-latest
     defaults:
@@ -235,6 +247,7 @@ jobs:
       with:
         msystem: UCRT64
         update: true
+        install: zip
         pacboy: >-
           toolchain:p
           cmake:p
@@ -254,6 +267,16 @@ jobs:
     - name: Run tests
       continue-on-error: true
       run: ctest --preset msys2-ucrt64-gcc -V
+
+    - name: Package
+      run: bash .mc/package-msys2.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-windows-msys2
+        path: gerbv.github.io/ci/gerbv*
+        if-no-files-found: error
 
   release:
     runs-on: ubuntu-22.04
