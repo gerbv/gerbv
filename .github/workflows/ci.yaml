@@ -243,6 +243,7 @@ jobs:
           gtk2:p
           gtkmm:p
           gettext-tools:p
+          imagemagick:p
 
     - name: Configure
       run: cmake --preset msys2-ucrt64-gcc
