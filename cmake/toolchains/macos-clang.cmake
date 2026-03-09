@@ -8,4 +8,4 @@ set(CMAKE_SYSTEM_NAME Darwin)
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_CXX_COMPILER clang++)
 
-add_compile_definitions(_GNU_SOURCE)
+add_compile_definitions(_GNU_SOURCE QUARTZ)

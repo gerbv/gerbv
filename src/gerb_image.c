@@ -340,6 +340,7 @@ gerbv_image_duplicate_layer (gerbv_layer_t *oldLayer) {
     
     *newLayer = *oldLayer;
     newLayer->name = g_strdup (oldLayer->name);
+    newLayer->next = NULL;
     return newLayer;
 }
 
@@ -349,6 +350,7 @@ gerbv_image_duplicate_state (gerbv_netstate_t *oldState)
 	gerbv_netstate_t *newState = g_new (gerbv_netstate_t, 1);
 
 	*newState = *oldState;
+	newState->next = NULL;
 	return newState;
 }
 

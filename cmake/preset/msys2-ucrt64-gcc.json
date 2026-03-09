@@ -1,0 +1,31 @@
+{
+    "version": 8,
+    "include": [ "base.json" ],
+    "configurePresets": [
+        {
+            "name": "msys2-ucrt64-gcc",
+            "inherits": "base",
+            "toolchainFile": "cmake/toolchains/msys2-ucrt64-gcc.cmake"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "msys2-ucrt64-gcc",
+            "configurePreset": "msys2-ucrt64-gcc",
+            "configuration": "Debug"
+        },
+        {
+            "name": "msys2-ucrt64-gcc-release",
+            "configurePreset": "msys2-ucrt64-gcc",
+            "configuration": "Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "msys2-ucrt64-gcc",
+            "configurePreset": "msys2-ucrt64-gcc",
+            "inherits": "base"
+        }
+    ],
+    "packagePresets": []
+}
