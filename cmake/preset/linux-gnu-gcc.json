@@ -11,7 +11,8 @@
             "name": "linux-gnu-gcc-install",
             "inherits": "linux-gnu-gcc",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "/opt/gerbv.github/"
+                "CMAKE_INSTALL_PREFIX": "/opt/gerbv.github/",
+                "BUILD_SHARED_LIBS": "ON"
             }
         }
     ],
