@@ -1,0 +1,7 @@
+G04 Test file for D10000 - reporter's test case*
+%FSLAX36Y36*%
+%MOIN*%
+%ADD10000C,1.000000*%
+D10000*
+X0Y0D03*
+M02*

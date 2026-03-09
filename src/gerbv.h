@@ -93,7 +93,8 @@ extern "C" {
 #endif
 
 #define APERTURE_MIN 10
-#define APERTURE_MAX 9999
+#define APERTURE_INITIAL_SLOTS 10001
+#define APERTURE_SLOTS_MAX 10000001
 
 /*
  * Maximum number of aperture parameters is set by the outline aperture macro.
@@ -720,7 +721,8 @@ typedef struct gerbv_image_info {
 /*!  The structure used to hold a layer (RS274X, drill, or pick-and-place data) */
 typedef struct {
   gerbv_layertype_t layertype; /*!< the type of layer (RS274X, drill, or pick-and-place) */
-  gerbv_aperture_t *aperture[APERTURE_MAX]; /*!< an array with all apertures used */
+  gerbv_aperture_t **aperture; /*!< a dynamically-allocated array of aperture pointers */
+  int aperture_slots; /*!< number of allocated slots in the aperture array */
   gerbv_layer_t *layers; /*!< an array of all RS274X layers used (only used in RS274X types) */
   gerbv_netstate_t *states; /*!< an array of all RS274X states used (only used in RS274X types) */
   gerbv_amacro_t *amacro; /*!< an array of all macros used (only used in RS274X types) */
@@ -791,6 +793,9 @@ gerbv_image_t *gerbv_create_image(gerbv_image_t *image, /*!< the old image to fr
 //! Free an image structure
 void gerbv_destroy_image(gerbv_image_t *image /*!< the image to free */
 );
+
+//! Ensure the aperture array has room for the given index, growing if needed
+gboolean gerbv_image_ensure_aperture_slot(gerbv_image_t *image, int index);
 
 //! Copy an image into an existing image, effectively merging the two together
 void
