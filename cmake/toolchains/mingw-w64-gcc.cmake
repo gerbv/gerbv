@@ -21,8 +21,6 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 set(PKG_CONFIG_EXECUTABLE /usr/bin/x86_64-w64-mingw32-pkg-config)
 
-add_compile_definitions(_GNU_SOURCE WIN32)
-
 ################
 # Common Flags #
 ################
