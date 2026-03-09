@@ -40,6 +40,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h> /* access() on Linux */
 #endif
+#include <stdlib.h>  /* before stddef.h on MinGW so _CRTIMP is defined */
 #include <stddef.h>
 
 #if USE_STRCASECMP
@@ -76,7 +77,6 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
-#include <stdlib.h>
 #ifndef macintosh
 #ifdef HAVE_MALLOC_H
 # include <malloc.h>
