@@ -209,23 +209,34 @@ gerb_verify_error_t
 gerbv_image_verify(gerbv_image_t const* image)
 {
     gerb_verify_error_t error = GERB_IMAGE_OK;
-    int i, n_nets;;
+    int i;
     gerbv_net_t *net;
+    gboolean needs_aperture = FALSE;
+    gboolean in_parea = FALSE;
 
     if (image->netlist == NULL) error |= GERB_IMAGE_MISSING_NETLIST;
     if (image->format == NULL)  error |= GERB_IMAGE_MISSING_FORMAT;
     if (image->info == NULL)    error |= GERB_IMAGE_MISSING_INFO;
 
-    /* Count how many nets we have */
-    n_nets = 0;
+    /* Check if any net actually requires an aperture (i.e., draws or
+     * flashes outside a polygon area fill).  G36/G37 polygon fills
+     * don't need apertures, so files using only polygon fills should
+     * not trigger a missing-apertures warning. */
     if (image->netlist != NULL) {
       for (net = image->netlist->next ; net != NULL; net = net->next) {
-	n_nets++;
+	if (net->interpolation == GERBV_INTERPOLATION_PAREA_START)
+	    in_parea = TRUE;
+	else if (net->interpolation == GERBV_INTERPOLATION_PAREA_END)
+	    in_parea = FALSE;
+	else if (!in_parea &&
+		 (net->aperture_state == GERBV_APERTURE_STATE_ON ||
+		  net->aperture_state == GERBV_APERTURE_STATE_FLASH))
+	    needs_aperture = TRUE;
       }
     }
 
-    /* If we have nets but no apertures are defined, then complain */
-    if( n_nets > 0) {
+    /* If we have nets that need apertures but none are defined, complain */
+    if (needs_aperture) {
       for (i = 0; i < APERTURE_MAX && image->aperture[i] == NULL; i++);
       if (i == APERTURE_MAX) error |= GERB_IMAGE_MISSING_APERTURES;
     }
