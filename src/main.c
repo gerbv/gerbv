@@ -58,6 +58,7 @@
 #include "interface.h"
 #include "render.h"
 #include "project.h"
+#include "export-diff.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #undef DPRINTF
@@ -177,6 +178,8 @@ const struct option longopts[] = {
     {"export",          required_argument,  NULL,    'x'},
     {"svg-layers",      no_argument,        &longopt_val, 3},
     {"svg-cairo",       no_argument,        &longopt_val, 4},
+    {"diff",            no_argument,        &longopt_val, 5},
+    {"diff-hide-unchanged", no_argument,    &longopt_val, 6},
     {"geometry",        required_argument,  &longopt_val, 1},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",      required_argument,  &longopt_val, 2},
@@ -495,6 +498,7 @@ main(int argc, char *argv[])
     gboolean initial_mirror_x = FALSE;
     gboolean initial_mirror_y = FALSE;
     gboolean svgLayers = FALSE;
+    gboolean diffMode = FALSE, diffHideUnchanged = FALSE;
     const gchar *exportFilename = NULL;
     gfloat userSuppliedOriginX=0.0,userSuppliedOriginY=0.0,userSuppliedDpiX=72.0, userSuppliedDpiY=72.0, 
 	   userSuppliedWidth=0, userSuppliedHeight=0,
@@ -699,6 +703,12 @@ main(int argc, char *argv[])
 		break;
 	    case 4: /* svg-cairo */
 		mainProject->use_cairo_svg = TRUE;
+		break;
+	    case 5: /* diff */
+		diffMode = TRUE;
+		break;
+	    case 6: /* diff-hide-unchanged */
+		diffHideUnchanged = TRUE;
 		break;
 	    default:
 		break;
@@ -1107,6 +1117,77 @@ main(int argc, char *argv[])
 	}
     }
 
+    if (diffMode) {
+	if (mainProject->last_loaded != 1) {
+	    fprintf(stderr, _("--diff requires exactly 2 input files.\n"));
+	    if (logFile)
+		fclose(logFile);
+	    exit(1);
+	}
+
+	if (!exportFilename)
+	    exportFilename = "diff.png";
+
+	gerbv_render_size_t bb;
+	gerbv_render_get_boundingbox(mainProject, &bb);
+	if (!userSuppliedOrigin) {
+	    userSuppliedOriginX = bb.left;
+	    userSuppliedOriginY = bb.top;
+	}
+
+	float width  = bb.right  - userSuppliedOriginX + 0.001;
+	float height = bb.bottom - userSuppliedOriginY + 0.001;
+	if (!userSuppliedWindow) {
+	    userSuppliedWidth  = width;
+	    userSuppliedHeight = height;
+	} else if (!userSuppliedDpi && userSuppliedWindowInPixels) {
+	    userSuppliedDpiX = MIN((userSuppliedWidth-0.5)/width,
+		    (userSuppliedHeight-0.5)/height);
+	    userSuppliedDpiY = userSuppliedDpiX;
+	    userSuppliedOriginX -= 0.5/userSuppliedDpiX;
+	    userSuppliedOriginY -= 0.5/userSuppliedDpiY;
+	}
+
+	if (userSuppliedBorder != 0) {
+	    if (!userSuppliedWindowInPixels) {
+		userSuppliedOriginX -= (userSuppliedWidth*userSuppliedBorder)/2.0;
+		userSuppliedOriginY -= (userSuppliedHeight*userSuppliedBorder)/2.0;
+		userSuppliedWidth  += userSuppliedWidth*userSuppliedBorder;
+		userSuppliedHeight += userSuppliedHeight*userSuppliedBorder;
+	    } else {
+		userSuppliedOriginX -= ((userSuppliedWidth/userSuppliedDpiX)*userSuppliedBorder)/2.0;
+		userSuppliedOriginY -= ((userSuppliedHeight/userSuppliedDpiX)*userSuppliedBorder)/2.0;
+		userSuppliedDpiX -= (userSuppliedDpiX*userSuppliedBorder);
+		userSuppliedDpiY -= (userSuppliedDpiY*userSuppliedBorder);
+	    }
+	}
+
+	if (!userSuppliedWindowInPixels) {
+	    userSuppliedWidth  *= userSuppliedDpiX;
+	    userSuppliedHeight *= userSuppliedDpiY;
+	}
+	if (userSuppliedWidth <= 0)
+	    userSuppliedWidth = 1;
+	if (userSuppliedHeight <= 0)
+	    userSuppliedHeight = 1;
+
+	gerbv_render_info_t renderInfo = {userSuppliedDpiX, userSuppliedDpiY,
+	    userSuppliedOriginX, userSuppliedOriginY,
+	    userSuppliedAntiAlias ? GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY : GERBV_RENDER_TYPE_CAIRO_NORMAL,
+	    userSuppliedWidth, userSuppliedHeight};
+
+	gerbv_diff_options_t diffOpts;
+	gerbv_diff_options_init(&diffOpts);
+	diffOpts.show_unchanged = !diffHideUnchanged;
+
+	gerbv_export_diff_png(mainProject->file[0], mainProject->file[1],
+		&renderInfo, &diffOpts, exportFilename);
+
+	if (logFile)
+	    fclose(logFile);
+	exit(0);
+    }
+
     if (exportType != EXP_TYPE_NONE) {
 	/* load the info struct with the default values */
 
@@ -1496,6 +1577,13 @@ gerbv_print_help(void)
 	printf(_(
 "      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
 "                          Only used with --export=svg.\n"));
+	printf(_(
+"      --diff             Compare two input files and export a diff PNG.\n"
+"                          Removals in red, additions in green, unchanged\n"
+"                          in gray. Requires exactly 2 input files.\n"));
+	printf(_(
+"      --diff-hide-unchanged\n"
+"                          Hide unchanged geometry in diff output.\n"));
 #else
 	printf(_(
 "  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
@@ -1508,6 +1596,13 @@ gerbv_print_help(void)
 	printf(_(
 "      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
 "                          Only used with -xsvg.\n"));
+	printf(_(
+"      --diff             Compare two input files and export a diff PNG.\n"
+"                          Removals in red, additions in green, unchanged\n"
+"                          in gray. Requires exactly 2 input files.\n"));
+	printf(_(
+"      --diff-hide-unchanged\n"
+"                          Hide unchanged geometry in diff output.\n"));
 #endif
 
 }
