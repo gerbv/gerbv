@@ -554,6 +554,7 @@ typedef struct {
     int M95;
     int M97;
     int M98;
+    int M99;
     int M_unknown;
 
     int R;
