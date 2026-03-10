@@ -125,6 +125,11 @@ typedef struct drill_state {
 } drill_state_t;
 
 /* Local function prototypes */
+static gerbv_net_t *drill_parse_segment(gerb_file_t *fd,
+				gerbv_image_t *image, drill_state_t *state,
+				gerbv_net_t *curr_net,
+				gerbv_drill_stats_t *stats,
+				int recursion_depth);
 static drill_g_code_t drill_parse_G_code(gerb_file_t *fd,
 				gerbv_image_t *image, unsigned int file_line);
 static drill_m_code_t drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
@@ -534,105 +539,29 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
 }
 
 /* -------------------------------------------------------------- */
-gerbv_image_t *
-parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int reload)
+/* drill_parse_segment: parse the body of an Excellon drill file.
+ *
+ * Extracted from parse_drillfile() to enable recursive parsing of
+ * included pattern files (M99).  Follows the same pattern as
+ * gerber_parse_file_segment() in gerber.c.
+ *
+ * At recursion_depth > 0, M00/M30 return from the segment rather
+ * than terminating the entire parse.
+ *
+ * Returns the current netlist tail pointer.
+ */
+static gerbv_net_t *
+drill_parse_segment(gerb_file_t *fd, gerbv_image_t *image,
+		    drill_state_t *state, gerbv_net_t *curr_net,
+		    gerbv_drill_stats_t *stats, int recursion_depth)
 {
-    drill_state_t *state = NULL;
-    gerbv_image_t *image = NULL;
-    gerbv_net_t *curr_net = NULL;
-    gerbv_HID_Attribute *hid_attrs;
     int read;
     gboolean parsing_done = FALSE;
-    gerbv_drill_stats_t *stats;
     gchar *tmps;
     unsigned int file_line = 1;
 
-    /* 
-     * many locales redefine "." as "," and so on, so sscanf and strtod 
-     * has problems when reading files using %f format.
-     * Fixes bug #1963618 reported by Lorenzo Marcantonio.
-     */
-    setlocale(LC_NUMERIC, "C" );
-
-    /* Create new image for this layer */
-    DPRINTF("In parse_drillfile, about to create image for this layer\n");
-
-    image = gerbv_create_image(image, "Excellon Drill File");
-    if (image == NULL) {
-	GERB_FATAL_ERROR("malloc image failed in %s()", __FUNCTION__);
-    }
-
-    if (reload && attr_list != NULL) {
-      /* FIXME there should probably just be a function to copy an
-	 attribute list including using strdup as needed */
-
-	image->info->n_attr = n_attr;
-	image->info->attr_list = gerbv_attribute_dup(attr_list, n_attr);
-
-    } else {
-	/* Copy in the default attribute list for drill files.  We make a
-	 * copy here because we will allow per-layer editing of the
-	 * attributes.
-	 */
-	image->info->n_attr = sizeof (drill_attribute_list) / sizeof (drill_attribute_list[0]);
-	image->info->attr_list = gerbv_attribute_dup (drill_attribute_list, image->info->n_attr);
-
-	/* now merge any project attributes */
-	drill_attribute_merge (image->info->attr_list, image->info->n_attr,
-			 attr_list, n_attr);
-    }
-    
-    curr_net = image->netlist;
-    curr_net->layer = image->layers;
-    curr_net->state = image->states;
-    image->layertype = GERBV_LAYERTYPE_DRILL;
-    stats = gerbv_drill_stats_new();
-    if (stats == NULL) {
-	GERB_FATAL_ERROR("malloc stats failed in %s()", __FUNCTION__);
-    }
-    image->drill_stats = stats;
-
-    /* Create local state variable to track photoplotter state */
-    state = new_state(state);
-    if (state == NULL) {
-	GERB_FATAL_ERROR("malloc state failed in %s()", __FUNCTION__);
-    }
-
-    image->format = g_new0(gerbv_format_t, 1);
-    if (image->format == NULL) {
-	GERB_FATAL_ERROR("malloc format failed in %s()", __FUNCTION__);
-    }
-
-    image->format->omit_zeros = GERBV_OMIT_ZEROS_UNSPECIFIED;
-
-    hid_attrs = image->info->attr_list;
-
-    if (!hid_attrs[HA_auto].default_val.int_value) {
-	state->autod = 0;
-	state->number_format = FMT_USER;
-	state->decimals = hid_attrs[HA_digits].default_val.int_value;
-
-	if (GERBV_UNIT_MM == hid_attrs[HA_xy_units].default_val.int_value) {
-	    state->unit = GERBV_UNIT_MM;
-	}
-
-	switch (hid_attrs[HA_suppression].default_val.int_value) {
-	case SUP_LEAD:
-	    image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
-	    break;
-	    
-	case SUP_TRAIL:
-	    image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
-	    break;
-
-	default:
-	    image->format->omit_zeros = GERBV_OMIT_ZEROS_EXPLICIT;
-	    break;
-	}
-    }
-
-    DPRINTF("%s():  Starting parsing of drill file \"%s\"\n",
-		    __FUNCTION__, fd->filename);
+    DPRINTF("%s():  Starting parsing of drill file \"%s\" (depth %d)\n",
+		    __FUNCTION__, fd->filename, recursion_depth);
 
     while (!parsing_done && (read = gerb_fgetc(fd)) != EOF) {
 
@@ -699,12 +628,10 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			    "at line %u in file \"%s\""),
 			file_line, fd->filename);
 
-		gerbv_destroy_image(image);
 		g_free (tmps);
-
-		return NULL;
+		break;
 	    }
-	    
+
 	    gerbv_stats_printf(stats->error_list,
 			    GERBV_MESSAGE_ERROR, -1,
 			    _("Unrecognised string \"%s\" in header "
@@ -902,9 +829,9 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			    /* First update stats.   Do this before changing drill dias.
 			     * Maybe also put error into stats? */
 			    size = image->aperture[tool_num]->parameter[0];
-			    drill_stats_modify_drill_list(stats->drill_list, 
-							  tool_num, 
-							  size, 
+			    drill_stats_modify_drill_list(stats->drill_list,
+							  tool_num,
+							  size,
 							  "MM");
 			    /* Now go back and update all tool dias, since
 			     * tools are displayed in inch units
@@ -1051,7 +978,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	      } else {
 		gerb_ungetc (fd);
 	      }
-	      
+
+
 	      DPRINTF("Getting ready to repeat the drill %d times with delta_x = %g, delta_y = %g\n", rcnt, step_x, step_y);
 
 	      /* spit out the drills */
@@ -1182,10 +1110,111 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	}
     }
 
-    if (!parsing_done) {
+    if (!parsing_done && recursion_depth == 0) {
 	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
 		_("No EOF found in drill file \"%s\""), fd->filename);
     }
+
+    return curr_net;
+} /* drill_parse_segment */
+
+
+/* -------------------------------------------------------------- */
+gerbv_image_t *
+parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int reload)
+{
+    drill_state_t *state = NULL;
+    gerbv_image_t *image = NULL;
+    gerbv_net_t *curr_net = NULL;
+    gerbv_HID_Attribute *hid_attrs;
+    gerbv_drill_stats_t *stats;
+
+    /*
+     * many locales redefine "." as "," and so on, so sscanf and strtod
+     * has problems when reading files using %f format.
+     * Fixes bug #1963618 reported by Lorenzo Marcantonio.
+     */
+    setlocale(LC_NUMERIC, "C" );
+
+    /* Create new image for this layer */
+    DPRINTF("In parse_drillfile, about to create image for this layer\n");
+
+    image = gerbv_create_image(image, "Excellon Drill File");
+    if (image == NULL) {
+	GERB_FATAL_ERROR("malloc image failed in %s()", __FUNCTION__);
+    }
+
+    if (reload && attr_list != NULL) {
+      /* FIXME there should probably just be a function to copy an
+	 attribute list including using strdup as needed */
+
+	image->info->n_attr = n_attr;
+	image->info->attr_list = gerbv_attribute_dup(attr_list, n_attr);
+
+    } else {
+	/* Copy in the default attribute list for drill files.  We make a
+	 * copy here because we will allow per-layer editing of the
+	 * attributes.
+	 */
+	image->info->n_attr = sizeof (drill_attribute_list) / sizeof (drill_attribute_list[0]);
+	image->info->attr_list = gerbv_attribute_dup (drill_attribute_list, image->info->n_attr);
+
+	/* now merge any project attributes */
+	drill_attribute_merge (image->info->attr_list, image->info->n_attr,
+			 attr_list, n_attr);
+    }
+
+    curr_net = image->netlist;
+    curr_net->layer = image->layers;
+    curr_net->state = image->states;
+    image->layertype = GERBV_LAYERTYPE_DRILL;
+    stats = gerbv_drill_stats_new();
+    if (stats == NULL) {
+	GERB_FATAL_ERROR("malloc stats failed in %s()", __FUNCTION__);
+    }
+    image->drill_stats = stats;
+
+    /* Create local state variable to track photoplotter state */
+    state = new_state(state);
+    if (state == NULL) {
+	GERB_FATAL_ERROR("malloc state failed in %s()", __FUNCTION__);
+    }
+
+    image->format = g_new0(gerbv_format_t, 1);
+    if (image->format == NULL) {
+	GERB_FATAL_ERROR("malloc format failed in %s()", __FUNCTION__);
+    }
+
+    image->format->omit_zeros = GERBV_OMIT_ZEROS_UNSPECIFIED;
+
+    hid_attrs = image->info->attr_list;
+
+    if (!hid_attrs[HA_auto].default_val.int_value) {
+	state->autod = 0;
+	state->number_format = FMT_USER;
+	state->decimals = hid_attrs[HA_digits].default_val.int_value;
+
+	if (GERBV_UNIT_MM == hid_attrs[HA_xy_units].default_val.int_value) {
+	    state->unit = GERBV_UNIT_MM;
+	}
+
+	switch (hid_attrs[HA_suppression].default_val.int_value) {
+	case SUP_LEAD:
+	    image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
+	    break;
+
+	case SUP_TRAIL:
+	    image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
+	    break;
+
+	default:
+	    image->format->omit_zeros = GERBV_OMIT_ZEROS_EXPLICIT;
+	    break;
+	}
+    }
+
+    /* Delegate to drill_parse_segment() for the main parse loop */
+    curr_net = drill_parse_segment(fd, image, state, curr_net, stats, 0);
 
     DPRINTF("%s():  Populating file attributes\n", __FUNCTION__);
 
