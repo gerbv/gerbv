@@ -13,10 +13,10 @@ set_tests_properties(gerbv_regression_tests PROPERTIES
 
 if(WIN32)
     set_tests_properties(gerbv_regression_tests PROPERTIES
-        ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_FILE_DIR:gerbv>"
+        ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_FILE_DIR:gerbv-shared>"
     )
 else()
     set_tests_properties(gerbv_regression_tests PROPERTIES
-        ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:gerbv>"
+        ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:gerbv-shared>"
     )
 endif()

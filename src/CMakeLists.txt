@@ -3,12 +3,8 @@
 # Building the library, installed as libgerbv.
 # The naming convention is to avoid name clashing in targets
 
-add_library(gerbv)
-set_target_properties(gerbv PROPERTIES
-                   VERSION 1.11.0
-                   SOVERSION 1
-                   PUBLIC_HEADER gerbv.h)
-target_sources(gerbv PRIVATE
+add_library(gerbv-lib INTERFACE)
+target_sources(gerbv-lib INTERFACE
                 amacro.c amacro.h
                 csv.c csv.h csv_defines.h
                 draw-gdk.c draw-gdk.h
@@ -30,16 +26,40 @@ target_sources(gerbv PRIVATE
                 pick-and-place.c pick-and-place.h
                 selection.c selection.h
                 tooltable.c)
-target_link_libraries(gerbv PRIVATE compilation-flags config gettext_support)
+target_link_libraries(gerbv-lib INTERFACE compilation-flags config gettext_support)
 
 # DXF support, always using the bundled one
-target_sources(gerbv PRIVATE export-dxf.cpp)
-target_link_libraries(gerbv PRIVATE dxflib_bundled)
+target_sources(gerbv-lib INTERFACE export-dxf.cpp)
 
+# We must include dxflib_bundle in respective actual library,
+# probably because it is an OBJECT that actually get compiled/linked
+# in there and not when in an INTERFACE library
+#target_link_libraries(gerbv INTERFACE dxflib_bundled)
 
-install(TARGETS gerbv
+##
+## Lets build the shared version, aka libgerbv.so
+add_library(gerbv-shared SHARED)
+target_link_libraries(gerbv-shared PRIVATE gerbv-lib dxflib_bundled)
+
+set_target_properties(gerbv-shared PROPERTIES
+                   VERSION 1.11.0
+                   SOVERSION 1
+                   PUBLIC_HEADER gerbv.h
+                   OUTPUT_NAME gerbv)
+
+install(TARGETS gerbv-shared
         PUBLIC_HEADER
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_PROJECT_NAME})
+
+##
+## Lets build the static version of libgerbv, aka libgerbv.a
+add_library(gerbv-static STATIC)
+target_link_libraries(gerbv-static PRIVATE gerbv-lib dxflib_bundled)
+
+set_target_properties(gerbv-static PROPERTIES
+                   OUTPUT_NAME gerbv)
+
+install(TARGETS gerbv-static)
 
 ######
 # Building the application, installed as gerbv.
@@ -60,7 +80,7 @@ target_sources(gerbv-app PRIVATE
                 lrealpath.c lrealpath.h)
 # target_compile_definitions(gerbv-app PUBLIC GDK_DISABLE_DEPRECATED GTK_DISABLE_DEPRECATED) # Removes all deprecated functions
 target_compile_definitions(gerbv-app PRIVATE $<$<BOOL:${DEBUG_PRINTOUT}>:DEBUG=1>)
-target_link_libraries(gerbv-app PRIVATE gerbv compilation-flags config tinyscheme gettext_support)
+target_link_libraries(gerbv-app PRIVATE gerbv-shared compilation-flags config tinyscheme gettext_support)
 add_dependencies(gerbv-app generated)
 if(WIN32)
     # Embed the application icon via Windows resource file
