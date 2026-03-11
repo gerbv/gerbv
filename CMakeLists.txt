@@ -13,6 +13,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+option(GERBV_ENABLE_CODE_COVERAGE "Enable code coverage instrumentation" OFF)
+if(GERBV_ENABLE_CODE_COVERAGE)
+    include(CodeCoverage)
+    append_coverage_compiler_flags()
+endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 
 ## Glib-2.0 and GTK-2.0
@@ -88,8 +94,11 @@ add_subdirectory(thirdparty)
 install(DIRECTORY example TYPE DOC) # Rename to examples
 install(DIRECTORY share/ TYPE DATA)
 
-enable_testing()
-add_subdirectory(test)
+include(CTest)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(test)
+endif()
 
 # where to find our CMake modules
 include(Packing)
