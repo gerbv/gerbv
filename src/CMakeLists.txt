@@ -98,8 +98,6 @@ if(APPLE)
 endif()
 
 install(TARGETS gerbv-app)
-install(FILES ${CMAKE_SOURCE_DIR}/thirdparty/tinyscheme/init.scm
-        DESTINATION ${BACKEND_DIR})
 
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\$\{prefix\}")
