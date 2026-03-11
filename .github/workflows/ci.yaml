@@ -75,13 +75,10 @@ jobs:
       run: cmake --build build -j ${NUM_BUILD_JOBS}
 
     - name: Run tests
-      if: "!matrix.code_coverage"
-      continue-on-error: true
-      run: ctest --preset linux-gnu-gcc -V
+      run: ctest --preset linux-gnu-gcc --output-on-failure -V
 
     - name: Reset coverage
       if: matrix.code_coverage
-      continue-on-error: true
       run: lcov --directory . -z
 
     - name: Run unit tests
@@ -219,8 +216,8 @@ jobs:
       run: cmake --build --preset macos-clang --parallel ${NUM_BUILD_JOBS}
 
     - name: Run tests
-      continue-on-error: true
-      run: ctest --preset macos-clang -V
+      continue-on-error: true  # TODO: Fix these tests.
+      run: ctest --preset macos-clang --output-on-failure -V
 
     - name: Package
       run: bash .mc/package-macos.sh
@@ -265,8 +262,8 @@ jobs:
       run: cmake --build --preset msys2-ucrt64-gcc --parallel $(nproc)
 
     - name: Run tests
-      continue-on-error: true
-      run: ctest --preset msys2-ucrt64-gcc -V
+      continue-on-error: true  # TODO: Fix these tests.
+      run: ctest --preset msys2-ucrt64-gcc --output-on-failure -V
 
     - name: Package
       run: bash .mc/package-msys2.sh
