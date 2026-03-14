@@ -326,6 +326,7 @@ gerbv_draw_aperture_hole(cairo_t *cairoTarget,
 		gdouble dimensionX, gdouble dimensionY, gboolean pixelOutput)
 {
 	if (dimensionX) {
+		cairo_new_sub_path (cairoTarget);
 		if (dimensionY)
 			gerbv_draw_rectangle (cairoTarget,
 					dimensionX, dimensionY, pixelOutput);
