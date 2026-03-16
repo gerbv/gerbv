@@ -10,5 +10,6 @@ set -e
 rm -rf build
 /opt/configure.sh
 cmake --build --preset mingw-w64-gcc
+cmake --build --preset mingw-w64-gcc-release
 /opt/package.sh
 

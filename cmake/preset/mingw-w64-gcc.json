@@ -22,5 +22,12 @@
 
     ],
     "testPresets": [],
-    "packagePresets": []
+    "packagePresets": [
+        {
+            "name": "mingw-w64-gcc",
+            "configurePreset": "mingw-w64-gcc",
+            "generators": ["NSIS"],
+            "configurations": ["Release"]
+        }
+    ]
 }
