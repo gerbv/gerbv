@@ -125,6 +125,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Rebuild Fedora 43
       run: npx --package mini-cross@0.15.2 mc --no-tty fedora_43 .mc/rebuild.sh
@@ -140,6 +142,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Rebuild Ubuntu 22.04
       run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu_22.04 .mc/rebuild.sh
@@ -155,6 +159,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Rebuild Debian 13
       run: npx --package mini-cross@0.15.2 mc --no-tty debian_13 .mc/rebuild.sh
@@ -170,6 +176,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Rebuild Windows amd64 cross compilation
       run: npx --package mini-cross@0.15.2 mc --no-tty windows_amd64 .mc/rebuild-win.sh
