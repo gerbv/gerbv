@@ -309,9 +309,7 @@ gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideDiameter,
 	cairo_move_to(cairoTarget, outsideDiameter / 2.0, 0);
 
 	/* skip first point, since we've moved there already */
-	/* include last point, since we may be drawing an aperture hole next
-	   and cairo may not correctly close the path itself */
-	for (i = 1; i <= (int)numberOfSidesInteger; i++){
+	for (i = 1; i < numberOfSidesInteger; i++){
 	    gdouble angle = ((double)i)*M_PI*2.0 / numberOfSidesInteger;
 	    cairo_line_to (cairoTarget, cos(angle) * outsideDiameter / 2.0,
 		       sin(angle) * outsideDiameter / 2.0);
