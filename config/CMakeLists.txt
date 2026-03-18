@@ -85,6 +85,7 @@ execute_process(
             -DINPUT_AUTHORS=${CMAKE_SOURCE_DIR}/AUTHORS
             -DOUTPUT_AUTHORS=${CMAKE_CURRENT_BINARY_DIR}/authors.c
             -P ${GENERATOR_SCRIPT_DIR}/generate_headers.cmake
+    COMMAND_ERROR_IS_FATAL ANY
 )
 
 add_custom_command(
