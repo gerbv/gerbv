@@ -20,6 +20,10 @@ can be downloaded straight from the pipeline at [download-actions].
 [download-ci]: https://gerbv.github.io/#download
 [download-actions]: https://github.com/gerbv/gerbv/actions
 
+## Build
+
+See [BUILD.md](https://github.com/gerbv/gerbv/blob/develop/BUILD.md) for how to compile
+it using CMake with presets.
 
 ## About Gerbv
 
@@ -91,7 +95,7 @@ and surprising stuff, but most things are now in place.
 We are now in the CI always compiling and building packages for Debian, Ubuntu, Windows (both cross compiled
 and using MSYS2) and MacOS.
 
-There is now a description on [how CMake is used in this project](BUILD.md) that I recommend you to read.
+There is now a description on [how to compile this project using CMake et al](BUILD.md) that I recommend you to read.
 
 ### Fixing first set of trivial bugs
 
@@ -164,6 +168,8 @@ access to, that might delay things. But the urgency will be based on severity.
 * Other annoyances.
 
 ## Building (after CMake transition)
+
+See a more in depth in [BUILD.md](https://github.com/gerbv/gerbv/blob/develop/BUILD.md).
 
 ### For general Linux distributions
 
