@@ -94,16 +94,19 @@ sets the install directory to `/opt/gerbv.github/`, since that is a requirement 
 **Note** We don't say anything about `Debug` or `Release` build here, since we are using the `Ninja Multi-Config` generator.
 
 After configuration you should have a `build` directory, and in that there should be a `compile_commands.json` that
-describes all flags that will be used when compiling. Also in there should be the generated `config/config.h`, which is
+describes all flags that will be used when compiling. There should also be the generated `build/config/config.h`, which is
 the generated configuration file used throughout the project. Those two files can be used to check that all the
 compilation flags and defines have been set properly.
 
-In `build/src` you have three directories
+The `build/config/config.h` is generated from `config/config.h.in` by the `config/CMakeLists.txt`.
+
+After configuration `build/src` should have three directories
 * `build/src/Debug/`
 * `build/src/Release/`
 * `build/src/RelWithDebInfo/`
 
-They are empty, but they will be used in the following build stage where we will tell what kind of build we want.
+They are empty after the configuration stage, but they will be used in the following build stage where we will tell
+what kind of build we want.
 
 #### Build presets in Gerbv
 
@@ -196,6 +199,147 @@ Set by `-DGERBV_DEFAULT_BORDER_COEFF=<value>` where <value> is a floating point 
 
 To change to millimeters for example, add `-DGERBV_DEFAULT_UNIT=GERBV_MILS` to CMake configuration.
 Possible values are `GERBV_MILS`, `GERBV_MMS` or `GERBV_INS`
+
+## Packages needed
+
+To build this there are a couple of packages needed to be installed on your computer.
+
+### Debian
+
+You can always see a list of the latest packages used to build in the pipeline at the
+[pipeline setup](.mc/gerbv/.mc/debian_13/debian_13.yaml)
+
+```
+install:
+ - gcc
+ - cmake
+ - ninja-build
+
+ # Buildsystem dependencies
+ - pkg-config
+
+ # Runtime dependencies
+ - libgtk2.0-dev
+ - libcairo2-dev
+
+ # Test dependencies
+ - imagemagick
+
+ # Packaging dependencies
+ - git
+```
+
+### Ubuntu
+
+You can always see a list of the latest packages used to build in the pipeline at the
+[pipeline setup](.mc/gerbv/.mc/ubuntu_22.04/ubuntu_22.04.yaml)
+
+Since we are using Ubuntu 22.04 that does not contain the relevant version of CMake,
+we need to download and install it from KitWare (the makers of CMake)
+
+```
+install:
+ - gcc
+ - ninja-build
+
+ # Buildsystem dependencies
+ - pkg-config
+ - wget
+ - software-properties-common
+ - gpg
+
+ # Runtime dependencies
+ - libgtk2.0-dev
+ - libcairo2-dev
+
+ # Test dependencies
+ - imagemagick
+
+  # Packaging dependencies
+ - git
+---
+#!/bin/bash
+set -e
+
+# Install CMake 3.28+ from Kitware's official repository
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+sudo apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ jammy main'
+sudo apt-get update
+sudo apt-get install -y cmake
+```
+
+### Fedora
+
+You can always see a list of the latest packages used to build in the pipeline at the
+[pipeline setup](.mc/gerbv/.mc/fedora_43/fedora_43.yaml)
+
+```
+install:
+ - gcc
+ - gcc-c++
+ - cmake
+ - ninja-build
+
+ # Buildsystem dependencies
+ - gettext-devel
+ - pkgconf
+
+ # Runtime dependencies
+ - cairo-devel
+ - gtk2-devel
+
+ # Test dependencies
+ - ImageMagick
+
+ # Packaging dependencies
+ - git
+ - rpm-build
+```
+
+### Windows (cross compiled)
+
+You can always see a list of the latest packages used to build in the pipeline at the
+[pipeline setup](.mc/gerbv/.mc/windows_amd64/windows_amd64.yaml)
+
+It is cross compiled on a Fedora 43. It seems that Fedora have the most ready made
+cross compilation libraries for Windows.
+
+```
+install:
+ - mingw64-gcc
+ - mingw64-gcc-c++
+ - cmake
+ - ninja-build
+
+ # Buildsystem dependencies
+ - gettext-devel
+ - pkgconf
+
+ # Runtime dependencies
+ - mingw64-cairo-static
+ - mingw64-gtk2-static
+
+ # Test dependencies
+ - ImageMagick
+
+ # Packaging dependencies
+ - git
+ - zip
+```
+
+### Windows (native compile)
+
+For Windows native, [the packages are defined in the pipeline description directly](https://github.com/gerbv/gerbv/blob/develop/.github/workflows/ci.yaml#L192)
+
+### MacOS
+
+For MacOS, [the packages are defined in the pipeline description directly](https://github.com/gerbv/gerbv/blob/develop/.github/workflows/ci.yaml#L243)
+
+Using `brew` you need the following packages
+
+```
+brew install cmake ninja pkgconf gettext gtk+ gtkmm libffi zlib bzip2 libpng expat imagemagick
+```
 
 ## IDEs
 
