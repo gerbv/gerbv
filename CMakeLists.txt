@@ -78,8 +78,9 @@ set(PROJECT_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 message(STATUS "Version from git: ${GIT_VERSION}")
 message(STATUS "Parsed version: ${PROJECT_VERSION} (suffix: ${VERSION_SUFFIX})")
 
-add_subdirectory(locale)
+# Note: config must happen before locale, since locale uses config for authors.c/bugs.c 
 add_subdirectory(config)
+add_subdirectory(locale)
 add_subdirectory(src)
 add_subdirectory(man)
 add_subdirectory(desktop)
