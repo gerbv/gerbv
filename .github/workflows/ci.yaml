@@ -294,14 +294,14 @@ jobs:
         repository-name: gerbv/gerbv.github.io
         branch: gh-pages
         folder: gerbv.github.io
-        token: ${{ secrets.GERBV_BUILDBOT_PAT }}
+        ssh-key: ${{ secrets.PAGES_DEPLOY_KEY }}
         git-config-name: gerbv-buildbot
-        git-config-email: violetland+gerbv@mail.ru
+        git-config-email: gerbv-buildbot@users.noreply.github.com
         single-commit: true
       env:
-        GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
-      # Guard: step is skipped (not failed) when PAT secret is absent
-      if: ${{ env.GERBV_BUILDBOT_PAT != '' }}
+        PAGES_DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
+      # Guard: step is skipped (not failed) when deploy key secret is absent
+      if: ${{ env.PAGES_DEPLOY_KEY != '' }}
 
 
   release:
