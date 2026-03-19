@@ -100,26 +100,6 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: gerbv-lcov.info
 
-    - name: Rebuild gerbv.github.io
-      if: ${{ github.ref == 'refs/heads/develop' && !matrix.code_coverage }}
-      run: |
-        npx --package mini-cross@0.15.2 mc --no-tty website make -C gerbv.github.io
-        find gerbv.github.io -type f -name '.gitignore' -exec rm {} \;
-
-    - name: Deploy gerbv.github.io
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        repository-name: gerbv/gerbv.github.io
-        branch: gh-pages
-        folder: gerbv.github.io
-        token: ${{ secrets.GERBV_BUILDBOT_PAT }}
-        git-config-name: gerbv-buildbot
-        git-config-email: violetland+gerbv@mail.ru
-        single-commit: true
-      # @see https://github.community/t/how-can-i-test-if-secrets-are-available-in-an-action/17911/10
-      env:
-        GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
-      if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && env.GERBV_BUILDBOT_PAT && !matrix.code_coverage }}
 
   ci-fedora:
     runs-on: ubuntu-22.04
@@ -135,7 +115,7 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: gerbv-fedora
-        path: gerbv.github.io/ci/gerbv*
+        path: gerbv.github.io/ci/
         if-no-files-found: error
 
   ci-ubuntu:
@@ -152,7 +132,7 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: gerbv-ubuntu
-        path: gerbv.github.io/ci/gerbv*
+        path: gerbv.github.io/ci/
         if-no-files-found: error
 
   ci-debian:
@@ -169,7 +149,7 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: gerbv-debian
-        path: gerbv.github.io/ci/gerbv*
+        path: gerbv.github.io/ci/
         if-no-files-found: error
 
   ci-windows_amd64-cross:
@@ -186,7 +166,7 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: gerbv-windows_amd64
-        path: gerbv.github.io/ci/gerbv*
+        path: gerbv.github.io/ci/
         if-no-files-found: error
 
   ci-macos:
@@ -237,7 +217,7 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: gerbv-macos
-        path: gerbv.github.io/ci/gerbv*
+        path: gerbv.github.io/ci/
         if-no-files-found: error
 
   ci-windows:
@@ -283,8 +263,46 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: gerbv-windows-msys2
-        path: gerbv.github.io/ci/gerbv*
+        path: gerbv.github.io/ci/
         if-no-files-found: error
+
+  ci-website:
+    runs-on: ubuntu-22.04
+    needs: [ci-fedora, ci-debian, ci-ubuntu, ci-windows_amd64-cross, ci-macos, ci-windows]
+    if: ${{ github.ref == 'refs/heads/develop' && github.event_name == 'push' }}
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Download all platform artifacts
+      uses: actions/download-artifact@v6
+      with:
+        pattern: gerbv-*
+        path: gerbv.github.io/ci/
+        merge-multiple: true
+
+    - name: Install doxygen
+      run: |
+        sudo apt-get update
+        sudo apt-get install doxygen
+
+    - name: Build website
+      run: make -C gerbv.github.io
+
+    - name: Deploy gerbv.github.io
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        repository-name: gerbv/gerbv.github.io
+        branch: gh-pages
+        folder: gerbv.github.io
+        token: ${{ secrets.GERBV_BUILDBOT_PAT }}
+        git-config-name: gerbv-buildbot
+        git-config-email: violetland+gerbv@mail.ru
+        single-commit: true
+      env:
+        GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
+      # Guard: step is skipped (not failed) when PAT secret is absent
+      if: ${{ env.GERBV_BUILDBOT_PAT != '' }}
+
 
   release:
     runs-on: ubuntu-22.04
