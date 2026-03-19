@@ -163,10 +163,15 @@ Available package presets:
   "deb-opt"
   "rpm"
   "rpm-opt"
+  "mingw-w64-gcc"
 ```
 
 The simple difference between the `-opt` and non `-opt` is that the `-opt` will build a package that is
 installed in `/opt/gerbv.github`. The package will be built in `_packages`.
+
+Preset `mingw-w64-gcc` uses NSIS to create an install shield installer. It is rather new and needs some
+testing. If the NSIS fails to install there is always the native Windows artifact that just zips together
+needed files.
 
 ### Toolchains
 
