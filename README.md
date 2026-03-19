@@ -77,10 +77,10 @@ This is a list of things I hope to be able to fix
     - [ ] Enable Valgrind (maybe)
     - [ ] Enable Coverage (maybe)
 - [X] [Fixing first set of trivial bugs](#fixing-first-set-of-trivial-bugs)
-- [ ] [Packing](#packing)
+- [X] [Packing](#packing)
   - [X] deb
   - [X] rpm
-  - [ ] Windows NSIS
+  - [X] Windows NSIS
 - [ ] [More updated Gerber specifications](#more-updated-gerber-specifications)
 - [ ] [Port over to GTK-3.0](#port-over-to-gtk-30)
 - [ ] [Fixing misunderstandings of the original specification](#fixing-misunderstandings-of-the-original-specification)

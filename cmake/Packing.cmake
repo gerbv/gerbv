@@ -90,4 +90,45 @@ set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)#ONE_PER_GROUP)
 # without this you won't be able to pack only specified component
 set(CPACK_DEB_COMPONENT_INSTALL YES)
 
+# NSIS-specific configuration
+# Same icon for install and uninstall
+set(CPACK_NSIS_MUI_ICON
+        ${CMAKE_SOURCE_DIR}/desktop/gerbv_icon.ico
+)
+set(CPACK_NSIS_MUI_UNIICON
+        ${CMAKE_SOURCE_DIR}/desktop/gerbv_icon.ico
+)
+set(CPACK_NSIS_INSTALLED_ICON_NAME bin/gerbv.exe)
+set(CPACK_NSIS_DISPLAY_NAME "Gerbv")
+set(CPACK_NSIS_PACKAGE_NAME "gerbv")
+set(CPACK_NSIS_URL_INFO_ABOUT "https://gerbv.github.io/")
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL YES)
+set(CPACK_NSIS_MODIFY_PATH YES)
+
+# registerExtension.nsh (in win32/) defines ${registerExtension} / ${unregisterExtension}
+# with a 4-argument signature: executable flags extension description.
+# Note: NOT the NSIS-bundled FileAssociation.nsh, which has different macro names/signature.
+set(CPACK_NSIS_DEFINES "!include \"${CMAKE_SOURCE_DIR}/win32/registerExtension.nsh\"")
+
+# Associate file types and icons.
+# Commands must be joined with \n — semicolons are NSIS line comment characters.
+# .gvp uses the "-p" flag (open-project mode) supported by the macro's flags argument.
+string(JOIN "\n" CPACK_NSIS_EXTRA_INSTALL_COMMANDS
+    "\${registerExtension} '$INSTDIR\\bin\\gerbv.exe' '' '.gbr' 'RS274-X File'"
+    "\${registerExtension} '$INSTDIR\\bin\\gerbv.exe' '' '.gbx' 'RS274-X File'"
+    "\${registerExtension} '$INSTDIR\\bin\\gerbv.exe' '' '.cnc' 'Excellon Drill File'"
+    "\${registerExtension} '$INSTDIR\\bin\\gerbv.exe' '' '.ncd' 'Excellon Drill File'"
+    "\${registerExtension} '$INSTDIR\\bin\\gerbv.exe' '' '.xy' 'PCB Centroid File'"
+    "\${registerExtension} '$INSTDIR\\bin\\gerbv.exe' '-p' '.gvp' 'Gerbv Project File'"
+)
+
+string(JOIN "\n" CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
+    "\${unregisterExtension} '.gbr' 'RS274-X File'"
+    "\${unregisterExtension} '.gbx' 'RS274-X File'"
+    "\${unregisterExtension} '.cnc' 'Excellon Drill File'"
+    "\${unregisterExtension} '.ncd' 'Excellon Drill File'"
+    "\${unregisterExtension} '.xy' 'PCB Centroid File'"
+    "\${unregisterExtension} '.gvp' 'Gerbv Project File'"
+)
+
 include(CPack)

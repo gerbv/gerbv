@@ -93,4 +93,5 @@ enable_testing()
 add_subdirectory(test)
 
 # where to find our CMake modules
+include(InstallWindowsDLLs)
 include(Packing)
