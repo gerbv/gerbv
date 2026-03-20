@@ -20,4 +20,12 @@ sed \
     -e "s|@WINDOWS_AMD64_COMMIT@|$(tr -d '\n' < 'ci/Windows amd64.RELEASE_COMMIT')|g" \
     -e "s|@WINDOWS_AMD64_COMMIT_SHORT@|$(tr -d '\n' < 'ci/Windows amd64.RELEASE_COMMIT_SHORT')|g" \
     -e "s|@WINDOWS_AMD64_FILENAME@|$(tr -d '\n' < 'ci/Windows amd64.RELEASE_FILENAME')|g" \
+    -e "s|@WINDOWS_MSYS2_DATE@|$(tr -d '\n' < 'ci/Windows MSYS2 UCRT64.RELEASE_DATE')|g" \
+    -e "s|@WINDOWS_MSYS2_COMMIT@|$(tr -d '\n' < 'ci/Windows MSYS2 UCRT64.RELEASE_COMMIT')|g" \
+    -e "s|@WINDOWS_MSYS2_COMMIT_SHORT@|$(tr -d '\n' < 'ci/Windows MSYS2 UCRT64.RELEASE_COMMIT_SHORT')|g" \
+    -e "s|@WINDOWS_MSYS2_FILENAME@|$(tr -d '\n' < 'ci/Windows MSYS2 UCRT64.RELEASE_FILENAME')|g" \
+    -e "s|@MACOS_DATE@|$(tr -d '\n' < 'ci/macOS.RELEASE_DATE')|g" \
+    -e "s|@MACOS_COMMIT@|$(tr -d '\n' < 'ci/macOS.RELEASE_COMMIT')|g" \
+    -e "s|@MACOS_COMMIT_SHORT@|$(tr -d '\n' < 'ci/macOS.RELEASE_COMMIT_SHORT')|g" \
+    -e "s|@MACOS_FILENAME@|$(tr -d '\n' < 'ci/macOS.RELEASE_FILENAME')|g" \
     index.html.in > index.html
