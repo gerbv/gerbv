@@ -89,6 +89,18 @@
            <td style="vertical-align: middle"><code><a href="https://github.com/gerbv/gerbv/tree/@WINDOWS_AMD64_COMMIT@">@WINDOWS_AMD64_COMMIT_SHORT@</a></code></td>
            <td style="vertical-align: middle"><a class="zip_download_link" href="ci/@WINDOWS_AMD64_FILENAME@">Download Windows amd64 binaries</a></td>
          </tr>
+         <tr>
+           <td style="vertical-align: middle"><img src="assets/Windows_10_Logo.png" alt="Windows MSYS2 UCRT64" title="Windows MSYS2 UCRT64" style="height: 100px; box-shadow: none; border: none" /></td>
+           <td style="vertical-align: middle">@WINDOWS_MSYS2_DATE@</td>
+           <td style="vertical-align: middle"><code><a href="https://github.com/gerbv/gerbv/tree/@WINDOWS_MSYS2_COMMIT@">@WINDOWS_MSYS2_COMMIT_SHORT@</a></code></td>
+           <td style="vertical-align: middle"><a class="zip_download_link" href="ci/@WINDOWS_MSYS2_FILENAME@">Download Windows MSYS2 UCRT64 binaries</a></td>
+         </tr>
+         <tr>
+           <td style="vertical-align: middle">macOS</td>
+           <td style="vertical-align: middle">@MACOS_DATE@</td>
+           <td style="vertical-align: middle"><code><a href="https://github.com/gerbv/gerbv/tree/@MACOS_COMMIT@">@MACOS_COMMIT_SHORT@</a></code></td>
+           <td style="vertical-align: middle"><a class="zip_download_link" href="ci/@MACOS_FILENAME@">Download macOS binaries</a></td>
+         </tr>
        </table>
 
       </section>
