@@ -27,22 +27,24 @@ These are harmless but noisy. Suppressed with `-w` in practice.
 
 ## Proposed Fix: Split libgerbv from GTK2
 
-### Phase 1: Decouple header (non-breaking)
+### Phase 1: Decouple header (non-breaking) — **Implemented**
 
-Replace `GdkColor` in `gerbv.h` with a standalone color struct:
+Added `gerbv_color_t` standalone RGBA color type to `gerbv.h` (normalized floats 0.0–1.0):
 
 ```c
-/* New: standalone color type, no GTK dependency */
 typedef struct {
-    double red;    /* 0.0 - 1.0 */
-    double green;  /* 0.0 - 1.0 */
-    double blue;   /* 0.0 - 1.0 */
-    double alpha;  /* 0.0 - 1.0 */
+    double red;
+    double green;
+    double blue;
+    double alpha;
 } gerbv_color_t;
 ```
 
-Update `gerbv_fileinfo_t` and `gerbv_project_t` to use `gerbv_color_t`.
-Provide backward-compat macros for existing code using `GdkColor`.
+Added backward-compatibility macros `GERBV_COLOR_FROM_GDK()` and `GERBV_COLOR_TO_GDK()`
+for converting between `GdkColor` (16-bit) and `gerbv_color_t` (float).
+
+Existing `GdkColor` fields in `gerbv_fileinfo_t` and `gerbv_project_t` are **unchanged**
+(no ABI break). The new type and macros provide a migration path for Phase 2.
 
 ### Phase 2: Remove GTK include from gerbv.h
 

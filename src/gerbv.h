@@ -731,6 +731,28 @@ typedef struct {
   gerbv_drill_stats_t *drill_stats;  /*!< Excellon drill statistics for the layer */
 } gerbv_image_t;
 
+/** Standalone RGBA color type — no GTK dependency.
+ *  Values are normalized floats 0.0–1.0.
+ *  Added to replace GdkColor which has no alpha and requires GTK headers.
+ */
+typedef struct {
+    double red;
+    double green;
+    double blue;
+    double alpha;
+} gerbv_color_t;
+
+/** Convert GdkColor (16-bit) + alpha to gerbv_color_t (float) */
+#define GERBV_COLOR_FROM_GDK(gdk, a) \
+    ((gerbv_color_t){ (gdk).red / 65535.0, (gdk).green / 65535.0, (gdk).blue / 65535.0, (a) / 65535.0 })
+
+/** Convert gerbv_color_t (float) to GdkColor (16-bit) */
+#define GERBV_COLOR_TO_GDK(c, gdk) do { \
+    (gdk).red = (guint16)((c).red * 65535.0);   \
+    (gdk).green = (guint16)((c).green * 65535.0); \
+    (gdk).blue = (guint16)((c).blue * 65535.0);   \
+} while(0)
+
 /*!  Holds information related to an individual layer that is part of a project */
 typedef struct {
   gerbv_image_t *image; /*!< the image holding all the geometry of the layer */
