@@ -4,6 +4,7 @@
     "configurePresets": [
         {
             "name": "msys2-ucrt64-gcc",
+            "displayName": "MSYS2 native Windows",
             "inherits": "base",
             "toolchainFile": "cmake/toolchains/msys2-ucrt64-gcc.cmake"
         }

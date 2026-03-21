@@ -4,6 +4,7 @@
     "configurePresets": [
         {
             "name": "mingw-w64-gcc",
+            "displayName": "MinGW cross compiled",
             "inherits": "base",
             "toolchainFile": "cmake/toolchains/mingw-w64-gcc.cmake"
         }
