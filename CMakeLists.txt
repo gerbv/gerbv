@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
 
+# Update the release version here for when the code is built out
+# of tree. It is not optimal, but that how it is. There is a check
+# in the release build to make sure this version and the tag have
+# the same version.
 project(gerbv
-        VERSION 4.0
+        VERSION 2.13.0
         DESCRIPTION "Gerber Viewer"
         LANGUAGES C CXX)
 
