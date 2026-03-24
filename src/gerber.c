@@ -816,6 +816,7 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     int i;
     gboolean found_binary = FALSE;
     gboolean found_ADD = FALSE;
+    gboolean found_percent_cmd = FALSE;
     gboolean found_D0 = FALSE;
     gboolean found_D2 = FALSE;
     gboolean found_M0 = FALSE;
@@ -823,9 +824,9 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     gboolean found_star = FALSE;
     gboolean found_X = FALSE;
     gboolean found_Y = FALSE;
-   
+
     DPRINTF("%s(%p, %p), fd->fd = %p\n",
-		    __func__, fd, returnFoundBinary, fd->fd); 
+		    __func__, fd, returnFoundBinary, fd->fd);
     buf = (char *) g_malloc(MAXL);
     if (buf == NULL) 
 	GERB_FATAL_ERROR("malloc buf failed while checking for rs274x in %s()",
@@ -849,6 +850,13 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	if (g_strstr_len(buf, len, "%ADD")) {
 	    found_ADD = TRUE;
             DPRINTF("found_ADD\n");
+	}
+	if (g_strstr_len(buf, len, "%FS") ||
+	    g_strstr_len(buf, len, "%MO") ||
+	    g_strstr_len(buf, len, "%LP") ||
+	    g_strstr_len(buf, len, "%AM")) {
+	    found_percent_cmd = TRUE;
+	    DPRINTF("found_percent_cmd\n");
 	}
 	if (g_strstr_len(buf, len, "D00") || g_strstr_len(buf, len, "D0")) {
 	    found_D0 = TRUE;
@@ -890,8 +898,8 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     *returnFoundBinary = found_binary;
 
     /* Now form logical expression determining if the file is RS-274X */
-    if ((found_D0 || found_D2 || found_M0 || found_M2) && 
-	found_ADD && found_star && (found_X || found_Y)) 
+    if ((found_D0 || found_D2 || found_M0 || found_M2) &&
+	(found_ADD || found_percent_cmd) && found_star && (found_X || found_Y))
 	return TRUE;
 
     
