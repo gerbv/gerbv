@@ -4,25 +4,42 @@
     "configurePresets": [
         {
             "name": "linux-gnu-gcc",
+            "displayName": "Linux/GCC. Installs in /usr/local/",
+            "description": "Linux build with GCC. Installs in /usr/local/, default",
             "inherits": "base",
             "toolchainFile": "cmake/toolchains/linux-gnu-gcc.cmake"
         },
         {
-            "name": "linux-gnu-gcc-install",
+            "name": "linux-gnu-gcc-opt",
+            "displayName": "Linux/GCC. Installs in /opt/gerbv.github/",
+            "description": "Linux build with GCC. Installs in /opt/gerbv.github/",
             "inherits": "linux-gnu-gcc",
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "/opt/gerbv.github/"
+            }
+        },
+        {
+            "name": "linux-gnu-gcc-usr",
+            "displayName": "Linux/GCC. Installs in /usr/",
+            "description": "Linux build with GCC. Installs in /usr/",
+            "inherits": "linux-gnu-gcc",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "/usr/"
             }
         }
     ],
     "buildPresets": [
         {
             "name": "linux-gnu-gcc",
+            "displayName": "Build debug",
+            "description": "Debug build, default",
             "configurePreset": "linux-gnu-gcc",
             "configuration": "Debug"
         },
         {
             "name": "linux-gnu-gcc-release",
+            "displayName": "Build release",
+            "description": "Release build",
             "configurePreset": "linux-gnu-gcc",
             "configuration": "Release"
         }
@@ -48,7 +65,7 @@
         },
         {
             "name": "deb-opt",
-            "configurePreset": "linux-gnu-gcc-install",
+            "configurePreset": "linux-gnu-gcc-opt",
             "generators": [
                 "DEB"
             ],
@@ -68,7 +85,7 @@
         },
         {
             "name": "rpm-opt",
-            "configurePreset": "linux-gnu-gcc-install",
+            "configurePreset": "linux-gnu-gcc-opt",
             "generators": [
                 "RPM"
             ],

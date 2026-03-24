@@ -2,5 +2,4 @@
 
 set -e
 
-cmake --preset linux-gnu-gcc-install
-
+cmake --preset linux-gnu-gcc-opt

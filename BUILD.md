@@ -30,12 +30,22 @@ rm -rf build
 cmake --preset linux-gnu-gcc
 cmake --build --preset linux-gnu-gcc
 ```
-Binary is now in `build/src/Debug/gerbv`
+Binary is now in `build/src/Debug/gerbv`. If you run `cmake --install build` it will install
+everything in `/usr/local/`.
+
+Building locally on a Linux/GCC based machine to install to `/usr/`:
+```
+rm -rf build
+cmake --preset linux-gnu-gcc-usr
+cmake --build --preset linux-gnu-gcc
+sudo cmake --install build/
+```
+Binary is Debug version. It will install everything in `/usr/`.
 
 Building a Debian package to install using `dpkg -i`
 ```
 rm -rf build
-cmake --preset linux-gnu-gcc-install
+cmake --preset linux-gnu-gcc-opt
 cmake --build --preset linux-gnu-gcc-release
 cpack --preset deb-opt
 sudo dpkg -i _packages/gerbv<Something>.deb
@@ -81,19 +91,20 @@ Doing `cmake --list-presets` in Gerbv gives (at the time of writing)
 $ cmake --list-presets
 Available configure presets:
 
-  "linux-gnu-gcc"
-  "linux-gnu-gcc-install"
-  "macos-clang"
-  "mingw-w64-gcc"
-  "msys2-ucrt64-gcc"
+  "linux-gnu-gcc"     - Linux/GCC. Installs in /usr/local/
+  "linux-gnu-gcc-opt" - Linux/GCC. Installs in /opt/gerbv.github/
+  "linux-gnu-gcc-usr" - Linux/GCC. Installs in /usr/
+  "macos-clang"       - macOS/Clang
+  "mingw-w64-gcc"     - MinGW cross compiled
+  "msys2-ucrt64-gcc"  - MSYS2 native Windows
 ```
-Here are the different platforms listed. The difference between `linux-gnu-gcc` and `linux-gnu-gcc-install` is
-that CMake requires you to set the installation directory already in the configuration stage. So `linux-gnu-gcc-install`
+Here are the different platforms listed. The difference between `linux-gnu-gcc` and `linux-gnu-gcc-opt` is
+that CMake requires you to set the installation directory already in the configuration stage. So `linux-gnu-gcc-opt`
 sets the install directory to `/opt/gerbv.github/`, since that is a requirement for thirdparty packages in Debian.
 
 **Note** We don't say anything about `Debug` or `Release` build here, since we are using the `Ninja Multi-Config` generator.
 
-After configuration you should have a `build` directory, and in that there should be a `compile_commands.json` that
+After configuration you should have a `build` directory, and in there there should be a `compile_commands.json` that
 describes all flags that will be used when compiling. There should also be the generated `build/config/config.h`, which is
 the generated configuration file used throughout the project. Those two files can be used to check that all the
 compilation flags and defines have been set properly.
@@ -115,16 +126,16 @@ Doing `cmake --build --list-presets` after the previous configuration stage give
 $ cmake --build --list-presets
 Available build presets:
 
-  "linux-gnu-gcc"
-  "linux-gnu-gcc-release"
-  "macos-clang"
-  "macos-clang-release"
+  "linux-gnu-gcc"            - Build debug
+  "linux-gnu-gcc-release"    - Build release
+  "macos-clang"              - macOS/Clang debug
+  "macos-clang-release"      - macOS/Clang release
   "mingw-w64-gcc"
   "mingw-w64-gcc-release"
   "msys2-ucrt64-gcc"
   "msys2-ucrt64-gcc-release"
 ```
-Here we define if we should do a `Debug` or a `Release` build. Default is, as you probably understand, `Debug`.
+Here we define if we want to do a `Debug` or a `Release` build. Default is, as you probably understand, `Debug`.
 The build `RelWithDebInfo` is not used by us at the moment.
 
 #### Test presets in Gerbv
