@@ -14,6 +14,24 @@ on:
 
 
 jobs:
+  check-version:
+    runs-on: ubuntu-22.04
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check CMakeLists.txt VERSION matches git tag
+        run: |
+          CMAKE_VERSION=$(grep -oP 'project\s*\(\s*gerbv\s+VERSION\s+\K[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt)
+          TAG_VERSION="${{ github.ref_name }}"
+          TAG_BASE="${TAG_VERSION#v}"
+          TAG_BASE="${TAG_BASE%%-*}"
+          if [ "$CMAKE_VERSION" != "$TAG_BASE" ]; then
+            echo "ERROR: CMakeLists.txt VERSION (${CMAKE_VERSION}) does not match git tag (${TAG_VERSION})"
+            echo "Please update VERSION in CMakeLists.txt before tagging a release."
+            exit 1
+          fi
+          echo "Version check passed: ${CMAKE_VERSION} matches tag ${TAG_VERSION}"
+
   ci-ubuntu-22-04:
     runs-on: ubuntu-22.04
     strategy:
@@ -308,7 +326,7 @@ jobs:
 
   release:
     runs-on: ubuntu-22.04
-    needs: [ci-ubuntu-22-04, ci-fedora, ci-debian, ci-ubuntu, ci-windows_amd64-cross, ci-macos, ci-windows]
+    needs: [check-version, ci-ubuntu-22-04, ci-fedora, ci-debian, ci-ubuntu, ci-windows_amd64-cross, ci-macos, ci-windows]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
