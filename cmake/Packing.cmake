@@ -6,7 +6,7 @@ set(CPACK_PACKAGE_NAME ${PROJECT_NAME}
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gerber file viewer (only RS 274 X format)"
     CACHE STRING "Package description for the package metadata"
 )
-set(CPACK_PACKAGE_VENDOR "https://github.com/gerbv/gerbv")
+set(CPACK_PACKAGE_VENDOR "Gerbv Project")
 
 set(CPACK_VERBATIM_VARIABLES YES)
 
@@ -98,9 +98,9 @@ set(CPACK_NSIS_MUI_ICON
 set(CPACK_NSIS_MUI_UNIICON
         ${CMAKE_SOURCE_DIR}/desktop/gerbv_icon.ico
 )
-set(CPACK_NSIS_INSTALLED_ICON_NAME bin/gerbv.exe)
+set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\gerbv.exe")
 set(CPACK_NSIS_DISPLAY_NAME "Gerbv")
-set(CPACK_NSIS_PACKAGE_NAME "gerbv")
+set(CPACK_NSIS_PACKAGE_NAME "Gerbv")
 set(CPACK_NSIS_URL_INFO_ABOUT "https://gerbv.github.io/")
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL YES)
 set(CPACK_NSIS_MODIFY_PATH YES)
