@@ -105,10 +105,22 @@ set(CPACK_NSIS_URL_INFO_ABOUT "https://gerbv.github.io/")
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL YES)
 set(CPACK_NSIS_MODIFY_PATH YES)
 
+# Start Menu shortcut: pairs of (executable-name-without-.exe, display-label).
+# CPack's NSIS template looks for the exe in bin/ relative to the install prefix.
+# Without this variable, CPack only creates the uninstall entry — no app shortcut.
+set(CPACK_PACKAGE_EXECUTABLES "gerbv" "Gerbv")
+
+# Allow the user to optionally create a Desktop shortcut during install.
+set(CPACK_CREATE_DESKTOP_LINKS "gerbv")
+
 # registerExtension.nsh (in win32/) defines ${registerExtension} / ${unregisterExtension}
 # with a 4-argument signature: executable flags extension description.
 # Note: NOT the NSIS-bundled FileAssociation.nsh, which has different macro names/signature.
-set(CPACK_NSIS_DEFINES "!include \"${CMAKE_SOURCE_DIR}/win32/registerExtension.nsh\"")
+# ManifestDPIAware makes the installer UI crisp on Windows 10/11 HiDPI displays (NSIS 3.x).
+string(JOIN "\n" CPACK_NSIS_DEFINES
+    "!include \"${CMAKE_SOURCE_DIR}/win32/registerExtension.nsh\""
+    "ManifestDPIAware true"
+)
 
 # Associate file types and icons.
 # Commands must be joined with \n — semicolons are NSIS line comment characters.
