@@ -27,7 +27,7 @@ def main():
     test_inputs = sys.argv[2]
 
     files = [
-        os.path.join(test_inputs, "test-aperture-circle-1.gbr"),
+        os.path.join(test_inputs, "test-aperture-circle-1.gbx"),
         os.path.join(test_inputs, "test-drill-trailing-zero-1.exc"),
         os.path.join(test_inputs, "example_pick_and_place_LED.xy"),
     ]
