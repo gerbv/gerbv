@@ -304,6 +304,9 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		break;
 	    }
 	    curr_net = gerber_create_new_net (curr_net, state->layer, state->state);
+	    /* attach current TO attributes to new net */
+	    if (state->current_object_attrs)
+		curr_net->x2_attrs = gerbv_x2_attr_copy(state->current_object_attrs);
 	    /*
 	     * Scale to given coordinate format
 	     * XXX only "omit leading zeros".
@@ -793,6 +796,8 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
 	gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
 		_("Missing Gerber EOF code in file \"%s\""), fd->filename);
     }
+    gerbv_x2_attr_free(state->pending_aperture_attrs);
+    gerbv_x2_attr_free(state->current_object_attrs);
     g_free(state);
     
     DPRINTF("               ... done parsing Gerber file\n");
@@ -1674,6 +1679,10 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	}
 	else if ((ano >= 0) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->state->unit;
+	    /* attach any pending TA attributes to this aperture */
+	    if (state->pending_aperture_attrs) {
+		a->x2_attrs = gerbv_x2_attr_copy(state->pending_aperture_attrs);
+	    }
 	    image->aperture[ano] = a;
 	    DPRINTF("     In %s(), adding new aperture to aperture list ...\n",
 			    __func__);
@@ -1858,17 +1867,50 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    *line_num_p, fd->filename);
 	}
 	break;
-    /* Gerber X2 attribute commands (TF, TA, TO, TD) — metadata only, skip silently */
-    case A2I('T','F'): /* File Attribute */
-    case A2I('T','A'): /* Aperture Attribute */
-    case A2I('T','O'): /* Object Attribute */
-    case A2I('T','D'): /* Delete Attribute */
-	gerbv_stats_printf(error_list, GERBV_MESSAGE_NOTE, -1,
-		_("Ignoring Gerber X2 attribute %%%s%s%% "
-		    "at line %ld in file \"%s\""),
-		gerbv_escape_char(op[0]), gerbv_escape_char(op[1]),
-		*line_num_p, fd->filename);
+    case A2I('T','F'): /* File Attribute */ {
+	gchar *content = gerb_fgetstring(fd, '*');
+	if (content) {
+	    gerbv_x2_attr_t *attr = gerbv_x2_attr_parse(content);
+	    if (attr)
+		gerbv_x2_attr_set(&image->info->x2_file_attrs, attr);
+	    g_free(content);
+	}
 	break;
+    }
+    case A2I('T','A'): /* Aperture Attribute */ {
+	gchar *content = gerb_fgetstring(fd, '*');
+	if (content) {
+	    gerbv_x2_attr_t *attr = gerbv_x2_attr_parse(content);
+	    if (attr)
+		gerbv_x2_attr_set(&state->pending_aperture_attrs, attr);
+	    g_free(content);
+	}
+	break;
+    }
+    case A2I('T','O'): /* Object Attribute */ {
+	gchar *content = gerb_fgetstring(fd, '*');
+	if (content) {
+	    gerbv_x2_attr_t *attr = gerbv_x2_attr_parse(content);
+	    if (attr)
+		gerbv_x2_attr_set(&state->current_object_attrs, attr);
+	    g_free(content);
+	}
+	break;
+    }
+    case A2I('T','D'): /* Delete Attribute */ {
+	gchar *content = gerb_fgetstring(fd, '*');
+	if (content && content[0] != '\0') {
+	    /* Delete named attribute from both aperture and object dicts */
+	    gerbv_x2_attr_delete(&state->pending_aperture_attrs, content);
+	    gerbv_x2_attr_delete(&state->current_object_attrs, content);
+	} else {
+	    /* TD with no name: clear all aperture and object attributes */
+	    gerbv_x2_attr_delete_all(&state->pending_aperture_attrs);
+	    gerbv_x2_attr_delete_all(&state->current_object_attrs);
+	}
+	g_free(content);
+	break;
+    }
     default:
 	gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		_("Unknown RS-274X extension found %%%s%s%% "

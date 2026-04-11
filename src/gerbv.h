@@ -440,6 +440,16 @@ typedef struct gerbv_simplified_amacro {
     struct gerbv_simplified_amacro *next;
 } gerbv_simplified_amacro_t;
 
+/*! Gerber X2/X3 attribute entry (linked list node).
+ *  Stores a single attribute name and its comma-separated values.
+ *  Used for TF (file), TA (aperture), and TO (object) attributes. */
+typedef struct gerbv_x2_attr {
+    gchar *name;              /*!< attribute name (e.g. ".FileFunction") */
+    gchar **values;           /*!< array of value strings */
+    int n_values;             /*!< number of values in the array */
+    struct gerbv_x2_attr *next; /*!< next attribute in linked list */
+} gerbv_x2_attr_t;
+
 typedef struct gerbv_aperture {
     gerbv_aperture_type_t type;
     gerbv_amacro_t *amacro;
@@ -447,6 +457,7 @@ typedef struct gerbv_aperture {
     double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     gerbv_unit_t unit;
+    gerbv_x2_attr_t *x2_attrs; /*!< X2/X3 aperture attributes from TA commands */
 } gerbv_aperture_t;
 
 /* the gerb_aperture_list is used to keep track of 
@@ -667,6 +678,7 @@ typedef struct gerbv_net {
     GString *label; /*!< a label string for this net */
     gerbv_layer_t *layer; /*!< the RS274X layer this net belongs to */
     gerbv_netstate_t *state; /*!< the RS274X state this net belongs to */
+    gerbv_x2_attr_t *x2_attrs; /*!< X2/X3 object attributes from TO commands */
 } gerbv_net_t;
 
 /*! Struct holding info about interpreting the Gerber files read
@@ -712,9 +724,11 @@ typedef struct gerbv_image_info {
 
     /* Attribute list that is used to hold all sorts of information
      * about how the layer is to be parsed.
-    */ 
+    */
     gerbv_HID_Attribute *attr_list;
     int n_attr;
+
+    gerbv_x2_attr_t *x2_file_attrs; /*!< X2/X3 file attributes from TF commands */
 } gerbv_image_info_t;
 
 /*!  The structure used to hold a layer (RS274X, drill, or pick-and-place data) */
@@ -1159,6 +1173,39 @@ gerbv_transform_coord(double *x, double *y,
 /*! Rotate coordinate x and y buy angle in radians */
 void
 gerbv_rotate_coord(double *x, double *y, double rad);
+
+/* X2/X3 attribute management functions */
+
+//! Create a new X2 attribute node
+gerbv_x2_attr_t *gerbv_x2_attr_new(const gchar *name, gchar **values, int n_values);
+
+//! Deep copy an X2 attribute linked list
+gerbv_x2_attr_t *gerbv_x2_attr_copy(const gerbv_x2_attr_t *attr_list);
+
+//! Free an entire X2 attribute linked list
+void gerbv_x2_attr_free(gerbv_x2_attr_t *attr_list);
+
+//! Find an attribute by name in a linked list
+//! \return the attribute node, or NULL if not found
+const gerbv_x2_attr_t *gerbv_x2_attr_find(const gerbv_x2_attr_t *attr_list, const gchar *name);
+
+//! Delete a named attribute from a linked list (modifies the list pointer)
+void gerbv_x2_attr_delete(gerbv_x2_attr_t **attr_list, const gchar *name);
+
+//! Delete all attributes from a linked list
+void gerbv_x2_attr_delete_all(gerbv_x2_attr_t **attr_list);
+
+//! Get the file-level X2 attributes from an image
+const gerbv_x2_attr_t *gerbv_image_get_x2_file_attrs(const gerbv_image_t *image);
+
+//! Get the X2 attributes from an aperture
+const gerbv_x2_attr_t *gerbv_aperture_get_x2_attrs(const gerbv_aperture_t *aperture);
+
+//! Get the X2 attributes from a net (geometric entity)
+const gerbv_x2_attr_t *gerbv_net_get_x2_attrs(const gerbv_net_t *net);
+
+//! Get the first value of a named attribute, or NULL if not found
+const gchar *gerbv_x2_attr_get_value(const gerbv_x2_attr_t *attr_list, const gchar *name);
 
 /* Standard C inline functions for MIN/MAX - works with any C99+ compiler */
 #undef MIN

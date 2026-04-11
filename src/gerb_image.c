@@ -117,14 +117,14 @@ gerbv_destroy_image(gerbv_image_t *image)
     /*
      * Free apertures
      */
-    for (i = 0; i < APERTURE_MAX; i++) 
+    for (i = 0; i < APERTURE_MAX; i++)
 	if (image->aperture[i] != NULL) {
 	    for (sam = image->aperture[i]->simplified; sam != NULL; ){
 	      sam2 = sam->next;
 	    	g_free (sam);
 	    	sam = sam2;
 	    }
-
+	    gerbv_x2_attr_free(image->aperture[i]->x2_attrs);
 	    g_free(image->aperture[i]);
 	    image->aperture[i] = NULL;
 	}
@@ -150,6 +150,7 @@ gerbv_destroy_image(gerbv_image_t *image)
 	g_free(image->info->name);
 	g_free(image->info->type);
 	gerbv_attribute_destroy_HID_attribute (image->info->attr_list, image->info->n_attr);
+	gerbv_x2_attr_free(image->info->x2_file_attrs);
 	g_free(image->info);
     }
     
@@ -157,8 +158,8 @@ gerbv_destroy_image(gerbv_image_t *image)
      * Free netlist
      */
     for (net = image->netlist; net != NULL; ) {
-	tmp = net; 
-	net = net->next; 
+	tmp = net;
+	net = net->next;
 	if (tmp->cirseg != NULL) {
 	    g_free(tmp->cirseg);
 	    tmp->cirseg = NULL;
@@ -166,6 +167,7 @@ gerbv_destroy_image(gerbv_image_t *image)
 	if (tmp->label) {
 		g_string_free (tmp->label, TRUE);
 	}
+	gerbv_x2_attr_free(tmp->x2_attrs);
 	g_free(tmp);
 	tmp = NULL;
     }
@@ -389,6 +391,8 @@ gerbv_image_duplicate_aperture (gerbv_aperture_t *oldAperture)
 	  newAperture->simplified = newSimplified;
 	tempSimplified = newSimplified;
     }
+    /* deep copy X2 attributes */
+    newAperture->x2_attrs = gerbv_x2_attr_copy(oldAperture->x2_attrs);
     return newAperture;
 }
 
@@ -485,6 +489,8 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 			newNet->label = g_string_new (currentNet->label->str);
 		else
 			newNet->label = NULL;
+
+		newNet->x2_attrs = gerbv_x2_attr_copy(currentNet->x2_attrs);
 
 		newNet->state = lastState;
 		newNet->layer = lastLayer;
@@ -931,7 +937,8 @@ gerbv_image_duplicate_image (gerbv_image_t *sourceImage, gerbv_user_transformati
     newImage->info->plotterFilm = g_strdup (sourceImage->info->plotterFilm);
     newImage->info->attr_list = gerbv_attribute_dup (sourceImage->info->attr_list,
     		 sourceImage->info->n_attr);
-    
+    newImage->info->x2_file_attrs = gerbv_x2_attr_copy(sourceImage->info->x2_file_attrs);
+
     /* copy apertures over, compressing all the numbers down for a cleaner output, and
        moving and apertures less than 10 up to the correct range */
     for (i = 0; i < APERTURE_MAX; i++) {
@@ -1373,7 +1380,7 @@ gerbv_image_return_next_renderable_object (gerbv_net_t *oldNet) {
 void
 gerbv_image_create_dummy_apertures (gerbv_image_t *parsed_image) {
 	gerbv_net_t *currentNet;
-		
+
 	/* run through and find last net pointer */
 	for (currentNet = parsed_image->netlist; currentNet->next; currentNet = currentNet->next){
 		if (parsed_image->aperture[currentNet->aperture] == NULL) {
@@ -1383,4 +1390,208 @@ gerbv_image_create_dummy_apertures (gerbv_image_t *parsed_image) {
 			parsed_image->aperture[currentNet->aperture]->parameter[1] = 0;
 		}
 	}
+}
+
+
+/* ------------------------------------------------------------------ */
+/* X2/X3 attribute management functions                                */
+/* ------------------------------------------------------------------ */
+
+gerbv_x2_attr_t *
+gerbv_x2_attr_new(const gchar *name, gchar **values, int n_values)
+{
+    gerbv_x2_attr_t *attr = g_new0(gerbv_x2_attr_t, 1);
+    int i;
+
+    attr->name = g_strdup(name);
+    attr->n_values = n_values;
+    if (n_values > 0 && values != NULL) {
+        attr->values = g_new0(gchar *, n_values);
+        for (i = 0; i < n_values; i++)
+            attr->values[i] = g_strdup(values[i]);
+    } else {
+        attr->values = NULL;
+    }
+    attr->next = NULL;
+    return attr;
+}
+
+
+gerbv_x2_attr_t *
+gerbv_x2_attr_copy(const gerbv_x2_attr_t *attr_list)
+{
+    gerbv_x2_attr_t *new_list = NULL;
+    gerbv_x2_attr_t *tail = NULL;
+    const gerbv_x2_attr_t *src;
+
+    for (src = attr_list; src != NULL; src = src->next) {
+        gerbv_x2_attr_t *copy = gerbv_x2_attr_new(src->name, src->values,
+                                                    src->n_values);
+        if (tail)
+            tail->next = copy;
+        else
+            new_list = copy;
+        tail = copy;
+    }
+    return new_list;
+}
+
+
+void
+gerbv_x2_attr_free(gerbv_x2_attr_t *attr_list)
+{
+    gerbv_x2_attr_t *curr, *next;
+
+    for (curr = attr_list; curr != NULL; curr = next) {
+        next = curr->next;
+        g_free(curr->name);
+        if (curr->values) {
+            for (int i = 0; i < curr->n_values; i++)
+                g_free(curr->values[i]);
+            g_free(curr->values);
+        }
+        g_free(curr);
+    }
+}
+
+
+const gerbv_x2_attr_t *
+gerbv_x2_attr_find(const gerbv_x2_attr_t *attr_list, const gchar *name)
+{
+    const gerbv_x2_attr_t *curr;
+
+    for (curr = attr_list; curr != NULL; curr = curr->next) {
+        if (strcmp(curr->name, name) == 0)
+            return curr;
+    }
+    return NULL;
+}
+
+
+void
+gerbv_x2_attr_delete(gerbv_x2_attr_t **attr_list, const gchar *name)
+{
+    gerbv_x2_attr_t *curr, *prev = NULL;
+
+    for (curr = *attr_list; curr != NULL; prev = curr, curr = curr->next) {
+        if (strcmp(curr->name, name) == 0) {
+            if (prev)
+                prev->next = curr->next;
+            else
+                *attr_list = curr->next;
+            curr->next = NULL;
+            gerbv_x2_attr_free(curr);
+            return;
+        }
+    }
+}
+
+
+void
+gerbv_x2_attr_delete_all(gerbv_x2_attr_t **attr_list)
+{
+    gerbv_x2_attr_free(*attr_list);
+    *attr_list = NULL;
+}
+
+
+const gerbv_x2_attr_t *
+gerbv_image_get_x2_file_attrs(const gerbv_image_t *image)
+{
+    if (image && image->info)
+        return image->info->x2_file_attrs;
+    return NULL;
+}
+
+
+const gerbv_x2_attr_t *
+gerbv_aperture_get_x2_attrs(const gerbv_aperture_t *aperture)
+{
+    if (aperture)
+        return aperture->x2_attrs;
+    return NULL;
+}
+
+
+const gerbv_x2_attr_t *
+gerbv_net_get_x2_attrs(const gerbv_net_t *net)
+{
+    if (net)
+        return net->x2_attrs;
+    return NULL;
+}
+
+
+const gchar *
+gerbv_x2_attr_get_value(const gerbv_x2_attr_t *attr_list, const gchar *name)
+{
+    const gerbv_x2_attr_t *attr = gerbv_x2_attr_find(attr_list, name);
+
+    if (attr && attr->n_values > 0)
+        return attr->values[0];
+    return NULL;
+}
+
+
+gerbv_x2_attr_t *
+gerbv_x2_attr_parse(const gchar *content)
+{
+    /* Parse attribute content string: "name,val1,val2,..."
+     * The content is everything between the two-letter command (TF/TA/TO)
+     * and the trailing '*'. */
+    gchar **parts;
+    gerbv_x2_attr_t *attr;
+    int n_parts;
+
+    if (content == NULL || content[0] == '\0')
+        return NULL;
+
+    parts = g_strsplit(content, ",", -1);
+
+    /* count parts */
+    for (n_parts = 0; parts[n_parts] != NULL; n_parts++)
+        ;
+
+    if (n_parts == 0) {
+        g_strfreev(parts);
+        return NULL;
+    }
+
+    /* first part is the attribute name, rest are values */
+    attr = gerbv_x2_attr_new(parts[0],
+                              n_parts > 1 ? &parts[1] : NULL,
+                              n_parts - 1);
+    g_strfreev(parts);
+    return attr;
+}
+
+
+/* Set or replace an attribute in a linked list. If an attribute with the
+ * same name already exists, it is replaced. Otherwise the new attribute
+ * is appended. */
+void
+gerbv_x2_attr_set(gerbv_x2_attr_t **attr_list, gerbv_x2_attr_t *new_attr)
+{
+    gerbv_x2_attr_t *curr, *prev = NULL;
+
+    /* check for existing attribute with same name */
+    for (curr = *attr_list; curr != NULL; prev = curr, curr = curr->next) {
+        if (strcmp(curr->name, new_attr->name) == 0) {
+            /* replace: splice new_attr in place of curr */
+            new_attr->next = curr->next;
+            if (prev)
+                prev->next = new_attr;
+            else
+                *attr_list = new_attr;
+            curr->next = NULL;
+            gerbv_x2_attr_free(curr);
+            return;
+        }
+    }
+
+    /* append to end */
+    if (prev)
+        prev->next = new_attr;
+    else
+        *attr_list = new_attr;
 }

@@ -39,6 +39,56 @@
 
 #define round(x) floor(x+0.5)
 
+/* Write an X2 attribute command to file.
+ * prefix is "TF", "TA", or "TO". */
+static void
+export_rs274x_write_x2_attr (FILE *fd, const gchar *prefix,
+                              const gerbv_x2_attr_t *attr)
+{
+    int i;
+
+    fprintf(fd, "%%%s%s", prefix, attr->name);
+    for (i = 0; i < attr->n_values; i++)
+        fprintf(fd, ",%s", attr->values[i]);
+    fprintf(fd, "*%%\n");
+}
+
+/* Write all attributes in a linked list */
+static void
+export_rs274x_write_x2_attr_list (FILE *fd, const gchar *prefix,
+                                   const gerbv_x2_attr_t *attr_list)
+{
+    const gerbv_x2_attr_t *attr;
+
+    for (attr = attr_list; attr != NULL; attr = attr->next)
+        export_rs274x_write_x2_attr(fd, prefix, attr);
+}
+
+/* Check if two attribute lists differ (used for TO change detection) */
+static gboolean
+x2_attr_lists_differ (const gerbv_x2_attr_t *a, const gerbv_x2_attr_t *b)
+{
+    const gerbv_x2_attr_t *ca, *cb;
+    int count_a = 0, count_b = 0;
+
+    /* count entries */
+    for (ca = a; ca != NULL; ca = ca->next) count_a++;
+    for (cb = b; cb != NULL; cb = cb->next) count_b++;
+    if (count_a != count_b) return TRUE;
+
+    /* check each attribute in a exists in b with same values */
+    for (ca = a; ca != NULL; ca = ca->next) {
+        const gerbv_x2_attr_t *found = gerbv_x2_attr_find(b, ca->name);
+        if (!found) return TRUE;
+        if (found->n_values != ca->n_values) return TRUE;
+        for (int i = 0; i < ca->n_values; i++) {
+            if (strcmp(ca->values[i], found->values[i]) != 0)
+                return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 void
 export_rs274x_write_macro (FILE *fd, gerbv_aperture_t *currentAperture,
 			gint apertureNumber) {
@@ -120,11 +170,16 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image) {
 	   assume the aperture range is correct */
 	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {
 		gboolean writeAperture=TRUE;
-		
+
 		currentAperture = image->aperture[i];
-		
+
 		if (!currentAperture)
 			continue;
+
+		/* write X2 aperture attributes (TA) before this aperture definition */
+		if (currentAperture->x2_attrs) {
+			export_rs274x_write_x2_attr_list(fd, "TA", currentAperture->x2_attrs);
+		}
 		
 		switch (currentAperture->type) {
 			case GERBV_APTYPE_CIRCLE:
@@ -170,6 +225,10 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image) {
 				}
 			}
 			fprintf(fd, "*%%\n");
+		}
+		/* clear aperture attributes after definition (per spec) */
+		if (currentAperture->x2_attrs) {
+			fprintf(fd, "%%TD*%%\n");
 		}
 	}
 }
@@ -230,6 +289,10 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 	fprintf(fd, "G04 --End of header info--*\n");
 	fprintf(fd, "%%MOIN*%%\n");
 	fprintf(fd, "%%FSLAX36Y36*%%\n");
+
+	/* write X2 file attributes (TF) */
+	if (image->info->x2_file_attrs)
+		export_rs274x_write_x2_attr_list(fd, "TF", image->info->x2_file_attrs);
 	
 	/* check the image info struct for any non-default settings */
 	/* image offset */
@@ -286,7 +349,8 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 	fprintf(fd, "G04 --Start main section--*\n");
 	gint currentAperture = 0;
 	gerbv_net_t *currentNet;
-	
+	const gerbv_x2_attr_t *lastObjectAttrs = NULL;
+
 	oldLayer = image->layers;
 	oldState = image->states;
 	/* skip the first net, since it's always zero due to the way we parse things */
@@ -294,10 +358,21 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 		/* check for "layer" changes (RS274X commands) */
 		if (currentNet->layer != oldLayer)
 			export_rs274x_write_layer_change (oldLayer, currentNet->layer, fd);
-		
+
 		/* check for new "netstate" (more RS274X commands) */
 		if (currentNet->state != oldState)
 			export_rs274x_write_state_change (oldState, currentNet->state, fd);
+
+		/* check for object attribute changes (TO/TD) */
+		if (x2_attr_lists_differ(currentNet->x2_attrs, lastObjectAttrs)) {
+			/* clear previous object attributes */
+			if (lastObjectAttrs != NULL)
+				fprintf(fd, "%%TD*%%\n");
+			/* write new object attributes */
+			if (currentNet->x2_attrs != NULL)
+				export_rs274x_write_x2_attr_list(fd, "TO", currentNet->x2_attrs);
+			lastObjectAttrs = currentNet->x2_attrs;
+		}
 		
 		/* check for tool changes */
 		/* also, make sure the aperture number is a valid one, since sometimes
