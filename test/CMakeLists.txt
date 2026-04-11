@@ -24,7 +24,7 @@ endif()
 # X2/X3 attribute storage and round-trip test
 add_executable(test_x2_attrs test_x2_attrs.c)
 target_include_directories(test_x2_attrs PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(test_x2_attrs PRIVATE gerbv compilation-flags)
+target_link_libraries(test_x2_attrs PRIVATE gerbv-shared compilation-flags)
 add_test(
     NAME x2_attribute_test
     COMMAND test_x2_attrs
