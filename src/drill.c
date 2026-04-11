@@ -122,6 +122,10 @@ typedef struct drill_state {
     double delta_cp_x;
     double delta_cp_y;
 
+    /* M99 user-defined stored pattern state */
+    double m99_offset_x;          /* additive offset applied to all coordinates in pattern */
+    double m99_offset_y;
+
 } drill_state_t;
 
 /* Local function prototypes */
@@ -948,8 +952,205 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			tmps, file_line, fd->filename);
 		g_free(tmps);
 		break;
-	    case DRILL_M_PATTERNEND :
-	    case DRILL_M_TOOLTIPCHECK :
+	    case DRILL_M_PATTERN:    /* M25 — begin pattern recording */
+		state->in_pattern = TRUE;
+		if (state->pattern_buffer) {
+		    g_array_set_size(state->pattern_buffer, 0);
+		} else {
+		    state->pattern_buffer = g_array_new(FALSE, FALSE,
+			    sizeof(drill_pattern_entry_t));
+		}
+		break;
+
+	    case DRILL_M_PATTERNEND:    /* M01 — end pattern recording */
+		state->in_pattern = FALSE;
+		break;
+
+	    case DRILL_M_REPEATPATTERNOFFSET: {    /* M02 — repeat pattern at offset */
+		double offset_x = 0.0, offset_y = 0.0;
+		int c, saved_tool;
+
+		/* Parse X/Y offsets (same format as R-code step) */
+		c = gerb_fgetc(fd);
+		if (c == 'X') {
+		    offset_x = read_double(fd, state->number_format,
+			    image->format->omit_zeros, state->decimals);
+		    c = gerb_fgetc(fd);
+		}
+		if (c == 'Y') {
+		    offset_y = read_double(fd, state->number_format,
+			    image->format->omit_zeros, state->decimals);
+		} else {
+		    gerb_ungetc(fd);
+		}
+
+		/* Replay buffered drills at offset */
+		if (state->pattern_buffer && state->pattern_buffer->len > 0) {
+		    double save_x = state->curr_x;
+		    double save_y = state->curr_y;
+		    saved_tool = state->current_tool;
+
+		    for (guint i = 0; i < state->pattern_buffer->len; i++) {
+			drill_pattern_entry_t *e = &g_array_index(
+				state->pattern_buffer,
+				drill_pattern_entry_t, i);
+			state->current_tool = e->tool;
+			state->curr_x = e->x + offset_x;
+			state->curr_y = e->y + offset_y;
+
+			if (e->is_route) {
+			    curr_net = drill_add_route_segment(image, state,
+				    stats, curr_net,
+				    e->prev_x + offset_x,
+				    e->prev_y + offset_y);
+			} else {
+			    curr_net = drill_add_drill_hole(image, state,
+				    stats, curr_net);
+			}
+		    }
+
+		    state->curr_x = save_x;
+		    state->curr_y = save_y;
+		    state->current_tool = saved_tool;
+		}
+		break;
+	    }
+
+	    case DRILL_M_USERDEFPATTERN: {  /* M99 — user defined stored pattern */
+		gchar *pattern_name;
+		gchar *parent_dir;
+		gchar *pattern_path;
+		gerb_file_t *pattern_fd;
+		double save_x, save_y, save_ox, save_oy;
+		int save_tool;
+
+		/* Format: M99,name\nX#Y# */
+		pattern_name = get_line(fd);
+		if (!pattern_name || strlen(pattern_name) == 0) {
+		    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+			    _("M99 without pattern name "
+				"at line %u in file \"%s\""),
+			    file_line, fd->filename);
+		    g_free(pattern_name);
+		    break;
+		}
+
+		/* Strip leading comma if present (M99,name format) */
+		if (pattern_name[0] == ',') {
+		    gchar *tmp = g_strdup(pattern_name + 1);
+		    g_free(pattern_name);
+		    pattern_name = tmp;
+		}
+
+		/* Security: reject path traversal */
+		if (strstr(pattern_name, "..") || strchr(pattern_name, '/')
+		    || strchr(pattern_name, '\\')) {
+		    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+			    _("M99 pattern name \"%s\" contains path traversal "
+				"at line %u in file \"%s\""),
+			    pattern_name, file_line, fd->filename);
+		    g_free(pattern_name);
+		    break;
+		}
+
+		/* Parse X/Y offset from next line */
+		save_ox = state->m99_offset_x;
+		save_oy = state->m99_offset_y;
+
+		{
+		    int c = gerb_fgetc(fd);
+		    /* Skip newlines to get to X#Y# on next line */
+		    while (c == '\n' || c == '\r') {
+			if (c == '\n') file_line++;
+			c = gerb_fgetc(fd);
+		    }
+		    if (c == 'X' || c == 'Y') {
+			double offset_x = 0.0, offset_y = 0.0;
+			if (c == 'X') {
+			    offset_x = read_double(fd, state->number_format,
+				    image->format->omit_zeros, state->decimals);
+			    c = gerb_fgetc(fd);
+			}
+			if (c == 'Y') {
+			    offset_y = read_double(fd, state->number_format,
+				    image->format->omit_zeros, state->decimals);
+			} else if (c != EOF) {
+			    gerb_ungetc(fd);
+			}
+			state->m99_offset_x = offset_x;
+			state->m99_offset_y = offset_y;
+		    } else if (c != EOF) {
+			gerb_ungetc(fd);
+			state->m99_offset_x = 0.0;
+			state->m99_offset_y = 0.0;
+		    }
+		}
+
+		/* Check recursion depth (M99 cannot be nested per spec) */
+		if (recursion_depth >= 1) {
+		    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+			    _("Nested M99 not allowed (depth %d) "
+				"at line %u in file \"%s\""),
+			    recursion_depth, file_line, fd->filename);
+		    g_free(pattern_name);
+		    state->m99_offset_x = save_ox;
+		    state->m99_offset_y = save_oy;
+		    break;
+		}
+
+		/* Resolve pattern file path relative to parent directory */
+		parent_dir = g_path_get_dirname(fd->filename);
+		pattern_path = g_build_filename(parent_dir, pattern_name, NULL);
+		g_free(parent_dir);
+
+		pattern_fd = gerb_fopen(pattern_path);
+		if (!pattern_fd) {
+		    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
+			    _("M99 pattern file \"%s\" not found "
+				"at line %u in file \"%s\""),
+			    pattern_path, file_line, fd->filename);
+		    g_free(pattern_path);
+		    g_free(pattern_name);
+		    state->m99_offset_x = save_ox;
+		    state->m99_offset_y = save_oy;
+		    break;
+		}
+
+		/* Save state before entering pattern */
+		save_x = state->curr_x;
+		save_y = state->curr_y;
+		save_tool = state->current_tool;
+
+		/* Enable pattern recording for P# replay */
+		state->in_pattern = TRUE;
+		if (state->pattern_buffer) {
+		    g_array_set_size(state->pattern_buffer, 0);
+		} else {
+		    state->pattern_buffer = g_array_new(FALSE, FALSE,
+			    sizeof(drill_pattern_entry_t));
+		}
+
+		/* Recursively parse the pattern file */
+		DPRINTF("M99: opening pattern file \"%s\" at offset (%g, %g)\n",
+			pattern_path, state->m99_offset_x, state->m99_offset_y);
+		curr_net = drill_parse_segment(pattern_fd, image, state,
+			curr_net, stats, recursion_depth + 1);
+		gerb_fclose(pattern_fd);
+
+		/* Restore state */
+		state->in_pattern = FALSE;
+		state->curr_x = save_x;
+		state->curr_y = save_y;
+		state->current_tool = save_tool;
+		state->m99_offset_x = save_ox;
+		state->m99_offset_y = save_oy;
+
+		g_free(pattern_path);
+		g_free(pattern_name);
+		break;
+	    }
+
+	    case DRILL_M_TOOLTIPCHECK:
 		break;
 
 	    case DRILL_M_ZAXISROUTEPOSITIONDEPTHCTRL: /* M14 */
@@ -1001,6 +1202,88 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 	    break;
 	} /* case 'M' */
+
+	case 'P': {
+	    /* P# — Repeat stored pattern (from M99 or canned pattern).
+	     * Format: P#X#(Y#) where # is repeat count (up to 3 digits)
+	     * and X/Y specify step between pattern origins. */
+	    int pcnt = 0;
+	    double step_x = 0.0, step_y = 0.0;
+	    int c;
+
+	    if (state->curr_section == DRILL_HEADER) {
+		stats->unknown++;
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+			_("Not allowed 'P' code in the header "
+			    "at line %u in file \"%s\""),
+			file_line, fd->filename);
+		break;
+	    }
+
+	    /* Parse repeat count */
+	    c = gerb_fgetc(fd);
+	    while ('0' <= c && c <= '9') {
+		pcnt = 10 * pcnt + (c - '0');
+		c = gerb_fgetc(fd);
+	    }
+
+	    /* Parse X/Y step */
+	    if (c == 'X') {
+		step_x = read_double(fd, state->number_format,
+			image->format->omit_zeros, state->decimals);
+		c = gerb_fgetc(fd);
+	    }
+	    if (c == 'Y') {
+		step_y = read_double(fd, state->number_format,
+			image->format->omit_zeros, state->decimals);
+	    } else if (c != EOF) {
+		gerb_ungetc(fd);
+	    }
+
+	    /* Replay pattern_buffer pcnt times with cumulative offset */
+	    if (state->pattern_buffer && state->pattern_buffer->len > 0 && pcnt > 0) {
+		double base_x = state->curr_x;
+		double base_y = state->curr_y;
+		int save_tool = state->current_tool;
+
+		DPRINTF("P%d: replaying %u entries with step (%g, %g)\n",
+			pcnt, state->pattern_buffer->len, step_x, step_y);
+
+		for (int rep = 1; rep <= pcnt; rep++) {
+		    double rep_off_x = rep * step_x;
+		    double rep_off_y = rep * step_y;
+
+		    for (guint i = 0; i < state->pattern_buffer->len; i++) {
+			drill_pattern_entry_t *e = &g_array_index(
+				state->pattern_buffer,
+				drill_pattern_entry_t, i);
+			state->current_tool = e->tool;
+			state->curr_x = e->x + rep_off_x;
+			state->curr_y = e->y + rep_off_y;
+
+			if (e->is_route) {
+			    curr_net = drill_add_route_segment(image, state,
+				    stats, curr_net,
+				    e->prev_x + rep_off_x,
+				    e->prev_y + rep_off_y);
+			} else {
+			    curr_net = drill_add_drill_hole(image, state,
+				    stats, curr_net);
+			}
+		    }
+		}
+
+		state->curr_x = base_x;
+		state->curr_y = base_y;
+		state->current_tool = save_tool;
+	    } else if (pcnt > 0) {
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
+			_("P%d repeat with no stored pattern "
+			    "at line %u in file \"%s\""),
+			pcnt, file_line, fd->filename);
+	    }
+	    break;
+	}
 
 	case 'R':
 	    if (state->curr_section == DRILL_HEADER) {
@@ -1699,6 +1982,9 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 98:
 	stats->M98++;
 	break;
+    case 99:
+	stats->M99++;
+	break;
 
     default:
     case DRILL_M_UNKNOWN:
@@ -2222,6 +2508,12 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
       state->delta_cp_x = i_val;
     if (found_j)
       state->delta_cp_y = j_val;
+
+    /* Apply M99 offset (non-zero only inside a pattern file) */
+    if (state->m99_offset_x != 0.0 || state->m99_offset_y != 0.0) {
+      state->curr_x += state->m99_offset_x;
+      state->curr_y += state->m99_offset_y;
+    }
 } /* drill_parse_coordinate */
 
 

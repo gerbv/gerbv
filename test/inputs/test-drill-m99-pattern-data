@@ -1,0 +1,6 @@
+; M99 pattern file: 3-hole triangle pattern
+; No header — coordinates are relative to M99 origin
+X0Y0
+X01000Y0
+X00500Y00866
+M30

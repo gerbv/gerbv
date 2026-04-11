@@ -1649,6 +1649,7 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	table_add_row(M_table, "M95", stat->M95, _(drill_m_code_name(95)));
 	table_add_row(M_table, "M97", stat->M97, _(drill_m_code_name(97)));
 	table_add_row(M_table, "M98", stat->M98, _(drill_m_code_name(98)));
+	table_add_row(M_table, "M99", stat->M99, _(drill_m_code_name(99)));
 	table_add_row(M_table, "", stat->M_unknown, _("unknown M-codes"));
 
 	table_set_sortable(M_table);
