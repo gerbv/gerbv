@@ -550,9 +550,27 @@ main(int argc, char *argv[])
 
 #ifdef ENABLE_NLS
     setlocale(LC_ALL, "");
-    bindtextdomain(PACKAGE, GERBV_LOCALEDIR);
+    /* Fix locale path discovery on Windows: the compile-time LOCALEDIR
+     * won't resolve correctly when gerbv is installed in a path with
+     * non-ASCII characters or moved after build.  Use GLib's runtime
+     * module path detection instead.
+     * See: https://github.com/kitanokitsune/gerbv_for_win_multilingual */
 # ifdef WIN32
+    {
+	const gchar *installdir =
+	    g_win32_get_package_installation_directory_of_module(NULL);
+	gchar *localedir_utf8 =
+	    g_canonicalize_filename("share/locale", installdir);
+	gchar *localedir_win =
+	    g_win32_locale_filename_from_utf8(localedir_utf8);
+	bindtextdomain(PACKAGE, localedir_win);
+	g_free(localedir_win);
+	g_free(localedir_utf8);
+	g_free((gchar *)installdir);
+    }
     bind_textdomain_codeset(PACKAGE, "UTF-8");
+# else
+    bindtextdomain(PACKAGE, GERBV_LOCALEDIR);
 # endif
     textdomain(PACKAGE);
 #endif
@@ -583,7 +601,15 @@ main(int argc, char *argv[])
     screen.unit = GERBV_DEFAULT_UNIT;
     
     mainProject = gerbv_create_project();
+#ifdef WIN32
+    /* On Windows, argv[0] may be encoded in the system codepage and
+     * contain non-ASCII characters that break path resolution in
+     * init_paths().  Use empty string and let init_paths() fall back
+     * to g_win32_get_package_installation_directory_of_module(). */
+    mainProject->execname = g_strdup("");
+#else
     mainProject->execname = g_strdup(argv[0]);
+#endif
     mainProject->execpath = g_path_get_dirname(argv[0]);
 
     /* Add "fallback" directory with settings schema file from this
@@ -1015,6 +1041,14 @@ main(int argc, char *argv[])
      */
 
     if (project_filename) {
+#ifdef WIN32
+	/* Convert project filename from system codepage to UTF-8 so
+	 * GLib path functions work with non-ASCII characters. */
+	gchar *pf_utf8 = g_locale_to_utf8(project_filename, -1,
+					   NULL, NULL, NULL);
+	if (pf_utf8)
+	    project_filename = pf_utf8;
+#endif
 	DPRINTF(_("Loading project %s...\n"), project_filename);
 	/* calculate the absolute pathname to the project if the user
 	   used a relative path */
@@ -1031,6 +1065,9 @@ main(int argc, char *argv[])
 	    main_open_project_from_filename (mainProject, project_filename);
 	    mainProject->path = g_path_get_dirname (project_filename);
 	}
+#ifdef WIN32
+	g_free(pf_utf8);
+#endif
     } else {
 	gint loadedIndex = 0;
 	for(i = optind ; i < argc; i++) {
