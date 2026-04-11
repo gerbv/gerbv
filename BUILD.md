@@ -1,5 +1,7 @@
 # How to build Gerbv
 
+> To install Gerbv from a pre-built package instead, see [doc/install/INSTALL_GUIDE.md](doc/install/INSTALL_GUIDE.md).
+
 Gerbv now uses CMake with *presets*, uses the *Ninja Multi-Config* generator and also *toolchains*.
 *Install* and *CPack* is also used extensively to be able to create easy to use multiplatform support.
 
