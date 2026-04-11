@@ -112,7 +112,7 @@ export_rs274x_write_macro (FILE *fd, gerbv_aperture_t *currentAperture,
 }
 
 void
-export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image) {
+export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image, double unit_scale) {
 	gerbv_aperture_t *currentAperture;
 	gint numberOfRequiredParameters=0,numberOfOptionalParameters=0,i,j;
 	
@@ -166,7 +166,15 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image) {
 					/* print the "X" character to separate the parameters */
 					if (j>0)
 						fprintf(fd, "X");
-					fprintf(fd, "%.4f",currentAperture->parameter[j]);
+					/* Polygon parameters 1 (sides) and 2 (rotation) are
+					 * not lengths — don't apply unit scaling. */
+					gboolean is_dimension = TRUE;
+					if (currentAperture->type == GERBV_APTYPE_POLYGON
+					    && (j == 1 || j == 2))
+						is_dimension = FALSE;
+					fprintf(fd, "%.4f",
+						currentAperture->parameter[j] *
+						(is_dimension ? unit_scale : 1.0));
 				}
 			}
 			fprintf(fd, "*%%\n");
@@ -188,15 +196,45 @@ export_rs274x_write_layer_change (gerbv_layer_t *oldLayer, gerbv_layer_t *newLay
 
 void
 export_rs274x_write_state_change (gerbv_netstate_t *oldState, gerbv_netstate_t *newState, FILE *fd) {
+	if (oldState->axisSelect != newState->axisSelect) {
+		if (newState->axisSelect == GERBV_AXIS_SELECT_SWAPAB)
+			fprintf(fd, "%%ASAYBX*%%\n");
+		else
+			fprintf(fd, "%%ASAXBY*%%\n");
+	}
 
+	if (oldState->mirrorState != newState->mirrorState) {
+		switch (newState->mirrorState) {
+		case GERBV_MIRROR_STATE_FLIPA:
+			fprintf(fd, "%%MIA1B0*%%\n"); break;
+		case GERBV_MIRROR_STATE_FLIPB:
+			fprintf(fd, "%%MIA0B1*%%\n"); break;
+		case GERBV_MIRROR_STATE_FLIPAB:
+			fprintf(fd, "%%MIA1B1*%%\n"); break;
+		default:
+			fprintf(fd, "%%MIA0B0*%%\n"); break;
+		}
+	}
 
+	if (oldState->offsetA != newState->offsetA ||
+	    oldState->offsetB != newState->offsetB) {
+		fprintf(fd, "%%OFA%fB%f*%%\n",
+			newState->offsetA, newState->offsetB);
+	}
+
+	if (oldState->scaleA != newState->scaleA ||
+	    oldState->scaleB != newState->scaleB) {
+		fprintf(fd, "%%SFA%fB%f*%%\n",
+			newState->scaleA, newState->scaleB);
+	}
 }
 
 gboolean
 gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *inputImage,
 		gerbv_user_transformation_t *transform)
 {
-	const double decimal_coeff = 1e6;
+	double decimal_coeff;
+	double unit_scale;  /* multiplier to convert internal inches to output unit */
 	FILE *fd;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
@@ -228,8 +266,21 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 	fprintf(fd, "G04 More information is available about gerbv at *\n");
 	fprintf(fd, "G04 https://gerbv.github.io/ *\n");
 	fprintf(fd, "G04 --End of header info--*\n");
-	fprintf(fd, "%%MOIN*%%\n");
-	fprintf(fd, "%%FSLAX36Y36*%%\n");
+	/* Export in the file's original unit to preserve precision.
+	 * gerbv stores all coordinates internally in inches, so mm
+	 * export needs a 25.4x scale factor.  Use 4.6 format for mm
+	 * (nanometer resolution) vs 3.6 for inches. */
+	if (image->info->orig_unit == GERBV_UNIT_MM) {
+		fprintf(fd, "%%MOMM*%%\n");
+		fprintf(fd, "%%FSLAX46Y46*%%\n");
+		decimal_coeff = 25.4e6;  /* inches → mm × 1e6 */
+		unit_scale = 25.4;
+	} else {
+		fprintf(fd, "%%MOIN*%%\n");
+		fprintf(fd, "%%FSLAX36Y36*%%\n");
+		decimal_coeff = 1e6;
+		unit_scale = 1.0;
+	}
 	
 	/* check the image info struct for any non-default settings */
 	/* image offset */
@@ -280,7 +331,7 @@ gerbv_export_rs274x_file_from_image (const gchar *filename, gerbv_image_t *input
 	
 	/* define all apertures */
 	fprintf(fd, "G04 --Define apertures--*\n");
-	export_rs274x_write_apertures (fd, image);
+	export_rs274x_write_apertures (fd, image, unit_scale);
 	
 	/* write rest of image */
 	fprintf(fd, "G04 --Start main section--*\n");

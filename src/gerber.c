@@ -1440,10 +1440,12 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	case A2I('I','N'):
 	    state->state = gerbv_image_return_new_netstate (state->state);
 	    state->state->unit = GERBV_UNIT_INCH;
+	    image->info->orig_unit = GERBV_UNIT_INCH;
 	    break;
 	case A2I('M','M'):
 	    state->state = gerbv_image_return_new_netstate (state->state);
 	    state->state->unit = GERBV_UNIT_MM;
+	    image->info->orig_unit = GERBV_UNIT_MM;
 	    break;
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,

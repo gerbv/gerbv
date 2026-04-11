@@ -715,6 +715,8 @@ typedef struct gerbv_image_info {
     */ 
     gerbv_HID_Attribute *attr_list;
     int n_attr;
+
+    gerbv_unit_t orig_unit; /*!< unit declared in the source file (%MOMM*% or %MOIN*%) */
 } gerbv_image_info_t;
 
 /*!  The structure used to hold a layer (RS274X, drill, or pick-and-place data) */
