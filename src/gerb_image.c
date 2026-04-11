@@ -924,6 +924,16 @@ gerbv_image_duplicate_image (gerbv_image_t *sourceImage, gerbv_user_transformati
     GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
     
     newImage->layertype = sourceImage->layertype;
+
+    /* Free the type string allocated by gerbv_create_image() before the
+     * struct copy overwrites the pointer (would leak otherwise). */
+    g_free(newImage->info->type);
+
+    /* Free the sentinel netlist node — gerbv_image_copy_all_nets() will
+     * replace newImage->netlist with a fresh copy of the source nets. */
+    g_free(newImage->netlist);
+    newImage->netlist = NULL;
+
     /* copy information layer over */
     *(newImage->info) = *(sourceImage->info);
     newImage->info->name = g_strdup (sourceImage->info->name);
