@@ -48,6 +48,10 @@
 
 #include "draw.h"
 
+#ifdef WIN32
+#include <gio/gsettingsbackend.h>
+#endif
+
 #include "gerbv_icon.h"
 #include "icons.h"
 
@@ -348,7 +352,32 @@ interface_create_gui (int req_width, int req_height)
 
 	if (NULL != settings_schema) {
 		g_settings_schema_unref(settings_schema);
+#ifdef WIN32
+		/* Use the keyfile backend on Windows instead of the default
+		 * registry backend.  GLib 2.69+ changed the Windows GSettings
+		 * backend to use registry watching, which busy-loops on
+		 * Windows 7 and causes 100% CPU usage.  The keyfile backend
+		 * stores settings in a plain INI file in %APPDATA% and works
+		 * on all Windows versions.
+		 * See: https://github.com/gerbv/gerbv/issues/457 */
+		{
+			gchar *config_dir = g_build_filename(
+			    g_get_user_config_dir(), "gerbv", NULL);
+			g_mkdir_with_parents(config_dir, 0755);
+			gchar *config_path = g_build_filename(
+			    config_dir, "settings.ini", NULL);
+			GSettingsBackend *backend =
+			    g_keyfile_settings_backend_new(
+				config_path, "/org/geda-user/gerbv/", NULL);
+			screen.settings = g_settings_new_with_backend(
+			    settings_id, backend);
+			g_object_unref(backend);
+			g_free(config_path);
+			g_free(config_dir);
+		}
+#else
 		screen.settings = g_settings_new(settings_id);
+#endif
 	}
 
 	pointerpixbuf = pixbuf_from_icon(&pointer);
