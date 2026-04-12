@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: gerbv 2.13.0\n"
 "Report-Msgid-Bugs-To: spe-ciellt@github.com\n"
 "POT-Creation-Date: 2026-04-12 06:10+0800\n"
-"PO-Revision-Date: 2026-04-12 06:10+0800\n"
-"Last-Translator: Automatically generated\n"
+"PO-Revision-Date: 2026-04-11 12:00+0000\n"
+"Last-Translator: French Translation\n"
 "Language-Team: none\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -18,460 +18,572 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: ../src/attribute.c:324
+#, fuzzy
 msgid "gerbv"
-msgstr ""
+msgstr "gerbv"
 
 #: ../src/attribute.c:508
-#, c-format
+#, c-format, fuzzy
 msgid "%s: unknown type of HID attribute\n"
-msgstr ""
+msgstr "%s : type inconnu d'attribut HID\n"
 
 #: ../src/callbacks.c:137
+#, fuzzy
 msgid "No layers are currently loaded. A layer must be loaded first."
 msgstr ""
+"Aucune couche n'est actuellement chargee. Une couche doit d'abord etre "
+"chargee."
 
 #: ../src/callbacks.c:155
+#, fuzzy
 msgid "Do you want to close any open layers and start a new project?"
 msgstr ""
+"Voulez-vous fermer toutes les couches ouvertes et demarrer un nouveau projet"
+" ?"
 
 #: ../src/callbacks.c:157
+#, fuzzy
 msgid ""
 "Starting a new project will cause all currently open layers to be closed. "
 "Any unsaved changes will be lost."
 msgstr ""
+"Demarrer un nouveau projet entrainera la fermeture de toutes les couches "
+"actuellement ouvertes. Toutes les modifications non enregistrees seront "
+"perdues."
 
 #: ../src/callbacks.c:191
+#, fuzzy
 msgid "Do you want to close any open layers and load an existing project?"
 msgstr ""
+"Voulez-vous fermer toutes les couches ouvertes et charger un projet existant"
+" ?"
 
 #: ../src/callbacks.c:193
+#, fuzzy
 msgid ""
 "Loading a project will cause all currently open layers to be closed. Any "
 "unsaved changes will be lost."
 msgstr ""
+"Le chargement d'un projet entrainera la fermeture de toutes les couches "
+"actuellement ouvertes. Toutes les modifications non enregistrees seront "
+"perdues."
 
 #: ../src/callbacks.c:356 ../src/interface.c:391 ../src/interface.c:1039
 #: ../src/interface.c:1188
+#, fuzzy
 msgid "Open Gerbv project, Gerber, drill, or pick&place files"
 msgstr ""
+"Ouvrir un projet Gerbv, des fichiers Gerber, de percage ou de placement"
 
 #: ../src/callbacks.c:418
+#, fuzzy
 msgid "Gerbv cannot export this file type"
-msgstr ""
+msgstr "Gerbv ne peut pas exporter ce type de fichier"
 
 #: ../src/callbacks.c:459
+#, fuzzy
 msgid "Unknown Layer type for merge"
-msgstr ""
+msgstr "Type de couche inconnu pour la fusion"
 
 #: ../src/callbacks.c:474
+#, fuzzy
 msgid "Not Enough Files of same type to merge"
-msgstr ""
+msgstr "Pas assez de fichiers du meme type pour la fusion"
 
 #: ../src/callbacks.c:520 ../src/callbacks.c:599
+#, fuzzy
 msgctxt "file name"
 msgid "untitled"
-msgstr ""
+msgstr "sans_titre"
 
 #: ../src/callbacks.c:558
+#, fuzzy
 msgid "No layer is currently active"
-msgstr ""
+msgstr "Aucune couche n'est actuellement active"
 
 #: ../src/callbacks.c:559
+#, fuzzy
 msgid "Please select a layer and try again."
-msgstr ""
+msgstr "Veuillez selectionner une couche et reessayer."
 
 #: ../src/callbacks.c:575
+#, fuzzy
 msgid "Export as Inkscape layers"
-msgstr ""
+msgstr "Exporter en tant que couches Inkscape"
 
 #: ../src/callbacks.c:577
+#, fuzzy
 msgid "Use Cairo SVG (legacy)"
-msgstr ""
+msgstr "Utiliser Cairo SVG (ancien)"
 
 #: ../src/callbacks.c:592 ../src/interface.c:511
+#, fuzzy
 msgid "Save project as..."
-msgstr ""
+msgstr "Enregistrer le projet sous..."
 
 #: ../src/callbacks.c:610
+#, fuzzy
 msgid "All"
-msgstr ""
+msgstr "Tout"
 
 #: ../src/callbacks.c:617 ../src/callbacks.c:629 ../src/callbacks.c:641
 #: ../src/callbacks.c:668
-#, c-format
+#, c-format, fuzzy
 msgid "Export visible layers to %s file as..."
-msgstr ""
+msgstr "Exporter les couches visibles vers un fichier %s sous..."
 
 #: ../src/callbacks.c:618
+#, fuzzy
 msgid "PS"
-msgstr ""
+msgstr "PS"
 
 #: ../src/callbacks.c:630
+#, fuzzy
 msgid "PDF"
-msgstr ""
+msgstr "PDF"
 
 #: ../src/callbacks.c:642
+#, fuzzy
 msgid "SVG"
-msgstr ""
+msgstr "SVG"
 
 #: ../src/callbacks.c:650
+#, fuzzy
 msgid "Create one Inkscape layer per visible gerber layer"
-msgstr ""
+msgstr "Creer une couche Inkscape par couche Gerber visible"
 
 #: ../src/callbacks.c:654
+#, fuzzy
 msgid "Use Cairo's SVG surface (larger files, legacy behavior)"
 msgstr ""
+"Utiliser la surface SVG de Cairo (fichiers plus volumineux, comportement "
+"ancien)"
 
 #: ../src/callbacks.c:661
-#, c-format
+#, c-format, fuzzy
 msgid "Export \"%s\" layer #%d to DXF file as..."
-msgstr ""
+msgstr "Exporter la couche \"%s\" #%d vers un fichier DXF sous..."
 
 #: ../src/callbacks.c:669
+#, fuzzy
 msgid "PNG"
-msgstr ""
+msgstr "PNG"
 
 #: ../src/callbacks.c:676
+#, fuzzy
 msgid "DPI:"
-msgstr ""
+msgstr "PPP :"
 
 #: ../src/callbacks.c:680 ../src/callbacks.c:682
+#, fuzzy
 msgid "DPI value, autoscaling if 0"
-msgstr ""
+msgstr "Valeur PPP, mise a l'echelle automatique si 0"
 
 #: ../src/callbacks.c:689
-#, c-format
+#, c-format, fuzzy
 msgid "Export \"%s\" layer #%d to RS-274X file as..."
-msgstr ""
+msgstr "Exporter la couche \"%s\" #%d vers un fichier RS-274X sous..."
 
 #: ../src/callbacks.c:701
+#, fuzzy
 msgid "Export merged visible layers to RS-274X file as..."
 msgstr ""
+"Exporter les couches visibles fusionnees vers un fichier RS-274X sous..."
 
 #: ../src/callbacks.c:711
-#, c-format
+#, c-format, fuzzy
 msgid "Export \"%s\" layer #%d to Excellon drill file as..."
-msgstr ""
+msgstr "Exporter la couche \"%s\" #%d vers un fichier de percage Excellon sous..."
 
 #: ../src/callbacks.c:723
+#, fuzzy
 msgid "Export merged visible layers to Excellon drill file as..."
 msgstr ""
+"Exporter les couches visibles fusionnees vers un fichier de percage Excellon"
+" sous..."
 
 #: ../src/callbacks.c:732
-#, c-format
+#, c-format, fuzzy
 msgid "Export \"%s\" layer #%d to ISEL NCP drill file as..."
-msgstr ""
+msgstr "Exporter la couche \"%s\" #%d vers un fichier de percage ISEL NCP sous..."
 
 #: ../src/callbacks.c:740
-#, c-format
+#, c-format, fuzzy
 msgid "Export \"%s\" layer #%d to gEDA PCB file as..."
-msgstr ""
+msgstr "Exporter la couche \"%s\" #%d vers un fichier gEDA PCB sous..."
 
 #: ../src/callbacks.c:746
-#, c-format
+#, c-format, fuzzy
 msgid "Save \"%s\" layer #%d as..."
-msgstr ""
+msgstr "Enregistrer la couche \"%s\" #%d sous..."
 
 #: ../src/callbacks.c:774
+#, fuzzy
 msgid "Not enough Gerber layers are visible"
-msgstr ""
+msgstr "Pas assez de couches Gerber visibles"
 
 #: ../src/callbacks.c:775
+#, fuzzy
 msgid "Two or more Gerber layers must be visible for export with merge."
 msgstr ""
+"Deux couches Gerber ou plus doivent etre visibles pour l'exportation avec "
+"fusion."
 
 #: ../src/callbacks.c:781
+#, fuzzy
 msgid "Not enough Excellon layers are visible"
-msgstr ""
+msgstr "Pas assez de couches Excellon visibles"
 
 #: ../src/callbacks.c:782
+#, fuzzy
 msgid "Two or more Excellon layers must be visible for export with merge."
 msgstr ""
+"Deux couches Excellon ou plus doivent etre visibles pour l'exportation avec "
+"fusion."
 
 #: ../src/callbacks.c:788
+#, fuzzy
 msgid "No layers are visible"
-msgstr ""
+msgstr "Aucune couche n'est visible"
 
 #: ../src/callbacks.c:788
+#, fuzzy
 msgid "One or more layers must be visible for export."
-msgstr ""
+msgstr "Une ou plusieurs couches doivent etre visibles pour l'exportation."
 
 #: ../src/callbacks.c:837
-#, c-format
+#, c-format, fuzzy
 msgid "\"%s\" layer #%d saved as DXF in \"%s\""
-msgstr ""
+msgstr "Couche \"%s\" #%d enregistree en DXF dans \"%s\""
 
 #: ../src/callbacks.c:884
-#, c-format
+#, c-format, fuzzy
 msgid "\"%s\" layer #%d saved as Gerber in \"%s\""
-msgstr ""
+msgstr "Couche \"%s\" #%d enregistree en Gerber dans \"%s\""
 
 #: ../src/callbacks.c:894
-#, c-format
+#, c-format, fuzzy
 msgid "\"%s\" layer #%d saved as drill in \"%s\""
-msgstr ""
+msgstr "Couche \"%s\" #%d enregistree en percage dans \"%s\""
 
 #: ../src/callbacks.c:903
-#, c-format
+#, c-format, fuzzy
 msgid "\"%s\" layer #%d saved as ISEL NCP drill in \"%s\""
-msgstr ""
+msgstr "Couche \"%s\" #%d enregistree en percage ISEL NCP dans \"%s\""
 
 #: ../src/callbacks.c:912
-#, c-format
+#, c-format, fuzzy
 msgid "\"%s\" layer #%d saved as gEDA PCB in \"%s\""
-msgstr ""
+msgstr "Couche \"%s\" #%d enregistree en gEDA PCB dans \"%s\""
 
 #: ../src/callbacks.c:923
-#, c-format
+#, c-format, fuzzy
 msgid "Merged visible Gerber layers and saved in \"%s\""
-msgstr ""
+msgstr "Couches Gerber visibles fusionnees et enregistrees dans \"%s\""
 
 #: ../src/callbacks.c:938
-#, c-format
+#, c-format, fuzzy
 msgid "Merged visible drill layers and saved in \"%s\""
-msgstr ""
+msgstr "Couches de percage visibles fusionnees et enregistrees dans \"%s\""
 
 #: ../src/callbacks.c:1125
+#, fuzzy
 msgid "FATAL"
-msgstr ""
+msgstr "FATAL"
 
 #: ../src/callbacks.c:1127
+#, fuzzy
 msgid "ERROR"
-msgstr ""
+msgstr "ERREUR"
 
 #: ../src/callbacks.c:1129
+#, fuzzy
 msgid "Warning"
-msgstr ""
+msgstr "Avertissement"
 
 #: ../src/callbacks.c:1131 ../src/callbacks.c:1238 ../src/callbacks.c:1275
 #: ../src/callbacks.c:1297 ../src/callbacks.c:1605 ../src/callbacks.c:1634
+#, fuzzy
 msgid "Note"
-msgstr ""
+msgstr "Note"
 
 #: ../src/callbacks.c:1159
+#, fuzzy
 msgid "No Gerber layers visible!"
-msgstr ""
+msgstr "Aucune couche Gerber visible !"
 
 #: ../src/callbacks.c:1163
-#, c-format
+#, c-format, fuzzy
 msgid "No errors found in %d visible Gerber layer."
 msgid_plural "No errors found in %d visible Gerber layers."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Aucune erreur trouvee dans %d couche Gerber visible."
+msgstr[1] "Aucune erreur trouvee dans %d couches Gerber visibles."
 
 #: ../src/callbacks.c:1171
-#, c-format
+#, c-format, fuzzy
 msgid "Found errors in %d visible Gerber layer."
 msgid_plural "Found errors in %d visible Gerber layers."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Erreurs trouvees dans %d couche Gerber visible."
+msgstr[1] "Erreurs trouvees dans %d couches Gerber visibles."
 
 #: ../src/callbacks.c:1189 ../src/callbacks.c:1350 ../src/callbacks.c:1556
+#, fuzzy
 msgid "Layer"
-msgstr ""
+msgstr "Couche"
 
 #: ../src/callbacks.c:1189 ../src/callbacks.c:1556
+#, fuzzy
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/callbacks.c:1190 ../src/callbacks.c:1557
+#, fuzzy
 msgid "Description"
-msgstr ""
+msgstr "Description"
 
 #: ../src/callbacks.c:1202
+#, fuzzy
 msgid "RS-274X file"
-msgstr ""
+msgstr "Fichier RS-274X"
 
 #: ../src/callbacks.c:1204 ../src/callbacks.c:1571
-#, c-format
+#, c-format, fuzzy
 msgid "%g x %g %s"
-msgstr ""
+msgstr "%g x %g %s"
 
 #: ../src/callbacks.c:1210 ../src/callbacks.c:1577
+#, fuzzy
 msgid "Bounding size"
-msgstr ""
+msgstr "Taille englobante"
 
 #: ../src/callbacks.c:1236 ../src/callbacks.c:1273 ../src/callbacks.c:1295
 #: ../src/callbacks.c:1316 ../src/callbacks.c:1403 ../src/callbacks.c:1603
 #: ../src/callbacks.c:1632 ../src/callbacks.c:1666
+#, fuzzy
 msgid "Code"
-msgstr ""
+msgstr "Code"
 
 #: ../src/callbacks.c:1237 ../src/callbacks.c:1274 ../src/callbacks.c:1296
 #: ../src/callbacks.c:1317 ../src/callbacks.c:1404 ../src/callbacks.c:1604
 #: ../src/callbacks.c:1633 ../src/callbacks.c:1665 ../src/callbacks.c:1696
+#, fuzzy
 msgctxt "table"
 msgid "Count"
-msgstr ""
+msgstr "Nombre"
 
 #: ../src/callbacks.c:1262 ../src/callbacks.c:1621
+#, fuzzy
 msgid "unknown G-codes"
-msgstr ""
+msgstr "codes G inconnus"
 
 #: ../src/callbacks.c:1283
+#, fuzzy
 msgid "unknown D-codes"
-msgstr ""
+msgstr "codes D inconnus"
 
 #: ../src/callbacks.c:1284
+#, fuzzy
 msgid "D-code errors"
-msgstr ""
+msgstr "erreurs de codes D"
 
 #: ../src/callbacks.c:1305 ../src/callbacks.c:1652
+#, fuzzy
 msgid "unknown M-codes"
-msgstr ""
+msgstr "codes M inconnus"
 
 #: ../src/callbacks.c:1326
+#, fuzzy
 msgid "Unknown"
-msgstr ""
+msgstr "Inconnu"
 
 #: ../src/callbacks.c:1341
+#, fuzzy
 msgid "No aperture definitions found in active Gerber file(s)!"
 msgstr ""
+"Aucune definition d'ouverture trouvee dans le(s) fichier(s) Gerber actif(s) "
+"!"
 
 #: ../src/callbacks.c:1351
+#, fuzzy
 msgid "D code"
-msgstr ""
+msgstr "Code D"
 
 #: ../src/callbacks.c:1352
+#, fuzzy
 msgid "Aperture"
-msgstr ""
+msgstr "Ouverture"
 
 #: ../src/callbacks.c:1353
+#, fuzzy
 msgid "Param[0]"
-msgstr ""
+msgstr "Param[0]"
 
 #: ../src/callbacks.c:1354
+#, fuzzy
 msgid "Param[1]"
-msgstr ""
+msgstr "Param[1]"
 
 #: ../src/callbacks.c:1355
+#, fuzzy
 msgid "Param[2]"
-msgstr ""
+msgstr "Param[2]"
 
 #: ../src/callbacks.c:1394
+#, fuzzy
 msgid "No apertures used in Gerber file(s)!"
-msgstr ""
+msgstr "Aucune ouverture utilisee dans le(s) fichier(s) Gerber !"
 
 #: ../src/callbacks.c:1421
+#, fuzzy
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 #: ../src/callbacks.c:1430
+#, fuzzy
 msgid "Gerber codes report on visible layers"
-msgstr ""
+msgstr "Rapport des codes Gerber sur les couches visibles"
 
 #: ../src/callbacks.c:1460 ../src/callbacks.c:1753
+#, fuzzy
 msgid "General"
-msgstr ""
+msgstr "General"
 
 #: ../src/callbacks.c:1464 ../src/callbacks.c:1757
+#, fuzzy
 msgid "G codes"
-msgstr ""
+msgstr "Codes G"
 
 #: ../src/callbacks.c:1468
+#, fuzzy
 msgid "D codes"
-msgstr ""
+msgstr "Codes D"
 
 #: ../src/callbacks.c:1472 ../src/callbacks.c:1761
+#, fuzzy
 msgid "M codes"
-msgstr ""
+msgstr "Codes M"
 
 #: ../src/callbacks.c:1476 ../src/callbacks.c:1765
+#, fuzzy
 msgid "Misc. codes"
-msgstr ""
+msgstr "Codes divers"
 
 #: ../src/callbacks.c:1480
+#, fuzzy
 msgid "Aperture definitions"
-msgstr ""
+msgstr "Definitions d'ouvertures"
 
 #: ../src/callbacks.c:1484
+#, fuzzy
 msgid "Aperture usage"
-msgstr ""
+msgstr "Utilisation des ouvertures"
 
 #: ../src/callbacks.c:1526
+#, fuzzy
 msgid "No drill layers visible!"
-msgstr ""
+msgstr "Aucune couche de percage visible !"
 
 #: ../src/callbacks.c:1530
-#, c-format
+#, c-format, fuzzy
 msgid "No errors found in %d visible drill layer."
 msgid_plural "No errors found in %d visible drill layers."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Aucune erreur trouvee dans %d couche de percage visible."
+msgstr[1] "Aucune erreur trouvee dans %d couches de percage visibles."
 
 #: ../src/callbacks.c:1538
-#, c-format
+#, c-format, fuzzy
 msgid "Found errors found in %d visible drill layer."
 msgid_plural "Found errors found in %d visible drill layers."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Erreurs trouvees dans %d couche de percage visible."
+msgstr[1] "Erreurs trouvees dans %d couches de percage visibles."
 
 #: ../src/callbacks.c:1569
+#, fuzzy
 msgid "Excellon file"
-msgstr ""
+msgstr "Fichier Excellon"
 
 #: ../src/callbacks.c:1669
+#, fuzzy
 msgid "Comments"
-msgstr ""
+msgstr "Commentaires"
 
 #: ../src/callbacks.c:1672
+#, fuzzy
 msgid "Unknown codes"
-msgstr ""
+msgstr "Codes inconnus"
 
 #: ../src/callbacks.c:1675
+#, fuzzy
 msgid "Repeat hole (R)"
-msgstr ""
+msgstr "Trou repete (R)"
 
 #: ../src/callbacks.c:1693
+#, fuzzy
 msgid "Drill no."
-msgstr ""
+msgstr "Foret n°"
 
 #: ../src/callbacks.c:1694
+#, fuzzy
 msgid "Dia."
-msgstr ""
+msgstr "Dia."
 
 #: ../src/callbacks.c:1695
+#, fuzzy
 msgid "Units"
-msgstr ""
+msgstr "Unites"
 
 #: ../src/callbacks.c:1723
+#, fuzzy
 msgid "Drill codes report on visible layers"
-msgstr ""
+msgstr "Rapport des codes de percage sur les couches visibles"
 
 #: ../src/callbacks.c:1769
+#, fuzzy
 msgid "Drill usage"
-msgstr ""
+msgstr "Utilisation des forets"
 
 #: ../src/callbacks.c:1827
+#, fuzzy
 msgid "Do you want to close all open layers and quit the program?"
 msgstr ""
+"Voulez-vous fermer toutes les couches ouvertes et quitter le programme ?"
 
 #: ../src/callbacks.c:1828
+#, fuzzy
 msgid "Quitting the program will cause any unsaved changes to be lost."
 msgstr ""
+"Quitter le programme entrainera la perte de toutes les modifications non "
+"enregistrees."
 
 #. TRANSLATORS: Replace this string with your names, one name per line.
 #: ../src/callbacks.c:1886
+#, fuzzy
 msgid "translator-credits"
 msgstr ""
 
 #: ../src/callbacks.c:1889
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Gerbv — a Gerber (RS-274/X) viewer\n"
 "\n"
 "Version %s\n"
 "Compiled on %s at %s\n"
 "\n"
-"Gerbv was originally developed as part of the gEDA Project but is now "
-"separately maintained.\n"
+"Gerbv was originally developed as part of the gEDA Project but is now separately maintained.\n"
 "\n"
 "For more information see:\n"
 "  gerbv homepage: https://gerbv.github.io/\n"
 "  gerbv repository: https://github.com/gerbv/gerbv"
 msgstr ""
+"Gerbv — un visualiseur Gerber (RS-274/X)\n"
+"\n"
+"Version %s\n"
+"Compile le %s a %s\n"
+"\n"
+"Gerbv a ete initialement developpe par Stefan Petersen et porte les contributions de nombreux autres depuis.\n"
 
 #: ../src/callbacks.c:1904
+#, fuzzy
 msgid ""
 "Gerbv — a Gerber (RS-274/X) viewer\n"
 "\n"
@@ -490,2196 +602,2616 @@ msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>."
 msgstr ""
+"Gerbv — un visualiseur Gerber (RS-274/X)\n"
+"\n"
+"Copyright (C) 2000—2007 Stefan Petersen\n"
+"\n"
+"Ce programme est un logiciel libre ; vous pouvez le redistribuer et/ou le modifier selon les termes de la Licence Publique Generale GNU."
 
 #: ../src/callbacks.c:1928
+#, fuzzy
 msgid "Gerbv"
-msgstr ""
+msgstr "Gerbv"
 
 #: ../src/callbacks.c:1957
+#, fuzzy
 msgid "About Gerbv"
-msgstr ""
+msgstr "A propos de Gerbv"
 
 #: ../src/callbacks.c:1984
+#, fuzzy
 msgid "Known bugs in Gerbv"
-msgstr ""
+msgstr "Bogues connus dans Gerbv"
 
 #: ../src/callbacks.c:2313 ../src/callbacks.c:3447
+#, fuzzy
 msgid ""
 "Click to select objects in the active layer. Middle click and drag to pan."
 msgstr ""
+"Cliquez pour selectionner des objets dans la couche active. Clic du milieu "
+"et glisser pour deplacer la vue."
 
 #: ../src/callbacks.c:2322
+#, fuzzy
 msgid "Click and drag to pan. Right click and drag to zoom."
 msgstr ""
+"Cliquez et glissez pour deplacer la vue. Clic droit et glisser pour zoomer."
 
 #: ../src/callbacks.c:2330
+#, fuzzy
 msgid "Click and drag to zoom in. Shift+click to zoom out."
-msgstr ""
+msgstr "Cliquez et glissez pour agrandir. Maj+clic pour reduire."
 
 #: ../src/callbacks.c:2339
+#, fuzzy
 msgid "Click and drag to measure a distance or select two apertures."
 msgstr ""
+"Cliquez et glissez pour mesurer une distance ou selectionner deux "
+"ouvertures."
 
 #: ../src/callbacks.c:2569
+#, fuzzy
 msgid "Select a color"
-msgstr ""
+msgstr "Selectionner une couleur"
 
 #: ../src/callbacks.c:2717
+#, fuzzy
 msgid "This file type does not currently have any editable features"
 msgstr ""
+"Ce type de fichier ne possede actuellement aucune fonctionnalite modifiable"
 
 #: ../src/callbacks.c:2718
+#, fuzzy
 msgid ""
 "Format editing is currently only supported for Excellon drill file formats."
 msgstr ""
+"La modification du format n'est actuellement prise en charge que pour les "
+"formats de fichiers de percage Excellon."
 
 #: ../src/callbacks.c:2729
+#, fuzzy
 msgid "This layer has changed!"
-msgstr ""
+msgstr "Cette couche a ete modifiee !"
 
 #: ../src/callbacks.c:2730
+#, fuzzy
 msgid ""
-"Editing the file type will reload the layer, destroying your changes.  Click "
-"OK to edit the file type and destroy your changes, or Cancel to leave."
+"Editing the file type will reload the layer, destroying your changes.  Click"
+" OK to edit the file type and destroy your changes, or Cancel to leave."
 msgstr ""
+"La modification du type de fichier rechargera la couche, detruisant vos "
+"modifications. Cliquez sur OK pour continuer."
 
 #: ../src/callbacks.c:2744
+#, fuzzy
 msgid "Edit file format"
-msgstr ""
+msgstr "Modifier le format de fichier"
 
 #: ../src/callbacks.c:3021 ../src/callbacks.c:3180
+#, fuzzy
 msgid "No object is currently selected"
-msgstr ""
+msgstr "Aucun objet n'est actuellement selectionne"
 
 #: ../src/callbacks.c:3022
+#, fuzzy
 msgid ""
 "Objects must be selected using the pointer tool before you can view the "
 "object properties."
 msgstr ""
+"Les objets doivent etre selectionnes a l'aide de l'outil pointeur avant de "
+"pouvoir afficher les proprietes de l'objet."
 
 #: ../src/callbacks.c:3040
+#, fuzzy
 msgid "Object type: Polygon"
-msgstr ""
+msgstr "Type d'objet : Polygone"
 
 #: ../src/callbacks.c:3082
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)"
 msgstr ""
+"Benchmark en mode RAPIDE (=GDK) : %d rafraichissements en %ld secondes (%g "
+"rafraichissements/seconde)"
 
 #: ../src/callbacks.c:3104
-#, c-format
+#, c-format, fuzzy
 msgid ""
-"NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g redraws/second)"
+"NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g "
+"redraws/second)"
 msgstr ""
+"Benchmark en mode NORMAL (=Cairo) : %d rafraichissements en %ld secondes (%g"
+" rafraichissements/seconde)"
 
 #: ../src/callbacks.c:3117
+#, fuzzy
 msgid "Performance benchmark"
-msgstr ""
+msgstr "Benchmark de performance"
 
 #: ../src/callbacks.c:3118
+#, fuzzy
 msgid ""
 "Application will be unresponsive for 1 minute! Run performance benchmark?"
 msgstr ""
+"L'application ne repondra plus pendant 1 minute ! Lancer le benchmark de "
+"performance ?"
 
 #: ../src/callbacks.c:3123
+#, fuzzy
 msgid "Running full zoom benchmark..."
-msgstr ""
+msgstr "Execution du benchmark en zoom complet..."
 
 #: ../src/callbacks.c:3131
+#, fuzzy
 msgid "Running x5 zoom benchmark..."
-msgstr ""
+msgstr "Execution du benchmark en zoom x5..."
 
 #: ../src/callbacks.c:3181
+#, fuzzy
 msgid ""
 "Objects must be selected using the pointer tool before they can be deleted."
 msgstr ""
+"Les objets doivent etre selectionnes a l'aide de l'outil pointeur avant de "
+"pouvoir etre supprimes."
 
 #: ../src/callbacks.c:3194
+#, fuzzy
 msgid ""
 "Do you want to permanently delete the selected objects from <i>visible</i> "
 "layers?"
 msgstr ""
+"Voulez-vous supprimer definitivement les objets selectionnes des couches "
+"<i>visibles</i> ?"
 
 #: ../src/callbacks.c:3196
+#, fuzzy
 msgid ""
 "Gerbv currently has no undo function, so this action cannot be undone. This "
 "action will not change the saved file unless you save the file afterwards."
 msgstr ""
+"Gerbv ne dispose actuellement d'aucune fonction d'annulation, cette action "
+"ne peut donc pas etre annulee. Cette action ne supprimera les objets que des"
+" couches visibles."
 
 #: ../src/callbacks.c:3412
-#, c-format
+#, c-format, fuzzy
 msgid "%8.3f %8.3f"
-msgstr ""
+msgstr "%8.3f %8.3f"
 
 #: ../src/callbacks.c:3417
-#, c-format
+#, c-format, fuzzy
 msgid "%4.5f %4.5f"
-msgstr ""
+msgstr "%4.5f %4.5f"
 
 #: ../src/callbacks.c:3438
+#, fuzzy
 msgid "No object selected. Objects can only be selected in the active layer."
 msgstr ""
+"Aucun objet selectionne. Les objets ne peuvent etre selectionnes que dans la"
+" couche active."
 
 #: ../src/callbacks.c:3454
-#, c-format
+#, c-format, fuzzy
 msgid "%d object are currently selected"
 msgid_plural "%d objects are currently selected"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d objet est actuellement selectionne"
+msgstr[1] "%d objets sont actuellement selectionnes"
 
 #: ../src/callbacks.c:3657 ../src/callbacks.c:3663
-#, c-format
+#, c-format, fuzzy
 msgid "#_%i %s  >  #%i %s"
-msgstr ""
+msgstr "#_%i %s  >  #%i %s"
 
 #: ../src/callbacks.c:3734 ../src/callbacks.c:3740
+#, fuzzy
 msgid "Can't align by this type of object"
-msgstr ""
+msgstr "Impossible d'aligner par ce type d'objet"
 
 #: ../src/callbacks.c:3918
-#, c-format
+#, c-format, fuzzy
 msgid "Measured distance: %8.2f mils (%8.2f x, %8.2f y)"
-msgstr ""
+msgstr "Distance mesuree : %8.2f mils (%8.2f x, %8.2f y)"
 
 #: ../src/callbacks.c:3923
-#, c-format
+#, c-format, fuzzy
 msgid "Measured distance: %8.3f mm (%8.3f x, %8.3f y)"
-msgstr ""
+msgstr "Distance mesuree : %8.3f mm (%8.3f x, %8.3f y)"
 
 #: ../src/callbacks.c:3928
-#, c-format
+#, c-format, fuzzy
 msgid "Measured distance: %4.5f inches (%4.5f x, %4.5f y)"
-msgstr ""
+msgstr "Distance mesuree : %4.5f pouces (%4.5f x, %4.5f y)"
 
 #: ../src/callbacks.c:4095
-#, c-format
+#, c-format, fuzzy
 msgid "Fatal error: %s\n"
-msgstr ""
+msgstr "Erreur fatale : %s\n"
 
 #: ../src/callbacks.c:4098
+#, fuzzy
 msgid "Fatal Error"
-msgstr ""
+msgstr "Erreur fatale"
 
 #: ../src/callbacks.c:4102
-#, c-format
+#, c-format, fuzzy
 msgid "Fatal error: %s"
-msgstr ""
+msgstr "Erreur fatale : %s"
 
 #: ../src/callbacks.c:4107
+#, fuzzy
 msgid ""
 "\n"
 "Gerbv will be closed now!"
 msgstr ""
+"\n"
+"Gerbv va maintenant etre ferme !"
 
 #: ../src/callbacks.c:4214
+#, fuzzy
 msgid "Object type: Line"
-msgstr ""
+msgstr "Type d'objet : Ligne"
 
 #: ../src/callbacks.c:4216
+#, fuzzy
 msgid "Object type: Slot (drilled)"
-msgstr ""
+msgstr "Type d'objet : Fente (percee)"
 
 #: ../src/callbacks.c:4226
+#, fuzzy
 msgid "Object type: Arc"
-msgstr ""
+msgstr "Type d'objet : Arc"
 
 #: ../src/callbacks.c:4234
+#, fuzzy
 msgid "Object type: Unknown"
-msgstr ""
+msgstr "Type d'objet : Inconnu"
 
 #: ../src/callbacks.c:4239
+#, fuzzy
 msgid "    Exposure: On"
-msgstr ""
+msgstr "    Exposition : Activee"
 
 #: ../src/callbacks.c:4253 ../src/callbacks.c:4400 ../src/callbacks.c:4480
-#, c-format
+#, c-format, fuzzy
 msgid "    Start: (%g, %g) %s"
-msgstr ""
+msgstr "    Debut : (%g, %g) %s"
 
 #: ../src/callbacks.c:4261 ../src/callbacks.c:4486
-#, c-format
+#, c-format, fuzzy
 msgid "    Stop: (%g, %g) %s"
-msgstr ""
+msgstr "    Fin : (%g, %g) %s"
 
 #: ../src/callbacks.c:4273 ../src/callbacks.c:4389 ../src/callbacks.c:4416
 #: ../src/callbacks.c:4445 ../src/callbacks.c:4466 ../src/callbacks.c:4503
-#, c-format
+#, c-format, fuzzy
 msgid "    Center: (%g, %g) %s"
-msgstr ""
+msgstr "    Centre : (%g, %g) %s"
 
 #: ../src/callbacks.c:4281
-#, c-format
+#, c-format, fuzzy
 msgid "    Radius: %g %s"
-msgstr ""
+msgstr "    Rayon : %g %s"
 
 #: ../src/callbacks.c:4285
-#, c-format
+#, c-format, fuzzy
 msgid "    Angle: %g deg"
-msgstr ""
+msgstr "    Angle : %g deg"
 
 #: ../src/callbacks.c:4288
-#, c-format
+#, c-format, fuzzy
 msgid "    Angles: (%g, %g) deg"
-msgstr ""
+msgstr "    Angles : (%g, %g) deg"
 
 #: ../src/callbacks.c:4291
-#, c-format
+#, c-format, fuzzy
 msgid "    Direction: %s"
-msgstr ""
+msgstr "    Direction : %s"
 
 #: ../src/callbacks.c:4294 ../src/callbacks.c:4634 ../src/gerber.c:346
+#, fuzzy
 msgid "CW"
-msgstr ""
+msgstr "HOR"
 
 #: ../src/callbacks.c:4294 ../src/callbacks.c:4634 ../src/gerber.c:346
+#, fuzzy
 msgid "CCW"
-msgstr ""
+msgstr "AHOR"
 
 #: ../src/callbacks.c:4308
-#, c-format
+#, c-format, fuzzy
 msgid "    Slot length: %g %s"
-msgstr ""
+msgstr "    Longueur de fente : %g %s"
 
 #: ../src/callbacks.c:4314
-#, c-format
+#, c-format, fuzzy
 msgid "    Length: %g (sum: %g) %s"
-msgstr ""
+msgstr "    Longueur : %g (somme : %g) %s"
 
 #: ../src/callbacks.c:4326
+#, fuzzy
 msgid "Object type: Flashed aperture"
-msgstr ""
+msgstr "Type d'objet : Ouverture flashee"
 
 #: ../src/callbacks.c:4328
+#, fuzzy
 msgid "Object type: Drill"
-msgstr ""
+msgstr "Type d'objet : Percage"
 
 #: ../src/callbacks.c:4342
-#, c-format
+#, c-format, fuzzy
 msgid "    Location: (%g, %g) %s"
-msgstr ""
+msgstr "    Position : (%g, %g) %s"
 
 #: ../src/callbacks.c:4361
-#, c-format
+#, c-format, fuzzy
 msgid "    Aperture used: D%d"
-msgstr ""
+msgstr "    Ouverture utilisee : D%d"
 
 #: ../src/callbacks.c:4362
-#, c-format
+#, c-format, fuzzy
 msgid "    Aperture type: %s"
-msgstr ""
+msgstr "    Type d'ouverture : %s"
 
 #: ../src/callbacks.c:4369 ../src/callbacks.c:4383 ../src/callbacks.c:4410
 #: ../src/callbacks.c:4544
-#, c-format
+#, c-format, fuzzy
 msgid "    Diameter: %g %s"
-msgstr ""
+msgstr "    Diametre : %g %s"
 
 #: ../src/callbacks.c:4375
-#, c-format
+#, c-format, fuzzy
 msgid "    Dimensions: %gx%g %s"
-msgstr ""
+msgstr "    Dimensions : %gx%g %s"
 
 #: ../src/callbacks.c:4395 ../src/callbacks.c:4408
-#, c-format
+#, c-format, fuzzy
 msgid "    Number of points: %g"
-msgstr ""
+msgstr "    Nombre de points : %g"
 
 #: ../src/callbacks.c:4403 ../src/callbacks.c:4419 ../src/callbacks.c:4448
 #: ../src/callbacks.c:4469 ../src/callbacks.c:4489 ../src/callbacks.c:4506
 #: ../src/callbacks.c:4523
-#, c-format
+#, c-format, fuzzy
 msgid "    Rotation: %g deg"
-msgstr ""
+msgstr "    Rotation : %g deg"
 
 #: ../src/callbacks.c:4424 ../src/callbacks.c:4453
-#, c-format
+#, c-format, fuzzy
 msgid "    Outside diameter: %g %s"
-msgstr ""
+msgstr "    Diametre exterieur : %g %s"
 
 #: ../src/callbacks.c:4427
-#, c-format
+#, c-format, fuzzy
 msgid "    Ring thickness: %g %s"
-msgstr ""
+msgstr "    Epaisseur d'anneau : %g %s"
 
 #: ../src/callbacks.c:4430
-#, c-format
+#, c-format, fuzzy
 msgid "    Gap width: %g %s"
-msgstr ""
+msgstr "    Largeur d'espace : %g %s"
 
 #: ../src/callbacks.c:4433
-#, c-format
+#, c-format, fuzzy
 msgid "    Number of rings: %g"
-msgstr ""
+msgstr "    Nombre d'anneaux : %g"
 
 #: ../src/callbacks.c:4435 ../src/callbacks.c:4459
-#, c-format
+#, c-format, fuzzy
 msgid "    Crosshair thickness: %g %s"
-msgstr ""
+msgstr "    Epaisseur du reticule : %g %s"
 
 #: ../src/callbacks.c:4439
-#, c-format
+#, c-format, fuzzy
 msgid "    Crosshair length: %g %s"
-msgstr ""
+msgstr "    Longueur du reticule : %g %s"
 
 #: ../src/callbacks.c:4456
-#, c-format
+#, c-format, fuzzy
 msgid "    Inside diameter: %g %s"
-msgstr ""
+msgstr "    Diametre interieur : %g %s"
 
 #: ../src/callbacks.c:4474 ../src/callbacks.c:4494 ../src/callbacks.c:4511
-#, c-format
+#, c-format, fuzzy
 msgid "    Width: %g %s"
-msgstr ""
+msgstr "    Largeur : %g %s"
 
 #: ../src/callbacks.c:4497 ../src/callbacks.c:4514
-#, c-format
+#, c-format, fuzzy
 msgid "    Height: %g %s"
-msgstr ""
+msgstr "    Hauteur : %g %s"
 
 #: ../src/callbacks.c:4520
-#, c-format
+#, c-format, fuzzy
 msgid "    Lower left: (%g, %g) %s"
-msgstr ""
+msgstr "    Coin inferieur gauche : (%g, %g) %s"
 
 #: ../src/callbacks.c:4542
-#, c-format
+#, c-format, fuzzy
 msgid "    Tool used: T%d"
-msgstr ""
+msgstr "    Outil utilise : T%d"
 
 #: ../src/callbacks.c:4567
-#, c-format
+#, c-format, fuzzy
 msgid "    Number of vertices: %u"
-msgstr ""
+msgstr "    Nombre de sommets : %u"
 
 #: ../src/callbacks.c:4583
-#, c-format
+#, c-format, fuzzy
 msgid "    Line from: (%g, %g) %s"
-msgstr ""
+msgstr "    Ligne de : (%g, %g) %s"
 
 #: ../src/callbacks.c:4592
-#, c-format
+#, c-format, fuzzy
 msgid "        Line to: (%g, %g) %s"
-msgstr ""
+msgstr "        Ligne vers : (%g, %g) %s"
 
 #: ../src/callbacks.c:4603
-#, c-format
+#, c-format, fuzzy
 msgid "    Arc from: (%g, %g) %s"
-msgstr ""
+msgstr "    Arc de : (%g, %g) %s"
 
 #: ../src/callbacks.c:4610
-#, c-format
+#, c-format, fuzzy
 msgid "        Arc to: (%g, %g) %s"
-msgstr ""
+msgstr "        Arc vers : (%g, %g) %s"
 
 #: ../src/callbacks.c:4617
-#, c-format
+#, c-format, fuzzy
 msgid "        Center: (%g, %g) %s"
-msgstr ""
+msgstr "        Centre : (%g, %g) %s"
 
 #: ../src/callbacks.c:4624
-#, c-format
+#, c-format, fuzzy
 msgid "        Radius: %g %s"
-msgstr ""
+msgstr "        Rayon : %g %s"
 
 #: ../src/callbacks.c:4627
-#, c-format
+#, c-format, fuzzy
 msgid "        Angle: %g deg"
-msgstr ""
+msgstr "        Angle : %g deg"
 
 #: ../src/callbacks.c:4629
-#, c-format
+#, c-format, fuzzy
 msgid "        Angles: (%g, %g) deg"
-msgstr ""
+msgstr "        Angles : (%g, %g) deg"
 
 #: ../src/callbacks.c:4631
-#, c-format
+#, c-format, fuzzy
 msgid "        Direction: %s"
-msgstr ""
+msgstr "        Direction : %s"
 
 #: ../src/callbacks.c:4651
-#, c-format
+#, c-format, fuzzy
 msgid "    Net label: %s"
-msgstr ""
+msgstr "    Etiquette de net : %s"
 
 #: ../src/callbacks.c:4655
-#, c-format
+#, c-format, fuzzy
 msgid "    Layer name: %s"
-msgstr ""
+msgstr "    Nom de la couche : %s"
 
 #: ../src/callbacks.c:4660
-#, c-format
+#, c-format, fuzzy
 msgid "    In file: %s"
-msgstr ""
+msgstr "    Dans le fichier : %s"
 
 #: ../src/csv.c:168 ../src/csv.c:290
-#, c-format
+#, c-format, fuzzy
 msgid "%d: unexpected quote in element"
-msgstr ""
+msgstr "%d : guillemet inattendu dans l'element"
 
 #: ../src/csv.c:199
-#, c-format
+#, c-format, fuzzy
 msgid "%d: bad end quote in element"
-msgstr ""
+msgstr "%d : guillemet de fin incorrect dans l'element"
 
 #: ../src/csv.c:321
-#, c-format
+#, c-format, fuzzy
 msgid "%d: bad end quote in element "
-msgstr ""
+msgstr "%d : guillemet de fin incorrect dans l'element "
 
 #: ../src/draw-gdk.c:598
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown simplified aperture macro type %d"
-msgstr ""
+msgstr "Type de macro d'ouverture simplifie inconnu %d"
 
 #: ../src/draw-gdk.c:812 ../src/draw-gdk.c:1205
-#, c-format
+#, c-format, fuzzy
 msgid "Skipped interpolation type %d"
-msgstr ""
+msgstr "Type d'interpolation %d ignore"
 
 #: ../src/draw-gdk.c:1149
+#, fuzzy
 msgid "Linear != x1"
-msgstr ""
+msgstr "Lineaire != x1"
 
 #: ../src/draw-gdk.c:1274
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown aperture type %d"
-msgstr ""
+msgstr "Type d'ouverture inconnu %d"
 
 #: ../src/draw-gdk.c:1280
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown aperture state %d"
-msgstr ""
+msgstr "Etat d'ouverture inconnu %d"
 
 #: ../src/draw.c:550
-#, c-format
+#, c-format, fuzzy
 msgid "Ignoring %s with non positive diameter"
-msgstr ""
+msgstr "Ignorance de %s avec un diametre non positif"
 
 #: ../src/draw.c:747
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown macro type: %s"
-msgstr ""
+msgstr "Type de macro inconnu : %s"
 
 #: ../src/draw.c:1337 ../src/draw.c:1437
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown aperture type: %s"
-msgstr ""
+msgstr "Type d'ouverture inconnu : %s"
 
 #: ../src/draw.c:1373
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown interpolation type: %s"
-msgstr ""
+msgstr "Type d'interpolation inconnu : %s"
 
 #: ../src/draw.c:1460
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown aperture state: %s"
-msgstr ""
+msgstr "Etat d'ouverture inconnu : %s"
 
 #: ../src/drill.c:648
-#, c-format
+#, c-format, fuzzy
 msgid "Comment \"%s\" at line %u in file \"%s\""
-msgstr ""
+msgstr "Commentaire \"%s\" a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:678 ../src/drill.c:710 ../src/drill.c:1172
-#, c-format
+#, c-format, fuzzy
 msgid "Unrecognised string \"%s\" in header at line %u in file \"%s\""
 msgstr ""
+"Chaine non reconnue \"%s\" dans l'en-tete a la ligne %u dans le fichier "
+"\"%s\""
 
 #: ../src/drill.c:698
-#, c-format
+#, c-format, fuzzy
 msgid "File in unsupported format 1 at line %u in file \"%s\""
 msgstr ""
+"Fichier dans un format non pris en charge 1 a la ligne %u dans le fichier "
+"\"%s\""
 
 #: ../src/drill.c:750 ../src/drill.c:794 ../src/gerber.c:1248
 #: ../src/gerber.c:1262 ../src/gerber.c:1276 ../src/gerber.c:1437
 #: ../src/gerber.c:1552
-#, c-format
+#, c-format, fuzzy
 msgid "Unexpected EOF found in file \"%s\""
-msgstr ""
+msgstr "Fin de fichier inattendue trouvee dans le fichier \"%s\""
 
 #: ../src/drill.c:809 ../src/drill.c:842 ../src/drill.c:985
-#, c-format
+#, c-format, fuzzy
 msgid "Unrecognized string \"%s\" found at line %u in file \"%s\""
-msgstr ""
+msgstr "Chaine non reconnue \"%s\" trouvee a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:818
-#, c-format
+#, c-format, fuzzy
 msgid "Unsupported G%02d (%s) code at line %u in file \"%s\""
-msgstr ""
+msgstr "Code G%02d (%s) non pris en charge a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:870
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "End of Excellon header reached but no leading/trailing zero handling "
 "specified at line %u in file \"%s\""
 msgstr ""
+"Fin de l'en-tete Excellon atteinte mais aucun traitement des zeros de "
+"debut/fin specifie au fichier \"%s\""
 
 #: ../src/drill.c:877
-#, c-format
+#, c-format, fuzzy
 msgid "Assuming leading zeros in file \"%s\""
-msgstr ""
+msgstr "Supposition de zeros en tete dans le fichier \"%s\""
 
 #: ../src/drill.c:889
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "M71 code found but no METRIC specification in header at line %u in file "
 "\"%s\""
 msgstr ""
+"Code M71 trouve mais aucune specification METRIC dans l'en-tete a la ligne "
+"%u dans le fichier \"%s\""
 
 #: ../src/drill.c:895
-#, c-format
+#, c-format, fuzzy
 msgid "Assuming all tool sizes are MM in file \"%s\""
 msgstr ""
+"Supposition que toutes les tailles d'outils sont en MM dans le fichier "
+"\"%s\""
 
 #: ../src/drill.c:937
-#, c-format
+#, c-format, fuzzy
 msgid "Canned text \"%s\" at line %u in drill file \"%s\""
-msgstr ""
+msgstr "Texte pre-enregistre \"%s\" a la ligne %u dans le fichier de percage \"%s\""
 
 #: ../src/drill.c:946
-#, c-format
+#, c-format, fuzzy
 msgid "Message \"%s\" embedded at line %u in drill file \"%s\""
-msgstr ""
+msgstr "Message \"%s\" incorpore a la ligne %u dans le fichier de percage \"%s\""
 
 #: ../src/drill.c:995
-#, c-format
+#, c-format, fuzzy
 msgid "Unsupported M%02d (%s) code found at line %u in file \"%s\""
 msgstr ""
+"Code M%02d (%s) non pris en charge trouve a la ligne %u dans le fichier "
+"\"%s\""
 
 #: ../src/drill.c:1009
-#, c-format
+#, c-format, fuzzy
 msgid "Not allowed 'R' code in the header at line %u in file \"%s\""
-msgstr ""
+msgstr "Code 'R' non autorise dans l'en-tete a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:1070
-#, c-format
+#, c-format, fuzzy
 msgid "Ignoring setting spindle speed at line %u in drill file \"%s\""
 msgstr ""
+"Ignorance du reglage de vitesse de broche a la ligne %u dans le fichier de "
+"percage \"%s\""
 
 #: ../src/drill.c:1086
-#, c-format
+#, c-format, fuzzy
 msgid "Undefined string \"%s\" in header at line %u in file \"%s\""
-msgstr ""
+msgstr "Chaine non definie \"%s\" dans l'en-tete a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:1163
-#, c-format
+#, c-format, fuzzy
 msgid "Undefined code '%s' (0x%x) found in header at line %u in file \"%s\""
 msgstr ""
+"Code non defini '%s' (0x%x) trouve dans l'en-tete a la ligne %u dans le "
+"fichier \"%s\""
 
 #: ../src/drill.c:1178
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Ignoring undefined character '%s' (0x%x) found inside data at line %u in "
 "file \"%s\""
 msgstr ""
+"Ignorance du caractere non defini '%s' (0x%x) trouve dans les donnees a la "
+"ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:1187
-#, c-format
+#, c-format, fuzzy
 msgid "No EOF found in drill file \"%s\""
-msgstr ""
+msgstr "Aucune fin de fichier trouvee dans le fichier de percage \"%s\""
 
 #: ../src/drill.c:1410
-#, c-format
+#, c-format, fuzzy
 msgid "Tool change stop switch found \"%s\" at line %u in file \"%s\""
 msgstr ""
+"Interrupteur d'arret de changement d'outil trouve \"%s\" a la ligne %u dans "
+"le fichier \"%s\""
 
 #: ../src/drill.c:1425
+#, fuzzy
 msgid "OrCAD bug: Junk text found in place of tool definition"
 msgstr ""
+"Bogue OrCAD : texte parasite trouve a la place de la definition d'outil"
 
 #: ../src/drill.c:1428
-#, c-format
+#, c-format, fuzzy
 msgid "Junk text \"%s\" at line %u in file \"%s\""
-msgstr ""
+msgstr "Texte parasite \"%s\" a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:1433
+#, fuzzy
 msgid "Ignoring junk text"
-msgstr ""
+msgstr "Ignorance du texte parasite"
 
 #: ../src/drill.c:1448
-#, c-format
+#, c-format, fuzzy
 msgid "Out of bounds drill number %d at line %u in file \"%s\""
-msgstr ""
+msgstr "Numero de foret hors limites %d a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:1479
-#, c-format
+#, c-format, fuzzy
 msgid "Read a drill of diameter %g inches at line %u in file \"%s\""
 msgstr ""
+"Lecture d'un foret de diametre %g pouces a la ligne %u dans le fichier "
+"\"%s\""
 
 #: ../src/drill.c:1483
+#, fuzzy
 msgid "Assuming units are mils"
-msgstr ""
+msgstr "Supposition que les unites sont en mils"
 
 #: ../src/drill.c:1489
-#, c-format
+#, c-format, fuzzy
 msgid "Unreasonable drill size %g found for drill %d at line %u in file \"%s\""
 msgstr ""
+"Taille de foret deraisonnable %g trouvee pour le foret %d a la ligne %u dans"
+" le fichier \"%s\""
 
 #: ../src/drill.c:1505
-#, c-format
+#, c-format, fuzzy
 msgid "Found redefinition of drill %d at line %u in file \"%s\""
-msgstr ""
+msgstr "Redefinition du foret %d trouvee a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:1530 ../src/drill.c:1608 ../src/interface.c:1292
+#, fuzzy
 msgid "mm"
-msgstr ""
+msgstr "mm"
 
 #: ../src/drill.c:1530 ../src/drill.c:1608
+#, fuzzy
 msgid "inch"
-msgstr ""
+msgstr "pouce"
 
 #: ../src/drill.c:1555
-#, c-format
+#, c-format, fuzzy
 msgid "Unexpected EOF encountered in header of drill file \"%s\""
 msgstr ""
+"Fin de fichier inattendue rencontree dans l'en-tete du fichier de percage "
+"\"%s\""
 
 #: ../src/drill.c:1590
-#, c-format
+#, c-format, fuzzy
 msgid "Tool %02d used without being defined at line %u in file \"%s\""
-msgstr ""
+msgstr "Outil %02d utilise sans etre defini a la ligne %u dans le fichier \"%s\""
 
 #: ../src/drill.c:1594
-#, c-format
+#, c-format, fuzzy
 msgid "Setting a default size of %g\""
-msgstr ""
+msgstr "Definition d'une taille par defaut de %g\""
 
 #: ../src/drill.c:1641
-#, c-format
+#, c-format, fuzzy
 msgid "Unexpected EOF found while parsing M-code in file \"%s\""
 msgstr ""
+"Fin de fichier inattendue trouvee lors de l'analyse du code M dans le "
+"fichier \"%s\""
 
 #: ../src/drill.c:1738 ../src/drill.c:1984 ../src/drill.c:2063
 #: ../src/drill.c:2075
-#, c-format
+#, c-format, fuzzy
 msgid "Unexpected EOF found while parsing \"%s\" string in file \"%s\""
 msgstr ""
+"Fin de fichier inattendue trouvee lors de l'analyse de la chaine \"%s\" dans"
+" le fichier \"%s\""
 
 #: ../src/drill.c:1878
-#, c-format
+#, c-format, fuzzy
 msgid "Found junk after METRIC command at line %u in file \"%s\""
 msgstr ""
+"Texte parasite trouve apres la commande METRIC a la ligne %u dans le fichier"
+" \"%s\""
 
 #: ../src/drill.c:1912
-#, c-format
-msgid ""
-"Unexpected EOF found while parsing \"%s\" string in file \"%s\" on line %u"
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing \"%s\" string in file \"%s\" on line %u"
 msgstr ""
+"Fin de fichier inattendue trouvee lors de l'analyse de la chaine \"%s\" dans"
+" le fichier \"%s\" a la ligne %u"
 
 #: ../src/drill.c:1923
-#, c-format
+#, c-format, fuzzy
 msgid "Expected '=' while parsing \"%s\" string in file \"%s\" on line %u"
 msgstr ""
+"Caractere '=' attendu lors de l'analyse de la chaine \"%s\" dans le fichier "
+"\"%s\" a la ligne %u"
 
 #: ../src/drill.c:1935
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Expected integer after '=' while parsing \"%s\" string in file \"%s\" on "
 "line %u"
 msgstr ""
+"Entier attendu apres '=' lors de l'analyse de la chaine \"%s\" dans le "
+"fichier \"%s\" a la ligne %u"
 
 #: ../src/drill.c:1943
-#, c-format
+#, c-format, fuzzy
 msgid "Expected ':' while parsing \"%s\" string in file \"%s\" on line %u"
 msgstr ""
+"Caractere ':' attendu lors de l'analyse de la chaine \"%s\" dans le fichier "
+"\"%s\" a la ligne %u"
 
 #: ../src/drill.c:1954
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Expected integer after ':' while parsing \"%s\" string in file \"%s\" on "
 "line %u"
 msgstr ""
+"Entier attendu apres ':' lors de l'analyse de la chaine \"%s\" dans le "
+"fichier \"%s\" a la ligne %u"
 
 #: ../src/drill.c:2028 ../src/drill.c:2038
-#, c-format
+#, c-format, fuzzy
 msgid "Found junk '%s' after INCH command at line %u in file \"%s\""
 msgstr ""
+"Texte parasite '%s' trouve apres la commande INCH a la ligne %u dans le "
+"fichier \"%s\""
 
 #: ../src/drill.c:2104
-#, c-format
+#, c-format, fuzzy
 msgid "Unexpected EOF found while parsing G-code in file \"%s\""
 msgstr ""
+"Fin de fichier inattendue trouvee lors de l'analyse du code G dans le "
+"fichier \"%s\""
 
 #: ../src/drill.c:2215
-#, c-format
+#, c-format, fuzzy
 msgid ""
-"Coordinate mode is not absolute and not incremental at line %u in file \"%s\""
+"Coordinate mode is not absolute and not incremental at line %u in file "
+"\"%s\""
 msgstr ""
+"Le mode de coordonnees n'est ni absolu ni incremental a la ligne %u dans le "
+"fichier \"%s\""
 
 #: ../src/drill.c:2327
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "%s():  omit_zeros == GERBV_OMIT_ZEROS_TRAILING but fmt = %d.\n"
 "This should never have happened\n"
 msgstr ""
+"%s() :  omit_zeros == GERBV_OMIT_ZEROS_TRAILING mais fmt = %d.\n"
+"Ceci ne devrait jamais se produire. Veuillez signaler ce bogue.\n"
 
 #: ../src/drill.c:2343
-#, c-format
+#, c-format, fuzzy
 msgid "%s():  wantdigits = %d which exceeds the maximum allowed size\n"
-msgstr ""
+msgstr "%s() :  wantdigits = %d ce qui depasse la taille maximale autorisee\n"
 
 #: ../src/drill.c:2398
-#, c-format
+#, c-format, fuzzy
 msgid "%s(): Unhandled fmt ` %d\n"
-msgstr ""
+msgstr "%s() : fmt non gere ` %d\n"
 
 #: ../src/drill_stats.c:189
-#, c-format
+#, c-format, fuzzy
 msgid "Broken tool detect %s (layer %d)"
-msgstr ""
+msgstr "Outil casse detecte %s (couche %d)"
 
 #: ../thirdparty/tinyscheme/dynload.c:48
-#, c-format
+#, c-format, fuzzy
 msgid "scheme load-extension: %s: %s"
-msgstr ""
+msgstr "scheme load-extension : %s : %s"
 
 #: ../thirdparty/tinyscheme/dynload.c:78
-#, c-format
+#, c-format, fuzzy
 msgid "Error loading scheme extension \"%s\": %s\n"
-msgstr ""
+msgstr "Erreur de chargement de l'extension scheme \"%s\" : %s\n"
 
 #: ../thirdparty/tinyscheme/dynload.c:89
-#, c-format
+#, c-format, fuzzy
 msgid "Error initializing scheme module \"%s\": %s\n"
-msgstr ""
+msgstr "Erreur d'initialisation du module scheme \"%s\" : %s\n"
 
 #: ../src/export-drill.c:52 ../src/export-isel-drill.c:57
 #: ../src/export-rs274x.c:217
-#, c-format
+#, c-format, fuzzy
 msgid "Can't open file for writing: %s"
-msgstr ""
+msgstr "Impossible d'ouvrir le fichier en ecriture : %s"
 
 #: ../src/export-image.c:139 ../src/export-image.c:149
 #: ../src/export-image.c:156 ../src/export-image.c:186
 #: ../src/export-image.c:235
-#, c-format
+#, c-format, fuzzy
 msgid "Exporting error to file \"%s\""
-msgstr ""
+msgstr "Erreur d'exportation vers le fichier \"%s\""
 
 #: ../src/export-image.c:162
+#, fuzzy
 msgid "Unnamed layer"
-msgstr ""
+msgstr "Couche sans nom"
 
 #: ../src/export-isel-drill.c:148
-#, c-format
+#, c-format, fuzzy
 msgid "Skipped to export of unsupported state %d interpolation \"%s\""
 msgstr ""
+"Exportation ignoree de l'interpolation \"%s\" d'etat non pris en charge %d"
 
 #: ../src/gerb_file.c:188
+#, fuzzy
 msgid "Failed to read integer"
-msgstr ""
+msgstr "Echec de la lecture d'un entier"
 
 #: ../src/gerb_file.c:232
+#, fuzzy
 msgid "Failed to read double"
-msgstr ""
+msgstr "Echec de la lecture d'un nombre decimal"
 
 #: ../src/gerb_image.c:93 ../src/gerb_image.c:296
-#, c-format
+#, c-format, fuzzy
 msgid "unknown"
-msgstr ""
+msgstr "inconnu"
 
 #: ../src/gerb_image.c:252
-#, c-format
+#, c-format, fuzzy
 msgid "..state off"
-msgstr ""
+msgstr "..etat desactive"
 
 #: ../src/gerb_image.c:255
-#, c-format
+#, c-format, fuzzy
 msgid "..state on"
-msgstr ""
+msgstr "..etat active"
 
 #: ../src/gerb_image.c:258
-#, c-format
+#, c-format, fuzzy
 msgid "..state flash"
-msgstr ""
+msgstr "..etat flash"
 
 #: ../src/gerb_image.c:261
-#, c-format
+#, c-format, fuzzy
 msgid "..state unknown"
-msgstr ""
+msgstr "..etat inconnu"
 
 #: ../src/gerb_image.c:274
-#, c-format
+#, c-format, fuzzy
 msgid "Apertures:\n"
-msgstr ""
+msgstr "Ouvertures :\n"
 
 #: ../src/gerb_image.c:278
-#, c-format
+#, c-format, fuzzy
 msgid " Aperture no:%d is an "
-msgstr ""
+msgstr " Ouverture n°%d est un(e) "
 
 #: ../src/gerb_image.c:281
-#, c-format
+#, c-format, fuzzy
 msgid "circle"
-msgstr ""
+msgstr "cercle"
 
 #: ../src/gerb_image.c:284
-#, c-format
+#, c-format, fuzzy
 msgid "rectangle"
-msgstr ""
+msgstr "rectangle"
 
 #: ../src/gerb_image.c:287
-#, c-format
+#, c-format, fuzzy
 msgid "oval"
-msgstr ""
+msgstr "ovale"
 
 #: ../src/gerb_image.c:290
-#, c-format
+#, c-format, fuzzy
 msgid "polygon"
-msgstr ""
+msgstr "polygone"
 
 #: ../src/gerb_image.c:293
-#, c-format
+#, c-format, fuzzy
 msgid "macro"
-msgstr ""
+msgstr "macro"
 
 #: ../src/gerb_image.c:308
-#, c-format
+#, c-format, fuzzy
 msgid "(%f,%f)->(%f,%f) with %d ("
-msgstr ""
+msgstr "(%f,%f)->(%f,%f) avec %d ("
 
 #: ../src/gerb_image.c:425 ../src/gerbv.c:292
+#, fuzzy
 msgid "Exporting mirrored file is not supported!"
-msgstr ""
+msgstr "L'exportation de fichier en miroir n'est pas prise en charge !"
 
 #: ../src/gerb_image.c:432 ../src/gerbv.c:299 ../src/gerbv.c:313
+#, fuzzy
 msgid "Exporting inverted file is not supported!"
-msgstr ""
+msgstr "L'exportation de fichier inverse n'est pas prise en charge !"
 
 #: ../src/gerb_image.c:823
-#, c-format
-msgid "Can't rotate %u rectangular aperture to %.2f degrees (non 90 multiply)!"
+#, c-format, fuzzy
+msgid ""
+"Can't rotate %u rectangular aperture to %.2f degrees (non 90 multiply)!"
 msgid_plural ""
 "Can't rotate %u rectangular apertures to %.2f degrees (non 90 multiply)!"
 msgstr[0] ""
+"Impossible de pivoter %u ouverture rectangulaire de %.2f degres (non "
+"multiple de 90) !"
 msgstr[1] ""
+"Impossible de pivoter %u ouvertures rectangulaires de %.2f degres (non "
+"multiple de 90) !"
 
 #: ../src/gerb_image.c:831
-#, c-format
+#, c-format, fuzzy
 msgid "Can't scale %u line macro!"
 msgid_plural "Can't scale %u line macros!"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Impossible de mettre a l'echelle %u macro de ligne !"
+msgstr[1] "Impossible de mettre a l'echelle %u macros de ligne !"
 
 #: ../src/gerb_image.c:837
-#, c-format
+#, c-format, fuzzy
 msgid "Can't scale %u polygon macro!"
 msgid_plural "Can't scale %u polygon macros!"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Impossible de mettre a l'echelle %u macro de polygone !"
+msgstr[1] "Impossible de mettre a l'echelle %u macros de polygone !"
 
 #: ../src/gerb_image.c:843
-#, c-format
+#, c-format, fuzzy
 msgid "Can't scale %u thermal macro!"
 msgid_plural "Can't scale %u thermal macros!"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Impossible de mettre a l'echelle %u macro thermique !"
+msgstr[1] "Impossible de mettre a l'echelle %u macros thermiques !"
 
 #: ../src/gerb_image.c:849
-#, c-format
+#, c-format, fuzzy
 msgid "Can't scale %u moire macro!"
 msgid_plural "Can't scale %u moire macros!"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Impossible de mettre a l'echelle %u macro de moire !"
+msgstr[1] "Impossible de mettre a l'echelle %u macros de moire !"
 
 #: ../src/gerb_image.c:855
-#, c-format
+#, c-format, fuzzy
 msgid "Can't rotate %u oval aperture to %.2f degrees (non 90 multiply)!"
 msgid_plural ""
 "Can't rotate %u oval apertures to %.2f degrees (non 90 multiply)!"
 msgstr[0] ""
+"Impossible de pivoter %u ouverture ovale de %.2f degres (non multiple de 90)"
+" !"
 msgstr[1] ""
+"Impossible de pivoter %u ouvertures ovales de %.2f degres (non multiple de "
+"90) !"
 
 #: ../src/gerb_image.c:863
-#, c-format
+#, c-format, fuzzy
 msgid "Can't scale %u circle aperture to ellipse!"
 msgid_plural "Can't scale %u circle apertures to ellipse!"
 msgstr[0] ""
+"Impossible de mettre a l'echelle %u ouverture circulaire en ellipse !"
 msgstr[1] ""
+"Impossible de mettre a l'echelle %u ouvertures circulaires en ellipse !"
 
 #: ../src/gerb_image.c:869
-#, c-format
+#, c-format, fuzzy
 msgid "Skipped %u aperture with unknown type!"
 msgid_plural "Skipped %u apertures with unknown type!"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u ouverture de type inconnu ignoree !"
+msgstr[1] "%u ouvertures de type inconnu ignorees !"
 
 #: ../src/gerb_image.c:875
-#, c-format
+#, c-format, fuzzy
 msgid "Skipped %u macro aperture!"
 msgid_plural "Skipped %u macro apertures!"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u ouverture macro ignoree !"
+msgstr[1] "%u ouvertures macro ignorees !"
 
 #: ../src/gerb_stats.c:530
+#, fuzzy
 msgid "Undefined aperture number called out in D code"
-msgstr ""
+msgstr "Numero d'ouverture non defini appele dans le code D"
 
 #: ../src/gerber.c:181
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown M code found at line %ld in file \"%s\""
-msgstr ""
+msgstr "Code M inconnu trouve a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:342
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Signed incremental distance IxJy in single quadrant %s circular "
 "interpolation %s at line %ld in file \"%s\""
 msgstr ""
+"Distance incrementale signee IxJy en interpolation circulaire en quadrant "
+"unique %s %s a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:368
-#, c-format
+#, c-format, fuzzy
 msgid "End of polygon without start at line %ld in file \"%s\""
-msgstr ""
+msgstr "Fin de polygone sans debut a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:481
-#, c-format
+#, c-format, fuzzy
 msgid "Found undefined D code D%02d at line %ld in file \"%s\""
-msgstr ""
+msgstr "Code D non defini D%02d trouve a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:727
-#, c-format
+#, c-format, fuzzy
 msgid "Found unknown character '%s' (0x%x) at line %ld in file \"%s\""
 msgstr ""
+"Caractere inconnu '%s' (0x%x) trouve a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:794
-#, c-format
+#, c-format, fuzzy
 msgid "Missing Gerber EOF code in file \"%s\""
-msgstr ""
+msgstr "Code de fin de fichier Gerber manquant dans le fichier \"%s\""
 
 #: ../src/gerber.c:1039
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Found newline while parsing G04 code at line %ld in file \"%s\", maybe you "
 "forgot a \"*\"?"
 msgstr ""
+"Saut de ligne trouve lors de l'analyse du code G04 a la ligne %ld dans le "
+"fichier \"%s\", peut-etre avez-vous oublie le terminateur '*'"
 
 #: ../src/gerber.c:1080
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Found aperture D%02d out of bounds while parsing G code at line %ld in file "
 "\"%s\""
 msgstr ""
+"Ouverture D%02d hors limites trouvee lors de l'analyse du code G a la ligne "
+"%ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1086
-#, c-format
+#, c-format, fuzzy
 msgid "Found unexpected code after G54 at line %ld in file \"%s\""
-msgstr ""
+msgstr "Code inattendu trouve apres G54 a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1124
-#, c-format
+#, c-format, fuzzy
 msgid "Encountered unknown G code G%02d at line %ld in file \"%s\""
-msgstr ""
+msgstr "Code G inconnu G%02d rencontre a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1128
-#, c-format
+#, c-format, fuzzy
 msgid "Ignoring unknown G code G%02d"
-msgstr ""
+msgstr "Ignorance du code G inconnu G%02d"
 
 #: ../src/gerber.c:1157
-#, c-format
+#, c-format, fuzzy
 msgid "Found invalid D00 code at line %ld in file \"%s\""
-msgstr ""
+msgstr "Code D00 invalide trouve a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1182
-#, c-format
+#, c-format, fuzzy
 msgid "Found out of bounds aperture D%02d at line %ld in file \"%s\""
 msgstr ""
+"Ouverture D%02d hors limites trouvee a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1216
-#, c-format
+#, c-format, fuzzy
 msgid "Encountered unknown M%02d code at line %ld in file \"%s\""
-msgstr ""
+msgstr "Code M%02d inconnu rencontre a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1219
-#, c-format
+#, c-format, fuzzy
 msgid "Ignoring unknown M%02d code"
-msgstr ""
+msgstr "Ignorance du code M%02d inconnu"
 
 #: ../src/gerber.c:1301
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "EagleCad bug detected: Undefined handling of zeros in format code at line "
 "%ld in file \"%s\""
 msgstr ""
+"Bogue EagleCad detecte : traitement des zeros non defini dans le code de "
+"format a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1305
+#, fuzzy
 msgid "Defaulting to omitting leading zeros"
-msgstr ""
+msgstr "Par defaut, omission des zeros en tete"
 
 #: ../src/gerber.c:1319
-#, c-format
-msgid ""
-"Invalid coordinate type defined in format code at line %ld in file \"%s\""
+#, c-format, fuzzy
+msgid "Invalid coordinate type defined in format code at line %ld in file \"%s\""
 msgstr ""
+"Type de coordonnee invalide defini dans le code de format a la ligne %ld "
+"dans le fichier \"%s\""
 
 #: ../src/gerber.c:1323
+#, fuzzy
 msgid "Defaulting to absolute coordinates"
-msgstr ""
+msgstr "Par defaut, coordonnees absolues"
 
 #: ../src/gerber.c:1349 ../src/gerber.c:1358 ../src/gerber.c:1369
 #: ../src/gerber.c:1378
-#, c-format
+#, c-format, fuzzy
 msgid "Illegal format size '%s' at line %ld in file \"%s\""
-msgstr ""
+msgstr "Taille de format illegale '%s' a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1387
-#, c-format
+#, c-format, fuzzy
 msgid "Illegal format statement '%s' at line %ld in file \"%s\""
-msgstr ""
+msgstr "Declaration de format illegale '%s' a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1392
+#, fuzzy
 msgid "Ignoring invalid format statement"
-msgstr ""
+msgstr "Ignorance de la declaration de format invalide"
 
 #: ../src/gerber.c:1424
-#, c-format
+#, c-format, fuzzy
 msgid "Wrong character '%s' in mirror at line %ld in file \"%s\""
 msgstr ""
+"Caractere errone '%s' dans le miroir a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1450
-#, c-format
+#, c-format, fuzzy
 msgid "Illegal unit '%s%s' at line %ld in file \"%s\""
-msgstr ""
+msgstr "Unite illegale '%s%s' a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1468
-#, c-format
+#, c-format, fuzzy
 msgid "Wrong character '%s' in offset at line %ld in file \"%s\""
 msgstr ""
+"Caractere errone '%s' dans le decalage a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1495
-#, c-format
+#, c-format, fuzzy
 msgid "Included file \"%s\" cannot be found at line %ld in file \"%s\""
 msgstr ""
+"Le fichier inclus \"%s\" est introuvable a la ligne %ld dans le fichier "
+"\"%s\""
 
 #: ../src/gerber.c:1502
+#, fuzzy
 msgid ""
 "Parser encountered more than 10 levels of include file recursion which is "
 "not allowed by the RS-274X spec"
 msgstr ""
+"L'analyseur a rencontre plus de 10 niveaux de recursion de fichiers inclus, "
+"ce qui n'est pas autorise par la specification RS-274X"
 
 #: ../src/gerber.c:1523
-#, c-format
+#, c-format, fuzzy
 msgid "Wrong character '%s' in image offset at line %ld in file \"%s\""
 msgstr ""
+"Caractere errone '%s' dans le decalage d'image a la ligne %ld dans le "
+"fichier \"%s\""
 
 #: ../src/gerber.c:1572
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown input code (IC) '%s%s' at line %ld in file \"%s\""
-msgstr ""
+msgstr "Code d'entree inconnu (IC) '%s%s' a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1612
-#, c-format
+#, c-format, fuzzy
 msgid "Wrong character '%s' in image justify at line %ld in file \"%s\""
 msgstr ""
+"Caractere errone '%s' dans la justification d'image a la ligne %ld dans le "
+"fichier \"%s\""
 
 #: ../src/gerber.c:1628
-#, c-format
+#, c-format, fuzzy
 msgid "Unexpected EOF while reading image polarity (IP) in file \"%s\""
 msgstr ""
+"Fin de fichier inattendue lors de la lecture de la polarite d'image (IP) "
+"dans le fichier \"%s\""
 
 #: ../src/gerber.c:1640
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown polarity '%s%s%s' at line %ld in file \"%s\""
-msgstr ""
+msgstr "Polarite inconnue '%s%s%s' a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1658
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Image rotation must be 0, 90, 180 or 270 (is actually %d) at line %ld in "
 "file \"%s\""
 msgstr ""
+"La rotation d'image doit etre 0, 90, 180 ou 270 (est actuellement %d) a la "
+"ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1688 ../src/gerber.c:1694
-#, c-format
+#, c-format, fuzzy
 msgid "Aperture number out of bounds %d at line %ld in file \"%s\""
-msgstr ""
+msgstr "Numero d'ouverture hors limites %d a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1711
-#, c-format
+#, c-format, fuzzy
 msgid "Failed to parse aperture macro at line %ld in file \"%s\""
 msgstr ""
+"Echec de l'analyse de la macro d'ouverture a la ligne %ld dans le fichier "
+"\"%s\""
 
 #: ../src/gerber.c:1733
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown layer polarity '%s' at line %ld in file \"%s\""
-msgstr ""
+msgstr "Polarite de couche inconnue '%s' a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1753
-#, c-format
+#, c-format, fuzzy
 msgid "Knockout must supply a polarity (C, D, or *) at line %ld in file \"%s\""
 msgstr ""
+"Le knockout doit fournir une polarite (C, D ou *) a la ligne %ld dans le "
+"fichier \"%s\""
 
 #: ../src/gerber.c:1796
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown variable in knockout at line %ld in file \"%s\""
-msgstr ""
+msgstr "Variable inconnue dans le knockout a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1830
-#, c-format
+#, c-format, fuzzy
 msgid "Step-and-repeat parameter error at line %ld in file \"%s\""
-msgstr ""
+msgstr "Erreur de parametre step-and-repeat a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:1856
-#, c-format
+#, c-format, fuzzy
 msgid "Error in layer rotation command at line %ld in file \"%s\""
 msgstr ""
+"Erreur dans la commande de rotation de couche a la ligne %ld dans le fichier"
+" \"%s\""
 
 #: ../src/gerber.c:1867
-#, c-format
+#, c-format, fuzzy
 msgid "Ignoring Gerber X2 attribute %%%s%s%% at line %ld in file \"%s\""
 msgstr ""
+"Ignorance de l'attribut Gerber X2 %%%s%s%% a la ligne %ld dans le fichier "
+"\"%s\""
 
 #: ../src/gerber.c:1874
-#, c-format
+#, c-format, fuzzy
 msgid "Unknown RS-274X extension found %%%s%s%% at line %ld in file \"%s\""
 msgstr ""
+"Extension RS-274X inconnue trouvee %%%s%s%% a la ligne %ld dans le fichier "
+"\"%s\""
 
 #: ../src/gerber.c:1932
+#, fuzzy
 msgid "push will overflow stack capacity"
-msgstr ""
+msgstr "push va depasser la capacite de la pile"
 
 #: ../src/gerber.c:1967
+#, fuzzy
 msgid "aperture NULL in simplify aperture macro"
-msgstr ""
+msgstr "ouverture NULL dans la simplification de macro d'ouverture"
 
 #: ../src/gerber.c:1970
+#, fuzzy
 msgid "aperture->amacro NULL in simplify aperture macro"
-msgstr ""
+msgstr "aperture->amacro NULL dans la simplification de macro d'ouverture"
 
 #: ../src/gerber.c:1992 ../src/gerber.c:2001
+#, fuzzy
 msgid "Tried to access oob aperture"
-msgstr ""
+msgstr "Tentative d'acces a une ouverture hors limites"
 
 #: ../src/gerber.c:1998 ../src/gerber.c:2007 ../src/gerber.c:2009
 #: ../src/gerber.c:2014 ../src/gerber.c:2016 ../src/gerber.c:2021
 #: ../src/gerber.c:2023 ../src/gerber.c:2028 ../src/gerber.c:2030
+#, fuzzy
 msgid "Tried to pop an empty stack"
-msgstr ""
+msgstr "Tentative de depiler une pile vide"
 
 #: ../src/gerber.c:2063
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Possible signed integer overflow in calculating number of parameters to "
 "aperture macro, will clamp to (%d)"
 msgstr ""
+"Possible depassement d'entier signe dans le calcul du nombre de parametres "
+"de macro d'ouverture"
 
 #: ../src/gerber.c:2109
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Number of parameters to aperture macro (%d) are more than gerbv is able to "
 "store (%d)"
 msgstr ""
+"Le nombre de parametres de macro d'ouverture (%d) est superieur a ce que "
+"gerbv peut stocker"
 
 #: ../src/gerber.c:2128
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Number of parameters to aperture macro (%d) capped to stack capacity (%zu)"
 msgstr ""
+"Le nombre de parametres de macro d'ouverture (%d) est limite a la capacite "
+"de la pile (%zu)"
 
 #: ../src/gerber.c:2265
-#, c-format
+#, c-format, fuzzy
 msgid "Found AD code with no following 'D' at line %ld in file \"%s\""
-msgstr ""
+msgstr "Code AD trouve sans 'D' suivant a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:2283
-#, c-format
+#, c-format, fuzzy
 msgid "Invalid aperture definition at line %ld in file \"%s\", cannot find '*'"
 msgstr ""
+"Definition d'ouverture invalide a la ligne %ld dans le fichier \"%s\", "
+"impossible de trouver '*'"
 
 #: ../src/gerber.c:2293
-#, c-format
+#, c-format, fuzzy
 msgid "Invalid aperture definition at line %ld in file \"%s\""
-msgstr ""
+msgstr "Definition d'ouverture invalide a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:2337
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Maximum number of allowed parameters exceeded in aperture %d at line %ld in "
 "file \"%s\""
 msgstr ""
+"Nombre maximal de parametres autorises depasse dans l'ouverture %d a la "
+"ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:2355
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Failed to read all parameters exceeded in aperture %d at line %ld in file "
 "\"%s\""
 msgstr ""
+"Echec de la lecture de tous les parametres depasses dans l'ouverture %d a la"
+" ligne %ld dans le fichier \"%s\""
 
 #: ../src/gerber.c:2427
+#, fuzzy
 msgid "Unknow quadrant value while converting to cw"
-msgstr ""
+msgstr "Valeur de quadrant inconnue lors de la conversion en sens horaire"
 
 #: ../src/gerber.c:2452 ../src/gerber.c:2497
-#, c-format
+#, c-format, fuzzy
 msgid "Strange quadrant: %d"
-msgstr ""
+msgstr "Quadrant etrange : %d"
 
 #: ../src/gerber.c:2501
-#, c-format
+#, c-format, fuzzy
 msgid "Negative width [%f] in quadrant %d [%f][%f]"
-msgstr ""
+msgstr "Largeur negative [%f] dans le quadrant %d [%f][%f]"
 
 #: ../src/gerber.c:2505
-#, c-format
+#, c-format, fuzzy
 msgid "Negative height [%f] in quadrant %d [%f][%f]"
-msgstr ""
+msgstr "Hauteur negative [%f] dans le quadrant %d [%f][%f]"
 
 #: ../src/gerbv.c:248 ../src/gerbv.c:267 ../src/main.c:234
-#, c-format
+#, c-format, fuzzy
 msgid "Could not read \"%s\" (loaded %d)"
-msgstr ""
+msgstr "Impossible de lire \"%s\" (charge %d)"
 
 #: ../src/gerbv.c:423
+#, fuzzy
 msgid "Missing netlist - aborting file read"
-msgstr ""
+msgstr "Liste de connexions manquante - abandon de la lecture du fichier"
 
 #: ../src/gerbv.c:430
+#, fuzzy
 msgid "Missing format in file...trying to load anyways\n"
-msgstr ""
+msgstr "Format manquant dans le fichier...tentative de chargement malgre tout\n"
 
 #: ../src/gerbv.c:432
+#, fuzzy
 msgid "Missing apertures/drill sizes...trying to load anyways\n"
 msgstr ""
+"Ouvertures/tailles de forets manquantes...tentative de chargement malgre "
+"tout\n"
 
 #: ../src/gerbv.c:438
+#, fuzzy
 msgid "Missing info...trying to load anyways\n"
-msgstr ""
+msgstr "Informations manquantes...tentative de chargement malgre tout\n"
 
 #: ../src/gerbv.c:522 ../src/gerbv.c:681 ../src/gerbv.c:697
-#, c-format
+#, c-format, fuzzy
 msgid "Trying to open \"%s\": %s"
-msgstr ""
+msgstr "Tentative d'ouverture de \"%s\" : %s"
 
 #: ../src/gerbv.c:572
-#, c-format
+#, c-format, fuzzy
 msgid "%s: unknown pick-and-place board side to reload"
-msgstr ""
+msgstr "%s : cote de carte pick-and-place inconnu a recharger"
 
 #: ../src/gerbv.c:579
-#, c-format
+#, c-format, fuzzy
 msgid "Most likely found a RS-274D file \"%s\" ... trying to open anyways\n"
 msgstr ""
+"Tres probablement un fichier RS-274D \"%s\" ... tentative d'ouverture malgre"
+" tout\n"
 
 #: ../src/gerbv.c:595
-#, c-format
+#, c-format, fuzzy
 msgid "%s: Unknown file type."
-msgstr ""
+msgstr "%s : Type de fichier inconnu."
 
 #: ../src/gerbv.c:613
-#, c-format
+#, c-format, fuzzy
 msgid "File \"%s\" contains no drill hits or routes"
-msgstr ""
+msgstr "Le fichier \"%s\" ne contient aucun trou de percage ni trajet"
 
 #: ../src/gerbv.c:619
-#, c-format
+#, c-format, fuzzy
 msgid "File \"%s\" contains no drawing elements"
-msgstr ""
+msgstr "Le fichier \"%s\" ne contient aucun element de dessin"
 
 #: ../src/gerbv.c:628
+#, fuzzy
 msgid " (top)"
-msgstr ""
+msgstr " (dessus)"
 
 #: ../src/gerbv.c:645
+#, fuzzy
 msgid " (bottom)"
-msgstr ""
+msgstr " (dessous)"
 
 #: ../src/interface.c:377
+#, fuzzy
 msgid "_File"
-msgstr ""
+msgstr "_Fichier"
 
 #: ../src/interface.c:387
+#, fuzzy
 msgid "_Open"
-msgstr ""
+msgstr "_Ouvrir"
 
 #: ../src/interface.c:394
+#, fuzzy
 msgid "_Save active layer"
-msgstr ""
+msgstr "_Enregistrer la couche active"
 
 #: ../src/interface.c:396
+#, fuzzy
 msgid "Save the active layer"
-msgstr ""
+msgstr "Enregistrer la couche active"
 
 #: ../src/interface.c:400
+#, fuzzy
 msgid "Save active layer _as..."
-msgstr ""
+msgstr "Enregistrer la couche active _sous..."
 
 #: ../src/interface.c:402
+#, fuzzy
 msgid "Save the active layer to a new file"
-msgstr ""
+msgstr "Enregistrer la couche active dans un nouveau fichier"
 
 #: ../src/interface.c:408
+#, fuzzy
 msgid "_Revert all"
-msgstr ""
+msgstr "_Recharger tout"
 
 #: ../src/interface.c:411
+#, fuzzy
 msgid "Reload all layers"
-msgstr ""
+msgstr "Recharger toutes les couches"
 
 #: ../src/interface.c:419
+#, fuzzy
 msgid "_Export"
-msgstr ""
+msgstr "_Exporter"
 
 #: ../src/interface.c:422
+#, fuzzy
 msgid "Export to a new format"
-msgstr ""
+msgstr "Exporter vers un nouveau format"
 
 #: ../src/interface.c:430
+#, fuzzy
 msgid "P_NG..."
-msgstr ""
+msgstr "P_NG..."
 
 #: ../src/interface.c:432
+#, fuzzy
 msgid "Export visible layers to a PNG file"
-msgstr ""
+msgstr "Exporter les couches visibles vers un fichier PNG"
 
 #: ../src/interface.c:434
+#, fuzzy
 msgid "P_DF..."
-msgstr ""
+msgstr "P_DF..."
 
 #: ../src/interface.c:436
+#, fuzzy
 msgid "Export visible layers to a PDF file"
-msgstr ""
+msgstr "Exporter les couches visibles vers un fichier PDF"
 
 #: ../src/interface.c:438
+#, fuzzy
 msgid "_SVG..."
-msgstr ""
+msgstr "_SVG..."
 
 #: ../src/interface.c:440
+#, fuzzy
 msgid "Export visible layers to a SVG file"
-msgstr ""
+msgstr "Exporter les couches visibles vers un fichier SVG"
 
 #: ../src/interface.c:442
+#, fuzzy
 msgid "_PostScript..."
-msgstr ""
+msgstr "_PostScript..."
 
 #: ../src/interface.c:444
+#, fuzzy
 msgid "Export visible layers to a PostScript file"
-msgstr ""
+msgstr "Exporter les couches visibles vers un fichier PostScript"
 
 #: ../src/interface.c:446
+#, fuzzy
 msgid "D_XF..."
-msgstr ""
+msgstr "D_XF..."
 
 #: ../src/interface.c:449
+#, fuzzy
 msgid "Export active layer to a DXF file"
-msgstr ""
+msgstr "Exporter la couche active vers un fichier DXF"
 
 #: ../src/interface.c:454
+#, fuzzy
 msgid "RS-274X (_Gerber)..."
-msgstr ""
+msgstr "RS-274X (_Gerber)..."
 
 #: ../src/interface.c:457
+#, fuzzy
 msgid "Export active layer to a RS-274X (Gerber) file"
-msgstr ""
+msgstr "Exporter la couche active vers un fichier RS-274X (Gerber)"
 
 #: ../src/interface.c:459
+#, fuzzy
 msgid "RS-274X merge (Gerber)..."
-msgstr ""
+msgstr "Fusion RS-274X (Gerber)..."
 
 #: ../src/interface.c:462
+#, fuzzy
 msgid "Export merged visible Gerber layers to a RS-274X (Gerber) file"
 msgstr ""
+"Exporter les couches Gerber visibles fusionnees vers un fichier RS-274X "
+"(Gerber)"
 
 #: ../src/interface.c:468
+#, fuzzy
 msgid "_Excellon drill..."
-msgstr ""
+msgstr "_Excellon percage..."
 
 #: ../src/interface.c:471
+#, fuzzy
 msgid "Export active layer to an Excellon drill file"
-msgstr ""
+msgstr "Exporter la couche active vers un fichier de percage Excellon"
 
 #: ../src/interface.c:473
+#, fuzzy
 msgid "Excellon drill merge..."
-msgstr ""
+msgstr "Fusion de percage Excellon..."
 
 #: ../src/interface.c:476
+#, fuzzy
 msgid "Export merged visible drill layers to an Excellon drill file"
 msgstr ""
+"Exporter les couches de percage visibles fusionnees vers un fichier de "
+"percage Excellon"
 
 #: ../src/interface.c:479
+#, fuzzy
 msgid "_ISEL NCP drill..."
-msgstr ""
+msgstr "_ISEL NCP percage..."
 
 #: ../src/interface.c:482
+#, fuzzy
 msgid "Export active layer to an ISEL Automation NCP drill file"
 msgstr ""
+"Exporter la couche active vers un fichier de percage ISEL Automation NCP"
 
 #: ../src/interface.c:488
+#, fuzzy
 msgid "gEDA P_CB (beta)..."
-msgstr ""
+msgstr "gEDA P_CB (beta)..."
 
 #: ../src/interface.c:491
+#, fuzzy
 msgid "Export active layer to a gEDA PCB file"
-msgstr ""
+msgstr "Exporter la couche active vers un fichier gEDA PCB"
 
 #: ../src/interface.c:498
+#, fuzzy
 msgid "_New project"
-msgstr ""
+msgstr "_Nouveau projet"
 
 #: ../src/interface.c:500 ../src/interface.c:1034
+#, fuzzy
 msgid "Close all layers and start a new project"
-msgstr ""
+msgstr "Fermer toutes les couches et demarrer un nouveau projet"
 
 #: ../src/interface.c:504
+#, fuzzy
 msgid "Save project"
-msgstr ""
+msgstr "Enregistrer le projet"
 
 #: ../src/interface.c:506 ../src/interface.c:1048
+#, fuzzy
 msgid "Save the current project"
-msgstr ""
+msgstr "Enregistrer le projet actuel"
 
 #: ../src/interface.c:513
+#, fuzzy
 msgid "Save the current project to a new file"
-msgstr ""
+msgstr "Enregistrer le projet actuel dans un nouveau fichier"
 
 #: ../src/interface.c:533 ../src/interface.c:1055
+#, fuzzy
 msgid "Print the visible layers"
-msgstr ""
+msgstr "Imprimer les couches visibles"
 
 #: ../src/interface.c:541
+#, fuzzy
 msgid "Quit Gerbv"
-msgstr ""
+msgstr "Quitter Gerbv"
 
 #: ../src/interface.c:545
+#, fuzzy
 msgid "_Edit"
-msgstr ""
+msgstr "_Edition"
 
 #: ../src/interface.c:554
+#, fuzzy
 msgid "Display _properties of selected object(s)"
-msgstr ""
+msgstr "Afficher les _proprietes de(s) objet(s) selectionne(s)"
 
 #: ../src/interface.c:556
+#, fuzzy
 msgid "Examine the properties of the selected object"
-msgstr ""
+msgstr "Examiner les proprietes de l'objet selectionne"
 
 #: ../src/interface.c:561
+#, fuzzy
 msgid "_Delete selected object(s)"
-msgstr ""
+msgstr "_Supprimer le(s) objet(s) selectionne(s)"
 
 #: ../src/interface.c:563
+#, fuzzy
 msgid "Delete selected objects"
-msgstr ""
+msgstr "Supprimer les objets selectionnes"
 
 #: ../src/interface.c:568
+#, fuzzy
 msgid "_Align layers"
-msgstr ""
+msgstr "_Aligner les couches"
 
 #: ../src/interface.c:571
+#, fuzzy
 msgid "Align two layers by two selected objects"
-msgstr ""
+msgstr "Aligner deux couches par deux objets selectionnes"
 
 #: ../src/interface.c:586
+#, fuzzy
 msgid "Edit object properties"
-msgstr ""
+msgstr "Modifier les proprietes de l'objet"
 
 #: ../src/interface.c:588
+#, fuzzy
 msgid "Edit the properties of the selected object"
-msgstr ""
+msgstr "Modifier les proprietes de l'objet selectionne"
 
 #: ../src/interface.c:592
+#, fuzzy
 msgid "Move object(s)"
-msgstr ""
+msgstr "Deplacer le(s) objet(s)"
 
 #: ../src/interface.c:594
+#, fuzzy
 msgid "Move the selected object(s)"
-msgstr ""
+msgstr "Deplacer le(s) objet(s) selectionne(s)"
 
 #: ../src/interface.c:598
+#, fuzzy
 msgid "Reduce area"
-msgstr ""
+msgstr "Reduire la surface"
 
 #: ../src/interface.c:600
+#, fuzzy
 msgid "Reduce the area of the object (e.g. to prevent component floating)"
 msgstr ""
+"Reduire la surface de l'objet (par ex. pour empecher le flottement de "
+"composant)"
 
 #: ../src/interface.c:609
+#, fuzzy
 msgid "_View"
-msgstr ""
+msgstr "_Affichage"
 
 #: ../src/interface.c:617
+#, fuzzy
 msgid "Fullscr_een"
-msgstr ""
+msgstr "Pl_ein ecran"
 
 #: ../src/interface.c:619
+#, fuzzy
 msgid "Toggle between fullscreen and normal view"
-msgstr ""
+msgstr "Basculer entre le plein ecran et l'affichage normal"
 
 #: ../src/interface.c:623
+#, fuzzy
 msgid "Show _Toolbar"
-msgstr ""
+msgstr "Afficher la _barre d'outils"
 
 #: ../src/interface.c:625
+#, fuzzy
 msgid "Toggle visibility of the toolbar"
-msgstr ""
+msgstr "Basculer la visibilite de la barre d'outils"
 
 #: ../src/interface.c:629
+#, fuzzy
 msgid "Show _Sidepane"
-msgstr ""
+msgstr "Afficher le panneau _lateral"
 
 #: ../src/interface.c:631
+#, fuzzy
 msgid "Toggle visibility of the sidepane"
-msgstr ""
+msgstr "Basculer la visibilite du panneau lateral"
 
 #: ../src/interface.c:638
+#, fuzzy
 msgid "Toggle layer _visibility"
-msgstr ""
+msgstr "Basculer la _visibilite de la couche"
 
 #: ../src/interface.c:641
+#, fuzzy
 msgid "Show all se_lection"
-msgstr ""
+msgstr "Afficher toute la se_lection"
 
 #: ../src/interface.c:643
+#, fuzzy
 msgid "Show selected objects on invisible layers"
-msgstr ""
+msgstr "Afficher les objets selectionnes sur les couches invisibles"
 
 #: ../src/interface.c:647
+#, fuzzy
 msgid "Show _cross on drill holes"
-msgstr ""
+msgstr "Afficher une _croix sur les trous de percage"
 
 #: ../src/interface.c:649
+#, fuzzy
 msgid "Show cross on drill holes"
-msgstr ""
+msgstr "Afficher une croix sur les trous de percage"
 
 #: ../src/interface.c:666
+#, fuzzy
 msgid "Toggle visibility of layer 1"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 1"
 
 #: ../src/interface.c:670
+#, fuzzy
 msgid "Toggle visibility of layer 2"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 2"
 
 #: ../src/interface.c:674
+#, fuzzy
 msgid "Toggle visibility of layer 3"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 3"
 
 #: ../src/interface.c:678
+#, fuzzy
 msgid "Toggle visibility of layer 4"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 4"
 
 #: ../src/interface.c:682
+#, fuzzy
 msgid "Toggle visibility of layer 5"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 5"
 
 #: ../src/interface.c:686
+#, fuzzy
 msgid "Toggle visibility of layer 6"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 6"
 
 #: ../src/interface.c:690
+#, fuzzy
 msgid "Toggle visibility of layer 7"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 7"
 
 #: ../src/interface.c:694
+#, fuzzy
 msgid "Toggle visibility of layer 8"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 8"
 
 #: ../src/interface.c:698
+#, fuzzy
 msgid "Toggle visibility of layer 9"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 9"
 
 #: ../src/interface.c:702
+#, fuzzy
 msgid "Toggle visibility of layer 10"
-msgstr ""
+msgstr "Basculer la visibilite de la couche 10"
 
 #: ../src/interface.c:711 ../src/interface.c:1062
+#, fuzzy
 msgid "Zoom in"
-msgstr ""
+msgstr "Zoom avant"
 
 #: ../src/interface.c:716 ../src/interface.c:1066
+#, fuzzy
 msgid "Zoom out"
-msgstr ""
+msgstr "Zoom arriere"
 
 #: ../src/interface.c:720 ../src/interface.c:1070
+#, fuzzy
 msgid "Zoom to fit all visible layers in the window"
-msgstr ""
+msgstr "Zoom pour ajuster toutes les couches visibles dans la fenetre"
 
 #: ../src/interface.c:727
+#, fuzzy
 msgid "Background color"
-msgstr ""
+msgstr "Couleur d'arriere-plan"
 
 #: ../src/interface.c:728
+#, fuzzy
 msgid "Change the background color"
-msgstr ""
+msgstr "Changer la couleur d'arriere-plan"
 
 #: ../src/interface.c:748
+#, fuzzy
 msgid "_Rendering"
-msgstr ""
+msgstr "_Rendu"
 
 #: ../src/interface.c:758
+#, fuzzy
 msgid "_Fast"
-msgstr ""
+msgstr "_Rapide"
 
 #: ../src/interface.c:762
+#, fuzzy
 msgid "Fast (_XOR)"
-msgstr ""
+msgstr "Rapide (_XOR)"
 
 #: ../src/interface.c:766
+#, fuzzy
 msgid "_Normal"
-msgstr ""
+msgstr "_Normal"
 
 #: ../src/interface.c:770
+#, fuzzy
 msgid "High _Quality"
-msgstr ""
+msgstr "Haute _qualite"
 
 #: ../src/interface.c:787
+#, fuzzy
 msgid "U_nits"
-msgstr ""
+msgstr "U_nites"
 
 #: ../src/interface.c:797
+#, fuzzy
 msgid "mi_l"
-msgstr ""
+msgstr "mi_l"
 
 #: ../src/interface.c:801
+#, fuzzy
 msgid "_mm"
-msgstr ""
+msgstr "_mm"
 
 #: ../src/interface.c:805
+#, fuzzy
 msgid "_in"
-msgstr ""
+msgstr "_po"
 
 #: ../src/interface.c:819
+#, fuzzy
 msgid "_Layer"
-msgstr ""
+msgstr "_Couche"
 
 #: ../src/interface.c:827
+#, fuzzy
 msgid "Toggle _visibility"
-msgstr ""
+msgstr "Basculer la _visibilite"
 
 #: ../src/interface.c:829
+#, fuzzy
 msgid "Toggles the visibility of the active layer"
-msgstr ""
+msgstr "Bascule la visibilite de la couche active"
 
 #: ../src/interface.c:832
+#, fuzzy
 msgid "All o_n"
-msgstr ""
+msgstr "Tout a_ctiver"
 
 #: ../src/interface.c:834
+#, fuzzy
 msgid "Turn on visibility of all layers"
-msgstr ""
+msgstr "Activer la visibilite de toutes les couches"
 
 #: ../src/interface.c:839
+#, fuzzy
 msgid "All _off"
-msgstr ""
+msgstr "Tout _desactiver"
 
 #: ../src/interface.c:841
+#, fuzzy
 msgid "Turn off visibility of all layers"
-msgstr ""
+msgstr "Desactiver la visibilite de toutes les couches"
 
 #: ../src/interface.c:846
+#, fuzzy
 msgid "_Invert color"
-msgstr ""
+msgstr "_Inverser la couleur"
 
 #: ../src/interface.c:848
+#, fuzzy
 msgid "Invert the display polarity of the active layer"
-msgstr ""
+msgstr "Inverser la polarite d'affichage de la couche active"
 
 #: ../src/interface.c:851
+#, fuzzy
 msgid "_Change color"
-msgstr ""
+msgstr "_Changer la couleur"
 
 #: ../src/interface.c:854
+#, fuzzy
 msgid "Change the display color of the active layer"
-msgstr ""
+msgstr "Changer la couleur d'affichage de la couche active"
 
 #: ../src/interface.c:862
+#, fuzzy
 msgid "_Reload layer"
-msgstr ""
+msgstr "_Recharger la couche"
 
 #: ../src/interface.c:864
+#, fuzzy
 msgid "Reload the active layer from disk"
-msgstr ""
+msgstr "Recharger la couche active depuis le disque"
 
 #: ../src/interface.c:869
+#, fuzzy
 msgid "_Edit layer"
-msgstr ""
+msgstr "_Modifier la couche"
 
 #: ../src/interface.c:872
+#, fuzzy
 msgid "Translate, scale, rotate or mirror the active layer"
 msgstr ""
+"Translater, mettre a l'echelle, pivoter ou symetriser la couche active"
 
 #: ../src/interface.c:876
+#, fuzzy
 msgid "Edit file _format"
-msgstr ""
+msgstr "Modifier le _format de fichier"
 
 #: ../src/interface.c:878
+#, fuzzy
 msgid "View and edit the numerical format used to parse the active layer"
 msgstr ""
+"Afficher et modifier le format numerique utilise pour analyser la couche "
+"active"
 
 #: ../src/interface.c:887
+#, fuzzy
 msgid "Move u_p"
-msgstr ""
+msgstr "Monter d'un _pas"
 
 #: ../src/interface.c:889 ../src/interface.c:1205
+#, fuzzy
 msgid "Move the active layer one step up"
-msgstr ""
+msgstr "Monter la couche active d'une position"
 
 #: ../src/interface.c:895
+#, fuzzy
 msgid "Move dow_n"
-msgstr ""
+msgstr "Desce_ndre"
 
 #: ../src/interface.c:897 ../src/interface.c:1197
+#, fuzzy
 msgid "Move the active layer one step down"
-msgstr ""
+msgstr "Descendre la couche active d'une position"
 
 #: ../src/interface.c:903
+#, fuzzy
 msgid "_Delete"
-msgstr ""
+msgstr "_Supprimer"
 
 #: ../src/interface.c:905 ../src/interface.c:1213
+#, fuzzy
 msgid "Remove the active layer"
-msgstr ""
+msgstr "Supprimer la couche active"
 
 #: ../src/interface.c:918
+#, fuzzy
 msgid "_Analyze"
-msgstr ""
+msgstr "_Analyser"
 
 #: ../src/interface.c:930
+#, fuzzy
 msgid "Analyze visible _Gerber layers"
-msgstr ""
+msgstr "Analyser les couches _Gerber visibles"
 
 #: ../src/interface.c:932
+#, fuzzy
 msgid ""
 "Examine a detailed analysis of the contents of all visible Gerber layers"
 msgstr ""
+"Examiner une analyse detaillee du contenu de toutes les couches Gerber "
+"visibles"
 
 #: ../src/interface.c:938
+#, fuzzy
 msgid "Analyze visible _drill layers"
-msgstr ""
+msgstr "Analyser les couches de _percage visibles"
 
 #: ../src/interface.c:940
-msgid "Examine a detailed analysis of the contents of all visible drill layers"
+#, fuzzy
+msgid ""
+"Examine a detailed analysis of the contents of all visible drill layers"
 msgstr ""
+"Examiner une analyse detaillee du contenu de toutes les couches de percage "
+"visibles"
 
 #: ../src/interface.c:945
+#, fuzzy
 msgid "_Benchmark"
-msgstr ""
+msgstr "_Benchmark"
 
 #: ../src/interface.c:947
+#, fuzzy
 msgid ""
 "Benchmark different rendering methods. Will make the application "
 "unresponsive for 1 minute!"
 msgstr ""
+"Comparer les differentes methodes de rendu. L'application ne repondra plus "
+"pendant environ 1 minute."
 
 #: ../src/interface.c:959
+#, fuzzy
 msgid "_Tools"
-msgstr ""
+msgstr "Ou_tils"
 
 #: ../src/interface.c:966
+#, fuzzy
 msgid "_Pointer Tool"
-msgstr ""
+msgstr "Outil _pointeur"
 
 #: ../src/interface.c:971 ../src/interface.c:1094
+#, fuzzy
 msgid "Select objects on the screen"
-msgstr ""
+msgstr "Selectionner des objets a l'ecran"
 
 #: ../src/interface.c:972
+#, fuzzy
 msgid "Pa_n Tool"
-msgstr ""
+msgstr "Outil de de_placement"
 
 #: ../src/interface.c:977 ../src/interface.c:1100
+#, fuzzy
 msgid "Pan by left clicking and dragging"
-msgstr ""
+msgstr "Deplacer la vue en cliquant et glissant avec le bouton gauche"
 
 #: ../src/interface.c:979
+#, fuzzy
 msgid "_Zoom Tool"
-msgstr ""
+msgstr "Outil de _zoom"
 
 #: ../src/interface.c:984 ../src/interface.c:1108
+#, fuzzy
 msgid "Zoom by left clicking or dragging"
-msgstr ""
+msgstr "Zoomer en cliquant ou glissant avec le bouton gauche"
 
 #: ../src/interface.c:986
+#, fuzzy
 msgid "_Measure Tool"
-msgstr ""
+msgstr "Outil de _mesure"
 
 #: ../src/interface.c:991 ../src/interface.c:1115
+#, fuzzy
 msgid "Measure distances on the screen"
-msgstr ""
+msgstr "Mesurer des distances a l'ecran"
 
 #: ../src/interface.c:993
+#, fuzzy
 msgid "_Help"
-msgstr ""
+msgstr "_Aide"
 
 #: ../src/interface.c:1007
+#, fuzzy
 msgid "_About Gerbv..."
-msgstr ""
+msgstr "_A propos de Gerbv..."
 
 #: ../src/interface.c:1009
+#, fuzzy
 msgid "View information about Gerbv"
-msgstr ""
+msgstr "Afficher les informations sur Gerbv"
 
 #: ../src/interface.c:1013
+#, fuzzy
 msgid "Known _bugs in this version..."
-msgstr ""
+msgstr "_Bogues connus dans cette version..."
 
 #: ../src/interface.c:1016
+#, fuzzy
 msgid "View list of known Gerbv bugs"
-msgstr ""
+msgstr "Afficher la liste des bogues connus de Gerbv"
 
 #: ../src/interface.c:1044
+#, fuzzy
 msgid "Reload all layers in project"
-msgstr ""
+msgstr "Recharger toutes les couches du projet"
 
 #: ../src/interface.c:1143
+#, fuzzy
 msgid "Rendering type"
-msgstr ""
+msgstr "Type de rendu"
 
 #: ../src/interface.c:1145
+#, fuzzy
 msgid "Fast"
-msgstr ""
+msgstr "Rapide"
 
 #: ../src/interface.c:1146
+#, fuzzy
 msgid "Fast, with XOR"
-msgstr ""
+msgstr "Rapide, avec XOR"
 
 #: ../src/interface.c:1147
+#, fuzzy
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: ../src/interface.c:1148
+#, fuzzy
 msgid "High quality"
-msgstr ""
+msgstr "Haute qualite"
 
 #: ../src/interface.c:1215
+#, fuzzy
 msgid "Layers"
-msgstr ""
+msgstr "Couches"
 
 #: ../src/interface.c:1237
+#, fuzzy
 msgid "Clear all messages and accumulated sum"
-msgstr ""
+msgstr "Effacer tous les messages et la somme accumulee"
 
 #: ../src/interface.c:1240
+#, fuzzy
 msgid "Messages"
-msgstr ""
+msgstr "Messages"
 
 #: ../src/interface.c:1291
+#, fuzzy
 msgid "mil"
-msgstr ""
+msgstr "mil"
 
 #: ../src/interface.c:1293
+#, fuzzy
 msgid "in"
-msgstr ""
+msgstr "po"
 
 #: ../src/interface.c:1896
+#, fuzzy
 msgid "Gerbv Alert"
-msgstr ""
+msgstr "Alerte Gerbv"
 
 #: ../src/interface.c:1928 ../src/interface.c:2268
+#, fuzzy
 msgid "Do not show this dialog again."
-msgstr ""
+msgstr "Ne plus afficher cette boite de dialogue."
 
 #: ../src/interface.c:2054
-#, c-format
+#, c-format, fuzzy
 msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layer)"
 msgid_plural "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<b>%d</b>  *<i>%s</i> (<b>modifie</b>, %d couche)"
+msgstr[1] "<b>%d</b>  *<i>%s</i> (<b>modifie</b>, %d couches)"
 
 #: ../src/interface.c:2058
-#, c-format
+#, c-format, fuzzy
 msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>)"
-msgstr ""
+msgstr "<b>%d</b>  *<i>%s</i> (<b>modifie</b>)"
 
 #: ../src/interface.c:2064
-#, c-format
+#, c-format, fuzzy
 msgid "<b>%d</b>  %s (%d layer)"
 msgid_plural "<b>%d</b>  %s (%d layers)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<b>%d</b>  %s (%d couche)"
+msgstr[1] "<b>%d</b>  %s (%d couches)"
 
 #: ../src/interface.c:2067
-#, c-format
+#, c-format, fuzzy
 msgid "<b>%d</b>  %s"
-msgstr ""
+msgstr "<b>%d</b>  %s"
 
 #: ../src/interface.c:2110
+#, fuzzy
 msgid "Gerbv — Reload Files"
-msgstr ""
+msgstr "Gerbv — Recharger les fichiers"
 
 #: ../src/interface.c:2129
-#, c-format
+#, c-format, fuzzy
 msgid "%u file is already loaded from directory"
 msgid_plural "%u files are already loaded from directory"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u fichier est deja charge depuis le repertoire"
+msgstr[1] "%u fichiers sont deja charges depuis le repertoire"
 
 #: ../src/interface.c:2151
+#, fuzzy
 msgid "Select _all"
-msgstr ""
+msgstr "_Tout selectionner"
 
 #: ../src/interface.c:2183
+#, fuzzy
 msgid "_Reload"
-msgstr ""
+msgstr "_Recharger"
 
 #: ../src/interface.c:2185
+#, fuzzy
 msgid "Reload layers with selected files"
-msgstr ""
+msgstr "Recharger les couches avec les fichiers selectionnes"
 
 #: ../src/interface.c:2189
+#, fuzzy
 msgid "Add as _new"
-msgstr ""
+msgstr "Ajouter en tant que _nouveau"
 
 #: ../src/interface.c:2191
+#, fuzzy
 msgid "Add selected files as new layers"
-msgstr ""
+msgstr "Ajouter les fichiers selectionnes en tant que nouvelles couches"
 
 #: ../src/interface.c:2328
+#, fuzzy
 msgid "Edit layer"
-msgstr ""
+msgstr "Modifier la couche"
 
 #: ../src/interface.c:2331
+#, fuzzy
 msgid "Apply to _active"
-msgstr ""
+msgstr "Appliquer a la couche _active"
 
 #: ../src/interface.c:2333
+#, fuzzy
 msgid "Apply to _visible"
-msgstr ""
+msgstr "Appliquer aux couches _visibles"
 
 #: ../src/interface.c:2346
+#, fuzzy
 msgid "<span weight=\"bold\">Translation</span>"
-msgstr ""
+msgstr "<span weight=\"bold\">Translation</span>"
 
 #: ../src/interface.c:2355
+#, fuzzy
 msgid "X (mils):"
-msgstr ""
+msgstr "X (mils) :"
 
 #: ../src/interface.c:2356
+#, fuzzy
 msgid "Y (mils):"
-msgstr ""
+msgstr "Y (mils) :"
 
 #: ../src/interface.c:2361
+#, fuzzy
 msgid "X (mm):"
-msgstr ""
+msgstr "X (mm) :"
 
 #: ../src/interface.c:2362
+#, fuzzy
 msgid "Y (mm):"
-msgstr ""
+msgstr "Y (mm) :"
 
 #: ../src/interface.c:2367
+#, fuzzy
 msgid "X (inches):"
-msgstr ""
+msgstr "X (pouces) :"
 
 #: ../src/interface.c:2368
+#, fuzzy
 msgid "Y (inches):"
-msgstr ""
+msgstr "Y (pouces) :"
 
 #: ../src/interface.c:2386
+#, fuzzy
 msgid "<span weight=\"bold\">Scale</span>"
-msgstr ""
+msgstr "<span weight=\"bold\">Echelle</span>"
 
 #: ../src/interface.c:2390
+#, fuzzy
 msgid "X direction:"
-msgstr ""
+msgstr "Direction X :"
 
 #: ../src/interface.c:2393
+#, fuzzy
 msgid "Y direction:"
-msgstr ""
+msgstr "Direction Y :"
 
 #: ../src/interface.c:2410
+#, fuzzy
 msgid "<span weight=\"bold\">Rotation</span>"
-msgstr ""
+msgstr "<span weight=\"bold\">Rotation</span>"
 
 #: ../src/interface.c:2414
+#, fuzzy
 msgid "Rotation (degrees):"
-msgstr ""
+msgstr "Rotation (degres) :"
 
 #: ../src/interface.c:2418
+#, fuzzy
 msgid "None"
-msgstr ""
+msgstr "Aucun"
 
 #: ../src/interface.c:2419
+#, fuzzy
 msgid "90 deg CCW"
-msgstr ""
+msgstr "90 deg AHOR"
 
 #: ../src/interface.c:2420
+#, fuzzy
 msgid "180 deg CCW"
-msgstr ""
+msgstr "180 deg AHOR"
 
 #: ../src/interface.c:2421
+#, fuzzy
 msgid "270 deg CCW"
-msgstr ""
+msgstr "270 deg AHOR"
 
 #: ../src/interface.c:2441
+#, fuzzy
 msgid "<span weight=\"bold\">Mirroring</span>"
-msgstr ""
+msgstr "<span weight=\"bold\">Symetrie</span>"
 
 #: ../src/interface.c:2445
+#, fuzzy
 msgid "About X axis:"
-msgstr ""
+msgstr "Selon l'axe X :"
 
 #: ../src/interface.c:2452
+#, fuzzy
 msgid "About Y axis:"
-msgstr ""
+msgstr "Selon l'axe Y :"
 
 #: ../src/main.c:285
-#, c-format
+#, c-format, fuzzy
 msgid "could not read file: %s"
-msgstr ""
+msgstr "impossible de lire le fichier : %s"
 
 #: ../src/main.c:378
+#, fuzzy
 msgid "Failed to write project"
-msgstr ""
+msgstr "Echec de l'ecriture du projet"
 
 #: ../src/main.c:452
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "\n"
 "*** Press Enter to continue ***"
 msgstr ""
+"\n"
+"*** Appuyez sur Entree pour continuer ***"
 
 #: ../src/main.c:638 ../src/main.c:928
-#, c-format
+#, c-format, fuzzy
 msgid "Unrecognized length unit \"%s\" in command line"
-msgstr ""
+msgstr "Unite de longueur non reconnue \"%s\" en ligne de commande"
 
 #: ../src/main.c:657
-#, c-format
+#, c-format, fuzzy
 msgid "Not handled option \"%s\" in command line"
-msgstr ""
+msgstr "Option non geree \"%s\" en ligne de commande"
 
 #: ../src/main.c:664
+#, fuzzy
 msgid "Width"
-msgstr ""
+msgstr "Largeur"
 
 #: ../src/main.c:668
-#, c-format
+#, c-format, fuzzy
 msgid "Split X and Y parameters with an x\n"
-msgstr ""
+msgstr "Separer les parametres X et Y avec un x\n"
 
 #: ../src/main.c:675
+#, fuzzy
 msgid "Height"
-msgstr ""
+msgstr "Hauteur"
 
 #: ../src/main.c:710
-#, c-format
+#, c-format, fuzzy
 msgid "You must specify the border in the format <alpha>.\n"
-msgstr ""
+msgstr "Vous devez specifier la bordure au format <alpha>.\n"
 
 #: ../src/main.c:714
-#, c-format
+#, c-format, fuzzy
 msgid "Specified border is not recognized.\n"
-msgstr ""
+msgstr "La bordure specifiee n'est pas reconnue.\n"
 
 #: ../src/main.c:719
-#, c-format
+#, c-format, fuzzy
 msgid "Specified border is smaller than zero!\n"
-msgstr ""
+msgstr "La bordure specifiee est inferieure a zero !\n"
 
 #: ../src/main.c:726
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "You must give an resolution in the format <DPI_XxDPI_Y> or <DPI_X_and_Y>.\n"
 msgstr ""
+"Vous devez donner une resolution au format <DPI_XxDPI_Y> ou <DPI_X_et_Y>.\n"
 
 #: ../src/main.c:730
-#, c-format
+#, c-format, fuzzy
 msgid "Specified resolution is not recognized.\n"
-msgstr ""
+msgstr "La resolution specifiee n'est pas reconnue.\n"
 
 #: ../src/main.c:740
-#, c-format
+#, c-format, fuzzy
 msgid "Specified resolution should be greater than 0.\n"
-msgstr ""
+msgstr "La resolution specifiee doit etre superieure a 0.\n"
 
 #: ../src/main.c:747
-#, c-format
+#, c-format, fuzzy
 msgid "You must give an origin in the format <XxY> or <X;Y>.\n"
-msgstr ""
+msgstr "Vous devez donner une origine au format <XxY> ou <X;Y>.\n"
 
 #: ../src/main.c:752
-#, c-format
+#, c-format, fuzzy
 msgid "Specified origin is not recognized.\n"
-msgstr ""
+msgstr "L'origine specifiee n'est pas reconnue.\n"
 
 #: ../src/main.c:763
-#, c-format
+#, c-format, fuzzy
 msgid "gerbv version %s\n"
-msgstr ""
+msgstr "gerbv version %s\n"
 
 #: ../src/main.c:764
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Copyright (C) 2001-2008 by Stefan Petersen\n"
 "and the respective original authors listed in the source files.\n"
 msgstr ""
+"Copyright (C) 2001-2008 par Stefan Petersen\n"
+"et les auteurs originaux respectifs listes dans le fichier AUTHORS.\n"
+"\n"
+"Ce programme est un logiciel libre.\n"
 
 #: ../src/main.c:772
-#, c-format
+#, c-format, fuzzy
 msgid "You must give an background color in the hex-format <#RRGGBB>.\n"
 msgstr ""
+"Vous devez donner une couleur d'arriere-plan au format hexadecimal "
+"<#RRGGBB>.\n"
 
 #: ../src/main.c:777 ../src/main.c:802
-#, c-format
+#, c-format, fuzzy
 msgid "Specified color format is not recognized.\n"
-msgstr ""
+msgstr "Le format de couleur specifie n'est pas reconnu.\n"
 
 #: ../src/main.c:785
-#, c-format
+#, c-format, fuzzy
 msgid "Specified color values should be between 00 and FF.\n"
-msgstr ""
+msgstr "Les valeurs de couleur specifiees doivent etre entre 00 et FF.\n"
 
 #: ../src/main.c:798
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "You must give an foreground color in the hex-format <#RRGGBB> or "
 "<#RRGGBBAA>.\n"
 msgstr ""
+"Vous devez donner une couleur de premier plan au format hexadecimal "
+"<#RRGGBB> ou <#RRGGBBAA>.\n"
 
 #: ../src/main.c:816
-#, c-format
+#, c-format, fuzzy
 msgid "Specified color values should be between 0x00 (0) and 0xFF (255).\n"
 msgstr ""
+"Les valeurs de couleur specifiees doivent etre entre 0x00 (0) et 0xFF "
+"(255).\n"
 
 #: ../src/main.c:830
-#, c-format
+#, c-format, fuzzy
 msgid "You must give the initial rotation angle\n"
-msgstr ""
+msgstr "Vous devez donner l'angle de rotation initial\n"
 
 #: ../src/main.c:836
+#, fuzzy
 msgid "Rotate"
-msgstr ""
+msgstr "Rotation"
 
 #: ../src/main.c:840
-#, c-format
+#, c-format, fuzzy
 msgid "Failed parsing rotate value\n"
-msgstr ""
+msgstr "Echec de l'analyse de la valeur de rotation\n"
 
 #: ../src/main.c:846
-#, c-format
+#, c-format, fuzzy
 msgid "You must give the axis to mirror about\n"
-msgstr ""
+msgstr "Vous devez donner l'axe de symetrie\n"
 
 #: ../src/main.c:856
-#, c-format
+#, c-format, fuzzy
 msgid "Failed parsing mirror axis\n"
-msgstr ""
+msgstr "Echec de l'analyse de l'axe de symetrie\n"
 
 #: ../src/main.c:862
-#, c-format
+#, c-format, fuzzy
 msgid "You must give a filename to send log to\n"
-msgstr ""
+msgstr "Vous devez donner un nom de fichier pour le journal\n"
 
 #: ../src/main.c:870
-#, c-format
+#, c-format, fuzzy
 msgid "You must give a filename to export to.\n"
-msgstr ""
+msgstr "Vous devez donner un nom de fichier pour l'exportation.\n"
 
 #: ../src/main.c:877
-#, c-format
+#, c-format, fuzzy
 msgid "You must give a project filename\n"
-msgstr ""
+msgstr "Vous devez donner un nom de fichier de projet\n"
 
 #: ../src/main.c:884
-#, c-format
+#, c-format, fuzzy
 msgid "You must give a filename to read the tools from.\n"
-msgstr ""
+msgstr "Vous devez donner un nom de fichier pour lire les outils.\n"
 
 #: ../src/main.c:888
-#, c-format
+#, c-format, fuzzy
 msgid "*** ERROR processing tools file \"%s\".\n"
-msgstr ""
+msgstr "*** ERREUR lors du traitement du fichier d'outils \"%s\".\n"
 
 #: ../src/main.c:889
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Make sure all lines of the file are formatted like this:\n"
 "T01 0.024\n"
@@ -2688,554 +3220,648 @@ msgid ""
 "...\n"
 "*** EXITING to prevent erroneous display.\n"
 msgstr ""
+"Assurez-vous que toutes les lignes du fichier sont formatees ainsi :\n"
+"T01 0.024\n"
+"T02 0.032\n"
+"T03 0.040\n"
+"...\n"
 
 #: ../src/main.c:897
-#, c-format
+#, c-format, fuzzy
 msgid "You must give a translation in the format <XxY> or <X;Y>.\n"
-msgstr ""
+msgstr "Vous devez donner une translation au format <XxY> ou <X;Y>.\n"
 
 #: ../src/main.c:902
-#, c-format
+#, c-format, fuzzy
 msgid "The translation format is not recognized.\n"
-msgstr ""
+msgstr "Le format de translation n'est pas reconnu.\n"
 
 #: ../src/main.c:938
-#, c-format
+#, c-format, fuzzy
 msgid "You must give a window size in the format <width x height>.\n"
 msgstr ""
+"Vous devez donner une taille de fenetre au format <largeur x hauteur>.\n"
 
 #: ../src/main.c:942
-#, c-format
+#, c-format, fuzzy
 msgid "Specified window size is not recognized.\n"
-msgstr ""
+msgstr "La taille de fenetre specifiee n'est pas reconnue.\n"
 
 #: ../src/main.c:948
-#, c-format
+#, c-format, fuzzy
 msgid "Specified window size is out of bounds.\n"
-msgstr ""
+msgstr "La taille de fenetre specifiee est hors limites.\n"
 
 #: ../src/main.c:955
-#, c-format
+#, c-format, fuzzy
 msgid "You must supply an export type.\n"
-msgstr ""
+msgstr "Vous devez fournir un type d'exportation.\n"
 
 #: ../src/main.c:967
-#, c-format
+#, c-format, fuzzy
 msgid "Unrecognized \"%s\" export type.\n"
-msgstr ""
+msgstr "Type d'exportation \"%s\" non reconnu.\n"
 
 #: ../src/main.c:986
-#, c-format
+#, c-format, fuzzy
 msgid "Not handled option '%c' in command line"
-msgstr ""
+msgstr "Option '%c' non geree en ligne de commande"
 
 #: ../src/main.c:1018
-#, c-format
+#, c-format, fuzzy
 msgid "Loading project %s...\n"
-msgstr ""
+msgstr "Chargement du projet %s...\n"
 
 #: ../src/main.c:1052
-#, c-format
+#, c-format, fuzzy
 msgid "No loadable files found in \"%s\"\n"
-msgstr ""
+msgstr "Aucun fichier chargeable trouve dans \"%s\"\n"
 
 #: ../src/main.c:1199 ../src/main.c:1240
-#, c-format
+#, c-format, fuzzy
 msgid "A valid file was not loaded.\n"
-msgstr ""
+msgstr "Aucun fichier valide n'a ete charge.\n"
 
 #: ../src/main.c:1299
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Usage: gerbv [OPTIONS...] [FILE...]\n"
 "\n"
 "Available options:\n"
 msgstr ""
+"Utilisation : gerbv [OPTIONS...] [FICHIER...]\n"
+"\n"
+"Options disponibles :\n"
 
 #: ../src/main.c:1305
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -B, --border=<b>        Border around the image in percent of the\n"
 "                          width/height. Defaults to %d%%.\n"
 msgstr ""
+"  -B, --border=<b>        Bordure autour de l'image en pourcentage de la\n"
+"                          taille totale. Par defaut : 5%%\n"
 
 #: ../src/main.c:1310
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -B<b>                   Border around the image in percent of the\n"
 "                          width/height. Defaults to %d%%.\n"
 msgstr ""
+"  -B<b>                   Bordure autour de l'image en pourcentage de la\n"
+"                          taille totale. Par defaut : 5%%\n"
 
 #: ../src/main.c:1317
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -D, --dpi=<XxY|R>       Resolution (Dots per inch) for the output\n"
 "                          bitmap. With the format <XxY>, different\n"
 "                          resolutions for X- and Y-direction are used.\n"
 "                          With the format <R>, both are the same.\n"
 msgstr ""
+"  -D, --dpi=<XxY|R>       Resolution (points par pouce) pour la sortie\n"
+"                          bitmap. Par defaut : 72\n"
 
 #: ../src/main.c:1323
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -D<XxY|R>               Resolution (Dots per inch) for the output\n"
 "                          bitmap. With the format <XxY>, different\n"
 "                          resolutions for X- and Y-direction are used.\n"
 "                          With the format <R>, both are the same.\n"
 msgstr ""
+"  -D<XxY|R>               Resolution (points par pouce) pour la sortie\n"
+"                          bitmap. Par defaut : 72\n"
 
 #: ../src/main.c:1331
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -O, --origin=<XxY|X;Y>  Use the specified coordinates (in inches)\n"
 "                          for the lower left corner.\n"
 msgstr ""
+"  -O, --origin=<XxY|X;Y>  Utiliser les coordonnees specifiees (en pouces)\n"
+"                          comme origine de la sortie.\n"
 
 #: ../src/main.c:1335
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -O<XxY|X;Y>             Use the specified coordinates (in inches)\n"
 "                          for the lower left corner.\n"
 msgstr ""
+"  -O<XxY|X;Y>             Utiliser les coordonnees specifiees (en pouces)\n"
+"                          comme origine de la sortie.\n"
 
 #: ../src/main.c:1341
-#, c-format
+#, c-format, fuzzy
 msgid "  -V, --version           Print version of Gerbv.\n"
-msgstr ""
+msgstr "  -V, --version           Afficher la version de Gerbv.\n"
 
 #: ../src/main.c:1344
-#, c-format
+#, c-format, fuzzy
 msgid "  -V                      Print version of Gerbv.\n"
-msgstr ""
+msgstr "  -V                      Afficher la version de Gerbv.\n"
 
 #: ../src/main.c:1349
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -a, --antialias         Use antialiasing for generated bitmap output.\n"
 msgstr ""
+"  -a, --antialias         Utiliser l'antialiassage pour la sortie bitmap "
+"generee.\n"
 
 #: ../src/main.c:1352
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -a                      Use antialiasing for generated bitmap output.\n"
 msgstr ""
+"  -a                      Utiliser l'antialiassage pour la sortie bitmap "
+"generee.\n"
 
 #: ../src/main.c:1357
-#, c-format
+#, c-format, fuzzy
 msgid "  -b, --background=<hex>  Use background color <hex> (like #RRGGBB).\n"
 msgstr ""
+"  -b, --background=<hex>  Utiliser la couleur d'arriere-plan <hex> (comme "
+"#RRGGBB).\n"
 
 #: ../src/main.c:1360
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -b<hexcolor>            Use background color <hexcolor> (like #RRGGBB).\n"
 msgstr ""
+"  -b<hexcolor>            Utiliser la couleur d'arriere-plan <hexcolor> "
+"(comme #RRGGBB).\n"
 
 #: ../src/main.c:1365
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -f, --foreground=<hex>  Use foreground color <hex> (like #RRGGBB or\n"
 "                          #RRGGBBAA for setting the alpha).\n"
 "                          Use multiple -f flags to set the color for\n"
 "                          multiple layers.\n"
 msgstr ""
+"  -f, --foreground=<hex>  Utiliser la couleur de premier plan <hex> (comme #RRGGBB ou\n"
+"                          #RRGGBBAA).\n"
 
 #: ../src/main.c:1371
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
 "                          #RRGGBBAA for setting the alpha).\n"
 "                          Use multiple -f flags to set the color for\n"
 "                          multiple layers.\n"
 msgstr ""
+"  -f<hexcolor>            Utiliser la couleur de premier plan <hexcolor> (comme #RRGGBB ou\n"
+"                          #RRGGBBAA).\n"
 
 #: ../src/main.c:1379
-#, c-format
+#, c-format, fuzzy
 msgid "  -r, --rotate=<degree>   Set initial orientation for all layers.\n"
 msgstr ""
+"  -r, --rotate=<degree>   Definir l'orientation initiale pour toutes les "
+"couches.\n"
 
 #: ../src/main.c:1382
-#, c-format
+#, c-format, fuzzy
 msgid "  -r<degree>              Set initial orientation for all layers.\n"
 msgstr ""
+"  -r<degree>              Definir l'orientation initiale pour toutes les "
+"couches.\n"
 
 #: ../src/main.c:1387
-#, c-format
+#, c-format, fuzzy
 msgid "  -m, --mirror=<axis>     Set initial mirroring axis (X or Y).\n"
-msgstr ""
+msgstr "  -m, --mirror=<axis>     Definir l'axe de symetrie initial (X ou Y).\n"
 
 #: ../src/main.c:1390
-#, c-format
+#, c-format, fuzzy
 msgid "  -m<axis>                Set initial mirroring axis (X or Y).\n"
-msgstr ""
+msgstr "  -m<axis>                Definir l'axe de symetrie initial (X ou Y).\n"
 
 #: ../src/main.c:1395
-#, c-format
+#, c-format, fuzzy
 msgid "  -h, --help              Print this help message.\n"
-msgstr ""
+msgstr "  -h, --help              Afficher ce message d'aide.\n"
 
 #: ../src/main.c:1398
-#, c-format
+#, c-format, fuzzy
 msgid "  -h                      Print this help message.\n"
-msgstr ""
+msgstr "  -h                      Afficher ce message d'aide.\n"
 
 #: ../src/main.c:1403
-#, c-format
+#, c-format, fuzzy
 msgid "  -l, --log=<logfile>     Send error messages to <logfile>.\n"
 msgstr ""
+"  -l, --log=<logfile>     Envoyer les messages d'erreur vers <logfile>.\n"
 
 #: ../src/main.c:1406
-#, c-format
+#, c-format, fuzzy
 msgid "  -l<logfile>             Send error messages to <logfile>.\n"
 msgstr ""
+"  -l<logfile>             Envoyer les messages d'erreur vers <logfile>.\n"
 
 #: ../src/main.c:1411
-#, c-format
+#, c-format, fuzzy
 msgid "  -q, --quiet             Suppress note-level messages.\n"
-msgstr ""
+msgstr "  -q, --quiet             Supprimer les messages de niveau note.\n"
 
 #: ../src/main.c:1414
-#, c-format
+#, c-format, fuzzy
 msgid "  -q                      Suppress note-level messages.\n"
-msgstr ""
+msgstr "  -q                      Supprimer les messages de niveau note.\n"
 
 #: ../src/main.c:1419
-#, c-format
+#, c-format, fuzzy
 msgid "  -o, --output=<filename> Export to <filename>.\n"
-msgstr ""
+msgstr "  -o, --output=<filename> Exporter vers <filename>.\n"
 
 #: ../src/main.c:1422
-#, c-format
+#, c-format, fuzzy
 msgid "  -o<filename>            Export to <filename>.\n"
-msgstr ""
+msgstr "  -o<filename>            Exporter vers <filename>.\n"
 
 #: ../src/main.c:1427
-#, c-format
+#, c-format, fuzzy
 msgid "  -p, --project=<prjfile> Load project file <prjfile>.\n"
-msgstr ""
+msgstr "  -p, --project=<prjfile> Charger le fichier de projet <prjfile>.\n"
 
 #: ../src/main.c:1430
-#, c-format
+#, c-format, fuzzy
 msgid "  -p<prjfile>             Load project file <prjfile>.\n"
-msgstr ""
+msgstr "  -p<prjfile>             Charger le fichier de projet <prjfile>.\n"
 
 #: ../src/main.c:1435
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -u, --units=<inch|mm|mil>\n"
 "                          Use given unit for coordinates.\n"
 "                          Default to inch.\n"
 msgstr ""
+"  -u, --units=<inch|mm|mil>\n"
+"                          Utiliser l'unite donnee pour les coordonnees.\n"
+"                          Par defaut : mil\n"
 
 #: ../src/main.c:1440
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -u<inch|mm|mil>         Use given unit for coordinates.\n"
 "                          Default to inch.\n"
 msgstr ""
+"  -u<inch|mm|mil>         Utiliser l'unite donnee pour les coordonnees.\n"
+"                          Par defaut : mil\n"
 
 #: ../src/main.c:1446
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -W, --window_inch=<WxH> Window size in inches <WxH> for the exported "
 "image.\n"
 msgstr ""
+"  -W, --window_inch=<WxH> Taille de fenetre en pouces <WxH> pour l'image "
+"exportee.\n"
 
 #: ../src/main.c:1449
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -W<WxH>                 Window size in inches <WxH> for the exported "
 "image.\n"
 msgstr ""
+"  -W<WxH>                 Taille de fenetre en pouces <WxH> pour l'image "
+"exportee.\n"
 
 #: ../src/main.c:1454
-#, c-format
+#, c-format, fuzzy
 msgid ""
-"  -w, --window=<WxH>      Window size in pixels <WxH> for the exported "
-"image.\n"
+"  -w, --window=<WxH>      Window size in pixels <WxH> for the exported image.\n"
 "                          Autoscales to fit if no resolution is specified.\n"
 "                          If a resolution is specified, it will clip\n"
 "                          exported image.\n"
 msgstr ""
+"  -w, --window=<WxH>      Taille de fenetre en pixels <WxH> pour l'image exportee.\n"
+"                          Par defaut : 800x600\n"
 
 #: ../src/main.c:1460
-#, c-format
+#, c-format, fuzzy
 msgid ""
-"  -w<WxH>                 Window size in pixels <WxH> for the exported "
-"image.\n"
+"  -w<WxH>                 Window size in pixels <WxH> for the exported image.\n"
 "                          Autoscales to fit if no resolution is specified.\n"
 "                          If a resolution is specified, it will clip\n"
 "                          exported image.\n"
 msgstr ""
+"  -w<WxH>                 Taille de fenetre en pixels <WxH> pour l'image exportee.\n"
+"                          Par defaut : 800x600\n"
 
 #: ../src/main.c:1468
-#, c-format
+#, c-format, fuzzy
 msgid "  -t, --tools=<toolfile>  Read Excellon tools from file <toolfile>.\n"
 msgstr ""
+"  -t, --tools=<toolfile>  Lire les outils Excellon depuis le fichier "
+"<toolfile>.\n"
 
 #: ../src/main.c:1471
-#, c-format
+#, c-format, fuzzy
 msgid "  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
 msgstr ""
+"  -t<toolfile>            Lire les outils Excellon depuis le fichier "
+"<toolfile>\n"
 
 #: ../src/main.c:1476
-#, c-format
+#, c-format, fuzzy
 msgid ""
-"  -T, --translate=<XxYrR| Translate image by X and Y and rotate by R "
-"degree.\n"
+"  -T, --translate=<XxYrR| Translate image by X and Y and rotate by R degree.\n"
 "                   X;YrR> Useful for arranging panels.\n"
 "                          Use multiple -T flags for multiple layers.\n"
 "                          Only evaluated when exporting as RS274X or drill.\n"
 msgstr ""
+"  -T, --translate=<XxYrR| Translater l'image de X et Y et pivoter de R degres.\n"
+"                X;YrR>    Par defaut : pas de translation ni de rotation.\n"
 
 #: ../src/main.c:1482
-#, c-format
+#, c-format, fuzzy
 msgid ""
-"  -T<XxYrR|X;YrR>         Translate image by X and Y and rotate by R "
-"degree.\n"
+"  -T<XxYrR|X;YrR>         Translate image by X and Y and rotate by R degree.\n"
 "                          Useful for arranging panels.\n"
 "                          Use multiple -T flags for multiple files.\n"
 "                          Only evaluated when exporting as RS274X or drill.\n"
 msgstr ""
+"  -T<XxYrR|X;YrR>         Translater l'image de X et Y et pivoter de R degres.\n"
+"                          Par defaut : pas de translation ni de rotation.\n"
 
 #: ../src/main.c:1490
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\n"
 "                          Export a rendered picture to a file with\n"
 "                          the specified format.\n"
 msgstr ""
+"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\n"
+"                          Exporter une image rendue vers un fichier avec\n"
+"                          le format specifie.\n"
 
 #: ../src/main.c:1494
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
 "                          Only used with --export=svg.\n"
 msgstr ""
+"      --svg-layers       Exporter les couches visibles en tant que couches SVG Inkscape.\n"
+"                          (format par defaut : SVG simple).\n"
 
 #: ../src/main.c:1497
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
 "                          Only used with --export=svg.\n"
 msgstr ""
+"      --svg-cairo        Utiliser la surface SVG de Cairo (ancien, sortie plus volumineuse).\n"
+"                          (par defaut : sortie SVG Inkscape).\n"
 
 #: ../src/main.c:1501
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
 "     rs274x|drill|        the specified format.\n"
 "     idrill|dxf>\n"
 msgstr ""
+"  -x<png|pdf|ps|svg|      Exporter une image rendue vers un fichier avec\n"
+"     rs274x|drill|idrill|  le format specifie.\n"
+"     dxf>\n"
 
 #: ../src/main.c:1506
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
 "                          Only used with -xsvg.\n"
 msgstr ""
+"      --svg-layers       Exporter les couches visibles en tant que couches SVG Inkscape.\n"
+"                          (format par defaut : SVG simple).\n"
 
 #: ../src/main.c:1509
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
 "                          Only used with -xsvg.\n"
 msgstr ""
+"      --svg-cairo        Utiliser la surface SVG de Cairo (ancien, sortie plus volumineuse).\n"
+"                          (par defaut : sortie SVG Inkscape).\n"
 
 #: ../src/project.c:259
-#, c-format
+#, c-format, fuzzy
 msgid "'%s' parameter not a vector"
-msgstr ""
+msgstr "Le parametre '%s' n'est pas un vecteur"
 
 #: ../src/project.c:265
-#, c-format
+#, c-format, fuzzy
 msgid "'%s' vector of incorrect length"
-msgstr ""
+msgstr "Vecteur '%s' de longueur incorrecte"
 
 #: ../src/project.c:288
+#, fuzzy
 msgid "Illegal color in projectfile"
-msgstr ""
+msgstr "Couleur illegale dans le fichier de projet"
 
 #: ../src/project.c:309
+#, fuzzy
 msgid "Illegal alpha value in projectfile"
-msgstr ""
+msgstr "Valeur alpha illegale dans le fichier de projet"
 
 #: ../src/project.c:325 ../src/project.c:343 ../src/project.c:351
 #: ../src/project.c:371 ../src/project.c:381
-#, c-format
+#, c-format, fuzzy
 msgid "Illegal %s in projectfile"
-msgstr ""
+msgstr "%s illegal(e) dans le fichier de projet"
 
 #: ../src/project.c:605
-#, c-format
+#, c-format, fuzzy
 msgid "%s(): too few arguments"
-msgstr ""
+msgstr "%s() : trop peu d'arguments"
 
 #: ../src/project.c:614
-#, c-format
+#, c-format, fuzzy
 msgid "%s(): layer number missing/incorrect"
-msgstr ""
+msgstr "%s() : numero de couche manquant/incorrect"
 
 #: ../src/project.c:645
-#, c-format
+#, c-format, fuzzy
 msgid "%s(): non-symbol found, ignoring"
-msgstr ""
+msgstr "%s() : non-symbole trouve, ignore"
 
 #: ../src/project.c:681
+#, fuzzy
 msgid "Argument to inverted must be #t or #f"
-msgstr ""
+msgstr "L'argument de inverted doit etre #t ou #f"
 
 #: ../src/project.c:689
+#, fuzzy
 msgid "Argument to visible must be #t or #f"
-msgstr ""
+msgstr "L'argument de visible doit etre #t ou #f"
 
 #: ../src/project.c:707
-#, c-format
+#, c-format, fuzzy
 msgid "%s():  realloc failed\n"
-msgstr ""
+msgstr "%s() :  realloc echoue\n"
 
 #: ../src/project.c:771
-#, c-format
+#, c-format, fuzzy
 msgid "%s():  WARNING:  HID_Mixed is not yet supported\n"
-msgstr ""
+msgstr "%s() :  AVERTISSEMENT :  HID_Mixed n'est pas encore pris en charge\n"
 
 #: ../src/project.c:780
-#, c-format
+#, c-format, fuzzy
 msgid "%s():  Unknown attribute type: \"%s\"\n"
-msgstr ""
+msgstr "%s() :  Type d'attribut inconnu : \"%s\"\n"
 
 #: ../src/project.c:789
-#, c-format
+#, c-format, fuzzy
 msgid "Ignoring \"%s\" in project file"
-msgstr ""
+msgstr "Ignorance de \"%s\" dans le fichier de projet"
 
 #: ../src/project.c:809
+#, fuzzy
 msgid "set-render-type!: Too few arguments"
-msgstr ""
+msgstr "set-render-type! : Trop peu d'arguments"
 
 #: ../src/project.c:833
+#, fuzzy
 msgid "gerbv-file-version!: Too few arguments"
-msgstr ""
+msgstr "gerbv-file-version! : Trop peu d'arguments"
 
 #: ../src/project.c:845
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "The project file you are attempting to load has specified that it\n"
 "uses project file version \"%s\" but this string is not\n"
 "a valid version.  Gerbv will attempt to load the file using\n"
 "version \"%s\".  You may experience unexpected results."
 msgstr ""
+"Le fichier de projet que vous tentez de charger a specifie qu'il\n"
+"utilise la version de fichier de projet %d. Cette version de gerbv ne prend en charge que les versions de fichier jusqu'a %d.\n"
+"Si vous chargez ce fichier, vous risquez de perdre des donnees."
 
 #: ../src/project.c:854
-#, c-format
+#, c-format, fuzzy
 msgid "%s():  Read a project file version of %s (%d)\n"
-msgstr ""
+msgstr "%s() :  Lecture d'une version de fichier de projet de %s (%d)\n"
 
 #: ../src/project.c:855
-#, c-format
+#, c-format, fuzzy
 msgid "      Translated back to \"%s\"\n"
-msgstr ""
+msgstr "      Retraduit vers \"%s\"\n"
 
 #: ../src/project.c:863
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "The project file you are attempting to load is version \"%s\"\n"
 "but this copy of gerbv is only capable of loading project files\n"
 "using version \"%s\" or older.  You may experience unexpected results."
 msgstr ""
+"Le fichier de projet que vous tentez de charger est de version \"%s\"\n"
+"mais cette copie de gerbv ne prend en charge que le format version %d.\n"
+"Le fichier pourrait ne pas se charger correctement."
 
 #: ../src/project.c:882
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "The project file you are attempting to load is version \"%s\"\n"
 "which is an unknown version.\n"
 "You may experience unexpected results."
 msgstr ""
+"Le fichier de projet que vous tentez de charger est de version \"%s\"\n"
+"qui est une version de format inconnu. Les informations pourraient etre perdues ou corrompues."
 
 #: ../src/project.c:915
-#, c-format
+#, c-format, fuzzy
 msgid "Failed to open \"%s\" for reading: %s"
-msgstr ""
+msgstr "Echec de l'ouverture de \"%s\" en lecture : %s"
 
 #: ../src/project.c:989
-#, c-format
+#, c-format, fuzzy
 msgid "Failed to read %s"
-msgstr ""
+msgstr "Echec de la lecture de %s"
 
 #: ../src/project.c:998
+#, fuzzy
 msgid "Couldn't init scheme"
-msgstr ""
+msgstr "Impossible d'initialiser scheme"
 
 #: ../src/project.c:1006
-#, c-format
+#, c-format, fuzzy
 msgid "Problem loading init.scm (%s)"
-msgstr ""
+msgstr "Probleme de chargement de init.scm (%s)"
 
 #: ../src/project.c:1013
-#, c-format
+#, c-format, fuzzy
 msgid "Couldn't open %s (%s)"
-msgstr ""
+msgstr "Impossible d'ouvrir %s (%s)"
 
 #: ../src/project.c:1038
-#, c-format
+#, c-format, fuzzy
 msgid "Couldn't open project file %s (%s)"
-msgstr ""
+msgstr "Impossible d'ouvrir le fichier de projet %s (%s)"
 
 #: ../src/project.c:1085
-#, c-format
+#, c-format, fuzzy
 msgid "Couldn't save project %s"
-msgstr ""
+msgstr "Impossible d'enregistrer le projet %s"
 
 #: ../src/project.c:1181
-#, c-format
+#, c-format, fuzzy
 msgid "%s():  WARNING:  HID_Mixed is not yet supported.\n"
-msgstr ""
+msgstr "%s() :  AVERTISSEMENT :  HID_Mixed n'est pas encore pris en charge.\n"
 
 #: ../src/project.c:1191
-#, c-format
+#, c-format, fuzzy
 msgid "%s: unknown type of HID attribute (%d)\n"
-msgstr ""
+msgstr "%s : type inconnu d'attribut HID (%d)\n"
 
 #: ../src/render.c:123
-#, c-format
+#, c-format, fuzzy
 msgid "Illegal zoom direction %d"
-msgstr ""
+msgstr "Direction de zoom illegale %d"
 
 #: ../src/tooltable.c:60
-#, c-format
+#, c-format, fuzzy
 msgid "Ignored strange tool \"%s\" at line %ld in file \"%s\""
-msgstr ""
+msgstr "Outil etrange \"%s\" ignore a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/tooltable.c:66
-#, c-format
+#, c-format, fuzzy
 msgid "No tool number in \"%s\" at line %ld in file \"%s\""
-msgstr ""
+msgstr "Aucun numero d'outil dans \"%s\" a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/tooltable.c:78
-#, c-format
+#, c-format, fuzzy
 msgid "Can't parse tool number in \"%s\" at line %ld in file \"%s\""
 msgstr ""
+"Impossible d'analyser le numero d'outil dans \"%s\" a la ligne %ld dans le "
+"fichier \"%s\""
 
 #: ../src/tooltable.c:97
-#, c-format
+#, c-format, fuzzy
 msgid "Tool T%02d diameter is impossible at line %ld in file \"%s\""
 msgstr ""
+"Le diametre de l'outil T%02d est impossible a la ligne %ld dans le fichier "
+"\"%s\""
 
 #: ../src/tooltable.c:103
-#, c-format
+#, c-format, fuzzy
 msgid "Tool T%02d diameter is very small at line %ld in file \"%s\""
 msgstr ""
+"Le diametre de l'outil T%02d est tres petit a la ligne %ld dans le fichier "
+"\"%s\""
 
 #: ../src/tooltable.c:109
-#, c-format
+#, c-format, fuzzy
 msgid "Tool T%02d is already defined, occurred at line %ld in file \"%s\""
-msgstr ""
+msgstr "L'outil T%02d est deja defini, a la ligne %ld dans le fichier \"%s\""
 
 #: ../src/tooltable.c:112
+#, fuzzy
 msgid "Exiting because this is a HOLD error at any board house."
 msgstr ""
+"Arret car il s'agit d'une erreur de type HOLD chez tout fabricant de "
+"circuits."
 
 #: ../src/tooltable.c:137
-#, c-format
+#, c-format, fuzzy
 msgid "Failed to open \"%s\" for reading"
-msgstr ""
+msgstr "Echec de l'ouverture de \"%s\" en lecture"
