@@ -2,7 +2,7 @@
 set(GETTEXT_DOMAIN "gerbv")
 set(GETTEXT_TARGET "gerbv-translations")
 set(GETTEXT_OUTPUT_DIR "locale")
-set(GETTEXT_LANGUAGES "ja" "ru")
+set(GETTEXT_LANGUAGES "de" "es" "fr" "ja" "ko" "nl" "ru" "sv" "zh_CN" "zh_TW")
 get_filename_component(GERBV_BINARY_DIR "${CMAKE_BINARY_DIR}" ABSOLUTE)
 
 set(GETTEXT_SOURCES
@@ -42,10 +42,26 @@ set(GETTEXT_SOURCES
 # clearly signals what languages they are a translation of.
 # The current CMake script used for gettext processing creates files and
 # directories in the source tree which is less than optimal.
-file(MAKE_DIRECTORY "locale/po/ru")
+file(MAKE_DIRECTORY "locale/po/de")
+file(MAKE_DIRECTORY "locale/po/es")
+file(MAKE_DIRECTORY "locale/po/fr")
 file(MAKE_DIRECTORY "locale/po/ja")
+file(MAKE_DIRECTORY "locale/po/ko")
+file(MAKE_DIRECTORY "locale/po/nl")
+file(MAKE_DIRECTORY "locale/po/ru")
+file(MAKE_DIRECTORY "locale/po/sv")
+file(MAKE_DIRECTORY "locale/po/zh_CN")
+file(MAKE_DIRECTORY "locale/po/zh_TW")
+file(COPY_FILE de.po locale/po/de/gerbv.po)
+file(COPY_FILE es.po locale/po/es/gerbv.po)
+file(COPY_FILE fr.po locale/po/fr/gerbv.po)
 file(COPY_FILE ja.po locale/po/ja/gerbv.po)
+file(COPY_FILE ko.po locale/po/ko/gerbv.po)
+file(COPY_FILE nl.po locale/po/nl/gerbv.po)
 file(COPY_FILE ru.po locale/po/ru/gerbv.po)
+file(COPY_FILE sv.po locale/po/sv/gerbv.po)
+file(COPY_FILE zh_CN.po locale/po/zh_CN/gerbv.po)
+file(COPY_FILE zh_TW.po locale/po/zh_TW/gerbv.po)
 
 include(Gettext_helpers)
 
