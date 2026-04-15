@@ -49,6 +49,7 @@
 #include "draw.h"
 
 #ifdef WIN32
+#define G_SETTINGS_ENABLE_BACKEND
 #include <gio/gsettingsbackend.h>
 #endif
 
