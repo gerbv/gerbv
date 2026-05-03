@@ -234,6 +234,22 @@ and to compile you do
 cmake --build --preset mingw-w64-gcc
 ```
 
+### Windows 7 support
+
+We are currently building and testing on Windows 10 (when available). Windows 7 is currently unsupported beyond
+[release 2.8.0](https://github.com/gerbv/gerbv/releases/tag/v2.8.0). 
+
+There was a report that [Windows 7 starts up and locks immediately with newer versions of Gerbv](https://github.com/gerbv/gerbv/issues/457).
+The first cause seemed to point to [incompatible versions of Glib](https://github.com/gerbv/gerbv/issues/457#issuecomment-4111947105).
+
+A later test the cause was determined to be [registry reading and writing](https://github.com/gerbv/gerbv/issues/457#issuecomment-4227492574).
+A patch was made, but did not seem to work as intended, see https://github.com/gerbv/gerbv/pull/469.
+
+Current status is that Gerbv does not support Windows 7 beyond [release 2.8.0](https://github.com/gerbv/gerbv/releases/tag/v2.8.0).
+
+The Windows version actually installs and runs under Wine if it is any comfort. But then it should be better to install a Linux
+version directly.
+
 ### Other cross compilations
 
 To create another cross compilation target, check the directory `cmake/toolchains/`.
