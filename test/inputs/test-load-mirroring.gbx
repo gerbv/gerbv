@@ -1,0 +1,39 @@
+G04 Test load mirroring (LM command)*
+G04 Draws an L-shape in four orientations using LM*
+%MOIN*%
+%FSLAX23Y23*%
+%ADD10C,0.010*%
+
+G04 Original (no mirror) - L-shape in quadrant 1*
+%LMN*%
+G54D10*
+X0Y0D02*
+X500Y0D01*
+X0Y0D02*
+X0Y500D01*
+
+G04 Mirror X - L-shape should be mirrored around X axis*
+%LMX*%
+X0Y0D02*
+X500Y0D01*
+X0Y0D02*
+X0Y500D01*
+
+G04 Mirror Y - L-shape should be mirrored around Y axis*
+%LMY*%
+X0Y0D02*
+X500Y0D01*
+X0Y0D02*
+X0Y500D01*
+
+G04 Mirror XY - L-shape should be mirrored around both axes*
+%LMXY*%
+X0Y0D02*
+X500Y0D01*
+X0Y0D02*
+X0Y500D01*
+
+G04 Reset to no mirror*
+%LMN*%
+
+M02*

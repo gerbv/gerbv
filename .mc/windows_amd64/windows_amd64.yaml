@@ -19,6 +19,7 @@ install:
 
  # Packaging dependencies
  - git
- - zip
+ - mingw-nsis-base
+ - mingw32-nsis
 ---
 

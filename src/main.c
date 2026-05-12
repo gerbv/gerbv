@@ -603,7 +603,33 @@ main(int argc, char *argv[])
 		    NULL);
     g_setenv(settings_schema_env, env_val, TRUE);
     g_free(env_val);
-    
+
+#ifdef WIN32
+    /* Suppress "GdkPixbuf-WARNING: Error loading XPM image loader"
+     * on Windows.  gerbv doesn't use any GdkPixbuf loaders — image
+     * export uses Cairo, and the only XPM usage is inline data via
+     * gdk_pixmap_create_from_xpm_d().  Point GDK_PIXBUF_MODULE_FILE
+     * at an empty cache so GdkPixbuf skips loader enumeration. */
+    if (!g_getenv("GDK_PIXBUF_MODULE_FILE")) {
+	gchar *cache_dir = g_build_filename(
+	    g_get_user_cache_dir(), "gerbv", NULL);
+	g_mkdir_with_parents(cache_dir, 0755);
+	gchar *cache_path = g_build_filename(
+	    cache_dir, "loaders.cache", NULL);
+
+	if (!g_file_test(cache_path, G_FILE_TEST_EXISTS)) {
+	    g_file_set_contents(cache_path,
+		"# GdkPixbuf Image Loader Modules file\n"
+		"# Intentionally empty — gerbv uses no loaders\n",
+		-1, NULL);
+	}
+
+	g_setenv("GDK_PIXBUF_MODULE_FILE", cache_path, FALSE);
+	g_free(cache_path);
+	g_free(cache_dir);
+    }
+#endif
+
     /* set default rendering mode */
 #ifdef WIN32
     /* Cairo seems to render faster on Windows, so use it for default */
