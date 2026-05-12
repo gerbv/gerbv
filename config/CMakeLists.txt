@@ -36,8 +36,6 @@ include(CheckLibraryExists)
 check_library_exists(m pow "" HAVE_LIBM)
 check_library_exists(dl dlopen "" HAVE_LIBDL)
 
-set(HAVE_LIBDXFLIB ${DXF_FOUND})
-
 set(PACKAGE_VERSION ${PROJECT_VERSION})
 set(PACKAGE ${PROJECT_NAME})
 set(PACKAGE_NAME ${PROJECT_NAME})
@@ -78,6 +76,18 @@ option(USE_INTERFACE "Use extension interface of Scheme interpreter" ON)
 configure_file(config.h.in config.h @ONLY)
 
 set(GENERATOR_SCRIPT_DIR ${CMAKE_SOURCE_DIR}/cmake/generate)
+
+# Generate at configure time so xgettext can find them
+execute_process(
+    COMMAND ${CMAKE_COMMAND}
+            -DINPUT_BUGS=${CMAKE_SOURCE_DIR}/BUGS
+            -DOUTPUT_BUGS=${CMAKE_CURRENT_BINARY_DIR}/bugs.c
+            -DINPUT_AUTHORS=${CMAKE_SOURCE_DIR}/AUTHORS
+            -DOUTPUT_AUTHORS=${CMAKE_CURRENT_BINARY_DIR}/authors.c
+            -P ${GENERATOR_SCRIPT_DIR}/generate_headers.cmake
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
 add_custom_command(
     OUTPUT bugs.c authors.c
     COMMAND ${CMAKE_COMMAND}

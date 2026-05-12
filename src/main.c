@@ -50,6 +50,8 @@
 # include <getopt.h>
 #endif
 
+#include <glib/gstdio.h>
+
 #include "common.h"
 #include "main.h"
 #include "callbacks.h"
@@ -57,11 +59,9 @@
 #include "render.h"
 #include "project.h"
 
-#if (DEBUG)
-# define dprintf printf("%s():  ", __FUNCTION__); printf
-#else
-# define dprintf if(0) printf
-#endif
+/* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 #define NUMBER_OF_DEFAULT_COLORS 18
 #define NUMBER_OF_DEFAULT_TRANSFORMATIONS 20
@@ -75,6 +75,35 @@ getopt_configured(int argc, char * const argv[], const char *optstring,
 static int
 getopt_lengh_unit(const char *optarg, double *input_div,
 		gerbv_screen_t *screen);
+
+static gint
+compare_strings(gconstpointer a, gconstpointer b)
+{
+    return g_ascii_strcasecmp((const char *)a, (const char *)b);
+}
+
+static GList *
+scan_directory(const char *dirpath)
+{
+    GDir *dir = g_dir_open(dirpath, 0, NULL);
+    if (!dir)
+	return NULL;
+
+    GList *files = NULL;
+    const gchar *entry;
+    while ((entry = g_dir_read_name(dir)) != NULL) {
+	gchar *fullpath = g_build_filename(dirpath, entry, NULL);
+	if (g_file_test(fullpath, G_FILE_TEST_IS_REGULAR)
+	&&  gerbv_is_loadable_file(fullpath)) {
+	    files = g_list_prepend(files, fullpath);
+	} else {
+	    g_free(fullpath);
+	}
+    }
+    g_dir_close(dir);
+
+    return g_list_sort(files, compare_strings);
+}
 
 static gerbv_layer_color mainDefaultColors[NUMBER_OF_DEFAULT_COLORS] = {
 	{115,115,222,177},
@@ -147,6 +176,7 @@ const struct option longopts[] = {
     {"window",		required_argument,  NULL,    'w'},
     {"export",          required_argument,  NULL,    'x'},
     {"svg-layers",      no_argument,        &longopt_val, 3},
+    {"svg-cairo",       no_argument,        &longopt_val, 4},
     {"geometry",        required_argument,  &longopt_val, 1},
     /* GDK/GDK debug flags to be "let through" */
     {"gtk-module",      required_argument,  &longopt_val, 2},
@@ -197,7 +227,7 @@ main_open_project_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 	gint i, max_layer_num = -1;
 	gerbv_fileinfo_t *file_info;
 
-	dprintf("Opening project = %s\n", (gchar *) filename);
+	DPRINTF("Opening project = %s\n", (gchar *) filename);
 	list = read_project_file(filename);
 
 	if (!list) {
@@ -481,9 +511,7 @@ main(int argc, char *argv[])
 	EXP_TYPE_RS274X,
 	EXP_TYPE_DRILL,
 	EXP_TYPE_IDRILL,
-#ifdef HAVE_LIBDXFLIB
 	EXP_TYPE_DXF,
-#endif
     };
     enum exp_type exportType = EXP_TYPE_NONE;
     const char *export_type_names[] = {
@@ -494,9 +522,7 @@ main(int argc, char *argv[])
 	"rs274x",
 	"drill",
 	"idrill",
-#ifdef HAVE_LIBDXFLIB
 	"dxf",
-#endif
 	NULL
     };
     const gchar *export_def_file_names[] = {
@@ -507,9 +533,7 @@ main(int argc, char *argv[])
 	"output.gbx",
 	"output.cnc",
 	"output.ncp",
-#ifdef HAVE_LIBDXFLIB
 	"output.dxf",
-#endif
 	NULL
     };
 
@@ -534,6 +558,21 @@ main(int argc, char *argv[])
 #endif
 
     attach_console_for_win();
+
+#ifdef WIN32
+    /* Convert argv from system codepage to UTF-8 for GLib functions.
+     * The original argv[i] pointers (owned by the C runtime) are
+     * intentionally overwritten and leaked — the converted strings
+     * must live for the entire process lifetime, and argv is not
+     * freed by the caller.  This block only runs on Windows, so it
+     * will not appear in Linux Valgrind runs. */
+    for (i = 0; i < argc; i++) {
+        gchar *utf8_arg = g_locale_to_utf8(argv[i], -1, NULL, NULL, NULL);
+        if (utf8_arg) {
+            argv[i] = utf8_arg;
+        }
+    }
+#endif
 
     /*
      * Setup the screen info. Must do this before getopt, since getopt
@@ -657,6 +696,9 @@ main(int argc, char *argv[])
 		break;
 	    case 3: /* svg-layers */
 		svgLayers = TRUE;
+		break;
+	    case 4: /* svg-cairo */
+		mainProject->use_cairo_svg = TRUE;
 		break;
 	    default:
 		break;
@@ -947,10 +989,11 @@ main(int argc, char *argv[])
     }
 
     if (logToFileOption) {
-	logFile = fopen(logToFileFilename, "w");
+	logFile = g_fopen(logToFileFilename, "w");
 	if (!logFile) {
-	    fprintf(stderr, "error: cannot open log file '%s'\n",
-		    logToFileFilename);
+	    int saved_errno = errno;
+	    fprintf(stderr, "error: cannot open log file '%s': %s\n",
+		    logToFileFilename, strerror(saved_errno));
 	    exit(1);
 	}
     }
@@ -972,7 +1015,7 @@ main(int argc, char *argv[])
      */
 
     if (project_filename) {
-	dprintf(_("Loading project %s...\n"), project_filename);
+	DPRINTF(_("Loading project %s...\n"), project_filename);
 	/* calculate the absolute pathname to the project if the user
 	   used a relative path */
 	g_free (mainProject->path);
@@ -989,30 +1032,48 @@ main(int argc, char *argv[])
 	    mainProject->path = g_path_get_dirname (project_filename);
 	}
     } else {
-    	gint loadedIndex = 0;
+	gint loadedIndex = 0;
 	for(i = optind ; i < argc; i++) {
-	    g_free (mainProject->path);
-	    if (!g_path_is_absolute(argv[i])) {
-		gchar *currentDir = g_get_current_dir ();
-		gchar *fullName = g_build_filename (currentDir,
-						    argv[i], NULL);
-		gerbv_open_layer_from_filename_with_color (mainProject, fullName,
-			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
-			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].green*257,
-			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].blue*257,
-			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
-		mainProject->path = g_path_get_dirname (fullName);
-		g_free (fullName);
-		g_free (currentDir);
+	    gchar *arg = argv[i];
+	    gchar *absArg;
+
+	    if (!g_path_is_absolute(arg)) {
+		gchar *currentDir = g_get_current_dir();
+		absArg = g_build_filename(currentDir, arg, NULL);
+		g_free(currentDir);
 	    } else {
-		gerbv_open_layer_from_filename_with_color (mainProject, argv[i],
+		absArg = g_strdup(arg);
+	    }
+
+	    if (g_file_test(absArg, G_FILE_TEST_IS_DIR)) {
+		GList *files = scan_directory(absArg);
+		if (!files) {
+		    fprintf(stderr,
+			_("No loadable files found in \"%s\"\n"), arg);
+		}
+		for (GList *l = files; l != NULL; l = l->next) {
+		    g_free(mainProject->path);
+		    gerbv_open_layer_from_filename_with_color(mainProject,
+			(gchar *)l->data,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].green*257,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].blue*257,
 			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
-		mainProject->path = g_path_get_dirname (argv[i]);
+		    mainProject->path = g_path_get_dirname((gchar *)l->data);
+		    loadedIndex++;
+		}
+		g_list_free_full(files, g_free);
+	    } else {
+		g_free(mainProject->path);
+		gerbv_open_layer_from_filename_with_color(mainProject, absArg,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].red*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].green*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].blue*257,
+			mainDefaultColors[loadedIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257);
+		mainProject->path = g_path_get_dirname(absArg);
+		loadedIndex++;
 	    }
-	    loadedIndex++;
+	    g_free(absArg);
 	}
     }
 
@@ -1021,7 +1082,7 @@ main(int argc, char *argv[])
 
 	gdouble initial_radians = DEG2RAD(initial_rotation);
 
-	dprintf("Rotating all layers by %.0f degrees\n", (float) initial_rotation);
+	DPRINTF("Rotating all layers by %.0f degrees\n", (float) initial_rotation);
 	for(i = 0; i < mainProject->max_files; i++) {
 	    if (mainProject->file[i])
 		mainProject->file[i]->transform.rotation = initial_radians;
@@ -1032,10 +1093,10 @@ main(int argc, char *argv[])
 	/* Set initial mirroring of all layers */
 
 	if (initial_mirror_x) {
-	    dprintf("Mirroring all layers about x axis\n");
+	    DPRINTF("Mirroring all layers about x axis\n");
 	}
 	if (initial_mirror_y) {
-	    dprintf("Mirroring all layers about y axis\n");
+	    DPRINTF("Mirroring all layers about y axis\n");
 	}
 
 	for (i = 0; i < mainProject->max_files; i++) {
@@ -1133,9 +1194,7 @@ main(int argc, char *argv[])
 	case EXP_TYPE_RS274X:
 	case EXP_TYPE_DRILL:
 	case EXP_TYPE_IDRILL:
-#ifdef HAVE_LIBDXFLIB
 	case EXP_TYPE_DXF:
-#endif
 	    if (!mainProject->file[0]->image) {
 		fprintf(stderr, _("A valid file was not loaded.\n"));
 		if (logFile)
@@ -1167,12 +1226,10 @@ main(int argc, char *argv[])
 		gerbv_export_isel_drill_file_from_image (exportFilename,
 			exportImage, &mainProject->file[0]->transform);
 		break;
-#ifdef HAVE_LIBDXFLIB
 	    case EXP_TYPE_DXF:
 		gerbv_export_dxf_file_from_image(exportFilename,
 			exportImage, &mainProject->file[0]->transform);
 		break;
-#endif
 	    default:
 		break;
 	    }
@@ -1430,28 +1487,26 @@ gerbv_print_help(void)
 
 #ifdef HAVE_GETOPT_LONG
 	printf(_(
-#ifdef HAVE_LIBDXFLIB
 "  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\n"
-#else
-"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill>\n"
-#endif
 "                          Export a rendered picture to a file with\n"
 "                          the specified format.\n"));
 	printf(_(
 "      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
 "                          Only used with --export=svg.\n"));
+	printf(_(
+"      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
+"                          Only used with --export=svg.\n"));
 #else
 	printf(_(
 "  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
 "     rs274x|drill|        the specified format.\n"
-#ifdef HAVE_LIBDXFLIB
 "     idrill|dxf>\n"
-#else
-"     idrill>\n"
-#endif
 ));
 	printf(_(
 "      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
+"                          Only used with -xsvg.\n"));
+	printf(_(
+"      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
 "                          Only used with -xsvg.\n"));
 #endif
 

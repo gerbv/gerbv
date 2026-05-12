@@ -51,7 +51,8 @@
 #include "gerbv_icon.h"
 #include "icons.h"
 
-#define dprintf if(DEBUG) printf
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static const gchar *gerbv_win_title = N_("Gerbv — gEDA's Gerber Viewer");
 
@@ -71,7 +72,7 @@ rename_main_window(char const* filename, GtkWidget *main_win)
 	g_assert(win != NULL);
 
 	if (filename && filename[0] != '\0') {
-		gchar *basename = g_path_get_basename(filename);
+		gchar *basename = g_filename_display_basename(filename);
 		g_string_printf(win_title, "%s — Gerbv", basename);
 		g_free(basename);
 	} else {
@@ -181,9 +182,7 @@ interface_create_gui (int req_width, int req_height)
 	GtkWidget *menuitem_file_export_menu;
 	GtkWidget *png, *pdf, *svg, *postscript, *geda_pcb;
 	GtkWidget *rs274x, *drill, *idrill, *rs274xm, *drillm;
-#if HAVE_LIBDXFLIB
 	GtkWidget *dxf;
-#endif
 	
 #if GTK_CHECK_VERSION(2,10,0)
 	GtkWidget *print;
@@ -444,12 +443,10 @@ interface_create_gui (int req_width, int req_height)
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), postscript);
 	gtk_tooltips_set_tip (tooltips, postscript, _("Export visible layers to a PostScript file"), NULL);
 
-#if HAVE_LIBDXFLIB
 	dxf = gtk_menu_item_new_with_mnemonic (_("D_XF..."));
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu), dxf);
 	gtk_tooltips_set_tip (tooltips, dxf,
 			_("Export active layer to a DXF file"), NULL);
-#endif
 
 	gtk_container_add (GTK_CONTAINER (menuitem_file_export_menu),
 			gtk_separator_menu_item_new ());
@@ -1375,11 +1372,9 @@ interface_create_gui (int req_width, int req_height)
 	g_signal_connect ((gpointer) geda_pcb, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_GEDA_PCB);
-#if HAVE_LIBDXFLIB
 	g_signal_connect ((gpointer) dxf, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_DXF);
-#endif
 	g_signal_connect ((gpointer) rs274x, "activate",
 	                  G_CALLBACK (callbacks_generic_save_activate),
 	                  (gpointer) CALLBACKS_SAVE_FILE_RS274X);
@@ -1642,7 +1637,7 @@ interface_create_gui (int req_width, int req_height)
 
 	renderer = gtk_cell_renderer_text_new ();
 	g_object_set (G_OBJECT (renderer), "foreground", "red", "xalign", 0.5,
-			"family", "Times", "size-points", 12.0, NULL);
+			"family", "Serif", "size-points", 12.0, NULL);
 	column = gtk_tree_view_column_new_with_attributes ("Modified",
 	                                                renderer,
 	                                                "text", 3,

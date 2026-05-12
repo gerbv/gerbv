@@ -35,7 +35,8 @@
 #include "common.h"
 #include "gerb_stats.h"
 
-#define dprintf if(DEBUG) printf
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 /* ------------------------------------------------------- */
 /** Allocates a new gerbv_stats structure
@@ -121,7 +122,7 @@ gerbv_stats_add_layer(gerbv_stats_t *accum_stats,
 		     gerbv_stats_t *input_stats,
 		     int this_layer) {
     
-    dprintf("---> Entering gerbv_stats_add_layer ... \n");
+    DPRINTF("---> Entering gerbv_stats_add_layer ... \n");
 
     gerbv_error_list_t *error;
     gerbv_aperture_list_t *aperture;
@@ -156,11 +157,11 @@ gerbv_stats_add_layer(gerbv_stats_t *accum_stats,
          D_code != NULL;
          D_code = D_code->next) {
         if (D_code->number != -1) {
-	  dprintf("     .... In gerbv_stats_add_layer, D code section, adding number = %d to accum_stats D list ...\n",
+	  DPRINTF("     .... In gerbv_stats_add_layer, D code section, adding number = %d to accum_stats D list ...\n",
 		  D_code->number);
 	  gerbv_stats_add_to_D_list(accum_stats->D_code_list,
 				   D_code->number);
-	  dprintf("     .... In gerbv_stats_add_layer, D code section, calling increment_D_count with count %d ...\n", 
+	  DPRINTF("     .... In gerbv_stats_add_layer, D code section, calling increment_D_count with count %d ...\n", 
 		  D_code->count);
 	  gerbv_stats_increment_D_list_count(accum_stats->D_code_list,
 					    D_code->number,
@@ -209,7 +210,7 @@ gerbv_stats_add_layer(gerbv_stats_t *accum_stats,
         }
     }
 
-    dprintf("<---- .... Leaving gerbv_stats_add_layer. \n");
+    DPRINTF("<---- .... Leaving gerbv_stats_add_layer. \n");
 
     return;
 }
@@ -362,14 +363,14 @@ gerbv_stats_new_aperture_list() {
     gerbv_aperture_list_t *aperture_list;
     int i;
 
-    dprintf("Mallocing new gerb aperture list\n");
+    DPRINTF("Mallocing new gerb aperture list\n");
     /* Malloc space for new aperture_list struct.  Return NULL if error. */
     if (NULL == (aperture_list = g_new(gerbv_aperture_list_t, 1))) {
-        dprintf("malloc new gerb aperture list failed in %s()\n", __FUNCTION__);
+        DPRINTF("malloc new gerb aperture list failed in %s()\n", __FUNCTION__);
         return NULL;
     }
 
-    dprintf("   Placing values in certain structs.\n");
+    DPRINTF("   Placing values in certain structs.\n");
     aperture_list->number = -1;
     aperture_list->count = 0;
     aperture_list->type = 0;
@@ -392,12 +393,12 @@ gerbv_stats_add_aperture(gerbv_aperture_list_t *aperture_list_in,
     gerbv_aperture_list_t *aperture;
     int i;
 
-    dprintf("   --->  Entering gerbv_stats_add_aperture ....\n"); 
+    DPRINTF("   --->  Entering gerbv_stats_add_aperture ....\n"); 
 
     /* First handle case where this is the first list element */
     if (aperture_list_in->number == -1) {
-	dprintf("     .... Adding first aperture to aperture list ... \n"); 
-	dprintf("     .... Aperture type = %d ... \n", type); 
+	DPRINTF("     .... Adding first aperture to aperture list ... \n"); 
+	DPRINTF("     .... Aperture type = %d ... \n", type); 
         aperture_list_in->number = number;
         aperture_list_in->type = type;
 	aperture_list_in->layer = layer;
@@ -405,7 +406,7 @@ gerbv_stats_add_aperture(gerbv_aperture_list_t *aperture_list_in,
 	    aperture_list_in->parameter[i] = parameter[i];
 	}
         aperture_list_in->next = NULL;
-	dprintf("   <---  .... Leaving gerbv_stats_add_aperture.\n"); 
+	DPRINTF("   <---  .... Leaving gerbv_stats_add_aperture.\n"); 
         return;
     }
 
@@ -415,15 +416,15 @@ gerbv_stats_add_aperture(gerbv_aperture_list_t *aperture_list_in,
 	aperture = aperture->next) {
         if ((aperture->number == number) &&
             (aperture->layer == layer) ) {
-	  dprintf("     .... This aperture is already in the list ... \n"); 
-	    dprintf("   <---  .... Leaving gerbv_stats_add_aperture.\n"); 
+	  DPRINTF("     .... This aperture is already in the list ... \n"); 
+	    DPRINTF("   <---  .... Leaving gerbv_stats_add_aperture.\n"); 
             return;  
         }
         aperture_last = aperture;  /* point to last element in list */
     }
     /* This aperture number is unique.  Therefore, add it to the list */
-    dprintf("     .... Adding another aperture to list ... \n"); 
-    dprintf("     .... Aperture type = %d ... \n", type); 
+    DPRINTF("     .... Adding another aperture to list ... \n"); 
+    DPRINTF("     .... Aperture type = %d ... \n", type); 
 	
     /* Now malloc space for new aperture list element */
     if (NULL == (aperture_list_new = g_new(gerbv_aperture_list_t, 1))) {
@@ -440,7 +441,7 @@ gerbv_stats_add_aperture(gerbv_aperture_list_t *aperture_list_in,
     }
     aperture_last->next = aperture_list_new;
 
-    dprintf("   <---  .... Leaving gerbv_stats_add_aperture.\n"); 
+    DPRINTF("   <---  .... Leaving gerbv_stats_add_aperture.\n"); 
 
     return;
 }
@@ -454,16 +455,16 @@ gerbv_stats_add_to_D_list(gerbv_aperture_list_t *D_list_in,
   gerbv_aperture_list_t *D_list_last=NULL;
   gerbv_aperture_list_t *D_list_new;
 
-    dprintf("   ----> Entering add_to_D_list, numbr = %d\n", number);
+    DPRINTF("   ----> Entering add_to_D_list, numbr = %d\n", number);
 
     /* First handle case where this is the first list element */
     if (D_list_in->number == -1) {
-	dprintf("     .... Adding first D code to D code list ... \n"); 
-	dprintf("     .... Aperture number = %d ... \n", number); 
+	DPRINTF("     .... Adding first D code to D code list ... \n"); 
+	DPRINTF("     .... Aperture number = %d ... \n", number); 
         D_list_in->number = number;
 	D_list_in->count = 0;
         D_list_in->next = NULL;
-	dprintf("   <---  .... Leaving add_to_D_list.\n"); 
+	DPRINTF("   <---  .... Leaving add_to_D_list.\n"); 
         return;
     }
 
@@ -472,15 +473,15 @@ gerbv_stats_add_to_D_list(gerbv_aperture_list_t *D_list_in,
 	D_list != NULL; 
 	D_list = D_list->next) {
         if (D_list->number == number) {
-  	    dprintf("    .... Found in D list .... \n");
-	    dprintf("   <---  .... Leaving add_to_D_list.\n"); 
+  	    DPRINTF("    .... Found in D list .... \n");
+	    DPRINTF("   <---  .... Leaving add_to_D_list.\n"); 
             return;  
         }
         D_list_last = D_list;  /* point to last element in list */
     }
 
     /* This aperture number is unique.  Therefore, add it to the list */
-    dprintf("     .... Adding another D code to D code list ... \n"); 
+    DPRINTF("     .... Adding another D code to D code list ... \n"); 
 	
     /* Malloc space for new aperture list element */
     if (NULL == (D_list_new = g_new(gerbv_aperture_list_t, 1))) {
@@ -493,7 +494,7 @@ gerbv_stats_add_to_D_list(gerbv_aperture_list_t *D_list_in,
     D_list_new->next = NULL;
     D_list_last->next = D_list_new;
 
-    dprintf("   <---  .... Leaving add_to_D_list.\n"); 
+    DPRINTF("   <---  .... Leaving add_to_D_list.\n"); 
 
     return;
 }
@@ -507,23 +508,23 @@ gerbv_stats_increment_D_list_count(gerbv_aperture_list_t *D_list_in,
   
     gerbv_aperture_list_t *D_list;
 
-    dprintf("   Entering inc_D_list_count, code = D%d, input count to add = %d\n", number, count);
+    DPRINTF("   Entering inc_D_list_count, code = D%d, input count to add = %d\n", number, count);
 
     /* Find D code in list and increment it */
     for(D_list = D_list_in; 
 	D_list != NULL; 
 	D_list = D_list->next) {
         if (D_list->number == number) {
-	    dprintf("    old count = %d\n", D_list->count);
+	    DPRINTF("    old count = %d\n", D_list->count);
 	    D_list->count += count;  /* Add to this aperture count, then return */
-	    dprintf("    updated count = %d\n", D_list->count);
+	    DPRINTF("    updated count = %d\n", D_list->count);
             return 0;  /* Return 0 for success */  
         }
     }
 
     /* This D number is not defined.  Therefore, flag error */
-    dprintf("    .... Didn't find this D code in defined list .... \n");
-    dprintf("   <---  .... Leaving inc_D_list_count.\n"); 
+    DPRINTF("    .... Didn't find this D code in defined list .... \n");
+    DPRINTF("   <---  .... Leaving inc_D_list_count.\n"); 
 
     gerbv_stats_printf(error, GERBV_MESSAGE_ERROR, -1,
 	    _("Undefined aperture number called out in D code"));

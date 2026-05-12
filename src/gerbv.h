@@ -78,6 +78,16 @@ For help with using the standalone Gerbv software, please refer to the man page
 # include <cairo.h>
 #endif
 
+#ifndef M_PI
+# define M_PI		3.14159265358979323846	/* pi */
+#endif
+#ifndef M_PI_2
+# define M_PI_2		1.57079632679489661923	/* pi/2 */
+#endif
+#ifndef M_1_PI
+# define M_1_PI		0.31830988618379067154	/* 1/pi */
+#endif
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -525,13 +535,16 @@ typedef struct {
     int G04;
     int G05;
     int G85;
+    int G87;
     int G90;
     int G91;
     int G93;
+    int G_machine_only;
     int G_unknown;
 
     int M00;
     int M01;
+    int M02;
     int M18;
     int M25;
     int M30;
@@ -539,11 +552,15 @@ typedef struct {
     int M45;
     int M47;
     int M48;
+    int M70;
     int M71;
     int M72;
+    int M80;
+    int M90;
     int M95;
     int M97;
     int M98;
+    int M_machine_only;
     int M_unknown;
 
     int R;
@@ -749,6 +766,7 @@ typedef struct {
   gchar *execpath;    /*!< the path to executed version of Gerbv */
   gchar *execname;    /*!< the path plus executible name for Gerbv */
   gchar *project;     /*!< the default name for the private project file */
+  gboolean use_cairo_svg; /*!< TRUE to use Cairo's SVG surface instead of the optimized writer */
 } gerbv_project_t;
 
 /*! Color of layer */
@@ -1135,6 +1153,10 @@ gerbv_transform_coord_for_image(double *x, double *y,
 /*! See if 'path' ends with the filename extension 'ext' */
 gboolean
 gerbv_endswith(const char *path, const char *ext);
+
+/*! Check if a file is a loadable gerber, drill, or pick-and-place file */
+gboolean
+gerbv_is_loadable_file(const char *filename);
 
 /*! Transform coordinate x and y */
 void

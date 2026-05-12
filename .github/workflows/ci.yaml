@@ -14,6 +14,24 @@ on:
 
 
 jobs:
+  check-version:
+    runs-on: ubuntu-22.04
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check CMakeLists.txt VERSION matches git tag
+        run: |
+          CMAKE_VERSION=$(grep -oP 'project\s*\(\s*gerbv\s+VERSION\s+\K[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt)
+          TAG_VERSION="${{ github.ref_name }}"
+          TAG_BASE="${TAG_VERSION#v}"
+          TAG_BASE="${TAG_BASE%%-*}"
+          if [ "$CMAKE_VERSION" != "$TAG_BASE" ]; then
+            echo "ERROR: CMakeLists.txt VERSION (${CMAKE_VERSION}) does not match git tag (${TAG_VERSION})"
+            echo "Please update VERSION in CMakeLists.txt before tagging a release."
+            exit 1
+          fi
+          echo "Version check passed: ${CMAKE_VERSION} matches tag ${TAG_VERSION}"
+
   ci-ubuntu-22-04:
     runs-on: ubuntu-22.04
     strategy:
@@ -100,62 +118,90 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: gerbv-lcov.info
 
+
+  ci-fedora:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
     - name: Rebuild Fedora 43
-      if: "!matrix.code_coverage"
       run: npx --package mini-cross@0.15.2 mc --no-tty fedora_43 .mc/rebuild.sh
 
-    - name: Rebuild Ubuntu 22.04
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu_22.04 .mc/rebuild.sh
-
-    - name: Rebuild Debian 13
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty debian_13 .mc/rebuild.sh
-
-    - name: Rebuild Windows amd64
-      if: "!matrix.code_coverage"
-      run: npx --package mini-cross@0.15.2 mc --no-tty windows_amd64 .mc/rebuild-win.sh
-
-    - name: Upload executable artifacts
-      if: "!matrix.code_coverage"
+    - name: Upload artifacts
       uses: actions/upload-artifact@v6
       with:
-        name: gerbv
-        path: gerbv.github.io/ci/gerbv*
+        name: gerbv-fedora
+        path: gerbv.github.io/ci/
         if-no-files-found: error
 
-    - name: Rebuild gerbv.github.io
-      if: ${{ github.ref == 'refs/heads/develop' && !matrix.code_coverage }}
-      run: |
-        npx --package mini-cross@0.15.2 mc --no-tty website make -C gerbv.github.io
-        find gerbv.github.io -type f -name '.gitignore' -exec rm {} \;
-
-    - name: Deploy gerbv.github.io
-      uses: JamesIves/github-pages-deploy-action@v4
+  ci-ubuntu:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
       with:
-        repository-name: gerbv/gerbv.github.io
-        branch: gh-pages
-        folder: gerbv.github.io
-        token: ${{ secrets.GERBV_BUILDBOT_PAT }}
-        git-config-name: gerbv-buildbot
-        git-config-email: violetland+gerbv@mail.ru
-        single-commit: true
-      # @see https://github.community/t/how-can-i-test-if-secrets-are-available-in-an-action/17911/10
-      env:
-        GERBV_BUILDBOT_PAT: ${{ secrets.GERBV_BUILDBOT_PAT }}
-      if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && env.GERBV_BUILDBOT_PAT && !matrix.code_coverage }}
+        fetch-depth: 0
+
+    - name: Rebuild Ubuntu 22.04
+      run: npx --package mini-cross@0.15.2 mc --no-tty ubuntu_22.04 .mc/rebuild.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-ubuntu
+        path: gerbv.github.io/ci/
+        if-no-files-found: error
+
+  ci-debian:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Rebuild Debian 13
+      run: npx --package mini-cross@0.15.2 mc --no-tty debian_13 .mc/rebuild.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-debian
+        path: gerbv.github.io/ci/
+        if-no-files-found: error
+
+  ci-windows_amd64-cross:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Rebuild Windows amd64 cross compilation
+      run: npx --package mini-cross@0.15.2 mc --no-tty windows_amd64 .mc/rebuild-win.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-windows_amd64
+        path: gerbv.github.io/ci/
+        if-no-files-found: error
 
   ci-macos:
     runs-on: macos-15
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Get number of jobs for compiling
       run: echo "NUM_BUILD_JOBS=$(sysctl -n hw.logicalcpu)" >> $GITHUB_ENV
 
     - name: Install build dependencies
       run: |
-        brew install cmake ninja pkgconf gettext gtk+ gtkmm libffi zlib bzip2 libpng expat imagemagick
+        # These packages are already installed. We comment them out to avoid warnings
+        # brew install cmake ninja pkgconf libpng gettext
+        brew install gtk+ gtkmm libffi zlib bzip2 expat imagemagick
         echo "PATH=$(brew --prefix gettext)/bin:${PATH}" >> $GITHUB_ENV
         mkdir -p "${HOME}/.local/lib/pkgconfig"
         BZIP_PREFIX="$(brew --prefix bzip2)"
@@ -184,9 +230,103 @@ jobs:
       continue-on-error: true
       run: ctest --preset macos-clang -V
 
+    - name: Package
+      run: bash .mc/package-macos.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-macos
+        path: gerbv.github.io/ci/
+        if-no-files-found: error
+
+  ci-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        install: git zip
+        pacboy: >-
+          toolchain:p
+          cmake:p
+          ninja:p
+          pkgconf:p
+          gtk2:p
+          gtkmm:p
+          gettext-tools:p
+          imagemagick:p
+
+    - name: Configure
+      run: cmake --preset msys2-ucrt64-gcc
+
+    - name: Build
+      run: cmake --build --preset msys2-ucrt64-gcc --parallel $(nproc)
+
+    - name: Run tests
+      continue-on-error: true
+      run: ctest --preset msys2-ucrt64-gcc -V
+
+    - name: Package
+      run: bash .mc/package-msys2.sh
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: gerbv-windows-msys2
+        path: gerbv.github.io/ci/
+        if-no-files-found: error
+
+  ci-website:
+    runs-on: ubuntu-22.04
+    needs: [ci-fedora, ci-debian, ci-ubuntu, ci-windows_amd64-cross, ci-macos, ci-windows]
+    if: ${{ github.ref == 'refs/heads/develop' && github.event_name == 'push' }}
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Download all platform artifacts
+      uses: actions/download-artifact@v6
+      with:
+        pattern: gerbv-*
+        path: gerbv.github.io/ci/
+        merge-multiple: true
+
+    - name: Install doxygen
+      run: |
+        sudo apt-get update
+        sudo apt-get install doxygen
+
+    - name: Build website
+      run: make -C gerbv.github.io
+
+    - name: Deploy gerbv.github.io
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        repository-name: gerbv/gerbv.github.io
+        branch: gh-pages
+        folder: gerbv.github.io
+        ssh-key: ${{ secrets.PAGES_DEPLOY_KEY }}
+        git-config-name: gerbv-buildbot
+        git-config-email: gerbv-buildbot@users.noreply.github.com
+        single-commit: true
+      env:
+        PAGES_DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
+      # Guard: step is skipped (not failed) when deploy key secret is absent
+      if: ${{ env.PAGES_DEPLOY_KEY != '' }}
+
+
   release:
     runs-on: ubuntu-22.04
-    needs: [ci-ubuntu-22-04, ci-macos]
+    needs: [check-version, ci-ubuntu-22-04, ci-fedora, ci-debian, ci-ubuntu, ci-windows_amd64-cross, ci-macos, ci-windows]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
@@ -194,8 +334,9 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v6
         with:
-          name: gerbv
+          pattern: gerbv-*
           path: artifacts/
+          merge-multiple: true
 
       - name: Rename artifacts to use version tag
         run: |

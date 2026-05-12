@@ -39,7 +39,8 @@
 #include "common.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
-#define dprintf if(DEBUG) printf
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 #define round(x) floor(x+0.5)
 
 gboolean

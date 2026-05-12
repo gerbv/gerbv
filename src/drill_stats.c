@@ -37,7 +37,8 @@
 #include "drill_stats.h"
 #include "gerb_stats.h"
 
-#define dprintf if(DEBUG) printf
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 
 /* ------------------------------------------------------- */
@@ -115,7 +116,7 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     gerbv_error_list_t *error;
     char *tmps, *tmps2;
 
-    dprintf("--->  Entering gerbv_drill_stats_add_layer ..... \n");
+    DPRINTF("--->  Entering gerbv_drill_stats_add_layer ..... \n");
 
     accum_stats->layer_count++;
 
@@ -129,13 +130,16 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     accum_stats->G04 += input_stats->G04;
     accum_stats->G05 += input_stats->G05;
     accum_stats->G85 += input_stats->G85;
+    accum_stats->G87 += input_stats->G87;
     accum_stats->G90 += input_stats->G90;
     accum_stats->G91 += input_stats->G91;
     accum_stats->G93 += input_stats->G93;
+    accum_stats->G_machine_only += input_stats->G_machine_only;
     accum_stats->G_unknown += input_stats->G_unknown;
 
     accum_stats->M00 += input_stats->M00;
     accum_stats->M01 += input_stats->M01;
+    accum_stats->M02 += input_stats->M02;
     accum_stats->M18 += input_stats->M18;
     accum_stats->M25 += input_stats->M25;
     accum_stats->M30 += input_stats->M30;
@@ -143,11 +147,15 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     accum_stats->M45 += input_stats->M45;
     accum_stats->M47 += input_stats->M47;
     accum_stats->M48 += input_stats->M48;
+    accum_stats->M70 += input_stats->M70;
     accum_stats->M71 += input_stats->M71;
     accum_stats->M72 += input_stats->M72;
+    accum_stats->M80 += input_stats->M80;
+    accum_stats->M90 += input_stats->M90;
     accum_stats->M95 += input_stats->M95;
     accum_stats->M97 += input_stats->M97;
     accum_stats->M98 += input_stats->M98;
+    accum_stats->M_machine_only += input_stats->M_machine_only;
     accum_stats->M_unknown += input_stats->M_unknown;
 
     accum_stats->R += input_stats->R;
@@ -156,7 +164,7 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     for (drill = input_stats->drill_list;
          drill != NULL;
 	 drill = drill->next) {
-	dprintf("   In gerbv_drill_stats_add_layer, adding drill_num = %d to list\n",
+	DPRINTF("   In gerbv_drill_stats_add_layer, adding drill_num = %d to list\n",
 		drill->drill_num);
 	/* First add this input drill to the accumulated list.
 	 * Drills already in accum list will not be added. */
@@ -166,7 +174,7 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
 				      drill->drill_unit);
 
 	/* Now add count of input drill to accum list */
-	dprintf("   adding count %d of drills for drill %d\n", 
+	DPRINTF("   adding count %d of drills for drill %d\n", 
 		drill->drill_count, drill->drill_num);
 	drill_stats_add_to_drill_counter(accum_stats->drill_list,
 					 drill->drill_num,
@@ -215,7 +223,7 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     }
 
 
-    dprintf("<---  .... Leaving gerbv_drill_stats_add_layer.\n");
+    DPRINTF("<---  .... Leaving gerbv_drill_stats_add_layer.\n");
 	    
     return;
 }
@@ -264,15 +272,15 @@ drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
     gerbv_drill_list_t *drill;
     gerbv_drill_list_t *drill_last = NULL;
 
-    dprintf ("%s(%p, %d, %g, \"%s\")\n", __FUNCTION__, drill_list_in, drill_num_in,
+    DPRINTF("%s(%p, %d, %g, \"%s\")\n", __FUNCTION__, drill_list_in, drill_num_in,
 	     drill_size_in, drill_unit_in);
 
-    dprintf("   ---> Entering drill_stats_add_to_drill_list, first drill_num in list = %d ...\n", 
+    DPRINTF("   ---> Entering drill_stats_add_to_drill_list, first drill_num in list = %d ...\n", 
 	    drill_list_in->drill_num);
 
     /* First check for empty list.  If empty, then just add this drill */
     if (drill_list_in->drill_num == -1) {
-	dprintf("    .... In drill_stats_add_to_drill_list, adding first drill, no %d\n", 
+	DPRINTF("    .... In drill_stats_add_to_drill_list, adding first drill, no %d\n", 
 		drill_num_in);
 	drill_list_in->drill_num = drill_num_in;
 	drill_list_in->drill_size = drill_size_in;
@@ -285,10 +293,10 @@ drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
     for(drill = drill_list_in; 
 	drill != NULL; 
 	drill = (gerbv_drill_list_t *) drill->next) {
-	dprintf("checking this drill_num %d against that in list %d.\n", 
+	DPRINTF("checking this drill_num %d against that in list %d.\n", 
 		drill_num_in, drill->drill_num);
 	if (drill_num_in == drill->drill_num) {
-	    dprintf("   .... In drill_stats_add_to_drill_list, drill no %d already in list\n", 
+	    DPRINTF("   .... In drill_stats_add_to_drill_list, drill no %d already in list\n", 
 		    drill_num_in);
 	    return;  /* Found it in list, so return */
 	}
@@ -301,7 +309,7 @@ drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
     }
 
     /* Now set various parameters based upon calling args */
-    dprintf("    .... In drill_stats_add_to_drill_list, adding new drill, no %d\n", 
+    DPRINTF("    .... In drill_stats_add_to_drill_list, adding new drill, no %d\n", 
 	    drill_num_in);
     drill_list_new->drill_num = drill_num_in;
     drill_list_new->drill_size = drill_size_in;
@@ -310,7 +318,7 @@ drill_stats_add_to_drill_list(gerbv_drill_list_t *drill_list_in,
     drill_list_new->next = NULL;
     drill_last->next = drill_list_new;
 
-    dprintf("   <---- ... leaving drill_stats_add_to_drill_list.\n");
+    DPRINTF("   <---- ... leaving drill_stats_add_to_drill_list.\n");
     return;
 }
 
@@ -322,26 +330,26 @@ drill_stats_modify_drill_list(gerbv_drill_list_t *drill_list_in,
 
     gerbv_drill_list_t *drill;
 
-    dprintf("   ---> Entering drill_stats_modify_drill_list, first drill_num in list = %d ...\n", 
+    DPRINTF("   ---> Entering drill_stats_modify_drill_list, first drill_num in list = %d ...\n", 
 	    drill_list_in->drill_num);
 
     /* Look for this drill num in list */
     for(drill = drill_list_in; 
 	drill != NULL; 
 	drill = (gerbv_drill_list_t *) drill->next) {
-	dprintf("checking this drill_num %d against that in list %d.\n", 
+	DPRINTF("checking this drill_num %d against that in list %d.\n", 
 		drill_num_in, drill->drill_num);
 	if (drill_num_in == drill->drill_num) {
-	    dprintf("   .... Found it, now update it ....\n");
+	    DPRINTF("   .... Found it, now update it ....\n");
 	    drill->drill_size = drill_size_in;
 	    if (drill->drill_unit) 
 		g_free(drill->drill_unit);
 	    drill->drill_unit = g_strdup_printf("%s", drill_unit_in);
-	    dprintf("   <---- ... Modified drill.  leaving drill_stats_modify_drill_list.\n");
+	    DPRINTF("   <---- ... Modified drill.  leaving drill_stats_modify_drill_list.\n");
 	    return;
 	}
     }
-    dprintf("   <---- ... Did not find drill.  leaving drill_stats_modify_drill_list.\n");
+    DPRINTF("   <---- ... Did not find drill.  leaving drill_stats_modify_drill_list.\n");
     return;
 }
 
@@ -350,19 +358,19 @@ void
 drill_stats_increment_drill_counter(gerbv_drill_list_t *drill_list_in, 
 				    int drill_num_in) {
 
-    dprintf("   ----> Entering drill_stats_increment_drill_counter......\n");
+    DPRINTF("   ----> Entering drill_stats_increment_drill_counter......\n");
     /* First check to see if this drill is already in the list */
     gerbv_drill_list_t *drill;
     for(drill = drill_list_in; drill != NULL; drill = drill->next) {
 	if (drill_num_in == drill->drill_num) {
 	    drill->drill_count++;
-	    dprintf("         .... incrementing drill count.  drill_num = %d, drill_count = %d.\n",
+	    DPRINTF("         .... incrementing drill count.  drill_num = %d, drill_count = %d.\n",
 		    drill_list_in->drill_num, drill->drill_count);
-	    dprintf("   <---- .... Leaving drill_stats_increment_drill_counter after incrementing counter.\n");
+	    DPRINTF("   <---- .... Leaving drill_stats_increment_drill_counter after incrementing counter.\n");
 	    return;
 	}
     }
-    dprintf("   <---- .... Leaving drill_stats_increment_drill_counter without incrementing any counter.\n");
+    DPRINTF("   <---- .... Leaving drill_stats_increment_drill_counter without incrementing any counter.\n");
 
 }
 
@@ -375,7 +383,7 @@ drill_stats_add_to_drill_counter(gerbv_drill_list_t *drill_list_in,
     gerbv_drill_list_t *drill;
     for(drill = drill_list_in; drill != NULL; drill = drill->next) {
 	if (drill_num_in == drill->drill_num) {
-	    dprintf("    In drill_stats_add_to_drill_counter, adding increment = %d drills to drill list\n", increment);
+	    DPRINTF("    In drill_stats_add_to_drill_counter, adding increment = %d drills to drill list\n", increment);
 	    drill->drill_count += increment;
 	    return;
 	}

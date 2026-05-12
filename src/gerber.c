@@ -43,7 +43,8 @@
 #include "amacro.h"
 
 #undef AMACRO_DEBUG
-#define dprintf if(DEBUG) printf
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 #define A2I(a,b) (((a & 0xff) << 8) + (b & 0xff))
 
@@ -66,8 +67,8 @@ static int parse_aperture_definition(gerb_file_t *fd,
 				     long int *line_num_p);
 static void calc_cirseg_sq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
-static void calc_cirseg_mq(struct gerbv_net *net, int cw, 
-			   double delta_cp_x, double delta_cp_y);
+void calc_cirseg_mq(struct gerbv_net *net, int cw,
+		    double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 			double apert_size_x, double apert_size_y,
 			gerbv_render_size_t *bbox);
@@ -159,15 +160,15 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
             scale = 1.0;
 	switch ((char)(read & 0xff)) {
 	case 'G':
-	    dprintf("... Found G code at line %ld\n", line_num);
+	    DPRINTF("... Found G code at line %ld\n", line_num);
 	    parse_G_code(fd, state, image, &line_num);
 	    break;
 	case 'D':
-	    dprintf("... Found D code at line %ld\n", line_num);
+	    DPRINTF("... Found D code at line %ld\n", line_num);
 	    parse_D_code(fd, state, image, &line_num);
 	    break;
 	case 'M':
-	    dprintf("... Found M code at line %ld\n", line_num);
+	    DPRINTF("... Found M code at line %ld\n", line_num);
 
 	    switch(parse_M_code(fd, image, &line_num)) {
 	    case 1 :
@@ -188,7 +189,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    add_trailing_zeros_if_omitted(&coord,
 			    image->format->x_int + image->format->x_dec - len,
 			    image->format);
-	    dprintf("... Found X code %d at line %ld\n", coord, line_num);
+	    DPRINTF("... Found X code %d at line %ld\n", coord, line_num);
 	    if (image->format
 	    &&  image->format->coordinate==GERBV_COORDINATE_INCREMENTAL)
 	        state->curr_x += coord;
@@ -205,7 +206,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    add_trailing_zeros_if_omitted(&coord,
 			    image->format->y_int + image->format->y_dec - len,
 			    image->format);
-	    dprintf("... Found Y code %d at line %ld\n", coord, line_num);
+	    DPRINTF("... Found Y code %d at line %ld\n", coord, line_num);
 	    if (image->format
 	    &&  image->format->coordinate==GERBV_COORDINATE_INCREMENTAL)
 	        state->curr_y += coord;
@@ -222,7 +223,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    add_trailing_zeros_if_omitted(&coord,
 			    image->format->x_int + image->format->x_dec - len,
 			    image->format);
-	    dprintf("... Found I code %d at line %ld\n", coord, line_num);
+	    DPRINTF("... Found I code %d at line %ld\n", coord, line_num);
 	    state->delta_cp_x = coord;
 	    state->changed = 1;
 	    break;
@@ -234,13 +235,13 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 		    add_trailing_zeros_if_omitted(&coord,
 			    image->format->y_int + image->format->y_dec - len,
 			    image->format);
-	    dprintf("... Found J code %d at line %ld\n", coord, line_num);
+	    DPRINTF("... Found J code %d at line %ld\n", coord, line_num);
 	    state->delta_cp_y = coord;
 	    state->changed = 1;
 	    break;
 
 	case '%':
-	    dprintf("... Found %% code at line %ld\n", line_num);
+	    DPRINTF("... Found %% code at line %ld\n", line_num);
 	    while (1) {
 	    	parse_rs274x(levelOfRecursion, fd, image, state, curr_net,
 				stats, directoryPath, &line_num);
@@ -288,7 +289,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    }
 	    break;
 	case '*':  
-	    dprintf("... Found * code at line %ld\n", line_num);
+	    DPRINTF("... Found * code at line %ld\n", line_num);
 	    stats->star++;
 	    if (state->changed == 0) break;
 	    state->changed = 0;
@@ -469,7 +470,7 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 
 		/* Update stats with current aperture number if not in polygon */
 		if (!state->in_parea_fill) {
-			dprintf("     In %s(), adding 1 to D_list ...\n",
+			DPRINTF("     In %s(), adding 1 to D_list ...\n",
 					__func__);
 			int retcode = gerbv_stats_increment_D_list_count(
 				stats->D_code_list, curr_net->aperture,
@@ -555,42 +556,54 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 			    widthx=widthy=ls->parameter[CIRCLE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_OUTLINE) {
 			    int pointCounter,numberOfPoints;
+			    gdouble rotation = DEG2RAD(ls->parameter[
+				OUTLINE_ROTATION_IDX(ls->parameter)]);
 			    numberOfPoints = ls->parameter[OUTLINE_NUMBER_OF_POINTS] + 1;
-		
+
 			    for (pointCounter = 0; pointCounter < numberOfPoints; pointCounter++) {
+				gdouble px = ls->parameter[OUTLINE_X_IDX_OF_POINT(pointCounter)];
+				gdouble py = ls->parameter[OUTLINE_Y_IDX_OF_POINT(pointCounter)];
+				gerbv_rotate_coord(&px, &py, rotation);
 				gerber_update_min_and_max (&boundingBox,
-							   curr_net->stop_x +
-							   ls->parameter[OUTLINE_X_IDX_OF_POINT(pointCounter)],
-							   curr_net->stop_y +
-							   ls->parameter[OUTLINE_Y_IDX_OF_POINT(pointCounter)], 
+							   curr_net->stop_x + px,
+							   curr_net->stop_y + py,
 							   0,0,0,0);
 			    }
 			    calculatedAlready = TRUE;
 			} else if (ls->type == GERBV_APTYPE_MACRO_POLYGON) {
 			    offsetx = ls->parameter[POLYGON_CENTER_X];
 			    offsety = ls->parameter[POLYGON_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[POLYGON_ROTATION]));
 			    widthx = widthy = ls->parameter[POLYGON_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_MOIRE) {
 			    offsetx = ls->parameter[MOIRE_CENTER_X];
 			    offsety = ls->parameter[MOIRE_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[MOIRE_ROTATION]));
 			    widthx = widthy = ls->parameter[MOIRE_OUTSIDE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_THERMAL) {
 			    offsetx = ls->parameter[THERMAL_CENTER_X];
 			    offsety = ls->parameter[THERMAL_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[THERMAL_ROTATION]));
 			    widthx = widthy = ls->parameter[THERMAL_OUTSIDE_DIAMETER];
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE20) {
+			    gdouble rotation = DEG2RAD(ls->parameter[LINE20_ROTATION]);
+			    gdouble sx = ls->parameter[LINE20_START_X];
+			    gdouble sy = ls->parameter[LINE20_START_Y];
+			    gdouble ex = ls->parameter[LINE20_END_X];
+			    gdouble ey = ls->parameter[LINE20_END_Y];
+			    gerbv_rotate_coord(&sx, &sy, rotation);
+			    gerbv_rotate_coord(&ex, &ey, rotation);
 			    widthx = widthy = ls->parameter[LINE20_LINE_WIDTH];
 			    gerber_update_min_and_max (&boundingBox,
-						       curr_net->stop_x +
-						       ls->parameter[LINE20_START_X],
-						       curr_net->stop_y +
-						       ls->parameter[LINE20_START_Y], 
+						       curr_net->stop_x + sx,
+						       curr_net->stop_y + sy,
 						       widthx/2,widthx/2,widthy/2,widthy/2);
 			    gerber_update_min_and_max (&boundingBox,
-						       curr_net->stop_x +
-						       ls->parameter[LINE20_END_X],
-						       curr_net->stop_y +
-						       ls->parameter[LINE20_END_Y], 
+						       curr_net->stop_x + ex,
+						       curr_net->stop_y + ey,
 						       widthx/2,widthx/2,widthy/2,widthy/2);
 			    calculatedAlready = TRUE;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE21) {
@@ -598,6 +611,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 							     ls->parameter[LINE21_HEIGHT]);
 			    offsetx = ls->parameter[LINE21_CENTER_X];
 			    offsety = ls->parameter[LINE21_CENTER_Y];
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[LINE21_ROTATION]));
 			    widthx = widthy = largestDimension;
 			} else if (ls->type == GERBV_APTYPE_MACRO_LINE22) {
 			    gdouble largestDimension = hypot(ls->parameter[LINE22_WIDTH],
@@ -607,6 +622,8 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	      			ls->parameter[LINE22_WIDTH]/2;
 			    offsety = ls->parameter[LINE22_LOWER_LEFT_Y] +
 	      			ls->parameter[LINE22_HEIGHT]/2;
+			    gerbv_rotate_coord(&offsetx, &offsety,
+				DEG2RAD(ls->parameter[LINE22_ROTATION]));
 			    widthx = widthy=largestDimension;
 			}
 	      	
@@ -768,7 +785,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
     /*
      * Start parsing
      */
-    dprintf("In %s(), starting to parse file...\n", __func__);
+    DPRINTF("In %s(), starting to parse file...\n", __func__);
     foundEOF = gerber_parse_file_segment (1, image, state, curr_net, stats,
 					  fd, directoryPath);
 
@@ -778,7 +795,7 @@ parse_gerb(gerb_file_t *fd, gchar *directoryPath)
     }
     g_free(state);
     
-    dprintf("               ... done parsing Gerber file\n");
+    DPRINTF("               ... done parsing Gerber file\n");
     gerber_update_any_running_knockout_measurements (image);
     gerber_calculate_final_justify_effects(image);
 
@@ -799,6 +816,7 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     int i;
     gboolean found_binary = FALSE;
     gboolean found_ADD = FALSE;
+    gboolean found_percent_cmd = FALSE;
     gboolean found_D0 = FALSE;
     gboolean found_D2 = FALSE;
     gboolean found_M0 = FALSE;
@@ -806,16 +824,16 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     gboolean found_star = FALSE;
     gboolean found_X = FALSE;
     gboolean found_Y = FALSE;
-   
-    dprintf ("%s(%p, %p), fd->fd = %p\n",
-		    __func__, fd, returnFoundBinary, fd->fd); 
+
+    DPRINTF("%s(%p, %p), fd->fd = %p\n",
+		    __func__, fd, returnFoundBinary, fd->fd);
     buf = (char *) g_malloc(MAXL);
     if (buf == NULL) 
 	GERB_FATAL_ERROR("malloc buf failed while checking for rs274x in %s()",
 			__FUNCTION__);
     
     while (fgets(buf, MAXL, fd->fd) != NULL) {
-        dprintf ("buf = \"%s\"\n", buf);
+        DPRINTF("buf = \"%s\"\n", buf);
 	len = strlen(buf);
     
 	/* First look through the file for indications of its type by
@@ -826,44 +844,51 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	    if (!isprint((int) buf[i]) && (buf[i] != '\r') && 
 		(buf[i] != '\n') && (buf[i] != '\t')) {
 		found_binary = TRUE;
-                dprintf ("found_binary (%d)\n", buf[i]);
+                DPRINTF("found_binary (%d)\n", buf[i]);
 	    }
 	}
 	if (g_strstr_len(buf, len, "%ADD")) {
 	    found_ADD = TRUE;
-            dprintf ("found_ADD\n");
+            DPRINTF("found_ADD\n");
+	}
+	if (g_strstr_len(buf, len, "%FS") ||
+	    g_strstr_len(buf, len, "%MO") ||
+	    g_strstr_len(buf, len, "%LP") ||
+	    g_strstr_len(buf, len, "%AM")) {
+	    found_percent_cmd = TRUE;
+	    DPRINTF("found_percent_cmd\n");
 	}
 	if (g_strstr_len(buf, len, "D00") || g_strstr_len(buf, len, "D0")) {
 	    found_D0 = TRUE;
-            dprintf ("found_D0\n");
+            DPRINTF("found_D0\n");
 	}
 	if (g_strstr_len(buf, len, "D02") || g_strstr_len(buf, len, "D2")) {
 	    found_D2 = TRUE;
-            dprintf ("found_D2\n");
+            DPRINTF("found_D2\n");
 	}
 	if (g_strstr_len(buf, len, "M00") || g_strstr_len(buf, len, "M0")) {
 	    found_M0 = TRUE;
-            dprintf ("found_M0\n");
+            DPRINTF("found_M0\n");
 	}
 	if (g_strstr_len(buf, len, "M02") || g_strstr_len(buf, len, "M2")) {
 	    found_M2 = TRUE;
-            dprintf ("found_M2\n");
+            DPRINTF("found_M2\n");
 	}
 	if (g_strstr_len(buf, len, "*")) {
 	    found_star = TRUE;
-            dprintf ("found_star\n");
+            DPRINTF("found_star\n");
 	}
 	/* look for X<number> or Y<number> */
 	if ((letter = g_strstr_len(buf, len, "X")) != NULL) {
 	    if (isdigit((int) letter[1])) { /* grab char after X */
 		found_X = TRUE;
-                dprintf ("found_X\n");
+                DPRINTF("found_X\n");
 	    }
 	}
 	if ((letter = g_strstr_len(buf, len, "Y")) != NULL) {
 	    if (isdigit((int) letter[1])) { /* grab char after Y */
 		found_Y = TRUE;
-                dprintf ("found_Y\n");
+                DPRINTF("found_Y\n");
 	    }
 	}
     }
@@ -873,8 +898,8 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     *returnFoundBinary = found_binary;
 
     /* Now form logical expression determining if the file is RS-274X */
-    if ((found_D0 || found_D2 || found_M0 || found_M2) && 
-	found_ADD && found_star && (found_X || found_Y)) 
+    if ((found_D0 || found_D2 || found_M0 || found_M2) &&
+	(found_ADD || found_percent_cmd) && found_star && (found_X || found_Y))
 	return TRUE;
 
     
@@ -985,7 +1010,7 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
     op_int=gerb_fgetint(fd, NULL);
 
     /* Emphasize text with new line '\n' in the beginning */
-    dprintf("\n     Found G%02d at line %ld (%s)\n",
+    DPRINTF("\n     Found G%02d at line %ld (%s)\n",
 		    op_int, *line_num_p, gerber_g_code_name(op_int));
     
     switch(op_int) {
@@ -1124,7 +1149,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state,
     gerbv_error_list_t *error_list = stats->error_list;
 
     a = gerb_fgetint(fd, NULL);
-    dprintf("     Found D%02d code at line %ld\n", a, *line_num_p);
+    DPRINTF("     Found D%02d code at line %ld\n", a, *line_num_p);
 
     switch(a) {
     case 0 : /* Invalid code */
@@ -1650,7 +1675,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	else if ((ano >= 0) && (ano <= APERTURE_MAX)) {
 	    a->unit = state->state->unit;
 	    image->aperture[ano] = a;
-	    dprintf("     In %s(), adding new aperture to aperture list ...\n",
+	    DPRINTF("     In %s(), adding new aperture to aperture list ...\n",
 			    __func__);
 	    gerbv_stats_add_aperture(stats->aperture_list,
 				    -1, ano, 
@@ -2013,14 +2038,14 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 	     */
 	    switch(ip->data.ival) {
 	    case 1:
-		dprintf("  Aperture macro circle [1] (");
+		DPRINTF("  Aperture macro circle [1] (");
 		type = GERBV_APTYPE_MACRO_CIRCLE;
 		nuf_parameters = 5;
 		break;
 	    case 3:
 		break;
 	    case 4 :
-		dprintf("  Aperture macro outline [4] (");
+		DPRINTF("  Aperture macro outline [4] (");
 		type = GERBV_APTYPE_MACRO_OUTLINE;
 		/*
 		 * Number of parameters are:
@@ -2045,33 +2070,33 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 		}
 		break;
 	    case 5 :
-		dprintf("  Aperture macro polygon [5] (");
+		DPRINTF("  Aperture macro polygon [5] (");
 		type = GERBV_APTYPE_MACRO_POLYGON;
 		nuf_parameters = 6;
 		break;
 	    case 6 :
-		dprintf("  Aperture macro moire [6] (");
+		DPRINTF("  Aperture macro moire [6] (");
 		type = GERBV_APTYPE_MACRO_MOIRE;
 		nuf_parameters = 9;
 		break;
 	    case 7 :
-		dprintf("  Aperture macro thermal [7] (");
+		DPRINTF("  Aperture macro thermal [7] (");
 		type = GERBV_APTYPE_MACRO_THERMAL;
 		nuf_parameters = 6;
 		break;
 	    case 2  :
 	    case 20 :
-		dprintf("  Aperture macro line 20/2 (");
+		DPRINTF("  Aperture macro line 20/2 (");
 		type = GERBV_APTYPE_MACRO_LINE20;
 		nuf_parameters = 7;
 		break;
 	    case 21 :
-		dprintf("  Aperture macro line 21 (");
+		DPRINTF("  Aperture macro line 21 (");
 		type = GERBV_APTYPE_MACRO_LINE21;
 		nuf_parameters = 6;
 		break;
 	    case 22 :
-		dprintf("  Aperture macro line 22 (");
+		DPRINTF("  Aperture macro line 22 (");
 		type = GERBV_APTYPE_MACRO_LINE22;
 		nuf_parameters = 6;
 		break;
@@ -2193,10 +2218,10 @@ simplify_aperture_macro(gerbv_aperture_t *aperture, gdouble scale)
 
 #ifdef DEBUG
 		for (i = 0; i < nuf_parameters; i++) {
-		    dprintf("%f, ", s->stack[i]);
+		    DPRINTF("%f, ", s->stack[i]);
 		}
 #endif /* DEBUG */
-		dprintf(")\n");
+		DPRINTF(")\n");
 	    }
 
 	    /* 
@@ -2339,10 +2364,10 @@ parse_aperture_definition(gerb_file_t *fd, gerbv_aperture_t *aperture,
     gerb_ungetc(fd);
 
     if (aperture->type == GERBV_APTYPE_MACRO) {
-	dprintf("Simplifying aperture %d using aperture macro \"%s\"\n", ano,
+	DPRINTF("Simplifying aperture %d using aperture macro \"%s\"\n", ano,
 		aperture->amacro->name);
 	simplify_aperture_macro(aperture, scale);
-	dprintf("Done simplifying\n");
+	DPRINTF("Done simplifying\n");
     }
     
     g_free(ad);
@@ -2486,8 +2511,8 @@ calc_cirseg_sq(struct gerbv_net *net, int cw,
 
 
 /* Multiquadrant circular interpolation */
-static void 
-calc_cirseg_mq(struct gerbv_net *net, int cw, 
+void
+calc_cirseg_mq(struct gerbv_net *net, int cw,
 	       double delta_cp_x, double delta_cp_y)
 {
     double d1x, d1y, d2x, d2y;
@@ -2538,7 +2563,7 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
     /*
      * This is a sanity check for angles after the nature of atan2.
      * If cw we must make sure angle1-angle2 are always positive,
-     * If ccw we must make sure angle2-angle1 are always negative.
+     * If ccw we must make sure angle2-angle1 are always positive.
      * We should really return one angle and the difference as GTK
      * uses them. But what the heck, it works for me.
      */
@@ -2576,8 +2601,8 @@ calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 				apert_size_x, apert_size_x,
 				apert_size_y, apert_size_y);
 
-	/* Middle arc points */
-	for (step_pi_2 = (ang1/M_PI_2 + 1)*M_PI_2;
+	/* Middle arc points at each 90-degree axis crossing */
+	for (step_pi_2 = (floor(ang1/M_PI_2) + 1)*M_PI_2;
 				step_pi_2 < MIN(ang2, ang1 + 2*M_PI);
 				step_pi_2 += M_PI_2) {
 		x = cirseg->cp_x + cirseg->width*cos(step_pi_2)/2;

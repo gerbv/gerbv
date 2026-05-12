@@ -39,7 +39,8 @@
 #include "common.h"
 #include "selection.h"
 
-#define dprintf if(DEBUG) printf
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 static gboolean draw_do_vector_export_fix(cairo_t *cairoTarget,
 		double *bg_red, double *bg_green, double *bg_blue);
@@ -308,9 +309,7 @@ gerbv_draw_polygon(cairo_t *cairoTarget, gdouble outsideDiameter,
 	cairo_move_to(cairoTarget, outsideDiameter / 2.0, 0);
 
 	/* skip first point, since we've moved there already */
-	/* include last point, since we may be drawing an aperture hole next
-	   and cairo may not correctly close the path itself */
-	for (i = 1; i <= (int)numberOfSidesInteger; i++){
+	for (i = 1; i < numberOfSidesInteger; i++){
 	    gdouble angle = ((double)i)*M_PI*2.0 / numberOfSidesInteger;
 	    cairo_line_to (cairoTarget, cos(angle) * outsideDiameter / 2.0,
 		       sin(angle) * outsideDiameter / 2.0);
@@ -325,6 +324,7 @@ gerbv_draw_aperture_hole(cairo_t *cairoTarget,
 		gdouble dimensionX, gdouble dimensionY, gboolean pixelOutput)
 {
 	if (dimensionX) {
+		cairo_new_sub_path (cairoTarget);
 		if (dimensionY)
 			gerbv_draw_rectangle (cairoTarget,
 					dimensionX, dimensionY, pixelOutput);
@@ -367,7 +367,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 	double bg_r, bg_g, bg_b; /* Background color */
 	int ret = 1;
 
-	dprintf("Drawing simplified aperture macros:\n");
+	DPRINTF("Drawing simplified aperture macros:\n");
 
 	doVectorExportFix =
 		draw_do_vector_export_fix (cairoTarget, &bg_r, &bg_g, &bg_b);
@@ -399,7 +399,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_save (cairoTarget);
 		cairo_new_path(cairoTarget);
 
-		dprintf("\t%s(): drawing %s\n", __FUNCTION__,
+		DPRINTF("\t%s(): drawing %s\n", __FUNCTION__,
 				gerbv_aperture_type_name(ls->type));
 
 		switch (ls->type) {

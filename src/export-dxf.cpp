@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <dxflib/dl_dxf.h>
+#include <dl_dxf.h>
 
 #include "common.h"
 
@@ -203,8 +203,6 @@ gerbv_export_dxf_file_from_image(const gchar *file_name,
 						double cy = net->cirseg->cp_y;
 						int steps = (int)(fabs(net->cirseg->angle2 -
 								net->cirseg->angle1) / 2.0) + 1;
-						if (steps < 1)
-							steps = 1;
 						for (int s = 1; s <= steps; s++) {
 							double a = a1 + (a2 - a1) * s / steps;
 							dxf->writeVertex(*dw,

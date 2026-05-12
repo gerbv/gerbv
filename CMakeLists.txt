@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
 
+# Update the release version here for when the code is built out
+# of tree. It is not optimal, but that how it is. There is a check
+# in the release build to make sure this version and the tag have
+# the same version.
 project(gerbv
-        VERSION 4.0
+        VERSION 2.13.0
         DESCRIPTION "Gerber Viewer"
         LANGUAGES C CXX)
 
@@ -18,21 +22,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 ## Glib-2.0 and GTK-2.0
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-2.0)
-pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
-
-## DXF support library
-pkg_check_modules(DXF IMPORTED_TARGET dxflib)
-if(NOT DXF_FOUND)
-    # Bundled dxflib (GPL-2+, RibbonSoft/QCAD)
-    add_library(dxflib_bundled STATIC
-        thirdparty/dxflib/dl_dxf.cpp
-        thirdparty/dxflib/dl_writer_ascii.cpp)
-    set_target_properties(dxflib_bundled PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(dxflib_bundled PUBLIC
-        ${CMAKE_SOURCE_DIR}/thirdparty)
-    set(DXF_FOUND TRUE)
-    set(DXFLIB_BUNDLED TRUE)
-endif()
+pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0>=2.6)
 
 ## Gettext and intl
 find_package(Gettext REQUIRED) # https://cmake.org/cmake/help/latest/module/FindGettext.html
@@ -48,21 +38,8 @@ add_library(compilation-flags INTERFACE)
 target_compile_options(compilation-flags INTERFACE -Wall -Wimplicit-fallthrough -O3 -Wno-deprecated-declarations)
 target_compile_options(compilation-flags INTERFACE $<$<CONFIG:Debug>:-g3>)
 target_link_libraries(compilation-flags INTERFACE PkgConfig::GLIB PkgConfig::GTK m)
-if(DXF_FOUND)
-    if(DXFLIB_BUNDLED)
-        target_link_libraries(compilation-flags INTERFACE dxflib_bundled)
-    else()
-        target_link_libraries(compilation-flags INTERFACE PkgConfig::DXF)
-    endif()
-endif()
 if(Intl_FOUND)
     target_link_libraries(compilation-flags INTERFACE Intl::Intl)
-endif()
-if(APPLE)
-    target_compile_definitions(compilation-flags INTERFACE QUARTZ)
-endif()
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_compile_definitions(compilation-flags INTERFACE _GNU_SOURCE)
 endif()
 
 ## This is installation directory settings. These must be solved later by install target
@@ -105,11 +82,13 @@ set(PROJECT_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 message(STATUS "Version from git: ${GIT_VERSION}")
 message(STATUS "Parsed version: ${PROJECT_VERSION} (suffix: ${VERSION_SUFFIX})")
 
-add_subdirectory(locale)
+# Note: config must happen before locale, since locale uses config for authors.c/bugs.c 
 add_subdirectory(config)
+add_subdirectory(locale)
 add_subdirectory(src)
 add_subdirectory(man)
 add_subdirectory(desktop)
+add_subdirectory(thirdparty)
 
 install(DIRECTORY example TYPE DOC) # Rename to examples
 install(DIRECTORY share/ TYPE DATA)
@@ -118,4 +97,5 @@ enable_testing()
 add_subdirectory(test)
 
 # where to find our CMake modules
+include(InstallWindowsDLLs)
 include(Packing)

@@ -432,6 +432,7 @@ pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary)
     int len = 0;
     int i;
     char *letter;
+    char *tmp;
     gboolean found_binary = FALSE;
     gboolean found_G54 = FALSE;
     gboolean found_M0 = FALSE;
@@ -461,19 +462,19 @@ pick_and_place_check_file_type(gerb_file_t *fd, gboolean *returnFoundBinary)
 	    }
 	}
 	
-	if (g_strstr_len(buf, len, "G54")) {
+	if ((tmp = g_strstr_len(buf, len, "G54")) && (tmp - buf < 2)) {
 	    found_G54 = TRUE;
 	}
-	if (g_strstr_len(buf, len, "M00")) {
+	if ((tmp = g_strstr_len(buf, len, "M00")) && (tmp - buf < 2)) {
 	    found_M0 = TRUE;
 	}
-	if (g_strstr_len(buf, len, "M02")) {
+	if ((tmp = g_strstr_len(buf, len, "M02")) && (tmp - buf < 2)) {
 	    found_M2 = TRUE;
 	}
-	if (g_strstr_len(buf, len, "G02")) {
+	if ((tmp = g_strstr_len(buf, len, "G02")) && (tmp - buf < 2)) {
 	    found_G2 = TRUE;
 	}
-	if (g_strstr_len(buf, len, "ADD")) {
+	if ((tmp = g_strstr_len(buf, len, "ADD")) && (tmp - buf < 2)) {
 	    found_ADD = TRUE;
 	}
 	if (g_strstr_len(buf, len, ",")) {

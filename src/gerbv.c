@@ -62,9 +62,11 @@
 #include "draw.h"
 
 #include "pick-and-place.h"
+#include "gerb_stats.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
-#define dprintf if(DEBUG) printf
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 /** Return string name of gerbv_aperture_type_t aperture type. */
 const char *gerbv_aperture_type_name(gerbv_aperture_type_t type)
@@ -240,7 +242,7 @@ void
 gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar const* filename)
 {
   gint idx_loaded;
-  dprintf("Opening filename = %s\n", filename);
+  DPRINTF("Opening filename = %s\n", filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
     GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
@@ -249,7 +251,7 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar const* filen
   } else {
     idx_loaded = gerbvProject->last_loaded;
     gerbvProject->file[idx_loaded]->layer_dirty = FALSE;
-    dprintf("     Successfully opened file!\n");	
+    DPRINTF("     Successfully opened file!\n");	
   }
 } /* gerbv_open_layer_from_filename */
 
@@ -259,7 +261,7 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar c
 		guint16 red, guint16 green, guint16 blue, guint16 alpha)
 {
   gint idx_loaded;
-  dprintf("Opening filename = %s\n", filename);
+  DPRINTF("Opening filename = %s\n", filename);
   
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
     GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
@@ -271,7 +273,7 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar c
     GdkColor colorTemplate = {0, red, green, blue};
     gerbvProject->file[idx_loaded]->color = colorTemplate;
     gerbvProject->file[idx_loaded]->alpha = alpha;
-    dprintf("     Successfully opened file!\n");	
+    DPRINTF("     Successfully opened file!\n");	
   }
 } /* gerbv_open_layer_from_filename_with_color */  
     
@@ -413,7 +415,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
     gerb_verify_error_t error = GERB_IMAGE_OK;
     int r, g, b; 
     
-    dprintf("In open_image, now error check file....\n");
+    DPRINTF("In open_image, now error check file....\n");
     error = gerbv_image_verify(parsed_image);
 
     if (error) {
@@ -513,7 +515,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	gerbvProject->max_files += 2;
     }
     
-    dprintf("In open_image, about to try opening filename = %s\n", filename);
+    DPRINTF("In open_image, about to try opening filename = %s\n", filename);
     
     fd = gerb_fopen(filename);
     if (fd == NULL) {
@@ -522,7 +524,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	return -1;
     }
 
-    dprintf("In open_image, successfully opened file.  Now check its type....\n");
+    DPRINTF("In open_image, successfully opened file.  Now check its type....\n");
     /* Here's where we decide what file type we have */
     /* Note: if the file has some invalid characters in it but still appears to
        be a valid file, we check with the user if he wants to continue (only
@@ -530,7 +532,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
        ahead and try to load it anyways) */
 
     if (gerber_is_rs274x_p(fd, &foundBinary)) {
-	dprintf("Found RS-274X file\n");
+	DPRINTF("Found RS-274X file\n");
 	if (!foundBinary || forceLoadFile) {
 		/* figure out the directory path in case parse_gerb needs to
 		 * load any include files */
@@ -539,12 +541,12 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 		g_free (currentLoadDirectory);
 	}
     } else if(drill_file_p(fd, &foundBinary)) {
-	dprintf("Found drill file\n");
+	DPRINTF("Found drill file\n");
 	if (!foundBinary || forceLoadFile)
 	    parsed_image = parse_drillfile(fd, attr_list, n_attr, reload);
 	
     } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
-	dprintf("Found pick-n-place file\n");
+	DPRINTF("Found pick-n-place file\n");
 	if (!foundBinary || forceLoadFile) {
 		if (!reload) {
 			pick_and_place_parse_file_to_images(fd, &parsed_image, &parsed_image2);
@@ -576,7 +578,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     } else if (gerber_is_rs274d_p(fd)) {
 	gchar *str = g_strdup_printf(_("Most likely found a RS-274D file "
 			"\"%s\" ... trying to open anyways\n"), filename);
-	dprintf("%s", str);
+	DPRINTF("%s", str);
 	g_warning("%s", str);
 	g_free (str);
 
@@ -589,7 +591,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 	}
     } else {
 	/* This is not a known file */
-	dprintf("Unknown filetype");
+	DPRINTF("Unknown filetype");
 	GERB_COMPILE_ERROR(_("%s: Unknown file type."), filename);
 	parsed_image = NULL;
     }
@@ -600,6 +602,25 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
     }
     
     if (parsed_image) {
+	/* Warn if the file parsed successfully but contains no geometry */
+	if ((parsed_image->netlist != NULL)
+	&&  (parsed_image->netlist->next == NULL)) {
+	    if ((parsed_image->layertype == GERBV_LAYERTYPE_DRILL)
+	    &&  (parsed_image->drill_stats != NULL)) {
+		gerbv_stats_printf(
+		    parsed_image->drill_stats->error_list,
+		    GERBV_MESSAGE_WARNING, -1,
+		    _("File \"%s\" contains no drill hits or routes"),
+		    filename);
+	    } else if (parsed_image->gerbv_stats != NULL) {
+		gerbv_stats_printf(
+		    parsed_image->gerbv_stats->error_list,
+		    GERBV_MESSAGE_WARNING, -1,
+		    _("File \"%s\" contains no drawing elements"),
+		    filename);
+	    }
+	}
+
 	/* strip the filename to the base */
 	gchar *baseName = g_path_get_basename (filename);
 	gchar *displayedName;
@@ -629,6 +650,25 @@ gerbv_open_image(gerbv_project_t *gerbvProject, gchar const* filename, int idx, 
 
     return retv;
 } /* open_image */
+
+gboolean
+gerbv_is_loadable_file(const char *filename)
+{
+    gerb_file_t *fd;
+    gboolean foundBinary;
+
+    fd = gerb_fopen(filename);
+    if (fd == NULL)
+	return FALSE;
+
+    gboolean loadable = gerber_is_rs274x_p(fd, &foundBinary)
+		     || drill_file_p(fd, &foundBinary)
+		     || pick_and_place_check_file_type(fd, &foundBinary)
+		     || gerber_is_rs274d_p(fd);
+
+    gerb_fclose(fd);
+    return loadable;
+}
 
 gerbv_image_t *
 gerbv_create_excellon_image_from_filename (const gchar *filename)
@@ -848,7 +888,7 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 			* Translation is to get it inside the allocated pixmap,
 			* which is not always centered perfectly for GTK/X.
 			*/
-			dprintf("  .... calling image2pixmap on image %d...\n", i);
+			DPRINTF("  .... calling image2pixmap on image %d...\n", i);
 			// Dirty scaling solution when using GDK; simply use scaling factor for x-axis, ignore y-axis
 			draw_gdk_image_to_pixmap(&clipmask, gerbvProject->file[i]->image,
 				renderInfo->scaleFactorX, -(renderInfo->lowerLeftX * renderInfo->scaleFactorX),
@@ -1137,7 +1177,7 @@ gerbv_transform_coord_for_image(double *x, double *y,
 		gerbv_get_fileinfo_for_image(image, project);
 
 	if (fileinfo == NULL) {
-		dprintf("%s(): NULL fileinfo\n", __func__);
+		DPRINTF("%s(): NULL fileinfo\n", __func__);
 		return -1;
 	}
 

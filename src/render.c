@@ -63,7 +63,8 @@
 #endif
 #include "draw.h"
 
-#define dprintf if(DEBUG) printf
+#undef DPRINTF
+#define DPRINTF(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
 
 gerbv_render_info_t screenRenderInfo;
 
@@ -428,7 +429,7 @@ static void render_selection (void)
 void render_refresh_rendered_image_on_screen (void) {
 	GdkCursor *cursor;
 	
-	dprintf("----> Entering redraw_pixmap...\n");
+	DPRINTF("----> Entering redraw_pixmap...\n");
 	cursor = gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
 	gdk_cursor_destroy(cursor);
@@ -440,11 +441,11 @@ void render_refresh_rendered_image_on_screen (void) {
 	    screenRenderInfo.displayHeight, -1);
 	    gerbv_render_to_pixmap_using_gdk (mainProject, screen.pixmap, &screenRenderInfo, &screen.selectionInfo,
 	    		&screen.selection_color);	
-	    dprintf("<---- leaving redraw_pixmap.\n");
+	    DPRINTF("<---- leaving redraw_pixmap.\n");
 	}
 	else{
 	    int i;
-	    dprintf("    .... Now try rendering the drawing using cairo .... \n");
+	    DPRINTF("    .... Now try rendering the drawing using cairo .... \n");
 	    /* 
 	     * This now allows drawing several layers on top of each other.
 	     * Higher layer numbers have higher priority in the Z-order.
@@ -460,7 +461,7 @@ void render_refresh_rendered_image_on_screen (void) {
 			screenRenderInfo.displayHeight);
 		    cr= cairo_create(mainProject->file[i]->privateRenderData );
 		    gerbv_render_layer_to_cairo_target (cr, mainProject->file[i], &screenRenderInfo);
-		    dprintf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
+		    DPRINTF("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
 		    cairo_destroy (cr);
 		}
 	    }
