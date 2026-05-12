@@ -2108,16 +2108,24 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
 		break;
 	    }
 
-	    if ('0' == gerb_fgetc(fd)
-	    &&  state->autod) {
-		state->number_format = FMT_000_000;
-		state->decimals = 3;
-	    } else {
-		gerb_ungetc(fd);
-
-		if (state->autod) {
-		    state->number_format = FMT_000_00;
-		    state->decimals = 2;
+	    /* Either FMT_000_000 or FMT_000_00.
+	     * No longer rewind to beginning, as either option
+	     * results in an accepted value. */
+	    {
+		int last_char = gerb_fgetc(fd);
+		if (last_char == '0') {
+		    if (state->autod) {
+			state->number_format = FMT_000_000;
+			state->decimals = 3;
+		    }
+		} else {
+		    if (last_char != EOF) {
+			gerb_ungetc(fd);
+		    }
+		    if (state->autod) {
+			state->number_format = FMT_000_00;
+			state->decimals = 2;
+		    }
 		}
 	    }
 
