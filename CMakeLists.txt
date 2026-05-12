@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
 
+# Update the release version here for when the code is built out
+# of tree. It is not optimal, but that how it is. There is a check
+# in the release build to make sure this version and the tag have
+# the same version.
 project(gerbv
-        VERSION 4.0
+        VERSION 2.13.0
         DESCRIPTION "Gerber Viewer"
         LANGUAGES C CXX)
 
@@ -78,8 +82,9 @@ set(PROJECT_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 message(STATUS "Version from git: ${GIT_VERSION}")
 message(STATUS "Parsed version: ${PROJECT_VERSION} (suffix: ${VERSION_SUFFIX})")
 
-add_subdirectory(locale)
+# Note: config must happen before locale, since locale uses config for authors.c/bugs.c 
 add_subdirectory(config)
+add_subdirectory(locale)
 add_subdirectory(src)
 add_subdirectory(man)
 add_subdirectory(desktop)
@@ -92,4 +97,5 @@ enable_testing()
 add_subdirectory(test)
 
 # where to find our CMake modules
+include(InstallWindowsDLLs)
 include(Packing)

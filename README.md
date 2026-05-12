@@ -8,11 +8,22 @@ Gerbv was originally developed as part of the
 
 Official releases are published on [GitHub Releases][download-official].
 Moreover, CI generated binaries are published on [gerbv.github.io][download-ci].
+
 Be aware however that they are not manually verified!
+
+### Current status on packages:
+
+The [download-ci] page is not updated properly at the moment, but latest build
+can be downloaded straight from the pipeline at [download-actions].
 
 [download-official]: https://github.com/gerbv/gerbv/releases
 [download-ci]: https://gerbv.github.io/#download
+[download-actions]: https://github.com/gerbv/gerbv/actions
 
+## Build
+
+See [BUILD.md](https://github.com/gerbv/gerbv/blob/develop/BUILD.md) for how to compile
+it using CMake with presets.
 
 ## About Gerbv
 
@@ -66,10 +77,10 @@ This is a list of things I hope to be able to fix
     - [ ] Enable Valgrind (maybe)
     - [ ] Enable Coverage (maybe)
 - [X] [Fixing first set of trivial bugs](#fixing-first-set-of-trivial-bugs)
-- [ ] [Packing](#packing)
+- [X] [Packing](#packing)
   - [X] deb
   - [X] rpm
-  - [ ] Windows NSIS
+  - [X] Windows NSIS
 - [ ] [More updated Gerber specifications](#more-updated-gerber-specifications)
 - [ ] [Port over to GTK-3.0](#port-over-to-gtk-30)
 - [ ] [Fixing misunderstandings of the original specification](#fixing-misunderstandings-of-the-original-specification)
@@ -78,34 +89,26 @@ This is a list of things I hope to be able to fix
 
 ### CMake
 
-First order of business is to use CMake, which is a more modern tool to create builds compared to
-autotools. Autotools were born in an era of diversified releases of different Unix systems.
-Now it is basically Linux everywhere. I have anyhow never liked autotools with its obscure syntax.
+First step was to switch to modern CMake that uses presets and toolchains. There have been kinks
+and surprising stuff, but most things are now in place.
 
-Hopefully it can simplify things like MacOS, Windows and packaging. Since we are using GTK, it
-will probably never be trivial I guess.
+We are now in the CI always compiling and building packages for Debian, Ubuntu, Windows (both cross compiled
+and using MSYS2) and MacOS.
 
-CMake Presets are a thing. Also some sourcecode directory structure can and will probably be
-updated at a later stage.
+There is now a description on [how to compile this project using CMake et al](BUILD.md) that I recommend you to read.
 
 ### Fixing first set of trivial bugs
 
 When I was porting the code to CMake I found a bunch of trivial but serious errors. So I fixed
-them. Upgrading the compiler version have also reveled a number of compilation errors.
+them. Upgrading the compiler version have also revealed a number of compilation errors. Now the code
+compiles cleanly on fairly modern compilers.
 
 ### Packing
 
-Current packing of binaries are zipping it all together. It is always nicer to have the code
-in the - for the operating system/distribution - native way.
+After introducing CMake we are now able to package Debian, Ubuntu and RPMs.
 
-Since we now use CMake we should be able to use the packing support available. For Debian/Ubuntu
-that would mean `.deb` and for Red Hat/Fedora that would mean `.rpm`. When creating the CMake build
-system I spent considerable time to make the install target to be as good as it possible could,
-looking at the Ubuntu/Debian gerbv package as a role model.
-
-For Windows builds we should use the NSIS toolchain. For the Windows packing there is a need for
-distributing all the `.dll` files as well (30+), but my limited experience says it shouldn't be a
-problem.
+For Windows builds we should use the NSIS toolchain, that is WIP to use NSIS. They are currently zipped
+together, but downloading it, unzipping and executing it seems to work.
 
 
 ### More updated Gerber specifications
@@ -116,6 +119,9 @@ as well. Hopefully at least try to parse without warnings on missing syntax.
 
 There is (at least was) a lot of broken Gerber files out there. Just look in the examples directory.
 The question is if it still is so, and if we should support every little quirk, and error or omission.
+
+I have gotten a lot of help in trying to work out all the new Gerbers. It is not all yet, but there are
+a big bunch of PRs still working on to merge in.
 
 ### Port over to GTK-3.0
 
@@ -133,7 +139,7 @@ a frontend using OpenGL is always welcome.
 ### Fixing misunderstandings of the original specification
 
 I am not a graphics guy, I always liked the parsing part more. So from the tiny "standards" paper
-to the full-blown standards paper of today there are bunch of things that has been misunderstood
+to the full-blown standards paper of today there are a bunch of things that has been misunderstood
 or not even implemented.
 
 ### General documentation
@@ -162,6 +168,8 @@ access to, that might delay things. But the urgency will be based on severity.
 * Other annoyances.
 
 ## Building (after CMake transition)
+
+See a more in depth in [BUILD.md](https://github.com/gerbv/gerbv/blob/develop/BUILD.md).
 
 ### For general Linux distributions
 
@@ -203,7 +211,7 @@ If you want to install it somewhere else, then YMMV.
 For creating Windows binaries, the Fedora distribution is used. It provides all the development libraries
 that is needed for Mingw64 cross compilation, especially GTK2.0+ and Cairo.
 
-Compilation have been tested on Fedora 43 with the following libraries installed:
+Compilation has been tested on Fedora 43 with the following libraries installed:
 * `mingw64-cairo-static`
 * `mingw64-gtk2.static`
 * `cmake`
@@ -212,7 +220,7 @@ Compilation have been tested on Fedora 43 with the following libraries installed
 * `mingw64-gcc-c++`
 * `gettext`
 
-As the binaries are not tested at the moment it might not work or crash horrible. But I would
+As the binaries are not tested at the moment it might not work or crash horribly. But I would
 appreciate any report.
 
 The preset is called `mingw-w64-gcc` and the toolchain file is located in `cmake/toolchains/mingw-w64-gcc.cmake`.
@@ -225,6 +233,22 @@ and to compile you do
 ```
 cmake --build --preset mingw-w64-gcc
 ```
+
+### Windows 7 support
+
+We are currently building and testing on Windows 10 (when available). Windows 7 is currently unsupported beyond
+[release 2.8.0](https://github.com/gerbv/gerbv/releases/tag/v2.8.0). 
+
+There was a report that [Windows 7 starts up and locks immediately with newer versions of Gerbv](https://github.com/gerbv/gerbv/issues/457).
+The first cause seemed to point to [incompatible versions of Glib](https://github.com/gerbv/gerbv/issues/457#issuecomment-4111947105).
+
+A later test the cause was determined to be [registry reading and writing](https://github.com/gerbv/gerbv/issues/457#issuecomment-4227492574).
+A patch was made, but did not seem to work as intended, see https://github.com/gerbv/gerbv/pull/469.
+
+Current status is that Gerbv does not support Windows 7 beyond [release 2.8.0](https://github.com/gerbv/gerbv/releases/tag/v2.8.0).
+
+The Windows version actually installs and runs under Wine if it is any comfort. But then it should be better to install a Linux
+version directly.
 
 ### Other cross compilations
 
@@ -273,7 +297,7 @@ The problem might only be when running the application locally, but it is hard t
 without being able to run locally. When installing Ubuntu, the first user created is always UID/GID
 1000. 
 
-This problem have been deferred at the moment, running on Ubuntu 22.04 should be good enough for the
+This problem has been deferred at the moment, running on Ubuntu 22.04 should be good enough for the
 time being.
 
 ## Information for developers
@@ -355,6 +379,11 @@ version 2.0.  See the toplevel [COPYING](COPYING) file for more information.
 Gerbv bundles [TinyScheme](https://sourceforge.net/projects/tinyscheme/)
 1.35, which is licensed under the BSD 3-Clause License. See
 [thirdparty/tinyscheme/COPYING](thirdparty/tinyscheme/COPYING) for details.
+
+Gerbv bundles [dxflib](https://qcad.org/en/90-dxflib), which is licensed
+under the GNU General Public License (GPL) version 2.0 or later. See
+[thirdparty/dxflib/gpl-2.0greater.txt](thirdparty/dxflib/gpl-2.0greater.txt)
+for details.
 
 Programs and associated files are:
 Copyright 2001, 2002 by Stefan Petersen and the respective original authors

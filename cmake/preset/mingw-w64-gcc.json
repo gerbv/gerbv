@@ -4,6 +4,7 @@
     "configurePresets": [
         {
             "name": "mingw-w64-gcc",
+            "displayName": "MinGW cross compiled",
             "inherits": "base",
             "toolchainFile": "cmake/toolchains/mingw-w64-gcc.cmake"
         }
@@ -22,5 +23,12 @@
 
     ],
     "testPresets": [],
-    "packagePresets": []
+    "packagePresets": [
+        {
+            "name": "mingw-w64-gcc",
+            "configurePreset": "mingw-w64-gcc",
+            "generators": ["NSIS"],
+            "configurations": ["Release"]
+        }
+    ]
 }
