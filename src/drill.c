@@ -135,6 +135,11 @@ typedef struct drill_state {
     gboolean in_pattern;
     GArray *pattern_buffer;   /* Array of drill_pattern_entry_t */
 
+    /* Axis transform state (M70/M80/M90) — toggles */
+    gboolean swap_axis;   /* M70 */
+    gboolean mirror_x;    /* M80 */
+    gboolean mirror_y;    /* M90 */
+
 } drill_state_t;
 
 /* Local function prototypes */
@@ -792,6 +797,27 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    }
 
+	    case DRILL_G_ROUTSLOT : {
+		/* G87 routed slot: read end XY coordinate, then create
+		 * a routed line segment from current position to end */
+		double prev_x = state->curr_x;
+		double prev_y = state->curr_y;
+
+		if (EOF == (read = gerb_fgetc(fd))) {
+		    gerbv_stats_printf(stats->error_list,
+			    GERBV_MESSAGE_ERROR, -1,
+			    _("Unexpected EOF found in file \"%s\""),
+			    fd->filename);
+		    break;
+		}
+
+		drill_parse_coordinate(fd, read, image, state, file_line);
+
+		curr_net = drill_add_route_segment(image, state, stats,
+			curr_net, prev_x, prev_y);
+		break;
+	    }
+
 	    case DRILL_G_ABSOLUTE :
 		state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 		break;
@@ -1035,6 +1061,16 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    case DRILL_M_RETRACTCLAMPING:             /* M16 */
 	    case DRILL_M_RETRACTNOCLAMPING:           /* M17 */
 		state->tool_down = FALSE;
+		break;
+
+	    case DRILL_M_SWAPAXIS:                    /* M70 */
+		state->swap_axis = !state->swap_axis;
+		break;
+	    case DRILL_M_MIRRORX:                     /* M80 */
+		state->mirror_x = !state->mirror_x;
+		break;
+	    case DRILL_M_MIRRORY:                     /* M90 */
+		state->mirror_y = !state->mirror_y;
 		break;
 
 	    case DRILL_M_END :
@@ -1784,6 +1820,9 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 48:
 	stats->M48++;
 	break;
+    case 70:
+	stats->M70++;
+	break;
     case 71:
 	stats->M71++;
 	eat_line(fd);
@@ -1791,6 +1830,12 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 72:
 	stats->M72++;
 	eat_line(fd);
+	break;
+    case 80:
+	stats->M80++;
+	break;
+    case 90:
+	stats->M90++;
 	break;
     case 95:
 	stats->M95++;
@@ -2236,6 +2281,9 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, unsigned int file_line
     case 85:
 	stats->G85++;
 	break;
+    case 87:
+	stats->G87++;
+	break;
     case 90:
 	stats->G90++;
 	break;
@@ -2298,6 +2346,16 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
       eat_whitespace(fd);
       firstchar = gerb_fgetc(fd);
     }
+    /* Apply axis transforms (M70/M80/M90) to raw parsed values */
+    if (state->swap_axis) {
+      double tmp = x;  x = y;  y = tmp;
+      gboolean ftmp = found_x;  found_x = found_y;  found_y = ftmp;
+    }
+    if (state->mirror_x && found_x)
+      x = -x;
+    if (state->mirror_y && found_y)
+      y = -y;
+
     if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
       if (found_x) {
         state->curr_x = x;

@@ -535,6 +535,7 @@ typedef struct {
     int G04;
     int G05;
     int G85;
+    int G87;
     int G90;
     int G91;
     int G93;
@@ -550,8 +551,11 @@ typedef struct {
     int M45;
     int M47;
     int M48;
+    int M70;
     int M71;
     int M72;
+    int M80;
+    int M90;
     int M95;
     int M97;
     int M98;
