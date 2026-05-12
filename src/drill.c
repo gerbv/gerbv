@@ -79,6 +79,15 @@ typedef enum {
     FMT_USER	/* User defined format */
 } number_fmt_t;
 
+typedef struct drill_pattern_entry {
+    double x;
+    double y;
+    double prev_x;      /* start point for route segments */
+    double prev_y;
+    int tool;
+    gboolean is_route;  /* FALSE = drill hole, TRUE = route segment */
+} drill_pattern_entry_t;
+
 typedef struct drill_state {
     double curr_x;
     double curr_y;
@@ -121,6 +130,10 @@ typedef struct drill_state {
     /* Arc center offsets for G02/G03 (I/J values, relative to start) */
     double delta_cp_x;
     double delta_cp_y;
+
+    /* Pattern recording state (M25/M01/M02) */
+    gboolean in_pattern;
+    GArray *pattern_buffer;   /* Array of drill_pattern_entry_t */
 
     /* Axis transform state (M70/M80/M90) — toggles */
     gboolean swap_axis;   /* M70 */
@@ -974,8 +987,71 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			tmps, file_line, fd->filename);
 		g_free(tmps);
 		break;
-	    case DRILL_M_PATTERNEND :
-	    case DRILL_M_TOOLTIPCHECK :
+	    case DRILL_M_PATTERN:    /* M25 — begin pattern recording */
+		state->in_pattern = TRUE;
+		if (state->pattern_buffer) {
+		    g_array_set_size(state->pattern_buffer, 0);
+		} else {
+		    state->pattern_buffer = g_array_new(FALSE, FALSE,
+			    sizeof(drill_pattern_entry_t));
+		}
+		break;
+
+	    case DRILL_M_PATTERNEND:    /* M01 — end pattern recording */
+		state->in_pattern = FALSE;
+		break;
+
+	    case DRILL_M_REPEATPATTERNOFFSET: {    /* M02 — repeat pattern at offset */
+		double offset_x = 0.0, offset_y = 0.0;
+		int c, saved_tool;
+
+		/* Parse X/Y offsets (same format as R-code step) */
+		c = gerb_fgetc(fd);
+		if (c == 'X') {
+		    offset_x = read_double(fd, state->number_format,
+			    image->format->omit_zeros, state->decimals);
+		    c = gerb_fgetc(fd);
+		}
+		if (c == 'Y') {
+		    offset_y = read_double(fd, state->number_format,
+			    image->format->omit_zeros, state->decimals);
+		} else {
+		    gerb_ungetc(fd);
+		}
+
+		/* Replay buffered drills at offset */
+		if (state->pattern_buffer && state->pattern_buffer->len > 0) {
+		    double save_x = state->curr_x;
+		    double save_y = state->curr_y;
+		    saved_tool = state->current_tool;
+
+		    for (guint i = 0; i < state->pattern_buffer->len; i++) {
+			drill_pattern_entry_t *e = &g_array_index(
+				state->pattern_buffer,
+				drill_pattern_entry_t, i);
+			state->current_tool = e->tool;
+			state->curr_x = e->x + offset_x;
+			state->curr_y = e->y + offset_y;
+
+			if (e->is_route) {
+			    curr_net = drill_add_route_segment(image, state,
+				    stats, curr_net,
+				    e->prev_x + offset_x,
+				    e->prev_y + offset_y);
+			} else {
+			    curr_net = drill_add_drill_hole(image, state,
+				    stats, curr_net);
+			}
+		    }
+
+		    state->curr_x = save_x;
+		    state->curr_y = save_y;
+		    state->current_tool = saved_tool;
+		}
+		break;
+	    }
+
+	    case DRILL_M_TOOLTIPCHECK:
 		break;
 
 	    case DRILL_M_ZAXISROUTEPOSITIONDEPTHCTRL: /* M14 */
@@ -1096,8 +1172,15 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		state->curr_y = start_y + c*step_y;
 		DPRINTF("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
 		curr_net = drill_add_drill_hole (image, state, stats, curr_net);
+		if (state->in_pattern) {
+		    drill_pattern_entry_t entry = {
+			state->curr_x, state->curr_y,
+			0, 0, state->current_tool, FALSE
+		    };
+		    g_array_append_val(state->pattern_buffer, entry);
+		}
 	      }
-	      
+
 	    }
 	    break;
 
@@ -1156,9 +1239,23 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		/* Routing mode, tool down: create line segment */
 		curr_net = drill_add_route_segment(image, state, stats,
 			curr_net, prev_x, prev_y);
+		if (state->in_pattern) {
+		    drill_pattern_entry_t entry = {
+			state->curr_x, state->curr_y,
+			prev_x, prev_y, state->current_tool, TRUE
+		    };
+		    g_array_append_val(state->pattern_buffer, entry);
+		}
 	    } else {
 		/* Drill mode (default): create flash hole */
 		curr_net = drill_add_drill_hole(image, state, stats, curr_net);
+		if (state->in_pattern) {
+		    drill_pattern_entry_t entry = {
+			state->curr_x, state->curr_y,
+			0, 0, state->current_tool, FALSE
+		    };
+		    g_array_append_val(state->pattern_buffer, entry);
+		}
 	    }
 	    break;
 	}
@@ -1275,6 +1372,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	break;
     }
 
+    if (state->pattern_buffer)
+	g_array_free(state->pattern_buffer, TRUE);
     g_free(state);
 
     return image;
@@ -1695,6 +1794,9 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
 	break;
     case 1:
 	stats->M01++;
+	break;
+    case 2:
+	stats->M02++;
 	break;
     case 14: break;  /* M14 - Z-axis route position with depth control */
     case 15: break;  /* M15 - Z-axis route position (tool down) */

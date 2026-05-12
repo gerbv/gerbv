@@ -543,6 +543,7 @@ typedef struct {
 
     int M00;
     int M01;
+    int M02;
     int M18;
     int M25;
     int M30;
