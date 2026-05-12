@@ -539,6 +539,7 @@ typedef struct {
     int G90;
     int G91;
     int G93;
+    int G_machine_only;
     int G_unknown;
 
     int M00;
@@ -559,6 +560,7 @@ typedef struct {
     int M95;
     int M97;
     int M98;
+    int M_machine_only;
     int M_unknown;
 
     int R;
