@@ -216,6 +216,8 @@ Ruthie_V1R0-Plated | Ruthie_V1R0-Plated.drl
 
 # Excellon axis transforms (M70 swap, M80 mirror X, M90 mirror Y)
 test-drill-axis-transforms | test-drill-axis-transforms.exc
+# Test "G87" routed slot
+test-drill-routed-slot | test-drill-routed-slot.exc
 
 # Excellon routing/milling (G00/G01 + M15/M16/M17)
 test-drill-route-milling | test-drill-route-milling.exc
