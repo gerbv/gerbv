@@ -4,6 +4,7 @@
     "configurePresets": [
         {
             "name": "macos-clang",
+            "displayName": "macOS/Clang",
             "inherits": "base",
             "binaryDir": "build-macos-clang",
             "cacheVariables": {
@@ -15,11 +16,13 @@
     "buildPresets": [
         {
             "name": "macos-clang",
+            "displayName": "macOS/Clang debug",
             "configurePreset": "macos-clang",
             "configuration": "Debug"
         },
         {
             "name": "macos-clang-release",
+            "displayName": "macOS/Clang release",
             "configurePreset": "macos-clang",
             "configuration": "Release"
         }

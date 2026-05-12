@@ -361,7 +361,8 @@ gerbv_unload_layer(gerbv_project_t *gerbvProject, int index)
     gint i;
 
     gerbv_destroy_fileinfo (gerbvProject->file[index]);
-    
+    g_free (gerbvProject->file[index]);
+
     /* slide all later layers down to fill the empty slot */
     for (i=index; i<(gerbvProject->last_loaded); i++) {
 	gerbvProject->file[i]=gerbvProject->file[i+1];
@@ -1078,12 +1079,15 @@ gerbv_attribute_destroy_HID_attribute (gerbv_HID_Attribute *attributeList, int n
 {
   int i;
 
-  /* free the string attributes */
+  /* free the string attributes and names */
   for (i = 0 ; i < n_attr ; i++) {
     if ( (attributeList[i].type == HID_String ||
 	  attributeList[i].type == HID_Label) &&
 	attributeList[i].default_val.str_value != NULL) {
       free (attributeList[i].default_val.str_value);
+    }
+    if (attributeList[i].name != NULL) {
+      free (attributeList[i].name);
     }
   }
 
@@ -1107,20 +1111,17 @@ gerbv_attribute_dup (gerbv_HID_Attribute *attributeList, int n_attr)
     exit (1);
   }
 
-  /* copy the attribute list being sure to strdup the strings */
+  /* deep-copy every entry: struct copy first, then strdup name and
+   * string values so the copy owns all its memory independently */
   for (i = 0 ; i < n_attr ; i++) {
+    nl[i] = attributeList[i];
+    nl[i].name = attributeList[i].name ? strdup (attributeList[i].name) : NULL;
 
     if (attributeList[i].type == HID_String ||
 	attributeList[i].type == HID_Label) {
-
-      if (attributeList[i].default_val.str_value != NULL) {
-	nl[i].default_val.str_value = strdup (attributeList[i].default_val.str_value);
-      } else {
-	nl[i].default_val.str_value = NULL;
-      }
-
-    } else {
-      nl[i] = attributeList[i];
+      nl[i].default_val.str_value =
+	  attributeList[i].default_val.str_value
+	      ? strdup (attributeList[i].default_val.str_value) : NULL;
     }
   }
 

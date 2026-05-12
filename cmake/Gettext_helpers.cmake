@@ -101,7 +101,8 @@ function(configure_gettext)
             COMMAND "${GETTEXT_XGETTEXT_COMMAND}" ${GETTEXT_XGETTEXT_ARGS}
                 ${GETTEXT_SOURCES}
                 "--output=${GETTEXT_POTFILE_DESTINATION}/${GETTEXT_DOMAIN}.pot"
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+            COMMAND_ERROR_IS_FATAL ANY)
     endif()
     add_custom_command(
         OUTPUT "${GETTEXT_POTFILE_DESTINATION}/${GETTEXT_DOMAIN}.pot"
@@ -129,7 +130,8 @@ function(configure_gettext)
                     "--input=${GETTEXT_POTFILE_DESTINATION}/${GETTEXT_DOMAIN}.pot"
                     "--output-file=${GETTEXT_POFILE_DESTINATION}/${lang}/${GETTEXT_DOMAIN}.po"
                     "--locale=${lang}"
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                COMMAND_ERROR_IS_FATAL ANY)
         endif()
         add_custom_command(
             OUTPUT "${GETTEXT_POFILE_DESTINATION}/${lang}/${GETTEXT_DOMAIN}.po"

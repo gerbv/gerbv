@@ -3,6 +3,7 @@
     "include": [
         "cmake/preset/linux-gnu-gcc.json",
         "cmake/preset/macos-clang.json",
-        "cmake/preset/mingw-w64-gcc.json"
+        "cmake/preset/mingw-w64-gcc.json",
+        "cmake/preset/msys2-ucrt64-gcc.json"
     ]
 }

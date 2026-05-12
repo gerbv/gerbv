@@ -67,8 +67,8 @@ static int parse_aperture_definition(gerb_file_t *fd,
 				     long int *line_num_p);
 static void calc_cirseg_sq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
-static void calc_cirseg_mq(struct gerbv_net *net, int cw, 
-			   double delta_cp_x, double delta_cp_y);
+void calc_cirseg_mq(struct gerbv_net *net, int cw,
+		    double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 			double apert_size_x, double apert_size_y,
 			gerbv_render_size_t *bbox);
@@ -827,6 +827,7 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     int i;
     gboolean found_binary = FALSE;
     gboolean found_ADD = FALSE;
+    gboolean found_percent_cmd = FALSE;
     gboolean found_D0 = FALSE;
     gboolean found_D2 = FALSE;
     gboolean found_M0 = FALSE;
@@ -834,9 +835,9 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     gboolean found_star = FALSE;
     gboolean found_X = FALSE;
     gboolean found_Y = FALSE;
-   
+
     DPRINTF("%s(%p, %p), fd->fd = %p\n",
-		    __func__, fd, returnFoundBinary, fd->fd); 
+		    __func__, fd, returnFoundBinary, fd->fd);
     buf = (char *) g_malloc(MAXL);
     if (buf == NULL) 
 	GERB_FATAL_ERROR("malloc buf failed while checking for rs274x in %s()",
@@ -860,6 +861,13 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
 	if (g_strstr_len(buf, len, "%ADD")) {
 	    found_ADD = TRUE;
             DPRINTF("found_ADD\n");
+	}
+	if (g_strstr_len(buf, len, "%FS") ||
+	    g_strstr_len(buf, len, "%MO") ||
+	    g_strstr_len(buf, len, "%LP") ||
+	    g_strstr_len(buf, len, "%AM")) {
+	    found_percent_cmd = TRUE;
+	    DPRINTF("found_percent_cmd\n");
 	}
 	if (g_strstr_len(buf, len, "D00") || g_strstr_len(buf, len, "D0")) {
 	    found_D0 = TRUE;
@@ -901,8 +909,8 @@ gerber_is_rs274x_p(gerb_file_t *fd, gboolean *returnFoundBinary)
     *returnFoundBinary = found_binary;
 
     /* Now form logical expression determining if the file is RS-274X */
-    if ((found_D0 || found_D2 || found_M0 || found_M2) && 
-	found_ADD && found_star && (found_X || found_Y)) 
+    if ((found_D0 || found_D2 || found_M0 || found_M2) &&
+	(found_ADD || found_percent_cmd) && found_star && (found_X || found_Y))
 	return TRUE;
 
     
@@ -1783,6 +1791,33 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	}
 	break;
+    case A2I('L','S'): /* Load Scaling */
+	state->state = gerbv_image_return_new_netstate(state->state);
+	state->state->scaleA = gerb_fgetdouble(fd);
+	state->state->scaleB = state->state->scaleA;
+  break;
+    case A2I('L','M'): /* Load Mirroring */
+	state->state = gerbv_image_return_new_netstate(state->state);
+	op[0] = gerb_fgetc(fd);
+	if (op[0] == 'N') {
+	    state->state->mirrorState = GERBV_MIRROR_STATE_NOMIRROR;
+	} else if (op[0] == 'X') {
+	    op[1] = gerb_fgetc(fd);
+	    if (op[1] == 'Y') {
+		state->state->mirrorState = GERBV_MIRROR_STATE_FLIPAB;
+	    } else {
+		gerb_ungetc(fd);
+		state->state->mirrorState = GERBV_MIRROR_STATE_FLIPA;
+	    }
+	} else if (op[0] == 'Y') {
+	    state->state->mirrorState = GERBV_MIRROR_STATE_FLIPB;
+	} else {
+	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
+		    _("Unknown load mirroring parameter '%s' "
+		       "at line %ld in file \"%s\""),
+		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
+	}
+	break;
     case A2I('K','O'): /* Knock Out */
         state->layer = gerbv_image_return_new_layer (state->layer);
         gerber_update_any_running_knockout_measurements (image);
@@ -2559,8 +2594,8 @@ calc_cirseg_sq(struct gerbv_net *net, int cw,
 
 
 /* Multiquadrant circular interpolation */
-static void 
-calc_cirseg_mq(struct gerbv_net *net, int cw, 
+void
+calc_cirseg_mq(struct gerbv_net *net, int cw,
 	       double delta_cp_x, double delta_cp_y)
 {
     double d1x, d1y, d2x, d2y;
