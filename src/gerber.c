@@ -67,8 +67,8 @@ static int parse_aperture_definition(gerb_file_t *fd,
 				     long int *line_num_p);
 static void calc_cirseg_sq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
-static void calc_cirseg_mq(struct gerbv_net *net, int cw, 
-			   double delta_cp_x, double delta_cp_y);
+void calc_cirseg_mq(struct gerbv_net *net, int cw,
+		    double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 			double apert_size_x, double apert_size_y,
 			gerbv_render_size_t *bbox);
@@ -2511,8 +2511,8 @@ calc_cirseg_sq(struct gerbv_net *net, int cw,
 
 
 /* Multiquadrant circular interpolation */
-static void 
-calc_cirseg_mq(struct gerbv_net *net, int cw, 
+void
+calc_cirseg_mq(struct gerbv_net *net, int cw,
 	       double delta_cp_x, double delta_cp_y)
 {
     double d1x, d1y, d2x, d2y;
