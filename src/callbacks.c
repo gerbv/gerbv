@@ -1645,8 +1645,11 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	table_add_row(M_table, "M45", stat->M45, _(drill_m_code_name(45)));
 	table_add_row(M_table, "M47", stat->M47, _(drill_m_code_name(47)));
 	table_add_row(M_table, "M48", stat->M48, _(drill_m_code_name(48)));
+	table_add_row(M_table, "M70", stat->M70, _(drill_m_code_name(70)));
 	table_add_row(M_table, "M71", stat->M71, _(drill_m_code_name(71)));
 	table_add_row(M_table, "M72", stat->M72, _(drill_m_code_name(72)));
+	table_add_row(M_table, "M80", stat->M80, _(drill_m_code_name(80)));
+	table_add_row(M_table, "M90", stat->M90, _(drill_m_code_name(90)));
 	table_add_row(M_table, "M95", stat->M95, _(drill_m_code_name(95)));
 	table_add_row(M_table, "M97", stat->M97, _(drill_m_code_name(97)));
 	table_add_row(M_table, "M98", stat->M98, _(drill_m_code_name(98)));
