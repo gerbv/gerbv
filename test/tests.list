@@ -229,6 +229,9 @@ test-drill-route-milling | test-drill-route-milling.exc
 # Excellon arc routing (G02/G03 + I/J offsets)
 test-drill-arc-routing | test-drill-arc-routing.exc
 
+# Excellon arc routing with A (radius) parameter
+test-drill-arc-radius | test-drill-arc-radius.exc
+
 # Gerber X2 attribute commands (TF, TA, TO, TD) should be silently ignored
 test-gerber-x2-attributes | test-gerber-x2-attributes.gbx
 

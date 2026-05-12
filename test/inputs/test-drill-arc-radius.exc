@@ -1,0 +1,33 @@
+M48
+; Test file for G02/G03 arc routing with A (radius) parameter
+; Exercises CW and CCW arcs using radius instead of I/J center offsets
+INCH,TZ
+T01C0.0100
+%
+T01
+; CW 90-degree arc: from (1.0, 1.0) to (1.5, 1.5), radius 0.5
+; Same arc as I/J test but specified via A parameter
+G00X010000Y010000
+M15
+G02X015000Y015000A005000
+M16
+; CCW 90-degree arc: from (2.0, 1.0) to (2.5, 1.5), radius 0.5
+G00X020000Y010000
+M15
+G03X025000Y015000A005000
+M16
+; Rounded rectangle contour using mixed G01/G02
+; 1" x 0.5" rectangle with 0.1" corner radii, starting at bottom-left corner
+G00X030000Y010000
+M15
+G01X039000Y010000
+G02X040000Y011000A001000
+G01X040000Y014000
+G02X039000Y015000A001000
+G01X031000Y015000
+G02X030000Y014000A001000
+G01X030000Y011000
+G02X031000Y010000A001000
+M16
+G05
+M00

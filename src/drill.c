@@ -132,6 +132,10 @@ typedef struct drill_state {
     double delta_cp_x;
     double delta_cp_y;
 
+    /* Arc radius for G02/G03 (A value) — alternative to I/J */
+    double   arc_radius;
+    gboolean found_arc_radius;
+
     /* Pattern recording state (M25/M01/M02) */
     gboolean in_pattern;
     GArray *pattern_buffer;   /* Array of drill_pattern_entry_t */
@@ -437,6 +441,60 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
 	curr_net->state->unit = GERBV_UNIT_INCH;
     }
 
+    cw = (state->route_mode == DRILL_G_CWMOVE);
+
+    if (state->found_arc_radius) {
+	/* A-parameter arc: convert radius to center offsets.
+	 * Given start (sx,sy), end (ex,ey), radius r, direction CW/CCW,
+	 * solve for the arc center and derive delta_cp from it. */
+	double radius = state->arc_radius;
+	double dx, dy, d, h, mx, my, px, py, sign, cp_x, cp_y;
+
+	if (state->unit == GERBV_UNIT_MM)
+	    radius /= 25.4;
+
+	dx = stop_x - start_x;
+	dy = stop_y - start_y;
+	d = hypot(dx, dy);
+
+	if (d < DBL_EPSILON) {
+	    /* Start == end: full circle.  Center is offset by radius
+	     * perpendicular to the X axis (arbitrary choice). */
+	    delta_cp_x = 0;
+	    delta_cp_y = fabs(radius);
+	} else if (d > 2.0 * fabs(radius)) {
+	    /* Chord longer than diameter — clamp radius to minimum.
+	     * This avoids sqrt of a negative number while still
+	     * producing a reasonable (semicircle) arc. */
+	    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
+		    _("Arc radius %.4f too small for chord %.4f; "
+		      "clamping to semicircle"),
+		    fabs(radius), d);
+	    delta_cp_x = dx / 2.0;
+	    delta_cp_y = dy / 2.0;
+	} else {
+	    h = sqrt(radius * radius - (d / 2.0) * (d / 2.0));
+	    mx = (start_x + stop_x) / 2.0;
+	    my = (start_y + stop_y) / 2.0;
+
+	    /* Perpendicular unit vector to the chord */
+	    px = -dy / d;
+	    py =  dx / d;
+
+	    /* CW arc: center is to the right of start->end vector.
+	     * CCW arc: center is to the left. */
+	    sign = cw ? -1.0 : 1.0;
+
+	    cp_x = mx + sign * h * px;
+	    cp_y = my + sign * h * py;
+
+	    delta_cp_x = cp_x - start_x;
+	    delta_cp_y = cp_y - start_y;
+	}
+
+	state->found_arc_radius = FALSE;
+    }
+
     curr_net->start_x = start_x;
     curr_net->start_y = start_y;
     curr_net->stop_x = stop_x;
@@ -444,7 +502,6 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
     curr_net->aperture = state->current_tool;
     curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 
-    cw = (state->route_mode == DRILL_G_CWMOVE);
     curr_net->interpolation = cw ? GERBV_INTERPOLATION_CW_CIRCULAR
 				 : GERBV_INTERPOLATION_CCW_CIRCULAR;
 
@@ -1252,6 +1309,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		/* Routing mode, tool up: reposition only, no geometry */
 		state->delta_cp_x = 0;
 		state->delta_cp_y = 0;
+		state->found_arc_radius = FALSE;
 		break;
 	    }
 
@@ -1262,6 +1320,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			curr_net, prev_x, prev_y);
 		state->delta_cp_x = 0;
 		state->delta_cp_y = 0;
+		state->found_arc_radius = FALSE;
 	    } else if ((state->route_mode == DRILL_G_LINEARMOVE ||
 		 state->route_mode == DRILL_G_ROUT) && state->tool_down) {
 		/* Routing mode, tool down: create line segment */
@@ -2382,6 +2441,10 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
       } else if (firstchar == 'J') {
         j_val = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
         found_j = TRUE;
+      } else if (firstchar == 'A') {
+        state->arc_radius = read_double(fd, state->number_format,
+                                        image->format->omit_zeros, state->decimals);
+        state->found_arc_radius = TRUE;
       } else {
         gerb_ungetc(fd);
         break;
