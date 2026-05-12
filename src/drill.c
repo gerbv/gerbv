@@ -779,6 +779,27 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    }
 
+	    case DRILL_G_ROUTSLOT : {
+		/* G87 routed slot: read end XY coordinate, then create
+		 * a routed line segment from current position to end */
+		double prev_x = state->curr_x;
+		double prev_y = state->curr_y;
+
+		if (EOF == (read = gerb_fgetc(fd))) {
+		    gerbv_stats_printf(stats->error_list,
+			    GERBV_MESSAGE_ERROR, -1,
+			    _("Unexpected EOF found in file \"%s\""),
+			    fd->filename);
+		    break;
+		}
+
+		drill_parse_coordinate(fd, read, image, state, file_line);
+
+		curr_net = drill_add_route_segment(image, state, stats,
+			curr_net, prev_x, prev_y);
+		break;
+	    }
+
 	    case DRILL_G_ABSOLUTE :
 		state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 		break;
@@ -2133,6 +2154,9 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, unsigned int file_line
 	break;
     case 85:
 	stats->G85++;
+	break;
+    case 87:
+	stats->G87++;
 	break;
     case 90:
 	stats->G90++;
