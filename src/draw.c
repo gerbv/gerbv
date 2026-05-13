@@ -1122,7 +1122,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 	gboolean limitLineWidth = TRUE;
 	gboolean displayPixel = TRUE;
 	gboolean doVectorExportFix;
-	double bg_r, bg_g, bg_b; /* Background color */
+	/* Initialize so GCC's -Wmaybe-uninitialized doesn't fire under -Werror
+	 * on the bg_r/bg_g/bg_b use below: those are only read inside the
+	 * `if (doVectorExportFix && ...)` guard at the trailing fill, but the
+	 * compiler can't always see that draw_do_vector_export_fix() writes
+	 * through the pointers in the FALSE return path. Defaulting to 0
+	 * (black) is harmless — the guard means the value is never used. */
+	double bg_r = 0.0, bg_g = 0.0, bg_b = 0.0; /* Background color */
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
     // Fix for cairo 1.17.6 and above which sets to surface unit back to PT (default: UNIT_USER)
