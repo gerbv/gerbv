@@ -1271,7 +1271,24 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		    ap_num = ap_num * 10 + (c - '0');
 		}
 	    }
-	    if ((ap_num < APERTURE_MIN) || (ap_num >= APERTURE_MAX)) {
+	    if (state->in_block) {
+		/* Reject nested %ABD*% — the parser keeps a single
+		 * (block_aperture_num, block_netlist, saved_curr_net)
+		 * triple, not a stack. Silently overwriting it would
+		 * leak the outer block's net pointer and route the
+		 * inner block's flashes into the outer's net list. The
+		 * Gerber X2 spec permits nesting, but real-world
+		 * generators don't emit it; if a file ever needs it
+		 * we'll grow this into a stack. The outer block is
+		 * preserved; the inner definition is dropped (`ap_num`
+		 * never gets allocated as an aperture). */
+		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
+			_("Nested %%AB%% aperture block (D%d inside D%d) "
+			    "is not supported at line %ld in file \"%s\" — "
+			    "inner block dropped"),
+			ap_num, state->block_aperture_num,
+			*line_num_p, fd->filename);
+	    } else if ((ap_num < APERTURE_MIN) || (ap_num >= APERTURE_MAX)) {
 		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Aperture block D-code %d out of range "
 			    "at line %ld in file \"%s\""),
