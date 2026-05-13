@@ -764,10 +764,25 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 void
 draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *state)
 {
-	/* apply scale factor */
+	/* Gerber X2 §4.9 transformation order applied to a point:
+	 *   Scale (LS) → Rotate (LR) → Mirror (LM).
+	 *
+	 * Cairo left-multiplies — each call computes CTM_new = M_new × CTM_old —
+	 * so the call order is the reverse of the coordinate-space order. To
+	 * land at CTM = M_lm × R_lr × T_of × S_ls, the Cairo calls must run
+	 * scale → translate → rotate → mirror (this order).
+	 *
+	 * apply scale factor */
 	cairo_scale (cairoTarget, state->scaleA, state->scaleB);
 	/* apply offset */
 	cairo_translate (cairoTarget, state->offsetA, state->offsetB);
+	/* apply per-object rotation (LR command) — must precede the mirror
+	 * switch so the spec's Scale→Rotate→Mirror order holds. Calling
+	 * cairo_rotate AFTER the mirror would compose as R∘M instead of
+	 * M∘R, which renders correctly only when no LM is active. */
+	if (state->rotation != 0.0) {
+		cairo_rotate (cairoTarget, state->rotation);
+	}
 	/* apply mirror */
 	switch (state->mirrorState) {
 	case GERBV_MIRROR_STATE_FLIPA:
@@ -781,10 +796,6 @@ draw_apply_netstate_transformation (cairo_t *cairoTarget, gerbv_netstate_t *stat
 		break;
 	default:
 		break;
-	}
-	/* apply per-object rotation (LR command) */
-	if (state->rotation != 0.0) {
-		cairo_rotate (cairoTarget, state->rotation);
 	}
 	/* finally, apply axis select */
 	if (state->axisSelect == GERBV_AXIS_SELECT_SWAPAB) {

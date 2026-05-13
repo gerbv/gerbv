@@ -1737,8 +1737,8 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	break;
     case A2I('L','R'): /* Load Rotation */
 	state->state = gerbv_image_return_new_netstate(state->state);
-	state->state->rotation = gerb_fgetdouble(fd) * M_PI / 180.0;
-  break;
+	state->state->rotation = DEG2RAD(gerb_fgetdouble(fd));
+	break;
     case A2I('L','S'): /* Load Scaling */
 	state->state = gerbv_image_return_new_netstate(state->state);
 	state->state->scaleA = gerb_fgetdouble(fd);
