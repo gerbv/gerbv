@@ -55,6 +55,7 @@
 #include "common.h"
 #include "drill.h"
 #include "drill_stats.h"
+#include "gerber.h"
 
 /* DEBUG printing.  #define DEBUG 1 in config.h to use this fcn. */
 #undef DPRINTF
@@ -78,6 +79,15 @@ typedef enum {
     FMT_0000_00	/* METRIC 6-digit, 10 um */,
     FMT_USER	/* User defined format */
 } number_fmt_t;
+
+typedef struct drill_pattern_entry {
+    double x;
+    double y;
+    double prev_x;      /* start point for route segments */
+    double prev_y;
+    int tool;
+    gboolean is_route;  /* FALSE = drill hole, TRUE = route segment */
+} drill_pattern_entry_t;
 
 typedef struct drill_state {
     double curr_x;
@@ -122,6 +132,19 @@ typedef struct drill_state {
     double delta_cp_x;
     double delta_cp_y;
 
+    /* Arc radius for G02/G03 (A value) — alternative to I/J */
+    double   arc_radius;
+    gboolean found_arc_radius;
+
+    /* Pattern recording state (M25/M01/M02) */
+    gboolean in_pattern;
+    GArray *pattern_buffer;   /* Array of drill_pattern_entry_t */
+
+    /* Axis transform state (M70/M80/M90) — toggles */
+    gboolean swap_axis;   /* M70 */
+    gboolean mirror_x;    /* M80 */
+    gboolean mirror_y;    /* M90 */
+
 } drill_state_t;
 
 /* Local function prototypes */
@@ -152,6 +175,13 @@ static gerbv_net_t *drill_add_arc_segment(gerbv_image_t *image,
 				gerbv_drill_stats_t *stats,
 				gerbv_net_t *curr_net,
 				double prev_x, double prev_y);
+static gerbv_net_t *drill_add_circle_segment(gerbv_image_t *image,
+				drill_state_t *state,
+				gerbv_drill_stats_t *stats,
+				gerbv_net_t *curr_net,
+				double start_x, double start_y,
+				double center_x, double center_y,
+				gboolean cw);
 static double read_double(gerb_file_t *fd, number_fmt_t fmt,
 				gerbv_omit_zeros_t omit_zeros, int decimals);
 static void eat_line(gerb_file_t *fd);
@@ -377,8 +407,6 @@ drill_add_route_segment(gerbv_image_t *image, drill_state_t *state,
 
 /*
  * Adds a routed arc segment (G02/G03 with tool down) to the drawing.
- * Uses the same multi-quadrant circular interpolation algorithm as
- * Gerber's calc_cirseg_mq (gerber.c).
  */
 static gerbv_net_t *
 drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
@@ -389,8 +417,6 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
     double r;
     double start_x, start_y, stop_x, stop_y;
     double delta_cp_x, delta_cp_y;
-    double d1x, d1y, d2x, d2y;
-    double alfa, beta;
     int cw;
 
     curr_net->next = g_new0(gerbv_net_t, 1);
@@ -420,6 +446,60 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
 	curr_net->state->unit = GERBV_UNIT_INCH;
     }
 
+    cw = (state->route_mode == DRILL_G_CWMOVE);
+
+    if (state->found_arc_radius) {
+	/* A-parameter arc: convert radius to center offsets.
+	 * Given start (sx,sy), end (ex,ey), radius r, direction CW/CCW,
+	 * solve for the arc center and derive delta_cp from it. */
+	double radius = state->arc_radius;
+	double dx, dy, d, h, mx, my, px, py, sign, cp_x, cp_y;
+
+	if (state->unit == GERBV_UNIT_MM)
+	    radius /= 25.4;
+
+	dx = stop_x - start_x;
+	dy = stop_y - start_y;
+	d = hypot(dx, dy);
+
+	if (d < DBL_EPSILON) {
+	    /* Start == end: full circle.  Center is offset by radius
+	     * perpendicular to the X axis (arbitrary choice). */
+	    delta_cp_x = 0;
+	    delta_cp_y = fabs(radius);
+	} else if (d > 2.0 * fabs(radius)) {
+	    /* Chord longer than diameter — clamp radius to minimum.
+	     * This avoids sqrt of a negative number while still
+	     * producing a reasonable (semicircle) arc. */
+	    gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
+		    _("Arc radius %.4f too small for chord %.4f; "
+		      "clamping to semicircle"),
+		    fabs(radius), d);
+	    delta_cp_x = dx / 2.0;
+	    delta_cp_y = dy / 2.0;
+	} else {
+	    h = sqrt(radius * radius - (d / 2.0) * (d / 2.0));
+	    mx = (start_x + stop_x) / 2.0;
+	    my = (start_y + stop_y) / 2.0;
+
+	    /* Perpendicular unit vector to the chord */
+	    px = -dy / d;
+	    py =  dx / d;
+
+	    /* CW arc: center is to the right of start->end vector.
+	     * CCW arc: center is to the left. */
+	    sign = cw ? -1.0 : 1.0;
+
+	    cp_x = mx + sign * h * px;
+	    cp_y = my + sign * h * py;
+
+	    delta_cp_x = cp_x - start_x;
+	    delta_cp_y = cp_y - start_y;
+	}
+
+	state->found_arc_radius = FALSE;
+    }
+
     curr_net->start_x = start_x;
     curr_net->start_y = start_y;
     curr_net->stop_x = stop_x;
@@ -427,53 +507,14 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
     curr_net->aperture = state->current_tool;
     curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
 
-    cw = (state->route_mode == DRILL_G_CWMOVE);
     curr_net->interpolation = cw ? GERBV_INTERPOLATION_CW_CIRCULAR
 				 : GERBV_INTERPOLATION_CCW_CIRCULAR;
 
-    /* Allocate and populate cirseg (same algorithm as calc_cirseg_mq) */
     curr_net->cirseg = g_new0(gerbv_cirseg_t, 1);
     if (curr_net->cirseg == NULL)
 	GERB_FATAL_ERROR("malloc cirseg failed in %s()", __FUNCTION__);
 
-    curr_net->cirseg->cp_x = start_x + delta_cp_x;
-    curr_net->cirseg->cp_y = start_y + delta_cp_y;
-
-    d1x = -delta_cp_x;
-    d1y = -delta_cp_y;
-    d2x = stop_x - curr_net->cirseg->cp_x;
-    d2y = stop_y - curr_net->cirseg->cp_y;
-
-    /* Clamp near-zero values to avoid signed-zero atan2 issues */
-    if (fabs(d1x) < DBL_EPSILON) d1x = 0;
-    if (fabs(d1y) < DBL_EPSILON) d1y = 0;
-    if (fabs(d2x) < DBL_EPSILON) d2x = 0;
-    if (fabs(d2y) < DBL_EPSILON) d2y = 0;
-
-    curr_net->cirseg->width = hypot(delta_cp_x, delta_cp_y) * 2.0;
-    curr_net->cirseg->height = curr_net->cirseg->width;
-
-    alfa = atan2(d1y, d1x);
-    beta = atan2(d2y, d2x);
-
-    if (alfa < 0.0) {
-	alfa += M_PI + M_PI;
-	beta += M_PI + M_PI;
-    }
-
-    if (beta < 0.0)
-	beta += M_PI + M_PI;
-
-    if (cw) {
-	if (alfa - beta < DBL_EPSILON)
-	    beta -= M_PI + M_PI;
-    } else {
-	if (beta - alfa < DBL_EPSILON)
-	    beta += M_PI + M_PI;
-    }
-
-    curr_net->cirseg->angle1 = RAD2DEG(alfa);
-    curr_net->cirseg->angle2 = RAD2DEG(beta);
+    calc_cirseg_mq(curr_net, cw, delta_cp_x, delta_cp_y);
 
     /* Check if aperture is set. Skip bbox computation if not. */
     if (image->aperture[state->current_tool] == NULL)
@@ -525,6 +566,94 @@ drill_add_arc_segment(gerbv_image_t *image, drill_state_t *state,
 	bbox->bottom = MIN(bbox->bottom, y - r);
 	bbox->top    = MAX(bbox->top,    y + r);
     }
+
+    drill_update_image_info_min_max_from_bbox(image->info, bbox);
+
+    return curr_net;
+}
+
+/* -------------------------------------------------------------- */
+/* Full-circle arc net for G32/G33 canned cycles.
+ * start_x/y is the point on the circle (tool position before G-code),
+ * center_x/y is the circle center. Both in file units. */
+static gerbv_net_t *
+drill_add_circle_segment(gerbv_image_t *image, drill_state_t *state,
+	gerbv_drill_stats_t *stats, gerbv_net_t *curr_net,
+	double start_x, double start_y,
+	double center_x, double center_y, gboolean cw)
+{
+    gerbv_render_size_t *bbox;
+    double r, tool_r;
+    double cx, cy, sx, sy;
+    double start_angle;
+
+    curr_net->next = g_new0(gerbv_net_t, 1);
+    if (curr_net->next == NULL)
+	GERB_FATAL_ERROR("malloc curr_net->next failed in %s()",
+			__FUNCTION__);
+
+    curr_net = curr_net->next;
+    curr_net->layer = image->layers;
+    curr_net->state = image->states;
+
+    sx = start_x;
+    sy = start_y;
+    cx = center_x;
+    cy = center_y;
+
+    if (state->unit == GERBV_UNIT_MM) {
+	sx /= 25.4;
+	sy /= 25.4;
+	cx /= 25.4;
+	cy /= 25.4;
+	curr_net->state->unit = GERBV_UNIT_INCH;
+    }
+
+    /* Full circle: start == stop (returns to same point) */
+    curr_net->start_x = sx;
+    curr_net->start_y = sy;
+    curr_net->stop_x = sx;
+    curr_net->stop_y = sy;
+    curr_net->aperture = state->current_tool;
+    curr_net->aperture_state = GERBV_APERTURE_STATE_ON;
+    curr_net->interpolation = cw ? GERBV_INTERPOLATION_CW_CIRCULAR
+				 : GERBV_INTERPOLATION_CCW_CIRCULAR;
+
+    /* Populate cirseg for full 360 degree circle */
+    curr_net->cirseg = g_new0(gerbv_cirseg_t, 1);
+    if (curr_net->cirseg == NULL)
+	GERB_FATAL_ERROR("malloc cirseg failed in %s()", __FUNCTION__);
+
+    r = hypot(sx - cx, sy - cy);
+    curr_net->cirseg->cp_x = cx;
+    curr_net->cirseg->cp_y = cy;
+    curr_net->cirseg->width = r * 2.0;
+    curr_net->cirseg->height = r * 2.0;
+
+    /* Angle from center to start point */
+    start_angle = RAD2DEG(atan2(sy - cy, sx - cx));
+    if (start_angle < 0)
+	start_angle += 360.0;
+
+    if (cw) {
+	curr_net->cirseg->angle1 = start_angle;
+	curr_net->cirseg->angle2 = start_angle - 360.0;
+    } else {
+	curr_net->cirseg->angle1 = start_angle;
+	curr_net->cirseg->angle2 = start_angle + 360.0;
+    }
+
+    /* Bounding box: full circle centered at (cx, cy) with tool radius */
+    if (image->aperture[state->current_tool] == NULL)
+	return curr_net;
+
+    bbox = &curr_net->boundingBox;
+    tool_r = image->aperture[state->current_tool]->parameter[0] / 2;
+
+    bbox->left   = cx - r - tool_r;
+    bbox->right  = cx + r + tool_r;
+    bbox->bottom = cy - r - tool_r;
+    bbox->top    = cy + r + tool_r;
 
     drill_update_image_info_min_max_from_bbox(image->info, bbox);
 
@@ -647,6 +776,27 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		    tmps, file_line, fd->filename);
 	    DPRINTF("    Comment with ';' \"%s\" at line %u\n",
 		    tmps, file_line);
+	    g_free(tmps);
+	    break;
+
+	case 'A' :
+	    /* ATC,ON/OFF — automatic tool change.  Machine-only command
+	     * found in Zuken CR-8000 Excellon output.  Silently ignored,
+	     * similar to DETECT,ON/OFF.  See issue #93. */
+	    gerb_ungetc(fd);
+	    tmps = get_line(fd);
+	    if (strcmp(tmps, "ATC,ON") == 0 ||
+		strcmp(tmps, "ATC,OFF") == 0) {
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
+			_("Ignoring ATC command \"%s\" "
+			    "at line %u in file \"%s\""),
+			tmps, file_line, fd->filename);
+	    } else {
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+			_("Undefined code \"%s\" "
+			    "at line %u in file \"%s\""),
+			tmps, file_line, fd->filename);
+	    }
 	    g_free(tmps);
 	    break;
 
@@ -777,6 +927,56 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    }
 
+	    case DRILL_G_ROUTSLOT : {
+		/* G87 routed slot: read end XY coordinate, then create
+		 * a routed line segment from current position to end */
+		double prev_x = state->curr_x;
+		double prev_y = state->curr_y;
+
+		if (EOF == (read = gerb_fgetc(fd))) {
+		    gerbv_stats_printf(stats->error_list,
+			    GERBV_MESSAGE_ERROR, -1,
+			    _("Unexpected EOF found in file \"%s\""),
+			    fd->filename);
+		    break;
+		}
+
+		drill_parse_coordinate(fd, read, image, state, file_line);
+
+		curr_net = drill_add_route_segment(image, state, stats,
+			curr_net, prev_x, prev_y);
+		break;
+	    }
+                       
+	    case DRILL_G_ROUTCIRCLE:       /* G32 -- routed CW circle */
+	    case DRILL_G_ROUTCIRCLECCW: {  /* G33 -- routed CCW circle */
+		double circ_start_x = state->curr_x;
+		double circ_start_y = state->curr_y;
+
+                if (EOF == (read = gerb_fgetc(fd))) {
+		    gerbv_stats_printf(stats->error_list,
+			    GERBV_MESSAGE_ERROR, -1,
+			    _("Unexpected EOF found in file \"%s\""),
+			    fd->filename);
+		    break;
+		}
+
+		/* Parse center coordinates */
+		drill_parse_coordinate(fd, read, image, state, file_line);
+
+		/* curr_x/y now holds the center; start is on the circle */
+		curr_net = drill_add_circle_segment(image, state, stats,
+			curr_net, circ_start_x, circ_start_y,
+			state->curr_x, state->curr_y,
+			g_code == DRILL_G_ROUTCIRCLE);
+
+		/* Restore position (full circle returns to origin) */
+		state->curr_x = circ_start_x;
+		state->curr_y = circ_start_y;
+                    
+        break;
+        }
+
 	    case DRILL_G_ABSOLUTE :
 		state->coordinate_mode = DRILL_MODE_ABSOLUTE;
 		break;
@@ -808,6 +1008,33 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			    "at line %u in file \"%s\""),
 			tmps, file_line, fd->filename);
 		g_free(tmps);
+		break;
+
+	    case DRILL_G_OVERRIDETOOLSPEED:        /* G07 */
+	    case DRILL_G_VISTOOL:                  /* G34 */
+	    case DRILL_G_VISSINGLEPOINTOFFSET:     /* G35 */
+	    case DRILL_G_VISMULTIPOINTTRANS:       /* G36 */
+	    case DRILL_G_VISCANCEL:                /* G37 */
+	    case DRILL_G_VISCORRHOLEDRILL:         /* G38 */
+	    case DRILL_G_VISAUTOCALIBRATION:       /* G39 */
+	    case DRILL_G_CUTTERCOMPOFF:            /* G40 */
+	    case DRILL_G_CUTTERCOMPLEFT:           /* G41 */
+	    case DRILL_G_CUTTERCOMPRIGHT:          /* G42 */
+	    case DRILL_G_VISSINGLEPOINTOFFSETREL:  /* G45 */
+	    case DRILL_G_VISMULTIPOINTTRANSREL:    /* G46 */
+	    case DRILL_G_VISCANCELREL:             /* G47 */
+	    case DRILL_G_VISCORRHOLEDRILLREL:      /* G48 */
+	    case DRILL_G_PACKDIP2:                 /* G81 */
+	    case DRILL_G_PACKDIP:                  /* G82 */
+	    case DRILL_G_PACK8PINL:                /* G83 */
+	    case DRILL_G_CIRLE:                    /* G84 */
+		eat_line(fd);
+		gerbv_stats_printf(stats->error_list,
+			GERBV_MESSAGE_NOTE, -1,
+			_("Ignoring machine-only G%02d (%s) "
+			    "at line %u in file \"%s\""),
+			g_code, _(drill_g_code_name(g_code)),
+			file_line, fd->filename);
 		break;
 
 	    default:
@@ -946,8 +1173,71 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			tmps, file_line, fd->filename);
 		g_free(tmps);
 		break;
-	    case DRILL_M_PATTERNEND :
-	    case DRILL_M_TOOLTIPCHECK :
+	    case DRILL_M_PATTERN:    /* M25 — begin pattern recording */
+		state->in_pattern = TRUE;
+		if (state->pattern_buffer) {
+		    g_array_set_size(state->pattern_buffer, 0);
+		} else {
+		    state->pattern_buffer = g_array_new(FALSE, FALSE,
+			    sizeof(drill_pattern_entry_t));
+		}
+		break;
+
+	    case DRILL_M_PATTERNEND:    /* M01 — end pattern recording */
+		state->in_pattern = FALSE;
+		break;
+
+	    case DRILL_M_REPEATPATTERNOFFSET: {    /* M02 — repeat pattern at offset */
+		double offset_x = 0.0, offset_y = 0.0;
+		int c, saved_tool;
+
+		/* Parse X/Y offsets (same format as R-code step) */
+		c = gerb_fgetc(fd);
+		if (c == 'X') {
+		    offset_x = read_double(fd, state->number_format,
+			    image->format->omit_zeros, state->decimals);
+		    c = gerb_fgetc(fd);
+		}
+		if (c == 'Y') {
+		    offset_y = read_double(fd, state->number_format,
+			    image->format->omit_zeros, state->decimals);
+		} else {
+		    gerb_ungetc(fd);
+		}
+
+		/* Replay buffered drills at offset */
+		if (state->pattern_buffer && state->pattern_buffer->len > 0) {
+		    double save_x = state->curr_x;
+		    double save_y = state->curr_y;
+		    saved_tool = state->current_tool;
+
+		    for (guint i = 0; i < state->pattern_buffer->len; i++) {
+			drill_pattern_entry_t *e = &g_array_index(
+				state->pattern_buffer,
+				drill_pattern_entry_t, i);
+			state->current_tool = e->tool;
+			state->curr_x = e->x + offset_x;
+			state->curr_y = e->y + offset_y;
+
+			if (e->is_route) {
+			    curr_net = drill_add_route_segment(image, state,
+				    stats, curr_net,
+				    e->prev_x + offset_x,
+				    e->prev_y + offset_y);
+			} else {
+			    curr_net = drill_add_drill_hole(image, state,
+				    stats, curr_net);
+			}
+		    }
+
+		    state->curr_x = save_x;
+		    state->curr_y = save_y;
+		    state->current_tool = saved_tool;
+		}
+		break;
+	    }
+
+	    case DRILL_M_TOOLTIPCHECK:
 		break;
 
 	    case DRILL_M_ZAXISROUTEPOSITIONDEPTHCTRL: /* M14 */
@@ -957,6 +1247,16 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    case DRILL_M_RETRACTCLAMPING:             /* M16 */
 	    case DRILL_M_RETRACTNOCLAMPING:           /* M17 */
 		state->tool_down = FALSE;
+		break;
+
+	    case DRILL_M_SWAPAXIS:                    /* M70 */
+		state->swap_axis = !state->swap_axis;
+		break;
+	    case DRILL_M_MIRRORX:                     /* M80 */
+		state->mirror_x = !state->mirror_x;
+		break;
+	    case DRILL_M_MIRRORY:                     /* M90 */
+		state->mirror_y = !state->mirror_y;
 		break;
 
 	    case DRILL_M_END :
@@ -987,6 +1287,25 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 		break;
 
+	    case DRILL_M_STOPOPTIONAL:                    /* M06 */
+	    case DRILL_M_SANDREND:                        /* M08 */
+	    case DRILL_M_STOPINSPECTION:                  /* M09 */
+	    case DRILL_M_VISANDRPATTERN:                  /* M50 */
+	    case DRILL_M_VISANDRPATTERNREWIND:            /* M51 */
+	    case DRILL_M_VISANDRPATTERNOFFSETCOUNTERCTRL: /* M52 */
+	    case DRILL_M_REFSCALING:                      /* M60 */
+	    case DRILL_M_REFSCALINGEND:                   /* M61 */
+	    case DRILL_M_PECKDRILLING:                    /* M62 */
+	    case DRILL_M_PECKDRILLINGEND:                 /* M63 */
+		eat_line(fd);
+		gerbv_stats_printf(stats->error_list,
+			GERBV_MESSAGE_NOTE, -1,
+			_("Ignoring machine-only M%02d (%s) "
+			    "at line %u in file \"%s\""),
+			m_code, _(drill_m_code_name(m_code)),
+			file_line, fd->filename);
+		break;
+
 	    default:
 		stats->M_unknown++;
 		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
@@ -1003,7 +1322,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	case 'R':
 	    if (state->curr_section == DRILL_HEADER) {
 		stats->unknown++;
-		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
 			_("Not allowed 'R' code in the header "
 			    "at line %u in file \"%s\""),
 			file_line, fd->filename);
@@ -1058,6 +1377,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		state->curr_y = start_y + c*step_y;
 		DPRINTF("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
 		curr_net = drill_add_drill_hole (image, state, curr_net);
+		if (state->in_pattern) {
+		    drill_pattern_entry_t entry = {
+			state->curr_x, state->curr_y,
+			0, 0, state->current_tool, FALSE
+		    };
+		    g_array_append_val(state->pattern_buffer, entry);
+		}
 	      }
 
 	    }
@@ -1074,6 +1400,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    drill_parse_T_code(fd, state, image, file_line);
 	    state->route_mode = DRILL_G_DRILL;
 	    state->tool_down = FALSE;
+	    state->delta_cp_x = 0;
+	    state->delta_cp_y = 0;
 	    break;
 	case 'V' :
 	    gerb_ungetc (fd);
@@ -1103,6 +1431,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		/* Routing mode, tool up: reposition only, no geometry */
 		state->delta_cp_x = 0;
 		state->delta_cp_y = 0;
+		state->found_arc_radius = FALSE;
 		break;
 	    }
 
@@ -1113,14 +1442,29 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 			curr_net, prev_x, prev_y);
 		state->delta_cp_x = 0;
 		state->delta_cp_y = 0;
+		state->found_arc_radius = FALSE;
 	    } else if ((state->route_mode == DRILL_G_LINEARMOVE ||
 		 state->route_mode == DRILL_G_ROUT) && state->tool_down) {
 		/* Routing mode, tool down: create line segment */
 		curr_net = drill_add_route_segment(image, state,
 			curr_net, prev_x, prev_y);
+		if (state->in_pattern) {
+		    drill_pattern_entry_t entry = {
+			state->curr_x, state->curr_y,
+			prev_x, prev_y, state->current_tool, TRUE
+		    };
+		    g_array_append_val(state->pattern_buffer, entry);
+		}
 	    } else {
 		/* Drill mode (default): create flash hole */
 		curr_net = drill_add_drill_hole(image, state, curr_net);
+		if (state->in_pattern) {
+		    drill_pattern_entry_t entry = {
+			state->curr_x, state->curr_y,
+			0, 0, state->current_tool, FALSE
+		    };
+		    g_array_append_val(state->pattern_buffer, entry);
+		}
 	    }
 	    break;
 	}
@@ -1157,7 +1501,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    stats->unknown++;
 
 	    if (DRILL_HEADER == state->curr_section) {
-		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_ERROR, -1,
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
 			_("Undefined code '%s' (0x%x) found in header "
 			    "at line %u in file \"%s\""),
 			gerbv_escape_char(read), read,
@@ -1166,7 +1510,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 		/* Unrecognised crap in the header is thrown away */
 		tmps = get_line(fd);
-		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_WARNING, -1,
+		gerbv_stats_printf(stats->error_list, GERBV_MESSAGE_NOTE, -1,
 			_("Unrecognised string \"%s\" in header "
 			    "at line %u in file \"%s\""),
 			tmps, file_line, fd->filename);
@@ -1237,6 +1581,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	break;
     }
 
+    if (state->pattern_buffer)
+	g_array_free(state->pattern_buffer, TRUE);
     g_free(state);
 
     return image;
@@ -1438,7 +1784,26 @@ drill_parse_T_code(gerb_file_t *fd, drill_state_t *state,
     DPRINTF("  Handling tool T%d at line %u\n", tool_num, file_line);
 
     if (tool_num == 0) {
-	return tool_num; /* T00 is a command to unload the drill */
+	/* T0 is nominally an unload-tool command, but some CAD tools
+	   (e.g. ekf2) define T0 with a C diameter parameter in the
+	   header.  Consume any trailing parameters so they don't get
+	   mis-parsed as unknown header codes, then return. */
+	temp = gerb_fgetc(fd);
+	while (temp != EOF && temp != '\n' && temp != '\r') {
+	    if (temp == 'C') {
+		read_double(fd, state->header_number_format,
+			    GERBV_OMIT_ZEROS_TRAILING, state->decimals);
+	    } else if (temp == 'F' || temp == 'S') {
+		gerb_fgetint(fd, NULL);
+	    } else {
+		gerb_ungetc(fd);
+		break;
+	    }
+	    temp = gerb_fgetc(fd);
+	}
+	if (temp == '\n' || temp == '\r')
+	    gerb_ungetc(fd);
+	return tool_num;
     }
 
     if (tool_num < TOOL_MIN || tool_num >= TOOL_MAX) {
@@ -1658,6 +2023,9 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 1:
 	stats->M01++;
 	break;
+    case 2:
+	stats->M02++;
+	break;
     case 14: break;  /* M14 - Z-axis route position with depth control */
     case 15: break;  /* M15 - Z-axis route position (tool down) */
     case 16: break;  /* M16 - Retract with clamping */
@@ -1680,6 +2048,9 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 48:
 	stats->M48++;
 	break;
+    case 70:
+	stats->M70++;
+	break;
     case 71:
 	stats->M71++;
 	eat_line(fd);
@@ -1687,6 +2058,12 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
     case 72:
 	stats->M72++;
 	eat_line(fd);
+	break;
+    case 80:
+	stats->M80++;
+	break;
+    case 90:
+	stats->M90++;
 	break;
     case 95:
 	stats->M95++;
@@ -1696,6 +2073,13 @@ drill_parse_M_code(gerb_file_t *fd, drill_state_t *state,
 	break;
     case 98:
 	stats->M98++;
+	break;
+
+    case 6:
+    case 8: case 9:
+    case 50: case 51: case 52:
+    case 60: case 61: case 62: case 63:
+	stats->M_machine_only++;
 	break;
 
     default:
@@ -1847,16 +2231,24 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
 		break;
 	    }
 
-	    if ('0' == gerb_fgetc(fd)
-	    &&  state->autod) {
-		state->number_format = FMT_000_000;
-		state->decimals = 3;
-	    } else {
-		gerb_ungetc(fd);
-
-		if (state->autod) {
-		    state->number_format = FMT_000_00;
-		    state->decimals = 2;
+	    /* Either FMT_000_000 or FMT_000_00.
+	     * No longer rewind to beginning, as either option
+	     * results in an accepted value. */
+	    {
+		int last_char = gerb_fgetc(fd);
+		if (last_char == '0') {
+		    if (state->autod) {
+			state->number_format = FMT_000_000;
+			state->decimals = 3;
+		    }
+		} else {
+		    if (last_char != EOF) {
+			gerb_ungetc(fd);
+		    }
+		    if (state->autod) {
+			state->number_format = FMT_000_00;
+			state->decimals = 2;
+		    }
 		}
 	    }
 
@@ -2133,8 +2525,17 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, unsigned int file_line
     case 5:
 	stats->G05++;
 	break;
+    case 32:
+	stats->G32++;
+	break;
+    case 33:
+	stats->G33++;
+	break;
     case 85:
 	stats->G85++;
+	break;
+    case 87:
+	stats->G87++;
 	break;
     case 90:
 	stats->G90++;
@@ -2144,6 +2545,14 @@ drill_parse_G_code(gerb_file_t *fd, gerbv_image_t *image, unsigned int file_line
 	break;
     case 93:
 	stats->G93++;
+	break;
+
+    case 7:
+    case 34: case 35: case 36: case 37: case 38: case 39:
+    case 40: case 41: case 42:
+    case 45: case 46: case 47: case 48:
+    case 81: case 82: case 83: case 84:
+	stats->G_machine_only++;
 	break;
 
     case DRILL_G_UNKNOWN:
@@ -2191,6 +2600,10 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
       } else if (firstchar == 'J') {
         j_val = read_double(fd, state->number_format, image->format->omit_zeros, state->decimals);
         found_j = TRUE;
+      } else if (firstchar == 'A') {
+        state->arc_radius = read_double(fd, state->number_format,
+                                        image->format->omit_zeros, state->decimals);
+        state->found_arc_radius = TRUE;
       } else {
         gerb_ungetc(fd);
         break;
@@ -2198,6 +2611,16 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
       eat_whitespace(fd);
       firstchar = gerb_fgetc(fd);
     }
+    /* Apply axis transforms (M70/M80/M90) to raw parsed values */
+    if (state->swap_axis) {
+      double tmp = x;  x = y;  y = tmp;
+      gboolean ftmp = found_x;  found_x = found_y;  found_y = ftmp;
+    }
+    if (state->mirror_x && found_x)
+      x = -x;
+    if (state->mirror_y && found_y)
+      y = -y;
+
     if(state->coordinate_mode == DRILL_MODE_ABSOLUTE) {
       if (found_x) {
         state->curr_x = x;

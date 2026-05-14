@@ -55,6 +55,10 @@ typedef struct gerb_state {
     gerbv_netstate_t *state;
     int in_parea_fill;
     int mq_on;		/* Is multiquadrant circular iterpolation */
+    gboolean in_block;			/* Recording an aperture block */
+    int block_aperture_num;		/* D-code for the block */
+    gerbv_net_t *block_netlist;		/* Block net list head */
+    gerbv_net_t *saved_curr_net;	/* Saved main chain tail */
 } gerb_state_t;
 
 /*
@@ -76,6 +80,9 @@ void gerber_update_min_and_max(gerbv_render_size_t *boundingBox,
 			  gdouble x, gdouble y, gdouble apertureSizeX1,
 			  gdouble apertureSizeX2,gdouble apertureSizeY1,
 			  gdouble apertureSizeY2);
+void calc_cirseg_mq(struct gerbv_net *net, int cw,
+		    double delta_cp_x, double delta_cp_y);
+
 const char *gerber_d_code_name(int d_code);
 const char *gerber_g_code_name(int g_code);
 const char *gerber_m_code_name(int m_code);
