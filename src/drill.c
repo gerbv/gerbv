@@ -929,13 +929,13 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		break;
 	    }
 
-	    case DRILL_G_ROUTSLOT : { 
+	    case DRILL_G_ROUTSLOT : {
 		/* G87 routed slot: read end XY coordinate, then create
 		 * a routed line segment from current position to end */
 		double prev_x = state->curr_x;
 		double prev_y = state->curr_y;
 
-                if (EOF == (read = gerb_fgetc(fd))) {
+		if (EOF == (read = gerb_fgetc(fd))) {
 		    gerbv_stats_printf(stats->error_list,
 			    GERBV_MESSAGE_ERROR, -1,
 			    _("Unexpected EOF found in file \"%s\""),
