@@ -117,12 +117,25 @@ gerbv_destroy_image(gerbv_image_t *image)
     /*
      * Free apertures
      */
-    for (i = 0; i < APERTURE_MAX; i++) 
+    for (i = 0; i < APERTURE_MAX; i++)
 	if (image->aperture[i] != NULL) {
 	    for (sam = image->aperture[i]->simplified; sam != NULL; ){
 	      sam2 = sam->next;
 	    	g_free (sam);
 	    	sam = sam2;
+	    }
+	    /* Free block aperture net list */
+	    if (image->aperture[i]->type == GERBV_APTYPE_BLOCK) {
+		gerbv_net_t *bnet = image->aperture[i]->block_netlist;
+		while (bnet != NULL) {
+		    gerbv_net_t *bnext = bnet->next;
+		    if (bnet->cirseg)
+			g_free (bnet->cirseg);
+		    if (bnet->label)
+			g_string_free (bnet->label, TRUE);
+		    g_free (bnet);
+		    bnet = bnext;
+		}
 	    }
 
 	    g_free(image->aperture[i]);
