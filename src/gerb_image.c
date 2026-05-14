@@ -117,12 +117,25 @@ gerbv_destroy_image(gerbv_image_t *image)
     /*
      * Free apertures
      */
-    for (i = 0; i < APERTURE_MAX; i++) 
+    for (i = 0; i < APERTURE_MAX; i++)
 	if (image->aperture[i] != NULL) {
 	    for (sam = image->aperture[i]->simplified; sam != NULL; ){
 	      sam2 = sam->next;
 	    	g_free (sam);
 	    	sam = sam2;
+	    }
+	    /* Free block aperture net list */
+	    if (image->aperture[i]->type == GERBV_APTYPE_BLOCK) {
+		gerbv_net_t *bnet = image->aperture[i]->block_netlist;
+		while (bnet != NULL) {
+		    gerbv_net_t *bnext = bnet->next;
+		    if (bnet->cirseg)
+			g_free (bnet->cirseg);
+		    if (bnet->label)
+			g_string_free (bnet->label, TRUE);
+		    g_free (bnet);
+		    bnet = bnext;
+		}
 	    }
 
 	    g_free(image->aperture[i]);
@@ -338,8 +351,16 @@ gerbv_image_return_new_netstate (gerbv_netstate_t *previousState)
     
     *newState = *previousState;
     previousState->next = newState;
-    newState->scaleA = 1.0;
-    newState->scaleB = 1.0;
+    /* `rotation` (LR), `mirrorState` (LM), `unit` (MO), and `axisSelect`
+     * (AS) all persist across netstate boundaries per the Gerber X2
+     * spec — they're set by the corresponding RS274X command and stay
+     * active until the next explicit command. The struct copy above
+     * propagates them correctly; do NOT reset them here.
+     *
+     * scaleA/scaleB (LS) carry a pre-existing reset that has the same
+     * spec-violating behaviour. Left alone to keep this PR scoped to
+     * the LR fix Stefan flagged — a separate change should remove the
+     * scale reset too. */
     newState->next = NULL;
     
     return newState;
@@ -924,6 +945,16 @@ gerbv_image_duplicate_image (gerbv_image_t *sourceImage, gerbv_user_transformati
     GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
     
     newImage->layertype = sourceImage->layertype;
+
+    /* Free the type string allocated by gerbv_create_image() before the
+     * struct copy overwrites the pointer (would leak otherwise). */
+    g_free(newImage->info->type);
+
+    /* Free the sentinel netlist node — gerbv_image_copy_all_nets() will
+     * replace newImage->netlist with a fresh copy of the source nets. */
+    g_free(newImage->netlist);
+    newImage->netlist = NULL;
+
     /* copy information layer over */
     *(newImage->info) = *(sourceImage->info);
     newImage->info->name = g_strdup (sourceImage->info->name);

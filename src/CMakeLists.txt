@@ -106,7 +106,5 @@ set(includedir "\$\{prefix\}/${CMAKE_INSTALL_INCLUDEDIR}")
 set(PACKAGE ${PROJECT_NAME})
 configure_file(libgerbv.pc.in libgerbv.pc @ONLY)
 
-if(NOT WIN32)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libgerbv.pc
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-endif()
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libgerbv.pc
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

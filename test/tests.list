@@ -181,6 +181,14 @@ test-circular-interpolation-1           |  test-circular-interpolation-1.gbx
 test-circular-interpolation-mq-ccw      |  test-circular-interpolation-mq-ccw.gbx
 test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-error.gbx
 
+# Aperture block (Gerber X2)
+test-aperture-block  |  test-aperture-block.gbx
+
+# Load state commands (Gerber X2)
+test-load-rotation  |  test-load-rotation.gbx
+test-load-scaling   |  test-load-scaling.gbx
+test-load-mirroring |  test-load-mirroring.gbx
+
 test-merge-a+b_temporary | test-merge-a.gbx test-merge-b.gbx | ! --export=rs274x --output=inputs/test-merge-a+b_temporary.gbx
 test-merge-a+b | test-merge-a+b_temporary.gbx
 
@@ -220,11 +228,26 @@ test-drill-allegro-comment-tools | test-drill-allegro-comment-tools.exc
 # Allegro no-T-command drill file: Holesize comments without T prefix, M00 tool change (#331)
 test-drill-allegro-no-tcommand | test-drill-allegro-no-tcommand.exc
 
+# Excellon pattern repeat (M25 begin, M01 end, M02 repeat at offset)
+test-drill-pattern-repeat | test-drill-pattern-repeat.exc
+
+# Excellon axis transforms (M70 swap, M80 mirror X, M90 mirror Y)
+test-drill-axis-transforms | test-drill-axis-transforms.exc
+
+# Test "G87" routed slot
+test-drill-routed-slot | test-drill-routed-slot.exc
+
 # Excellon routing/milling (G00/G01 + M15/M16/M17)
 test-drill-route-milling | test-drill-route-milling.exc
 
 # Excellon arc routing (G02/G03 + I/J offsets)
 test-drill-arc-routing | test-drill-arc-routing.exc
+
+# Excellon routed circle canned cycles (G32 CW, G33 CCW)
+test-drill-routed-circle | test-drill-routed-circle.exc
+
+# Excellon arc routing with A (radius) parameter
+test-drill-arc-radius | test-drill-arc-radius.exc
 
 # Gerber X2 attribute commands (TF, TA, TO, TD) should be silently ignored
 test-gerber-x2-attributes | test-gerber-x2-attributes.gbx

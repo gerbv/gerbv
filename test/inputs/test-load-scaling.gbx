@@ -1,0 +1,21 @@
+G04 Test load scaling (LS command)*
+G04 Draws a cross at 1x then at 2x scale*
+%MOIN*%
+%FSLAX23Y23*%
+%ADD10C,0.010*%
+
+G04 Original scale (1x) - cross at origin*
+G54D10*
+X-500Y0D02*
+X500Y0D01*
+X0Y-500D02*
+X0Y500D01*
+
+G04 2x scale - cross should be twice as large*
+%LS2.0*%
+X-500Y0D02*
+X500Y0D01*
+X0Y-500D02*
+X0Y500D01*
+
+M02*
