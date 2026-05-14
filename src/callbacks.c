@@ -1617,9 +1617,11 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 	table_add_row(G_table, "G32", stat->G32, _(drill_g_code_name(32)));
 	table_add_row(G_table, "G33", stat->G33, _(drill_g_code_name(33)));
 	table_add_row(G_table, "G85", stat->G85, _(drill_g_code_name(85)));
+	table_add_row(G_table, "G87", stat->G87, _(drill_g_code_name(87)));
 	table_add_row(G_table, "G90", stat->G90, _(drill_g_code_name(90)));
 	table_add_row(G_table, "G91", stat->G91, _(drill_g_code_name(91)));
 	table_add_row(G_table, "G93", stat->G93, _(drill_g_code_name(93)));
+	table_add_row(G_table, "", stat->G_machine_only, _("machine-only G-codes (ignored)"));
 	table_add_row(G_table, "", stat->G_unknown, _("unknown G-codes"));
 
 	table_set_sortable(G_table);
@@ -1640,17 +1642,22 @@ callbacks_analyze_active_drill_activate(GtkMenuItem *menuitem,
 			GTK_TREE_VIEW(M_table->widget), TRUE);
 	table_add_row(M_table, "M00", stat->M00, _(drill_m_code_name(0)));
 	table_add_row(M_table, "M01", stat->M01, _(drill_m_code_name(1)));
+	table_add_row(M_table, "M02", stat->M02, _(drill_m_code_name(2)));
 	table_add_row(M_table, "M18", stat->M18, _(drill_m_code_name(18)));
 	table_add_row(M_table, "M25", stat->M25, _(drill_m_code_name(25)));
 	table_add_row(M_table, "M30", stat->M30, _(drill_m_code_name(30)));
 	table_add_row(M_table, "M45", stat->M45, _(drill_m_code_name(45)));
 	table_add_row(M_table, "M47", stat->M47, _(drill_m_code_name(47)));
 	table_add_row(M_table, "M48", stat->M48, _(drill_m_code_name(48)));
+	table_add_row(M_table, "M70", stat->M70, _(drill_m_code_name(70)));
 	table_add_row(M_table, "M71", stat->M71, _(drill_m_code_name(71)));
 	table_add_row(M_table, "M72", stat->M72, _(drill_m_code_name(72)));
+	table_add_row(M_table, "M80", stat->M80, _(drill_m_code_name(80)));
+	table_add_row(M_table, "M90", stat->M90, _(drill_m_code_name(90)));
 	table_add_row(M_table, "M95", stat->M95, _(drill_m_code_name(95)));
 	table_add_row(M_table, "M97", stat->M97, _(drill_m_code_name(97)));
 	table_add_row(M_table, "M98", stat->M98, _(drill_m_code_name(98)));
+	table_add_row(M_table, "", stat->M_machine_only, _("machine-only M-codes (ignored)"));
 	table_add_row(M_table, "", stat->M_unknown, _("unknown M-codes"));
 
 	table_set_sortable(M_table);

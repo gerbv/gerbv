@@ -132,13 +132,16 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     accum_stats->G32 += input_stats->G32;
     accum_stats->G33 += input_stats->G33;
     accum_stats->G85 += input_stats->G85;
+    accum_stats->G87 += input_stats->G87;
     accum_stats->G90 += input_stats->G90;
     accum_stats->G91 += input_stats->G91;
     accum_stats->G93 += input_stats->G93;
+    accum_stats->G_machine_only += input_stats->G_machine_only;
     accum_stats->G_unknown += input_stats->G_unknown;
 
     accum_stats->M00 += input_stats->M00;
     accum_stats->M01 += input_stats->M01;
+    accum_stats->M02 += input_stats->M02;
     accum_stats->M18 += input_stats->M18;
     accum_stats->M25 += input_stats->M25;
     accum_stats->M30 += input_stats->M30;
@@ -146,11 +149,15 @@ gerbv_drill_stats_add_layer(gerbv_drill_stats_t *accum_stats,
     accum_stats->M45 += input_stats->M45;
     accum_stats->M47 += input_stats->M47;
     accum_stats->M48 += input_stats->M48;
+    accum_stats->M70 += input_stats->M70;
     accum_stats->M71 += input_stats->M71;
     accum_stats->M72 += input_stats->M72;
+    accum_stats->M80 += input_stats->M80;
+    accum_stats->M90 += input_stats->M90;
     accum_stats->M95 += input_stats->M95;
     accum_stats->M97 += input_stats->M97;
     accum_stats->M98 += input_stats->M98;
+    accum_stats->M_machine_only += input_stats->M_machine_only;
     accum_stats->M_unknown += input_stats->M_unknown;
 
     accum_stats->R += input_stats->R;

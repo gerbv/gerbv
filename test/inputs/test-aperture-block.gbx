@@ -1,0 +1,98 @@
+G04 Test aperture block (AB command)*
+G04 Exercises all content types inside block apertures:*
+G04  - Linear draws (D01)*
+G04  - Arc strokes (G02/G03 with I/J)*
+G04  - Rectangle draw strokes*
+G04  - Polygon regions (G36/G37)*
+G04  - Macro flashes*
+G04  - Nested block flashes*
+%MOIN*%
+%FSLAX23Y23*%
+
+G04 === Aperture definitions ==================================================*
+%ADD10C,0.010*%
+%ADD11R,0.008X0.008*%
+
+G04 Define a simple macro (crosshair)*
+%AMCROSS*
+1,1,0.020,0,0,0*
+20,1,0.004,-.015,0,.015,0,0*
+20,1,0.004,0,-.015,0,.015,0*
+%
+%ADD12CROSS*%
+
+G04 === Block D20: L-shape with linear draws (existing test) ==================*
+%ABD20*%
+G54D10*
+X0Y0D02*
+X500Y0D01*
+X0Y0D02*
+X0Y500D01*
+%AB*%
+
+G04 === Block D21: arc stroke (quarter circle CW) =============================*
+%ABD21*%
+G54D10*
+X500Y0D02*
+G75*
+G02X0Y500I-500J0D01*
+G01*
+%AB*%
+
+G04 === Block D22: polygon region (filled triangle) ===========================*
+%ABD22*%
+G36*
+X0Y0D02*
+X400Y0D01*
+X200Y350D01*
+X0Y0D01*
+G37*
+%AB*%
+
+G04 === Block D23: macro flash inside block ====================================*
+%ABD23*%
+G54D12*
+X0Y0D03*
+%AB*%
+
+G04 === Block D24: rectangle draw stroke =======================================*
+%ABD24*%
+G54D11*
+X0Y0D02*
+X600Y0D01*
+%AB*%
+
+G04 === Block D25: nested block (flashes D20 inside D25) =======================*
+%ABD25*%
+G54D20*
+X0Y0D03*
+X600Y0D03*
+%AB*%
+
+G04 === Flash each block ======================================================*
+
+G04 Flash D20 (linear L-shape) at (500, 500)*
+G54D20*
+X500Y500D03*
+
+G04 Flash D21 (arc) at (1500, 500)*
+G54D21*
+X1500Y500D03*
+
+G04 Flash D22 (polygon region) at (2500, 500)*
+G54D22*
+X2500Y500D03*
+
+G04 Flash D23 (macro) at (3500, 500)*
+G54D23*
+X3500Y500D03*
+
+G04 Flash D24 (rect stroke) at (500, 1500)*
+G54D24*
+X500Y1500D03*
+
+G04 Flash D25 (nested block) at (1500, 1500)*
+G54D25*
+X1500Y1500D03*
+
+M02*

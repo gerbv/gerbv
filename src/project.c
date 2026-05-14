@@ -392,15 +392,10 @@ static char *exec_prefix = NULL;
 static char *pkgdatadir = NULL;
 static gchar *scmdatadir = NULL;
 
-/* this really should not be needed but it could
- * be hooked in to appease malloc debuggers as
- * we don't otherwise free these variables.  However,
- * they only get malloc-ed once ever so this
- * is a fixed leak of a small size.
- */
-#if 0
-void
-destroy_paths ()
+/** Free static path strings allocated by init_paths().
+ * Registered via atexit() so valgrind reports zero leaks. */
+static void
+destroy_paths (void)
 {
   if (bindir != NULL) {
     free (bindir);
@@ -421,10 +416,7 @@ destroy_paths ()
     g_free (scmdatadir);
     scmdatadir = NULL;
   }
-
-
 }
-#endif
 
 static void
 init_paths (char *argv0)
@@ -455,7 +447,9 @@ init_paths (char *argv0)
   DPRINTF("%s (%s): haspath = %d\n", __FUNCTION__, argv0, haspath);
   if (haspath)
     {
-      bindir = strdup (lrealpath (argv0));
+      /* lrealpath() returns a malloc'd string — assign directly,
+       * don't strdup again (would leak the lrealpath result). */
+      bindir = lrealpath (argv0);
       found_bindir = 1;
     }
   else
@@ -548,7 +542,8 @@ init_paths (char *argv0)
   DPRINTF("%s():  exec_prefix = %s\n", __FUNCTION__, exec_prefix);
   DPRINTF("%s():  pkgdatadir  = %s\n", __FUNCTION__, pkgdatadir);
   DPRINTF("%s():  scmdatadir  = %s\n", __FUNCTION__, scmdatadir);
-  
+
+  atexit(destroy_paths);
 }
 
 
@@ -1011,8 +1006,10 @@ read_project_file(char const* filename)
     if ((fd = g_fopen(initfile, "r")) == NULL) {
 	scheme_deinit(sc);
 	GERB_MESSAGE(_("Couldn't open %s (%s)"), initfile, strerror(errno));
+	g_free(initfile);
 	return NULL;
     }
+    g_free(initfile);
 
     /* Force gerbv to input decimals as dots */
     setlocale(LC_NUMERIC, "C");
@@ -1059,10 +1056,11 @@ project_destroy_project_list (project_list_t *projectList){
 	
 	for (tempP = projectList; tempP != NULL; ){
 		tempP2 = tempP->next;
-		
+
 		g_free (tempP->filename);
 		gerbv_attribute_destroy_HID_attribute (tempP->attr_list, tempP->n_attr);
 		tempP->attr_list = NULL;
+		g_free (tempP);
 		tempP = tempP2;
 	}
 }

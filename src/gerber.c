@@ -67,8 +67,8 @@ static int parse_aperture_definition(gerb_file_t *fd,
 				     long int *line_num_p);
 static void calc_cirseg_sq(struct gerbv_net *net, int cw, 
 			   double delta_cp_x, double delta_cp_y);
-static void calc_cirseg_mq(struct gerbv_net *net, int cw, 
-			   double delta_cp_x, double delta_cp_y);
+void calc_cirseg_mq(struct gerbv_net *net, int cw,
+		    double delta_cp_x, double delta_cp_y);
 static void calc_cirseg_bbox(const gerbv_cirseg_t *cirseg,
 			double apert_size_x, double apert_size_y,
 			gerbv_render_size_t *bbox);
@@ -245,6 +245,17 @@ gerber_parse_file_segment (gint levelOfRecursion, gerbv_image_t *image,
 	    while (1) {
 	    	parse_rs274x(levelOfRecursion, fd, image, state, curr_net,
 				stats, directoryPath, &line_num);
+
+		/* Handle aperture block open/close transitions */
+		if ((state->in_block) && (state->saved_curr_net == NULL)) {
+		    /* Just entered a block — redirect curr_net */
+		    state->saved_curr_net = curr_net;
+		    curr_net = state->block_netlist;
+		} else if ((!state->in_block) && (state->saved_curr_net != NULL)) {
+		    /* Just closed a block — restore curr_net */
+		    curr_net = state->saved_curr_net;
+		    state->saved_curr_net = NULL;
+		}
 
 	    	/* advance past any whitespace here */
 		int c;
@@ -1248,9 +1259,71 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 		_("Unexpected EOF found in file \"%s\""), fd->filename);
 
     switch (A2I(op[0], op[1])){
-	
-	/* 
-	 * Directive parameters 
+
+    case A2I('A','B'): /* Aperture Block */
+	op[0] = gerb_fgetc(fd);
+	if (op[0] == 'D') {
+	    /* %ABD<code>*% — open block definition */
+	    int ap_num = 0;
+	    int c;
+	    while (((c = gerb_fgetc(fd)) != EOF) && (c != '*')) {
+		if ((c >= '0') && (c <= '9')) {
+		    ap_num = ap_num * 10 + (c - '0');
+		}
+	    }
+	    if (state->in_block) {
+		/* Reject nested %ABD*% — the parser keeps a single
+		 * (block_aperture_num, block_netlist, saved_curr_net)
+		 * triple, not a stack. Silently overwriting it would
+		 * leak the outer block's net pointer and route the
+		 * inner block's flashes into the outer's net list. The
+		 * Gerber X2 spec permits nesting, but real-world
+		 * generators don't emit it; if a file ever needs it
+		 * we'll grow this into a stack. The outer block is
+		 * preserved; the inner definition is dropped (`ap_num`
+		 * never gets allocated as an aperture). */
+		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
+			_("Nested %%AB%% aperture block (D%d inside D%d) "
+			    "is not supported at line %ld in file \"%s\" — "
+			    "inner block dropped"),
+			ap_num, state->block_aperture_num,
+			*line_num_p, fd->filename);
+	    } else if ((ap_num < APERTURE_MIN) || (ap_num >= APERTURE_MAX)) {
+		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
+			_("Aperture block D-code %d out of range "
+			    "at line %ld in file \"%s\""),
+			ap_num, *line_num_p, fd->filename);
+	    } else {
+		state->in_block = TRUE;
+		state->block_aperture_num = ap_num;
+		/* Allocate the aperture and set its type */
+		image->aperture[ap_num] = g_new0(gerbv_aperture_t, 1);
+		image->aperture[ap_num]->type = GERBV_APTYPE_BLOCK;
+		/* Register in stats so D-code usage tracking works */
+		gerbv_stats_add_aperture(stats->aperture_list,
+					-1, ap_num,
+					GERBV_APTYPE_BLOCK,
+					image->aperture[ap_num]->parameter);
+		gerbv_stats_add_to_D_list(stats->D_code_list, ap_num);
+		/* Create head node for the block net list */
+		state->block_netlist = g_new0(gerbv_net_t, 1);
+		state->block_netlist->layer = state->layer;
+		state->block_netlist->state = state->state;
+	    }
+	} else {
+	    /* %AB*% — close block definition */
+	    gerb_ungetc(fd);
+	    if (state->in_block) {
+		image->aperture[state->block_aperture_num]->block_netlist =
+			state->block_netlist;
+		state->in_block = FALSE;
+		state->block_netlist = NULL;
+	    }
+	}
+	break;
+
+	/*
+	 * Directive parameters
 	 */
     case A2I('A','S'): /* Axis Select */
 	op[0] = gerb_fgetc(fd);
@@ -1731,6 +1804,37 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	default:
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Unknown layer polarity '%s' "
+		       "at line %ld in file \"%s\""),
+		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
+	}
+	break;
+    case A2I('L','R'): /* Load Rotation */
+	state->state = gerbv_image_return_new_netstate(state->state);
+	state->state->rotation = DEG2RAD(gerb_fgetdouble(fd));
+	break;
+    case A2I('L','S'): /* Load Scaling */
+	state->state = gerbv_image_return_new_netstate(state->state);
+	state->state->scaleA = gerb_fgetdouble(fd);
+	state->state->scaleB = state->state->scaleA;
+  break;
+    case A2I('L','M'): /* Load Mirroring */
+	state->state = gerbv_image_return_new_netstate(state->state);
+	op[0] = gerb_fgetc(fd);
+	if (op[0] == 'N') {
+	    state->state->mirrorState = GERBV_MIRROR_STATE_NOMIRROR;
+	} else if (op[0] == 'X') {
+	    op[1] = gerb_fgetc(fd);
+	    if (op[1] == 'Y') {
+		state->state->mirrorState = GERBV_MIRROR_STATE_FLIPAB;
+	    } else {
+		gerb_ungetc(fd);
+		state->state->mirrorState = GERBV_MIRROR_STATE_FLIPA;
+	    }
+	} else if (op[0] == 'Y') {
+	    state->state->mirrorState = GERBV_MIRROR_STATE_FLIPB;
+	} else {
+	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
+		    _("Unknown load mirroring parameter '%s' "
 		       "at line %ld in file \"%s\""),
 		    gerbv_escape_char(op[0]), *line_num_p, fd->filename);
 	}
@@ -2511,8 +2615,8 @@ calc_cirseg_sq(struct gerbv_net *net, int cw,
 
 
 /* Multiquadrant circular interpolation */
-static void 
-calc_cirseg_mq(struct gerbv_net *net, int cw, 
+void
+calc_cirseg_mq(struct gerbv_net *net, int cw,
 	       double delta_cp_x, double delta_cp_y)
 {
     double d1x, d1y, d2x, d2y;

@@ -169,7 +169,8 @@ typedef enum {
 			GERBV_APTYPE_MACRO_THERMAL, /*!< a RS274X thermal macro */
 			GERBV_APTYPE_MACRO_LINE20, /*!< a RS274X vector line (code 20) macro */
 			GERBV_APTYPE_MACRO_LINE21, /*!< a RS274X centered line (code 21) macro */
-			GERBV_APTYPE_MACRO_LINE22 /*!< a RS274X lower left line (code 22) macro */
+			GERBV_APTYPE_MACRO_LINE22, /*!< a RS274X lower left line (code 22) macro */
+			GERBV_APTYPE_BLOCK /*!< a block aperture (AB command) */
 } gerbv_aperture_type_t;
 
 const char *gerbv_aperture_type_name(gerbv_aperture_type_t type);
@@ -447,6 +448,7 @@ typedef struct gerbv_aperture {
     double parameter[APERTURE_PARAMETERS_MAX];
     int nuf_parameters;
     gerbv_unit_t unit;
+    struct gerbv_net *block_netlist; /*!< net list for block apertures (AB command) */
 } gerbv_aperture_t;
 
 /* the gerb_aperture_list is used to keep track of 
@@ -537,13 +539,16 @@ typedef struct {
     int G32;
     int G33;
     int G85;
+    int G87;
     int G90;
     int G91;
     int G93;
+    int G_machine_only;
     int G_unknown;
 
     int M00;
     int M01;
+    int M02;
     int M18;
     int M25;
     int M30;
@@ -551,11 +556,15 @@ typedef struct {
     int M45;
     int M47;
     int M48;
+    int M70;
     int M71;
     int M72;
+    int M80;
+    int M90;
     int M95;
     int M97;
     int M98;
+    int M_machine_only;
     int M_unknown;
 
     int R;
@@ -651,6 +660,7 @@ typedef struct {
     gdouble offsetB; /*!< the offset along the B axis (usually this is the Y axis) */
     gdouble scaleA; /*!< the scale factor in the A axis (usually this is the X axis) */
     gdouble scaleB; /*!< the scale factor in the B axis (usually this is the Y axis) */
+    gdouble rotation; /*!< per-object rotation in radians (LR command) */
     gpointer next; /*!< the next state group in the array */
 } gerbv_netstate_t;
 
