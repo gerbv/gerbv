@@ -165,10 +165,9 @@ static int drill_parse_header_is_ici(gerb_file_t *fd, drill_state_t *state,
 static void drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 				gerbv_image_t *image, drill_state_t *state,
 				unsigned int file_line);
-static drill_state_t *new_state(drill_state_t *state);
+static drill_state_t *new_state(void);
 static gerbv_net_t *drill_add_route_segment(gerbv_image_t *image,
 				drill_state_t *state,
-				gerbv_drill_stats_t *stats,
 				gerbv_net_t *curr_net,
 				double prev_x, double prev_y);
 static gerbv_net_t *drill_add_arc_segment(gerbv_image_t *image,
@@ -286,7 +285,7 @@ drill_update_image_info_min_max_from_bbox(gerbv_image_info_t *info,
  */
 static gerbv_net_t *
 drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state,
-		gerbv_drill_stats_t *stats, gerbv_net_t *curr_net)
+		gerbv_net_t *curr_net)
 {
     gerbv_render_size_t *bbox;
     double r;
@@ -348,8 +347,7 @@ drill_add_drill_hole (gerbv_image_t *image, drill_state_t *state,
  */
 static gerbv_net_t *
 drill_add_route_segment(gerbv_image_t *image, drill_state_t *state,
-		gerbv_drill_stats_t *stats, gerbv_net_t *curr_net,
-		double prev_x, double prev_y)
+		gerbv_net_t *curr_net, double prev_x, double prev_y)
 {
     gerbv_render_size_t *bbox;
     double r;
@@ -722,7 +720,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
     image->drill_stats = stats;
 
     /* Create local state variable to track photoplotter state */
-    state = new_state(state);
+    state = new_state();
     if (state == NULL) {
 	GERB_FATAL_ERROR("malloc state failed in %s()", __FUNCTION__);
     }
@@ -945,8 +943,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 		drill_parse_coordinate(fd, read, image, state, file_line);
 
-		curr_net = drill_add_route_segment(image, state, stats,
-			curr_net, prev_x, prev_y);
+		curr_net = drill_add_route_segment(image, state, curr_net,
+			prev_x, prev_y);
 		break;
 	    }
                        
@@ -1223,12 +1221,12 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 			if (e->is_route) {
 			    curr_net = drill_add_route_segment(image, state,
-				    stats, curr_net,
+				    curr_net,
 				    e->prev_x + offset_x,
 				    e->prev_y + offset_y);
 			} else {
 			    curr_net = drill_add_drill_hole(image, state,
-				    stats, curr_net);
+				    curr_net);
 			}
 		    }
 
@@ -1378,7 +1376,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		state->curr_x = start_x + c*step_x;
 		state->curr_y = start_y + c*step_y;
 		DPRINTF("    Repeat #%d - new location is (%g, %g)\n", c, state->curr_x, state->curr_y);
-		curr_net = drill_add_drill_hole (image, state, stats, curr_net);
+		curr_net = drill_add_drill_hole (image, state, curr_net);
 		if (state->in_pattern) {
 		    drill_pattern_entry_t entry = {
 			state->curr_x, state->curr_y,
@@ -1448,7 +1446,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 	    } else if ((state->route_mode == DRILL_G_LINEARMOVE ||
 		 state->route_mode == DRILL_G_ROUT) && state->tool_down) {
 		/* Routing mode, tool down: create line segment */
-		curr_net = drill_add_route_segment(image, state, stats,
+		curr_net = drill_add_route_segment(image, state,
 			curr_net, prev_x, prev_y);
 		if (state->in_pattern) {
 		    drill_pattern_entry_t entry = {
@@ -1459,7 +1457,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 		}
 	    } else {
 		/* Drill mode (default): create flash hole */
-		curr_net = drill_add_drill_hole(image, state, stats, curr_net);
+		curr_net = drill_add_drill_hole(image, state, curr_net);
 		if (state->in_pattern) {
 		    drill_pattern_entry_t entry = {
 			state->curr_x, state->curr_y,
@@ -2162,17 +2160,18 @@ drill_parse_header_is_metric(gerb_file_t *fd, drill_state_t *state,
 		state->decimals = state->digits_before;
 	    }
 
+	    /* Tool definitions always use standard metric format
+	     * (1 um resolution), regardless of FILE_FORMAT= settings. */
+	    state->header_number_format = FMT_000_000;
+
 	    if (state->autod && state->number_format != FMT_USER) {
 		/* Default metric number format is 6-digit, 1 um
-		 * resolution.  The header number format (for T#C#
-		 * definitions) is fixed to that, while the number
-		 * format within the file can differ.  If the
-		 * number_format is already FMT_USER, that means that
-		 * we have set the number format in another way, maybe
-		 * with one of the altium FILE_FORMAT= style comments,
-		 * so don't do this default. */
-		state->header_number_format =
-		    state->number_format = FMT_000_000;
+		 * resolution.  If the number_format is already
+		 * FMT_USER, that means that we have set the number
+		 * format in another way, maybe with one of the altium
+		 * FILE_FORMAT= style comments, so don't do this
+		 * default. */
+		state->number_format = FMT_000_000;
 		state->decimals = 3;
 	    }
 
@@ -2349,7 +2348,10 @@ drill_parse_header_is_metric_comment(gerb_file_t *fd, drill_state_t *state,
     /* We've failed to read a number. */
     return 0;
   }
-  state->header_number_format = state->number_format = FMT_USER;
+  state->number_format = FMT_USER;
+  /* header_number_format is intentionally NOT set here — tool definitions
+   * use standard formats (FMT_00_0000 for inch, FMT_000_000 for metric),
+   * never FMT_USER.  See issue #214. */
   state->decimals = digits_after;
   state->digits_before = digits_before;
   state->autod = 0;
@@ -2391,9 +2393,9 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 	    switch (c) {
 	    case 'L':
 		image->format->omit_zeros = GERBV_OMIT_ZEROS_TRAILING;
+		state->header_number_format = FMT_00_0000;
 		if (state->autod) {
-		    state->header_number_format =
-			state->number_format = FMT_00_0000;
+		    state->number_format = FMT_00_0000;
 		    state->decimals = 4;
 		} else if (state->number_format == FMT_USER
 			&& state->digits_before > 0) {
@@ -2405,9 +2407,9 @@ drill_parse_header_is_inch(gerb_file_t *fd, drill_state_t *state,
 
 	    case 'T':
 		image->format->omit_zeros = GERBV_OMIT_ZEROS_LEADING;
+		state->header_number_format = FMT_00_0000;
 		if (state->autod) {
-		    state->header_number_format =
-			state->number_format = FMT_00_0000;
+		    state->number_format = FMT_00_0000;
 		    state->decimals = 4;
 		}
 		/* For TZ (leading suppression), decimals stays as M (digits
@@ -2651,9 +2653,9 @@ drill_parse_coordinate(gerb_file_t *fd, char firstchar,
 /* Allocates and returns a new drill_state structure
    Returns state pointer on success, NULL on ERROR */
 static drill_state_t *
-new_state(drill_state_t *state)
+new_state(void)
 {
-    state = g_new0(drill_state_t, 1);
+    drill_state_t *state = g_new0(drill_state_t, 1);
     if (state != NULL) {
 	/* Init structure */
 	state->curr_section = DRILL_NONE;
@@ -2824,6 +2826,10 @@ read_double(gerb_file_t *fd, number_fmt_t fmt, gerbv_omit_zeros_t omit_zeros, in
 	}
 
 	result = strtod(temp, NULL) * scale;
+    }
+
+    if (!isfinite(result)) {
+	result = 0.0;
     }
 
     DPRINTF("    %s()=%f: fmt=%d, omit_zeros=%d, decimals=%d \n",
