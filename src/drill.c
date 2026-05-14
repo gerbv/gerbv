@@ -1221,7 +1221,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 			if (e->is_route) {
 			    curr_net = drill_add_route_segment(image, state,
-				    stats, curr_net,
+				    curr_net,
 				    e->prev_x + offset_x,
 				    e->prev_y + offset_y);
 			} else {
