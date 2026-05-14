@@ -17,6 +17,11 @@ This directory contains small, runnable examples:
 
 Full HTML API reference: <https://gerbv.github.io/doc/>
 
+Sample Gerber, Excellon drill, and pick-and-place files from a variety of
+CAD tools (Eagle, OrCAD, Protel, Mentor BoardStation, …) live in the
+top-level [`example/`](../../example/) directory. They are useful as
+real-world inputs when wiring up a consumer of libgerbv.
+
 ## Minimal parse + PNG render
 
 ```c
