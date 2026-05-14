@@ -98,7 +98,7 @@ gerbv_export_isel_drill_file_from_image (const gchar *filename, gerbv_image_t *i
 
 	/* the image should already have been cleaned by a duplicate_image call, so we can safely
 	   assume the aperture range is correct */
-	for (int i=APERTURE_MIN; i<APERTURE_MAX; i++) {
+	for (int i=APERTURE_MIN; i<image->aperture_slots; i++) {
 		currentAperture = image->aperture[i];
 
 		if (!currentAperture)

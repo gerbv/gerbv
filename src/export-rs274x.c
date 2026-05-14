@@ -118,7 +118,7 @@ export_rs274x_write_apertures (FILE *fd, gerbv_image_t *image) {
 	
 	/* the image should already have been cleaned by a duplicate_image call, so we can safely
 	   assume the aperture range is correct */
-	for (i=APERTURE_MIN; i<APERTURE_MAX; i++) {
+	for (i=APERTURE_MIN; i<image->aperture_slots; i++) {
 		gboolean writeAperture=TRUE;
 		
 		currentAperture = image->aperture[i];

@@ -1,0 +1,7 @@
+G04 Test file for D100000 - large D code triggers array growth*
+%FSLAX36Y36*%
+%MOIN*%
+%ADD100000C,0.500000*%
+D100000*
+X0Y0D03*
+M02*

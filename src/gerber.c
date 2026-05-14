@@ -111,7 +111,7 @@ gerber_create_new_aperture (gerbv_image_t *image, int *indexNumber,
 	int i;
 	
 	/* search for an available aperture spot */
-	for (i = 0; i <= APERTURE_MAX; i++) {
+	for (i = 0; i < image->aperture_slots; i++) {
 		if (image->aperture[i] == NULL) {
 			image->aperture[i] = g_new0 (gerbv_aperture_t, 1);
 			image->aperture[i]->type = apertureType;
@@ -1073,10 +1073,10 @@ parse_G_code(gerb_file_t *fd, gerb_state_t *state,
 	/* XXX Maybe uneccesary??? */
 	if (gerb_fgetc(fd) == 'D') {
 	    int a = gerb_fgetint(fd, NULL);
-	    if ((a >= 0) && (a <= APERTURE_MAX)) {
+	    if ((a >= 0) && gerbv_image_ensure_aperture_slot(image, a)) {
 		state->curr_aperture = a;
-	    } else { 
-		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1, 
+	    } else {
+		gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 			_("Found aperture D%02d out of bounds while parsing "
 			    "G code at line %ld in file \"%s\""),
 			a, *line_num_p, fd->filename);
@@ -1174,9 +1174,9 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state,
 	stats->D3++;
 	break;
     default: /* Aperture in use */
-	if ((a >= 0) && (a <= APERTURE_MAX)) {
+	if ((a >= 0) && gerbv_image_ensure_aperture_slot(image, a)) {
 	    state->curr_aperture = a;
-	    
+
 	} else {
 	    gerbv_stats_printf(error_list, GERBV_MESSAGE_ERROR, -1,
 		    _("Found out of bounds aperture D%02d "
@@ -1187,7 +1187,7 @@ parse_D_code(gerb_file_t *fd, gerb_state_t *state,
 	state->changed = 0;
 	break;
     }
-    
+
     return;
 } /* parse_D_code */
 
@@ -1672,7 +1672,7 @@ parse_rs274x(gint levelOfRecursion, gerb_file_t *fd, gerbv_image_t *image,
 	if (ano == -1) {
 		/* error with line parse, so just quietly ignore */
 	}
-	else if ((ano >= 0) && (ano <= APERTURE_MAX)) {
+	else if ((ano >= 0) && gerbv_image_ensure_aperture_slot(image, ano)) {
 	    a->unit = state->state->unit;
 	    image->aperture[ano] = a;
 	    DPRINTF("     In %s(), adding new aperture to aperture list ...\n",

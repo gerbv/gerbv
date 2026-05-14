@@ -52,8 +52,16 @@ gerbv_create_image(gerbv_image_t *image, const gchar *type)
 	return NULL;
     }
 
+    /* Malloc space for dynamic aperture array */
+    if (NULL == (image->aperture = g_new0(gerbv_aperture_t *, APERTURE_INITIAL_SLOTS))) {
+	g_free(image);
+	return NULL;
+    }
+    image->aperture_slots = APERTURE_INITIAL_SLOTS;
+
     /* Malloc space for image->netlist */
     if (NULL == (image->netlist = g_new0(gerbv_net_t, 1))) {
+	g_free(image->aperture);
 	g_free(image);
 	return NULL;
     }
@@ -61,6 +69,7 @@ gerbv_create_image(gerbv_image_t *image, const gchar *type)
     /* Malloc space for image->info */
     if (NULL == (image->info = g_new0(gerbv_image_info_t, 1))) {
 	g_free(image->netlist);
+	g_free(image->aperture);
 	g_free(image);
 	return NULL;
     }
@@ -102,6 +111,31 @@ gerbv_create_image(gerbv_image_t *image, const gchar *type)
 }
 
 
+gboolean
+gerbv_image_ensure_aperture_slot(gerbv_image_t *image, int index)
+{
+    if (index < 0)
+	return FALSE;
+    if (index < image->aperture_slots)
+	return TRUE;
+    if (index >= APERTURE_SLOTS_MAX)
+	return FALSE;
+
+    int new_slots = image->aperture_slots;
+    while (new_slots <= index)
+	new_slots *= 2;
+    if (new_slots > APERTURE_SLOTS_MAX)
+	new_slots = APERTURE_SLOTS_MAX;
+
+    image->aperture = g_realloc(image->aperture,
+		new_slots * sizeof(gerbv_aperture_t *));
+    memset(image->aperture + image->aperture_slots, 0,
+		(new_slots - image->aperture_slots) * sizeof(gerbv_aperture_t *));
+    image->aperture_slots = new_slots;
+    return TRUE;
+}
+
+
 void
 gerbv_destroy_image(gerbv_image_t *image)
 {
@@ -117,7 +151,7 @@ gerbv_destroy_image(gerbv_image_t *image)
     /*
      * Free apertures
      */
-    for (i = 0; i < APERTURE_MAX; i++) 
+    for (i = 0; i < image->aperture_slots; i++)
 	if (image->aperture[i] != NULL) {
 	    for (sam = image->aperture[i]->simplified; sam != NULL; ){
 	      sam2 = sam->next;
@@ -128,6 +162,7 @@ gerbv_destroy_image(gerbv_image_t *image)
 	    g_free(image->aperture[i]);
 	    image->aperture[i] = NULL;
 	}
+    g_free(image->aperture);
 
     /*
      * Free aperture macro
@@ -237,8 +272,8 @@ gerbv_image_verify(gerbv_image_t const* image)
 
     /* If we have nets that need apertures but none are defined, complain */
     if (needs_aperture) {
-      for (i = 0; i < APERTURE_MAX && image->aperture[i] == NULL; i++);
-      if (i == APERTURE_MAX) error |= GERB_IMAGE_MISSING_APERTURES;
+      for (i = 0; i < image->aperture_slots && image->aperture[i] == NULL; i++);
+      if (i == image->aperture_slots) error |= GERB_IMAGE_MISSING_APERTURES;
     }
 
     return error;
@@ -273,7 +308,7 @@ gerbv_image_dump(gerbv_image_t const* image)
     /* Apertures */
     printf(_("Apertures:\n"));
     aperture = image->aperture;
-    for (i = 0; i < APERTURE_MAX; i++) {
+    for (i = 0; i < image->aperture_slots; i++) {
 	if (aperture[i]) {
 	    printf(_(" Aperture no:%d is an "), i);
 	    switch(aperture[i]->type) {
@@ -437,7 +472,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 	if (trans) {
 		/* Find last used aperture to add transformed apertures if
 		 * needed */
-		for (aper_last_id = APERTURE_MAX - 1; aper_last_id > 0;
+		for (aper_last_id = destImage->aperture_slots - 1; aper_last_id > 0;
 						aper_last_id--) {
 			if (destImage->aperture[aper_last_id] != NULL)
 				break;
@@ -563,6 +598,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 				aper->parameter[0] *= trans->scaleX;
 
 				trans_apers[newNet->aperture] = ++aper_last_id;
+				gerbv_image_ensure_aperture_slot(destImage, aper_last_id);
 				destImage->aperture[aper_last_id] = aper;
 				newNet->aperture = aper_last_id;
 			} else {
@@ -599,6 +635,7 @@ gerbv_image_copy_all_nets (gerbv_image_t *sourceImage,
 			}
 
 			trans_apers[newNet->aperture] = ++aper_last_id;
+			gerbv_image_ensure_aperture_slot(destImage, aper_last_id);
 			destImage->aperture[aper_last_id] = aper;
 			newNet->aperture = aper_last_id;
 
@@ -809,6 +846,7 @@ selection_add_item (&screen.selectionInfo, &sItem);
 			}
 
 			trans_apers[newNet->aperture] = ++aper_last_id;
+			gerbv_image_ensure_aperture_slot(destImage, aper_last_id);
 			destImage->aperture[aper_last_id] = aper;
 			newNet->aperture = aper_last_id;
 
@@ -885,7 +923,7 @@ gerbv_image_find_existing_aperture_match (gerbv_aperture_t *checkAperture, gerbv
     int i,j;
     gboolean isMatch;
     
-    for (i = 0; i < APERTURE_MAX; i++) {
+    for (i = 0; i < imageToSearch->aperture_slots; i++) {
 	if (imageToSearch->aperture[i] != NULL) {
 	  if ((imageToSearch->aperture[i]->type == checkAperture->type) &&
 	      (imageToSearch->aperture[i]->simplified == NULL) &&
@@ -908,7 +946,7 @@ int
 gerbv_image_find_unused_aperture_number (int startIndex, gerbv_image_t *image){
     int i;
     
-    for (i = startIndex; i < APERTURE_MAX; i++) {
+    for (i = startIndex; i < image->aperture_slots; i++) {
 	if (image->aperture[i] == NULL) {
 	  return i;
 	}
@@ -934,7 +972,7 @@ gerbv_image_duplicate_image (gerbv_image_t *sourceImage, gerbv_user_transformati
     
     /* copy apertures over, compressing all the numbers down for a cleaner output, and
        moving and apertures less than 10 up to the correct range */
-    for (i = 0; i < APERTURE_MAX; i++) {
+    for (i = 0; i < sourceImage->aperture_slots; i++) {
 	if (sourceImage->aperture[i] != NULL) {
 	  gerbv_aperture_t *newAperture = gerbv_image_duplicate_aperture (sourceImage->aperture[i]);
 
@@ -943,6 +981,7 @@ gerbv_image_duplicate_image (gerbv_image_t *sourceImage, gerbv_user_transformati
 	  gerb_translation_entry_t translationEntry={i,lastUsedApertureNumber};
 	  g_array_append_val (apertureNumberTable,translationEntry);
 
+	  gerbv_image_ensure_aperture_slot(newImage, lastUsedApertureNumber);
 	  newImage->aperture[lastUsedApertureNumber] = newAperture;
 	}
     }
@@ -961,10 +1000,10 @@ gerbv_image_copy_image (gerbv_image_t *sourceImage, gerbv_user_transformation_t 
     GArray *apertureNumberTable = g_array_new(FALSE,FALSE,sizeof(gerb_translation_entry_t));
     
     /* copy apertures over */
-    for (i = 0; i < APERTURE_MAX; i++) {
+    for (i = 0; i < sourceImage->aperture_slots; i++) {
 	if (sourceImage->aperture[i] != NULL) {
 	  gint existingAperture = gerbv_image_find_existing_aperture_match (sourceImage->aperture[i], destinationImage);
-	  
+
 	  /* if we already have an existing aperture in the destination image that matches what
 	     we want, just use it instead */
 	  if (existingAperture > 0) {
@@ -974,12 +1013,13 @@ gerbv_image_copy_image (gerbv_image_t *sourceImage, gerbv_user_transformation_t 
 	  /* else, create a new aperture and put it in the destination image */
 	  else {
 	  	gerbv_aperture_t *newAperture = gerbv_image_duplicate_aperture (sourceImage->aperture[i]);
-	  
+
 	  	lastUsedApertureNumber = gerbv_image_find_unused_aperture_number (lastUsedApertureNumber + 1, destinationImage);
 	  	/* store the aperture numbers (new and old) in the translation table */
 	  	gerb_translation_entry_t translationEntry={i,lastUsedApertureNumber};
 	  	g_array_append_val (apertureNumberTable,translationEntry);
 
+	  	gerbv_image_ensure_aperture_slot(destinationImage, lastUsedApertureNumber);
 	  	destinationImage->aperture[lastUsedApertureNumber] = newAperture;
 	  }
 	}
@@ -1105,9 +1145,9 @@ gerb_image_return_aperture_index (gerbv_image_t *image, gdouble lineWidth, int *
 	for (currentNet = image->netlist; currentNet->next; currentNet = currentNet->next){}
 	
 	/* try to find an existing aperture that matches the requested width and type */
-	for (i = 0; i < APERTURE_MAX; i++) {
+	for (i = 0; i < image->aperture_slots; i++) {
 		if (image->aperture[i] != NULL) {
-			if ((image->aperture[i]->type == GERBV_APTYPE_CIRCLE) && 
+			if ((image->aperture[i]->type == GERBV_APTYPE_CIRCLE) &&
 				(fabs (image->aperture[i]->parameter[0] - lineWidth) < 0.001)){
 				aperture = image->aperture[i];
 				*apertureIndex = i;
