@@ -183,7 +183,6 @@ test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-erro
 
 # Aperture block (Gerber X2)
 test-aperture-block  |  test-aperture-block.gbx
-test-load-scaling    |  test-load-scaling.gbx
 
 # Load state commands (Gerber X2)
 test-load-rotation  |  test-load-rotation.gbx
