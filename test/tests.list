@@ -184,7 +184,11 @@ test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-erro
 # Aperture block (Gerber X2)
 test-aperture-block  |  test-aperture-block.gbx
 test-load-scaling    |  test-load-scaling.gbx
-test-load-mirroring  |  test-load-mirroring.gbx
+
+# Load state commands (Gerber X2)
+test-load-rotation  |  test-load-rotation.gbx
+test-load-scaling   |  test-load-scaling.gbx
+test-load-mirroring |  test-load-mirroring.gbx
 
 test-merge-a+b_temporary | test-merge-a.gbx test-merge-b.gbx | ! --export=rs274x --output=inputs/test-merge-a+b_temporary.gbx
 test-merge-a+b | test-merge-a+b_temporary.gbx
