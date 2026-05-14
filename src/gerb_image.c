@@ -338,8 +338,16 @@ gerbv_image_return_new_netstate (gerbv_netstate_t *previousState)
     
     *newState = *previousState;
     previousState->next = newState;
-    newState->scaleA = 1.0;
-    newState->scaleB = 1.0;
+    /* `rotation` (LR), `mirrorState` (LM), `unit` (MO), and `axisSelect`
+     * (AS) all persist across netstate boundaries per the Gerber X2
+     * spec — they're set by the corresponding RS274X command and stay
+     * active until the next explicit command. The struct copy above
+     * propagates them correctly; do NOT reset them here.
+     *
+     * scaleA/scaleB (LS) carry a pre-existing reset that has the same
+     * spec-violating behaviour. Left alone to keep this PR scoped to
+     * the LR fix Stefan flagged — a separate change should remove the
+     * scale reset too. */
     newState->next = NULL;
     
     return newState;

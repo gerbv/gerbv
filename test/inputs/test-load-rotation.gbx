@@ -1,0 +1,28 @@
+G04 Test load rotation (LR command)*
+G04 Draws an L-shape at 0, 45, and 90 degrees*
+%MOIN*%
+%FSLAX23Y23*%
+%ADD10C,0.010*%
+
+G04 Original (0 degrees) - L-shape*
+G54D10*
+X0Y0D02*
+X500Y0D01*
+X0Y0D02*
+X0Y500D01*
+
+G04 Rotated 45 degrees CCW*
+%LR45*%
+X0Y0D02*
+X500Y0D01*
+X0Y0D02*
+X0Y500D01*
+
+G04 Rotated 90 degrees CCW*
+%LR90*%
+X0Y0D02*
+X500Y0D01*
+X0Y0D02*
+X0Y500D01*
+
+M02*

@@ -182,6 +182,7 @@ test-circular-interpolation-mq-ccw      |  test-circular-interpolation-mq-ccw.gb
 test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-error.gbx
 
 # Load state commands (Gerber X2)
+test-load-rotation  |  test-load-rotation.gbx
 test-load-scaling  |  test-load-scaling.gbx
 test-load-mirroring  |  test-load-mirroring.gbx
 
