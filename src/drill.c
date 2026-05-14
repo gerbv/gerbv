@@ -943,8 +943,8 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 
 		drill_parse_coordinate(fd, read, image, state, file_line);
 
-		curr_net = drill_add_route_segment(image, state, stats,
-			curr_net, prev_x, prev_y);
+		curr_net = drill_add_route_segment(image, state, curr_net,
+			prev_x, prev_y);
 		break;
 	    }
                        
@@ -1226,7 +1226,7 @@ parse_drillfile(gerb_file_t *fd, gerbv_HID_Attribute *attr_list, int n_attr, int
 				    e->prev_y + offset_y);
 			} else {
 			    curr_net = drill_add_drill_hole(image, state,
-				    stats, curr_net);
+				    curr_net);
 			}
 		    }
 
