@@ -237,6 +237,9 @@ test-drill-route-milling | test-drill-route-milling.exc
 # Excellon arc routing (G02/G03 + I/J offsets)
 test-drill-arc-routing | test-drill-arc-routing.exc
 
+# Excellon routed circle canned cycles (G32 CW, G33 CCW)
+test-drill-routed-circle | test-drill-routed-circle.exc
+
 # Excellon arc routing with A (radius) parameter
 test-drill-arc-radius | test-drill-arc-radius.exc
 
