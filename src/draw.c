@@ -1346,7 +1346,10 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			if (draw_calc_pnp_mark_coords(net, &mark_x, &mark_y)) {
 				cairo_save (cairoTarget);
 
-				cairo_set_font_size (cairoTarget, 0.05);
+				cairo_select_font_face (cairoTarget, "sans-serif",
+						CAIRO_FONT_SLANT_NORMAL,
+						CAIRO_FONT_WEIGHT_NORMAL);
+			cairo_set_font_size (cairoTarget, 0.05);
 				cairo_move_to (cairoTarget, mark_x, mark_y);
 				cairo_scale (cairoTarget, pnp_label_scale_x,
 							pnp_label_scale_y);
