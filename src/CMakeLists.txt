@@ -16,6 +16,7 @@ target_sources(gerbv-lib INTERFACE
                 export-image.c
                 export-svg.c export-svg.h
                 export-isel-drill.c
+                export-diff.c export-diff.h
                 export-rs274x.c
                 gerb_file.c gerb_file.h
                 gerb_image.c gerb_image.h
