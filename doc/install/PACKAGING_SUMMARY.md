@@ -78,7 +78,7 @@ Both DEB and RPM packages have been configured with full desktop integration whe
 
 ```bash
 # Configure for /opt installation
-cmake --preset linux-gnu-gcc-install
+cmake --preset linux-gnu-gcc-opt
 
 # Build
 cmake --build build --config Release
@@ -93,7 +93,7 @@ cpack --preset deb-opt -C Release
 
 ```bash
 # Configure for /opt installation
-cmake --preset linux-gnu-gcc-install
+cmake --preset linux-gnu-gcc-opt
 
 # Build
 cmake --build build --config Release
