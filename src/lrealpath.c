@@ -53,7 +53,7 @@ components will be simplified.  The returned value will be allocated using
 
 /* On GNU libc systems the declaration is only visible with _GNU_SOURCE.  */
 #if defined(HAVE_CANONICALIZE_FILE_NAME) \
-    && defined(NEED_DECLARATION_CANONICALIZE_FILE_NAME)
+    && ! defined(HAVE_CANONICALIZE_FILE_NAME_DECL)
 extern char *canonicalize_file_name (const char *);
 #endif
 

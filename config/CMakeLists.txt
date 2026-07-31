@@ -32,6 +32,9 @@ check_function_exists(canonicalize_file_name HAVE_CANONICALIZE_FILE_NAME)
 check_function_exists(dcgettext HAVE_DCGETTEXT)
 check_function_exists(iconv HAVE_ICONV)
 
+include(CheckSymbolExists)
+check_symbol_exists(canonicalize_file_name stdlib.h HAVE_CANONICALIZE_FILE_NAME_DECL)
+
 include(CheckLibraryExists)
 check_library_exists(m pow "" HAVE_LIBM)
 check_library_exists(dl dlopen "" HAVE_LIBDL)
