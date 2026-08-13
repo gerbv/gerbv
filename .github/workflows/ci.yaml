@@ -201,7 +201,7 @@ jobs:
       run: |
         # These packages are already installed. We comment them out to avoid warnings
         # brew install cmake ninja pkgconf libpng gettext
-        brew install gtk+ gtkmm libffi zlib bzip2 expat imagemagick
+        brew install gtk+ libffi zlib bzip2 expat imagemagick
         echo "PATH=$(brew --prefix gettext)/bin:${PATH}" >> $GITHUB_ENV
         mkdir -p "${HOME}/.local/lib/pkgconfig"
         BZIP_PREFIX="$(brew --prefix bzip2)"
