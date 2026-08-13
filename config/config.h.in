@@ -38,6 +38,9 @@
 /* Define to 1 if you have the `canonicalize_file_name' function. */
 #cmakedefine HAVE_CANONICALIZE_FILE_NAME @HAVE_CANONICALIZE_FILE_NAME@
 
+/* Define to 1 if canonicalize_file_name is declared in system header files. */
+#cmakedefine HAVE_CANONICALIZE_FILE_NAME_DECL @HAVE_CANONICALIZE_FILE_NAME_DECL@
+
 /* Define to 1 if you have the Mac OS X function CFLocaleCopyCurrent in the
    CoreFoundation framework. */
 #undef HAVE_CFLOCALECOPYCURRENT
@@ -120,9 +123,6 @@
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 //#undef LT_OBJDIR
-
-/* Define if canonicalize_file_name is not declared in system header files. */
-#undef NEED_DECLARATION_CANONICALIZE_FILE_NAME
 
 /* Name of package */
 #define PACKAGE "@PACKAGE@"
