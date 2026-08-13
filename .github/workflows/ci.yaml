@@ -262,7 +262,6 @@ jobs:
           ninja:p
           pkgconf:p
           gtk2:p
-          gtkmm:p
           gettext-tools:p
           imagemagick:p
 
