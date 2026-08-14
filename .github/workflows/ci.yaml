@@ -36,10 +36,8 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        coverage: [""] # Only regular build, no coverage
-        include:
-          - coverage: ""
-            code_coverage: "" # Always empty, so matrix.code_coverage is always false
+        code_coverage: [true]
+        valgrind: [false]
 
     steps:
     - uses: actions/checkout@v6
@@ -58,19 +56,19 @@ jobs:
     - name: Install coverage specific programs
       if: matrix.code_coverage
       run: |
-        sudo apt-get install libperlio-gzip-perl libjson-perl
+        sudo apt-get install libperlio-gzip-perl libjson-perl libcapture-tiny-perl libjson-xs-perl libdatetime-perl
         pushd ~
-        git clone --depth=1 --branch=v1.16 https://github.com/linux-test-project/lcov.git
+        git clone --depth=1 --branch=v2.4 https://github.com/linux-test-project/lcov.git
         pushd lcov
         make PREFIX=${LOCAL_INSTALL_PATH} install
         hash -r
         lcov --version
 
     - name: Install valgrind
-      if: matrix.code_coverage
+      if: matrix.valgrind
       run: |
         pushd ~
-        git clone --depth=1 --branch=master https://github.com/eyal0/valgrind.git
+        git clone --depth=1 --branch=master git://sourceware.org/git/valgrind.git
         pushd valgrind
         sh autogen.sh
         ./configure --prefix=${LOCAL_INSTALL_PATH}
@@ -80,43 +78,27 @@ jobs:
         popd
 
     - name: Configure
-      run: cmake --preset linux-gnu-gcc
-
-    - name: Remove debug and optimization and valgrind from coverage builds
-      if: matrix.code_coverage
       run: |
-        find . -name Makefile | xargs sed -i 's/-O[0-9]/-O0/g' # No optimizations
-        find . -name Makefile | xargs sed -i 's/-g /-g0 /g' # No debugging
-        : > test/run_valgrind_tests.sh # No valgrind tests.
+        if [ "${{ matrix.code_coverage }}" = "true" ]; then
+          cmake --preset linux-gnu-gcc -DGERBV_ENABLE_CODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+        else
+          cmake --preset linux-gnu-gcc
+        fi
 
     - name: Build
       run: cmake --build build -j ${NUM_BUILD_JOBS}
 
     - name: Run tests
-      if: "!matrix.code_coverage"
-      continue-on-error: true
-      run: ctest --preset linux-gnu-gcc -V
-
-    - name: Reset coverage
-      if: matrix.code_coverage
-      continue-on-error: true
-      run: lcov --directory . -z
-
-    - name: Run unit tests
-      if: matrix.code_coverage
-      run: cd test && ./run_tests.sh
+      run: ctest --preset linux-gnu-gcc --output-on-failure -V
 
     - name: Gather coverage
       if: matrix.code_coverage
       run: |
-        lcov --rc lcov_branch_coverage=1 -rc lcov_function_coverage=1 --directory . --capture --no-external --output-file "gerbv-lcov.info"
+        cmake --build build -j ${NUM_BUILD_JOBS} --target lcov
 
     - name: Upload coverage to coveralls
       if: matrix.code_coverage
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: gerbv-lcov.info
+      uses: coverallsapp/github-action@v2.3.6
 
 
   ci-fedora:
@@ -227,8 +209,8 @@ jobs:
       run: cmake --build --preset macos-clang --parallel ${NUM_BUILD_JOBS}
 
     - name: Run tests
-      continue-on-error: true
-      run: ctest --preset macos-clang -V
+      continue-on-error: true  # TODO: Fix these tests.
+      run: ctest --preset macos-clang --output-on-failure -V
 
     - name: Package
       run: bash .mc/package-macos.sh
@@ -272,8 +254,8 @@ jobs:
       run: cmake --build --preset msys2-ucrt64-gcc --parallel $(nproc)
 
     - name: Run tests
-      continue-on-error: true
-      run: ctest --preset msys2-ucrt64-gcc -V
+      continue-on-error: true  # TODO: Fix these tests.
+      run: ctest --preset msys2-ucrt64-gcc --output-on-failure -V
 
     - name: Package
       run: bash .mc/package-msys2.sh
