@@ -41,6 +41,15 @@ target_link_libraries(compilation-flags INTERFACE PkgConfig::GLIB PkgConfig::GTK
 if(Intl_FOUND)
     target_link_libraries(compilation-flags INTERFACE Intl::Intl)
 endif()
+if(APPLE)
+    target_compile_definitions(compilation-flags INTERFACE QUARTZ)
+endif()
+if(WIN32)
+    target_compile_definitions(compilation-flags INTERFACE WIN32)
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_compile_definitions(compilation-flags INTERFACE _GNU_SOURCE)
+endif()
 
 ## This is installation directory settings. These must be solved later by install target
 target_compile_definitions(compilation-flags INTERFACE "GERBV_DATADIR=\"${DATADIR}\"")
