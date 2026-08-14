@@ -1084,7 +1084,7 @@ callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user
 
 	callbacks_update_layer_tree ();
 
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+	if (uses_gdk(screenRenderInfo.renderType)) {
 		render_refresh_rendered_image_on_screen ();
 	} else {
 		render_recreate_composite_surface ();
@@ -2212,7 +2212,7 @@ callbacks_layer_tree_visibility_toggled (gint index)
 		!mainProject->file[index]->isVisible;
 
 	callbacks_update_layer_tree ();
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+	if (uses_gdk(screenRenderInfo.renderType)) {
 		render_refresh_rendered_image_on_screen ();
 	} else {
 		render_recreate_composite_surface ();
@@ -2464,7 +2464,7 @@ callbacks_remove_layer_button_clicked (GtkButton *button, gpointer user_data)
 		index = MAX(0, index - 1);
 		callbacks_select_layer_row (index);
 
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+		if (uses_gdk(screenRenderInfo.renderType)) {
 			render_refresh_rendered_image_on_screen ();
 		} else {
 			render_recreate_composite_surface ();
@@ -2494,7 +2494,7 @@ callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_da
 		callbacks_update_layer_tree ();
 		callbacks_select_layer_row (index + 1);
 
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+		if (uses_gdk(screenRenderInfo.renderType)) {
 			render_refresh_rendered_image_on_screen ();
 		}
 		else {
@@ -2523,7 +2523,7 @@ callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data
 		gerbv_change_layer_order (mainProject, index, index - 1);
 		callbacks_update_layer_tree ();
 		callbacks_select_layer_row (index - 1);
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+		if (uses_gdk(screenRenderInfo.renderType)) {
 			render_refresh_rendered_image_on_screen();
 		}
 		else {
@@ -2551,7 +2551,7 @@ void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *
 				oldPosition--;
 			gerbv_change_layer_order (mainProject, oldPosition, newPosition);
 
-			if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+			if (uses_gdk(screenRenderInfo.renderType)) {
 				render_refresh_rendered_image_on_screen();
 			}
 			else {
@@ -2584,7 +2584,7 @@ callbacks_show_color_picker_dialog (gint index){
 		gtk_color_selection_set_current_color (colorsel, &mainProject->file[index]->color);
 	else
 		gtk_color_selection_set_current_color (colorsel, &mainProject->background);
-	if ((screenRenderInfo.renderType >= GERBV_RENDER_TYPE_CAIRO_NORMAL)&&(index >= 0)) {
+	if (!uses_gdk(screenRenderInfo.renderType)&&(index >= 0)) {
 		gtk_color_selection_set_has_opacity_control (colorsel, TRUE);
 		gtk_color_selection_set_current_alpha (colorsel, mainProject->file[index]->alpha);
 	}
@@ -2601,7 +2601,7 @@ callbacks_show_color_picker_dialog (gint index){
 			gtk_color_selection_get_current_color (colorsel, &mainProject->background);
 			gdk_colormap_alloc_color(gdk_colormap_get_system(), &mainProject->background, FALSE, TRUE);
 		}
-		if ((screenRenderInfo.renderType >= GERBV_RENDER_TYPE_CAIRO_NORMAL)&&(index >= 0)) {
+		if (!uses_gdk(screenRenderInfo.renderType)&&(index >= 0)) {
 			mainProject->file[rowIndex]->alpha = gtk_color_selection_get_current_alpha (colorsel);
 		}
 		
@@ -3285,7 +3285,7 @@ callbacks_drawingarea_configure_event (GtkWidget *widget, GdkEventConfigure *eve
 gboolean
 callbacks_drawingarea_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+	if (uses_gdk(screenRenderInfo.renderType)) {
 		GdkPixmap *new_pixmap;
 		GdkGC *gc = gdk_gc_new(widget->window);
 

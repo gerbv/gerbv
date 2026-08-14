@@ -885,7 +885,16 @@ gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixm
 			}
 			else if (renderInfo->renderType == GERBV_RENDER_TYPE_GDK_XOR) {
 				gdk_gc_set_function(gc, GDK_XOR);
-			}
+            } else if (renderInfo->renderType == GERBV_RENDER_TYPE_GDK_OR) {
+                int cR = (gerbvProject->file[i]->color.pixel >> 16) & 0xFF;
+                int cG = (gerbvProject->file[i]->color.pixel >> 8) & 0xFF;
+                int cB = (gerbvProject->file[i]->color.pixel) & 0xFF;
+                if (((cR == cB) && (cG <= cR)) || ((cR == cG) && (cB <= cR))) {
+                    gdk_gc_set_function(gc, GDK_COPY);
+                } else {
+                    gdk_gc_set_function(gc, GDK_OR);
+                }
+	        }
 			/*
 			* Translation is to get it inside the allocated pixmap,
 			* which is not always centered perfectly for GTK/X.

@@ -434,7 +434,7 @@ void render_refresh_rendered_image_on_screen (void) {
 	gdk_window_set_cursor(GDK_WINDOW(screen.drawing_area->window), cursor);
 	gdk_cursor_destroy(cursor);
 
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR){
+	if (uses_gdk(screenRenderInfo.renderType)){
 	    if (screen.pixmap) 
 		gdk_pixmap_unref(screen.pixmap);
 	    screen.pixmap = gdk_pixmap_new(screen.drawing_area->window, screenRenderInfo.displayWidth,
@@ -540,7 +540,7 @@ render_find_selected_objects_and_refresh_display (gint activeFileIndex,
 	cairo_destroy (cr);
 
 	/* re-render the selection buffer layer */
-	if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+	if (uses_gdk(screenRenderInfo.renderType)) {
 		render_refresh_rendered_image_on_screen ();
 	} else {
 		render_recreate_composite_surface ();
