@@ -97,6 +97,16 @@ jobs:
       continue-on-error: true
       run: ctest --preset linux-gnu-gcc -V
 
+    - name: Install GUI test dependencies
+      if: "!matrix.code_coverage"
+      run: |
+        sudo apt-get install -y python3-dogtail xdotool xvfb at-spi2-core dbus-x11
+
+    - name: Run GUI tests
+      if: "!matrix.code_coverage"
+      continue-on-error: true
+      run: ./test/gui/run_gui_tests.sh
+
     - name: Reset coverage
       if: matrix.code_coverage
       continue-on-error: true
