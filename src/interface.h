@@ -212,4 +212,4 @@ interface_show_alert_dialog (gchar *primaryText,
  * array must be terminated with NULL */
 void
 interface_show_layer_edit_dialog (gerbv_user_transformation_t *transforms[],
-				  gerbv_gui_unit_t screenUnit);
+        gerbv_gui_unit_t screenUnit, gint selected_count);

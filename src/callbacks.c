@@ -84,7 +84,9 @@
 const char *gerbv_project_file_name = N_("Gerbv Project");
 const char *gerbv_project_file_pat = "*" GERBV_PROJECT_FILE_EXT;
 
-static gint callbacks_get_selected_row_index (void);
+static void callbacks_select_layer_row (gint rowIndex);
+static void callbacks_deselect_layer_row(gint rowIndex);
+static gint *callbacks_get_selected_row_indices(gint *size);
 static void callbacks_units_changed (gerbv_gui_unit_t unit);
 static void callbacks_update_statusbar_coordinates (gint x, gint y);
 static void callbacks_update_ruler_scales (void);
@@ -409,20 +411,33 @@ void
 callbacks_save_layer_activate                       (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-  /* first figure out which layer in the layer side menu is selected */
-  gint index=callbacks_get_selected_row_index();
+
+  /* first figure out which layer(s) in the layer side menu is selected */
+  gint count = 0;
+  gint *selected_indices =callbacks_get_selected_row_indices(&count);
+    
   
   /* Now save that layer */
-  if (index >= 0) {
-    if (!gerbv_save_layer_from_index (mainProject, index, mainProject->file[index]->fullPathname)) {
-      interface_show_alert_dialog(_("Gerbv cannot export this file type"), 
-				  NULL,
-				  FALSE,
-				  NULL);
-      mainProject->file[index]->layer_dirty = FALSE;
-      callbacks_update_layer_tree();
-      return;
-    }
+  if (selected_indices != NULL) {
+	for (gint i = 0; i < count; i++) {
+
+	    gint index = selected_indices[i];
+      	if (index >= 0 && index < mainProject->max_files && mainProject->file[index] != NULL) {
+			if (!gerbv_save_layer_from_index (mainProject, index, mainProject->file[index]->fullPathname)) {
+							interface_show_alert_dialog(_("Gerbv cannot export this file type"), 
+							NULL,
+							FALSE,
+							NULL);
+				mainProject->file[index]->layer_dirty = FALSE;
+				g_free(selected_indices);
+				selected_indices = NULL; 
+				callbacks_update_layer_tree();
+				return;
+			}
+		}
+	}
+	g_free(selected_indices);
+
   }
   callbacks_update_layer_tree();
   return;
@@ -553,8 +568,10 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 	static gint dpi = 0;
 	static gboolean svg_layers = FALSE;
 	
-	file_index = callbacks_get_selected_row_index ();
-	if (file_index < 0) {
+	gint count = 0;
+	gint *selected_indices =callbacks_get_selected_row_indices(&count);
+
+	if (selected_indices == NULL) {
 		interface_show_alert_dialog (_("No layer is currently active"),
 			_("Please select a layer and try again."),
 			FALSE,
@@ -562,390 +579,398 @@ callbacks_generic_save_activate (GtkMenuItem     *menuitem,
 		return;
 	}
 
-	act_file = mainProject->file[file_index];
+	for (gint i = 0; i < count; i++) {
+		file_index = selected_indices[i];
+		act_file = mainProject->file[file_index];
 
-	screen.win.gerber = gtk_file_chooser_dialog_new ("", NULL,
-			GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL, NULL);
-	GtkFileChooser *file_chooser_p =
-			GTK_FILE_CHOOSER(screen.win.gerber);
-	gtk_file_chooser_set_do_overwrite_confirmation (file_chooser_p, TRUE);
+		screen.win.gerber = gtk_file_chooser_dialog_new ("", NULL,
+				GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL, NULL);
+		GtkFileChooser *file_chooser_p =
+				GTK_FILE_CHOOSER(screen.win.gerber);
+		gtk_file_chooser_set_do_overwrite_confirmation (file_chooser_p, TRUE);
 
-	hbox = gtk_hbox_new (0, 0);
-	spin_but = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range (0, 0, 1));
-	svg_layers_check = gtk_check_button_new_with_label (_("Export as Inkscape layers"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (svg_layers_check), svg_layers);
-	svg_cairo_check = gtk_check_button_new_with_label (_("Use Cairo SVG (legacy)"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (svg_cairo_check), mainProject->use_cairo_svg);
-	label = gtk_label_new ("");
-	tooltips = gtk_tooltips_new ();
-	gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(spin_but), 0, 0, 1);
-	gtk_box_pack_end (GTK_BOX(hbox), label, 0, 0, 5);
-	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
-			svg_cairo_check, 0, 0, 2);
-	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
-			svg_layers_check, 0, 0, 2);
-	gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
-			hbox, 0, 0, 2);
+		hbox = gtk_hbox_new (0, 0);
+		spin_but = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range (0, 0, 1));
+		svg_layers_check = gtk_check_button_new_with_label (_("Export as Inkscape layers"));
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (svg_layers_check), svg_layers);
+		svg_cairo_check = gtk_check_button_new_with_label (_("Use Cairo SVG (legacy)"));
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (svg_cairo_check), mainProject->use_cairo_svg);
+		label = gtk_label_new ("");
+		tooltips = gtk_tooltips_new ();
+		gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(spin_but), 0, 0, 1);
+		gtk_box_pack_end (GTK_BOX(hbox), label, 0, 0, 5);
+		gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
+				svg_cairo_check, 0, 0, 2);
+		gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
+				svg_layers_check, 0, 0, 2);
+		gtk_box_pack_end (GTK_BOX(GTK_DIALOG(screen.win.gerber)->vbox),
+				hbox, 0, 0, 2);
 
-	switch (processType) {
-	case CALLBACKS_SAVE_PROJECT_AS:
-		windowTitle = g_strdup (_("Save project as..."));
-		if (mainProject->project) {
-			file_name = g_path_get_basename (mainProject->project);
-
-			dir_name = g_path_get_dirname (mainProject->project);
-		} else {
-			file_name = g_strdup_printf("%s%s",
-					pgettext("file name", "untitled"),
-					GERBV_PROJECT_FILE_EXT);
-			dir_name= g_path_get_dirname (act_file->fullPathname);
-		}
-
-		filter = gtk_file_filter_new ();
-		gtk_file_filter_set_name (filter, _(gerbv_project_file_name));
-		gtk_file_filter_add_pattern (filter, gerbv_project_file_pat);
-		gtk_file_chooser_add_filter (file_chooser_p, filter);
-
-		filter = gtk_file_filter_new ();
-		gtk_file_filter_set_name (filter, _("All"));
-		gtk_file_filter_add_pattern (filter, "*");
-		gtk_file_chooser_add_filter (file_chooser_p, filter);
-
-		break;
-	case CALLBACKS_SAVE_FILE_PS:
-		windowTitle = g_strdup_printf (
-				_("Export visible layers to %s file as..."),
-				_("PS"));
-		if (0 == visible_file_name(&file_name, &dir_name, -1,
-							".ps", ".ps")) {
-			error_visible_layers = TRUE;
-			break;
-		}
-
-
-		break;
-	case CALLBACKS_SAVE_FILE_PDF:
-		windowTitle = g_strdup_printf (
-				_("Export visible layers to %s file as..."),
-				_("PDF"));
-		if (0 == visible_file_name(&file_name, &dir_name, -1,
-							".pdf", ".pdf")) {
-			error_visible_layers = TRUE;
-			break;
-		}
-
-
-		break;
-	case CALLBACKS_SAVE_FILE_SVG:
-		windowTitle = g_strdup_printf (
-				_("Export visible layers to %s file as..."),
-				_("SVG"));
-		if (0 == visible_file_name(&file_name, &dir_name, -1,
-							".svg", ".svg")) {
-			error_visible_layers = TRUE;
-			break;
-		}
-
-		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(svg_layers_check),
-				_("Create one Inkscape layer per visible gerber layer"), NULL);
-		gtk_widget_show_all (svg_layers_check);
-
-		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(svg_cairo_check),
-				_("Use Cairo's SVG surface (larger files, legacy behavior)"), NULL);
-		gtk_widget_show_all (svg_cairo_check);
-
-
-		break;
-	case CALLBACKS_SAVE_FILE_DXF:
-		windowTitle = g_strdup_printf (
-			_("Export \"%s\" layer #%d to DXF file as..."),
-			act_file->name, file_index + 1);
-		file_name = g_strconcat (act_file->name, ".dxf", NULL);
-		dir_name =  g_path_get_dirname (act_file->fullPathname);
-		break;
-	case CALLBACKS_SAVE_FILE_PNG:
-		windowTitle = g_strdup_printf (
-				_("Export visible layers to %s file as..."),
-				_("PNG"));
-		if (0 == visible_file_name(&file_name, &dir_name, -1,
-							".png", ".png")) {
-			error_visible_layers = TRUE;
-			break;
-		}
-
-		gtk_label_set_text (GTK_LABEL(label), _("DPI:"));
-		gtk_spin_button_set_range (spin_but, 0, 6000);
-		gtk_spin_button_set_increments (spin_but, 10, 100);
-		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(label),
-				_("DPI value, autoscaling if 0"), NULL);
-		gtk_tooltips_set_tip (tooltips, GTK_WIDGET(spin_but),
-				_("DPI value, autoscaling if 0"), NULL);
-		gtk_spin_button_set_value (spin_but, dpi);
-		gtk_widget_show_all (hbox);
-
-		break;
-	case CALLBACKS_SAVE_FILE_RS274X:
-		windowTitle = g_strdup_printf(
-			_("Export \"%s\" layer #%d to "
-				"RS-274X file as..."),
-			act_file->name, file_index+1);
-
-		if (GERBV_LAYERTYPE_RS274X != act_file->image->layertype)
-			file_name = g_strconcat (act_file->name, ".gbr", NULL);
-		else
-			file_name = g_strdup (act_file->name);
-
-		dir_name =  g_path_get_dirname (act_file->fullPathname);
-		break;
-	case CALLBACKS_SAVE_FILE_RS274XM:
-		windowTitle = g_strdup (_("Export merged visible layers to "
-					"RS-274X file as..."));
-		if (2 > visible_file_name(&file_name, &dir_name,
-					GERBV_LAYERTYPE_RS274X, "", ".gbr")) {
-			error_visible_layers = TRUE;
-			break;
-		}
-		break;
-	case CALLBACKS_SAVE_FILE_DRILL:
-		windowTitle = g_strdup_printf(
-			_("Export \"%s\" layer #%d to "
-				"Excellon drill file as..."),
-			act_file->name, file_index+1);
-
-		if (GERBV_LAYERTYPE_DRILL != act_file->image->layertype)
-			file_name = g_strconcat (act_file->name, ".drl", NULL);
-		else
-			file_name = g_strdup (act_file->name);
-
-		dir_name =  g_path_get_dirname (act_file->fullPathname);
-		break;
-	case CALLBACKS_SAVE_FILE_DRILLM:
-		windowTitle = g_strdup (_("Export merged visible layers to "
-					"Excellon drill file as..."));
-		if (2 > visible_file_name(&file_name, &dir_name,
-				GERBV_LAYERTYPE_DRILL, "", ".drl")) {
-			error_visible_layers = TRUE;
-		}
-		break;
-	case CALLBACKS_SAVE_FILE_IDRILL:
-		windowTitle = g_strdup_printf(
-			_("Export \"%s\" layer #%d to ISEL NCP drill file as..."),
-			act_file->name, file_index+1);
-		file_name = g_strconcat (act_file->name, ".ncp", NULL);
-		dir_name =  g_path_get_dirname (act_file->fullPathname);
-
-		break;
-	case CALLBACKS_SAVE_FILE_GEDA_PCB:
-		windowTitle = g_strdup_printf (
-			_("Export \"%s\" layer #%d to gEDA PCB file as..."),
-			act_file->name, file_index + 1);
-		file_name = g_strconcat (act_file->name, ".pcb", NULL);
-		dir_name =  g_path_get_dirname (act_file->fullPathname);
-		break;
-	case CALLBACKS_SAVE_LAYER_AS:
-		windowTitle = g_strdup_printf (_("Save \"%s\" layer #%d as..."),
-				act_file->name, file_index+1);
-		file_name = g_strdup (act_file->name);
-		dir_name =  g_path_get_dirname (act_file->fullPathname);
-		break;
-	}
-
-	if (file_name != NULL) {
-		gtk_file_chooser_set_current_name (file_chooser_p, file_name);
-		g_free (file_name);
-	}
-	if (dir_name != NULL) {
-		gtk_file_chooser_set_current_folder (file_chooser_p, dir_name);
-		g_free (dir_name);
-	}
-
-	gtk_dialog_add_buttons (GTK_DIALOG(screen.win.gerber),
-			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
-			NULL);
-
-	gtk_window_set_title (GTK_WINDOW(screen.win.gerber), windowTitle);
-	g_free (windowTitle);
-
-	if (error_visible_layers) {
 		switch (processType) {
+		case CALLBACKS_SAVE_PROJECT_AS:
+			windowTitle = g_strdup (_("Save project as..."));
+			if (mainProject->project) {
+				file_name = g_path_get_basename (mainProject->project);
+
+				dir_name = g_path_get_dirname (mainProject->project);
+			} else {
+				file_name = g_strdup_printf("%s%s",
+						pgettext("file name", "untitled"),
+						GERBV_PROJECT_FILE_EXT);
+				dir_name= g_path_get_dirname (act_file->fullPathname);
+			}
+
+			filter = gtk_file_filter_new ();
+			gtk_file_filter_set_name (filter, _(gerbv_project_file_name));
+			gtk_file_filter_add_pattern (filter, gerbv_project_file_pat);
+			gtk_file_chooser_add_filter (file_chooser_p, filter);
+
+			filter = gtk_file_filter_new ();
+			gtk_file_filter_set_name (filter, _("All"));
+			gtk_file_filter_add_pattern (filter, "*");
+			gtk_file_chooser_add_filter (file_chooser_p, filter);
+
+			break;
+		case CALLBACKS_SAVE_FILE_PS:
+			windowTitle = g_strdup_printf (
+					_("Export visible layers to %s file as..."),
+					_("PS"));
+			if (0 == visible_file_name(&file_name, &dir_name, -1,
+								".ps", ".ps")) {
+				error_visible_layers = TRUE;
+				break;
+			}
+
+
+			break;
+		case CALLBACKS_SAVE_FILE_PDF:
+			windowTitle = g_strdup_printf (
+					_("Export visible layers to %s file as..."),
+					_("PDF"));
+			if (0 == visible_file_name(&file_name, &dir_name, -1,
+								".pdf", ".pdf")) {
+				error_visible_layers = TRUE;
+				break;
+			}
+
+
+			break;
+		case CALLBACKS_SAVE_FILE_SVG:
+			windowTitle = g_strdup_printf (
+					_("Export visible layers to %s file as..."),
+					_("SVG"));
+			if (0 == visible_file_name(&file_name, &dir_name, -1,
+								".svg", ".svg")) {
+				error_visible_layers = TRUE;
+				break;
+			}
+
+			gtk_tooltips_set_tip (tooltips, GTK_WIDGET(svg_layers_check),
+					_("Create one Inkscape layer per visible gerber layer"), NULL);
+			gtk_widget_show_all (svg_layers_check);
+
+			gtk_tooltips_set_tip (tooltips, GTK_WIDGET(svg_cairo_check),
+					_("Use Cairo's SVG surface (larger files, legacy behavior)"), NULL);
+			gtk_widget_show_all (svg_cairo_check);
+
+
+			break;
+		case CALLBACKS_SAVE_FILE_DXF:
+			windowTitle = g_strdup_printf (
+				_("Export \"%s\" layer #%d to DXF file as..."),
+				act_file->name, file_index + 1);
+			file_name = g_strconcat (act_file->name, ".dxf", NULL);
+			dir_name =  g_path_get_dirname (act_file->fullPathname);
+			break;
+		case CALLBACKS_SAVE_FILE_PNG:
+			windowTitle = g_strdup_printf (
+					_("Export visible layers to %s file as..."),
+					_("PNG"));
+			if (0 == visible_file_name(&file_name, &dir_name, -1,
+								".png", ".png")) {
+				error_visible_layers = TRUE;
+				break;
+			}
+
+			gtk_label_set_text (GTK_LABEL(label), _("DPI:"));
+			gtk_spin_button_set_range (spin_but, 0, 6000);
+			gtk_spin_button_set_increments (spin_but, 10, 100);
+			gtk_tooltips_set_tip (tooltips, GTK_WIDGET(label),
+					_("DPI value, autoscaling if 0"), NULL);
+			gtk_tooltips_set_tip (tooltips, GTK_WIDGET(spin_but),
+					_("DPI value, autoscaling if 0"), NULL);
+			gtk_spin_button_set_value (spin_but, dpi);
+			gtk_widget_show_all (hbox);
+
+			break;
+		case CALLBACKS_SAVE_FILE_RS274X:
+			windowTitle = g_strdup_printf(
+				_("Export \"%s\" layer #%d to "
+					"RS-274X file as..."),
+				act_file->name, file_index+1);
+
+			if (GERBV_LAYERTYPE_RS274X != act_file->image->layertype)
+				file_name = g_strconcat (act_file->name, ".gbr", NULL);
+			else
+				file_name = g_strdup (act_file->name);
+
+			dir_name =  g_path_get_dirname (act_file->fullPathname);
+			break;
 		case CALLBACKS_SAVE_FILE_RS274XM:
-			interface_get_alert_dialog_response (
-				_("Not enough Gerber layers are visible"),
-				_("Two or more Gerber layers must be visible "
-				"for export with merge."),
-				FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+			windowTitle = g_strdup (_("Export merged visible layers to "
+						"RS-274X file as..."));
+			if (2 > visible_file_name(&file_name, &dir_name,
+						GERBV_LAYERTYPE_RS274X, "", ".gbr")) {
+				error_visible_layers = TRUE;
+				break;
+			}
+			break;
+		case CALLBACKS_SAVE_FILE_DRILL:
+			windowTitle = g_strdup_printf(
+				_("Export \"%s\" layer #%d to "
+					"Excellon drill file as..."),
+				act_file->name, file_index+1);
+
+			if (GERBV_LAYERTYPE_DRILL != act_file->image->layertype)
+				file_name = g_strconcat (act_file->name, ".drl", NULL);
+			else
+				file_name = g_strdup (act_file->name);
+
+			dir_name =  g_path_get_dirname (act_file->fullPathname);
 			break;
 		case CALLBACKS_SAVE_FILE_DRILLM:
-			interface_get_alert_dialog_response (
-				_("Not enough Excellon layers are visible"),
-				_("Two or more Excellon layers must be visible "
-				"for export with merge."),
-				FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+			windowTitle = g_strdup (_("Export merged visible layers to "
+						"Excellon drill file as..."));
+			if (2 > visible_file_name(&file_name, &dir_name,
+					GERBV_LAYERTYPE_DRILL, "", ".drl")) {
+				error_visible_layers = TRUE;
+			}
 			break;
-		default:
-			interface_get_alert_dialog_response (
-				_("No layers are visible"), _("One or more "
-				"layers must be visible for export."),
-				FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+		case CALLBACKS_SAVE_FILE_IDRILL:
+			windowTitle = g_strdup_printf(
+				_("Export \"%s\" layer #%d to ISEL NCP drill file as..."),
+				act_file->name, file_index+1);
+			file_name = g_strconcat (act_file->name, ".ncp", NULL);
+			dir_name =  g_path_get_dirname (act_file->fullPathname);
+
+			break;
+		case CALLBACKS_SAVE_FILE_GEDA_PCB:
+			windowTitle = g_strdup_printf (
+				_("Export \"%s\" layer #%d to gEDA PCB file as..."),
+				act_file->name, file_index + 1);
+			file_name = g_strconcat (act_file->name, ".pcb", NULL);
+			dir_name =  g_path_get_dirname (act_file->fullPathname);
+			break;
+		case CALLBACKS_SAVE_LAYER_AS:
+			windowTitle = g_strdup_printf (_("Save \"%s\" layer #%d as..."),
+					act_file->name, file_index+1);
+			file_name = g_strdup (act_file->name);
+			dir_name =  g_path_get_dirname (act_file->fullPathname);
+			break;
 		}
 
+		if (file_name != NULL) {
+			gtk_file_chooser_set_current_name (file_chooser_p, file_name);
+			g_free (file_name);
+		}
+		if (dir_name != NULL) {
+			gtk_file_chooser_set_current_folder (file_chooser_p, dir_name);
+			g_free (dir_name);
+		}
+
+		gtk_dialog_add_buttons (GTK_DIALOG(screen.win.gerber),
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
+				NULL);
+
+		gtk_window_set_title (GTK_WINDOW(screen.win.gerber), windowTitle);
+		g_free (windowTitle);
+
+		if (error_visible_layers) {
+			switch (processType) {
+			case CALLBACKS_SAVE_FILE_RS274XM:
+				interface_get_alert_dialog_response (
+					_("Not enough Gerber layers are visible"),
+					_("Two or more Gerber layers must be visible "
+					"for export with merge."),
+					FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+				break;
+			case CALLBACKS_SAVE_FILE_DRILLM:
+				interface_get_alert_dialog_response (
+					_("Not enough Excellon layers are visible"),
+					_("Two or more Excellon layers must be visible "
+					"for export with merge."),
+					FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+				break;
+			default:
+				interface_get_alert_dialog_response (
+					_("No layers are visible"), _("One or more "
+					"layers must be visible for export."),
+					FALSE, NULL, NULL, GTK_STOCK_CANCEL);
+			}
+
+			gtk_widget_destroy (screen.win.gerber);
+			callbacks_update_layer_tree ();
+			g_free(selected_indices);
+			return;
+		}
+
+		gtk_widget_show (screen.win.gerber);
+		if (gtk_dialog_run (GTK_DIALOG(screen.win.gerber)) == GTK_RESPONSE_ACCEPT) {
+			new_file_name = gtk_file_chooser_get_filename (file_chooser_p);
+			dpi = gtk_spin_button_get_value_as_int (spin_but);
+			svg_layers = gtk_toggle_button_get_active (
+					GTK_TOGGLE_BUTTON (svg_layers_check));
+			mainProject->use_cairo_svg = gtk_toggle_button_get_active (
+					GTK_TOGGLE_BUTTON (svg_cairo_check));
+		}
 		gtk_widget_destroy (screen.win.gerber);
-		callbacks_update_layer_tree ();
 
-		return;
-	}
-
-	gtk_widget_show (screen.win.gerber);
-	if (gtk_dialog_run (GTK_DIALOG(screen.win.gerber)) == GTK_RESPONSE_ACCEPT) {
-		new_file_name = gtk_file_chooser_get_filename (file_chooser_p);
-		dpi = gtk_spin_button_get_value_as_int (spin_but);
-		svg_layers = gtk_toggle_button_get_active (
-				GTK_TOGGLE_BUTTON (svg_layers_check));
-		mainProject->use_cairo_svg = gtk_toggle_button_get_active (
-				GTK_TOGGLE_BUTTON (svg_cairo_check));
-	}
-	gtk_widget_destroy (screen.win.gerber);
-
-	if (!new_file_name) {
-		callbacks_update_layer_tree ();
-
-		return;
-	}
-
-	switch (processType) {
-	case CALLBACKS_SAVE_PROJECT_AS:
-		main_save_as_project_from_filename (mainProject, new_file_name);
-		rename_main_window(new_file_name, NULL);
-		break;
-	case CALLBACKS_SAVE_FILE_PS:
-		gerbv_export_postscript_file_from_project_autoscaled (
-				mainProject, new_file_name);
-		break;
-	case CALLBACKS_SAVE_FILE_PDF:
-		gerbv_export_pdf_file_from_project_autoscaled (
-				mainProject, new_file_name);
-		break;
-	case CALLBACKS_SAVE_FILE_SVG:
-		gerbv_export_svg_file_from_project_autoscaled_with_options (
-				mainProject, new_file_name, svg_layers);
-		break;
-	case CALLBACKS_SAVE_FILE_DXF:
-		if (gerbv_export_dxf_file_from_image(new_file_name,
-				act_file->image, &act_file->transform)) {
-			GERB_MESSAGE (
-				_("\"%s\" layer #%d saved as DXF in \"%s\""),
-				act_file->name, file_index + 1,
-				new_file_name);
+		if (!new_file_name) {
+			callbacks_update_layer_tree ();
+			g_free(selected_indices);
+			return;
 		}
-		break;
-	case CALLBACKS_SAVE_FILE_PNG:
-		if (dpi == 0) {
-			gerbv_export_png_file_from_project_autoscaled (
-					mainProject,
-					screenRenderInfo.displayWidth,
-					screenRenderInfo.displayHeight,
+
+		switch (processType) {
+		case CALLBACKS_SAVE_PROJECT_AS:
+			main_save_as_project_from_filename (mainProject, new_file_name);
+			rename_main_window(new_file_name, NULL);
+			break;
+		case CALLBACKS_SAVE_FILE_PS:
+			gerbv_export_postscript_file_from_project_autoscaled (
+					mainProject, new_file_name);
+			break;
+		case CALLBACKS_SAVE_FILE_PDF:
+			gerbv_export_pdf_file_from_project_autoscaled (
+					mainProject, new_file_name);
+			break;
+		case CALLBACKS_SAVE_FILE_SVG:
+			gerbv_export_svg_file_from_project_autoscaled_with_options (
+					mainProject, new_file_name, svg_layers);
+			break;
+		case CALLBACKS_SAVE_FILE_DXF:
+			if (gerbv_export_dxf_file_from_image(new_file_name,
+					act_file->image, &act_file->transform)) {
+				GERB_MESSAGE (
+					_("\"%s\" layer #%d saved as DXF in \"%s\""),
+					act_file->name, file_index + 1,
 					new_file_name);
-		} else {	/* Non zero DPI */
-			gerbv_render_size_t bb;
-			gerbv_render_get_boundingbox (mainProject, &bb);
-			gfloat w = bb.right - bb.left;
-			gfloat h = bb.bottom - bb.top;
-			gerbv_render_info_t renderInfo = {
-				dpi, dpi,
-				bb.left - (w*GERBV_DEFAULT_BORDER_COEFF)/2.0,
-				bb.top - (h*GERBV_DEFAULT_BORDER_COEFF)/2.0,
-				GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY,
-				w*dpi*(1 + GERBV_DEFAULT_BORDER_COEFF),
-				h*dpi*(1 + GERBV_DEFAULT_BORDER_COEFF),
-			};
-			gerbv_export_png_file_from_project (mainProject,
-					&renderInfo, new_file_name);
-		}
+			}
+			break;
+		case CALLBACKS_SAVE_FILE_PNG:
+			if (dpi == 0) {
+				gerbv_export_png_file_from_project_autoscaled (
+						mainProject,
+						screenRenderInfo.displayWidth,
+						screenRenderInfo.displayHeight,
+						new_file_name);
+			} else {	/* Non zero DPI */
+				gerbv_render_size_t bb;
+				gerbv_render_get_boundingbox (mainProject, &bb);
+				gfloat w = bb.right - bb.left;
+				gfloat h = bb.bottom - bb.top;
+				gerbv_render_info_t renderInfo = {
+					dpi, dpi,
+					bb.left - (w*GERBV_DEFAULT_BORDER_COEFF)/2.0,
+					bb.top - (h*GERBV_DEFAULT_BORDER_COEFF)/2.0,
+					GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY,
+					w*dpi*(1 + GERBV_DEFAULT_BORDER_COEFF),
+					h*dpi*(1 + GERBV_DEFAULT_BORDER_COEFF),
+				};
+				gerbv_export_png_file_from_project (mainProject,
+						&renderInfo, new_file_name);
+			}
 
-		break;
-	case  CALLBACKS_SAVE_LAYER_AS:
-		gerbv_save_layer_from_index (mainProject,
-				file_index, new_file_name);
+			break;
+		case  CALLBACKS_SAVE_LAYER_AS:
+			gerbv_save_layer_from_index (mainProject,
+					file_index, new_file_name);
 
-		/* Rename the file path in the index, so future saves will
-		 * reference the new file path */
-		g_free (act_file->fullPathname);
-		act_file->fullPathname = g_strdup (new_file_name);
-		g_free (act_file->name);
-		act_file->name = g_path_get_basename (new_file_name);
+			/* Rename the file path in the index, so future saves will
+			* reference the new file path */
+			g_free (act_file->fullPathname);
+			act_file->fullPathname = g_strdup (new_file_name);
+			g_free (act_file->name);
+			act_file->name = g_path_get_basename (new_file_name);
 
-		break;
-	case CALLBACKS_SAVE_FILE_RS274X:
-		if (gerbv_export_rs274x_file_from_image (new_file_name,
-					act_file->image,
-					&act_file->transform)) {
-			GERB_MESSAGE (
-				_("\"%s\" layer #%d saved as Gerber in \"%s\""),
-				act_file->name, file_index + 1,
-				new_file_name);
+			break;
+		case CALLBACKS_SAVE_FILE_RS274X:
+			if (gerbv_export_rs274x_file_from_image (new_file_name,
+						act_file->image,
+						&act_file->transform)) {
+				GERB_MESSAGE (
+					_("\"%s\" layer #%d saved as Gerber in \"%s\""),
+					act_file->name, file_index + 1,
+					new_file_name);
+			}
+			break;
+		case CALLBACKS_SAVE_FILE_DRILL:
+			if (gerbv_export_drill_file_from_image (new_file_name,
+						act_file->image,
+						&act_file->transform)) {
+				GERB_MESSAGE (
+					_("\"%s\" layer #%d saved as drill in \"%s\""),
+					act_file->name, file_index + 1,
+					new_file_name);
+			}
+			break;
+		case CALLBACKS_SAVE_FILE_IDRILL:
+			if (gerbv_export_isel_drill_file_from_image (new_file_name,
+					act_file->image, &act_file->transform)) {
+				GERB_MESSAGE (
+					_("\"%s\" layer #%d saved as ISEL NCP drill "
+					"in \"%s\""), act_file->name, file_index + 1,
+					new_file_name);
+			}
+			break;
+		case CALLBACKS_SAVE_FILE_GEDA_PCB:
+			if (gerbv_export_geda_pcb_file_from_image(new_file_name,
+					act_file->image, &act_file->transform)) {
+				GERB_MESSAGE (
+					_("\"%s\" layer #%d saved as gEDA PCB "
+					"in \"%s\""), act_file->name, file_index + 1,
+					new_file_name);
+			}
+			break;
+		case CALLBACKS_SAVE_FILE_RS274XM: {
+			gerbv_image_t *image;
+			gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};
+			if (NULL != (image = merge_images (processType))) {
+				if (gerbv_export_rs274x_file_from_image (
+							new_file_name, image, &t)) {
+					GERB_MESSAGE (_("Merged visible Gerber layers "
+							"and saved in \"%s\""),
+							new_file_name);
+				}
+				gerbv_destroy_image (image);
+			}
+			break;
 		}
-		break;
-	case CALLBACKS_SAVE_FILE_DRILL:
-		if (gerbv_export_drill_file_from_image (new_file_name,
-					act_file->image,
-					&act_file->transform)) {
-			GERB_MESSAGE (
-				_("\"%s\" layer #%d saved as drill in \"%s\""),
-				act_file->name, file_index + 1,
-				new_file_name);
-		}
-		break;
-	case CALLBACKS_SAVE_FILE_IDRILL:
-		if (gerbv_export_isel_drill_file_from_image (new_file_name,
-				act_file->image, &act_file->transform)) {
-			GERB_MESSAGE (
-				_("\"%s\" layer #%d saved as ISEL NCP drill "
-				"in \"%s\""), act_file->name, file_index + 1,
-				new_file_name);
-		}
-		break;
-	case CALLBACKS_SAVE_FILE_GEDA_PCB:
-		if (gerbv_export_geda_pcb_file_from_image(new_file_name,
-				act_file->image, &act_file->transform)) {
-			GERB_MESSAGE (
-				_("\"%s\" layer #%d saved as gEDA PCB "
-				"in \"%s\""), act_file->name, file_index + 1,
-				new_file_name);
-		}
-		break;
-	case CALLBACKS_SAVE_FILE_RS274XM: {
-		gerbv_image_t *image;
-		gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};
-		if (NULL != (image = merge_images (processType))) {
-			if (gerbv_export_rs274x_file_from_image (
-						new_file_name, image, &t)) {
-				GERB_MESSAGE (_("Merged visible Gerber layers "
+		case CALLBACKS_SAVE_FILE_DRILLM: {
+			gerbv_image_t *image;
+			gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};
+			if (NULL != (image = merge_images (processType))) {
+				gerbv_export_drill_file_from_image (
+						new_file_name, image, &t);
+				gerbv_destroy_image (image);
+				GERB_MESSAGE (_("Merged visible drill layers "
 						"and saved in \"%s\""),
 						new_file_name);
 			}
-			gerbv_destroy_image (image);
+			break;
 		}
-		break;
-	}
-	case CALLBACKS_SAVE_FILE_DRILLM: {
-		gerbv_image_t *image;
-		gerbv_user_transformation_t t = {0,0,1,1,0,FALSE,FALSE,FALSE};
-		if (NULL != (image = merge_images (processType))) {
-			gerbv_export_drill_file_from_image (
-					new_file_name, image, &t);
-			gerbv_destroy_image (image);
-			GERB_MESSAGE (_("Merged visible drill layers "
-					"and saved in \"%s\""),
-					new_file_name);
 		}
-		break;
-	}
+
+		/* break the for loop, to save project only once*/
+		if (processType	== CALLBACKS_SAVE_PROJECT_AS){
+			break;	
+		}		
 	}
 
 	g_free (new_file_name);
 	callbacks_update_layer_tree ();
-
+	g_free(selected_indices);
 	return;
 }
 
@@ -1060,8 +1085,20 @@ callbacks_toggle_layer_visibility_activate (GtkMenuItem *menuitem, gpointer user
 
 	switch (i) {
 	case LAYER_SELECTED:
-		i = callbacks_get_selected_row_index ();
-		[[fallthrough]];
+		gint count = 0;
+  		gint *selected_indices =callbacks_get_selected_row_indices(&count);		
+
+		if (selected_indices == NULL)
+		{
+			g_free(selected_indices);
+			return;
+		} else {
+			for (gint x = 0; x < count; x++) {
+				mainProject->file[selected_indices[x]]->isVisible = !mainProject->file[selected_indices[x]]->isVisible;
+			}
+			g_free(selected_indices);
+		}
+		break;
 	default:
 		if (0 <= i && i <= mainProject->last_loaded) {
 			mainProject->file[i]->isVisible = !mainProject->file[i]->isVisible;
@@ -2410,58 +2447,97 @@ callbacks_select_layer_row (gint rowIndex)
 			((GtkTreeView *) screen.win.layerTree);
 
 	selection = gtk_tree_view_get_selection((GtkTreeView *) screen.win.layerTree);
-
+	gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+	
 	if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store),
 				&iter, NULL, rowIndex)) {
 		gtk_tree_selection_select_iter (selection, &iter);
 	}
 }
 
-/* --------------------------------------------------------- */
-/**
-  * This fcn returns the index of selected layer (selected in
-  * the layer window on left).
-  *
-  */
-static gint
-callbacks_get_selected_row_index (void)
+static void
+callbacks_deselect_layer_row(gint rowIndex)
 {
 	GtkTreeSelection *selection;
-	GtkTreeIter       iter;
-	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
-			((GtkTreeView *) screen.win.layerTree);
-	gint index=-1,i=0;
+	GtkTreeIter iter;
+	GtkListStore *list_store = (GtkListStore *)gtk_tree_view_get_model((GtkTreeView *)screen.win.layerTree);
 
-	/* This will only work in single or browse selection mode! */
-	selection = gtk_tree_view_get_selection((GtkTreeView *) screen.win.layerTree);
-	if (gtk_tree_selection_get_selected(selection, NULL, &iter)) {
-		while (gtk_tree_model_iter_nth_child ((GtkTreeModel *)list_store,
-				&iter, NULL, i)){
-			if (gtk_tree_selection_iter_is_selected (selection, &iter)) {
-				return i;
-			}
-			i++;
-     		}
+	selection = gtk_tree_view_get_selection((GtkTreeView *)screen.win.layerTree);
+
+	if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store), &iter, NULL, rowIndex)) {
+		gtk_tree_selection_unselect_iter(selection, &iter);
 	}
-	return index;
 }
 
+/* --------------------------------------------------------- */
+/**
+ * This fcn returns the indices of selected layers (selected in
+ * the layer window on left).
+ *
+ */
+static gint *
+callbacks_get_selected_row_indices (gint *size)
+{
+	GtkTreeSelection *selection;
+    GtkTreeModel     *model;
+    GList            *selected_rows;
+    GList            *node;
+    gint             *indices_array = NULL;
+    gint              count = 0;
+    gint              i = 0;
+
+    if (size != NULL) {
+        *size = 0;
+    }
+
+    selection = gtk_tree_view_get_selection((GtkTreeView *) screen.win.layerTree);  
+    selected_rows = gtk_tree_selection_get_selected_rows(selection, &model);
+    count = g_list_length(selected_rows);
+
+    if (count > 0) {
+        indices_array = g_new(gint, count);
+
+        for (node = selected_rows; node != NULL; node = node->next) {
+            GtkTreePath *path = (GtkTreePath *)node->data;
+            gint *path_indices = gtk_tree_path_get_indices(path);
+            
+            if (path_indices != NULL) {
+                indices_array[i] = *path_indices;
+                i++;
+            }
+        }
+        
+        if (size != NULL) {
+            *size = i;
+        }
+    }
+
+    g_list_free_full(selected_rows, (GDestroyNotify)gtk_tree_path_free);
+    return indices_array;
+}
 /* --------------------------------------------------------- */
 void
 callbacks_remove_layer_button_clicked (GtkButton *button, gpointer user_data)
 {
-	gint index = callbacks_get_selected_row_index ();
-	
-	if ((index >= 0) && (index <= mainProject->last_loaded)) {
-		render_remove_selected_objects_belonging_to_layer (
-				&screen.selectionInfo,
-				mainProject->file[index]->image);
-		update_selected_object_message (FALSE);
+	gint count = 0;
+	gint *selected_indices =callbacks_get_selected_row_indices(&count);
 
-		gerbv_unload_layer (mainProject, index);
-		callbacks_update_layer_tree ();
+	if (selected_indices != NULL) {
+		for (gint i = 0; i < count; i++) {
+			gint index = selected_indices[i] - i;
+			callbacks_deselect_layer_row(index);
+			if (index <= mainProject->last_loaded)
+			{
+				render_remove_selected_objects_belonging_to_layer (
+						&screen.selectionInfo,
+						mainProject->file[index]->image);
+				update_selected_object_message (FALSE);
+				gerbv_unload_layer (mainProject, index);
+				callbacks_update_layer_tree ();
+			}
+		}
 
-		index = MAX(0, index - 1);
+		gint index = MAX(0, selected_indices[0] - 1 );
 		callbacks_select_layer_row (index);
 
 		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
@@ -2470,6 +2546,8 @@ callbacks_remove_layer_button_clicked (GtkButton *button, gpointer user_data)
 			render_recreate_composite_surface ();
 			callbacks_force_expose_event_for_screen ();
 		}
+
+		g_free(selected_indices);
 	}
 }
 
@@ -2482,28 +2560,52 @@ callbacks_move_layer_down_menu_activate (GtkMenuItem *menuitem, gpointer user_da
 
 /* --------------------------------------------------------- */
 void
-callbacks_move_layer_down_button_clicked  (GtkButton *button, gpointer   user_data) {
-	gint index=callbacks_get_selected_row_index();
-	if (index < 0) {
-		show_no_layers_warning ();
-		return;
-	}
+callbacks_move_layer_down_button_clicked (GtkButton *button, gpointer user_data) 
+{
+    gint count = 0;
+    gint *selected_indices = callbacks_get_selected_row_indices(&count);
 
-	if (index < mainProject->last_loaded) {
-		gerbv_change_layer_order (mainProject, index, index + 1);
-		callbacks_update_layer_tree ();
-		callbacks_select_layer_row (index + 1);
+    if (selected_indices == NULL || count == 0) {
+        if (selected_indices) {
+			g_free(selected_indices);
+		}
+        show_no_layers_warning();
+        return;
+    }
 
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+    gboolean moved_any = FALSE;
+    gint dynamic_limit = mainProject->last_loaded; 
+
+    for (gint i = count - 1; i >= 0; i--) {
+        gint index = selected_indices[i];
+        if (index < mainProject->last_loaded && index < dynamic_limit) {
+            gerbv_change_layer_order(mainProject, index, index + 1);
+			callbacks_deselect_layer_row(selected_indices[i]);
+			selected_indices[i] = index + 1;
+			moved_any = TRUE;
+			dynamic_limit = index; 
+        } else {
+            dynamic_limit = index - 1;
+        }
+    }
+
+    if (moved_any) {
+        for (gint i = 0; i < count; i++) {
+            callbacks_select_layer_row(selected_indices[i]);
+        }
+
+        if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
 			render_refresh_rendered_image_on_screen ();
 		}
 		else {
 			render_recreate_composite_surface ();
 			callbacks_force_expose_event_for_screen ();
-		}
-	}
-}
+        }
+        callbacks_update_layer_tree();		
+    }
 
+    g_free(selected_indices);
+}
 /* --------------------------------------------------------- */
 void
 callbacks_move_layer_up_menu_activate (GtkMenuItem *menuitem, gpointer user_data) {
@@ -2513,62 +2615,99 @@ callbacks_move_layer_up_menu_activate (GtkMenuItem *menuitem, gpointer user_data
 
 /* --------------------------------------------------------- */
 void
-callbacks_move_layer_up_button_clicked  (GtkButton *button, gpointer   user_data) {
-	gint index=callbacks_get_selected_row_index();
-	if (index < 0) {
-		show_no_layers_warning ();
-		return;
-	}
-	if (index > 0) {
-		gerbv_change_layer_order (mainProject, index, index - 1);
-		callbacks_update_layer_tree ();
-		callbacks_select_layer_row (index - 1);
-		if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-			render_refresh_rendered_image_on_screen();
+callbacks_move_layer_up_button_clicked (GtkButton *button, gpointer user_data) 
+{
+    gint count = 0;
+    gint *selected_indices = callbacks_get_selected_row_indices(&count);
+
+    if (selected_indices == NULL || count == 0) {
+        if (selected_indices) {
+			 g_free(selected_indices);
+		}
+        show_no_layers_warning();
+        return;
+    }
+
+    gboolean moved_any = FALSE;
+    gint dynamic_limit = 0;
+
+    for (gint i = 0; i < count; i++) {
+        gint index = selected_indices[i];
+        if (index > 0 && index > dynamic_limit) {
+            gerbv_change_layer_order(mainProject, index, index - 1);
+			callbacks_deselect_layer_row(selected_indices[i]);
+			selected_indices[i] = index - 1;
+
+            moved_any = TRUE;
+            dynamic_limit = index;
+        } else {
+            dynamic_limit = index + 1;
+        }
+    }
+
+    if (moved_any) {
+        for (gint i = 0; i < count; i++) {
+            callbacks_select_layer_row(selected_indices[i]);
+        }
+
+        if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+            render_refresh_rendered_image_on_screen();
 		}
 		else {
 			render_recreate_composite_surface ();
 			callbacks_force_expose_event_for_screen ();
-		}
-	}
-}
+	    }
+		callbacks_update_layer_tree();
+    }
 
+    g_free(selected_indices);
+}
 /* --------------------------------------------------------- */
 void callbacks_layer_tree_row_inserted (GtkTreeModel *tree_model, GtkTreePath  *path,
-                              GtkTreeIter  *oIter, gpointer user_data) {
-	gint *indices=NULL,oldPosition,newPosition;
-      
-	if ((!screen.win.treeIsUpdating)&&(path != NULL)) {
-		indices = gtk_tree_path_get_indices (path);
-		if (indices) {
-			newPosition = indices[0];
-			oldPosition = callbacks_get_selected_row_index ();
-			/* compensate for the fact that the old row has already
-			   been removed */
-			if (oldPosition < newPosition)
-				newPosition--;
-			else
-				oldPosition--;
-			gerbv_change_layer_order (mainProject, oldPosition, newPosition);
+									    GtkTreeIter  *oIter, gpointer user_data) {
+		gint *indices=NULL,oldPosition,newPosition;
 
-			if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
-				render_refresh_rendered_image_on_screen();
-			}
-			else {
-				render_recreate_composite_surface ();
-				callbacks_force_expose_event_for_screen ();
-			}
-			/* select the new line */
-			GtkTreeSelection *selection;
-			GtkTreeIter iter;
-			GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
-				((GtkTreeView *) screen.win.layerTree);
-			
-			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(screen.win.layerTree));
-			if (gtk_tree_model_get_iter ((GtkTreeModel *)list_store, &iter, path))
-				gtk_tree_selection_select_iter (selection, &iter);
-		}
-	}
+		if ((!screen.win.treeIsUpdating)&&(path != NULL)) {
+			indices = gtk_tree_path_get_indices (path);
+			if (indices) {
+				newPosition = indices[0];
+
+				gint count = 0;
+				gint *selectedRows = callbacks_get_selected_row_indices(&count);
+
+				oldPosition = -1;
+				if (selectedRows != NULL && count > 0)
+					oldPosition = selectedRows[0];
+
+				g_free(selectedRows);
+
+				if (oldPosition >= 0)
+				{
+					if (oldPosition < newPosition)
+						newPosition--;
+					else
+						oldPosition--;
+					gerbv_change_layer_order (mainProject, oldPosition, newPosition);
+
+					if (screenRenderInfo.renderType <= GERBV_RENDER_TYPE_GDK_XOR) {
+						render_refresh_rendered_image_on_screen();
+					}
+					else {
+						render_recreate_composite_surface ();
+						callbacks_force_expose_event_for_screen ();
+					}
+
+					GtkTreeSelection *selection;
+					GtkTreeIter iter;
+					GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model
+					    ((GtkTreeView *) screen.win.layerTree);
+
+					selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(screen.win.layerTree));
+					if (gtk_tree_model_get_iter ((GtkTreeModel *)list_store, &iter, path))
+						gtk_tree_selection_select_iter (selection, &iter);
+                }
+            }
+        }
 }
 
 /* --------------------------------------------------------- */
@@ -2615,25 +2754,70 @@ callbacks_show_color_picker_dialog (gint index){
 /* --------------------------------------------------------- */
 void
 callbacks_invert_layer_clicked  (GtkButton *button, gpointer   user_data) {
-	gint index=callbacks_get_selected_row_index();
-	if (index < 0) {
-		show_no_layers_warning ();
-		return;
-	}
-	mainProject->file[index]->transform.inverted = !mainProject->file[index]->transform.inverted;
-	render_refresh_rendered_image_on_screen ();
-	callbacks_update_layer_tree ();
+	gint count = 0;
+    gint *selected_indices = callbacks_get_selected_row_indices(&count);
+
+    if (selected_indices == NULL || count == 0) {
+        show_no_layers_warning();
+		g_free(selected_indices);		
+        return;
+    }
+
+    for (gint i = 0; i < count; i++) {
+        gint index = selected_indices[i];
+        if (index >= 0 && index <= mainProject->last_loaded && mainProject->file[index] != NULL) {
+            mainProject->file[index]->transform.inverted = !mainProject->file[index]->transform.inverted;
+        }
+    }
+
+    render_refresh_rendered_image_on_screen();
+    callbacks_update_layer_tree();
+
+    for (gint i = 0; i < count; i++) {
+        callbacks_select_layer_row(selected_indices[i]);
+    }
+
+    g_free(selected_indices);
 }
 
 /* --------------------------------------------------------- */
 void
-callbacks_change_layer_color_clicked  (GtkButton *button, gpointer   user_data) {
-	gint index=callbacks_get_selected_row_index();
-	if (index < 0) {
-		show_no_layers_warning ();
-		return;
-	}
-	callbacks_show_color_picker_dialog (index);
+callbacks_change_layer_color_clicked (GtkButton *button, gpointer user_data) 
+{
+    gint count = 0;
+    gint *selected_indices = callbacks_get_selected_row_indices(&count);
+
+    if (selected_indices == NULL || count == 0) {
+		g_free(selected_indices);
+        show_no_layers_warning();
+        return;
+    }
+
+    gint first_index = selected_indices[0];
+    callbacks_show_color_picker_dialog(first_index);
+
+    if (mainProject->file[first_index] != NULL) {
+        GdkColor new_color = mainProject->file[first_index]->color;
+        gint new_alpha = mainProject->file[first_index]->alpha;
+
+        for (gint i = 1; i < count; i++) {
+            gint idx = selected_indices[i];
+            if (idx >= 0 && idx <= mainProject->last_loaded && mainProject->file[idx] != NULL) {
+                mainProject->file[idx]->color = new_color;
+                mainProject->file[idx]->alpha = new_alpha;
+                gdk_colormap_alloc_color(gdk_colormap_get_system(), &mainProject->file[idx]->color, FALSE, TRUE);
+            }
+        }
+
+        callbacks_update_layer_tree();
+        render_refresh_rendered_image_on_screen();
+
+        for (gint i = 0; i < count; i++) {
+            callbacks_select_layer_row(selected_indices[i]);
+        }
+    }
+
+    g_free(selected_indices);
 }
 
 void
@@ -2645,134 +2829,155 @@ callbacks_change_background_color_clicked  (GtkButton *button, gpointer   user_d
 void
 callbacks_reload_layer_clicked (GtkButton *button, gpointer user_data)
 {
-	gint index = callbacks_get_selected_row_index ();
+	printf("Reloaded Layer... \r\n");
+    gint count = 0;
+    gint *selected_indices = callbacks_get_selected_row_indices(&count);
 
-	if (index < 0) {
-		show_no_layers_warning ();
-		return;
-	}
+    if (selected_indices == NULL || count == 0) {
+        g_free(selected_indices);
+        show_no_layers_warning();
+        return;
+    }
 
-	render_remove_selected_objects_belonging_to_layer (
-			&screen.selectionInfo, mainProject->file[index]->image);
-	update_selected_object_message (FALSE);
+    for (gint i = 0; i < count; i++) {
+        gint idx = selected_indices[i];
+        if (idx >= 0 && idx <= mainProject->last_loaded && mainProject->file[idx] != NULL) {
+            render_remove_selected_objects_belonging_to_layer (
+                    &screen.selectionInfo, mainProject->file[idx]->image);
+            gerbv_revert_file (mainProject, idx);
+        }
+    }
 
-	gerbv_revert_file (mainProject, index);
-	render_refresh_rendered_image_on_screen ();
-	callbacks_update_layer_tree();
+    update_selected_object_message (FALSE);
+    render_refresh_rendered_image_on_screen ();
+    callbacks_update_layer_tree();
+
+    g_free(selected_indices);
 }
 
 void
 callbacks_change_layer_edit_clicked  (GtkButton *button, gpointer userData)
 {
-	gint index = callbacks_get_selected_row_index();
-	gerbv_fileinfo_t **files = mainProject->file;
-	gerbv_user_transformation_t **transforms;
+    gint count = 0;
+    gint *selected_indices = callbacks_get_selected_row_indices(&count);
+    gerbv_fileinfo_t **files = mainProject->file;
+    gerbv_user_transformation_t **transforms;
 	int i, j;
 
-	if (index < 0) {
-		show_no_layers_warning ();
-		return;
-	}
-
-	/* last_loaded == 0 if only one file is loaded */
-	transforms = g_new (gerbv_user_transformation_t *,
-			mainProject->last_loaded +
-			2 /* layer + NULL */ +
-			1 /* if selected layer is visible */);
-
-	/* [0] is selected layer */
-	transforms[0] = &mainProject->file[index]->transform;
-
-	/* Get visible Gerber files transformations */
-	j = 1;	/* [0] is alerady used */
-	for (i = 0; i <= mainProject->last_loaded; i++) {
-		if (files[i] && files[i]->isVisible)
-			transforms[j++] = &files[i]->transform;
-	}
-
-	/* Terminate array with NULL */
-	transforms[j] = NULL;
-
-	interface_show_layer_edit_dialog(transforms, screen.unit);
-	g_free (transforms);
-	render_refresh_rendered_image_on_screen ();
-	callbacks_update_layer_tree ();	
-}
-
-/* --------------------------------------------------------------------------- */
-void
-callbacks_change_layer_format_clicked  (GtkButton *button, gpointer   user_data)
-{
-    gerbv_HID_Attribute *attr = NULL;
-    int n = 0;
-    int i;
-    gerbv_HID_Attr_Val * results = NULL;
-    gint index = callbacks_get_selected_row_index();
-    gchar *type;
-    gint rc;
-	if (index < 0) {
-		show_no_layers_warning ();
-		return;
-	}
-    DPRINTF("%s(): index = %d\n", __FUNCTION__, index);
-    attr = mainProject->file[index]->image->info->attr_list;
-    n =  mainProject->file[index]->image->info->n_attr;
-    type =  mainProject->file[index]->image->info->type;
-    if (type == NULL) 
-	type = N_("Unknown type");
-
-    if (attr == NULL || n == 0) 
-	{
-	  interface_show_alert_dialog(_("This file type does not currently have any editable features"), 
-				      _("Format editing is currently only supported for Excellon drill file formats."),
-				      FALSE,
-				      NULL);
-	  return;
-	}
-
-    DPRINTF("%s(): n = %d, attr = %p\n", __FUNCTION__, n, attr);
-    if (n > 0)
-	{
-	    if (mainProject->file[index]->layer_dirty) {
-		rc = interface_get_alert_dialog_response (
-			_("This layer has changed!"),
-			_("Editing the file type will reload the layer, "
-			"destroying your changes.  Click OK to edit "
-			"the file type and destroy your changes, "
-			"or Cancel to leave."),
-			TRUE, NULL, GTK_STOCK_OK, GTK_STOCK_CANCEL);
-		if (rc == 0) return;  /* Return if user hit Cancel */
-	    }
-
-	    results = (gerbv_HID_Attr_Val *) malloc (n * sizeof (gerbv_HID_Attr_Val));
-	    if (results == NULL)
-		GERB_FATAL_ERROR("%s(): malloc failed", __FUNCTION__);
-      
-	    /* non-zero means cancel was picked */
-	    if (attribute_interface_dialog (attr, n, results, 
-					    _("Edit file format"), 
-					    _(type)))
-		{
-		    return;
-		}
-          
+    if (selected_indices == NULL || count == 0) {
+        show_no_layers_warning ();
+		g_free(selected_indices);		
+        return;
     }
 
-    DPRINTF("%s(): reloading layer\n", __func__);
-    gerbv_revert_file (mainProject, index);
 
-    for (i = 0; i < n; i++)
-	{
-	    if (results[i].str_value)
-		free (results[i].str_value);
-	}
+	transforms = g_new (gerbv_user_transformation_t *, count + mainProject->last_loaded + 2);
+
+    j = 0;
+    for (i = 0; i < count; i++) {
+        gint id = selected_indices[i];
+        if (id >= 0 && id <= mainProject->last_loaded && files[id]) {
+            transforms[j++] = &files[id]->transform;
+        }
+    }
+	/* Terminate array with NULL */	
+    transforms[j] = NULL;
+
+    interface_show_layer_edit_dialog(transforms, screen.unit, count);
+    g_free (transforms);   
+    render_refresh_rendered_image_on_screen ();
+    callbacks_update_layer_tree (); 
+	g_free (selected_indices);
+}
+/* --------------------------------------------------------------------------- */
+void 
+callbacks_change_layer_format_clicked (GtkButton *button, gpointer user_data)
+{
+    gint count = 0;
+    gint *selected_indices = callbacks_get_selected_row_indices(&count);
+
+    if (selected_indices == NULL || count == 0) {
+        show_no_layers_warning();
+        g_free(selected_indices);
+        return;
+    }
+
+    gerbv_HID_Attr_Val *saved_results = NULL;
+    int saved_n = 0;
+
+    for (gint si = 0; si < count; si++) {
+        int n = 0;
+        gerbv_HID_Attr_Val * results = NULL;
+        gint index = selected_indices[si];
+        gerbv_HID_Attribute *attr = NULL;
+        gchar *type;
+        gint rc;
     
-    if (results)
-	free (results);
+        DPRINTF("%s(): index = %d\n", __FUNCTION__, index);
+        attr = mainProject->file[index]->image->info->attr_list;
+        n =  mainProject->file[index]->image->info->n_attr;
+        type =  mainProject->file[index]->image->info->type;
+        if (type == NULL)
+            type = N_("Unknown type");
+
+        if (attr == NULL || n == 0) 
+        {
+            interface_show_alert_dialog(_("This file type does not currently have any editable features"), 
+                _("Format editing is currently only supported for Excellon drill file formats."),
+                FALSE,
+				NULL);
+            continue; /* skip this layer, continue to others */
+        }
+
+        DPRINTF("%s(): n = %d, attr = %p\n", __FUNCTION__, n, attr);
+        if (mainProject->file[index]->layer_dirty) {
+            rc = interface_get_alert_dialog_response (
+                _("This layer has changed!"),
+                _("Editing the file type will reload the layer, "
+                  "destroying your changes.  Click OK to edit "
+                  "the file type and destroy your changes, "
+                  "or Cancel to leave."),
+                TRUE, NULL, GTK_STOCK_OK, GTK_STOCK_CANCEL);
+            if (rc == 0) continue; /* skip */
+        }
+
+        /* First layer */
+        if (saved_results == NULL) {
+            results = (gerbv_HID_Attr_Val *) malloc (n * sizeof (gerbv_HID_Attr_Val));
+            if (results == NULL)
+                GERB_FATAL_ERROR("%s(): malloc failed", __FUNCTION__);
+
+            /* non-zero means cancel was picked */
+            if (attribute_interface_dialog (attr, n, results, 
+                            _("Edit file format"), 
+                            _(type)))
+            {
+                free(results);
+                break;
+            }
+            saved_results = results;
+            saved_n = n;
+        } else {
+            results = saved_results;
+            n = saved_n;
+        }
+
+        DPRINTF("%s(): reloading layer\n", __func__);
+        gerbv_revert_file (mainProject, index);
+    }
+
+    if (saved_results) {
+        for (int i = 0; i < saved_n; i++) {
+            if (saved_results[i].str_value)
+            free (saved_results[i].str_value);
+        }
+        free(saved_results);
+    }
+
+    g_free(selected_indices);
     render_refresh_rendered_image_on_screen();
     callbacks_update_layer_tree();
 }
-
 /* --------------------------------------------------------------------------- */
 gboolean
 callbacks_file_drop_event(GtkWidget *widget, GdkDragContext *dc,
@@ -2838,49 +3043,86 @@ callbacks_layer_tree_key_press (GtkWidget *widget, GdkEventKey *event, gpointer 
 /* --------------------------------------------------------------------------- */
 gboolean
 callbacks_layer_tree_button_press (GtkWidget *widget, GdkEventButton *event,
-					gpointer user_data)
+                    gpointer user_data)
 {
-	GtkTreePath *path;
-	GtkTreeIter iter;
-	GtkTreeViewColumn *col;
-	gint x,y;
-	gint *indices;
+    GtkTreePath *path;
+    GtkTreeIter iter;
+    GtkTreeViewColumn *col;
+    gint x,y;
+    gint *indices;
 
-	GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model (
-			(GtkTreeView *) screen.win.layerTree);
+    GtkListStore *list_store = (GtkListStore *) gtk_tree_view_get_model (
+            (GtkTreeView *) screen.win.layerTree);
 
-	if (event->button == 1) {
-		if (gtk_tree_view_get_path_at_pos ((GtkTreeView *) widget,
-				event->x, event->y, &path, &col, &x, &y)
-		&& gtk_tree_model_get_iter ((GtkTreeModel *)list_store,
-				&iter, path)) {
-			indices = gtk_tree_path_get_indices (path);
-			if (indices && (indices[0] <= mainProject->last_loaded)) {
-				switch (callbacks_get_col_num_from_tree_view_col (col)) {
-				case 0:
-					callbacks_select_layer_row (indices[0]);
-					callbacks_layer_tree_visibility_toggled (indices[0]);
-					return TRUE;
-				case 1:
-					callbacks_show_color_picker_dialog (indices[0]);
-					/* don't propagate the signal, since drag and drop can
-					   sometimes activated during color selection */
-					return TRUE;
+    gtk_tree_selection_set_mode(gtk_tree_view_get_selection(
+                                (GtkTreeView *) screen.win.layerTree), 
+                                GTK_SELECTION_MULTIPLE);
+
+    if (event->button == 1) {
+        if (gtk_tree_view_get_path_at_pos ((GtkTreeView *) widget,
+                event->x, event->y, &path, &col, &x, &y)
+        && gtk_tree_model_get_iter ((GtkTreeModel *)list_store,
+                &iter, path)) {
+            indices = gtk_tree_path_get_indices (path);
+            if (indices && (indices[0] <= mainProject->last_loaded)) {
+                
+                gint clicked_index = indices[0];
+                gint count = 0;
+                gint *selected_indices = callbacks_get_selected_row_indices(&count);
+
+                gboolean clicked_inside_selection = FALSE;
+                if (selected_indices && count > 0) {
+                    for (gint s = 0; s < count; s++) {
+                        if (selected_indices[s] == clicked_index) {
+                            clicked_inside_selection = TRUE;
+                            break;
+                        }
+                    }
+                }
+
+                if (!clicked_inside_selection) {
+                    if (selected_indices) g_free(selected_indices);
+                    selected_indices = NULL;
+                    count = 0;
+                }
+
+                switch (callbacks_get_col_num_from_tree_view_col (col)) {
+                case 0:
+                    callbacks_layer_tree_visibility_toggled (clicked_index);
+                    return TRUE;
+
+                case 1:
+                    callbacks_show_color_picker_dialog (clicked_index);
+                    
+                    if (selected_indices && count > 0 && mainProject->file[clicked_index] != NULL) {
+                        callbacks_update_layer_tree();
+                        render_refresh_rendered_image_on_screen();
+                        for (gint i = 0; i < count; i++) {
+							callbacks_select_layer_row(selected_indices[i]);
+						}
+                    }
+                    if (selected_indices) {
+						g_free(selected_indices);
+					}
+                    return TRUE;
+                }
+                if (selected_indices) {
+					g_free(selected_indices);
 				}
-			}
-		}
-	}
+            }
+        }
+    }
 	/* don't pop up the menu if we don't have any loaded files */
-	else if ((event->button == 3)&&(mainProject->last_loaded >= 0)) {
-		gtk_menu_popup (GTK_MENU (screen.win.layerTreePopupMenu),
-				NULL, NULL, NULL, NULL, 
-				event->button, event->time);
-	}
-
+    else if ((event->button == 3)&&(mainProject->last_loaded >= 0)) {
+        gtk_menu_popup (GTK_MENU (screen.win.layerTreePopupMenu),
+                NULL, NULL, NULL, NULL, 
+                event->button, event->time);
+                return TRUE;
+    }
+	
 	/* always allow the click to propagate and make sure the line is activated */
-	return FALSE;
+    return FALSE;
 }
-
 /* --------------------------------------------------------------------------- */
 void
 callbacks_update_layer_tree (void)
@@ -2890,17 +3132,15 @@ callbacks_update_layer_tree (void)
 	gint idx;
 	GtkTreeIter iter;
 	GtkTreeSelection *selection;
-	gint oldSelectedRow;
 
 	if (screen.win.treeIsUpdating)
 		return;
 
 	screen.win.treeIsUpdating = TRUE;
-
-	oldSelectedRow = callbacks_get_selected_row_index();
-	if (oldSelectedRow < 0)
-		oldSelectedRow = 0;
-
+	
+	gint count = 0;	
+	gint *oldSelectedRows = callbacks_get_selected_row_indices(&count);
+	
 	gtk_list_store_clear (list_store);
 
 	for (idx = 0; idx <= mainProject->last_loaded; idx++) {
@@ -3002,12 +3242,23 @@ callbacks_update_layer_tree (void)
 	/* if no line is selected yet, select the first row (if it has data) */
 	/* or, select the line that was previously selected */
 
-	if (!gtk_tree_selection_get_selected (selection, NULL, &iter)) {
-		if (gtk_tree_model_iter_nth_child ((GtkTreeModel *) list_store,
-						&iter, NULL, oldSelectedRow)) {
-			gtk_tree_selection_select_iter (selection, &iter);
+	if (oldSelectedRows != NULL && count > 0) {
+		for (gint i = 0; i < count; i++) {
+			if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store),
+					&iter, NULL, oldSelectedRows[i])) {
+				gtk_tree_selection_select_iter (selection, &iter);
+			}
 		}
 	}
+	else
+	{
+		if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store), &iter, NULL, 0)) {
+            gtk_tree_selection_select_iter (selection, &iter);
+        }
+	}
+
+	g_free(oldSelectedRows);
+
 	gboolean showItems = (mainProject->last_loaded >= 0);
 	gtk_widget_set_sensitive (screen.win.curLayerMenuItem, showItems);
 	gtk_widget_set_sensitive (screen.win.curAnalyzeMenuItem, showItems);
@@ -3023,14 +3274,17 @@ callbacks_update_layer_tree (void)
 void
 callbacks_display_object_properties_clicked (GtkButton *button, gpointer user_data)
 {
-	gint index = callbacks_get_selected_row_index ();
+	gint count = 0;
+	gint *selected_indices =callbacks_get_selected_row_indices(&count);
+
 	guint i;
 
-	if (index < 0 || selection_length (&screen.selectionInfo) == 0) {
+	if (selected_indices == NULL || selection_length (&screen.selectionInfo) == 0) {
 		interface_show_alert_dialog(_("No object is currently selected"),
 			_("Objects must be selected using the pointer tool "
 			"before you can view the object properties."),
 			FALSE, NULL);
+		g_free(selected_indices);
 		return;
 	}
 	
@@ -3180,59 +3434,79 @@ callbacks_reduce_object_area_clicked  (GtkButton *button, gpointer user_data){
 	render_refresh_rendered_image_on_screen ();
 }
 
+
 /* --------------------------------------------------------------------------- */
 void
 callbacks_delete_objects_clicked (GtkButton *button, gpointer user_data)
 {
-	if (selection_length (&screen.selectionInfo) == 0) {
-		interface_show_alert_dialog (
-			_("No object is currently selected"),
-			_("Objects must be selected using the pointer tool "
-				"before they can be deleted."),
-			FALSE,
-			NULL);
-		return;
-	}
+    guint sel_len = selection_length (&screen.selectionInfo);
+    if (sel_len == 0) {
+        interface_show_alert_dialog (
+            _("No object is currently selected"),
+            _("Objects must be selected using the pointer tool "
+                "before they can be deleted."),
+            FALSE,
+            NULL);
+        return;
+    }
 
-	gint index = callbacks_get_selected_row_index ();
-	if (index < 0)
-		return;
+    gint count = 0;
+    gint *selected_indices = callbacks_get_selected_row_indices(&count);
 
-	if (mainProject->check_before_delete) {
-		if (!interface_get_alert_dialog_response (
-			_("Do you want to permanently delete "
-			"the selected objects from <i>visible</i> layers?"),
-			_("Gerbv currently has no undo function, so "
-			"this action cannot be undone. This action "
-			"will not change the saved file unless you "
-			"save the file afterwards."),
-			TRUE, &(mainProject->check_before_delete),
-			GTK_STOCK_DELETE, GTK_STOCK_CANCEL)) {
-				return;
+    if (selected_indices == NULL || count == 0) {
+        if (selected_indices) {
+			g_free(selected_indices);
 		}
-	}
+        return;
+    }
 
-	guint i;
-	for (i = 0; i < selection_length (&screen.selectionInfo);) {
-		gerbv_selection_item_t sel_item =
-			selection_get_item_by_index (&screen.selectionInfo, i);
-		gerbv_fileinfo_t *file_info =
-			gerbv_get_fileinfo_for_image(sel_item.image, mainProject);
+    if (mainProject->check_before_delete) {
+        if (!interface_get_alert_dialog_response (
+            _("Do you want to permanently delete "
+            "the selected objects from <i>visible</i> layers?"),
+            _("Gerbv currently has no undo function, so "
+            "this action cannot be undone. This action "
+            "will not change the saved file unless you "
+            "save the file afterwards."),
+            TRUE, &(mainProject->check_before_delete),
+            GTK_STOCK_DELETE, GTK_STOCK_CANCEL)) {
+                g_free(selected_indices);
+                return;
+        }
+    }
 
-		/* Preserve currently invisible selection from deletion */
-		if (!file_info->isVisible) {
-			i++;
-			continue;
-		}
+    gint i;
 
-		file_info->layer_dirty = TRUE;
-		selection_clear_item_by_index (&screen.selectionInfo, i);
-		gerbv_image_delete_net (sel_item.net);
-	}
-	update_selected_object_message (FALSE);
+    for (i = (gint)sel_len - 1; i >= 0; i--) {
+        gerbv_selection_item_t sel_item =
+            selection_get_item_by_index (&screen.selectionInfo, i);
+        gerbv_fileinfo_t *file_info =
+            gerbv_get_fileinfo_for_image(sel_item.image, mainProject);
 
-	render_refresh_rendered_image_on_screen ();
-	callbacks_update_layer_tree();
+        if (!file_info) {
+            continue;
+        }
+
+        if (!file_info->isVisible) {
+            continue;
+        }
+
+        file_info->layer_dirty = TRUE;
+        
+        selection_clear_item_by_index (&screen.selectionInfo, i);
+        gerbv_image_delete_net (sel_item.net);
+    }
+
+    update_selected_object_message (FALSE);
+    render_refresh_rendered_image_on_screen ();
+    
+    callbacks_update_layer_tree();
+
+    for (gint j = 0; j < count; j++) {
+        callbacks_select_layer_row(selected_indices[j]);
+    }
+
+    g_free(selected_indices);
 }
 
 /* --------------------------------------------------------------------------- */
@@ -3542,7 +3816,7 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 {
 	GdkWindow *drawing_area_window = screen.drawing_area->window;
 	GdkCursor *cursor;
-	
+
 	switch (event->button) {
 		case 1 :
 			if (screen.tool == POINTER) {
@@ -3589,18 +3863,32 @@ callbacks_drawingarea_button_press_event (GtkWidget *widget, GdkEventButton *eve
 				/* if no items are selected, try and find the item the user
 				   is pointing at */
 				if (selection_length (&screen.selectionInfo) == 0) {
-					gint index=callbacks_get_selected_row_index();
-					if ((index >= 0) && 
-					    (index <= mainProject->last_loaded) &&
-					    (mainProject->file[index]->isVisible)) {
-					  render_fill_selection_buffer_from_mouse_click(
-							  event->x, event->y,
-							  index, SELECTION_REPLACE);
+					gint count = 0;			
+            		gint *selected_indices = callbacks_get_selected_row_indices(&count);
+
+					if (selected_indices != NULL)
+					{
+						for (gint i = 0; i < count; i++) {
+							gint index = selected_indices[i];
+
+							if ((index <= mainProject->last_loaded) &&
+								(mainProject->file[index]->isVisible)) {
+							render_fill_selection_buffer_from_mouse_click(
+																	
+									event->x, event->y,
+									index, SELECTION_ADD);
+							} else {
+								selection_clear (&screen.selectionInfo);
+								update_selected_object_message (FALSE);
+								render_refresh_rendered_image_on_screen ();
+							}
+						}
 					} else {
-					    selection_clear (&screen.selectionInfo);
-					    update_selected_object_message (FALSE);
-					    render_refresh_rendered_image_on_screen ();
+							selection_clear (&screen.selectionInfo);
+							update_selected_object_message (FALSE);
+							render_refresh_rendered_image_on_screen ();
 					}
+					g_free(selected_indices);
 				}
 
 				/* only show the popup if we actually have something selected now */
@@ -3771,78 +4059,98 @@ callbacks_align_files_from_sel_clicked (
 gboolean
 callbacks_drawingarea_button_release_event (GtkWidget *widget, GdkEventButton *event)
 {
-	gint index;
+    gint index;
 
-	if (event->type != GDK_BUTTON_RELEASE)
-		return TRUE;
+    if (event->type != GDK_BUTTON_RELEASE)
+        return TRUE;
 
-	switch (screen.state) {
-	case IN_MOVE:
-		screen.off_x = 0;
-		screen.off_y = 0;
-		render_refresh_rendered_image_on_screen ();
-		callbacks_switch_to_normal_tool_cursor (screen.tool);
-		break;
+    switch (screen.state) {
+    case IN_MOVE:
+        screen.off_x = 0;
+        screen.off_y = 0;
+        render_refresh_rendered_image_on_screen ();
+        callbacks_switch_to_normal_tool_cursor (screen.tool);
+        break;
 
-	case IN_ZOOM_OUTLINE:
-		if ((event->state & GDK_SHIFT_MASK) != 0) {
-			render_zoom_display (ZOOM_OUT_CMOUSE, 0,
-					event->x, event->y);
-		}
-		/* if the user just clicks without dragging, then simply
+    case IN_ZOOM_OUTLINE:
+        if ((event->state & GDK_SHIFT_MASK) != 0) {
+            render_zoom_display (ZOOM_OUT_CMOUSE, 0,
+				 event->x, event->y);
+        }
+				/* if the user just clicks without dragging, then simply
 		   zoom in a preset amount */
 		/// @todo This became double in the transition. Should it really?
-		else if ((fabs(screen.start_x - event->x) < 4.0) &&
-				(fabs(screen.start_y - event->y) < 4.0)) {
-			render_zoom_display (ZOOM_IN_CMOUSE, 0,
-					event->x, event->y);
-		} else {
-			render_calculate_zoom_from_outline (widget, event);
-		}
-		callbacks_switch_to_normal_tool_cursor (screen.tool);
-		break;
+        else if ((fabs(screen.start_x - event->x) < 4.0) &&
+                (fabs(screen.start_y - event->y) < 4.0)) {
+            render_zoom_display (ZOOM_IN_CMOUSE, 0,
+				event->x, event->y);
+        } else {
+            render_calculate_zoom_from_outline (widget, event);
+        }
+        callbacks_switch_to_normal_tool_cursor (screen.tool);
+        break;
 
-	case IN_SELECTION_DRAG:
+    case IN_SELECTION_DRAG:
 		/* selection will only work with cairo, so do nothing if it's
-		   not compiled */
-		index = callbacks_get_selected_row_index ();
+		   not compiled */			
+    		gint count = 0;
+            gint *selected_indices = callbacks_get_selected_row_indices(&count);
 
-		if ((index >= 0) && mainProject->file[index]->isVisible) {
-			enum selection_action sel_action = SELECTION_REPLACE;
-			
-			if (event->state & GDK_SHIFT_MASK)
-				sel_action = SELECTION_ADD;
-			else if (event->state & GDK_CONTROL_MASK)
-				sel_action = SELECTION_TOGGLE;
-
+            if (selected_indices != NULL) {
+				gint first_visible_layer = -1;
+                for (gint i = 0; i < count; i++) {
+                    index = selected_indices[i];
+                    if ((index >= 0) && mainProject->file[index]->isVisible) {
+                        enum selection_action sel_action;
+                        
+                        if (first_visible_layer == -1) {
+							first_visible_layer = i;
+                            if (event->state & GDK_SHIFT_MASK)
+                                sel_action = SELECTION_ADD;
+                            else if (event->state & GDK_CONTROL_MASK)
+                                sel_action = SELECTION_TOGGLE;
+                            else
+                                sel_action = SELECTION_REPLACE;
+                        } else {
+                            sel_action = SELECTION_ADD;
+                        }
 			/* determine if this was just a click or a box drag */
-			if ((fabs((double)(screen.last_x - screen.start_x)) < 5)
-			 && (fabs((double)(screen.last_y - screen.start_y)) < 5)) {
-				render_fill_selection_buffer_from_mouse_click (
-						event->x, event->y, index,
-						sel_action);
-			} else {
-				render_fill_selection_buffer_from_mouse_drag (
-						event->x, event->y,
-						screen.start_x, screen.start_y,
-						index, sel_action);
-			}
+                        if ((fabs((double)(screen.last_x - screen.start_x)) < 5)
+                        && (fabs((double)(screen.last_y - screen.start_y)) < 5)) {
+                            render_fill_selection_buffer_from_mouse_click (
+                                    event->x, event->y, index,
+									sel_action);
+                        } else {
+                            render_fill_selection_buffer_from_mouse_drag (
+                                    event->x, event->y,
+                                    screen.start_x, screen.start_y,
+                                    index, sel_action);
+                        }
+                    }
+                }
+                
+				/* Check if anything was selected */
+                update_selected_object_message (TRUE);
 
-			/* Check if anything was selected */
-			update_selected_object_message (TRUE);
+                check_align_files_possibility (&screen.selectionInfo);
 
-			check_align_files_possibility (&screen.selectionInfo);
-		} else {
-			render_refresh_rendered_image_on_screen ();
-		}
-		break;
-	default:
-		break;
-	}
+				/* Clear the selection rectangle */
+				if (first_visible_layer == -1){
+					render_refresh_rendered_image_on_screen ();
+				}
 
-	screen.state = NORMAL;
+            } else {
+                render_refresh_rendered_image_on_screen ();
+            }
+			g_free(selected_indices);
+        break;
+    default:
+        break;
+    }
 
-	return TRUE;
+    screen.state = NORMAL;
+
+    return TRUE;
 } /* button_release_event */
 
 /* --------------------------------------------------------- */
