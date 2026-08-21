@@ -2588,7 +2588,6 @@ callbacks_move_layer_down_button_clicked (GtkButton *button, gpointer user_data)
     }
 
     if (moved_any) {
-        callbacks_update_layer_tree();
         for (gint i = 0; i < count; i++) {
             callbacks_select_layer_row(selected_indices[i]);
         }
@@ -2600,6 +2599,7 @@ callbacks_move_layer_down_button_clicked (GtkButton *button, gpointer user_data)
 			render_recreate_composite_surface ();
 			callbacks_force_expose_event_for_screen ();
         }
+        callbacks_update_layer_tree();		
     }
 
     g_free(selected_indices);
@@ -2644,7 +2644,6 @@ callbacks_move_layer_up_button_clicked (GtkButton *button, gpointer user_data)
     }
 
     if (moved_any) {
-        callbacks_update_layer_tree();
         for (gint i = 0; i < count; i++) {
             callbacks_select_layer_row(selected_indices[i]);
         }
@@ -2656,6 +2655,7 @@ callbacks_move_layer_up_button_clicked (GtkButton *button, gpointer user_data)
 			render_recreate_composite_surface ();
 			callbacks_force_expose_event_for_screen ();
 	    }
+		callbacks_update_layer_tree();
     }
 
     g_free(selected_indices);
@@ -2796,7 +2796,7 @@ callbacks_change_layer_color_clicked (GtkButton *button, gpointer user_data)
 
     if (mainProject->file[first_index] != NULL) {
         GdkColor new_color = mainProject->file[first_index]->color;
-        typeof(mainProject->file[first_index]->alpha) new_alpha = mainProject->file[first_index]->alpha;
+        gint new_alpha = mainProject->file[first_index]->alpha;
 
         for (gint i = 1; i < count; i++) {
             gint idx = selected_indices[i];
@@ -3474,8 +3474,6 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer user_data)
     }
 
     gint i;
-    gint deleted_count = 0;
-    gint skipped_count = 0;
 
     for (i = (gint)sel_len - 1; i >= 0; i--) {
         gerbv_selection_item_t sel_item =
@@ -3488,7 +3486,6 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer user_data)
         }
 
         if (!file_info->isVisible) {
-            skipped_count++;
             continue;
         }
 
@@ -3496,7 +3493,6 @@ callbacks_delete_objects_clicked (GtkButton *button, gpointer user_data)
         
         selection_clear_item_by_index (&screen.selectionInfo, i);
         gerbv_image_delete_net (sel_item.net);
-        deleted_count++;
     }
 
     update_selected_object_message (FALSE);
