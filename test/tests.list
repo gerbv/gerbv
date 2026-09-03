@@ -222,6 +222,12 @@ Altium_file_format_inch | Altium_file_format_inch.drl
 Altium_file_format_inch_lz | Altium_file_format_inch_lz.drl
 Ruthie_V1R0-Plated | Ruthie_V1R0-Plated.drl
 
+# Allegro comment-style tool definitions (#96)
+test-drill-allegro-comment-tools | test-drill-allegro-comment-tools.exc
+
+# Allegro no-T-command drill file: Holesize comments without T prefix, M00 tool change (#331)
+test-drill-allegro-no-tcommand | test-drill-allegro-no-tcommand.exc
+
 # Excellon pattern repeat (M25 begin, M01 end, M02 repeat at offset)
 test-drill-pattern-repeat | test-drill-pattern-repeat.exc
 
