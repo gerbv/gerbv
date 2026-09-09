@@ -1,0 +1,3762 @@
+# Swedish translations for gerbv package.
+# Copyright (C) 2026 erri120
+# This file is distributed under the same license as the gerbv package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gerbv 2.13.0\n"
+"Report-Msgid-Bugs-To: spe-ciellt@github.com\n"
+"POT-Creation-Date: 2026-04-12 05:54+0800\n"
+"PO-Revision-Date: 2026-04-12 05:54+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../src/attribute.c:324
+#, fuzzy
+msgid "gerbv"
+msgstr "gerbv"
+
+#: ../src/attribute.c:508
+#, c-format, fuzzy
+msgid "%s: unknown type of HID attribute\n"
+msgstr "%s: okand typ av HID-attribut\n"
+
+#: ../src/callbacks.c:137
+#, fuzzy
+msgid "No layers are currently loaded. A layer must be loaded first."
+msgstr "Inga lager ar for narvarande inlasta. Ett lager maste lasas in forst."
+
+#: ../src/callbacks.c:155
+#, fuzzy
+msgid "Do you want to close any open layers and start a new project?"
+msgstr "Vill du stanga alla oppna lager och starta ett nytt projekt?"
+
+#: ../src/callbacks.c:157
+#, fuzzy
+msgid ""
+"Starting a new project will cause all currently open layers to be closed. "
+"Any unsaved changes will be lost."
+msgstr ""
+"Att starta ett nytt projekt kommer att stanga alla oppna lager. Osparade "
+"andringar gar forlorade."
+
+#: ../src/callbacks.c:191
+#, fuzzy
+msgid "Do you want to close any open layers and load an existing project?"
+msgstr "Vill du stanga alla oppna lager och lasa in ett befintligt projekt?"
+
+#: ../src/callbacks.c:193
+#, fuzzy
+msgid ""
+"Loading a project will cause all currently open layers to be closed. Any "
+"unsaved changes will be lost."
+msgstr ""
+"Att lasa in ett projekt kommer att stanga alla oppna lager. Osparade "
+"andringar gar forlorade."
+
+#: ../src/callbacks.c:393 ../src/interface.c:391 ../src/interface.c:1039
+#: ../src/interface.c:1188
+#, fuzzy
+msgid "Open Gerbv project, Gerber, drill, or pick&place files"
+msgstr "Oppna Gerbv-projekt, Gerber-, borr- eller pick&place-filer"
+
+#: ../src/callbacks.c:455
+#, fuzzy
+msgid "Gerbv cannot export this file type"
+msgstr "Gerbv kan inte exportera denna filtyp"
+
+#: ../src/callbacks.c:496
+#, fuzzy
+msgid "Unknown Layer type for merge"
+msgstr "Okand lagertyp for sammanslagning"
+
+#: ../src/callbacks.c:511
+#, fuzzy
+msgid "Not Enough Files of same type to merge"
+msgstr "Inte tillrackligt med filer av samma typ for sammanslagning"
+
+#: ../src/callbacks.c:557 ../src/callbacks.c:636
+#, fuzzy
+msgctxt "file name"
+msgid "untitled"
+msgstr "namnlos"
+
+#: ../src/callbacks.c:595
+#, fuzzy
+msgid "No layer is currently active"
+msgstr "Inget lager ar aktivt"
+
+#: ../src/callbacks.c:596
+#, fuzzy
+msgid "Please select a layer and try again."
+msgstr "Valj ett lager och forsok igen."
+
+#: ../src/callbacks.c:612
+#, fuzzy
+msgid "Export as Inkscape layers"
+msgstr "Exportera som Inkscape-lager"
+
+#: ../src/callbacks.c:614
+#, fuzzy
+msgid "Use Cairo SVG (legacy)"
+msgstr "Anvand Cairo SVG (aldre)"
+
+#: ../src/callbacks.c:629 ../src/interface.c:511
+#, fuzzy
+msgid "Save project as..."
+msgstr "Spara projekt som..."
+
+#: ../src/callbacks.c:647
+#, fuzzy
+msgid "All"
+msgstr "Alla"
+
+#: ../src/callbacks.c:654 ../src/callbacks.c:666 ../src/callbacks.c:678
+#: ../src/callbacks.c:705
+#, c-format, fuzzy
+msgid "Export visible layers to %s file as..."
+msgstr "Exportera synliga lager till %s-fil som..."
+
+#: ../src/callbacks.c:655
+#, fuzzy
+msgid "PS"
+msgstr "PS"
+
+#: ../src/callbacks.c:667
+#, fuzzy
+msgid "PDF"
+msgstr "PDF"
+
+#: ../src/callbacks.c:679
+#, fuzzy
+msgid "SVG"
+msgstr "SVG"
+
+#: ../src/callbacks.c:687
+#, fuzzy
+msgid "Create one Inkscape layer per visible gerber layer"
+msgstr "Skapa ett Inkscape-lager per synligt Gerber-lager"
+
+#: ../src/callbacks.c:691
+#, fuzzy
+msgid "Use Cairo's SVG surface (larger files, legacy behavior)"
+msgstr "Anvand Cairos SVG-yta (storre filer, aldre beteende)"
+
+#: ../src/callbacks.c:698
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to DXF file as..."
+msgstr "Exportera \"%s\" lager #%d till DXF-fil som..."
+
+#: ../src/callbacks.c:706
+#, fuzzy
+msgid "PNG"
+msgstr "PNG"
+
+#: ../src/callbacks.c:713
+#, fuzzy
+msgid "DPI:"
+msgstr "DPI:"
+
+#: ../src/callbacks.c:717 ../src/callbacks.c:719
+#, fuzzy
+msgid "DPI value, autoscaling if 0"
+msgstr "DPI-varde, automatisk skalning om 0"
+
+#: ../src/callbacks.c:726
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to RS-274X file as..."
+msgstr "Exportera \"%s\" lager #%d till RS-274X-fil som..."
+
+#: ../src/callbacks.c:738
+#, fuzzy
+msgid "Export merged visible layers to RS-274X file as..."
+msgstr "Exportera sammanslagna synliga lager till RS-274X-fil som..."
+
+#: ../src/callbacks.c:748
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to Excellon drill file as..."
+msgstr "Exportera \"%s\" lager #%d till Excellon-borrfil som..."
+
+#: ../src/callbacks.c:760
+#, fuzzy
+msgid "Export merged visible layers to Excellon drill file as..."
+msgstr "Exportera sammanslagna synliga lager till Excellon-borrfil som..."
+
+#: ../src/callbacks.c:769
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to ISEL NCP drill file as..."
+msgstr "Exportera \"%s\" lager #%d till ISEL NCP-borrfil som..."
+
+#: ../src/callbacks.c:777
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to gEDA PCB file as..."
+msgstr "Exportera \"%s\" lager #%d till gEDA PCB-fil som..."
+
+#: ../src/callbacks.c:783
+#, c-format, fuzzy
+msgid "Save \"%s\" layer #%d as..."
+msgstr "Spara \"%s\" lager #%d som..."
+
+#: ../src/callbacks.c:811
+#, fuzzy
+msgid "Not enough Gerber layers are visible"
+msgstr "Inte tillrackligt manga Gerber-lager ar synliga"
+
+#: ../src/callbacks.c:812
+#, fuzzy
+msgid "Two or more Gerber layers must be visible for export with merge."
+msgstr ""
+"Tva eller fler Gerber-lager maste vara synliga for export med "
+"sammanslagning."
+
+#: ../src/callbacks.c:818
+#, fuzzy
+msgid "Not enough Excellon layers are visible"
+msgstr "Inte tillrackligt manga Excellon-lager ar synliga"
+
+#: ../src/callbacks.c:819
+#, fuzzy
+msgid "Two or more Excellon layers must be visible for export with merge."
+msgstr ""
+"Tva eller fler Excellon-lager maste vara synliga for export med "
+"sammanslagning."
+
+#: ../src/callbacks.c:825
+#, fuzzy
+msgid "No layers are visible"
+msgstr "Inga lager ar synliga"
+
+#: ../src/callbacks.c:825
+#, fuzzy
+msgid "One or more layers must be visible for export."
+msgstr "Ett eller flera lager maste vara synliga for export."
+
+#: ../src/callbacks.c:874
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as DXF in \"%s\""
+msgstr "\"%s\" lager #%d sparat som DXF i \"%s\""
+
+#: ../src/callbacks.c:921
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as Gerber in \"%s\""
+msgstr "\"%s\" lager #%d sparat som Gerber i \"%s\""
+
+#: ../src/callbacks.c:931
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as drill in \"%s\""
+msgstr "\"%s\" lager #%d sparat som borrfil i \"%s\""
+
+#: ../src/callbacks.c:940
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as ISEL NCP drill in \"%s\""
+msgstr "\"%s\" lager #%d sparat som ISEL NCP-borrfil i \"%s\""
+
+#: ../src/callbacks.c:949
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as gEDA PCB in \"%s\""
+msgstr "\"%s\" lager #%d sparat som gEDA PCB i \"%s\""
+
+#: ../src/callbacks.c:960
+#, c-format, fuzzy
+msgid "Merged visible Gerber layers and saved in \"%s\""
+msgstr "Sammanslagna synliga Gerber-lager sparade i \"%s\""
+
+#: ../src/callbacks.c:975
+#, c-format, fuzzy
+msgid "Merged visible drill layers and saved in \"%s\""
+msgstr "Sammanslagna synliga borrlager sparade i \"%s\""
+
+#: ../src/callbacks.c:1162
+#, fuzzy
+msgid "FATAL"
+msgstr "KRITISKT"
+
+#: ../src/callbacks.c:1164
+#, fuzzy
+msgid "ERROR"
+msgstr "FEL"
+
+#: ../src/callbacks.c:1166
+#, fuzzy
+msgid "Warning"
+msgstr "Varning"
+
+#: ../src/callbacks.c:1168 ../src/callbacks.c:1275 ../src/callbacks.c:1312
+#: ../src/callbacks.c:1334 ../src/callbacks.c:1642 ../src/callbacks.c:1671
+#, fuzzy
+msgid "Note"
+msgstr "Observera"
+
+#: ../src/callbacks.c:1196
+#, fuzzy
+msgid "No Gerber layers visible!"
+msgstr "Inga Gerber-lager synliga!"
+
+#: ../src/callbacks.c:1200
+#, c-format, fuzzy
+msgid "No errors found in %d visible Gerber layer."
+msgid_plural "No errors found in %d visible Gerber layers."
+msgstr[0] "Inga fel hittades i %d synligt Gerber-lager."
+msgstr[1] "Inga fel hittades i %d synliga Gerber-lager."
+
+#: ../src/callbacks.c:1208
+#, c-format, fuzzy
+msgid "Found errors in %d visible Gerber layer."
+msgid_plural "Found errors in %d visible Gerber layers."
+msgstr[0] "Hittade fel i %d synligt Gerber-lager."
+msgstr[1] "Hittade fel i %d synliga Gerber-lager."
+
+#: ../src/callbacks.c:1226 ../src/callbacks.c:1387 ../src/callbacks.c:1593
+#, fuzzy
+msgid "Layer"
+msgstr "Lager"
+
+#: ../src/callbacks.c:1226 ../src/callbacks.c:1593
+#, fuzzy
+msgid "Type"
+msgstr "Typ"
+
+#: ../src/callbacks.c:1227 ../src/callbacks.c:1594
+#, fuzzy
+msgid "Description"
+msgstr "Beskrivning"
+
+#: ../src/callbacks.c:1239
+#, fuzzy
+msgid "RS-274X file"
+msgstr "RS-274X-fil"
+
+#: ../src/callbacks.c:1241 ../src/callbacks.c:1608
+#, c-format, fuzzy
+msgid "%g x %g %s"
+msgstr "%g x %g %s"
+
+#: ../src/callbacks.c:1247 ../src/callbacks.c:1614
+#, fuzzy
+msgid "Bounding size"
+msgstr "Omslutande storlek"
+
+#: ../src/callbacks.c:1273 ../src/callbacks.c:1310 ../src/callbacks.c:1332
+#: ../src/callbacks.c:1353 ../src/callbacks.c:1440 ../src/callbacks.c:1640
+#: ../src/callbacks.c:1669 ../src/callbacks.c:1703
+#, fuzzy
+msgid "Code"
+msgstr "Kod"
+
+#: ../src/callbacks.c:1274 ../src/callbacks.c:1311 ../src/callbacks.c:1333
+#: ../src/callbacks.c:1354 ../src/callbacks.c:1441 ../src/callbacks.c:1641
+#: ../src/callbacks.c:1670 ../src/callbacks.c:1702 ../src/callbacks.c:1733
+#, fuzzy
+msgctxt "table"
+msgid "Count"
+msgstr "Antal"
+
+#: ../src/callbacks.c:1299 ../src/callbacks.c:1658
+#, fuzzy
+msgid "unknown G-codes"
+msgstr "okanda G-koder"
+
+#: ../src/callbacks.c:1320
+#, fuzzy
+msgid "unknown D-codes"
+msgstr "okanda D-koder"
+
+#: ../src/callbacks.c:1321
+#, fuzzy
+msgid "D-code errors"
+msgstr "D-kodfel"
+
+#: ../src/callbacks.c:1342 ../src/callbacks.c:1689
+#, fuzzy
+msgid "unknown M-codes"
+msgstr "okanda M-koder"
+
+#: ../src/callbacks.c:1363
+#, fuzzy
+msgid "Unknown"
+msgstr "Okand"
+
+#: ../src/callbacks.c:1378
+#, fuzzy
+msgid "No aperture definitions found in active Gerber file(s)!"
+msgstr "Inga blandardefinitioner hittades i aktiv(a) Gerber-fil(er)!"
+
+#: ../src/callbacks.c:1388
+#, fuzzy
+msgid "D code"
+msgstr "D-kod"
+
+#: ../src/callbacks.c:1389
+#, fuzzy
+msgid "Aperture"
+msgstr "Blandare"
+
+#: ../src/callbacks.c:1390
+#, fuzzy
+msgid "Param[0]"
+msgstr "Param[0]"
+
+#: ../src/callbacks.c:1391
+#, fuzzy
+msgid "Param[1]"
+msgstr "Param[1]"
+
+#: ../src/callbacks.c:1392
+#, fuzzy
+msgid "Param[2]"
+msgstr "Param[2]"
+
+#: ../src/callbacks.c:1431
+#, fuzzy
+msgid "No apertures used in Gerber file(s)!"
+msgstr "Inga blandare anvands i Gerber-fil(er)!"
+
+#: ../src/callbacks.c:1458
+#, fuzzy
+msgid "Total"
+msgstr "Totalt"
+
+#: ../src/callbacks.c:1467
+#, fuzzy
+msgid "Gerber codes report on visible layers"
+msgstr "Gerber-kodrapport for synliga lager"
+
+#: ../src/callbacks.c:1497 ../src/callbacks.c:1790
+#, fuzzy
+msgid "General"
+msgstr "Allman"
+
+#: ../src/callbacks.c:1501 ../src/callbacks.c:1794
+#, fuzzy
+msgid "G codes"
+msgstr "G-koder"
+
+#: ../src/callbacks.c:1505
+#, fuzzy
+msgid "D codes"
+msgstr "D-koder"
+
+#: ../src/callbacks.c:1509 ../src/callbacks.c:1798
+#, fuzzy
+msgid "M codes"
+msgstr "M-koder"
+
+#: ../src/callbacks.c:1513 ../src/callbacks.c:1802
+#, fuzzy
+msgid "Misc. codes"
+msgstr "Ovriga koder"
+
+#: ../src/callbacks.c:1517
+#, fuzzy
+msgid "Aperture definitions"
+msgstr "Blandardefinitioner"
+
+#: ../src/callbacks.c:1521
+#, fuzzy
+msgid "Aperture usage"
+msgstr "Blandaranvandning"
+
+#: ../src/callbacks.c:1563
+#, fuzzy
+msgid "No drill layers visible!"
+msgstr "Inga borrlager synliga!"
+
+#: ../src/callbacks.c:1567
+#, c-format, fuzzy
+msgid "No errors found in %d visible drill layer."
+msgid_plural "No errors found in %d visible drill layers."
+msgstr[0] "Inga fel hittades i %d synligt borrlager."
+msgstr[1] "Inga fel hittades i %d synliga borrlager."
+
+#: ../src/callbacks.c:1575
+#, c-format, fuzzy
+msgid "Found errors found in %d visible drill layer."
+msgid_plural "Found errors found in %d visible drill layers."
+msgstr[0] "Hittade fel i %d synligt borrlager."
+msgstr[1] "Hittade fel i %d synliga borrlager."
+
+#: ../src/callbacks.c:1606
+#, fuzzy
+msgid "Excellon file"
+msgstr "Excellon-fil"
+
+#: ../src/callbacks.c:1706
+#, fuzzy
+msgid "Comments"
+msgstr "Kommentarer"
+
+#: ../src/callbacks.c:1709
+#, fuzzy
+msgid "Unknown codes"
+msgstr "Okanda koder"
+
+#: ../src/callbacks.c:1712
+#, fuzzy
+msgid "Repeat hole (R)"
+msgstr "Upprepa hal (R)"
+
+#: ../src/callbacks.c:1730
+#, fuzzy
+msgid "Drill no."
+msgstr "Borr nr."
+
+#: ../src/callbacks.c:1731
+#, fuzzy
+msgid "Dia."
+msgstr "Dia."
+
+#: ../src/callbacks.c:1732
+#, fuzzy
+msgid "Units"
+msgstr "Enheter"
+
+#: ../src/callbacks.c:1760
+#, fuzzy
+msgid "Drill codes report on visible layers"
+msgstr "Borrkodrapport for synliga lager"
+
+#: ../src/callbacks.c:1806
+#, fuzzy
+msgid "Drill usage"
+msgstr "Borranvandning"
+
+#: ../src/callbacks.c:1864
+#, fuzzy
+msgid "Do you want to close all open layers and quit the program?"
+msgstr "Vill du stanga alla oppna lager och avsluta programmet?"
+
+#: ../src/callbacks.c:1865
+#, fuzzy
+msgid "Quitting the program will cause any unsaved changes to be lost."
+msgstr "Att avsluta programmet gor att osparade andringar gar forlorade."
+
+#. TRANSLATORS: Replace this string with your names, one name per line.
+#: ../src/callbacks.c:1923
+#, fuzzy
+msgid "translator-credits"
+msgstr ""
+
+#: ../src/callbacks.c:1926
+#, c-format, fuzzy
+msgid ""
+"Gerbv — a Gerber (RS-274/X) viewer\n"
+"\n"
+"Version %s\n"
+"Compiled on %s at %s\n"
+"\n"
+"Gerbv was originally developed as part of the gEDA Project but is now separately maintained.\n"
+"\n"
+"For more information see:\n"
+"  gerbv homepage: https://gerbv.github.io/\n"
+"  gerbv repository: https://github.com/gerbv/gerbv"
+msgstr ""
+"Gerbv — en Gerber (RS-274/X)-visare\n"
+"\n"
+"Version %s\n"
+"Kompilerad den %s kl %s\n"
+"\n"
+"Gerbv utvecklades ursprungligen som en del av gEDA-projektet men underhålls nu separat.\n"
+"\n"
+"För mer information se:\n"
+"  gerbv hemsida: https://gerbv.github.io/\n"
+"  gerbv-forrad: https://github.com/gerbv/gerbv"
+
+#: ../src/callbacks.c:1941
+#, fuzzy
+msgid ""
+"Gerbv — a Gerber (RS-274/X) viewer\n"
+"\n"
+"Copyright (C) 2000—2007 Stefan Petersen\n"
+"\n"
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, either version 2 of the License, or\n"
+"(at your option) any later version.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>."
+msgstr ""
+"Gerbv — en Gerber (RS-274/X)-visare\n"
+"\n"
+"Copyright (C) 2000—2007 Stefan Petersen\n"
+"\n"
+"Detta program är fri programvara: du kan redistribuera det och/eller modifiera\n"
+"det under villkoren i GNU General Public License som publicerad av\n"
+"Free Software Foundation, antingen version 2 av licensen, eller\n"
+"(efter ditt val) någon senare version.\n"
+"\n"
+"Detta program distribueras i hopp om att det ska vara användbart,\n"
+"men UTAN NÅGON GARANTI; utan ens den underförstådda garantin om\n"
+"SÄLJBARHET eller LÄMPLIGHET FÖR ETT VISST ÄNDAMÅL. Se\n"
+"GNU General Public License för mer information.\n"
+"\n"
+"Du bör ha fått en kopia av GNU General Public License\n"
+"tillsammans med detta program. Om inte, se <http://www.gnu.org/licenses/>."
+
+#: ../src/callbacks.c:1965
+#, fuzzy
+msgid "Gerbv"
+msgstr "Gerbv"
+
+#: ../src/callbacks.c:1994
+#, fuzzy
+msgid "About Gerbv"
+msgstr "Om Gerbv"
+
+#: ../src/callbacks.c:2021
+#, fuzzy
+msgid "Known bugs in Gerbv"
+msgstr "Kanda buggar i Gerbv"
+
+#: ../src/callbacks.c:2350 ../src/callbacks.c:3484
+#, fuzzy
+msgid ""
+"Click to select objects in the active layer. Middle click and drag to pan."
+msgstr ""
+"Klicka for att valja objekt i det aktiva lagret. Mittenklicka och dra for "
+"att panorera."
+
+#: ../src/callbacks.c:2359
+#, fuzzy
+msgid "Click and drag to pan. Right click and drag to zoom."
+msgstr "Klicka och dra for att panorera. Hogerklicka och dra for att zooma."
+
+#: ../src/callbacks.c:2367
+#, fuzzy
+msgid "Click and drag to zoom in. Shift+click to zoom out."
+msgstr "Klicka och dra for att zooma in. Shift+klicka for att zooma ut."
+
+#: ../src/callbacks.c:2376
+#, fuzzy
+msgid "Click and drag to measure a distance or select two apertures."
+msgstr "Klicka och dra for att mata ett avstand eller valja tva blandare."
+
+#: ../src/callbacks.c:2606
+#, fuzzy
+msgid "Select a color"
+msgstr "Valj en farg"
+
+#: ../src/callbacks.c:2754
+#, fuzzy
+msgid "This file type does not currently have any editable features"
+msgstr "Denna filtyp har for narvarande inga redigerbara funktioner"
+
+#: ../src/callbacks.c:2755
+#, fuzzy
+msgid ""
+"Format editing is currently only supported for Excellon drill file formats."
+msgstr ""
+"Formatredigering stods for narvarande endast for Excellon-borrfilformat."
+
+#: ../src/callbacks.c:2766
+#, fuzzy
+msgid "This layer has changed!"
+msgstr "Detta lager har andrats!"
+
+#: ../src/callbacks.c:2767
+#, fuzzy
+msgid ""
+"Editing the file type will reload the layer, destroying your changes.  Click"
+" OK to edit the file type and destroy your changes, or Cancel to leave."
+msgstr ""
+"Att redigera filtypen kommer att ladda om lagret och forstora dina "
+"andringar. Klicka OK for att redigera filtypen och forstora dina andringar, "
+"eller Avbryt for att lamna."
+
+#: ../src/callbacks.c:2781
+#, fuzzy
+msgid "Edit file format"
+msgstr "Redigera filformat"
+
+#: ../src/callbacks.c:3058 ../src/callbacks.c:3217
+#, fuzzy
+msgid "No object is currently selected"
+msgstr "Inget objekt ar markerat"
+
+#: ../src/callbacks.c:3059
+#, fuzzy
+msgid ""
+"Objects must be selected using the pointer tool before you can view the "
+"object properties."
+msgstr ""
+"Objekt maste markeras med pekarverktyget innan du kan visa "
+"objektegenskaperna."
+
+#: ../src/callbacks.c:3077
+#, fuzzy
+msgid "Object type: Polygon"
+msgstr "Objekttyp: Polygon"
+
+#: ../src/callbacks.c:3119
+#, c-format, fuzzy
+msgid ""
+"FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)"
+msgstr ""
+"SNABB (=GDK) lagesprov: %d omritningar pa %ld sekunder (%g "
+"omritningar/sekund)"
+
+#: ../src/callbacks.c:3141
+#, c-format, fuzzy
+msgid ""
+"NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g "
+"redraws/second)"
+msgstr ""
+"NORMAL (=Cairo) lagesprov: %d omritningar pa %ld sekunder (%g "
+"omritningar/sekund)"
+
+#: ../src/callbacks.c:3154
+#, fuzzy
+msgid "Performance benchmark"
+msgstr "Prestandatest"
+
+#: ../src/callbacks.c:3155
+#, fuzzy
+msgid ""
+"Application will be unresponsive for 1 minute! Run performance benchmark?"
+msgstr ""
+"Applikationen kommer att vara oresponsiv i 1 minut! Kor prestandatest?"
+
+#: ../src/callbacks.c:3160
+#, fuzzy
+msgid "Running full zoom benchmark..."
+msgstr "Kor fullzoom-prestandatest..."
+
+#: ../src/callbacks.c:3168
+#, fuzzy
+msgid "Running x5 zoom benchmark..."
+msgstr "Kor x5-zoom-prestandatest..."
+
+#: ../src/callbacks.c:3218
+#, fuzzy
+msgid ""
+"Objects must be selected using the pointer tool before they can be deleted."
+msgstr "Objekt maste markeras med pekarverktyget innan de kan tas bort."
+
+#: ../src/callbacks.c:3231
+#, fuzzy
+msgid ""
+"Do you want to permanently delete the selected objects from <i>visible</i> "
+"layers?"
+msgstr ""
+"Vill du permanent ta bort de markerade objekten fran <i>synliga</i> lager?"
+
+#: ../src/callbacks.c:3233
+#, fuzzy
+msgid ""
+"Gerbv currently has no undo function, so this action cannot be undone. This "
+"action will not change the saved file unless you save the file afterwards."
+msgstr ""
+"Gerbv har for narvarande ingen angra-funktion, sa denna atgard kan inte "
+"angras. Denna atgard andrar inte den sparade filen om du inte sparar filen "
+"efterat."
+
+#: ../src/callbacks.c:3449
+#, c-format, fuzzy
+msgid "%8.3f %8.3f"
+msgstr "%8.3f %8.3f"
+
+#: ../src/callbacks.c:3454
+#, c-format, fuzzy
+msgid "%4.5f %4.5f"
+msgstr "%4.5f %4.5f"
+
+#: ../src/callbacks.c:3475
+#, fuzzy
+msgid "No object selected. Objects can only be selected in the active layer."
+msgstr "Inget objekt markerat. Objekt kan bara markeras i det aktiva lagret."
+
+#: ../src/callbacks.c:3491
+#, c-format, fuzzy
+msgid "%d object are currently selected"
+msgid_plural "%d objects are currently selected"
+msgstr[0] "%d objekt ar markerat"
+msgstr[1] "%d objekt ar markerade"
+
+#: ../src/callbacks.c:3694 ../src/callbacks.c:3700
+#, c-format, fuzzy
+msgid "#_%i %s  >  #%i %s"
+msgstr "#_%i %s  >  #%i %s"
+
+#: ../src/callbacks.c:3771 ../src/callbacks.c:3777
+#, fuzzy
+msgid "Can't align by this type of object"
+msgstr "Kan inte rikta in efter denna typ av objekt"
+
+#: ../src/callbacks.c:3955
+#, c-format, fuzzy
+msgid "Measured distance: %8.2f mils (%8.2f x, %8.2f y)"
+msgstr "Matt avstand: %8.2f mil (%8.2f x, %8.2f y)"
+
+#: ../src/callbacks.c:3960
+#, c-format, fuzzy
+msgid "Measured distance: %8.3f mm (%8.3f x, %8.3f y)"
+msgstr "Matt avstand: %8.3f mm (%8.3f x, %8.3f y)"
+
+#: ../src/callbacks.c:3965
+#, c-format, fuzzy
+msgid "Measured distance: %4.5f inches (%4.5f x, %4.5f y)"
+msgstr "Matt avstand: %4.5f tum (%4.5f x, %4.5f y)"
+
+#: ../src/callbacks.c:4132
+#, c-format, fuzzy
+msgid "Fatal error: %s\n"
+msgstr "Kritiskt fel: %s\n"
+
+#: ../src/callbacks.c:4135
+#, fuzzy
+msgid "Fatal Error"
+msgstr "Kritiskt fel"
+
+#: ../src/callbacks.c:4139
+#, c-format, fuzzy
+msgid "Fatal error: %s"
+msgstr "Kritiskt fel: %s"
+
+#: ../src/callbacks.c:4144
+#, fuzzy
+msgid ""
+"\n"
+"Gerbv will be closed now!"
+msgstr ""
+"\n"
+"Gerbv kommer nu att stangas!"
+
+#: ../src/callbacks.c:4251
+#, fuzzy
+msgid "Object type: Line"
+msgstr "Objekttyp: Linje"
+
+#: ../src/callbacks.c:4253
+#, fuzzy
+msgid "Object type: Slot (drilled)"
+msgstr "Objekttyp: Spalt (borrad)"
+
+#: ../src/callbacks.c:4263
+#, fuzzy
+msgid "Object type: Arc"
+msgstr "Objekttyp: Bage"
+
+#: ../src/callbacks.c:4271
+#, fuzzy
+msgid "Object type: Unknown"
+msgstr "Objekttyp: Okand"
+
+#: ../src/callbacks.c:4276
+#, fuzzy
+msgid "    Exposure: On"
+msgstr "    Exponering: Pa"
+
+#: ../src/callbacks.c:4290 ../src/callbacks.c:4437 ../src/callbacks.c:4517
+#, c-format, fuzzy
+msgid "    Start: (%g, %g) %s"
+msgstr "    Start: (%g, %g) %s"
+
+#: ../src/callbacks.c:4298 ../src/callbacks.c:4523
+#, c-format, fuzzy
+msgid "    Stop: (%g, %g) %s"
+msgstr "    Stopp: (%g, %g) %s"
+
+#: ../src/callbacks.c:4310 ../src/callbacks.c:4426 ../src/callbacks.c:4453
+#: ../src/callbacks.c:4482 ../src/callbacks.c:4503 ../src/callbacks.c:4540
+#, c-format, fuzzy
+msgid "    Center: (%g, %g) %s"
+msgstr "    Centrum: (%g, %g) %s"
+
+#: ../src/callbacks.c:4318
+#, c-format, fuzzy
+msgid "    Radius: %g %s"
+msgstr "    Radie: %g %s"
+
+#: ../src/callbacks.c:4322
+#, c-format, fuzzy
+msgid "    Angle: %g deg"
+msgstr "    Vinkel: %g grader"
+
+#: ../src/callbacks.c:4325
+#, c-format, fuzzy
+msgid "    Angles: (%g, %g) deg"
+msgstr "    Vinklar: (%g, %g) grader"
+
+#: ../src/callbacks.c:4328
+#, c-format, fuzzy
+msgid "    Direction: %s"
+msgstr "    Riktning: %s"
+
+#: ../src/callbacks.c:4331 ../src/callbacks.c:4671 ../src/gerber.c:346
+#, fuzzy
+msgid "CW"
+msgstr "Medurs"
+
+#: ../src/callbacks.c:4331 ../src/callbacks.c:4671 ../src/gerber.c:346
+#, fuzzy
+msgid "CCW"
+msgstr "Moturs"
+
+#: ../src/callbacks.c:4345
+#, c-format, fuzzy
+msgid "    Slot length: %g %s"
+msgstr "    Spaltlangd: %g %s"
+
+#: ../src/callbacks.c:4351
+#, c-format, fuzzy
+msgid "    Length: %g (sum: %g) %s"
+msgstr "    Langd: %g (summa: %g) %s"
+
+#: ../src/callbacks.c:4363
+#, fuzzy
+msgid "Object type: Flashed aperture"
+msgstr "Objekttyp: Blixtringsapertur"
+
+#: ../src/callbacks.c:4365
+#, fuzzy
+msgid "Object type: Drill"
+msgstr "Objekttyp: Borr"
+
+#: ../src/callbacks.c:4379
+#, c-format, fuzzy
+msgid "    Location: (%g, %g) %s"
+msgstr "    Plats: (%g, %g) %s"
+
+#: ../src/callbacks.c:4398
+#, c-format, fuzzy
+msgid "    Aperture used: D%d"
+msgstr "    Anvand blandare: D%d"
+
+#: ../src/callbacks.c:4399
+#, c-format, fuzzy
+msgid "    Aperture type: %s"
+msgstr "    Blandartyp: %s"
+
+#: ../src/callbacks.c:4406 ../src/callbacks.c:4420 ../src/callbacks.c:4447
+#: ../src/callbacks.c:4581
+#, c-format, fuzzy
+msgid "    Diameter: %g %s"
+msgstr "    Diameter: %g %s"
+
+#: ../src/callbacks.c:4412
+#, c-format, fuzzy
+msgid "    Dimensions: %gx%g %s"
+msgstr "    Dimensioner: %gx%g %s"
+
+#: ../src/callbacks.c:4432 ../src/callbacks.c:4445
+#, c-format, fuzzy
+msgid "    Number of points: %g"
+msgstr "    Antal punkter: %g"
+
+#: ../src/callbacks.c:4440 ../src/callbacks.c:4456 ../src/callbacks.c:4485
+#: ../src/callbacks.c:4506 ../src/callbacks.c:4526 ../src/callbacks.c:4543
+#: ../src/callbacks.c:4560
+#, c-format, fuzzy
+msgid "    Rotation: %g deg"
+msgstr "    Rotation: %g grader"
+
+#: ../src/callbacks.c:4461 ../src/callbacks.c:4490
+#, c-format, fuzzy
+msgid "    Outside diameter: %g %s"
+msgstr "    Ytterdiameter: %g %s"
+
+#: ../src/callbacks.c:4464
+#, c-format, fuzzy
+msgid "    Ring thickness: %g %s"
+msgstr "    Ringtjocklek: %g %s"
+
+#: ../src/callbacks.c:4467
+#, c-format, fuzzy
+msgid "    Gap width: %g %s"
+msgstr "    Spalvidd: %g %s"
+
+#: ../src/callbacks.c:4470
+#, c-format, fuzzy
+msgid "    Number of rings: %g"
+msgstr "    Antal ringar: %g"
+
+#: ../src/callbacks.c:4472 ../src/callbacks.c:4496
+#, c-format, fuzzy
+msgid "    Crosshair thickness: %g %s"
+msgstr "    Hartkorstjocklek: %g %s"
+
+#: ../src/callbacks.c:4476
+#, c-format, fuzzy
+msgid "    Crosshair length: %g %s"
+msgstr "    Hartkorslingd: %g %s"
+
+#: ../src/callbacks.c:4493
+#, c-format, fuzzy
+msgid "    Inside diameter: %g %s"
+msgstr "    Innerdiameter: %g %s"
+
+#: ../src/callbacks.c:4511 ../src/callbacks.c:4531 ../src/callbacks.c:4548
+#, c-format, fuzzy
+msgid "    Width: %g %s"
+msgstr "    Bredd: %g %s"
+
+#: ../src/callbacks.c:4534 ../src/callbacks.c:4551
+#, c-format, fuzzy
+msgid "    Height: %g %s"
+msgstr "    Hojd: %g %s"
+
+#: ../src/callbacks.c:4557
+#, c-format, fuzzy
+msgid "    Lower left: (%g, %g) %s"
+msgstr "    Nedre vanster: (%g, %g) %s"
+
+#: ../src/callbacks.c:4579
+#, c-format, fuzzy
+msgid "    Tool used: T%d"
+msgstr "    Anvant verktyg: T%d"
+
+#: ../src/callbacks.c:4604
+#, c-format, fuzzy
+msgid "    Number of vertices: %u"
+msgstr "    Antal hormpunkter: %u"
+
+#: ../src/callbacks.c:4620
+#, c-format, fuzzy
+msgid "    Line from: (%g, %g) %s"
+msgstr "    Linje fran: (%g, %g) %s"
+
+#: ../src/callbacks.c:4629
+#, c-format, fuzzy
+msgid "        Line to: (%g, %g) %s"
+msgstr "        Linje till: (%g, %g) %s"
+
+#: ../src/callbacks.c:4640
+#, c-format, fuzzy
+msgid "    Arc from: (%g, %g) %s"
+msgstr "    Bage fran: (%g, %g) %s"
+
+#: ../src/callbacks.c:4647
+#, c-format, fuzzy
+msgid "        Arc to: (%g, %g) %s"
+msgstr "        Bage till: (%g, %g) %s"
+
+#: ../src/callbacks.c:4654
+#, c-format, fuzzy
+msgid "        Center: (%g, %g) %s"
+msgstr "        Centrum: (%g, %g) %s"
+
+#: ../src/callbacks.c:4661
+#, c-format, fuzzy
+msgid "        Radius: %g %s"
+msgstr "        Radie: %g %s"
+
+#: ../src/callbacks.c:4664
+#, c-format, fuzzy
+msgid "        Angle: %g deg"
+msgstr "        Vinkel: %g grader"
+
+#: ../src/callbacks.c:4666
+#, c-format, fuzzy
+msgid "        Angles: (%g, %g) deg"
+msgstr "        Vinklar: (%g, %g) grader"
+
+#: ../src/callbacks.c:4668
+#, c-format, fuzzy
+msgid "        Direction: %s"
+msgstr "        Riktning: %s"
+
+#: ../src/callbacks.c:4688
+#, c-format, fuzzy
+msgid "    Net label: %s"
+msgstr "    Natetikett: %s"
+
+#: ../src/callbacks.c:4692
+#, c-format, fuzzy
+msgid "    Layer name: %s"
+msgstr "    Lagernamn: %s"
+
+#: ../src/callbacks.c:4697
+#, c-format, fuzzy
+msgid "    In file: %s"
+msgstr "    I fil: %s"
+
+#: ../src/csv.c:168 ../src/csv.c:290
+#, c-format, fuzzy
+msgid "%d: unexpected quote in element"
+msgstr "%d: ovantat citattecken i element"
+
+#: ../src/csv.c:199
+#, c-format, fuzzy
+msgid "%d: bad end quote in element"
+msgstr "%d: felaktigt avslutande citattecken i element"
+
+#: ../src/csv.c:321
+#, c-format, fuzzy
+msgid "%d: bad end quote in element "
+msgstr "%d: felaktigt avslutande citattecken i element "
+
+#: ../src/draw-gdk.c:598
+#, c-format, fuzzy
+msgid "Unknown simplified aperture macro type %d"
+msgstr "Okand foerenklad blandarmakrotyp %d"
+
+#: ../src/draw-gdk.c:812 ../src/draw-gdk.c:1205
+#, c-format, fuzzy
+msgid "Skipped interpolation type %d"
+msgstr "Hoppade oever interpolationstyp %d"
+
+#: ../src/draw-gdk.c:1149
+#, fuzzy
+msgid "Linear != x1"
+msgstr "Linear != x1"
+
+#: ../src/draw-gdk.c:1274
+#, c-format, fuzzy
+msgid "Unknown aperture type %d"
+msgstr "Okand blandartyp %d"
+
+#: ../src/draw-gdk.c:1280
+#, c-format, fuzzy
+msgid "Unknown aperture state %d"
+msgstr "Okant blandartillstand %d"
+
+#: ../src/draw.c:550
+#, c-format, fuzzy
+msgid "Ignoring %s with non positive diameter"
+msgstr "Ignorerar %s med icke-positivt diameter"
+
+#: ../src/draw.c:747
+#, c-format, fuzzy
+msgid "Unknown macro type: %s"
+msgstr "Okand makrotyp: %s"
+
+#: ../src/draw.c:1337 ../src/draw.c:1437
+#, c-format, fuzzy
+msgid "Unknown aperture type: %s"
+msgstr "Okand blandartyp: %s"
+
+#: ../src/draw.c:1373
+#, c-format, fuzzy
+msgid "Unknown interpolation type: %s"
+msgstr "Okand interpolationstyp: %s"
+
+#: ../src/draw.c:1460
+#, c-format, fuzzy
+msgid "Unknown aperture state: %s"
+msgstr "Okant blandartillstand: %s"
+
+#: ../src/drill.c:648
+#, c-format, fuzzy
+msgid "Comment \"%s\" at line %u in file \"%s\""
+msgstr "Kommentar \"%s\" pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:678 ../src/drill.c:710 ../src/drill.c:1172
+#, c-format, fuzzy
+msgid "Unrecognised string \"%s\" in header at line %u in file \"%s\""
+msgstr "Okand strang \"%s\" i huvud pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:698
+#, c-format, fuzzy
+msgid "File in unsupported format 1 at line %u in file \"%s\""
+msgstr "Fil i format 1 som inte stods pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:750 ../src/drill.c:794 ../src/gerber.c:1248
+#: ../src/gerber.c:1262 ../src/gerber.c:1276 ../src/gerber.c:1437
+#: ../src/gerber.c:1554
+#, c-format, fuzzy
+msgid "Unexpected EOF found in file \"%s\""
+msgstr "Ovantat filslut hittat i fil \"%s\""
+
+#: ../src/drill.c:809 ../src/drill.c:842 ../src/drill.c:985
+#, c-format, fuzzy
+msgid "Unrecognized string \"%s\" found at line %u in file \"%s\""
+msgstr "Okand strang \"%s\" hittad pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:818
+#, c-format, fuzzy
+msgid "Unsupported G%02d (%s) code at line %u in file \"%s\""
+msgstr "G%02d (%s)-kod som inte stods pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:870
+#, c-format, fuzzy
+msgid ""
+"End of Excellon header reached but no leading/trailing zero handling "
+"specified at line %u in file \"%s\""
+msgstr ""
+"Slutet av Excellon-huvud natt men ingen hantering av inledande/avslutande "
+"nollor angiven pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:877
+#, c-format, fuzzy
+msgid "Assuming leading zeros in file \"%s\""
+msgstr "Antar inledande nollor i fil \"%s\""
+
+#: ../src/drill.c:889
+#, c-format, fuzzy
+msgid ""
+"M71 code found but no METRIC specification in header at line %u in file "
+"\"%s\""
+msgstr ""
+"M71-kod hittad men ingen METRIC-specifikation i huvud pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:895
+#, c-format, fuzzy
+msgid "Assuming all tool sizes are MM in file \"%s\""
+msgstr "Antar att alla verktygsstorlekar ar MM i fil \"%s\""
+
+#: ../src/drill.c:937
+#, c-format, fuzzy
+msgid "Canned text \"%s\" at line %u in drill file \"%s\""
+msgstr "Standardtext \"%s\" pa rad %u i borrfil \"%s\""
+
+#: ../src/drill.c:946
+#, c-format, fuzzy
+msgid "Message \"%s\" embedded at line %u in drill file \"%s\""
+msgstr "Meddelande \"%s\" inbaddat pa rad %u i borrfil \"%s\""
+
+#: ../src/drill.c:995
+#, c-format, fuzzy
+msgid "Unsupported M%02d (%s) code found at line %u in file \"%s\""
+msgstr "M%02d (%s)-kod som inte stods hittad pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1009
+#, c-format, fuzzy
+msgid "Not allowed 'R' code in the header at line %u in file \"%s\""
+msgstr "'R'-kod inte tillatna i huvudet pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1070
+#, c-format, fuzzy
+msgid "Ignoring setting spindle speed at line %u in drill file \"%s\""
+msgstr "Ignorerar installning av spindelhastighet pa rad %u i borrfil \"%s\""
+
+#: ../src/drill.c:1086
+#, c-format, fuzzy
+msgid "Undefined string \"%s\" in header at line %u in file \"%s\""
+msgstr "Odefinierad strang \"%s\" i huvud pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1163
+#, c-format, fuzzy
+msgid "Undefined code '%s' (0x%x) found in header at line %u in file \"%s\""
+msgstr "Odefinierad kod '%s' (0x%x) hittad i huvud pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1178
+#, c-format, fuzzy
+msgid ""
+"Ignoring undefined character '%s' (0x%x) found inside data at line %u in "
+"file \"%s\""
+msgstr ""
+"Ignorerar odefinierat tecken '%s' (0x%x) hittat i data pa rad %u i fil "
+"\"%s\""
+
+#: ../src/drill.c:1187
+#, c-format, fuzzy
+msgid "No EOF found in drill file \"%s\""
+msgstr "Inget filslut hittat i borrfil \"%s\""
+
+#: ../src/drill.c:1410
+#, c-format, fuzzy
+msgid "Tool change stop switch found \"%s\" at line %u in file \"%s\""
+msgstr "Verktygsbyte stoppbrytare hittad \"%s\" pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1425
+#, fuzzy
+msgid "OrCAD bug: Junk text found in place of tool definition"
+msgstr "OrCAD-bugg: Skraptext hittad istallet for verktygsdefinition"
+
+#: ../src/drill.c:1428
+#, c-format, fuzzy
+msgid "Junk text \"%s\" at line %u in file \"%s\""
+msgstr "Skraptext \"%s\" pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1433
+#, fuzzy
+msgid "Ignoring junk text"
+msgstr "Ignorerar skraptext"
+
+#: ../src/drill.c:1448
+#, c-format, fuzzy
+msgid "Out of bounds drill number %d at line %u in file \"%s\""
+msgstr "Borrnummer %d utanfor tillatet intervall pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1479
+#, c-format, fuzzy
+msgid "Read a drill of diameter %g inches at line %u in file \"%s\""
+msgstr "Last en borr med diameter %g tum pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1483
+#, fuzzy
+msgid "Assuming units are mils"
+msgstr "Antar att enheten ar mil"
+
+#: ../src/drill.c:1489
+#, c-format, fuzzy
+msgid "Unreasonable drill size %g found for drill %d at line %u in file \"%s\""
+msgstr "Orimlig borrstorlek %g hittad for borr %d pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1505
+#, c-format, fuzzy
+msgid "Found redefinition of drill %d at line %u in file \"%s\""
+msgstr "Hittade omdefinition av borr %d pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1530 ../src/drill.c:1608 ../src/interface.c:1292
+#, fuzzy
+msgid "mm"
+msgstr "mm"
+
+#: ../src/drill.c:1530 ../src/drill.c:1608
+#, fuzzy
+msgid "inch"
+msgstr "tum"
+
+#: ../src/drill.c:1555
+#, c-format, fuzzy
+msgid "Unexpected EOF encountered in header of drill file \"%s\""
+msgstr "Ovantat filslut patraffat i huvudet pa borrfil \"%s\""
+
+#: ../src/drill.c:1590
+#, c-format, fuzzy
+msgid "Tool %02d used without being defined at line %u in file \"%s\""
+msgstr "Verktyg %02d anvant utan att vara definierat pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1594
+#, c-format, fuzzy
+msgid "Setting a default size of %g\""
+msgstr "Staller in en standardstorlek pa %g\""
+
+#: ../src/drill.c:1641
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing M-code in file \"%s\""
+msgstr "Ovantat filslut hittat vid tolkning av M-kod i fil \"%s\""
+
+#: ../src/drill.c:1738 ../src/drill.c:1984 ../src/drill.c:2063
+#: ../src/drill.c:2075
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing \"%s\" string in file \"%s\""
+msgstr "Ovantat filslut hittat vid tolkning av \"%s\"-strang i fil \"%s\""
+
+#: ../src/drill.c:1878
+#, c-format, fuzzy
+msgid "Found junk after METRIC command at line %u in file \"%s\""
+msgstr "Hittade skraptext efter METRIC-kommando pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:1912
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing \"%s\" string in file \"%s\" on line %u"
+msgstr "Ovantat filslut hittat vid tolkning av \"%s\"-strang i fil \"%s\" pa rad %u"
+
+#: ../src/drill.c:1923
+#, c-format, fuzzy
+msgid "Expected '=' while parsing \"%s\" string in file \"%s\" on line %u"
+msgstr "Forvantade '=' vid tolkning av \"%s\"-strang i fil \"%s\" pa rad %u"
+
+#: ../src/drill.c:1935
+#, c-format, fuzzy
+msgid ""
+"Expected integer after '=' while parsing \"%s\" string in file \"%s\" on "
+"line %u"
+msgstr ""
+"Forvantade heltal efter '=' vid tolkning av \"%s\"-strang i fil \"%s\" pa "
+"rad %u"
+
+#: ../src/drill.c:1943
+#, c-format, fuzzy
+msgid "Expected ':' while parsing \"%s\" string in file \"%s\" on line %u"
+msgstr "Forvantade ':' vid tolkning av \"%s\"-strang i fil \"%s\" pa rad %u"
+
+#: ../src/drill.c:1954
+#, c-format, fuzzy
+msgid ""
+"Expected integer after ':' while parsing \"%s\" string in file \"%s\" on "
+"line %u"
+msgstr ""
+"Forvantade heltal efter ':' vid tolkning av \"%s\"-strang i fil \"%s\" pa "
+"rad %u"
+
+#: ../src/drill.c:2028 ../src/drill.c:2038
+#, c-format, fuzzy
+msgid "Found junk '%s' after INCH command at line %u in file \"%s\""
+msgstr "Hittade skraptext '%s' efter INCH-kommando pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:2104
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing G-code in file \"%s\""
+msgstr "Ovantat filslut hittat vid tolkning av G-kod i fil \"%s\""
+
+#: ../src/drill.c:2215
+#, c-format, fuzzy
+msgid ""
+"Coordinate mode is not absolute and not incremental at line %u in file "
+"\"%s\""
+msgstr ""
+"Koordinatlage ar varken absolut eller inkrementellt pa rad %u i fil \"%s\""
+
+#: ../src/drill.c:2327
+#, c-format, fuzzy
+msgid ""
+"%s():  omit_zeros == GERBV_OMIT_ZEROS_TRAILING but fmt = %d.\n"
+"This should never have happened\n"
+msgstr ""
+"%s():  omit_zeros == GERBV_OMIT_ZEROS_TRAILING men fmt = %d.\n"
+"Detta borde aldrig ha hant\n"
+
+#: ../src/drill.c:2343
+#, c-format, fuzzy
+msgid "%s():  wantdigits = %d which exceeds the maximum allowed size\n"
+msgstr "%s():  wantdigits = %d overskrider den maximalt tillatna storleken\n"
+
+#: ../src/drill.c:2398
+#, c-format, fuzzy
+msgid "%s(): Unhandled fmt ` %d\n"
+msgstr "%s(): Ohanterat format ` %d\n"
+
+#: ../src/drill_stats.c:189
+#, c-format, fuzzy
+msgid "Broken tool detect %s (layer %d)"
+msgstr "Trasigt verktyg upptackt %s (lager %d)"
+
+#: ../thirdparty/tinyscheme/dynload.c:48
+#, c-format, fuzzy
+msgid "scheme load-extension: %s: %s"
+msgstr "scheme load-extension: %s: %s"
+
+#: ../thirdparty/tinyscheme/dynload.c:78
+#, c-format, fuzzy
+msgid "Error loading scheme extension \"%s\": %s\n"
+msgstr "Fel vid inlasning av scheme-tillagg \"%s\": %s\n"
+
+#: ../thirdparty/tinyscheme/dynload.c:89
+#, c-format, fuzzy
+msgid "Error initializing scheme module \"%s\": %s\n"
+msgstr "Fel vid initiering av scheme-modul \"%s\": %s\n"
+
+#: ../src/export-drill.c:52 ../src/export-isel-drill.c:57
+#: ../src/export-rs274x.c:255
+#, c-format, fuzzy
+msgid "Can't open file for writing: %s"
+msgstr "Kan inte oppna fil for skrivning: %s"
+
+#: ../src/export-image.c:139 ../src/export-image.c:149
+#: ../src/export-image.c:156 ../src/export-image.c:186
+#: ../src/export-image.c:235
+#, c-format, fuzzy
+msgid "Exporting error to file \"%s\""
+msgstr "Exporteringsfel till fil \"%s\""
+
+#: ../src/export-image.c:162
+#, fuzzy
+msgid "Unnamed layer"
+msgstr "Namnlost lager"
+
+#: ../src/export-isel-drill.c:148
+#, c-format, fuzzy
+msgid "Skipped to export of unsupported state %d interpolation \"%s\""
+msgstr "Hoppade over export av tillstand %d interpolation \"%s\" som inte stods"
+
+#: ../src/gerb_file.c:188
+#, fuzzy
+msgid "Failed to read integer"
+msgstr "Kunde inte lasa heltal"
+
+#: ../src/gerb_file.c:232
+#, fuzzy
+msgid "Failed to read double"
+msgstr "Kunde inte lasa flyttal"
+
+#: ../src/gerb_image.c:93 ../src/gerb_image.c:296
+#, c-format, fuzzy
+msgid "unknown"
+msgstr "okand"
+
+#: ../src/gerb_image.c:252
+#, c-format, fuzzy
+msgid "..state off"
+msgstr "..tillstand av"
+
+#: ../src/gerb_image.c:255
+#, c-format, fuzzy
+msgid "..state on"
+msgstr "..tillstand pa"
+
+#: ../src/gerb_image.c:258
+#, c-format, fuzzy
+msgid "..state flash"
+msgstr "..tillstand blixt"
+
+#: ../src/gerb_image.c:261
+#, c-format, fuzzy
+msgid "..state unknown"
+msgstr "..tillstand okant"
+
+#: ../src/gerb_image.c:274
+#, c-format, fuzzy
+msgid "Apertures:\n"
+msgstr "Blandare:\n"
+
+#: ../src/gerb_image.c:278
+#, c-format, fuzzy
+msgid " Aperture no:%d is an "
+msgstr " Blandare nr:%d ar en "
+
+#: ../src/gerb_image.c:281
+#, c-format, fuzzy
+msgid "circle"
+msgstr "cirkel"
+
+#: ../src/gerb_image.c:284
+#, c-format, fuzzy
+msgid "rectangle"
+msgstr "rektangel"
+
+#: ../src/gerb_image.c:287
+#, c-format, fuzzy
+msgid "oval"
+msgstr "oval"
+
+#: ../src/gerb_image.c:290
+#, c-format, fuzzy
+msgid "polygon"
+msgstr "polygon"
+
+#: ../src/gerb_image.c:293
+#, c-format, fuzzy
+msgid "macro"
+msgstr "makro"
+
+#: ../src/gerb_image.c:308
+#, c-format, fuzzy
+msgid "(%f,%f)->(%f,%f) with %d ("
+msgstr "(%f,%f)->(%f,%f) med %d ("
+
+#: ../src/gerb_image.c:425 ../src/gerbv.c:292
+#, fuzzy
+msgid "Exporting mirrored file is not supported!"
+msgstr "Export av speglad fil stods inte!"
+
+#: ../src/gerb_image.c:432 ../src/gerbv.c:299 ../src/gerbv.c:313
+#, fuzzy
+msgid "Exporting inverted file is not supported!"
+msgstr "Export av inverterad fil stods inte!"
+
+#: ../src/gerb_image.c:823
+#, c-format, fuzzy
+msgid ""
+"Can't rotate %u rectangular aperture to %.2f degrees (non 90 multiply)!"
+msgid_plural ""
+"Can't rotate %u rectangular apertures to %.2f degrees (non 90 multiply)!"
+msgstr[0] ""
+"Kan inte rotera %u rektangular blandare till %.2f grader (ej multipel av "
+"90)!"
+msgstr[1] ""
+"Kan inte rotera %u rektangulara blandare till %.2f grader (ej multipel av "
+"90)!"
+
+#: ../src/gerb_image.c:831
+#, c-format, fuzzy
+msgid "Can't scale %u line macro!"
+msgid_plural "Can't scale %u line macros!"
+msgstr[0] "Kan inte skala %u linjemakro!"
+msgstr[1] "Kan inte skala %u linjemakron!"
+
+#: ../src/gerb_image.c:837
+#, c-format, fuzzy
+msgid "Can't scale %u polygon macro!"
+msgid_plural "Can't scale %u polygon macros!"
+msgstr[0] "Kan inte skala %u polygonmakro!"
+msgstr[1] "Kan inte skala %u polygonmakron!"
+
+#: ../src/gerb_image.c:843
+#, c-format, fuzzy
+msgid "Can't scale %u thermal macro!"
+msgid_plural "Can't scale %u thermal macros!"
+msgstr[0] "Kan inte skala %u termalmakro!"
+msgstr[1] "Kan inte skala %u termalmakron!"
+
+#: ../src/gerb_image.c:849
+#, c-format, fuzzy
+msgid "Can't scale %u moire macro!"
+msgid_plural "Can't scale %u moire macros!"
+msgstr[0] "Kan inte skala %u moiremakro!"
+msgstr[1] "Kan inte skala %u moiremakron!"
+
+#: ../src/gerb_image.c:855
+#, c-format, fuzzy
+msgid "Can't rotate %u oval aperture to %.2f degrees (non 90 multiply)!"
+msgid_plural ""
+"Can't rotate %u oval apertures to %.2f degrees (non 90 multiply)!"
+msgstr[0] ""
+"Kan inte rotera %u oval blandare till %.2f grader (ej multipel av 90)!"
+msgstr[1] ""
+"Kan inte rotera %u ovala blandare till %.2f grader (ej multipel av 90)!"
+
+#: ../src/gerb_image.c:863
+#, c-format, fuzzy
+msgid "Can't scale %u circle aperture to ellipse!"
+msgid_plural "Can't scale %u circle apertures to ellipse!"
+msgstr[0] "Kan inte skala %u cirkelblandare till ellips!"
+msgstr[1] "Kan inte skala %u cirkelblandare till ellipser!"
+
+#: ../src/gerb_image.c:869
+#, c-format, fuzzy
+msgid "Skipped %u aperture with unknown type!"
+msgid_plural "Skipped %u apertures with unknown type!"
+msgstr[0] "Hoppade over %u blandare med okand typ!"
+msgstr[1] "Hoppade over %u blandare med okand typ!"
+
+#: ../src/gerb_image.c:875
+#, c-format, fuzzy
+msgid "Skipped %u macro aperture!"
+msgid_plural "Skipped %u macro apertures!"
+msgstr[0] "Hoppade over %u makroblandare!"
+msgstr[1] "Hoppade over %u makroblandare!"
+
+#: ../src/gerb_stats.c:530
+#, fuzzy
+msgid "Undefined aperture number called out in D code"
+msgstr "Odefinierat blandarnummer anropat i D-kod"
+
+#: ../src/gerber.c:181
+#, c-format, fuzzy
+msgid "Unknown M code found at line %ld in file \"%s\""
+msgstr "Okand M-kod hittad pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:342
+#, c-format, fuzzy
+msgid ""
+"Signed incremental distance IxJy in single quadrant %s circular "
+"interpolation %s at line %ld in file \"%s\""
+msgstr ""
+"Signerat inkrementellt avstand IxJy i enkel kvadrant %s cirkular "
+"interpolation %s pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:368
+#, c-format, fuzzy
+msgid "End of polygon without start at line %ld in file \"%s\""
+msgstr "Slut pa polygon utan start pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:481
+#, c-format, fuzzy
+msgid "Found undefined D code D%02d at line %ld in file \"%s\""
+msgstr "Hittade odefinierad D-kod D%02d pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:727
+#, c-format, fuzzy
+msgid "Found unknown character '%s' (0x%x) at line %ld in file \"%s\""
+msgstr "Hittade okant tecken '%s' (0x%x) pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:794
+#, c-format, fuzzy
+msgid "Missing Gerber EOF code in file \"%s\""
+msgstr "Saknar Gerber EOF-kod i fil \"%s\""
+
+#: ../src/gerber.c:1039
+#, c-format, fuzzy
+msgid ""
+"Found newline while parsing G04 code at line %ld in file \"%s\", maybe you "
+"forgot a \"*\"?"
+msgstr ""
+"Hittade nyrad vid tolkning av G04-kod pa rad %ld i fil \"%s\", kanske du "
+"glomde ett \"*\"?"
+
+#: ../src/gerber.c:1080
+#, c-format, fuzzy
+msgid ""
+"Found aperture D%02d out of bounds while parsing G code at line %ld in file "
+"\"%s\""
+msgstr ""
+"Hittade blandare D%02d utanfor tillatet intervall vid tolkning av G-kod pa "
+"rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1086
+#, c-format, fuzzy
+msgid "Found unexpected code after G54 at line %ld in file \"%s\""
+msgstr "Hittade ovantat kod efter G54 pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1124
+#, c-format, fuzzy
+msgid "Encountered unknown G code G%02d at line %ld in file \"%s\""
+msgstr "Patraffade okand G-kod G%02d pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1128
+#, c-format, fuzzy
+msgid "Ignoring unknown G code G%02d"
+msgstr "Ignorerar okand G-kod G%02d"
+
+#: ../src/gerber.c:1157
+#, c-format, fuzzy
+msgid "Found invalid D00 code at line %ld in file \"%s\""
+msgstr "Hittade ogiltig D00-kod pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1182
+#, c-format, fuzzy
+msgid "Found out of bounds aperture D%02d at line %ld in file \"%s\""
+msgstr "Hittade blandare D%02d utanfor tillatet intervall pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1216
+#, c-format, fuzzy
+msgid "Encountered unknown M%02d code at line %ld in file \"%s\""
+msgstr "Patraffade okand M%02d-kod pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1219
+#, c-format, fuzzy
+msgid "Ignoring unknown M%02d code"
+msgstr "Ignorerar okand M%02d-kod"
+
+#: ../src/gerber.c:1301
+#, c-format, fuzzy
+msgid ""
+"EagleCad bug detected: Undefined handling of zeros in format code at line "
+"%ld in file \"%s\""
+msgstr ""
+"EagleCad-bugg upptackt: Odefinierad hantering av nollor i formatkod pa rad "
+"%ld i fil \"%s\""
+
+#: ../src/gerber.c:1305
+#, fuzzy
+msgid "Defaulting to omitting leading zeros"
+msgstr "Anvander som standard att utesluta inledande nollor"
+
+#: ../src/gerber.c:1319
+#, c-format, fuzzy
+msgid "Invalid coordinate type defined in format code at line %ld in file \"%s\""
+msgstr "Ogiltig koordinattyp definierad i formatkod pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1323
+#, fuzzy
+msgid "Defaulting to absolute coordinates"
+msgstr "Anvander som standard absoluta koordinater"
+
+#: ../src/gerber.c:1349 ../src/gerber.c:1358 ../src/gerber.c:1369
+#: ../src/gerber.c:1378
+#, c-format, fuzzy
+msgid "Illegal format size '%s' at line %ld in file \"%s\""
+msgstr "Otillaten formatstorlek '%s' pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1387
+#, c-format, fuzzy
+msgid "Illegal format statement '%s' at line %ld in file \"%s\""
+msgstr "Otillaten formatspecifikation '%s' pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1392
+#, fuzzy
+msgid "Ignoring invalid format statement"
+msgstr "Ignorerar ogiltig formatspecifikation"
+
+#: ../src/gerber.c:1424
+#, c-format, fuzzy
+msgid "Wrong character '%s' in mirror at line %ld in file \"%s\""
+msgstr "Felaktigt tecken '%s' i spegling pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1452
+#, c-format, fuzzy
+msgid "Illegal unit '%s%s' at line %ld in file \"%s\""
+msgstr "Otillaten enhet '%s%s' pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1470
+#, c-format, fuzzy
+msgid "Wrong character '%s' in offset at line %ld in file \"%s\""
+msgstr "Felaktigt tecken '%s' i offset pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1497
+#, c-format, fuzzy
+msgid "Included file \"%s\" cannot be found at line %ld in file \"%s\""
+msgstr "Inkluderad fil \"%s\" kan inte hittas pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1504
+#, fuzzy
+msgid ""
+"Parser encountered more than 10 levels of include file recursion which is "
+"not allowed by the RS-274X spec"
+msgstr ""
+"Tolken patraffade mer an 10 nivaer av inkluderingsfilrekursion vilket inte "
+"ar tillatet enligt RS-274X-specifikationen"
+
+#: ../src/gerber.c:1525
+#, c-format, fuzzy
+msgid "Wrong character '%s' in image offset at line %ld in file \"%s\""
+msgstr "Felaktigt tecken '%s' i bildoffset pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1574
+#, c-format, fuzzy
+msgid "Unknown input code (IC) '%s%s' at line %ld in file \"%s\""
+msgstr "Okand inmatningskod (IC) '%s%s' pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1614
+#, c-format, fuzzy
+msgid "Wrong character '%s' in image justify at line %ld in file \"%s\""
+msgstr "Felaktigt tecken '%s' i bildjustering pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1630
+#, c-format, fuzzy
+msgid "Unexpected EOF while reading image polarity (IP) in file \"%s\""
+msgstr "Ovantat filslut vid lasning av bildpolaritet (IP) i fil \"%s\""
+
+#: ../src/gerber.c:1642
+#, c-format, fuzzy
+msgid "Unknown polarity '%s%s%s' at line %ld in file \"%s\""
+msgstr "Okand polaritet '%s%s%s' pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1660
+#, c-format, fuzzy
+msgid ""
+"Image rotation must be 0, 90, 180 or 270 (is actually %d) at line %ld in "
+"file \"%s\""
+msgstr ""
+"Bildrotation maste vara 0, 90, 180 eller 270 (ar faktiskt %d) pa rad %ld i "
+"fil \"%s\""
+
+#: ../src/gerber.c:1690 ../src/gerber.c:1696
+#, c-format, fuzzy
+msgid "Aperture number out of bounds %d at line %ld in file \"%s\""
+msgstr "Blandarnummer utanfor tillatet intervall %d pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1713
+#, c-format, fuzzy
+msgid "Failed to parse aperture macro at line %ld in file \"%s\""
+msgstr "Kunde inte tolka blandarmakro pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1735
+#, c-format, fuzzy
+msgid "Unknown layer polarity '%s' at line %ld in file \"%s\""
+msgstr "Okand lagerpolaritet '%s' pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1755
+#, c-format, fuzzy
+msgid "Knockout must supply a polarity (C, D, or *) at line %ld in file \"%s\""
+msgstr "Knockout maste ange en polaritet (C, D, eller *) pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1798
+#, c-format, fuzzy
+msgid "Unknown variable in knockout at line %ld in file \"%s\""
+msgstr "Okand variabel i knockout pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1832
+#, c-format, fuzzy
+msgid "Step-and-repeat parameter error at line %ld in file \"%s\""
+msgstr "Steg-och-upprepa-parameterfel pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1858
+#, c-format, fuzzy
+msgid "Error in layer rotation command at line %ld in file \"%s\""
+msgstr "Fel i lagerrotationskommando pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1869
+#, c-format, fuzzy
+msgid "Ignoring Gerber X2 attribute %%%s%s%% at line %ld in file \"%s\""
+msgstr "Ignorerar Gerber X2-attribut %%%s%s%% pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1876
+#, c-format, fuzzy
+msgid "Unknown RS-274X extension found %%%s%s%% at line %ld in file \"%s\""
+msgstr "Okand RS-274X-utvidgning hittad %%%s%s%% pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:1934
+#, fuzzy
+msgid "push will overflow stack capacity"
+msgstr "push kommer att overfylla stackkapaciteten"
+
+#: ../src/gerber.c:1969
+#, fuzzy
+msgid "aperture NULL in simplify aperture macro"
+msgstr "blandare NULL i forenklad blandarmakro"
+
+#: ../src/gerber.c:1972
+#, fuzzy
+msgid "aperture->amacro NULL in simplify aperture macro"
+msgstr "aperture->amacro NULL i forenklad blandarmakro"
+
+#: ../src/gerber.c:1994 ../src/gerber.c:2003
+#, fuzzy
+msgid "Tried to access oob aperture"
+msgstr "Forsok att komma at blandare utanfor intervall"
+
+#: ../src/gerber.c:2000 ../src/gerber.c:2009 ../src/gerber.c:2011
+#: ../src/gerber.c:2016 ../src/gerber.c:2018 ../src/gerber.c:2023
+#: ../src/gerber.c:2025 ../src/gerber.c:2030 ../src/gerber.c:2032
+#, fuzzy
+msgid "Tried to pop an empty stack"
+msgstr "Forsok att poppa en tom stack"
+
+#: ../src/gerber.c:2065
+#, c-format, fuzzy
+msgid ""
+"Possible signed integer overflow in calculating number of parameters to "
+"aperture macro, will clamp to (%d)"
+msgstr ""
+"Mojligt tecknat heltalsoverspill vid berakning av antal parametrar till "
+"blandarmakro, begransas till (%d)"
+
+#: ../src/gerber.c:2111
+#, c-format, fuzzy
+msgid ""
+"Number of parameters to aperture macro (%d) are more than gerbv is able to "
+"store (%d)"
+msgstr ""
+"Antalet parametrar till blandarmakro (%d) ar fler an vad gerbv kan lagra "
+"(%d)"
+
+#: ../src/gerber.c:2130
+#, c-format, fuzzy
+msgid ""
+"Number of parameters to aperture macro (%d) capped to stack capacity (%zu)"
+msgstr ""
+"Antalet parametrar till blandarmakro (%d) begransas till stackkapacitet "
+"(%zu)"
+
+#: ../src/gerber.c:2267
+#, c-format, fuzzy
+msgid "Found AD code with no following 'D' at line %ld in file \"%s\""
+msgstr "Hittade AD-kod utan foljande 'D' pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:2285
+#, c-format, fuzzy
+msgid "Invalid aperture definition at line %ld in file \"%s\", cannot find '*'"
+msgstr "Ogiltig blandardefinition pa rad %ld i fil \"%s\", kan inte hitta '*'"
+
+#: ../src/gerber.c:2295
+#, c-format, fuzzy
+msgid "Invalid aperture definition at line %ld in file \"%s\""
+msgstr "Ogiltig blandardefinition pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:2339
+#, c-format, fuzzy
+msgid ""
+"Maximum number of allowed parameters exceeded in aperture %d at line %ld in "
+"file \"%s\""
+msgstr ""
+"Maximalt antal tillatna parametrar oeverskridet i blandare %d pa rad %ld i "
+"fil \"%s\""
+
+#: ../src/gerber.c:2357
+#, c-format, fuzzy
+msgid ""
+"Failed to read all parameters exceeded in aperture %d at line %ld in file "
+"\"%s\""
+msgstr "Kunde inte lasa alla parametrar i blandare %d pa rad %ld i fil \"%s\""
+
+#: ../src/gerber.c:2429
+#, fuzzy
+msgid "Unknow quadrant value while converting to cw"
+msgstr "Okant kvadrantvarde vid konvertering till medurs"
+
+#: ../src/gerber.c:2454 ../src/gerber.c:2499
+#, c-format, fuzzy
+msgid "Strange quadrant: %d"
+msgstr "Konstig kvadrant: %d"
+
+#: ../src/gerber.c:2503
+#, c-format, fuzzy
+msgid "Negative width [%f] in quadrant %d [%f][%f]"
+msgstr "Negativ bredd [%f] i kvadrant %d [%f][%f]"
+
+#: ../src/gerber.c:2507
+#, c-format, fuzzy
+msgid "Negative height [%f] in quadrant %d [%f][%f]"
+msgstr "Negativ hojd [%f] i kvadrant %d [%f][%f]"
+
+#: ../src/gerbv.c:248 ../src/gerbv.c:267 ../src/main.c:234
+#, c-format, fuzzy
+msgid "Could not read \"%s\" (loaded %d)"
+msgstr "Kunde inte lasa \"%s\" (laddade %d)"
+
+#: ../src/gerbv.c:423
+#, fuzzy
+msgid "Missing netlist - aborting file read"
+msgstr "Saknar natverklista - avbryter fillasung"
+
+#: ../src/gerbv.c:430
+#, fuzzy
+msgid "Missing format in file...trying to load anyways\n"
+msgstr "Format saknas i fil...forsoker lasa in anda\n"
+
+#: ../src/gerbv.c:432
+#, fuzzy
+msgid "Missing apertures/drill sizes...trying to load anyways\n"
+msgstr "Blandare/borrstorlekar saknas...forsoker lasa in anda\n"
+
+#: ../src/gerbv.c:438
+#, fuzzy
+msgid "Missing info...trying to load anyways\n"
+msgstr "Information saknas...forsoker lasa in anda\n"
+
+#: ../src/gerbv.c:522 ../src/gerbv.c:681 ../src/gerbv.c:697
+#, c-format, fuzzy
+msgid "Trying to open \"%s\": %s"
+msgstr "Forsoker oppna \"%s\": %s"
+
+#: ../src/gerbv.c:572
+#, c-format, fuzzy
+msgid "%s: unknown pick-and-place board side to reload"
+msgstr "%s: okand pick-and-place-kortsida att ladda om"
+
+#: ../src/gerbv.c:579
+#, c-format, fuzzy
+msgid "Most likely found a RS-274D file \"%s\" ... trying to open anyways\n"
+msgstr "Troligtvis hittad en RS-274D-fil \"%s\" ... forsoker oppna anda\n"
+
+#: ../src/gerbv.c:595
+#, c-format, fuzzy
+msgid "%s: Unknown file type."
+msgstr "%s: Okand filtyp."
+
+#: ../src/gerbv.c:613
+#, c-format, fuzzy
+msgid "File \"%s\" contains no drill hits or routes"
+msgstr "Fil \"%s\" innehaller inga borrtraftar eller borrbanor"
+
+#: ../src/gerbv.c:619
+#, c-format, fuzzy
+msgid "File \"%s\" contains no drawing elements"
+msgstr "Fil \"%s\" innehaller inga ritningselement"
+
+#: ../src/gerbv.c:628
+#, fuzzy
+msgid " (top)"
+msgstr " (topp)"
+
+#: ../src/gerbv.c:645
+#, fuzzy
+msgid " (bottom)"
+msgstr " (botten)"
+
+#: ../src/interface.c:377
+#, fuzzy
+msgid "_File"
+msgstr "_Arkiv"
+
+#: ../src/interface.c:387
+#, fuzzy
+msgid "_Open"
+msgstr "_Oppna"
+
+#: ../src/interface.c:394
+#, fuzzy
+msgid "_Save active layer"
+msgstr "_Spara aktivt lager"
+
+#: ../src/interface.c:396
+#, fuzzy
+msgid "Save the active layer"
+msgstr "Spara det aktiva lagret"
+
+#: ../src/interface.c:400
+#, fuzzy
+msgid "Save active layer _as..."
+msgstr "Spara aktivt lager s_om..."
+
+#: ../src/interface.c:402
+#, fuzzy
+msgid "Save the active layer to a new file"
+msgstr "Spara det aktiva lagret till en ny fil"
+
+#: ../src/interface.c:408
+#, fuzzy
+msgid "_Revert all"
+msgstr "_Aterstall alla"
+
+#: ../src/interface.c:411
+#, fuzzy
+msgid "Reload all layers"
+msgstr "Ladda om alla lager"
+
+#: ../src/interface.c:419
+#, fuzzy
+msgid "_Export"
+msgstr "_Exportera"
+
+#: ../src/interface.c:422
+#, fuzzy
+msgid "Export to a new format"
+msgstr "Exportera till ett nytt format"
+
+#: ../src/interface.c:430
+#, fuzzy
+msgid "P_NG..."
+msgstr "P_NG..."
+
+#: ../src/interface.c:432
+#, fuzzy
+msgid "Export visible layers to a PNG file"
+msgstr "Exportera synliga lager till en PNG-fil"
+
+#: ../src/interface.c:434
+#, fuzzy
+msgid "P_DF..."
+msgstr "P_DF..."
+
+#: ../src/interface.c:436
+#, fuzzy
+msgid "Export visible layers to a PDF file"
+msgstr "Exportera synliga lager till en PDF-fil"
+
+#: ../src/interface.c:438
+#, fuzzy
+msgid "_SVG..."
+msgstr "_SVG..."
+
+#: ../src/interface.c:440
+#, fuzzy
+msgid "Export visible layers to a SVG file"
+msgstr "Exportera synliga lager till en SVG-fil"
+
+#: ../src/interface.c:442
+#, fuzzy
+msgid "_PostScript..."
+msgstr "_PostScript..."
+
+#: ../src/interface.c:444
+#, fuzzy
+msgid "Export visible layers to a PostScript file"
+msgstr "Exportera synliga lager till en PostScript-fil"
+
+#: ../src/interface.c:446
+#, fuzzy
+msgid "D_XF..."
+msgstr "D_XF..."
+
+#: ../src/interface.c:449
+#, fuzzy
+msgid "Export active layer to a DXF file"
+msgstr "Exportera aktivt lager till en DXF-fil"
+
+#: ../src/interface.c:454
+#, fuzzy
+msgid "RS-274X (_Gerber)..."
+msgstr "RS-274X (_Gerber)..."
+
+#: ../src/interface.c:457
+#, fuzzy
+msgid "Export active layer to a RS-274X (Gerber) file"
+msgstr "Exportera aktivt lager till en RS-274X (Gerber)-fil"
+
+#: ../src/interface.c:459
+#, fuzzy
+msgid "RS-274X merge (Gerber)..."
+msgstr "RS-274X sammanslagning (Gerber)..."
+
+#: ../src/interface.c:462
+#, fuzzy
+msgid "Export merged visible Gerber layers to a RS-274X (Gerber) file"
+msgstr ""
+"Exportera sammanslagna synliga Gerber-lager till en RS-274X (Gerber)-fil"
+
+#: ../src/interface.c:468
+#, fuzzy
+msgid "_Excellon drill..."
+msgstr "_Excellon-borr..."
+
+#: ../src/interface.c:471
+#, fuzzy
+msgid "Export active layer to an Excellon drill file"
+msgstr "Exportera aktivt lager till en Excellon-borrfil"
+
+#: ../src/interface.c:473
+#, fuzzy
+msgid "Excellon drill merge..."
+msgstr "Excellon-borrsammanslagning..."
+
+#: ../src/interface.c:476
+#, fuzzy
+msgid "Export merged visible drill layers to an Excellon drill file"
+msgstr "Exportera sammanslagna synliga borrlager till en Excellon-borrfil"
+
+#: ../src/interface.c:479
+#, fuzzy
+msgid "_ISEL NCP drill..."
+msgstr "_ISEL NCP-borr..."
+
+#: ../src/interface.c:482
+#, fuzzy
+msgid "Export active layer to an ISEL Automation NCP drill file"
+msgstr "Exportera aktivt lager till en ISEL Automation NCP-borrfil"
+
+#: ../src/interface.c:488
+#, fuzzy
+msgid "gEDA P_CB (beta)..."
+msgstr "gEDA P_CB (beta)..."
+
+#: ../src/interface.c:491
+#, fuzzy
+msgid "Export active layer to a gEDA PCB file"
+msgstr "Exportera aktivt lager till en gEDA PCB-fil"
+
+#: ../src/interface.c:498
+#, fuzzy
+msgid "_New project"
+msgstr "_Nytt projekt"
+
+#: ../src/interface.c:500 ../src/interface.c:1034
+#, fuzzy
+msgid "Close all layers and start a new project"
+msgstr "Stang alla lager och starta ett nytt projekt"
+
+#: ../src/interface.c:504
+#, fuzzy
+msgid "Save project"
+msgstr "Spara projekt"
+
+#: ../src/interface.c:506 ../src/interface.c:1048
+#, fuzzy
+msgid "Save the current project"
+msgstr "Spara det aktuella projektet"
+
+#: ../src/interface.c:513
+#, fuzzy
+msgid "Save the current project to a new file"
+msgstr "Spara det aktuella projektet till en ny fil"
+
+#: ../src/interface.c:533 ../src/interface.c:1055
+#, fuzzy
+msgid "Print the visible layers"
+msgstr "Skriv ut de synliga lagren"
+
+#: ../src/interface.c:541
+#, fuzzy
+msgid "Quit Gerbv"
+msgstr "Avsluta Gerbv"
+
+#: ../src/interface.c:545
+#, fuzzy
+msgid "_Edit"
+msgstr "_Redigera"
+
+#: ../src/interface.c:554
+#, fuzzy
+msgid "Display _properties of selected object(s)"
+msgstr "Visa _egenskaper for markerade objekt"
+
+#: ../src/interface.c:556
+#, fuzzy
+msgid "Examine the properties of the selected object"
+msgstr "Undersok egenskaperna for det markerade objektet"
+
+#: ../src/interface.c:561
+#, fuzzy
+msgid "_Delete selected object(s)"
+msgstr "_Ta bort markerade objekt"
+
+#: ../src/interface.c:563
+#, fuzzy
+msgid "Delete selected objects"
+msgstr "Ta bort markerade objekt"
+
+#: ../src/interface.c:568
+#, fuzzy
+msgid "_Align layers"
+msgstr "_Rikta in lager"
+
+#: ../src/interface.c:571
+#, fuzzy
+msgid "Align two layers by two selected objects"
+msgstr "Rikta in tva lager efter tva markerade objekt"
+
+#: ../src/interface.c:586
+#, fuzzy
+msgid "Edit object properties"
+msgstr "Redigera objektegenskaper"
+
+#: ../src/interface.c:588
+#, fuzzy
+msgid "Edit the properties of the selected object"
+msgstr "Redigera egenskaperna for det markerade objektet"
+
+#: ../src/interface.c:592
+#, fuzzy
+msgid "Move object(s)"
+msgstr "Flytta objekt"
+
+#: ../src/interface.c:594
+#, fuzzy
+msgid "Move the selected object(s)"
+msgstr "Flytta markerade objekt"
+
+#: ../src/interface.c:598
+#, fuzzy
+msgid "Reduce area"
+msgstr "Minska yta"
+
+#: ../src/interface.c:600
+#, fuzzy
+msgid "Reduce the area of the object (e.g. to prevent component floating)"
+msgstr ""
+"Minska ytan pa objektet (t.ex. for att forhindra att komponent flyter)"
+
+#: ../src/interface.c:609
+#, fuzzy
+msgid "_View"
+msgstr "_Visa"
+
+#: ../src/interface.c:617
+#, fuzzy
+msgid "Fullscr_een"
+msgstr "Fullsk_arm"
+
+#: ../src/interface.c:619
+#, fuzzy
+msgid "Toggle between fullscreen and normal view"
+msgstr "Vaxla mellan fullskarm och normalvy"
+
+#: ../src/interface.c:623
+#, fuzzy
+msgid "Show _Toolbar"
+msgstr "Visa _verktygsfalt"
+
+#: ../src/interface.c:625
+#, fuzzy
+msgid "Toggle visibility of the toolbar"
+msgstr "Vaxla synlighet for verktygsfalt"
+
+#: ../src/interface.c:629
+#, fuzzy
+msgid "Show _Sidepane"
+msgstr "Visa _sidopanel"
+
+#: ../src/interface.c:631
+#, fuzzy
+msgid "Toggle visibility of the sidepane"
+msgstr "Vaxla synlighet for sidopanelen"
+
+#: ../src/interface.c:638
+#, fuzzy
+msgid "Toggle layer _visibility"
+msgstr "Vaxla lager_synlighet"
+
+#: ../src/interface.c:641
+#, fuzzy
+msgid "Show all se_lection"
+msgstr "Visa allt mar_kerat"
+
+#: ../src/interface.c:643
+#, fuzzy
+msgid "Show selected objects on invisible layers"
+msgstr "Visa markerade objekt pa osynliga lager"
+
+#: ../src/interface.c:647
+#, fuzzy
+msgid "Show _cross on drill holes"
+msgstr "Visa _kors pa borrhal"
+
+#: ../src/interface.c:649
+#, fuzzy
+msgid "Show cross on drill holes"
+msgstr "Visa kors pa borrhal"
+
+#: ../src/interface.c:666
+#, fuzzy
+msgid "Toggle visibility of layer 1"
+msgstr "Vaxla synlighet for lager 1"
+
+#: ../src/interface.c:670
+#, fuzzy
+msgid "Toggle visibility of layer 2"
+msgstr "Vaxla synlighet for lager 2"
+
+#: ../src/interface.c:674
+#, fuzzy
+msgid "Toggle visibility of layer 3"
+msgstr "Vaxla synlighet for lager 3"
+
+#: ../src/interface.c:678
+#, fuzzy
+msgid "Toggle visibility of layer 4"
+msgstr "Vaxla synlighet for lager 4"
+
+#: ../src/interface.c:682
+#, fuzzy
+msgid "Toggle visibility of layer 5"
+msgstr "Vaxla synlighet for lager 5"
+
+#: ../src/interface.c:686
+#, fuzzy
+msgid "Toggle visibility of layer 6"
+msgstr "Vaxla synlighet for lager 6"
+
+#: ../src/interface.c:690
+#, fuzzy
+msgid "Toggle visibility of layer 7"
+msgstr "Vaxla synlighet for lager 7"
+
+#: ../src/interface.c:694
+#, fuzzy
+msgid "Toggle visibility of layer 8"
+msgstr "Vaxla synlighet for lager 8"
+
+#: ../src/interface.c:698
+#, fuzzy
+msgid "Toggle visibility of layer 9"
+msgstr "Vaxla synlighet for lager 9"
+
+#: ../src/interface.c:702
+#, fuzzy
+msgid "Toggle visibility of layer 10"
+msgstr "Vaxla synlighet for lager 10"
+
+#: ../src/interface.c:711 ../src/interface.c:1062
+#, fuzzy
+msgid "Zoom in"
+msgstr "Zooma in"
+
+#: ../src/interface.c:716 ../src/interface.c:1066
+#, fuzzy
+msgid "Zoom out"
+msgstr "Zooma ut"
+
+#: ../src/interface.c:720 ../src/interface.c:1070
+#, fuzzy
+msgid "Zoom to fit all visible layers in the window"
+msgstr "Zooma sa att alla synliga lager passar i fonstret"
+
+#: ../src/interface.c:727
+#, fuzzy
+msgid "Background color"
+msgstr "Bakgrundsfarg"
+
+#: ../src/interface.c:728
+#, fuzzy
+msgid "Change the background color"
+msgstr "Andra bakgrundsfarg"
+
+#: ../src/interface.c:748
+#, fuzzy
+msgid "_Rendering"
+msgstr "_Rendering"
+
+#: ../src/interface.c:758
+#, fuzzy
+msgid "_Fast"
+msgstr "_Snabb"
+
+#: ../src/interface.c:762
+#, fuzzy
+msgid "Fast (_XOR)"
+msgstr "Snabb (_XOR)"
+
+#: ../src/interface.c:766
+#, fuzzy
+msgid "_Normal"
+msgstr "_Normal"
+
+#: ../src/interface.c:770
+#, fuzzy
+msgid "High _Quality"
+msgstr "Hog _kvalitet"
+
+#: ../src/interface.c:787
+#, fuzzy
+msgid "U_nits"
+msgstr "E_nheter"
+
+#: ../src/interface.c:797
+#, fuzzy
+msgid "mi_l"
+msgstr "mi_l"
+
+#: ../src/interface.c:801
+#, fuzzy
+msgid "_mm"
+msgstr "_mm"
+
+#: ../src/interface.c:805
+#, fuzzy
+msgid "_in"
+msgstr "_in"
+
+#: ../src/interface.c:819
+#, fuzzy
+msgid "_Layer"
+msgstr "_Lager"
+
+#: ../src/interface.c:827
+#, fuzzy
+msgid "Toggle _visibility"
+msgstr "Vaxla _synlighet"
+
+#: ../src/interface.c:829
+#, fuzzy
+msgid "Toggles the visibility of the active layer"
+msgstr "Vaxlar synligheten for det aktiva lagret"
+
+#: ../src/interface.c:832
+#, fuzzy
+msgid "All o_n"
+msgstr "Alla p_a"
+
+#: ../src/interface.c:834
+#, fuzzy
+msgid "Turn on visibility of all layers"
+msgstr "Aktivera synlighet for alla lager"
+
+#: ../src/interface.c:839
+#, fuzzy
+msgid "All _off"
+msgstr "Alla a_v"
+
+#: ../src/interface.c:841
+#, fuzzy
+msgid "Turn off visibility of all layers"
+msgstr "Inaktivera synlighet for alla lager"
+
+#: ../src/interface.c:846
+#, fuzzy
+msgid "_Invert color"
+msgstr "_Invertera farg"
+
+#: ../src/interface.c:848
+#, fuzzy
+msgid "Invert the display polarity of the active layer"
+msgstr "Invertera visningspolariteten for det aktiva lagret"
+
+#: ../src/interface.c:851
+#, fuzzy
+msgid "_Change color"
+msgstr "_Andra farg"
+
+#: ../src/interface.c:854
+#, fuzzy
+msgid "Change the display color of the active layer"
+msgstr "Andra visningsfargen for det aktiva lagret"
+
+#: ../src/interface.c:862
+#, fuzzy
+msgid "_Reload layer"
+msgstr "Ladda _om lager"
+
+#: ../src/interface.c:864
+#, fuzzy
+msgid "Reload the active layer from disk"
+msgstr "Ladda om det aktiva lagret fran disk"
+
+#: ../src/interface.c:869
+#, fuzzy
+msgid "_Edit layer"
+msgstr "_Redigera lager"
+
+#: ../src/interface.c:872
+#, fuzzy
+msgid "Translate, scale, rotate or mirror the active layer"
+msgstr "Forflytta, skala, rotera eller spegla det aktiva lagret"
+
+#: ../src/interface.c:876
+#, fuzzy
+msgid "Edit file _format"
+msgstr "Redigera fil_format"
+
+#: ../src/interface.c:878
+#, fuzzy
+msgid "View and edit the numerical format used to parse the active layer"
+msgstr ""
+"Visa och redigera det numeriska format som anvands for att tolka det aktiva "
+"lagret"
+
+#: ../src/interface.c:887
+#, fuzzy
+msgid "Move u_p"
+msgstr "Flytta _upp"
+
+#: ../src/interface.c:889 ../src/interface.c:1205
+#, fuzzy
+msgid "Move the active layer one step up"
+msgstr "Flytta det aktiva lagret ett steg upp"
+
+#: ../src/interface.c:895
+#, fuzzy
+msgid "Move dow_n"
+msgstr "Flytta _ned"
+
+#: ../src/interface.c:897 ../src/interface.c:1197
+#, fuzzy
+msgid "Move the active layer one step down"
+msgstr "Flytta det aktiva lagret ett steg ned"
+
+#: ../src/interface.c:903
+#, fuzzy
+msgid "_Delete"
+msgstr "_Ta bort"
+
+#: ../src/interface.c:905 ../src/interface.c:1213
+#, fuzzy
+msgid "Remove the active layer"
+msgstr "Ta bort det aktiva lagret"
+
+#: ../src/interface.c:918
+#, fuzzy
+msgid "_Analyze"
+msgstr "_Analysera"
+
+#: ../src/interface.c:930
+#, fuzzy
+msgid "Analyze visible _Gerber layers"
+msgstr "Analysera synliga _Gerber-lager"
+
+#: ../src/interface.c:932
+#, fuzzy
+msgid ""
+"Examine a detailed analysis of the contents of all visible Gerber layers"
+msgstr ""
+"Undersok en detaljerad analys av innehallet i alla synliga Gerber-lager"
+
+#: ../src/interface.c:938
+#, fuzzy
+msgid "Analyze visible _drill layers"
+msgstr "Analysera synliga _borrlager"
+
+#: ../src/interface.c:940
+#, fuzzy
+msgid ""
+"Examine a detailed analysis of the contents of all visible drill layers"
+msgstr "Undersok en detaljerad analys av innehallet i alla synliga borrlager"
+
+#: ../src/interface.c:945
+#, fuzzy
+msgid "_Benchmark"
+msgstr "_Prestandatest"
+
+#: ../src/interface.c:947
+#, fuzzy
+msgid ""
+"Benchmark different rendering methods. Will make the application "
+"unresponsive for 1 minute!"
+msgstr ""
+"Testa olika renderingsmetoder. Applikationen kommer att vara oresponsiv i 1 "
+"minut!"
+
+#: ../src/interface.c:959
+#, fuzzy
+msgid "_Tools"
+msgstr "_Verktyg"
+
+#: ../src/interface.c:966
+#, fuzzy
+msgid "_Pointer Tool"
+msgstr "_Pekarverktyg"
+
+#: ../src/interface.c:971 ../src/interface.c:1094
+#, fuzzy
+msgid "Select objects on the screen"
+msgstr "Markera objekt pa skarmen"
+
+#: ../src/interface.c:972
+#, fuzzy
+msgid "Pa_n Tool"
+msgstr "Pa_noreringsverktyg"
+
+#: ../src/interface.c:977 ../src/interface.c:1100
+#, fuzzy
+msgid "Pan by left clicking and dragging"
+msgstr "Panorera genom att vansterklicka och dra"
+
+#: ../src/interface.c:979
+#, fuzzy
+msgid "_Zoom Tool"
+msgstr "_Zoomverktyg"
+
+#: ../src/interface.c:984 ../src/interface.c:1108
+#, fuzzy
+msgid "Zoom by left clicking or dragging"
+msgstr "Zooma genom att vansterklicka eller dra"
+
+#: ../src/interface.c:986
+#, fuzzy
+msgid "_Measure Tool"
+msgstr "_Matverktyg"
+
+#: ../src/interface.c:991 ../src/interface.c:1115
+#, fuzzy
+msgid "Measure distances on the screen"
+msgstr "Mat avstand pa skarmen"
+
+#: ../src/interface.c:993
+#, fuzzy
+msgid "_Help"
+msgstr "_Hjalp"
+
+#: ../src/interface.c:1007
+#, fuzzy
+msgid "_About Gerbv..."
+msgstr "_Om Gerbv..."
+
+#: ../src/interface.c:1009
+#, fuzzy
+msgid "View information about Gerbv"
+msgstr "Visa information om Gerbv"
+
+#: ../src/interface.c:1013
+#, fuzzy
+msgid "Known _bugs in this version..."
+msgstr "Kanda _buggar i denna version..."
+
+#: ../src/interface.c:1016
+#, fuzzy
+msgid "View list of known Gerbv bugs"
+msgstr "Visa lista over kanda Gerbv-buggar"
+
+#: ../src/interface.c:1044
+#, fuzzy
+msgid "Reload all layers in project"
+msgstr "Ladda om alla lager i projektet"
+
+#: ../src/interface.c:1143
+#, fuzzy
+msgid "Rendering type"
+msgstr "Renderingstyp"
+
+#: ../src/interface.c:1145
+#, fuzzy
+msgid "Fast"
+msgstr "Snabb"
+
+#: ../src/interface.c:1146
+#, fuzzy
+msgid "Fast, with XOR"
+msgstr "Snabb, med XOR"
+
+#: ../src/interface.c:1147
+#, fuzzy
+msgid "Normal"
+msgstr "Normal"
+
+#: ../src/interface.c:1148
+#, fuzzy
+msgid "High quality"
+msgstr "Hog kvalitet"
+
+#: ../src/interface.c:1215
+#, fuzzy
+msgid "Layers"
+msgstr "Lager"
+
+#: ../src/interface.c:1237
+#, fuzzy
+msgid "Clear all messages and accumulated sum"
+msgstr "Rensa alla meddelanden och ackumulerad summa"
+
+#: ../src/interface.c:1240
+#, fuzzy
+msgid "Messages"
+msgstr "Meddelanden"
+
+#: ../src/interface.c:1291
+#, fuzzy
+msgid "mil"
+msgstr "mil"
+
+#: ../src/interface.c:1293
+#, fuzzy
+msgid "in"
+msgstr "tum"
+
+#: ../src/interface.c:1896
+#, fuzzy
+msgid "Gerbv Alert"
+msgstr "Gerbv-varning"
+
+#: ../src/interface.c:1928 ../src/interface.c:2268
+#, fuzzy
+msgid "Do not show this dialog again."
+msgstr "Visa inte denna dialog igen."
+
+#: ../src/interface.c:2054
+#, c-format, fuzzy
+msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layer)"
+msgid_plural "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)"
+msgstr[0] "<b>%d</b>  *<i>%s</i> (<b>andrad</b>, %d lager)"
+msgstr[1] "<b>%d</b>  *<i>%s</i> (<b>andrad</b>, %d lager)"
+
+#: ../src/interface.c:2058
+#, c-format, fuzzy
+msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>)"
+msgstr "<b>%d</b>  *<i>%s</i> (<b>andrad</b>)"
+
+#: ../src/interface.c:2064
+#, c-format, fuzzy
+msgid "<b>%d</b>  %s (%d layer)"
+msgid_plural "<b>%d</b>  %s (%d layers)"
+msgstr[0] "<b>%d</b>  %s (%d lager)"
+msgstr[1] "<b>%d</b>  %s (%d lager)"
+
+#: ../src/interface.c:2067
+#, c-format, fuzzy
+msgid "<b>%d</b>  %s"
+msgstr "<b>%d</b>  %s"
+
+#: ../src/interface.c:2110
+#, fuzzy
+msgid "Gerbv — Reload Files"
+msgstr "Gerbv — Ladda om filer"
+
+#: ../src/interface.c:2129
+#, c-format, fuzzy
+msgid "%u file is already loaded from directory"
+msgid_plural "%u files are already loaded from directory"
+msgstr[0] "%u fil ar redan inlast fran katalog"
+msgstr[1] "%u filer ar redan inlasta fran katalog"
+
+#: ../src/interface.c:2151
+#, fuzzy
+msgid "Select _all"
+msgstr "Markera _alla"
+
+#: ../src/interface.c:2183
+#, fuzzy
+msgid "_Reload"
+msgstr "_Ladda om"
+
+#: ../src/interface.c:2185
+#, fuzzy
+msgid "Reload layers with selected files"
+msgstr "Ladda om lager med valda filer"
+
+#: ../src/interface.c:2189
+#, fuzzy
+msgid "Add as _new"
+msgstr "Lagg till som _nya"
+
+#: ../src/interface.c:2191
+#, fuzzy
+msgid "Add selected files as new layers"
+msgstr "Lagg till valda filer som nya lager"
+
+#: ../src/interface.c:2328
+#, fuzzy
+msgid "Edit layer"
+msgstr "Redigera lager"
+
+#: ../src/interface.c:2331
+#, fuzzy
+msgid "Apply to _active"
+msgstr "Tillimpa pa _aktivt"
+
+#: ../src/interface.c:2333
+#, fuzzy
+msgid "Apply to _visible"
+msgstr "Tillimpa pa _synliga"
+
+#: ../src/interface.c:2346
+#, fuzzy
+msgid "<span weight=\"bold\">Translation</span>"
+msgstr "<span weight=\"bold\">Forflyttning</span>"
+
+#: ../src/interface.c:2355
+#, fuzzy
+msgid "X (mils):"
+msgstr "X (mil):"
+
+#: ../src/interface.c:2356
+#, fuzzy
+msgid "Y (mils):"
+msgstr "Y (mil):"
+
+#: ../src/interface.c:2361
+#, fuzzy
+msgid "X (mm):"
+msgstr "X (mm):"
+
+#: ../src/interface.c:2362
+#, fuzzy
+msgid "Y (mm):"
+msgstr "Y (mm):"
+
+#: ../src/interface.c:2367
+#, fuzzy
+msgid "X (inches):"
+msgstr "X (tum):"
+
+#: ../src/interface.c:2368
+#, fuzzy
+msgid "Y (inches):"
+msgstr "Y (tum):"
+
+#: ../src/interface.c:2386
+#, fuzzy
+msgid "<span weight=\"bold\">Scale</span>"
+msgstr "<span weight=\"bold\">Skala</span>"
+
+#: ../src/interface.c:2390
+#, fuzzy
+msgid "X direction:"
+msgstr "X-riktning:"
+
+#: ../src/interface.c:2393
+#, fuzzy
+msgid "Y direction:"
+msgstr "Y-riktning:"
+
+#: ../src/interface.c:2410
+#, fuzzy
+msgid "<span weight=\"bold\">Rotation</span>"
+msgstr "<span weight=\"bold\">Rotation</span>"
+
+#: ../src/interface.c:2414
+#, fuzzy
+msgid "Rotation (degrees):"
+msgstr "Rotation (grader):"
+
+#: ../src/interface.c:2418
+#, fuzzy
+msgid "None"
+msgstr "Ingen"
+
+#: ../src/interface.c:2419
+#, fuzzy
+msgid "90 deg CCW"
+msgstr "90 grader moturs"
+
+#: ../src/interface.c:2420
+#, fuzzy
+msgid "180 deg CCW"
+msgstr "180 grader moturs"
+
+#: ../src/interface.c:2421
+#, fuzzy
+msgid "270 deg CCW"
+msgstr "270 grader moturs"
+
+#: ../src/interface.c:2441
+#, fuzzy
+msgid "<span weight=\"bold\">Mirroring</span>"
+msgstr "<span weight=\"bold\">Spegling</span>"
+
+#: ../src/interface.c:2445
+#, fuzzy
+msgid "About X axis:"
+msgstr "Kring X-axel:"
+
+#: ../src/interface.c:2452
+#, fuzzy
+msgid "About Y axis:"
+msgstr "Kring Y-axel:"
+
+#: ../src/main.c:285
+#, c-format, fuzzy
+msgid "could not read file: %s"
+msgstr "kunde inte lasa fil: %s"
+
+#: ../src/main.c:378
+#, fuzzy
+msgid "Failed to write project"
+msgstr "Kunde inte skriva projekt"
+
+#: ../src/main.c:452
+#, c-format, fuzzy
+msgid ""
+"\n"
+"*** Press Enter to continue ***"
+msgstr ""
+"\n"
+"*** Tryck Enter for att fortsatta ***"
+
+#: ../src/main.c:638 ../src/main.c:928
+#, c-format, fuzzy
+msgid "Unrecognized length unit \"%s\" in command line"
+msgstr "Okand langdenhet \"%s\" pa kommandoraden"
+
+#: ../src/main.c:657
+#, c-format, fuzzy
+msgid "Not handled option \"%s\" in command line"
+msgstr "Ohanterat alternativ \"%s\" pa kommandoraden"
+
+#: ../src/main.c:664
+#, fuzzy
+msgid "Width"
+msgstr "Bredd"
+
+#: ../src/main.c:668
+#, c-format, fuzzy
+msgid "Split X and Y parameters with an x\n"
+msgstr "Separera X- och Y-parametrar med ett x\n"
+
+#: ../src/main.c:675
+#, fuzzy
+msgid "Height"
+msgstr "Hojd"
+
+#: ../src/main.c:710
+#, c-format, fuzzy
+msgid "You must specify the border in the format <alpha>.\n"
+msgstr "Du maste ange kanten i formatet <alpha>.\n"
+
+#: ../src/main.c:714
+#, c-format, fuzzy
+msgid "Specified border is not recognized.\n"
+msgstr "Angiven kant kandes inte igen.\n"
+
+#: ../src/main.c:719
+#, c-format, fuzzy
+msgid "Specified border is smaller than zero!\n"
+msgstr "Angiven kant ar mindre an noll!\n"
+
+#: ../src/main.c:726
+#, c-format, fuzzy
+msgid ""
+"You must give an resolution in the format <DPI_XxDPI_Y> or <DPI_X_and_Y>.\n"
+msgstr ""
+"Du maste ange en upplosning i formatet <DPI_XxDPI_Y> eller <DPI_X_och_Y>.\n"
+
+#: ../src/main.c:730
+#, c-format, fuzzy
+msgid "Specified resolution is not recognized.\n"
+msgstr "Angiven upplosning kandes inte igen.\n"
+
+#: ../src/main.c:740
+#, c-format, fuzzy
+msgid "Specified resolution should be greater than 0.\n"
+msgstr "Angiven upplosning bor vara storre an 0.\n"
+
+#: ../src/main.c:747
+#, c-format, fuzzy
+msgid "You must give an origin in the format <XxY> or <X;Y>.\n"
+msgstr "Du maste ange ett origo i formatet <XxY> eller <X;Y>.\n"
+
+#: ../src/main.c:752
+#, c-format, fuzzy
+msgid "Specified origin is not recognized.\n"
+msgstr "Angivet origo kandes inte igen.\n"
+
+#: ../src/main.c:763
+#, c-format, fuzzy
+msgid "gerbv version %s\n"
+msgstr "gerbv version %s\n"
+
+#: ../src/main.c:764
+#, c-format, fuzzy
+msgid ""
+"Copyright (C) 2001-2008 by Stefan Petersen\n"
+"and the respective original authors listed in the source files.\n"
+msgstr ""
+"Copyright (C) 2001-2008 av Stefan Petersen\n"
+"och respektive originalforfattare listade i kallkodsfilerna.\n"
+
+#: ../src/main.c:772
+#, c-format, fuzzy
+msgid "You must give an background color in the hex-format <#RRGGBB>.\n"
+msgstr "Du maste ange en bakgrundsfarg i hexformatet <#RRGGBB>.\n"
+
+#: ../src/main.c:777 ../src/main.c:802
+#, c-format, fuzzy
+msgid "Specified color format is not recognized.\n"
+msgstr "Angivet fargformat kandes inte igen.\n"
+
+#: ../src/main.c:785
+#, c-format, fuzzy
+msgid "Specified color values should be between 00 and FF.\n"
+msgstr "Angivna fargvarden bor vara mellan 00 och FF.\n"
+
+#: ../src/main.c:798
+#, c-format, fuzzy
+msgid ""
+"You must give an foreground color in the hex-format <#RRGGBB> or "
+"<#RRGGBBAA>.\n"
+msgstr ""
+"Du maste ange en forgrundsfarg i hexformatet <#RRGGBB> eller <#RRGGBBAA>.\n"
+
+#: ../src/main.c:816
+#, c-format, fuzzy
+msgid "Specified color values should be between 0x00 (0) and 0xFF (255).\n"
+msgstr "Angivna fargvarden bor vara mellan 0x00 (0) och 0xFF (255).\n"
+
+#: ../src/main.c:830
+#, c-format, fuzzy
+msgid "You must give the initial rotation angle\n"
+msgstr "Du maste ange den initiala rotationsvinkeln\n"
+
+#: ../src/main.c:836
+#, fuzzy
+msgid "Rotate"
+msgstr "Rotera"
+
+#: ../src/main.c:840
+#, c-format, fuzzy
+msgid "Failed parsing rotate value\n"
+msgstr "Kunde inte tolka rotationsvarde\n"
+
+#: ../src/main.c:846
+#, c-format, fuzzy
+msgid "You must give the axis to mirror about\n"
+msgstr "Du maste ange axeln att spegla kring\n"
+
+#: ../src/main.c:856
+#, c-format, fuzzy
+msgid "Failed parsing mirror axis\n"
+msgstr "Kunde inte tolka speglingsaxel\n"
+
+#: ../src/main.c:862
+#, c-format, fuzzy
+msgid "You must give a filename to send log to\n"
+msgstr "Du maste ange ett filnamn att skicka loggen till\n"
+
+#: ../src/main.c:870
+#, c-format, fuzzy
+msgid "You must give a filename to export to.\n"
+msgstr "Du maste ange ett filnamn att exportera till.\n"
+
+#: ../src/main.c:877
+#, c-format, fuzzy
+msgid "You must give a project filename\n"
+msgstr "Du maste ange ett projektfilnamn\n"
+
+#: ../src/main.c:884
+#, c-format, fuzzy
+msgid "You must give a filename to read the tools from.\n"
+msgstr "Du maste ange ett filnamn att lasa verktygen fran.\n"
+
+#: ../src/main.c:888
+#, c-format, fuzzy
+msgid "*** ERROR processing tools file \"%s\".\n"
+msgstr "*** FEL vid behandling av verktygsfil \"%s\".\n"
+
+#: ../src/main.c:889
+#, c-format, fuzzy
+msgid ""
+"Make sure all lines of the file are formatted like this:\n"
+"T01 0.024\n"
+"T02 0.032\n"
+"T03 0.040\n"
+"...\n"
+"*** EXITING to prevent erroneous display.\n"
+msgstr ""
+"Se till att alla rader i filen ar formaterade sa har:\n"
+"T01 0.024\n"
+"T02 0.032\n"
+"T03 0.040\n"
+"...\n"
+"*** AVSLUTAR for att forhindra felaktig visning.\n"
+
+#: ../src/main.c:897
+#, c-format, fuzzy
+msgid "You must give a translation in the format <XxY> or <X;Y>.\n"
+msgstr "Du maste ange en forflyttning i formatet <XxY> eller <X;Y>.\n"
+
+#: ../src/main.c:902
+#, c-format, fuzzy
+msgid "The translation format is not recognized.\n"
+msgstr "Forflyttningsformatet kandes inte igen.\n"
+
+#: ../src/main.c:938
+#, c-format, fuzzy
+msgid "You must give a window size in the format <width x height>.\n"
+msgstr "Du maste ange en fonsterstorlek i formatet <bredd x hojd>.\n"
+
+#: ../src/main.c:942
+#, c-format, fuzzy
+msgid "Specified window size is not recognized.\n"
+msgstr "Angiven fonsterstorlek kandes inte igen.\n"
+
+#: ../src/main.c:948
+#, c-format, fuzzy
+msgid "Specified window size is out of bounds.\n"
+msgstr "Angiven fonsterstorlek ar utanfor tillatet intervall.\n"
+
+#: ../src/main.c:955
+#, c-format, fuzzy
+msgid "You must supply an export type.\n"
+msgstr "Du maste ange en exporttyp.\n"
+
+#: ../src/main.c:967
+#, c-format, fuzzy
+msgid "Unrecognized \"%s\" export type.\n"
+msgstr "Okand \"%s\" exporttyp.\n"
+
+#: ../src/main.c:986
+#, c-format, fuzzy
+msgid "Not handled option '%c' in command line"
+msgstr "Ohanterat alternativ '%c' pa kommandoraden"
+
+#: ../src/main.c:1018
+#, c-format, fuzzy
+msgid "Loading project %s...\n"
+msgstr "Laddar projekt %s...\n"
+
+#: ../src/main.c:1052
+#, c-format, fuzzy
+msgid "No loadable files found in \"%s\"\n"
+msgstr "Inga laddningsbara filer hittade i \"%s\"\n"
+
+#: ../src/main.c:1199 ../src/main.c:1240
+#, c-format, fuzzy
+msgid "A valid file was not loaded.\n"
+msgstr "En giltig fil laddades inte.\n"
+
+#: ../src/main.c:1299
+#, c-format, fuzzy
+msgid ""
+"Usage: gerbv [OPTIONS...] [FILE...]\n"
+"\n"
+"Available options:\n"
+msgstr ""
+"Anvandning: gerbv [ALTERNATIV...] [FIL...]\n"
+"\n"
+"Tillgangliga alternativ:\n"
+
+#: ../src/main.c:1305
+#, c-format, fuzzy
+msgid ""
+"  -B, --border=<b>        Border around the image in percent of the\n"
+"                          width/height. Defaults to %d%%.\n"
+msgstr ""
+"  -B, --border=<b>        Kant runt bilden i procent av\n"
+"                          bredd/hojd. Standard ar %d%%.\n"
+
+#: ../src/main.c:1310
+#, c-format, fuzzy
+msgid ""
+"  -B<b>                   Border around the image in percent of the\n"
+"                          width/height. Defaults to %d%%.\n"
+msgstr ""
+"  -B<b>                   Kant runt bilden i procent av\n"
+"                          bredd/hojd. Standard ar %d%%.\n"
+
+#: ../src/main.c:1317
+#, c-format, fuzzy
+msgid ""
+"  -D, --dpi=<XxY|R>       Resolution (Dots per inch) for the output\n"
+"                          bitmap. With the format <XxY>, different\n"
+"                          resolutions for X- and Y-direction are used.\n"
+"                          With the format <R>, both are the same.\n"
+msgstr ""
+"  -D, --dpi=<XxY|R>       Upplosning (punkter per tum) for utdata-\n"
+"                          bitmappen. Med formatet <XxY> anvands olika\n"
+"                          upplosning for X- och Y-riktning.\n"
+"                          Med formatet <R> ar bada desamma.\n"
+
+#: ../src/main.c:1323
+#, c-format, fuzzy
+msgid ""
+"  -D<XxY|R>               Resolution (Dots per inch) for the output\n"
+"                          bitmap. With the format <XxY>, different\n"
+"                          resolutions for X- and Y-direction are used.\n"
+"                          With the format <R>, both are the same.\n"
+msgstr ""
+"  -D<XxY|R>               Upplosning (punkter per tum) for utdata-\n"
+"                          bitmappen. Med formatet <XxY> anvands olika\n"
+"                          upplosning for X- och Y-riktning.\n"
+"                          Med formatet <R> ar bada desamma.\n"
+
+#: ../src/main.c:1331
+#, c-format, fuzzy
+msgid ""
+"  -O, --origin=<XxY|X;Y>  Use the specified coordinates (in inches)\n"
+"                          for the lower left corner.\n"
+msgstr ""
+"  -O, --origin=<XxY|X;Y>  Anvand angivna koordinater (i tum)\n"
+"                          for det nedre vanstra hornet.\n"
+
+#: ../src/main.c:1335
+#, c-format, fuzzy
+msgid ""
+"  -O<XxY|X;Y>             Use the specified coordinates (in inches)\n"
+"                          for the lower left corner.\n"
+msgstr ""
+"  -O<XxY|X;Y>             Anvand angivna koordinater (i tum)\n"
+"                          for det nedre vanstra hornet.\n"
+
+#: ../src/main.c:1341
+#, c-format, fuzzy
+msgid "  -V, --version           Print version of Gerbv.\n"
+msgstr "  -V, --version           Skriv ut version av Gerbv.\n"
+
+#: ../src/main.c:1344
+#, c-format, fuzzy
+msgid "  -V                      Print version of Gerbv.\n"
+msgstr "  -V                      Skriv ut version av Gerbv.\n"
+
+#: ../src/main.c:1349
+#, c-format, fuzzy
+msgid ""
+"  -a, --antialias         Use antialiasing for generated bitmap output.\n"
+msgstr ""
+"  -a, --antialias         Anvand kantutjamning for genererad "
+"bitmapputdata.\n"
+
+#: ../src/main.c:1352
+#, c-format, fuzzy
+msgid ""
+"  -a                      Use antialiasing for generated bitmap output.\n"
+msgstr ""
+"  -a                      Anvand kantutjamning for genererad "
+"bitmapputdata.\n"
+
+#: ../src/main.c:1357
+#, c-format, fuzzy
+msgid "  -b, --background=<hex>  Use background color <hex> (like #RRGGBB).\n"
+msgstr "  -b, --background=<hex>  Anvand bakgrundsfarg <hex> (som #RRGGBB).\n"
+
+#: ../src/main.c:1360
+#, c-format, fuzzy
+msgid ""
+"  -b<hexcolor>            Use background color <hexcolor> (like #RRGGBB).\n"
+msgstr ""
+"  -b<hexcolor>            Anvand bakgrundsfarg <hexcolor> (som #RRGGBB).\n"
+
+#: ../src/main.c:1365
+#, c-format, fuzzy
+msgid ""
+"  -f, --foreground=<hex>  Use foreground color <hex> (like #RRGGBB or\n"
+"                          #RRGGBBAA for setting the alpha).\n"
+"                          Use multiple -f flags to set the color for\n"
+"                          multiple layers.\n"
+msgstr ""
+"  -f, --foreground=<hex>  Anvand forgrundsfarg <hex> (som #RRGGBB eller\n"
+"                          #RRGGBBAA for att stalla in alfa).\n"
+"                          Anvand flera -f-flaggor for att stalla in fargen\n"
+"                          for flera lager.\n"
+
+#: ../src/main.c:1371
+#, c-format, fuzzy
+msgid ""
+"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
+"                          #RRGGBBAA for setting the alpha).\n"
+"                          Use multiple -f flags to set the color for\n"
+"                          multiple layers.\n"
+msgstr ""
+"  -f<hexcolor>            Anvand forgrundsfarg <hexcolor> (som #RRGGBB eller\n"
+"                          #RRGGBBAA for att stalla in alfa).\n"
+"                          Anvand flera -f-flaggor for att stalla in fargen\n"
+"                          for flera lager.\n"
+
+#: ../src/main.c:1379
+#, c-format, fuzzy
+msgid "  -r, --rotate=<degree>   Set initial orientation for all layers.\n"
+msgstr ""
+"  -r, --rotate=<grader>   Stall in initial orientering for alla lager.\n"
+
+#: ../src/main.c:1382
+#, c-format, fuzzy
+msgid "  -r<degree>              Set initial orientation for all layers.\n"
+msgstr ""
+"  -r<grader>              Stall in initial orientering for alla lager.\n"
+
+#: ../src/main.c:1387
+#, c-format, fuzzy
+msgid "  -m, --mirror=<axis>     Set initial mirroring axis (X or Y).\n"
+msgstr "  -m, --mirror=<axel>     Stall in initial speglingsaxel (X eller Y).\n"
+
+#: ../src/main.c:1390
+#, c-format, fuzzy
+msgid "  -m<axis>                Set initial mirroring axis (X or Y).\n"
+msgstr "  -m<axel>                Stall in initial speglingsaxel (X eller Y).\n"
+
+#: ../src/main.c:1395
+#, c-format, fuzzy
+msgid "  -h, --help              Print this help message.\n"
+msgstr "  -h, --help              Skriv ut detta hjalpmeddelande.\n"
+
+#: ../src/main.c:1398
+#, c-format, fuzzy
+msgid "  -h                      Print this help message.\n"
+msgstr "  -h                      Skriv ut detta hjalpmeddelande.\n"
+
+#: ../src/main.c:1403
+#, c-format, fuzzy
+msgid "  -l, --log=<logfile>     Send error messages to <logfile>.\n"
+msgstr "  -l, --log=<loggfil>     Skicka felmeddelanden till <loggfil>.\n"
+
+#: ../src/main.c:1406
+#, c-format, fuzzy
+msgid "  -l<logfile>             Send error messages to <logfile>.\n"
+msgstr "  -l<loggfil>             Skicka felmeddelanden till <loggfil>.\n"
+
+#: ../src/main.c:1411
+#, c-format, fuzzy
+msgid "  -q, --quiet             Suppress note-level messages.\n"
+msgstr "  -q, --quiet             Undertryck meddelanden pa observera-niva.\n"
+
+#: ../src/main.c:1414
+#, c-format, fuzzy
+msgid "  -q                      Suppress note-level messages.\n"
+msgstr "  -q                      Undertryck meddelanden pa observera-niva.\n"
+
+#: ../src/main.c:1419
+#, c-format, fuzzy
+msgid "  -o, --output=<filename> Export to <filename>.\n"
+msgstr "  -o, --output=<filnamn>  Exportera till <filnamn>.\n"
+
+#: ../src/main.c:1422
+#, c-format, fuzzy
+msgid "  -o<filename>            Export to <filename>.\n"
+msgstr "  -o<filnamn>             Exportera till <filnamn>.\n"
+
+#: ../src/main.c:1427
+#, c-format, fuzzy
+msgid "  -p, --project=<prjfile> Load project file <prjfile>.\n"
+msgstr "  -p, --project=<prjfil>  Ladda projektfil <prjfil>.\n"
+
+#: ../src/main.c:1430
+#, c-format, fuzzy
+msgid "  -p<prjfile>             Load project file <prjfile>.\n"
+msgstr "  -p<prjfil>              Ladda projektfil <prjfil>.\n"
+
+#: ../src/main.c:1435
+#, c-format, fuzzy
+msgid ""
+"  -u, --units=<inch|mm|mil>\n"
+"                          Use given unit for coordinates.\n"
+"                          Default to inch.\n"
+msgstr ""
+"  -u, --units=<inch|mm|mil>\n"
+"                          Anvand given enhet for koordinater.\n"
+"                          Standard ar inch.\n"
+
+#: ../src/main.c:1440
+#, c-format, fuzzy
+msgid ""
+"  -u<inch|mm|mil>         Use given unit for coordinates.\n"
+"                          Default to inch.\n"
+msgstr ""
+"  -u<inch|mm|mil>         Anvand given enhet for koordinater.\n"
+"                          Standard ar inch.\n"
+
+#: ../src/main.c:1446
+#, c-format, fuzzy
+msgid ""
+"  -W, --window_inch=<WxH> Window size in inches <WxH> for the exported "
+"image.\n"
+msgstr ""
+"  -W, --window_inch=<WxH> Fonsterstorlek i tum <WxH> for den exporterade "
+"bilden.\n"
+
+#: ../src/main.c:1449
+#, c-format, fuzzy
+msgid ""
+"  -W<WxH>                 Window size in inches <WxH> for the exported "
+"image.\n"
+msgstr ""
+"  -W<WxH>                 Fonsterstorlek i tum <WxH> for den exporterade "
+"bilden.\n"
+
+#: ../src/main.c:1454
+#, c-format, fuzzy
+msgid ""
+"  -w, --window=<WxH>      Window size in pixels <WxH> for the exported image.\n"
+"                          Autoscales to fit if no resolution is specified.\n"
+"                          If a resolution is specified, it will clip\n"
+"                          exported image.\n"
+msgstr ""
+"  -w, --window=<WxH>      Fonsterstorlek i pixlar <WxH> for den exporterade bilden.\n"
+"                          Autoskalar for att passa om ingen upplosning anges.\n"
+"                          Om en upplosning anges, klipps den\n"
+"                          exporterade bilden.\n"
+
+#: ../src/main.c:1460
+#, c-format, fuzzy
+msgid ""
+"  -w<WxH>                 Window size in pixels <WxH> for the exported image.\n"
+"                          Autoscales to fit if no resolution is specified.\n"
+"                          If a resolution is specified, it will clip\n"
+"                          exported image.\n"
+msgstr ""
+"  -w<WxH>                 Fonsterstorlek i pixlar <WxH> for den exporterade bilden.\n"
+"                          Autoskalar for att passa om ingen upplosning anges.\n"
+"                          Om en upplosning anges, klipps den\n"
+"                          exporterade bilden.\n"
+
+#: ../src/main.c:1468
+#, c-format, fuzzy
+msgid "  -t, --tools=<toolfile>  Read Excellon tools from file <toolfile>.\n"
+msgstr ""
+"  -t, --tools=<verktygsfil>  Las Excellon-verktyg fran fil <verktygsfil>.\n"
+
+#: ../src/main.c:1471
+#, c-format, fuzzy
+msgid "  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
+msgstr "  -t<verktygsfil>         Las Excellon-verktyg fran fil <verktygsfil>\n"
+
+#: ../src/main.c:1476
+#, c-format, fuzzy
+msgid ""
+"  -T, --translate=<XxYrR| Translate image by X and Y and rotate by R degree.\n"
+"                   X;YrR> Useful for arranging panels.\n"
+"                          Use multiple -T flags for multiple layers.\n"
+"                          Only evaluated when exporting as RS274X or drill.\n"
+msgstr ""
+"  -T, --translate=<XxYrR| Forflytta bild med X och Y och rotera med R grader.\n"
+"                   X;YrR> Anvandbart for att arrangera paneler.\n"
+"                          Anvand flera -T-flaggor for flera lager.\n"
+"                          Utvarderas bara vid export som RS274X eller borr.\n"
+
+#: ../src/main.c:1482
+#, c-format, fuzzy
+msgid ""
+"  -T<XxYrR|X;YrR>         Translate image by X and Y and rotate by R degree.\n"
+"                          Useful for arranging panels.\n"
+"                          Use multiple -T flags for multiple files.\n"
+"                          Only evaluated when exporting as RS274X or drill.\n"
+msgstr ""
+"  -T<XxYrR|X;YrR>         Forflytta bild med X och Y och rotera med R grader.\n"
+"                          Anvandbart for att arrangera paneler.\n"
+"                          Anvand flera -T-flaggor for flera filer.\n"
+"                          Utvarderas bara vid export som RS274X eller borr.\n"
+
+#: ../src/main.c:1490
+#, c-format, fuzzy
+msgid ""
+"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\n"
+"                          Export a rendered picture to a file with\n"
+"                          the specified format.\n"
+msgstr ""
+"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\n"
+"                          Exportera en renderad bild till en fil med\n"
+"                          det angivna formatet.\n"
+
+#: ../src/main.c:1494
+#, c-format, fuzzy
+msgid ""
+"      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
+"                          Only used with --export=svg.\n"
+msgstr ""
+"      --svg-layers       Exportera synliga lager som Inkscape SVG-lager.\n"
+"                          Anvands bara med --export=svg.\n"
+
+#: ../src/main.c:1497
+#, c-format, fuzzy
+msgid ""
+"      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
+"                          Only used with --export=svg.\n"
+msgstr ""
+"      --svg-cairo        Anvand Cairo SVG-yta (aldre, storre utdata).\n"
+"                          Anvands bara med --export=svg.\n"
+
+#: ../src/main.c:1501
+#, c-format, fuzzy
+msgid ""
+"  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
+"     rs274x|drill|        the specified format.\n"
+"     idrill|dxf>\n"
+msgstr ""
+"  -x<png|pdf|ps|svg|      Exportera en renderad bild till en fil med\n"
+"     rs274x|drill|        det angivna formatet.\n"
+"     idrill|dxf>\n"
+
+#: ../src/main.c:1506
+#, c-format, fuzzy
+msgid ""
+"      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
+"                          Only used with -xsvg.\n"
+msgstr ""
+"      --svg-layers       Exportera synliga lager som Inkscape SVG-lager.\n"
+"                          Anvands bara med -xsvg.\n"
+
+#: ../src/main.c:1509
+#, c-format, fuzzy
+msgid ""
+"      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
+"                          Only used with -xsvg.\n"
+msgstr ""
+"      --svg-cairo        Anvand Cairo SVG-yta (aldre, storre utdata).\n"
+"                          Anvands bara med -xsvg.\n"
+
+#: ../src/project.c:259
+#, c-format, fuzzy
+msgid "'%s' parameter not a vector"
+msgstr "'%s'-parameter ar inte en vektor"
+
+#: ../src/project.c:265
+#, c-format, fuzzy
+msgid "'%s' vector of incorrect length"
+msgstr "'%s'-vektor med felaktig langd"
+
+#: ../src/project.c:288
+#, fuzzy
+msgid "Illegal color in projectfile"
+msgstr "Otillaten farg i projektfil"
+
+#: ../src/project.c:309
+#, fuzzy
+msgid "Illegal alpha value in projectfile"
+msgstr "Otillatet alfavarde i projektfil"
+
+#: ../src/project.c:325 ../src/project.c:343 ../src/project.c:351
+#: ../src/project.c:371 ../src/project.c:381
+#, c-format, fuzzy
+msgid "Illegal %s in projectfile"
+msgstr "Otillatet %s i projektfil"
+
+#: ../src/project.c:605
+#, c-format, fuzzy
+msgid "%s(): too few arguments"
+msgstr "%s(): for fa argument"
+
+#: ../src/project.c:614
+#, c-format, fuzzy
+msgid "%s(): layer number missing/incorrect"
+msgstr "%s(): lagernummer saknas/ar felaktigt"
+
+#: ../src/project.c:645
+#, c-format, fuzzy
+msgid "%s(): non-symbol found, ignoring"
+msgstr "%s(): icke-symbol hittad, ignorerar"
+
+#: ../src/project.c:681
+#, fuzzy
+msgid "Argument to inverted must be #t or #f"
+msgstr "Argument till inverterad maste vara #t eller #f"
+
+#: ../src/project.c:689
+#, fuzzy
+msgid "Argument to visible must be #t or #f"
+msgstr "Argument till synlig maste vara #t eller #f"
+
+#: ../src/project.c:707
+#, c-format, fuzzy
+msgid "%s():  realloc failed\n"
+msgstr "%s():  realloc misslyckades\n"
+
+#: ../src/project.c:771
+#, c-format, fuzzy
+msgid "%s():  WARNING:  HID_Mixed is not yet supported\n"
+msgstr "%s():  VARNING:  HID_Mixed stods annu inte\n"
+
+#: ../src/project.c:780
+#, c-format, fuzzy
+msgid "%s():  Unknown attribute type: \"%s\"\n"
+msgstr "%s():  Okand attributtyp: \"%s\"\n"
+
+#: ../src/project.c:789
+#, c-format, fuzzy
+msgid "Ignoring \"%s\" in project file"
+msgstr "Ignorerar \"%s\" i projektfil"
+
+#: ../src/project.c:809
+#, fuzzy
+msgid "set-render-type!: Too few arguments"
+msgstr "set-render-type!: For fa argument"
+
+#: ../src/project.c:833
+#, fuzzy
+msgid "gerbv-file-version!: Too few arguments"
+msgstr "gerbv-file-version!: For fa argument"
+
+#: ../src/project.c:845
+#, c-format, fuzzy
+msgid ""
+"The project file you are attempting to load has specified that it\n"
+"uses project file version \"%s\" but this string is not\n"
+"a valid version.  Gerbv will attempt to load the file using\n"
+"version \"%s\".  You may experience unexpected results."
+msgstr ""
+"Projektfilen du forsoker lasa in har angett att den\n"
+"anvander projektfilversion \"%s\" men denna strang ar inte\n"
+"en giltig version. Gerbv kommer att forsoka lasa in filen med\n"
+"version \"%s\". Du kan uppleva ovantade resultat."
+
+#: ../src/project.c:854
+#, c-format, fuzzy
+msgid "%s():  Read a project file version of %s (%d)\n"
+msgstr "%s():  Last en projektfilversion av %s (%d)\n"
+
+#: ../src/project.c:855
+#, c-format, fuzzy
+msgid "      Translated back to \"%s\"\n"
+msgstr "      Oversatt tillbaka till \"%s\"\n"
+
+#: ../src/project.c:863
+#, c-format, fuzzy
+msgid ""
+"The project file you are attempting to load is version \"%s\"\n"
+"but this copy of gerbv is only capable of loading project files\n"
+"using version \"%s\" or older.  You may experience unexpected results."
+msgstr ""
+"Projektfilen du forsoker lasa in ar version \"%s\"\n"
+"men denna kopia av gerbv kan bara lasa in projektfiler\n"
+"med version \"%s\" eller aldre. Du kan uppleva ovantade resultat."
+
+#: ../src/project.c:882
+#, c-format, fuzzy
+msgid ""
+"The project file you are attempting to load is version \"%s\"\n"
+"which is an unknown version.\n"
+"You may experience unexpected results."
+msgstr ""
+"Projektfilen du forsoker lasa in ar version \"%s\"\n"
+"vilket ar en okand version.\n"
+"Du kan uppleva ovantade resultat."
+
+#: ../src/project.c:915
+#, c-format, fuzzy
+msgid "Failed to open \"%s\" for reading: %s"
+msgstr "Kunde inte oppna \"%s\" for lasning: %s"
+
+#: ../src/project.c:989
+#, c-format, fuzzy
+msgid "Failed to read %s"
+msgstr "Kunde inte lasa %s"
+
+#: ../src/project.c:998
+#, fuzzy
+msgid "Couldn't init scheme"
+msgstr "Kunde inte initiera scheme"
+
+#: ../src/project.c:1006
+#, c-format, fuzzy
+msgid "Problem loading init.scm (%s)"
+msgstr "Problem vid inlasning av init.scm (%s)"
+
+#: ../src/project.c:1013
+#, c-format, fuzzy
+msgid "Couldn't open %s (%s)"
+msgstr "Kunde inte oppna %s (%s)"
+
+#: ../src/project.c:1038
+#, c-format, fuzzy
+msgid "Couldn't open project file %s (%s)"
+msgstr "Kunde inte oppna projektfil %s (%s)"
+
+#: ../src/project.c:1085
+#, c-format, fuzzy
+msgid "Couldn't save project %s"
+msgstr "Kunde inte spara projekt %s"
+
+#: ../src/project.c:1181
+#, c-format, fuzzy
+msgid "%s():  WARNING:  HID_Mixed is not yet supported.\n"
+msgstr "%s():  VARNING:  HID_Mixed stods annu inte.\n"
+
+#: ../src/project.c:1191
+#, c-format, fuzzy
+msgid "%s: unknown type of HID attribute (%d)\n"
+msgstr "%s: okand typ av HID-attribut (%d)\n"
+
+#: ../src/render.c:123
+#, c-format, fuzzy
+msgid "Illegal zoom direction %d"
+msgstr "Otillaten zoomriktning %d"
+
+#: ../src/tooltable.c:60
+#, c-format, fuzzy
+msgid "Ignored strange tool \"%s\" at line %ld in file \"%s\""
+msgstr "Ignorerade konstigt verktyg \"%s\" pa rad %ld i fil \"%s\""
+
+#: ../src/tooltable.c:66
+#, c-format, fuzzy
+msgid "No tool number in \"%s\" at line %ld in file \"%s\""
+msgstr "Inget verktygsnummer i \"%s\" pa rad %ld i fil \"%s\""
+
+#: ../src/tooltable.c:78
+#, c-format, fuzzy
+msgid "Can't parse tool number in \"%s\" at line %ld in file \"%s\""
+msgstr "Kan inte tolka verktygsnummer i \"%s\" pa rad %ld i fil \"%s\""
+
+#: ../src/tooltable.c:97
+#, c-format, fuzzy
+msgid "Tool T%02d diameter is impossible at line %ld in file \"%s\""
+msgstr "Verktyg T%02d diameter ar omojlig pa rad %ld i fil \"%s\""
+
+#: ../src/tooltable.c:103
+#, c-format, fuzzy
+msgid "Tool T%02d diameter is very small at line %ld in file \"%s\""
+msgstr "Verktyg T%02d diameter ar mycket liten pa rad %ld i fil \"%s\""
+
+#: ../src/tooltable.c:109
+#, c-format, fuzzy
+msgid "Tool T%02d is already defined, occurred at line %ld in file \"%s\""
+msgstr "Verktyg T%02d ar redan definierat, intraffade pa rad %ld i fil \"%s\""
+
+#: ../src/tooltable.c:112
+#, fuzzy
+msgid "Exiting because this is a HOLD error at any board house."
+msgstr ""
+"Avslutar eftersom detta ar ett HOLD-fel hos alla kretskortstillverkare."
+
+#: ../src/tooltable.c:137
+#, c-format, fuzzy
+msgid "Failed to open \"%s\" for reading"
+msgstr "Kunde inte oppna \"%s\" for lasning"

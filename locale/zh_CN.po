@@ -1,0 +1,3628 @@
+# Chinese translations for gerbv package
+# gerbv 软件包的简体中文翻译.
+# Copyright (C) 2026 erri120
+# This file is distributed under the same license as the gerbv package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gerbv 2.13.0\n"
+"Report-Msgid-Bugs-To: spe-ciellt@github.com\n"
+"POT-Creation-Date: 2026-04-12 05:54+0800\n"
+"PO-Revision-Date: 2026-04-12 05:54+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: Claude translation\n"
+"X-Translation-Note: Machine-translated — community verification needed\n"
+
+#: ../src/attribute.c:324
+#, fuzzy
+msgid "gerbv"
+msgstr "gerbv"
+
+#: ../src/attribute.c:508
+#, c-format, fuzzy
+msgid "%s: unknown type of HID attribute\n"
+msgstr "%s: 未知的 HID 属性类型\\n"
+
+#: ../src/callbacks.c:137
+#, fuzzy
+msgid "No layers are currently loaded. A layer must be loaded first."
+msgstr "当前没有加载任何图层。必须先加载一个图层。"
+
+#: ../src/callbacks.c:155
+#, fuzzy
+msgid "Do you want to close any open layers and start a new project?"
+msgstr "是否要关闭所有已打开的图层并开始新项目？"
+
+#: ../src/callbacks.c:157
+#, fuzzy
+msgid ""
+"Starting a new project will cause all currently open layers to be closed. "
+"Any unsaved changes will be lost."
+msgstr "开始新项目将关闭当前所有已打开的图层。未保存的更改将丢失。"
+
+#: ../src/callbacks.c:191
+#, fuzzy
+msgid "Do you want to close any open layers and load an existing project?"
+msgstr "是否要关闭所有已打开的图层并加载现有项目？"
+
+#: ../src/callbacks.c:193
+#, fuzzy
+msgid ""
+"Loading a project will cause all currently open layers to be closed. Any "
+"unsaved changes will be lost."
+msgstr "加载项目将关闭当前所有已打开的图层。未保存的更改将丢失。"
+
+#: ../src/callbacks.c:393 ../src/interface.c:391 ../src/interface.c:1039
+#: ../src/interface.c:1188
+#, fuzzy
+msgid "Open Gerbv project, Gerber, drill, or pick&place files"
+msgstr "打开 Gerbv 项目、Gerber、钻孔或贴片文件"
+
+#: ../src/callbacks.c:455
+#, fuzzy
+msgid "Gerbv cannot export this file type"
+msgstr "Gerbv 无法导出此文件类型"
+
+#: ../src/callbacks.c:496
+#, fuzzy
+msgid "Unknown Layer type for merge"
+msgstr "合并的图层类型未知"
+
+#: ../src/callbacks.c:511
+#, fuzzy
+msgid "Not Enough Files of same type to merge"
+msgstr "没有足够的相同类型文件进行合并"
+
+#: ../src/callbacks.c:557 ../src/callbacks.c:636
+#, fuzzy
+msgctxt "file name"
+msgid "untitled"
+msgstr "未命名"
+
+#: ../src/callbacks.c:595
+#, fuzzy
+msgid "No layer is currently active"
+msgstr "当前没有活动图层"
+
+#: ../src/callbacks.c:596
+#, fuzzy
+msgid "Please select a layer and try again."
+msgstr "请选择一个图层然后重试。"
+
+#: ../src/callbacks.c:612
+#, fuzzy
+msgid "Export as Inkscape layers"
+msgstr "导出为 Inkscape 图层"
+
+#: ../src/callbacks.c:614
+#, fuzzy
+msgid "Use Cairo SVG (legacy)"
+msgstr "使用 Cairo SVG（旧版）"
+
+#: ../src/callbacks.c:629 ../src/interface.c:511
+#, fuzzy
+msgid "Save project as..."
+msgstr "项目另存为..."
+
+#: ../src/callbacks.c:647
+#, fuzzy
+msgid "All"
+msgstr "全部"
+
+#: ../src/callbacks.c:654 ../src/callbacks.c:666 ../src/callbacks.c:678
+#: ../src/callbacks.c:705
+#, c-format, fuzzy
+msgid "Export visible layers to %s file as..."
+msgstr "将可见图层导出为 %s 文件..."
+
+#: ../src/callbacks.c:655
+#, fuzzy
+msgid "PS"
+msgstr "PS"
+
+#: ../src/callbacks.c:667
+#, fuzzy
+msgid "PDF"
+msgstr "PDF"
+
+#: ../src/callbacks.c:679
+#, fuzzy
+msgid "SVG"
+msgstr "SVG"
+
+#: ../src/callbacks.c:687
+#, fuzzy
+msgid "Create one Inkscape layer per visible gerber layer"
+msgstr "为每个可见 Gerber 图层创建一个 Inkscape 图层"
+
+#: ../src/callbacks.c:691
+#, fuzzy
+msgid "Use Cairo's SVG surface (larger files, legacy behavior)"
+msgstr "使用 Cairo 的 SVG 表面（更大文件，旧版行为）"
+
+#: ../src/callbacks.c:698
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to DXF file as..."
+msgstr "将\"%s\"图层 #%d 导出为 DXF 文件..."
+
+#: ../src/callbacks.c:706
+#, fuzzy
+msgid "PNG"
+msgstr "PNG"
+
+#: ../src/callbacks.c:713
+#, fuzzy
+msgid "DPI:"
+msgstr "DPI："
+
+#: ../src/callbacks.c:717 ../src/callbacks.c:719
+#, fuzzy
+msgid "DPI value, autoscaling if 0"
+msgstr "DPI 值，为 0 时自动缩放"
+
+#: ../src/callbacks.c:726
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to RS-274X file as..."
+msgstr "将\"%s\"图层 #%d 导出为 RS-274X 文件..."
+
+#: ../src/callbacks.c:738
+#, fuzzy
+msgid "Export merged visible layers to RS-274X file as..."
+msgstr "将合并的可见图层导出为 RS-274X 文件..."
+
+#: ../src/callbacks.c:748
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to Excellon drill file as..."
+msgstr "将\"%s\"图层 #%d 导出为 Excellon 钻孔文件..."
+
+#: ../src/callbacks.c:760
+#, fuzzy
+msgid "Export merged visible layers to Excellon drill file as..."
+msgstr "将合并的可见图层导出为 Excellon 钻孔文件..."
+
+#: ../src/callbacks.c:769
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to ISEL NCP drill file as..."
+msgstr "将\"%s\"图层 #%d 导出为 ISEL NCP 钻孔文件..."
+
+#: ../src/callbacks.c:777
+#, c-format, fuzzy
+msgid "Export \"%s\" layer #%d to gEDA PCB file as..."
+msgstr "将\"%s\"图层 #%d 导出为 gEDA PCB 文件..."
+
+#: ../src/callbacks.c:783
+#, c-format, fuzzy
+msgid "Save \"%s\" layer #%d as..."
+msgstr "将\"%s\"图层 #%d 另存为..."
+
+#: ../src/callbacks.c:811
+#, fuzzy
+msgid "Not enough Gerber layers are visible"
+msgstr "可见的 Gerber 图层不足"
+
+#: ../src/callbacks.c:812
+#, fuzzy
+msgid "Two or more Gerber layers must be visible for export with merge."
+msgstr "合并导出需要两个或更多 Gerber 图层可见。"
+
+#: ../src/callbacks.c:818
+#, fuzzy
+msgid "Not enough Excellon layers are visible"
+msgstr "可见的 Excellon 图层不足"
+
+#: ../src/callbacks.c:819
+#, fuzzy
+msgid "Two or more Excellon layers must be visible for export with merge."
+msgstr "合并导出需要两个或更多 Excellon 图层可见。"
+
+#: ../src/callbacks.c:825
+#, fuzzy
+msgid "No layers are visible"
+msgstr "没有可见的图层"
+
+#: ../src/callbacks.c:825
+#, fuzzy
+msgid "One or more layers must be visible for export."
+msgstr "导出需要一个或更多图层可见。"
+
+#: ../src/callbacks.c:874
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as DXF in \"%s\""
+msgstr "\"%s\"图层 #%d 已另存为 DXF 到\"%s\""
+
+#: ../src/callbacks.c:921
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as Gerber in \"%s\""
+msgstr "\"%s\"图层 #%d 已另存为 Gerber 到\"%s\""
+
+#: ../src/callbacks.c:931
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as drill in \"%s\""
+msgstr "\"%s\"图层 #%d 已另存为钻孔到\"%s\""
+
+#: ../src/callbacks.c:940
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as ISEL NCP drill in \"%s\""
+msgstr "\"%s\"图层 #%d 已另存为 ISEL NCP 钻孔到\"%s\""
+
+#: ../src/callbacks.c:949
+#, c-format, fuzzy
+msgid "\"%s\" layer #%d saved as gEDA PCB in \"%s\""
+msgstr "\"%s\"图层 #%d 已另存为 gEDA PCB 到\"%s\""
+
+#: ../src/callbacks.c:960
+#, c-format, fuzzy
+msgid "Merged visible Gerber layers and saved in \"%s\""
+msgstr "已合并可见 Gerber 图层并保存到\"%s\""
+
+#: ../src/callbacks.c:975
+#, c-format, fuzzy
+msgid "Merged visible drill layers and saved in \"%s\""
+msgstr "已合并可见钻孔图层并保存到\"%s\""
+
+#: ../src/callbacks.c:1162
+#, fuzzy
+msgid "FATAL"
+msgstr "致命错误"
+
+#: ../src/callbacks.c:1164
+#, fuzzy
+msgid "ERROR"
+msgstr "错误"
+
+#: ../src/callbacks.c:1166
+#, fuzzy
+msgid "Warning"
+msgstr "警告"
+
+#: ../src/callbacks.c:1168 ../src/callbacks.c:1275 ../src/callbacks.c:1312
+#: ../src/callbacks.c:1334 ../src/callbacks.c:1642 ../src/callbacks.c:1671
+#, fuzzy
+msgid "Note"
+msgstr "注意"
+
+#: ../src/callbacks.c:1196
+#, fuzzy
+msgid "No Gerber layers visible!"
+msgstr "没有可见的 Gerber 图层！"
+
+#: ../src/callbacks.c:1200
+#, c-format, fuzzy
+msgid "No errors found in %d visible Gerber layer."
+msgid_plural "No errors found in %d visible Gerber layers."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/callbacks.c:1208
+#, c-format, fuzzy
+msgid "Found errors in %d visible Gerber layer."
+msgid_plural "Found errors in %d visible Gerber layers."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/callbacks.c:1226 ../src/callbacks.c:1387 ../src/callbacks.c:1593
+#, fuzzy
+msgid "Layer"
+msgstr "图层"
+
+#: ../src/callbacks.c:1226 ../src/callbacks.c:1593
+#, fuzzy
+msgid "Type"
+msgstr "类型"
+
+#: ../src/callbacks.c:1227 ../src/callbacks.c:1594
+#, fuzzy
+msgid "Description"
+msgstr "描述"
+
+#: ../src/callbacks.c:1239
+#, fuzzy
+msgid "RS-274X file"
+msgstr "RS-274X 文件"
+
+#: ../src/callbacks.c:1241 ../src/callbacks.c:1608
+#, c-format, fuzzy
+msgid "%g x %g %s"
+msgstr "%g x %g %s"
+
+#: ../src/callbacks.c:1247 ../src/callbacks.c:1614
+#, fuzzy
+msgid "Bounding size"
+msgstr "边界尺寸"
+
+#: ../src/callbacks.c:1273 ../src/callbacks.c:1310 ../src/callbacks.c:1332
+#: ../src/callbacks.c:1353 ../src/callbacks.c:1440 ../src/callbacks.c:1640
+#: ../src/callbacks.c:1669 ../src/callbacks.c:1703
+#, fuzzy
+msgid "Code"
+msgstr "代码"
+
+#: ../src/callbacks.c:1274 ../src/callbacks.c:1311 ../src/callbacks.c:1333
+#: ../src/callbacks.c:1354 ../src/callbacks.c:1441 ../src/callbacks.c:1641
+#: ../src/callbacks.c:1670 ../src/callbacks.c:1702 ../src/callbacks.c:1733
+#, fuzzy
+msgctxt "table"
+msgid "Count"
+msgstr "计数"
+
+#: ../src/callbacks.c:1299 ../src/callbacks.c:1658
+#, fuzzy
+msgid "unknown G-codes"
+msgstr "未知 G 代码"
+
+#: ../src/callbacks.c:1320
+#, fuzzy
+msgid "unknown D-codes"
+msgstr "未知 D 代码"
+
+#: ../src/callbacks.c:1321
+#, fuzzy
+msgid "D-code errors"
+msgstr "D 代码错误"
+
+#: ../src/callbacks.c:1342 ../src/callbacks.c:1689
+#, fuzzy
+msgid "unknown M-codes"
+msgstr "未知 M 代码"
+
+#: ../src/callbacks.c:1363
+#, fuzzy
+msgid "Unknown"
+msgstr "未知"
+
+#: ../src/callbacks.c:1378
+#, fuzzy
+msgid "No aperture definitions found in active Gerber file(s)!"
+msgstr "在活动 Gerber 文件中未找到 aperture 定义！"
+
+#: ../src/callbacks.c:1388
+#, fuzzy
+msgid "D code"
+msgstr "D 代码"
+
+#: ../src/callbacks.c:1389
+#, fuzzy
+msgid "Aperture"
+msgstr "Aperture"
+
+#: ../src/callbacks.c:1390
+#, fuzzy
+msgid "Param[0]"
+msgstr "参数[0]"
+
+#: ../src/callbacks.c:1391
+#, fuzzy
+msgid "Param[1]"
+msgstr "参数[1]"
+
+#: ../src/callbacks.c:1392
+#, fuzzy
+msgid "Param[2]"
+msgstr "参数[2]"
+
+#: ../src/callbacks.c:1431
+#, fuzzy
+msgid "No apertures used in Gerber file(s)!"
+msgstr "Gerber 文件中没有使用 aperture！"
+
+#: ../src/callbacks.c:1458
+#, fuzzy
+msgid "Total"
+msgstr "总计"
+
+#: ../src/callbacks.c:1467
+#, fuzzy
+msgid "Gerber codes report on visible layers"
+msgstr "可见图层的 Gerber 代码报告"
+
+#: ../src/callbacks.c:1497 ../src/callbacks.c:1790
+#, fuzzy
+msgid "General"
+msgstr "常规"
+
+#: ../src/callbacks.c:1501 ../src/callbacks.c:1794
+#, fuzzy
+msgid "G codes"
+msgstr "G 代码"
+
+#: ../src/callbacks.c:1505
+#, fuzzy
+msgid "D codes"
+msgstr "D 代码"
+
+#: ../src/callbacks.c:1509 ../src/callbacks.c:1798
+#, fuzzy
+msgid "M codes"
+msgstr "M 代码"
+
+#: ../src/callbacks.c:1513 ../src/callbacks.c:1802
+#, fuzzy
+msgid "Misc. codes"
+msgstr "其他代码"
+
+#: ../src/callbacks.c:1517
+#, fuzzy
+msgid "Aperture definitions"
+msgstr "Aperture 定义"
+
+#: ../src/callbacks.c:1521
+#, fuzzy
+msgid "Aperture usage"
+msgstr "Aperture 使用"
+
+#: ../src/callbacks.c:1563
+#, fuzzy
+msgid "No drill layers visible!"
+msgstr "没有可见的钻孔图层！"
+
+#: ../src/callbacks.c:1567
+#, c-format, fuzzy
+msgid "No errors found in %d visible drill layer."
+msgid_plural "No errors found in %d visible drill layers."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/callbacks.c:1575
+#, c-format, fuzzy
+msgid "Found errors found in %d visible drill layer."
+msgid_plural "Found errors found in %d visible drill layers."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/callbacks.c:1606
+#, fuzzy
+msgid "Excellon file"
+msgstr "Excellon 文件"
+
+#: ../src/callbacks.c:1706
+#, fuzzy
+msgid "Comments"
+msgstr "注释"
+
+#: ../src/callbacks.c:1709
+#, fuzzy
+msgid "Unknown codes"
+msgstr "未知代码"
+
+#: ../src/callbacks.c:1712
+#, fuzzy
+msgid "Repeat hole (R)"
+msgstr "重复孔 (R)"
+
+#: ../src/callbacks.c:1730
+#, fuzzy
+msgid "Drill no."
+msgstr "钻孔编号"
+
+#: ../src/callbacks.c:1731
+#, fuzzy
+msgid "Dia."
+msgstr "直径"
+
+#: ../src/callbacks.c:1732
+#, fuzzy
+msgid "Units"
+msgstr "单位"
+
+#: ../src/callbacks.c:1760
+#, fuzzy
+msgid "Drill codes report on visible layers"
+msgstr "可见图层的钻孔代码报告"
+
+#: ../src/callbacks.c:1806
+#, fuzzy
+msgid "Drill usage"
+msgstr "钻孔使用"
+
+#: ../src/callbacks.c:1864
+#, fuzzy
+msgid "Do you want to close all open layers and quit the program?"
+msgstr "是否要关闭所有已打开的图层并退出程序？"
+
+#: ../src/callbacks.c:1865
+#, fuzzy
+msgid "Quitting the program will cause any unsaved changes to be lost."
+msgstr "退出程序将导致未保存的更改丢失。"
+
+#. TRANSLATORS: Replace this string with your names, one name per line.
+#: ../src/callbacks.c:1923
+#, fuzzy
+msgid "translator-credits"
+msgstr "翻译者名单"
+
+#: ../src/callbacks.c:1926
+#, c-format, fuzzy
+msgid ""
+"Gerbv — a Gerber (RS-274/X) viewer\n"
+"\n"
+"Version %s\n"
+"Compiled on %s at %s\n"
+"\n"
+"Gerbv was originally developed as part of the gEDA Project but is now separately maintained.\n"
+"\n"
+"For more information see:\n"
+"  gerbv homepage: https://gerbv.github.io/\n"
+"  gerbv repository: https://github.com/gerbv/gerbv"
+msgstr ""
+"Gerbv — Gerber (RS-274/X) 查看器\\n\\n版本 %s\\n编译于 %s %s\\n\\nGerbv 最初作为 gEDA "
+"项目的一部分开发，现在独立维护。\\n\\n更多信息请见：\\n  gerbv 主页：https://gerbv.github.io/\\n  "
+"gerbv 仓库：https://github.com/gerbv/gerbv"
+
+#: ../src/callbacks.c:1941
+#, fuzzy
+msgid ""
+"Gerbv — a Gerber (RS-274/X) viewer\n"
+"\n"
+"Copyright (C) 2000—2007 Stefan Petersen\n"
+"\n"
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, either version 2 of the License, or\n"
+"(at your option) any later version.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>."
+msgstr ""
+"Gerbv — Gerber (RS-274/X) 查看器\\n\\nCopyright (C) 2000—2007 Stefan "
+"Petersen\\n\\n本程序是自由软件：您可以根据 Free Software Foundation 发布的\\nGNU 通用公共许可证第 2 "
+"版或（您可以选择）任何更高版本的条款，\\n重新分发和/或修改它。\\n\\n本程序的发布是希望它能有用，\\n但不作任何保证；甚至没有对适销性或特定用途\\n适用性的暗示保证。\\n有关详细信息，请参阅"
+" GNU 通用公共许可证。\\n\\n您应该已经收到了本程序附带的 GNU 通用公共许可证副本。\\n如果没有，请参阅 "
+"<http://www.gnu.org/licenses/>。"
+
+#: ../src/callbacks.c:1965
+#, fuzzy
+msgid "Gerbv"
+msgstr "Gerbv"
+
+#: ../src/callbacks.c:1994
+#, fuzzy
+msgid "About Gerbv"
+msgstr "关于 Gerbv"
+
+#: ../src/callbacks.c:2021
+#, fuzzy
+msgid "Known bugs in Gerbv"
+msgstr "Gerbv 的已知缺陷"
+
+#: ../src/callbacks.c:2350 ../src/callbacks.c:3484
+#, fuzzy
+msgid ""
+"Click to select objects in the active layer. Middle click and drag to pan."
+msgstr "点击以选择活动图层中的对象。中键点击并拖动以平移。"
+
+#: ../src/callbacks.c:2359
+#, fuzzy
+msgid "Click and drag to pan. Right click and drag to zoom."
+msgstr "点击并拖动以平移。右键点击并拖动以缩放。"
+
+#: ../src/callbacks.c:2367
+#, fuzzy
+msgid "Click and drag to zoom in. Shift+click to zoom out."
+msgstr "点击并拖动以放大。Shift+点击以缩小。"
+
+#: ../src/callbacks.c:2376
+#, fuzzy
+msgid "Click and drag to measure a distance or select two apertures."
+msgstr "点击并拖动以测量距离或选择两个 aperture。"
+
+#: ../src/callbacks.c:2606
+#, fuzzy
+msgid "Select a color"
+msgstr "选择颜色"
+
+#: ../src/callbacks.c:2754
+#, fuzzy
+msgid "This file type does not currently have any editable features"
+msgstr "此文件类型当前没有可编辑的功能"
+
+#: ../src/callbacks.c:2755
+#, fuzzy
+msgid ""
+"Format editing is currently only supported for Excellon drill file formats."
+msgstr "格式编辑当前仅支持 Excellon 钻孔文件格式。"
+
+#: ../src/callbacks.c:2766
+#, fuzzy
+msgid "This layer has changed!"
+msgstr "此图层已更改！"
+
+#: ../src/callbacks.c:2767
+#, fuzzy
+msgid ""
+"Editing the file type will reload the layer, destroying your changes.  Click"
+" OK to edit the file type and destroy your changes, or Cancel to leave."
+msgstr "编辑文件类型将重新加载图层，销毁您的更改。点击\"确定\"编辑文件类型并销毁更改，或点击\"取消\"离开。"
+
+#: ../src/callbacks.c:2781
+#, fuzzy
+msgid "Edit file format"
+msgstr "编辑文件格式"
+
+#: ../src/callbacks.c:3058 ../src/callbacks.c:3217
+#, fuzzy
+msgid "No object is currently selected"
+msgstr "当前没有选中的对象"
+
+#: ../src/callbacks.c:3059
+#, fuzzy
+msgid ""
+"Objects must be selected using the pointer tool before you can view the "
+"object properties."
+msgstr "必须先使用指针工具选择对象，才能查看对象属性。"
+
+#: ../src/callbacks.c:3077
+#, fuzzy
+msgid "Object type: Polygon"
+msgstr "对象类型：多边形"
+
+#: ../src/callbacks.c:3119
+#, c-format, fuzzy
+msgid ""
+"FAST (=GDK) mode benchmark: %d redraws in %ld seconds (%g redraws/second)"
+msgstr "快速 (=GDK) 模式基准测试：%ld 秒内 %d 次重绘 (%g 次重绘/秒)"
+
+#: ../src/callbacks.c:3141
+#, c-format, fuzzy
+msgid ""
+"NORMAL (=Cairo) mode benchmark: %d redraws in %ld seconds (%g "
+"redraws/second)"
+msgstr "普通 (=Cairo) 模式基准测试：%ld 秒内 %d 次重绘 (%g 次重绘/秒)"
+
+#: ../src/callbacks.c:3154
+#, fuzzy
+msgid "Performance benchmark"
+msgstr "性能基准测试"
+
+#: ../src/callbacks.c:3155
+#, fuzzy
+msgid ""
+"Application will be unresponsive for 1 minute! Run performance benchmark?"
+msgstr "应用程序将在 1 分钟内无响应！是否运行性能基准测试？"
+
+#: ../src/callbacks.c:3160
+#, fuzzy
+msgid "Running full zoom benchmark..."
+msgstr "正在运行全缩放基准测试..."
+
+#: ../src/callbacks.c:3168
+#, fuzzy
+msgid "Running x5 zoom benchmark..."
+msgstr "正在运行 x5 缩放基准测试..."
+
+#: ../src/callbacks.c:3218
+#, fuzzy
+msgid ""
+"Objects must be selected using the pointer tool before they can be deleted."
+msgstr "必须先使用指针工具选择对象，才能删除。"
+
+#: ../src/callbacks.c:3231
+#, fuzzy
+msgid ""
+"Do you want to permanently delete the selected objects from <i>visible</i> "
+"layers?"
+msgstr "是否要从<i>可见</i>图层中永久删除选中的对象？"
+
+#: ../src/callbacks.c:3233
+#, fuzzy
+msgid ""
+"Gerbv currently has no undo function, so this action cannot be undone. This "
+"action will not change the saved file unless you save the file afterwards."
+msgstr "Gerbv 当前没有撤销功能，因此此操作无法撤销。此操作不会更改已保存的文件，除非您之后保存文件。"
+
+#: ../src/callbacks.c:3449
+#, c-format, fuzzy
+msgid "%8.3f %8.3f"
+msgstr "%8.3f %8.3f"
+
+#: ../src/callbacks.c:3454
+#, c-format, fuzzy
+msgid "%4.5f %4.5f"
+msgstr "%4.5f %4.5f"
+
+#: ../src/callbacks.c:3475
+#, fuzzy
+msgid "No object selected. Objects can only be selected in the active layer."
+msgstr "没有选中的对象。对象只能在活动图层中选择。"
+
+#: ../src/callbacks.c:3491
+#, c-format, fuzzy
+msgid "%d object are currently selected"
+msgid_plural "%d objects are currently selected"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/callbacks.c:3694 ../src/callbacks.c:3700
+#, c-format, fuzzy
+msgid "#_%i %s  >  #%i %s"
+msgstr "#_%i %s  >  #%i %s"
+
+#: ../src/callbacks.c:3771 ../src/callbacks.c:3777
+#, fuzzy
+msgid "Can't align by this type of object"
+msgstr "无法按此类型的对象对齐"
+
+#: ../src/callbacks.c:3955
+#, c-format, fuzzy
+msgid "Measured distance: %8.2f mils (%8.2f x, %8.2f y)"
+msgstr "测量距离：%8.2f mil (%8.2f x, %8.2f y)"
+
+#: ../src/callbacks.c:3960
+#, c-format, fuzzy
+msgid "Measured distance: %8.3f mm (%8.3f x, %8.3f y)"
+msgstr "测量距离：%8.3f mm (%8.3f x, %8.3f y)"
+
+#: ../src/callbacks.c:3965
+#, c-format, fuzzy
+msgid "Measured distance: %4.5f inches (%4.5f x, %4.5f y)"
+msgstr "测量距离：%4.5f 英寸 (%4.5f x, %4.5f y)"
+
+#: ../src/callbacks.c:4132
+#, c-format, fuzzy
+msgid "Fatal error: %s\n"
+msgstr "致命错误：%s\\n"
+
+#: ../src/callbacks.c:4135
+#, fuzzy
+msgid "Fatal Error"
+msgstr "致命错误"
+
+#: ../src/callbacks.c:4139
+#, c-format, fuzzy
+msgid "Fatal error: %s"
+msgstr "致命错误：%s"
+
+#: ../src/callbacks.c:4144
+#, fuzzy
+msgid ""
+"\n"
+"Gerbv will be closed now!"
+msgstr "\\nGerbv 将立即关闭！"
+
+#: ../src/callbacks.c:4251
+#, fuzzy
+msgid "Object type: Line"
+msgstr "对象类型：线段"
+
+#: ../src/callbacks.c:4253
+#, fuzzy
+msgid "Object type: Slot (drilled)"
+msgstr "对象类型：槽孔（钻孔）"
+
+#: ../src/callbacks.c:4263
+#, fuzzy
+msgid "Object type: Arc"
+msgstr "对象类型：圆弧"
+
+#: ../src/callbacks.c:4271
+#, fuzzy
+msgid "Object type: Unknown"
+msgstr "对象类型：未知"
+
+#: ../src/callbacks.c:4276
+#, fuzzy
+msgid "    Exposure: On"
+msgstr "    曝光：开"
+
+#: ../src/callbacks.c:4290 ../src/callbacks.c:4437 ../src/callbacks.c:4517
+#, c-format, fuzzy
+msgid "    Start: (%g, %g) %s"
+msgstr "    起点：(%g, %g) %s"
+
+#: ../src/callbacks.c:4298 ../src/callbacks.c:4523
+#, c-format, fuzzy
+msgid "    Stop: (%g, %g) %s"
+msgstr "    终点：(%g, %g) %s"
+
+#: ../src/callbacks.c:4310 ../src/callbacks.c:4426 ../src/callbacks.c:4453
+#: ../src/callbacks.c:4482 ../src/callbacks.c:4503 ../src/callbacks.c:4540
+#, c-format, fuzzy
+msgid "    Center: (%g, %g) %s"
+msgstr "    中心：(%g, %g) %s"
+
+#: ../src/callbacks.c:4318
+#, c-format, fuzzy
+msgid "    Radius: %g %s"
+msgstr "    半径：%g %s"
+
+#: ../src/callbacks.c:4322
+#, c-format, fuzzy
+msgid "    Angle: %g deg"
+msgstr "    角度：%g 度"
+
+#: ../src/callbacks.c:4325
+#, c-format, fuzzy
+msgid "    Angles: (%g, %g) deg"
+msgstr "    角度：(%g, %g) 度"
+
+#: ../src/callbacks.c:4328
+#, c-format, fuzzy
+msgid "    Direction: %s"
+msgstr "    方向：%s"
+
+#: ../src/callbacks.c:4331 ../src/callbacks.c:4671 ../src/gerber.c:346
+#, fuzzy
+msgid "CW"
+msgstr "顺时针"
+
+#: ../src/callbacks.c:4331 ../src/callbacks.c:4671 ../src/gerber.c:346
+#, fuzzy
+msgid "CCW"
+msgstr "逆时针"
+
+#: ../src/callbacks.c:4345
+#, c-format, fuzzy
+msgid "    Slot length: %g %s"
+msgstr "    槽孔长度：%g %s"
+
+#: ../src/callbacks.c:4351
+#, c-format, fuzzy
+msgid "    Length: %g (sum: %g) %s"
+msgstr "    长度：%g（总计：%g）%s"
+
+#: ../src/callbacks.c:4363
+#, fuzzy
+msgid "Object type: Flashed aperture"
+msgstr "对象类型：闪光 aperture"
+
+#: ../src/callbacks.c:4365
+#, fuzzy
+msgid "Object type: Drill"
+msgstr "对象类型：钻孔"
+
+#: ../src/callbacks.c:4379
+#, c-format, fuzzy
+msgid "    Location: (%g, %g) %s"
+msgstr "    位置：(%g, %g) %s"
+
+#: ../src/callbacks.c:4398
+#, c-format, fuzzy
+msgid "    Aperture used: D%d"
+msgstr "    使用的 aperture：D%d"
+
+#: ../src/callbacks.c:4399
+#, c-format, fuzzy
+msgid "    Aperture type: %s"
+msgstr "    Aperture 类型：%s"
+
+#: ../src/callbacks.c:4406 ../src/callbacks.c:4420 ../src/callbacks.c:4447
+#: ../src/callbacks.c:4581
+#, c-format, fuzzy
+msgid "    Diameter: %g %s"
+msgstr "    直径：%g %s"
+
+#: ../src/callbacks.c:4412
+#, c-format, fuzzy
+msgid "    Dimensions: %gx%g %s"
+msgstr "    尺寸：%gx%g %s"
+
+#: ../src/callbacks.c:4432 ../src/callbacks.c:4445
+#, c-format, fuzzy
+msgid "    Number of points: %g"
+msgstr "    顶点数：%g"
+
+#: ../src/callbacks.c:4440 ../src/callbacks.c:4456 ../src/callbacks.c:4485
+#: ../src/callbacks.c:4506 ../src/callbacks.c:4526 ../src/callbacks.c:4543
+#: ../src/callbacks.c:4560
+#, c-format, fuzzy
+msgid "    Rotation: %g deg"
+msgstr "    旋转：%g 度"
+
+#: ../src/callbacks.c:4461 ../src/callbacks.c:4490
+#, c-format, fuzzy
+msgid "    Outside diameter: %g %s"
+msgstr "    外径：%g %s"
+
+#: ../src/callbacks.c:4464
+#, c-format, fuzzy
+msgid "    Ring thickness: %g %s"
+msgstr "    环宽：%g %s"
+
+#: ../src/callbacks.c:4467
+#, c-format, fuzzy
+msgid "    Gap width: %g %s"
+msgstr "    间隙宽度：%g %s"
+
+#: ../src/callbacks.c:4470
+#, c-format, fuzzy
+msgid "    Number of rings: %g"
+msgstr "    环数：%g"
+
+#: ../src/callbacks.c:4472 ../src/callbacks.c:4496
+#, c-format, fuzzy
+msgid "    Crosshair thickness: %g %s"
+msgstr "    十字线宽度：%g %s"
+
+#: ../src/callbacks.c:4476
+#, c-format, fuzzy
+msgid "    Crosshair length: %g %s"
+msgstr "    十字线长度：%g %s"
+
+#: ../src/callbacks.c:4493
+#, c-format, fuzzy
+msgid "    Inside diameter: %g %s"
+msgstr "    内径：%g %s"
+
+#: ../src/callbacks.c:4511 ../src/callbacks.c:4531 ../src/callbacks.c:4548
+#, c-format, fuzzy
+msgid "    Width: %g %s"
+msgstr "    宽度：%g %s"
+
+#: ../src/callbacks.c:4534 ../src/callbacks.c:4551
+#, c-format, fuzzy
+msgid "    Height: %g %s"
+msgstr "    高度：%g %s"
+
+#: ../src/callbacks.c:4557
+#, c-format, fuzzy
+msgid "    Lower left: (%g, %g) %s"
+msgstr "    左下角：(%g, %g) %s"
+
+#: ../src/callbacks.c:4579
+#, c-format, fuzzy
+msgid "    Tool used: T%d"
+msgstr "    使用的工具：T%d"
+
+#: ../src/callbacks.c:4604
+#, c-format, fuzzy
+msgid "    Number of vertices: %u"
+msgstr "    顶点数：%u"
+
+#: ../src/callbacks.c:4620
+#, c-format, fuzzy
+msgid "    Line from: (%g, %g) %s"
+msgstr "    线段起点：(%g, %g) %s"
+
+#: ../src/callbacks.c:4629
+#, c-format, fuzzy
+msgid "        Line to: (%g, %g) %s"
+msgstr "        线段终点：(%g, %g) %s"
+
+#: ../src/callbacks.c:4640
+#, c-format, fuzzy
+msgid "    Arc from: (%g, %g) %s"
+msgstr "    圆弧起点：(%g, %g) %s"
+
+#: ../src/callbacks.c:4647
+#, c-format, fuzzy
+msgid "        Arc to: (%g, %g) %s"
+msgstr "        圆弧终点：(%g, %g) %s"
+
+#: ../src/callbacks.c:4654
+#, c-format, fuzzy
+msgid "        Center: (%g, %g) %s"
+msgstr "        中心：(%g, %g) %s"
+
+#: ../src/callbacks.c:4661
+#, c-format, fuzzy
+msgid "        Radius: %g %s"
+msgstr "        半径：%g %s"
+
+#: ../src/callbacks.c:4664
+#, c-format, fuzzy
+msgid "        Angle: %g deg"
+msgstr "        角度：%g 度"
+
+#: ../src/callbacks.c:4666
+#, c-format, fuzzy
+msgid "        Angles: (%g, %g) deg"
+msgstr "        角度：(%g, %g) 度"
+
+#: ../src/callbacks.c:4668
+#, c-format, fuzzy
+msgid "        Direction: %s"
+msgstr "        方向：%s"
+
+#: ../src/callbacks.c:4688
+#, c-format, fuzzy
+msgid "    Net label: %s"
+msgstr "    网络标签：%s"
+
+#: ../src/callbacks.c:4692
+#, c-format, fuzzy
+msgid "    Layer name: %s"
+msgstr "    图层名称：%s"
+
+#: ../src/callbacks.c:4697
+#, c-format, fuzzy
+msgid "    In file: %s"
+msgstr "    在文件中：%s"
+
+#: ../src/csv.c:168 ../src/csv.c:290
+#, c-format, fuzzy
+msgid "%d: unexpected quote in element"
+msgstr "%d: 元素中出现意外引号"
+
+#: ../src/csv.c:199
+#, c-format, fuzzy
+msgid "%d: bad end quote in element"
+msgstr "%d: 元素中的结束引号错误"
+
+#: ../src/csv.c:321
+#, c-format, fuzzy
+msgid "%d: bad end quote in element "
+msgstr "%d: 元素中的结束引号错误"
+
+#: ../src/draw-gdk.c:598
+#, c-format, fuzzy
+msgid "Unknown simplified aperture macro type %d"
+msgstr "未知的简化 aperture 宏类型 %d"
+
+#: ../src/draw-gdk.c:812 ../src/draw-gdk.c:1205
+#, c-format, fuzzy
+msgid "Skipped interpolation type %d"
+msgstr "已跳过插值类型 %d"
+
+#: ../src/draw-gdk.c:1149
+#, fuzzy
+msgid "Linear != x1"
+msgstr "线性 != x1"
+
+#: ../src/draw-gdk.c:1274
+#, c-format, fuzzy
+msgid "Unknown aperture type %d"
+msgstr "未知的 aperture 类型 %d"
+
+#: ../src/draw-gdk.c:1280
+#, c-format, fuzzy
+msgid "Unknown aperture state %d"
+msgstr "未知的 aperture 状态 %d"
+
+#: ../src/draw.c:550
+#, c-format, fuzzy
+msgid "Ignoring %s with non positive diameter"
+msgstr "忽略非正直径的 %s"
+
+#: ../src/draw.c:747
+#, c-format, fuzzy
+msgid "Unknown macro type: %s"
+msgstr "未知的宏类型：%s"
+
+#: ../src/draw.c:1337 ../src/draw.c:1437
+#, c-format, fuzzy
+msgid "Unknown aperture type: %s"
+msgstr "未知的 aperture 类型：%s"
+
+#: ../src/draw.c:1373
+#, c-format, fuzzy
+msgid "Unknown interpolation type: %s"
+msgstr "未知的插值类型：%s"
+
+#: ../src/draw.c:1460
+#, c-format, fuzzy
+msgid "Unknown aperture state: %s"
+msgstr "未知的 aperture 状态：%s"
+
+#: ../src/drill.c:648
+#, c-format, fuzzy
+msgid "Comment \"%s\" at line %u in file \"%s\""
+msgstr "注释\"%s\"位于文件\"%s\"的第 %u 行"
+
+#: ../src/drill.c:678 ../src/drill.c:710 ../src/drill.c:1172
+#, c-format, fuzzy
+msgid "Unrecognised string \"%s\" in header at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行的头部中无法识别的字符串\"%s\""
+
+#: ../src/drill.c:698
+#, c-format, fuzzy
+msgid "File in unsupported format 1 at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行中不支持的格式 1"
+
+#: ../src/drill.c:750 ../src/drill.c:794 ../src/gerber.c:1248
+#: ../src/gerber.c:1262 ../src/gerber.c:1276 ../src/gerber.c:1437
+#: ../src/gerber.c:1554
+#, c-format, fuzzy
+msgid "Unexpected EOF found in file \"%s\""
+msgstr "在文件\"%s\"中发现意外的文件结尾 (EOF)"
+
+#: ../src/drill.c:809 ../src/drill.c:842 ../src/drill.c:985
+#, c-format, fuzzy
+msgid "Unrecognized string \"%s\" found at line %u in file \"%s\""
+msgstr "在文件\"%s\"的第 %u 行发现无法识别的字符串\"%s\""
+
+#: ../src/drill.c:818
+#, c-format, fuzzy
+msgid "Unsupported G%02d (%s) code at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行中不支持的 G%02d (%s) 代码"
+
+#: ../src/drill.c:870
+#, c-format, fuzzy
+msgid ""
+"End of Excellon header reached but no leading/trailing zero handling "
+"specified at line %u in file \"%s\""
+msgstr "在文件\"%s\"的第 %u 行到达 Excellon 头部结尾，但未指定前导/尾随零处理"
+
+#: ../src/drill.c:877
+#, c-format, fuzzy
+msgid "Assuming leading zeros in file \"%s\""
+msgstr "假定文件\"%s\"中使用前导零"
+
+#: ../src/drill.c:889
+#, c-format, fuzzy
+msgid ""
+"M71 code found but no METRIC specification in header at line %u in file "
+"\"%s\""
+msgstr "文件\"%s\"第 %u 行发现 M71 代码，但头部中没有 METRIC 规范"
+
+#: ../src/drill.c:895
+#, c-format, fuzzy
+msgid "Assuming all tool sizes are MM in file \"%s\""
+msgstr "假定文件\"%s\"中所有工具尺寸为毫米"
+
+#: ../src/drill.c:937
+#, c-format, fuzzy
+msgid "Canned text \"%s\" at line %u in drill file \"%s\""
+msgstr "钻孔文件\"%s\"第 %u 行的固定文本\"%s\""
+
+#: ../src/drill.c:946
+#, c-format, fuzzy
+msgid "Message \"%s\" embedded at line %u in drill file \"%s\""
+msgstr "钻孔文件\"%s\"第 %u 行嵌入的消息\"%s\""
+
+#: ../src/drill.c:995
+#, c-format, fuzzy
+msgid "Unsupported M%02d (%s) code found at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行发现不支持的 M%02d (%s) 代码"
+
+#: ../src/drill.c:1009
+#, c-format, fuzzy
+msgid "Not allowed 'R' code in the header at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行的头部中不允许 'R' 代码"
+
+#: ../src/drill.c:1070
+#, c-format, fuzzy
+msgid "Ignoring setting spindle speed at line %u in drill file \"%s\""
+msgstr "忽略钻孔文件\"%s\"第 %u 行的主轴速度设置"
+
+#: ../src/drill.c:1086
+#, c-format, fuzzy
+msgid "Undefined string \"%s\" in header at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行头部中未定义的字符串\"%s\""
+
+#: ../src/drill.c:1163
+#, c-format, fuzzy
+msgid "Undefined code '%s' (0x%x) found in header at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行头部中发现未定义的代码 '%s' (0x%x)"
+
+#: ../src/drill.c:1178
+#, c-format, fuzzy
+msgid ""
+"Ignoring undefined character '%s' (0x%x) found inside data at line %u in "
+"file \"%s\""
+msgstr "忽略在文件\"%s\"第 %u 行数据中发现的未定义字符 '%s' (0x%x)"
+
+#: ../src/drill.c:1187
+#, c-format, fuzzy
+msgid "No EOF found in drill file \"%s\""
+msgstr "钻孔文件\"%s\"中未找到 EOF"
+
+#: ../src/drill.c:1410
+#, c-format, fuzzy
+msgid "Tool change stop switch found \"%s\" at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行发现工具更换停止开关\"%s\""
+
+#: ../src/drill.c:1425
+#, fuzzy
+msgid "OrCAD bug: Junk text found in place of tool definition"
+msgstr "OrCAD 缺陷：在工具定义处发现垃圾文本"
+
+#: ../src/drill.c:1428
+#, c-format, fuzzy
+msgid "Junk text \"%s\" at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行的垃圾文本\"%s\""
+
+#: ../src/drill.c:1433
+#, fuzzy
+msgid "Ignoring junk text"
+msgstr "忽略垃圾文本"
+
+#: ../src/drill.c:1448
+#, c-format, fuzzy
+msgid "Out of bounds drill number %d at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行中钻孔编号 %d 超出范围"
+
+#: ../src/drill.c:1479
+#, c-format, fuzzy
+msgid "Read a drill of diameter %g inches at line %u in file \"%s\""
+msgstr "在文件\"%s\"第 %u 行读取到直径为 %g 英寸的钻孔"
+
+#: ../src/drill.c:1483
+#, fuzzy
+msgid "Assuming units are mils"
+msgstr "假定单位为 mil"
+
+#: ../src/drill.c:1489
+#, c-format, fuzzy
+msgid "Unreasonable drill size %g found for drill %d at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行中钻孔 %d 的钻孔尺寸 %g 不合理"
+
+#: ../src/drill.c:1505
+#, c-format, fuzzy
+msgid "Found redefinition of drill %d at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行发现钻孔 %d 的重复定义"
+
+#: ../src/drill.c:1530 ../src/drill.c:1608 ../src/interface.c:1292
+#, fuzzy
+msgid "mm"
+msgstr "mm"
+
+#: ../src/drill.c:1530 ../src/drill.c:1608
+#, fuzzy
+msgid "inch"
+msgstr "英寸"
+
+#: ../src/drill.c:1555
+#, c-format, fuzzy
+msgid "Unexpected EOF encountered in header of drill file \"%s\""
+msgstr "在解析钻孔文件\"%s\"的头部时遇到意外的 EOF"
+
+#: ../src/drill.c:1590
+#, c-format, fuzzy
+msgid "Tool %02d used without being defined at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行中工具 %02d 未定义就被使用"
+
+#: ../src/drill.c:1594
+#, c-format, fuzzy
+msgid "Setting a default size of %g\""
+msgstr "设置默认尺寸为 %g\""
+
+#: ../src/drill.c:1641
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing M-code in file \"%s\""
+msgstr "在文件\"%s\"中解析 M 代码时遇到意外的 EOF"
+
+#: ../src/drill.c:1738 ../src/drill.c:1984 ../src/drill.c:2063
+#: ../src/drill.c:2075
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing \"%s\" string in file \"%s\""
+msgstr "在文件\"%s\"中解析\"%s\"字符串时遇到意外的 EOF"
+
+#: ../src/drill.c:1878
+#, c-format, fuzzy
+msgid "Found junk after METRIC command at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行 METRIC 命令后发现垃圾文本"
+
+#: ../src/drill.c:1912
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing \"%s\" string in file \"%s\" on line %u"
+msgstr "在文件\"%s\"第 %u 行解析\"%s\"字符串时遇到意外的 EOF"
+
+#: ../src/drill.c:1923
+#, c-format, fuzzy
+msgid "Expected '=' while parsing \"%s\" string in file \"%s\" on line %u"
+msgstr "在文件\"%s\"第 %u 行解析\"%s\"字符串时期望 '='"
+
+#: ../src/drill.c:1935
+#, c-format, fuzzy
+msgid ""
+"Expected integer after '=' while parsing \"%s\" string in file \"%s\" on "
+"line %u"
+msgstr "在文件\"%s\"第 %u 行解析\"%s\"字符串时期望 '=' 后有整数"
+
+#: ../src/drill.c:1943
+#, c-format, fuzzy
+msgid "Expected ':' while parsing \"%s\" string in file \"%s\" on line %u"
+msgstr "在文件\"%s\"第 %u 行解析\"%s\"字符串时期望 ':'"
+
+#: ../src/drill.c:1954
+#, c-format, fuzzy
+msgid ""
+"Expected integer after ':' while parsing \"%s\" string in file \"%s\" on "
+"line %u"
+msgstr "在文件\"%s\"第 %u 行解析\"%s\"字符串时期望 ':' 后有整数"
+
+#: ../src/drill.c:2028 ../src/drill.c:2038
+#, c-format, fuzzy
+msgid "Found junk '%s' after INCH command at line %u in file \"%s\""
+msgstr "文件\"%s\"第 %u 行 INCH 命令后发现垃圾文本 '%s'"
+
+#: ../src/drill.c:2104
+#, c-format, fuzzy
+msgid "Unexpected EOF found while parsing G-code in file \"%s\""
+msgstr "在文件\"%s\"中解析 G 代码时遇到意外的 EOF"
+
+#: ../src/drill.c:2215
+#, c-format, fuzzy
+msgid ""
+"Coordinate mode is not absolute and not incremental at line %u in file "
+"\"%s\""
+msgstr "文件\"%s\"第 %u 行的坐标模式既不是绝对也不是增量"
+
+#: ../src/drill.c:2327
+#, c-format, fuzzy
+msgid ""
+"%s():  omit_zeros == GERBV_OMIT_ZEROS_TRAILING but fmt = %d.\n"
+"This should never have happened\n"
+msgstr "%s(): omit_zeros == GERBV_OMIT_ZEROS_TRAILING 但 fmt = %d。\\n这种情况不应该发生\\n"
+
+#: ../src/drill.c:2343
+#, c-format, fuzzy
+msgid "%s():  wantdigits = %d which exceeds the maximum allowed size\n"
+msgstr "%s(): wantdigits = %d 超出了最大允许大小\\n"
+
+#: ../src/drill.c:2398
+#, c-format, fuzzy
+msgid "%s(): Unhandled fmt ` %d\n"
+msgstr "%s(): 未处理的 fmt ` %d\\n"
+
+#: ../src/drill_stats.c:189
+#, c-format, fuzzy
+msgid "Broken tool detect %s (layer %d)"
+msgstr "损坏的工具检测 %s（图层 %d）"
+
+#: ../thirdparty/tinyscheme/dynload.c:48
+#, c-format, fuzzy
+msgid "scheme load-extension: %s: %s"
+msgstr "scheme load-extension: %s: %s"
+
+#: ../thirdparty/tinyscheme/dynload.c:78
+#, c-format, fuzzy
+msgid "Error loading scheme extension \"%s\": %s\n"
+msgstr "加载 Scheme 扩展\"%s\"时出错：%s\\n"
+
+#: ../thirdparty/tinyscheme/dynload.c:89
+#, c-format, fuzzy
+msgid "Error initializing scheme module \"%s\": %s\n"
+msgstr "初始化 Scheme 模块\"%s\"时出错：%s\\n"
+
+#: ../src/export-drill.c:52 ../src/export-isel-drill.c:57
+#: ../src/export-rs274x.c:255
+#, c-format, fuzzy
+msgid "Can't open file for writing: %s"
+msgstr "无法打开文件进行写入：%s"
+
+#: ../src/export-image.c:139 ../src/export-image.c:149
+#: ../src/export-image.c:156 ../src/export-image.c:186
+#: ../src/export-image.c:235
+#, c-format, fuzzy
+msgid "Exporting error to file \"%s\""
+msgstr "导出到文件\"%s\"时出错"
+
+#: ../src/export-image.c:162
+#, fuzzy
+msgid "Unnamed layer"
+msgstr "未命名的图层"
+
+#: ../src/export-isel-drill.c:148
+#, c-format, fuzzy
+msgid "Skipped to export of unsupported state %d interpolation \"%s\""
+msgstr "跳过不支持的状态 %d 插值\"%s\"的导出"
+
+#: ../src/gerb_file.c:188
+#, fuzzy
+msgid "Failed to read integer"
+msgstr "读取整数失败"
+
+#: ../src/gerb_file.c:232
+#, fuzzy
+msgid "Failed to read double"
+msgstr "读取浮点数失败"
+
+#: ../src/gerb_image.c:93 ../src/gerb_image.c:296
+#, c-format, fuzzy
+msgid "unknown"
+msgstr "未知"
+
+#: ../src/gerb_image.c:252
+#, c-format, fuzzy
+msgid "..state off"
+msgstr "..状态关闭"
+
+#: ../src/gerb_image.c:255
+#, c-format, fuzzy
+msgid "..state on"
+msgstr "..状态开启"
+
+#: ../src/gerb_image.c:258
+#, c-format, fuzzy
+msgid "..state flash"
+msgstr "..状态闪光"
+
+#: ../src/gerb_image.c:261
+#, c-format, fuzzy
+msgid "..state unknown"
+msgstr "..状态未知"
+
+#: ../src/gerb_image.c:274
+#, c-format, fuzzy
+msgid "Apertures:\n"
+msgstr "Aperture：\\n"
+
+#: ../src/gerb_image.c:278
+#, c-format, fuzzy
+msgid " Aperture no:%d is an "
+msgstr " Aperture 编号：%d 是"
+
+#: ../src/gerb_image.c:281
+#, c-format, fuzzy
+msgid "circle"
+msgstr "圆形"
+
+#: ../src/gerb_image.c:284
+#, c-format, fuzzy
+msgid "rectangle"
+msgstr "矩形"
+
+#: ../src/gerb_image.c:287
+#, c-format, fuzzy
+msgid "oval"
+msgstr "椭圆形"
+
+#: ../src/gerb_image.c:290
+#, c-format, fuzzy
+msgid "polygon"
+msgstr "多边形"
+
+#: ../src/gerb_image.c:293
+#, c-format, fuzzy
+msgid "macro"
+msgstr "宏"
+
+#: ../src/gerb_image.c:308
+#, c-format, fuzzy
+msgid "(%f,%f)->(%f,%f) with %d ("
+msgstr "(%f,%f)->(%f,%f)，含 %d ("
+
+#: ../src/gerb_image.c:425 ../src/gerbv.c:292
+#, fuzzy
+msgid "Exporting mirrored file is not supported!"
+msgstr "不支持导出镜像文件！"
+
+#: ../src/gerb_image.c:432 ../src/gerbv.c:299 ../src/gerbv.c:313
+#, fuzzy
+msgid "Exporting inverted file is not supported!"
+msgstr "不支持导出反转文件！"
+
+#: ../src/gerb_image.c:823
+#, c-format, fuzzy
+msgid ""
+"Can't rotate %u rectangular aperture to %.2f degrees (non 90 multiply)!"
+msgid_plural ""
+"Can't rotate %u rectangular apertures to %.2f degrees (non 90 multiply)!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_image.c:831
+#, c-format, fuzzy
+msgid "Can't scale %u line macro!"
+msgid_plural "Can't scale %u line macros!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_image.c:837
+#, c-format, fuzzy
+msgid "Can't scale %u polygon macro!"
+msgid_plural "Can't scale %u polygon macros!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_image.c:843
+#, c-format, fuzzy
+msgid "Can't scale %u thermal macro!"
+msgid_plural "Can't scale %u thermal macros!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_image.c:849
+#, c-format, fuzzy
+msgid "Can't scale %u moire macro!"
+msgid_plural "Can't scale %u moire macros!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_image.c:855
+#, c-format, fuzzy
+msgid "Can't rotate %u oval aperture to %.2f degrees (non 90 multiply)!"
+msgid_plural ""
+"Can't rotate %u oval apertures to %.2f degrees (non 90 multiply)!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_image.c:863
+#, c-format, fuzzy
+msgid "Can't scale %u circle aperture to ellipse!"
+msgid_plural "Can't scale %u circle apertures to ellipse!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_image.c:869
+#, c-format, fuzzy
+msgid "Skipped %u aperture with unknown type!"
+msgid_plural "Skipped %u apertures with unknown type!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_image.c:875
+#, c-format, fuzzy
+msgid "Skipped %u macro aperture!"
+msgid_plural "Skipped %u macro apertures!"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gerb_stats.c:530
+#, fuzzy
+msgid "Undefined aperture number called out in D code"
+msgstr "D 代码中调用了未定义的 aperture 编号"
+
+#: ../src/gerber.c:181
+#, c-format, fuzzy
+msgid "Unknown M code found at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行发现未知的 M 代码"
+
+#: ../src/gerber.c:342
+#, c-format, fuzzy
+msgid ""
+"Signed incremental distance IxJy in single quadrant %s circular "
+"interpolation %s at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行单象限 %s 圆弧插值 %s 中有符号增量距离 IxJy"
+
+#: ../src/gerber.c:368
+#, c-format, fuzzy
+msgid "End of polygon without start at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行出现无起始的多边形结束"
+
+#: ../src/gerber.c:481
+#, c-format, fuzzy
+msgid "Found undefined D code D%02d at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行发现未定义的 D 代码 D%02d"
+
+#: ../src/gerber.c:727
+#, c-format, fuzzy
+msgid "Found unknown character '%s' (0x%x) at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行发现未知字符 '%s' (0x%x)"
+
+#: ../src/gerber.c:794
+#, c-format, fuzzy
+msgid "Missing Gerber EOF code in file \"%s\""
+msgstr "文件\"%s\"中缺少 Gerber EOF 代码"
+
+#: ../src/gerber.c:1039
+#, c-format, fuzzy
+msgid ""
+"Found newline while parsing G04 code at line %ld in file \"%s\", maybe you "
+"forgot a \"*\"?"
+msgstr "文件\"%s\"第 %ld 行解析 G04 代码时发现换行，可能忘记了\"*\"？"
+
+#: ../src/gerber.c:1080
+#, c-format, fuzzy
+msgid ""
+"Found aperture D%02d out of bounds while parsing G code at line %ld in file "
+"\"%s\""
+msgstr "文件\"%s\"第 %ld 行解析 G 代码时发现超出范围的 aperture D%02d"
+
+#: ../src/gerber.c:1086
+#, c-format, fuzzy
+msgid "Found unexpected code after G54 at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行 G54 后发现意外代码"
+
+#: ../src/gerber.c:1124
+#, c-format, fuzzy
+msgid "Encountered unknown G code G%02d at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行遇到未知的 G 代码 G%02d"
+
+#: ../src/gerber.c:1128
+#, c-format, fuzzy
+msgid "Ignoring unknown G code G%02d"
+msgstr "忽略未知的 G 代码 G%02d"
+
+#: ../src/gerber.c:1157
+#, c-format, fuzzy
+msgid "Found invalid D00 code at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行发现无效的 D00 代码"
+
+#: ../src/gerber.c:1182
+#, c-format, fuzzy
+msgid "Found out of bounds aperture D%02d at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行发现超出范围的 aperture D%02d"
+
+#: ../src/gerber.c:1216
+#, c-format, fuzzy
+msgid "Encountered unknown M%02d code at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行遇到未知的 M%02d 代码"
+
+#: ../src/gerber.c:1219
+#, c-format, fuzzy
+msgid "Ignoring unknown M%02d code"
+msgstr "忽略未知的 M%02d 代码"
+
+#: ../src/gerber.c:1301
+#, c-format, fuzzy
+msgid ""
+"EagleCad bug detected: Undefined handling of zeros in format code at line "
+"%ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行格式代码中检测到 EagleCad 缺陷：零的处理方式未定义"
+
+#: ../src/gerber.c:1305
+#, fuzzy
+msgid "Defaulting to omitting leading zeros"
+msgstr "默认为省略前导零"
+
+#: ../src/gerber.c:1319
+#, c-format, fuzzy
+msgid "Invalid coordinate type defined in format code at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行格式代码中定义了无效的坐标类型"
+
+#: ../src/gerber.c:1323
+#, fuzzy
+msgid "Defaulting to absolute coordinates"
+msgstr "默认为绝对坐标"
+
+#: ../src/gerber.c:1349 ../src/gerber.c:1358 ../src/gerber.c:1369
+#: ../src/gerber.c:1378
+#, c-format, fuzzy
+msgid "Illegal format size '%s' at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中非法的格式大小 '%s'"
+
+#: ../src/gerber.c:1387
+#, c-format, fuzzy
+msgid "Illegal format statement '%s' at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中非法的格式语句 '%s'"
+
+#: ../src/gerber.c:1392
+#, fuzzy
+msgid "Ignoring invalid format statement"
+msgstr "忽略无效的格式语句"
+
+#: ../src/gerber.c:1424
+#, c-format, fuzzy
+msgid "Wrong character '%s' in mirror at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行镜像中错误的字符 '%s'"
+
+#: ../src/gerber.c:1452
+#, c-format, fuzzy
+msgid "Illegal unit '%s%s' at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中非法的单位 '%s%s'"
+
+#: ../src/gerber.c:1470
+#, c-format, fuzzy
+msgid "Wrong character '%s' in offset at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行偏移中错误的字符 '%s'"
+
+#: ../src/gerber.c:1497
+#, c-format, fuzzy
+msgid "Included file \"%s\" cannot be found at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中找不到包含文件\"%s\""
+
+#: ../src/gerber.c:1504
+#, fuzzy
+msgid ""
+"Parser encountered more than 10 levels of include file recursion which is "
+"not allowed by the RS-274X spec"
+msgstr "解析器遇到了超过 10 层的包含文件递归，RS-274X 规范不允许这样做"
+
+#: ../src/gerber.c:1525
+#, c-format, fuzzy
+msgid "Wrong character '%s' in image offset at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行图像偏移中错误的字符 '%s'"
+
+#: ../src/gerber.c:1574
+#, c-format, fuzzy
+msgid "Unknown input code (IC) '%s%s' at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中未知的输入代码 (IC) '%s%s'"
+
+#: ../src/gerber.c:1614
+#, c-format, fuzzy
+msgid "Wrong character '%s' in image justify at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行图像对齐中错误的字符 '%s'"
+
+#: ../src/gerber.c:1630
+#, c-format, fuzzy
+msgid "Unexpected EOF while reading image polarity (IP) in file \"%s\""
+msgstr "在文件\"%s\"中读取图像极性 (IP) 时遇到意外的 EOF"
+
+#: ../src/gerber.c:1642
+#, c-format, fuzzy
+msgid "Unknown polarity '%s%s%s' at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中未知的极性 '%s%s%s'"
+
+#: ../src/gerber.c:1660
+#, c-format, fuzzy
+msgid ""
+"Image rotation must be 0, 90, 180 or 270 (is actually %d) at line %ld in "
+"file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中图像旋转必须为 0、90、180 或 270（实际为 %d）"
+
+#: ../src/gerber.c:1690 ../src/gerber.c:1696
+#, c-format, fuzzy
+msgid "Aperture number out of bounds %d at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中 aperture 编号 %d 超出范围"
+
+#: ../src/gerber.c:1713
+#, c-format, fuzzy
+msgid "Failed to parse aperture macro at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行解析 aperture 宏失败"
+
+#: ../src/gerber.c:1735
+#, c-format, fuzzy
+msgid "Unknown layer polarity '%s' at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中未知的图层极性 '%s'"
+
+#: ../src/gerber.c:1755
+#, c-format, fuzzy
+msgid "Knockout must supply a polarity (C, D, or *) at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中 Knockout 必须提供极性 (C、D 或 *)"
+
+#: ../src/gerber.c:1798
+#, c-format, fuzzy
+msgid "Unknown variable in knockout at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行 knockout 中的未知变量"
+
+#: ../src/gerber.c:1832
+#, c-format, fuzzy
+msgid "Step-and-repeat parameter error at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中步进重复参数错误"
+
+#: ../src/gerber.c:1858
+#, c-format, fuzzy
+msgid "Error in layer rotation command at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行中图层旋转命令错误"
+
+#: ../src/gerber.c:1869
+#, c-format, fuzzy
+msgid "Ignoring Gerber X2 attribute %%%s%s%% at line %ld in file \"%s\""
+msgstr "忽略文件\"%s\"第 %ld 行的 Gerber X2 属性 %%%s%s%%"
+
+#: ../src/gerber.c:1876
+#, c-format, fuzzy
+msgid "Unknown RS-274X extension found %%%s%s%% at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行发现未知的 RS-274X 扩展 %%%s%s%%"
+
+#: ../src/gerber.c:1934
+#, fuzzy
+msgid "push will overflow stack capacity"
+msgstr "push 将超出堆栈容量"
+
+#: ../src/gerber.c:1969
+#, fuzzy
+msgid "aperture NULL in simplify aperture macro"
+msgstr "简化 aperture 宏中 aperture 为 NULL"
+
+#: ../src/gerber.c:1972
+#, fuzzy
+msgid "aperture->amacro NULL in simplify aperture macro"
+msgstr "简化 aperture 宏中 aperture->amacro 为 NULL"
+
+#: ../src/gerber.c:1994 ../src/gerber.c:2003
+#, fuzzy
+msgid "Tried to access oob aperture"
+msgstr "尝试访问超出范围的 aperture"
+
+#: ../src/gerber.c:2000 ../src/gerber.c:2009 ../src/gerber.c:2011
+#: ../src/gerber.c:2016 ../src/gerber.c:2018 ../src/gerber.c:2023
+#: ../src/gerber.c:2025 ../src/gerber.c:2030 ../src/gerber.c:2032
+#, fuzzy
+msgid "Tried to pop an empty stack"
+msgstr "尝试从空堆栈中 pop"
+
+#: ../src/gerber.c:2065
+#, c-format, fuzzy
+msgid ""
+"Possible signed integer overflow in calculating number of parameters to "
+"aperture macro, will clamp to (%d)"
+msgstr "计算 aperture 宏参数数量时可能出现有符号整数溢出，将限制为 (%d)"
+
+#: ../src/gerber.c:2111
+#, c-format, fuzzy
+msgid ""
+"Number of parameters to aperture macro (%d) are more than gerbv is able to "
+"store (%d)"
+msgstr "aperture 宏的参数数量 (%d) 超过 gerbv 能存储的数量 (%d)"
+
+#: ../src/gerber.c:2130
+#, c-format, fuzzy
+msgid ""
+"Number of parameters to aperture macro (%d) capped to stack capacity (%zu)"
+msgstr "aperture 宏的参数数量 (%d) 已限制为堆栈容量 (%zu)"
+
+#: ../src/gerber.c:2267
+#, c-format, fuzzy
+msgid "Found AD code with no following 'D' at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行发现 AD 代码后没有 'D'"
+
+#: ../src/gerber.c:2285
+#, c-format, fuzzy
+msgid "Invalid aperture definition at line %ld in file \"%s\", cannot find '*'"
+msgstr "文件\"%s\"第 %ld 行 aperture 定义无效，找不到 '*'"
+
+#: ../src/gerber.c:2295
+#, c-format, fuzzy
+msgid "Invalid aperture definition at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行 aperture 定义无效"
+
+#: ../src/gerber.c:2339
+#, c-format, fuzzy
+msgid ""
+"Maximum number of allowed parameters exceeded in aperture %d at line %ld in "
+"file \"%s\""
+msgstr "文件\"%s\"第 %ld 行 aperture %d 超过了最大允许参数数"
+
+#: ../src/gerber.c:2357
+#, c-format, fuzzy
+msgid ""
+"Failed to read all parameters exceeded in aperture %d at line %ld in file "
+"\"%s\""
+msgstr "文件\"%s\"第 %ld 行未能读取 aperture %d 的所有参数"
+
+#: ../src/gerber.c:2429
+#, fuzzy
+msgid "Unknow quadrant value while converting to cw"
+msgstr "转换为顺时针时未知的象限值"
+
+#: ../src/gerber.c:2454 ../src/gerber.c:2499
+#, c-format, fuzzy
+msgid "Strange quadrant: %d"
+msgstr "异常象限：%d"
+
+#: ../src/gerber.c:2503
+#, c-format, fuzzy
+msgid "Negative width [%f] in quadrant %d [%f][%f]"
+msgstr "象限 %d 中宽度为负 [%f] [%f][%f]"
+
+#: ../src/gerber.c:2507
+#, c-format, fuzzy
+msgid "Negative height [%f] in quadrant %d [%f][%f]"
+msgstr "象限 %d 中高度为负 [%f] [%f][%f]"
+
+#: ../src/gerbv.c:248 ../src/gerbv.c:267 ../src/main.c:234
+#, c-format, fuzzy
+msgid "Could not read \"%s\" (loaded %d)"
+msgstr "无法读取\"%s\"（已加载 %d）"
+
+#: ../src/gerbv.c:423
+#, fuzzy
+msgid "Missing netlist - aborting file read"
+msgstr "缺少网表 - 中止文件读取"
+
+#: ../src/gerbv.c:430
+#, fuzzy
+msgid "Missing format in file...trying to load anyways\n"
+msgstr "文件中缺少格式...仍尝试加载\\n"
+
+#: ../src/gerbv.c:432
+#, fuzzy
+msgid "Missing apertures/drill sizes...trying to load anyways\n"
+msgstr "缺少 aperture/钻孔尺寸...仍尝试加载\\n"
+
+#: ../src/gerbv.c:438
+#, fuzzy
+msgid "Missing info...trying to load anyways\n"
+msgstr "缺少信息...仍尝试加载\\n"
+
+#: ../src/gerbv.c:522 ../src/gerbv.c:681 ../src/gerbv.c:697
+#, c-format, fuzzy
+msgid "Trying to open \"%s\": %s"
+msgstr "尝试打开\"%s\"：%s"
+
+#: ../src/gerbv.c:572
+#, c-format, fuzzy
+msgid "%s: unknown pick-and-place board side to reload"
+msgstr "%s: 未知的贴片板面重新加载方式"
+
+#: ../src/gerbv.c:579
+#, c-format, fuzzy
+msgid "Most likely found a RS-274D file \"%s\" ... trying to open anyways\n"
+msgstr "很可能发现了 RS-274D 文件\"%s\" ... 仍尝试打开\\n"
+
+#: ../src/gerbv.c:595
+#, c-format, fuzzy
+msgid "%s: Unknown file type."
+msgstr "%s: 未知的文件类型。"
+
+#: ../src/gerbv.c:613
+#, c-format, fuzzy
+msgid "File \"%s\" contains no drill hits or routes"
+msgstr "文件\"%s\"不包含钻孔或路由"
+
+#: ../src/gerbv.c:619
+#, c-format, fuzzy
+msgid "File \"%s\" contains no drawing elements"
+msgstr "文件\"%s\"不包含绘图元素"
+
+#: ../src/gerbv.c:628
+#, fuzzy
+msgid " (top)"
+msgstr " （顶层）"
+
+#: ../src/gerbv.c:645
+#, fuzzy
+msgid " (bottom)"
+msgstr " （底层）"
+
+#: ../src/interface.c:377
+#, fuzzy
+msgid "_File"
+msgstr "文件(_F)"
+
+#: ../src/interface.c:387
+#, fuzzy
+msgid "_Open"
+msgstr "打开(_O)"
+
+#: ../src/interface.c:394
+#, fuzzy
+msgid "_Save active layer"
+msgstr "保存活动图层(_S)"
+
+#: ../src/interface.c:396
+#, fuzzy
+msgid "Save the active layer"
+msgstr "保存活动图层"
+
+#: ../src/interface.c:400
+#, fuzzy
+msgid "Save active layer _as..."
+msgstr "活动图层另存为(_a)..."
+
+#: ../src/interface.c:402
+#, fuzzy
+msgid "Save the active layer to a new file"
+msgstr "将活动图层保存到新文件"
+
+#: ../src/interface.c:408
+#, fuzzy
+msgid "_Revert all"
+msgstr "全部还原(_R)"
+
+#: ../src/interface.c:411
+#, fuzzy
+msgid "Reload all layers"
+msgstr "重新加载所有图层"
+
+#: ../src/interface.c:419
+#, fuzzy
+msgid "_Export"
+msgstr "导出(_E)"
+
+#: ../src/interface.c:422
+#, fuzzy
+msgid "Export to a new format"
+msgstr "导出为新格式"
+
+#: ../src/interface.c:430
+#, fuzzy
+msgid "P_NG..."
+msgstr "P_NG..."
+
+#: ../src/interface.c:432
+#, fuzzy
+msgid "Export visible layers to a PNG file"
+msgstr "将可见图层导出为 PNG 文件"
+
+#: ../src/interface.c:434
+#, fuzzy
+msgid "P_DF..."
+msgstr "P_DF..."
+
+#: ../src/interface.c:436
+#, fuzzy
+msgid "Export visible layers to a PDF file"
+msgstr "将可见图层导出为 PDF 文件"
+
+#: ../src/interface.c:438
+#, fuzzy
+msgid "_SVG..."
+msgstr "_SVG..."
+
+#: ../src/interface.c:440
+#, fuzzy
+msgid "Export visible layers to a SVG file"
+msgstr "将可见图层导出为 SVG 文件"
+
+#: ../src/interface.c:442
+#, fuzzy
+msgid "_PostScript..."
+msgstr "_PostScript..."
+
+#: ../src/interface.c:444
+#, fuzzy
+msgid "Export visible layers to a PostScript file"
+msgstr "将可见图层导出为 PostScript 文件"
+
+#: ../src/interface.c:446
+#, fuzzy
+msgid "D_XF..."
+msgstr "D_XF..."
+
+#: ../src/interface.c:449
+#, fuzzy
+msgid "Export active layer to a DXF file"
+msgstr "将活动图层导出为 DXF 文件"
+
+#: ../src/interface.c:454
+#, fuzzy
+msgid "RS-274X (_Gerber)..."
+msgstr "RS-274X (_Gerber)..."
+
+#: ../src/interface.c:457
+#, fuzzy
+msgid "Export active layer to a RS-274X (Gerber) file"
+msgstr "将活动图层导出为 RS-274X (Gerber) 文件"
+
+#: ../src/interface.c:459
+#, fuzzy
+msgid "RS-274X merge (Gerber)..."
+msgstr "RS-274X 合并 (Gerber)..."
+
+#: ../src/interface.c:462
+#, fuzzy
+msgid "Export merged visible Gerber layers to a RS-274X (Gerber) file"
+msgstr "将合并的可见 Gerber 图层导出为 RS-274X (Gerber) 文件"
+
+#: ../src/interface.c:468
+#, fuzzy
+msgid "_Excellon drill..."
+msgstr "_Excellon 钻孔..."
+
+#: ../src/interface.c:471
+#, fuzzy
+msgid "Export active layer to an Excellon drill file"
+msgstr "将活动图层导出为 Excellon 钻孔文件"
+
+#: ../src/interface.c:473
+#, fuzzy
+msgid "Excellon drill merge..."
+msgstr "Excellon 钻孔合并..."
+
+#: ../src/interface.c:476
+#, fuzzy
+msgid "Export merged visible drill layers to an Excellon drill file"
+msgstr "将合并的可见钻孔图层导出为 Excellon 钻孔文件"
+
+#: ../src/interface.c:479
+#, fuzzy
+msgid "_ISEL NCP drill..."
+msgstr "_ISEL NCP 钻孔..."
+
+#: ../src/interface.c:482
+#, fuzzy
+msgid "Export active layer to an ISEL Automation NCP drill file"
+msgstr "将活动图层导出为 ISEL Automation NCP 钻孔文件"
+
+#: ../src/interface.c:488
+#, fuzzy
+msgid "gEDA P_CB (beta)..."
+msgstr "gEDA P_CB（测试版）..."
+
+#: ../src/interface.c:491
+#, fuzzy
+msgid "Export active layer to a gEDA PCB file"
+msgstr "将活动图层导出为 gEDA PCB 文件"
+
+#: ../src/interface.c:498
+#, fuzzy
+msgid "_New project"
+msgstr "新建项目(_N)"
+
+#: ../src/interface.c:500 ../src/interface.c:1034
+#, fuzzy
+msgid "Close all layers and start a new project"
+msgstr "关闭所有图层并开始新项目"
+
+#: ../src/interface.c:504
+#, fuzzy
+msgid "Save project"
+msgstr "保存项目"
+
+#: ../src/interface.c:506 ../src/interface.c:1048
+#, fuzzy
+msgid "Save the current project"
+msgstr "保存当前项目"
+
+#: ../src/interface.c:513
+#, fuzzy
+msgid "Save the current project to a new file"
+msgstr "将当前项目保存到新文件"
+
+#: ../src/interface.c:533 ../src/interface.c:1055
+#, fuzzy
+msgid "Print the visible layers"
+msgstr "打印可见图层"
+
+#: ../src/interface.c:541
+#, fuzzy
+msgid "Quit Gerbv"
+msgstr "退出 Gerbv"
+
+#: ../src/interface.c:545
+#, fuzzy
+msgid "_Edit"
+msgstr "编辑(_E)"
+
+#: ../src/interface.c:554
+#, fuzzy
+msgid "Display _properties of selected object(s)"
+msgstr "显示选中对象的属性(_p)"
+
+#: ../src/interface.c:556
+#, fuzzy
+msgid "Examine the properties of the selected object"
+msgstr "查看选中对象的属性"
+
+#: ../src/interface.c:561
+#, fuzzy
+msgid "_Delete selected object(s)"
+msgstr "删除选中的对象(_D)"
+
+#: ../src/interface.c:563
+#, fuzzy
+msgid "Delete selected objects"
+msgstr "删除选中的对象"
+
+#: ../src/interface.c:568
+#, fuzzy
+msgid "_Align layers"
+msgstr "对齐图层(_A)"
+
+#: ../src/interface.c:571
+#, fuzzy
+msgid "Align two layers by two selected objects"
+msgstr "通过两个选中的对象对齐两个图层"
+
+#: ../src/interface.c:586
+#, fuzzy
+msgid "Edit object properties"
+msgstr "编辑对象属性"
+
+#: ../src/interface.c:588
+#, fuzzy
+msgid "Edit the properties of the selected object"
+msgstr "编辑选中对象的属性"
+
+#: ../src/interface.c:592
+#, fuzzy
+msgid "Move object(s)"
+msgstr "移动对象"
+
+#: ../src/interface.c:594
+#, fuzzy
+msgid "Move the selected object(s)"
+msgstr "移动选中的对象"
+
+#: ../src/interface.c:598
+#, fuzzy
+msgid "Reduce area"
+msgstr "缩小区域"
+
+#: ../src/interface.c:600
+#, fuzzy
+msgid "Reduce the area of the object (e.g. to prevent component floating)"
+msgstr "缩小对象的区域（例如防止元件浮动）"
+
+#: ../src/interface.c:609
+#, fuzzy
+msgid "_View"
+msgstr "视图(_V)"
+
+#: ../src/interface.c:617
+#, fuzzy
+msgid "Fullscr_een"
+msgstr "全屏(_e)"
+
+#: ../src/interface.c:619
+#, fuzzy
+msgid "Toggle between fullscreen and normal view"
+msgstr "在全屏和普通视图之间切换"
+
+#: ../src/interface.c:623
+#, fuzzy
+msgid "Show _Toolbar"
+msgstr "显示工具栏(_T)"
+
+#: ../src/interface.c:625
+#, fuzzy
+msgid "Toggle visibility of the toolbar"
+msgstr "切换工具栏的显示"
+
+#: ../src/interface.c:629
+#, fuzzy
+msgid "Show _Sidepane"
+msgstr "显示侧边栏(_S)"
+
+#: ../src/interface.c:631
+#, fuzzy
+msgid "Toggle visibility of the sidepane"
+msgstr "切换侧边栏的显示"
+
+#: ../src/interface.c:638
+#, fuzzy
+msgid "Toggle layer _visibility"
+msgstr "切换图层可见性(_v)"
+
+#: ../src/interface.c:641
+#, fuzzy
+msgid "Show all se_lection"
+msgstr "显示所有选中项(_l)"
+
+#: ../src/interface.c:643
+#, fuzzy
+msgid "Show selected objects on invisible layers"
+msgstr "显示不可见图层上的选中对象"
+
+#: ../src/interface.c:647
+#, fuzzy
+msgid "Show _cross on drill holes"
+msgstr "在钻孔上显示十字标记(_c)"
+
+#: ../src/interface.c:649
+#, fuzzy
+msgid "Show cross on drill holes"
+msgstr "在钻孔上显示十字标记"
+
+#: ../src/interface.c:666
+#, fuzzy
+msgid "Toggle visibility of layer 1"
+msgstr "切换图层 1 的可见性"
+
+#: ../src/interface.c:670
+#, fuzzy
+msgid "Toggle visibility of layer 2"
+msgstr "切换图层 2 的可见性"
+
+#: ../src/interface.c:674
+#, fuzzy
+msgid "Toggle visibility of layer 3"
+msgstr "切换图层 3 的可见性"
+
+#: ../src/interface.c:678
+#, fuzzy
+msgid "Toggle visibility of layer 4"
+msgstr "切换图层 4 的可见性"
+
+#: ../src/interface.c:682
+#, fuzzy
+msgid "Toggle visibility of layer 5"
+msgstr "切换图层 5 的可见性"
+
+#: ../src/interface.c:686
+#, fuzzy
+msgid "Toggle visibility of layer 6"
+msgstr "切换图层 6 的可见性"
+
+#: ../src/interface.c:690
+#, fuzzy
+msgid "Toggle visibility of layer 7"
+msgstr "切换图层 7 的可见性"
+
+#: ../src/interface.c:694
+#, fuzzy
+msgid "Toggle visibility of layer 8"
+msgstr "切换图层 8 的可见性"
+
+#: ../src/interface.c:698
+#, fuzzy
+msgid "Toggle visibility of layer 9"
+msgstr "切换图层 9 的可见性"
+
+#: ../src/interface.c:702
+#, fuzzy
+msgid "Toggle visibility of layer 10"
+msgstr "切换图层 10 的可见性"
+
+#: ../src/interface.c:711 ../src/interface.c:1062
+#, fuzzy
+msgid "Zoom in"
+msgstr "放大"
+
+#: ../src/interface.c:716 ../src/interface.c:1066
+#, fuzzy
+msgid "Zoom out"
+msgstr "缩小"
+
+#: ../src/interface.c:720 ../src/interface.c:1070
+#, fuzzy
+msgid "Zoom to fit all visible layers in the window"
+msgstr "缩放以使所有可见图层适合窗口"
+
+#: ../src/interface.c:727
+#, fuzzy
+msgid "Background color"
+msgstr "背景颜色"
+
+#: ../src/interface.c:728
+#, fuzzy
+msgid "Change the background color"
+msgstr "更改背景颜色"
+
+#: ../src/interface.c:748
+#, fuzzy
+msgid "_Rendering"
+msgstr "渲染(_R)"
+
+#: ../src/interface.c:758
+#, fuzzy
+msgid "_Fast"
+msgstr "快速(_F)"
+
+#: ../src/interface.c:762
+#, fuzzy
+msgid "Fast (_XOR)"
+msgstr "快速 (_XOR)"
+
+#: ../src/interface.c:766
+#, fuzzy
+msgid "_Normal"
+msgstr "普通(_N)"
+
+#: ../src/interface.c:770
+#, fuzzy
+msgid "High _Quality"
+msgstr "高质量(_Q)"
+
+#: ../src/interface.c:787
+#, fuzzy
+msgid "U_nits"
+msgstr "单位(_n)"
+
+#: ../src/interface.c:797
+#, fuzzy
+msgid "mi_l"
+msgstr "mi_l"
+
+#: ../src/interface.c:801
+#, fuzzy
+msgid "_mm"
+msgstr "_mm"
+
+#: ../src/interface.c:805
+#, fuzzy
+msgid "_in"
+msgstr "_in"
+
+#: ../src/interface.c:819
+#, fuzzy
+msgid "_Layer"
+msgstr "图层(_L)"
+
+#: ../src/interface.c:827
+#, fuzzy
+msgid "Toggle _visibility"
+msgstr "切换可见性(_v)"
+
+#: ../src/interface.c:829
+#, fuzzy
+msgid "Toggles the visibility of the active layer"
+msgstr "切换活动图层的可见性"
+
+#: ../src/interface.c:832
+#, fuzzy
+msgid "All o_n"
+msgstr "全部显示(_n)"
+
+#: ../src/interface.c:834
+#, fuzzy
+msgid "Turn on visibility of all layers"
+msgstr "开启所有图层的可见性"
+
+#: ../src/interface.c:839
+#, fuzzy
+msgid "All _off"
+msgstr "全部隐藏(_o)"
+
+#: ../src/interface.c:841
+#, fuzzy
+msgid "Turn off visibility of all layers"
+msgstr "关闭所有图层的可见性"
+
+#: ../src/interface.c:846
+#, fuzzy
+msgid "_Invert color"
+msgstr "反转颜色(_I)"
+
+#: ../src/interface.c:848
+#, fuzzy
+msgid "Invert the display polarity of the active layer"
+msgstr "反转活动图层的显示极性"
+
+#: ../src/interface.c:851
+#, fuzzy
+msgid "_Change color"
+msgstr "更改颜色(_C)"
+
+#: ../src/interface.c:854
+#, fuzzy
+msgid "Change the display color of the active layer"
+msgstr "更改活动图层的显示颜色"
+
+#: ../src/interface.c:862
+#, fuzzy
+msgid "_Reload layer"
+msgstr "重新加载图层(_R)"
+
+#: ../src/interface.c:864
+#, fuzzy
+msgid "Reload the active layer from disk"
+msgstr "从磁盘重新加载活动图层"
+
+#: ../src/interface.c:869
+#, fuzzy
+msgid "_Edit layer"
+msgstr "编辑图层(_E)"
+
+#: ../src/interface.c:872
+#, fuzzy
+msgid "Translate, scale, rotate or mirror the active layer"
+msgstr "平移、缩放、旋转或镜像活动图层"
+
+#: ../src/interface.c:876
+#, fuzzy
+msgid "Edit file _format"
+msgstr "编辑文件格式(_f)"
+
+#: ../src/interface.c:878
+#, fuzzy
+msgid "View and edit the numerical format used to parse the active layer"
+msgstr "查看和编辑用于解析活动图层的数字格式"
+
+#: ../src/interface.c:887
+#, fuzzy
+msgid "Move u_p"
+msgstr "上移(_p)"
+
+#: ../src/interface.c:889 ../src/interface.c:1205
+#, fuzzy
+msgid "Move the active layer one step up"
+msgstr "将活动图层上移一步"
+
+#: ../src/interface.c:895
+#, fuzzy
+msgid "Move dow_n"
+msgstr "下移(_n)"
+
+#: ../src/interface.c:897 ../src/interface.c:1197
+#, fuzzy
+msgid "Move the active layer one step down"
+msgstr "将活动图层下移一步"
+
+#: ../src/interface.c:903
+#, fuzzy
+msgid "_Delete"
+msgstr "删除(_D)"
+
+#: ../src/interface.c:905 ../src/interface.c:1213
+#, fuzzy
+msgid "Remove the active layer"
+msgstr "移除活动图层"
+
+#: ../src/interface.c:918
+#, fuzzy
+msgid "_Analyze"
+msgstr "分析(_A)"
+
+#: ../src/interface.c:930
+#, fuzzy
+msgid "Analyze visible _Gerber layers"
+msgstr "分析可见 _Gerber 图层"
+
+#: ../src/interface.c:932
+#, fuzzy
+msgid ""
+"Examine a detailed analysis of the contents of all visible Gerber layers"
+msgstr "查看所有可见 Gerber 图层内容的详细分析"
+
+#: ../src/interface.c:938
+#, fuzzy
+msgid "Analyze visible _drill layers"
+msgstr "分析可见钻孔图层(_d)"
+
+#: ../src/interface.c:940
+#, fuzzy
+msgid ""
+"Examine a detailed analysis of the contents of all visible drill layers"
+msgstr "查看所有可见钻孔图层内容的详细分析"
+
+#: ../src/interface.c:945
+#, fuzzy
+msgid "_Benchmark"
+msgstr "基准测试(_B)"
+
+#: ../src/interface.c:947
+#, fuzzy
+msgid ""
+"Benchmark different rendering methods. Will make the application "
+"unresponsive for 1 minute!"
+msgstr "对不同渲染方法进行基准测试。应用程序将在 1 分钟内无响应！"
+
+#: ../src/interface.c:959
+#, fuzzy
+msgid "_Tools"
+msgstr "工具(_T)"
+
+#: ../src/interface.c:966
+#, fuzzy
+msgid "_Pointer Tool"
+msgstr "指针工具(_P)"
+
+#: ../src/interface.c:971 ../src/interface.c:1094
+#, fuzzy
+msgid "Select objects on the screen"
+msgstr "在屏幕上选择对象"
+
+#: ../src/interface.c:972
+#, fuzzy
+msgid "Pa_n Tool"
+msgstr "平移工具(_n)"
+
+#: ../src/interface.c:977 ../src/interface.c:1100
+#, fuzzy
+msgid "Pan by left clicking and dragging"
+msgstr "左键点击并拖动以平移"
+
+#: ../src/interface.c:979
+#, fuzzy
+msgid "_Zoom Tool"
+msgstr "缩放工具(_Z)"
+
+#: ../src/interface.c:984 ../src/interface.c:1108
+#, fuzzy
+msgid "Zoom by left clicking or dragging"
+msgstr "左键点击或拖动以缩放"
+
+#: ../src/interface.c:986
+#, fuzzy
+msgid "_Measure Tool"
+msgstr "测量工具(_M)"
+
+#: ../src/interface.c:991 ../src/interface.c:1115
+#, fuzzy
+msgid "Measure distances on the screen"
+msgstr "在屏幕上测量距离"
+
+#: ../src/interface.c:993
+#, fuzzy
+msgid "_Help"
+msgstr "帮助(_H)"
+
+#: ../src/interface.c:1007
+#, fuzzy
+msgid "_About Gerbv..."
+msgstr "关于 Gerbv(_A)..."
+
+#: ../src/interface.c:1009
+#, fuzzy
+msgid "View information about Gerbv"
+msgstr "查看 Gerbv 的相关信息"
+
+#: ../src/interface.c:1013
+#, fuzzy
+msgid "Known _bugs in this version..."
+msgstr "此版本的已知缺陷(_b)..."
+
+#: ../src/interface.c:1016
+#, fuzzy
+msgid "View list of known Gerbv bugs"
+msgstr "查看已知 Gerbv 缺陷列表"
+
+#: ../src/interface.c:1044
+#, fuzzy
+msgid "Reload all layers in project"
+msgstr "重新加载项目中的所有图层"
+
+#: ../src/interface.c:1143
+#, fuzzy
+msgid "Rendering type"
+msgstr "渲染类型"
+
+#: ../src/interface.c:1145
+#, fuzzy
+msgid "Fast"
+msgstr "快速"
+
+#: ../src/interface.c:1146
+#, fuzzy
+msgid "Fast, with XOR"
+msgstr "快速，使用 XOR"
+
+#: ../src/interface.c:1147
+#, fuzzy
+msgid "Normal"
+msgstr "普通"
+
+#: ../src/interface.c:1148
+#, fuzzy
+msgid "High quality"
+msgstr "高质量"
+
+#: ../src/interface.c:1215
+#, fuzzy
+msgid "Layers"
+msgstr "图层"
+
+#: ../src/interface.c:1237
+#, fuzzy
+msgid "Clear all messages and accumulated sum"
+msgstr "清除所有消息和累计总和"
+
+#: ../src/interface.c:1240
+#, fuzzy
+msgid "Messages"
+msgstr "消息"
+
+#: ../src/interface.c:1291
+#, fuzzy
+msgid "mil"
+msgstr "mil"
+
+#: ../src/interface.c:1293
+#, fuzzy
+msgid "in"
+msgstr "in"
+
+#: ../src/interface.c:1896
+#, fuzzy
+msgid "Gerbv Alert"
+msgstr "Gerbv 警告"
+
+#: ../src/interface.c:1928 ../src/interface.c:2268
+#, fuzzy
+msgid "Do not show this dialog again."
+msgstr "不再显示此对话框。"
+
+#: ../src/interface.c:2054
+#, c-format, fuzzy
+msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layer)"
+msgid_plural "<b>%d</b>  *<i>%s</i> (<b>changed</b>, %d layers)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/interface.c:2058
+#, c-format, fuzzy
+msgid "<b>%d</b>  *<i>%s</i> (<b>changed</b>)"
+msgstr "<b>%d</b>  *<i>%s</i>（<b>已更改</b>）"
+
+#: ../src/interface.c:2064
+#, c-format, fuzzy
+msgid "<b>%d</b>  %s (%d layer)"
+msgid_plural "<b>%d</b>  %s (%d layers)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/interface.c:2067
+#, c-format, fuzzy
+msgid "<b>%d</b>  %s"
+msgstr "<b>%d</b>  %s"
+
+#: ../src/interface.c:2110
+#, fuzzy
+msgid "Gerbv — Reload Files"
+msgstr "Gerbv — 重新加载文件"
+
+#: ../src/interface.c:2129
+#, c-format, fuzzy
+msgid "%u file is already loaded from directory"
+msgid_plural "%u files are already loaded from directory"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/interface.c:2151
+#, fuzzy
+msgid "Select _all"
+msgstr "全选(_a)"
+
+#: ../src/interface.c:2183
+#, fuzzy
+msgid "_Reload"
+msgstr "重新加载(_R)"
+
+#: ../src/interface.c:2185
+#, fuzzy
+msgid "Reload layers with selected files"
+msgstr "重新加载包含选中文件的图层"
+
+#: ../src/interface.c:2189
+#, fuzzy
+msgid "Add as _new"
+msgstr "添加为新图层(_n)"
+
+#: ../src/interface.c:2191
+#, fuzzy
+msgid "Add selected files as new layers"
+msgstr "将选中的文件添加为新图层"
+
+#: ../src/interface.c:2328
+#, fuzzy
+msgid "Edit layer"
+msgstr "编辑图层"
+
+#: ../src/interface.c:2331
+#, fuzzy
+msgid "Apply to _active"
+msgstr "应用到活动图层(_a)"
+
+#: ../src/interface.c:2333
+#, fuzzy
+msgid "Apply to _visible"
+msgstr "应用到可见图层(_v)"
+
+#: ../src/interface.c:2346
+#, fuzzy
+msgid "<span weight=\"bold\">Translation</span>"
+msgstr "<span weight=\"bold\">平移</span>"
+
+#: ../src/interface.c:2355
+#, fuzzy
+msgid "X (mils):"
+msgstr "X (mil)："
+
+#: ../src/interface.c:2356
+#, fuzzy
+msgid "Y (mils):"
+msgstr "Y (mil)："
+
+#: ../src/interface.c:2361
+#, fuzzy
+msgid "X (mm):"
+msgstr "X (mm)："
+
+#: ../src/interface.c:2362
+#, fuzzy
+msgid "Y (mm):"
+msgstr "Y (mm)："
+
+#: ../src/interface.c:2367
+#, fuzzy
+msgid "X (inches):"
+msgstr "X（英寸）："
+
+#: ../src/interface.c:2368
+#, fuzzy
+msgid "Y (inches):"
+msgstr "Y（英寸）："
+
+#: ../src/interface.c:2386
+#, fuzzy
+msgid "<span weight=\"bold\">Scale</span>"
+msgstr "<span weight=\"bold\">缩放</span>"
+
+#: ../src/interface.c:2390
+#, fuzzy
+msgid "X direction:"
+msgstr "X 方向："
+
+#: ../src/interface.c:2393
+#, fuzzy
+msgid "Y direction:"
+msgstr "Y 方向："
+
+#: ../src/interface.c:2410
+#, fuzzy
+msgid "<span weight=\"bold\">Rotation</span>"
+msgstr "<span weight=\"bold\">旋转</span>"
+
+#: ../src/interface.c:2414
+#, fuzzy
+msgid "Rotation (degrees):"
+msgstr "旋转（度）："
+
+#: ../src/interface.c:2418
+#, fuzzy
+msgid "None"
+msgstr "无"
+
+#: ../src/interface.c:2419
+#, fuzzy
+msgid "90 deg CCW"
+msgstr "逆时针 90 度"
+
+#: ../src/interface.c:2420
+#, fuzzy
+msgid "180 deg CCW"
+msgstr "逆时针 180 度"
+
+#: ../src/interface.c:2421
+#, fuzzy
+msgid "270 deg CCW"
+msgstr "逆时针 270 度"
+
+#: ../src/interface.c:2441
+#, fuzzy
+msgid "<span weight=\"bold\">Mirroring</span>"
+msgstr "<span weight=\"bold\">镜像</span>"
+
+#: ../src/interface.c:2445
+#, fuzzy
+msgid "About X axis:"
+msgstr "关于 X 轴："
+
+#: ../src/interface.c:2452
+#, fuzzy
+msgid "About Y axis:"
+msgstr "关于 Y 轴："
+
+#: ../src/main.c:285
+#, c-format, fuzzy
+msgid "could not read file: %s"
+msgstr "无法读取文件：%s"
+
+#: ../src/main.c:378
+#, fuzzy
+msgid "Failed to write project"
+msgstr "写入项目失败"
+
+#: ../src/main.c:452
+#, c-format, fuzzy
+msgid ""
+"\n"
+"*** Press Enter to continue ***"
+msgstr "\\n*** 按 Enter 继续 ***"
+
+#: ../src/main.c:638 ../src/main.c:928
+#, c-format, fuzzy
+msgid "Unrecognized length unit \"%s\" in command line"
+msgstr "命令行中无法识别的长度单位\"%s\""
+
+#: ../src/main.c:657
+#, c-format, fuzzy
+msgid "Not handled option \"%s\" in command line"
+msgstr "命令行中未处理的选项\"%s\""
+
+#: ../src/main.c:664
+#, fuzzy
+msgid "Width"
+msgstr "宽度"
+
+#: ../src/main.c:668
+#, c-format, fuzzy
+msgid "Split X and Y parameters with an x\n"
+msgstr "用 x 分隔 X 和 Y 参数\\n"
+
+#: ../src/main.c:675
+#, fuzzy
+msgid "Height"
+msgstr "高度"
+
+#: ../src/main.c:710
+#, c-format, fuzzy
+msgid "You must specify the border in the format <alpha>.\n"
+msgstr "必须以 <alpha> 格式指定边框。\\n"
+
+#: ../src/main.c:714
+#, c-format, fuzzy
+msgid "Specified border is not recognized.\n"
+msgstr "指定的边框无法识别。\\n"
+
+#: ../src/main.c:719
+#, c-format, fuzzy
+msgid "Specified border is smaller than zero!\n"
+msgstr "指定的边框小于零！\\n"
+
+#: ../src/main.c:726
+#, c-format, fuzzy
+msgid ""
+"You must give an resolution in the format <DPI_XxDPI_Y> or <DPI_X_and_Y>.\n"
+msgstr "必须以 <DPI_XxDPI_Y> 或 <DPI_X_and_Y> 格式指定分辨率。\\n"
+
+#: ../src/main.c:730
+#, c-format, fuzzy
+msgid "Specified resolution is not recognized.\n"
+msgstr "指定的分辨率无法识别。\\n"
+
+#: ../src/main.c:740
+#, c-format, fuzzy
+msgid "Specified resolution should be greater than 0.\n"
+msgstr "指定的分辨率应大于 0。\\n"
+
+#: ../src/main.c:747
+#, c-format, fuzzy
+msgid "You must give an origin in the format <XxY> or <X;Y>.\n"
+msgstr "必须以 <XxY> 或 <X;Y> 格式指定原点。\\n"
+
+#: ../src/main.c:752
+#, c-format, fuzzy
+msgid "Specified origin is not recognized.\n"
+msgstr "指定的原点无法识别。\\n"
+
+#: ../src/main.c:763
+#, c-format, fuzzy
+msgid "gerbv version %s\n"
+msgstr "gerbv 版本 %s\\n"
+
+#: ../src/main.c:764
+#, c-format, fuzzy
+msgid ""
+"Copyright (C) 2001-2008 by Stefan Petersen\n"
+"and the respective original authors listed in the source files.\n"
+msgstr "Copyright (C) 2001-2008 Stefan Petersen\\n及各源文件中列出的原作者。\\n"
+
+#: ../src/main.c:772
+#, c-format, fuzzy
+msgid "You must give an background color in the hex-format <#RRGGBB>.\n"
+msgstr "必须以十六进制格式 <#RRGGBB> 指定背景颜色。\\n"
+
+#: ../src/main.c:777 ../src/main.c:802
+#, c-format, fuzzy
+msgid "Specified color format is not recognized.\n"
+msgstr "指定的颜色格式无法识别。\\n"
+
+#: ../src/main.c:785
+#, c-format, fuzzy
+msgid "Specified color values should be between 00 and FF.\n"
+msgstr "指定的颜色值应在 00 到 FF 之间。\\n"
+
+#: ../src/main.c:798
+#, c-format, fuzzy
+msgid ""
+"You must give an foreground color in the hex-format <#RRGGBB> or "
+"<#RRGGBBAA>.\n"
+msgstr "必须以十六进制格式 <#RRGGBB> 或 <#RRGGBBAA> 指定前景颜色。\\n"
+
+#: ../src/main.c:816
+#, c-format, fuzzy
+msgid "Specified color values should be between 0x00 (0) and 0xFF (255).\n"
+msgstr "指定的颜色值应在 0x00 (0) 到 0xFF (255) 之间。\\n"
+
+#: ../src/main.c:830
+#, c-format, fuzzy
+msgid "You must give the initial rotation angle\n"
+msgstr "必须指定初始旋转角度\\n"
+
+#: ../src/main.c:836
+#, fuzzy
+msgid "Rotate"
+msgstr "旋转"
+
+#: ../src/main.c:840
+#, c-format, fuzzy
+msgid "Failed parsing rotate value\n"
+msgstr "解析旋转值失败\\n"
+
+#: ../src/main.c:846
+#, c-format, fuzzy
+msgid "You must give the axis to mirror about\n"
+msgstr "必须指定镜像轴\\n"
+
+#: ../src/main.c:856
+#, c-format, fuzzy
+msgid "Failed parsing mirror axis\n"
+msgstr "解析镜像轴失败\\n"
+
+#: ../src/main.c:862
+#, c-format, fuzzy
+msgid "You must give a filename to send log to\n"
+msgstr "必须指定日志文件名\\n"
+
+#: ../src/main.c:870
+#, c-format, fuzzy
+msgid "You must give a filename to export to.\n"
+msgstr "必须指定导出文件名。\\n"
+
+#: ../src/main.c:877
+#, c-format, fuzzy
+msgid "You must give a project filename\n"
+msgstr "必须指定项目文件名\\n"
+
+#: ../src/main.c:884
+#, c-format, fuzzy
+msgid "You must give a filename to read the tools from.\n"
+msgstr "必须指定工具文件名。\\n"
+
+#: ../src/main.c:888
+#, c-format, fuzzy
+msgid "*** ERROR processing tools file \"%s\".\n"
+msgstr "*** 处理工具文件\"%s\"时出错。\\n"
+
+#: ../src/main.c:889
+#, c-format, fuzzy
+msgid ""
+"Make sure all lines of the file are formatted like this:\n"
+"T01 0.024\n"
+"T02 0.032\n"
+"T03 0.040\n"
+"...\n"
+"*** EXITING to prevent erroneous display.\n"
+msgstr "确保文件的每一行格式如下：\\nT01 0.024\\nT02 0.032\\nT03 0.040\\n...\\n*** 为防止显示错误而退出。\\n"
+
+#: ../src/main.c:897
+#, c-format, fuzzy
+msgid "You must give a translation in the format <XxY> or <X;Y>.\n"
+msgstr "必须以 <XxY> 或 <X;Y> 格式指定平移。\\n"
+
+#: ../src/main.c:902
+#, c-format, fuzzy
+msgid "The translation format is not recognized.\n"
+msgstr "无法识别平移格式。\\n"
+
+#: ../src/main.c:938
+#, c-format, fuzzy
+msgid "You must give a window size in the format <width x height>.\n"
+msgstr "必须以 <宽度 x 高度> 格式指定窗口大小。\\n"
+
+#: ../src/main.c:942
+#, c-format, fuzzy
+msgid "Specified window size is not recognized.\n"
+msgstr "指定的窗口大小无法识别。\\n"
+
+#: ../src/main.c:948
+#, c-format, fuzzy
+msgid "Specified window size is out of bounds.\n"
+msgstr "指定的窗口大小超出范围。\\n"
+
+#: ../src/main.c:955
+#, c-format, fuzzy
+msgid "You must supply an export type.\n"
+msgstr "必须指定导出类型。\\n"
+
+#: ../src/main.c:967
+#, c-format, fuzzy
+msgid "Unrecognized \"%s\" export type.\n"
+msgstr "无法识别的\"%s\"导出类型。\\n"
+
+#: ../src/main.c:986
+#, c-format, fuzzy
+msgid "Not handled option '%c' in command line"
+msgstr "命令行中未处理的选项 '%c'"
+
+#: ../src/main.c:1018
+#, c-format, fuzzy
+msgid "Loading project %s...\n"
+msgstr "正在加载项目 %s...\\n"
+
+#: ../src/main.c:1052
+#, c-format, fuzzy
+msgid "No loadable files found in \"%s\"\n"
+msgstr "在\"%s\"中未找到可加载的文件\\n"
+
+#: ../src/main.c:1199 ../src/main.c:1240
+#, c-format, fuzzy
+msgid "A valid file was not loaded.\n"
+msgstr "未加载有效文件。\\n"
+
+#: ../src/main.c:1299
+#, c-format, fuzzy
+msgid ""
+"Usage: gerbv [OPTIONS...] [FILE...]\n"
+"\n"
+"Available options:\n"
+msgstr "用法：gerbv [选项...] [文件...]\\n\\n可用选项：\\n"
+
+#: ../src/main.c:1305
+#, c-format, fuzzy
+msgid ""
+"  -B, --border=<b>        Border around the image in percent of the\n"
+"                          width/height. Defaults to %d%%.\n"
+msgstr ""
+"  -B, --border=<b>        图像周围的边框，以宽度/高度的\\n                          "
+"百分比表示。默认为 %d%%。\\n"
+
+#: ../src/main.c:1310
+#, c-format, fuzzy
+msgid ""
+"  -B<b>                   Border around the image in percent of the\n"
+"                          width/height. Defaults to %d%%.\n"
+msgstr ""
+"  -B<b>                   图像周围的边框，以宽度/高度的\\n                          "
+"百分比表示。默认为 %d%%。\\n"
+
+#: ../src/main.c:1317
+#, c-format, fuzzy
+msgid ""
+"  -D, --dpi=<XxY|R>       Resolution (Dots per inch) for the output\n"
+"                          bitmap. With the format <XxY>, different\n"
+"                          resolutions for X- and Y-direction are used.\n"
+"                          With the format <R>, both are the same.\n"
+msgstr ""
+"  -D, --dpi=<XxY|R>       输出位图的分辨率（每英寸点数）。\\n                          使用 "
+"<XxY> 格式可为 X 和 Y 方向\\n                          设置不同的分辨率。\\n"
+"                          使用 <R> 格式则两个方向相同。\\n"
+
+#: ../src/main.c:1323
+#, c-format, fuzzy
+msgid ""
+"  -D<XxY|R>               Resolution (Dots per inch) for the output\n"
+"                          bitmap. With the format <XxY>, different\n"
+"                          resolutions for X- and Y-direction are used.\n"
+"                          With the format <R>, both are the same.\n"
+msgstr ""
+"  -D<XxY|R>               输出位图的分辨率（每英寸点数）。\\n                          使用 "
+"<XxY> 格式可为 X 和 Y 方向\\n                          设置不同的分辨率。\\n"
+"                          使用 <R> 格式则两个方向相同。\\n"
+
+#: ../src/main.c:1331
+#, c-format, fuzzy
+msgid ""
+"  -O, --origin=<XxY|X;Y>  Use the specified coordinates (in inches)\n"
+"                          for the lower left corner.\n"
+msgstr ""
+"  -O, --origin=<XxY|X;Y>  使用指定的坐标（英寸单位）\\n                          "
+"作为左下角原点。\\n"
+
+#: ../src/main.c:1335
+#, c-format, fuzzy
+msgid ""
+"  -O<XxY|X;Y>             Use the specified coordinates (in inches)\n"
+"                          for the lower left corner.\n"
+msgstr ""
+"  -O<XxY|X;Y>             使用指定的坐标（英寸单位）\\n                          "
+"作为左下角原点。\\n"
+
+#: ../src/main.c:1341
+#, c-format, fuzzy
+msgid "  -V, --version           Print version of Gerbv.\n"
+msgstr "  -V, --version           打印 Gerbv 的版本。\\n"
+
+#: ../src/main.c:1344
+#, c-format, fuzzy
+msgid "  -V                      Print version of Gerbv.\n"
+msgstr "  -V                      打印 Gerbv 的版本。\\n"
+
+#: ../src/main.c:1349
+#, c-format, fuzzy
+msgid ""
+"  -a, --antialias         Use antialiasing for generated bitmap output.\n"
+msgstr "  -a, --antialias         对生成的位图输出使用抗锯齿。\\n"
+
+#: ../src/main.c:1352
+#, c-format, fuzzy
+msgid ""
+"  -a                      Use antialiasing for generated bitmap output.\n"
+msgstr "  -a                      对生成的位图输出使用抗锯齿。\\n"
+
+#: ../src/main.c:1357
+#, c-format, fuzzy
+msgid "  -b, --background=<hex>  Use background color <hex> (like #RRGGBB).\n"
+msgstr "  -b, --background=<hex>  使用背景颜色 <hex>（如 #RRGGBB）。\\n"
+
+#: ../src/main.c:1360
+#, c-format, fuzzy
+msgid ""
+"  -b<hexcolor>            Use background color <hexcolor> (like #RRGGBB).\n"
+msgstr "  -b<hexcolor>            使用背景颜色 <hexcolor>（如 #RRGGBB）。\\n"
+
+#: ../src/main.c:1365
+#, c-format, fuzzy
+msgid ""
+"  -f, --foreground=<hex>  Use foreground color <hex> (like #RRGGBB or\n"
+"                          #RRGGBBAA for setting the alpha).\n"
+"                          Use multiple -f flags to set the color for\n"
+"                          multiple layers.\n"
+msgstr ""
+"  -f, --foreground=<hex>  使用前景颜色 <hex>（如 #RRGGBB 或\\n"
+"                          #RRGGBBAA 以设置透明度）。\\n                          "
+"使用多个 -f 标志为多个\\n                          图层设置颜色。\\n"
+
+#: ../src/main.c:1371
+#, c-format, fuzzy
+msgid ""
+"  -f<hexcolor>            Use foreground color <hexcolor> (like #RRGGBB or\n"
+"                          #RRGGBBAA for setting the alpha).\n"
+"                          Use multiple -f flags to set the color for\n"
+"                          multiple layers.\n"
+msgstr ""
+"  -f<hexcolor>            使用前景颜色 <hexcolor>（如 #RRGGBB 或\\n"
+"                          #RRGGBBAA 以设置透明度）。\\n                          "
+"使用多个 -f 标志为多个\\n                          图层设置颜色。\\n"
+
+#: ../src/main.c:1379
+#, c-format, fuzzy
+msgid "  -r, --rotate=<degree>   Set initial orientation for all layers.\n"
+msgstr "  -r, --rotate=<degree>   设置所有图层的初始方向。\\n"
+
+#: ../src/main.c:1382
+#, c-format, fuzzy
+msgid "  -r<degree>              Set initial orientation for all layers.\n"
+msgstr "  -r<degree>              设置所有图层的初始方向。\\n"
+
+#: ../src/main.c:1387
+#, c-format, fuzzy
+msgid "  -m, --mirror=<axis>     Set initial mirroring axis (X or Y).\n"
+msgstr "  -m, --mirror=<axis>     设置初始镜像轴（X 或 Y）。\\n"
+
+#: ../src/main.c:1390
+#, c-format, fuzzy
+msgid "  -m<axis>                Set initial mirroring axis (X or Y).\n"
+msgstr "  -m<axis>                设置初始镜像轴（X 或 Y）。\\n"
+
+#: ../src/main.c:1395
+#, c-format, fuzzy
+msgid "  -h, --help              Print this help message.\n"
+msgstr "  -h, --help              打印此帮助信息。\\n"
+
+#: ../src/main.c:1398
+#, c-format, fuzzy
+msgid "  -h                      Print this help message.\n"
+msgstr "  -h                      打印此帮助信息。\\n"
+
+#: ../src/main.c:1403
+#, c-format, fuzzy
+msgid "  -l, --log=<logfile>     Send error messages to <logfile>.\n"
+msgstr "  -l, --log=<logfile>     将错误消息发送到 <logfile>。\\n"
+
+#: ../src/main.c:1406
+#, c-format, fuzzy
+msgid "  -l<logfile>             Send error messages to <logfile>.\n"
+msgstr "  -l<logfile>             将错误消息发送到 <logfile>。\\n"
+
+#: ../src/main.c:1411
+#, c-format, fuzzy
+msgid "  -q, --quiet             Suppress note-level messages.\n"
+msgstr "  -q, --quiet             抑制注意级别的消息。\\n"
+
+#: ../src/main.c:1414
+#, c-format, fuzzy
+msgid "  -q                      Suppress note-level messages.\n"
+msgstr "  -q                      抑制注意级别的消息。\\n"
+
+#: ../src/main.c:1419
+#, c-format, fuzzy
+msgid "  -o, --output=<filename> Export to <filename>.\n"
+msgstr "  -o, --output=<filename> 导出到 <filename>。\\n"
+
+#: ../src/main.c:1422
+#, c-format, fuzzy
+msgid "  -o<filename>            Export to <filename>.\n"
+msgstr "  -o<filename>            导出到 <filename>。\\n"
+
+#: ../src/main.c:1427
+#, c-format, fuzzy
+msgid "  -p, --project=<prjfile> Load project file <prjfile>.\n"
+msgstr "  -p, --project=<prjfile> 加载项目文件 <prjfile>。\\n"
+
+#: ../src/main.c:1430
+#, c-format, fuzzy
+msgid "  -p<prjfile>             Load project file <prjfile>.\n"
+msgstr "  -p<prjfile>             加载项目文件 <prjfile>。\\n"
+
+#: ../src/main.c:1435
+#, c-format, fuzzy
+msgid ""
+"  -u, --units=<inch|mm|mil>\n"
+"                          Use given unit for coordinates.\n"
+"                          Default to inch.\n"
+msgstr ""
+"  -u, --units=<inch|mm|mil>\\n                          使用指定的坐标单位。\\n"
+"                          默认为 inch。\\n"
+
+#: ../src/main.c:1440
+#, c-format, fuzzy
+msgid ""
+"  -u<inch|mm|mil>         Use given unit for coordinates.\n"
+"                          Default to inch.\n"
+msgstr ""
+"  -u<inch|mm|mil>         使用指定的坐标单位。\\n                          默认为 "
+"inch。\\n"
+
+#: ../src/main.c:1446
+#, c-format, fuzzy
+msgid ""
+"  -W, --window_inch=<WxH> Window size in inches <WxH> for the exported "
+"image.\n"
+msgstr "  -W, --window_inch=<WxH> 导出图像的窗口大小（英寸）<WxH>。\\n"
+
+#: ../src/main.c:1449
+#, c-format, fuzzy
+msgid ""
+"  -W<WxH>                 Window size in inches <WxH> for the exported "
+"image.\n"
+msgstr "  -W<WxH>                 导出图像的窗口大小（英寸）<WxH>。\\n"
+
+#: ../src/main.c:1454
+#, c-format, fuzzy
+msgid ""
+"  -w, --window=<WxH>      Window size in pixels <WxH> for the exported image.\n"
+"                          Autoscales to fit if no resolution is specified.\n"
+"                          If a resolution is specified, it will clip\n"
+"                          exported image.\n"
+msgstr ""
+"  -w, --window=<WxH>      导出图像的窗口大小（像素）<WxH>。\\n                          "
+"如未指定分辨率则自动缩放。\\n                          如果指定了分辨率，将裁剪\\n"
+"                          导出的图像。\\n"
+
+#: ../src/main.c:1460
+#, c-format, fuzzy
+msgid ""
+"  -w<WxH>                 Window size in pixels <WxH> for the exported image.\n"
+"                          Autoscales to fit if no resolution is specified.\n"
+"                          If a resolution is specified, it will clip\n"
+"                          exported image.\n"
+msgstr ""
+"  -w<WxH>                 导出图像的窗口大小（像素）<WxH>。\\n                          "
+"如未指定分辨率则自动缩放。\\n                          如果指定了分辨率，将裁剪\\n"
+"                          导出的图像。\\n"
+
+#: ../src/main.c:1468
+#, c-format, fuzzy
+msgid "  -t, --tools=<toolfile>  Read Excellon tools from file <toolfile>.\n"
+msgstr "  -t, --tools=<toolfile>  从文件 <toolfile> 读取 Excellon 工具。\\n"
+
+#: ../src/main.c:1471
+#, c-format, fuzzy
+msgid "  -t<toolfile>            Read Excellon tools from file <toolfile>\n"
+msgstr "  -t<toolfile>            从文件 <toolfile> 读取 Excellon 工具\\n"
+
+#: ../src/main.c:1476
+#, c-format, fuzzy
+msgid ""
+"  -T, --translate=<XxYrR| Translate image by X and Y and rotate by R degree.\n"
+"                   X;YrR> Useful for arranging panels.\n"
+"                          Use multiple -T flags for multiple layers.\n"
+"                          Only evaluated when exporting as RS274X or drill.\n"
+msgstr ""
+"  -T, --translate=<XxYrR| 按 X 和 Y 平移图像并旋转 R 度。\\n                   X;YrR> "
+"适用于排列拼板。\\n                          使用多个 -T 标志处理多个图层。\\n"
+"                          仅在导出为 RS274X 或钻孔时有效。\\n"
+
+#: ../src/main.c:1482
+#, c-format, fuzzy
+msgid ""
+"  -T<XxYrR|X;YrR>         Translate image by X and Y and rotate by R degree.\n"
+"                          Useful for arranging panels.\n"
+"                          Use multiple -T flags for multiple files.\n"
+"                          Only evaluated when exporting as RS274X or drill.\n"
+msgstr ""
+"  -T<XxYrR|X;YrR>         按 X 和 Y 平移图像并旋转 R 度。\\n                          "
+"适用于排列拼板。\\n                          使用多个 -T 标志处理多个文件。\\n"
+"                          仅在导出为 RS274X 或钻孔时有效。\\n"
+
+#: ../src/main.c:1490
+#, c-format, fuzzy
+msgid ""
+"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\n"
+"                          Export a rendered picture to a file with\n"
+"                          the specified format.\n"
+msgstr ""
+"  -x, --export=<png|pdf|ps|svg|rs274x|drill|idrill|dxf>\\n"
+"                          将渲染的图片导出为\\n                          指定格式的文件。\\n"
+
+#: ../src/main.c:1494
+#, c-format, fuzzy
+msgid ""
+"      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
+"                          Only used with --export=svg.\n"
+msgstr ""
+"      --svg-layers       将可见图层导出为 Inkscape SVG 图层。\\n"
+"                          仅与 --export=svg 一起使用。\\n"
+
+#: ../src/main.c:1497
+#, c-format, fuzzy
+msgid ""
+"      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
+"                          Only used with --export=svg.\n"
+msgstr ""
+"      --svg-cairo        使用 Cairo SVG 表面（旧版，更大输出）。\\n"
+"                          仅与 --export=svg 一起使用。\\n"
+
+#: ../src/main.c:1501
+#, c-format, fuzzy
+msgid ""
+"  -x<png|pdf|ps|svg|      Export a rendered picture to a file with\n"
+"     rs274x|drill|        the specified format.\n"
+"     idrill|dxf>\n"
+msgstr ""
+"  -x<png|pdf|ps|svg|      将渲染的图片导出为\\n     rs274x|drill|        指定格式的文件。\\n"
+"     idrill|dxf>\\n"
+
+#: ../src/main.c:1506
+#, c-format, fuzzy
+msgid ""
+"      --svg-layers       Export visible layers as Inkscape SVG layers.\n"
+"                          Only used with -xsvg.\n"
+msgstr ""
+"      --svg-layers       将可见图层导出为 Inkscape SVG 图层。\\n"
+"                          仅与 -xsvg 一起使用。\\n"
+
+#: ../src/main.c:1509
+#, c-format, fuzzy
+msgid ""
+"      --svg-cairo        Use Cairo SVG surface (legacy, larger output).\n"
+"                          Only used with -xsvg.\n"
+msgstr ""
+"      --svg-cairo        使用 Cairo SVG 表面（旧版，更大输出）。\\n"
+"                          仅与 -xsvg 一起使用。\\n"
+
+#: ../src/project.c:259
+#, c-format, fuzzy
+msgid "'%s' parameter not a vector"
+msgstr "'%s' 参数不是向量"
+
+#: ../src/project.c:265
+#, c-format, fuzzy
+msgid "'%s' vector of incorrect length"
+msgstr "'%s' 向量长度不正确"
+
+#: ../src/project.c:288
+#, fuzzy
+msgid "Illegal color in projectfile"
+msgstr "项目文件中的颜色非法"
+
+#: ../src/project.c:309
+#, fuzzy
+msgid "Illegal alpha value in projectfile"
+msgstr "项目文件中的透明度值非法"
+
+#: ../src/project.c:325 ../src/project.c:343 ../src/project.c:351
+#: ../src/project.c:371 ../src/project.c:381
+#, c-format, fuzzy
+msgid "Illegal %s in projectfile"
+msgstr "项目文件中的 %s 非法"
+
+#: ../src/project.c:605
+#, c-format, fuzzy
+msgid "%s(): too few arguments"
+msgstr "%s(): 参数太少"
+
+#: ../src/project.c:614
+#, c-format, fuzzy
+msgid "%s(): layer number missing/incorrect"
+msgstr "%s(): 图层编号缺失/不正确"
+
+#: ../src/project.c:645
+#, c-format, fuzzy
+msgid "%s(): non-symbol found, ignoring"
+msgstr "%s(): 发现非符号，忽略"
+
+#: ../src/project.c:681
+#, fuzzy
+msgid "Argument to inverted must be #t or #f"
+msgstr "inverted 的参数必须为 #t 或 #f"
+
+#: ../src/project.c:689
+#, fuzzy
+msgid "Argument to visible must be #t or #f"
+msgstr "visible 的参数必须为 #t 或 #f"
+
+#: ../src/project.c:707
+#, c-format, fuzzy
+msgid "%s():  realloc failed\n"
+msgstr "%s(): realloc 失败\\n"
+
+#: ../src/project.c:771
+#, c-format, fuzzy
+msgid "%s():  WARNING:  HID_Mixed is not yet supported\n"
+msgstr "%s(): 警告：HID_Mixed 尚不支持\\n"
+
+#: ../src/project.c:780
+#, c-format, fuzzy
+msgid "%s():  Unknown attribute type: \"%s\"\n"
+msgstr "%s(): 未知的属性类型：\"%s\"\\n"
+
+#: ../src/project.c:789
+#, c-format, fuzzy
+msgid "Ignoring \"%s\" in project file"
+msgstr "忽略项目文件中的\"%s\""
+
+#: ../src/project.c:809
+#, fuzzy
+msgid "set-render-type!: Too few arguments"
+msgstr "set-render-type!: 参数太少"
+
+#: ../src/project.c:833
+#, fuzzy
+msgid "gerbv-file-version!: Too few arguments"
+msgstr "gerbv-file-version!: 参数太少"
+
+#: ../src/project.c:845
+#, c-format, fuzzy
+msgid ""
+"The project file you are attempting to load has specified that it\n"
+"uses project file version \"%s\" but this string is not\n"
+"a valid version.  Gerbv will attempt to load the file using\n"
+"version \"%s\".  You may experience unexpected results."
+msgstr ""
+"您尝试加载的项目文件指定使用项目文件版本\"%s\"，\\n但此字符串不是有效的版本。Gerbv "
+"将尝试使用\\n版本\"%s\"加载文件。您可能会遇到意外的结果。"
+
+#: ../src/project.c:854
+#, c-format, fuzzy
+msgid "%s():  Read a project file version of %s (%d)\n"
+msgstr "%s(): 读取到项目文件版本 %s (%d)\\n"
+
+#: ../src/project.c:855
+#, c-format, fuzzy
+msgid "      Translated back to \"%s\"\n"
+msgstr "      转换回\"%s\"\\n"
+
+#: ../src/project.c:863
+#, c-format, fuzzy
+msgid ""
+"The project file you are attempting to load is version \"%s\"\n"
+"but this copy of gerbv is only capable of loading project files\n"
+"using version \"%s\" or older.  You may experience unexpected results."
+msgstr "您尝试加载的项目文件版本为\"%s\"，\\n但此 gerbv 仅能加载版本\"%s\"或更早的项目文件。\\n您可能会遇到意外的结果。"
+
+#: ../src/project.c:882
+#, c-format, fuzzy
+msgid ""
+"The project file you are attempting to load is version \"%s\"\n"
+"which is an unknown version.\n"
+"You may experience unexpected results."
+msgstr "您尝试加载的项目文件版本为\"%s\"，\\n这是一个未知版本。\\n您可能会遇到意外的结果。"
+
+#: ../src/project.c:915
+#, c-format, fuzzy
+msgid "Failed to open \"%s\" for reading: %s"
+msgstr "无法打开\"%s\"进行读取：%s"
+
+#: ../src/project.c:989
+#, c-format, fuzzy
+msgid "Failed to read %s"
+msgstr "读取 %s 失败"
+
+#: ../src/project.c:998
+#, fuzzy
+msgid "Couldn't init scheme"
+msgstr "无法初始化 Scheme"
+
+#: ../src/project.c:1006
+#, c-format, fuzzy
+msgid "Problem loading init.scm (%s)"
+msgstr "加载 init.scm 时出现问题 (%s)"
+
+#: ../src/project.c:1013
+#, c-format, fuzzy
+msgid "Couldn't open %s (%s)"
+msgstr "无法打开 %s (%s)"
+
+#: ../src/project.c:1038
+#, c-format, fuzzy
+msgid "Couldn't open project file %s (%s)"
+msgstr "无法打开项目文件 %s (%s)"
+
+#: ../src/project.c:1085
+#, c-format, fuzzy
+msgid "Couldn't save project %s"
+msgstr "无法保存项目 %s"
+
+#: ../src/project.c:1181
+#, c-format, fuzzy
+msgid "%s():  WARNING:  HID_Mixed is not yet supported.\n"
+msgstr "%s(): 警告：HID_Mixed 尚不支持。\\n"
+
+#: ../src/project.c:1191
+#, c-format, fuzzy
+msgid "%s: unknown type of HID attribute (%d)\n"
+msgstr "%s: 未知的 HID 属性类型 (%d)\\n"
+
+#: ../src/render.c:123
+#, c-format, fuzzy
+msgid "Illegal zoom direction %d"
+msgstr "非法的缩放方向 %d"
+
+#: ../src/tooltable.c:60
+#, c-format, fuzzy
+msgid "Ignored strange tool \"%s\" at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行忽略了异常工具\"%s\""
+
+#: ../src/tooltable.c:66
+#, c-format, fuzzy
+msgid "No tool number in \"%s\" at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行的\"%s\"中没有工具编号"
+
+#: ../src/tooltable.c:78
+#, c-format, fuzzy
+msgid "Can't parse tool number in \"%s\" at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行无法解析\"%s\"中的工具编号"
+
+#: ../src/tooltable.c:97
+#, c-format, fuzzy
+msgid "Tool T%02d diameter is impossible at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行的工具 T%02d 直径不可能"
+
+#: ../src/tooltable.c:103
+#, c-format, fuzzy
+msgid "Tool T%02d diameter is very small at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行的工具 T%02d 直径非常小"
+
+#: ../src/tooltable.c:109
+#, c-format, fuzzy
+msgid "Tool T%02d is already defined, occurred at line %ld in file \"%s\""
+msgstr "文件\"%s\"第 %ld 行的工具 T%02d 已定义"
+
+#: ../src/tooltable.c:112
+#, fuzzy
+msgid "Exiting because this is a HOLD error at any board house."
+msgstr "由于这在任何电路板制造商处都是 HOLD 错误，因此退出。"
+
+#: ../src/tooltable.c:137
+#, c-format, fuzzy
+msgid "Failed to open \"%s\" for reading"
+msgstr "无法打开\"%s\"进行读取"

@@ -1,8 +1,16 @@
 # Gerbv translations
 
 Currently there are translations to
-* Russian
-* Japanese
+* Chinese Simplified (zh_CN)
+* Chinese Traditional (zh_TW)
+* Dutch (nl)
+* French (fr)
+* German (de)
+* Japanese (ja)
+* Korean (ko)
+* Russian (ru)
+* Spanish (es)
+* Swedish (sv)
 
 It uses the GNU gettext project to handle the translations.
 

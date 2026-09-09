@@ -15,3 +15,5 @@ CMakeUserPresets.json
 
 # Package building directory
 _packages/
+test/gui/__pycache__/
+scripts/temporary/
