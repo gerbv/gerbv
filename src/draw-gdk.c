@@ -705,6 +705,70 @@ gerbv_gdk_draw_oval(GdkPixmap *pixmap, GdkGC *gc,
 
 
 /*
+ * Draws a regular polygon _centered_ at x,y with given diameter, number of
+ * sides, and rotation angle in degrees
+ */
+static void
+gerbv_gdk_draw_polygon(GdkPixmap *pixmap, GdkGC *gc,
+		gint filled, gint x, gint y, gint diameter,
+		gint numberOfSides, double rotation_deg)
+{
+	int i;
+	GdkPoint *points;
+	double radius = diameter / 2.0;
+
+	if (numberOfSides < 3)
+		numberOfSides = 3;
+
+	points = g_new(GdkPoint, numberOfSides);
+
+	for (i = 0; i < numberOfSides; i++) {
+		double angle = DEG2RAD(rotation_deg) +
+			((double)i) * 2.0 * M_PI / numberOfSides;
+		points[i].x = x + (gint)round(cos(angle) * radius);
+		points[i].y = y - (gint)round(sin(angle) * radius);
+	}
+
+	gdk_draw_polygon(pixmap, gc, filled, points, numberOfSides);
+
+	g_free(points);
+} /* gerbv_gdk_draw_polygon */
+
+
+/*
+ * Draws a hole at x,y by swapping the foreground color.
+ * If holeY is non-zero, draws a rectangular hole (holeX x holeY).
+ * Otherwise draws a circular hole of diameter holeX.
+ */
+static void
+gerbv_gdk_draw_hole(GdkPixmap *pixmap, GdkGC *gc,
+		gint x, gint y, gint holeX, gint holeY,
+		GdkColor *opaque, GdkColor *transparent)
+{
+	GdkGCValues gc_values;
+
+	if (!holeX)
+		return;
+
+	gdk_gc_get_values(gc, &gc_values);
+	if (gc_values.foreground.pixel == opaque->pixel) {
+		gdk_gc_set_foreground(gc, transparent);
+	} else {
+		gdk_gc_set_foreground(gc, opaque);
+	}
+
+	if (holeY)
+		gerbv_gdk_draw_rectangle(pixmap, gc, TRUE, x, y,
+				holeX, holeY, 0);
+	else
+		gerbv_gdk_draw_circle(pixmap, gc, TRUE, x, y, holeX);
+
+	/* Restore original foreground */
+	gdk_gc_set_foreground(gc, &gc_values.foreground);
+} /* gerbv_gdk_draw_hole */
+
+
+/*
  * Draws an arc 
  * Draws an arc _centered_ at x,y
  * direction:  0 counterclockwise, 1 clockwise
@@ -873,7 +937,6 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 	const int hole_cross_inc_px = 8;
 	GdkGC *gc = gdk_gc_new(*pixmap);
 	GdkGC *pgc = gdk_gc_new(*pixmap);
-	GdkGCValues gc_values;
 	struct gerbv_net *net;
 	gerbv_netstate_t *oldState;
 	gerbv_layer_t *oldLayer;
@@ -1230,23 +1293,16 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 				draw_gdk_cross(*pixmap, gc, x2, y2, r);
 			}
 
-			/*
-			 * If circle has an inner diameter we must remove
-			 * that part of the circle to make a hole in it.
-			 * We should actually support square holes too,
-			 * but due to laziness I don't.
-			 */
-			if (p2) {
-			    gdk_gc_get_values(gc, &gc_values);
-			    if (gc_values.foreground.pixel == opaque.pixel) {
-				gdk_gc_set_foreground(gc, &transparent);
-				gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p2);
-				gdk_gc_set_foreground(gc, &opaque);
-			    } else {
-				gdk_gc_set_foreground(gc, &opaque);
-				gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p2);
-				gdk_gc_set_foreground(gc, &transparent);
-			    }
+			/* Circle: parameter[1] = hole diameter,
+			 * parameter[2] = hole height (rectangular hole) */
+			{
+			    double hX = image->aperture[net->aperture]->parameter[1];
+			    double hY = image->aperture[net->aperture]->parameter[2];
+			    double shX = hX, shY = hY;
+			    cairo_matrix_transform_distance(&scaleMatrix, &shX, &shY);
+			    gerbv_gdk_draw_hole(*pixmap, gc, x2, y2,
+				(int)round(fabs(shX)), (int)round(fabs(shY)),
+				&opaque, &transparent);
 			}
 
 			break;
@@ -1254,15 +1310,60 @@ draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
 			gerbv_gdk_draw_rectangle(*pixmap, gc, TRUE,
 				x2, y2, p1, p2, RAD2DEG(transform.rotation +
 					image->info->imageRotation));
+
+			/* Rectangle: parameter[2] = hole diameter,
+			 * parameter[3] = hole height (rectangular hole) */
+			{
+			    double hX = image->aperture[net->aperture]->parameter[2];
+			    double hY = image->aperture[net->aperture]->parameter[3];
+			    double shX = hX, shY = hY;
+			    cairo_matrix_transform_distance(&scaleMatrix, &shX, &shY);
+			    gerbv_gdk_draw_hole(*pixmap, gc, x2, y2,
+				(int)round(fabs(shX)), (int)round(fabs(shY)),
+				&opaque, &transparent);
+			}
+
 			break;
 		    case GERBV_APTYPE_OVAL :
 			gerbv_gdk_draw_oval(*pixmap, gc, TRUE,
 				x2, y2, p1, p2, RAD2DEG(transform.rotation +
 					image->info->imageRotation));
+
+			/* Oval: parameter[2] = hole diameter,
+			 * parameter[3] = hole height (rectangular hole) */
+			{
+			    double hX = image->aperture[net->aperture]->parameter[2];
+			    double hY = image->aperture[net->aperture]->parameter[3];
+			    double shX = hX, shY = hY;
+			    cairo_matrix_transform_distance(&scaleMatrix, &shX, &shY);
+			    gerbv_gdk_draw_hole(*pixmap, gc, x2, y2,
+				(int)round(fabs(shX)), (int)round(fabs(shY)),
+				&opaque, &transparent);
+			}
+
 			break;
 		    case GERBV_APTYPE_POLYGON :
-			/* TODO: gdk_draw_polygon() */
-			gerbv_gdk_draw_circle(*pixmap, gc, TRUE, x2, y2, p1);
+			/* Polygon: parameter[0] = outer diameter,
+			 * parameter[1] = number of sides,
+			 * parameter[2] = rotation angle (degrees),
+			 * parameter[3] = hole diameter,
+			 * parameter[4] = hole height (rectangular hole) */
+			gerbv_gdk_draw_polygon(*pixmap, gc, TRUE, x2, y2,
+				p1, (int)image->aperture[net->aperture]->parameter[1],
+				image->aperture[net->aperture]->parameter[2] +
+					RAD2DEG(transform.rotation +
+						image->info->imageRotation));
+
+			{
+			    double hX = image->aperture[net->aperture]->parameter[3];
+			    double hY = image->aperture[net->aperture]->parameter[4];
+			    double shX = hX, shY = hY;
+			    cairo_matrix_transform_distance(&scaleMatrix, &shX, &shY);
+			    gerbv_gdk_draw_hole(*pixmap, gc, x2, y2,
+				(int)round(fabs(shX)), (int)round(fabs(shY)),
+				&opaque, &transparent);
+			}
+
 			break;
 		    case GERBV_APTYPE_MACRO :
 			/* TODO: check line22 and others */
