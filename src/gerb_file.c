@@ -370,7 +370,7 @@ gerb_find_file(char const * filename, char **paths)
 	  DPRINTF("%s():  Tring to access \"%s\"\n", __FUNCTION__,
 		  complete_path);
 	  
-	  if (access(complete_path, R_OK) != -1)
+	  if (g_access(complete_path, R_OK) != -1)
 	    break;
 	  
 	  g_free(complete_path);

@@ -455,14 +455,13 @@ init_paths (char *argv0)
   else
     {
       char *path, *p, *tmps;
-      struct stat sb;
+      GStatBuf sb;
       int r;
-      
-      tmps = getenv ("PATH");
-      
-      if (tmps != NULL)
+      const char *path_env = g_getenv ("PATH");
+
+      if (path_env != NULL)
         {
-          path = strdup (tmps);
+          path = strdup (path_env);
 	  
           /* search through the font path for a font file */
           for (p = strtok (path, GERBV_PATH_DELIMETER); p && *p;
@@ -475,7 +474,7 @@ init_paths (char *argv0)
                   exit (1);
                 }
               sprintf (tmps, "%s%s%s", p, GERBV_DIR_SEPARATOR_S, argv0);
-              r = stat (tmps, &sb);
+              r = g_stat (tmps, &sb);
               if (r == 0)
                 {
 		  DPRINTF("Found it:  \"%s\"\n", tmps);
@@ -513,7 +512,26 @@ init_paths (char *argv0)
       /* we have failed to find out anything from argv[0] so fall back to the original
        * install prefix
        */
+#ifdef WIN32
+       /* On Windows, use GLib's module path detection to find the
+        * installation directory at runtime.  This handles non-ASCII
+        * install paths and cases where gerbv is moved after build. */
+       {
+	   const gchar *moduledir =
+	       g_win32_get_package_installation_directory_of_module(NULL);
+	   gchar *modbindir = g_canonicalize_filename("bin", moduledir);
+	   GStatBuf msb;
+	   if (g_stat(modbindir, &msb) == 0) {
+	       bindir = g_strdup(modbindir);
+	   } else {
+	       bindir = g_strdup(moduledir);
+	   }
+	   g_free(modbindir);
+	   g_free((gchar *)moduledir);
+       }
+#else
        bindir = strdup (GERBV_BINDIR);
+#endif
     }
     
   /* now find the path to exec_prefix */
@@ -892,6 +910,24 @@ gerbv_file_version(scheme *sc, pointer args)
     return sc->NIL;
 } /* gerbv_file_version */
 
+#ifdef WIN32
+/** Wrapper for fopen() on Windows.
+ * Receives a UTF-8 encoded filename and converts it to the system
+ * codepage before calling fopen(), so non-ASCII paths work correctly.
+ */
+static FILE *
+win32_fopen_utf8(const char *filename_utf8, const char *mode)
+{
+    FILE *fd;
+    gchar *filename_local =
+	g_win32_locale_filename_from_utf8(filename_utf8);
+    fd = fopen(filename_local, mode);
+    g_free(filename_local);
+    return fd;
+}
+#define fopen(F, M) win32_fopen_utf8(F, M)
+#endif
+
 /** Checks whether the supplied file look like a gerbv project by
  * reading the first line and checking if it contains gerbv-file-version
  *
@@ -938,7 +974,7 @@ project_is_gerbv_project(const char *filename, gboolean *ret)
 project_list_t *
 read_project_file(char const* filename)
 {
-    struct stat stat_info;
+    GStatBuf stat_info;
     scheme *sc;
     FILE *fd;
     /* always let the environment variable win so one can force
@@ -980,7 +1016,7 @@ read_project_file(char const* filename)
     current_file_version =
 		version_str_to_int(GERBV_DEFAULT_PROJECT_FILE_VERSION);
 
-    if (stat(filename, &stat_info) || !S_ISREG(stat_info.st_mode)) {
+    if (g_stat(filename, &stat_info) || !S_ISREG(stat_info.st_mode)) {
 	GERB_MESSAGE(_("Failed to read %s"), filename);
 
 	return NULL;

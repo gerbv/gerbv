@@ -1905,7 +1905,7 @@ interface_get_alert_dialog_response (const gchar *primaryText,
   gtk_box_pack_start (GTK_BOX (dialog_vbox1), hbox1, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox1), 6);
 
-  image1 = gtk_image_new_from_icon_name (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
+  image1 = gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
   gtk_box_pack_start (GTK_BOX (hbox1), image1, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (image1), 0.5, 0);
 
@@ -2246,7 +2246,7 @@ interface_show_alert_dialog (gchar *primaryText, gchar *secondaryText,
   gtk_box_pack_start (GTK_BOX (dialog_vbox1), hbox1, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (hbox1), 6);
 
-  image1 = gtk_image_new_from_icon_name (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
+  image1 = gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
   gtk_box_pack_start (GTK_BOX (hbox1), image1, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (image1), 0.5, 0);
 
