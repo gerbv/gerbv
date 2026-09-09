@@ -307,6 +307,9 @@ wishing to incorporate Gerber parsing/editing/exporting/rendering into other
 programs are welcome to use libgerbv. Complete API documentation for libgerbv
 is [here](https://gerbv.github.io/doc/), as well as many example programs using libgerbv.
 
+See [`doc/example-code/README.md`](doc/example-code/README.md) for a guide to
+building against libgerbv on Linux, macOS, MSYS2, and Visual Studio 2022.
+
 <details>
   <summary>Click for Example 1</summary>
    <p>Description: Loads example1-input.gbx into a project, and then exports the layer back to another RS274X file 
