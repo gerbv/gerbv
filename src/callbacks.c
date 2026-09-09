@@ -209,6 +209,41 @@ void open_project(char *project_filename)
 
 /* --------------------------------------------------------- */
 /**
+  * Auto-detect and apply the display unit from the first loaded
+  * Gerber file.  Only switches when no files were previously
+  * loaded (first-file heuristic), so opening additional layers
+  * won't clobber the user's manual choice.
+  */
+static void
+auto_detect_display_unit(void)
+{
+    /* Only auto-detect on first file load */
+    int layer_count = 0;
+    for (int i = 0; i <= mainProject->last_loaded; i++) {
+        if (mainProject->file[i])
+            layer_count++;
+    }
+    if (layer_count != 1)
+        return;
+
+    /* Find the first loaded file and check its unit */
+    for (int i = 0; i <= mainProject->last_loaded; i++) {
+        if (!mainProject->file[i] || !mainProject->file[i]->image)
+            continue;
+
+        gerbv_unit_t unit = mainProject->file[i]->image->info->orig_unit;
+        if (unit == GERBV_UNIT_MM && screen.unit != GERBV_MMS) {
+            screen.unit = GERBV_MMS;
+            gtk_combo_box_set_active(
+                GTK_COMBO_BOX(screen.win.statusUnitComboBox),
+                GERBV_MMS);
+        }
+        break;
+    }
+}
+
+/* --------------------------------------------------------- */
+/**
   * File -> open action requested
   * or file drop event happened.
   * Open a layer (or layers) or one Gerbv project from the files.
@@ -339,6 +374,8 @@ void open_files(GSList *filenames)
 	gerbv_render_zoom_to_fit_display (mainProject, &screenRenderInfo);
 	render_refresh_rendered_image_on_screen();
 	callbacks_update_layer_tree();
+
+	auto_detect_display_unit();
 }
 
 /* --------------------------------------------------------- */
