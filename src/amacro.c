@@ -84,6 +84,7 @@ new_amacro(void)
  */
 #define MATH_OP_STACK_SIZE 64
 #define MATH_OP_UMINUS (-1) /* unary minus; emits SUB after the operand */
+#define MATH_OP_LPAREN (-2) /* '('; stops popping until the matching ')' */
 #define MATH_OP_PUSH(val) do { \
 	if (math_op_idx < MATH_OP_STACK_SIZE) \
 	    math_op[math_op_idx++] = (val); \
@@ -131,6 +132,26 @@ emit_math_op(gerbv_instruction_t *ip, int math_op)
 					     : (gerbv_opcodes_t)math_op;
     return ip;
 } /* emit_math_op */
+
+
+/*
+ * Emits all operators left on the stack at the end of an expression.
+ */
+static gerbv_instruction_t *
+flush_math_ops(gerbv_instruction_t *ip, int *math_op, int *math_op_idx,
+	       const char *amacro_name)
+{
+    while (*math_op_idx > 0) {
+	int op = math_op[--*math_op_idx];
+
+	if (op == MATH_OP_LPAREN)
+	    GERB_COMPILE_ERROR(_("Unbalanced '(' in aperture macro %s"),
+			       amacro_name ? amacro_name : "");
+	else
+	    ip = emit_math_op(ip, op);
+    }
+    return ip;
+} /* flush_math_ops */
 
 
 /*
@@ -186,8 +207,7 @@ parse_aperture_macro(gerb_file_t *fd)
 	    }
 	    break;
 	case '*':
-	    while (!MATH_OP_EMPTY)
-		ip = emit_math_op(ip, MATH_OP_POP);
+	    ip = flush_math_ops(ip, math_op, &math_op_idx, amacro->name);
 	    /*
 	     * Check is due to some gerber files has spurious empty lines.
 	     * (EagleCad of course).
@@ -219,8 +239,7 @@ parse_aperture_macro(gerb_file_t *fd)
 		comma = 1;
 		break;
 	    }
-	    while (!MATH_OP_EMPTY)
-		ip = emit_math_op(ip, MATH_OP_POP);
+	    ip = flush_math_ops(ip, math_op, &math_op_idx, amacro->name);
 	    comma = 1;
 	    break;
 	case '+':
@@ -264,6 +283,20 @@ parse_aperture_macro(gerb_file_t *fd)
 		ip = emit_math_op(ip, MATH_OP_POP);
 	    MATH_OP_PUSH(GERBV_OPCODE_MUL);
 	    comma = 1;
+	    break;
+	case '(':
+	    MATH_OP_PUSH(MATH_OP_LPAREN);
+	    comma = 1;
+	    break;
+	case ')':
+	    while ((!MATH_OP_EMPTY) && (MATH_OP_TOP != MATH_OP_LPAREN))
+		ip = emit_math_op(ip, MATH_OP_POP);
+	    if (MATH_OP_EMPTY)
+		GERB_COMPILE_ERROR(_("Unbalanced ')' in aperture macro %s"),
+				   amacro->name ? amacro->name : "");
+	    else
+		math_op_idx--; /* drop the '(' marker */
+	    comma = 0;
 	    break;
 	case '0':
 	    /*

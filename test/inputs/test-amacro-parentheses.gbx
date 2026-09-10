@@ -1,0 +1,20 @@
+G04 Test for brackets in aperture macro arithmetic expressions*
+G04 Brackets group a sub-expression, which takes precedence over the surrounding operators*
+G04 RING: a filled circle of diameter $1 = 1.0 with a clear circle of diameter ($1+$2)/2 = 0.75 on top*
+%MOIN*%
+%FSLAX34Y34*%
+%IPPOS*%
+%AMRING*
+1,1,$1,0,0,0*
+1,0,($1+$2)/2,0,0,0*%
+G04 OFFSET: nested brackets, a unary minus on a bracketed term, a unary minus inside brackets*
+G04 A circle of diameter $1 = 0.3 placed at (-($2-$3)x2, (($2+$3)/2)x(-1)) = (-0.6, -0.35)*
+%AMOFFSET*
+1,1,$1,-($2-$3)x2,(($2+$3)/2)x(-1),0*%
+%ADD10RING,1.0X0.5*%
+%ADD11OFFSET,0.3X0.5X0.2*%
+G54D10*
+G01X0010000Y0010000D03*
+G54D11*
+G01X0030000Y0010000D03*
+M02*
