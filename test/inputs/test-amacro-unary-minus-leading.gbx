@@ -1,0 +1,14 @@
+G04 Test for a unary minus at the start of an aperture macro arithmetic expression*
+G04 The right-hand side of a variable definition ($3=-$1/2) and the first parameter of a primitive (7,-$1,...) may start with '-'*
+%MOIN*%
+%FSLAX34Y34*%
+%IPPOS*%
+G04 Thermal centered at (-$1, 0) = (-0.5, 0); circle of diameter $2 centered at ($3, $3) = (-0.25, -0.25)*
+%AMLEADING*
+$3=-$1/2*
+7,-$1,0,$2,$2x0.6,$2x0.1,0*
+1,1,$2,$3,$3,0*%
+%ADD10LEADING,0.5X0.4*%
+G54D10*
+G01X0010000Y0010000D03*
+M02*

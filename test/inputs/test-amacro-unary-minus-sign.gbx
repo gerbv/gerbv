@@ -1,0 +1,18 @@
+G04 Test for the unary minus on aperture macro arithmetic expression operands*
+G04 A '-' in front of an operand negates that operand, literal or variable alike: -$4, -$5+$2*
+G04 RECT: 1.0x0.6 rectangle centered at (-$4, -$5+$2) = (-0.2, +0.5) from the flash point*
+%MOIN*%
+%FSLAX34Y34*%
+%IPPOS*%
+%AMRECT*
+21,1,$1,$2-2x$3,-$4,-$5+$2,0*%
+G04 DIAMOND: outline with vertices ($1,0) (0,$2) (-$1,0) (0,-$2)*
+%AMDIAMOND*
+4,1,4,$1,0,0,$2,-$1,0,0,-$2,$1,0,$3*%
+%ADD10RECT,1.0X0.8X0.1X0.2X0.3*%
+%ADD11DIAMOND,0.4X0.25X0*%
+G54D10*
+G01X0010000Y0010000D03*
+G54D11*
+G01X0030000Y0010000D03*
+M02*
