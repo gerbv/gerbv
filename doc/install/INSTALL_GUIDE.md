@@ -1,5 +1,7 @@
 # Gerbv Installation Guide
 
+> To build Gerbv from source instead of installing a pre-built package, see [BUILD.md](../../BUILD.md).
+
 ## Quick Installation
 
 ### 1. Install the Package
@@ -243,7 +245,7 @@ This creates a package that installs to `/usr/local/` (no integration scripts ne
 ### Custom `/opt` installation (parallel installs)
 
 ```bash
-cmake --preset linux-gnu-gcc-install
+cmake --preset linux-gnu-gcc-opt
 cmake --build build --config Release
 cpack --preset deb-opt -C Release
 ```
