@@ -94,7 +94,6 @@ jobs:
 
     - name: Run tests
       if: "!matrix.code_coverage"
-      continue-on-error: true
       run: ctest --preset linux-gnu-gcc -V
 
     - name: Reset coverage
@@ -227,7 +226,6 @@ jobs:
       run: cmake --build --preset macos-clang --parallel ${NUM_BUILD_JOBS}
 
     - name: Run tests
-      continue-on-error: true
       run: ctest --preset macos-clang -V
 
     - name: Package
