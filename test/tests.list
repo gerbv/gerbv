@@ -246,5 +246,9 @@ test-drill-arc-radius | test-drill-arc-radius.exc
 # Gerber X2 attribute commands (TF, TA, TO, TD) should be silently ignored
 test-gerber-x2-attributes | test-gerber-x2-attributes.gbx
 
+# Layer diff/compare export (--diff mode)
+test-diff | test-diff-base.gbx test-diff-modified.gbx | ! --diff --output=outputs/test-diff.png
+test-diff-hide-unchanged | test-diff-base.gbx test-diff-modified.gbx | ! --diff --diff-hide-unchanged --output=outputs/test-diff-hide-unchanged.png
+
 # XNC files
 empty_xnc | empty.xnc
