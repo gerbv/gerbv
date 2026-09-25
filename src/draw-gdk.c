@@ -95,8 +95,8 @@ gerbv_gdk_draw_prim1(GdkPixmap *pixmap, GdkGC *gc, gerbv_simplified_amacro_t *s,
     const gint full_circle = 23360;
     GdkGC *local_gc = gdk_gc_new(pixmap);
     gint dia    = round(fabs(s->parameter[diameter_idx] * scale));
-    gint real_x = x - dia / 2;
-    gint real_y = y - dia / 2;
+    gint real_x = round(x - dia / 2.0);
+    gint real_y = round(y - dia / 2.0);
     GdkPoint center;
     GdkColor color;
 
@@ -286,7 +286,7 @@ gerbv_gdk_draw_prim6(GdkPixmap *pixmap, GdkGC *gc, gerbv_simplified_amacro_t *s,
 	const gint full_circle = 23360;
 	gint dia = (real_dia - real_dia_diff * circle) * scale;
 	if (dia >= 0){
-		gdk_draw_arc(pixmap, local_gc, 0, x - dia / 2, y - dia / 2, 
+		gdk_draw_arc(pixmap, local_gc, 0, round(x - dia / 2.0), round(y - dia / 2.0),
 				dia, dia, 0, full_circle);
 	}
     }
@@ -356,7 +356,7 @@ gerbv_gdk_draw_prim7(GdkPixmap *pixmap, GdkGC *gc, gerbv_simplified_amacro_t *s,
      * Non filled circle 
      */
     diameter = (s->parameter[inside_dia_idx] + ci_thickness) * scale;
-    gdk_draw_arc(pixmap, local_gc, 0, x - diameter / 2, y - diameter / 2, 
+    gdk_draw_arc(pixmap, local_gc, 0, round(x - diameter / 2.0), round(y - diameter / 2.0),
 		 diameter, diameter, 0, full_circle);
 
     /*
@@ -612,9 +612,9 @@ gerbv_gdk_draw_circle(GdkPixmap *pixmap, GdkGC *gc,
 		  gint filled, gint x, gint y, gint dia)
 {
     static const gint full_circle = 23360;
-    gint real_x = x - dia / 2;
-    gint real_y = y - dia / 2;
-    
+    gint real_x = round(x - dia / 2.0);
+    gint real_y = round(y - dia / 2.0);
+
     gdk_draw_arc(pixmap, gc, filled, real_x, real_y, dia, dia, 0, full_circle);
     
     return;
@@ -632,12 +632,12 @@ gerbv_gdk_draw_rectangle(GdkPixmap *pixmap, GdkGC *gc,
 	int i;
 	GdkPoint points[4];
 
-	points[0].x = -(x_side >> 1);
-	points[0].y = -(y_side >> 1);
-	points[1].x = x_side >> 1;
+	points[0].x = round(-(x_side / 2.0));
+	points[0].y = round(-(y_side / 2.0));
+	points[1].x = round(x_side / 2.0);
 	points[1].y = points[0].y;
 	points[2].x = points[1].x;
-	points[2].y = y_side >> 1;
+	points[2].y = round(y_side / 2.0);
 	points[3].x = points[0].x;
 	points[3].y = points[2].y;
 
@@ -671,18 +671,18 @@ gerbv_gdk_draw_oval(GdkPixmap *pixmap, GdkGC *gc,
 		/* Draw in x axis */
 		width = y_axis;
 
-		points[0].x = -(x_axis >> 1) + (y_axis >> 1);
+		points[0].x = round(-(x_axis / 2.0) + (y_axis / 2.0));
 		points[0].y = 0;
-		points[1].x =  (x_axis >> 1) - (y_axis >> 1);
+		points[1].x = round( (x_axis / 2.0) - (y_axis / 2.0));
 		points[1].y = 0;
 	} else {
 		/* Draw in y axis */
 		width = x_axis;
 
 		points[0].x = 0;
-		points[0].y = -(y_axis >> 1) + (x_axis >> 1);
+		points[0].y = round(-(y_axis / 2.0) + (x_axis / 2.0));
 		points[1].x = 0;
-		points[1].y =  (y_axis >> 1) - (x_axis >> 1);
+		points[1].y = round( (y_axis / 2.0) - (x_axis / 2.0));
 	}
 
 	points[0] = rotate_point(points[0], angle_deg);
