@@ -30,7 +30,7 @@
 #include "gerbv.h"
 
 int
-main(int argc, char *argv[]) {
+main(void) {
 	gerbv_image_t *originalImage, *duplicatedImage;
 	
 	/* parse and create the first image (by default, the image will not be

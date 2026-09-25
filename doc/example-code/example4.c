@@ -28,7 +28,7 @@
 #include "gerbv.h"
 
 int
-main(int argc, char *argv[]) {
+main(void) {
 	gerbv_image_t *workingImage;
 	gerbv_net_t *currentNet;
 
