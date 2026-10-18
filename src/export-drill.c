@@ -98,18 +98,29 @@ gerbv_export_drill_file_from_image (const gchar *filename, gerbv_image_t *inputI
 				continue;
 
 			switch (net->aperture_state) {
-			case GERBV_APERTURE_STATE_FLASH:
-				fprintf(fd, "X%06ldY%06ld\n",
-					(long)round(net->stop_x * 10000.0),
-					(long)round(net->stop_y * 10000.0));
+			case GERBV_APERTURE_STATE_FLASH: {
+				long x = (long)round(net->stop_x * 10000.0);
+				long y = (long)round(net->stop_y * 10000.0);
+
+				/* Keep six coordinate digits; the sign adds one character. */
+				fprintf(fd, "X%0*ldY%0*ld\n",
+					x < 0 ? 7 : 6, x,
+					y < 0 ? 7 : 6, y);
 				break;
-			case GERBV_APERTURE_STATE_ON:	/* Cut slot */
-				fprintf(fd, "X%06ldY%06ldG85X%06ldY%06ld\n",
-					(long)round(net->start_x * 10000.0),
-					(long)round(net->start_y * 10000.0),
-					(long)round(net->stop_x * 10000.0),
-					(long)round(net->stop_y * 10000.0));
+			}
+			case GERBV_APERTURE_STATE_ON: { /* Cut slot */
+				long start_x = (long)round(net->start_x * 10000.0);
+				long start_y = (long)round(net->start_y * 10000.0);
+				long stop_x = (long)round(net->stop_x * 10000.0);
+				long stop_y = (long)round(net->stop_y * 10000.0);
+
+				fprintf(fd, "X%0*ldY%0*ldG85X%0*ldY%0*ld\n",
+					start_x < 0 ? 7 : 6, start_x,
+					start_y < 0 ? 7 : 6, start_y,
+					stop_x < 0 ? 7 : 6, stop_x,
+					stop_y < 0 ? 7 : 6, stop_y);
 				break;
+			}
 			default:
 				break;
 			}

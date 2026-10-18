@@ -1,0 +1,8 @@
+G04 Issue 488 negative coordinate regression test*
+%FSLAX24Y24*%
+%MOMM*%
+%ADD10C,1.0*%
+D10*
+X-030000Y030000D03*
+X030000Y030000D03*
+M02*
