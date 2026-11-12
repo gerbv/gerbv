@@ -2630,8 +2630,6 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
      */
     d1x = -delta_cp_x;
     d1y = -delta_cp_y;
-    d2x = net->stop_x - net->cirseg->cp_x;
-    d2y = net->stop_y - net->cirseg->cp_y;
 
     /*
      * It's possible for values to be calculated that smaller than epsilon,
@@ -2640,8 +2638,6 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
      */
     if (fabs(d1x) < DBL_EPSILON) d1x = 0;
     if (fabs(d1y) < DBL_EPSILON) d1y = 0;
-    if (fabs(d2x) < DBL_EPSILON) d2x = 0;
-    if (fabs(d2y) < DBL_EPSILON) d2y = 0;
 
     net->cirseg->width = hypot(delta_cp_x, delta_cp_y);
     net->cirseg->width *= 2.0;
@@ -2651,32 +2647,44 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
      *  Keep values in radians, convert to degrees only results
      */
     alfa = atan2(d1y, d1x);
-    beta = atan2(d2y, d2x);
 
     /*
      * Make sure it's always positive angles
      */
-    if (alfa < 0.0) {
+    if (alfa < 0.0)
 	alfa += M_PI + M_PI;
-	beta += M_PI + M_PI;
-    }
-
-    if (beta < 0.0)
-	beta += M_PI + M_PI;
 
     /*
-     * This is a sanity check for angles after the nature of atan2.
-     * If cw we must make sure angle1-angle2 are always positive,
-     * If ccw we must make sure angle2-angle1 are always positive.
-     * We should really return one angle and the difference as GTK
-     * uses them. But what the heck, it works for me.
+     * In multiquadrant mode (G75), start == stop defines a full 360 deg circle.
+     * Avoid computing beta via atan2 in this case so floating-point rounding
+     * cannot turn a full circle into a near-zero-degree arc.
      */
-    if (cw) {
-	if (alfa - beta < DBL_EPSILON)
-	    beta -= M_PI + M_PI;
+    if (net->start_x == net->stop_x && net->start_y == net->stop_y) {
+	beta = cw ? alfa - (M_PI + M_PI) : alfa + (M_PI + M_PI);
     } else {
-	if (beta - alfa < DBL_EPSILON)
+	d2x = (net->stop_x - net->start_x) - delta_cp_x;
+	d2y = (net->stop_y - net->start_y) - delta_cp_y;
+	if (fabs(d2x) < DBL_EPSILON) d2x = 0;
+	if (fabs(d2y) < DBL_EPSILON) d2y = 0;
+
+	beta = atan2(d2y, d2x);
+	if (beta < 0.0)
 	    beta += M_PI + M_PI;
+
+	/*
+	 * This is a sanity check for angles after the nature of atan2.
+	 * If cw we must make sure angle1-angle2 are always positive,
+	 * If ccw we must make sure angle2-angle1 are always positive.
+	 * We should really return one angle and the difference as GTK
+	 * uses them. But what the heck, it works for me.
+	 */
+	if (cw) {
+	    if (alfa - beta < DBL_EPSILON)
+		beta -= M_PI + M_PI;
+	} else {
+	    if (beta - alfa < DBL_EPSILON)
+		beta += M_PI + M_PI;
+	}
     }
 
     net->cirseg->angle1 = RAD2DEG(alfa);

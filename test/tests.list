@@ -179,6 +179,7 @@ test-amacro-hex-expression  |  test-amacro-hex-expression.gbx
 test-polygon-fill-1  |  test-polygon-fill-1.gbx
 test-circular-interpolation-1           |  test-circular-interpolation-1.gbx
 test-circular-interpolation-mq-ccw      |  test-circular-interpolation-mq-ccw.gbx
+test-circular-interpolation-mq-full-circle | test-circular-interpolation-mq-full-circle.gbx
 test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-error.gbx
 
 # Aperture block (Gerber X2)
