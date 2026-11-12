@@ -2670,8 +2670,14 @@ calc_cirseg_mq(struct gerbv_net *net, int cw,
      * If ccw we must make sure angle2-angle1 are always positive.
      * We should really return one angle and the difference as GTK
      * uses them. But what the heck, it works for me.
+     *
+     * Coincident start and end points mean a full circle. Test the points,
+     * not the angles: d1 and d2 are rounded differently, so alfa and beta
+     * can differ by more than DBL_EPSILON even when the points are equal.
      */
-    if (cw) {
+    if (net->start_x == net->stop_x && net->start_y == net->stop_y) {
+	beta = cw ? alfa - (M_PI + M_PI) : alfa + (M_PI + M_PI);
+    } else if (cw) {
 	if (alfa - beta < DBL_EPSILON)
 	    beta -= M_PI + M_PI;
     } else {

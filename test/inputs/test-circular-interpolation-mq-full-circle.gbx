@@ -1,0 +1,17 @@
+G04 Each arc starts and ends at the same point, so each is a full circle.*
+G04 The small J offsets are deliberate: they stress floating-point rounding.*
+%FSLAX25Y25*MOMM*%
+%ADD10C,0.1*%
+G75*
+D10*
+G04 Start points just off 0 degrees*
+X-460000Y-2490000D02*
+G03I-159993J4D01*
+X-460000Y-2000000D02*
+G02I-159993J-4D01*
+G04 Start points just off 180 degrees*
+X-380000Y-2490000D02*
+G02I159993J4D01*
+X-380000Y-2000000D02*
+G03I159993J-4D01*
+M02*
