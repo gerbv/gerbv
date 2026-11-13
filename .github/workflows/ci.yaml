@@ -93,9 +93,70 @@ jobs:
       run: cmake --build build -j ${NUM_BUILD_JOBS}
 
     - name: Run tests
+      id: run_tests
       if: "!matrix.code_coverage"
       continue-on-error: true
       run: ctest --preset linux-gnu-gcc -V
+
+    - name: Prepare test failure artifact
+      id: prepare_failure_artifact
+      if: (success() || failure()) && steps.run_tests.outcome == 'failure'
+      run: |
+        ARTIFACT_DIR="${RUNNER_TEMP}/test-failure-artifact"
+        rm -rf "${ARTIFACT_DIR}"
+        mkdir -p "${ARTIFACT_DIR}/golden"
+
+        # 1. Existing tests whose rendered PNG differed from test/golden/
+        if [ -d test/mismatch ]; then
+          cp -r test/mismatch "${ARTIFACT_DIR}/"
+          for dir in test/mismatch/*/; do
+            [ -d "$dir" ] || continue
+            t=$(basename "$dir")
+            if [ -s "test/outputs/${t}.png" ]; then
+              cp "test/outputs/${t}.png" "${ARTIFACT_DIR}/golden/${t}.png"
+              cp "test/outputs/${t}.png" "test/golden/${t}.png"
+            fi
+          done
+        fi
+
+        # 2. New tests added without a golden PNG yet
+        for out in test/outputs/*.png; do
+          [ -s "$out" ] || continue
+          t=$(basename "$out" .png)
+          if [ ! -f "test/golden/${t}.png" ]; then
+            cp "$out" "${ARTIFACT_DIR}/golden/${t}.png"
+            cp "$out" "test/golden/${t}.png"
+          fi
+        done
+
+        git add -- test/golden
+        git diff --cached --binary -- test/golden > "${ARTIFACT_DIR}/fix-golden.patch"
+        git reset -q -- test/golden
+        git checkout -q -- test/golden
+        git clean -fdq -- test/golden
+
+        if [ -s "${ARTIFACT_DIR}/fix-golden.patch" ]; then
+          echo "has_artifact=true" >> "${GITHUB_OUTPUT}"
+          {
+            echo "### Golden image mismatch / missing golden files"
+            echo ""
+            echo "To inspect visual diffs and apply the Ubuntu 22.04 golden updates locally:"
+            echo '```sh'
+            echo "gh run download ${{ github.run_id }} --repo ${{ github.repository }} -n test-failures-ubuntu-22-04 -D /tmp/gerbv-test-failures"
+            echo "# Inspect /tmp/gerbv-test-failures/mismatch/ and /tmp/gerbv-test-failures/golden/, then:"
+            echo "git apply /tmp/gerbv-test-failures/fix-golden.patch"
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+        fi
+
+    - name: Upload test failure artifact
+      if: (success() || failure()) && steps.prepare_failure_artifact.outputs.has_artifact == 'true'
+      uses: actions/upload-artifact@v6
+      with:
+        name: test-failures-ubuntu-22-04
+        path: ${{ runner.temp }}/test-failure-artifact/
+        retention-days: 14
+        if-no-files-found: error
 
     - name: Reset coverage
       if: matrix.code_coverage
