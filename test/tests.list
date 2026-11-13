@@ -180,6 +180,7 @@ test-polygon-fill-1  |  test-polygon-fill-1.gbx
 test-circular-interpolation-1           |  test-circular-interpolation-1.gbx
 test-circular-interpolation-mq-ccw      |  test-circular-interpolation-mq-ccw.gbx
 test-circular-interpolation-zero-error  |  test-circular-interpolation-zero-error.gbx
+test-circular-interpolation-mq-full-circle  |  test-circular-interpolation-mq-full-circle.gbx
 
 # Aperture block (Gerber X2)
 test-aperture-block  |  test-aperture-block.gbx
